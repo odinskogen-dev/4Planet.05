@@ -80,3 +80,20 @@ Required evidence:
 - Odin makes the final judgement.
 
 No item is called VERIFIED DELIVERY until evidence has been inspected.
+
+## Candidate gate record — 2026-07-22
+
+Candidate commit: `a404b24`
+
+| Gate | Candidate state | Evidence | Remaining gate |
+|---|---|---|---|
+| A — 4PLANET | DONE LOCALLY | Shared product navigation and retained URL context compile and pass contract tests. | Browser inspection. |
+| B — ATLAS | PARTIAL | Globe symbol suppression, world-copy protection, shared camera implementation and regression tests are committed. | Execute desktop/mobile Playwright tests and inspect label rendering. |
+| C — SPECIES | DONE LOCALLY | Three accepted GBIF identities, source-aware profiles, live-read states, local WATCH and review-pending seams compile and pass contract tests. | Hosted/browser runtime inspection and source/claims audit. |
+| D — IMPACT | DONE LOCALLY | Tree/Plastic TEST journeys, local Personal Impact Records, share-card disclosure and separated proof states compile and pass contract tests. | Browser inspection; production partner/payment remains out of scope. |
+| E — Integrated journey | PARTIAL | `entity`, `journey` and `record` are preserved across product links; an E2E test exists. | Browser execution is blocked by missing Chromium. |
+| F — Supporting MVPs | DONE LOCALLY | WATCH remains local; Observation is not Signal; minimal NEWS is labelled a product note. | Editorial/source review before public promotion. |
+| G — Engineering | PARTIAL | Clean install, typecheck, build, 18 smoke/contract tests, lint, assets and audit pass. | Five Playwright tests, screenshots, hosted DB proof and preview URL remain open. |
+| H — Authority | BLOCKED | Auditable branch candidate and evidence record exist. | GPT/Gemini review and Odin judgement. |
+
+No gate in this table changes Locked Canon or asserts production readiness.

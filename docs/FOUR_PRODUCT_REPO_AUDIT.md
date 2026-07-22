@@ -272,3 +272,42 @@ NOT YET VERIFIED DELIVERY:
 - Species product code
 - Impact adapter code
 - integrated deploy candidate
+
+## 12. Implementation recovery evidence — 2026-07-22
+
+Status: AGENT-REPORTED LOCAL IMPLEMENTATION CANDIDATE / EXTERNAL RUNTIME GATES OPEN
+
+Implementation commit: `a404b24` (`feat: build integrated four-product prototype`)
+
+Documented delivery:
+
+- one shared product switcher for 4PLANET, ATLAS, SPECIES and IMPACT; canonical `entity`, `journey` and `record` context is retained in product links
+- ATLAS and `/` use the same World implementation; globe mode disables duplicated world copies and third-party symbol layers, while flat mode restores their original visibility
+- Orca, Humpback Whale and Western Honey Bee use accepted GBIF keys `2440483`, `5220086` and `1341976`; the earlier Humpback/Blue Whale identity collision is corrected
+- Source Record, Observation, Signal, Interpretation, Contribution, Delivery, Outcome and Impact remain separate typed and SQL records
+- an exact, attributed GBIF Orca occurrence (`5939349319`) is bundled as a fixture; no Signal is created from it
+- PostGIS migration, seed and bounded down migration are included; RLS enables public-safe reads and exposes no public write policy for contribution/delivery/outcome/impact records
+- local WATCH is connected through canonical taxon IDs; ISSUE, SOLUTION and minimal NEWS are labelled seams with review limits
+- Tree and Plastic journeys create only local TEST records with `NOT_DELIVERED` and `NOT_ASSESSED` states; no fetch, payment or provider request exists
+- local-storage denial produces an explicit error state instead of a false record
+
+Verification run after a strict clean install:
+
+- `npm ci --cache /tmp/4planet-npm-cache`: PASS, 204 packages
+- `npm run typecheck`: PASS
+- `npm run build`: PASS, Vite 8.1.5, 75 modules; World chunk-size warning remains
+- `npm run test:smoke`: PASS, 18/18
+- `npm run lint`: PASS with 0 errors and 6 pre-existing unused-directive warnings
+- `npm run assets:verify`: PASS, 0 missing; 7 duplicate references and 10 unassigned files reported
+- `npm audit`: PASS, 0 vulnerabilities after the Vite/toolchain update
+- secret-pattern scan: no secret value found; only the declared `VITE_SUPABASE_ANON_KEY` type name matched
+- local static server: HTTP 200 and app root confirmed for `/`, contextual `/atlas`, `/species/orca` and `/impact/test/tree`
+
+Open gates:
+
+- hosted Supabase/PostGIS migration and RLS execution were not run because no staging secret/runtime was supplied; evidence is migration/seed plus static contract tests only
+- Playwright has five relevant tests but Chromium is absent; browser download failed in the execution environment, so desktop/mobile behaviour and screenshots remain blocked
+- no Cloudflare/Vercel/Netlify credential or automatic preview URL was present before push
+- GBIF occurrence rights are `CONDITIONAL` on retained CC BY 4.0 attribution; no new media assets were introduced
+
+This addendum supersedes only the `NOT YET VERIFIED DELIVERY` implementation statements above. It does not promote the candidate to Founder Accepted, Locked Canon or production Impact.
