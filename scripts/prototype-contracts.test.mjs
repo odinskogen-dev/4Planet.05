@@ -73,7 +73,7 @@ test("new source-aware journeys add no unregistered media rights burden", () => 
 
 test("migration enables RLS and exposes no public Impact records", () => {
   const sql = read("supabase/migrations/20260722163000_truth_spine.sql");
-  for (const table of ["source_records", "taxon_observations", "signals", "interpretations", "contributions", "deliveries", "outcomes", "impacts", "product_contexts"]) {
+  for (const table of ["source_records", "taxon_observations", "signals", "interpretations", "impact_unit_definitions", "contributions", "deliveries", "outcomes", "impacts", "product_contexts"]) {
     assert.match(sql, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
   }
   assert.match(sql, /revoke all on public\.contributions, public\.deliveries, public\.outcomes, public\.impacts from anon, authenticated/i);

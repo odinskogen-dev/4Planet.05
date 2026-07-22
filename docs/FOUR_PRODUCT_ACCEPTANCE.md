@@ -83,7 +83,7 @@ No item is called VERIFIED DELIVERY until evidence has been inspected.
 
 ## Candidate gate record — 2026-07-22
 
-Candidate commit: `a404b24`
+Candidate implementation commit: `328dda5bcf909d911ebe21999a08a6b3d9412eec`
 
 | Gate | Candidate state | Evidence | Remaining gate |
 |---|---|---|---|
