@@ -18,7 +18,7 @@ const MENU: Cat[] = [
   { key: "4_", to: "/people", kind: "list", items: [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
-  { key: "IMPACT_", to: "/impact", kind: "list", items: [["PLANT TREES", "/impact/tree-unit"], ["CLEAN OCEAN PLASTIC", "/impact/ocean-waste"], ["PROTECT AMAZON RAINFOREST", "/impact/amazon-square"], ["REWILD DEGRADED LAND", "/impact/habitat-recovery"], ["PROOF & REPORTS", "/reports"]] },
+  { key: "IMPACT_", to: "/impact", kind: "list", items: [["TREE TEST JOURNEY", "/impact/test/tree"], ["PLASTIC TEST JOURNEY", "/impact/test/plastic"], ["PROTECT AMAZON RAINFOREST", "/impact/amazon-square"], ["REWILD DEGRADED LAND", "/impact/habitat-recovery"], ["PROOF & REPORTS", "/reports"]] },
   { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];

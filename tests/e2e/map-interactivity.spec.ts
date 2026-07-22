@@ -109,3 +109,38 @@ test.describe("P0 — street-level vector zoom", () => {
     expect(max).toBeGreaterThanOrEqual(20);
   });
 });
+
+test.describe("P0 — globe label occlusion", () => {
+  test("globe hides basemap symbols and mercator restores them", async ({ page }) => {
+    await page.goto(BASE);
+    await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+
+    const globe = await page.evaluate(() => {
+      const map = window.__4planet_map;
+      return map.getStyle().layers
+        .filter((layer: any) => layer.type === "symbol" && !String(layer.id).startsWith("4planet-"))
+        .every((layer: any) => map.getLayoutProperty(layer.id, "visibility") === "none");
+    });
+    expect(globe).toBe(true);
+
+    await page.getByRole("button", { name: "LAYERS" }).click();
+    await page.getByRole("button", { name: "FLAT" }).click();
+    const visibleSymbols = await page.evaluate(() => {
+      const map = window.__4planet_map;
+      return map.getStyle().layers
+        .filter((layer: any) => layer.type === "symbol" && !String(layer.id).startsWith("4planet-"))
+        .some((layer: any) => map.getLayoutProperty(layer.id, "visibility") !== "none");
+    });
+    expect(visibleSymbols).toBe(true);
+  });
+});
+
+test.describe("shared product context", () => {
+  test("entity and journey survive navigation", async ({ page }) => {
+    await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
+    await page.getByRole("link", { name: "ATLAS", exact: true }).click();
+    await expect(page).toHaveURL(/\/atlas\?/);
+    await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
+    await expect(page).toHaveURL(/journey=orca-gbif/);
+  });
+});

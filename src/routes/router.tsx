@@ -4,7 +4,9 @@ import Home from "@/pages/v5/Home";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
-import { ImpactIndex, PathwayPage } from "@/pages/v5/Impact";
+import { PathwayPage } from "@/pages/v5/Impact";
+import { ImpactPrototypeIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
+import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
@@ -13,13 +15,12 @@ import { Stories, CultureFilm, CultureTelier, CulturePlay } from "@/pages/v5/Cul
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
-const Atlas = lazy(() => import("@/pages/v5/Atlas"));
 
 /* 4PLANET_ v1 — THE WORLD.
    Mandate: "I open 4PLANET_ and immediately see Earth." So Earth is "/".
    The V36 editorial home is NOT deleted — it moves to /story, intact.
-   /atlas is left byte-identical so the separate ATLAS development line continues
-   from its own snapshot without this product line disturbing it. */
+   /atlas reuses the same persistent World implementation so entity, journey,
+   camera and label-safety behaviour cannot diverge between entry points. */
 const World = lazy(() => import("@/earth/World"));
 
 const WorldFallback = (
@@ -48,8 +49,12 @@ export function AppRoutes() {
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
-      <Route path="/atlas" element={<Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}><Atlas /></Suspense>} />
-      <Route path="/impact" element={<ImpactIndex />} />
+      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><World /></Suspense>} />
+      <Route path="/species" element={<SpeciesIndex />} />
+      <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/impact" element={<ImpactPrototypeIndex />} />
+      <Route path="/impact/test/:unit" element={<ImpactTestJourney />} />
+      <Route path="/impact/record/:recordId" element={<PersonalImpactRecordPage />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
       <Route path="/join" element={<Navigate to="/people" replace />} />
       <Route path="/people" element={<People />} />

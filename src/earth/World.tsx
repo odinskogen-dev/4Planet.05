@@ -78,7 +78,7 @@ const readUrl = () => {
     light: p.get("t") === "light",
     flat: p.get("p") === "2d",
     lens: ["EARTH", "NOW", "WATCH"].includes(p.get("lens")) ? p.get("lens") : "EARTH",
-    focus: p.get("f") || "",
+    focus: p.get("entity") || p.get("f") || "",
     zoom: Number(p.get("z")) || 2.1,
     center: c.length === 2 && !c.some(isNaN) ? c : [10, 25],
   };
@@ -101,6 +101,24 @@ const onKeyActivate = (fn) => (e) => {
    imagery + data overlays are added ON TOP via the existing registry, so basemap
    and science stay separate. On load failure the map falls back to raster. */
 const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+/* MapLibre + third-party vector styles may render symbol glyphs from a world
+   copy through the rear hemisphere. On the globe, 4PLANET therefore removes
+   basemap symbol layers entirely; geometry and data layers remain. Mercator
+   restores each layer's original visibility. This is deterministic, reversible
+   and safer than trying to infer which rear-facing label should be visible. */
+const setBackfaceSafeLabels = (m, flat, originalVisibility) => {
+  const layers = m.getStyle()?.layers ?? [];
+  layers.forEach((layer) => {
+    if (layer.type !== "symbol" || String(layer.id).startsWith("4planet-")) return;
+    if (!originalVisibility.has(layer.id)) {
+      originalVisibility.set(layer.id, layer.layout?.visibility ?? "visible");
+    }
+    try {
+      m.setLayoutProperty(layer.id, "visibility", flat ? originalVisibility.get(layer.id) : "none");
+    } catch { /* style may be changing; next style.load reapplies */ }
+  });
+};
 
 /* Watch items are two classes. These helpers read either without collapsing them. */
 const watchItemId = (w) =>
@@ -135,6 +153,8 @@ function WorldInner() {
   // are active right now, so any style reload can rehydrate them.
   const vectorFailed = useRef(false);
   const onRef = useRef<string[]>([]);
+  const basemapSymbolVisibility = useRef(new Map());
+  const flatRef = useRef(init.current.flat);
 
   /* ── V36 console state, preserved ─────────────────────────────────────── */
   const [ready, setReady] = useState(false);
@@ -142,6 +162,7 @@ function WorldInner() {
   const [on, setOn] = useState(() => Object.fromEntries(init.current.on.map((id) => [id, true])));
   const [light, setLight] = useState(init.current.light);
   const [flat, setFlat] = useState(init.current.flat);
+  flatRef.current = flat;
   const [status, setStatus] = useState({});
   const [busy, setBusy] = useState({});
   const [info, setInfo] = useState({});
@@ -190,6 +211,7 @@ function WorldInner() {
 
   const writeUrl = useCallback((patch = {}) => {
     const m = map.current; if (!m) return;
+    const current = new URLSearchParams(window.location.search);
     const p = new URLSearchParams();
     p.set("m", patch.mode ?? mode);
     const src = patch.on ?? on;
@@ -200,7 +222,11 @@ function WorldInner() {
     const ln = patch.lens ?? lens;
     if (ln !== "EARTH") p.set("lens", ln);
     const f = "focus" in patch ? patch.focus : ctx ? idOfCtx(ctx) : "";
-    if (f) p.set("f", f);
+    if (f) p.set("entity", f);
+    ["journey", "record"].forEach((key) => {
+      const value = current.get(key);
+      if (value) p.set(key, value);
+    });
     const c = m.getCenter();
     p.set("z", m.getZoom().toFixed(2));
     p.set("c", `${c.lng.toFixed(2)},${c.lat.toFixed(2)}`);
@@ -699,13 +725,18 @@ function WorldInner() {
       touchPitch: true,
       keyboard: true,
       trackResize: true,
+      renderWorldCopies: false,
     });
     map.current = m;
     // V40: expose the live map so behavioural browser tests can read real camera
     // state (center/zoom) and assert the world stays movable with context open.
     (window as any).__4planet_map = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    m.on("style.load", () => m.setProjection({ type: init.current.flat ? "mercator" : "globe" }));
+    m.on("style.load", () => {
+      const isFlat = flatRef.current;
+      m.setProjection({ type: isFlat ? "mercator" : "globe" });
+      setBackfaceSafeLabels(m, isFlat, basemapSymbolVisibility.current);
+    });
     m.on("load", () => setReady(true));
     m.on("error", (e) => {
       const id = e && e.sourceId;
@@ -718,7 +749,8 @@ function WorldInner() {
         try {
           m.setStyle(makeStyle(light));
           m.once("styledata", () => {
-            m.setProjection({ type: flat ? "mercator" : "globe" });
+            m.setProjection({ type: flatRef.current ? "mercator" : "globe" });
+            setBackfaceSafeLabels(m, flatRef.current, basemapSymbolVisibility.current);
             onRef.current.forEach((lid) => addLayer(LAYERS.find((l) => l.id === lid), true));
           });
         } catch { /* keep whatever rendered */ }
@@ -767,6 +799,7 @@ function WorldInner() {
       m.setStyle(makeStyle(light));
       m.once("styledata", () => {
         m.setProjection({ type: flat ? "mercator" : "globe" });
+        setBackfaceSafeLabels(m, flat, basemapSymbolVisibility.current);
         RASTER_ORDER.forEach((id) => { if (active.includes(id)) addLayer(LAYERS.find((l) => l.id === id), true); });
         active.filter((id) => !RASTER_ORDER.includes(id)).forEach((id) => addLayer(LAYERS.find((l) => l.id === id), true));
       });
@@ -810,8 +843,10 @@ function WorldInner() {
 
   const toggleProjection = () => {
     const next = !flat;
+    flatRef.current = next;
     setFlat(next);
     map.current.setProjection({ type: next ? "mercator" : "globe" });
+    setBackfaceSafeLabels(map.current, next, basemapSymbolVisibility.current);
     writeUrl({ flat: next });
   };
 
