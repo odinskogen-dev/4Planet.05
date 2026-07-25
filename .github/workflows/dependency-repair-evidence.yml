@@ -1,0 +1,76 @@
+name: Dependency Repair Evidence
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-repair-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  produce-tested-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact branch commit
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install the locked current dependencies
+        run: npm ci
+
+      - name: Generate a conservative React Router repair
+        run: npm install react-router-dom@version-6
+
+      - name: Generate the supported ESLint repair
+        run: npm install --save-dev eslint@latest @eslint/js@latest typescript-eslint@latest
+
+      - name: Apply remaining non-breaking audit repairs
+        run: npm audit fix
+
+      - name: Verify the repaired dependency tree
+        shell: bash
+        run: |
+          set +e
+          npm audit --audit-level=high 2>&1 | tee dependency-audit.log
+          status=${PIPESTATUS[0]}
+          echo "DEPENDENCY_AUDIT_EXIT=$status" >> "$GITHUB_ENV"
+          exit $status
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Upload tested dependency files and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tested-dependency-repair
+          path: |
+            package.json
+            package-lock.json
+            dependency-audit.log
+          if-no-files-found: error
+          retention-days: 7
