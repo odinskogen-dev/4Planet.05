@@ -105,7 +105,7 @@ test("public preview headers and status boundaries are committed", () => {
   const status = read("docs/PUBLIC_PREVIEW_STATUS.md");
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Content-Security-Policy:/);
-  assert.match(status, /PUBLIC PREVIEW \/ WORKING CANDIDATE/);
+  assert.match(status, /PUBLIC PREVIEW CANDIDATE \/ DEPLOYED \/ RELEASE GATE CLOSED/);
   assert.match(status, /TEST RECORD — NO PHYSICAL DELIVERY/);
   assert.match(status, /does not claim/);
 });
