@@ -15,8 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AUDITED_RUNTIME_SHA: 8fc79420db5e0766f512b616feeaac6142418109
-  AUDITED_RUNTIME_URL: https://e9908320.4planet-05.pages.dev
+  AUDITED_RUNTIME_SHA: d348e27fa172a649a076c4893e38bfd47a36b0b2
+  AUDITED_RUNTIME_URL: https://build-four-product-integrate.4planet-05.pages.dev
+  AUDITED_RUNTIME_MARKER: product-proof-2026-07-25
 
 jobs:
   test-critical-journeys:
@@ -26,7 +27,7 @@ jobs:
       - name: Check out the exact evidence candidate
         uses: actions/checkout@v4
 
-      - name: Confirm that runtime product files still match the deployed candidate
+      - name: Confirm that runtime product files still match the controlled candidate
         shell: bash
         run: |
           git fetch --no-tags --depth=1 origin "$AUDITED_RUNTIME_SHA"
@@ -47,20 +48,22 @@ jobs:
       - name: Build the current source for integrity
         run: npm run build
 
-      - name: Confirm the exact deployed candidate is reachable
+      - name: Confirm the controlled branch deployment is current and reachable
         shell: bash
         run: |
-          for attempt in {1..60}; do
-            if curl --fail --silent "$AUDITED_RUNTIME_URL/" > /dev/null; then
+          for attempt in {1..90}; do
+            marker="$(curl --fail --silent "$AUDITED_RUNTIME_URL/product-build.txt" || true)"
+            if printf '%s' "$marker" | grep --fixed-strings --quiet "$AUDITED_RUNTIME_MARKER"; then
               printf '%s\n' "$AUDITED_RUNTIME_URL" > runtime-url.txt
               printf '%s\n' "$AUDITED_RUNTIME_SHA" > runtime-sha.txt
+              printf '%s\n' "$marker" > runtime-marker.txt
               exit 0
             fi
             sleep 2
           done
           exit 1
 
-      - name: Run desktop, mobile, map and critical-route tests against the exact deployment
+      - name: Run desktop, mobile, map and critical-route tests against the controlled deployment
         env:
           BASE_URL: ${{ env.AUDITED_RUNTIME_URL }}
         run: npm run test:e2e
@@ -76,5 +79,6 @@ jobs:
             test-results
             runtime-url.txt
             runtime-sha.txt
+            runtime-marker.txt
           if-no-files-found: warn
           retention-days: 14
