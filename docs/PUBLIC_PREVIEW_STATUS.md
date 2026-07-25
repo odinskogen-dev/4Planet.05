@@ -1,95 +1,139 @@
-# 4PLANET PUBLIC PREVIEW — STATUS AND LIMITS
+# 4PLANET PUBLIC PREVIEW — CURRENT PRODUCT PROOF
 
 Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED
-Audited product candidate: `deed9507559d2cacfd610345426fb7e34ad7d95f`
-Branch preview: https://build-four-product-integrate.4planet-05.pages.dev
-Exact audited preview: https://495b1051.4planet-05.pages.dev
-Authority: Odin Oddekalv → GPT programme control → specialist implementation → GPT audit → Odin final judgement
 
-## Verified delivery evidence
+This is a controlled public preview for internal product judgement. It is not a Beta, a production-ready service, a commercial offer or proof of ecological impact.
 
-- Cloudflare reported successful deployment for exact product commit `deed9507559d2cacfd610345426fb7e34ad7d95f`.
-- Clean locked installation passes in GitHub Actions.
-- TypeScript typecheck passes.
-- Production build passes.
-- Contract and smoke tests pass after correcting the required build-before-smoke order.
-- Lint passes.
-- Asset verification passes.
-- Eleven new Public Preview contract tests pass.
-- Root and ATLAS route semantics, shared product navigation, context retention, WebGL capability fallback, security headers and public maturity language are committed on the existing PR branch.
+## Exact identity
 
-## Open release blockers
+- Repository: `odinskogen-dev/4Planet.05`
+- Working branch: `build/four-product-integrated-prototype`
+- Open code review: pull request 9
+- Audited runtime product commit: `d348e27fa172a649a076c4893e38bfd47a36b0b2`
+- Product marker: `product-proof-2026-07-25`
+- Stable branch preview: https://build-four-product-integrate.4planet-05.pages.dev
+- Browser-evidence commit: `a5b5e18d9883544f13535f38bb613ee19c0c3f71`
+- Public Preview Gate run: `30169545758`
+- Browser Product Proof run: `30169545766`
+- Browser evidence artifact: `8622543696`
+- Evidence digest: `sha256:8d2877b41118aa057c7f5ec31c9f62169a1c4275b9e1c6c7f711a6375c113f81`
 
-- Dependency audit fails. The controlled audit identified seven vulnerabilities: two moderate and five high.
-- The current runtime dependency route includes published React Router advisories affecting the installed version range.
-- The development tooling chain includes a vulnerable `brace-expansion` path through ESLint-related dependencies.
-- A tested package and lockfile repair has not been delivered. No version has been guessed or force-upgraded without evidence.
-- Desktop and mobile browser acceptance has not been independently completed for the audited candidate.
-- Current screenshots have not been accepted.
-- The complete locked Oslofjorden place journey has not passed runtime acceptance.
-- Hosted Product Context migration, RLS execution and readback remain open. The public candidate continues to require bundled-fixture disclosure.
-- Direct-route inspection from the GPT runtime was blocked by external URL/network restrictions; Cloudflare deployment evidence does not replace browser acceptance.
+The browser workflow confirms that the deployed branch contains the audited runtime product marker before testing it. Product files are compared to the audited runtime commit before the browser evidence is accepted.
 
-## What this preview demonstrates
+## Verified technical result
+
+The exact controlled candidate passed:
+
+- clean locked dependency installation;
+- TypeScript type control;
+- production build;
+- nineteen contract and smoke tests;
+- code linting;
+- registered-asset verification;
+- dependency security audit with no remaining registered vulnerability at the release threshold;
+- eight real Chromium browser tests covering desktop, mobile, ATLAS and direct IMPACT test routes;
+- seven current screenshots from the controlled deployment.
+
+The public delivery also contains the expected security and content headers.
+
+## Current screenshots
+
+1. 4PLANET desktop entry.
+2. Orca source and limitation proof on desktop.
+3. ATLAS with the same Orca context preserved.
+4. 4PLANET mobile entry.
+5. Orca source and limitation proof on mobile.
+6. Tree test journey.
+7. Plastic test journey.
+
+The mobile proof also verifies a single-column footer and no horizontal page overflow at 390 pixels.
+
+## What the preview demonstrates
 
 - one connected public family: 4PLANET, ATLAS, SPECIES and IMPACT;
-- one shared navigation and retained `entity`, `journey` and `record` context;
-- a source-aware Orca profile and observation path;
-- ATLAS as the interactive spatial interface when the device supports WebGL;
-- place search and context, with Oslofjorden as the locked proof direction;
-- local Tree and Plastic test journeys with Personal Impact test records;
-- visible separation between Observation, Signal, Interpretation, Contribution, Delivery, Outcome and Impact.
+- one shared navigation with retained `entity`, `journey` and `record` context;
+- the same accepted Orca identity across SPECIES, ATLAS and local Watch;
+- a source-aware Orca record with source, date, location, attribution, licence and explicit limitations;
+- clear separation between Source Record, Observation, Signal and Interpretation;
+- ATLAS as an interactive spatial interface when the browser supports the required graphics;
+- an honest fallback when the interactive globe is unavailable;
+- local Watch without a false account or server-storage claim;
+- local Tree and Plastic test journeys with no payment or physical delivery;
+- clear separation between Contribution, Delivery, Evidence, Outcome and System Impact;
+- a main-content landmark, keyboard skip link and shared public navigation.
 
-## What this preview does not claim
+## Controlled Orca evidence
 
-- Beta, production readiness or final Public Preview acceptance;
-- complete global coverage;
-- scientific or expert review of every public explanation;
-- operational partner, provider, funder or customer relationships;
-- production payment, physical delivery or ecological outcome;
-- hosted Product Context persistence;
-- a verified Tree Unit or Plastic Unit;
-- secured capital, product-market fit or measured impact.
+- Accepted GBIF taxon: `2440483`
+- GBIF occurrence: `5939349319`
+- Recorded date: 3 January 2026
+- Recorded place: Åstfjorden near Hitra, Trøndelag
+- Recorder named by the source: Karl Anders Olaussen
+- Licence: CC BY 4.0
+- Coordinate status: rounded
 
-## Public language rules
+One occurrence does not establish range, abundance, population trend, permanent place membership, live tracking or ecological change. No Signal has been created from this Observation.
 
-Use:
+The integrated Product Context remains a bundled fixture. Hosted persistence has not been exercised and read back in the controlled staging environment.
 
-- `PUBLIC PREVIEW`
-- `SOURCE RECORD`
-- `OBSERVATION`
+## Impact boundary
+
+Tree and Plastic remain local test journeys. Every prototype record states:
+
 - `TEST RECORD — NO PHYSICAL DELIVERY`
 - `NOT DELIVERED`
 - `OUTCOME NOT ASSESSED`
 - `SYSTEM IMPACT NOT ASSESSED`
-- `SOURCE UNAVAILABLE`
-- `NO RECORDS FOUND`
-- `REVIEW PENDING`
 
-Do not use without new evidence:
+No provider request, payment, physical delivery, verified outcome or ecological impact is claimed.
 
-- `VERIFIED IMPACT`
-- `LIVE IMPACT`
-- `PARTNER`
-- `DELIVERED`
-- `RESTORED`
-- `PROTECTED`
-- `SCIENTIFICALLY VERIFIED`
-- `REAL-TIME` as a generic label
-- `BETA` or `PRODUCTION READY`
+## Corrections completed during the proof work
 
-## Exact next product gate
+- an outdated contract test was aligned with the current public-status boundary;
+- seven dependency vulnerabilities were removed through tested package and lockfile updates;
+- the public shell received a main-content landmark and keyboard skip link;
+- ATLAS browser tests were moved to the real `/atlas` route;
+- map tests were rewritten around observable user behaviour rather than unstable animation details;
+- mobile footer layout was corrected and tested for one-column rendering and no horizontal overflow;
+- browser evidence now tests the controlled deployed branch rather than an unconfigured local map runtime;
+- current desktop, mobile, source, map and IMPACT screenshots are generated from the same controlled deployment.
 
-1. Produce and commit a tested dependency and lockfile repair.
-2. Pass the complete Public Preview Gate on the exact repaired SHA.
-3. Confirm Cloudflare deployment and direct routes for that exact SHA.
-4. Complete desktop and mobile browser acceptance, including WebGL fallback.
-5. Capture and approve current screenshots.
-6. Complete and inspect the Orca and Oslofjorden critical journeys.
-7. Preserve hosted-fixture and Impact test boundaries.
-8. Send the accepted candidate to Gemini red team.
-9. Present the audited candidate to Odin for final judgement.
+## What this preview does not claim
+
+- Beta or production readiness;
+- complete hosted BRAIN persistence;
+- complete global data coverage;
+- complete scientific review of public explanations;
+- completed Oslofjord product proof;
+- operational partner, provider, funder or customer relationships;
+- validated users, demand or willingness to pay;
+- production payment, physical delivery or ecological outcome;
+- a verified Tree Unit or Plastic Unit;
+- secured or received capital;
+- professional legal, privacy, accessibility, scientific or security approval.
+
+## Remaining product gates
+
+1. Odin judges whether this candidate is the correct basis for continued internal development.
+2. A separate founder decision determines whether an independent Gemini review is run.
+3. Hosted Product Context migration, access rules and readback remain open.
+4. The Oslofjord journey remains open and must not duplicate existing qualified work.
+5. Real user comprehension and usefulness remain untested.
+6. Professional security, privacy, accessibility and rights review remain open.
+7. Main-branch merge requires a separate founder decision and technical check.
+8. Controlled user testing, public launch and contact activity require separate decisions.
+
+## Contact and release boundary
+
+- Contact Phase: HOLD
+- NIVA: HOLD
+- TOMRA: HOLD
+- Main-branch merge: NOT AUTHORISED
+- Beta or production label: NOT AUTHORISED
+- Public launch: NOT AUTHORISED
+- Partner or funding claim: NOT AUTHORISED
+- IMPACT activation: NOT AUTHORISED
 
 ## Correction rule
 
-When evidence changes, correct the public status before expanding distribution. A preview limitation is not hidden behind design language. A missing source, unavailable capability, unassessed outcome or unresolved security condition remains visible.
+When evidence changes, this status must be corrected before distribution expands. A limitation is not hidden behind design language. A missing source, unavailable capability, unassessed outcome or unresolved professional gate remains visible.
