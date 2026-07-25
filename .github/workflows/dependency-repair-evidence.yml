@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: dependency-repair-${{ github.ref }}
@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Check out the exact branch commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -32,14 +34,10 @@ jobs:
       - name: Install the locked current dependencies
         run: npm ci
 
-      - name: Generate a conservative React Router repair
-        run: npm install react-router-dom@version-6
-
-      - name: Generate the supported ESLint repair
-        run: npm install --save-dev eslint@latest @eslint/js@latest typescript-eslint@latest
-
-      - name: Apply remaining non-breaking audit repairs
-        run: npm audit fix
+      - name: Generate the tested dependency repair
+        run: |
+          npm install react-router-dom@6.30.4
+          npm install --save-dev eslint@10.8.0 @eslint/js@10.0.1 typescript-eslint@8.65.0
 
       - name: Verify the repaired dependency tree
         shell: bash
@@ -76,3 +74,17 @@ jobs:
             dependency-audit.log
           if-no-files-found: error
           retention-days: 7
+
+      - name: Commit the tested repair to the working branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "The tested dependency files are already current."
+            exit 0
+          fi
+          git config user.name "4PLANET programme control"
+          git config user.email "odin.skogen@gmail.com"
+          git add package.json package-lock.json
+          git commit -m "Repair product dependencies and lockfile"
+          git push origin HEAD:build/four-product-integrated-prototype
