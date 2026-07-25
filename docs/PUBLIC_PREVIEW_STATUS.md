@@ -1,28 +1,31 @@
-# 4PLANET PUBLIC PREVIEW — CURRENT PRODUCT PROOF
+# 4PLANET PUBLIC PREVIEW — FINAL CONTROLLED PRODUCT PROOF
 
-Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED
+Status: VERIFIED CONTROLLED PUBLIC PREVIEW CANDIDATE / INTERNAL PRODUCT PROOF COMPLETE / FOUNDER JUDGEMENT OPEN / NO MERGE OR LAUNCH
 
 This is a controlled public preview for internal product judgement. It is not a Beta, a production-ready service, a commercial offer or proof of ecological impact.
 
-## Exact identity
+## Exact frozen identity
 
 - Repository: `odinskogen-dev/4Planet.05`
 - Working branch: `build/four-product-integrated-prototype`
 - Open code review: pull request 9
+- Main-branch baseline: `f975913d57cba4524e72bb285529394cbc04b3f5`
 - Audited runtime product commit: `d348e27fa172a649a076c4893e38bfd47a36b0b2`
+- Strict evidence and test commit: `ec356846c6e7b8939cbcfee34f58b78203ac4648`
 - Product marker: `product-proof-2026-07-25`
 - Stable branch preview: https://build-four-product-integrate.4planet-05.pages.dev
-- Browser-evidence commit: `a5b5e18d9883544f13535f38bb613ee19c0c3f71`
-- Public Preview Gate run: `30169545758`
-- Browser Product Proof run: `30169545766`
-- Browser evidence artifact: `8622543696`
-- Evidence digest: `sha256:8d2877b41118aa057c7f5ec31c9f62169a1c4275b9e1c6c7f711a6375c113f81`
+- Public Preview Gate run: https://github.com/odinskogen-dev/4Planet.05/actions/runs/30170059741
+- Browser Product Proof run: https://github.com/odinskogen-dev/4Planet.05/actions/runs/30170059734
+- Browser evidence artifact: `8622684617`
+- Evidence digest: `sha256:d8f2c5523e593418cc4ac3a14067b948a37c7ab82ed8eea415a5f3411cc2e852`
 
-The browser workflow confirms that the deployed branch contains the audited runtime product marker before testing it. Product files are compared to the audited runtime commit before the browser evidence is accepted.
+The strict browser workflow ran with automatic retries disabled. It confirmed that the deployed branch contained the controlled product marker and that all runtime product files still matched the audited runtime product commit before the browser result was accepted.
 
-## Verified technical result
+The later evidence commit contains test and evidence-control changes only. The product itself is frozen at the audited runtime product commit above.
 
-The exact controlled candidate passed:
+## Verified clean result
+
+The controlled candidate passed:
 
 - clean locked dependency installation;
 - TypeScript type control;
@@ -31,7 +34,7 @@ The exact controlled candidate passed:
 - code linting;
 - registered-asset verification;
 - dependency security audit with no remaining registered vulnerability at the release threshold;
-- eight real Chromium browser tests covering desktop, mobile, ATLAS and direct IMPACT test routes;
+- eight real Chromium browser tests with zero retries, eight expected passes, zero unexpected results, zero flaky results and zero skipped tests;
 - seven current screenshots from the controlled deployment.
 
 The public delivery also contains the expected security and content headers.
@@ -55,12 +58,13 @@ The mobile proof also verifies a single-column footer and no horizontal page ove
 - the same accepted Orca identity across SPECIES, ATLAS and local Watch;
 - a source-aware Orca record with source, date, location, attribution, licence and explicit limitations;
 - clear separation between Source Record, Observation, Signal and Interpretation;
-- ATLAS as an interactive spatial interface when the browser supports the required graphics;
-- an honest fallback when the interactive globe is unavailable;
+- ATLAS as an interactive spatial interface in the controlled Chromium environment;
 - local Watch without a false account or server-storage claim;
 - local Tree and Plastic test journeys with no payment or physical delivery;
 - clear separation between Contribution, Delivery, Evidence, Outcome and System Impact;
 - a main-content landmark, keyboard skip link and shared public navigation.
+
+An honest non-WebGL fallback is implemented and contract-controlled. The final strict browser proof exercised the normal interactive map path rather than a forced fallback environment.
 
 ## Controlled Orca evidence
 
@@ -95,8 +99,9 @@ No provider request, payment, physical delivery, verified outcome or ecological 
 - ATLAS browser tests were moved to the real `/atlas` route;
 - map tests were rewritten around observable user behaviour rather than unstable animation details;
 - mobile footer layout was corrected and tested for one-column rendering and no horizontal overflow;
-- browser evidence now tests the controlled deployed branch rather than an unconfigured local map runtime;
-- current desktop, mobile, source, map and IMPACT screenshots are generated from the same controlled deployment.
+- browser evidence tests the controlled deployed branch rather than an unconfigured local map runtime;
+- the final browser suite requires a clean first-pass result with retries disabled;
+- current desktop, mobile, source, map and IMPACT screenshots were generated from the same controlled deployment.
 
 ## What this preview does not claim
 
@@ -112,16 +117,24 @@ No provider request, payment, physical delivery, verified outcome or ecological 
 - secured or received capital;
 - professional legal, privacy, accessibility, scientific or security approval.
 
+## Final internal recommendation
+
+GPT Programme Control recommends:
+
+**APPROVE AS THE CONTROLLED PRODUCT BASELINE FOR FURTHER INTERNAL DEVELOPMENT.**
+
+This recommendation accepts the direction, the integrated product proof and the evidence standard. It does not approve main-branch merge, launch, Beta status, external distribution, contact activity, commercial use or Impact activation.
+
 ## Remaining product gates
 
-1. Odin judges whether this candidate is the correct basis for continued internal development.
-2. A separate founder decision determines whether an independent Gemini review is run.
-3. Hosted Product Context migration, access rules and readback remain open.
-4. The Oslofjord journey remains open and must not duplicate existing qualified work.
-5. Real user comprehension and usefulness remain untested.
-6. Professional security, privacy, accessibility and rights review remain open.
-7. Main-branch merge requires a separate founder decision and technical check.
-8. Controlled user testing, public launch and contact activity require separate decisions.
+1. Odin makes the final founder judgement on the product direction.
+2. Hosted Product Context migration, access rules and readback remain open.
+3. The Oslofjord journey remains open and must not duplicate existing qualified work.
+4. Real user comprehension and usefulness remain untested.
+5. Professional security, privacy, accessibility, rights and scientific review remain open.
+6. Main-branch merge requires a separate founder decision and technical check.
+7. Controlled user testing, public launch and contact activity require separate decisions.
+8. A later independent Gemini review requires a separate founder decision and an exact scoped order.
 
 ## Contact and release boundary
 
