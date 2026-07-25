@@ -63,7 +63,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png` });
 });
 
-test("mobile proof preserves the public navigation, source limits and local Watch state", async ({ page }) => {
+test("mobile proof preserves navigation, source limits, local Watch and a readable footer", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
 
   await page.goto(`${BASE}/`);
@@ -79,6 +79,19 @@ test("mobile proof preserves the public navigation, source limits and local Watc
   await expect(page.getByText(/do not establish range, abundance, population trend or live tracking/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
+
+  const mobileLayout = await page.evaluate(() => {
+    const footerGrid = document.querySelector<HTMLElement>(".foot-grid");
+    if (!footerGrid) return null;
+    return {
+      columns: getComputedStyle(footerGrid).gridTemplateColumns.split(" ").filter(Boolean).length,
+      pageWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
+  });
+  expect(mobileLayout).not.toBeNull();
+  expect(mobileLayout!.columns).toBe(1);
+  expect(mobileLayout!.pageWidth).toBeLessThanOrEqual(mobileLayout!.viewportWidth + 1);
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png`, fullPage: true });
 });
 
