@@ -1,6 +1,8 @@
 # 4PLANET PUBLIC PREVIEW — FINAL CONTROLLED PRODUCT PROOF
 
-Status: VERIFIED CONTROLLED PUBLIC PREVIEW CANDIDATE / INTERNAL PRODUCT PROOF COMPLETE / FOUNDER JUDGEMENT OPEN / NO MERGE OR LAUNCH
+Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED
+
+Internal closeout: VERIFIED CONTROLLED PRODUCT PROOF / FOUNDER JUDGEMENT OPEN / NO MERGE OR LAUNCH
 
 This is a controlled public preview for internal product judgement. It is not a Beta, a production-ready service, a commercial offer or proof of ecological impact.
 
