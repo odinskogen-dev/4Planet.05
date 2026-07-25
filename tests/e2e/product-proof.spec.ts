@@ -6,6 +6,15 @@ const OUTPUT = "artifacts/product-proof";
 
 mkdirSync(OUTPUT, { recursive: true });
 
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+});
+
+async function settleVisuals(page: import("@playwright/test").Page) {
+  await page.addStyleTag({ content: "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}" });
+  await page.waitForTimeout(800);
+}
+
 async function verifySharedNavigation(page: import("@playwright/test").Page) {
   const navigation = page.getByRole("navigation", { name: "4PLANET product navigation" });
   await expect(navigation).toBeVisible();
@@ -21,7 +30,8 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.goto(`${BASE}/`);
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
-  await page.screenshot({ path: `${OUTPUT}/01-4planet-desktop.png`, fullPage: true });
+  await settleVisuals(page);
+  await page.screenshot({ path: `${OUTPUT}/01-4planet-desktop.png` });
 
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
@@ -32,6 +42,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
   await expect(page.getByText("BUNDLED FIXTURE", { exact: true })).toBeVisible();
   await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
+  await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
   const watchButton = page.getByRole("button", { name: "ADD TO LOCAL WATCH" });
@@ -44,7 +55,12 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
   await expect(page.getByText("CONTEXT PRESERVED")).toBeVisible();
-  await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png`, fullPage: true });
+  await page.waitForFunction(() => {
+    const map = (window as any).__4planet_map;
+    return map?.isStyleLoaded?.() && map?.loaded?.();
+  });
+  await settleVisuals(page);
+  await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png` });
 });
 
 test("mobile proof preserves the public navigation, source limits and local Watch state", async ({ page }) => {
@@ -53,7 +69,8 @@ test("mobile proof preserves the public navigation, source limits and local Watc
   await page.goto(`${BASE}/`);
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
-  await page.screenshot({ path: `${OUTPUT}/04-4planet-mobile.png`, fullPage: true });
+  await settleVisuals(page);
+  await page.screenshot({ path: `${OUTPUT}/04-4planet-mobile.png` });
 
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
@@ -61,6 +78,7 @@ test("mobile proof preserves the public navigation, source limits and local Watc
   await expect(page.getByText("ECOLOGICAL SOURCE REVIEW PENDING")).toBeVisible();
   await expect(page.getByText(/do not establish range, abundance, population trend or live tracking/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
+  await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png`, fullPage: true });
 });
 
@@ -70,6 +88,7 @@ test("IMPACT direct routes remain explicit local tests with no physical delivery
     await verifySharedNavigation(page);
     await expect(page.getByText("TEST RECORD — NO PHYSICAL DELIVERY", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("NOT DELIVERED", { exact: false }).first()).toBeVisible();
+    await settleVisuals(page);
     await page.screenshot({ path: `${OUTPUT}/06-${unit}-test-journey.png`, fullPage: true });
   }
 });
