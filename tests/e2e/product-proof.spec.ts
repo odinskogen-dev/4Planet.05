@@ -55,10 +55,8 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
   await expect(page.getByText("CONTEXT PRESERVED")).toBeVisible();
-  await page.waitForFunction(() => {
-    const map = (window as any).__4planet_map;
-    return map?.isStyleLoaded?.() && map?.loaded?.();
-  });
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  await page.waitForTimeout(2500);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png` });
 });
