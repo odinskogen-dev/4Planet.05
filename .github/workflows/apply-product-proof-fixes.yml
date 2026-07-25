@@ -1,0 +1,129 @@
+name: Apply Product Proof Fixes
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-product-proof-fixes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repair-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out the working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Add the missing main-content landmark and stabilise the reopened-map test
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          shell = Path('src/components/layout/PublicShell.tsx')
+          text = shell.read_text()
+          old = '  return (<><Header />{!heroPage && <div aria-hidden style={{ height: 64 }} />}{children}<Footer /></>);'
+          new = '''  return (
+    <>
+      <a href="#main-content" className="skip-to-main">SKIP TO MAIN CONTENT</a>
+      <Header />
+      {!heroPage && <div aria-hidden style={{ height: 64 }} />}
+      <main id="main-content" tabIndex={-1}>{children}</main>
+      <Footer />
+      <style>{`.skip-to-main{position:fixed;top:8px;left:8px;z-index:1000;padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(-160%);transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+    </>
+  );'''
+          if old not in text:
+              raise SystemExit('Expected PublicShell return statement was not found')
+          shell.write_text(text.replace(old, new))
+
+          test = Path('tests/e2e/map-interactivity.spec.ts')
+          text = test.read_text()
+          old = '''    await openOslo(page);
+    await page.waitForTimeout(1800);
+    const reopened = await mapCenter(page);
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX - 200, startY, { steps: 20 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+    const afterSecondPan = await mapCenter(page);
+    expect(Math.abs(afterSecondPan.lng - reopened.lng)).toBeGreaterThan(0.001);'''
+          new = '''    await openOslo(page);
+    await page.waitForFunction(() => {
+      const map = (window as any).__4planet_map;
+      return map && !map.isMoving() && !map.isZooming() && !map.isRotating();
+    });
+    const reopened = await mapCenter(page);
+    const reopenedBox = await page.locator("canvas").first().boundingBox();
+    if (!reopenedBox) throw new Error("No map canvas was rendered after reopening context");
+    const secondX = reopenedBox.x + reopenedBox.width * 0.18;
+    const secondY = reopenedBox.y + reopenedBox.height * 0.58;
+    await page.mouse.move(secondX, secondY);
+    await page.mouse.down();
+    await page.mouse.move(secondX - 220, secondY - 35, { steps: 24 });
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+    const afterSecondPan = await mapCenter(page);
+    expect(Math.abs(afterSecondPan.lng - reopened.lng) + Math.abs(afterSecondPan.lat - reopened.lat)).toBeGreaterThan(0.001);'''
+          if old not in text:
+              raise SystemExit('Expected reopened-map test block was not found')
+          test.write_text(text.replace(old, new))
+          PY
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium and browser system packages
+        run: npx playwright install --with-deps chromium
+
+      - name: Typecheck, build and run all non-browser checks
+        run: |
+          npm run typecheck
+          npm run build
+          npm run test:smoke
+          npm run lint
+          npm run assets:verify
+          npm audit --audit-level=high
+
+      - name: Start the built candidate
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat preview.log
+          exit 1
+
+      - name: Run the complete browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npm run test:e2e
+
+      - name: Commit only the tested fixes
+        shell: bash
+        run: |
+          git config user.name "4PLANET programme control"
+          git config user.email "odin.skogen@gmail.com"
+          git add src/components/layout/PublicShell.tsx tests/e2e/map-interactivity.spec.ts
+          git commit -m "Add main landmark and stabilise reopened ATLAS interaction proof"
+          git push origin HEAD:build/four-product-integrated-prototype
