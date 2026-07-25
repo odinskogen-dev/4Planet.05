@@ -245,5 +245,14 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/");
   const heroPage = !!useDomainContext() || darkWorld;   // dark worlds run under the transparent header
-  return (<><Header />{!heroPage && <div aria-hidden style={{ height: 64 }} />}{children}<Footer /></>);
+  return (
+    <>
+      <a href="#main-content" className="skip-to-main">SKIP TO MAIN CONTENT</a>
+      <Header />
+      {!heroPage && <div aria-hidden style={{ height: 64 }} />}
+      <main id="main-content" tabIndex={-1}>{children}</main>
+      <Footer />
+      <style>{`.skip-to-main{position:fixed;top:8px;left:8px;z-index:1000;padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(-160%);transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+    </>
+  );
 }
