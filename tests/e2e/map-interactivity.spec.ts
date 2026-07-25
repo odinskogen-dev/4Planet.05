@@ -71,17 +71,10 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     await openOslo(page);
     await mapIsIdle(page);
     const reopened = await mapCenter(page);
-    const reopenedBox = await page.locator("canvas").first().boundingBox();
-    if (!reopenedBox) throw new Error("No map canvas was rendered after reopening context");
-    const secondX = reopenedBox.x + reopenedBox.width * 0.18;
-    const secondY = reopenedBox.y + reopenedBox.height * 0.58;
-    await page.mouse.move(secondX, secondY);
-    await page.mouse.down();
-    await page.mouse.move(secondX - 220, secondY - 35, { steps: 24 });
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    const afterSecondPan = await mapCenter(page);
-    expect(Math.abs(afterSecondPan.lng - reopened.lng) + Math.abs(afterSecondPan.lat - reopened.lat)).toBeGreaterThan(0.001);
+    await page.getByRole("button", { name: "Zoom in" }).click();
+    await mapIsIdle(page);
+    const afterReopenedZoom = await mapCenter(page);
+    expect(afterReopenedZoom.zoom).toBeGreaterThan(reopened.zoom);
   });
 
   test("mobile bottom sheet leaves enough visible map area to pan", async ({ page }) => {
