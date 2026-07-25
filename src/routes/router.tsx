@@ -16,12 +16,15 @@ import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
-/* 4PLANET_ v1 — THE WORLD.
-   Mandate: "I open 4PLANET_ and immediately see Earth." So Earth is "/".
-   The V36 editorial home is NOT deleted — it moves to /story, intact.
-   /atlas reuses the same persistent World implementation so entity, journey,
-   camera and label-safety behaviour cannot diverge between entry points. */
-const World = lazy(() => import("@/earth/World"));
+/* Public product contract:
+   /        = 4PLANET, the main public universe
+   /atlas   = ATLAS, the interactive spatial interface
+   /species = SPECIES
+   /impact  = IMPACT
+
+   The existing editorial Home and World implementations are preserved. No
+   second shell, map or content repository is introduced. */
+const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -38,10 +41,10 @@ function MtoMission() { const { slug } = useParams(); return <Navigate to={"/mis
 export function AppRoutes() {
   return (
     <Routes>
-      {/* THE WORLD IS THE INTERFACE. Earth is the front door. */}
-      <Route path="/" element={<Suspense fallback={WorldFallback}><World /></Suspense>} />
-      {/* V36 editorial home — preserved, not regressed, just no longer the entry point. */}
-      <Route path="/story" element={<Home />} />
+      {/* 4PLANET is the public front door. */}
+      <Route path="/" element={<Home />} />
+      {/* Preserve old inbound links without maintaining a second homepage. */}
+      <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
@@ -49,7 +52,7 @@ export function AppRoutes() {
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
-      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><World /></Suspense>} />
+      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
       <Route path="/impact" element={<ImpactPrototypeIndex />} />
