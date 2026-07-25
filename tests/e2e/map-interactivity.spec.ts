@@ -56,7 +56,7 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     const afterPan = await mapCenter(page);
     expect(Math.abs(afterPan.lng - before.lng) + Math.abs(afterPan.lat - before.lat)).toBeGreaterThan(0.001);
 
-    await page.getByRole("button", { name: "Zoom in" }).click();
+    await page.mouse.dblclick(startX, startY, { delay: 80 });
     await mapIsIdle(page);
     const afterZoom = await mapCenter(page);
     expect(afterZoom.zoom).toBeGreaterThan(afterPan.zoom);
