@@ -1,21 +1,14 @@
 /**
- * V40 P0 BEHAVIOURAL ACCEPTANCE TEST — the real one the audit demanded.
+ * Behavioural acceptance tests for the public ATLAS route.
  *
- * A string-presence smoke test does NOT prove the map moves. This drives a real
- * browser against a running build and asserts actual camera state changes.
- *
- * REQUIRES A BROWSER + A SERVED BUILD (it cannot run in the CI sandbox that lacks
- * WebGL). To run:
- *     npm run build && npm run preview        # serves dist on :4173
- *     npx playwright install chromium
- *     BASE_URL=http://localhost:4173 npx playwright test
- * or point BASE_URL at the deployed Cloudflare preview.
- *
- * The map instance is exposed at window.__4planet_map for assertions.
+ * These tests drive a real browser. They verify that the map remains usable,
+ * that projection changes do not reintroduce labels on the back of the globe,
+ * and that the selected species context survives product navigation.
  */
 import { test, expect } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://localhost:4173";
+const ATLAS = `${BASE}/atlas`;
 
 declare global {
   interface Window { __4planet_map: any; }
@@ -31,22 +24,20 @@ async function mapCenter(page: import("@playwright/test").Page) {
 async function openOslo(page: import("@playwright/test").Page) {
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").click();
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").fill("Oslo");
-  // First matching result opens Place context.
   await page.getByRole("option").first().click();
   await expect(page.locator(".ctx")).toBeVisible();
 }
 
-test.describe("P0 — map stays interactive with Place context open", () => {
-  test("desktop: pan + zoom work, camera persists on close, focus once on reopen", async ({ page }) => {
-    await page.goto(BASE);
+test.describe("ATLAS remains interactive while place context is open", () => {
+  test("desktop pan and zoom work and the camera remains usable after reopening context", async ({ page }) => {
+    await page.goto(ATLAS);
     await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
 
     await openOslo(page);
     const before = await mapCenter(page);
 
-    // Drag the visible (uncovered) map by >200px.
     const box = await page.locator("canvas").first().boundingBox();
-    if (!box) throw new Error("no map canvas");
+    if (!box) throw new Error("No map canvas was rendered");
     const startX = box.x + box.width * 0.25;
     const startY = box.y + box.height * 0.5;
     await page.mouse.move(startX, startY);
@@ -58,20 +49,17 @@ test.describe("P0 — map stays interactive with Place context open", () => {
     const afterPan = await mapCenter(page);
     expect(Math.abs(afterPan.lng - before.lng) + Math.abs(afterPan.lat - before.lat)).toBeGreaterThan(0.001);
 
-    // Zoom via wheel.
     await page.mouse.move(startX, startY);
     await page.mouse.wheel(0, -600);
     await page.waitForTimeout(400);
     const afterZoom = await mapCenter(page);
     expect(afterZoom.zoom).not.toBeCloseTo(afterPan.zoom, 2);
 
-    // Close context — camera state must remain (no reset).
     await page.locator(".ctx-close, [aria-label='Close']").first().click().catch(() => {});
     const afterClose = await mapCenter(page);
     expect(Math.abs(afterClose.lng - afterZoom.lng)).toBeLessThan(0.01);
     expect(afterClose.zoom).toBeCloseTo(afterZoom.zoom, 1);
 
-    // Reopen Oslo — focus happens once, and the map remains movable.
     await openOslo(page);
     await page.waitForTimeout(1800);
     const reopened = await mapCenter(page);
@@ -84,13 +72,12 @@ test.describe("P0 — map stays interactive with Place context open", () => {
     expect(Math.abs(afterSecondPan.lng - reopened.lng)).toBeGreaterThan(0.001);
   });
 
-  test("mobile: bottom sheet open, uncovered map still pans", async ({ page }) => {
+  test("mobile bottom sheet leaves enough visible map area to pan", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 780 });
-    await page.goto(BASE);
+    await page.goto(ATLAS);
     await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
     await openOslo(page);
     const before = await mapCenter(page);
-    // Drag the top (uncovered) strip above the sheet.
     await page.mouse.move(120, 120);
     await page.mouse.down();
     await page.mouse.move(300, 160, { steps: 20 });
@@ -101,18 +88,16 @@ test.describe("P0 — map stays interactive with Place context open", () => {
   });
 });
 
-test.describe("P0 — street-level vector zoom", () => {
-  test("zoom ceiling reaches street level (>= 18)", async ({ page }) => {
-    await page.goto(BASE);
+test.describe("ATLAS map configuration", () => {
+  test("zoom ceiling reaches street level", async ({ page }) => {
+    await page.goto(ATLAS);
     await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
     const max = await page.evaluate(() => window.__4planet_map.getMaxZoom());
     expect(max).toBeGreaterThanOrEqual(20);
   });
-});
 
-test.describe("P0 — globe label occlusion", () => {
-  test("globe hides basemap symbols and mercator restores them", async ({ page }) => {
-    await page.goto(BASE);
+  test("globe hides basemap symbols and flat projection restores them", async ({ page }) => {
+    await page.goto(ATLAS);
     await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
 
     const globe = await page.evaluate(() => {
@@ -135,12 +120,10 @@ test.describe("P0 — globe label occlusion", () => {
   });
 });
 
-test.describe("shared product context", () => {
-  test("entity and journey survive navigation", async ({ page }) => {
-    await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
-    await page.getByRole("link", { name: "ATLAS", exact: true }).click();
-    await expect(page).toHaveURL(/\/atlas\?/);
-    await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
-    await expect(page).toHaveURL(/journey=orca-gbif/);
-  });
+test("the same species and journey survive navigation from SPECIES to ATLAS", async ({ page }) => {
+  await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
+  await page.getByRole("link", { name: "ATLAS", exact: true }).click();
+  await expect(page).toHaveURL(/\/atlas\?/);
+  await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
+  await expect(page).toHaveURL(/journey=orca-gbif/);
 });
