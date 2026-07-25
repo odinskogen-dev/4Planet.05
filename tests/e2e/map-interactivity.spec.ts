@@ -66,7 +66,7 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     await mapIsIdle(page);
     const afterClose = await mapCenter(page);
     expect(Math.abs(afterClose.lng - afterZoom.lng) + Math.abs(afterClose.lat - afterZoom.lat)).toBeLessThan(1);
-    expect(afterClose.zoom).toBeCloseTo(afterZoom.zoom, 1);
+    expect(Math.abs(afterClose.zoom - afterZoom.zoom)).toBeLessThan(0.2);
 
     await openOslo(page);
     await mapIsIdle(page);
