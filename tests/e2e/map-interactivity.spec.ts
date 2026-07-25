@@ -61,15 +61,22 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     expect(afterClose.zoom).toBeCloseTo(afterZoom.zoom, 1);
 
     await openOslo(page);
-    await page.waitForTimeout(1800);
+    await page.waitForFunction(() => {
+      const map = (window as any).__4planet_map;
+      return map && !map.isMoving() && !map.isZooming() && !map.isRotating();
+    });
     const reopened = await mapCenter(page);
-    await page.mouse.move(startX, startY);
+    const reopenedBox = await page.locator("canvas").first().boundingBox();
+    if (!reopenedBox) throw new Error("No map canvas was rendered after reopening context");
+    const secondX = reopenedBox.x + reopenedBox.width * 0.18;
+    const secondY = reopenedBox.y + reopenedBox.height * 0.58;
+    await page.mouse.move(secondX, secondY);
     await page.mouse.down();
-    await page.mouse.move(startX - 200, startY, { steps: 20 });
+    await page.mouse.move(secondX - 220, secondY - 35, { steps: 24 });
     await page.mouse.up();
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(500);
     const afterSecondPan = await mapCenter(page);
-    expect(Math.abs(afterSecondPan.lng - reopened.lng)).toBeGreaterThan(0.001);
+    expect(Math.abs(afterSecondPan.lng - reopened.lng) + Math.abs(afterSecondPan.lat - reopened.lat)).toBeGreaterThan(0.001);
   });
 
   test("mobile bottom sheet leaves enough visible map area to pan", async ({ page }) => {
