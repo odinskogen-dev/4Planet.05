@@ -31,7 +31,9 @@ test("integrated controls expose keyboard and assistive-technology contracts", (
   assert.match(impact, /aria-label="Personal Impact test share card"/);
   assert.match(impact, /role="alert"/);
   assert.match(world, /keyboard: true/);
-  assert.match(publicWorld, /maplibregl\.supported/);
+  assert.match(publicWorld, /document\.createElement\("canvas"\)/);
+  assert.match(publicWorld, /getContext\("webgl2"/);
+  assert.match(publicWorld, /failIfMajorPerformanceCaveat: true/);
   assert.match(publicWorld, /INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE/);
   assert.match(publicWorld, /NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED/);
 });
