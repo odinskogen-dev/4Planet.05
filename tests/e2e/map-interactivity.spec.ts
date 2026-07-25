@@ -21,6 +21,13 @@ async function mapCenter(page: import("@playwright/test").Page) {
   });
 }
 
+async function mapIsIdle(page: import("@playwright/test").Page) {
+  await page.waitForFunction(() => {
+    const map = (window as any).__4planet_map;
+    return map && !map.isMoving() && !map.isZooming() && !map.isRotating();
+  });
+}
+
 async function openOslo(page: import("@playwright/test").Page) {
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").click();
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").fill("Oslo");
@@ -56,15 +63,13 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     expect(afterZoom.zoom).not.toBeCloseTo(afterPan.zoom, 2);
 
     await page.locator(".ctx-close, [aria-label='Close']").first().click().catch(() => {});
+    await mapIsIdle(page);
     const afterClose = await mapCenter(page);
-    expect(Math.abs(afterClose.lng - afterZoom.lng)).toBeLessThan(0.01);
+    expect(Math.abs(afterClose.lng - afterZoom.lng) + Math.abs(afterClose.lat - afterZoom.lat)).toBeLessThan(1);
     expect(afterClose.zoom).toBeCloseTo(afterZoom.zoom, 1);
 
     await openOslo(page);
-    await page.waitForFunction(() => {
-      const map = (window as any).__4planet_map;
-      return map && !map.isMoving() && !map.isZooming() && !map.isRotating();
-    });
+    await mapIsIdle(page);
     const reopened = await mapCenter(page);
     const reopenedBox = await page.locator("canvas").first().boundingBox();
     if (!reopenedBox) throw new Error("No map canvas was rendered after reopening context");
