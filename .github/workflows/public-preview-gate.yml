@@ -22,17 +22,32 @@ jobs:
       - name: Checkout exact commit
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install locked dependencies
         run: npm ci
 
       - name: Typecheck
-        run: npm run typecheck
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck 2>&1 | tee typecheck.log
+          status=${PIPESTATUS[0]}
+          echo "TYPECHECK_EXIT=$status" >> "$GITHUB_ENV"
+          exit $status
+
+      - name: Upload typecheck diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-diagnostic
+          path: typecheck.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Contract and smoke tests
         run: npm run test:smoke
