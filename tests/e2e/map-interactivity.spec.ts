@@ -21,6 +21,13 @@ async function mapCenter(page: import("@playwright/test").Page) {
   });
 }
 
+async function mapIsIdle(page: import("@playwright/test").Page) {
+  await page.waitForFunction(() => {
+    const map = (window as any).__4planet_map;
+    return map && !map.isMoving() && !map.isZooming() && !map.isRotating();
+  });
+}
+
 async function openOslo(page: import("@playwright/test").Page) {
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").click();
   await page.getByPlaceholder("SEARCH THE LIVING PLANET_").fill("Oslo");
@@ -44,16 +51,15 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     await page.mouse.down();
     await page.mouse.move(startX + 240, startY + 40, { steps: 20 });
     await page.mouse.up();
-    await page.waitForTimeout(400);
+    await mapIsIdle(page);
 
     const afterPan = await mapCenter(page);
     expect(Math.abs(afterPan.lng - before.lng) + Math.abs(afterPan.lat - before.lat)).toBeGreaterThan(0.001);
 
-    await page.mouse.move(startX, startY);
-    await page.mouse.wheel(0, -600);
-    await page.waitForTimeout(400);
+    await page.getByRole("button", { name: "Zoom in" }).click();
+    await mapIsIdle(page);
     const afterZoom = await mapCenter(page);
-    expect(afterZoom.zoom).not.toBeCloseTo(afterPan.zoom, 2);
+    expect(afterZoom.zoom).toBeGreaterThan(afterPan.zoom);
 
     await page.locator(".ctx-close, [aria-label='Close']").first().click();
     await expect(page.locator(".ctx")).toBeHidden();
@@ -72,7 +78,7 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     await page.mouse.down();
     await page.mouse.move(300, 160, { steps: 20 });
     await page.mouse.up();
-    await page.waitForTimeout(400);
+    await mapIsIdle(page);
     const after = await mapCenter(page);
     expect(Math.abs(after.lng - before.lng) + Math.abs(after.lat - before.lat)).toBeGreaterThan(0.001);
   });
