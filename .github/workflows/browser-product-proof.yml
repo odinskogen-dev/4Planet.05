@@ -14,13 +14,23 @@ concurrency:
   group: browser-product-proof-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  AUDITED_RUNTIME_SHA: 8fc79420db5e0766f512b616feeaac6142418109
+  AUDITED_RUNTIME_URL: https://e9908320.4planet-05.pages.dev
+
 jobs:
   test-critical-journeys:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Check out the exact candidate
+      - name: Check out the exact evidence candidate
         uses: actions/checkout@v4
+
+      - name: Confirm that runtime product files still match the deployed candidate
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin "$AUDITED_RUNTIME_SHA"
+          git diff --exit-code "$AUDITED_RUNTIME_SHA" HEAD -- src public package.json package-lock.json supabase
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -34,26 +44,25 @@ jobs:
       - name: Install Chromium and browser system packages
         run: npx playwright install --with-deps chromium
 
-      - name: Build the public candidate
+      - name: Build the current source for integrity
         run: npm run build
 
-      - name: Start the exact built candidate
+      - name: Confirm the exact deployed candidate is reachable
         shell: bash
         run: |
-          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
-          echo $! > preview.pid
           for attempt in {1..60}; do
-            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+            if curl --fail --silent "$AUDITED_RUNTIME_URL/" > /dev/null; then
+              printf '%s\n' "$AUDITED_RUNTIME_URL" > runtime-url.txt
+              printf '%s\n' "$AUDITED_RUNTIME_SHA" > runtime-sha.txt
               exit 0
             fi
-            sleep 1
+            sleep 2
           done
-          cat preview.log
           exit 1
 
-      - name: Run desktop, mobile, map and critical-route tests
+      - name: Run desktop, mobile, map and critical-route tests against the exact deployment
         env:
-          BASE_URL: http://127.0.0.1:4173
+          BASE_URL: ${{ env.AUDITED_RUNTIME_URL }}
         run: npm run test:e2e
 
       - name: Upload current product screenshots and browser evidence
@@ -65,6 +74,7 @@ jobs:
             artifacts/product-proof
             playwright-report
             test-results
-            preview.log
+            runtime-url.txt
+            runtime-sha.txt
           if-no-files-found: warn
           retention-days: 14
