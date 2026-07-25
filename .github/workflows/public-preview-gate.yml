@@ -77,4 +77,19 @@ jobs:
         run: npm run assets:verify
 
       - name: Dependency audit
-        run: npm audit --audit-level=high
+        shell: bash
+        run: |
+          set +e
+          npm audit --audit-level=high 2>&1 | tee audit.log
+          status=${PIPESTATUS[0]}
+          echo "AUDIT_EXIT=$status" >> "$GITHUB_ENV"
+          exit $status
+
+      - name: Upload audit diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-diagnostic
+          path: audit.log
+          if-no-files-found: warn
+          retention-days: 7
