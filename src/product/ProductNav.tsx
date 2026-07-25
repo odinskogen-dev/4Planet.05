@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 export type ProductKey = "4PLANET" | "ATLAS" | "SPECIES" | "IMPACT";
 
 const PRODUCTS: Array<{ key: ProductKey; label: string; path: string }> = [
-  { key: "4PLANET", label: "4PLANET", path: "/story" },
+  { key: "4PLANET", label: "4PLANET", path: "/" },
   { key: "ATLAS", label: "ATLAS", path: "/atlas" },
   { key: "SPECIES", label: "SPECIES", path: "/species" },
   { key: "IMPACT", label: "IMPACT", path: "/impact" },
@@ -26,7 +26,7 @@ export function contextHref(path: string, currentSearch = "", overrides: Record<
 }
 
 function activeProduct(pathname: string): ProductKey {
-  if (pathname === "/" || pathname.startsWith("/atlas")) return "ATLAS";
+  if (pathname.startsWith("/atlas")) return "ATLAS";
   if (pathname.startsWith("/species")) return "SPECIES";
   if (pathname.startsWith("/impact")) return "IMPACT";
   return "4PLANET";
@@ -51,7 +51,10 @@ export function ProductNav() {
           </Link>
         ))}
       </div>
-      {hasContext && <span className="product-nav__context">CONTEXT PRESERVED</span>}
+      <div className="product-nav__state" aria-label="Preview state">
+        <span className="product-nav__preview">PUBLIC PREVIEW</span>
+        {hasContext && <span className="product-nav__context">CONTEXT PRESERVED</span>}
+      </div>
     </nav>
   );
 }
