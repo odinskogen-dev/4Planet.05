@@ -1,0 +1,3 @@
+4PLANET controlled public preview candidate
+Release marker: product-proof-2026-07-25
+Status: public preview, not Beta or production
