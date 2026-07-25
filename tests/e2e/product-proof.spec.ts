@@ -59,7 +59,7 @@ test("mobile proof preserves the public navigation, source limits and local Watc
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
   await expect(page.getByText("ECOLOGICAL SOURCE REVIEW PENDING")).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, population trend or live tracking/i)).toBeVisible();
+  await expect(page.getByText(/do not establish range, abundance, population trend or live tracking/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png`, fullPage: true });
 });
