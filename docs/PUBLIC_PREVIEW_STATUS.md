@@ -1,14 +1,14 @@
 # 4PLANET PUBLIC PREVIEW — STATUS AND LIMITS
 
 Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED
-Exact audited candidate before this status-only commit: `deed9507559d2cacfd610345426fb7e34ad7d95f`
+Audited product candidate: `deed9507559d2cacfd610345426fb7e34ad7d95f`
 Branch preview: https://build-four-product-integrate.4planet-05.pages.dev
-Exact preview: https://495b1051.4planet-05.pages.dev
+Exact audited preview: https://495b1051.4planet-05.pages.dev
 Authority: Odin Oddekalv → GPT programme control → specialist implementation → GPT audit → Odin final judgement
 
 ## Verified delivery evidence
 
-- Cloudflare reported successful deployment for exact commit `deed9507559d2cacfd610345426fb7e34ad7d95f`.
+- Cloudflare reported successful deployment for exact product commit `deed9507559d2cacfd610345426fb7e34ad7d95f`.
 - Clean locked installation passes in GitHub Actions.
 - TypeScript typecheck passes.
 - Production build passes.
@@ -24,7 +24,7 @@ Authority: Odin Oddekalv → GPT programme control → specialist implementation
 - The current runtime dependency route includes published React Router advisories affecting the installed version range.
 - The development tooling chain includes a vulnerable `brace-expansion` path through ESLint-related dependencies.
 - A tested package and lockfile repair has not been delivered. No version has been guessed or force-upgraded without evidence.
-- Desktop and mobile browser acceptance has not been independently completed for the exact candidate.
+- Desktop and mobile browser acceptance has not been independently completed for the audited candidate.
 - Current screenshots have not been accepted.
 - The complete locked Oslofjorden place journey has not passed runtime acceptance.
 - Hosted Product Context migration, RLS execution and readback remain open. The public candidate continues to require bundled-fixture disclosure.
