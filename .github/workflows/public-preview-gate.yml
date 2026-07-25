@@ -1,0 +1,50 @@
+name: Public Preview Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+
+      - name: Production build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
