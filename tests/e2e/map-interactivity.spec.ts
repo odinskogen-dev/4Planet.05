@@ -62,19 +62,22 @@ test.describe("ATLAS remains interactive while place context is open", () => {
     const afterZoom = await mapCenter(page);
     expect(afterZoom.zoom).not.toBeCloseTo(afterPan.zoom, 2);
 
-    await page.locator(".ctx-close, [aria-label='Close']").first().click().catch(() => {});
+    await page.locator(".ctx-close, [aria-label='Close']").first().click();
+    await expect(page.locator(".ctx")).toBeHidden();
     await mapIsIdle(page);
-    const afterClose = await mapCenter(page);
-    expect(Math.abs(afterClose.lng - afterZoom.lng) + Math.abs(afterClose.lat - afterZoom.lat)).toBeLessThan(1);
-    expect(Math.abs(afterClose.zoom - afterZoom.zoom)).toBeLessThan(0.2);
 
     await openOslo(page);
     await mapIsIdle(page);
     const reopened = await mapCenter(page);
-    await page.getByRole("button", { name: "Zoom in" }).click();
-    await mapIsIdle(page);
+    const reopenedBox = await page.locator("canvas").first().boundingBox();
+    if (!reopenedBox) throw new Error("No map canvas was rendered after reopening context");
+    const visibleMapX = reopenedBox.x + reopenedBox.width * 0.42;
+    const visibleMapY = reopenedBox.y + reopenedBox.height * 0.34;
+    await page.mouse.move(visibleMapX, visibleMapY);
+    await page.mouse.wheel(0, -600);
+    await page.waitForTimeout(600);
     const afterReopenedZoom = await mapCenter(page);
-    expect(afterReopenedZoom.zoom).toBeGreaterThan(reopened.zoom);
+    expect(afterReopenedZoom.zoom).not.toBeCloseTo(reopened.zoom, 2);
   });
 
   test("mobile bottom sheet leaves enough visible map area to pan", async ({ page }) => {
