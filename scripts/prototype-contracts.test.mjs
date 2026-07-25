@@ -4,11 +4,15 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("four public products share routes and a context-preserving switcher", () => {
+test("four public products have distinct routes and a context-preserving switcher", () => {
   const routes = read("src/routes/router.tsx");
   const nav = read("src/product/ProductNav.tsx");
-  for (const route of ["/atlas", "/species", "/impact", "/story"]) assert.match(routes + nav, new RegExp(route.replace("/", "\\/")));
-  for (const key of ["entity", "journey", "record"]) assert.match(nav, new RegExp(`\"${key}\"`));
+  for (const route of ["/atlas", "/species", "/impact"]) assert.match(routes + nav, new RegExp(route.replace("/", "\\/")));
+  assert.match(routes, /<Route path="\/" element=\{<Home \/>\}/);
+  assert.match(routes, /<Route path="\/story" element=\{<Navigate to="\/" replace \/>\}/);
+  assert.match(routes, /<Route path="\/atlas"[\s\S]+<PublicWorld/);
+  assert.match(nav, /key: "4PLANET", label: "4PLANET", path: "\/"/);
+  for (const key of ["entity", "journey", "record"]) assert.match(nav, new RegExp(`"${key}"`));
   assert.match(routes, /SpeciesProfilePage/);
   assert.match(routes, /PersonalImpactRecordPage/);
 });
@@ -18,13 +22,18 @@ test("integrated controls expose keyboard and assistive-technology contracts", (
   const species = read("src/pages/integrated/Species.tsx");
   const impact = read("src/pages/integrated/ImpactPrototype.tsx");
   const world = read("src/earth/World.tsx");
+  const publicWorld = read("src/earth/PublicWorld.tsx");
   assert.match(nav, /<nav[^>]+aria-label="4PLANET product navigation"/);
   assert.match(nav, /aria-current=/);
+  assert.match(nav, /PUBLIC PREVIEW/);
   assert.match(species, /<button[\s\S]+ADD TO LOCAL WATCH/);
   assert.match(impact, /<button[\s\S]+CREATE LOCAL TEST RECORD/);
   assert.match(impact, /aria-label="Personal Impact test share card"/);
   assert.match(impact, /role="alert"/);
   assert.match(world, /keyboard: true/);
+  assert.match(publicWorld, /maplibregl\.supported/);
+  assert.match(publicWorld, /INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE/);
+  assert.match(publicWorld, /NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED/);
 });
 
 test("globe suppresses basemap symbols and disables duplicate world copies", () => {
@@ -38,7 +47,7 @@ test("globe suppresses basemap symbols and disables duplicate world copies", () 
 test("truth spine keeps eight record classes separate", () => {
   const truth = read("src/data/truthSpine.ts");
   for (const recordType of ["SOURCE_RECORD", "OBSERVATION", "SIGNAL", "INTERPRETATION", "CONTRIBUTION", "DELIVERY", "OUTCOME", "IMPACT"]) {
-    assert.match(truth, new RegExp(`\"${recordType}\"`));
+    assert.match(truth, new RegExp(`"${recordType}"`));
   }
   assert.match(truth, /signalIds: \[\]/);
   assert.match(truth, /No Signal has been created from this Observation/);
@@ -83,10 +92,20 @@ test("migration enables RLS and exposes no public Impact records", () => {
 
 test("Tree and Plastic remain local TEST records with no delivery", () => {
   const impact = read("src/impact/prototype.ts");
-  for (const token of ["tree", "plastic", "TEST RECORD — NO PHYSICAL DELIVERY", "NOT_DELIVERED", "NOT_ASSESSED", "provider:fixture:none"]) {
+  for (const token of ["tree", "plastic", "TEST RECORD — NO PHYSICAL DELIVERY", "NOT_DELIVERED", "NOT_ASSESSED", "provider:fixture:none", "NO_PROVIDER_REQUEST"]) {
     assert.match(impact, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   assert.doesNotMatch(impact, /fetch\(/);
+});
+
+test("public preview headers and status boundaries are committed", () => {
+  const headers = read("public/_headers");
+  const status = read("docs/PUBLIC_PREVIEW_STATUS.md");
+  assert.match(headers, /X-Content-Type-Options: nosniff/);
+  assert.match(headers, /Content-Security-Policy:/);
+  assert.match(status, /PUBLIC PREVIEW \/ WORKING CANDIDATE/);
+  assert.match(status, /TEST RECORD — NO PHYSICAL DELIVERY/);
+  assert.match(status, /does not claim/);
 });
 
 test("rollback removes only the prototype truth-spine objects", () => {
