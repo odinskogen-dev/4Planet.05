@@ -1,6 +1,5 @@
 import { lazy, Suspense, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import maplibregl from "maplibre-gl";
 
 const World = lazy(() => import("./World"));
 
@@ -25,8 +24,15 @@ function retainedContext(search: string) {
 }
 
 function webglAvailable() {
+  if (typeof document === "undefined") return false;
   try {
-    return maplibregl.supported({ failIfMajorPerformanceCaveat: true });
+    const canvas = document.createElement("canvas");
+    const options: WebGLContextAttributes = { failIfMajorPerformanceCaveat: true };
+    return Boolean(
+      canvas.getContext("webgl2", options) ||
+      canvas.getContext("webgl", options) ||
+      canvas.getContext("experimental-webgl", options),
+    );
   } catch {
     return false;
   }
