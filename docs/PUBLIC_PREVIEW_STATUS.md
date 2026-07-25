@@ -1,7 +1,34 @@
 # 4PLANET PUBLIC PREVIEW — STATUS AND LIMITS
 
-Status: PUBLIC PREVIEW / WORKING CANDIDATE
+Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED
+Exact audited candidate before this status-only commit: `deed9507559d2cacfd610345426fb7e34ad7d95f`
+Branch preview: https://build-four-product-integrate.4planet-05.pages.dev
+Exact preview: https://495b1051.4planet-05.pages.dev
 Authority: Odin Oddekalv → GPT programme control → specialist implementation → GPT audit → Odin final judgement
+
+## Verified delivery evidence
+
+- Cloudflare reported successful deployment for exact commit `deed9507559d2cacfd610345426fb7e34ad7d95f`.
+- Clean locked installation passes in GitHub Actions.
+- TypeScript typecheck passes.
+- Production build passes.
+- Contract and smoke tests pass after correcting the required build-before-smoke order.
+- Lint passes.
+- Asset verification passes.
+- Eleven new Public Preview contract tests pass.
+- Root and ATLAS route semantics, shared product navigation, context retention, WebGL capability fallback, security headers and public maturity language are committed on the existing PR branch.
+
+## Open release blockers
+
+- Dependency audit fails. The controlled audit identified seven vulnerabilities: two moderate and five high.
+- The current runtime dependency route includes published React Router advisories affecting the installed version range.
+- The development tooling chain includes a vulnerable `brace-expansion` path through ESLint-related dependencies.
+- A tested package and lockfile repair has not been delivered. No version has been guessed or force-upgraded without evidence.
+- Desktop and mobile browser acceptance has not been independently completed for the exact candidate.
+- Current screenshots have not been accepted.
+- The complete locked Oslofjorden place journey has not passed runtime acceptance.
+- Hosted Product Context migration, RLS execution and readback remain open. The public candidate continues to require bundled-fixture disclosure.
+- Direct-route inspection from the GPT runtime was blocked by external URL/network restrictions; Cloudflare deployment evidence does not replace browser acceptance.
 
 ## What this preview demonstrates
 
@@ -9,17 +36,18 @@ Authority: Odin Oddekalv → GPT programme control → specialist implementation
 - one shared navigation and retained `entity`, `journey` and `record` context;
 - a source-aware Orca profile and observation path;
 - ATLAS as the interactive spatial interface when the device supports WebGL;
-- place search and context, including the Oslofjorden proof direction;
+- place search and context, with Oslofjorden as the locked proof direction;
 - local Tree and Plastic test journeys with Personal Impact test records;
 - visible separation between Observation, Signal, Interpretation, Contribution, Delivery, Outcome and Impact.
 
 ## What this preview does not claim
 
-- Beta, production readiness or complete global coverage;
+- Beta, production readiness or final Public Preview acceptance;
+- complete global coverage;
 - scientific or expert review of every public explanation;
 - operational partner, provider, funder or customer relationships;
 - production payment, physical delivery or ecological outcome;
-- hosted Product Context persistence until the staging evidence gate passes;
+- hosted Product Context persistence;
 - a verified Tree Unit or Plastic Unit;
 - secured capital, product-market fit or measured impact.
 
@@ -50,17 +78,18 @@ Do not use without new evidence:
 - `REAL-TIME` as a generic label
 - `BETA` or `PRODUCTION READY`
 
-## Current evidence gates
+## Exact next product gate
 
-1. Remote CI on the exact candidate commit.
-2. Cloudflare deployment and direct-route readback.
-3. Desktop and mobile browser inspection.
-4. Accessibility and WebGL fallback inspection.
-5. Hosted migration, RLS and Product Context readback, or explicit continued fixture disclosure.
-6. Source, rights and claim review for every release surface.
-7. Gemini red team after GPT accepts the integrated candidate.
-8. Odin final public-release judgement.
+1. Produce and commit a tested dependency and lockfile repair.
+2. Pass the complete Public Preview Gate on the exact repaired SHA.
+3. Confirm Cloudflare deployment and direct routes for that exact SHA.
+4. Complete desktop and mobile browser acceptance, including WebGL fallback.
+5. Capture and approve current screenshots.
+6. Complete and inspect the Orca and Oslofjorden critical journeys.
+7. Preserve hosted-fixture and Impact test boundaries.
+8. Send the accepted candidate to Gemini red team.
+9. Present the audited candidate to Odin for final judgement.
 
 ## Correction rule
 
-When evidence changes, correct the public status before expanding distribution. A preview limitation is not hidden behind design language. A missing source, unavailable capability or unassessed outcome remains visible.
+When evidence changes, correct the public status before expanding distribution. A preview limitation is not hidden behind design language. A missing source, unavailable capability, unassessed outcome or unresolved security condition remains visible.
