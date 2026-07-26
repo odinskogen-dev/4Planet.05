@@ -129,6 +129,21 @@ export function personalImpactRecordById(id?: string) {
   return readPersonalImpactRecords().find((record) => record.id === id);
 }
 
+export function deletePersonalImpactRecord(id: string): PersonalImpactRecord[] {
+  const next = readPersonalImpactRecords().filter((record) => record.id !== id);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+  return next;
+}
+
+export function resetPersonalImpactRecords(): void {
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* storage unavailable */ }
+}
+
+export function displayContributionState(status: string): string {
+  if (status === "CONFIRMED") return "LOCAL TEST STATE CREATED";
+  return status.replace(/_/g, " ");
+}
+
 export function shareText(record: PersonalImpactRecord) {
-  return `${record.unit.name} · ${record.contribution.quantity} ${record.unit.unitLabel}\nContribution: ${record.contribution.status}\nDelivery: ${record.delivery.status}\nOutcome: ${record.outcome.status}\nImpact: ${record.impact.status}\n${record.disclosure}`;
+  return `${record.unit.name} · ${record.contribution.quantity} ${record.unit.unitLabel}\nContribution: ${displayContributionState(record.contribution.status)}\nDelivery: ${record.delivery.status}\nOutcome: ${record.outcome.status}\nImpact: ${record.impact.status}\n${record.disclosure}`;
 }
