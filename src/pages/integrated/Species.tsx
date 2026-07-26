@@ -39,10 +39,11 @@ export function SpeciesIndex() {
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
-        <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_ / WORKING EXECUTION SET</div>
+        <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
         <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(48px,8vw,112px)", lineHeight: .92, letterSpacing: "-.05em" }}>Life, without invented certainty.</h1>
         <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.5 }}>
-          Three source-aware profiles prove the shared identity, observation, relationship and action seams. Occurrence records remain observations—not range, population or signals.
+          Each profile begins with the living animal and its place, then opens into what it depends on and what is
+          reported about it. Occurrence records show where people have looked — not range, abundance or population.
         </p>
         {contextProfile && (
           <div style={{ marginTop: 24 }}>
@@ -134,7 +135,7 @@ export function SpeciesProfilePage() {
         {isOrca && (
           <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-              <div style={{ ...mono, color: T.blue }}>ORCA / GBIF PRODUCT CONTEXT</div>
+              <div style={{ ...mono, color: T.blue }}>WHAT THIS RECORD SHOWS · AND WHAT IT DOES NOT</div>
               <Status color="#8A6500">{ORCA_PRODUCT_CONTEXT.persistedBy.replace(/_/g, " ")}</Status>
             </div>
             <p style={{ marginTop: 18, maxWidth: 840, lineHeight: 1.55 }}>{ORCA_INTERPRETATION.text}</p>
@@ -153,21 +154,21 @@ export function SpeciesProfilePage() {
 
         <div className="tw" style={{ marginTop: 24 }}>
           <div style={panel}>
-            <div style={{ ...mono, color: T.red }}>ISSUE SEAM</div>
+            <div style={{ ...mono, color: T.red }}>PRESSURE</div>
             <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.issue.label}</h2>
-            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>The entity connection exists. Public issue claims remain blocked until the source pack and wording are audited.</p>
-            <div style={{ marginTop: 18 }}><Status color="#8A6500">{profile.issue.status.replace(/_/g, " ")}</Status></div>
+            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>The connection to this species exists. The public wording is held back until its ecological source pack is audited — no unsourced claim is shown.</p>
+            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
           </div>
           <div style={panel}>
-            <div style={{ ...mono, color: T.acid }}>SOLUTION SEAM</div>
+            <div style={{ ...mono, color: T.acid }}>RESPONSE</div>
             <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.solution.label}</h2>
-            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>This is a connected prototype path—not a recommendation, efficacy claim or 4PLANET delivery offer.</p>
-            <div style={{ marginTop: 18 }}><Status color="#8A6500">{profile.solution.status.replace(/_/g, " ")}</Status></div>
+            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>A connected prototype path — not a recommendation, an efficacy claim or a 4PLANET delivery offer.</p>
+            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
           </div>
         </div>
 
         <div style={{ ...panel, marginTop: 24 }}>
-          <div style={{ ...mono, color: T.blue }}>MINIMAL NEWS SEAM / PRODUCT NOTE</div>
+          <div style={{ ...mono, color: T.blue }}>PRODUCT NOTE</div>
           <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.5 }}>{profile.commonName} now retains the same canonical identity across SPECIES, ATLAS and local WATCH.</p>
           <p style={{ marginTop: 10, color: T.dim, fontSize: 13 }}>Published by 4PLANET · 22 July 2026 · Product change, not a planetary signal.</p>
         </div>
