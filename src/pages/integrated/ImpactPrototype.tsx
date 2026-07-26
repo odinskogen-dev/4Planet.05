@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
@@ -9,6 +9,9 @@ import {
   createTestPersonalImpactRecord,
   personalImpactRecordById,
   readPersonalImpactRecords,
+  deletePersonalImpactRecord,
+  resetPersonalImpactRecords,
+  displayContributionState,
   shareText,
   type PersonalImpactRecord,
   type TestUnitSlug,
@@ -23,61 +26,124 @@ function Badge({ children, color = T.red }: { children: React.ReactNode; color?:
   return <span style={{ ...mono, display: "inline-flex", border: `1px solid ${color}`, color, padding: "4px 7px" }}>{children}</span>;
 }
 
-function RecordStatus({ record }: { record: PersonalImpactRecord }) {
-  const rows = [
-    ["CONTRIBUTION", record.contribution.status],
-    ["DELIVERY", record.delivery.status],
-    ["OUTCOME", record.outcome.status],
-    ["SYSTEM IMPACT", record.impact.status],
-  ];
+type Pathway = { title: string; place: string; status: "VALIDATION" | "DEVELOPMENT" | "PROTOTYPE"; body: string };
+const PATHWAYS: Pathway[] = [
+  { title: "Tree planting", place: "Project geography — stated once a provider agreement exists", status: "DEVELOPMENT",
+    body: "The provider and proof method are being prepared for validation. No provider agreement or public contribution route is in place." },
+  { title: "Plastic recovery", place: "Coastal and river systems — scope defined per provider", status: "PROTOTYPE",
+    body: "The contract model exists as a transparent prototype. No production pathway is open." },
+  { title: "Habitat restoration", place: "Degraded land — geography pending", status: "DEVELOPMENT",
+    body: "Structure in development; sources and provider agreements are not yet in place." },
+];
+
+const CHAIN: [string, string][] = [
+  ["Contribution", "what you put in"],
+  ["Provider", "who does the work"],
+  ["Delivery", "what actually happened"],
+  ["Evidence", "proof it happened"],
+  ["Outcome", "what it achieved"],
+  ["System impact", "long-term, inferred"],
+];
+
+export function ImpactPublicHome() {
+  const location = useLocation();
   return (
-    <div className="four" style={{ marginTop: 24 }}>
-      {rows.map(([label, value]) => (
-        <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}>
-          <div style={{ ...mono, color: T.dim }}>{label}</div>
-          <div style={{ marginTop: 8, fontSize: 13 }}>{value.replace(/_/g, " ")}</div>
+    <PublicShell>
+      <Section pad="clamp(88px,10vw,138px)">
+        <p style={{ ...mono, color: T.blue, fontSize: 11, letterSpacing: ".18em" }}>4PLANET IMPACT_ · FOR A LIVING PLANET</p>
+        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(48px,7vw,92px)", lineHeight: .96, letterSpacing: "-.04em", maxWidth: "14ch" }}>
+          Action, made credible.
+        </h1>
+        <p style={{ marginTop: 24, maxWidth: "56ch", fontSize: "clamp(17px,2vw,21px)", lineHeight: 1.5, color: "rgba(8,8,8,.72)" }}>
+          IMPACT is being built to make credible action traceable — with every material claim linked to a source,
+          and nothing counted as done until evidence supports it.
+        </p>
+        <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <a href="#pathways" style={{ ...mono, fontSize: 12, background: T.blue, color: "#fff", padding: "14px 20px", textDecoration: "none" }}>SEE THE PATHWAYS →</a>
+          <Link to={contextHref("/impact/lab", location.search)} style={{ ...mono, fontSize: 12, border: `1px solid ${T.ink}`, color: T.ink, padding: "14px 20px", textDecoration: "none" }}>INSPECT THE LAB</Link>
         </div>
-      ))}
-    </div>
+
+        <div style={{ marginTop: "clamp(56px,7vw,96px)" }}>
+          <div style={{ ...mono, color: T.blue }}>HOW IMPACT WORKS</div>
+          <div className="impact-chain" style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", border: `1px solid ${T.line}` }}>
+            {CHAIN.map(([step, desc], i) => (
+              <div key={step} style={{ padding: "14px 12px", borderLeft: i === 0 ? "none" : `1px solid ${T.line}` }}>
+                <div style={{ ...mono, color: T.blue, fontSize: 9.5 }}>0{i + 1}</div>
+                <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 500 }}>{step}</div>
+                <div style={{ marginTop: 4, fontSize: 11.5, color: "rgba(8,8,8,.6)", lineHeight: 1.4 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div id="pathways" style={{ marginTop: "clamp(44px,5vw,72px)" }}>
+          <div style={{ ...mono, color: T.blue }}>PATHWAYS IN DEVELOPMENT</div>
+          <div className="tw" style={{ marginTop: 16 }}>
+            {PATHWAYS.map((p) => (
+              <div key={p.title} style={{ ...panel }}>
+                <Badge color="#8A6500">{p.status} · NOT OPEN</Badge>
+                <h2 style={{ marginTop: 14, fontFamily: T.display, fontSize: "clamp(24px,3vw,32px)", letterSpacing: "-.02em" }}>{p.title}</h2>
+                <p style={{ marginTop: 8, fontSize: 13, color: "rgba(8,8,8,.7)", lineHeight: 1.5 }}>{p.body}</p>
+                <p style={{ marginTop: 12, ...mono, fontSize: 10, color: "rgba(8,8,8,.55)" }}>PLACE · {p.place}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p style={{ marginTop: 28, maxWidth: "70ch", fontSize: 13.5, color: "rgba(8,8,8,.7)", lineHeight: 1.6, borderLeft: `2px solid ${T.line}`, paddingLeft: 14 }}>
+          No production pathway is open yet. Nothing here takes payment, requests a provider or claims physical
+          delivery. When a pathway becomes real, it will say so — with sources.
+        </p>
+      </Section>
+    </PublicShell>
   );
 }
 
 function UnitCard({ slug, search }: { slug: TestUnitSlug; search: string }) {
   const unit = TEST_UNITS[slug];
   return (
-    <Link to={contextHref(`/impact/test/${slug}`, search, { journey: `${slug}-test` })} style={{ ...panel, color: T.ink, textDecoration: "none", display: "flex", flexDirection: "column", minHeight: 290 }}>
+    <Link to={contextHref(`/impact/lab/${slug}`, search, { journey: `${slug}-test` })} style={{ ...panel, color: T.ink, textDecoration: "none", display: "flex", flexDirection: "column", minHeight: 240 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
         <div style={{ ...mono, color: T.blue }}>{unit.id}</div><Badge>TEST ONLY</Badge>
       </div>
-      <h2 style={{ marginTop: 38, fontFamily: T.display, fontSize: "clamp(36px,5vw,64px)", letterSpacing: "-.04em" }}>{unit.name}</h2>
-      <p style={{ marginTop: 14, color: T.dim, lineHeight: 1.55 }}>{unit.description}</p>
-      <div style={{ marginTop: "auto", paddingTop: 26, ...mono, color: T.blue }}>RUN TEST JOURNEY →</div>
+      <h2 style={{ marginTop: 28, fontFamily: T.display, fontSize: "clamp(28px,4vw,44px)", letterSpacing: "-.03em" }}>{unit.name}</h2>
+      <p style={{ marginTop: 12, color: "rgba(8,8,8,.7)", lineHeight: 1.55, fontSize: 14 }}>{unit.description}</p>
+      <div style={{ marginTop: "auto", paddingTop: 22, ...mono, color: T.blue }}>RUN TEST JOURNEY →</div>
     </Link>
   );
 }
 
-export function ImpactPrototypeIndex() {
+export function ImpactLabIndex() {
   const location = useLocation();
-  const records = useMemo(() => readPersonalImpactRecords(), []);
+  const [records, setRecords] = useState<PersonalImpactRecord[]>(() => readPersonalImpactRecords());
+  const removeOne = (id: string) => setRecords(deletePersonalImpactRecord(id));
+  const resetAll = () => { resetPersonalImpactRecords(); setRecords([]); };
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><Badge>NON-PRODUCTION</Badge><Badge color="#8A6500">NO PAYMENT</Badge><Badge color="#8A6500">NO PROVIDER REQUEST</Badge></div>
-        <h1 style={{ marginTop: 24, fontFamily: T.display, fontSize: "clamp(48px,8vw,112px)", lineHeight: .92, letterSpacing: "-.05em" }}>Impact truth before impact claims.</h1>
-        <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.5 }}>
-          Tree and Plastic are contract tests. They prove that contribution, provider delivery, outcome and system impact remain separate. They do not trigger real-world work.
+        <Link to={contextHref("/impact", location.search)} style={{ ...mono, color: T.blue }}>← IMPACT</Link>
+        <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}><Badge>TEST ENVIRONMENT — NON-PRODUCTION</Badge><Badge color="#8A6500">NO PAYMENT</Badge><Badge color="#8A6500">NO PROVIDER REQUEST</Badge></div>
+        <h1 style={{ marginTop: 22, fontFamily: T.display, fontSize: "clamp(40px,6vw,64px)", lineHeight: .96, letterSpacing: "-.03em" }}>Impact lab</h1>
+        <p style={{ marginTop: 18, maxWidth: "60ch", fontSize: "clamp(16px,2vw,21px)", lineHeight: 1.5, color: "rgba(8,8,8,.7)" }}>
+          A transparent place to inspect how the proof model works. Everything here is a local test — no payment,
+          no provider request, no physical delivery.
         </p>
-        <div style={{ marginTop: 24 }}><Badge>{TEST_DISCLOSURE}</Badge></div>
-        <div className="tw" style={{ marginTop: 48 }}>
+        <div className="tw" style={{ marginTop: 40 }}>
           <UnitCard slug="tree" search={location.search} />
           <UnitCard slug="plastic" search={location.search} />
         </div>
         <div style={{ ...panel, marginTop: 24 }}>
-          <div style={{ ...mono, color: T.blue }}>LOCAL PERSONAL IMPACT RECORDS</div>
-          {records.length === 0 ? <p style={{ marginTop: 16, color: T.dim }}>No local test records on this device.</p> : records.slice(0, 6).map((record) => (
-            <Link key={record.id} to={contextHref(`/impact/record/${encodeURIComponent(record.id)}`, location.search, { record: record.id, journey: `${record.unit.slug}-test` })} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "14px 0", borderTop: `1px solid ${T.line}`, color: T.ink, textDecoration: "none" }}>
-              <span>{record.unit.name}</span><span style={{ ...mono, color: T.red }}>NOT DELIVERED →</span>
-            </Link>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ ...mono, color: T.blue }}>LOCAL PERSONAL IMPACT RECORDS</div>
+            {records.length > 0 && <button onClick={resetAll} style={{ ...mono, fontSize: 10, border: `1px solid ${T.red}`, color: T.red, background: "transparent", padding: "6px 10px", cursor: "pointer" }}>DELETE ALL LOCAL RECORDS</button>}
+          </div>
+          {records.length === 0 ? <p style={{ marginTop: 16, color: "rgba(8,8,8,.6)" }}>No local test records on this device.</p> : records.slice(0, 8).map((record) => (
+            <div key={record.id} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "14px 0", borderTop: `1px solid ${T.line}`, alignItems: "center" }}>
+              <Link to={contextHref(`/impact/lab/records/${encodeURIComponent(record.id)}`, location.search, { record: record.id, journey: `${record.unit.slug}-test` })} style={{ color: T.ink, textDecoration: "none", flex: 1 }}>
+                {record.unit.name} <span style={{ ...mono, color: T.red, marginLeft: 8 }}>NOT DELIVERED</span>
+              </Link>
+              <button onClick={() => removeOne(record.id)} aria-label={`Delete local record ${record.unit.name}`} style={{ ...mono, fontSize: 10, border: `1px solid ${T.line}`, background: "transparent", color: "rgba(8,8,8,.6)", padding: "6px 9px", cursor: "pointer" }}>DELETE</button>
+            </div>
           ))}
         </div>
       </Section>
@@ -100,7 +166,7 @@ export function ImpactTestJourney() {
   const create = () => {
     try {
       const record = createTestPersonalImpactRecord(slug);
-      navigate(contextHref(`/impact/record/${encodeURIComponent(record.id)}`, location.search, { entity, journey: `${slug}-test`, record: record.id }));
+      navigate(contextHref(`/impact/lab/records/${encodeURIComponent(record.id)}`, location.search, { entity, journey: `${slug}-test`, record: record.id }));
     } catch {
       setStorageError(true);
     }
@@ -109,17 +175,17 @@ export function ImpactTestJourney() {
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
-        <Link to={contextHref("/impact", location.search)} style={{ ...mono, color: T.blue }}>← IMPACT TEST LAB</Link>
-        <div style={{ marginTop: 32 }}><Badge>{TEST_DISCLOSURE}</Badge></div>
-        <h1 style={{ marginTop: 24, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .9, letterSpacing: "-.055em" }}>{unit.name}</h1>
-        <p style={{ marginTop: 24, maxWidth: 720, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.55 }}>{unit.description}</p>
-        <div className="four" style={{ marginTop: 46 }}>
+        <Link to={contextHref("/impact/lab", location.search)} style={{ ...mono, color: T.blue }}>← IMPACT LAB</Link>
+        <div style={{ marginTop: 22 }}><Badge>{TEST_DISCLOSURE}</Badge></div>
+        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(40px,6vw,64px)", lineHeight: .95, letterSpacing: "-.03em" }}>{unit.name}</h1>
+        <p style={{ marginTop: 18, maxWidth: "62ch", fontSize: "clamp(16px,2vw,21px)", lineHeight: 1.55, color: "rgba(8,8,8,.72)" }}>{unit.description}</p>
+        <div className="four" style={{ marginTop: 40 }}>
           {[
             ["01", "UNDERSTAND", `Open the connected ${slug === "tree" ? "pollinator" : "orca"} context.`],
             ["02", "CONTRIBUTE", "Create a local test contribution. No payment."],
             ["03", "DELIVERY", "Fixture returns NOT DELIVERED. No provider request."],
-            ["04", "PROOF", "Create a Personal Impact Record with outcome and impact unassessed."],
-          ].map(([n, title, text]) => <div key={n} style={{ ...panel, borderRight: 0 }}><div style={{ ...mono, color: T.blue }}>{n}</div><h2 style={{ marginTop: 14, fontSize: 21 }}>{title}</h2><p style={{ marginTop: 10, fontSize: 13.5, lineHeight: 1.5, color: T.dim }}>{text}</p></div>)}
+            ["04", "PROOF", "Create a Personal Impact Record with outcome and system impact unassessed."],
+          ].map(([n, title, text]) => <div key={n} style={{ ...panel, borderRight: 0 }}><div style={{ ...mono, color: T.blue }}>{n}</div><h2 style={{ marginTop: 14, fontSize: 20 }}>{title}</h2><p style={{ marginTop: 10, fontSize: 13.5, lineHeight: 1.5, color: "rgba(8,8,8,.7)" }}>{text}</p></div>)}
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 28 }}>
           <Link to={atlas} style={{ ...mono, color: T.ink, border: `1px solid ${T.ink}`, padding: "12px 15px", textDecoration: "none" }}>ATLAS CONTEXT</Link>
@@ -127,15 +193,35 @@ export function ImpactTestJourney() {
           <button onClick={create} style={{ ...mono, border: 0, background: T.blue, color: "#fff", padding: "13px 16px", cursor: "pointer" }}>CREATE LOCAL TEST RECORD →</button>
         </div>
         {storageError && <p role="alert" style={{ marginTop: 18, maxWidth: 760, color: T.red, fontSize: 13 }}>LOCAL RECORD NOT CREATED. Browser storage is unavailable; no contribution or delivery state was recorded.</p>}
-        <p style={{ marginTop: 18, maxWidth: 760, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>Creating this record writes only to localStorage on this device. No personal identity, payment, API request or physical delivery is created.</p>
+        <p style={{ marginTop: 18, maxWidth: 760, fontSize: 12.5, color: "rgba(8,8,8,.62)", lineHeight: 1.55 }}>Creating this record writes only to localStorage on this device. No personal identity, payment, API request or physical delivery is created.</p>
       </Section>
     </PublicShell>
+  );
+}
+
+function RecordStatus({ record }: { record: PersonalImpactRecord }) {
+  const rows: [string, string, string][] = [
+    ["Contribution", displayContributionState(record.contribution.status), "ok"],
+    ["Delivery", record.delivery.status.replace(/_/g, " "), "no"],
+    ["Outcome", record.outcome.status.replace(/_/g, " "), "no"],
+    ["System impact", record.impact.status.replace(/_/g, " "), "no"],
+  ];
+  return (
+    <div className="four" style={{ marginTop: 24 }}>
+      {rows.map(([label, value, tone]) => (
+        <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}>
+          <div style={{ ...mono, color: "rgba(8,8,8,.55)" }}>{label.toUpperCase()}</div>
+          <div style={{ marginTop: 8, fontSize: 13, color: tone === "no" ? T.red : "#1c7a3a", fontWeight: 500 }}>{value}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 
 export function PersonalImpactRecordPage() {
   const { recordId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const record = personalImpactRecordById(recordId ? decodeURIComponent(recordId) : undefined);
   if (!record) return <NotFound />;
@@ -143,29 +229,43 @@ export function PersonalImpactRecordPage() {
   const share = async () => {
     const text = shareText(record);
     try {
-      if (navigator.share) await navigator.share({ title: `${record.unit.name} — test record`, text });
+      if (navigator.share) await navigator.share({ title: `${record.unit.name} — TEST-ONLY local record`, text });
       else await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch { setCopied(false); }
   };
 
+  const remove = () => {
+    deletePersonalImpactRecord(record.id);
+    navigate(contextHref("/impact/lab", location.search));
+  };
+
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
-        <Link to={contextHref("/impact", location.search)} style={{ ...mono, color: T.blue }}>← IMPACT TEST LAB</Link>
-        <article style={{ ...panel, marginTop: 34, border: `2px solid ${T.red}` }} aria-label="Personal Impact test share card">
-          <Badge>{record.disclosure}</Badge>
-          <h1 style={{ marginTop: 28, fontFamily: T.display, fontSize: "clamp(46px,8vw,104px)", lineHeight: .9, letterSpacing: "-.05em" }}>{record.unit.name}</h1>
-          <p style={{ marginTop: 22, fontSize: 18 }}>{record.contribution.quantity} × {record.unit.unitLabel}</p>
-          <RecordStatus record={record} />
-          <div style={{ marginTop: 26, borderTop: `1px solid ${T.line}`, paddingTop: 18, fontSize: 12, lineHeight: 1.65, wordBreak: "break-all" }}>
+        <Link to={contextHref("/impact/lab", location.search)} style={{ ...mono, color: T.blue }}>← IMPACT LAB</Link>
+        <div style={{ marginTop: 18 }}><Badge>{TEST_DISCLOSURE}</Badge></div>
+        <h1 style={{ marginTop: 18, fontFamily: T.display, fontSize: "clamp(32px,5vw,48px)", lineHeight: .95, letterSpacing: "-.02em" }}>Proof record</h1>
+        <article aria-label="Personal Impact test share card">
+        <p style={{ ...panel, marginTop: 18, maxWidth: "72ch", fontSize: 16, lineHeight: 1.6, color: "rgba(8,8,8,.8)" }}>
+          You created a <strong>local test contribution</strong> for {record.contribution.quantity} × {record.unit.unitLabel}.
+          <strong> No provider was contacted, nothing was delivered, and no outcome was assessed.</strong> This record lives only on this device.
+        </p>
+        <RecordStatus record={record} />
+        <details style={{ marginTop: 24, ...mono, color: "rgba(8,8,8,.5)" }}>
+          <summary style={{ cursor: "pointer", color: T.blue }}>Technical detail</summary>
+          <div style={{ marginTop: 10, lineHeight: 1.7, wordBreak: "break-all" }}>
             <div>Record: {record.id}</div>
             <div>Provider: {record.delivery.providerId}</div>
             <div>Provider reference: {record.delivery.providerReference}</div>
             <div>Created locally: {record.createdAt}</div>
           </div>
-          <button onClick={share} style={{ ...mono, marginTop: 24, background: T.blue, color: "#fff", border: 0, padding: "13px 16px", cursor: "pointer" }}>{copied ? "TEST CARD COPIED" : "SHARE TEST CARD"}</button>
+        </details>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
+          <button onClick={share} style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "12px 16px", cursor: "pointer" }}>{copied ? "TEST CARD COPIED" : "SHARE (TEST-ONLY)"}</button>
+          <button onClick={remove} style={{ ...mono, background: "transparent", color: T.red, border: `1px solid ${T.red}`, padding: "12px 16px", cursor: "pointer" }}>DELETE THIS LOCAL RECORD</button>
+        </div>
         </article>
       </Section>
     </PublicShell>
