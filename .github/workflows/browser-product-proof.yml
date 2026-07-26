@@ -15,9 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AUDITED_RUNTIME_SHA: d348e27fa172a649a076c4893e38bfd47a36b0b2
+  AUDITED_RUNTIME_SHA: 60d55cd758e496ac40fcd7e4654713b110f54718
   AUDITED_RUNTIME_URL: https://build-four-product-integrate.4planet-05.pages.dev
-  AUDITED_RUNTIME_MARKER: product-proof-2026-07-25
+  AUDITED_RUNTIME_MARKER: pq02-claude-02-audit-preview-2026-07-26
 
 jobs:
   test-critical-journeys:
