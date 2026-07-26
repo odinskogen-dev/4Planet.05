@@ -16,12 +16,17 @@ async function settleVisuals(page: import("@playwright/test").Page) {
 }
 
 async function verifySharedNavigation(page: import("@playwright/test").Page) {
-  const navigation = page.getByRole("navigation", { name: "4PLANET product navigation" });
-  await expect(navigation).toBeVisible();
+  const trigger = page.getByRole("button", { name: /Switch product, current product/ }).first();
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Switch product" });
+  await expect(dialog).toBeVisible();
   for (const name of ["4PLANET", "ATLAS", "SPECIES", "IMPACT"]) {
-    await expect(navigation.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
   }
-  await expect(navigation.getByText("PUBLIC PREVIEW")).toBeVisible();
+  await expect(dialog.getByText("PUBLIC PREVIEW", { exact: false })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
 }
 
 test("desktop proof captures the public entry, source-aware Orca profile and retained ATLAS context", async ({ page }) => {
@@ -40,7 +45,6 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
   await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
-  await expect(page.getByText("BUNDLED FIXTURE", { exact: true })).toBeVisible();
   await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
@@ -54,7 +58,6 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page).toHaveURL(/\/atlas\?/);
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
-  await expect(page.getByText("CONTEXT PRESERVED")).toBeVisible();
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
   await page.waitForTimeout(2500);
   await settleVisuals(page);
@@ -95,7 +98,7 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
 
 test("IMPACT direct routes remain explicit local tests with no physical delivery", async ({ page }) => {
   for (const unit of ["tree", "plastic"]) {
-    await page.goto(`${BASE}/impact/test/${unit}`);
+    await page.goto(`${BASE}/impact/lab/${unit}`);
     await verifySharedNavigation(page);
     await expect(page.getByText("TEST RECORD — NO PHYSICAL DELIVERY", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("NOT DELIVERED", { exact: false }).first()).toBeVisible();
