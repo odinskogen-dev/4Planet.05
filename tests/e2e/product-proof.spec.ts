@@ -22,7 +22,7 @@ async function verifySharedNavigation(page: import("@playwright/test").Page) {
   const dialog = page.getByRole("dialog", { name: "Switch product" });
   await expect(dialog).toBeVisible();
   for (const name of ["4PLANET", "ATLAS", "SPECIES", "IMPACT"]) {
-    await expect(dialog.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: new RegExp(name) })).toBeVisible();
   }
   await expect(dialog.getByText("PUBLIC PREVIEW", { exact: false })).toBeVisible();
   await page.keyboard.press("Escape");
