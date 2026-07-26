@@ -118,7 +118,7 @@ test.describe("ATLAS map configuration", () => {
 
 test("the same species and journey survive navigation from SPECIES to ATLAS", async ({ page }) => {
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
-  await page.getByRole("link", { name: "ATLAS", exact: true }).click();
+  await page.getByRole("link", { name: /OPEN SAME ENTITY IN ATLAS/ }).click();
   await expect(page).toHaveURL(/\/atlas\?/);
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
