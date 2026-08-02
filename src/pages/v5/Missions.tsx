@@ -34,16 +34,10 @@ function ListBlock({ title, items, accent }: { title: string; items: string[]; a
 export function MissionDetail() {
   const { slug } = useParams();
   const redirect = slug ? LEGACY_MISSION_REDIRECTS[slug] : undefined;
-  if (redirect) return <Navigate to={`/missions/${redirect}`} replace />;
-
   const mission = getMission(slug);
-  if (!mission) return <NotFound />;
-
-  const domain = DOMAINS[mission.domain];
-  const accent = DOMAIN_ACCENT[mission.domain];
-  const hero = missionHero(mission.slug) ?? domainHero(mission.domain);
 
   useEffect(() => {
+    if (!mission) return;
     const previousTitle = document.title;
     const description = document.querySelector('meta[name="description"]');
     const previousDescription = description?.getAttribute("content");
@@ -53,7 +47,14 @@ export function MissionDetail() {
       document.title = previousTitle;
       if (description && previousDescription) description.setAttribute("content", previousDescription);
     };
-  }, [mission.seoDescription, mission.seoTitle]);
+  }, [mission]);
+
+  if (redirect) return <Navigate to={`/missions/${redirect}`} replace />;
+  if (!mission) return <NotFound />;
+
+  const domain = DOMAINS[mission.domain];
+  const accent = DOMAIN_ACCENT[mission.domain];
+  const hero = missionHero(mission.slug) ?? domainHero(mission.domain);
 
   return (
     <PublicShell>
