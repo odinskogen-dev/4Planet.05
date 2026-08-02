@@ -11,41 +11,61 @@ import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
-import { Stories, CultureFilm, CultureTelier, CulturePlay } from "@/pages/v5/Culture";
+import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/people" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
-function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
-function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
-function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
+
+function MtoMission() {
+  const { slug } = useParams();
+  return <Navigate to={`/missions/${slug}`} replace />;
+}
+
+function RedirectTestUnit() {
+  const { unit } = useParams();
+  return <Navigate to={`/impact/lab/${unit}`} replace />;
+}
+
+function RedirectRecord() {
+  const { recordId } = useParams();
+  return <Navigate to={`/impact/lab/records/${recordId}`} replace />;
+}
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
+
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
+
       <Route path="/missions" element={<MissionsIndex />} />
       <Route path="/missions/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
+      <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+      <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
+      <Route path="/domains/oce4n/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+      <Route path="/domains/e4rth/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/culture/art" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
+
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
@@ -53,6 +73,7 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
+
       <Route path="/join" element={<Navigate to="/people" replace />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
@@ -65,8 +86,8 @@ export function AppRoutes() {
       <Route path="/stories/:slug" element={<StoryArticle />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
-      <Route path="/culture/telier" element={<CultureTelier />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+
       <Route path="/os" element={toAbout} />
       <Route path="/os/*" element={toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
