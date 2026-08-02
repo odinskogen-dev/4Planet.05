@@ -14,6 +14,13 @@ const PROOF: [string, string, string][] = [
   ["04_", "PUBLIC REPORT", "The public archive opens with the first live Impact Unit."],
 ];
 
+const MISSION_FOR_PATHWAY: Record<string, string> = {
+  "tree-unit": "clim4te",
+  "ocean-waste": "pl4stic",
+  "amazon-square": "am4zonia",
+  "habitat-recovery": "rewild-land",
+};
+
 export function ImpactIndex() {
   const pathways = content.getImpactPathways();
   return (
@@ -56,7 +63,8 @@ export function PathwayPage() {
   const { slug } = useParams();
   const p = slug ? content.getImpactPathway(slug) : undefined;
   if (!p) return <NotFound />;
-  const mission = content.getMissions().find((m) => m.impactPathwaySlug === p.slug);
+  const missionSlug = MISSION_FOR_PATHWAY[p.slug];
+  const mission = missionSlug ? content.getMission(missionSlug) : undefined;
   const heroImg = impactImage(p.slug);
 
   return (
