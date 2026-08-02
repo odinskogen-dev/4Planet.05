@@ -1,183 +1,142 @@
-import { useParams, Link } from "react-router-dom";
-import { T, DOMAIN_ACCENT, DOMAIN_DESC } from "@/styles/tokens";
+import { Link, useParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
-import { content } from "@/content/contentRepository";
-import { DOMAIN_NARRATIVE } from "@/content/domainNarratives";
-import { img, domainHero, missionHero, type ImageKey } from "@/content/imageRegistry";
-import { fieldNote } from "@/content/fieldNotes";
+import { Section } from "@/components/ui";
+import { T, DOMAIN_ACCENT } from "@/styles/tokens";
+import { domainHero, img, type ImageKey } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
+import {
+  DOMAIN_ORDER,
+  DOMAINS,
+  domainSlug,
+  displayName,
+  getMissionsByDomain,
+} from "@/content/narrativeContract";
+import { ActionLink, MissionCard, display, mono } from "@/components/narrative/NarrativeUI";
 import { NotFound } from "@/pages/system";
 
-const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
-const dslug = (k: string) => k.replace("_", "").toLowerCase();
-const strip = (k: string) => k.replace("_", "");
-const keyFromSlug = (s?: string): DomainKey | undefined => ORDER.find((k) => dslug(k) === (s ?? "").toLowerCase());
-const mono = (color: string): React.CSSProperties => ({ fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".14em", textTransform: "uppercase", color });
-const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.035em" };
+const FALLBACK: Record<DomainKey, ImageKey> = {
+  "OCE4N_": "oce4nDomainHero",
+  "E4RTH_": "e4rthDomainHero",
+  "S4PIENS_": "s4piensDomainHero",
+  "4CULTURE_": "m4gazineHero",
+};
 
-// one documentary image per domain (never the hero) — from a mission in that world
-const SECOND_IMG: Record<DomainKey, ImageKey> = { "OCE4N_": "wh4lesHero", "E4RTH_": "e4rthField", "S4PIENS_": "en3rgyHero", "4CULTURE_": "filmHero" };
-// canonical mission order per domain (4CULTURE order is locked)
-const MISSION_ORDER: Partial<Record<DomainKey, string[]>> = { "4CULTURE_": ["4play", "4film", "4telier", "m4gazine"] };
-function orderedMissions(dk: DomainKey) {
-  const ms = content.getMissionsByDomain(dk);
-  const ord = MISSION_ORDER[dk];
-  if (!ord) return ms;
-  return [...ms].sort((a, b) => ord.indexOf(a.slug) - ord.indexOf(b.slug));
-}
-
-/* ───────── /domains — World Atlas (calm light index; colour lives on the images) ───────── */
-function WorldTile({ dk }: { dk: DomainKey }) {
-  const acc = DOMAIN_ACCENT[dk]; const m = domainHero(dk) ?? img(SECOND_IMG[dk]);
-  const missions = orderedMissions(dk);
-  return (
-    <Link to={"/domains/" + dslug(dk)} className="world-tile" style={{ position: "relative", display: "block", overflow: "hidden", textDecoration: "none", background: "#000", minHeight: "clamp(360px,44vw,540px)" }}>
-      {m && <img src={m.src} alt={m.alt} loading="lazy" decoding="async" className="world-img" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: m.objectPosition ?? "50% 50%" }} />}
-      <div aria-hidden className="world-scrim" style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,8,8,.14) 0%, rgba(8,8,8,.12) 38%, rgba(8,8,8,.86) 100%)" }} />
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 80, height: 3, background: acc }} />
-      <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(24px,2.6vw,38px)", minHeight: "inherit" }}>
-        <div style={{ ...display, color: acc, fontSize: "clamp(34px,4.4vw,60px)", letterSpacing: "-.04em", lineHeight: .95 }}>{strip(dk)}</div>
-        <p style={{ color: "rgba(255,255,255,.9)", fontSize: "clamp(14px,1.1vw,17px)", marginTop: 10, maxWidth: 360, lineHeight: 1.45 }}>{DOMAIN_DESC[dk]}</p>
-        <div className="mono world-enter" style={{ fontSize: 11.5, letterSpacing: ".14em", color: "#fff", marginTop: 16, display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 7, height: 7, background: acc, display: "inline-block" }} />ENTER {strip(dk)}<span className="world-arrow" style={{ transition: "transform .25s" }}>→</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
+const keyFromSlug = (slug: string | undefined): DomainKey | undefined =>
+  DOMAIN_ORDER.find((key) => domainSlug(key) === slug?.toLowerCase());
 
 export function DomainsIndex() {
   return (
     <PublicShell>
-      <Section bg={T.ink} pad="clamp(84px,10vw,140px)">
-        <Reveal>
-          <div style={{ ...mono(T.blue), marginBottom: 22 }}>ENTER FOUR WORLDS</div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 40, flexWrap: "wrap" }}>
-            <h1 style={{ ...display, color: "#fff", fontSize: "clamp(30px,4.6vw,60px)", lineHeight: 1.02, maxWidth: 620, textWrap: "balance" } as React.CSSProperties}>One living planet.<br />Four ways in.</h1>
-            <p style={{ fontSize: "clamp(16px,1.3vw,19px)", color: "rgba(255,255,255,.86)", maxWidth: 440, lineHeight: 1.55 }}>Each world reveals a different part of the system — and a clearer way to understand what is under pressure, what can help and where you can take part.</p>
+      <section style={{ background: T.ink, color: "#fff" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(84px,11vw,154px) clamp(20px,5vw,72px)" }}>
+          <Reveal>
+            <div style={{ ...mono(T.blue), marginBottom: 24 }}>FOUR DOMAINS</div>
+            <h1 style={{ ...display, margin: 0, color: "#fff", fontSize: "clamp(48px,8vw,118px)", lineHeight: .9, maxWidth: 1080 }}>
+              One living planet. Four ways in.
+            </h1>
+            <p style={{ margin: "30px 0 0", color: "rgba(255,255,255,.78)", fontSize: "clamp(17px,1.7vw,23px)", lineHeight: 1.55, maxWidth: 720 }}>
+              Each Domain follows a different part of the same system — ocean movement, living landscapes, human infrastructure and public imagination.
+            </p>
+          </Reveal>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 2, marginTop: "clamp(50px,7vw,90px)" }} className="domain-index-grid">
+            {DOMAIN_ORDER.map((key) => {
+              const domain = DOMAINS[key];
+              const accent = DOMAIN_ACCENT[key];
+              const missions = getMissionsByDomain(key);
+              return (
+                <Link
+                  key={key}
+                  to={`/domains/${domainSlug(key)}`}
+                  style={{ minHeight: 430, padding: "clamp(28px,4vw,52px)", textDecoration: "none", color: "#fff", background: "#111", borderTop: `4px solid ${accent}`, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
+                >
+                  <div>
+                    <div style={mono(accent)}>{domain.code} / {domain.descriptor}</div>
+                    <h2 style={{ ...display, margin: "28px 0 0", color: accent, fontSize: "clamp(44px,6vw,82px)", lineHeight: .9 }}>{displayName(domain.name)}</h2>
+                    <p style={{ margin: "24px 0 0", color: "rgba(255,255,255,.9)", fontSize: 18, lineHeight: 1.55, maxWidth: 540 }}>{domain.hero}</p>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, color: "rgba(255,255,255,.55)", fontSize: 13.5, lineHeight: 1.6 }}>
+                      {missions.map((mission) => displayName(mission.name)).join(" · ")}
+                    </p>
+                    <div style={{ ...mono(accent), marginTop: 18 }}>ENTER DOMAIN →</div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        </Reveal>
-        <Reveal delay={60}>
-          <div className="world-atlas" style={{ marginTop: "clamp(30px,4vw,52px)" }}>
-            {ORDER.map((dk) => <WorldTile key={dk} dk={dk} />)}
-          </div>
-        </Reveal>
-      </Section>
+          <style>{`@media(max-width:760px){.domain-index-grid{grid-template-columns:1fr!important}}`}</style>
+        </div>
+      </section>
     </PublicShell>
   );
 }
 
-/* ───────── /domains/:key — world entry (dark) → white reading plane → doors → dark participation ───────── */
-function MissionDoor({ slug, name, line, acc }: { slug: string; name: string; line: string; acc: string }) {
-  const m = missionHero(slug);
-  return (
-    <Link to={"/missions/" + slug} className="world-tile" style={{ position: "relative", display: "block", overflow: "hidden", textDecoration: "none", background: "#000", minHeight: "clamp(300px,32vw,420px)" }}>
-      {m && <img src={m.src} alt={m.alt} loading="lazy" decoding="async" className="world-img" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: m.objectPosition ?? "50% 50%" }} />}
-      <div aria-hidden className="world-scrim" style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,8,8,.10) 0%, rgba(8,8,8,.12) 40%, rgba(8,8,8,.84) 100%)" }} />
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 64, height: 3, background: acc }} />
-      <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(22px,2.4vw,34px)", minHeight: "inherit" }}>
-        <div style={{ ...display, color: acc, fontSize: "clamp(26px,3vw,40px)", lineHeight: .96 }}>{strip(name)}</div>
-        <p style={{ color: "rgba(255,255,255,.92)", fontSize: "clamp(14px,1.1vw,16.5px)", marginTop: 10, maxWidth: 380, lineHeight: 1.4 }}>{line}</p>
-      </div>
-    </Link>
-  );
-}
-
 export function DomainWorld() {
-  const { key } = useParams();
-  const dk = keyFromSlug(key);
-  if (!dk) return <NotFound />;
-  const acc = DOMAIN_ACCENT[dk];
-  const n = DOMAIN_NARRATIVE[dk];
-  const d = content.getDomain(dk);
-  const missions = orderedMissions(dk);
-  const fn = fieldNote(dk);
-  const hero = domainHero(dk) ?? img(SECOND_IMG[dk]);
-  const second = img(SECOND_IMG[dk]);
-  const manifesto = n.body.slice(1);   // do not repeat the hero opening line
+  const { key: slug } = useParams();
+  const key = keyFromSlug(slug);
+  if (!key) return <NotFound />;
+
+  const domain = DOMAINS[key];
+  const accent = DOMAIN_ACCENT[key];
+  const missions = getMissionsByDomain(key);
+  const hero = domainHero(key) ?? img(FALLBACK[key]);
 
   return (
     <PublicShell>
-      {/* immersive world entry (dark) */}
-      <CinematicImage meta={hero} height="100svh" overlay={0.5} priority accent={acc} align="end">
+      <CinematicImage meta={hero} height="100svh" priority overlay={0.56} accent={accent} align="end">
         <Reveal>
-          <div style={{ ...mono("#fff"), marginBottom: 16 }}>{d.code}</div>
-          <h1 style={{ ...display, color: acc, fontSize: "clamp(46px,7.4vw,108px)", letterSpacing: "-.045em", lineHeight: .9 }}>{strip(dk)}</h1>
-          <p style={{ fontSize: "clamp(17px,1.8vw,23px)", color: "rgba(255,255,255,.94)", marginTop: 18, maxWidth: 560, lineHeight: 1.38 }}>{n.body[0]}</p>
+          <div style={{ ...mono(accent), marginBottom: 18 }}>{domain.code} / {domain.descriptor}</div>
+          <h1 style={{ ...display, margin: 0, color: accent, fontSize: "clamp(58px,10vw,144px)", lineHeight: .84 }}>{displayName(domain.name)}</h1>
+          <p style={{ margin: "26px 0 0", color: "#fff", fontSize: "clamp(19px,2.2vw,30px)", lineHeight: 1.38, maxWidth: 760 }}>{domain.hero}</p>
         </Reveal>
       </CinematicImage>
 
-      {/* dark manifesto reading plane — inside the world */}
-      <Section bg="#000" pad="clamp(72px,9vw,132px)">
-        <Reveal><div style={{ ...mono(acc), marginBottom: "clamp(28px,4vw,44px)" }}>DOMAIN MANIFESTO</div></Reveal>
-        <div style={{ maxWidth: 760, display: "grid", gap: 18 }}>
-          {manifesto.map((p, i) => (
-            <Reveal key={i}>
-              <p style={{ margin: 0, fontFamily: i === 0 ? T.display : T.sans, fontSize: i === 0 ? "clamp(23px,2.9vw,36px)" : "clamp(16.5px,1.4vw,19px)", fontWeight: i === 0 ? 500 : 400, letterSpacing: i === 0 ? "-.02em" : "normal", color: i === 0 ? "#fff" : "rgba(255,255,255,.82)", lineHeight: i === 0 ? 1.22 : 1.68, textWrap: (i === 0 ? "balance" : "pretty") } as React.CSSProperties}>{p}</p>
+      <section style={{ background: T.ink, color: "#fff" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(72px,9vw,134px) clamp(20px,5vw,72px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,.72fr)", gap: "clamp(42px,8vw,120px)" }} className="domain-reading-grid">
+            <Reveal>
+              <div style={{ ...mono(accent), marginBottom: 22 }}>THE RELATIONSHIP</div>
+              <h2 style={{ ...display, margin: 0, color: "#fff", fontSize: "clamp(36px,5vw,72px)", lineHeight: .98 }}>{domain.relationship}</h2>
             </Reveal>
-          ))}
-        </div>
-      </Section>
-
-      {/* one documentary image */}
-      <CinematicImage meta={second} height="min(66vh, 640px)" accent={acc} />
-
-      {/* why this world matters + four mission doors — dark */}
-      <Section bg="#000" pad="clamp(72px,9vw,132px)">
-        <Reveal>
-          <div style={{ ...mono(acc), marginBottom: 20 }}>WHY THIS WORLD MATTERS</div>
-          <p style={{ ...display, fontSize: "clamp(21px,2.5vw,32px)", letterSpacing: "-.02em", lineHeight: 1.28, maxWidth: 880, color: "#fff", margin: 0, textWrap: "balance" } as React.CSSProperties}>{n.why}</p>
-        </Reveal>
-        <Reveal delay={60} style={{ marginTop: "clamp(44px,6vw,80px)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, flexWrap: "wrap", marginBottom: "clamp(20px,3vw,30px)" }}>
-            <h2 style={{ ...display, color: "#fff", fontSize: "clamp(24px,3vw,40px)" }}>Four Missions</h2>
-            <span style={mono(acc)}>{String(missions.length).padStart(2, "0")} IN {strip(dk)}</span>
+            <Reveal delay={80}>
+              <p style={{ margin: 0, color: "rgba(255,255,255,.84)", fontSize: "clamp(17px,1.5vw,20px)", lineHeight: 1.68 }}>{domain.lead}</p>
+            </Reveal>
           </div>
-          <div className="door-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "clamp(14px,1.6vw,22px)" }}>
-            {missions.map((m) => <MissionDoor key={m.slug} slug={m.slug} name={m.name} line={m.hero} acc={acc} />)}
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, background: "rgba(255,255,255,.18)", marginTop: "clamp(52px,7vw,96px)", border: "1px solid rgba(255,255,255,.18)" }} className="domain-body-grid">
+            {domain.body.map((paragraph, index) => (
+              <div key={paragraph} style={{ background: "#0a0a0a", padding: "clamp(24px,3vw,38px)" }}>
+                <div style={mono(accent)}>0{index + 1}</div>
+                <p style={{ margin: "18px 0 0", color: "rgba(255,255,255,.82)", fontSize: 15.5, lineHeight: 1.65 }}>{paragraph}</p>
+              </div>
+            ))}
           </div>
-        </Reveal>
-      </Section>
 
-      {/* domain note + other worlds — dark */}
-      <Section bg="#000" pad="clamp(56px,7vw,100px)">
-        <div className="tw-plain" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(28px,4vw,64px)" }}>
-          <Reveal>
-            <div style={{ ...mono(acc), marginBottom: 16 }}>DOMAIN NOTE</div>
-            <div style={{ borderTop: `1px solid ${acc}`, paddingTop: 18 }}>
-              <div style={{ ...display, fontSize: "clamp(19px,1.8vw,24px)", color: "#fff" }}>{fn.title}</div>
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,.82)", marginTop: 12, lineHeight: 1.6, maxWidth: 460, textWrap: "pretty" } as React.CSSProperties}>{fn.body.join(" ")}</p>
-            </div>
-          </Reveal>
-          <Reveal delay={60}>
-            <div style={{ ...mono(acc), marginBottom: 16 }}>OTHER WORLDS</div>
-            <div style={{ borderTop: `1px solid rgba(255,255,255,.2)`, paddingTop: 6 }}>
-              {ORDER.filter((k) => k !== dk).map((k) => (
-                <Link key={k} to={"/domains/" + dslug(k)} className="link" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "14px 0", borderBottom: `1px solid rgba(255,255,255,.14)`, color: "#fff", textDecoration: "none" }}>
-                  <span style={{ ...display, fontSize: "clamp(18px,1.7vw,22px)" }}>{strip(k)}</span>
-                  <span className="mono" style={{ fontSize: 10.5, letterSpacing: ".1em", color: DOMAIN_ACCENT[k] }}>{DOMAIN_DESC[k]} →</span>
-                </Link>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </Section>
-
-      {/* dark participation ending — continuous world */}
-      <section style={{ background: "#000", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,8vw,110px) clamp(20px,5vw,72px)" }}>
-          <Reveal>
-            <div style={{ ...mono(acc), marginBottom: 20 }}>PARTICIPATE</div>
-            <h2 style={{ ...display, color: "#fff", fontSize: "clamp(26px,3.6vw,50px)", lineHeight: 1.02, maxWidth: 760 }}>Follow {strip(dk)} as its Missions, evidence and pathways open.</h2>
-            <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
-              <Button to="/people" primary accent={acc} arrow>JOIN 4PLANET</Button>
-              <Button to="/partners" onDark accent="#fff">EXPLORE PARTNERSHIP</Button>
-            </div>
-          </Reveal>
+          <div style={{ borderTop: `1px solid ${accent}`, marginTop: "clamp(54px,7vw,96px)", paddingTop: 28 }}>
+            <div style={mono(accent)}>THE DOMAIN QUESTION</div>
+            <p style={{ ...display, margin: "18px 0 0", color: "#fff", fontSize: "clamp(28px,4vw,54px)", lineHeight: 1.05, maxWidth: 900 }}>{domain.question}</p>
+          </div>
+          <style>{`@media(max-width:780px){.domain-reading-grid,.domain-body-grid{grid-template-columns:1fr!important}}`}</style>
         </div>
       </section>
+
+      <Section pad="clamp(72px,9vw,132px)">
+        <Reveal>
+          <div style={{ ...mono(accent), marginBottom: 22 }}>FOUR MISSIONS</div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 26, alignItems: "flex-end", flexWrap: "wrap" }}>
+            <h2 style={{ ...display, margin: 0, color: T.ink, fontSize: "clamp(36px,5vw,68px)", lineHeight: 1, maxWidth: 800 }}>
+              Four distinct ways to enter {displayName(domain.name)}.
+            </h2>
+            <ActionLink href="/missions">ALL SIXTEEN</ActionLink>
+          </div>
+        </Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 2, marginTop: "clamp(42px,6vw,74px)" }} className="domain-mission-grid">
+          {missions.map((mission) => <MissionCard key={mission.slug} mission={mission} />)}
+        </div>
+        <style>{`@media(max-width:760px){.domain-mission-grid{grid-template-columns:1fr!important}}`}</style>
+      </Section>
     </PublicShell>
   );
 }
