@@ -1,22 +1,21 @@
 import type { DomainKey } from "@/types/content";
 import { DOMAIN_CONTENT } from "@/content/domains";
-import { MISSION_CONTENT, findMissionContent } from "@/content/missions";
+import { MISSIONS, getMission, getMissionsByDomain } from "@/content/narrativeContract";
 import { IMPACT_PATHWAYS, findImpactPathway } from "@/content/impactPathways";
-import { sourcesFor } from "@/content/sources";
 
-// Local repository now; a SupabaseContentRepository can implement the same shape later.
+// One public content source for every Domain/Mission surface.
+// A hosted repository may implement the same read contract later without changing public semantics.
 export const content = {
   getDomains: () => Object.values(DOMAIN_CONTENT),
   getDomain: (key: DomainKey) => DOMAIN_CONTENT[key],
-  getMissions: () => MISSION_CONTENT,
-  getMission: (slug: string) => findMissionContent(slug),
-  getMissionsByDomain: (key: DomainKey) => MISSION_CONTENT.filter((m) => m.domain === key),
+  getMissions: () => MISSIONS,
+  getMission: (slug: string) => getMission(slug),
+  getMissionsByDomain: (key: DomainKey) => getMissionsByDomain(key),
   getImpactPathways: () => IMPACT_PATHWAYS,
   getImpactPathway: (slug: string) => findImpactPathway(slug),
-  getSources: (missionSlug: string) => sourcesFor(missionSlug),
+  getSources: (missionSlug: string) => getMission(missionSlug)?.sources ?? [],
 };
 
-// re-exports for convenience
 export { DOMAIN_CONTENT } from "@/content/domains";
-export { MISSION_CONTENT, findMissionContent } from "@/content/missions";
+export { MISSIONS as MISSION_CONTENT, getMission as findMissionContent } from "@/content/narrativeContract";
 export { IMPACT_PATHWAYS, findImpactPathway } from "@/content/impactPathways";
