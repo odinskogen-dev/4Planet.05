@@ -35,6 +35,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.goto(`${BASE}/`);
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Everything we depend on is alive." })).toBeVisible();
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/01-4planet-desktop.png` });
 
@@ -70,6 +71,7 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await page.goto(`${BASE}/`);
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Everything we depend on is alive." })).toBeVisible();
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/04-4planet-mobile.png` });
 
@@ -82,7 +84,7 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await settleVisuals(page);
 
   const mobileLayout = await page.evaluate(() => {
-    const footerGrid = document.querySelector<HTMLElement>(".foot-grid");
+    const footerGrid = document.querySelector<HTMLElement>(".shell-footer-grid");
     if (!footerGrid) return null;
     return {
       columns: getComputedStyle(footerGrid).gridTemplateColumns.split(" ").filter(Boolean).length,
@@ -94,6 +96,39 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   expect(mobileLayout!.columns).toBe(1);
   expect(mobileLayout!.pageWidth).toBeLessThanOrEqual(mobileLayout!.viewportWidth + 1);
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png`, fullPage: true });
+});
+
+test("calibration Mission routes show distinct narratives and honest states", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const cases = [
+    ["wh4les", "A whale crosses borders the ocean does not recognise.", "IN DEVELOPMENT"],
+    ["am4zonia", "A forest can make rain far beyond its own canopy.", "IN DEVELOPMENT"],
+    ["food", "Every meal begins in a living system.", "CONCEPT"],
+    ["4rt", "An image can carry attention — and a transparent contribution.", "CONCEPT"],
+  ] as const;
+
+  for (const [slug, heading, status] of cases) {
+    await page.goto(`${BASE}/missions/${slug}`);
+    await expect(page.getByText(heading, { exact: true })).toBeVisible();
+    await expect(page.getByText(status, { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("ISSUE", { exact: true })).toBeVisible();
+    await expect(page.getByText("WHY IT MATTERS", { exact: true })).toBeVisible();
+    await expect(page.getByText("OUR APPROACH", { exact: true })).toBeVisible();
+    await expect(page.getByText("CONTRIBUTION", { exact: true })).toBeVisible();
+  }
+});
+
+test("obsolete Mission URLs resolve to the replacement identities", async ({ page }) => {
+  const cases = [
+    ["/missions/4ntarctica", "/missions/rewild-marine"],
+    ["/missions/rewild", "/missions/rewild-land"],
+    ["/culture/telier", "/missions/4rt"],
+  ] as const;
+
+  for (const [legacy, replacement] of cases) {
+    await page.goto(`${BASE}${legacy}`);
+    await expect(page).toHaveURL(new RegExp(`${replacement}$`));
+  }
 });
 
 test("IMPACT direct routes remain explicit local tests with no physical delivery", async ({ page }) => {
