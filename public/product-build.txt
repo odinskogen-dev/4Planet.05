@@ -1,3 +1,4 @@
-4PLANET product-quality implementation candidate
-Release marker: pq02-claude-02-audit-preview-2026-07-26
-Status: deployed audit preview, not Beta or production
+4PLANET premium narrative calibration candidate
+Release marker: premium-narrative-calibration-gate-01-2026-08-02
+Status: founder-review calibration preview, not Beta or production
+Authority: FD-2026-08-02-35
