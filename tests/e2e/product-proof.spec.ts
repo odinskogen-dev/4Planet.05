@@ -115,6 +115,8 @@ test("calibration Mission routes show distinct narratives and honest states", as
     await expect(page.getByText("WHY IT MATTERS", { exact: true })).toBeVisible();
     await expect(page.getByText("OUR APPROACH", { exact: true })).toBeVisible();
     await expect(page.getByText("CONTRIBUTION", { exact: true })).toBeVisible();
+    await settleVisuals(page);
+    await page.screenshot({ path: `${OUTPUT}/07-${slug}-calibration.png`, fullPage: true });
   }
 });
 
