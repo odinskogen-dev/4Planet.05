@@ -61,7 +61,7 @@ test("status and capability vocabulary prevents premature delivery claims", () =
   ]) {
     assert.match(contract, new RegExp(`"${status}"`));
   }
-  assert.match(contract, /Contribution is not delivery/);
+  assert.match(home, /Contribution is not delivery/);
   assert.match(contract, /No production Plastic Unit is active/);
   assert.match(contract, /No marketplace, edition, artist agreement, price or ecological allocation is active/);
 });
