@@ -3,7 +3,14 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
 import { T } from "@/styles/tokens";
-import { SPECIES_PROFILES, speciesById, speciesBySlug, type SpeciesProfile } from "@/data/species";
+import {
+  SPECIES_PROFILES,
+  speciesById,
+  speciesBySlug,
+  type EvidenceClaim,
+  type EvidenceState,
+  type SpeciesProfile,
+} from "@/data/species";
 import { ORCA_INTERPRETATION, ORCA_OBSERVATION, ORCA_PRODUCT_CONTEXT, ORCA_SOURCE_RECORD } from "@/data/truthSpine";
 import { taxonOccurrences } from "@/planet/connectors";
 import type { Occurrence } from "@/planet/types";
@@ -16,6 +23,32 @@ const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "cl
 
 function Status({ children, color = T.blue }: { children: React.ReactNode; color?: string }) {
   return <span style={{ ...mono, display: "inline-flex", border: `1px solid ${color}`, color, padding: "4px 7px" }}>{children}</span>;
+}
+
+const evidenceColor = (state: EvidenceState) => {
+  if (state === "KNOWN") return T.acid;
+  if (state === "INTERPRETED") return T.blue;
+  return "#8A6500";
+};
+
+function EvidenceClaimCard({ claim }: { claim: EvidenceClaim }) {
+  const color = evidenceColor(claim.state);
+  return (
+    <article style={{ ...panel, display: "flex", minHeight: 290, flexDirection: "column", borderColor: color }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <Status color={color}>{claim.state}</Status>
+        <span style={{ ...mono, color: T.dim }}>CHECKED {claim.checkedAt}</span>
+      </div>
+      <h3 style={{ marginTop: 22, fontFamily: T.display, fontSize: "clamp(25px,3vw,36px)", lineHeight: 1.02, letterSpacing: "-.025em" }}>{claim.label}</h3>
+      <p style={{ marginTop: 16, fontSize: 15, lineHeight: 1.6 }}>{claim.text}</p>
+      {claim.limitation && <p style={{ marginTop: 16, color: T.dim, fontSize: 12.5, lineHeight: 1.55 }}><strong>BOUNDARY:</strong> {claim.limitation}</p>}
+      {claim.sourceUrl && (
+        <a href={claim.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, marginTop: "auto", paddingTop: 24, color: T.blue }}>
+          {claim.sourceLabel ?? "OPEN SOURCE"} ↗
+        </a>
+      )}
+    </article>
+  );
 }
 
 function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
@@ -95,7 +128,7 @@ export function SpeciesProfilePage() {
         <div style={{ marginTop: 38, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Status>GBIF TAXON · ACCEPTED</Status>
           <Status color={T.acid}>IDENTITY PRESERVED</Status>
-          <Status color="#8A6500">ECOLOGICAL SOURCE REVIEW PENDING</Status>
+          <Status color="#8A6500">POPULATION-SPECIFIC CLAIMS CONTROLLED</Status>
         </div>
         <h1 style={{ marginTop: 24, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .86, letterSpacing: "-.055em" }}>{profile.commonName}</h1>
         <p style={{ marginTop: 20, fontSize: "clamp(20px,2.6vw,30px)", fontStyle: "italic" }}>{profile.scientificName}</p>
@@ -133,26 +166,48 @@ export function SpeciesProfilePage() {
         </div>
 
         {isOrca && (
-          <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-              <div style={{ ...mono, color: T.blue }}>WHAT THIS RECORD SHOWS · AND WHAT IT DOES NOT</div>
-              <Status color="#8A6500">{ORCA_PRODUCT_CONTEXT.persistedBy.replace(/_/g, " ")}</Status>
+          <>
+            <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ ...mono, color: T.blue }}>WHAT THIS RECORD SHOWS · AND WHAT IT DOES NOT</div>
+                <Status color="#8A6500">{ORCA_PRODUCT_CONTEXT.persistedBy.replace(/_/g, " ")}</Status>
+              </div>
+              <p style={{ marginTop: 18, maxWidth: 840, lineHeight: 1.55 }}>{ORCA_INTERPRETATION.text}</p>
+              <div className="four" style={{ marginTop: 24 }}>
+                {[
+                  ["SOURCE RECORD", ORCA_SOURCE_RECORD.sourceRecordId],
+                  ["OBSERVATION", ORCA_OBSERVATION.id],
+                  ["SIGNAL", "NONE CREATED"],
+                  ["INTERPRETATION", ORCA_INTERPRETATION.reviewStatus],
+                ].map(([label, value]) => <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}><div style={{ ...mono, color: T.dim }}>{label}</div><div style={{ marginTop: 8, fontSize: 12, wordBreak: "break-all" }}>{value}</div></div>)}
+              </div>
+              <p style={{ marginTop: 18, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>{ORCA_PRODUCT_CONTEXT.disclosure}</p>
+              <a href={ORCA_SOURCE_RECORD.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 14, color: T.blue }}>SOURCE RECORD + LICENCE ↗</a>
             </div>
-            <p style={{ marginTop: 18, maxWidth: 840, lineHeight: 1.55 }}>{ORCA_INTERPRETATION.text}</p>
-            <div className="four" style={{ marginTop: 24 }}>
-              {[
-                ["SOURCE RECORD", ORCA_SOURCE_RECORD.sourceRecordId],
-                ["OBSERVATION", ORCA_OBSERVATION.id],
-                ["SIGNAL", "NONE CREATED"],
-                ["INTERPRETATION", ORCA_INTERPRETATION.reviewStatus],
-              ].map(([label, value]) => <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}><div style={{ ...mono, color: T.dim }}>{label}</div><div style={{ marginTop: 8, fontSize: 12, wordBreak: "break-all" }}>{value}</div></div>)}
-            </div>
-            <p style={{ marginTop: 18, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>{ORCA_PRODUCT_CONTEXT.disclosure}</p>
-            <a href={ORCA_SOURCE_RECORD.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 14, color: T.blue }}>SOURCE RECORD + LICENCE ↗</a>
-          </div>
+
+            <section style={{ marginTop: 72 }} aria-labelledby="whales-evidence-title">
+              <div style={{ ...mono, color: T.blue }}>WH4LES_ · FOUR EVIDENCE CHAPTERS</div>
+              <h2 id="whales-evidence-title" style={{ marginTop: 16, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(38px,6vw,78px)", lineHeight: .95, letterSpacing: "-.045em" }}>
+                From one animal to the living relationships around it.
+              </h2>
+              <p style={{ marginTop: 24, maxWidth: 780, fontSize: 17, lineHeight: 1.6, color: T.dim }}>
+                Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. Species-level evidence is never silently converted into a claim about one population, pod or individual.
+              </p>
+              {profile.narrativeChapters?.map((chapter, index) => (
+                <article key={chapter.id} style={{ marginTop: index === 0 ? 48 : 72 }}>
+                  <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow}</div>
+                  <h3 style={{ marginTop: 14, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(34px,5vw,64px)", lineHeight: .98, letterSpacing: "-.04em" }}>{chapter.title}</h3>
+                  <p style={{ marginTop: 20, maxWidth: 820, fontSize: 17, lineHeight: 1.62 }}>{chapter.summary}</p>
+                  <div className="tw" style={{ marginTop: 28 }}>
+                    {chapter.claims.map((claim) => <EvidenceClaimCard key={claim.id} claim={claim} />)}
+                  </div>
+                </article>
+              ))}
+            </section>
+          </>
         )}
 
-        <div className="tw" style={{ marginTop: 24 }}>
+        <div className="tw" style={{ marginTop: 72 }}>
           <div style={panel}>
             <div style={{ ...mono, color: T.red }}>PRESSURE</div>
             <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.issue.label}</h2>
@@ -169,8 +224,8 @@ export function SpeciesProfilePage() {
 
         <div style={{ ...panel, marginTop: 24 }}>
           <div style={{ ...mono, color: T.blue }}>PRODUCT NOTE</div>
-          <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.5 }}>{profile.commonName} now retains the same canonical identity across SPECIES, ATLAS and local WATCH.</p>
-          <p style={{ marginTop: 10, color: T.dim, fontSize: 13 }}>Published by 4PLANET · 22 July 2026 · Product change, not a planetary signal.</p>
+          <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.5 }}>{profile.commonName} retains the same canonical identity across SPECIES, ATLAS and local WATCH.</p>
+          <p style={{ marginTop: 10, color: T.dim, fontSize: 13 }}>Working prototype · evidence layer checked 3 August 2026 · not a population assessment, live tracker or ecological outcome claim.</p>
         </div>
       </Section>
     </PublicShell>
