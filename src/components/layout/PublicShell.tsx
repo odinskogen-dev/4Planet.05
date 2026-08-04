@@ -128,12 +128,21 @@ function Header() {
   }, [open]);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
+  // WS-A: one transparent header that hides on downward scroll and returns on
+  // upward scroll. No blur, frosted glass or background panel is ever added.
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 24);
       setPastHero(y > window.innerHeight * 0.82);
+      const dy = y - lastY.current;
+      if (y < 80 || dy < -6) setHidden(false);
+      else if (dy > 6 && y > 120) setHidden(true);
+      lastY.current = y;
     };
+    lastY.current = window.scrollY;
     onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
@@ -149,7 +158,7 @@ function Header() {
 
   return (
     <>
-      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transition: "none" }}>
+      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transform: hidden && !open ? "translateY(-100%)" : "translateY(0)", transition: "transform .32s cubic-bezier(.2,.7,.2,1)", paddingTop: "env(safe-area-inset-top,0px)" }}>
         <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
           <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
@@ -166,7 +175,7 @@ function Header() {
           <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
             background: "transparent", color: open ? T.ink : fg,
             border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
-            transition: "border-color .25s ease, color .25s ease" }}>JOIN 4_</Link>
+            transition: "border-color .25s ease, color .25s ease", whiteSpace: "nowrap" }}>JOIN 4PLANET</Link>
         </div>
       </header>
       {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} /></>)}
