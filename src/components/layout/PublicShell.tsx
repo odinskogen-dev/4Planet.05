@@ -10,17 +10,16 @@ import type { DomainKey } from "@/types/content";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const dslug = (k: string) => k.replace("_", "").toLowerCase();
-const LS_URL = "https://4p-living-systems-v1-4-1.pages.dev/";
-const ATLAS_URL = "https://4planet-atlas-mobile.pages.dev/";
 
 type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [string, string][] };
 const stripU = (k: string) => k.replace(/_$/, "");
 const MENU: Cat[] = [
-  { key: "4_", to: "/people", kind: "list", items: [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]] },
+  { key: "PRODUCTS_", to: "/", kind: "list", items: [["4PLANET", "/"], ["ATLAS", "/atlas"], ["SPECIES", "/species"], ["IMPACT", "/impact"], ["LIVING SYSTEMS", "/living-systems"]] },
+  { key: "JOIN_", to: "/join", kind: "list", items: [["Join 4Planet", "/join"], ["People", "/people"], ["Brands", "/brands"], ["Partners", "/partners"], ["Funders", "/funders"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
   { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
-  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
+  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4RT", "/missions/4rt"], ["M4GAZINE", "/stories"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
 
@@ -98,14 +97,14 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
             );
           })}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-            <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
+            <Link to="/living-systems" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
             <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
             <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
           </div>
         </div>
 
         <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
+          <Link to="/living-systems" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
           <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
           <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
         </div>

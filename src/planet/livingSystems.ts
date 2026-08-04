@@ -521,7 +521,7 @@ export const SOLUTIONS: Solution[] = [
     limitations:
       "Designation is not protection. A large share of the world's protected areas are weakly enforced, and marine protection in particular is frequently 'paper park'. Restoration outcomes vary by an order of magnitude between projects.",
     actors: ["National authorities", "IUCN", "Community-managed conservation"],
-    missionIds: [missionId("rewild"), missionId("wh4les")],
+    missionIds: [missionId("rewild-land"), missionId("wh4les")],
   },
 ];
 
@@ -553,9 +553,9 @@ export const MISSIONS: Mission[] = [
     proofPath: "No proof path exists yet.",
   },
   {
-    id: missionId("rewild"),
+    id: missionId("rewild-land"),
     name: "RE:WILD_",
-    href: "/missions/rewild",
+    href: "/missions/rewild-land",
     accelerates: "Connecting restoration pathways to the places and systems where they may apply.",
     status: "ARCHITECTURE",
     expectedOutcome: "Not yet defined.",

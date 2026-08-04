@@ -85,7 +85,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("A measurable pathway designed to support one kilogram of marine waste recovery — but only after an approved delivery partner, a measurement method, an evidence standard and a reporting model are confirmed. Until each of those is in place, the pathway stays closed to public support. The honesty is the point."),
     ],
   },
-  "4ntarctica": {
+  "rewild-marine": {
     scene: [
       "At the bottom of the world, ice, ocean and atmosphere move as one system.",
       "What happens there does not stay there.",
@@ -164,7 +164,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("SPECIES is being developed as a mission world that connects species intelligence, field protection pathways, public education and cultural storytelling — making ecological roles, biodiversity loss and the routes to protection easier to understand, support and follow."),
     ],
   },
-  "rewild": {
+  "rewild-land": {
     scene: [
       "Land can recover when pressure is reduced and life is given room to return.",
       "Water finds new paths. Soils rebuild. Plants spread. Insects return. Birds follow. Larger systems begin to reconnect.",
@@ -201,7 +201,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("FOOD is being developed as a mission world for food-system intelligence, practical partnerships and cultural communication around the systems that feed people and shape landscapes — editorial about food systems, not lifestyle photography of them."),
     ],
   },
-  "en3rgy": {
+  "en4rgy": {
     scene: [
       "Energy powers nearly every system we live inside.",
       "How we heat, move, build, produce and connect shapes the pressure placed on land, water, climate and communities.",
@@ -289,7 +289,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("4FILM is being developed as a documentary pathway for the whales, forests, species, field partners and ecological restoration that shape the work of 4Planet."),
     ],
   },
-  "4telier": {
+  "4rt": {
     scene: [
       "Culture needs places where ideas become objects, images, spaces and interventions.",
       "4TELIER is being developed as a studio for visual work that makes ecological attention tangible — through design, art, print, objects and public expression.",

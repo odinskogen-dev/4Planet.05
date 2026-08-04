@@ -15,8 +15,8 @@ const strip = (s: string) => s.replace("_", "");
 const mono = (color: string): React.CSSProperties => ({ fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".14em", textTransform: "uppercase", color });
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.03em" };
 
-const CULTURAL = new Set(["4play", "4film", "4telier", "m4gazine"]);
-const SYSTEM = new Set(["food", "en3rgy", "circular-city", "f4shion"]);
+const CULTURAL = new Set(["4play", "4film", "4rt", "m4gazine"]);
+const SYSTEM = new Set(["food", "en4rgy", "circular-city", "f4shion"]);
 const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "pl4stic"]);
 // dark-world missions live in tokens (DARK_MISSIONS) so the header can share them
 function classify(slug: string): { label: string } {

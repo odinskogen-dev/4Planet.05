@@ -41,6 +41,11 @@ export function AppRoutes() {
       <Route path="/missions" element={<MissionsIndex />} />
       <Route path="/missions/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
+      <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+      <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+      <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
+      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />

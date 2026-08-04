@@ -4,9 +4,9 @@ export type PublicStatus = "IN DEVELOPMENT" | "PARTNER VALIDATION" | "FIELD RESE
 const MAP: Record<string, PublicStatus> = {
   clim4te: "PARTNER VALIDATION",
   pl4stic: "IN DEVELOPMENT", "am4zonia": "IN DEVELOPMENT", rewild: "IN DEVELOPMENT",
-  wh4les: "FIELD RESEARCH", cor4l: "FIELD RESEARCH", species: "FIELD RESEARCH", "4ntarctica": "FIELD RESEARCH",
+  wh4les: "FIELD RESEARCH", cor4l: "FIELD RESEARCH", species: "FIELD RESEARCH", "rewild-marine": "FIELD RESEARCH",
   food: "IN DEVELOPMENT", en3rgy: "IN DEVELOPMENT", "circular-city": "IN DEVELOPMENT", f4shion: "IN DEVELOPMENT",
-  "4play": "PROTOTYPE", "4film": "PROTOTYPE", "4telier": "PROTOTYPE", m4gazine: "PROTOTYPE",
+  "4play": "PROTOTYPE", "4film": "PROTOTYPE", "4rt": "PROTOTYPE", m4gazine: "PROTOTYPE",
 };
 export const publicStatus = (slug: string): PublicStatus => MAP[slug] ?? "IN DEVELOPMENT";
 
