@@ -25,23 +25,45 @@ function activeProduct(pathname: string): ProductKey {
   return "4PLANET";
 }
 
-/** The four-square mark. `activeIndex` fills one square with brand blue. */
-function FourSquare({ activeIndex, dark, size = 22 }: { activeIndex: number; dark?: boolean; size?: number }) {
-  const gap = size >= 20 ? 3 : 2;
-  const cell = (size - gap) / 2;
-  const line = dark ? "rgba(255,255,255,.85)" : "rgba(8,8,8,1)";
+/**
+ * WS-A — Product Switcher, two founder-review options.
+ * OPTION A: a refined family mark — four nodes on a quiet baseline that reads as a
+ *   product-family relationship, not a generic app grid; the active node carries
+ *   the contextual accent.
+ * OPTION B: a typographic product-family trigger — "4·" wordmark with the active
+ *   product initial, subtle and editorial.
+ * Neither repeats the same icon inside every panel row.
+ */
+type SwitcherVariant = "A" | "B";
+
+function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { activeIndex: number; dark?: boolean; accent?: string; size?: number }) {
+  const idle = dark ? "rgba(255,255,255,.5)" : "rgba(8,8,8,.4)";
+  const r = Math.max(2, Math.round(size * 0.11));
+  const cx = [0.18, 0.5, 0.82, 0.5];
+  const cy = [0.5, 0.2, 0.5, 0.8];
   return (
-    <span aria-hidden style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap, width: size, height: size }}>
+    <svg aria-hidden width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
+      <path d="M18 50 L50 20 L82 50 L50 80 Z" fill="none" stroke={idle} strokeWidth={3} strokeOpacity={0.5} strokeLinejoin="round" />
       {[0, 1, 2, 3].map((i) => (
-        <span key={i} style={{ width: cell, height: cell, boxSizing: "border-box",
-          background: i === activeIndex ? "#2E2EFF" : "transparent",
-          border: `1.4px solid ${i === activeIndex ? "#2E2EFF" : line}` }} />
+        <circle key={i} cx={cx[i] * 100} cy={cy[i] * 100} r={i === activeIndex ? r * 1.5 : r}
+          fill={i === activeIndex ? accent : idle} />
       ))}
+    </svg>
+  );
+}
+
+function TypeMark({ activeLabel, dark, accent = "#2E2EFF" }: { activeLabel: string; dark?: boolean; accent?: string }) {
+  const fg = dark ? "#fff" : "#080808";
+  return (
+    <span aria-hidden style={{ display: "inline-flex", alignItems: "baseline", gap: 3, fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1 }}>
+      <span style={{ fontSize: 17, color: fg }}>4</span>
+      <span style={{ width: 4, height: 4, borderRadius: "50%", background: accent, alignSelf: "center" }} />
+      <span style={{ fontSize: 11, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.7)" : "rgba(8,8,8,.6)" }}>{activeLabel}</span>
     </span>
   );
 }
 
-export function ProductSwitcher({ dark = false }: { dark?: boolean }) {
+export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A" }: { dark?: boolean; accent?: string; variant?: SwitcherVariant }) {
   const location = useLocation();
   const active = activeProduct(location.pathname);
   const activeIdx = PRODUCTS.find((p) => p.key === active)!.index;
@@ -87,10 +109,12 @@ export function ProductSwitcher({ dark = false }: { dark?: boolean }) {
         aria-controls="product-switcher-panel"
         aria-label={`Switch product, current product ${active}`}
         className="product-switcher__trigger"
-        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44,
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: variant === "B" ? "flex-start" : "center", minWidth: 44, height: 44,
           background: "transparent", border: "none", cursor: "pointer", padding: 0, color: fg }}
       >
-        <FourSquare activeIndex={activeIdx} dark={dark} />
+        {variant === "B"
+          ? <TypeMark activeLabel={active} dark={dark} accent={accent} />
+          : <FamilyMark activeIndex={activeIdx} dark={dark} accent={accent} />}
       </button>
 
       {open && (
@@ -123,14 +147,15 @@ export function ProductSwitcher({ dark = false }: { dark?: boolean }) {
                   onClick={() => setOpen(false)}
                   style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 18px", textDecoration: "none",
                     color: fg, borderBottom: p.index < 3 ? `1px solid ${panelLine}` : "none",
-                    background: isActive ? (dark ? "rgba(46,46,255,.14)" : "rgba(46,46,255,.04)") : "transparent" }}
+                    background: isActive ? (dark ? "rgba(255,255,255,.06)" : "rgba(8,8,8,.03)") : "transparent" }}
                 >
                   <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, color: descColor, width: 22, flex: "none" }}>0{p.index + 1}</span>
                   <span style={{ flex: 1 }}>
-                    <span style={{ display: "block", fontFamily: "'Instrument Sans', 'DM Sans', sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-.01em", color: isActive ? "#2E2EFF" : fg }}>{p.label}</span>
+                    <span style={{ display: "block", fontFamily: "'Instrument Sans', 'DM Sans', sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-.01em", color: isActive ? accent : fg }}>{p.label}</span>
                     <span style={{ display: "block", fontSize: 13, color: descColor, marginTop: 2 }}>{p.descriptor}</span>
                   </span>
-                  <FourSquare activeIndex={p.index} dark={dark} size={16} />
+                  <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", flex: "none",
+                    background: isActive ? accent : "transparent", border: isActive ? "none" : `1px solid ${panelLine}` }} />
                 </Link>
               );
             })}

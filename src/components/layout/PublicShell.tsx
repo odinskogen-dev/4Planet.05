@@ -115,7 +115,7 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
 }
 
 function Header() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const ctx = useDomainContext();
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -162,7 +162,7 @@ function Header() {
         <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
           <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
-            {!open && <ProductSwitcher dark={overHero} />}
+            {!open && <ProductSwitcher dark={overHero} accent={accent} variant={new URLSearchParams(search).get("sw") === "B" ? "B" : "A"} />}
           </div>
 
           <button aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} ref={closeRef}
