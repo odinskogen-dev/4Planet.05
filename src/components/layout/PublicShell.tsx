@@ -61,12 +61,12 @@ function MenuItems({ c, onMobile, onClose }: { c: Cat; onMobile: boolean; onClos
   );
 }
 
-function MenuPlane({ onClose }: { onClose: () => void }) {
+function MenuPlane({ onClose, planeRef }: { onClose: () => void; planeRef?: React.Ref<HTMLDivElement> }) {
   const [active, setActive] = useState<string>(MENU[1].key);
   const [openCat, setOpenCat] = useState<string | null>(MENU[1].key);
   const cat = MENU.find((c) => c.key === active)!;
   return (
-    <div className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
+    <div ref={planeRef} role="dialog" aria-modal="true" aria-label="Main menu" className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(80px,9vw,104px) clamp(20px,5vw,72px) clamp(40px,8vw,72px)" }}>
         <div className="menu-desktop" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(24px,5vw,72px)" }}>
           <div role="menu" aria-label="Primary">
@@ -118,11 +118,33 @@ function Header() {
   const ctx = useDomainContext();
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerFocusRef = useRef<HTMLElement | null>(null);
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    if (open) { window.addEventListener("keydown", onKey); closeRef.current?.focus(); }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setOpen(false); return; }
+      // P1.8 focus trap: keep Tab focus within the menu while it is modal
+      if (e.key === "Tab" && open && menuRef.current) {
+        const f = menuRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
+        );
+        if (f.length === 0) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    if (open) {
+      triggerFocusRef.current = document.activeElement as HTMLElement;
+      window.addEventListener("keydown", onKey);
+      closeRef.current?.focus();
+    } else if (triggerFocusRef.current) {
+      // P1.8 focus return: send focus back to the element that opened the menu
+      triggerFocusRef.current.focus();
+      triggerFocusRef.current = null;
+    }
     return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
   }, [open]);
   const [scrolled, setScrolled] = useState(false);
@@ -177,7 +199,7 @@ function Header() {
             transition: "border-color .25s ease, color .25s ease", whiteSpace: "nowrap" }}>JOIN 4PLANET</Link>
         </div>
       </header>
-      {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} /></>)}
+      {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} planeRef={menuRef} /></>)}
       <style>{`.menu-mobile{display:none}@media(max-width:760px){.menu-desktop{display:none!important}.menu-mobile{display:block}}`}</style>
     </>
   );
