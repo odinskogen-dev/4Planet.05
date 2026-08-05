@@ -3,6 +3,7 @@ import { T, DOMAIN_ACCENT, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
+import { MissionStrip } from "@/components/MissionStrip";
 import { Editorial } from "@/components/Editorial";
 import { content } from "@/content/contentRepository";
 import { missionArticle, type Block } from "@/content/narratives";
@@ -73,6 +74,17 @@ export function MissionDetail() {
           </div>
         </Reveal>
       </CinematicImage>
+
+      {/* ── WS-B Technical Mission Strip: after cinematic opening, before article ── */}
+      <MissionStrip
+        issue={m.issue}
+        whyItMatters={m.whyItMatters}
+        approach={m.whatCanHelp}
+        contribution={m.fourPlanetRole}
+        status={status}
+        accent={acc}
+        dark={dark}
+      />
 
       {/* ── editorial reading plane (dark or white per mission) ── */}
       <Section bg={secBg} pad="clamp(64px,8.5vw,124px)">
