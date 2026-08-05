@@ -14,7 +14,19 @@ async function settleVisualLayout(page: Page) {
 
 async function screenshot(page: Page, selector: string, name: string) {
   await settleVisualLayout(page);
+  await page.evaluate(() => {
+    document.querySelectorAll<HTMLElement>('header, a[href="#main-content"]').forEach((element) => {
+      element.dataset["p17PreviousVisibility"] = element.style.visibility;
+      element.style.visibility = "hidden";
+    });
+  });
   await page.locator(selector).first().screenshot({ path: `${ARTIFACTS}/${name}.png` });
+  await page.evaluate(() => {
+    document.querySelectorAll<HTMLElement>('[data-p17-previous-visibility]').forEach((element) => {
+      element.style.visibility = element.dataset["p17PreviousVisibility"] ?? "";
+      delete element.dataset["p17PreviousVisibility"];
+    });
+  });
 }
 
 test.beforeAll(async () => {
@@ -69,13 +81,17 @@ test("capture mobile discovery, profile and secure review gate", async ({ page }
 test("capture native Actor Mode on the existing Atlas route", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(ACTOR_ATLAS_URL);
-  await expect(page.getByRole("complementary", { name: "Actor Mode private beta" })).toBeVisible();
+  const desktopOverlay = page.getByRole("complementary", { name: "Actor Mode private beta" });
+  await expect(desktopOverlay).toBeVisible();
+  await expect(desktopOverlay).toHaveAttribute("data-p17-native-actor-layer", /ready|unavailable/, { timeout: 15_000 });
   await settleVisualLayout(page);
   await page.screenshot({ path: `${ARTIFACTS}/desktop-atlas-native-actor-mode.png` });
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(ACTOR_ATLAS_URL);
-  await expect(page.getByRole("complementary", { name: "Actor Mode private beta" })).toBeVisible();
+  const mobileOverlay = page.getByRole("complementary", { name: "Actor Mode private beta" });
+  await expect(mobileOverlay).toBeVisible();
+  await expect(mobileOverlay).toHaveAttribute("data-p17-native-actor-layer", /ready|unavailable/, { timeout: 15_000 });
   await settleVisualLayout(page);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-atlas-native-actor-mode.png` });
 });
