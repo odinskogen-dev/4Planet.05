@@ -4,12 +4,24 @@ import { normalizeGtin, normaliseSourceEnvelope, rankAlternatives } from "../src
 const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:4173";
 const TARGET_PER_CATEGORY = Number(process.env.TARGET_PER_CATEGORY || 10);
 const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS || 6500);
-const USER_AGENT = "4PLANET-P18-FOOD-COVERAGE/0.2 (https://4planet.org; product-intelligence@4planet.org)";
+const USER_AGENT = "4PLANET-P18-FOOD-COVERAGE/0.3 (https://4planet.org; product-intelligence@4planet.org)";
 const OFF_ORIGIN = "https://world.openfoodfacts.org";
 
 const categories = [
-  { id: "dairy_yoghurt", label: "Dairy and yoghurt", searchTag: "en:plain-yogurts", expectedFamily: "yoghurt", expectedProfiles: ["plain_yoghurt"] },
-  { id: "breakfast_cereals", label: "Breakfast cereals", searchTag: "en:breakfast-cereals", expectedFamily: "breakfast_cereal", expectedProfiles: ["muesli_granola", "cereal_flakes", "breakfast_cereal_other"] },
+  {
+    id: "dairy_yoghurt",
+    label: "Dairy and yoghurt",
+    searchTag: "en:plain-yogurts",
+    expectedFamily: "yoghurt",
+    expectedProfiles: ["plain_yoghurt", "greek_plain_yoghurt", "skyr_protein_yoghurt"],
+  },
+  {
+    id: "breakfast_cereals",
+    label: "Breakfast cereals",
+    searchTag: "en:breakfast-cereals",
+    expectedFamily: "breakfast_cereal",
+    expectedProfiles: ["rolled_oats", "instant_porridge", "granola", "muesli", "corn_flakes", "wheat_biscuits", "extruded_cereal"],
+  },
   { id: "snacks", label: "Snacks", searchTag: "en:potato-chips", expectedFamily: "savoury_snack", expectedProfiles: ["potato_chips"] },
   { id: "beverages", label: "Beverages", searchTag: "en:carbonated-drinks", expectedFamily: "cold_beverage", expectedProfiles: ["carbonated_soft_drink"] },
   { id: "ready_meals", label: "Ready meals", searchTag: "en:frozen-pizzas", expectedFamily: "ready_meal", expectedProfiles: ["frozen_pizza"] },
