@@ -47,6 +47,20 @@ export interface SpeciesProfile {
   missionSlug?: string;
   /** region tag used for filtering (e.g. Norwegian marine) */
   region?: string;
+  /**
+   * ORCA-04: source-backed public claims for non-Orca profiles. Each is labelled
+   * KNOWN / INTERPRETED / UNKNOWN, carries an authority + URL, and states its own
+   * boundary. Never surfaced as a settled 4PLANET assertion. Orca uses the richer
+   * narrativeChapters model instead.
+   */
+  publicClaims?: {
+    state: "KNOWN" | "INTERPRETED" | "UNKNOWN";
+    text: string;
+    source: string;
+    sourceUrl: string;
+    checkedAt: string;
+    limitation: string;
+  }[];
 }
 
 const ORCA_CHAPTERS: NarrativeChapter[] = [
@@ -199,6 +213,11 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     habitat: "Worldwide. Feeds at high latitudes in summer and migrates to warmer breeding waters — one of the longest migrations of any mammal.",
     journey: "orca",
     missionSlug: "wh4les",
+    publicClaims: [
+      { state: "KNOWN", text: "The humpback is assessed globally as Least Concern, following recovery in several regions after the end of most commercial whaling.", source: "IUCN Red List", sourceUrl: "https://www.iucnredlist.org/species/13006/50362794", checkedAt: "2026-08-05", limitation: "A global category; some regional subpopulations remain depleted or separately assessed." },
+      { state: "KNOWN", text: "Humpbacks undertake some of the longest migrations of any mammal, between high-latitude feeding grounds and warmer breeding waters.", source: "NOAA Fisheries species profile", sourceUrl: "https://www.fisheries.noaa.gov/species/humpback-whale", checkedAt: "2026-08-05", limitation: "Migration patterns differ by population; not every individual follows the same route." },
+      { state: "INTERPRETED", text: "Entanglement in fishing gear and vessel strike are widely studied pressures on humpbacks.", source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/humpback-whale", checkedAt: "2026-08-05", limitation: "Pressure intensity is region-specific and not quantified here." },
+    ],
   },
   {
     id: "taxon:gbif:1341976",
@@ -239,6 +258,11 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     habitat: "Deep waters of all oceans; females and young stay in warmer seas while males range to polar waters.",
     journey: "orca",
     missionSlug: "wh4les",
+    publicClaims: [
+      { state: "KNOWN", text: "The sperm whale is assessed globally as Vulnerable on the IUCN Red List.", source: "IUCN Red List", sourceUrl: "https://www.iucnredlist.org/species/41755/160983555", checkedAt: "2026-08-05", limitation: "A global category; trend and status vary by region." },
+      { state: "KNOWN", text: "It is the largest toothed predator and performs among the deepest dives of any mammal to hunt squid.", source: "NOAA Fisheries species profile", sourceUrl: "https://www.fisheries.noaa.gov/species/sperm-whale", checkedAt: "2026-08-05", limitation: "Dive depth and duration figures vary between studies and individuals." },
+      { state: "INTERPRETED", text: "Entanglement, vessel strike and ocean noise are studied pressures for the species.", source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/sperm-whale", checkedAt: "2026-08-05", limitation: "Relative importance differs by population and region." },
+    ],
   },
   {
     id: "taxon:gbif:2440739",
@@ -260,6 +284,11 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     journey: "oslofjord",
     missionSlug: "rewild-marine",
     region: "Norwegian marine",
+    publicClaims: [
+      { state: "KNOWN", text: "The harbour porpoise is assessed globally as Least Concern, but several regional populations are separately assessed and of concern.", source: "IUCN Red List", sourceUrl: "https://www.iucnredlist.org/species/17027/50369903", checkedAt: "2026-08-05", limitation: "The global category masks at-risk regional subpopulations." },
+      { state: "KNOWN", text: "Bycatch in gillnets is one of the most widely documented pressures on the species.", source: "NOAA Fisheries species profile", sourceUrl: "https://www.fisheries.noaa.gov/species/harbor-porpoise", checkedAt: "2026-08-05", limitation: "Bycatch levels vary strongly by fishery and area." },
+      { state: "INTERPRETED", text: "It is a shy, coastal cetacean regularly recorded in Norwegian fjords and the North Sea, relevant to the Oslofjord.", source: "GBIF occurrence records", sourceUrl: "https://www.gbif.org/species/2440739", checkedAt: "2026-08-05", limitation: "Occurrence records show reporting, not abundance or current position." },
+    ],
   },
   {
     id: "taxon:gbif:2440601",
@@ -280,6 +309,11 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     habitat: "Temperate and tropical seas worldwide, from shallow coasts and estuaries to the open ocean.",
     journey: "orca",
     missionSlug: "wh4les",
+    publicClaims: [
+      { state: "KNOWN", text: "The common bottlenose dolphin is assessed globally as Least Concern.", source: "IUCN Red List", sourceUrl: "https://www.iucnredlist.org/species/22563/156932432", checkedAt: "2026-08-05", limitation: "A global category; some local populations face specific threats." },
+      { state: "KNOWN", text: "It is a highly social, adaptable dolphin found in coastal and offshore waters worldwide.", source: "NOAA Fisheries species profile", sourceUrl: "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin", checkedAt: "2026-08-05", limitation: "Coastal and offshore forms differ in ecology and exposure to pressures." },
+      { state: "INTERPRETED", text: "Coastal populations can be exposed to pollution, habitat disturbance and fishery interactions.", source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin", checkedAt: "2026-08-05", limitation: "Exposure is population- and location-specific." },
+    ],
   },
   {
     id: "taxon:gbif:2378026",

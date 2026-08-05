@@ -190,6 +190,24 @@ export function SpeciesProfilePage() {
             <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
           </div>
         )}
+        {profile.publicClaims && profile.publicClaims.length > 0 && (
+          <div style={{ marginTop: 24, maxWidth: 760 }}>
+            <div style={{ ...mono, color: T.blue, marginBottom: 12 }}>WHAT IS KNOWN · SOURCE-BACKED</div>
+            <div style={{ display: "grid", gap: 12 }}>
+              {profile.publicClaims.map((c, i) => {
+                const col = c.state === "KNOWN" ? T.acid : c.state === "INTERPRETED" ? T.blue : "#8A6500";
+                return (
+                  <div key={i} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${col}`, padding: "14px 16px" }}>
+                    <div style={{ ...mono, color: col }}>{c.state} · CHECKED {c.checkedAt}</div>
+                    <p style={{ margin: "8px 0 0", fontSize: 15, lineHeight: 1.5 }}>{c.text}</p>
+                    <p style={{ margin: "8px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>BOUNDARY · {c.limitation}</p>
+                    <a href={c.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: T.blue, display: "inline-block", marginTop: 8 }}>{c.source} ↗</a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ marginTop: 38, display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link to={atlasHref} style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>OPEN SAME ENTITY IN ATLAS →</Link>
           <button
