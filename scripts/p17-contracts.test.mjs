@@ -49,11 +49,12 @@ test("Global Fishing Watch passes the data-only scaling gate", async () => {
 
 test("fifty material claims remain source-mapped and bounded", async () => {
   const data = await read("src/data/actors.ts");
-  assert.match(data, /ACTOR_CLAIM_COUNT/);
+  assert.match(data, /ACTOR_CLAIM_COUNT = ACTORS\.reduce\(\(total, actor\) => total \+ actor\.claims\.length, 0\)/);
   assert.equal((data.match(/claimStart: \d+,/g) ?? []).length, 10);
+  assert.equal((data.match(/id: claimId\(input\.claimStart(?: \+ \d)?\)/g) ?? []).length, 5);
+  assert.equal((data.match(/sourceIds: \[s/g) ?? []).length, 5);
   assert.match(data, /claimStart: 1,/);
   assert.match(data, /claimStart: 46,/);
-  assert.ok((data.match(/sourceIds:/g) ?? []).length >= 50);
   assert.match(data, /A donation is not automatically a transferable 4PLANET land unit/);
   assert.match(data, /Occurrence records do not establish complete range, abundance, population trend or live tracking/);
   assert.match(data, /Local and Indigenous work must remain attributed/);
