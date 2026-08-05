@@ -1,3 +1,5 @@
+import type { CategoryControlResult, ComparisonRelation } from "./category-control.js";
+
 export type DataConfidence = "high" | "medium" | "low" | "conflicted";
 export type ProductState = "complete" | "incomplete" | "conflicted" | "malformed";
 
@@ -34,7 +36,10 @@ export interface CanonicalFoodProduct {
     sodium: number | null;
   };
   categoryTags: string[];
+  sourceComparisonCategory: string | null;
   comparisonCategory: string | null;
+  comparisonFamily: string | null;
+  categoryControl: CategoryControlResult;
   marketTags: string[];
   imageUrl: string;
   sourceRevision: number | null;
@@ -60,6 +65,7 @@ export interface FoodPreferences {
 
 export interface RankedAlternative {
   product: CanonicalFoodProduct;
+  relation: ComparisonRelation;
   eligible: boolean;
   exclusions: string[];
   explanations: string[];
@@ -80,6 +86,7 @@ export function normaliseSourceEnvelope(envelope: unknown): Record<string, unkno
   alternativeState?: string;
   alternativeMessage?: string;
   alternativeAttempts?: unknown[];
+  sourceSearchCategory?: string | null;
 };
 export function rankAlternatives(
   baseline: CanonicalFoodProduct,
@@ -88,7 +95,11 @@ export function rankAlternatives(
 ): {
   modelVersion: string;
   preferences: Required<FoodPreferences>;
+  fairComparison: boolean;
+  limitations: string[];
   eligible: RankedAlternative[];
+  adjacent: RankedAlternative[];
+  unsuitable: RankedAlternative[];
   excluded: RankedAlternative[];
 };
 export function canonicalJson(value: unknown): string;
