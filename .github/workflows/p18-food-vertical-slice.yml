@@ -1,0 +1,95 @@
+name: P18 FOOD Vertical Slice Gate
+
+on:
+  push:
+    branches:
+      - agent/p18-food-vertical-slice
+  pull_request:
+    branches:
+      - build/four-product-integrated-prototype
+    paths:
+      - "src/food/**"
+      - "functions/api/food.ts"
+      - "scripts/food-contracts.test.mjs"
+      - "tests/e2e/food-vertical-slice.spec.ts"
+      - "src/routes/router.tsx"
+      - "package.json"
+      - ".github/workflows/p18-food-vertical-slice.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p18-food-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck FOOD source adapter
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM functions/api/food.ts
+
+      - name: Production build
+        run: npm run build
+
+      - name: FOOD contracts
+        run: npm run test:food
+
+      - name: Repository smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start bounded preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/p18-food-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/labs/food-intelligence > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/p18-food-preview.log
+          exit 1
+
+      - name: Run deterministic browser fixtures
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+
+      - name: Upload FOOD gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p18-food-gate-evidence
+          path: |
+            playwright-report
+            test-results
+            /tmp/p18-food-preview.log
+          if-no-files-found: warn
+          retention-days: 14
