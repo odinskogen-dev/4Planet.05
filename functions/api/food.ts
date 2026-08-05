@@ -1,9 +1,9 @@
 /**
  * GET /api/food?barcode={GTIN}
  *
- * Bounded P18-FOOD-01 source adapter. It performs one product read and one
- * category-bounded alternative search. It does not persist, score, or infer
- * missing product facts.
+ * Bounded P18-FOOD-01 source adapter. It performs one product read and a
+ * bounded same-category alternative search. It does not persist, score, or
+ * infer missing product facts.
  */
 
 interface PagesContext {
@@ -12,6 +12,14 @@ interface PagesContext {
 
 interface JsonObject {
   [key: string]: unknown;
+}
+
+interface AlternativeAttempt {
+  endpoint: string;
+  categoryTag: string;
+  httpStatus: number;
+  productCount: number;
+  ok: boolean;
 }
 
 const OFF_ORIGIN = "https://world.openfoodfacts.org";
@@ -43,6 +51,9 @@ const GENERIC_CATEGORIES = new Set([
   "en:dairies",
   "en:fermented-foods",
   "en:fermented-milk-products",
+  "en:desserts",
+  "en:dairy-desserts",
+  "en:fermented-dairy-desserts",
 ]);
 
 const licence = {
@@ -82,9 +93,13 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-function selectComparisonCategory(product: JsonObject): string | null {
-  const tags = stringArray(product.categories_tags).filter((tag) => tag.startsWith("en:"));
-  return [...tags].reverse().find((tag) => !GENERIC_CATEGORIES.has(tag)) ?? tags.at(-1) ?? null;
+function selectComparisonCategories(product: JsonObject): string[] {
+  const tags = stringArray(product.categories_tags)
+    .filter((tag) => tag.startsWith("en:"))
+    .filter((tag) => !GENERIC_CATEGORIES.has(tag));
+  const reversed = [...tags].reverse();
+  const yoghurtFallback = tags.includes("en:yogurts") ? ["en:yogurts"] : [];
+  return [...new Set([...reversed.slice(0, 2), ...yoghurtFallback])].slice(0, 3);
 }
 
 async function fetchJson(url: string): Promise<{ response: Response; payload: JsonObject | null }> {
@@ -102,6 +117,98 @@ async function fetchJson(url: string): Promise<{ response: Response; payload: Js
     payload = null;
   }
   return { response, payload };
+}
+
+function productArray(payload: JsonObject | null): JsonObject[] {
+  return Array.isArray(payload?.products)
+    ? payload.products.filter((item): item is JsonObject => Boolean(item) && typeof item === "object" && !Array.isArray(item))
+    : [];
+}
+
+function buildAlternativeEndpoint(categoryTag: string): string {
+  const searchUrl = new URL(`${OFF_ORIGIN}/api/v2/search`);
+  searchUrl.searchParams.set("categories_tags", categoryTag);
+  searchUrl.searchParams.set("countries_tags_en", "norway");
+  searchUrl.searchParams.set("fields", PRODUCT_FIELDS);
+  searchUrl.searchParams.set("page", "1");
+  searchUrl.searchParams.set("page_size", "24");
+  searchUrl.searchParams.set("json", "1");
+  return searchUrl.toString();
+}
+
+async function readAlternatives(product: JsonObject): Promise<JsonObject> {
+  const categoryCandidates = selectComparisonCategories(product);
+  if (categoryCandidates.length === 0) {
+    return {
+      kind: "not_run",
+      categoryTag: null,
+      marketScope: "norway_tagged_only",
+      raw: { products: [] },
+      attempts: [],
+    };
+  }
+
+  const attempts: AlternativeAttempt[] = [];
+  let bestSuccessfulRead: {
+    endpoint: string;
+    categoryTag: string;
+    response: Response;
+    payload: JsonObject | null;
+    products: JsonObject[];
+  } | null = null;
+
+  for (const categoryTag of categoryCandidates) {
+    const endpoint = buildAlternativeEndpoint(categoryTag);
+    try {
+      const read = await fetchJson(endpoint);
+      const products = productArray(read.payload);
+      attempts.push({
+        endpoint,
+        categoryTag,
+        httpStatus: read.response.status,
+        productCount: products.length,
+        ok: read.response.ok,
+      });
+
+      if (read.response.ok && (!bestSuccessfulRead || products.length > bestSuccessfulRead.products.length)) {
+        bestSuccessfulRead = { endpoint, categoryTag, response: read.response, payload: read.payload, products };
+      }
+      if (read.response.ok && products.length >= 4) break;
+    } catch {
+      attempts.push({ endpoint, categoryTag, httpStatus: 0, productCount: 0, ok: false });
+    }
+  }
+
+  if (bestSuccessfulRead) {
+    return {
+      kind: "found",
+      httpStatus: bestSuccessfulRead.response.status,
+      endpoint: bestSuccessfulRead.endpoint,
+      categoryTag: bestSuccessfulRead.categoryTag,
+      requestedCategoryTags: categoryCandidates,
+      marketScope: "norway_tagged_only",
+      raw: { products: bestSuccessfulRead.products },
+      rawEnvelopeMeta: {
+        count: bestSuccessfulRead.payload?.count ?? null,
+        page: bestSuccessfulRead.payload?.page ?? null,
+        pageSize: bestSuccessfulRead.payload?.page_size ?? null,
+        attempts,
+      },
+    };
+  }
+
+  const lastAttempt = attempts.at(-1);
+  return {
+    kind: "source_error",
+    httpStatus: lastAttempt?.httpStatus ?? 0,
+    endpoint: lastAttempt?.endpoint ?? "",
+    categoryTag: categoryCandidates[0],
+    requestedCategoryTags: categoryCandidates,
+    marketScope: "norway_tagged_only",
+    message: "Open Food Facts alternative search did not return a usable response",
+    raw: { products: [] },
+    rawEnvelopeMeta: { attempts },
+  };
 }
 
 export const onRequestGet = async ({ request }: PagesContext): Promise<Response> => {
@@ -167,54 +274,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     }
 
     const product = rawProduct as JsonObject;
-    const categoryTag = selectComparisonCategory(product);
-    let alternatives: JsonObject = {
-      kind: "not_run",
-      categoryTag,
-      marketScope: "norway_tagged_only",
-      raw: { products: [] },
-    };
-
-    if (categoryTag) {
-      const searchUrl = new URL(`${OFF_ORIGIN}/api/v2/search`);
-      searchUrl.searchParams.set("categories_tags", categoryTag);
-      searchUrl.searchParams.set("countries_tags_en", "norway");
-      searchUrl.searchParams.set("fields", PRODUCT_FIELDS);
-      searchUrl.searchParams.set("page_size", "24");
-      searchUrl.searchParams.set("sort_by", "unique_scans_n");
-      searchUrl.searchParams.set("json", "1");
-      const alternativeEndpoint = searchUrl.toString();
-
-      try {
-        const alternativeRead = await fetchJson(alternativeEndpoint);
-        const products = Array.isArray(alternativeRead.payload?.products)
-          ? alternativeRead.payload?.products.filter((item) => item && typeof item === "object")
-          : [];
-        alternatives = {
-          kind: alternativeRead.response.ok ? "found" : "source_error",
-          httpStatus: alternativeRead.response.status,
-          endpoint: alternativeEndpoint,
-          categoryTag,
-          marketScope: "norway_tagged_only",
-          raw: { products },
-          rawEnvelopeMeta: {
-            count: alternativeRead.payload?.count ?? null,
-            page: alternativeRead.payload?.page ?? null,
-            pageSize: alternativeRead.payload?.page_size ?? null,
-          },
-        };
-      } catch (error) {
-        alternatives = {
-          kind: "source_error",
-          httpStatus: 0,
-          endpoint: alternativeEndpoint,
-          categoryTag,
-          marketScope: "norway_tagged_only",
-          message: error instanceof Error ? error.message : "Alternative source request failed",
-          raw: { products: [] },
-        };
-      }
-    }
+    const alternatives = await readAlternatives(product);
 
     return json({
       ok: true,
