@@ -12,6 +12,7 @@ import {
 } from "./core.js";
 import { FOOD_FIXTURES } from "./fixtures.js";
 import "./food.css";
+import "./food-02.css";
 
 type ResultState = "idle" | "loading" | "found" | "not_found" | "source_error" | "malformed";
 
