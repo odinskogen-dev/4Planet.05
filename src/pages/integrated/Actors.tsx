@@ -1,4 +1,4 @@
-import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { NotFound } from "@/pages/system";
@@ -51,7 +51,7 @@ function Status({
   children,
   tone = "blue",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   tone?: "blue" | "green" | "red" | "amber" | "neutral";
 }) {
   const colour =
@@ -284,7 +284,7 @@ export function ActorsIndex() {
   return (
     <PublicShell>
       <div className="actors-page">
-        <section className="actors-hero" id="main-content">
+        <section className="actors-hero">
           <div style={{ ...mono, color: T.blue }}>ORGANISATIONS_ · PRIVATE BETA</div>
           <h1>
             Working for
@@ -578,7 +578,8 @@ function ClaimCorrectionForm({ actor }: { actor: ActorProfile }) {
     setReceipt(null);
     setError(null);
     setSubmitting(true);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const request: ActorReviewRequest = {
       actorId: actor.id,
       actorSlug: actor.slug,
@@ -599,7 +600,7 @@ function ClaimCorrectionForm({ actor }: { actor: ActorProfile }) {
     try {
       const result = await submitActorReviewRequest(request);
       setReceipt(result);
-      if (result.persisted) event.currentTarget.reset();
+      if (result.persisted) formElement.reset();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "The request could not be prepared.");
     } finally {
@@ -725,7 +726,7 @@ function ProfileSection({
 }: {
   eyebrow: string;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (
@@ -813,7 +814,7 @@ export function ActorProfilePage() {
   return (
     <PublicShell>
       <div className="actor-profile">
-        <section className="actor-profile-hero" id="main-content">
+        <section className="actor-profile-hero">
           <Link to="/actors" className="actor-back">
             ← ORGANISATIONS_
           </Link>

@@ -6,6 +6,7 @@ import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { Img } from "@/components/Img";
 import { img, type ImageKey } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
+import { ACTORS } from "@/data/actors";
 
 const dslug = (k: string) => k.replace("_", "").toLowerCase();
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
@@ -237,6 +238,37 @@ export default function Home() {
 
       {/* extra cinematic beat (v24) — a full-bleed breath before the closing act */}
       <CinematicImage meta={img("homepageBonus")} height="min(72vh, 720px)" position="50% 50%" accent={T.blue} />
+
+      {/* ORGANISATIONS_ — visible discovery in the main universe */}
+      <section aria-labelledby="home-organisations-title" style={{ borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(72px,10vw,150px) clamp(20px,5vw,72px)" }}>
+          <Reveal>
+            <div style={{ ...eyebrow, color: T.blue, marginBottom: 22 }}>ORGANISATIONS_ / WORKING FOR A LIVING PLANET</div>
+            <div className="home-organisations-heading" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(280px,.85fr)", gap: "clamp(28px,6vw,90px)", alignItems: "end" }}>
+              <h2 id="home-organisations-title" style={{ ...actHead, maxWidth: 760 }}>Meet the organisations turning knowledge, rights and field capacity into action.</h2>
+              <div>
+                <p style={{ ...bodyDim, margin: 0 }}>Independent 4PLANET profiles make important work easier to discover, understand and support while sources, limitations and relationship status remain visible.</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 24 }}>
+                  <Button to="/actors" primary arrow>EXPLORE ORGANISATIONS</Button>
+                  <Button to="/atlas?mode=actors" arrow>VIEW ON THE MAP</Button>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={60}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", borderTop: `1px solid ${T.ink}`, borderLeft: `1px solid ${T.line}`, marginTop: "clamp(34px,5vw,64px)" }} className="home-organisations-grid">
+              {ACTORS.filter((actor) => actor.collections.includes("FEATURED")).slice(0, 3).map((actor) => (
+                <Link key={actor.id} to={`/actors/${actor.slug}`} style={{ minHeight: 330, display: "flex", flexDirection: "column", padding: "clamp(24px,3vw,38px)", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, color: T.ink, textDecoration: "none" }}>
+                  <span className="mono" style={{ fontSize: 10.5, letterSpacing: ".11em", color: T.blue }}>{actor.actorTypeLabel}</span>
+                  <h3 style={{ margin: "clamp(40px,5vw,72px) 0 0", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3vw,42px)", lineHeight: 1, letterSpacing: "-.035em" }}>{actor.name}</h3>
+                  <p style={{ ...bodyDim, fontSize: 15, marginTop: 16 }}>{actor.tagline}</p>
+                  <span className="mono" style={{ marginTop: "auto", paddingTop: 28, fontSize: 10.5, letterSpacing: ".1em", color: T.blue }}>OPEN PROFILE →</span>
+                </Link>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       {/* ACT 06 — build the future together */}
       <Section pad="clamp(64px,9vw,120px)">

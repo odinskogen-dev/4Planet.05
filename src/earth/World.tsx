@@ -930,6 +930,7 @@ function WorldInner() {
               ["/domains", "DOMAINS", "OCE4N · E4RTH · S4PIENS · 4CULTURE"],
               ["/missions", "MISSIONS", "Every active mission"],
               ["/impact", "IMPACT", "Pathways and proof"],
+              ["/actors", "ORGANISATIONS", "Who is working for a living planet"],
               ["/living-systems", "LIVING SYSTEMS", "Relationship intelligence"],
               ["/about", "ABOUT", "What 4PLANET is"],
               ["/atlas", "ATLAS", "The full data console"],
