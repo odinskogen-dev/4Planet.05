@@ -69,5 +69,5 @@ test("Actor Mode remains on the existing Atlas route with native geography seman
   await expect(page.getByText("OPERATING GEOGRAPHY").first()).toBeVisible();
   await expect(page).toHaveURL(/\/atlas\?mode=actors/);
   await expect(page.getByRole("link", { name: /OPEN PROFILE/ })).toHaveAttribute("href", "/actors/global-biodiversity-information-facility");
-  await expect(overlay).toHaveAttribute("data-p17-native-actor-layer", /ready|unavailable|loading/);
+  await expect(overlay).toHaveAttribute("data-p17-native-actor-layer", /ready|unavailable/, { timeout: 15_000 });
 });
