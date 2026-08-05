@@ -76,7 +76,16 @@ test("new source-aware journeys add no unregistered media rights burden", () => 
   const species = read("src/pages/integrated/Species.tsx");
   const impact = read("src/pages/integrated/ImpactPrototype.tsx");
   const truth = read("src/data/truthSpine.ts");
-  assert.doesNotMatch(species + impact, /<img|backgroundImage|url\(/);
+  const media = read("src/data/speciesMedia.ts");
+  // IMPACT must still embed no images.
+  assert.doesNotMatch(impact, /<img|backgroundImage|url\(/);
+  // SPECIES may show images, but ONLY gated by the media-rights registry:
+  // every <img> is guarded by a showable-rights check, and the registry refuses
+  // to show anything without a cleared/founder-cleared status + local asset.
+  assert.match(species, /hasShowableImage/);
+  assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "FOUNDER_CLEARED"/);
+  assert.match(media, /&& !!m\.localPath/);
+  // Truth spine rights record preserved.
   assert.match(truth, /licence: "CC BY 4\.0"/);
   assert.match(truth, /attribution: "Karl Anders Olaussen; record published through GBIF"/);
   assert.match(truth, /rightsStatus: "CONDITIONAL"/);

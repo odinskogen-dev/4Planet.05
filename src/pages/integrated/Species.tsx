@@ -17,6 +17,7 @@ import type { Occurrence } from "@/planet/types";
 import { useFollows } from "@/planet/follow";
 import { contextHref } from "@/product/ProductNav";
 import { NotFound } from "@/pages/system";
+import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
@@ -51,17 +52,42 @@ function EvidenceClaimCard({ claim }: { claim: EvidenceClaim }) {
   );
 }
 
+/** Life-first image plane: a rights-cleared photo, or a designed no-image state. */
+function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: string; sci: string; ratio?: string }) {
+  const media = speciesMedia(slug);
+  const show = hasShowableImage(slug);
+  return (
+    <figure style={{ margin: 0, position: "relative", aspectRatio: ratio, overflow: "hidden", background: "#05081b", border: `1px solid ${T.line}` }}>
+      {show ? (
+        <img src={media!.localPath} alt={`${name} — ${sci}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18,
+          background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
+          <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 300 }}>
+            <strong style={{ display: "block", color: "#fff", marginBottom: 4, letterSpacing: ".14em" }}>NO CLEARED IMAGE</strong>
+            Awaiting a verified media-rights record. No unverified photo is shown.
+          </div>
+        </div>
+      )}
+      <figcaption style={{ position: "absolute", left: 12, bottom: 10, ...mono, color: "rgba(255,255,255,.7)" }}>{name.toUpperCase()} · {sci.toUpperCase()}</figcaption>
+    </figure>
+  );
+}
+
 function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
   return (
     <Link
       to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.slug === "orca" ? "orca-gbif" : null })}
-      style={{ ...panel, display: "flex", minHeight: 260, flexDirection: "column", color: T.ink, textDecoration: "none" }}
+      style={{ display: "flex", flexDirection: "column", color: T.ink, textDecoration: "none", minWidth: 0, border: `1px solid ${T.line}` }}
     >
-      <div style={{ ...mono, color: T.blue }}>{profile.id}</div>
-      <h2 style={{ marginTop: 28, fontFamily: T.display, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1, letterSpacing: "-.035em" }}>{profile.commonName}</h2>
-      <p style={{ marginTop: 8, fontStyle: "italic", color: T.dim }}>{profile.scientificName}</p>
-      <p style={{ marginTop: 22, fontSize: 14, lineHeight: 1.55, color: T.dim }}>{profile.context}</p>
-      <div style={{ marginTop: "auto", paddingTop: 24 }}><Status>OPEN SOURCE-AWARE PROFILE →</Status></div>
+      <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="4/3" />
+      <div style={{ padding: "18px 20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+        {profile.group && <div style={{ ...mono, color: T.dim }}>{profile.group.toUpperCase()}{profile.region ? ` · ${profile.region.toUpperCase()}` : ""}</div>}
+        <h2 style={{ marginTop: 10, fontFamily: T.display, fontSize: "clamp(22px,2.6vw,32px)", lineHeight: 1, letterSpacing: "-.03em" }}>{profile.commonName}</h2>
+        <p style={{ marginTop: 6, fontStyle: "italic", color: T.dim, fontSize: 14 }}>{profile.scientificName}</p>
+        {profile.intro && <p style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.5, color: T.dim, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{profile.intro}</p>}
+        <div style={{ marginTop: "auto", paddingTop: 18, ...mono, color: T.blue }}>OPEN PROFILE →</div>
+      </div>
     </Link>
   );
 }
@@ -69,11 +95,20 @@ function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: str
 export function SpeciesIndex() {
   const location = useLocation();
   const contextProfile = speciesById(new URLSearchParams(location.search).get("entity") ?? undefined);
+  const [query, setQuery] = useState("");
+  const [group, setGroup] = useState("ALL");
+  const groups = ["ALL", ...Array.from(new Set(SPECIES_PROFILES.map((p) => p.group).filter(Boolean)))] as string[];
+  const q = query.trim().toLowerCase();
+  const filtered = SPECIES_PROFILES.filter((p) => {
+    if (group !== "ALL" && p.group !== group) return false;
+    if (!q) return true;
+    return p.commonName.toLowerCase().includes(q) || p.scientificName.toLowerCase().includes(q) || (p.group ?? "").toLowerCase().includes(q) || (p.region ?? "").toLowerCase().includes(q);
+  });
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
         <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
-        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(48px,8vw,112px)", lineHeight: .92, letterSpacing: "-.05em" }}>Life, without invented certainty.</h1>
+        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(44px,7.5vw,104px)", lineHeight: .92, letterSpacing: "-.05em" }}>Life, without invented certainty.</h1>
         <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.5 }}>
           Each profile begins with the living animal and its place, then opens into what it depends on and what is
           reported about it. Occurrence records show where people have looked — not range, abundance or population.
@@ -83,9 +118,22 @@ export function SpeciesIndex() {
             <Status color={T.acid}>CONTEXT CONTINUED · {contextProfile.commonName.toUpperCase()}</Status>
           </div>
         )}
-        <div className="three" style={{ marginTop: 48 }}>
-          {SPECIES_PROFILES.map((profile) => <SpeciesCard key={profile.id} profile={profile} search={location.search} />)}
+        <div style={{ marginTop: 44, display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search species…" aria-label="Search species"
+            style={{ flex: "1 1 240px", minWidth: 0, border: `1px solid ${T.line}`, padding: "12px 14px", fontSize: 15, fontFamily: T.sans, background: "transparent", color: T.ink }} />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {groups.map((g) => (
+              <button key={g} onClick={() => setGroup(g)} style={{ ...mono, padding: "8px 12px", cursor: "pointer", background: group === g ? T.ink : "transparent", color: group === g ? "#fff" : T.dim, border: `1px solid ${group === g ? T.ink : T.line}` }}>
+                {g === "ALL" ? "ALL" : g.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
+        <div style={{ ...mono, color: T.dim, marginTop: 16 }}>{filtered.length} PROFILE{filtered.length === 1 ? "" : "S"}</div>
+        <div className="three" style={{ marginTop: 28 }}>
+          {filtered.map((profile) => <SpeciesCard key={profile.id} profile={profile} search={location.search} />)}
+        </div>
+        {filtered.length === 0 && <p style={{ marginTop: 40, color: T.dim }}>No species match that search yet.</p>}
       </Section>
     </PublicShell>
   );
@@ -130,8 +178,18 @@ export function SpeciesProfilePage() {
           <Status color={T.acid}>IDENTITY PRESERVED</Status>
           <Status color="#8A6500">POPULATION-SPECIFIC CLAIMS CONTROLLED</Status>
         </div>
-        <h1 style={{ marginTop: 24, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .86, letterSpacing: "-.055em" }}>{profile.commonName}</h1>
+        <div style={{ marginTop: 28 }}>
+          <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="16/9" />
+        </div>
+        <h1 style={{ marginTop: 30, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .86, letterSpacing: "-.055em" }}>{profile.commonName}</h1>
         <p style={{ marginTop: 20, fontSize: "clamp(20px,2.6vw,30px)", fontStyle: "italic" }}>{profile.scientificName}</p>
+        {profile.intro && <p style={{ marginTop: 22, maxWidth: 760, fontSize: "clamp(16px,1.6vw,19px)", lineHeight: 1.55 }}>{profile.intro}</p>}
+        {profile.habitat && (
+          <div style={{ ...panel, marginTop: 24, maxWidth: 760 }}>
+            <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
+            <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
+          </div>
+        )}
         <div style={{ marginTop: 38, display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link to={atlasHref} style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>OPEN SAME ENTITY IN ATLAS →</Link>
           <button
@@ -153,8 +211,8 @@ export function SpeciesProfilePage() {
             <a href={profile.taxonSourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 22, color: T.blue }}>OPEN GBIF TAXON RECORD ↗</a>
           </div>
           <div style={panel}>
-            <div style={{ ...mono, color: T.dim }}>LIVE OCCURRENCE READ</div>
-            <div style={{ marginTop: 18 }}><Status color={occurrences.status === "LIVE" ? T.acid : occurrences.status === "SOURCE_UNAVAILABLE" ? T.red : "#8A6500"}>{occurrences.status.replace(/_/g, " ")}</Status></div>
+            <div style={{ ...mono, color: T.dim }}>OCCURRENCE RECORDS</div>
+            <div style={{ marginTop: 18 }}><Status color={occurrences.status === "LIVE" ? T.acid : occurrences.status === "SOURCE_UNAVAILABLE" ? T.red : "#8A6500"}>{occurrences.status === "LIVE" ? "RECORDS RETRIEVED" : occurrences.status.replace(/_/g, " ")}</Status></div>
             {occurrences.status === "LIVE" && <p style={{ marginTop: 18, fontSize: 15 }}>{occurrences.total.toLocaleString()} records reported by GBIF; {occurrences.rows.length} loaded in this view.</p>}
             <p style={{ marginTop: 14, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>Records show reporting activity. They do not establish range, abundance, population trend or live tracking.</p>
             {occurrences.rows.slice(0, 3).map((row) => (
