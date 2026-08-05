@@ -16,7 +16,7 @@ The route is not added to the public product switcher or main navigation. It is 
 
 1. GTIN validation.
 2. One server-side Open Food Facts v3 product request.
-3. One bounded Open Food Facts v2 same-category, Norway-tagged alternative request.
+3. One bounded Open Food Facts v2 same-category, Norway-tagged alternative search with recorded retries across up to three product-derived taxonomy levels.
 4. Immutable append-only local preservation of the returned source envelope, keyed by a canonical SHA-256 hash.
 5. Versioned canonical FOOD product normalisation.
 6. Source-backed product card with explicit missing/conflicting states.
@@ -38,7 +38,9 @@ The Cloudflare Pages Function `/api/food`:
 - distinguishes found, not found, malformed and source-error states;
 - does not infer missing facts;
 - does not fall back to retailer scraping;
-- treats alternatives as Norway-tagged source candidates, not verified shelf availability.
+- treats alternatives as Norway-tagged source candidates, not verified shelf availability;
+- keeps a successful product read distinct from a failed alternative search;
+- records each bounded alternative-source attempt and exposes source failure instead of presenting an empty result as evidence.
 
 Open Food Facts database, contents and image rights are recorded separately in the response metadata. Product images are not treated as covered by the database licence.
 
@@ -53,7 +55,8 @@ The model version is `p18-food-comparison-0.1.0`.
 - nutrition preferences compare values only when both products contain the metric;
 - missing values earn no favourable result;
 - data confidence is a tie-breaker, not a health or sustainability judgement;
-- no universal product score is generated or displayed.
+- no universal product score is generated or displayed;
+- source failure produces no inferred or substituted alternatives.
 
 ## Required deterministic states
 
