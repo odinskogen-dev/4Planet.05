@@ -29,10 +29,10 @@ test.describe("P18 FOOD controlled decision surface", () => {
     await expect(page.getByRole("heading", { name: "Source unavailable" })).toBeVisible();
   });
 
-  test("conflicting record remains visible but fails the product-card gate", async ({ page }) => {
+  test("conflicting record remains visible and both dependent gates amend", async ({ page }) => {
     await page.getByRole("button", { name: "Malformed or conflicting record" }).click();
     await expect(page.getByText(/source_gtin_mismatch/)).toBeVisible();
-    await expect(page.locator(".food-gates").getByText("AMEND")).toBeVisible();
+    await expect(page.locator(".food-gates").getByText("AMEND")).toHaveCount(2);
   });
 
   test("manual lookup is keyboard reachable and correctly labelled", async ({ page }) => {
