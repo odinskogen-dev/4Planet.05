@@ -85,7 +85,7 @@ test("candidate taxonomy is independent from the search category", () => {
     image_front_url: "fixture://cereal",
     nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
   });
-  assert.equal(cereal.comparisonCategory, "cereal_flakes");
+  assert.equal(cereal.comparisonCategory, "corn_flakes");
   assert.equal(classifyProductRelation(result.product, cereal).kind, "unsuitable");
   const ranked = rankAlternatives(result.product, [cereal], { lowerSugar: true });
   assert.equal(ranked.eligible.length, 0);
@@ -111,6 +111,70 @@ test("taxonomy overlap with a different format is adjacent, not direct", () => {
   const ranked = rankAlternatives(result.product, [biola], { lowerSugar: true });
   assert.equal(ranked.eligible.length, 0);
   assert.equal(ranked.adjacent.length, 1);
+});
+
+test("flavoured yoghurt is not a direct substitute for plain yoghurt", () => {
+  const baseline = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope).product;
+  const vanilla = normaliseProduct({
+    code: "7048840000210",
+    product_name: "TEST RECORD — Vaniljeyoghurt",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Melk, sukker, vanilje.",
+    allergens_tags: ["en:milk"],
+    categories_tags: ["en:foods", "en:yogurts", "en:plain-yogurts", "en:vanilla-yogurt"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://vanilla",
+    nutriments: { "energy-kcal_100g": 90, sugars_100g: 11, salt_100g: 0.1, proteins_100g: 3.2 },
+  });
+  assert.equal(vanilla.comparisonCategory, "flavoured_yoghurt");
+  assert.equal(classifyProductRelation(baseline, vanilla).kind, "adjacent");
+});
+
+test("rolled oats and corn flakes remain adjacent breakfast formats", () => {
+  const oats = normaliseProduct({
+    code: "7048840000227",
+    product_name: "TEST RECORD — Havregryn",
+    brands: "P18 Fixture",
+    quantity: "1000 g",
+    ingredients_text: "Havre.",
+    allergens_tags: ["en:oats"],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:rolled-oats"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://oats",
+    nutriments: { "energy-kcal_100g": 370, sugars_100g: 1, salt_100g: 0.01, proteins_100g: 13 },
+  });
+  const cornFlakes = normaliseProduct({
+    code: "7048840000234",
+    product_name: "TEST RECORD — Corn Flakes",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Mais.",
+    allergens_tags: [],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:corn-flakes"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://cornflakes",
+    nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
+  });
+  assert.equal(oats.comparisonCategory, "rolled_oats");
+  assert.equal(cornFlakes.comparisonCategory, "corn_flakes");
+  assert.equal(classifyProductRelation(oats, cornFlakes).kind, "adjacent");
+});
+
+test("energy drink classification takes precedence over generic carbonated drink tags", () => {
+  const energy = normaliseProduct({
+    code: "7048840000241",
+    product_name: "TEST RECORD — Energy Drink",
+    brands: "P18 Fixture",
+    quantity: "500 ml",
+    ingredients_text: "Carbonated water, caffeine.",
+    allergens_tags: [],
+    categories_tags: ["en:beverages", "en:carbonated-drinks", "en:energy-drinks"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://energy",
+    nutriments: { "energy-kcal_100g": 45, sugars_100g: 10, salt_100g: 0.1, proteins_100g: 0 },
+  });
+  assert.equal(energy.comparisonCategory, "energy_drink");
 });
 
 test("unsupported baseline cannot generate a fair ranking", () => {
