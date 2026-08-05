@@ -8,13 +8,13 @@ test("actor index filters three shared profiles without ranking", async ({ page 
   await expect(page.getByText("3 OF 3 PROFILES")).toBeVisible();
   await page.getByLabel("Actor type").selectOption("DATA_INFRASTRUCTURE");
   await expect(page.getByText("1 OF 3 PROFILES")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Global Biodiversity Information Facility" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Global Biodiversity Information Facility", exact: true })).toBeVisible();
   await expect(page.getByText(/No universal ranking/)).toBeVisible();
 });
 
 test("World Land Trust profile exposes evidence boundaries and official actions", async ({ page }) => {
   await page.goto(`${BASE}/actors/world-land-trust`);
-  await expect(page.getByRole("heading", { name: "World Land Trust" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "World Land Trust", exact: true })).toBeVisible();
   await expect(page.getByText(/A donation is not automatically a transferable 4PLANET land unit/)).toBeVisible();
   await expect(page.getByRole("link", { name: /OFFICIAL WEBSITE/ })).toHaveAttribute("href", /worldlandtrust\.org/);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow");
