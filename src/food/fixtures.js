@@ -28,12 +28,12 @@ const completeProduct = {
     salt_100g: 0.1,
     sodium_100g: 0.04,
   },
-  categories_tags: ["en:foods", "en:dairies", "en:yogurts"],
+  categories_tags: ["en:foods", "en:dairies", "en:yogurts", "en:plain-yogurts"],
   countries_tags: ["en:norway"],
-  image_front_url: "",
+  image_front_url: "fixture://product-image",
   last_modified_t: 1785960000,
   rev: 1,
-  tags_sources: ["fixture:p18-food-01"],
+  tags_sources: ["fixture:p18-food-02"],
 };
 
 const alternatives = [
@@ -74,7 +74,7 @@ function envelope(product, alternativeProducts = alternatives) {
   return {
     fixture: true,
     request: { barcode: "7038010055652" },
-    retrievedAt: "2026-08-05T20:00:00.000Z",
+    retrievedAt: "2026-08-06T00:00:00.000Z",
     source: SOURCE,
     product: {
       kind: "found",
@@ -85,8 +85,8 @@ function envelope(product, alternativeProducts = alternatives) {
     alternatives: {
       kind: "found",
       httpStatus: 200,
-      endpoint: "fixture://open-food-facts/search/en:yogurts",
-      categoryTag: "en:yogurts",
+      endpoint: "fixture://open-food-facts/search/en:plain-yogurts",
+      categoryTag: "en:plain-yogurts",
       marketScope: "fixture_norway",
       raw: { products: alternativeProducts },
     },
@@ -106,7 +106,7 @@ export const FOOD_FIXTURES = {
       code: "7038010055652",
       product_name: "TEST RECORD — Incomplete yoghurt",
       brands: "P18 Fixture",
-      categories_tags: ["en:foods", "en:dairies", "en:yogurts"],
+      categories_tags: ["en:foods", "en:dairies", "en:yogurts", "en:plain-yogurts"],
       countries_tags: ["en:norway"],
       nutriments: { sugars_100g: 4.2 },
       rev: 1,
@@ -118,7 +118,7 @@ export const FOOD_FIXTURES = {
     envelope: {
       fixture: true,
       request: { barcode: "7038010055652" },
-      retrievedAt: "2026-08-05T20:00:00.000Z",
+      retrievedAt: "2026-08-06T00:00:00.000Z",
       source: SOURCE,
       product: { kind: "not_found", httpStatus: 404, endpoint: "fixture://open-food-facts/product/unknown" },
       alternatives: { kind: "not_run", raw: { products: [] } },
@@ -140,7 +140,7 @@ export const FOOD_FIXTURES = {
     envelope: {
       fixture: true,
       request: { barcode: "7038010055652" },
-      retrievedAt: "2026-08-05T20:00:00.000Z",
+      retrievedAt: "2026-08-06T00:00:00.000Z",
       source: SOURCE,
       product: { kind: "source_error", httpStatus: 503, endpoint: "fixture://open-food-facts/unavailable", message: "Fixture source unavailable" },
       alternatives: { kind: "not_run", raw: { products: [] } },
