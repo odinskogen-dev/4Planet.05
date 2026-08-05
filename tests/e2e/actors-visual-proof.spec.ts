@@ -15,7 +15,7 @@ test("capture desktop actor index and profile evidence", async ({ page }) => {
   await page.screenshot({ path: `${ARTIFACTS}/desktop-actors-index.png`, fullPage: true });
 
   await page.goto(`${BASE}/actors/world-land-trust`);
-  await expect(page.getByRole("heading", { name: "World Land Trust" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "World Land Trust", exact: true })).toBeVisible();
   await page.screenshot({ path: `${ARTIFACTS}/desktop-world-land-trust.png`, fullPage: true });
 });
 
@@ -26,7 +26,7 @@ test("capture mobile actor journey evidence", async ({ page }) => {
   await page.screenshot({ path: `${ARTIFACTS}/mobile-actors-index.png`, fullPage: true });
 
   await page.goto(`${BASE}/actors/rainforest-foundation-norway`);
-  await expect(page.getByRole("heading", { name: "Rainforest Foundation Norway" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Rainforest Foundation Norway", exact: true })).toBeVisible();
   await page.screenshot({ path: `${ARTIFACTS}/mobile-rainforest-foundation-norway.png`, fullPage: true });
 });
 
