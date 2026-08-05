@@ -3,6 +3,7 @@ import { mkdir } from "node:fs/promises";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:4173";
 const ARTIFACTS = "artifacts/p17-organisations";
+const ACTOR_ATLAS_URL = `${BASE}/atlas?mode=actors&entity=actor%3Ap17%3AP17-A003&actorGeo=geo%3Agbif%3Asecretariat&c=12.57,55.68&z=5.2`;
 
 async function settleVisualLayout(page: Page) {
   await page.evaluate(async () => {
@@ -36,7 +37,7 @@ test("capture homepage and desktop discovery evidence", async ({ page }) => {
 test("capture premium profile meaning, visualisation and evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/actors/world-land-trust`);
-  await expect(page.getByRole("heading", { name: "World Land Trust", exact: true })).toBeVisible();
+  await expect(page.locator("h1").filter({ hasText: /^World Land Trust$/ })).toBeVisible();
   await screenshot(page, ".actor-profile-hero", "desktop-world-land-trust-hero");
   await screenshot(page, ".actor-signature", "desktop-world-land-trust-signature");
   await screenshot(page, ".actor-claim-list", "desktop-world-land-trust-evidence");
@@ -47,7 +48,7 @@ test("capture premium profile meaning, visualisation and evidence", async ({ pag
 test("capture Global Fishing Watch data-only scale proof", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/actors/global-fishing-watch`);
-  await expect(page.getByRole("heading", { name: "Global Fishing Watch", exact: true })).toBeVisible();
+  await expect(page.locator("h1").filter({ hasText: /^Global Fishing Watch$/ })).toBeVisible();
   await screenshot(page, ".actor-profile-hero", "desktop-global-fishing-watch-hero");
   await screenshot(page, ".actor-signature", "desktop-global-fishing-watch-data-system");
 });
@@ -60,20 +61,20 @@ test("capture mobile discovery, profile and secure review gate", async ({ page }
   await screenshot(page, ".actors-controls", "mobile-organisations-filters");
 
   await page.goto(`${BASE}/actors/rainforest-foundation-norway`);
-  await expect(page.getByRole("heading", { name: "Rainforest Foundation Norway", exact: true })).toBeVisible();
+  await expect(page.locator("h1").filter({ hasText: /^Rainforest Foundation Norway$/ })).toBeVisible();
   await screenshot(page, ".actor-profile-hero", "mobile-rainforest-foundation-norway-hero");
   await screenshot(page, ".actor-form-panel", "mobile-rainforest-foundation-norway-review-gate");
 });
 
 test("capture native Actor Mode on the existing Atlas route", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(`${BASE}/atlas?mode=actors&entity=actor%3Ap17%3AP17-A003&actorGeo=geo%3Agbif%3Asecretariat&c=12.57,55.68&z=5.2`);
+  await page.goto(ACTOR_ATLAS_URL);
   await expect(page.getByRole("complementary", { name: "Actor Mode private beta" })).toBeVisible();
   await settleVisualLayout(page);
   await page.screenshot({ path: `${ARTIFACTS}/desktop-atlas-native-actor-mode.png` });
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.reload();
+  await page.goto(ACTOR_ATLAS_URL);
   await expect(page.getByRole("complementary", { name: "Actor Mode private beta" })).toBeVisible();
   await settleVisualLayout(page);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-atlas-native-actor-mode.png` });
