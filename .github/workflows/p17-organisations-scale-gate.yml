@@ -1,0 +1,95 @@
+name: P17 Organisations Discovery and Scale Gate
+
+on:
+  push:
+    branches:
+      - build/p17-organisations-discovery-scale-gate
+  pull_request:
+    branches:
+      - build/p17-actor-atlas-private-beta
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p17-organisations-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out Megasprint 04 candidate
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit and critical gate
+        shell: bash
+        run: |
+          mkdir -p artifacts/p17-organisations
+          npm audit --json > artifacts/p17-organisations/npm-audit.json || true
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const report = JSON.parse(readFileSync('artifacts/p17-organisations/npm-audit.json', 'utf8'));
+          const vulnerabilities = report.metadata?.vulnerabilities ?? {};
+          console.log('Dependency vulnerabilities:', vulnerabilities);
+          if ((vulnerabilities.critical ?? 0) > 0) process.exit(1);
+          NODE
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start private preview runtime
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/p17-organisations-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/actors > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/p17-organisations-preview.log
+          exit 1
+
+      - name: Organisations browser journeys and visual proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/actors-private-beta.spec.ts tests/e2e/actors-visual-proof.spec.ts
+
+      - name: Upload P17 Megasprint 04 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p17-organisations-discovery-scale-evidence
+          path: |
+            artifacts/p17-organisations
+            playwright-report
+            test-results
+            /tmp/p17-organisations-preview.log
+          if-no-files-found: warn
+          retention-days: 14

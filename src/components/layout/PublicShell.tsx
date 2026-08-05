@@ -20,6 +20,7 @@ const MENU: Cat[] = [
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
   { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
+  { key: "ORGANISATIONS_", to: "/actors", kind: "list", items: [["Explore organisations", "/actors"], ["Organisations on the map", "/atlas?mode=actors"], ["Planetary data & research", "/actors?theme=PLANETARY_DATA_AND_RESEARCH"], ["Work you can support", "/actors?theme=OFFICIAL_SUPPORT_AVAILABLE"]] },
   { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
@@ -192,7 +193,7 @@ function Footer() {
   const { pathname } = useLocation();
   const { acc } = footerCtx(pathname);
   const cols: [string, [string, string][]][] = [
-    ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
+    ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Organisations", "/actors"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
     ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
   ];

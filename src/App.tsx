@@ -6,6 +6,7 @@ import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { ActorAtlasOverlay } from "@/earth/ActorAtlasOverlay";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
+import "@/styles/p17-organisations-home.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();

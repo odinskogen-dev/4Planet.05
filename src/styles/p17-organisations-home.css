@@ -1,0 +1,9 @@
+@media (max-width: 760px) {
+  .home-organisations-heading {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-organisations-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

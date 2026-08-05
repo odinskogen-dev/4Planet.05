@@ -221,8 +221,21 @@ function WorldInner() {
     if (patch.flat ?? flat) p.set("p", "2d");
     const ln = patch.lens ?? lens;
     if (ln !== "EARTH") p.set("lens", ln);
-    const f = "focus" in patch ? patch.focus : ctx ? idOfCtx(ctx) : "";
-    if (f) p.set("entity", f);
+
+    // P17: Actor Mode is an additive ATLAS product context. Camera and layer
+    // synchronisation must not erase its canonical actor identity or geography
+    // role from the shareable URL.
+    const actorMode = current.get("mode") === "actors";
+    if (actorMode) {
+      p.set("mode", "actors");
+      const actorGeo = current.get("actorGeo");
+      if (actorGeo) p.set("actorGeo", actorGeo);
+      const actorEntity = current.get("entity");
+      if (actorEntity?.startsWith("actor:p17:")) p.set("entity", actorEntity);
+    } else {
+      const f = "focus" in patch ? patch.focus : ctx ? idOfCtx(ctx) : "";
+      if (f) p.set("entity", f);
+    }
     ["journey", "record"].forEach((key) => {
       const value = current.get(key);
       if (value) p.set(key, value);
@@ -930,6 +943,7 @@ function WorldInner() {
               ["/domains", "DOMAINS", "OCE4N · E4RTH · S4PIENS · 4CULTURE"],
               ["/missions", "MISSIONS", "Every active mission"],
               ["/impact", "IMPACT", "Pathways and proof"],
+              ["/actors", "ORGANISATIONS", "Who is working for a living planet"],
               ["/living-systems", "LIVING SYSTEMS", "Relationship intelligence"],
               ["/about", "ABOUT", "What 4PLANET is"],
               ["/atlas", "ATLAS", "The full data console"],
