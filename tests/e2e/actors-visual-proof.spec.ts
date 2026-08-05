@@ -9,18 +9,24 @@ async function settleVisualLayout(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(450);
 }
 
 async function screenshot(page: Page, selector: string, name: string) {
+  const target = page.locator(selector).first();
+  await target.scrollIntoViewIfNeeded();
+  await expect(target).toBeVisible();
   await settleVisualLayout(page);
   await page.evaluate(() => {
     document.querySelectorAll<HTMLElement>('header, a[href="#main-content"]').forEach((element) => {
+      const fixedHeader = element.tagName === "HEADER" && getComputedStyle(element).position === "fixed";
+      const skipLink = element.matches('a[href="#main-content"]');
+      if (!fixedHeader && !skipLink) return;
       element.dataset["p17PreviousVisibility"] = element.style.visibility;
       element.style.visibility = "hidden";
     });
   });
-  await page.locator(selector).first().screenshot({ path: `${ARTIFACTS}/${name}.png` });
+  await target.screenshot({ path: `${ARTIFACTS}/${name}.png` });
   await page.evaluate(() => {
     document.querySelectorAll<HTMLElement>('[data-p17-previous-visibility]').forEach((element) => {
       element.style.visibility = element.dataset["p17PreviousVisibility"] ?? "";
@@ -36,7 +42,9 @@ test.beforeAll(async () => {
 test("capture homepage and desktop discovery evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/`);
-  await expect(page.getByRole("heading", { name: /Meet the organisations turning knowledge/ })).toBeVisible();
+  const homeHeading = page.getByRole("heading", { name: /Meet the organisations turning knowledge/ });
+  await homeHeading.scrollIntoViewIfNeeded();
+  await expect(homeHeading).toBeVisible();
   await screenshot(page, "section[aria-labelledby='home-organisations-title']", "desktop-home-organisations");
 
   await page.goto(`${BASE}/actors`);
