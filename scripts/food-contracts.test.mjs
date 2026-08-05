@@ -23,7 +23,7 @@ test("normalises the well-covered fixture and preserves provenance", () => {
   assert.equal(result.product.comparisonCategory, "plain_yoghurt");
   assert.equal(result.product.categoryControl.status, "controlled");
   assert.equal(result.product.sourceRef.sourceId, "open_food_facts");
-  assert.equal(result.alternatives.length, 5);
+  assert.equal(result.alternatives.length, 7);
 });
 
 test("keeps incomplete data explicit", () => {
@@ -52,7 +52,7 @@ test("enforces allergens before ranking", () => {
   const ranked = rankAlternatives(result.product, result.alternatives, { avoidAllergens: ["milk"], lowerSugar: true });
   assert.equal(ranked.eligible.length, 1);
   assert.equal(ranked.eligible[0].product.name, "TEST RECORD — Yoghurt C");
-  assert.equal(ranked.excluded.length, 4);
+  assert.equal(ranked.excluded.length, 6);
 });
 
 test("missing nutrition never gains an ordering advantage", () => {
