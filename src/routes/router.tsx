@@ -7,6 +7,7 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { PathwayPage } from "@/pages/v5/Impact";
 import { ImpactPublicHome, ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import FoodIntelligence from "@/food/FoodIntelligence";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
@@ -53,6 +54,7 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
+      <Route path="/labs/food-intelligence" element={<FoodIntelligence />} />
       <Route path="/join" element={<Navigate to="/people" replace />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
