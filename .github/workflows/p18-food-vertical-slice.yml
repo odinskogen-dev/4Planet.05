@@ -26,7 +26,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Start bounded preview
+      - name: Start bounded local preview
         shell: bash
         run: |
           npm run preview -- --host 0.0.0.0 > /tmp/p18-food-preview.log 2>&1 &
@@ -77,10 +77,75 @@ jobs:
           cat /tmp/p18-food-preview.log
           exit 1
 
-      - name: Run deterministic browser fixtures
+      - name: Run deterministic local browser fixtures
         env:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+
+      - name: Await hosted branch preview
+        env:
+          HOSTED_URL: https://agent-p18-food-vertical-slic.4planet-05.pages.dev
+        shell: bash
+        run: |
+          for attempt in {1..120}; do
+            if curl --fail --silent --show-error "$HOSTED_URL/labs/food-intelligence" > hosted-food-route.html; then
+              printf '%s\n' "$HOSTED_URL" > hosted-food-url.txt
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Run deterministic hosted browser fixtures
+        env:
+          BASE_URL: https://agent-p18-food-vertical-slic.4planet-05.pages.dev
+        run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+
+      - name: Capture one real Open Food Facts source envelope
+        env:
+          HOSTED_URL: https://agent-p18-food-vertical-slic.4planet-05.pages.dev
+          BARCODE: "7038010055652"
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            status="$(curl --silent --show-error --output hosted-food-source.json --write-out '%{http_code}' "$HOSTED_URL/api/food?barcode=$BARCODE" || true)"
+            if [ "$status" = "200" ] && node -e 'JSON.parse(require("fs").readFileSync("hosted-food-source.json", "utf8"))'; then
+              break
+            fi
+            sleep 2
+          done
+
+          node <<'NODE'
+          const fs = require('fs');
+          const envelope = JSON.parse(fs.readFileSync('hosted-food-source.json', 'utf8'));
+          if (!envelope.source || !envelope.product || !envelope.request) {
+            throw new Error('Hosted FOOD response is not a valid source envelope');
+          }
+          const products = Array.isArray(envelope.alternatives?.raw?.products)
+            ? envelope.alternatives.raw.products
+            : [];
+          const summary = {
+            requestedBarcode: envelope.request.barcode ?? null,
+            retrievedAt: envelope.retrievedAt ?? null,
+            sourceId: envelope.source.id ?? null,
+            apiVersion: envelope.source.apiVersion ?? null,
+            schemaVersion: envelope.source.schemaVersion ?? null,
+            productKind: envelope.product.kind ?? null,
+            productStatus: envelope.product.httpStatus ?? null,
+            productCode: envelope.product.raw?.code ?? null,
+            productName: envelope.product.raw?.product_name ?? null,
+            brand: envelope.product.raw?.brands ?? null,
+            quantity: envelope.product.raw?.quantity ?? null,
+            categories: envelope.product.raw?.categories_tags ?? [],
+            categoryTag: envelope.alternatives?.categoryTag ?? null,
+            marketScope: envelope.alternatives?.marketScope ?? null,
+            alternativeKind: envelope.alternatives?.kind ?? null,
+            alternativeCount: products.length,
+            licence: envelope.source.licence ?? null,
+          };
+          fs.writeFileSync('hosted-food-summary.json', JSON.stringify(summary, null, 2));
+          console.log(JSON.stringify(summary, null, 2));
+          NODE
 
       - name: Upload FOOD gate evidence
         if: always()
@@ -91,5 +156,9 @@ jobs:
             playwright-report
             test-results
             /tmp/p18-food-preview.log
+            hosted-food-url.txt
+            hosted-food-route.html
+            hosted-food-source.json
+            hosted-food-summary.json
           if-no-files-found: warn
           retention-days: 14
