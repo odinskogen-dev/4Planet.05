@@ -68,6 +68,22 @@ const alternatives = [
     product_name: "TEST RECORD — Yoghurt E",
     nutriments: { ...completeProduct.nutriments, sugars_100g: 3.8, proteins_100g: 3.8 },
   },
+  {
+    ...completeProduct,
+    code: "7048840000197",
+    product_name: "TEST RECORD — Biola syrnet melk naturell",
+    quantity: "1000 g",
+  },
+  {
+    ...completeProduct,
+    code: "7048840000180",
+    product_name: "TEST RECORD — Corn Flakes",
+    quantity: "500 g",
+    ingredients_text: "Mais.",
+    allergens_tags: [],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:corn-flakes"],
+    nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
+  },
 ];
 
 function envelope(product, alternativeProducts = alternatives) {
