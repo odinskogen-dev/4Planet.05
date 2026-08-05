@@ -26,16 +26,16 @@ test("actor index presents ten profiles without ranking and preserves filter sta
 
 test("Global Fishing Watch is a fourth data-driven profile with source boundaries", async ({ page }) => {
   await page.goto(`${BASE}/actors/global-fishing-watch`);
-  await expect(page.getByRole("heading", { name: "Global Fishing Watch", exact: true })).toBeVisible();
-  await expect(page.getByText(/Making human activity at sea more visible/)).toBeVisible();
+  await expect(page.locator("h1").filter({ hasText: /^Global Fishing Watch$/ })).toBeVisible();
+  await expect(page.getByText(/Making human activity at sea more visible/).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: /Modelled vessel activity or apparent fishing effort is not automatic evidence/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Explore datasets and code/ })).toHaveAttribute("href", /globalfishingwatch\.org/);
 });
 
 test("World Land Trust profile leads with meaning and exposes evidence boundaries", async ({ page }) => {
   await page.goto(`${BASE}/actors/world-land-trust`);
-  await expect(page.getByRole("heading", { name: "World Land Trust", exact: true })).toBeVisible();
-  await expect(page.getByText(/Helping local conservation partners protect threatened habitats/)).toBeVisible();
+  await expect(page.locator("h1").filter({ hasText: /^World Land Trust$/ })).toBeVisible();
+  await expect(page.getByText(/Helping local conservation partners protect threatened habitats/).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: /A donation is not automatically a transferable 4PLANET land unit/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /OFFICIAL WEBSITE/ })).toHaveAttribute("href", /worldlandtrust\.org/);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow");
