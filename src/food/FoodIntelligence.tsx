@@ -19,6 +19,7 @@ interface SourceMeta {
   id?: string;
   apiVersion?: string;
   schemaVersion?: number | null;
+  adapterVersion?: string;
   licence?: Record<string, unknown>;
 }
 
@@ -29,9 +30,10 @@ interface NormalisedResult {
   alternatives?: CanonicalFoodProduct[];
   alternativeState?: string;
   alternativeMessage?: string;
-  alternativeAttempts?: unknown[];
+  alternativeAttempts?: Array<Record<string, unknown>>;
   marketScope?: string;
   comparisonCategory?: string | null;
+  sourceSearchCategory?: string | null;
   message?: string;
   rawEnvelope?: Record<string, unknown>;
 }
@@ -72,7 +74,7 @@ function formatNumber(value: number | null, unit = "g"): string {
 }
 
 function categoryLabel(category: string | null | undefined): string {
-  return category ? category.replace(/^..:/, "").replaceAll("-", " ") : "Not classified";
+  return category ? category.replace(/^..:/, "").replaceAll("-", " ").replaceAll("_", " ") : "Not classified";
 }
 
 async function sha256(value: string): Promise<string> {
@@ -105,7 +107,7 @@ async function preserveRawEnvelope(envelope: Record<string, unknown>): Promise<R
 function StatusPanel({ state, message }: { state: ResultState; message?: string }) {
   if (state === "idle" || state === "found") return null;
   const copy: Record<Exclude<ResultState, "idle" | "found">, { title: string; body: string }> = {
-    loading: { title: "Reading source", body: "Fetching one product and a bounded same-category alternative set." },
+    loading: { title: "Reading source", body: "Fetching one product and a bounded same-category candidate set." },
     not_found: { title: "Barcode not found", body: "Open Food Facts did not return a product. No product facts have been inferred." },
     source_error: { title: "Source unavailable", body: message || "The source request failed. The previous result has not been silently reused." },
     malformed: { title: "Record cannot be trusted", body: message || "The source envelope or product identity is malformed or conflicting." },
@@ -135,19 +137,26 @@ function ProductCard({ product }: { product: CanonicalFoodProduct }) {
     <section className="food-card food-product-card" aria-labelledby="food-product-title">
       <div className="food-product-identity">
         <div className="food-image-frame">
-          {product.imageUrl ? <img src={product.imageUrl} alt="" /> : <span>Image not available</span>}
+          {product.imageUrl && !product.imageUrl.startsWith("fixture:") ? <img src={product.imageUrl} alt="" /> : <span>Image not available</span>}
         </div>
         <div>
           <span className="food-kicker">GTIN {product.gtin || "unknown"}</span>
           <h2 id="food-product-title">{product.name || "Unnamed product"}</h2>
           <p className="food-product-meta">{product.brand || "Brand not available"} · {product.quantity || "Quantity not available"}</p>
-          <p className="food-category">Comparison category: {categoryLabel(product.comparisonCategory)}</p>
+          <div className="food-category-stack">
+            <span className="food-relation-pill" data-relation={product.categoryControl.status === "controlled" ? "direct" : "unknown"}>{product.categoryControl.label}</span>
+            <span>Controlled group: {categoryLabel(product.comparisonCategory)}</span>
+            <span>Source taxonomy: {categoryLabel(product.sourceComparisonCategory)}</span>
+          </div>
         </div>
         <QualityBadge product={product} />
       </div>
 
-      {(product.dataQuality.missingFields.length > 0 || product.dataQuality.conflicts.length > 0) && (
+      {(product.categoryControl.limitations.length > 0 || product.dataQuality.missingFields.length > 0 || product.dataQuality.conflicts.length > 0) && (
         <div className="food-warning-grid">
+          {product.categoryControl.limitations.length > 0 && (
+            <div><span className="food-kicker">Comparison limitation</span><p>{product.categoryControl.limitations.join(" · ")}</p></div>
+          )}
           {product.dataQuality.missingFields.length > 0 && (
             <div><span className="food-kicker">Missing</span><p>{product.dataQuality.missingFields.join(", ")}</p></div>
           )}
@@ -177,7 +186,7 @@ function ProductCard({ product }: { product: CanonicalFoodProduct }) {
       <div className="food-nutrition" aria-label="Nutrition per 100 grams or millilitres">
         <span className="food-kicker food-nutrition-heading">Nutrition · per 100 g/ml</span>
         <dl>
-          <div><dt>Energy</dt><dd>{product.nutrients.energyKcal === null ? "Not available" : `${formatNumber(product.nutrients.energyKcal, "kcal")}`}</dd></div>
+          <div><dt>Energy</dt><dd>{product.nutrients.energyKcal === null ? "Not available" : formatNumber(product.nutrients.energyKcal, "kcal")}</dd></div>
           <div><dt>Sugar</dt><dd>{formatNumber(product.nutrients.sugars)}</dd></div>
           <div><dt>Salt</dt><dd>{formatNumber(product.nutrients.salt)}</dd></div>
           <div><dt>Protein</dt><dd>{formatNumber(product.nutrients.protein)}</dd></div>
@@ -195,15 +204,34 @@ function AlternativeCard({ item, index }: { item: RankedAlternative; index: numb
     <article className="food-alternative">
       <div className="food-alt-rank">{String(index + 1).padStart(2, "0")}</div>
       <div className="food-alt-body">
-        <span className="food-kicker">{product.brand || "Brand unavailable"} · {product.quantity || "Quantity unavailable"}</span>
+        <div className="food-alt-kicker-row">
+          <span className="food-relation-pill" data-relation={item.relation.kind}>{item.relation.label}</span>
+          <span className="food-kicker">{product.brand || "Brand unavailable"} · {product.quantity || "Quantity unavailable"}</span>
+        </div>
         <h3>{product.name}</h3>
-        <ul>{item.explanations.map((explanation) => <li key={explanation}>{explanation}</li>)}</ul>
+        <p className="food-relation-reason">{item.relation.reason}</p>
+        <ul>{item.explanations.slice(1).map((explanation) => <li key={explanation}>{explanation}</li>)}</ul>
         <div className="food-alt-footer">
           <span>{product.dataQuality.confidence} confidence</span>
           <span>GTIN {product.gtin}</span>
         </div>
       </div>
     </article>
+  );
+}
+
+function CandidateInspection({ title, items }: { title: string; items: RankedAlternative[] }) {
+  if (items.length === 0) return null;
+  return (
+    <details className="food-excluded">
+      <summary>{title} · {items.length}</summary>
+      {items.map((item) => (
+        <div key={`${title}-${item.product.gtin}`}>
+          <strong>{item.product.name || item.product.gtin}</strong>
+          <span>{item.exclusions.join(" · ")}</span>
+        </div>
+      ))}
+    </details>
   );
 }
 
@@ -351,17 +379,18 @@ export default function FoodIntelligence() {
     && !["malformed", "conflicted"].includes(result.product.dataQuality.state),
   );
   const comparisonGatePass = Boolean(
-    ranked
+    ranked?.fairComparison
     && ranked.eligible.length >= 3
-    && ranked.eligible.every((item) => item.explanations.length > 0 && item.product.comparisonCategory === result?.product?.comparisonCategory),
+    && ranked.eligible.every((item) => item.relation.kind === "direct" && item.explanations.length > 0),
   );
 
   return (
     <div className="food-app">
+      <a className="food-skip" href="#food-barcode">Skip to product lookup</a>
       <header className="food-header">
         <Link to="/" className="food-wordmark">4PLANET_</Link>
         <div>
-          <span className="food-kicker">P18 · controlled vertical slice</span>
+          <span className="food-kicker">P18 · multi-category controlled prototype</span>
           <strong>FOOD INTELLIGENCE</strong>
         </div>
         <Link to="/missions/food" className="food-back">FOOD_ mission ↗</Link>
@@ -373,7 +402,7 @@ export default function FoodIntelligence() {
             <span className="food-kicker">Scan → understand → compare</span>
             <h1>See the product.<br />See the evidence.</h1>
           </div>
-          <p>One bounded decision surface using Open Food Facts. No universal score. Missing data stays visible. Alternatives are ordered only by the priorities you select and the facts both products actually contain.</p>
+          <p>A source-aware decision surface for real Norwegian products. Direct substitutes are separated from adjacent products. No universal score. Missing data stays visible.</p>
         </section>
 
         <section className="food-input-panel">
@@ -383,7 +412,7 @@ export default function FoodIntelligence() {
               <input id="food-barcode" inputMode="numeric" autoComplete="off" value={barcode} onChange={(event: ChangeEvent<HTMLInputElement>) => setBarcode(event.target.value)} aria-describedby="food-barcode-help" />
               <button type="submit" disabled={state === "loading"}>{state === "loading" ? "Reading…" : "Read source"}</button>
             </div>
-            <small id="food-barcode-help">The sample GTIN is derived from a Norwegian product record and must still be verified against the physical pack.</small>
+            <small id="food-barcode-help">Manual entry is the guaranteed fallback. Always verify allergens and formulation against the physical pack.</small>
           </form>
           <div className="food-camera-control">
             <button type="button" onClick={cameraState === "active" ? stopCamera : () => void startCamera()}>{cameraState === "active" ? "Close camera" : "Scan with camera"}</button>
@@ -421,7 +450,7 @@ export default function FoodIntelligence() {
               <div>
                 <span className="food-kicker">Your priorities</span>
                 <h2>Change the ordering—not the evidence.</h2>
-                <p>Mandatory allergen constraints are applied before ranking. Nutrition preferences only compare values available for both products.</p>
+                <p>Mandatory allergen constraints are applied before ordering. Nutrition preferences only compare values present for both products. These are decision aids, not medical or universal health claims.</p>
               </div>
               <div className="food-preference-controls">
                 <label><input type="checkbox" checked={preferences.lowerSugar} onChange={(event: ChangeEvent<HTMLInputElement>) => setPreferences((current) => ({ ...current, lowerSugar: event.target.checked }))} /> Lower sugar</label>
@@ -433,44 +462,52 @@ export default function FoodIntelligence() {
 
             <section className="food-comparison" aria-labelledby="food-comparison-title">
               <div className="food-section-heading">
-                <div><span className="food-kicker">Eligible alternatives</span><h2 id="food-comparison-title">Transparent comparison</h2></div>
-                <p>{ranked?.eligible.length ?? 0} eligible · {ranked?.excluded.length ?? 0} excluded · scope: {result.marketScope?.replaceAll("_", " ") ?? "unknown"}</p>
+                <div><span className="food-kicker">Direct substitutes only</span><h2 id="food-comparison-title">Transparent comparison</h2></div>
+                <p>{ranked?.eligible.length ?? 0} direct · {ranked?.adjacent.length ?? 0} adjacent · {ranked?.unsuitable.length ?? 0} unsuitable</p>
               </div>
-              {result.alternativeState === "source_error" ? (
+              {ranked && !ranked.fairComparison ? (
+                <div className="food-empty-comparison"><strong>Products cannot be compared fairly yet.</strong><br />{ranked.limitations.join(" ")}</div>
+              ) : result.alternativeState === "source_error" ? (
                 <div className="food-empty-comparison"><strong>Alternative source unavailable.</strong><br />No comparison candidates were inferred or substituted. Retry later or inspect the recorded source attempts.</div>
+              ) : result.alternativeState === "not_found" ? (
+                <div className="food-empty-comparison"><strong>No bounded source candidates found.</strong><br />This is a source result, not evidence that no alternatives exist in the market.</div>
               ) : ranked && ranked.eligible.length > 0 ? (
                 <div className="food-alternative-list">{ranked.eligible.map((item, index) => <AlternativeCard key={item.product.gtin} item={item} index={index} />)}</div>
               ) : (
-                <div className="food-empty-comparison">No alternative currently passes the category, source-quality and personal-constraint gates.</div>
+                <div className="food-empty-comparison">No candidate currently passes the direct-substitute, source-quality and personal-constraint gates.</div>
               )}
-              {ranked && ranked.excluded.length > 0 && (
-                <details className="food-excluded">
-                  <summary>Inspect {ranked.excluded.length} excluded candidate{ranked.excluded.length === 1 ? "" : "s"}</summary>
-                  {ranked.excluded.map((item) => <div key={item.product.gtin}><strong>{item.product.name || item.product.gtin}</strong><span>{item.exclusions.join(" · ")}</span></div>)}
-                </details>
-              )}
+              {ranked && <CandidateInspection title="Adjacent products — inspect, do not rank as substitutes" items={ranked.adjacent} />}
+              {ranked && <CandidateInspection title="Unsuitable or unresolved candidates" items={ranked.unsuitable} />}
             </section>
 
             <section className="food-gates">
               <div data-pass={productGatePass}><span className="food-kicker">Product-card gate</span><strong>{productGatePass ? "PASS" : "AMEND"}</strong><p>Identity, source reference and non-conflicted product state.</p></div>
-              <div data-pass={comparisonGatePass}><span className="food-kicker">Comparison gate</span><strong>{comparisonGatePass ? "PASS" : "AMEND"}</strong><p>At least three eligible same-category alternatives with inspectable reasons.</p></div>
+              <div data-pass={comparisonGatePass}><span className="food-kicker">Comparison gate</span><strong>{comparisonGatePass ? "PASS" : "AMEND"}</strong><p>At least three controlled direct substitutes with inspectable reasons.</p></div>
             </section>
 
             <section className="food-card food-source-panel">
               <div>
                 <span className="food-kicker">Source and licence</span>
                 <h2>Open Food Facts</h2>
-                <p>Product and alternative records are read through the bounded 4PLANET source adapter. Source data may be incomplete, old or contributed by users.</p>
+                <p>Product identity and alternative discovery are separate source operations. Every retry remains inspectable. Source data may be incomplete, old or contributed by users.</p>
               </div>
               <dl>
                 <div><dt>API</dt><dd>{result.source?.apiVersion || "Unknown"}</dd></div>
+                <div><dt>Adapter</dt><dd>{result.source?.adapterVersion || "Unknown"}</dd></div>
                 <div><dt>Schema</dt><dd>{result.source?.schemaVersion ?? "Not reported"}</dd></div>
+                <div><dt>Search category</dt><dd>{categoryLabel(result.sourceSearchCategory)}</dd></div>
                 <div><dt>Database</dt><dd>{String(result.source?.licence?.database ?? "ODbL 1.0")}</dd></div>
                 <div><dt>Contents</dt><dd>{String(result.source?.licence?.contents ?? "DbCL 1.0")}</dd></div>
                 <div><dt>Images</dt><dd>{String(result.source?.licence?.images ?? "Separate image terms")}</dd></div>
                 <div><dt>Model</dt><dd>{result.product.modelVersion}</dd></div>
               </dl>
-              <p className="food-source-limit">This interface is not medical advice. Always verify allergens and formulation against the physical label. A category model or certification must never be presented as a measured product footprint without product-specific evidence.</p>
+              {result.alternativeAttempts && result.alternativeAttempts.length > 0 && (
+                <details className="food-source-attempts">
+                  <summary>Inspect {result.alternativeAttempts.length} alternative-source attempt{result.alternativeAttempts.length === 1 ? "" : "s"}</summary>
+                  <pre>{JSON.stringify(result.alternativeAttempts, null, 2)}</pre>
+                </details>
+              )}
+              <p className="food-source-limit">This interface is not medical advice and does not claim that one product is universally healthier. Always verify allergens and formulation against the physical label. Norway tagging does not prove current availability in every Norwegian store.</p>
             </section>
           </>
         )}
