@@ -77,6 +77,9 @@ export function normaliseSourceEnvelope(envelope: unknown): Record<string, unkno
   state: "found" | "not_found" | "source_error" | "malformed";
   product?: CanonicalFoodProduct;
   alternatives?: CanonicalFoodProduct[];
+  alternativeState?: string;
+  alternativeMessage?: string;
+  alternativeAttempts?: unknown[];
 };
 export function rankAlternatives(
   baseline: CanonicalFoodProduct,

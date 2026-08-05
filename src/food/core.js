@@ -230,6 +230,11 @@ export function normaliseSourceEnvelope(envelopeInput) {
     rawEnvelope: envelope,
     product,
     alternatives,
+    alternativeState: text(alternativeResult.kind) || "not_run",
+    alternativeMessage: text(alternativeResult.message),
+    alternativeAttempts: Array.isArray(alternativeResult.rawEnvelopeMeta?.attempts)
+      ? alternativeResult.rawEnvelopeMeta.attempts
+      : [],
     marketScope: text(alternativeResult.marketScope) || "unknown",
     comparisonCategory: product.comparisonCategory,
   };

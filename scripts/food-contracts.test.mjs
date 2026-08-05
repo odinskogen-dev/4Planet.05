@@ -76,6 +76,23 @@ test("ordering is deterministic and emits no universal product score", () => {
   assert.equal("score" in first.eligible[0], false);
 });
 
+test("keeps a found product distinct from an alternative-source failure", () => {
+  const envelope = structuredClone(FOOD_FIXTURES.complete.envelope);
+  envelope.alternatives = {
+    kind: "source_error",
+    httpStatus: 503,
+    categoryTag: "en:yogurts",
+    message: "Fixture alternative search unavailable",
+    raw: { products: [] },
+    rawEnvelopeMeta: { attempts: [{ httpStatus: 503 }] },
+  };
+  const result = normaliseSourceEnvelope(envelope);
+  assert.equal(result.state, "found");
+  assert.equal(result.alternativeState, "source_error");
+  assert.equal(result.alternatives.length, 0);
+  assert.equal(result.alternativeAttempts.length, 1);
+});
+
 test("canonical JSON is stable across key order", () => {
   assert.equal(canonicalJson({ b: 1, a: { d: 2, c: 3 } }), canonicalJson({ a: { c: 3, d: 2 }, b: 1 }));
 });

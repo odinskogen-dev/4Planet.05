@@ -27,6 +27,9 @@ interface NormalisedResult {
   source?: SourceMeta;
   product?: CanonicalFoodProduct;
   alternatives?: CanonicalFoodProduct[];
+  alternativeState?: string;
+  alternativeMessage?: string;
+  alternativeAttempts?: unknown[];
   marketScope?: string;
   comparisonCategory?: string | null;
   message?: string;
@@ -433,7 +436,9 @@ export default function FoodIntelligence() {
                 <div><span className="food-kicker">Eligible alternatives</span><h2 id="food-comparison-title">Transparent comparison</h2></div>
                 <p>{ranked?.eligible.length ?? 0} eligible · {ranked?.excluded.length ?? 0} excluded · scope: {result.marketScope?.replaceAll("_", " ") ?? "unknown"}</p>
               </div>
-              {ranked && ranked.eligible.length > 0 ? (
+              {result.alternativeState === "source_error" ? (
+                <div className="food-empty-comparison"><strong>Alternative source unavailable.</strong><br />No comparison candidates were inferred or substituted. Retry later or inspect the recorded source attempts.</div>
+              ) : ranked && ranked.eligible.length > 0 ? (
                 <div className="food-alternative-list">{ranked.eligible.map((item, index) => <AlternativeCard key={item.product.gtin} item={item} index={index} />)}</div>
               ) : (
                 <div className="food-empty-comparison">No alternative currently passes the category, source-quality and personal-constraint gates.</div>
