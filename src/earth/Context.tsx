@@ -20,6 +20,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { SPECIES_PROFILES } from "@/data/species";
 import type {
   DataStatus,
   EntityId,
@@ -872,10 +873,30 @@ export const ContextLayer: React.FC<ContextProps> = ({
     const { observation: ob } = ctx;
     const o = ob.occurrence;
     const p = ob.provenance;
+    // Route into SPECIES when this record's taxon matches the catalogue.
+    const sciMatch = (o.scientificName || "").toLowerCase();
+    const speciesMatch = SPECIES_PROFILES.find(
+      (s) => (o.taxonKey && s.gbifKey === o.taxonKey) || s.scientificName.toLowerCase() === sciMatch,
+    );
+    // Source image shown ONLY when both URL and licence are present.
+    const showImg = !!(o.mediaUrl && o.mediaLicence);
     return (
       <div className="ctx">
         {head(o.commonName || ob.taxon.label, OBSERVATION_LABEL, ob.id)}
         <div className="ctx-body">
+          {showImg ? (
+            <figure style={{ margin: "0 0 4px", position: "relative" }}>
+              <img src={o.mediaUrl} alt={`${o.commonName || o.scientificName} — source record image`} loading="lazy"
+                style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} />
+              <figcaption className="foot" style={{ padding: "6px 0", lineHeight: 1.6 }}>
+                {o.mediaAttribution || "Source image"} · {o.mediaLicence} · a past record, not the animal's current position
+              </figcaption>
+            </figure>
+          ) : (
+            <div className="note-box" style={{ color }}>
+              No licensed image on this record — showing the record without a photo.
+            </div>
+          )}
           <div className="sec">
             <div className="sec-h">
               <span>WHAT WAS RECORDED</span>
@@ -897,6 +918,12 @@ export const ContextLayer: React.FC<ContextProps> = ({
                   {Math.abs(o.lng).toFixed(3)}°{o.lng >= 0 ? "E" : "W"}
                 </span>
               </div>
+              {typeof o.coordinateUncertaintyM === "number" && (
+                <div className="hrow">
+                  <span>Coordinate uncertainty</span>
+                  <span style={{ color }}>±{Math.round(o.coordinateUncertaintyM).toLocaleString()} m</span>
+                </div>
+              )}
               <div className="hrow">
                 <span>4PLANET checked</span>
                 <span style={{ opacity: 0.7 }}>{timeAgo(p.checkedAt)}</span>
@@ -911,12 +938,20 @@ export const ContextLayer: React.FC<ContextProps> = ({
                   </a>
                 </div>
               )}
+              {speciesMatch && (
+                <div className="src-line">
+                  <Link to={`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`}>
+                    Open {speciesMatch.commonName} in SPECIES →
+                  </Link>
+                </div>
+              )}
               <Source ids={["gbif"]} />
               {/* Honest about what we do NOT have from the source. Brief §29. */}
               <div className="foot" style={{ marginTop: 10, lineHeight: 1.7 }}>
-                COORDINATE UNCERTAINTY · NOT CHECKED — SENSITIVITY / OBFUSCATION ·
-                NOT CHECKED. 4PLANET does not yet read these fields from the source
-                record.
+                {typeof o.coordinateUncertaintyM === "number" ? "" : "COORDINATE UNCERTAINTY · NOT CHECKED — "}
+                SENSITIVITY / OBFUSCATION · NOT CHECKED. Sensitive locations are
+                generalised. This point is where a record was reported, not where
+                the animal is now.
               </div>
             </div>
           </div>

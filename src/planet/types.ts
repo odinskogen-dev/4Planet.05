@@ -153,6 +153,14 @@ export interface Occurrence {
   eventDate?: string;
   sourceRecordId?: string;
   sourceUrl?: string;
+  /** Source-carried media — shown ONLY when both mediaUrl and mediaLicence exist. */
+  mediaUrl?: string;
+  mediaLicence?: string;
+  mediaAttribution?: string;
+  /** GBIF taxonKey when known, to route into the SPECIES catalogue. */
+  taxonKey?: number;
+  /** Coordinate uncertainty in metres when the source supplies it. */
+  coordinateUncertaintyM?: number;
 }
 
 /* ── PLACE ───────────────────────────────────────────────────────────────── */
