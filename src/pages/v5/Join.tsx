@@ -11,16 +11,39 @@ const ROLES: [string, string, string][] = [
 ];
 
 export default function Join() {
+  const NOW: [string, string, string][] = [
+    ["FOLLOW", "Follow a Domain, Mission or species.", "Watch the living systems you care about and see what is reported about them over time."],
+    ["EXPLORE THE EVIDENCE", "Use ATLAS and the test journeys.", "Explore real source records in ATLAS and walk the IMPACT test journeys — no account, no payment."],
+    ["LEND EXPERTISE", "Scientists, ecologists, data people.", "If you work with ecological data or field science, 4Planet wants your review and correction."],
+    ["OPEN A DATA SOURCE", "Point us to credible, licensed data.", "Suggest authoritative datasets and sources 4Planet should integrate — with their terms."],
+    ["CREATIVE WORK", "Writers, photographers, designers.", "Contribute images, writing and design that carry ecological attention (with clear rights)."],
+    ["PARTNER ENQUIRY", "Organisations, brands, funders.", "Explore partnership once your delivery, evidence and reporting can be shown honestly."],
+  ];
   return (
     <PublicShell>
       <Section pad="clamp(48px,7vw,96px)">
-        <Label color={T.blue} style={{ marginBottom: 16 }}>Join 4PLANET_</Label>
+        <Label color={T.blue} style={{ marginBottom: 16 }}>Join 4PLANET</Label>
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.05 }}>Everyone has a role in bringing nature back into balance.</h1>
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 640, lineHeight: 1.55 }}>
-          4Planet is being built to bring people, partners, brands and funders into the same system for action. These are roles in that system — not active subscription tiers.
+          4Planet is being built to bring people, partners, brands and funders into the same system for action.
+          Some ways to take part are open now; paid membership is not yet active. We would rather be honest about
+          that than pretend.
         </p>
 
-        <div className="tw" style={{ marginTop: 34, border: `1px solid ${T.line}` }}>
+        {/* Ways to take part NOW — honest, no payment or data capture */}
+        <div className="mono" style={{ fontSize: 11, color: T.blue, marginTop: 40, letterSpacing: ".14em" }}>WAYS TO TAKE PART NOW</div>
+        <div className="three" style={{ marginTop: 18, border: `1px solid ${T.line}` }}>
+          {NOW.map(([t, role, desc], i) => (
+            <div key={t} style={{ padding: "clamp(22px,3vw,34px)", borderTop: i >= 3 ? `1px solid ${T.line}` : "none", borderLeft: i % 3 ? `1px solid ${T.line}` : "none" }}>
+              <span style={{ fontWeight: 600, fontSize: "clamp(17px,2vw,21px)", color: T.ink }}>{t}</span>
+              <div className="mono" style={{ fontSize: 11, color: T.dim, marginTop: 10 }}>{role}</div>
+              <p style={{ fontSize: 14, color: T.dim, marginTop: 12, lineHeight: 1.55 }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mono" style={{ fontSize: 11, color: T.dim, marginTop: 48, letterSpacing: ".14em" }}>FUTURE MEMBERSHIP · NOT YET ACTIVE</div>
+        <div className="tw" style={{ marginTop: 18, border: `1px solid ${T.line}` }}>
           {ROLES.map(([t, role, desc], i) => (
             <div key={t} style={{ padding: "clamp(22px,3vw,38px)", borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
               <span style={{ fontWeight: 500, fontSize: "clamp(18px,2.1vw,23px)", color: T.ink }}>{t}</span>
