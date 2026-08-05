@@ -83,7 +83,7 @@ async function preserveRawEnvelope(envelope: Record<string, unknown>): Promise<R
   const hash = await sha256(serialised);
   const barcode = String((envelope.request as { barcode?: unknown } | undefined)?.barcode ?? "unknown");
   const storageKey = `${RAW_PREFIX}:${barcode}:${hash}`;
-  let persisted = false;
+  let persisted: boolean;
   try {
     if (!localStorage.getItem(storageKey)) localStorage.setItem(storageKey, serialised);
     persisted = localStorage.getItem(storageKey) === serialised;
@@ -279,7 +279,7 @@ export default function FoodIntelligence() {
     void fetchBarcode();
   };
 
-  const useFixture = (fixtureId: string) => {
+  const applyFixture = (fixtureId: string) => {
     const fixture = FOOD_FIXTURES[fixtureId];
     if (fixture) void applyEnvelope(fixture.envelope);
   };
@@ -396,7 +396,7 @@ export default function FoodIntelligence() {
           <div><span className="food-kicker">Required fixtures</span><p>Test records are isolated from live product claims.</p></div>
           <div className="food-fixture-buttons">
             {Object.values(FOOD_FIXTURES).map((fixture) => (
-              <button key={fixture.id} type="button" onClick={() => useFixture(fixture.id)}>{fixture.label}</button>
+              <button key={fixture.id} type="button" onClick={() => applyFixture(fixture.id)}>{fixture.label}</button>
             ))}
           </div>
         </section>
