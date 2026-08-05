@@ -147,6 +147,84 @@ jobs:
           console.log(JSON.stringify(summary, null, 2));
           NODE
 
+      - name: Evaluate live product-card and comparison gates
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { normaliseSourceEnvelope, rankAlternatives } from './src/food/core.js';
+
+          const envelope = JSON.parse(fs.readFileSync('hosted-food-source.json', 'utf8'));
+          const result = normaliseSourceEnvelope(envelope);
+          if (result.state !== 'found' || !result.product) {
+            throw new Error(`Live product-card gate failed: state=${result.state}`);
+          }
+
+          const product = result.product;
+          const productGatePass = Boolean(
+            product.gtin
+            && product.name
+            && product.sourceRef?.sourceId === 'open_food_facts'
+            && !['malformed', 'conflicted'].includes(product.dataQuality.state)
+          );
+          if (!productGatePass) {
+            throw new Error(`Live product-card gate failed: ${JSON.stringify(product.dataQuality)}`);
+          }
+
+          const ranking = rankAlternatives(product, result.alternatives ?? [], { lowerSugar: true });
+          const comparisonGatePass = Boolean(
+            result.alternativeState === 'found'
+            && ranking.eligible.length >= 3
+            && ranking.eligible.every((item) =>
+              item.product.comparisonCategory === product.comparisonCategory
+              && item.explanations.length > 0
+              && !Object.prototype.hasOwnProperty.call(item, 'score')
+            )
+          );
+
+          const decisionSummary = {
+            productGate: productGatePass ? 'PASS' : 'FAIL',
+            comparisonGate: comparisonGatePass ? 'PASS' : 'FAIL',
+            modelVersion: product.modelVersion,
+            comparisonModelVersion: ranking.modelVersion,
+            product: {
+              gtin: product.gtin,
+              name: product.name,
+              brand: product.brand,
+              quantity: product.quantity,
+              comparisonCategory: product.comparisonCategory,
+              confidence: product.dataQuality.confidence,
+              completeness: product.dataQuality.completeness,
+              missingFields: product.dataQuality.missingFields,
+              conflicts: product.dataQuality.conflicts,
+            },
+            source: product.sourceRef,
+            rawAlternativeCount: result.alternatives?.length ?? 0,
+            alternativeSourceState: result.alternativeState ?? null,
+            eligibleCount: ranking.eligible.length,
+            excludedCount: ranking.excluded.length,
+            topAlternatives: ranking.eligible.map((item) => ({
+              gtin: item.product.gtin,
+              name: item.product.name,
+              brand: item.product.brand,
+              confidence: item.product.dataQuality.confidence,
+              reasons: item.explanations,
+            })),
+            exclusionReasons: ranking.excluded.slice(0, 10).map((item) => ({
+              gtin: item.product.gtin,
+              name: item.product.name,
+              reasons: item.exclusions,
+            })),
+          };
+
+          fs.writeFileSync('hosted-food-decision-summary.json', JSON.stringify(decisionSummary, null, 2));
+          console.log(JSON.stringify(decisionSummary, null, 2));
+
+          if (!comparisonGatePass) {
+            throw new Error(`Live comparison gate failed: eligible=${ranking.eligible.length}, source=${result.alternativeState}`);
+          }
+          NODE
+
       - name: Upload FOOD gate evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -160,5 +238,6 @@ jobs:
             hosted-food-route.html
             hosted-food-source.json
             hosted-food-summary.json
+            hosted-food-decision-summary.json
           if-no-files-found: warn
           retention-days: 14
