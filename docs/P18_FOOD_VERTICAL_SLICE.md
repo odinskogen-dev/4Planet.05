@@ -74,6 +74,8 @@ Fixture products are labelled `TEST RECORD` and must never be presented as live 
 - `tests/e2e/food-vertical-slice.spec.ts` — browser checks for the five deterministic states and both UI gates.
 - `npm run typecheck`, `npm run lint`, `npm run build` — repository integrity.
 
+The repository gate must pass on the exact final branch SHA before fixture or live-source gates are accepted.
+
 ## Stop condition
 
 Stop after the product-card and comparison gates have been evaluated. Do not begin bulk catalogue ingestion on this branch.
