@@ -3,9 +3,11 @@ import test from "node:test";
 import {
   canonicalJson,
   normalizeGtin,
+  normaliseProduct,
   normaliseSourceEnvelope,
   rankAlternatives,
 } from "../src/food/core.js";
+import { classifyProductRelation } from "../src/food/category-control.js";
 import { FOOD_FIXTURES } from "../src/food/fixtures.js";
 
 test("validates GTIN check digits", () => {
@@ -18,7 +20,8 @@ test("normalises the well-covered fixture and preserves provenance", () => {
   const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
   assert.equal(result.state, "found");
   assert.equal(result.product.gtin, "7038010055652");
-  assert.equal(result.product.comparisonCategory, "en:yogurts");
+  assert.equal(result.product.comparisonCategory, "plain_yoghurt");
+  assert.equal(result.product.categoryControl.status, "controlled");
   assert.equal(result.product.sourceRef.sourceId, "open_food_facts");
   assert.equal(result.alternatives.length, 5);
 });
@@ -68,6 +71,68 @@ test("missing nutrition never gains an ordering advantage", () => {
   assert.equal(ranked.eligible[1].favourableCount, 0);
 });
 
+test("candidate taxonomy is independent from the search category", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const cereal = normaliseProduct({
+    code: "7048840000180",
+    product_name: "TEST RECORD — Corn Flakes",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Corn.",
+    allergens_tags: [],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:corn-flakes"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://cereal",
+    nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
+  });
+  assert.equal(cereal.comparisonCategory, "cereal_flakes");
+  assert.equal(classifyProductRelation(result.product, cereal).kind, "unsuitable");
+  const ranked = rankAlternatives(result.product, [cereal], { lowerSugar: true });
+  assert.equal(ranked.eligible.length, 0);
+  assert.equal(ranked.unsuitable.length, 1);
+});
+
+test("taxonomy overlap with a different format is adjacent, not direct", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const biola = normaliseProduct({
+    code: "7048840000197",
+    product_name: "TEST RECORD — Biola syrnet melk naturell",
+    brands: "P18 Fixture",
+    quantity: "1000 g",
+    ingredients_text: "Melk, kultur.",
+    allergens_tags: ["en:milk"],
+    categories_tags: ["en:foods", "en:dairies", "en:yogurts", "en:plain-yogurts"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://biola",
+    nutriments: { "energy-kcal_100g": 55, sugars_100g: 4, salt_100g: 0.1, proteins_100g: 3.4 },
+  });
+  const relation = classifyProductRelation(result.product, biola);
+  assert.equal(relation.kind, "adjacent");
+  const ranked = rankAlternatives(result.product, [biola], { lowerSugar: true });
+  assert.equal(ranked.eligible.length, 0);
+  assert.equal(ranked.adjacent.length, 1);
+});
+
+test("unsupported baseline cannot generate a fair ranking", () => {
+  const unsupported = normaliseProduct({
+    code: "7048840000203",
+    product_name: "TEST RECORD — Unknown food format",
+    brands: "P18 Fixture",
+    quantity: "200 g",
+    ingredients_text: "Unknown.",
+    allergens_tags: [],
+    categories_tags: ["en:foods"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://unknown",
+    nutriments: { "energy-kcal_100g": 100, sugars_100g: 2, salt_100g: 0.1, proteins_100g: 2 },
+  });
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const ranked = rankAlternatives(unsupported, result.alternatives, { lowerSugar: true });
+  assert.equal(ranked.fairComparison, false);
+  assert.equal(ranked.eligible.length, 0);
+  assert.ok(ranked.limitations.length > 0);
+});
+
 test("ordering is deterministic and emits no universal product score", () => {
   const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
   const first = rankAlternatives(result.product, result.alternatives, { lowerSugar: true, higherProtein: true });
@@ -81,7 +146,7 @@ test("keeps a found product distinct from an alternative-source failure", () => 
   envelope.alternatives = {
     kind: "source_error",
     httpStatus: 503,
-    categoryTag: "en:yogurts",
+    categoryTag: "en:plain-yogurts",
     message: "Fixture alternative search unavailable",
     raw: { products: [] },
     rawEnvelopeMeta: { attempts: [{ httpStatus: 503 }] },
