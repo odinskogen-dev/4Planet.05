@@ -14,6 +14,7 @@
     "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/food-contracts.test.mjs",
     "test:contracts": "node --test scripts/prototype-contracts.test.mjs",
     "test:food": "node --test scripts/food-contracts.test.mjs",
+    "test:food:coverage": "node scripts/food-coverage-audit.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
