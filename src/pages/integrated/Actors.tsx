@@ -271,13 +271,14 @@ function ClaimCorrectionForm({ actor }: { actor: ActorProfile }) {
       environment: "PRIVATE_BETA_LOCAL_FIXTURE",
     };
     const key = "4planet:p17:actor-review-queue";
-    let previous: unknown[] = [];
+    const previous = (() => {
     try {
-      previous = JSON.parse(localStorage.getItem(key) ?? "[]") as unknown[];
-      if (!Array.isArray(previous)) previous = [];
+      const parsed = JSON.parse(localStorage.getItem(key) ?? "[]") as unknown;
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
-      previous = [];
+      return [];
     }
+  })();
     localStorage.setItem(key, JSON.stringify([...previous, record]));
     setSubmitted(requestId);
     event.currentTarget.reset();
