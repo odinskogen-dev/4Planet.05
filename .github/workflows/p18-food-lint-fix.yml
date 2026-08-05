@@ -1,0 +1,48 @@
+name: P18 FOOD One-Time Lint Fix
+
+on:
+  push:
+    branches:
+      - agent/p18-food-vertical-slice
+    paths:
+      - ".github/workflows/p18-food-lint-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout FOOD branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/p18-food-vertical-slice
+          fetch-depth: 0
+
+      - name: Apply exact reviewed fixes and remove this one-time workflow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/food/FoodIntelligence.tsx")
+          text = path.read_text()
+          replacements = {
+              "let persisted = false;": "let persisted: boolean;",
+              "const useFixture = (fixtureId: string) => {": "const applyFixture = (fixtureId: string) => {",
+              "onClick={() => useFixture(fixture.id)}": "onClick={() => applyFixture(fixture.id)}",
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f"Expected text not found: {old}")
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          Path(".github/workflows/p18-food-lint-fix.yml").unlink()
+          PY
+
+          git config user.name "4PLANET Gate Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/food/FoodIntelligence.tsx .github/workflows/p18-food-lint-fix.yml
+          git commit -m "fix(food): resolve vertical-slice lint findings"
+          git push origin HEAD:agent/p18-food-vertical-slice
