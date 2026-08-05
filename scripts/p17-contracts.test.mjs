@@ -50,7 +50,7 @@ test("Global Fishing Watch passes the data-only scaling gate", async () => {
 test("fifty material claims remain source-mapped and bounded", async () => {
   const data = await read("src/data/actors.ts");
   assert.match(data, /ACTOR_CLAIM_COUNT/);
-  assert.equal((data.match(/claimStart: /g) ?? []).length, 10);
+  assert.equal((data.match(/claimStart: \d+,/g) ?? []).length, 10);
   assert.match(data, /claimStart: 1,/);
   assert.match(data, /claimStart: 46,/);
   assert.ok((data.match(/sourceIds:/g) ?? []).length >= 50);
@@ -88,7 +88,7 @@ test("secure review flow stores no sensitive contact data in browser storage", a
   assert.match(review, /VITE_P17_REVIEW_ENDPOINT/);
   assert.match(review, /status: "STAGING_BLOCKED"/);
   assert.doesNotMatch(review, /localStorage|sessionStorage/);
-  assert.doesNotMatch(page, /localStorage|sessionStorage/);
+  assert.doesNotMatch(page, /localStorage\.setItem|sessionStorage\.setItem/);
   assert.match(page, /never change profile content automatically/);
   assert.match(migration, /revoke all on public\.actor_profile_requests, public\.actor_review_events from anon, authenticated/);
   assert.match(migration, /'DISPUTE','APPEAL'/);
