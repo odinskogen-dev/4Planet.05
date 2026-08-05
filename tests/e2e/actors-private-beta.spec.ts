@@ -36,7 +36,7 @@ test("World Land Trust profile leads with meaning and exposes evidence boundarie
   await page.goto(`${BASE}/actors/world-land-trust`);
   await expect(page.locator("h1").filter({ hasText: /^World Land Trust$/ })).toBeVisible();
   await expect(page.getByText(/Helping local conservation partners protect threatened habitats/).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: /A donation is not automatically a transferable 4PLANET land unit/ })).toBeVisible();
+  await expect(page.getByText("A donation is not automatically a transferable 4PLANET land unit.", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /OFFICIAL WEBSITE/ })).toHaveAttribute("href", /worldlandtrust\.org/);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://4planet.org/actors/world-land-trust");
