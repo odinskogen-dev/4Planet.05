@@ -5,7 +5,7 @@ import { contextHref, type ProductKey } from "@/product/ProductNav";
 /**
  * PRD-PQ02 — Four-square Product Switcher.
  * Replaces the floating product rail. Quiet, discoverable, accessible.
- * Fixed order 4PLANET · ATLAS · SPECIES · IMPACT; active square #2E2EFF.
+ * Fixed order 4PLANET · ATLAS · SPECIES · IMPACT; active node in the contextual accent.
  * Governing spec: Product Switcher & Shared Shell Specification v1.0.
  */
 
@@ -160,7 +160,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
               );
             })}
             <div style={{ padding: "12px 18px", fontFamily: "'Fragment Mono', monospace", fontSize: 10.5, letterSpacing: ".04em", color: descColor }}>
-              PUBLIC PREVIEW · <Link to="/about#system" onClick={() => setOpen(false)} style={{ color: "#2E2EFF", textDecoration: "none" }}>limitations &amp; sources</Link>
+              PUBLIC PREVIEW · <Link to="/about#system" onClick={() => setOpen(false)} style={{ color: accent, textDecoration: "none" }}>limitations &amp; sources</Link>
             </div>
           </div>
         </>
