@@ -64,7 +64,7 @@ export const IMAGES = {
   circularCityHero: { src: `${A}/missions/circular-city/hero.jpg`, alt: "A building facade planted with living greenery", mission: "circular-city", domain: "S4PIENS_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   f4shionHero: { src: `${A}/missions/f4shion/hero.jpg`, alt: "Editorial fashion portrait in flowing silver fabric", mission: "f4shion", domain: "S4PIENS_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
   m4gazineHero: { src: `${A}/missions/m4gazine/hero.jpg`, alt: "An open editorial spread — print in detail", mission: "m4gazine", domain: "4CULTURE_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
-  telierHero: { src: `${A}/missions/4telier/hero.jpg`, alt: "A curved white parametric architectural form", mission: "4rt", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
+  artHero: { src: `${A}/missions/4rt/hero.jpg`, alt: "Three framed ecological art prints on a gallery wall", mission: "4rt", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   playHero: { src: `${A}/missions/4play/hero.jpg`, alt: "A figure in warm light — culture as a way in", mission: "4play", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
   filmHero: { src: `${A}/missions/4film/hero.jpg`, alt: "A cabin window framing a still lake and mountains", mission: "4film", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 55%", role: "missionHero" },
 } as const;
@@ -96,7 +96,7 @@ const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "wh4les": { src: `${A2}/wh4les/detail-01.jpg`, alt: "A whale at the surface — a second frame from the field", aspectRatio: "3/2", role: "editorial" },
   "rewild-marine": { src: `${A2}/rewild-marine/detail-01.jpg`, alt: "Restored seagrass and kelp in coastal water", aspectRatio: "3/2", role: "editorial" },
-  "4rt": { src: `${A2}/4telier/detail-01.jpg`, alt: "An architectural form in light", aspectRatio: "3/2", role: "editorial" },
+  "4rt": { src: `${A2}/4rt/detail-01.jpg`, alt: "An ecological art print in progress", aspectRatio: "3/2", role: "editorial" },
   "am4zonia": { src: `${A2}/am4zonia/detail-01.jpg`, alt: "Rainforest river winding through dense canopy", aspectRatio: "3/2", role: "editorial" },
   "clim4te": { src: `${A2}/clim4te/detail-01.jpg`, alt: "Dark northern forest — slow restoration in low light", aspectRatio: "3/2", role: "editorial" },
   "species": { src: `${A2}/species/detail-01.jpg`, alt: "Aerial of wild terrain — habitat seen whole", aspectRatio: "3/2", role: "editorial" },

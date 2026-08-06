@@ -37,7 +37,7 @@ export default function Privacy() {
           ))}
         </div>
         <div style={{ marginTop: "clamp(40px,5vw,64px)" }}>
-          <Link to="/people" className="link" style={{ fontSize: 14, color: T.blue }}>← Back to participation</Link>
+          <Link to="/join" className="link" style={{ fontSize: 14, color: T.blue }}>← Back to participation</Link>
         </div>
       </Section>
     </PublicShell>
