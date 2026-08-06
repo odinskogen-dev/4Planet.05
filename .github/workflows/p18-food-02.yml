@@ -1,0 +1,161 @@
+name: P18 FOOD 02 Multi-Category Gate
+
+on:
+  push:
+    branches:
+      - agent/p18-food-02
+  pull_request:
+    branches:
+      - agent/p18-food-vertical-slice
+    paths:
+      - "src/food/**"
+      - "functions/api/food.ts"
+      - "scripts/food-*.mjs"
+      - "tests/e2e/food-vertical-slice.spec.ts"
+      - "package.json"
+      - ".github/workflows/p18-food-02.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p18-food-02-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HOSTED_URL: https://agent-p18-food-02.4planet-05.pages.dev
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck FOOD source adapter
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM functions/api/food.ts
+
+      - name: Production build
+        run: npm run build
+
+      - name: FOOD contracts
+        run: npm run test:food
+
+      - name: Repository smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start bounded local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/p18-food-02-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/labs/food-intelligence > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/p18-food-02-preview.log
+          exit 1
+
+      - name: Run deterministic local browser journeys
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+
+      - name: Await hosted branch preview
+        shell: bash
+        run: |
+          for attempt in {1..150}; do
+            if curl --fail --silent --show-error "$HOSTED_URL/labs/food-intelligence" > hosted-food-02-route.html; then
+              printf '%s\n' "$HOSTED_URL" > hosted-food-02-url.txt
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Run deterministic hosted browser journeys
+        env:
+          BASE_URL: https://agent-p18-food-02.4planet-05.pages.dev
+        run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+
+      - name: Run bounded 50-product Norwegian coverage audit
+        env:
+          BASE_URL: https://agent-p18-food-02.4planet-05.pages.dev
+          TARGET_PER_CATEGORY: "10"
+          REQUEST_DELAY_MS: "6500"
+        run: npm run test:food:coverage
+
+      - name: Evaluate category and source gates
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('food-coverage-summary.json', 'utf8'));
+          const rows = JSON.parse(fs.readFileSync('food-coverage-matrix.json', 'utf8'));
+          if (summary.testedProducts < 50) throw new Error(`Only ${summary.testedProducts} products tested`);
+          if (rows.some((row) => row.gtin && !Object.prototype.hasOwnProperty.call(row, 'relevanceSignal'))) {
+            throw new Error('Coverage rows are missing relevance evidence');
+          }
+          const decision = {
+            generatedAt: new Date().toISOString(),
+            exactSha: process.env.GITHUB_SHA,
+            testedProducts: summary.testedProducts,
+            productCardModel: summary.overall.productCardPass >= 40 ? 'GO' : summary.overall.productCardPass >= 25 ? 'AMEND' : 'DEFER',
+            comparisonModel: summary.overall.comparisonPass >= 30 ? 'GO' : summary.overall.comparisonPass >= 15 ? 'AMEND' : 'DEFER',
+            categories: summary.categories.map((category) => ({
+              ...category,
+              decision: category.found >= 8 && category.categoryPrecisionRate >= 0.7 && category.threeAlternativeRate >= 0.6
+                ? 'GO'
+                : category.found >= 5
+                  ? 'AMEND'
+                  : 'DEFER',
+            })),
+            limitedCatalogueIngestion: 'AMEND',
+            privateUserTesting: summary.overall.productCardPass >= 40 ? 'GO' : 'AMEND',
+            publicIntegration: 'DEFER',
+            limitation: 'Machine-evaluated taxonomy relevance; physical shelf availability and human substitute relevance still require founder/user validation.',
+          };
+          fs.writeFileSync('food-02-gate-decision.json', JSON.stringify(decision, null, 2));
+          console.log(JSON.stringify(decision, null, 2));
+          NODE
+
+      - name: Upload P18 FOOD 02 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p18-food-02-evidence
+          path: |
+            playwright-report
+            test-results
+            /tmp/p18-food-02-preview.log
+            hosted-food-02-url.txt
+            hosted-food-02-route.html
+            food-coverage-seeds.json
+            food-coverage-matrix.csv
+            food-coverage-matrix.json
+            food-coverage-summary.json
+            food-02-gate-decision.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,9 +1,8 @@
 /**
  * GET /api/food?barcode={GTIN}
  *
- * Bounded P18-FOOD-01 source adapter. It performs one product read and a
- * bounded same-category alternative search. It does not persist, score, or
- * infer missing product facts.
+ * Bounded P18-FOOD source adapter. Product identity and alternative discovery
+ * are separate source operations. Every attempt remains inspectable.
  */
 
 interface PagesContext {
@@ -14,16 +13,30 @@ interface JsonObject {
   [key: string]: unknown;
 }
 
+interface SourceRead {
+  response: Response;
+  payload: JsonObject | null;
+  contentType: string;
+  durationMs: number;
+  attempt: number;
+}
+
 interface AlternativeAttempt {
   endpoint: string;
   categoryTag: string;
   httpStatus: number;
   productCount: number;
   ok: boolean;
+  contentType: string;
+  durationMs: number;
+  attempt: number;
+  retrievedAt: string;
 }
 
 const OFF_ORIGIN = "https://world.openfoodfacts.org";
-const USER_AGENT = "4PLANET-P18-FOOD/0.1 (https://4planet.org; product-intelligence@4planet.org)";
+const USER_AGENT = "4PLANET-P18-FOOD/0.2 (https://4planet.org; product-intelligence@4planet.org)";
+const ADAPTER_VERSION = "p18-food-off-adapter-0.2.0";
+const TRANSIENT_STATUS = new Set([429, 502, 503, 504]);
 const PRODUCT_FIELDS = [
   "code",
   "product_name",
@@ -63,13 +76,16 @@ const licence = {
   attribution: "Open Food Facts contributors",
 };
 
-function json(body: unknown, status = 200): Response {
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+function json(body: unknown, status = 200, requestId = ""): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
+      ...(requestId ? { "x-p18-request-id": requestId } : {}),
     },
   });
 }
@@ -98,25 +114,42 @@ function selectComparisonCategories(product: JsonObject): string[] {
     .filter((tag) => tag.startsWith("en:"))
     .filter((tag) => !GENERIC_CATEGORIES.has(tag));
   const reversed = [...tags].reverse();
-  const yoghurtFallback = tags.includes("en:yogurts") ? ["en:yogurts"] : [];
-  return [...new Set([...reversed.slice(0, 2), ...yoghurtFallback])].slice(0, 3);
+  const controlledFallbacks = [
+    tags.includes("en:plain-yogurts") ? "en:plain-yogurts" : null,
+    tags.includes("en:breakfast-cereals") ? "en:breakfast-cereals" : null,
+    tags.includes("en:potato-chips") ? "en:potato-chips" : null,
+    tags.includes("en:carbonated-drinks") ? "en:carbonated-drinks" : null,
+    tags.includes("en:frozen-pizzas") ? "en:frozen-pizzas" : null,
+  ].filter((tag): tag is string => Boolean(tag));
+  return [...new Set([...controlledFallbacks, ...reversed.slice(0, 3)])].slice(0, 4);
 }
 
-async function fetchJson(url: string): Promise<{ response: Response; payload: JsonObject | null }> {
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/json",
-      "user-agent": USER_AGENT,
-    },
-  });
-  let payload: JsonObject | null = null;
-  try {
-    const parsed = await response.json();
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) payload = parsed as JsonObject;
-  } catch {
-    payload = null;
+async function fetchJson(url: string, maxAttempts = 1): Promise<SourceRead> {
+  let lastRead: SourceRead | null = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const started = Date.now();
+    const response = await fetch(url, {
+      headers: {
+        accept: "application/json",
+        "user-agent": USER_AGENT,
+      },
+    });
+    const contentType = response.headers.get("content-type") ?? "";
+    let payload: JsonObject | null = null;
+    if (contentType.includes("application/json")) {
+      try {
+        const parsed = await response.json();
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) payload = parsed as JsonObject;
+      } catch {
+        payload = null;
+      }
+    }
+    lastRead = { response, payload, contentType, durationMs: Date.now() - started, attempt };
+    if (response.ok || !TRANSIENT_STATUS.has(response.status) || attempt === maxAttempts) return lastRead;
+    await sleep(attempt * 400);
   }
-  return { response, payload };
+  if (!lastRead) throw new Error("Source read did not execute");
+  return lastRead;
 }
 
 function productArray(payload: JsonObject | null): JsonObject[] {
@@ -149,6 +182,7 @@ async function readAlternatives(product: JsonObject): Promise<JsonObject> {
   }
 
   const attempts: AlternativeAttempt[] = [];
+  let successfulEmptyRead: { endpoint: string; categoryTag: string; response: Response; payload: JsonObject | null } | null = null;
   let bestSuccessfulRead: {
     endpoint: string;
     categoryTag: string;
@@ -160,7 +194,7 @@ async function readAlternatives(product: JsonObject): Promise<JsonObject> {
   for (const categoryTag of categoryCandidates) {
     const endpoint = buildAlternativeEndpoint(categoryTag);
     try {
-      const read = await fetchJson(endpoint);
+      const read = await fetchJson(endpoint, 2);
       const products = productArray(read.payload);
       attempts.push({
         endpoint,
@@ -168,14 +202,31 @@ async function readAlternatives(product: JsonObject): Promise<JsonObject> {
         httpStatus: read.response.status,
         productCount: products.length,
         ok: read.response.ok,
+        contentType: read.contentType,
+        durationMs: read.durationMs,
+        attempt: read.attempt,
+        retrievedAt: new Date().toISOString(),
       });
 
-      if (read.response.ok && (!bestSuccessfulRead || products.length > bestSuccessfulRead.products.length)) {
+      if (read.response.ok && products.length === 0 && !successfulEmptyRead) {
+        successfulEmptyRead = { endpoint, categoryTag, response: read.response, payload: read.payload };
+      }
+      if (read.response.ok && products.length > 0 && (!bestSuccessfulRead || products.length > bestSuccessfulRead.products.length)) {
         bestSuccessfulRead = { endpoint, categoryTag, response: read.response, payload: read.payload, products };
       }
       if (read.response.ok && products.length >= 4) break;
     } catch {
-      attempts.push({ endpoint, categoryTag, httpStatus: 0, productCount: 0, ok: false });
+      attempts.push({
+        endpoint,
+        categoryTag,
+        httpStatus: 0,
+        productCount: 0,
+        ok: false,
+        contentType: "",
+        durationMs: 0,
+        attempt: 1,
+        retrievedAt: new Date().toISOString(),
+      });
     }
   }
 
@@ -197,6 +248,20 @@ async function readAlternatives(product: JsonObject): Promise<JsonObject> {
     };
   }
 
+  if (successfulEmptyRead) {
+    return {
+      kind: "not_found",
+      httpStatus: successfulEmptyRead.response.status,
+      endpoint: successfulEmptyRead.endpoint,
+      categoryTag: successfulEmptyRead.categoryTag,
+      requestedCategoryTags: categoryCandidates,
+      marketScope: "norway_tagged_only",
+      message: "Open Food Facts returned no Norway-tagged products for the bounded category searches",
+      raw: { products: [] },
+      rawEnvelopeMeta: { attempts },
+    };
+  }
+
   const lastAttempt = attempts.at(-1);
   return {
     kind: "source_error",
@@ -212,14 +277,15 @@ async function readAlternatives(product: JsonObject): Promise<JsonObject> {
 }
 
 export const onRequestGet = async ({ request }: PagesContext): Promise<Response> => {
+  const requestId = crypto.randomUUID();
   const requestUrl = new URL(request.url);
   const gtin = normaliseGtin(requestUrl.searchParams.get("barcode"));
   if (!gtin.ok) {
     return json({
       ok: false,
       error: gtin.error,
-      request: { barcode: gtin.normalized },
-    }, 400);
+      request: { barcode: gtin.normalized, requestId },
+    }, 400, requestId);
   }
 
   const retrievedAt = new Date().toISOString();
@@ -228,49 +294,60 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     id: "open_food_facts",
     apiVersion: "v3.6",
     schemaVersion: null as number | null,
+    adapterVersion: ADAPTER_VERSION,
     licence,
     userAgent: USER_AGENT,
   };
 
   try {
-    const { response, payload } = await fetchJson(productEndpoint);
-    const rawProduct = payload?.product;
-    const found = response.ok && rawProduct && typeof rawProduct === "object" && !Array.isArray(rawProduct);
-    const schemaVersion = Number(payload?.schema_version);
+    const read = await fetchJson(productEndpoint, 2);
+    const rawProduct = read.payload?.product;
+    const found = read.response.ok && rawProduct && typeof rawProduct === "object" && !Array.isArray(rawProduct);
+    const schemaVersion = Number(read.payload?.schema_version);
     if (Number.isFinite(schemaVersion)) source.schemaVersion = schemaVersion;
 
+    const productReadMeta = {
+      requestId,
+      contentType: read.contentType,
+      durationMs: read.durationMs,
+      attempt: read.attempt,
+      retrievedAt,
+    };
+
     if (!found) {
-      const explicitNotFound = response.status === 404 || payload?.status === 0 || payload?.status === "not_found";
+      const explicitNotFound = read.response.status === 404 || read.payload?.status === 0 || read.payload?.status === "not_found";
       if (explicitNotFound) {
         return json({
           ok: true,
-          request: { barcode: gtin.normalized },
+          request: { barcode: gtin.normalized, requestId },
           retrievedAt,
           source,
           product: {
             kind: "not_found",
-            httpStatus: response.status,
+            httpStatus: read.response.status,
             endpoint: productEndpoint,
-            rawEnvelope: payload,
+            rawEnvelope: read.payload,
+            rawEnvelopeMeta: productReadMeta,
           },
           alternatives: { kind: "not_run", raw: { products: [] } },
-        });
+        }, 200, requestId);
       }
 
       return json({
         ok: false,
-        request: { barcode: gtin.normalized },
+        request: { barcode: gtin.normalized, requestId },
         retrievedAt,
         source,
         product: {
           kind: "source_error",
-          httpStatus: response.status,
+          httpStatus: read.response.status,
           endpoint: productEndpoint,
-          message: payload ? "Open Food Facts returned an unusable product envelope" : "Open Food Facts returned non-JSON data",
-          rawEnvelope: payload,
+          message: read.payload ? "Open Food Facts returned an unusable product envelope" : "Open Food Facts returned non-JSON or malformed data",
+          rawEnvelope: read.payload,
+          rawEnvelopeMeta: productReadMeta,
         },
         alternatives: { kind: "not_run", raw: { products: [] } },
-      }, 502);
+      }, 502, requestId);
     }
 
     const product = rawProduct as JsonObject;
@@ -278,25 +355,26 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
 
     return json({
       ok: true,
-      request: { barcode: gtin.normalized },
+      request: { barcode: gtin.normalized, requestId },
       retrievedAt,
       source,
       product: {
         kind: "found",
-        httpStatus: response.status,
+        httpStatus: read.response.status,
         endpoint: productEndpoint,
         raw: product,
         rawEnvelopeMeta: {
-          status: payload?.status ?? null,
-          warnings: payload?.warnings ?? [],
+          ...productReadMeta,
+          status: read.payload?.status ?? null,
+          warnings: read.payload?.warnings ?? [],
         },
       },
       alternatives,
-    });
+    }, 200, requestId);
   } catch (error) {
     return json({
       ok: false,
-      request: { barcode: gtin.normalized },
+      request: { barcode: gtin.normalized, requestId },
       retrievedAt,
       source,
       product: {
@@ -304,9 +382,10 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
         httpStatus: 0,
         endpoint: productEndpoint,
         message: error instanceof Error ? error.message : "Open Food Facts request failed",
+        rawEnvelopeMeta: { requestId, retrievedAt },
       },
       alternatives: { kind: "not_run", raw: { products: [] } },
-    }, 503);
+    }, 503, requestId);
   }
 };
 

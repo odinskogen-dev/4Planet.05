@@ -1,5 +1,7 @@
-export const FOOD_MODEL_VERSION = "p18-food-canonical-0.1.0";
-export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.1.0";
+import { classifyProductCategory, classifyProductRelation } from "./category-control.js";
+
+export const FOOD_MODEL_VERSION = "p18-food-canonical-0.2.0";
+export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.2.1";
 
 const GTIN_LENGTHS = new Set([8, 12, 13, 14]);
 const GENERIC_CATEGORY_TAGS = new Set([
@@ -21,7 +23,6 @@ const finiteNumber = (value) => {
 const text = (value) => (typeof value === "string" ? value.trim() : "");
 const stringArray = (value) =>
   Array.isArray(value) ? value.filter((item) => typeof item === "string").map((item) => item.trim()).filter(Boolean) : [];
-
 const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object ?? {}, key);
 
 export function normalizeGtin(input) {
@@ -109,12 +110,15 @@ export function normaliseProduct(rawInput, options = {}) {
   const gtin = source.ok ? source.normalized : requested.normalized;
   const nutriments = raw.nutriments && typeof raw.nutriments === "object" ? raw.nutriments : {};
   const categoryTags = stringArray(raw.categories_tags);
+  const name = text(raw.product_name) || text(raw.product_name_no_language) || text(raw.generic_name);
+  const categoryControl = classifyProductCategory({ name, categoryTags });
+  const sourceComparisonCategory = selectComparisonCategory(categoryTags);
 
   const canonical = {
     modelVersion: FOOD_MODEL_VERSION,
     id: gtin ? `gtin:${gtin}` : "gtin:unknown",
     gtin,
-    name: text(raw.product_name) || text(raw.product_name_no_language) || text(raw.generic_name),
+    name,
     brand: text(raw.brands),
     quantity: text(raw.quantity),
     ingredientsText: text(raw.ingredients_text),
@@ -134,7 +138,10 @@ export function normaliseProduct(rawInput, options = {}) {
       sodium: nutrient(nutriments, "sodium_100g"),
     },
     categoryTags,
-    comparisonCategory: options.comparisonCategory ?? selectComparisonCategory(categoryTags),
+    sourceComparisonCategory,
+    comparisonCategory: categoryControl.profileId ?? sourceComparisonCategory,
+    comparisonFamily: categoryControl.family,
+    categoryControl,
     marketTags: stringArray(raw.countries_tags),
     imageUrl: text(raw.image_front_url),
     sourceRevision: finiteNumber(raw.rev),
@@ -188,7 +195,6 @@ export function normaliseSourceEnvelope(envelopeInput) {
     return { state: "malformed", source, requestedGtin, rawEnvelope: envelope, message: "Malformed source envelope" };
   }
 
-  const comparisonCategory = text(alternativeResult.categoryTag) || undefined;
   const sourceRef = {
     sourceId: text(source.id) || "open_food_facts",
     apiVersion: text(source.apiVersion),
@@ -199,7 +205,6 @@ export function normaliseSourceEnvelope(envelopeInput) {
   };
   const product = normaliseProduct(productResult.raw, {
     requestedGtin: requestedGtin.normalized,
-    comparisonCategory,
     sourceRef,
     isFixture: Boolean(envelope.fixture),
   });
@@ -210,7 +215,6 @@ export function normaliseSourceEnvelope(envelopeInput) {
   for (const item of rawAlternatives) {
     const candidate = normaliseProduct(item, {
       requestedGtin: item?.code,
-      comparisonCategory,
       sourceRef: {
         ...sourceRef,
         endpoint: text(alternativeResult.endpoint),
@@ -237,6 +241,7 @@ export function normaliseSourceEnvelope(envelopeInput) {
       : [],
     marketScope: text(alternativeResult.marketScope) || "unknown",
     comparisonCategory: product.comparisonCategory,
+    sourceSearchCategory: text(alternativeResult.categoryTag) || null,
   };
 }
 
@@ -268,16 +273,25 @@ export function rankAlternatives(baseline, alternativesInput, preferencesInput =
     higherProtein: Boolean(preferencesInput.higherProtein),
   };
   const selectedPriorityCount = Number(preferences.lowerSugar) + Number(preferences.lowerSalt) + Number(preferences.higherProtein);
+  const baselineControlled = Boolean(baseline?.categoryControl?.profileId);
+  const baselineReliable = !["malformed", "conflicted"].includes(baseline?.dataQuality?.state);
+  const canRank = baselineControlled && baselineReliable;
+  const limitations = [
+    ...(baselineControlled ? [] : ["The scanned product has no controlled direct-substitute group, so alternatives cannot be ranked fairly"]),
+    ...(baselineReliable ? [] : ["The scanned product record is conflicted or malformed, so alternatives cannot be ranked fairly"]),
+  ];
 
   const evaluated = alternatives.map((candidate) => {
     const exclusions = [];
+    const relation = classifyProductRelation(baseline, candidate);
+    if (!canRank) exclusions.push("The scanned product record is not reliable enough for comparison");
     const matchedAllergens = allergenMatch(candidate, preferences.avoidAllergens);
     if (matchedAllergens.length > 0) exclusions.push(`Contains selected allergen: ${matchedAllergens.join(", ")}`);
     if (preferences.avoidAllergens.length > 0 && !candidate.allergenDataPresent) exclusions.push("Allergen data is missing");
-    if (baseline.comparisonCategory && candidate.comparisonCategory !== baseline.comparisonCategory) exclusions.push("Not in the same controlled comparison category");
+    if (relation.kind !== "direct") exclusions.push(`${relation.label}: ${relation.reason}`);
     if (candidate.dataQuality.state === "malformed" || candidate.dataQuality.state === "conflicted") exclusions.push("Product record is not reliable enough for ranking");
 
-    const explanations = [];
+    const explanations = [`${relation.label}: ${relation.reason}`];
     let favourableCount = 0;
     let knownCount = 0;
     if (preferences.lowerSugar) {
@@ -292,11 +306,12 @@ export function rankAlternatives(baseline, alternativesInput, preferencesInput =
       const result = compareMetric(candidate, baseline, "protein", "higher", "Protein");
       explanations.push(result.text); knownCount += Number(result.known); favourableCount += Number(result.favourable);
     }
-    if (selectedPriorityCount === 0) explanations.push("No nutrition priority selected; ordered by data confidence only");
+    if (selectedPriorityCount === 0) explanations.push("No nutrition priority selected; direct substitutes are ordered by data confidence only");
     if (candidate.dataQuality.missingFields.length > 0) explanations.push(`Missing: ${candidate.dataQuality.missingFields.join(", ")}`);
 
     return {
       product: candidate,
+      relation,
       eligible: exclusions.length === 0,
       exclusions,
       explanations,
@@ -319,11 +334,16 @@ export function rankAlternatives(baseline, alternativesInput, preferencesInput =
     return left.product.name.localeCompare(right.product.name, "nb");
   });
 
+  const excluded = evaluated.filter((item) => !item.eligible);
   return {
     modelVersion: COMPARISON_MODEL_VERSION,
     preferences,
+    fairComparison: canRank,
+    limitations,
     eligible: evaluated.filter((item) => item.eligible).slice(0, 5),
-    excluded: evaluated.filter((item) => !item.eligible),
+    adjacent: excluded.filter((item) => item.relation.kind === "adjacent"),
+    unsuitable: excluded.filter((item) => item.relation.kind === "unsuitable" || item.relation.kind === "unknown"),
+    excluded,
   };
 }
 

@@ -3,9 +3,11 @@ import test from "node:test";
 import {
   canonicalJson,
   normalizeGtin,
+  normaliseProduct,
   normaliseSourceEnvelope,
   rankAlternatives,
 } from "../src/food/core.js";
+import { classifyProductRelation } from "../src/food/category-control.js";
 import { FOOD_FIXTURES } from "../src/food/fixtures.js";
 
 test("validates GTIN check digits", () => {
@@ -18,9 +20,10 @@ test("normalises the well-covered fixture and preserves provenance", () => {
   const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
   assert.equal(result.state, "found");
   assert.equal(result.product.gtin, "7038010055652");
-  assert.equal(result.product.comparisonCategory, "en:yogurts");
+  assert.equal(result.product.comparisonCategory, "plain_yoghurt");
+  assert.equal(result.product.categoryControl.status, "controlled");
   assert.equal(result.product.sourceRef.sourceId, "open_food_facts");
-  assert.equal(result.alternatives.length, 5);
+  assert.equal(result.alternatives.length, 7);
 });
 
 test("keeps incomplete data explicit", () => {
@@ -49,7 +52,7 @@ test("enforces allergens before ranking", () => {
   const ranked = rankAlternatives(result.product, result.alternatives, { avoidAllergens: ["milk"], lowerSugar: true });
   assert.equal(ranked.eligible.length, 1);
   assert.equal(ranked.eligible[0].product.name, "TEST RECORD — Yoghurt C");
-  assert.equal(ranked.excluded.length, 4);
+  assert.equal(ranked.excluded.length, 6);
 });
 
 test("missing nutrition never gains an ordering advantage", () => {
@@ -68,6 +71,141 @@ test("missing nutrition never gains an ordering advantage", () => {
   assert.equal(ranked.eligible[1].favourableCount, 0);
 });
 
+test("candidate taxonomy is independent from the search category", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const cereal = normaliseProduct({
+    code: "7048840000180",
+    product_name: "TEST RECORD — Corn Flakes",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Corn.",
+    allergens_tags: [],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:corn-flakes"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://cereal",
+    nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
+  });
+  assert.equal(cereal.comparisonCategory, "corn_flakes");
+  assert.equal(classifyProductRelation(result.product, cereal).kind, "unsuitable");
+  const ranked = rankAlternatives(result.product, [cereal], { lowerSugar: true });
+  assert.equal(ranked.eligible.length, 0);
+  assert.equal(ranked.unsuitable.length, 1);
+});
+
+test("taxonomy overlap with a different format is adjacent, not direct", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const biola = normaliseProduct({
+    code: "7048840000197",
+    product_name: "TEST RECORD — Biola syrnet melk naturell",
+    brands: "P18 Fixture",
+    quantity: "1000 g",
+    ingredients_text: "Melk, kultur.",
+    allergens_tags: ["en:milk"],
+    categories_tags: ["en:foods", "en:dairies", "en:yogurts", "en:plain-yogurts"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://biola",
+    nutriments: { "energy-kcal_100g": 55, sugars_100g: 4, salt_100g: 0.1, proteins_100g: 3.4 },
+  });
+  const relation = classifyProductRelation(result.product, biola);
+  assert.equal(relation.kind, "adjacent");
+  const ranked = rankAlternatives(result.product, [biola], { lowerSugar: true });
+  assert.equal(ranked.eligible.length, 0);
+  assert.equal(ranked.adjacent.length, 1);
+});
+
+test("flavoured yoghurt is not a direct substitute for plain yoghurt", () => {
+  const baseline = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope).product;
+  const vanilla = normaliseProduct({
+    code: "7048840000210",
+    product_name: "TEST RECORD — Vaniljeyoghurt",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Melk, sukker, vanilje.",
+    allergens_tags: ["en:milk"],
+    categories_tags: ["en:foods", "en:yogurts", "en:plain-yogurts", "en:vanilla-yogurt"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://vanilla",
+    nutriments: { "energy-kcal_100g": 90, sugars_100g: 11, salt_100g: 0.1, proteins_100g: 3.2 },
+  });
+  assert.equal(vanilla.comparisonCategory, "flavoured_yoghurt");
+  assert.equal(classifyProductRelation(baseline, vanilla).kind, "adjacent");
+});
+
+test("rolled oats and corn flakes remain adjacent breakfast formats", () => {
+  const oats = normaliseProduct({
+    code: "7048840000227",
+    product_name: "TEST RECORD — Havregryn",
+    brands: "P18 Fixture",
+    quantity: "1000 g",
+    ingredients_text: "Havre.",
+    allergens_tags: ["en:oats"],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:rolled-oats"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://oats",
+    nutriments: { "energy-kcal_100g": 370, sugars_100g: 1, salt_100g: 0.01, proteins_100g: 13 },
+  });
+  const cornFlakes = normaliseProduct({
+    code: "7048840000234",
+    product_name: "TEST RECORD — Corn Flakes",
+    brands: "P18 Fixture",
+    quantity: "500 g",
+    ingredients_text: "Mais.",
+    allergens_tags: [],
+    categories_tags: ["en:foods", "en:breakfast-cereals", "en:corn-flakes"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://cornflakes",
+    nutriments: { "energy-kcal_100g": 360, sugars_100g: 8, salt_100g: 1, proteins_100g: 7 },
+  });
+  assert.equal(oats.comparisonCategory, "rolled_oats");
+  assert.equal(cornFlakes.comparisonCategory, "corn_flakes");
+  assert.equal(classifyProductRelation(oats, cornFlakes).kind, "adjacent");
+});
+
+test("energy drink classification takes precedence over generic carbonated drink tags", () => {
+  const energy = normaliseProduct({
+    code: "7048840000241",
+    product_name: "TEST RECORD — Energy Drink",
+    brands: "P18 Fixture",
+    quantity: "500 ml",
+    ingredients_text: "Carbonated water, caffeine.",
+    allergens_tags: [],
+    categories_tags: ["en:beverages", "en:carbonated-drinks", "en:energy-drinks"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://energy",
+    nutriments: { "energy-kcal_100g": 45, sugars_100g: 10, salt_100g: 0.1, proteins_100g: 0 },
+  });
+  assert.equal(energy.comparisonCategory, "energy_drink");
+});
+
+test("unsupported baseline cannot generate a fair ranking", () => {
+  const unsupported = normaliseProduct({
+    code: "7048840000203",
+    product_name: "TEST RECORD — Unknown food format",
+    brands: "P18 Fixture",
+    quantity: "200 g",
+    ingredients_text: "Unknown.",
+    allergens_tags: [],
+    categories_tags: ["en:foods"],
+    countries_tags: ["en:norway"],
+    image_front_url: "fixture://unknown",
+    nutriments: { "energy-kcal_100g": 100, sugars_100g: 2, salt_100g: 0.1, proteins_100g: 2 },
+  });
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
+  const ranked = rankAlternatives(unsupported, result.alternatives, { lowerSugar: true });
+  assert.equal(ranked.fairComparison, false);
+  assert.equal(ranked.eligible.length, 0);
+  assert.ok(ranked.limitations.length > 0);
+});
+
+test("conflicted baseline cannot produce an eligible comparison", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.conflict.envelope);
+  const ranked = rankAlternatives(result.product, result.alternatives, { lowerSugar: true });
+  assert.equal(result.product.dataQuality.state, "conflicted");
+  assert.equal(ranked.fairComparison, false);
+  assert.equal(ranked.eligible.length, 0);
+  assert.match(ranked.limitations.join(" "), /conflicted or malformed/);
+});
+
 test("ordering is deterministic and emits no universal product score", () => {
   const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
   const first = rankAlternatives(result.product, result.alternatives, { lowerSugar: true, higherProtein: true });
@@ -81,7 +219,7 @@ test("keeps a found product distinct from an alternative-source failure", () => 
   envelope.alternatives = {
     kind: "source_error",
     httpStatus: 503,
-    categoryTag: "en:yogurts",
+    categoryTag: "en:plain-yogurts",
     message: "Fixture alternative search unavailable",
     raw: { products: [] },
     rawEnvelopeMeta: { attempts: [{ httpStatus: 503 }] },
