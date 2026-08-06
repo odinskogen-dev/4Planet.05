@@ -11,10 +11,13 @@ test("private FOOD user test stores one anonymous scan and exports evidence", as
   await page.getByRole("textbox", { name: "GTIN", exact: true }).fill("7038010055652");
   await page.getByLabel("Product name", { exact: true }).fill("Naturell Yoghourt");
   await page.getByLabel("Category", { exact: true }).fill("plain yoghurt");
-  await page.getByLabel("Identity", { exact: true }).selectOption("match");
-  await page.getByLabel("Ingredients", { exact: true }).selectOption("match");
-  await page.getByLabel("Allergens", { exact: true }).selectOption("match");
-  await page.getByLabel("Nutrition", { exact: true }).selectOption("match");
+
+  const packageChecks = page.locator(".food-user-test-grid--checks select");
+  await expect(packageChecks).toHaveCount(4);
+  for (let index = 0; index < 4; index += 1) {
+    await packageChecks.nth(index).selectOption("match");
+  }
+
   await page.getByLabel(/Comprehension time/).fill("24");
   await page.getByRole("button", { name: "Save anonymous scan record" }).click();
 
