@@ -1,0 +1,88 @@
+name: P18 FOOD Apply Baseline Reliability
+
+on:
+  push:
+    branches:
+      - agent/p18-food-02
+    paths:
+      - ".github/workflows/p18-food-baseline-reliability-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout FOOD continuation branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/p18-food-02
+
+      - name: Apply baseline reliability contract
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          core = Path('src/food/core.js')
+          text = core.read_text()
+          text = text.replace(
+              'export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.2.0";',
+              'export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.2.1";'
+          )
+          old = '''  const baselineControlled = Boolean(baseline?.categoryControl?.profileId);
+          const limitations = baselineControlled ? [] : ["The scanned product has no controlled direct-substitute group, so alternatives cannot be ranked fairly"];
+          '''
+          new = '''  const baselineControlled = Boolean(baseline?.categoryControl?.profileId);
+          const baselineReliable = !["malformed", "conflicted"].includes(baseline?.dataQuality?.state);
+          const canRank = baselineControlled && baselineReliable;
+          const limitations = [
+            ...(baselineControlled ? [] : ["The scanned product has no controlled direct-substitute group, so alternatives cannot be ranked fairly"]),
+            ...(baselineReliable ? [] : ["The scanned product record is conflicted or malformed, so alternatives cannot be ranked fairly"]),
+          ];
+          '''
+          if old not in text:
+              raise SystemExit('baseline control block not found')
+          text = text.replace(old, new)
+          old = '''    const exclusions = [];
+              const relation = classifyProductRelation(baseline, candidate);
+          '''
+          new = '''    const exclusions = [];
+              const relation = classifyProductRelation(baseline, candidate);
+              if (!canRank) exclusions.push("The scanned product record is not reliable enough for comparison");
+          '''
+          if old not in text:
+              raise SystemExit('candidate exclusion block not found')
+          text = text.replace(old, new)
+          text = text.replace('    fairComparison: baselineControlled,', '    fairComparison: canRank,')
+          core.write_text(text)
+
+          tests = Path('scripts/food-contracts.test.mjs')
+          text = tests.read_text()
+          marker = '''test("ordering is deterministic and emits no universal product score", () => {'''
+          addition = '''test("conflicted baseline cannot produce an eligible comparison", () => {
+            const result = normaliseSourceEnvelope(FOOD_FIXTURES.conflict.envelope);
+            const ranked = rankAlternatives(result.product, result.alternatives, { lowerSugar: true });
+            assert.equal(result.product.dataQuality.state, "conflicted");
+            assert.equal(ranked.fairComparison, false);
+            assert.equal(ranked.eligible.length, 0);
+            assert.match(ranked.limitations.join(" "), /conflicted or malformed/);
+          });
+
+          '''
+          if marker not in text:
+              raise SystemExit('test insertion marker not found')
+          text = text.replace(marker, addition + marker)
+          tests.write_text(text)
+
+          Path('.github/workflows/p18-food-baseline-reliability-apply.yml').unlink()
+          PY
+
+      - name: Commit reliability contract
+        run: |
+          git config user.name "4PLANET Gate Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/food/core.js scripts/food-contracts.test.mjs .github/workflows/p18-food-baseline-reliability-apply.yml
+          git commit -m "fix(food): require reliable baseline for comparison"
+          git push origin HEAD:agent/p18-food-02
