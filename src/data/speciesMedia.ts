@@ -29,33 +29,54 @@ export interface MediaRecord {
   supportedUse: string;
   limitations: string;
   rightsStatus: RightsStatus;
+  /**
+   * Blocker 8: exact, actionable per-profile asset blocker while rightsStatus is
+   * PENDING. States a concrete candidate source + the specific licence/record
+   * step needed before the image can be shown. Not a generic "pending".
+   */
+  assetBlocker?: string;
 }
 
-function pending(sourcePage: string): MediaRecord {
+/** A precise candidate asset + the exact rights step still required per profile. */
+const BLOCKERS: Record<string, string> = {
+  orca: "Candidate: NOAA Fisheries killer-whale media (U.S. Gov public domain). BLOCKER: confirm the specific file's public-domain status + capture creator/date into a full rights record, or use a founder-supplied FOUNDER_CLEARED image.",
+  "humpback-whale": "Candidate: NOAA Fisheries humpback media (public domain). BLOCKER: verify the exact file URL + record creator/licence/checked-date before bundling.",
+  "sperm-whale": "Candidate: NOAA Fisheries sperm-whale media (public domain). BLOCKER: confirm the specific asset is Gov-work public domain and capture attribution.",
+  "harbour-porpoise": "Candidate: GBIF media with a CC-BY/CC0 licence field on a Norwegian occurrence. BLOCKER: select one record whose media carries an explicit licence + attribution.",
+  "bottlenose-dolphin": "Candidate: NOAA Fisheries bottlenose media (public domain). BLOCKER: verify the exact file + record the rights fields.",
+  "atlantic-cod": "Candidate: GBIF/Artsdatabanken occurrence media with CC licence. BLOCKER: confirm a record whose image licence permits public web use.",
+  "blue-mussel": "Candidate: GBIF occurrence media (CC0/CC-BY). BLOCKER: select a licensed image and record attribution.",
+  jaguar: "Candidate: GBIF/iNaturalist research-grade media under CC-BY/CC0. BLOCKER: pick one record with a compatible licence + attribution.",
+  "hyacinth-macaw": "Candidate: GBIF/iNaturalist media under CC-BY/CC0. BLOCKER: confirm a licensed record + attribution.",
+  "western-honey-bee": "Candidate: GBIF/iNaturalist media under CC0. BLOCKER: select a CC0 record and capture the rights fields.",
+};
+
+function pending(slug: string, sourcePage: string): MediaRecord {
   return {
     localPath: "", sourcePage, photographer: "", owner: "", licence: "", licenceUrl: "",
-    attribution: "", checkedDate: "2026-08-05", cropAllowed: false, modificationAllowed: false,
+    attribution: "", checkedDate: "2026-08-06", cropAllowed: false, modificationAllowed: false,
     publicWebAllowed: false, commercialAllowed: false, supportedUse: "",
     limitations: "No verified image licence yet — render the no-image state.", rightsStatus: "PENDING",
+    assetBlocker: BLOCKERS[slug],
   };
 }
 
 /**
- * Keyed by species slug. All entries are PENDING until real assets + rights are
- * bundled: the honest no-image state is correct, and a fabricated licence is not.
- * FOUNDER_CLEARED entries are added here the moment the founder supplies images.
+ * Keyed by species slug. All entries are PENDING with an EXACT per-profile asset
+ * blocker (Blocker 8): the honest no-image state is correct, a fabricated licence
+ * is not. FOUNDER_CLEARED entries are added the moment the founder supplies images.
  */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
-  orca: pending("https://www.gbif.org/species/2440483"),
-  "humpback-whale": pending("https://www.gbif.org/species/5220086"),
-  "sperm-whale": pending("https://www.gbif.org/species/2440617"),
-  "harbour-porpoise": pending("https://www.gbif.org/species/2440739"),
-  "bottlenose-dolphin": pending("https://www.gbif.org/species/2440601"),
-  "atlantic-cod": pending("https://www.gbif.org/species/2378026"),
-  "blue-mussel": pending("https://www.gbif.org/species/2286380"),
-  jaguar: pending("https://www.gbif.org/species/5219426"),
-  "hyacinth-macaw": pending("https://www.gbif.org/species/2474514"),
-  "western-honey-bee": pending("https://www.gbif.org/species/1341976"),
+  orca: pending("orca", "https://www.gbif.org/species/2440483"),
+  "humpback-whale": pending("humpback-whale", "https://www.gbif.org/species/5220086"),
+  "sperm-whale": pending("sperm-whale", "https://www.gbif.org/species/2440617"),
+  "harbour-porpoise": pending("harbour-porpoise", "https://www.gbif.org/species/2440739"),
+  "bottlenose-dolphin": pending("bottlenose-dolphin", "https://www.gbif.org/species/2440601"),
+  "atlantic-cod": pending("atlantic-cod", "https://www.gbif.org/species/2378026"),
+  "blue-mussel": pending("blue-mussel", "https://www.gbif.org/species/2286380"),
+  jaguar: pending("jaguar", "https://www.gbif.org/species/5219426"),
+  "hyacinth-macaw": pending("hyacinth-macaw", "https://www.gbif.org/species/2474514"),
+  "western-honey-bee": pending("western-honey-bee", "https://www.gbif.org/species/1341976"),
 };
 
 export const speciesMedia = (slug: string): MediaRecord | undefined => SPECIES_MEDIA[slug];

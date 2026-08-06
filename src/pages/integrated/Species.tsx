@@ -63,9 +63,9 @@ function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: str
       ) : (
         <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18,
           background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
-          <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 300 }}>
+          <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 420, fontSize: 9 }}>
             <strong style={{ display: "block", color: "#fff", marginBottom: 4, letterSpacing: ".14em" }}>NO CLEARED IMAGE</strong>
-            Awaiting a verified media-rights record. No unverified photo is shown.
+            {media?.assetBlocker ? media.assetBlocker : "Awaiting a verified media-rights record. No unverified photo is shown."}
           </div>
         </div>
       )}
