@@ -54,11 +54,11 @@ export const IMAGES = {
   wh4lesHero: { src: `${A}/missions/wh4les/hero.jpg`, alt: "A whale's tail rising from calm water", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 45%", role: "missionHero" },
   cor4lHero: { src: `${A}/missions/cor4l/hero.jpg`, alt: "A living coral reef standing in clear water", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
-  antarcticaHero: { src: `${A}/missions/4ntarctica/hero.jpg`, alt: "A large iceberg standing in still polar water", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
+  rewildMarineHero: { src: `${A}/missions/rewild-marine/hero.jpg`, alt: "Seagrass and kelp rising through sunlit coastal water above a shellfish bed", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   clim4teHero: { src: `${A}/missions/clim4te/hero.jpg`, alt: "A green forest under drifting mist", mission: "clim4te", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   amazoniaHero: { src: `${A}/missions/am4zonia/hero.jpg`, alt: "A rainforest waterfall in dense canopy", mission: "am4zonia", domain: "E4RTH_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   speciesHero: { src: `${A}/missions/species/hero.jpg`, alt: "A wild animal watching from low light", mission: "species", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
-  rewildHero: { src: `${A}/missions/rewild/hero.jpg`, alt: "A green hillside settlement returning to the land", mission: "rewild", domain: "E4RTH_", aspectRatio: "1/1", objectPosition: "50% 55%", role: "missionHero" },
+  rewildHero: { src: `${A}/missions/rewild/hero.jpg`, alt: "A green hillside returning to wild land", mission: "rewild-land", domain: "E4RTH_", aspectRatio: "1/1", objectPosition: "50% 55%", role: "missionHero" },
   foodHero: { src: `${A}/missions/food/hero.jpg`, alt: "Aerial of farmland with harvesters at work", mission: "food", domain: "S4PIENS_", aspectRatio: "16/9", objectPosition: "50% 50%", role: "missionHero" },
   en3rgyHero: { src: `${A}/missions/en3rgy/hero.jpg`, alt: "A hydroelectric dam spillway lit at night", mission: "en4rgy", domain: "S4PIENS_", aspectRatio: "2/1", objectPosition: "50% 50%", role: "missionHero" },
   circularCityHero: { src: `${A}/missions/circular-city/hero.jpg`, alt: "A building facade planted with living greenery", mission: "circular-city", domain: "S4PIENS_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
@@ -95,12 +95,12 @@ export const impactImage = (slug: string): ImageMeta | undefined => IMPACT_IMAGE
 const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "wh4les": { src: `${A2}/wh4les/detail-01.jpg`, alt: "A whale at the surface — a second frame from the field", aspectRatio: "3/2", role: "editorial" },
-  "rewild-marine": { src: `${A2}/4ntarctica/detail-01.jpg`, alt: "Polar ice standing in still water", aspectRatio: "3/2", role: "editorial" },
+  "rewild-marine": { src: `${A2}/rewild-marine/detail-01.jpg`, alt: "Restored seagrass and kelp in coastal water", aspectRatio: "3/2", role: "editorial" },
   "4rt": { src: `${A2}/4telier/detail-01.jpg`, alt: "An architectural form in light", aspectRatio: "3/2", role: "editorial" },
   "am4zonia": { src: `${A2}/am4zonia/detail-01.jpg`, alt: "Rainforest river winding through dense canopy", aspectRatio: "3/2", role: "editorial" },
   "clim4te": { src: `${A2}/clim4te/detail-01.jpg`, alt: "Dark northern forest — slow restoration in low light", aspectRatio: "3/2", role: "editorial" },
   "species": { src: `${A2}/species/detail-01.jpg`, alt: "Aerial of wild terrain — habitat seen whole", aspectRatio: "3/2", role: "editorial" },
-  "rewild": { src: `${A2}/rewild/detail-01.jpg`, alt: "Rugged land meeting water — habitat returning", aspectRatio: "3/2", role: "editorial" },
+  "rewild-land": { src: `${A2}/rewild/detail-01.jpg`, alt: "Rugged land meeting water — habitat returning", aspectRatio: "3/2", role: "editorial" },
   "circular-city": { src: `${A2}/circular-city/detail-01.jpg`, alt: "Planted terraces stepping down a dense urban block", aspectRatio: "3/2", role: "editorial" },
   "cor4l": { src: `${A2}/cor4l/detail-01.jpg`, alt: "Close detail of living coral structure", aspectRatio: "3/2", role: "editorial" },
   "en4rgy": { src: `${A2}/en3rgy/detail-01.jpg`, alt: "Detail of energy infrastructure at work", aspectRatio: "3/2", role: "editorial" },
@@ -109,3 +109,26 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "cle4n": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];
+
+/**
+ * Blocker 4 — exact rights record for the marine-rewilding hero that replaces the
+ * former 4NTARCTICA_ imagery. This asset is an original 4PLANET-created
+ * illustration (not a third-party photograph), so rights are clean and complete.
+ */
+export const MISSION_MEDIA_RIGHTS: Record<string, {
+  file: string; kind: string; owner: string; creator: string; licence: string;
+  attribution: string; checkedDate: string; commercialAllowed: boolean; limitations: string;
+}> = {
+  "rewild-marine": {
+    file: "/assets/missions/rewild-marine/hero.jpg",
+    kind: "Original illustration (procedural, 4PLANET-created)",
+    owner: "4PLANET / Skog Communications AS",
+    creator: "4PLANET (generated in-house)",
+    licence: "Owned work — all rights held by 4PLANET",
+    attribution: "4PLANET",
+    checkedDate: "2026-08-06",
+    commercialAllowed: true,
+    limitations: "Illustrative, not a photograph of a specific site; depicts seagrass, kelp and shellfish beds as a representation of coastal rewilding.",
+  },
+};
+export const missionMediaRights = (slug: string) => MISSION_MEDIA_RIGHTS[slug];
