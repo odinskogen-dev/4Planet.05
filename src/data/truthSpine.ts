@@ -135,6 +135,7 @@ export const ORCA_SOURCE_RECORD: SourceRecord = {
     eventDate: "2026-01-03",
     decimalLatitude: 63.44559,
     decimalLongitude: 9.304561,
+    coordinateUncertaintyInMeters: 1000,
     basisOfRecord: "HUMAN_OBSERVATION",
     occurrenceStatus: "PRESENT",
     datasetKey: "b124e1e0-4755-430f-9eab-894f25a9b59c",
