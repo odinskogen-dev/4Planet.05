@@ -1,27 +1,11 @@
-export const CATEGORY_CONTROL_VERSION = "p18-food-category-control-0.3.0";
+export const CATEGORY_CONTROL_VERSION = "p18-food-category-control-0.3.1";
 
 const hasAnyTag = (tags, values) => values.some((tag) => tags.has(tag));
 const normaliseName = (value) => String(value ?? "").trim().toLowerCase();
+const YOGHURT_SIGNAL = /yogh?o?urt/;
+const FLAVOUR_SIGNAL = /(vanil|vanilla|jordb|strawber|blåb|blueber|mango|bringeb|raspber|fersken|peach|karamell|caramel|sjokolade|chocolate|kokos|coconut|salted)/;
 
 const PROFILES = [
-  {
-    id: "greek_plain_yoghurt",
-    label: "Greek-style plain yoghurt",
-    family: "yoghurt",
-    directTags: ["en:greek-style-yogurts"],
-    familyTags: ["en:yogurts", "en:plain-yogurts", "en:fermented-dairy-desserts"],
-    matches: ({ name, tags }) => (tags.has("en:greek-style-yogurts") || /\b(gresk|greek)\b/.test(name))
-      && /yogh?urt/.test(name)
-      && !/(vanil|vanilla|jordb|strawber|blåb|blueber|mango|bringeb|raspber)/.test(name),
-  },
-  {
-    id: "skyr_protein_yoghurt",
-    label: "Skyr and protein yoghurt",
-    family: "yoghurt",
-    directTags: ["en:skyrs", "en:protein-yogurts"],
-    familyTags: ["en:yogurts", "en:plain-yogurts", "en:fermented-dairy-desserts"],
-    matches: ({ name }) => /\b(skyr|protein\s*yogh?urt|proteinyogh?urt)\b/.test(name),
-  },
   {
     id: "flavoured_yoghurt",
     label: "Flavoured yoghurt",
@@ -29,7 +13,25 @@ const PROFILES = [
     directTags: ["en:vanilla-yogurt", "en:flavoured-yogurts", "en:fruit-yogurts"],
     familyTags: ["en:yogurts", "en:plain-yogurts", "en:fermented-dairy-desserts"],
     matches: ({ name, tags }) => hasAnyTag(tags, ["en:vanilla-yogurt", "en:flavoured-yogurts", "en:fruit-yogurts"])
-      || (/yogh?urt/.test(name) && /(vanil|vanilla|jordb|strawber|blåb|blueber|mango|bringeb|raspber|fersken|peach)/.test(name)),
+      || (YOGHURT_SIGNAL.test(name) && FLAVOUR_SIGNAL.test(name)),
+  },
+  {
+    id: "greek_plain_yoghurt",
+    label: "Greek-style plain yoghurt",
+    family: "yoghurt",
+    directTags: ["en:greek-style-yogurts"],
+    familyTags: ["en:yogurts", "en:plain-yogurts", "en:fermented-dairy-desserts"],
+    matches: ({ name, tags }) => (tags.has("en:greek-style-yogurts") || /\b(gresk|greek|græsk)\b/.test(name))
+      && YOGHURT_SIGNAL.test(name)
+      && !FLAVOUR_SIGNAL.test(name),
+  },
+  {
+    id: "skyr_protein_yoghurt",
+    label: "Skyr and protein yoghurt",
+    family: "yoghurt",
+    directTags: ["en:skyrs", "en:protein-yogurts"],
+    familyTags: ["en:yogurts", "en:plain-yogurts", "en:fermented-dairy-desserts"],
+    matches: ({ name }) => /\b(skyr|protein\s*yogh?o?urt|proteinyogh?o?urt)\b/.test(name),
   },
   {
     id: "plain_yoghurt",
@@ -38,8 +40,9 @@ const PROFILES = [
     directTags: ["en:plain-yogurts", "en:plain-fermented-dairy-desserts"],
     familyTags: ["en:yogurts", "en:fermented-dairy-desserts"],
     matches: ({ name, tags }) => hasAnyTag(tags, ["en:plain-yogurts", "en:plain-fermented-dairy-desserts"])
-      && /yogh?urt/.test(name)
-      && !/(gresk|greek|skyr|protein|vanil|vanilla|jordb|strawber|blåb|blueber|mango|bringeb|raspber|cottage|biola|kefir|syrnet\s+melk|drikke?yogh?urt|drinking\s+yogh?urt)/.test(name),
+      && YOGHURT_SIGNAL.test(name)
+      && !/(gresk|greek|græsk|skyr|protein|cottage|biola|kefir|syrnet\s+melk|drikke?yogh?o?urt|drinking\s+yogh?o?urt)/.test(name)
+      && !FLAVOUR_SIGNAL.test(name),
   },
   {
     id: "rolled_oats",
@@ -103,13 +106,29 @@ const PROFILES = [
       && !tags.has("en:corn-flakes"),
   },
   {
+    id: "frozen_pizza",
+    label: "Frozen pizza",
+    family: "ready_meal",
+    directTags: ["en:frozen-pizzas"],
+    familyTags: ["en:pizzas", "en:frozen-foods", "en:meals"],
+    matches: ({ name, tags }) => tags.has("en:frozen-pizzas") || (/pizza/.test(name) && tags.has("en:frozen-foods")),
+  },
+  {
+    id: "pizza_other",
+    label: "Pizza",
+    family: "ready_meal",
+    directTags: ["en:pizzas"],
+    familyTags: ["en:meals"],
+    matches: ({ name, tags }) => tags.has("en:pizzas") || /pizza/.test(name),
+  },
+  {
     id: "tortilla_chips",
     label: "Tortilla chips",
     family: "savoury_snack",
     directTags: ["en:tortilla-chips", "en:corn-chips"],
     familyTags: ["en:salty-snacks", "en:snacks"],
-    matches: ({ name, tags }) => hasAnyTag(tags, ["en:tortilla-chips", "en:corn-chips"])
-      || /(tortilla|nacho|corn\s+chips?|maischips)/.test(name),
+    matches: ({ name, tags }) => !/pizza/.test(name)
+      && (hasAnyTag(tags, ["en:tortilla-chips", "en:corn-chips"]) || /(tortilla|nacho|corn\s+chips?|maischips)/.test(name)),
   },
   {
     id: "potato_chips",
@@ -137,22 +156,6 @@ const PROFILES = [
     matches: ({ name, tags }) => hasAnyTag(tags, ["en:carbonated-drinks", "en:sodas", "en:soft-drinks"])
       && !tags.has("en:energy-drinks")
       && !/(energy\s*drink|energidrikk|red\s*bull|monster\s+energy)/.test(name),
-  },
-  {
-    id: "frozen_pizza",
-    label: "Frozen pizza",
-    family: "ready_meal",
-    directTags: ["en:frozen-pizzas"],
-    familyTags: ["en:pizzas", "en:frozen-foods", "en:meals"],
-    matches: ({ name, tags }) => tags.has("en:frozen-pizzas") || (/pizza/.test(name) && tags.has("en:frozen-foods")),
-  },
-  {
-    id: "pizza_other",
-    label: "Pizza",
-    family: "ready_meal",
-    directTags: ["en:pizzas"],
-    familyTags: ["en:meals"],
-    matches: ({ name, tags }) => tags.has("en:pizzas") || /pizza/.test(name),
   },
 ];
 
