@@ -4,8 +4,9 @@ import { normalizeGtin, normaliseSourceEnvelope, rankAlternatives } from "../src
 const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:4173";
 const TARGET_PER_CATEGORY = Number(process.env.TARGET_PER_CATEGORY || 10);
 const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS || 6500);
-const USER_AGENT = "4PLANET-P18-FOOD-COVERAGE/0.3 (https://4planet.org; product-intelligence@4planet.org)";
+const USER_AGENT = "4PLANET-P18-FOOD-COVERAGE/0.4 (https://4planet.org; product-intelligence@4planet.org)";
 const OFF_ORIGIN = "https://world.openfoodfacts.org";
+const seedRegistry = JSON.parse(fs.readFileSync(new URL("../data/p18-food-02-audited-seeds.json", import.meta.url), "utf8"));
 
 const categories = [
   {
@@ -59,20 +60,23 @@ function seedEndpoint(category) {
   return url.toString();
 }
 
-async function discoverSeeds(category) {
-  const { payload } = await readJson(seedEndpoint(category));
-  const products = Array.isArray(payload?.products) ? payload.products : [];
+function normaliseSeedProducts(products) {
   const unique = new Map();
   for (const product of products) {
-    const gtin = normalizeGtin(product?.code);
-    const marketTags = Array.isArray(product?.countries_tags) ? product.countries_tags : [];
-    if (!gtin.ok || !marketTags.includes("en:norway") || !String(product?.product_name ?? "").trim()) continue;
+    const gtin = normalizeGtin(product?.code ?? product?.gtin);
+    const marketTags = Array.isArray(product?.countries_tags) ? product.countries_tags : ["en:norway"];
+    const name = String(product?.product_name ?? product?.seedName ?? "").trim();
+    if (!gtin.ok || !marketTags.includes("en:norway") || !name) continue;
     if (!unique.has(gtin.normalized)) {
       unique.set(gtin.normalized, {
         gtin: gtin.normalized,
-        seedName: String(product.product_name ?? ""),
-        seedBrand: String(product.brands ?? ""),
-        seedCategories: Array.isArray(product.categories_tags) ? product.categories_tags : [],
+        seedName: name,
+        seedBrand: String(product?.brands ?? product?.seedBrand ?? ""),
+        seedCategories: Array.isArray(product?.categories_tags)
+          ? product.categories_tags
+          : Array.isArray(product?.seedCategories)
+            ? product.seedCategories
+            : [],
       });
     }
     if (unique.size >= TARGET_PER_CATEGORY) break;
@@ -80,12 +84,50 @@ async function discoverSeeds(category) {
   return [...unique.values()];
 }
 
-function productRow(category, seed, result, envelope, error = null) {
+async function resolveSeeds(category) {
+  let liveError = null;
+  try {
+    const { payload } = await readJson(seedEndpoint(category));
+    const liveSeeds = normaliseSeedProducts(Array.isArray(payload?.products) ? payload.products : []);
+    if (liveSeeds.length >= TARGET_PER_CATEGORY) {
+      return {
+        seeds: liveSeeds.slice(0, TARGET_PER_CATEGORY),
+        seedSource: "live_discovery",
+        seedDiscoveryError: "",
+      };
+    }
+    liveError = new Error(`Live discovery returned ${liveSeeds.length}/${TARGET_PER_CATEGORY} valid seeds`);
+  } catch (error) {
+    liveError = error instanceof Error ? error : new Error(String(error));
+  }
+
+  const registrySeeds = normaliseSeedProducts(seedRegistry?.categories?.[category.id] ?? []);
+  if (registrySeeds.length < TARGET_PER_CATEGORY) {
+    throw new Error(
+      `${liveError?.message ?? "Live seed discovery failed"}; audited registry contains only ${registrySeeds.length}/${TARGET_PER_CATEGORY}`,
+    );
+  }
+
+  return {
+    seeds: registrySeeds.slice(0, TARGET_PER_CATEGORY),
+    seedSource: "audited_seed_registry_fallback",
+    seedDiscoveryError: liveError?.message ?? "Live seed discovery did not provide a complete set",
+  };
+}
+
+function productRow(category, seedContext, seed, result, envelope, error = null) {
+  const seedEvidence = {
+    seedSource: seedContext.seedSource,
+    seedDiscoveryError: seedContext.seedDiscoveryError,
+    seedRegistryVersion: seedContext.seedSource === "audited_seed_registry_fallback" ? seedRegistry.registryVersion : "",
+  };
+
   if (!result?.product) {
     return {
       categoryId: category.id,
       categoryLabel: category.label,
       searchTag: category.searchTag,
+      ...seedEvidence,
       gtin: seed.gtin,
       seedName: seed.seedName,
       resolution: result?.state ?? "source_error",
@@ -135,6 +177,7 @@ function productRow(category, seed, result, envelope, error = null) {
     categoryId: category.id,
     categoryLabel: category.label,
     searchTag: category.searchTag,
+    ...seedEvidence,
     gtin: seed.gtin,
     seedName: seed.seedName,
     resolution: result.state,
@@ -168,17 +211,25 @@ const rows = [];
 const seedRecord = {};
 
 for (const category of categories) {
-  let seeds = [];
+  let seedContext;
   try {
-    seeds = await discoverSeeds(category);
+    seedContext = await resolveSeeds(category);
   } catch (error) {
-    rows.push(productRow(category, { gtin: "", seedName: "CATEGORY SEED FAILURE" }, null, null, error));
-    seedRecord[category.id] = [];
+    const message = error instanceof Error ? error.message : String(error);
+    rows.push(productRow(
+      category,
+      { seedSource: "unresolved", seedDiscoveryError: message },
+      { gtin: "", seedName: "CATEGORY SEED FAILURE" },
+      null,
+      null,
+      error,
+    ));
+    seedRecord[category.id] = { seedSource: "unresolved", seedDiscoveryError: message, seeds: [] };
     continue;
   }
-  seedRecord[category.id] = seeds;
 
-  for (const seed of seeds) {
+  seedRecord[category.id] = seedContext;
+  for (const seed of seedContext.seeds) {
     let envelope = null;
     let result = null;
     let error = null;
@@ -189,13 +240,14 @@ for (const category of categories) {
     } catch (caught) {
       error = caught instanceof Error ? caught : new Error(String(caught));
     }
-    rows.push(productRow(category, seed, result, envelope, error));
+    rows.push(productRow(category, seedContext, seed, result, envelope, error));
     await sleep(REQUEST_DELAY_MS);
   }
 }
 
 const headers = [
-  "categoryId", "categoryLabel", "searchTag", "gtin", "seedName", "resolution", "identityAccuracy", "norwayMarketRelevant",
+  "categoryId", "categoryLabel", "searchTag", "seedSource", "seedDiscoveryError", "seedRegistryVersion",
+  "gtin", "seedName", "resolution", "identityAccuracy", "norwayMarketRelevant",
   "ingredientCoverage", "allergenCoverage", "nutritionCoverage", "categoryPrecision", "controlledProfile", "controlledFamily",
   "sourceConfidence", "completeness", "missingFields", "conflicts", "alternativeSourceState", "rawAlternativeCount",
   "eligibleAlternativeCount", "adjacentAlternativeCount", "unsuitableAlternativeCount", "relevanceSignal", "topAlternatives",
@@ -207,11 +259,15 @@ const categorySummaries = categories.map((category) => {
   const categoryRows = rows.filter((row) => row.categoryId === category.id && row.gtin);
   const count = categoryRows.length;
   const ratio = (field) => count ? categoryRows.filter((row) => Boolean(row[field])).length / count : 0;
+  const seedSources = [...new Set(categoryRows.map((row) => row.seedSource).filter(Boolean))];
+  const seedErrors = [...new Set(categoryRows.map((row) => row.seedDiscoveryError).filter(Boolean))];
   return {
     categoryId: category.id,
     categoryLabel: category.label,
     tested: count,
     found: categoryRows.filter((row) => row.resolution === "found").length,
+    seedSources,
+    seedDiscoveryErrors: seedErrors,
     identityAccuracyRate: ratio("identityAccuracy"),
     norwayRelevanceRate: ratio("norwayMarketRelevant"),
     ingredientCoverageRate: ratio("ingredientCoverage"),
@@ -228,6 +284,7 @@ const summary = {
   generatedAt: new Date().toISOString(),
   baseUrl: BASE_URL,
   targetPerCategory: TARGET_PER_CATEGORY,
+  seedRegistryVersion: seedRegistry.registryVersion,
   testedProducts: rows.filter((row) => row.gtin).length,
   categories: categorySummaries,
   overall: {
@@ -236,6 +293,7 @@ const summary = {
     comparisonPass: rows.filter((row) => row.gtin && row.eligibleAlternativeCount >= 3 && row.categoryPrecision).length,
     relevancePass: rows.filter((row) => row.gtin && row.relevanceSignal === "PASS").length,
     failedOrUnresolved: rows.filter((row) => row.gtin && row.relevanceSignal === "FAIL").length,
+    registryFallbackCategories: categorySummaries.filter((category) => category.seedSources.includes("audited_seed_registry_fallback")).map((category) => category.categoryId),
   },
 };
 
