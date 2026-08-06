@@ -41,6 +41,12 @@ export interface SpeciesProfile {
   intro?: string;
   /** where it lives, in plain language */
   habitat?: string;
+  /**
+   * Blocker 9: source record that bounds the descriptive intro/habitat prose.
+   * These are general descriptive summaries, not measured claims — this states
+   * where the description comes from, when it was checked, and its limitation.
+   */
+  descriptorSource?: { source: string; sourceUrl: string; checkedAt: string; note: string };
   /** flagship journey this species strengthens */
   journey?: "orca" | "amazonia" | "oslofjord";
   /** related mission slug */
@@ -191,6 +197,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Marine mammals",
     intro: "The orca is the largest member of the dolphin family — a fast, social, wide-ranging predator found in every ocean. Populations differ in prey, behaviour and calls, so a species label does not describe every group.",
     habitat: "All oceans, from polar seas to the tropics. Coastal groups follow prey along shelves and fjords; others range across open water.",
+    descriptorSource: { source: "NOAA Fisheries & GBIF", sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "orca",
     missionSlug: "wh4les",
   },
@@ -211,6 +218,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Marine mammals",
     intro: "A large baleen whale known for long migrations, complex songs and acrobatic surface behaviour. It feeds in cold, productive waters and breeds in warmer seas.",
     habitat: "Worldwide. Feeds at high latitudes in summer and migrates to warmer breeding waters — one of the longest migrations of any mammal.",
+    descriptorSource: { source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/humpback-whale", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "orca",
     missionSlug: "wh4les",
     publicClaims: [
@@ -236,6 +244,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Insects",
     intro: "One of the most widely distributed and studied pollinators, kept and wild across most of the world.",
     habitat: "Nearly worldwide alongside human landscapes and flowering plants.",
+    descriptorSource: { source: "GBIF", sourceUrl: "https://www.gbif.org/species/1341976", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "amazonia",
     missionSlug: "food",
   },
@@ -256,6 +265,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Marine mammals",
     intro: "The largest toothed predator on Earth, diving to great depths to hunt squid, carrying the most powerful biological sonar known.",
     habitat: "Deep waters of all oceans; females and young stay in warmer seas while males range to polar waters.",
+    descriptorSource: { source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/sperm-whale", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "orca",
     missionSlug: "wh4les",
     publicClaims: [
@@ -281,6 +291,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Marine mammals",
     intro: "One of the smallest cetaceans — a shy, coastal animal common in cool northern waters, including the Oslofjord region (Norwegian: nise).",
     habitat: "Cool coastal waters of the Northern Hemisphere; frequent in Norwegian fjords and the North Sea.",
+    descriptorSource: { source: "NOAA Fisheries & GBIF", sourceUrl: "https://www.fisheries.noaa.gov/species/harbor-porpoise", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "oslofjord",
     missionSlug: "rewild-marine",
     region: "Norwegian marine",
@@ -307,6 +318,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Marine mammals",
     intro: "A familiar, highly social dolphin found in coastal and offshore waters worldwide, known for adaptable feeding and strong group behaviour.",
     habitat: "Temperate and tropical seas worldwide, from shallow coasts and estuaries to the open ocean.",
+    descriptorSource: { source: "NOAA Fisheries", sourceUrl: "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "orca",
     missionSlug: "wh4les",
     publicClaims: [
@@ -332,6 +344,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Other",
     intro: "A cold-water fish central to North Atlantic ecosystems and to Norwegian fisheries history. Local populations, including in the Oslofjord, have seen major change.",
     habitat: "Cool North Atlantic shelf waters; the Oslofjord holds a distinct, much-reduced coastal cod.",
+    descriptorSource: { source: "GBIF & ICES", sourceUrl: "https://www.gbif.org/species/2378026", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "oslofjord",
     missionSlug: "rewild-marine",
     region: "Norwegian marine",
@@ -353,6 +366,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Other",
     intro: "A filter-feeding shellfish that forms dense beds on northern coasts, cleaning water and building habitat for other life.",
     habitat: "Rocky and soft-bottom coasts across the North Atlantic, including the Oslofjord.",
+    descriptorSource: { source: "GBIF", sourceUrl: "https://www.gbif.org/species/2286380", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "oslofjord",
     missionSlug: "rewild-marine",
     region: "Norwegian marine",
@@ -374,6 +388,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Land mammals",
     intro: "The largest cat in the Americas, a powerful, wide-ranging predator whose presence signals connected, functioning forest.",
     habitat: "Tropical forests and wetlands of Central and South America, including the Amazon basin.",
+    descriptorSource: { source: "IUCN & GBIF", sourceUrl: "https://www.gbif.org/species/5219426", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "amazonia",
     missionSlug: "am4zonia",
   },
@@ -394,6 +409,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     group: "Birds",
     intro: "The largest flying parrot in the world, a vivid blue macaw dependent on particular palms and old, hollow trees for food and nesting.",
     habitat: "Palm swamps, woodlands and forest edges of central South America, including parts of the Amazon.",
+    descriptorSource: { source: "IUCN & GBIF", sourceUrl: "https://www.gbif.org/species/2474514", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "amazonia",
     missionSlug: "am4zonia",
   },

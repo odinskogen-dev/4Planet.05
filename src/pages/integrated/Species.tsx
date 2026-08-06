@@ -188,6 +188,11 @@ export function SpeciesProfilePage() {
           <div style={{ ...panel, marginTop: 24, maxWidth: 760 }}>
             <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
             <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
+            {profile.descriptorSource && (
+              <p style={{ margin: "12px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>
+                DESCRIPTION SOURCE · <a href={profile.descriptorSource.sourceUrl} target="_blank" rel="noreferrer" style={{ color: T.blue }}>{profile.descriptorSource.source} ↗</a> · CHECKED {profile.descriptorSource.checkedAt} · {profile.descriptorSource.note}
+              </p>
+            )}
           </div>
         )}
         {profile.publicClaims && profile.publicClaims.length > 0 && (
