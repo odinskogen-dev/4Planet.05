@@ -11,5 +11,5 @@ export function missionKind(slug: string): MissionKind {
 }
 
 // Flagship missions get launch-quality depth + image minimums.
-export const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "pl4stic"]);
+export const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "cle4n"]);
 export const isFlagship = (slug: string) => FLAGSHIP.has(slug);

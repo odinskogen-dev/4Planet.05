@@ -7,7 +7,7 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { PathwayPage } from "@/pages/v5/Impact";
 import { ImpactPublicHome, ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
-import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
+import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
@@ -24,7 +24,7 @@ const WorldFallback = (
 );
 
 const toImpact = <Navigate to="/impact" replace />;
-const toJoin = <Navigate to="/people" replace />;
+const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
@@ -40,14 +40,14 @@ export function AppRoutes() {
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
-      <Route path="/missions/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
+      <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
       <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
+      <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
@@ -60,7 +60,7 @@ export function AppRoutes() {
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
       <Route path="/join" element={<Join />} />
-      <Route path="/people" element={<People />} />
+      <Route path="/people" element={<Navigate to="/join" replace />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
       <Route path="/funders" element={<Funders />} />

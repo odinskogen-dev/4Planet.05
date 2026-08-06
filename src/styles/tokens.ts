@@ -43,5 +43,5 @@ export const DOMAIN_DESC: Record<DomainKey, string> = {
 
 // ~50% of missions render as full dark worlds (shared by mission page + header context)
 export const DARK_MISSIONS = new Set<string>([
-  "wh4les", "cor4l", "pl4stic", "rewild-marine", "am4zonia", "rewild", "4film", "4play",
+  "wh4les", "cor4l", "cle4n", "rewild-marine", "am4zonia", "rewild", "4film", "4play",
 ]);

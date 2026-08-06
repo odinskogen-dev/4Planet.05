@@ -53,7 +53,7 @@ export const IMAGES = {
   // ── MISSION HEROES ──────────────────────────────────────────────────
   wh4lesHero: { src: `${A}/missions/wh4les/hero.jpg`, alt: "A whale's tail rising from calm water", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 45%", role: "missionHero" },
   cor4lHero: { src: `${A}/missions/cor4l/hero.jpg`, alt: "A living coral reef standing in clear water", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
-  pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "pl4stic", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
+  pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
   antarcticaHero: { src: `${A}/missions/4ntarctica/hero.jpg`, alt: "A large iceberg standing in still polar water", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   clim4teHero: { src: `${A}/missions/clim4te/hero.jpg`, alt: "A green forest under drifting mist", mission: "clim4te", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   amazoniaHero: { src: `${A}/missions/am4zonia/hero.jpg`, alt: "A rainforest waterfall in dense canopy", mission: "am4zonia", domain: "E4RTH_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
@@ -106,6 +106,6 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "en4rgy": { src: `${A2}/en3rgy/detail-01.jpg`, alt: "Detail of energy infrastructure at work", aspectRatio: "3/2", role: "editorial" },
   "food": { src: `${A2}/food/detail-01.jpg`, alt: "Working farmland viewed from above", aspectRatio: "3/2", role: "editorial" },
   "m4gazine": { src: `${A2}/m4gazine/detail-01.jpg`, alt: "P4NTHER editorial frame with analog white border", aspectRatio: "3/2", role: "editorial" },
-  "pl4stic": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
+  "cle4n": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];

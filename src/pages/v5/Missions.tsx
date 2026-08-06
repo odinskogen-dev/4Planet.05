@@ -18,7 +18,7 @@ const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, l
 
 const CULTURAL = new Set(["4play", "4film", "4rt", "m4gazine"]);
 const SYSTEM = new Set(["food", "en4rgy", "circular-city", "f4shion"]);
-const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "pl4stic"]);
+const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "cle4n"]);
 // dark-world missions live in tokens (DARK_MISSIONS) so the header can share them
 function classify(slug: string): { label: string } {
   if (CULTURAL.has(slug)) return { label: "CULTURAL PROJECT" };

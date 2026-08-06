@@ -15,7 +15,7 @@ type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [strin
 const stripU = (k: string) => k.replace(/_$/, "");
 const MENU: Cat[] = [
   { key: "PRODUCTS_", to: "/", kind: "list", items: [["4PLANET", "/"], ["ATLAS", "/atlas"], ["SPECIES", "/species"], ["IMPACT", "/impact"], ["LIVING SYSTEMS", "/living-systems"]] },
-  { key: "JOIN_", to: "/join", kind: "list", items: [["Join 4Planet", "/join"], ["People", "/people"], ["Brands", "/brands"], ["Partners", "/partners"], ["Funders", "/funders"]] },
+  { key: "JOIN_", to: "/join", kind: "list", items: [["Join 4Planet", "/join"], ["Brands", "/brands"], ["Partners", "/partners"], ["Funders", "/funders"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
   { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
@@ -193,7 +193,7 @@ function Header() {
             {open ? "CLOSE" : "MENU"}
           </button>
 
-          <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
+          <Link to="/join" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
             background: "transparent", color: open ? T.ink : fg,
             border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
             transition: "border-color .25s ease, color .25s ease", whiteSpace: "nowrap" }}>JOIN 4PLANET</Link>
@@ -224,7 +224,7 @@ function Footer() {
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
-    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
+    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>

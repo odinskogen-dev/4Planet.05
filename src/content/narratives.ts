@@ -65,7 +65,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("COR4L is being developed as a mission world for reef intelligence, restoration pathways and cultural communication that makes reef systems both emotionally and scientifically legible."),
     ],
   },
-  "pl4stic": {
+  "cle4n": {
     scene: [
       "Plastic does not disappear when it leaves our hands.",
       "It moves through rivers, coastlines, fisheries, beaches, stomachs, currents and food webs.",
