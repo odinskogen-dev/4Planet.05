@@ -1,3 +1,6 @@
-4PLANET product-quality implementation candidate
-Release marker: pq02-claude-02-audit-preview-2026-07-26
-Status: deployed audit preview, not Beta or production
+4PLANET one-interface premium completion — local Gate 1 correction candidate
+Local candidate: derived from base de9e01a via branch claude/one-interface-premium-completion
+Status: LOCAL CANDIDATE — NOT PUBLISHED, NOT DEPLOYED, NOT GATE 1 PASSED
+Remote SHA: (to be added by GPT/Codex only after publication)
+Preview: (exact-SHA Cloudflare preview to be established after publication)
+Notes: No production release. No self-approval. Gate 2 not started.
