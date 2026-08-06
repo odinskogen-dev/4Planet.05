@@ -197,6 +197,15 @@ test("unsupported baseline cannot generate a fair ranking", () => {
   assert.ok(ranked.limitations.length > 0);
 });
 
+test("conflicted baseline cannot produce an eligible comparison", () => {
+  const result = normaliseSourceEnvelope(FOOD_FIXTURES.conflict.envelope);
+  const ranked = rankAlternatives(result.product, result.alternatives, { lowerSugar: true });
+  assert.equal(result.product.dataQuality.state, "conflicted");
+  assert.equal(ranked.fairComparison, false);
+  assert.equal(ranked.eligible.length, 0);
+  assert.match(ranked.limitations.join(" "), /conflicted or malformed/);
+});
+
 test("ordering is deterministic and emits no universal product score", () => {
   const result = normaliseSourceEnvelope(FOOD_FIXTURES.complete.envelope);
   const first = rankAlternatives(result.product, result.alternatives, { lowerSugar: true, higherProtein: true });

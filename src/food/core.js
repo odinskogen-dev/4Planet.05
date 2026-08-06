@@ -1,7 +1,7 @@
 import { classifyProductCategory, classifyProductRelation } from "./category-control.js";
 
 export const FOOD_MODEL_VERSION = "p18-food-canonical-0.2.0";
-export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.2.0";
+export const COMPARISON_MODEL_VERSION = "p18-food-comparison-0.2.1";
 
 const GTIN_LENGTHS = new Set([8, 12, 13, 14]);
 const GENERIC_CATEGORY_TAGS = new Set([
@@ -274,11 +274,17 @@ export function rankAlternatives(baseline, alternativesInput, preferencesInput =
   };
   const selectedPriorityCount = Number(preferences.lowerSugar) + Number(preferences.lowerSalt) + Number(preferences.higherProtein);
   const baselineControlled = Boolean(baseline?.categoryControl?.profileId);
-  const limitations = baselineControlled ? [] : ["The scanned product has no controlled direct-substitute group, so alternatives cannot be ranked fairly"];
+  const baselineReliable = !["malformed", "conflicted"].includes(baseline?.dataQuality?.state);
+  const canRank = baselineControlled && baselineReliable;
+  const limitations = [
+    ...(baselineControlled ? [] : ["The scanned product has no controlled direct-substitute group, so alternatives cannot be ranked fairly"]),
+    ...(baselineReliable ? [] : ["The scanned product record is conflicted or malformed, so alternatives cannot be ranked fairly"]),
+  ];
 
   const evaluated = alternatives.map((candidate) => {
     const exclusions = [];
     const relation = classifyProductRelation(baseline, candidate);
+    if (!canRank) exclusions.push("The scanned product record is not reliable enough for comparison");
     const matchedAllergens = allergenMatch(candidate, preferences.avoidAllergens);
     if (matchedAllergens.length > 0) exclusions.push(`Contains selected allergen: ${matchedAllergens.join(", ")}`);
     if (preferences.avoidAllergens.length > 0 && !candidate.allergenDataPresent) exclusions.push("Allergen data is missing");
@@ -332,7 +338,7 @@ export function rankAlternatives(baseline, alternativesInput, preferencesInput =
   return {
     modelVersion: COMPARISON_MODEL_VERSION,
     preferences,
-    fairComparison: baselineControlled,
+    fairComparison: canRank,
     limitations,
     eligible: evaluated.filter((item) => item.eligible).slice(0, 5),
     adjacent: excluded.filter((item) => item.relation.kind === "adjacent"),
