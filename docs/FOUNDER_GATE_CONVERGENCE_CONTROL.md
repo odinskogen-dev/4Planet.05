@@ -31,6 +31,8 @@ The convergence candidate applies only non-breaking dependency remediation. One 
 
 The existing stale browser expectation was updated to the current source-controlled Orca wording. No scientific claim was weakened.
 
+A mobile accessibility regression was independently reproduced: after keyboard focus, the skip-to-main link overlapped the fixed header and intercepted the menu control. The product was corrected by placing the focused skip link below the header. The original user-observable browser test was retained and now passes as the regression contract.
+
 ## Donor boundaries
 
 - P17 Actor and Organisation Atlas work remains donor-only and is not introduced as a fifth public product.
