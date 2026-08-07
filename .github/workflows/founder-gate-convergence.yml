@@ -1,0 +1,130 @@
+name: Founder Gate ONE INTERFACE Convergence
+
+on:
+  push:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+  pull_request:
+    branches:
+      - build/four-product-integrated-prototype
+
+permissions:
+  contents: read
+
+concurrency:
+  group: founder-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        run: |
+          git rev-parse HEAD > exact-sha.txt
+          printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+
+      - name: Lint without new warnings
+        run: npm run lint -- --max-warnings=0
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit — high severity blocks
+        shell: bash
+        run: npm audit --audit-level=high 2>&1 | tee dependency-audit.txt
+
+      - name: Record bundle evidence
+        shell: bash
+        run: |
+          find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2nr > bundle-sizes.csv
+          largest="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
+          test -n "$largest"
+          test "$largest" -lt 1600000
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Existing browser product proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/product-proof.spec.ts tests/e2e/map-interactivity.spec.ts
+
+      - name: Founder gate critical journeys
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/founder-gate.spec.ts
+
+      - name: Internal link and route control
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('dist/index.html','utf8');
+          if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
+          const required = ['/', '/atlas', '/species', '/species/orca', '/impact', '/impact/lab/tree', '/impact/lab/plastic', '/missions/am4zonia'];
+          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
+          NODE
+
+      - name: Security and preview header control
+        shell: bash
+        run: |
+          curl --silent --show-error --dump-header local-headers.txt --output /dev/null http://127.0.0.1:4173/
+          grep -qi '^content-type:' local-headers.txt
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
+
+      - name: Upload exact-SHA acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: founder-gate-convergence-evidence
+          path: |
+            exact-sha.txt
+            exact-branch.txt
+            dependency-audit.txt
+            bundle-sizes.csv
+            preview.log
+            local-headers.txt
+            required-routes.json
+            artifacts/product-proof
+            artifacts/founder-gate
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30
