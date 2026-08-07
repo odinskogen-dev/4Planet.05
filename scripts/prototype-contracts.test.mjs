@@ -112,11 +112,15 @@ test("Tree and Plastic remain local TEST records with no delivery", () => {
 test("public preview headers and status boundaries are committed", () => {
   const headers = read("public/_headers");
   const status = read("docs/PUBLIC_PREVIEW_STATUS.md");
+  const current = read("docs/CURRENT_STATUS.md");
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Content-Security-Policy:/);
-  assert.match(status, /PUBLIC PREVIEW CANDIDATE \/ DEPLOYED \/ RELEASE GATE CLOSED/);
-  assert.match(status, /TEST RECORD — NO PHYSICAL DELIVERY/);
-  assert.match(status, /does not claim/);
+  // The old status doc must be unambiguously marked historical, not current truth.
+  assert.match(status, /HISTORICAL \/ SUPERSEDED/);
+  // Current status source must state the honest local-candidate truth.
+  assert.match(current, /LOCAL CANDIDATE — NOT PUBLISHED, NOT DEPLOYED, NOT GATE 1 PASSED/);
+  assert.match(current, /de9e01a37482b7678104690056cc6146e9b286a3/);
+  assert.doesNotMatch(current, /RELEASE GATE CLOSED/);
 });
 
 test("rollback removes only the prototype truth-spine objects", () => {

@@ -36,7 +36,21 @@ const ls = (s: string) => s.split("·").map((x) => x.trim()).filter(Boolean);
 export const MISSION_CONTENT: MissionContent[] = [
   // ───────────── OCE4N_ ─────────────
   {
-    slug: "wh4les", domain: "OCE4N_", code: "OCE4N_ / 01", name: "WH4LES_",
+    slug: "cle4n", domain: "OCE4N_", code: "OCE4N_ / 01", name: "CLE4N_",
+    hero: "A cleaner ocean, from source to sea.",
+    thesis: "A clean ocean is a systems problem, not only a clean-up problem. It begins with production, consumption, collection, rivers, coastlines and infrastructure — long before waste reaches the water.",
+    issue: "Pollution and waste enter marine systems through poorly managed material flows, stormwater, rivers, coastlines, ports and consumer systems. Recovery matters, but prevention and interception matter too.",
+    whyItMatters: "Ocean pollution affects species, habitats, coastlines, food systems and public trust in the health of the sea.",
+    livingSystem: ls("Rivers · coastlines · marine species · seabirds · fisheries · beaches · waste systems · material flows"),
+    whatCanHelp: "Source reduction, better material systems, interception before the sea, coastal recovery, transparent weighing and reporting, local field operations and policy change.",
+    fourPlanetRole: "A measurable pathway designed to support one kilogram of marine waste recovery only after an approved delivery partner, measurement method, evidence standard and reporting model are confirmed.",
+    currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 KG OCEAN WASTE_", impactPathwaySlug: "ocean-waste",
+    publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK CLE4N_",
+    visualDirection: "Deep blue, rough coastlines, boats, material close-ups, recovery teams, clean white reporting overlays.",
+    sources: [],
+  },
+  {
+    slug: "wh4les", domain: "OCE4N_", code: "OCE4N_ / 02", name: "WH4LES_",
     hero: "Migratory intelligence across the oceans.",
     thesis: "Whales are not isolated animals. They are part of the ocean's living infrastructure — moving through food webs, migration corridors and nutrient cycles across enormous distances.",
     issue: "Shipping, underwater noise, vessel strike, fishing pressure and climate-driven changes in prey distribution can disrupt whale populations and the waters they depend on. Many marine corridors remain difficult to monitor across large distances and jurisdictions.",
@@ -49,7 +63,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     sources: [],
   },
   {
-    slug: "cor4l", domain: "OCE4N_", code: "OCE4N_ / 02", name: "COR4L_",
+    slug: "cor4l", domain: "OCE4N_", code: "OCE4N_ / 03", name: "COR4L_",
     hero: "Rebuilding reef resilience.",
     thesis: "Coral reefs are living structures: dense ecological systems that support marine life, coastal livelihoods and the integrity of vulnerable shorelines.",
     issue: "Warming water, ocean acidification, pollution, disease and bleaching events place reef systems under severe pressure.",
@@ -59,20 +73,6 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for reef intelligence, restoration pathways and cultural communication that makes reef systems emotionally and scientifically legible.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK COR4L_",
     visualDirection: "Reef macro photography, underwater light, scientific fragments, blue-white overlays, fragile but powerful atmosphere.",
-    sources: [],
-  },
-  {
-    slug: "cle4n", domain: "OCE4N_", code: "OCE4N_ / 03", name: "CLE4N_",
-    hero: "A cleaner ocean, from source to sea.",
-    thesis: "A clean ocean is a systems problem, not only a clean-up problem. It begins with production, consumption, collection, rivers, coastlines and infrastructure — long before waste reaches the water.",
-    issue: "Pollution and waste enter marine systems through poorly managed material flows, stormwater, rivers, coastlines, ports and consumer systems. Recovery matters, but prevention and interception matter too.",
-    whyItMatters: "Ocean pollution affects species, habitats, coastlines, food systems and public trust in the health of the sea.",
-    livingSystem: ls("Rivers · coastlines · marine species · seabirds · fisheries · beaches · waste systems · material flows"),
-    whatCanHelp: "Source reduction, better material systems, interception before the sea, coastal recovery, transparent weighing and reporting, local field operations and policy change.",
-    fourPlanetRole: "A measurable pathway designed to support one kilogram of marine waste recovery only after an approved delivery partner, measurement method, evidence standard and reporting model are confirmed.",
-    currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 KG OCEAN WASTE_", impactPathwaySlug: "ocean-waste",
-    publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK CLE4N_",
-    visualDirection: "Deep blue, rough coastlines, boats, material close-ups, recovery teams, clean white reporting overlays.",
     sources: [],
   },
   {

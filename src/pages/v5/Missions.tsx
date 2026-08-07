@@ -143,7 +143,7 @@ export function MissionDetail() {
               </h2>
               <p style={{ fontSize: "clamp(14px,1.3vw,16px)", color: "rgba(255,255,255,.7)", marginTop: 14, maxWidth: 640, lineHeight: 1.6 }}>
                 A prototype model. Nothing is for sale yet — no active store, no completed sale, no transferred Impact
-                funds. Each work states its edition, rights, availability, share split and the mission pathway it would support.
+                funds. Each work states its edition, rights, availability, an EXAMPLE proposed share split (founder approval required) and the mission pathway it would support.
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 1, marginTop: 32, background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.16)" }}>
                 {PRINTS.map((pr) => (
@@ -163,14 +163,14 @@ export function MissionDetail() {
                       ))}
                     </dl>
                     <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.14)" }}>
-                      <div style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10, marginBottom: 8 }}>SHARE SPLIT</div>
+                      <div style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10, marginBottom: 8 }}>EXAMPLE SPLIT · PROPOSED · FOUNDER APPROVAL REQUIRED</div>
                       <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-                        <span style={{ width: `${pr.share.artist}%`, background: acc }} title={`Artist ${pr.share.artist}%`} />
-                        <span style={{ width: `${pr.share.production}%`, background: "rgba(255,255,255,.5)" }} title={`Production ${pr.share.production}%`} />
-                        <span style={{ width: `${pr.share.fourPlanet}%`, background: "rgba(255,255,255,.28)" }} title={`4PLANET ${pr.share.fourPlanet}%`} />
+                        <span style={{ width: `${pr.share.artist}%`, background: acc }} title={`Artist ${pr.share.artist}% (example)`} />
+                        <span style={{ width: `${pr.share.production}%`, background: "rgba(255,255,255,.5)" }} title={`Production ${pr.share.production}% (example)`} />
+                        <span style={{ width: `${pr.share.fourPlanet}%`, background: "rgba(255,255,255,.28)" }} title={`4PLANET ${pr.share.fourPlanet}% (example)`} />
                       </div>
                       <div style={{ ...mono("rgba(255,255,255,.6)"), fontSize: 10, marginTop: 8 }}>
-                        ARTIST {pr.share.artist}% · PRODUCTION {pr.share.production}% · 4PLANET {pr.share.fourPlanet}%
+                        ARTIST {pr.share.artist}% · PRODUCTION {pr.share.production}% · 4PLANET {pr.share.fourPlanet}% · EXAMPLE ONLY
                       </div>
                     </div>
                     <div style={{ marginTop: 14, ...mono(acc), fontSize: 10.5 }}>PATHWAY · <span style={{ color: "rgba(255,255,255,.86)" }}>{pr.pathway}</span></div>
@@ -179,7 +179,7 @@ export function MissionDetail() {
                 ))}
               </div>
               <p style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10.5, marginTop: 20, letterSpacing: ".06em" }}>
-                NO ACTIVE STORE · NO COMPLETED SALES · NO TRANSFERRED IMPACT FUNDS · PROTOTYPE MODEL ONLY
+                NO ACTIVE STORE · NO COMPLETED SALES · NO TRANSFERRED IMPACT FUNDS · NO PRINT-LICENCE AGREEMENT · EXAMPLE/PROPOSED SPLITS PENDING FOUNDER APPROVAL · PROTOTYPE MODEL ONLY
               </p>
             </Reveal>
           )}

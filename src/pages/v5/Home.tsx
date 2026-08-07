@@ -17,7 +17,7 @@ const body: React.CSSProperties = { fontSize: "clamp(16px,1.15vw,19px)", color: 
 const bodyDim: React.CSSProperties = { ...body, color: T.dim };
 
 const WORLDS: Record<DomainKey, { line: string; img: ImageKey; missions: string[] }> = {
-  "OCE4N_": { line: "The ocean connects life far beyond the shoreline.", img: "oce4nDomainHero", missions: ["WH4LES", "COR4L", "CLE4N", "RE:WILD"] },
+  "OCE4N_": { line: "The ocean connects life far beyond the shoreline.", img: "oce4nDomainHero", missions: ["CLE4N", "WH4LES", "COR4L", "RE:WILD"] },
   "E4RTH_": { line: "Living landscapes hold human life together.", img: "e4rthDomainHero", missions: ["CLIM4TE", "AM4ZONIA", "SPECIES", "RE:WILD"] },
   "S4PIENS_": { line: "The systems we build shape the pressure nature carries.", img: "s4piensDomainHero", missions: ["FOOD", "EN4RGY", "CIRCULAR CITY", "F4SHION"] },
   "4CULTURE_": { line: "Stories, sound, image and ideas can move people toward action.", img: "m4gazineHero", missions: ["4PLAY", "4FILM", "4RT", "M4GAZINE"] },

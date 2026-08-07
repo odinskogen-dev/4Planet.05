@@ -1,3 +1,13 @@
+# ⚠️ HISTORICAL / SUPERSEDED — DO NOT USE AS CURRENT STATUS
+
+> This document describes an OLD candidate (`build/four-product-integrated-prototype`,
+> product-proof-2026-07-25) and its since-obsolete SHAs and preview URLs. It is
+> retained only for history. It does NOT describe the current candidate. For the
+> current status see `docs/CURRENT_STATUS.md`. Nothing below is a live deployment
+> claim for the PRD-ONE-02 work.
+
+---
+
 # 4PLANET PUBLIC PREVIEW — FINAL CONTROLLED PRODUCT PROOF
 
 Status: PUBLIC PREVIEW CANDIDATE / DEPLOYED / RELEASE GATE CLOSED

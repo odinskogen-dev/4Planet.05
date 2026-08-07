@@ -121,14 +121,25 @@ export const MISSION_MEDIA_RIGHTS: Record<string, {
 }> = {
   "rewild-marine": {
     file: "/assets/missions/rewild-marine/hero.jpg",
-    kind: "Original illustration (procedural, 4PLANET-created)",
+    kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created)",
     owner: "4PLANET / Skog Communications AS",
-    creator: "4PLANET (generated in-house)",
+    creator: "4PLANET (generated in-house, procedural script)",
     licence: "Owned work — all rights held by 4PLANET",
     attribution: "4PLANET",
-    checkedDate: "2026-08-06",
+    checkedDate: "2026-08-07",
     commercialAllowed: true,
-    limitations: "Illustrative, not a photograph of a specific site; depicts seagrass, kelp and shellfish beds as a representation of coastal rewilding.",
+    limitations: "INTERNAL PROTOTYPE ART, not a final Gate 1 asset. Illustrative of coastal rewilding (seagrass/kelp/shellfish), not a photograph of a specific site. Self-asserted ownership; no external creation-source file or signed record supplied.",
+  },
+  "4rt": {
+    file: "/assets/missions/4rt/hero.jpg",
+    kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created)",
+    owner: "4PLANET / Skog Communications AS",
+    creator: "4PLANET (generated in-house, procedural script)",
+    licence: "Owned work — all rights held by 4PLANET",
+    attribution: "4PLANET",
+    checkedDate: "2026-08-07",
+    commercialAllowed: true,
+    limitations: "INTERNAL PROTOTYPE ART, not a final Gate 1 asset and not a real artwork for sale. Represents the Prints-for-Planet direction only. Self-asserted ownership.",
   },
 };
 export const missionMediaRights = (slug: string) => MISSION_MEDIA_RIGHTS[slug];
