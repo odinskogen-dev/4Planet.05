@@ -36,7 +36,7 @@
    at every turn. The typed core of the product lives in src/planet/*, which is
    strict. That boundary is deliberate. See ADAPTATION.md.
    ═══════════════════════════════════════════════════════════════════════════ */
-/* eslint-disable */
+ 
 // @ts-nocheck
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -768,7 +768,7 @@ function WorldInner() {
       if (!hit.length) askHereRef.current(e.lngLat.lng, e.lngLat.lat);
     });
     return () => { Object.values(timers.current).forEach(clearInterval); m.remove(); map.current = null; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // V40 P0: when the context panel opens/closes or the breakpoint changes, the
@@ -785,7 +785,7 @@ function WorldInner() {
     init.current.on.forEach((id) => addLayer(LAYERS.find((l) => l.id === id)));
     // Deep link straight into an object: ?f=place:4p:bergen
     if (init.current.focus) openEntity(init.current.focus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [ready]);
 
   useEffect(() => {
@@ -805,7 +805,7 @@ function WorldInner() {
       });
     }
     writeUrl({ light });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [light]);
 
   const toggle = (l) => {

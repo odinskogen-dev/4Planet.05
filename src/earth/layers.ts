@@ -13,7 +13,7 @@
    and CONTEXT all need to read the layer model, and a 1,000-line page component
    could not be shared. Moving it changed nothing about what it says.
    ═══════════════════════════════════════════════════════════════════════════ */
-/* eslint-disable */
+ 
 // @ts-nocheck
 
 export const MONO = "'Fragment Mono', ui-monospace, monospace";
