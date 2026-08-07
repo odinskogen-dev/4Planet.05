@@ -1,0 +1,47 @@
+name: Apply Founder Gate Controls
+
+on:
+  push:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+    paths:
+      - scripts/apply-founder-gate-controls.mjs
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/founder-gate-one-interface-convergence
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Apply source and evidence corrections
+        run: node scripts/apply-founder-gate-controls.mjs
+      - name: Apply safe dependency remediation
+        run: npm audit fix
+      - name: Remove auto-fixable inherited lint debt
+        run: npx eslint src --fix
+      - name: Verify repaired candidate
+        run: |
+          npm run typecheck
+          npm run build
+          npm run test:smoke
+          npm run lint -- --max-warnings=0
+          npm run assets:verify
+          npm audit --audit-level=high
+      - name: Commit repaired control state
+        run: |
+          rm scripts/apply-founder-gate-controls.mjs
+          rm .github/workflows/apply-founder-gate-controls.yml
+          git config user.name "4PLANET Gate Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(founder-gate): repair exact-SHA controls and high-severity audit"
+          git push origin HEAD:agent/founder-gate-one-interface-convergence
