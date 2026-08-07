@@ -7,3 +7,5 @@ const after = '.skip-to-main{position:fixed;top:72px;left:12px;z-index:1000;max-
 if (!text.includes(before)) throw new Error("Expected skip-link style not found");
 text = text.replace(before, after);
 fs.writeFileSync(path, text);
+
+// Trigger marker: 2026-08-07 mobile accessibility correction.
