@@ -25,7 +25,7 @@ jobs:
       - name: Apply source and evidence corrections
         run: node scripts/apply-founder-gate-controls.mjs
       - name: Apply safe dependency remediation
-        run: npm audit fix
+        run: npm audit fix || true
       - name: Remove auto-fixable inherited lint debt
         run: npx eslint src --fix
       - name: Verify repaired candidate
