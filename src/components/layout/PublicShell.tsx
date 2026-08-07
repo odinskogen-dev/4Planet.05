@@ -247,7 +247,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       {!heroPage && <div aria-hidden style={{ height: 64 }} />}
       <main id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
-      <style>{`.skip-to-main{position:fixed;top:8px;left:8px;z-index:1000;padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(-160%);transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+      <style>{`.skip-to-main{position:fixed;top:72px;left:12px;z-index:1000;max-width:calc(100vw - 24px);padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(calc(-100% - 80px));transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
     </>
   );
 }
