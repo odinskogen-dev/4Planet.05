@@ -16,3 +16,5 @@ fs.writeFileSync(
     "",
   ].join("\n"),
 );
+
+// Trigger marker: 2026-08-07 founder gate control repair.
