@@ -1,0 +1,41 @@
+{
+  "release": "4PLANET_ PSI PRODUCTION CONVERGENCE & DECISION-GRADE PROOF v1.0",
+  "generated_at": "2026-08-08T17:13:00+02:00",
+  "base_repo": "odinskogen-dev/4Planet.05",
+  "base_pr": 9,
+  "base_branch": "build/four-product-integrated-prototype",
+  "base_sha": "de9e01a37482b7678104690056cc6146e9b286a3",
+  "branch": "agent/psi-production-convergence-v1",
+  "runtime_truth_boundary": {
+    "phase03_fastapi_sqlite_source_recovered": false,
+    "phase03_reports_recovered": true,
+    "authoritative_physical_persistence_surface": "4Planet.05 / supabase truth spine",
+    "postgres_postgis_executed_in_this_sprint": false,
+    "production_deployed": false,
+    "founder_decisions_fd01_fd06_applied": false
+  },
+  "data_counts": {
+    "migration_objects": 368,
+    "hierarchy_relations": 780,
+    "causal_edges": 166,
+    "claim_records": 191,
+    "solution_problem_relations": 2724,
+    "coverage_rows": 100,
+    "existing_solution_ids": 1000,
+    "solutions_multi_problem": 837,
+    "retrieval_benchmarks": 50,
+    "verticals": 12
+  },
+  "external_data_package": {
+    "note": "Large JSONL payload remains in the BRAIN execution package rather than bloating the public product repo. Verify each file by SHA-256 before staging/import.",
+    "objects.jsonl": "0db346388e7660afe4b46d8d16c4dc7d3973965f2b043573146915dd4b606cd5",
+    "hierarchy.jsonl": "85e8522a4f182d893eaa1c694e0afd59ae1ae7ce0db19de625150275287b3378",
+    "causal_edges.jsonl": "9bb10be3841a337e37684c1af4690fce1eba8c5eea5e493bd72419c41f5a9256",
+    "claims.jsonl": "a6d5b63b49dbe5285c8c5962700d17453ddc0b2503fe63ac8c345b26e7b0b5b3",
+    "solution_problem_m2m.jsonl": "d016b700d3fe0678640795c8fdfacc3e7ee7483c98425137c0e9ebe29b0ac70a",
+    "coverage_matrix.jsonl": "3d25389993f39c8745944e14bcbeca43a45e997729d3f008c25466c6ce0d1d79",
+    "pollination_food_vertical.json": "bb097b1462c31c6464e9c31696486f01c84e9c3db4d423fcb95bfd74e4bfe729",
+    "decision_grade_verticals.json": "da39d657536d05e6d87720406229561f4ae07181597d1e9df771cf62991f42e2",
+    "retrieval_benchmarks_50.json": "47e8c47c283080f16f6d80d0d4fb7bf529685d534e1030e6d89a984d0c2d91fd"
+  }
+}
