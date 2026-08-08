@@ -796,6 +796,13 @@ function WorldInner() {
       focusTarget.current = { lng: o.lng, lat: o.lat, zoom: Math.max(init.current.zoom, 6) };
       map.current?.flyTo({ center: [o.lng, o.lat], zoom: Math.max(init.current.zoom, 6), duration: 1400 });
       setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
+      // Normalise the record param so cross-product returnTo captures it reliably
+      // even before the first moveend writes the camera state.
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("record") !== "orca-bundled") {
+        sp.set("record", "orca-bundled");
+        window.history.replaceState(null, "", `${window.location.pathname}?${sp.toString()}`);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
