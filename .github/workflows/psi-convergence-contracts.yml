@@ -35,11 +35,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Production build integrity
+        run: npm run build
+
       - name: Existing smoke and truth contracts
         run: npm run test:smoke
 
       - name: PSI schema convergence contracts
         run: npm run test:psi
-
-      - name: Production build integrity
-        run: npm run build
