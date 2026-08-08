@@ -4,9 +4,12 @@ drop function if exists public.brain_context_pack(text,text[],integer,integer,in
 drop function if exists public.brain_resolve_objects(text,integer);
 drop function if exists public.promote_brain_import_batch(text,text);
 drop function if exists public.stage_brain_record(text,text,text,jsonb,text);
-drop function if exists public.enforce_brain_relationship_types();
 
 drop view if exists public.solution_catalogue;
+
+-- Drop the trigger before its guard function so rollback remains explicit and non-CASCADE.
+drop trigger if exists brain_relationships_type_guard on public.brain_relationships;
+drop function if exists public.enforce_brain_relationship_types();
 
 drop table if exists public.context_pack_runs;
 drop table if exists public.brain_promotion_events;
