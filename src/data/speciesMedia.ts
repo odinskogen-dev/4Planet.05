@@ -35,6 +35,15 @@ export interface MediaRecord {
    * step needed before the image can be shown. Not a generic "pending".
    */
   assetBlocker?: string;
+  /**
+   * A self-owned illustration (NOT a photograph). Always cleared because 4PLANET
+   * created it. Used for a life-first visual while the real photo stays PENDING.
+   * Must be labelled clearly as an illustration wherever shown.
+   */
+  illustration?: {
+    localPath: string; kind: string; owner: string; creator: string;
+    licence: string; attribution: string; checkedDate: string; checksum: string;
+  };
 }
 
 /** A precise candidate asset + the exact rights step still required per profile. */
@@ -78,6 +87,17 @@ export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   "hyacinth-macaw": pending("hyacinth-macaw", "https://www.gbif.org/species/2474514"),
   "western-honey-bee": pending("western-honey-bee", "https://www.gbif.org/species/1341976"),
 };
+
+
+/** Self-owned illustrations (not photographs) attached to the five cetaceans. */
+const ILLUSTRATIONS: Record<string, NonNullable<MediaRecord["illustration"]>> = {
+  "orca": { localPath: "/assets/species/orca/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:851a02585309c49d2b1d0e218ca3150b97484afb423813e463d5b7b3a905de5b" },
+  "humpback-whale": { localPath: "/assets/species/humpback-whale/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:73ae654f1c4430712d01f365b50e0bb642d2ee1b3231ecc009f341dad6bc89c1" },
+  "sperm-whale": { localPath: "/assets/species/sperm-whale/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:ab1db11d25db77dcde8a28a1da9f480c51f237d8fcc5b2a9a0770752d2aee7c7" },
+  "harbour-porpoise": { localPath: "/assets/species/harbour-porpoise/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:153fc33c2e4c0b5d021d914fb257b63300125d1fcf9e97e739d20d13f7aa3a28" },
+  "bottlenose-dolphin": { localPath: "/assets/species/bottlenose-dolphin/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:d1c7246db0f5558cb335ce66cbf52f6d5d1b84689776656e225571c2303aae6b" },
+};
+Object.entries(ILLUSTRATIONS).forEach(([slug, ill]) => { if (SPECIES_MEDIA[slug]) SPECIES_MEDIA[slug].illustration = ill; });
 
 export const speciesMedia = (slug: string): MediaRecord | undefined => SPECIES_MEDIA[slug];
 export const hasShowableImage = (slug: string): boolean => {

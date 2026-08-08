@@ -53,14 +53,20 @@ function EvidenceClaimCard({ claim }: { claim: EvidenceClaim }) {
   );
 }
 
-/** Life-first image plane: a rights-cleared photo, or a designed no-image state. */
+/** Life-first image plane: a rights-cleared photo, a self-owned illustration, or a designed no-image state. */
 function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: string; sci: string; ratio?: string }) {
   const media = speciesMedia(slug);
   const show = hasShowableImage(slug);
+  const illustration = media?.illustration;
   return (
     <figure style={{ margin: 0, position: "relative", aspectRatio: ratio, overflow: "hidden", background: "#05081b", border: `1px solid ${T.line}` }}>
       {show ? (
         <img src={media!.localPath} alt={`${name} — ${sci}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : illustration ? (
+        <>
+          <img src={illustration.localPath} alt={`${name} — illustration, not a photograph`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", top: 10, left: 10, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+        </>
       ) : (
         <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18,
           background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
@@ -189,6 +195,11 @@ export function SpeciesProfilePage() {
         </div>
         <div style={{ marginTop: 28 }}>
           <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="16/9" />
+          {speciesMedia(profile.slug)?.illustration && !hasShowableImage(profile.slug) && (
+            <p style={{ margin: "10px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, fontSize: 10.5 }}>
+              PHOTOGRAPH · PENDING RIGHTS — {speciesMedia(profile.slug)?.assetBlocker ?? "no cleared photograph yet"} The image above is a 4PLANET illustration, not a photograph of this animal.
+            </p>
+          )}
         </div>
         <h1 style={{ marginTop: 30, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .86, letterSpacing: "-.055em" }}>{profile.commonName}</h1>
         <p style={{ marginTop: 20, fontSize: "clamp(20px,2.6vw,30px)", fontStyle: "italic" }}>{profile.scientificName}</p>
