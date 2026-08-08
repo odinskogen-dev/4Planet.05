@@ -153,7 +153,8 @@ BEGIN
   delete from public.claim_evidence where claim_id=c; delete from public.claims where object_id=c; delete from public.brain_objects where id=c;
   delete from public.brain_relationships where subject_id=s or object_id=s;
   delete from public.solution_pathways where object_id=s; delete from public.problem_frames where object_id=p;
-  delete from public.brain_objects where id in(p,s); delete from public.source_records where id='test-source-record';
+  delete from public.brain_objects where id in(p,s);
+  -- source_records are immutable by design; leave this test record for the imminent ephemeral db reset.
 END $$;
 
 select 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' as result;
