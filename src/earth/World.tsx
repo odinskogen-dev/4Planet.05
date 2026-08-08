@@ -54,6 +54,7 @@ import { ContextLayer, TYPE_COLOR, type ContextState } from "./Context";
 import { WorldBoundary } from "./Boundary";
 
 import { field } from "@/planet/types";
+import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleOccurrence";
 import { authorityOf, placeId as mkPlaceId, sourceKeyOf, typeOf } from "@/planet/ids";
 import {
   occurrencesInWkt, searchTaxa, taxonOccurrences, taxonPhoto, taxonVernacular,
@@ -785,6 +786,17 @@ function WorldInner() {
     init.current.on.forEach((id) => addLayer(LAYERS.find((l) => l.id === id)));
     // Deep link straight into an object: ?f=place:4p:bergen
     if (init.current.focus) openEntity(init.current.focus);
+    // Workstream C — deterministic bundled whale record. ?record=orca-bundled
+    // (or the canonical record id) paints a visible marker and opens the real
+    // OBSERVATION Context panel, with NO live API dependency.
+    const rec = new URLSearchParams(window.location.search).get("record");
+    if (rec === "orca-bundled" || rec === DEMO_WHALE_OBSERVATION.provenance.sourceRecordId) {
+      const o = DEMO_WHALE_OCCURRENCE;
+      paintFocus("focus", [{ lon: o.lng, lat: o.lat, col: C.blue, size: 9, eid: DEMO_WHALE_OBSERVATION.id, html: `<b>${o.commonName}</b>` }], C.blue, 8);
+      focusTarget.current = { lng: o.lng, lat: o.lat, zoom: Math.max(init.current.zoom, 6) };
+      map.current?.flyTo({ center: [o.lng, o.lat], zoom: Math.max(init.current.zoom, 6), duration: 1400 });
+      setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 

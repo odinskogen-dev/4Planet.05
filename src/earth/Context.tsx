@@ -21,6 +21,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { SPECIES_PROFILES } from "@/data/species";
+import { withReturnTo } from "@/product/productContext";
 import type {
   DataStatus,
   EntityId,
@@ -880,16 +881,23 @@ export const ContextLayer: React.FC<ContextProps> = ({
     );
     // Source image shown ONLY when both URL and licence are present.
     const showImg = !!(o.mediaUrl && o.mediaLicence);
+    const bundled = ob.provenance?.interpretation === "SOURCE_RECORD" && ob.id.startsWith("observation:gbif:");
     return (
       <div className="ctx">
         {head(o.commonName || ob.taxon.label, OBSERVATION_LABEL, ob.id)}
         <div className="ctx-body">
+          {bundled && (
+            <div className="note-box" style={{ color, marginBottom: 6, fontWeight: 600 }}>
+              BUNDLED SOURCE SNAPSHOT · NOT LIVE · {ob.provenance.sourceId?.toUpperCase() || "GBIF"} RECORD {o.sourceRecordId} · CHECKED {ob.provenance.checkedAt} — HISTORICAL OBSERVATION, NOT THE ANIMAL'S CURRENT POSITION
+            </div>
+          )}
           {showImg ? (
             <figure style={{ margin: "0 0 4px", position: "relative" }}>
-              <img src={o.mediaUrl} alt={`${o.commonName || o.scientificName} — source record image`} loading="lazy"
+              <img src={o.mediaUrl} alt={`${o.commonName || o.scientificName} — illustrative of the species, not this occurrence`} loading="lazy"
                 style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "'Fragment Mono', monospace", letterSpacing: ".08em", background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 7px", fontSize: 9 }}>ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE</div>
               <figcaption className="foot" style={{ padding: "6px 0", lineHeight: 1.6 }}>
-                {o.mediaAttribution || "Source image"} · {o.mediaLicence} · a past record, not the animal's current position
+                {o.mediaAttribution || "Illustration"} · {o.mediaLicence}
               </figcaption>
             </figure>
           ) : (
@@ -940,7 +948,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
               )}
               {speciesMatch && (
                 <div className="src-line">
-                  <Link to={`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`}>
+                  <Link to={withReturnTo(`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`, window.location.search)}>
                     Open {speciesMatch.commonName} in SPECIES →
                   </Link>
                 </div>

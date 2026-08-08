@@ -1,10 +1,11 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { MissionStrip } from "@/components/MissionStrip";
 import { PRINTS } from "@/data/prints";
+import { returnHrefFromSearch } from "@/product/productContext";
 import { Editorial } from "@/components/Editorial";
 import { content } from "@/content/contentRepository";
 import { missionArticle, type Block } from "@/content/narratives";
@@ -39,6 +40,8 @@ function splitArticle(blocks: Block[]): [Block[], Block[]] {
 
 export function MissionDetail() {
   const { slug } = useParams();
+  const location = useLocation();
+  const returnHref = returnHrefFromSearch(location.search);
   const m = slug ? content.getMission(slug) : undefined;
   if (!m) return <NotFound />;
 
@@ -62,6 +65,11 @@ export function MissionDetail() {
 
   return (
     <PublicShell>
+      {returnHref && (
+        <Link to={returnHref} data-testid="return-to-atlas" style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 70px)", left: 20, zIndex: 40, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: acc, padding: "10px 14px", textDecoration: "none" }}>
+          ← BACK TO OBSERVATION IN ATLAS
+        </Link>
+      )}
       {/* ── immersive entry (dark) ── */}
       <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority accent={acc} align="end">
         <Reveal>

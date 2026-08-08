@@ -18,6 +18,7 @@ import { useFollows } from "@/planet/follow";
 import { contextHref } from "@/product/ProductNav";
 import { NotFound } from "@/pages/system";
 import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
+import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
@@ -166,12 +167,20 @@ export function SpeciesProfilePage() {
 
   if (!profile) return <NotFound />;
   const isOrca = profile.slug === "orca";
-  const atlasHref = contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
+  const returnHref = returnHrefFromSearch(location.search);
+  // If we arrived from an ATLAS observation, "same entity in ATLAS" returns to
+  // the exact prior camera/record; otherwise it opens ATLAS on this entity.
+  const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
   const followed = following(profile.id);
 
   return (
     <PublicShell>
       <Section pad="clamp(88px,10vw,138px)">
+        {returnHref && (
+          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, ...mono, color: "#fff", background: T.blue, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
+            ← BACK TO OBSERVATION IN ATLAS
+          </Link>
+        )}
         <Link to={contextHref("/species", location.search)} style={{ ...mono, color: T.blue }}>← SPECIES INDEX</Link>
         <div style={{ marginTop: 38, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Status>GBIF TAXON · ACCEPTED</Status>
@@ -214,7 +223,13 @@ export function SpeciesProfilePage() {
           </div>
         )}
         <div style={{ marginTop: 38, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Link to={atlasHref} style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>OPEN SAME ENTITY IN ATLAS →</Link>
+          <Link to={atlasHref} data-testid="species-to-atlas" style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
+          {isOrca && (
+            <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
+          )}
+          {profile.missionSlug && (
+            <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
+          )}
           <button
             onClick={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
             style={{ ...mono, background: "transparent", color: followed ? T.acid : T.ink, border: `1px solid ${followed ? T.acid : T.ink}`, padding: "11px 15px", cursor: "pointer" }}

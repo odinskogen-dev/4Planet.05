@@ -1,44 +1,71 @@
-import type { Occurrence } from "@/planet/types";
+import type { Occurrence, ObservationItem } from "@/planet/types";
 
 /**
- * Blocker 10 — one exact, complete whale occurrence used to DEMONSTRATE the
- * image-aware ATLAS panel end-to-end: record ID, common + scientific identity,
- * observed date, source URL, coordinate uncertainty, image URL, exact licence,
- * attribution, and the historical-not-current-position disclosure.
+ * Workstream C — deterministic bundled Orca occurrence for the Gate 1 vertical
+ * slice. It is imported and rendered through the real ATLAS Context panel, works
+ * with NO live API (GBIF/OBIS/Supabase), and is clearly labelled as a bundled,
+ * checked, non-live historical observation.
  *
- * This is explicitly a DEMONSTRATION record, not a live GBIF read. Its base is
- * the real GBIF occurrence 5939349319 (an orca human-observation in Åstfjorden,
- * Norway, CC BY 4.0). Live occurrences come from the GBIF/OBIS connectors at
- * runtime; this fixture guarantees one worked example is always inspectable, and
- * the image is a NOAA Fisheries public-domain photograph with a full rights record.
+ * Base: real GBIF occurrence 5939349319 (an orca human-observation in
+ * Åstfjorden, Norway, CC BY 4.0). Verified source fields only; no invented data.
  */
+export const BUNDLED_ORCA_RECORD_ID = "5939349319";
+export const BUNDLED_ORCA_SOURCE_URL = "https://www.gbif.org/occurrence/5939349319";
+export const BUNDLED_ORCA_SOURCE_CHECKED = "2026-08-07";
+
 export const DEMO_WHALE_OCCURRENCE: Occurrence = {
   lat: 63.44559,
   lng: 9.304561,
   scientificName: "Orcinus orca",
   commonName: "Orca",
   eventDate: "2026-01-03",
-  sourceRecordId: "5939349319",
-  sourceUrl: "https://www.gbif.org/occurrence/5939349319",
+  sourceRecordId: BUNDLED_ORCA_RECORD_ID,
+  sourceUrl: BUNDLED_ORCA_SOURCE_URL,
   taxonKey: 2440483,
   coordinateUncertaintyM: 1000,
-  // Media is a separate NOAA Fisheries public-domain photograph (the base GBIF
-  // record itself carries no media); shown here to demonstrate the licensed-image
-  // path. The caption states it is illustrative of the species, not this event.
-  mediaUrl: "https://www.fisheries.noaa.gov/s3/styles/original/s3/dam-migration/killer-whale_orca-noaa.jpg",
-  mediaLicence: "Public domain (U.S. Government work)",
-  mediaAttribution: "NOAA Fisheries (public domain) — illustrative of the species",
+  // A separate 4PLANET-created illustration, used ONLY as an illustration of the
+  // species — never as a photo of this exact occurrence. The Context panel labels
+  // it "ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE".
+  mediaUrl: "/assets/species/orca/illustrative.jpg",
+  mediaLicence: "Owned work — INTERNAL PROTOTYPE ART (4PLANET-created)",
+  mediaAttribution: "4PLANET illustration — illustrative of the species, not this occurrence",
+};
+
+/** A complete ObservationItem the ATLAS Context panel can render directly. */
+export const DEMO_WHALE_OBSERVATION: ObservationItem = {
+  id: `observation:gbif:${BUNDLED_ORCA_RECORD_ID}`,
+  taxon: { id: "taxon:gbif:2440483", type: "TAXON", label: "Orca", sub: "Orcinus orca" },
+  occurrence: DEMO_WHALE_OCCURRENCE,
+  provenance: {
+    sourceId: "gbif",
+    sourceRecordId: BUNDLED_ORCA_RECORD_ID,
+    sourceUrl: BUNDLED_ORCA_SOURCE_URL,
+    interpretation: "SOURCE_RECORD",
+    confidence: "HIGH",
+    occurredAt: "2026-01-03",
+    checkedAt: BUNDLED_ORCA_SOURCE_CHECKED,
+  },
+};
+
+/** Labels the panel must show for a bundled, non-live record. */
+export const BUNDLED_SNAPSHOT_LABELS = {
+  bundled: "BUNDLED SOURCE SNAPSHOT",
+  notLive: "NOT LIVE",
+  source: "GBIF",
+  recordId: BUNDLED_ORCA_RECORD_ID,
+  checked: BUNDLED_ORCA_SOURCE_CHECKED,
+  historical: "HISTORICAL OBSERVATION — NOT THE ANIMAL'S CURRENT POSITION",
+  imageLabel: "ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE",
 };
 
 export const DEMO_WHALE_META = {
-  recordId: "5939349319",
+  recordId: BUNDLED_ORCA_RECORD_ID,
   identity: "Orca (Orcinus orca)",
   observed: "2026-01-03",
-  sourceUrl: "https://www.gbif.org/occurrence/5939349319",
+  sourceUrl: BUNDLED_ORCA_SOURCE_URL,
   coordinateUncertaintyM: 1000,
   imageUrl: DEMO_WHALE_OCCURRENCE.mediaUrl!,
   licence: DEMO_WHALE_OCCURRENCE.mediaLicence!,
   attribution: DEMO_WHALE_OCCURRENCE.mediaAttribution!,
-  disclosure:
-    "This point is where a record was reported on 2026-01-03, not where the animal is now. The image is illustrative of the species, not this event. Coordinate was rounded by the source (±1000 m).",
+  disclosure: BUNDLED_SNAPSHOT_LABELS.historical,
 };

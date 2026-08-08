@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label } from "@/components/ui";
 import { speciesBySlug, type EvidenceState } from "@/data/species";
+import { returnHrefFromSearch } from "@/product/productContext";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".12em" };
 const ACCENT = T.blue; // OCE4N_ journey — blue is the OCE4N domain accent
@@ -59,15 +60,25 @@ function SceneRow({ s, i }: { s: Scene; i: number }) {
 
 export function LivingSystems() {
   const orca = speciesBySlug("orca");
+  const location = useLocation();
+  const returnHref = returnHrefFromSearch(location.search);
+  // Forward the captured ATLAS return context onto the next hop so the whole
+  // journey can still return to the exact prior ATLAS state.
+  const fwd = (href: string) => (returnHref ? `${href}${href.includes("?") ? "&" : "?"}returnTo=${new URLSearchParams(location.search).get("returnTo")}` : href);
   const handoffs: [string, string, string][] = [
-    ["OPEN ORCA IN SPECIES", "The full profile, identity and records.", "/species/orca?entity=taxon:gbif:2440483"],
-    ["EXPLORE FREELY IN ATLAS", "Leave the guided path and inspect the data yourself.", "/atlas?entity=taxon:gbif:2440483"],
-    ["WH4LES_ MISSION", "What this connects to, and how to take part.", "/missions/wh4les"],
+    ["OPEN ORCA IN SPECIES", "The full profile, identity and records.", fwd("/species/orca?entity=taxon:gbif:2440483")],
+    ["EXPLORE FREELY IN ATLAS", "Leave the guided path and inspect the data yourself.", returnHref ?? "/atlas?entity=taxon:gbif:2440483"],
+    ["WH4LES_ MISSION", "What this connects to, and how to take part.", fwd("/missions/wh4les")],
     ["FOLLOW & PARTICIPATE", "Follow the animal and its mission.", "/join"],
   ];
   return (
     <PublicShell>
       <Section pad="clamp(48px,7vw,96px)">
+        {returnHref && (
+          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: ACCENT, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
+            ← BACK TO OBSERVATION IN ATLAS
+          </Link>
+        )}
         <Label color={ACCENT} style={{ marginBottom: 16 }}>4PLANET_ LIVING SYSTEMS_</Label>
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(32px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.04, maxWidth: 820 }}>
           Making the relationships that make life possible visible.
