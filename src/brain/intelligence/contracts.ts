@@ -1,14 +1,14 @@
 /**
- * 4PLANET_ BRAIN — canonical intelligence read contracts.
+ * 4PLANET_ BRAIN — founder-approved canonical intelligence read contracts.
  *
- * Phase 05 convergence rule:
  * PSI is an intelligence service over the One Planet Model, not a fifth product
- * and not a parallel truth store. These are product-facing read contracts only;
- * canonical truth remains in Postgres/PostGIS + Source/Claim/Evidence records.
+ * and not a parallel truth store. Canonical truth remains in Postgres/PostGIS +
+ * Source/Claim/Evidence records. FD-01 through FD-06 are implemented here.
  */
 
 export type PublicRef = string;
 export type EvidenceDirection = "SUPPORTS" | "QUALIFIES" | "CHALLENGES";
+export type EvidenceStrength = "UNASSESSED" | "INSUFFICIENT" | "LIMITED" | "MODERATE" | "STRONG";
 export type ReviewStatus =
   | "UNREVIEWED"
   | "SOURCE_CHECKED"
@@ -16,6 +16,12 @@ export type ReviewStatus =
   | "REVIEWED"
   | "EXPERT_REVIEWED"
   | "REJECTED";
+
+export type CanonicalSolutionType = "PATHWAY" | "INTERVENTION" | "OFFERING";
+export type NeedKind = "CHALLENGE" | "PROCUREMENT" | "PROJECT" | "MISSION" | "RESEARCH" | "OTHER";
+export type NeedOrigin = "EXTERNAL_EXPLICIT" | "EXTERNAL_DERIVED" | "INTERNAL_SCENARIO" | "ANALYTICAL_DERIVED";
+export type ExecutionPhase = "PROPOSED" | "PLANNED" | "PILOT" | "UNDER_CONSTRUCTION" | "OPERATIONAL" | "COMPLETED" | "DECOMMISSIONED";
+export type ExecutionState = "ACTIVE" | "SUSPENDED" | "CANCELLED" | "FAILED" | "UNKNOWN";
 
 export interface SourceRef {
   sourceRecordId: string;
@@ -30,7 +36,7 @@ export interface EvidenceItem {
   statement: string;
   direction: EvidenceDirection;
   reviewStatus: ReviewStatus;
-  evidenceStrength: "UNASSESSED" | "INSUFFICIENT" | "LIMITED" | "MODERATE" | "STRONG";
+  evidenceStrength: EvidenceStrength;
   directness?: string;
   measurementType?: string;
   independence?: string;
@@ -39,10 +45,14 @@ export interface EvidenceItem {
   sources: SourceRef[];
 }
 
+/** FD-01: public APIs may retain problemId, but it resolves to PROBLEM_FRAME. */
 export interface ProblemBrief {
   problemId: PublicRef;
+  canonicalType: "PROBLEM_FRAME";
   title: string;
   statement: string;
+  scope: string;
+  framingVersion?: string;
   system?: string;
   pressures: PublicRef[];
   affectedLivingSystems: PublicRef[];
@@ -50,10 +60,13 @@ export interface ProblemBrief {
   unknowns: string[];
 }
 
+/** FD-02/FD-03: Solution is a read umbrella only; VARIANT is legacy history. */
 export interface SolutionSummary {
   solutionId: PublicRef;
+  canonicalType: CanonicalSolutionType;
+  legacyClass?: "VARIANT";
+  parentSolutionId?: PublicRef;
   title: string;
-  level: "PATHWAY" | "INTERVENTION" | "VARIANT";
   mechanism?: string;
   maturity?: string;
   applicability?: string;
@@ -64,18 +77,50 @@ export interface SolutionLandscape {
   problemId: PublicRef;
   pathways: SolutionSummary[];
   interventions: SolutionSummary[];
-  variants: SolutionSummary[];
+  offerings: SolutionSummary[];
   evidence: EvidenceItem[];
   evidenceCoverageNote: string;
 }
 
+/** FD-04: need kind and origin are orthogonal axes. */
+export interface NeedSummary {
+  needId: PublicRef;
+  needKind: NeedKind;
+  needOrigin: NeedOrigin;
+  statement: string;
+  source?: SourceRef;
+  limitations: string[];
+}
+
+export interface ImplementationEvent {
+  kind:
+    | "ANNOUNCED"
+    | "FINANCED"
+    | "CONTRACTED"
+    | "PROCUREMENT_OPENED"
+    | "PROCUREMENT_AWARDED"
+    | "CONSTRUCTION_STARTED"
+    | "OPERATION_STARTED"
+    | "SUSPENDED"
+    | "CANCELLED"
+    | "COMPLETED"
+    | "OTHER";
+  date?: string;
+  source: SourceRef;
+}
+
+/** FD-05: phase/state/events are deliberately separate. */
 export interface ImplementationRecord {
   implementationId: PublicRef;
-  solutionIds: PublicRef[];
+  interventionIds: PublicRef[];
+  offeringIds: PublicRef[];
   actorIds: PublicRef[];
   placeIds: PublicRef[];
-  status?: string;
+  executionPhase: ExecutionPhase;
+  executionState: ExecutionState;
+  events: ImplementationEvent[];
   startDate?: string;
+  endDate?: string;
   scale?: string;
   outcomeEvidence: EvidenceItem[];
   limitations: string[];
@@ -91,12 +136,43 @@ export interface ActorMapItem {
   actorId: PublicRef;
   name: string;
   roles: string[];
-  solutionIds: PublicRef[];
+  interventionIds: PublicRef[];
+  offeringIds: PublicRef[];
   implementationIds: PublicRef[];
 }
 
 export interface ActorMap {
   actors: ActorMapItem[];
+}
+
+export interface ExpectedOutcomeRef {
+  expectedOutcomeId: PublicRef;
+  targetId: PublicRef;
+  statement: string;
+  metricHint?: string;
+  timeframe?: string;
+  source?: SourceRef;
+}
+
+export interface MeasurementRef {
+  measurementId: PublicRef;
+  targetId: PublicRef;
+  metric: string;
+  value?: number | string;
+  unit?: string;
+  basis: "MEASURED" | "MODELLED" | "PROJECTED" | "REPORTED";
+  source: SourceRef;
+  limitations?: string;
+}
+
+export interface ObservedOutcomeRef {
+  outcomeId: PublicRef;
+  targetId: PublicRef;
+  stage: "ACTIVITY" | "OUTPUT" | "OUTCOME" | "LONGER_TERM_IMPACT";
+  statement: string;
+  basis: "MEASURED" | "MODELLED" | "PROJECTED" | "REPORTED";
+  source?: SourceRef;
+  limitations?: string;
 }
 
 export interface TransferabilityFactor {
@@ -107,7 +183,7 @@ export interface TransferabilityFactor {
 }
 
 export interface TransferabilityBrief {
-  solutionId: PublicRef;
+  interventionId: PublicRef;
   sourceContext: string;
   targetContext: string;
   conclusion: "EVIDENCE_BACKED" | "PLAUSIBLE_HYPOTHESIS" | "WEAK_UNCERTAIN" | "NOT_ASSESSED";
@@ -134,6 +210,9 @@ export interface DecisionReadyEvidencePack {
   solutionLandscape: SolutionLandscape;
   implementations: ImplementationMap;
   actors: ActorMap;
+  expectedOutcomes: ExpectedOutcomeRef[];
+  measurements: MeasurementRef[];
+  observedOutcomes: ObservedOutcomeRef[];
   supports: EvidenceItem[];
   qualifies: EvidenceItem[];
   challenges: EvidenceItem[];
@@ -148,6 +227,7 @@ export interface DecisionReadyEvidencePack {
     unitBasis?: string;
     basis: "OBSERVED" | "MODELLED" | "PROJECTED" | "REPORTED";
     sources: SourceRef[];
+    limitations?: string;
   }>;
   transferability?: TransferabilityBrief;
   gaps: GapAnalysis;
@@ -159,9 +239,29 @@ export interface DecisionReadyEvidencePack {
   status: "RESEARCH_READY" | "DECISION_CONTEXT_READY" | "HUMAN_REVIEW_REQUIRED";
 }
 
+export interface BoundedContextPack {
+  status: "OK" | "NOT_FOUND";
+  rootRef: PublicRef;
+  bounds: {
+    maxHops: number;
+    maxObjects: number;
+    maxClaims: number;
+    maxSources: number;
+  };
+  objectRefs: PublicRef[];
+  claimRefs: PublicRef[];
+  sourceRecordIds: string[];
+  truthBoundary: {
+    sourceIsClaim: false;
+    claimIsVerifiedFact: false;
+    relationIsEffectiveness: false;
+    databaseAbsenceIsRealWorldAbsence: false;
+  };
+}
+
 export interface MissionContext {
   problemId: PublicRef;
-  credibleSolutionIds: PublicRef[];
+  credibleInterventionIds: PublicRef[];
   actorIds: PublicRef[];
   barrierGapIds: PublicRef[];
   possible4PlanetRole?: string;
