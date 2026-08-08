@@ -57,6 +57,9 @@ jobs:
           docker cp supabase/tests/phase05_brain_intelligence.sql "${{ steps.db.outputs.name }}:/tmp/phase05.sql"
           docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase05.sql | tee phase05-sql-gate-before-rollback.txt
           grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' phase05-sql-gate-before-rollback.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "${{ steps.db.outputs.name }}:/tmp/phase05-context.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase05-context.sql | tee phase05-context-pack-gate-before-rollback.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' phase05-context-pack-gate-before-rollback.txt
 
       - name: Execute bounded rollback and protect existing truth spine
         shell: bash
@@ -73,13 +76,16 @@ jobs:
       - name: Reapply all migrations after rollback
         run: supabase db reset
 
-      - name: Re-run SQL gate after clean reapply
+      - name: Re-run SQL gates after clean reapply
         shell: bash
         run: |
           name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
           docker cp supabase/tests/phase05_brain_intelligence.sql "$name:/tmp/phase05.sql"
           docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05.sql | tee phase05-sql-gate-after-reapply.txt
           grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' phase05-sql-gate-after-reapply.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "$name:/tmp/phase05-context.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05-context.sql | tee phase05-context-pack-gate-after-reapply.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' phase05-context-pack-gate-after-reapply.txt
 
       - name: Generate canonical schema types
         shell: bash
@@ -111,9 +117,11 @@ jobs:
           path: |
             postgres-version.txt
             phase05-sql-gate-before-rollback.txt
+            phase05-context-pack-gate-before-rollback.txt
             phase05-rollback.txt
             phase05-rollback-assertions.txt
             phase05-sql-gate-after-reapply.txt
+            phase05-context-pack-gate-after-reapply.txt
             phase05-schema.gen.ts
           if-no-files-found: warn
           retention-days: 30
