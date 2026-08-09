@@ -7,6 +7,8 @@ const data = read("src/data/oslofjordenProof.ts");
 const media = read("src/data/oslofjordenMedia.ts");
 const datasets = read("src/data/oslofjordenDatasets.ts");
 const places = read("src/data/oslofjordenPlaces.ts");
+const relationshipDeepening = read("src/data/oslofjordenRelationshipDeepening.ts");
+const relationshipComponent = read("src/components/place/OslofjordRelationshipDeepening.tsx");
 const evidenceComponent = read("src/components/place/ScientificDatasetEvidence.tsx");
 const model = read("src/planet/placeModel.ts");
 const follow = read("src/planet/follow.ts");
@@ -73,10 +75,23 @@ test("pressure intelligence is multi-causal and scoped", () => {
   assert.match(page, /There is no single cause/);
 });
 
-test("relationship chain distinguishes documented evidence from 4PLANET context", () => {
+test("Relationship Reveal now exposes two source-aware threads without manufacturing certainty", () => {
+  assert.match(relationshipDeepening, /relationship-phytoplankton-foodweb/);
+  assert.match(relationshipDeepening, /Phytoplankton/);
+  assert.match(relationshipDeepening, /Base of the marine food web/);
+  assert.match(relationshipDeepening, /Zooplankton graze on phytoplankton/);
+  assert.match(relationshipDeepening, /historical UiO phytoplankton archive/);
+  assert.match(relationshipDeepening, /together with other factors/);
+  assert.match(relationshipDeepening, /not presented as 'nitrogen caused the Oslofjord problem'/i);
+  assert.match(relationshipDeepening, /Restoration guidance is not proof/);
+  assert.match(relationshipComponent, /initialMode="THREAD"/);
+  assert.match(page, /TWO SOURCE-AWARE THREADS/);
+  assert.match(page, /high nitrogen acts together with other factors/i);
+});
+
+test("legacy weak relationship context remains distinguishable rather than silently promoted", () => {
   assert.match(data, /rel-human[\s\S]*grade: "4PLANET_CONTEXT"/);
   assert.match(data, /rel-eelgrass-life[\s\S]*grade: "DOCUMENTED"/);
-  assert.match(page, /mark the weak link/i);
 });
 
 test("Signals are real source events, not generic news or ecological outcome claims", () => {
