@@ -86,11 +86,17 @@ jobs:
           jq -e '.status == "OK"' phase06-contexts/microfibre.json
           jq -e '.status == "OK"' phase06-contexts/cooling.json
           jq -e '.status == "OK"' phase06-contexts/coral.json
+          jq -e '.context_pack_version == "4.0"' phase06-contexts/microfibre.json
 
-      - name: Generate DB-derived founder review cards and machine precheck
+      - name: Generate DB-derived review cards + human-feedback repair regression
         run: |
           node scripts/phase06-review-cards.mjs phase06-contexts | tee phase06-machine-review.txt
           grep -q 'PHASE06_MACHINE_REVIEW_PRECHECK_PASS' phase06-machine-review.txt
+          grep -q 'PHASE06_HUMAN_FEEDBACK_REPAIR_PASS' phase06-machine-review.txt
+          jq -e '.context_pack_decision == "RETAIN_CONTEXT_PACK_V4_0"' phase06-machine-scorecard.json
+          jq -e '.human_review_completed == 4 and .explicit_structured_passes == 0 and .explicit_structured_fails == 0 and .structured_label_status == "NOT_EXPLICITLY_SUPPLIED"' phase06-machine-scorecard.json
+          jq -e 'length == 4 and all(.[]; .scientific_meaning_changed == false)' phase06-before-after-human-repair.json
+          jq -e '.schema_change == false and (.required_fields|length) == 4' phase06-uncertainty-presentation-contract.json
 
       - name: Record auditable Context Pack runs
         shell: bash
@@ -101,7 +107,7 @@ jobs:
             obj="$(jq '.objects|length' "phase06-contexts/$file.json")"
             clm="$(jq '.claims|length' "phase06-contexts/$file.json")"
             src="$(jq '.sources|length' "phase06-contexts/$file.json")"
-            docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "insert into public.context_pack_runs(query_text,task_type,root_object_id,retrieval_version,database_revision,model_ref,object_count,claim_count,source_count) select 'Phase06 Decision Proof: $root','DECISION_PROOF',id,'brain_context_pack_v4','${{ github.sha }}','DETERMINISTIC_TEMPLATE',$obj,$clm,$src from public.brain_objects where public_ref='$root';"
+            docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "insert into public.context_pack_runs(query_text,task_type,root_object_id,retrieval_version,database_revision,model_ref,object_count,claim_count,source_count) select 'Phase06 Decision Proof: $root','DECISION_PROOF',id,'brain_context_pack_v4','${{ github.sha }}','DETERMINISTIC_TEMPLATE_UNCERTAINTY_V1',$obj,$clm,$src from public.brain_objects where public_ref='$root';"
           done
           docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -Atc "select count(*) from public.context_pack_runs where retrieval_version='brain_context_pack_v4';" | tee phase06-context-pack-audit-count.txt
           grep -q '^3$' phase06-context-pack-audit-count.txt
@@ -134,11 +140,11 @@ jobs:
           select 'context_pack_runs',count(*) from public.context_pack_runs;
           " | tee phase06-quality-snapshot.tsv
 
-      - name: Upload exact-SHA Phase 06 evidence
+      - name: Upload exact-SHA Phase 06.1 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: psi-phase06-staging-evidence
+          name: psi-phase06-1-closure-evidence
           path: |
             phase06-postgres-version.txt
             phase06-decision-proof-cohort.runtime.sql
@@ -146,6 +152,8 @@ jobs:
             phase06-sql-gate.txt
             phase06-contexts/
             phase06-founder-review-cards.json
+            phase06-before-after-human-repair.json
+            phase06-uncertainty-presentation-contract.json
             phase06-machine-scorecard.json
             phase06-machine-review.txt
             phase06-context-pack-audit-count.txt
