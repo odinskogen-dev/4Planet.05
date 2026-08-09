@@ -63,7 +63,7 @@ test("runtime local LIFE adapter exposes either source records or an explicit so
   if (text.includes("LIVE SOURCE")) {
     await expect(page.getByText(/Registration ≠ current position/i)).toBeVisible();
     await expect(page.getByText(/Loaded count ≠ abundance/i)).toBeVisible();
-    await expect(page.getByText(/rights remain source-controlled\/review-required/i)).toBeVisible();
+    await expect(page.getByText(/Reuse is under NLOD 2\.0 with attribution/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /VANNMILJØ API \/ SOURCE/i })).toHaveAttribute("href", /vannmiljoapi\.miljodirektoratet\.no/);
   } else {
     expect(text).toMatch(/SOURCE UNAVAILABLE|TIMEOUT|INVALID RESPONSE/);
@@ -119,13 +119,14 @@ test("front door uses a real rights-classified Oslofjord photograph", async ({ p
   await capture(page, "front-door-real-oslofjord-desktop");
 });
 
-test("Follow persists locally and first source watch establishes a baseline without alert", async ({ page }) => {
+test("Follow persists locally and bounded Watch establishes a baseline without false removals", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   const follow = page.getByRole("button", { name: "FOLLOW OSLOFJORDEN ON THIS DEVICE" });
   await follow.click();
   expect(await page.evaluate(() => localStorage.getItem("4planet.follows.v1"))).toContain("place:marine-regions:3379");
   await expect(page.getByText(/FOLLOW → SOURCE CHANGE → RETURN/i)).toBeVisible();
   await expect(page.getByText(/Baseline established|Checking the same source contract|source has not returned/i).last()).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(/capped source window.*ignored rather than labelled deleted or removed/i)).toBeVisible({ timeout: 15000 });
   await page.reload();
   await expect(page.getByRole("button", { name: /FOLLOWING OSLOFJORDEN ON THIS DEVICE/i })).toBeVisible();
 });
