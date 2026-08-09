@@ -8,6 +8,7 @@ Status: **INTERNAL RELEASE CANDIDATE / DRAFT PR / NO PUBLIC RELEASE**
 - Authoritative One Interface baseline branch: `build/four-product-integrated-prototype`
 - Exact Phase 04 start SHA: `de9e01a37482b7678104690056cc6146e9b286a3`
 - Controlled Phase 04 branch: `phase04/brand-product-convergence`
+- Final Phase 04 candidate head for this closeout: `bf104d7b99282708154aa26e2716800cad87ac63`
 - Review surface: draft PR #29 against the controlled build branch, **not `main`**.
 - No merge, production deploy or Beta claim is authorised by this document.
 
@@ -24,10 +25,11 @@ Phase 04 does not create a parallel brand site. It changes the shared public app
 | Root `/` | Long-form `Home` narrative | Living Place-first front door using Oslofjorden as selected context; product jobs visible immediately after hero | FOUNDER-APPROVED DIRECTION / CODE CANDIDATE |
 | Product family | Four-square launcher treatment remained | Editorial `4P / 01–04` family rail + context-preserving product chooser | EXPERIMENT / CODE CANDIDATE |
 | Living Systems | External prototype handoff | Internal shared-engine surface using repository relationship model | CANON ARCHITECTURE / PROTOTYPE DATA |
-| Relationship Reveal | Phase 03 design artefact | Reusable `THREAD / ORBIT / CONSTELLATION` component | FOUNDER-APPROVED DIRECTION / CODE CANDIDATE |
+| Relationship Reveal | Phase 03 design artefact | Reusable `THREAD / ORBIT / CONSTELLATION` component with semantic motion + reduced-motion fallback | FOUNDER-APPROVED DIRECTION / CODE CANDIDATE |
 | Proof State | Phase 03 design artefact | Typed `ProvenanceBar` + text explanation | FOUNDER-APPROVED DIRECTION / CODE CANDIDATE |
 | 4PLANET SIGNAL_ | Phase 03 design artefact | Typed reusable Signal presentation object | PROTOTYPE-VALIDATED DIRECTION / CODE CANDIDATE |
-| Oslofjorden | Required journey but no canonical marine entity in current place registry | Full journey shell with explicit source/maturity boundaries; missing marine place adapter remains visible | PARTIAL / SOURCE-INTEGRATION BLOCKER |
+| Runtime state grammar | Inconsistent local states | Explicit loading / no records / source unavailable / cached / curated / prototype / demo fixture / not-yet-built surface | CODE CANDIDATE |
+| Oslofjorden | Required journey without source-backed runtime identity contract | Marine Regions MRGID 3379 semantic identity implemented separately from unresolved display/query geometry; local LIFE/action/proof gaps remain visible | PARTIAL / SOURCE-INTEGRATION BLOCKER |
 | AM4ZONIA_ | Legacy mission route/content | Endorsed deep mission-world proof with plain descriptor and shared truth system | PROTOTYPE-VALIDATED |
 | WH4LES_ | Legacy mission route/content | Endorsed deep mission-world proof | PROTOTYPE-VALIDATED |
 | CLIM4TE_ | Legacy mission route/content | Endorsed temporal mission-world proof | PROTOTYPE-VALIDATED |
@@ -57,6 +59,7 @@ Phase 04 does not create a parallel brand site. It changes the shared public app
 - Endorsed mission-world architecture.
 - Shared Signal object grammar.
 - Product-family rail as a replacement for rejected four-square app launcher.
+- Semantic motion and explicit runtime state grammar survive production build + browser proof.
 
 ### EXTERNALLY VALIDATED
 - **NONE YET.** Human comprehension, recall, attribution and return-intent testing has not been run.
@@ -68,12 +71,13 @@ Phase 04 does not create a parallel brand site. It changes the shared public app
 - Exact mission accent/motion rules.
 
 ### NOT YET BUILT / BLOCKED
-- Canonical Oslofjorden marine-place adapter and selected source-aware geometry.
-- Real Oslofjorden-specific species records in the Phase 04 journey.
+- Selected defensible Oslofjorden display/query geometry for the relevant use case.
+- Real source-aware Oslofjorden-specific LIFE records in the Phase 04 journey.
 - Oslofjorden actor/solution graph.
 - Oslofjorden action pathway.
 - Oslofjorden outcome/proof feed.
 - Production Follow/notification service for Oslofjorden.
+- Rights-clean final Oslofjorden hero/life imagery.
 - Human validation results.
 - Public release.
 
@@ -86,7 +90,30 @@ Phase 04 does not create a parallel brand site. It changes the shared public app
 5. No mission-specific visual system may strengthen evidence status.
 6. A coded mission name must retain a plain-language descriptor on first exposure and in search/accessibility metadata.
 7. Existing ATLAS, SPECIES and IMPACT functionality remains shared infrastructure; Phase 04 is convergence, not rewrite.
+8. Semantic place identity is not silently treated as one universal display/scientific/management polygon.
+9. Source unavailable, no returned records and genuine absence are different states.
 
-## CI status
+## Final candidate gate
 
-A dedicated isolated candidate workflow runs typecheck, production build, existing smoke/contracts, Phase 04 contracts, lint and asset control on PR #29. Initial run proved typecheck and production build, then correctly caught a stale root-route smoke contract. That contract was superseded to accept the founder-directed Phase 04 front door while preserving the product-family requirements. Human validation is separate and must never be inferred from CI.
+**PASS — Phase 04 Candidate Gate run 18 on head `bf104d7b99282708154aa26e2716800cad87ac63`.**
+
+Passed:
+- locked dependency install;
+- TypeScript typecheck;
+- production build;
+- existing smoke + truth-spine contracts;
+- Phase 04 convergence contracts;
+- lint with zero errors (pre-existing warnings remain);
+- asset control with zero missing references;
+- local built-candidate server;
+- Chromium desktop front-door proof;
+- Oslofjorden source/geometry truth proof;
+- Relationship Reveal interaction proof;
+- AM4ZONIA_ / WH4LES_ / CLIM4TE_ parent + plain-language proof;
+- mobile front-door/menu proof at 390×844.
+
+Browser evidence is stored as the CI artefact `phase04-browser-evidence` for the gate run. This is implementation QA, **not human comprehension validation**.
+
+## Release conclusion
+
+Phase 04 has passed its internal code/browser candidate gate. It remains a draft, unmerged, non-public release candidate because the remaining blockers are external validation, real Oslofjorden documentary/content quality, local LIFE/source integration and founder release authority — not compile/runtime correctness.
