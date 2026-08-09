@@ -32,8 +32,8 @@ export type ActorReviewRequest = {
   proposedChange: string;
   evidenceReferences: string;
   attachmentReference?: string;
-  consent: true;
-  privacyAcknowledged: true;
+  consent: boolean;
+  privacyAcknowledged: boolean;
 };
 
 export type ActorReviewReceipt = {
