@@ -34,11 +34,18 @@ export type ProofFlag =
   | "RIGHTS REVIEW"
   | "CLAIM QUALIFIED";
 
+export interface ProvenanceSourceLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
 export interface ProvenancePresentation {
   state: ProofState;
   actor: string;
   source?: string;
   sources?: string[];
+  sourceLinks?: ProvenanceSourceLink[];
   method?: string;
   /** Legacy generic time label. Prefer dataDate / lastChecked for new surfaces. */
   time?: string;
