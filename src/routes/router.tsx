@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
 import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
+import Phase04StateLab from "@/pages/phase04/StateLab";
 import { MissionUniverse } from "@/pages/phase04/MissionUniverse";
 import { MissionHolding } from "@/pages/phase04/MissionHolding";
 import Join from "@/pages/v5/Join";
@@ -41,6 +42,7 @@ export function AppRoutes() {
       <Route path="/" element={<Phase04FrontDoor />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/place/oslofjorden" element={<OslofjordenJourney />} />
+      <Route path="/phase04/states" element={<Phase04StateLab />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
