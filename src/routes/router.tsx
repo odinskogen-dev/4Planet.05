@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
 import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
 import OslofjordenValidation from "@/pages/phase04/OslofjordenValidation";
+import OslofjordenValidationReview from "@/pages/phase04/OslofjordenValidationReview";
 import Phase04StateLab from "@/pages/phase04/StateLab";
 import { MissionUniverse } from "@/pages/phase04/MissionUniverse";
 import { MissionHolding } from "@/pages/phase04/MissionHolding";
@@ -55,6 +56,7 @@ export function AppRoutes() {
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/place/oslofjorden" element={<OslofjordenJourney />} />
       <Route path="/labs/oslofjorden-validation" element={<OslofjordenValidation />} />
+      <Route path="/labs/oslofjorden-validation/review" element={<OslofjordenValidationReview />} />
       <Route path="/phase04/states" element={<Phase04StateLab />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
