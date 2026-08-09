@@ -60,6 +60,7 @@ export function DatasetOccurrenceEvidence({
   datasetLicense: string;
   temporalBoundary: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [state, setState] = useState<
     | { kind: "LOADING" }
     | { kind: "LIVE"; checkedAt: string; total: number; records: DatasetOccurrenceRecord[] }
@@ -84,6 +85,10 @@ export function DatasetOccurrenceEvidence({
     return () => { active = false; };
   }, [datasetKey]);
 
+  const visibleRecords = state.kind === "LIVE"
+    ? state.records.slice(0, expanded ? state.records.length : 3)
+    : [];
+
   return (
     <section aria-label={`${datasetName} occurrence records`}>
       <div style={{ ...mono, color: "#0B7A39" }}>REAL SOURCE RECORDS / HISTORICAL OCCURRENCES</div>
@@ -96,13 +101,22 @@ export function DatasetOccurrenceEvidence({
       {state.kind === "UNAVAILABLE" && <DataStatePanel state="SOURCE UNAVAILABLE" title="The source record service did not answer this request." detail={`Checked ${state.checkedAt}. ${state.error}. Source unavailability is not evidence that the dataset or life is absent.`} />}
       {state.kind === "EMPTY" && <DataStatePanel state="NO RECORDS" title="No coordinate-bearing records were returned in this request." detail={`Checked ${state.checkedAt}. This is a statement about this source query, not the absence of life in Inner Oslofjorden.`} />}
       {state.kind === "LIVE" && (
-        <div>
+        <div data-source-records-ready="true">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", borderTop: "1px solid #0A0A0A", borderLeft: "1px solid #0A0A0A", marginBottom: 20 }}>
-            <div style={{ padding: 13, borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div style={mono}>SOURCE QUERY COUNT</div><div style={{ fontSize: 25, marginTop: 5 }}>{state.total.toLocaleString()}</div><div style={{ fontSize: 11.5, color: "rgba(10,10,10,.58)", marginTop: 4 }}>records with coordinates returned by GBIF search index for this dataset; not organism abundance</div></div>
-            <div style={{ padding: 13, borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div style={mono}>DISPLAYED</div><div style={{ fontSize: 25, marginTop: 5 }}>{state.records.length}</div><div style={{ fontSize: 11.5, color: "rgba(10,10,10,.58)", marginTop: 4 }}>most recent dated records within the fetched sample</div></div>
+            <div style={{ padding: 13, borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div style={mono}>SOURCE QUERY COUNT</div><div style={{ fontSize: 25, marginTop: 5 }}>{state.total.toLocaleString()}</div><div style={{ fontSize: 11.5, color: "rgba(10,10,10,.58)", marginTop: 4 }}>coordinate-bearing records returned by GBIF search for this dataset; not organism abundance</div></div>
+            <div style={{ padding: 13, borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div style={mono}>DISPLAYED</div><div style={{ fontSize: 25, marginTop: 5 }}>{visibleRecords.length} / {state.records.length}</div><div style={{ fontSize: 11.5, color: "rgba(10,10,10,.58)", marginTop: 4 }}>dated records from the fetched sample; compact by default to protect comprehension</div></div>
             <div style={{ padding: 13, borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div style={mono}>SOURCE CHECKED</div><div style={{ fontSize: 14, marginTop: 8 }}>{new Date(state.checkedAt).toLocaleString()}</div><div style={{ fontSize: 11.5, color: "rgba(10,10,10,.58)", marginTop: 4 }}>{temporalBoundary}</div></div>
           </div>
-          <div>{state.records.map((record) => <RecordCard key={record.gbifId} record={record} datasetLicense={datasetLicense} />)}</div>
+          <div>{visibleRecords.map((record) => <RecordCard key={record.gbifId} record={record} datasetLicense={datasetLicense} />)}</div>
+          {state.records.length > 3 && (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              style={{ ...mono, border: "1px solid #0A0A0A", background: expanded ? "#fff" : "#0A0A0A", color: expanded ? "#0A0A0A" : "#fff", padding: "10px 12px", cursor: "pointer", marginTop: 4 }}
+            >
+              {expanded ? "SHOW FEWER SOURCE RECORDS" : `SHOW ${state.records.length - 3} MORE SOURCE RECORDS`}
+            </button>
+          )}
         </div>
       )}
 
