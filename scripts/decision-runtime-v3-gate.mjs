@@ -1,7 +1,6 @@
 import {
   DecisionRuntimeV3Service,
   decisionRuntimeV3TruthBoundary,
-  explainMaterialUncertainty,
 } from "../.decision-v3-ci/brain/decision/runtimeV3.js";
 import {
   TARGET_PROBLEM_PRIORITY_V1,
@@ -15,7 +14,6 @@ import {
   evaluateDecisionLearningLoop,
   learningLoopV3TruthBoundary,
 } from "../.decision-v3-ci/brain/decision/learningLoopV3.js";
-import { POLLINATION_DECISION_PACKS } from "../.decision-v3-ci/brain/decision/pollinationDecisionPacks.js";
 
 const missingContextErrors = validatePriorityContext({
   methodologyVersion: TARGET_PROBLEM_PRIORITY_V1,
@@ -76,9 +74,7 @@ const municipality = await service.getDatabaseBackedDecisionPack("DP-POLL-MUNICI
 if (!municipality || municipality.runtimeVersion !== "DECISION_RUNTIME_V3") throw new Error("runtime v3 pack failed");
 if (municipality.fallbackInvented !== false) throw new Error("runtime v3 invented fallback");
 if (municipality.uncertaintyExplanations.length === 0) throw new Error("material uncertainty explanation repair missing");
-
-const sample = POLLINATION_DECISION_PACKS.MUNICIPALITY.evidence.find((x) => x.claim.limitations.length > 0);
-if (!sample || !explainMaterialUncertainty(sample)?.includes(":")) throw new Error("causal uncertainty prose gate failed");
+if (!municipality.uncertaintyExplanations.every((text) => text.includes(":"))) throw new Error("material uncertainty must identify the relevant option/evidence context");
 
 const noOutcome = evaluateDecisionLearningLoop({
   decisionPackId: "DP-POLL-MUNICIPALITY-V1",
