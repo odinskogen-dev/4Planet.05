@@ -7,6 +7,7 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { PathwayPage } from "@/pages/v5/Impact";
 import { ImpactPublicHome, ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import { PollinationDecisionProof } from "@/pages/integrated/PollinationDecisionProof";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
@@ -17,11 +18,7 @@ import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
-
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/people" replace />;
 const toBrands = <Navigate to="/brands" replace />;
@@ -59,6 +56,7 @@ export function AppRoutes() {
       <Route path="/partners" element={<Partners />} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
+      <Route path="/living-systems/decision/pollination" element={<PollinationDecisionProof />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
       <Route path="/stories" element={<Stories />} />

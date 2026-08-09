@@ -33,6 +33,19 @@ export function LivingSystems() {
             <div style={{ marginTop: 20 }}><Button href={ATLAS} newTab arrow>EXPLORE ATLAS — PROTOTYPE ↗</Button></div>
           </div>
         </div>
+
+        <div style={{ marginTop: 22, border: `1px solid ${T.blue}`, padding: "clamp(24px,3vw,40px)" }}>
+          <div className="mono meta-blue" style={{ fontSize: 11, letterSpacing: ".08em" }}>INTERNAL PRODUCT PROOF · DECISION INTELLIGENCE</div>
+          <h2 style={{ marginTop: 14, fontWeight: 500, fontSize: "clamp(28px,3.6vw,48px)", letterSpacing: "-.035em", lineHeight: 1.02 }}>
+            From understanding relationships to making better-informed decisions.
+          </h2>
+          <p style={{ fontSize: 15.5, color: T.dim, marginTop: 14, lineHeight: 1.58, maxWidth: 760 }}>
+            Pollination → Food is the first bounded proof: options, evidence, conflicts, Place boundaries, trade-offs, gaps and possible next actions — without a universal score or automated recommendation.
+          </p>
+          <Link to="/living-systems/decision/pollination" style={{ display: "inline-block", marginTop: 20, fontFamily: T.mono, fontSize: 11, letterSpacing: ".08em", color: T.blue }}>
+            OPEN DECISION INTELLIGENCE PROOF →
+          </Link>
+        </div>
       </Section>
     </PublicShell>
   );

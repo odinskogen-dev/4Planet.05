@@ -1,0 +1,80 @@
+name: Decision Intelligence for a Living Planet — Gate
+
+on:
+  push:
+    branches:
+      - agent/decision-intelligence-living-planet-v1
+  pull_request:
+    branches:
+      - agent/psi-phase05-canonical-convergence
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: decision-intelligence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  decision-intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+          github-token: ${{ github.token }}
+
+      - name: Ensure local Supabase config
+        shell: bash
+        run: |
+          if [ ! -f supabase/config.toml ]; then supabase init; fi
+
+      - name: Prove inherited BRAIN Postgres/PostGIS runtime
+        shell: bash
+        run: |
+          supabase db start
+          supabase db reset
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          test -n "$name"
+          docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee decision-postgres-version.txt
+          docker cp supabase/tests/phase05_brain_intelligence.sql "$name:/tmp/phase05.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05.sql | tee decision-phase05-brain-gate.txt
+          grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' decision-phase05-brain-gate.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "$name:/tmp/context.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/context.sql | tee decision-context-pack-gate.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' decision-context-pack-gate.txt
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Compile and execute Decision Intelligence gate
+        shell: bash
+        run: |
+          rm -rf .decision-ci
+          npx tsc --outDir .decision-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-intelligence-gate.mjs | tee decision-intelligence-report.json
+          grep -q '"pass": 28' decision-intelligence-report.json
+          grep -q '"aggregateScore": false' decision-intelligence-report.json
+
+      - name: Application typecheck and production build
+        run: |
+          npm run typecheck
+          npm run build
+
+      - name: Upload exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-intelligence-living-planet-evidence
+          path: |
+            decision-postgres-version.txt
+            decision-phase05-brain-gate.txt
+            decision-context-pack-gate.txt
+            decision-intelligence-report.json
+          if-no-files-found: warn
+          retention-days: 30
