@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
 import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
 import { MissionUniverse } from "@/pages/phase04/MissionUniverse";
+import { MissionHolding } from "@/pages/phase04/MissionHolding";
 import Join from "@/pages/v5/Join";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
@@ -43,13 +44,34 @@ export function AppRoutes() {
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
-      <Route path="/missions/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
-      <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
-      <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
+
       <Route path="/missions/am4zonia" element={<MissionUniverse mission="am4zonia" />} />
       <Route path="/missions/wh4les" element={<MissionUniverse mission="wh4les" />} />
       <Route path="/missions/clim4te" element={<MissionUniverse mission="clim4te" />} />
+
+      <Route path="/missions/cle4n" element={<MissionHolding />} />
+      <Route path="/missions/cor4l" element={<MissionHolding />} />
+      <Route path="/missions/rewild-marine" element={<MissionHolding />} />
+      <Route path="/missions/species" element={<MissionHolding />} />
+      <Route path="/missions/rewild-land" element={<MissionHolding />} />
+      <Route path="/missions/food" element={<MissionHolding />} />
+      <Route path="/missions/en4rgy" element={<MissionHolding />} />
+      <Route path="/missions/circular-city" element={<MissionHolding />} />
+      <Route path="/missions/f4shion" element={<MissionHolding />} />
+      <Route path="/missions/m4gazine" element={<MissionHolding />} />
+      <Route path="/missions/4film" element={<MissionHolding />} />
+      <Route path="/missions/4rt" element={<MissionHolding />} />
+      <Route path="/missions/4play" element={<MissionHolding />} />
+
+      <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
+      <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
+      <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
+      <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+      <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
+
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
