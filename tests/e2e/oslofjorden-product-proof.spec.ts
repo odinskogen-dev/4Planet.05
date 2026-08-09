@@ -29,6 +29,7 @@ test("Oslofjorden place identity does not silently become query geometry", async
   await expect(page.getByText("QUERY AREA", { exact: true })).toBeVisible();
   await expect(page.getByText("DISPLAY AREA", { exact: true })).toBeVisible();
   await expect(page.getByText(/A defensible biodiversity query area has not been selected/i)).toBeVisible();
+  await expect(page.getByText(/representative point only/i)).toBeVisible();
 });
 
 test("pressure, actor and solution sections preserve evidence boundaries", async ({ page }) => {
@@ -55,13 +56,27 @@ test("higher Oslofjord proof states remain absent", async ({ page }) => {
   await expect(page.getByText(/No Oslofjorden Partner Report, Assessed Outcome or Verified Outcome is claimed/i)).toBeVisible();
 });
 
-test("front door includes real survey evidence but still marks hero image limitation", async ({ page }) => {
+test("front door uses a real rights-classified Oslofjord photograph", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("261 million", { exact: true })).toBeVisible();
   await expect(page.getByText("75 million", { exact: true })).toBeVisible();
   await expect(page.getByText("50 million", { exact: true })).toBeVisible();
-  await expect(page.getByText(/REAL HERO ASSET STILL REQUIRED/i)).toBeVisible();
-  await capture(page, "front-door-real-proof-desktop");
+  await expect(page.getByText(/REAL OSLOFJORD PHOTO/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Leonhard Lenz.*CC0.*SOURCE/i })).toHaveAttribute("href", /commons\.wikimedia\.org/);
+  const hero = page.locator('img[alt="Oslofjord seen from a ferry in August 2022"]');
+  await expect(hero).toHaveAttribute("src", /upload\.wikimedia\.org/);
+  await capture(page, "front-door-real-oslofjord-desktop");
+});
+
+test("Oslofjorden Follow persists locally across refresh without creating an account", async ({ page }) => {
+  await page.goto("/place/oslofjorden");
+  const follow = page.getByRole("button", { name: "FOLLOW OSLOFJORDEN ON THIS DEVICE" });
+  await expect(follow).toBeVisible();
+  await follow.click();
+  const local = await page.evaluate(() => localStorage.getItem("4planet.follows.v1"));
+  expect(local).toContain("place:marine-regions:3379");
+  await page.reload();
+  await expect(page.getByRole("button", { name: /FOLLOWING OSLOFJORDEN ON THIS DEVICE/i })).toBeVisible();
 });
 
 test("Oslofjorden remains usable at 390px mobile", async ({ page }) => {
