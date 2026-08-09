@@ -1,0 +1,135 @@
+[
+  {
+    "storyId": "STORY-BOS-ORCA-001",
+    "title": "An Orca Is Never Only an Orca",
+    "slug": "orca-never-only",
+    "state": "SOURCE_READY",
+    "risk": "HIGH",
+    "truthCore": "An Orca is a living individual inside social, acoustic, food-web and place relationships. A source-reported occurrence can support a bounded statement about one reported record; it does not by itself establish range, abundance, trend or ecosystem condition.",
+    "audienceJob": "Distinguish evidence from interpretation while feeling the wider living system around one animal.",
+    "canonicalRefs": [
+      "SEASON:S01-001",
+      "PROOF:PPA-002",
+      "ASSET:AST-0008",
+      "ASSET:AST-0012",
+      "ASSET:AST-0013",
+      "RIGHTS:RD-0006",
+      "RIGHTS:RD-0007"
+    ],
+    "sourceRefs": [
+      {
+        "label": "NOAA Fisheries — Killer Whale Science",
+        "url": "https://www.fisheries.noaa.gov/species/killer-whale/science",
+        "scope": "social structure, acoustics and population/ecotype-specific behaviour",
+        "status": "FOUNDATION"
+      },
+      {
+        "label": "GBIF — Orcinus orca accepted taxon",
+        "url": "https://www.gbif.org/species/2440483",
+        "scope": "accepted taxon identity; exact publication occurrence record still open",
+        "status": "EXACT_RECORD_OPEN"
+      }
+    ],
+    "assetRefs": ["AST-0008", "AST-0012", "AST-0013"],
+    "rightsDecisionRefs": ["RD-0006", "RD-0007"],
+    "gates": {
+      "source": "OPEN",
+      "rights": "BLOCKED",
+      "qa": "OPEN",
+      "founder": "OPEN",
+      "product": "OPEN"
+    },
+    "targetChannels": ["web", "instagram", "youtube", "linkedin"],
+    "blockers": [
+      "Lock one exact source-reported occurrence record and its licence/attribution/uncertainty metadata.",
+      "Close documentary Orca media rights at asset level.",
+      "Audit the exact ATLAS → record → SPECIES public route against the accepted product candidate.",
+      "Run scientific/claim QA and accessibility QA.",
+      "Founder approval of exact final release remains required."
+    ],
+    "publicReleaseEligible": false
+  },
+  {
+    "storyId": "STORY-BOS-BEE-001",
+    "title": "What Depends on What? Bee → Pollination → Food",
+    "slug": "bee-pollination-food",
+    "state": "RESEARCHING",
+    "risk": "HIGH",
+    "truthCore": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but pollination is performed by many animal groups and not all food production depends on bees. The story must show a bounded relationship rather than a universal food-dependence claim.",
+    "audienceJob": "Understand one visible dependency chain without turning a complex food system into a false universal claim.",
+    "canonicalRefs": [
+      "ASSET:AST-0019",
+      "ASSET:AST-0020",
+      "RIGHTS:RD-0013",
+      "RIGHTS:RD-0014"
+    ],
+    "sourceRefs": [
+      {
+        "label": "FAO — Global Action on Pollination Services for Sustainable Agriculture",
+        "url": "https://www.fao.org/pollination/en/",
+        "scope": "pollination importance, crop dependence and multiple pollinator groups",
+        "status": "OFFICIAL_FOUNDATION"
+      }
+    ],
+    "assetRefs": ["AST-0019", "AST-0020"],
+    "rightsDecisionRefs": ["RD-0013", "RD-0014"],
+    "gates": {
+      "source": "OPEN",
+      "rights": "BLOCKED",
+      "qa": "OPEN",
+      "founder": "OPEN",
+      "product": "NOT_APPLICABLE"
+    },
+    "targetChannels": ["web", "instagram", "youtube", "linkedin"],
+    "blockers": [
+      "Lock the exact relationship claims and source sidecar for each diagram node.",
+      "Choose a specific bee/pollinator/crop example where required to keep species and food claims bounded.",
+      "Close documentary media rights at asset level.",
+      "Produce and QA the original Relationship Reveal graphic.",
+      "Founder approval of exact final release remains required."
+    ],
+    "publicReleaseEligible": false
+  },
+  {
+    "storyId": "STORY-BOS-OSLO-001",
+    "title": "Oslofjorden: One Place, Many Systems",
+    "slug": "oslofjorden-one-place-many-systems",
+    "state": "RESEARCHING",
+    "risk": "HIGH",
+    "truthCore": "Oslofjorden is not one condition or score. Different parts, time periods, species and pressure layers can show different signals. 4PLANET should connect bounded source layers while keeping coverage, time, uncertainty and causal limits visible.",
+    "audienceJob": "See one familiar place as a changing living system without mistaking partial observations for total condition or causal proof.",
+    "canonicalRefs": [
+      "SEASON:S01-002",
+      "ASSET:AST-0021",
+      "ASSET:AST-0022",
+      "RIGHTS:RD-0015",
+      "RIGHTS:RD-0016"
+    ],
+    "sourceRefs": [
+      {
+        "label": "Miljødirektoratet — Oslofjorden tilstandsrapport",
+        "url": "https://www.miljodirektoratet.no/publikasjoner/2025/januar-2025/tilstandsrapport-for-oslofjorden/",
+        "scope": "official state and development overview; exact source layers must retain geography and time",
+        "status": "OFFICIAL_FOUNDATION"
+      }
+    ],
+    "assetRefs": ["AST-0021", "AST-0022"],
+    "rightsDecisionRefs": ["RD-0015", "RD-0016"],
+    "gates": {
+      "source": "OPEN",
+      "rights": "BLOCKED",
+      "qa": "OPEN",
+      "founder": "OPEN",
+      "product": "OPEN"
+    },
+    "targetChannels": ["web", "instagram", "youtube", "linkedin"],
+    "blockers": [
+      "Select exact source layers and preserve geography, period, method and coverage for each.",
+      "Close documentary media rights and people consent at asset level.",
+      "Build the original ONE PLACE map/relationship visual with coverage and uncertainty visible.",
+      "Audit the exact ATLAS/place public handoff against the accepted product candidate.",
+      "Founder approval of exact final release remains required."
+    ],
+    "publicReleaseEligible": false
+  }
+]
