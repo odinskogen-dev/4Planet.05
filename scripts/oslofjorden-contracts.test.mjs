@@ -9,6 +9,8 @@ const datasets = read("src/data/oslofjordenDatasets.ts");
 const places = read("src/data/oslofjordenPlaces.ts");
 const relationshipDeepening = read("src/data/oslofjordenRelationshipDeepening.ts");
 const relationshipComponent = read("src/components/place/OslofjordRelationshipDeepening.tsx");
+const datasetOccurrenceConnector = read("src/planet/datasetOccurrences.ts");
+const datasetOccurrenceComponent = read("src/components/place/DatasetOccurrenceEvidence.tsx");
 const evidenceComponent = read("src/components/place/ScientificDatasetEvidence.tsx");
 const model = read("src/planet/placeModel.ts");
 const follow = read("src/planet/follow.ts");
@@ -59,6 +61,22 @@ test("microscopic LIFE adds source-bounded datasets without turning archive coun
   assert.match(page, /MICROSCOPIC LIFE/);
   assert.match(page, /The life you do not see drives the place story too/i);
   assert.match(evidenceComponent, /NOT A PLACE BOUNDARY/);
+});
+
+test("admitted Inner Oslofjord dataset can expose real record-level occurrences without a place polygon", () => {
+  assert.match(datasets, /runtimeOccurrenceDatasetKey: "777ea835-48a3-4136-bf3a-32c5b897563f"/);
+  assert.match(datasetOccurrenceConnector, /datasetKey/);
+  assert.match(datasetOccurrenceConnector, /hasCoordinate/);
+  assert.match(datasetOccurrenceConnector, /coordinateUncertaintyInMeters/);
+  assert.match(datasetOccurrenceConnector, /eventDate/);
+  assert.match(datasetOccurrenceConnector, /license/);
+  assert.match(datasetOccurrenceConnector, /issues/);
+  assert.match(datasetOccurrenceConnector, /https:\/\/www\.gbif\.org\/occurrence/);
+  assert.match(datasetOccurrenceComponent, /REAL SOURCE RECORDS \/ HISTORICAL OCCURRENCES/);
+  assert.match(datasetOccurrenceComponent, /not live organism positions/i);
+  assert.match(datasetOccurrenceComponent, /record count/i);
+  assert.match(datasetOccurrenceComponent, /does not establish a universal 4PLANET Oslofjorden polygon/i);
+  assert.match(evidenceComponent, /DatasetOccurrenceEvidence/);
 });
 
 test("official future occurrence sources remain source-ready rather than silently queried", () => {
