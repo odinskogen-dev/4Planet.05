@@ -15,7 +15,7 @@ test("motion factory requires captions, transcript, source footer and bounded du
   assert.match(videoFactory, /transcriptRequired/);
   assert.match(videoFactory, /sourceFooter/);
   assert.match(videoFactory, /durationMs > 180_000/);
-  assert.match(videoFactory, /Synthetic media requires explicit disclosure/);
+  assert.match(videoFactory, /uses synthetic media without disclosure/);
 });
 
 test("Bee motion manifest is source-ready but not rights- or release-ready", () => {
