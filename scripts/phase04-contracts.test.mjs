@@ -31,7 +31,7 @@ test('Oslofjorden separates semantic identity from display, query and regulatory
   assert.match(fjordProof, /id: "oslofjord-query"[\s\S]*availability: "NOT_SELECTED"/);
   assert.match(fjordProof, /id: "oslofjord-regulatory-fisheries"[\s\S]*availability: "SOURCE_AVAILABLE_NOT_INGESTED"/);
   assert.match(fjord, /A defensible biodiversity query area has not been selected/);
-  assert.match(fjord, /no fake pins/i);
+  assert.match(fjord, /not live animal positions/i);
   assert.match(fjord, /CURATED SOURCE/);
   assert.doesNotMatch(fjord, /dataState:\s*"LIVE DATA"/);
 });
