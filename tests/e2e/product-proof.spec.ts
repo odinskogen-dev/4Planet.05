@@ -41,11 +41,12 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("GBIF TAXON · ACCEPTED")).toBeVisible();
+  await expect(page.getByText("SPECIES PASSPORT · SOURCE-BOUNDED")).toBeVisible();
+  await expect(page.getByText("SOURCE + IDENTITY")).toBeVisible();
   await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
   await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
+  await expect(page.getByText(/does not establish range, abundance, migration track or current location/i)).toBeVisible();
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
@@ -54,7 +55,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await watchButton.click();
   await expect(page.getByRole("button", { name: "WATCHING LOCALLY" })).toBeVisible();
 
-  await page.getByRole("link", { name: /OPEN SAME ENTITY IN ATLAS/ }).click();
+  await page.getByRole("link", { name: /SEE RECORDS IN ATLAS/ }).click();
   await expect(page).toHaveURL(/\/atlas\?/);
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
@@ -76,8 +77,8 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("POPULATION-SPECIFIC CLAIMS CONTROLLED")).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
+  await expect(page.getByText(/Species-level evidence is never silently converted/i)).toBeVisible();
+  await expect(page.getByText(/does not establish range, abundance, migration track or current location/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
 
