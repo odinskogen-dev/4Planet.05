@@ -210,6 +210,24 @@ function WorldInner() {
     return () => { alive = false; clearInterval(t); };
   }, []);
 
+  // Stable id for the open context, written to the URL as ?entity= so a deep
+  // link (and the cross-product returnTo) can reopen it. Undefined-safe: any
+  // context without a canonical id contributes no entity rather than throwing.
+  const idOfCtx = (c: ContextState | null): string => {
+    if (!c) return "";
+    switch (c.kind) {
+      case "OBSERVATION": return c.observation?.taxon?.id || c.observation?.id || "";
+      case "TAXON": return c.ref?.id || "";
+      case "PLACE": return c.place?.id || "";
+      case "LIVING_SYSTEM": return c.system?.id || "";
+      case "SIGNAL": return c.signal?.id || "";
+      case "MISSION": return c.mission?.id || "";
+      case "PRESSURE": return c.pressure?.id || "";
+      case "SOLUTION": return c.solution?.id || "";
+      default: return "";
+    }
+  };
+
   const writeUrl = useCallback((patch = {}) => {
     const m = map.current; if (!m) return;
     const current = new URLSearchParams(window.location.search);
