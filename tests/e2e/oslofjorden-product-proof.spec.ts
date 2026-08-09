@@ -8,11 +8,6 @@ async function capture(page: import("@playwright/test").Page, name: string, full
   await page.screenshot({ path: `${proofDir}/${name}.png`, fullPage });
 }
 
-async function captureLocator(locator: import("@playwright/test").Locator, name: string) {
-  mkdirSync(proofDir, { recursive: true });
-  await locator.screenshot({ path: `${proofDir}/${name}.png` });
-}
-
 const oslofjordHero = (page: import("@playwright/test").Page) => page.getByRole("heading", { level: 1, name: "OSLO FJORDEN.", exact: true });
 
 async function expectRealHeroLoaded(page: import("@playwright/test").Page) {
@@ -129,10 +124,12 @@ test("Oslofjorden remains usable at 390px mobile with stable visual proof", asyn
   await expect(page.getByText("European sprat", { exact: true })).toBeVisible();
   const sourceRecords = await expectSourceRecordsReady(page);
   await sourceRecords.scrollIntoViewIfNeeded();
-  await captureLocator(sourceRecords, "oslofjorden-mobile-source-records");
+  await page.evaluate(() => window.scrollBy(0, -92));
+  await capture(page, "oslofjorden-mobile-source-records-390x844", false);
 
   const actionHeading = page.getByRole("heading", { name: "Comment on the proposed Oslofjord plan" });
   await actionHeading.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -92));
   await expect(actionHeading).toBeVisible();
   await capture(page, "oslofjorden-mobile-action-390x844", false);
 
