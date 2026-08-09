@@ -24,9 +24,10 @@ export interface PlaceMediaRecord {
  * - This is a real photograph of Oslofjord, not generated imagery.
  * - It is not an ecological observation, species record, monitoring result or
  *   evidence of current condition.
- * - Remote Wikimedia renditions are used in the controlled candidate because
- *   this connector cannot commit binary media. Before public release, prefer a
- *   locally controlled derivative plus stored checksum and source metadata.
+ * - A Wikimedia file redirect is used in the controlled candidate because this
+ *   connector cannot commit binary media. Browser QA must prove it actually
+ *   loads. Before public release, prefer a locally controlled derivative plus
+ *   stored checksum and source metadata.
  */
 export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   id: "media:commons:oslofjorden-2022-08-17-15",
@@ -37,8 +38,8 @@ export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   capturedAt: "2022-08-17T08:26:24",
   creator: "Leonhard Lenz",
   sourcePage: "https://commons.wikimedia.org/wiki/File:Oslofjorden_2022-08-17_15.jpg",
-  assetUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Oslofjorden_2022-08-17_15.jpg/2560px-Oslofjorden_2022-08-17_15.jpg",
-  mobileAssetUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Oslofjorden_2022-08-17_15.jpg/1280px-Oslofjorden_2022-08-17_15.jpg",
+  assetUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oslofjorden_2022-08-17_15.jpg?width=1920",
+  mobileAssetUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oslofjorden_2022-08-17_15.jpg?width=960",
   license: "CC0 1.0 Universal Public Domain Dedication",
   licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
   locationClaim: "Wikimedia Commons source description: Oslofjord seen from a ferry.",
