@@ -27,9 +27,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p docs/evidence
-          node <<'NODE'
-          const fs = require('fs');
-          const crypto = require('crypto');
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
           const endpoint = 'https://vannmiljoapi.miljodirektoratet.no/api/Public/GetRegistrations';
           const body = {
             MaxReturnCount: 80,
