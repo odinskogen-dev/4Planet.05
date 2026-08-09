@@ -54,13 +54,21 @@ test("Oslofjorden identity, waterbody status and biodiversity-query roles stay v
   await expect(page.getByRole("heading", { name: /One place\. Several spatial jobs/i })).toBeVisible();
 });
 
-test("runtime local LIFE adapter is honest whether the official source answers or fails", async ({ page }) => {
+test("runtime local LIFE adapter exposes either source records or an explicit source failure", async ({ page }) => {
   await page.goto("/place/oslofjorden");
-  await expect(page.getByText(/VANNMILJØ REGISTRATIONS/i)).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText(/Registration ≠ current position/i)).toBeVisible();
-  await expect(page.getByText(/Loaded count ≠ abundance/i)).toBeVisible();
-  await expect(page.getByText(/rights remain source-controlled\/review-required/i)).toBeVisible();
-  await expect(page.getByText(/LIVE SOURCE|SOURCE UNAVAILABLE|TIMEOUT|INVALID RESPONSE|LOADING/i).last()).toBeVisible();
+  const status = page.getByText(/^VANNMILJØ REGISTRATIONS \/ /).last();
+  await expect(status).toBeVisible({ timeout: 15000 });
+  await expect.poll(async () => (await status.textContent()) ?? "", { timeout: 15000 }).not.toMatch(/LOADING$/);
+  const text = (await status.textContent()) ?? "";
+  if (text.includes("LIVE SOURCE")) {
+    await expect(page.getByText(/Registration ≠ current position/i)).toBeVisible();
+    await expect(page.getByText(/Loaded count ≠ abundance/i)).toBeVisible();
+    await expect(page.getByText(/rights remain source-controlled\/review-required/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /VANNMILJØ API \/ SOURCE/i })).toHaveAttribute("href", /vannmiljoapi\.miljodirektoratet\.no/);
+  } else {
+    expect(text).toMatch(/SOURCE UNAVAILABLE|TIMEOUT|INVALID RESPONSE/);
+    await expect(page.getByText(/No local-life absence is inferred/i)).toBeVisible();
+  }
 });
 
 test("ATLAS and SPECIES open the same source-aware Oslofjord context", async ({ page }) => {
