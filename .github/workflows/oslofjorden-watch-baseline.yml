@@ -1,0 +1,97 @@
+name: Oslofjorden Real Source Watch Baseline
+
+on:
+  pull_request:
+    branches:
+      - phase04/brand-product-convergence
+    paths:
+      - '.github/workflows/oslofjorden-watch-baseline.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  baseline:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Capture bounded Vannmiljo source baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence
+          node <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const endpoint = 'https://vannmiljoapi.miljodirektoratet.no/api/Public/GetRegistrations';
+          const body = {
+            MaxReturnCount: 80,
+            RegType: 1,
+            WaterBodyIDFilter: ['0101020601-C'],
+            WaterLocationCategoryFilter: ['C']
+          };
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'content-type': 'application/json', accept: 'application/json'},
+            body: JSON.stringify(body)
+          });
+          if (!response.ok) throw new Error(`Vannmiljo HTTP ${response.status}`);
+          const json = await response.json();
+          if (!Array.isArray(json.Result)) throw new Error('Unexpected Vannmiljo response');
+          const records = json.Result
+            .filter(r => Number.isFinite(Number(r.WaterRegistrationID)))
+            .map(r => ({
+              waterRegistrationId: Number(r.WaterRegistrationID),
+              waterLocationId: Number(r.WaterLocationID ?? 0),
+              scientificName: r.VitenskapligNavn ?? null,
+              parameterId: r.ParameterID ?? null,
+              samplingTime: r.SamplingTime ?? null,
+              lastEditDate: r.LastEditDate ?? null,
+              value: typeof r.RegValue === 'number' ? r.RegValue : null,
+              unit: r.Unit ?? null
+            }))
+            .sort((a,b) => a.waterRegistrationId - b.waterRegistrationId);
+          const canonical = JSON.stringify(records);
+          const digest = crypto.createHash('sha256').update(canonical).digest('hex');
+          const out = {
+            version: 'OSLOFJORDEN_VANNMILJO_WATCH_BASELINE_V1',
+            evidenceClass: 'REAL_SOURCE_BOUNDED_RESPONSE_BASELINE',
+            checkedAt: new Date().toISOString(),
+            source: 'Miljodirektoratet / Vannmiljo Public API',
+            sourceUrl: endpoint,
+            licence: 'NLOD 2.0 / attribution required',
+            query: {
+              contract: 'WATERBODY_ID_FILTER',
+              waterBodyId: '0101020601-C',
+              maxReturnCount: 80,
+              coverage: 'BOUNDED_WINDOW'
+            },
+            sourceResultCount: typeof json.ResultCount === 'number' ? json.ResultCount : null,
+            capturedRecordCount: records.length,
+            canonicalRecordSetSha256: digest,
+            records,
+            limitation: 'This is a time-stamped bounded source response for later comparison. It is not a complete Oslofjord inventory, abundance estimate, trend, ecological state or proof that a later difference is ecological change. A record disappearing from this capped response must not be treated as deletion.'
+          };
+          fs.writeFileSync('docs/evidence/oslofjorden-vannmiljo-watch-baseline.json', JSON.stringify(out, null, 2) + '\n');
+          console.log(JSON.stringify({sourceResultCount: out.sourceResultCount, capturedRecordCount: out.capturedRecordCount, digest}, null, 2));
+          NODE
+
+      - name: Commit baseline once
+        shell: bash
+        run: |
+          if git diff --quiet -- docs/evidence/oslofjorden-vannmiljo-watch-baseline.json && git status --porcelain -- docs/evidence/oslofjorden-vannmiljo-watch-baseline.json | grep -q '^$'; then
+            echo 'Baseline already captured.'
+            exit 0
+          fi
+          git config user.name '4PLANET controlled QA'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/evidence/oslofjorden-vannmiljo-watch-baseline.json
+          git commit -m 'docs(evidence): capture real bounded Vannmiljo Watch baseline'
+          git push origin HEAD:${{ github.head_ref }}
