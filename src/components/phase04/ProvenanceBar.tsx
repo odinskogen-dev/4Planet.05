@@ -31,10 +31,19 @@ export function ProvenanceBar({ value, dark = false }: { value: ProvenancePresen
           </div>
         ))}
       </div>
-      {(value.whyWeSayThis || value.claimIds?.length || value.rightsState) && (
+      {(value.whyWeSayThis || value.claimIds?.length || value.rightsState || value.sourceLinks?.length) && (
         <details style={{ borderTop: `1px solid ${line}`, padding: "9px 11px" }}>
           <summary style={{ ...mono, color: muted, cursor: "pointer" }}>WHY WE SAY THIS</summary>
           {value.whyWeSayThis && <p style={{ margin: "9px 0 0", fontSize: 12, lineHeight: 1.5 }}>{value.whyWeSayThis}</p>}
+          {!!value.sourceLinks?.length && (
+            <div style={{ marginTop: 9, display: "grid", gap: 5 }}>
+              {value.sourceLinks.map((source) => (
+                <a key={source.id} href={source.url} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: "inherit", overflowWrap: "anywhere" }}>
+                  {source.label} ↗
+                </a>
+              ))}
+            </div>
+          )}
           {!!value.claimIds?.length && <p style={{ margin: "7px 0 0", fontSize: 11, color: muted }}>CLAIMS: {value.claimIds.join(" · ")}</p>}
           {value.rightsState && <p style={{ margin: "7px 0 0", fontSize: 11, color: muted }}>RIGHTS: {value.rightsState}</p>}
         </details>
