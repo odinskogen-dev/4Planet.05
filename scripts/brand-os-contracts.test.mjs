@@ -69,12 +69,30 @@ test("runtime hard-disables external publishing and preserves canon authority", 
   assert.match(runtime, /storyId: receipt\.storyId/);
 });
 
+test("retry policy is bounded and terminates in a dead-letter state", () => {
+  assert.match(runtime, /maxAttempts < 1 \|\| maxAttempts > 10/);
+  assert.match(runtime, /"DEAD_LETTER" : "RETRY_WAIT"/);
+  assert.match(runtime, /Math\.min\(15 \* 2 \*\* Math\.max\(0, attemptCount - 1\), 15 \* 60\)/);
+  assert.match(migration, /max_attempts integer not null default 3 check \(max_attempts between 1 and 10\)/);
+  assert.match(migration, /'DEAD_LETTER'/);
+});
+
+test("founder burden is instrumented as observed time, not an invented readiness score", () => {
+  assert.match(runtime, /recordFounderIntervention/);
+  assert.match(runtime, /summarizeFounderBurden/);
+  assert.match(runtime, /totalMinutes: totalSeconds \/ 60/);
+  assert.match(migration, /create table if not exists public\.brand_founder_interventions/);
+  assert.match(migration, /duration_seconds numeric not null check \(duration_seconds >= 0\)/);
+});
+
 test("database enforces release gates and service-only access", () => {
   assert.match(migration, /create trigger brand_releases_guard/);
   assert.match(migration, /Brand release blocked: source, rights, QA, product, founder and public eligibility gates must pass/);
   assert.match(migration, /idempotency_key text not null unique/);
   assert.match(migration, /create trigger publication_receipts_guard/);
   assert.match(migration, /alter table public\.brand_releases enable row level security/);
+  assert.match(migration, /alter table public\.brand_publish_jobs enable row level security/);
+  assert.match(migration, /alter table public\.brand_founder_interventions enable row level security/);
   assert.match(migration, /revoke all on public\.brand_releases from anon, authenticated/);
   assert.doesNotMatch(migration, /create policy .*brand_releases/i);
 });
