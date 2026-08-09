@@ -2,6 +2,7 @@ import { OSLOFJORD_PRIMARY_WATERBODY_ID } from "@/data/oslofjordenSpatial";
 
 const API = "https://vannmiljoapi.miljodirektoratet.no/api/Public";
 const SOURCE_URL = "https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index";
+const LICENSE_URL = "https://data.norge.no/nlod/no/2.0";
 
 export interface VannmiljoRegistration {
   id: string;
@@ -30,7 +31,9 @@ export interface VannmiljoRegistration {
   lng?: number;
   sourceId?: string;
   sourceUrl: string;
-  rights: "SOURCE_TERMS_REVIEW_REQUIRED";
+  sourcePublisher: "Miljødirektoratet";
+  rights: "NLOD_2_0_ATTRIBUTION_REQUIRED";
+  licenseUrl: string;
   issues: string[];
 }
 
@@ -47,6 +50,7 @@ export type VannmiljoResult =
         waterBodyIds: string[];
         fromRegisteredDate?: string;
         maxReturnCount: number;
+        coverage: "BOUNDED_WINDOW";
       };
     }
   | {
@@ -91,6 +95,10 @@ const postJson = async (path: string, body: Record<string, unknown>): Promise<Js
  * Vann-Nett WaterBodyID. No 4PLANET polygon or point-in-polygon inference is
  * involved in membership. Coordinates are attached from Vannmiljø's own water
  * location result when available.
+ *
+ * Vannmiljø/Miljødirektoratet publishes the relevant water-data service under
+ * NLOD. 4PLANET therefore preserves publisher/source/licence attribution on
+ * every normalised record and does not imply source endorsement.
  */
 export async function fetchVannmiljoRegistrations(options: {
   waterBodyId?: string;
@@ -168,7 +176,9 @@ export async function fetchVannmiljoRegistrations(options: {
         lng,
         sourceId: row.SourceID ? String(row.SourceID) : undefined,
         sourceUrl: SOURCE_URL,
-        rights: "SOURCE_TERMS_REVIEW_REQUIRED" as const,
+        sourcePublisher: "Miljødirektoratet" as const,
+        rights: "NLOD_2_0_ATTRIBUTION_REQUIRED" as const,
+        licenseUrl: LICENSE_URL,
         issues,
       };
     });
@@ -185,6 +195,7 @@ export async function fetchVannmiljoRegistrations(options: {
       waterBodyIds: [waterBodyId],
       fromRegisteredDate,
       maxReturnCount: limit,
+      coverage: "BOUNDED_WINDOW",
     },
   };
 }
