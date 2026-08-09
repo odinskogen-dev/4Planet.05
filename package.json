@@ -13,7 +13,7 @@
     "lint": "eslint src",
     "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs",
     "test:contracts": "node --test scripts/prototype-contracts.test.mjs",
-    "test:brand-os": "node --test scripts/brand-os-contracts.test.mjs",
+    "test:brand-os": "node --test scripts/brand-os-contracts.test.mjs scripts/brand-os-ops-contracts.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
