@@ -1,0 +1,750 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "/tmp/4p-one/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/gate1-vertical-slice.spec.ts",
+      "tests/e2e/product-switcher.spec.ts"
+    ],
+    "configFile": "/tmp/4p-one/playwright.config.ts",
+    "rootDir": "/tmp/4p-one/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": true,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/4p-one/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-1440",
+        "name": "desktop-1440",
+        "testDir": "/tmp/4p-one/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 150000
+      },
+      {
+        "outputDir": "/tmp/4p-one/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-1280",
+        "name": "desktop-1280",
+        "testDir": "/tmp/4p-one/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 150000
+      },
+      {
+        "outputDir": "/tmp/4p-one/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-390",
+        "name": "mobile-390",
+        "testDir": "/tmp/4p-one/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 150000
+      },
+      {
+        "outputDir": "/tmp/4p-one/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-430",
+        "name": "mobile-430",
+        "testDir": "/tmp/4p-one/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 150000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "gate1-vertical-slice.spec.ts",
+      "file": "gate1-vertical-slice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4LES_ → return to exact ATLAS context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1440",
+              "projectName": "desktop-1440",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60663,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:27:07.530Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1440/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1440/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1440/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8e3b4e910c40c94fa84a-63383f84c175553bb667",
+          "file": "gate1-vertical-slice.spec.ts",
+          "line": 43,
+          "column": 1
+        },
+        {
+          "title": "Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4LES_ → return to exact ATLAS context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1280",
+              "projectName": "desktop-1280",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50443,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:28:22.707Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1280/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1280/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-desktop-1280/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8e3b4e910c40c94fa84a-1d7a88037bbadcc43374",
+          "file": "gate1-vertical-slice.spec.ts",
+          "line": 43,
+          "column": 1
+        },
+        {
+          "title": "Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4LES_ → return to exact ATLAS context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-390",
+              "projectName": "mobile-390",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29042,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:29:28.203Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-390/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-390/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-390/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8e3b4e910c40c94fa84a-0bcef0bd66be5b7770e1",
+          "file": "gate1-vertical-slice.spec.ts",
+          "line": 43,
+          "column": 1
+        },
+        {
+          "title": "Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4LES_ → return to exact ATLAS context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-430",
+              "projectName": "mobile-430",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32825,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:30:05.161Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-430/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-430/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/gate1-vertical-slice-Gate--27838-turn-to-exact-ATLAS-context-mobile-430/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8e3b4e910c40c94fa84a-2cf40c41c3d513c9f9b3",
+          "file": "gate1-vertical-slice.spec.ts",
+          "line": 43,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "product-switcher.spec.ts",
+      "file": "product-switcher.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Product Switcher variant A — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1440",
+              "projectName": "desktop-1440",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6561,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:28:08.927Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1440/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1440/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1440/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-fe62a7f03e659f2d8253",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant B — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1440",
+              "projectName": "desktop-1440",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6102,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:28:15.557Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1440/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1440/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1440/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-83adee2e71814b99e2f0",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant A — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1280",
+              "projectName": "desktop-1280",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6477,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:29:13.920Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1280/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1280/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-desktop-1280/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-59966a2de0be75a65745",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant B — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop-1280",
+              "projectName": "desktop-1280",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6199,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:29:20.475Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1280/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1280/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-desktop-1280/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-efc2a78c0bf4ba97d851",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant A — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-390",
+              "projectName": "mobile-390",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2927,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:29:58.199Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-390/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-390/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-390/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-7583e09c1a48970b6ed5",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant B — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-390",
+              "projectName": "mobile-390",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2810,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:30:01.267Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-390/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-390/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-390/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-81facbd79883ac87aa23",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant A — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-430",
+              "projectName": "mobile-430",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2976,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:30:38.698Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-430/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-430/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-f41f6-variant-A-—-closed-and-open-mobile-430/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-4a55495285a2a8b42b2b",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        },
+        {
+          "title": "Product Switcher variant B — closed and open",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-430",
+              "projectName": "mobile-430",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2979,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-09T13:30:41.742Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-430/test-finished-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-430/video.webm"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/4p-one/test-results/product-switcher-Product-S-7890f-variant-B-—-closed-and-open-mobile-430/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "558087e5fb8a2b8ba8a4-ff7e34c6da0c730790ef",
+          "file": "product-switcher.spec.ts",
+          "line": 26,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-09T13:27:06.644Z",
+    "duration": 218256.592,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
