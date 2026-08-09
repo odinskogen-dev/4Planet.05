@@ -12,6 +12,7 @@ import {
   PressureEvidenceGrid,
   SignalTimeline,
 } from "@/components/place/PlaceEvidence";
+import { PlaceRelationEvidence, ScientificDatasetEvidence } from "@/components/place/ScientificDatasetEvidence";
 import {
   OSLOFJORD_ACTIONS,
   OSLOFJORD_ACTORS,
@@ -24,6 +25,8 @@ import {
   oslofjordSourceById,
 } from "@/data/oslofjordenProof";
 import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
+import { OSLOFJORD_PLACE_RELATIONS } from "@/data/oslofjordenPlaces";
+import { OSLOFJORD_SCIENTIFIC_DATASETS, VANNMILJO_LIFE_SOURCE } from "@/data/oslofjordenDatasets";
 import { useFollows } from "@/planet/follow";
 import type { RelationshipStep } from "@/phase04/model";
 
@@ -74,6 +77,7 @@ function SourceRegister() {
 export default function OslofjordenJourney() {
   const place = OSLOFJORD_PLACE;
   const media = OSLOFJORD_HERO_MEDIA;
+  const innerOslofjord = OSLOFJORD_PLACE_RELATIONS[0];
   const { following, toggle } = useFollows();
   const followed = following(place.id);
   const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
@@ -96,7 +100,7 @@ export default function OslofjordenJourney() {
         <div style={{ position: "relative", minHeight: "88svh", padding: "clamp(90px,12vw,170px) clamp(20px,5vw,72px) clamp(36px,6vw,72px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ ...label, color: "#fff" }}>PLACE JOURNEY 01 / OSLOFJORDEN / SOURCE-GROUNDED CANDIDATE</div>
-            <div style={{ ...label, color: "#3AE86F" }}>11 CONTROLLED SOURCES / HUMAN VALIDATION NOT RUN</div>
+            <div style={{ ...label, color: "#3AE86F" }}>15 CONTROLLED SOURCE RECORDS / HUMAN VALIDATION NOT RUN</div>
           </div>
           <div>
             <h1 style={{ ...title, fontSize: "clamp(68px,12vw,178px)", margin: 0 }}>OSLO<br />FJORDEN.</h1>
@@ -127,6 +131,7 @@ export default function OslofjordenJourney() {
               ].map(([k, v]) => <div key={k} style={{ borderRight: "1px solid rgba(10,10,10,.24)", borderBottom: "1px solid rgba(10,10,10,.24)", padding: 14 }}><div style={{ ...label, color: "rgba(10,10,10,.52)" }}>{k}</div><div style={{ fontSize: 13.5, lineHeight: 1.4, marginTop: 7 }}>{v}</div></div>)}
             </div>
             <ProvenanceBar value={{ state: "SOURCE", actor: place.source.publisher, source: place.source.url, time: `Checked ${place.source.checkedAt}`, limitation: place.identityLimitation }} />
+            <PlaceRelationEvidence relation={innerOslofjord} />
             <div style={{ marginTop: 18 }}><DataStatePanel state="NOT YET IMPLEMENTED" title="A defensible biodiversity query area has not been selected." detail="GBIF/OBIS/Artskart place queries stay disabled until we can say exactly what area was queried. A query result must not be confused with semantic membership in the fjord." action={<Link to={atlasUrl} style={linkButton}>Open representative Oslofjord view in ATLAS →</Link>} /></div>
             <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>ATLAS opens around the Marine Regions representative point only. It is a camera context, not an Oslofjord boundary or occurrence-query polygon.</p>
           </div>
@@ -135,12 +140,18 @@ export default function OslofjordenJourney() {
         <section style={chapter}>
           <div style={chapterNo}>02 / LIFE</div>
           <div style={{ minWidth: 0 }}>
-            <StateTag tone="green">REAL SURVEY EVIDENCE</StateTag>
+            <StateTag tone="green">REAL SURVEY + DATASET EVIDENCE</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 14px" }}>Life is no longer a placeholder.</h2>
-            <p style={body}>We begin with bounded evidence: a 2025 pelagic-fish survey, a limited multi-year research-trawl series and habitat-forming eelgrass. These records show what was measured or reported — not live animal positions, complete populations or the condition of the entire fjord.</p>
+            <p style={body}>We begin with bounded evidence: a 2025 pelagic-fish survey, a limited multi-year research-trawl series, habitat-forming eelgrass, a century-scale phytoplankton archive and sediment-dwelling foraminifera. These records show what was measured, sampled or reported — not live animal positions, complete populations or the condition of the entire fjord.</p>
             <LifeEvidenceGrid records={OSLOFJORD_LIFE} sourceById={oslofjordSourceById} />
+            <div style={{ marginTop: 28 }}>
+              <div style={{ ...label, color: "#0B7A39", marginBottom: 10 }}>MICROSCOPIC LIFE / SOURCE-BOUNDED DATASETS</div>
+              <h3 style={{ ...title, fontSize: "clamp(32px,4vw,58px)", margin: "0 0 22px" }}>The life you do not see drives the place story too.</h3>
+              <ScientificDatasetEvidence records={OSLOFJORD_SCIENTIFIC_DATASETS} />
+            </div>
             <div style={{ marginTop: 20 }}><Link to="/species" style={linkButton}>Browse the global SPECIES product →</Link></div>
-            <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>SPECIES is not filtered to Oslofjorden yet. Local occurrence integration remains blocked until a defensible query geometry and record-level rights/precision handling are selected.</p>
+            <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>SPECIES is not filtered to Oslofjorden yet. Local point-occurrence integration remains blocked until a defensible query geometry and record-level rights/precision handling are selected.</p>
+            <DataStatePanel state="SOURCE AVAILABLE" title="A strong official next source is ready, but not silently queried." detail={`${VANNMILJO_LIFE_SOURCE.publisher} publishes Vannmiljø species-occurrence data under ${VANNMILJO_LIFE_SOURCE.license}. Its national archive is continually updated, but 4PLANET has not selected or ingested an Oslofjorden subset, so the national record total is not shown as local evidence.`} />
           </div>
         </section>
 
@@ -224,8 +235,10 @@ export default function OslofjordenJourney() {
             <StateTag>VISIBLE SOURCE REGISTER</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 26px" }}>The source is part of the product.</h2>
             <SourceRegister />
-            <div style={{ marginTop: 28 }}>
+            <div style={{ marginTop: 28, display: "grid", gap: 14 }}>
               <ProvenanceBar value={{ state: "SOURCE", actor: media.creator, source: media.sourcePage, time: "Photographed 17 Aug 2022 · source checked Aug 2026", limitation: `${media.license}. ${media.limitation}` }} />
+              <ProvenanceBar value={{ state: "SOURCE", actor: innerOslofjord.source.publisher, source: innerOslofjord.source.url, time: "Source checked Aug 2026", limitation: innerOslofjord.limitation }} />
+              {OSLOFJORD_SCIENTIFIC_DATASETS.map((dataset) => <ProvenanceBar key={dataset.id} value={{ state: "SOURCE", actor: dataset.publisher, source: dataset.sourceUrl, time: `Published ${dataset.publishedAt} · checked ${dataset.checkedAt}`, limitation: `${dataset.license}. ${dataset.limitation}` }} />)}
             </div>
           </div>
         </section>
