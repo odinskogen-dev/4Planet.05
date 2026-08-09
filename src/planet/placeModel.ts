@@ -34,6 +34,27 @@ export interface PlaceGeometryRef {
   limitation: string;
 }
 
+/**
+ * Source-backed relation between two place identities. A hierarchy edge is not
+ * a geometry edge: PART_OF never licenses 4PLANET to manufacture a polygon for
+ * the child or parent.
+ */
+export interface PlaceRelationRef {
+  id: string;
+  relation: "PART_OF" | "CONTAINS" | "OVERLAPS" | "ADJACENT_TO";
+  fromPlaceId: string;
+  toPlaceId: string;
+  label: string;
+  source: PlaceSourceRef;
+  sourceRecordId: string;
+  representativePoint?: {
+    lat: number;
+    lng: number;
+    crs: string;
+  };
+  limitation: string;
+}
+
 export interface PlaceIdentity {
   id: string;
   name: string;
