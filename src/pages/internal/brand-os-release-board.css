@@ -234,6 +234,15 @@
   text-align: right;
 }
 
+.bos-burden-list {
+  margin-top: 0;
+}
+
+.bos-measurement-note {
+  color: #555;
+  font-size: 11px !important;
+}
+
 .bos-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -277,6 +286,7 @@
   color: #555;
 }
 
+.bos-production-preview,
 .bos-ledger {
   margin-top: 20px;
 }
