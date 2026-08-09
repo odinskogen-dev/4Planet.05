@@ -6,9 +6,7 @@ const ARTIFACTS = "artifacts/p17-organisations";
 const ACTOR_ATLAS_URL = `${BASE}/atlas?mode=actors&entity=actor%3Ap17%3AP17-A003&actorGeo=geo%3Agbif%3Asecretariat&c=12.57,55.68&z=5.2`;
 
 async function settleVisualLayout(page: Page) {
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-  });
+  await page.evaluate(async () => { await document.fonts.ready; });
   await page.waitForTimeout(450);
 }
 
@@ -35,9 +33,7 @@ async function screenshot(page: Page, selector: string, name: string) {
   });
 }
 
-test.beforeAll(async () => {
-  await mkdir(ARTIFACTS, { recursive: true });
-});
+test.beforeAll(async () => { await mkdir(ARTIFACTS, { recursive: true }); });
 
 test("capture homepage and desktop discovery evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -50,11 +46,21 @@ test("capture homepage and desktop discovery evidence", async ({ page }) => {
   await page.goto(`${BASE}/actors`);
   await expect(page.getByRole("heading", { name: /Working for a living planet/ })).toBeVisible();
   await screenshot(page, ".actors-hero", "desktop-organisations-hero");
-  await screenshot(page, ".actor-collection", "desktop-organisations-curated");
+  await screenshot(page, ".knowledge-collection", "desktop-knowledge-curated");
   await screenshot(page, ".actors-controls", "desktop-organisations-filters");
 });
 
-test("capture premium profile meaning, visualisation and evidence", async ({ page }) => {
+test("capture knowledge profile v2.1 and source-aware relationship view", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`${BASE}/actors/ocean-biodiversity-information-system`);
+  await expect(page.locator("h1").filter({ hasText: /^Ocean Biodiversity Information System$/ })).toBeVisible();
+  await screenshot(page, ".knowledge-profile-hero", "desktop-obis-knowledge-hero");
+  await screenshot(page, ".knowledge-flow", "desktop-obis-source-graph");
+  await screenshot(page, ".knowledge-boundary", "desktop-obis-limitations");
+  await screenshot(page, ".knowledge-review-form", "desktop-obis-review-gate");
+});
+
+test("capture premium field profile meaning, visualisation and evidence regression", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/actors/world-land-trust`);
   await expect(page.locator("h1").filter({ hasText: /^World Land Trust$/ })).toBeVisible();
@@ -65,7 +71,7 @@ test("capture premium profile meaning, visualisation and evidence", async ({ pag
   await screenshot(page, ".actor-share-card", "desktop-world-land-trust-share-card");
 });
 
-test("capture Global Fishing Watch data-only scale proof", async ({ page }) => {
+test("capture Global Fishing Watch data-only scale proof regression", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/actors/global-fishing-watch`);
   await expect(page.locator("h1").filter({ hasText: /^Global Fishing Watch$/ })).toBeVisible();
@@ -73,17 +79,17 @@ test("capture Global Fishing Watch data-only scale proof", async ({ page }) => {
   await screenshot(page, ".actor-signature", "desktop-global-fishing-watch-data-system");
 });
 
-test("capture mobile discovery, profile and secure review gate", async ({ page }) => {
+test("capture mobile discovery, knowledge profile and secure review gate", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/actors`);
   await expect(page.getByRole("heading", { name: /Working for a living planet/ })).toBeVisible();
   await screenshot(page, ".actors-hero", "mobile-organisations-hero");
   await screenshot(page, ".actors-controls", "mobile-organisations-filters");
 
-  await page.goto(`${BASE}/actors/rainforest-foundation-norway`);
-  await expect(page.locator("h1").filter({ hasText: /^Rainforest Foundation Norway$/ })).toBeVisible();
-  await screenshot(page, ".actor-profile-hero", "mobile-rainforest-foundation-norway-hero");
-  await screenshot(page, ".actor-form-panel", "mobile-rainforest-foundation-norway-review-gate");
+  await page.goto(`${BASE}/actors/artsdatabanken`);
+  await expect(page.locator("h1").filter({ hasText: /^Artsdatabanken$/ })).toBeVisible();
+  await screenshot(page, ".knowledge-profile-hero", "mobile-artsdatabanken-knowledge-hero");
+  await screenshot(page, ".knowledge-review-form", "mobile-artsdatabanken-review-gate");
 });
 
 test("capture native Actor Mode on the existing Atlas route", async ({ page }) => {
