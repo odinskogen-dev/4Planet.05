@@ -20,7 +20,7 @@ test("desktop front door communicates one product family and place journey", asy
 test("Oslofjorden exposes a source-backed semantic identity without inventing display geometry or live local data", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(page.getByRole("heading", { name: /OSLO\s*FJORDEN/i })).toBeVisible();
-  await expect(page.getByText(/MRGID 3379/i)).toBeVisible();
+  await expect(page.getByText("MRGID 3379 · Fjord", { exact: true })).toBeVisible();
   await expect(page.getByText(/DISPLAY GEOMETRY \/ NOT YET IMPLEMENTED/i)).toBeVisible();
   await expect(page.getByText(/do not manufacture local records/i)).toBeVisible();
   await expect(page.getByText("CURATED SOURCE").first()).toBeVisible();
@@ -62,7 +62,9 @@ test("mobile front door remains usable at iPhone-sized viewport", async ({ page 
   await expect(page.getByRole("heading", { name: /What is happening here\?/i })).toBeVisible();
   await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
   await page.getByRole("button", { name: "Open menu" }).click();
-  await expect(page.getByText("MISSIONS", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "MISSIONS" })).toBeVisible();
+  await page.getByRole("button", { name: "MISSIONS" }).click();
+  await expect(page.getByRole("link", { name: "AM4ZONIA_" })).toBeVisible();
   await page.getByRole("button", { name: "Close menu" }).click();
   await capture(page, "front-door-mobile-390x844");
 });
