@@ -1,0 +1,76 @@
+name: Decision Intelligence — Physical Runtime v2 Gate
+
+on:
+  push:
+    branches:
+      - agent/decision-intelligence-physical-runtime-v2
+  pull_request:
+    branches:
+      - agent/decision-intelligence-living-planet-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: decision-intelligence-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  decision-runtime-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+          github-token: ${{ github.token }}
+      - name: Prove inherited BRAIN Postgres/PostGIS truth contracts
+        shell: bash
+        run: |
+          if [ ! -f supabase/config.toml ]; then supabase init; fi
+          supabase db start
+          supabase db reset
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          test -n "$name"
+          docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee decision-v2-postgres-version.txt
+          docker cp supabase/tests/phase05_brain_intelligence.sql "$name:/tmp/phase05.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05.sql | tee decision-v2-brain-gate.txt
+          grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' decision-v2-brain-gate.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "$name:/tmp/context.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/context.sql | tee decision-v2-context-gate.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' decision-v2-context-gate.txt
+      - name: Install dependencies
+        run: npm ci
+      - name: Compile and execute Decision Runtime v2 gate
+        shell: bash
+        run: |
+          rm -rf .decision-v2-ci
+          npx tsc --outDir .decision-v2-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-runtime-v2-gate.mjs | tee decision-runtime-v2-report.json
+          grep -q '"pass": true' decision-runtime-v2-report.json
+          grep -q '"fallbackInvented": false' decision-runtime-v2-report.json
+      - name: Preserve v1 Decision evaluation and application build
+        shell: bash
+        run: |
+          rm -rf .decision-ci
+          npx tsc --outDir .decision-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-intelligence-gate.mjs | tee decision-v1-regression.json
+          grep -q '"pass": 28' decision-v1-regression.json
+          npm run typecheck
+          npm run build
+      - name: Upload exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-intelligence-physical-runtime-v2-evidence
+          path: |
+            decision-v2-postgres-version.txt
+            decision-v2-brain-gate.txt
+            decision-v2-context-gate.txt
+            decision-runtime-v2-report.json
+            decision-v1-regression.json
+          if-no-files-found: warn
+          retention-days: 30
