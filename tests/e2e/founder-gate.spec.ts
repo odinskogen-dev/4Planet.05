@@ -40,13 +40,13 @@ test("Orca keeps source truth across SPECIES and ATLAS", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("GBIF TAXON · ACCEPTED")).toBeVisible();
-  await expect(page.getByText("POPULATION-SPECIFIC CLAIMS CONTROLLED")).toBeVisible();
+  await expect(page.getByText("SPECIES PASSPORT · SOURCE-BOUNDED")).toBeVisible();
+  await expect(page.getByText("SOURCE + IDENTITY")).toBeVisible();
   await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
   await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
-  await page.getByRole("link", { name: /OPEN SAME ENTITY IN ATLAS/ }).click();
+  await expect(page.getByText(/do not establish range, abundance, migration track or current location/i)).toBeVisible();
+  await page.getByRole("link", { name: /SEE RECORDS IN ATLAS/ }).click();
   await expect(page).toHaveURL(/\/atlas\?/);
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
