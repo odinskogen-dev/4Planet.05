@@ -52,12 +52,32 @@
   {
     "claimId": "CLM-BOS-ORCA-002",
     "storyId": "STORY-BOS-ORCA-001",
-    "node": "OCCURRENCE",
+    "node": "OCCURRENCE_BOUNDARY",
     "claim": "One reported occurrence can support a bounded statement about one record, not range, abundance, trend or ecosystem condition.",
     "scope": "Methodological evidence boundary. Exact public occurrence record remains OPEN.",
-    "sourceIds": ["SRC-016"],
-    "sourceUrls": ["https://www.gbif.org/species/2440483", "https://techdocs.gbif.org/en/openapi/v1/occurrence"],
+    "sourceIds": ["SRC-016", "SRC-020"],
+    "sourceUrls": ["https://www.gbif.org/species/2440483", "https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d"],
     "status": "EXACT_RECORD_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-003",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "OCCURRENCE_DATASET",
+    "claim": "The Institute of Marine Research incidental-sightings dataset contains date, position and species records that can support selection of a single reported Orca occurrence.",
+    "scope": "Dataset-level statement only. The provider explicitly warns that incidental sightings are not suitable for abundance assessment and are biased by reporting effort; coordinate uncertainty is missing for the dataset in OBIS quality metadata.",
+    "sourceIds": ["SRC-020"],
+    "sourceUrls": ["https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d"],
+    "status": "DATASET_LOCKED_EXACT_RECORD_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-004",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "DOCUMENTARY_MEDIA_ROUTE",
+    "claim": "Artsdatabanken provides Orca images published by Havforskningsinstituttet under CC BY-SA 4.0 that can support documentary species depiction when attribution and ShareAlike conditions are preserved.",
+    "scope": "Media-rights route only. The image does not establish occurrence location/date, abundance, trend or ecosystem condition; exact binary ingest and creator/credit metadata remain required before release.",
+    "sourceIds": [],
+    "sourceUrls": ["https://artsdatabanken.no/arter/takson/31303"],
+    "status": "LICENSE_ROUTE_LOCKED_INGEST_OPEN"
   },
   {
     "claimId": "CLM-BOS-OSLO-001",
@@ -78,5 +98,45 @@
     "sourceIds": ["SRC-018"],
     "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
     "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-003",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "MODELLED_NITROGEN_LOAD",
+    "claim": "The official M-3141 model page reports whole-Oslofjord baseline nitrogen inputs of 15,068 tonnes/year from agriculture and 7,389 tonnes/year from wastewater, with lower modelled inputs under defined intervention scenarios.",
+    "scope": "Model/scenario layer only. These are not direct in-fjord concentration measurements or observed ecological outcomes; baseline and scenario definitions must remain visible.",
+    "sourceIds": ["SRC-021"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/oslofjorden-modellering/"],
+    "status": "LAYER_SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-004",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "MARINE_NATURE_COVERAGE",
+    "claim": "Naturbase HB19 provides mapped occurrences of marine nature types such as eelgrass communities and kelp forests, but the official guidance states that there is no comprehensive marine nature map and that much HB19 information is based on older mapping.",
+    "scope": "Coverage/mapped-known-occurrence layer. It must not be presented as complete current distribution or ecological condition; map service metadata lists NLOD licensing.",
+    "sourceIds": ["SRC-022"],
+    "sourceUrls": ["https://kartkatalog.miljodirektoratet.no/MapService/Details/naturtyper_marine_hb19", "https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/naturrestaurering-i-oslofjorden/hvilken-natur-kan-restaureres-i-kystomrader/"],
+    "status": "LAYER_SOURCE_LOCKED_COVERAGE_LIMITED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-005",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "WATERBODY_MEASUREMENT_ROUTE",
+    "claim": "The Vannmiljø public API supports querying environmental monitoring records by Vann-Nett WaterBodyID and returns the fields needed to build a bounded waterbody measurement layer.",
+    "scope": "Technical query route only. The exact Oslofjord WaterBodyID(s), parameter, sampling period, method, origin and quality context are still OPEN and must be locked before visualisation or comparison.",
+    "sourceIds": ["SRC-023"],
+    "sourceUrls": ["https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index"],
+    "status": "QUERY_ROUTE_LOCKED_EXACT_LAYER_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-006",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "LONG_RUN_NUTRIENT_PRESSURE_ROUTE",
+    "claim": "Teotil calculates annual modelled nitrogen and phosphorus loads to Norwegian coastal areas by source and provides a time series back to 1990.",
+    "scope": "Modelled source-apportioned pressure route. Exact Oslofjord extract/subcatchment and data reuse metadata are still OPEN; do not present Teotil as direct in-fjord concentration measurement.",
+    "sourceIds": ["SRC-024"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/miljoovervaking/overvakingsprogrammer/forurensning-og-klimagasser/teotil/"],
+    "status": "QUERY_ROUTE_LOCKED_EXACT_EXTRACT_OPEN"
   }
 ]
