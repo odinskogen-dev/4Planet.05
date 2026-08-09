@@ -53,28 +53,37 @@
     "storyId": "STORY-BOS-BEE-001",
     "title": "What Depends on What? Bee → Pollination → Food",
     "slug": "bee-pollination-food",
-    "state": "RESEARCHING",
+    "state": "SOURCE_READY",
     "risk": "HIGH",
-    "truthCore": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but pollination is performed by many animal groups and not all food production depends on bees. The story must show a bounded relationship rather than a universal food-dependence claim.",
+    "truthCore": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but pollination is performed by many animal groups and not all food production depends on bees. Apple is the bounded production example for the first vertical slice: the story shows how multiple bee groups contribute to apple pollination without turning this into an all-food or all-bees claim.",
     "audienceJob": "Understand one visible dependency chain without turning a complex food system into a false universal claim.",
     "canonicalRefs": [
       "ASSET:AST-0019",
       "ASSET:AST-0020",
       "RIGHTS:RD-0013",
-      "RIGHTS:RD-0014"
+      "RIGHTS:RD-0014",
+      "SOURCE:SRC-017",
+      "SOURCE:SRC-019",
+      "CLAIMS:CLM-BOS-BEE-001..004"
     ],
     "sourceRefs": [
       {
         "label": "FAO — Global Action on Pollination Services for Sustainable Agriculture",
         "url": "https://www.fao.org/pollination/en/",
         "scope": "pollination importance, crop dependence and multiple pollinator groups",
-        "status": "OFFICIAL_FOUNDATION"
+        "status": "SOURCE_LOCKED"
+      },
+      {
+        "label": "Garratt et al. — Apple pollination: demand depends on variety and supply depends on pollinator identity",
+        "url": "https://doi.org/10.1371/journal.pone.0153889",
+        "scope": "bounded apple example across four commercial UK varieties and four pollinator guilds",
+        "status": "SOURCE_LOCKED"
       }
     ],
     "assetRefs": ["AST-0019", "AST-0020"],
     "rightsDecisionRefs": ["RD-0013", "RD-0014"],
     "gates": {
-      "source": "OPEN",
+      "source": "PASS",
       "rights": "BLOCKED",
       "qa": "OPEN",
       "founder": "OPEN",
@@ -82,10 +91,9 @@
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Lock the exact relationship claims and source sidecar for each diagram node.",
-      "Choose a specific bee/pollinator/crop example where required to keep species and food claims bounded.",
-      "Close documentary media rights at asset level.",
-      "Produce and QA the original Relationship Reveal graphic.",
+      "Close documentary media rights at asset level or use the original-data/design route without implying documentary evidence.",
+      "Produce the first Relationship Reveal using CLM-BOS-BEE-001..004 and run regression QA against all-food/all-bees simplification.",
+      "Run accessibility, visual and final claim QA on the exact production object.",
       "Founder approval of exact final release remains required."
     ],
     "publicReleaseEligible": false
@@ -103,7 +111,9 @@
       "ASSET:AST-0021",
       "ASSET:AST-0022",
       "RIGHTS:RD-0015",
-      "RIGHTS:RD-0016"
+      "RIGHTS:RD-0016",
+      "SOURCE:SRC-018",
+      "CLAIMS:CLM-BOS-OSLO-001..002"
     ],
     "sourceRefs": [
       {
