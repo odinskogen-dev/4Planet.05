@@ -84,7 +84,12 @@ export function evaluateTargetProblemCoverage(
   }
   return [...bySolution.entries()].map(([solutionRef, rows]) => {
     const unique = [...new Set(rows.map((r) => r.problemRef))];
-    const coveredByTier = Object.fromEntries(tierOrder.map((tier) => [tier, []])) as Record<TargetPriorityTier, string[]>;
+    const coveredByTier: Record<TargetPriorityTier, string[]> = {
+      P0: [],
+      P1: [],
+      P2: [],
+      P3: [],
+    };
     for (const ref of unique) coveredByTier[targetByRef.get(ref)!.tier].push(ref);
     return {
       solutionRef,
