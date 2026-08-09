@@ -1,14 +1,16 @@
 import { useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { img } from "@/content/imageRegistry";
 import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar, ProofExplanation } from "@/components/phase04/ProvenanceBar";
 import { SignalCard } from "@/components/phase04/SignalCard";
+import { OSLOFJORDEN_SEMANTIC_IDENTITY } from "@/phase04/oslofjorden";
 import type { RelationshipStep, SignalPresentation } from "@/phase04/model";
 
 const RELATIONSHIP: RelationshipStep[] = [
-  { id: "place", label: "Oslofjorden", kind: "PLACE", status: "PROTOTYPE DATA" },
+  { id: "place", label: "Oslofjorden", kind: "PLACE", status: "CURATED SOURCE" },
   { id: "life", label: "Species + habitats", kind: "LIFE", status: "NOT YET IMPLEMENTED" },
   { id: "pressures", label: "Nitrogen + other human pressures", kind: "PRESSURE", status: "CURATED SOURCE" },
   { id: "response", label: "Policy + restoration responses", kind: "RESPONSE", status: "CURATED SOURCE" },
@@ -27,10 +29,10 @@ const POLICY_SIGNAL: SignalPresentation = {
   dataState: "CURATED SOURCE",
 };
 
-const label: React.CSSProperties = { fontFamily: "'Fragment Mono',ui-monospace,monospace", fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase" };
-const title: React.CSSProperties = { fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 500, letterSpacing: "-.05em", lineHeight: .94 };
+const label: CSSProperties = { fontFamily: "'Fragment Mono',ui-monospace,monospace", fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase" };
+const title: CSSProperties = { fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 500, letterSpacing: "-.05em", lineHeight: .94 };
 
-function StateTag({ children, tone = "blue" }: { children: React.ReactNode; tone?: "blue" | "red" | "dark" }) {
+function StateTag({ children, tone = "blue" }: { children: ReactNode; tone?: "blue" | "red" | "dark" }) {
   const color = tone === "red" ? "#FF4D22" : tone === "dark" ? "#0A0A0A" : "#2E2EFF";
   return <span style={{ ...label, color, border: `1px solid ${color}`, padding: "7px 9px", display: "inline-flex" }}>{children}</span>;
 }
@@ -38,6 +40,7 @@ function StateTag({ children, tone = "blue" }: { children: React.ReactNode; tone
 export default function OslofjordenJourney() {
   const [followed, setFollowed] = useState(false);
   const ocean = img("oce4nDomainHero");
+  const place = OSLOFJORDEN_SEMANTIC_IDENTITY;
   return (
     <PublicShell>
       <section style={{ minHeight: "88svh", position: "relative", background: "#0A0A0A", color: "#fff", overflow: "hidden" }}>
@@ -60,10 +63,19 @@ export default function OslofjordenJourney() {
         <section style={chapter}>
           <div style={chapterNo}>01 / PLACE</div>
           <div>
-            <StateTag>PROTOTYPE DATA</StateTag>
-            <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>A selected place context, not yet a canonical place adapter.</h2>
-            <p style={body}>The current shared place registry contains Oslo, but not a canonical Oslofjorden marine-place object. Phase 04 therefore refuses to pretend that a city bounding box is the fjord. A dedicated source-aware Oslofjorden geometry and place contract remains to be implemented.</p>
-            <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 20 }}><Link to="/atlas" style={linkButton}>Open ATLAS →</Link><StateTag tone="red">OSLOFJORDEN ADAPTER / NOT YET IMPLEMENTED</StateTag></div>
+            <StateTag>CURATED SOURCE</StateTag>
+            <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>The fjord has a source-backed identity. Its display geometry is a different question.</h2>
+            <p style={body}>4PLANET can identify Oslofjorden using Marine Regions MRGID 3379: a persistent marine gazetteer identity for Oslofjorden as a fjord. That record provides a representative coordinate, but it does not justify one universal ecological, legal or management polygon. Phase 04 therefore stores the semantic identity while keeping display geometry unresolved.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", borderTop: "1px solid rgba(10,10,10,.24)", borderLeft: "1px solid rgba(10,10,10,.24)", margin: "26px 0 18px" }}>
+              {[
+                ["IDENTITY", `${place.sourceId} · ${place.plainType}`],
+                ["SOURCE", place.source],
+                ["POINT", `${place.representativePoint.lat.toFixed(4)}, ${place.representativePoint.lng.toFixed(4)}`],
+                ["PRECISION", `≈ ${Math.round(place.representativePoint.precisionMetres / 1000)} km source precision`],
+              ].map(([k, v]) => <div key={k} style={{ borderRight: "1px solid rgba(10,10,10,.24)", borderBottom: "1px solid rgba(10,10,10,.24)", padding: 14 }}><div style={{ ...label, color: "rgba(10,10,10,.52)" }}>{k}</div><div style={{ fontSize: 13.5, lineHeight: 1.4, marginTop: 7 }}>{v}</div></div>)}
+            </div>
+            <ProvenanceBar value={{ state: "SOURCE", actor: "Marine Regions / VLIZ", source: place.sourceUrl, time: `Checked ${place.checkedAt}`, limitation: place.geometryLimitation }} />
+            <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 20 }}><Link to="/atlas" style={linkButton}>Open ATLAS →</Link><StateTag tone="red">DISPLAY GEOMETRY / NOT YET IMPLEMENTED</StateTag></div>
           </div>
         </section>
 
@@ -115,7 +127,7 @@ export default function OslofjordenJourney() {
           <div>
             <StateTag>EXPERIMENT</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>Return when something meaningful changes.</h2>
-            <p style={body}>This button is a local session interaction only. It does not create an account, notification or canonical Follow record because Oslofjorden does not yet have a canonical place entity in the shared registry.</p>
+            <p style={body}>This button is a local session interaction only. The semantic identity is source-backed, but it is not yet wired into the shared canonical Follow store or a production notification service.</p>
             <button type="button" onClick={() => setFollowed((v) => !v)} style={{ ...linkButton, cursor: "pointer" }}>{followed ? "FOLLOWING IN THIS SESSION" : "FOLLOW OSLOFJORDEN — PROTOTYPE"}</button>
           </div>
         </section>
@@ -140,11 +152,12 @@ export default function OslofjordenJourney() {
           </div>
         </section>
       </main>
+      <style>{`@media(max-width:720px){#main-content>main>section{grid-template-columns:1fr!important}}`}</style>
     </PublicShell>
   );
 }
 
-const chapter: React.CSSProperties = { display: "grid", gridTemplateColumns: "120px minmax(0,1fr)", gap: "clamp(20px,4vw,56px)", padding: "clamp(70px,9vw,130px) 0", borderBottom: "1px solid rgba(10,10,10,.22)" };
-const chapterNo: React.CSSProperties = { ...label, color: "rgba(10,10,10,.52)", paddingTop: 7 };
-const body: React.CSSProperties = { maxWidth: 820, fontSize: "clamp(16px,1.5vw,20px)", lineHeight: 1.6, margin: "24px 0" };
-const linkButton: React.CSSProperties = { display: "inline-flex", padding: "11px 14px", border: "1px solid #0A0A0A", background: "#0A0A0A", color: "#fff", textDecoration: "none", fontSize: 13 };
+const chapter: CSSProperties = { display: "grid", gridTemplateColumns: "120px minmax(0,1fr)", gap: "clamp(20px,4vw,56px)", padding: "clamp(70px,9vw,130px) 0", borderBottom: "1px solid rgba(10,10,10,.22)" };
+const chapterNo: CSSProperties = { ...label, color: "rgba(10,10,10,.52)", paddingTop: 7 };
+const body: CSSProperties = { maxWidth: 820, fontSize: "clamp(16px,1.5vw,20px)", lineHeight: 1.6, margin: "24px 0" };
+const linkButton: CSSProperties = { display: "inline-flex", padding: "11px 14px", border: "1px solid #0A0A0A", background: "#0A0A0A", color: "#fff", textDecoration: "none", fontSize: 13 };
