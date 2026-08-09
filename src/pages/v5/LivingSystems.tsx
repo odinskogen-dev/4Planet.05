@@ -4,17 +4,30 @@ import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
-import { LIVING_SYSTEMS, nodeById } from "@/planet/livingSystems";
+import { LIVING_SYSTEMS, RELATIONS, nodeById } from "@/planet/livingSystems";
+import { claimForRelation } from "@/data/runtimeClaims";
+import { runtimeSource } from "@/data/runtimeSources";
 import type { RelationshipStep } from "@/phase04/model";
 
 const pollination = LIVING_SYSTEMS.find((s) => s.name === "Pollination");
-const chain: RelationshipStep[] = (pollination?.chain ?? []).map((id) => {
+const pollinationIds = pollination?.chain ?? [];
+const pollinationRelations = pollinationIds.slice(1).map((id, index) =>
+  RELATIONS.find((relation) => relation.from === pollinationIds[index] && relation.to === id),
+).filter(Boolean);
+const pollinationClaims = pollinationRelations.map((relation) => claimForRelation(relation!.id)).filter(Boolean);
+const pollinationSources = Array.from(new Set(pollinationClaims.flatMap((claim) => claim.supportingSourceIds)))
+  .map(runtimeSource)
+  .filter(Boolean);
+
+const chain: RelationshipStep[] = pollinationIds.map((id, index) => {
   const node = nodeById(id);
+  const relation = index > 0 ? pollinationRelations[index - 1] : undefined;
+  const control = relation ? claimForRelation(relation.id) : undefined;
   return {
     id,
     label: node?.label ?? id,
     kind: node?.type ?? "UNKNOWN",
-    status: "SOURCE REVIEW PENDING",
+    status: control ? `${control.gate} · ${control.reviewState}` : "ENTRY POINT",
   };
 });
 
@@ -40,16 +53,22 @@ export function LivingSystems() {
         <div style={{ ...mono, color: T.blue, marginBottom: 18 }}>RELATIONSHIP REVEAL / POLLINATION PROOF CHAIN</div>
         <RelationshipReveal
           steps={chain}
-          note="This chain is read from the repository's shared seeded Living Systems model. Every underlying relation remains SEEDED_PROTOTYPE / UNREVIEWED until evidence review is completed."
+          note="The graph remains a seeded prototype reasoning surface. Material relation wording is now constrained by the versioned Claim-first runtime export; Claim review does not imply independent expert review."
         />
         <div style={{ marginTop: 18 }}>
           <ProvenanceBar value={{
             state: "4PLANET CONTEXT",
-            actor: "4PLANET",
-            method: "Seeded relationship model in src/planet/livingSystems.ts",
-            time: "Prototype candidate",
-            limitation: "Structural relationship proof only. Citation strings exist in the seeded model, but they are not yet resolved Evidence entities or expert-reviewed claims.",
-            flags: ["UNCERTAIN"],
+            actor: "4PLANET / Knowledge OS",
+            sources: pollinationSources.map((source) => source.publisher),
+            sourceLinks: pollinationSources.map((source) => ({ id: source.sourceId, label: `${source.publisher} — ${source.label}`, url: source.url })),
+            method: "Versioned derivative Claim-first runtime export from the canonical Knowledge OS",
+            dataDate: "CANONICAL CLAIM BASELINE · 2026-08-09",
+            lastChecked: "2026-08-09",
+            claimIds: pollinationClaims.map((claim) => `${claim.claimId}@${claim.claimVersion}`),
+            rightsState: "SOURCE-SPECIFIC — SEE LINKED SOURCE TERMS",
+            whyWeSayThis: "Each visible relationship step resolves to a canonical material Claim treatment before public wording is shown. The product uses public-safe wording and preserves the Claim limitations rather than treating repeated prototype prose as evidence.",
+            limitation: "Claim-first treatment reduces truth drift but does not make the complete Living Systems graph scientifically reviewed. New or changed material edges still require canonical Claim/source review.",
+            flags: ["CLAIM QUALIFIED"],
           }} />
         </div>
       </section>
