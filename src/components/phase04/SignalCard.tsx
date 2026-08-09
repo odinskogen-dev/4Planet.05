@@ -11,7 +11,7 @@ const mono: CSSProperties = {
 export function SignalCard({ signal, accent = "#2E2EFF" }: { signal: SignalPresentation; accent?: string }) {
   return (
     <article style={{ borderTop: `4px solid ${accent}`, borderBottom: "1px solid rgba(10,10,10,.28)", padding: "20px 0" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(110px,.35fr) minmax(0,1.2fr) minmax(210px,.7fr)", gap: "clamp(18px,3vw,40px)" }}>
+      <div className="phase04-signal-grid" style={{ display: "grid", gridTemplateColumns: "minmax(110px,.35fr) minmax(0,1.2fr) minmax(210px,.7fr)", gap: "clamp(18px,3vw,40px)" }}>
         <div style={mono}>
           <div>{signal.dataState}</div>
           <div style={{ marginTop: 8, color: "rgba(10,10,10,.58)" }}>{signal.when}</div>
@@ -28,7 +28,7 @@ export function SignalCard({ signal, accent = "#2E2EFF" }: { signal: SignalPrese
           <div style={{ ...mono, marginTop: 16 }}>FOLLOW NEXT</div><div style={{ marginTop: 5 }}>{signal.followNext}</div>
         </div>
       </div>
-      <style>{`@media(max-width:760px){article>div{grid-template-columns:1fr!important}}`}</style>
+      <style>{`@media(max-width:760px){.phase04-signal-grid{grid-template-columns:1fr!important}}`}</style>
     </article>
   );
 }
