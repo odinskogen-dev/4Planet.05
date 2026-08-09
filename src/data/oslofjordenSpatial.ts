@@ -8,6 +8,7 @@ import type { PlaceGeometryRef, PlaceSourceRef } from "@/planet/placeModel";
  */
 
 const NLOD_2_URL = "https://data.norge.no/nlod/no/2.0";
+const CC_BY_4_URL = "https://creativecommons.org/licenses/by/4.0/";
 
 export const MARINE_REGIONS_OSLOFJORD_SOURCE: PlaceSourceRef = {
   id: "marine-regions-3379",
@@ -15,6 +16,7 @@ export const MARINE_REGIONS_OSLOFJORD_SOURCE: PlaceSourceRef = {
   publisher: "Flanders Marine Institute / Marine Regions",
   url: "https://www.marineregions.org/gazetteer.php?id=3379&p=details",
   checkedAt: "2026-08-09",
+  sourceVersion: "Marine Regions Gazetteer checked 2026-08-09",
 };
 
 export const VANN_NETT_COASTAL_SOURCE: PlaceSourceRef = {
@@ -57,14 +59,15 @@ export const OSLOFJORD_SPATIAL_REGISTRY: PlaceGeometryRef[] = [
     geometryType: "POINT",
     crs: "WGS 84",
     rights: {
-      status: "REVIEW_REQUIRED",
-      label: "Source terms must be rechecked before geometry redistribution",
-      reuseNote: "The candidate stores the source identity and representative point, not a republished universal fjord polygon.",
+      status: "OPEN",
+      label: "Marine Regions Gazetteer / CC BY 4.0 — attribution required",
+      url: CC_BY_4_URL,
+      reuseNote: "Source: Flanders Marine Institute / MarineRegions.org. The candidate stores the MRGID identity and representative point, not a republished universal fjord polygon. Marine Regions states the data has no legal or navigational value; 4PLANET preserves that limitation and source attribution.",
     },
     intendedUse: "Persistent semantic identity and representative location only.",
     precision: "Representative point precision reported in the product as 56,000 m.",
     supersessionState: "CURRENT",
-    limitation: "MRGID 3379 identifies the fjord. It does not define one authoritative polygon for display, biodiversity queries, science, management or regulation.",
+    limitation: "MRGID 3379 identifies the fjord. It does not define one authoritative polygon for display, biodiversity queries, science, management or regulation, and it must not be used as legal or navigational geography.",
   },
   {
     id: "oslofjord-display",
@@ -131,7 +134,7 @@ export const OSLOFJORD_SPATIAL_REGISTRY: PlaceGeometryRef[] = [
     rights: {
       status: "OPEN",
       label: "CC-BY 4.0 dataset",
-      url: "https://creativecommons.org/licenses/by/4.0/",
+      url: CC_BY_4_URL,
     },
     intendedUse: "Describe the published dataset extent and constrain interpretation of its historical records.",
     resolution: "Dataset extent south 59.661 / west 10.415 / north 59.933 / east 10.956.",
