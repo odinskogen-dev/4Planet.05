@@ -11,6 +11,10 @@ import {
   targetProblemPriorityTruthBoundary,
   validatePriorityContext,
 } from "../.decision-v3-ci/brain/decision/targetProblemPriorityV1.js";
+import {
+  evaluateDecisionLearningLoop,
+  learningLoopV3TruthBoundary,
+} from "../.decision-v3-ci/brain/decision/learningLoopV3.js";
 import { POLLINATION_DECISION_PACKS } from "../.decision-v3-ci/brain/decision/pollinationDecisionPacks.js";
 
 const missingContextErrors = validatePriorityContext({
@@ -76,12 +80,29 @@ if (municipality.uncertaintyExplanations.length === 0) throw new Error("material
 const sample = POLLINATION_DECISION_PACKS.MUNICIPALITY.evidence.find((x) => x.claim.limitations.length > 0);
 if (!sample || !explainMaterialUncertainty(sample)?.includes(":")) throw new Error("causal uncertainty prose gate failed");
 
-for (const [key, value] of Object.entries(decisionRuntimeV3TruthBoundary)) {
-  if (value !== false) throw new Error(`runtime v3 truth boundary ${key} must remain false`);
-}
-for (const [key, value] of Object.entries(targetProblemPriorityTruthBoundary)) {
-  if (value !== false) throw new Error(`priority truth boundary ${key} must remain false`);
-}
+const noOutcome = evaluateDecisionLearningLoop({
+  decisionPackId: "DP-POLL-MUNICIPALITY-V1",
+  selectedActionRef: "test:action",
+  expectedOutcomeRef: "test:expected",
+  measurementPlan: [{ measurementId: "M1", metric: "wild pollinator abundance", baselineRequired: true, timeframe: "12 months" }],
+  implementationRef: "test:implementation",
+  observedOutcomes: [],
+});
+if (noOutcome.updateState !== "NO_UPDATE" || noOutcome.confidenceMayIncrease) throw new Error("no-outcome confidence gate failed");
+
+const challenged = evaluateDecisionLearningLoop({
+  decisionPackId: "DP-POLL-MUNICIPALITY-V1",
+  selectedActionRef: "test:action",
+  expectedOutcomeRef: "test:expected",
+  measurementPlan: [{ measurementId: "M1", metric: "wild pollinator abundance", baselineRequired: true, timeframe: "12 months" }],
+  implementationRef: "test:implementation",
+  observedOutcomes: [{ outcomeId: "O1", measurementId: "M1", sourceRecordId: "SR-TEST-IMMUTABLE", resultSummary: "No expected improvement in represented test context.", directionAgainstExpectation: "CHALLENGES" }],
+});
+if (challenged.updateState !== "ASSESSMENT_CHALLENGED" || challenged.confidenceMayIncrease) throw new Error("contradictory outcome challenge gate failed");
+
+for (const [key, value] of Object.entries(decisionRuntimeV3TruthBoundary)) if (value !== false) throw new Error(`runtime v3 truth boundary ${key} must remain false`);
+for (const [key, value] of Object.entries(targetProblemPriorityTruthBoundary)) if (value !== false) throw new Error(`priority truth boundary ${key} must remain false`);
+for (const [key, value] of Object.entries(learningLoopV3TruthBoundary)) if (value !== false) throw new Error(`learning truth boundary ${key} must remain false`);
 
 console.log(JSON.stringify({
   release: "DECISION_RUNTIME_V3_GATE",
@@ -94,7 +115,10 @@ console.log(JSON.stringify({
   fallbackInvented: false,
   materialUncertaintyExplained: true,
   traceableEvidenceRequired: true,
+  noObservedOutcomeConfidenceIncrease: false,
+  contradictoryObservedOutcomeChallengesAssessment: true,
   rawPrivateDatabaseExposed: false,
   truthBoundary: decisionRuntimeV3TruthBoundary,
   priorityTruthBoundary: targetProblemPriorityTruthBoundary,
+  learningTruthBoundary: learningLoopV3TruthBoundary,
 }, null, 2));
