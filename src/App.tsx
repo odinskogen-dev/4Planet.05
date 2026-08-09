@@ -1,3 +1,4 @@
+import "@/earth/runtimeTruthBootstrap";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
