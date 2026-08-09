@@ -8,7 +8,7 @@ import { LIVING_SYSTEMS, nodeById } from "@/planet/livingSystems";
 import type { RelationshipStep } from "@/phase04/model";
 
 const pollination = LIVING_SYSTEMS.find((s) => s.name === "Pollination");
-const chain: RelationshipStep[] = (pollination?.chain ?? []).map((id, i) => {
+const chain: RelationshipStep[] = (pollination?.chain ?? []).map((id) => {
   const node = nodeById(id);
   return {
     id,
@@ -56,7 +56,7 @@ export function LivingSystems() {
 
       <section style={{ background: T.ink, color: "#fff", padding: "clamp(70px,10vw,140px) clamp(20px,5vw,72px)" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,.8fr)", gap: "clamp(30px,6vw,80px)" }}>
-          <div><div style={{ ...mono, color: T.green }}>ONE ENGINE / MANY INTERFACES</div><h2 style={{ ...display, fontSize: "clamp(44px,7vw,92px)", margin: "18px 0 0" }}>Relationship intelligence should appear where context needs it.</h2></div>
+          <div><div style={{ ...mono, color: T.acid }}>ONE ENGINE / MANY INTERFACES</div><h2 style={{ ...display, fontSize: "clamp(44px,7vw,92px)", margin: "18px 0 0" }}>Relationship intelligence should appear where context needs it.</h2></div>
           <div style={{ alignSelf: "end" }}>
             {[
               ["ATLAS", "Place and spatial context", "/atlas"],
