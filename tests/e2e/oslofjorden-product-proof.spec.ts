@@ -12,7 +12,7 @@ const oslofjordHero = (page: import("@playwright/test").Page) => page.getByRole(
 
 async function expectRealHeroLoaded(page: import("@playwright/test").Page) {
   const hero = page.locator('img[alt="Oslofjord seen from a ferry in August 2022"]');
-  await expect(hero).toHaveAttribute("src", /commons\.wikimedia\.org/);
+  await expect(hero).toHaveAttribute("src", /\/assets\/places\/oslofjorden\/hero-oslofjorden-cc0-1920\.jpg/);
   await expect.poll(async () => hero.evaluate((el: HTMLImageElement) => ({ complete: el.complete, width: el.naturalWidth })), { timeout: 15000 }).toEqual(expect.objectContaining({ complete: true, width: expect.any(Number) }));
   expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(100);
 }
@@ -111,7 +111,7 @@ test("higher Oslofjord proof states remain absent", async ({ page }) => {
   await expect(page.getByText(/No Oslofjorden Partner Report, Assessed Outcome or Verified Outcome is claimed/i)).toBeVisible();
 });
 
-test("front door uses a real rights-classified Oslofjord photograph", async ({ page }) => {
+test("front door uses a repository-controlled rights-classified Oslofjord photograph", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText(/REAL OSLOFJORD PHOTO/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /Leonhard Lenz.*CC0.*SOURCE/i })).toHaveAttribute("href", /commons\.wikimedia\.org/);
