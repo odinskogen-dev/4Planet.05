@@ -14,20 +14,25 @@ export interface PlaceMediaRecord {
   locationClaim: string;
   limitation: string;
   alt: string;
+  sourceChecksum?: { algorithm: "SHA-1" | "SHA-256"; value: string };
+  sourceFileBytes?: number;
+  sourceDimensions?: { width: number; height: number };
+  custodyState?: "REMOTE_SOURCE_RUNTIME" | "REPO_CONTROLLED_DERIVATIVE" | "OWNED_MASTER";
+  derivativeNote?: string;
 }
 
 /**
  * Real Oslofjord documentary context for the internal product candidate.
- * Source page checked 2026-08-09. The author dedicated the photograph CC0.
+ * Source page and structured data checked 2026-08-09. The author dedicated
+ * the photograph CC0. Wikimedia reports the original source-file SHA-1 below.
  *
  * IMPORTANT:
  * - This is a real photograph of Oslofjord, not generated imagery.
  * - It is not an ecological observation, species record, monitoring result or
  *   evidence of current condition.
- * - A Wikimedia file redirect is used in the controlled candidate because this
- *   connector cannot commit binary media. Browser QA must prove it actually
- *   loads. Before public release, prefer a locally controlled derivative plus
- *   stored checksum and source metadata.
+ * - The current runtime still uses a Wikimedia derivative because the active
+ *   connector cannot transfer the binary into the repository. Source custody
+ *   is therefore explicit rather than falsely described as localised.
  */
 export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   id: "media:commons:oslofjorden-2022-08-17-15",
@@ -45,4 +50,9 @@ export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   locationClaim: "Wikimedia Commons source description: Oslofjord seen from a ferry.",
   limitation: "A place photograph proves the documented photographic context only. It does not show current ecological condition, a species occurrence, a survey result or the condition of the whole fjord.",
   alt: "Oslofjord seen from a ferry in August 2022",
+  sourceChecksum: { algorithm: "SHA-1", value: "7b7d2c709a5009b984df764624c7668e671ee1f3" },
+  sourceFileBytes: 30_023_899,
+  sourceDimensions: { width: 8_384, height: 5_612 },
+  custodyState: "REMOTE_SOURCE_RUNTIME",
+  derivativeNote: "Repo-controlled derivative remains an explicit pre-public-release media-custody task. The source master is checksum-addressed and rights-clean; runtime does not claim local binary custody.",
 };
