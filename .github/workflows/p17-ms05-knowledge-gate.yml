@@ -82,7 +82,7 @@ jobs:
       - name: Organisations and knowledge browser journeys
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/actors-private-beta.spec.ts tests/e2e/actors-visual-proof.spec.ts
+        run: npx playwright test tests/e2e/actors-private-beta.spec.ts tests/e2e/actors-visual-proof.spec.ts tests/e2e/p17-ms05-knowledge.spec.ts
 
       - name: Record exact candidate SHA
         shell: bash
