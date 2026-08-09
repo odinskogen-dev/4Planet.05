@@ -9,6 +9,8 @@ const shell = read('src/components/layout/PublicShell.tsx');
 const front = read('src/pages/phase04/FrontDoor.tsx');
 const fjord = read('src/pages/phase04/OslofjordenJourney.tsx');
 const fjordIdentity = read('src/phase04/oslofjorden.ts');
+const fjordProof = read('src/data/oslofjordenProof.ts');
+const placeModel = read('src/planet/placeModel.ts');
 const living = read('src/pages/v5/LivingSystems.tsx');
 const missions = read('src/pages/phase04/MissionUniverse.tsx');
 const proof = read('src/components/phase04/ProvenanceBar.tsx');
@@ -21,11 +23,14 @@ test('root converges to Phase 04 living-place front door without removing produc
   for (const job of ['ATLAS', 'SPECIES', 'LIVING SYSTEMS', 'IMPACT']) assert.ok(front.includes(`"${job}"`), job);
 });
 
-test('Oslofjorden separates semantic identity from unresolved display geometry', () => {
+test('Oslofjorden separates semantic identity from display, query and regulatory geometry', () => {
   assert.match(router, /path="\/place\/oslofjorden"/);
-  assert.match(fjordIdentity, /MRGID 3379/);
-  assert.match(fjordIdentity, /NOT_YET_SELECTED/);
-  assert.match(fjord, /DISPLAY GEOMETRY \/ NOT YET IMPLEMENTED/);
+  assert.match(fjordIdentity + fjordProof, /MRGID 3379/);
+  for (const use of ['"DISPLAY"', '"QUERY"', '"REGULATORY"', '"WATERBODY"']) assert.ok(placeModel.includes(use), use);
+  assert.match(fjordProof, /id: "oslofjord-display"[\s\S]*availability: "NOT_SELECTED"/);
+  assert.match(fjordProof, /id: "oslofjord-query"[\s\S]*availability: "NOT_SELECTED"/);
+  assert.match(fjordProof, /id: "oslofjord-regulatory-fisheries"[\s\S]*availability: "SOURCE_AVAILABLE_NOT_INGESTED"/);
+  assert.match(fjord, /A defensible biodiversity query area has not been selected/);
   assert.match(fjord, /no fake pins/i);
   assert.match(fjord, /CURATED SOURCE/);
   assert.doesNotMatch(fjord, /dataState:\s*"LIVE DATA"/);
