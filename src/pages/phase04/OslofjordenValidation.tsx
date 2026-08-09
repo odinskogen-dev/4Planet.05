@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
+import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
 
 const STORAGE_KEY = "4planet.oslofjorden.validation.v1";
 
@@ -41,6 +42,7 @@ const prompts = [
   ["oslofjord", "What does 4PLANET currently know about Oslofjorden, and what is explicitly still unknown or unfinished?"],
   ["relationship", "In your own words, what is Relationship Reveal showing? Which mode is easiest to understand?"],
   ["proof", "Does PARTNER REPORT mean 4PLANET independently verified an ecological result? Explain."],
+  ["sourceBoundary", "Pick one Oslofjord fact or record. Can you tell what its source, time period, place/scope and limitation are?"],
   ["trust", "What increased or reduced your trust in the experience?"],
   ["next", "What would you click or explore next?"],
   ["return", "What would make you return to 4PLANET next week?"],
@@ -48,6 +50,7 @@ const prompts = [
 ] as const;
 
 export default function OslofjordenValidation() {
+  const hero = OSLOFJORD_HERO_MEDIA;
   const [record, setRecord] = useState<ValidationRecord>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -75,7 +78,7 @@ export default function OslofjordenValidation() {
   const answer = (key: string, value: string) => setRecord((current) => ({ ...current, answers: { ...current.answers, [key]: value } }));
 
   const exportJson = () => {
-    const payload = { ...record, updatedAt: new Date().toISOString(), humanResultsStatus: "UNREVIEWED PARTICIPANT EXPORT" };
+    const payload = { ...record, updatedAt: new Date().toISOString(), humanResultsStatus: "UNREVIEWED PARTICIPANT EXPORT", stimulus: "CURRENT OSLOFJORDEN REAL-PLACE FIVE-SECOND V1" };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -105,9 +108,9 @@ export default function OslofjordenValidation() {
 
       <section style={{ maxWidth: 1180, margin: "0 auto", padding: "30px clamp(20px,5vw,72px) 70px" }}>
         <div style={mono}>01 / FIVE-SECOND EXPOSURE</div>
-        <p style={{ maxWidth: 760, lineHeight: 1.5 }}>Only start when the participant is ready. The stimulus disappears after five seconds. Do not explain 4PLANET beforehand.</p>
+        <p style={{ maxWidth: 760, lineHeight: 1.5 }}>Only start when the participant is ready. The stimulus disappears after five seconds. Do not explain 4PLANET beforehand. The stimulus uses the same real Oslofjord image and front-door proposition as the current candidate.</p>
         {exposure === "IDLE" && <button type="button" disabled={!record.consent} onClick={() => setExposure("RUNNING")} style={{ ...button, opacity: record.consent ? 1 : .35 }}>START FIVE SECONDS</button>}
-        {exposure === "RUNNING" && <div aria-live="polite" style={{ minHeight: 520, marginTop: 18, background: "#0A0A0A", color: "#fff", padding: "clamp(25px,5vw,62px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}><div style={{ ...mono, color: "#3AE86F" }}>4PLANET_ / OSLOFJORDEN / {seconds}</div><div><h2 style={{ ...display, fontSize: "clamp(58px,9vw,118px)", margin: 0 }}>What is<br />happening here?</h2><p style={{ fontSize: 22, maxWidth: 620, lineHeight: 1.3 }}>A living place, seen through life, relationships, changing evidence and the decisions around it.</p></div><div style={{ ...mono, color: "rgba(255,255,255,.65)" }}>SEE / DISCOVER / UNDERSTAND / ACT + PROVE</div></div>}
+        {exposure === "RUNNING" && <div aria-live="polite" style={{ minHeight: 520, marginTop: 18, background: "#0A0A0A", color: "#fff", position: "relative", overflow: "hidden" }}><img src={hero.assetUrl} alt="" aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /><div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.24),rgba(0,0,0,.82))" }} /><div style={{ position: "relative", minHeight: 520, padding: "clamp(25px,5vw,62px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}><div style={{ ...mono, color: "#3AE86F" }}>4PLANET_ / OSLOFJORDEN / {seconds}</div><div><h2 style={{ ...display, fontSize: "clamp(58px,9vw,118px)", margin: 0 }}>What is<br />happening here?</h2><p style={{ fontSize: 22, maxWidth: 620, lineHeight: 1.3 }}>A real living place, viewed through life, relationships, changing evidence and the decisions around it.</p></div><div style={{ ...mono, color: "rgba(255,255,255,.75)" }}>SEE / DISCOVER / UNDERSTAND / ACT + PROVE</div></div></div>}
         {exposure === "DONE" && <div style={{ padding: "32px 0", borderTop: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A", marginTop: 18 }}><div style={{ ...mono, color: "#FF4D22" }}>STIMULUS HIDDEN</div><p>Answer the first three questions from memory before opening the product.</p></div>}
       </section>
 
@@ -122,7 +125,7 @@ export default function OslofjordenValidation() {
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div style={mono}>03 / CONTROLLED EXPLORATION</div>
           <h2 style={{ ...display, fontSize: "clamp(38px,5vw,68px)", margin: "18px 0 0" }}>Open the real candidate in a new tab.</h2>
-          <p style={{ maxWidth: 780, lineHeight: 1.55 }}>Give the participant up to a few minutes. Ask them to find what 4PLANET knows, what it does not know, one pressure, one Signal, one source and one real action. Do not coach navigation unless they are blocked.</p>
+          <p style={{ maxWidth: 780, lineHeight: 1.55 }}>Give the participant up to a few minutes. Ask them to find what 4PLANET knows, what it does not know, one LIFE record, one pressure, one Signal, one source, one limitation and one real action. Do not coach navigation unless they are blocked.</p>
           <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 22 }}><Link to="/place/oslofjorden" target="_blank" rel="noreferrer" style={button}>OPEN OSLOFJORDEN ↗</Link><Link to="/living-systems" target="_blank" rel="noreferrer" style={{ ...button, background: "#fff", color: "#0A0A0A" }}>OPEN RELATIONSHIP REVEAL ↗</Link></div>
         </div>
       </section>
