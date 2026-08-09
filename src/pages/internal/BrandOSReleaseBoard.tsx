@@ -14,9 +14,9 @@ import type {
 } from "@/brand-os/types";
 import "./brand-os-release-board.css";
 
-const stories = pilotData as StoryRecord[];
+const stories = pilotData as unknown as StoryRecord[];
 
-const gateLabel = (value: string) => value.replaceAll("_", " ");
+const gateLabel = (value: string) => value.split("_").join(" ");
 
 const makeRelease = (story: StoryRecord, decision: FounderDecision): ReleaseRecord => ({
   releaseId: `REL-${story.storyId.replace("STORY-", "")}-IG-001`,
