@@ -1,9 +1,13 @@
 import type {
+  FounderBurdenSummary,
+  FounderInteractionType,
+  FounderIntervention,
   GateState,
   IncidentRecord,
   LearningDecision,
   MetricEvent,
   PublicationReceipt,
+  PublishJob,
   QAResult,
   ReleaseRecord,
   StoryRecord,
@@ -91,6 +95,92 @@ export function dryRunPublish(
     platformUrl: null,
     createdAt: now.toISOString(),
   } satisfies PublicationReceipt;
+}
+
+export function createPublishJob(release: ReleaseRecord, now = new Date(), maxAttempts = 3): PublishJob {
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10) {
+    throw new Error("Publish job maxAttempts must be an integer from 1 to 10.");
+  }
+
+  return {
+    jobId: `JOB-${release.releaseId}-${now.getTime()}`,
+    releaseId: release.releaseId,
+    idempotencyKey: idempotencyKey(release),
+    state: "QUEUED",
+    attemptCount: 0,
+    maxAttempts,
+    nextAttemptAt: null,
+    lastError: null,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  };
+}
+
+export function failPublishJob(job: PublishJob, error: string, now = new Date()): PublishJob {
+  const attemptCount = job.attemptCount + 1;
+  const exhausted = attemptCount >= job.maxAttempts;
+  const retryDelaySeconds = Math.min(15 * 2 ** Math.max(0, attemptCount - 1), 15 * 60);
+
+  return {
+    ...job,
+    state: exhausted ? "DEAD_LETTER" : "RETRY_WAIT",
+    attemptCount,
+    nextAttemptAt: exhausted ? null : new Date(now.getTime() + retryDelaySeconds * 1000).toISOString(),
+    lastError: error.trim() || "UNKNOWN_ERROR",
+    updatedAt: now.toISOString(),
+  };
+}
+
+export function succeedPublishJob(job: PublishJob, now = new Date()): PublishJob {
+  return {
+    ...job,
+    state: "SUCCEEDED",
+    nextAttemptAt: null,
+    lastError: null,
+    updatedAt: now.toISOString(),
+  };
+}
+
+export function recordFounderIntervention(
+  storyId: string,
+  releaseId: string | null,
+  interactionType: FounderInteractionType,
+  durationSeconds: number,
+  reason: string,
+  outcome: string,
+  now = new Date(),
+): FounderIntervention {
+  if (!Number.isFinite(durationSeconds) || durationSeconds < 0) {
+    throw new Error("Founder intervention duration must be a non-negative finite number.");
+  }
+
+  return {
+    interventionId: `FIN-${storyId}-${now.getTime()}`,
+    storyId,
+    releaseId,
+    interactionType,
+    durationSeconds,
+    reason,
+    outcome,
+    createdAt: now.toISOString(),
+  };
+}
+
+export function summarizeFounderBurden(interventions: FounderIntervention[]): FounderBurdenSummary {
+  const totalSeconds = interventions.reduce((sum, item) => sum + item.durationSeconds, 0);
+  const byType: FounderBurdenSummary["byType"] = {};
+
+  for (const intervention of interventions) {
+    byType[intervention.interactionType] = (byType[intervention.interactionType] ?? 0) + intervention.durationSeconds;
+  }
+
+  return {
+    interventionCount: interventions.length,
+    totalSeconds,
+    totalMinutes: totalSeconds / 60,
+    averageSeconds: interventions.length === 0 ? 0 : totalSeconds / interventions.length,
+    byType,
+  };
 }
 
 export function canExternallyPublish(story: StoryRecord, release: ReleaseRecord): boolean {
