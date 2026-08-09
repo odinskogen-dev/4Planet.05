@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { ScientificDatasetRecord } from "@/data/oslofjordenDatasets";
 import type { PlaceRelationRef } from "@/planet/placeModel";
 import { DatasetOccurrenceEvidence } from "@/components/place/DatasetOccurrenceEvidence";
+import { OslofjordSpatialLifeEvidence } from "@/components/place/OslofjordSpatialLifeEvidence";
 
 const mono: CSSProperties = {
   fontFamily: "'Fragment Mono',ui-monospace,monospace",
@@ -54,6 +55,7 @@ export function ScientificDatasetEvidence({ records }: { records: readonly Scien
           )}
         </article>
       ))}
+      <OslofjordSpatialLifeEvidence />
     </div>
   );
 }
