@@ -35,7 +35,8 @@ test("Oslofjorden semantic identity stays separate from role-specific spatial ob
   assert.match(spatial, /id: "oslofjord-display"[\s\S]*availability: "NOT_SELECTED"/);
   assert.match(spatial, /role: "WATERBODY_STATUS"[\s\S]*0101020601-C/);
   assert.match(spatial, /role: "BIODIVERSITY_QUERY"[\s\S]*0101020601-C/);
-  assert.match(spatial, /not a universal/i);
+  assert.match(spatial, /does not define one authoritative polygon for display, biodiversity queries, science, management or regulation/i);
+  assert.match(spatial, /never define the whole fjord/i);
   assert.doesNotMatch(spatial, /role: "DISPLAY"[\s\S]{0,300}availability: "INGESTED"/);
 });
 
