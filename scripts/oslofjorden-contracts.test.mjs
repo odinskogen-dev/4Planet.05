@@ -25,6 +25,11 @@ const front = read("src/pages/phase04/FrontDoor.tsx");
 const validation = read("src/pages/phase04/OslofjordenValidation.tsx");
 const validationReview = read("src/pages/phase04/OslofjordenValidationReview.tsx");
 const router = read("src/routes/router.tsx");
+const packageJson = JSON.parse(read("package.json"));
+
+test("release dependency baseline uses patched React Router", () => {
+  assert.equal(packageJson.dependencies["react-router-dom"], "7.18.2");
+});
 
 test("Oslofjorden semantic identity stays separate from role-specific spatial objects", () => {
   assert.match(data, /place:marine-regions:3379/);
@@ -87,7 +92,7 @@ test("admitted Inner Oslofjord GBIF dataset exposes exact records without invent
   assert.match(datasetOccurrenceComponent, /does not establish a universal 4PLANET Oslofjorden polygon/i);
 });
 
-test("Vannmiljo is queried through the source's own WaterBodyID contract", () => {
+test("Vannmiljo uses source WaterBodyID with explicit NLOD attribution", () => {
   assert.match(vannmiljo, /WaterBodyIDFilter/);
   assert.match(vannmiljo, /0101020601-C|OSLOFJORD_PRIMARY_WATERBODY_ID/);
   assert.match(vannmiljo, /GetRegistrations/);
@@ -96,22 +101,26 @@ test("Vannmiljo is queried through the source's own WaterBodyID contract", () =>
   assert.match(vannmiljo, /VitenskapligNavn/);
   assert.match(vannmiljo, /SamplingTime/);
   assert.match(vannmiljo, /CoordY_dg/);
-  assert.match(vannmiljo, /SOURCE_TERMS_REVIEW_REQUIRED/);
+  assert.match(vannmiljo, /NLOD_2_0_ATTRIBUTION_REQUIRED/);
+  assert.match(vannmiljo, /licenseUrl/);
+  assert.match(vannmiljo, /coverage: "BOUNDED_WINDOW"/);
   assert.match(vannmiljo, /NOT_A_SPECIES_REGISTRATION/);
   assert.match(spatialLifeComponent, /Registration ≠ current position/);
   assert.match(spatialLifeComponent, /Loaded count ≠ abundance/);
+  assert.match(spatialLifeComponent, /Reuse is under NLOD 2\.0 with attribution/);
   assert.match(page, /Vannmiljø is now a real local source adapter/);
-  assert.doesNotMatch(page, /has not selected or ingested an Oslofjorden subset/i);
 });
 
-test("official Vann-Nett geometry is a runtime waterbody-status source, never universal geometry", () => {
+test("official Vann-Nett geometry is NLOD-attributed waterbody status, never universal geometry", () => {
   assert.match(waterbodyGeometry, /MapServer\/1/);
   assert.match(waterbodyGeometry, /returnGeometry/);
   assert.match(waterbodyGeometry, /outSR/);
   assert.match(waterbodyGeometry, /f: "geojson"/);
-  assert.match(waterbodyGeometry, /PUBLIC_SERVICE_REUSE_REVIEW_REQUIRED/);
+  assert.match(waterbodyGeometry, /NLOD_2_0_ATTRIBUTION_REQUIRED/);
+  assert.match(waterbodyGeometry, /sourcePublisher: "Miljødirektoratet"/);
   assert.match(waterbodyGeometry, /not the semantic, ecological, regulatory, display or universal boundary/i);
-  assert.match(spatialLifeComponent, /VANN-NETT WATERBODY GEOMETRY/);
+  assert.match(spatial, /Norsk lisens for offentlige data \(NLOD\) 2\.0/);
+  assert.match(spatialLifeComponent, /NLOD 2\.0 \/ ATTRIBUTION REQUIRED/);
 });
 
 test("ATLAS and SPECIES reuse the same Oslofjord place/spatial context without rewriting their engines", () => {
@@ -189,15 +198,19 @@ test("front door exposes real Oslofjord LIFE evidence without calling it live da
   assert.doesNotMatch(front, /LIVE DATA/);
 });
 
-test("Follow remains local-first and source Watch never manufactures a first-check alert", () => {
+test("Follow Watch suppresses bounded-window removals and never manufactures first-check alerts", () => {
   assert.match(follow, /4planet\.follows\.v1/);
-  assert.match(sourceWatch, /4planet\.source-watch\.v1/);
+  assert.match(sourceWatch, /4planet\.source-watch\.v2/);
   assert.match(sourceWatch, /BASELINE_ESTABLISHED/);
   assert.match(sourceWatch, /NO_CHANGE/);
   assert.match(sourceWatch, /SOURCE_CHANGED/);
+  assert.match(sourceWatch, /COMPLETE_SET/);
+  assert.match(sourceWatch, /BOUNDED_WINDOW/);
   assert.match(sourceWatch, /REMOVED_FROM_SOURCE_RESPONSE/);
+  assert.match(sourceWatch, /previous\.coverage === "COMPLETE_SET" && snapshot\.coverage === "COMPLETE_SET"/);
   assert.match(sourceWatch, /if \(!previous\) return \{ state: "BASELINE_ESTABLISHED"/);
   assert.match(spatialLifeComponent, /first source check establishes a baseline/i);
+  assert.match(spatialLifeComponent, /capped source window/i);
   assert.match(spatialLifeComponent, /Return Objects, not ecological alerts/i);
   assert.match(page, /Account sync, push\/email delivery.*not built or claimed/i);
 });
