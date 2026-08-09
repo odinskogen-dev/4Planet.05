@@ -13,38 +13,52 @@
       "ASSET:AST-0008",
       "ASSET:AST-0012",
       "ASSET:AST-0013",
+      "ASSET:AST-0023",
+      "ASSET:AST-0024",
       "RIGHTS:RD-0006",
-      "RIGHTS:RD-0007"
+      "RIGHTS:RD-0007",
+      "RIGHTS:RD-0017",
+      "RIGHTS:RD-0018",
+      "SOURCE:SRC-015",
+      "SOURCE:SRC-016",
+      "SOURCE:SRC-020",
+      "CLAIMS:CLM-BOS-ORCA-001..004"
     ],
     "sourceRefs": [
       {
         "label": "NOAA Fisheries — Killer Whale Science",
         "url": "https://www.fisheries.noaa.gov/species/killer-whale/science",
         "scope": "social structure, acoustics and population/ecotype-specific behaviour",
-        "status": "FOUNDATION"
+        "status": "SOURCE_LOCKED"
       },
       {
         "label": "GBIF — Orcinus orca accepted taxon",
         "url": "https://www.gbif.org/species/2440483",
-        "scope": "accepted taxon identity; exact publication occurrence record still open",
-        "status": "EXACT_RECORD_OPEN"
+        "scope": "accepted taxon identity; not occurrence evidence",
+        "status": "SOURCE_LOCKED_TAXON_ONLY"
+      },
+      {
+        "label": "Institute of Marine Research / OBIS — Incidental sightings of marine mammals",
+        "url": "https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d",
+        "scope": "licensed occurrence dataset route; exact single Orca record still open; dataset is not suitable for abundance assessment",
+        "status": "DATASET_LOCKED_EXACT_RECORD_OPEN"
       }
     ],
-    "assetRefs": ["AST-0008", "AST-0012", "AST-0013"],
-    "rightsDecisionRefs": ["RD-0006", "RD-0007"],
+    "assetRefs": ["AST-0008", "AST-0012", "AST-0013", "AST-0023", "AST-0024"],
+    "rightsDecisionRefs": ["RD-0006", "RD-0007", "RD-0017", "RD-0018"],
     "gates": {
       "source": "OPEN",
-      "rights": "BLOCKED",
+      "rights": "OPEN",
       "qa": "OPEN",
       "founder": "OPEN",
       "product": "OPEN"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Lock one exact source-reported occurrence record and its licence/attribution/uncertainty metadata.",
-      "Close documentary Orca media rights at asset level.",
+      "Lock one exact Orca occurrence from the IMR/OBIS dataset with date, coordinates, provider/record identifiers, CC BY attribution and visible data-quality limitations.",
+      "Ingest/select one CC BY-SA 4.0 Havforskningsinstituttet/Artsdatabanken Orca image and preserve exact creator/credit metadata plus ShareAlike obligations; licensed route exists but binary ingest is still open.",
       "Audit the exact ATLAS → record → SPECIES public route against the accepted product candidate.",
-      "Run scientific/claim QA and accessibility QA.",
+      "Run scientific/claim, visual, accessibility and provenance QA on the exact production object.",
       "Founder approval of exact final release remains required."
     ],
     "publicReleaseEligible": false
@@ -113,14 +127,42 @@
       "RIGHTS:RD-0015",
       "RIGHTS:RD-0016",
       "SOURCE:SRC-018",
-      "CLAIMS:CLM-BOS-OSLO-001..002"
+      "SOURCE:SRC-021",
+      "SOURCE:SRC-022",
+      "SOURCE:SRC-023",
+      "SOURCE:SRC-024",
+      "CLAIMS:CLM-BOS-OSLO-001..006"
     ],
     "sourceRefs": [
       {
-        "label": "Miljødirektoratet — Oslofjorden tilstandsrapport",
+        "label": "Miljødirektoratet — Oslofjorden tilstandsrapport / kunnskapsgrunnlag",
         "url": "https://www.miljodirektoratet.no/publikasjoner/2025/januar-2025/tilstandsrapport-for-oslofjorden/",
-        "scope": "official state and development overview; exact source layers must retain geography and time",
-        "status": "OFFICIAL_FOUNDATION"
+        "scope": "official state/development foundation and whole-place boundary",
+        "status": "SOURCE_LOCKED_FOUNDATION"
+      },
+      {
+        "label": "Miljødirektoratet — Modellering av Oslofjorden / M-3141",
+        "url": "https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/oslofjorden-modellering/",
+        "scope": "modelled whole-Oslofjord pressure/scenario layer; not direct ecological outcome",
+        "status": "LAYER_SOURCE_LOCKED"
+      },
+      {
+        "label": "Naturbase — Marine naturtyper (HB19)",
+        "url": "https://kartkatalog.miljodirektoratet.no/MapService/Details/naturtyper_marine_hb19",
+        "scope": "NLOD spatial mapped-known-occurrence layer with explicit incomplete/older coverage",
+        "status": "LAYER_SOURCE_LOCKED_COVERAGE_LIMITED"
+      },
+      {
+        "label": "Vannmiljø API / Vann-Nett WaterBody route",
+        "url": "https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index",
+        "scope": "exact waterbody measurement query route; WaterBodyID/parameter/time/method selection open",
+        "status": "QUERY_ROUTE_LOCKED_EXACT_LAYER_OPEN"
+      },
+      {
+        "label": "Miljødirektoratet — Teotil",
+        "url": "https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/miljoovervaking/overvakingsprogrammer/forurensning-og-klimagasser/teotil/",
+        "scope": "long-run modelled nutrient-load route; exact Oslofjord extract open",
+        "status": "QUERY_ROUTE_LOCKED_EXACT_EXTRACT_OPEN"
       }
     ],
     "assetRefs": ["AST-0021", "AST-0022"],
@@ -134,11 +176,11 @@
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Select exact source layers and preserve geography, period, method and coverage for each.",
-      "Close documentary media rights and people consent at asset level.",
-      "Build the original ONE PLACE map/relationship visual with coverage and uncertainty visible.",
+      "Choose the first exact 3–5 ONE PLACE layers and execute/lock their specific WaterBodyID, parameter, geography, period, method, extract and data-licence metadata. Source routes are now known; exact layer selection is the remaining source blocker.",
+      "Close documentary media rights and people consent at asset level or use source-cleared map/data/design treatments without implying documentary evidence.",
+      "Build the original ONE PLACE map/relationship visual with explicit coverage, model/observation distinction and uncertainty visible.",
       "Audit the exact ATLAS/place public handoff against the accepted product candidate.",
-      "Founder approval of exact final release remains required."
+      "Run claim, visual, accessibility and provenance QA; founder approval of exact final release remains required."
     ],
     "publicReleaseEligible": false
   }
