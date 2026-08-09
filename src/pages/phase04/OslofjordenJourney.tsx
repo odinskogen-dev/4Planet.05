@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
 import { DataStatePanel } from "@/components/phase04/DataStatePanel";
 import {
@@ -13,13 +12,13 @@ import {
   SignalTimeline,
 } from "@/components/place/PlaceEvidence";
 import { PlaceRelationEvidence, ScientificDatasetEvidence } from "@/components/place/ScientificDatasetEvidence";
+import { OslofjordRelationshipDeepening } from "@/components/place/OslofjordRelationshipDeepening";
 import {
   OSLOFJORD_ACTIONS,
   OSLOFJORD_ACTORS,
   OSLOFJORD_LIFE,
   OSLOFJORD_PLACE,
   OSLOFJORD_PRESSURES,
-  OSLOFJORD_RELATIONSHIP,
   OSLOFJORD_SIGNALS,
   OSLOFJORD_SOLUTIONS,
   oslofjordSourceById,
@@ -28,7 +27,6 @@ import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
 import { OSLOFJORD_PLACE_RELATIONS } from "@/data/oslofjordenPlaces";
 import { OSLOFJORD_SCIENTIFIC_DATASETS, VANNMILJO_LIFE_SOURCE } from "@/data/oslofjordenDatasets";
 import { useFollows } from "@/planet/follow";
-import type { RelationshipStep } from "@/phase04/model";
 
 const label: CSSProperties = {
   fontFamily: "'Fragment Mono',ui-monospace,monospace",
@@ -80,12 +78,6 @@ export default function OslofjordenJourney() {
   const innerOslofjord = OSLOFJORD_PLACE_RELATIONS[0];
   const { following, toggle } = useFollows();
   const followed = following(place.id);
-  const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
-    id: step.id,
-    label: step.label,
-    kind: step.kind,
-    status: step.grade === "DOCUMENTED" ? "DOCUMENTED" : step.grade === "4PLANET_CONTEXT" ? "4PLANET CONTEXT" : "UNKNOWN",
-  }));
   const mainAction = OSLOFJORD_ACTIONS[0];
   const atlasUrl = "/atlas?m=OCE4N&journey=oslofjorden&z=6.40&c=10.62,59.67";
 
@@ -100,11 +92,11 @@ export default function OslofjordenJourney() {
         <div style={{ position: "relative", minHeight: "88svh", padding: "clamp(90px,12vw,170px) clamp(20px,5vw,72px) clamp(36px,6vw,72px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ ...label, color: "#fff" }}>PLACE JOURNEY 01 / OSLOFJORDEN / SOURCE-GROUNDED CANDIDATE</div>
-            <div style={{ ...label, color: "#3AE86F" }}>15 CONTROLLED SOURCE RECORDS / HUMAN VALIDATION NOT RUN</div>
+            <div style={{ ...label, color: "#3AE86F" }}>SOURCE-BOUNDED PRODUCT PROOF / HUMAN VALIDATION NOT RUN</div>
           </div>
           <div>
             <h1 style={{ ...title, fontSize: "clamp(68px,12vw,178px)", margin: 0 }}>OSLO<br />FJORDEN.</h1>
-            <p style={{ maxWidth: 820, fontSize: "clamp(20px,2.4vw,31px)", lineHeight: 1.18, letterSpacing: "-.025em", margin: "24px 0 0" }}>A real place, viewed through real surveys, pressures, decisions and the evidence needed to understand what changes next.</p>
+            <p style={{ maxWidth: 820, fontSize: "clamp(20px,2.4vw,31px)", lineHeight: 1.18, letterSpacing: "-.025em", margin: "24px 0 0" }}>A real place, viewed through real surveys, living systems, pressures, decisions and the evidence needed to understand what changes next.</p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24, alignItems: "center" }}>
               <span style={{ ...label, color: "#3AE86F" }}>REAL OSLOFJORD PHOTO / 17 AUG 2022</span>
               <a href={media.sourcePage} target="_blank" rel="noreferrer" style={{ ...label, color: "rgba(255,255,255,.9)", textDecoration: "none" }}>{media.creator} / CC0 / SOURCE ↗</a>
@@ -119,7 +111,7 @@ export default function OslofjordenJourney() {
           <div>
             <StateTag>CURATED SOURCE</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>One identity. Different geometries for different questions.</h2>
-            <p style={body}>Oslofjorden is anchored to Marine Regions MRGID 3379. That gives us a persistent fjord identity and representative point, but not one universal ecological, legal or map polygon. The product now stores each spatial use separately rather than pretending one boundary answers every question.</p>
+            <p style={body}>Oslofjorden is anchored to Marine Regions MRGID 3379. That gives us a persistent fjord identity and representative point, but not one universal ecological, legal or map polygon. The product stores each spatial use separately rather than pretending one boundary answers every question.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", borderTop: "1px solid rgba(10,10,10,.24)", borderLeft: "1px solid rgba(10,10,10,.24)", margin: "26px 0 18px" }}>
               {[
                 ["IDENTITY", `${place.sourceRecordId} · ${place.kind}`],
@@ -158,10 +150,10 @@ export default function OslofjordenJourney() {
         <section style={chapter}>
           <div style={chapterNo}>03 / RELATIONSHIP</div>
           <div style={{ minWidth: 0 }}>
-            <StateTag>DOCUMENTED + 4PLANET CONTEXT</StateTag>
-            <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 30px" }}>Reveal one chain — and mark the weak link.</h2>
-            <RelationshipReveal steps={relationship} note="Eelgrass chain. Documented steps are separated from the one human-system bridge that still needs a dedicated Oslofjord source." />
-            <div style={{ marginTop: 20 }}><ProvenanceBar value={{ state: "4PLANET CONTEXT", actor: "4PLANET", method: "Plain-language relationship synthesis from restoration guidance", time: "Candidate · Aug 2026", limitation: "The ‘fish, recreation and food-system value’ bridge remains 4PLANET context, not a source-reported Oslofjord relationship. It must not be displayed as equally evidenced." }} /></div>
+            <StateTag tone="green">TWO SOURCE-AWARE THREADS</StateTag>
+            <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 20px" }}>Show how the fjord works — without turning a network into fake certainty.</h2>
+            <p style={body}>The first thread begins with microscopic life and the marine food web. The second connects habitat to pressure and response while preserving the source's multi-causal qualifier: high nitrogen acts together with other factors. THREAD remains the default view; every chain carries its own source and limitation.</p>
+            <OslofjordRelationshipDeepening />
           </div>
         </section>
 
@@ -170,7 +162,7 @@ export default function OslofjordenJourney() {
           <div style={{ minWidth: 0 }}>
             <StateTag>CURATED SOURCES + MODELLED EVIDENCE</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 14px" }}>There is no single cause of “the Oslofjord problem”.</h2>
-            <p style={body}>The candidate now keeps nutrient loading, wastewater/agriculture, oxygen stress, fishing pressure and habitat degradation separate. Each item carries its own geographic scope and limitation so one local measurement cannot silently become a whole-fjord diagnosis.</p>
+            <p style={body}>The candidate keeps nutrient loading, wastewater/agriculture, oxygen stress, fishing pressure and habitat degradation separate. The relationship layer now also makes one key dependency explicit: high nitrogen can contribute to lurv and poorer eelgrass/kelp conditions together with other pressures, not as a one-cause explanation. Each item carries its own geographic scope and limitation.</p>
             <PressureEvidenceGrid records={OSLOFJORD_PRESSURES} sourceById={oslofjordSourceById} />
           </div>
         </section>
@@ -180,7 +172,7 @@ export default function OslofjordenJourney() {
           <div style={{ minWidth: 0 }}>
             <StateTag tone="green">REAL CHANGES TO FOLLOW</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 14px" }}>Return when something consequential changes.</h2>
-            <p style={body}>Signals are now real dated changes — a consultation, a regulation, a new fish survey and new nitrogen modelling — rather than a generic environmental-news feed.</p>
+            <p style={body}>Signals are real dated changes — a consultation, a regulation, a fish survey and nitrogen modelling — rather than a generic environmental-news feed.</p>
             <SignalTimeline records={OSLOFJORD_SIGNALS} sourceById={oslofjordSourceById} />
           </div>
         </section>
@@ -200,7 +192,7 @@ export default function OslofjordenJourney() {
           <div>
             <StateTag>LOCAL-FIRST WATCH STATE</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>Follow the next survey, decision and measured response.</h2>
-            <p style={body}>The return logic is concrete: the consultation closes, a final plan may follow, regulations can be evaluated, later surveys can be compared and measured nitrogen/oxygen indicators can change. Follow now uses the same local-first canonical follow store as ATLAS/WATCH and survives refresh on this device. No account, telemetry or notification subscription is created.</p>
+            <p style={body}>The return logic is concrete: the consultation closes, a final plan may follow, regulations can be evaluated, later surveys can be compared and measured nitrogen/oxygen indicators can change. Follow uses the same local-first canonical follow store as ATLAS/WATCH and survives refresh on this device. No account, telemetry or notification subscription is created.</p>
             <button type="button" onClick={() => toggle({ id: place.id, type: "PLACE", label: place.name, sub: "FJORD · Marine Regions MRGID 3379" })} style={{ ...linkButton, cursor: "pointer" }}>{followed ? "✓ FOLLOWING OSLOFJORDEN ON THIS DEVICE" : "FOLLOW OSLOFJORDEN ON THIS DEVICE"}</button>
             <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>Persistence is real. Automated Oslofjord notifications are not built yet; future updates must still come from source-grounded Signals rather than manufactured engagement.</p>
           </div>
