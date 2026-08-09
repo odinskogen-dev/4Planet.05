@@ -44,17 +44,21 @@ jobs:
       - name: Brand OS contracts
         run: npm run test:brand-os
 
-      - name: Existing smoke contracts
-        run: npm run test:smoke
-
       - name: Production build
         run: npm run build
+
+      - name: Existing smoke contracts
+        run: npm run test:smoke
 
       - name: Lint without new warnings
         run: npm run lint -- --max-warnings=0
 
       - name: Asset control
         run: npm run assets:verify
+
+      - name: Dependency audit — high severity blocks
+        shell: bash
+        run: npm audit --audit-level=high 2>&1 | tee brand-os-dependency-audit.txt
 
       - name: Secret scan
         shell: bash
@@ -108,6 +112,7 @@ jobs:
             brand-os-exact-sha.txt
             brand-os-exact-branch.txt
             brand-os-activation-evidence.json
+            brand-os-dependency-audit.txt
             brand-os-preview.log
             playwright-report
             test-results
