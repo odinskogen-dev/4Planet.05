@@ -33,8 +33,9 @@ export function OslofjordSpatialLifeEvidence() {
         const result = reconcileSourceSnapshot({
           entityId: PLACE_ID,
           sourceId: "vannmiljo",
-          queryKey: `WaterBodyIDFilter:${l.waterBodyId}`,
+          queryKey: `WaterBodyIDFilter:${l.waterBodyId}:max:${l.query.maxReturnCount}`,
           checkedAt: l.checkedAt,
+          coverage: l.query.coverage,
           records: l.records.map((record) => ({
             id: record.id,
             fingerprint: [record.lastEditedAt, record.samplingTime, record.scientificName, record.parameterId, record.value, record.unit].join("|"),
@@ -79,6 +80,7 @@ export function OslofjordSpatialLifeEvidence() {
               <h4 style={{ fontFamily: "'Instrument Sans',sans-serif", fontSize: 27, letterSpacing: "-.035em", margin: "14px 0 8px" }}>{geometry.record.name}</h4>
               <div style={{ fontSize: 13, lineHeight: 1.55 }}>WaterBodyID {geometry.record.waterBodyId}<br />SOURCE CRS {geometry.record.sourceCrs} → DELIVERY {geometry.record.deliveredCrs}<br />GEOMETRY {geometry.record.geometry.type}</div>
               <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(10,10,10,.65)" }}>{geometry.record.limitation}</p>
+              <div style={{ ...mono, marginTop: 9, color: "rgba(10,10,10,.55)" }}>SOURCE / MILJØDIREKTORATET · NLOD 2.0 / ATTRIBUTION REQUIRED</div>
               <a href={geometry.record.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: "#2E2EFF", textDecoration: "none" }}>OPEN SOURCE QUERY ↗</a>
             </>
           ) : (
@@ -92,7 +94,7 @@ export function OslofjordSpatialLifeEvidence() {
             <>
               <h4 style={{ fontFamily: "'Instrument Sans',sans-serif", fontSize: 27, letterSpacing: "-.035em", margin: "14px 0 8px" }}>{life.total.toLocaleString()} source matches</h4>
               <div style={{ fontSize: 13, lineHeight: 1.55 }}>{life.records.length} records loaded in this bounded view · {speciesRecords.length} carry a scientific-name field.</div>
-              <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(10,10,10,.65)" }}>Registration ≠ current position. Loaded count ≠ abundance. Source membership ≠ whole-fjord inventory. Rights remain source-controlled/review-required in this candidate.</p>
+              <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(10,10,10,.65)" }}>Registration ≠ current position. Loaded count ≠ abundance. Source membership ≠ whole-fjord inventory. Source: Miljødirektoratet / Vannmiljø. Reuse is under NLOD 2.0 with attribution; 4PLANET does not imply source endorsement.</p>
               <a href="https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index" target="_blank" rel="noreferrer" style={{ ...mono, color: "#2E2EFF", textDecoration: "none" }}>VANNMILJØ API / SOURCE ↗</a>
             </>
           ) : (
@@ -124,11 +126,11 @@ export function OslofjordSpatialLifeEvidence() {
         <div style={{ ...mono, color: followed ? "#0B7A39" : "#8A6500" }}>FOLLOW → SOURCE CHANGE → RETURN / {followed ? "WATCH CONTRACT ACTIVE" : "FOLLOW REQUIRED"}</div>
         {!followed && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>Follow Oslofjorden above to establish a local source snapshot. A first source check establishes a baseline; it never manufactures an alert.</p>}
         {followed && !watch && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>Checking the same source contract for a deterministic baseline/change comparison…</p>}
-        {followed && watch?.state === "BASELINE_ESTABLISHED" && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>Baseline established from the current Vannmiljø response. No change is claimed yet. A later check can produce a Return Object only when source records are added or updated.</p>}
-        {followed && watch?.state === "NO_CHANGE" && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>No source-response change since {watch.previousCheckedAt}. This is a checked state, not an ecological “nothing changed” claim.</p>}
-        {followed && watch?.state === "SOURCE_CHANGED" && <div><p style={{ fontSize: 13.5, lineHeight: 1.55 }}><strong>{watch.changes.length} source-response change(s)</strong> detected since {watch.previousCheckedAt}. These are Return Objects, not ecological alerts.</p>{watch.changes.slice(0, 5).map((change) => <div key={`${change.kind}-${change.record.id}`} style={{ ...mono, marginTop: 7 }}>{change.kind.replace(/_/g, " ")} / {change.record.label} / {change.record.occurredAt ?? "EVENT DATE NOT RETURNED"}</div>)}</div>}
+        {followed && watch?.state === "BASELINE_ESTABLISHED" && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>Baseline established from the current bounded Vannmiljø response. No change is claimed yet. A later check can produce a Return Object for added or updated records.</p>}
+        {followed && watch?.state === "NO_CHANGE" && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>No supported source-response change since {watch.previousCheckedAt}. This is a checked state, not an ecological “nothing changed” claim.</p>}
+        {followed && watch?.state === "SOURCE_CHANGED" && <div><p style={{ fontSize: 13.5, lineHeight: 1.55 }}><strong>{watch.changes.length} supported source-response change(s)</strong> detected since {watch.previousCheckedAt}. These are Return Objects, not ecological alerts.</p>{watch.changes.slice(0, 5).map((change) => <div key={`${change.kind}-${change.record.id}`} style={{ ...mono, marginTop: 7 }}>{change.kind.replace(/_/g, " ")} / {change.record.label} / {change.record.occurredAt ?? "EVENT DATE NOT RETURNED"}</div>)}</div>}
         {followed && watch?.state === "STORAGE_UNAVAILABLE" && <p style={{ fontSize: 13.5, lineHeight: 1.55 }}>Local source snapshots cannot be persisted in this browser. Watch degrades without claiming notification delivery.</p>}
-        {followed && <div style={{ ...mono, marginTop: 10, color: "rgba(10,10,10,.5)" }}>FOLLOWED {follow?.addedAt ? follow.addedAt.slice(0, 10) : "LOCAL STORE"} / NOTIFICATION DELIVERY NOT CLAIMED</div>}
+        {followed && <><p style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(10,10,10,.62)" }}>This Vannmiljø query is a capped source window. A record disappearing from that window is ignored rather than labelled deleted or removed; only a complete-set query may support a removal event.</p><div style={{ ...mono, marginTop: 10, color: "rgba(10,10,10,.5)" }}>FOLLOWED {follow?.addedAt ? follow.addedAt.slice(0, 10) : "LOCAL STORE"} / NOTIFICATION DELIVERY NOT CLAIMED</div></>}
       </article>
     </section>
   );
