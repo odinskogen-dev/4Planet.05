@@ -103,9 +103,10 @@ jobs:
       - name: Database lint
         run: supabase db lint --level warning
 
-      - name: Application typecheck and build
+      - name: Application typecheck, loader syntax and build
         run: |
           npm ci
+          node --check scripts/psi-phase05-stage-package.mjs
           npm run typecheck
           npm run build
 
