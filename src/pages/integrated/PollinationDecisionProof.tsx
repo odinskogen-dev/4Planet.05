@@ -51,7 +51,7 @@ export function PollinationDecisionProof() {
         </div>
 
         <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
-          <div style={{ ...mono, color: T.blue }}>DECISION QUESTION · {pack.status.replaceAll("_", " ")}</div>
+          <div style={{ ...mono, color: T.blue }}>DECISION QUESTION · {pack.status.replace(/_/g, " ")}</div>
           <h2 style={{ marginTop: 16, maxWidth: 1000, fontFamily: T.display, fontSize: "clamp(30px,4vw,52px)", lineHeight: 1.02, letterSpacing: "-.035em" }}>{pack.question.text}</h2>
           <p style={{ marginTop: 16, maxWidth: 820, color: T.dim, lineHeight: 1.55 }}>{pack.question.objective}</p>
           <div style={{ marginTop: 20, ...mono, color: "#8A6500" }}>PLACE / EVIDENCE SCOPE · {pack.context.place.label.toUpperCase()} · {pack.context.place.evidenceScope}</div>
@@ -76,11 +76,12 @@ export function PollinationDecisionProof() {
               const evidence = option.dimensions.find((d) => d.dimension === "EFFECTIVENESS_EVIDENCE");
               const transfer = option.dimensions.find((d) => d.dimension === "TRANSFERABILITY");
               const uncertainty = option.dimensions.find((d) => d.dimension === "UNCERTAINTY");
+              const metricRows = [["EVIDENCE", evidence], ["TRANSFER", transfer], ["UNCERTAINTY", uncertainty]] as const;
               return <article key={option.optionId} style={panel}>
                 <div style={{ ...mono, color: T.blue }}>{option.optionId}</div>
                 <h3 style={{ marginTop: 14, fontFamily: T.display, fontSize: 29, lineHeight: 1.03 }}>{option.label}</h3>
                 <p style={{ marginTop: 14, color: T.dim, lineHeight: 1.55 }}>{option.relevance.value}</p>
-                {[['EVIDENCE', evidence], ['TRANSFER', transfer], ['UNCERTAINTY', uncertainty]].map(([label, d]) => d && <div key={label as string} style={{ marginTop: 16, borderTop: `1px solid ${T.line}`, paddingTop: 10 }}><span style={{ ...mono, color: T.dim }}>{label as string}</span><div style={{ marginTop: 6, fontSize: 13 }}>{d.rating} · {d.confidence}</div></div>)}
+                {metricRows.map(([label, dimension]) => dimension && <div key={label} style={{ marginTop: 16, borderTop: `1px solid ${T.line}`, paddingTop: 10 }}><span style={{ ...mono, color: T.dim }}>{label}</span><div style={{ marginTop: 6, fontSize: 13 }}>{dimension.rating} · {dimension.confidence}</div></div>)}
               </article>;
             })}
           </div>
@@ -89,7 +90,7 @@ export function PollinationDecisionProof() {
           </p>
           <div style={{ ...panel, marginTop: 18 }}>
             <div style={{ ...mono, color: T.blue }}>EVIDENCE CONFIDENCE LENS · {lens.comparisons.length} PAIRWISE RELATIONS</div>
-            {lens.comparisons.map((comparison) => <div key={`${comparison.optionA}-${comparison.optionB}`} style={{ marginTop: 12, fontSize: 13.5, lineHeight: 1.5 }}><strong>{comparison.optionA}</strong> ↔ <strong>{comparison.optionB}</strong> · {comparison.relation.replaceAll("_", " ")}<div style={{ color: T.dim, marginTop: 3 }}>{comparison.explanation}</div></div>)}
+            {lens.comparisons.map((comparison) => <div key={`${comparison.optionA}-${comparison.optionB}`} style={{ marginTop: 12, fontSize: 13.5, lineHeight: 1.5 }}><strong>{comparison.optionA}</strong> ↔ <strong>{comparison.optionB}</strong> · {comparison.relation.replace(/_/g, " ")}<div style={{ color: T.dim, marginTop: 3 }}>{comparison.explanation}</div></div>)}
           </div>
         </section>
 
