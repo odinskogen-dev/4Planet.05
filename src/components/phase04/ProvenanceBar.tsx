@@ -12,12 +12,14 @@ export function ProvenanceBar({ value, dark = false }: { value: ProvenancePresen
   const fg = dark ? "#fff" : "#0A0A0A";
   const line = dark ? "rgba(255,255,255,.34)" : "rgba(10,10,10,.28)";
   const muted = dark ? "rgba(255,255,255,.7)" : "rgba(10,10,10,.62)";
+  const sourceText = value.sources?.length ? value.sources.join(" · ") : value.source;
   const items = [
     ["STATE", value.state],
     ["ACTOR", value.actor],
-    [value.source ? "SOURCE" : "METHOD", value.source ?? value.method ?? "NOT STATED"],
-    ["TIME", value.time ?? "NOT STATED"],
-    ["LIMIT", value.limitation],
+    [sourceText ? "SOURCES" : "METHOD", sourceText ?? value.method ?? "NOT STATED"],
+    ["DATA DATE", value.dataDate ?? value.time ?? "NOT STATED"],
+    ["LAST CHECKED", value.lastChecked ?? "NOT STATED"],
+    ["LIMITATIONS", value.limitation],
   ] as const;
   return (
     <div aria-label={`Proof state ${value.state}`} style={{ border: `1px solid ${line}`, color: fg }}>
@@ -29,6 +31,23 @@ export function ProvenanceBar({ value, dark = false }: { value: ProvenancePresen
           </div>
         ))}
       </div>
+      {(value.whyWeSayThis || value.claimIds?.length || value.rightsState || value.sourceLinks?.length) && (
+        <details style={{ borderTop: `1px solid ${line}`, padding: "9px 11px" }}>
+          <summary style={{ ...mono, color: muted, cursor: "pointer" }}>WHY WE SAY THIS</summary>
+          {value.whyWeSayThis && <p style={{ margin: "9px 0 0", fontSize: 12, lineHeight: 1.5 }}>{value.whyWeSayThis}</p>}
+          {!!value.sourceLinks?.length && (
+            <div style={{ marginTop: 9, display: "grid", gap: 5 }}>
+              {value.sourceLinks.map((source) => (
+                <a key={source.id} href={source.url} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: "inherit", overflowWrap: "anywhere" }}>
+                  {source.label} ↗
+                </a>
+              ))}
+            </div>
+          )}
+          {!!value.claimIds?.length && <p style={{ margin: "7px 0 0", fontSize: 11, color: muted }}>CLAIMS: {value.claimIds.join(" · ")}</p>}
+          {value.rightsState && <p style={{ margin: "7px 0 0", fontSize: 11, color: muted }}>RIGHTS: {value.rightsState}</p>}
+        </details>
+      )}
       {!!value.flags?.length && (
         <div style={{ ...mono, borderTop: `1px solid ${line}`, padding: "8px 11px", color: "#FF4D22" }}>
           {value.flags.join(" · ")}

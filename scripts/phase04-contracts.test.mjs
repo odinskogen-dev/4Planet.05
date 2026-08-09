@@ -9,7 +9,12 @@ const shell = read('src/components/layout/PublicShell.tsx');
 const front = read('src/pages/phase04/FrontDoor.tsx');
 const fjord = read('src/pages/phase04/OslofjordenJourney.tsx');
 const fjordIdentity = read('src/phase04/oslofjorden.ts');
+const fjordProof = read('src/data/oslofjordenProof.ts');
+const fjordSpatial = read('src/data/oslofjordenSpatial.ts');
+const spatialLife = read('src/components/place/OslofjordSpatialLifeEvidence.tsx');
+const placeModel = read('src/planet/placeModel.ts');
 const living = read('src/pages/v5/LivingSystems.tsx');
+const runtimeClaims = read('src/data/runtimeClaims.ts');
 const missions = read('src/pages/phase04/MissionUniverse.tsx');
 const proof = read('src/components/phase04/ProvenanceBar.tsx');
 const signal = read('src/components/phase04/SignalCard.tsx');
@@ -21,26 +26,36 @@ test('root converges to Phase 04 living-place front door without removing produc
   for (const job of ['ATLAS', 'SPECIES', 'LIVING SYSTEMS', 'IMPACT']) assert.ok(front.includes(`"${job}"`), job);
 });
 
-test('Oslofjorden separates semantic identity from unresolved display geometry', () => {
+test('Oslofjorden separates semantic identity from display, biodiversity-query, scientific, waterbody and regulatory geometry', () => {
   assert.match(router, /path="\/place\/oslofjorden"/);
-  assert.match(fjordIdentity, /MRGID 3379/);
-  assert.match(fjordIdentity, /NOT_YET_SELECTED/);
-  assert.match(fjord, /DISPLAY GEOMETRY \/ NOT YET IMPLEMENTED/);
-  assert.match(fjord, /no fake pins/i);
-  assert.match(fjord, /CURATED SOURCE/);
-  assert.doesNotMatch(fjord, /dataState:\s*"LIVE DATA"/);
+  assert.match(fjordIdentity + fjordProof + fjordSpatial, /MRGID 3379/);
+  for (const role of ['SEMANTIC_IDENTITY', 'DISPLAY', 'BIODIVERSITY_QUERY', 'SCIENTIFIC_AREA', 'WATERBODY_STATUS', 'REGULATORY', 'ADMINISTRATIVE']) assert.ok(placeModel.includes(`"${role}"`), role);
+  assert.match(fjordSpatial, /id: "oslofjord-display"[\s\S]*availability: "NOT_SELECTED"/);
+  assert.match(fjordSpatial, /role: "BIODIVERSITY_QUERY"[\s\S]*availability: "RUNTIME_SOURCE"/);
+  assert.match(fjordSpatial, /role: "WATERBODY_STATUS"[\s\S]*availability: "RUNTIME_SOURCE"/);
+  assert.match(fjordSpatial, /id: "oslofjord-regulatory-fisheries"[\s\S]*availability: "SOURCE_AVAILABLE_NOT_INGESTED"/);
+  assert.match(fjord, /does not turn that polygon into a universal fjord outline/i);
+  assert.match(spatialLife, /Registration ≠ current position/);
+  assert.match(spatialLife, /Loaded count ≠ abundance/);
+  assert.doesNotMatch(fjordSpatial, /role: "DISPLAY"[\s\S]{0,300}availability: "INGESTED"/);
 });
 
-test('Relationship Reveal and Living Systems remain one shared engine, not a fifth app', () => {
+test('Relationship Reveal and Living Systems remain one shared engine with Claim-first qualification', () => {
   for (const mode of ['THREAD', 'ORBIT', 'CONSTELLATION']) assert.ok(read('src/components/phase04/RelationshipReveal.tsx').includes(`"${mode}"`), mode);
   assert.match(living, /not a fifth app/i);
-  assert.match(living, /SOURCE REVIEW PENDING/);
+  assert.match(living, /seeded prototype reasoning surface/i);
+  assert.match(living, /claimForRelation\(relation\.id\)/);
+  assert.match(living, /Claim review does not imply independent expert review/i);
+  assert.match(runtimeClaims, /DERIVATIVE/);
 });
 
-test('Proof grammar keeps partner report separate from verification', () => {
+test('Proof grammar keeps partner report separate from verification and exposes dated provenance', () => {
   assert.match(proof, /PARTNER REPORT/);
   assert.match(proof, /not independent verification/i);
-  for (const field of ['STATE', 'ACTOR', 'TIME', 'LIMIT']) assert.ok(proof.includes(`"${field}"`), field);
+  for (const field of ['STATE', 'ACTOR', 'DATA DATE', 'LAST CHECKED', 'LIMITATIONS']) assert.ok(proof.includes(`"${field}"`), field);
+  assert.match(proof, /WHY WE SAY THIS/);
+  assert.match(proof, /CLAIMS:/);
+  assert.match(proof, /RIGHTS:/);
 });
 
 test('Signal presentation contains required semantic fields', () => {
