@@ -17,7 +17,7 @@ export type ReviewStatus =
   | "EXPERT_REVIEWED"
   | "REJECTED";
 
-export type CanonicalSolutionType = "PATHWAY" | "INTERVENTION" | "OFFERING";
+export type CanonicalSolutionType = "SOLUTION_PATHWAY" | "INTERVENTION" | "OFFERING";
 export type NeedKind = "CHALLENGE" | "PROCUREMENT" | "PROJECT" | "MISSION" | "RESEARCH" | "OTHER";
 export type NeedOrigin = "EXTERNAL_EXPLICIT" | "EXTERNAL_DERIVED" | "INTERNAL_SCENARIO" | "ANALYTICAL_DERIVED";
 export type ExecutionPhase = "PROPOSED" | "PLANNED" | "PILOT" | "UNDER_CONSTRUCTION" | "OPERATIONAL" | "COMPLETED" | "DECOMMISSIONED";
