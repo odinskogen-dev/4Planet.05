@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { PublicDataState } from "@/phase04/model";
 
-export type RuntimeState = "LOADING" | "NO RECORDS" | "SOURCE UNAVAILABLE" | PublicDataState;
+export type RuntimeState = "LOADING" | "NO RECORDS" | "SOURCE UNAVAILABLE" | "SOURCE AVAILABLE" | PublicDataState;
 
 const mono: CSSProperties = {
   fontFamily: "'Fragment Mono',ui-monospace,monospace",
@@ -17,6 +17,7 @@ const tone: Record<RuntimeState, string> = {
   "PROTOTYPE DATA": "#FF4D22",
   "DEMO FIXTURE": "#FF4D22",
   "NOT YET IMPLEMENTED": "#FF4D22",
+  "SOURCE AVAILABLE": "#2E2EFF",
   LOADING: "#2E2EFF",
   "NO RECORDS": "#0A0A0A",
   "SOURCE UNAVAILABLE": "#FF4D22",

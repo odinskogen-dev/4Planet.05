@@ -10,7 +10,8 @@ test("four public products have distinct routes and a context-preserving switche
   for (const route of ["/atlas", "/species", "/impact"]) assert.match(routes + nav, new RegExp(route.replace("/", "\\/")));
   assert.match(routes, /<Route path="\/" element=\{<(?:Home|Phase04FrontDoor) \/>\}/);
   assert.match(routes, /<Route path="\/story" element=\{<Navigate to="\/" replace \/>\}/);
-  assert.match(routes, /<Route path="\/atlas"[\s\S]+<PublicWorld/);
+  assert.match(routes, /function AtlasRoute\(\)[\s\S]+<PublicWorld/);
+  assert.match(routes, /<Route path="\/atlas" element=\{<AtlasRoute \/>\}/);
   assert.match(nav, /key: "4PLANET", label: "4PLANET", path: "\/"/);
   for (const key of ["entity", "journey", "record"]) assert.match(nav, new RegExp(`"${key}"`));
   assert.match(routes, /SpeciesProfilePage/);
@@ -48,9 +49,7 @@ test("globe suppresses basemap symbols and disables duplicate world copies", () 
 
 test("truth spine keeps eight record classes separate", () => {
   const truth = read("src/data/truthSpine.ts");
-  for (const recordType of ["SOURCE_RECORD", "OBSERVATION", "SIGNAL", "INTERPRETATION", "CONTRIBUTION", "DELIVERY", "OUTCOME", "IMPACT"]) {
-    assert.match(truth, new RegExp(`"${recordType}"`));
-  }
+  for (const recordType of ["SOURCE_RECORD", "OBSERVATION", "SIGNAL", "INTERPRETATION", "CONTRIBUTION", "DELIVERY", "OUTCOME", "IMPACT"]) assert.match(truth, new RegExp(`"${recordType}"`));
   assert.match(truth, /signalIds: \[\]/);
   assert.match(truth, /No Signal has been created from this Observation/);
 });
@@ -84,9 +83,7 @@ test("new source-aware journeys add no unregistered media rights burden", () => 
 
 test("migration enables RLS and exposes no public Impact records", () => {
   const sql = read("supabase/migrations/20260722163000_truth_spine.sql");
-  for (const table of ["source_records", "taxon_observations", "signals", "interpretations", "impact_unit_definitions", "contributions", "deliveries", "outcomes", "impacts", "product_contexts"]) {
-    assert.match(sql, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
-  }
+  for (const table of ["source_records", "taxon_observations", "signals", "interpretations", "impact_unit_definitions", "contributions", "deliveries", "outcomes", "impacts", "product_contexts"]) assert.match(sql, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
   assert.match(sql, /revoke all on public\.contributions, public\.deliveries, public\.outcomes, public\.impacts from anon, authenticated/i);
   assert.doesNotMatch(sql, /create policy .*contributions.* for insert/i);
   assert.match(sql, /source_records_immutable/);
@@ -94,9 +91,7 @@ test("migration enables RLS and exposes no public Impact records", () => {
 
 test("Tree and Plastic remain local TEST records with no delivery", () => {
   const impact = read("src/impact/prototype.ts");
-  for (const token of ["tree", "plastic", "TEST RECORD — NO PHYSICAL DELIVERY", "NOT_DELIVERED", "NOT_ASSESSED", "provider:fixture:none", "NO_PROVIDER_REQUEST"]) {
-    assert.match(impact, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
+  for (const token of ["tree", "plastic", "TEST RECORD — NO PHYSICAL DELIVERY", "NOT_DELIVERED", "NOT_ASSESSED", "provider:fixture:none", "NO_PROVIDER_REQUEST"]) assert.match(impact, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.doesNotMatch(impact, /fetch\(/);
 });
 

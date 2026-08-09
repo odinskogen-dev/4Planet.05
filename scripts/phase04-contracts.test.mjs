@@ -9,6 +9,10 @@ const shell = read('src/components/layout/PublicShell.tsx');
 const front = read('src/pages/phase04/FrontDoor.tsx');
 const fjord = read('src/pages/phase04/OslofjordenJourney.tsx');
 const fjordIdentity = read('src/phase04/oslofjorden.ts');
+const fjordProof = read('src/data/oslofjordenProof.ts');
+const fjordSpatial = read('src/data/oslofjordenSpatial.ts');
+const spatialLife = read('src/components/place/OslofjordSpatialLifeEvidence.tsx');
+const placeModel = read('src/planet/placeModel.ts');
 const living = read('src/pages/v5/LivingSystems.tsx');
 const missions = read('src/pages/phase04/MissionUniverse.tsx');
 const proof = read('src/components/phase04/ProvenanceBar.tsx');
@@ -21,14 +25,18 @@ test('root converges to Phase 04 living-place front door without removing produc
   for (const job of ['ATLAS', 'SPECIES', 'LIVING SYSTEMS', 'IMPACT']) assert.ok(front.includes(`"${job}"`), job);
 });
 
-test('Oslofjorden separates semantic identity from unresolved display geometry', () => {
+test('Oslofjorden separates semantic identity from display, biodiversity-query, scientific, waterbody and regulatory geometry', () => {
   assert.match(router, /path="\/place\/oslofjorden"/);
-  assert.match(fjordIdentity, /MRGID 3379/);
-  assert.match(fjordIdentity, /NOT_YET_SELECTED/);
-  assert.match(fjord, /DISPLAY GEOMETRY \/ NOT YET IMPLEMENTED/);
-  assert.match(fjord, /no fake pins/i);
-  assert.match(fjord, /CURATED SOURCE/);
-  assert.doesNotMatch(fjord, /dataState:\s*"LIVE DATA"/);
+  assert.match(fjordIdentity + fjordProof + fjordSpatial, /MRGID 3379/);
+  for (const role of ['SEMANTIC_IDENTITY', 'DISPLAY', 'BIODIVERSITY_QUERY', 'SCIENTIFIC_AREA', 'WATERBODY_STATUS', 'REGULATORY', 'ADMINISTRATIVE']) assert.ok(placeModel.includes(`"${role}"`), role);
+  assert.match(fjordSpatial, /id: "oslofjord-display"[\s\S]*availability: "NOT_SELECTED"/);
+  assert.match(fjordSpatial, /role: "BIODIVERSITY_QUERY"[\s\S]*availability: "RUNTIME_SOURCE"/);
+  assert.match(fjordSpatial, /role: "WATERBODY_STATUS"[\s\S]*availability: "RUNTIME_SOURCE"/);
+  assert.match(fjordSpatial, /id: "oslofjord-regulatory-fisheries"[\s\S]*availability: "SOURCE_AVAILABLE_NOT_INGESTED"/);
+  assert.match(fjord, /does not turn that polygon into a universal fjord outline/i);
+  assert.match(spatialLife, /Registration ≠ current position/);
+  assert.match(spatialLife, /Loaded count ≠ abundance/);
+  assert.doesNotMatch(fjordSpatial, /role: "DISPLAY"[\s\S]{0,300}availability: "INGESTED"/);
 });
 
 test('Relationship Reveal and Living Systems remain one shared engine, not a fifth app', () => {
