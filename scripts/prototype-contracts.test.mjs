@@ -72,11 +72,17 @@ test("Orca fixture is an exact attributed occurrence, not fabricated activity", 
   assert.doesNotMatch(truth, /Orca population (rose|fell|declined|increased)/i);
 });
 
-test("new source-aware journeys add no unregistered media rights burden", () => {
+test("source-aware journeys use only centrally registered product media", () => {
   const species = read("src/pages/integrated/Species.tsx");
   const impact = read("src/pages/integrated/ImpactPrototype.tsx");
+  const registry = read("src/content/imageRegistry.ts");
   const truth = read("src/data/truthSpine.ts");
-  assert.doesNotMatch(species + impact, /<img|backgroundImage|url\(/);
+  assert.match(species, /from "@\/content\/imageRegistry"/);
+  assert.match(species, /img\("wh4lesHero"\)/);
+  assert.match(registry, /wh4lesHero:/);
+  assert.match(registry, /Single source of truth for documentary imagery/);
+  assert.doesNotMatch(species + impact, /src=["']https?:|backgroundImage|url\(/);
+  assert.doesNotMatch(impact, /<img/);
   assert.match(truth, /licence: "CC BY 4\.0"/);
   assert.match(truth, /attribution: "Karl Anders Olaussen; record published through GBIF"/);
   assert.match(truth, /rightsStatus: "CONDITIONAL"/);

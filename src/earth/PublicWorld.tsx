@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
+import "./releaseHardening.css";
 
 const World = lazy(() => import("./World"));
 

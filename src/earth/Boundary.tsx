@@ -29,7 +29,7 @@ export class WorldBoundary extends React.Component<
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     // Full detail to the console for whoever opens dev tools.
-    // eslint-disable-next-line no-console
+     
     console.error("[4PLANET_ WORLD] runtime error:", error, info.componentStack);
   }
 

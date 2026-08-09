@@ -1,0 +1,71 @@
+/* Public release hardening overlays for the accepted ATLAS implementation.
+   Bounded to interaction hierarchy and mobile ergonomics; no map-engine rewrite. */
+
+.ctx-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(8,8,8,.97);
+  backdrop-filter: blur(14px);
+}
+.world.light .ctx-head { background: rgba(255,255,255,.98); }
+
+.ctx-close {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+@media (max-width: 760px) {
+  .search-wrap {
+    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    width: calc(100vw - 20px);
+  }
+
+  .atlas-panel {
+    top: calc(env(safe-area-inset-top, 0px) + 108px);
+    max-width: 54vw;
+    max-height: 34vh;
+  }
+
+  .atlas-panel.rest { max-width: 48vw; }
+
+  .ctx {
+    max-height: min(70svh, calc(100svh - 132px - env(safe-area-inset-top, 0px)));
+    border-radius: 14px 14px 0 0;
+  }
+
+  .ctx-head {
+    padding: 16px 14px 12px;
+    padding-top: 20px;
+  }
+
+  .ctx-title {
+    font-size: 20px;
+    line-height: 1.02;
+    max-width: calc(100vw - 92px);
+  }
+
+  .ctx-sub,
+  .ctx-id {
+    max-width: calc(100vw - 72px);
+  }
+
+  .ctx-body { padding: 0 14px 18px; }
+  .tier-btn,
+  .follow-btn { min-height: 44px; }
+
+  .lens-rail { gap: 4px; }
+  .lens { min-height: 36px; padding: 5px 9px; letter-spacing: .12em; }
+
+  .recenter-btn { bottom: calc(70svh + 32px); }
+}
+
+@media (max-width: 430px) {
+  .search-line { height: 46px; }
+  .site-btn { min-height: 34px; }
+  .atlas-panel.rest .sect { padding: 9px 10px; }
+}

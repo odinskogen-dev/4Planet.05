@@ -1,3 +1,4 @@
-4PLANET product-quality implementation candidate
-Release marker: pq02-claude-02-audit-preview-2026-07-26
-Status: deployed audit preview, not Beta or production
+4PLANET founder-gate ONE INTERFACE convergence candidate
+Release marker: founder-gate-one-interface-convergence-2026-08-07
+Status: private founder-review preview, not Beta or production
+Authority: Odin final authority
