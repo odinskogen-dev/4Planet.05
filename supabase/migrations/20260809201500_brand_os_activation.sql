@@ -54,6 +54,24 @@ create table if not exists public.brand_releases (
   unique (story_id, channel, version)
 );
 
+create table if not exists public.brand_publish_jobs (
+  id text primary key,
+  release_id text not null references public.brand_releases(id) on delete restrict,
+  idempotency_key text not null unique,
+  state text not null default 'QUEUED' check (state in ('QUEUED','RUNNING','RETRY_WAIT','SUCCEEDED','DEAD_LETTER','CANCELLED')),
+  attempt_count integer not null default 0 check (attempt_count >= 0),
+  max_attempts integer not null default 3 check (max_attempts between 1 and 10),
+  next_attempt_at timestamptz,
+  last_error text,
+  locked_at timestamptz,
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (attempt_count <= max_attempts)
+);
+create index if not exists brand_publish_jobs_ready_idx
+  on public.brand_publish_jobs (state, next_attempt_at, created_at);
+
 create table if not exists public.publication_receipts (
   id text primary key,
   release_id text not null references public.brand_releases(id) on delete restrict,
@@ -98,6 +116,21 @@ create table if not exists public.brand_learning_decisions (
   founder_decision_required boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+create table if not exists public.brand_founder_interventions (
+  id text primary key,
+  story_id text not null references public.brand_stories(id) on delete restrict,
+  release_id text references public.brand_releases(id) on delete set null,
+  interaction_type text not null check (interaction_type in (
+    'APPROVE','EDIT','HOLD','KILL','CLAIM_ATTESTATION','RIGHTS_ATTESTATION','RELATIONSHIP'
+  )),
+  duration_seconds numeric not null check (duration_seconds >= 0),
+  reason text not null,
+  outcome text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists brand_founder_interventions_story_idx
+  on public.brand_founder_interventions (story_id, created_at desc);
 
 create table if not exists public.brand_incidents (
   id text primary key,
@@ -173,9 +206,11 @@ for each row execute function public.brand_receipt_guard();
 alter table public.brand_stories enable row level security;
 alter table public.brand_story_asset_refs enable row level security;
 alter table public.brand_releases enable row level security;
+alter table public.brand_publish_jobs enable row level security;
 alter table public.publication_receipts enable row level security;
 alter table public.brand_metric_events enable row level security;
 alter table public.brand_learning_decisions enable row level security;
+alter table public.brand_founder_interventions enable row level security;
 alter table public.brand_incidents enable row level security;
 
 -- Internal service-only tables until a dedicated founder-auth policy is accepted.
@@ -183,13 +218,17 @@ alter table public.brand_incidents enable row level security;
 revoke all on public.brand_stories from anon, authenticated;
 revoke all on public.brand_story_asset_refs from anon, authenticated;
 revoke all on public.brand_releases from anon, authenticated;
+revoke all on public.brand_publish_jobs from anon, authenticated;
 revoke all on public.publication_receipts from anon, authenticated;
 revoke all on public.brand_metric_events from anon, authenticated;
 revoke all on public.brand_learning_decisions from anon, authenticated;
+revoke all on public.brand_founder_interventions from anon, authenticated;
 revoke all on public.brand_incidents from anon, authenticated;
 
 comment on table public.brand_stories is 'Transactional Brand OS state. BRAIN remains authority for canon; this table must not silently rewrite canon.';
 comment on table public.brand_story_asset_refs is 'References canonical BRAIN rights/media IDs without replacing the rights inventory.';
 comment on table public.brand_releases is 'Founder-gated release objects. Approval cannot bypass story source/rights/QA/product/public-eligibility gates.';
+comment on table public.brand_publish_jobs is 'Bounded retry queue for approved release work. Exhausted jobs enter DEAD_LETTER rather than retrying forever.';
 comment on table public.publication_receipts is 'Idempotent publication/dry-run receipts bound to one release, story and channel.';
 comment on table public.brand_learning_decisions is 'Performance may inform canon. canon_effect=FOUNDER_PROPOSED requires a separate founder/canon decision.';
+comment on table public.brand_founder_interventions is 'Measures actual founder seconds and intervention reasons so autonomy is optimized against observed founder burden.';
