@@ -1,6 +1,7 @@
 import { OSLOFJORD_PRIMARY_WATERBODY_ID } from "@/data/oslofjordenSpatial";
 
 const LAYER_URL = "https://arcgis001.miljodirektoratet.no/arcgis/rest/services/vann_nett_ekstern/Vannmiljo/MapServer/1";
+const LICENSE_URL = "https://data.norge.no/nlod/no/2.0";
 
 export type GeoJsonPolygon = {
   type: "Polygon" | "MultiPolygon";
@@ -19,7 +20,9 @@ export interface WaterbodyGeometryRecord {
   sourceLastChangedAt?: string;
   sourceUrl: string;
   checkedAt: string;
-  rights: "PUBLIC_SERVICE_REUSE_REVIEW_REQUIRED";
+  sourcePublisher: "Miljødirektoratet";
+  rights: "NLOD_2_0_ATTRIBUTION_REQUIRED";
+  licenseUrl: string;
   limitation: string;
 }
 
@@ -38,8 +41,11 @@ const sourceDate = (value: unknown): string | undefined => {
 
 /**
  * Fetches one official Vann-Nett coastal-waterbody polygon at runtime.
- * The polygon is retained as WATERBODY_STATUS geography only. It is not cached
- * or converted into a canonical Oslofjorden boundary by this adapter.
+ * The polygon is retained as WATERBODY_STATUS geography only. It is not
+ * converted into a canonical Oslofjorden boundary by this adapter.
+ *
+ * Vannforekomster/Vann-Nett is published under NLOD. The adapter therefore
+ * preserves publisher/source/licence attribution on the returned record.
  */
 export async function fetchWaterbodyGeometry(
   waterBodyId = OSLOFJORD_PRIMARY_WATERBODY_ID,
@@ -87,7 +93,9 @@ export async function fetchWaterbodyGeometry(
         sourceLastChangedAt: sourceDate(p.LCDateTime),
         sourceUrl,
         checkedAt,
-        rights: "PUBLIC_SERVICE_REUSE_REVIEW_REQUIRED",
+        sourcePublisher: "Miljødirektoratet",
+        rights: "NLOD_2_0_ATTRIBUTION_REQUIRED",
+        licenseUrl: LICENSE_URL,
         limitation: "This is the official geometry of one Vann-Nett coastal waterbody. It is not the semantic, ecological, regulatory, display or universal boundary of Oslofjorden.",
       },
     };
