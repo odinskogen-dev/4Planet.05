@@ -1,6 +1,9 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
-import Home from "@/pages/v5/Home";
+import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
+import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
+import { MissionUniverse } from "@/pages/phase04/MissionUniverse";
+import Join from "@/pages/v5/Join";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
@@ -23,7 +26,7 @@ const WorldFallback = (
 );
 
 const toImpact = <Navigate to="/impact" replace />;
-const toJoin = <Navigate to="/people" replace />;
+const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
@@ -34,14 +37,18 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Phase04FrontDoor />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
+      <Route path="/place/oslofjorden" element={<OslofjordenJourney />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
       <Route path="/missions/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
       <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/pl4stic" replace />} />
+      <Route path="/missions/am4zonia" element={<MissionUniverse mission="am4zonia" />} />
+      <Route path="/missions/wh4les" element={<MissionUniverse mission="wh4les" />} />
+      <Route path="/missions/clim4te" element={<MissionUniverse mission="clim4te" />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
@@ -53,7 +60,7 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
-      <Route path="/join" element={<Navigate to="/people" replace />} />
+      <Route path="/join" element={<Join />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
