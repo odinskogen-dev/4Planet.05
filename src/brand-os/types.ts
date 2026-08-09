@@ -20,6 +20,15 @@ export type GateState = "PASS" | "OPEN" | "BLOCKED" | "NOT_APPLICABLE";
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type Channel = "web" | "instagram" | "youtube" | "linkedin" | "tiktok" | "newsletter";
 export type FounderDecision = "OPEN" | "APPROVED" | "EDIT" | "HOLD" | "KILL";
+export type PublishJobState = "QUEUED" | "RUNNING" | "RETRY_WAIT" | "SUCCEEDED" | "DEAD_LETTER" | "CANCELLED";
+export type FounderInteractionType =
+  | "APPROVE"
+  | "EDIT"
+  | "HOLD"
+  | "KILL"
+  | "CLAIM_ATTESTATION"
+  | "RIGHTS_ATTESTATION"
+  | "RELATIONSHIP";
 
 export interface SourceRef {
   label: string;
@@ -80,6 +89,38 @@ export interface PublicationReceipt {
   platformPostId: string | null;
   platformUrl: string | null;
   createdAt: string;
+}
+
+export interface PublishJob {
+  jobId: string;
+  releaseId: string;
+  idempotencyKey: string;
+  state: PublishJobState;
+  attemptCount: number;
+  maxAttempts: number;
+  nextAttemptAt: string | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FounderIntervention {
+  interventionId: string;
+  storyId: string;
+  releaseId: string | null;
+  interactionType: FounderInteractionType;
+  durationSeconds: number;
+  reason: string;
+  outcome: string;
+  createdAt: string;
+}
+
+export interface FounderBurdenSummary {
+  interventionCount: number;
+  totalSeconds: number;
+  totalMinutes: number;
+  averageSeconds: number;
+  byType: Partial<Record<FounderInteractionType, number>>;
 }
 
 export interface MetricEvent {
