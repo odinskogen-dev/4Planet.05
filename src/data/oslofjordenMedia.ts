@@ -17,6 +17,10 @@ export interface PlaceMediaRecord {
   sourceChecksum?: { algorithm: "SHA-1" | "SHA-256"; value: string };
   sourceFileBytes?: number;
   sourceDimensions?: { width: number; height: number };
+  derivativeChecksums?: {
+    desktop: { algorithm: "SHA-256"; value: string; bytes: number };
+    mobile: { algorithm: "SHA-256"; value: string; bytes: number };
+  };
   custodyState?: "REMOTE_SOURCE_RUNTIME" | "REPO_CONTROLLED_DERIVATIVE" | "OWNED_MASTER";
   derivativeNote?: string;
 }
@@ -24,15 +28,15 @@ export interface PlaceMediaRecord {
 /**
  * Real Oslofjord documentary context for the internal product candidate.
  * Source page and structured data checked 2026-08-09. The author dedicated
- * the photograph CC0. Wikimedia reports the original source-file SHA-1 below.
+ * the photograph CC0. The original Commons source master and the exact
+ * repository-controlled derivatives are checksum-addressed below.
  *
  * IMPORTANT:
  * - This is a real photograph of Oslofjord, not generated imagery.
  * - It is not an ecological observation, species record, monitoring result or
  *   evidence of current condition.
- * - The current runtime still uses a Wikimedia derivative because the active
- *   connector cannot transfer the binary into the repository. Source custody
- *   is therefore explicit rather than falsely described as localised.
+ * - Runtime uses repository-controlled derivatives; the source page remains
+ *   the rights/provenance reference.
  */
 export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   id: "media:commons:oslofjorden-2022-08-17-15",
@@ -43,8 +47,8 @@ export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   capturedAt: "2022-08-17T08:26:24",
   creator: "Leonhard Lenz",
   sourcePage: "https://commons.wikimedia.org/wiki/File:Oslofjorden_2022-08-17_15.jpg",
-  assetUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oslofjorden_2022-08-17_15.jpg?width=1920",
-  mobileAssetUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oslofjorden_2022-08-17_15.jpg?width=960",
+  assetUrl: "/assets/places/oslofjorden/hero-oslofjorden-cc0-1920.jpg",
+  mobileAssetUrl: "/assets/places/oslofjorden/hero-oslofjorden-cc0-960.jpg",
   license: "CC0 1.0 Universal Public Domain Dedication",
   licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
   locationClaim: "Wikimedia Commons source description: Oslofjord seen from a ferry.",
@@ -53,6 +57,10 @@ export const OSLOFJORD_HERO_MEDIA: PlaceMediaRecord = {
   sourceChecksum: { algorithm: "SHA-1", value: "7b7d2c709a5009b984df764624c7668e671ee1f3" },
   sourceFileBytes: 30_023_899,
   sourceDimensions: { width: 8_384, height: 5_612 },
-  custodyState: "REMOTE_SOURCE_RUNTIME",
-  derivativeNote: "Repo-controlled derivative remains an explicit pre-public-release media-custody task. The source master is checksum-addressed and rights-clean; runtime does not claim local binary custody.",
+  derivativeChecksums: {
+    desktop: { algorithm: "SHA-256", value: "94c4507abccc993789785d437ca7c82502912b38fc38c1c9bd343ee2d1ee0109", bytes: 857_884 },
+    mobile: { algorithm: "SHA-256", value: "0eec7ec2d36b752091ecad0904316598bf799ee07acaade182b1bda727e2cafe", bytes: 203_387 },
+  },
+  custodyState: "REPO_CONTROLLED_DERIVATIVE",
+  derivativeNote: "Desktop and mobile derivatives are stored in the repository and checksum-addressed. Source master provenance remains Wikimedia Commons / Leonhard Lenz / CC0. The image is place context, not ecological evidence.",
 };
