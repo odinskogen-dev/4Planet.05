@@ -46,10 +46,25 @@ jobs:
           echo "name=$name" >> "$GITHUB_OUTPUT"
           docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee phase06-postgres-version.txt
 
+      - name: Normalise generated staging fixture quoting
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/fixtures/phase06_decision_proof_cohort.sql').read_text(encoding='utf-8')
+          start = "jsonb_array_elements('["
+          end = "]'::jsonb) loop"
+          if src.count(start) != 1 or src.count(end) != 1:
+              raise SystemExit('Unexpected Phase06 generated JSON staging block shape')
+          src = src.replace(start, 'jsonb_array_elements($phase06_json$[', 1)
+          src = src.replace(end, ']$phase06_json$::jsonb) loop', 1)
+          Path('phase06-decision-proof-cohort.runtime.sql').write_text(src, encoding='utf-8')
+          PY
+
       - name: Load bounded real Decision-Proof cohort through staging
         shell: bash
         run: |
-          docker cp supabase/fixtures/phase06_decision_proof_cohort.sql "${{ steps.db.outputs.name }}:/tmp/phase06-cohort.sql"
+          docker cp phase06-decision-proof-cohort.runtime.sql "${{ steps.db.outputs.name }}:/tmp/phase06-cohort.sql"
           docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase06-cohort.sql | tee phase06-cohort-load.txt
 
       - name: Run Phase 06 SQL gates
@@ -126,6 +141,7 @@ jobs:
           name: psi-phase06-staging-evidence
           path: |
             phase06-postgres-version.txt
+            phase06-decision-proof-cohort.runtime.sql
             phase06-cohort-load.txt
             phase06-sql-gate.txt
             phase06-contexts/
