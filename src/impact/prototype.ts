@@ -14,6 +14,7 @@ export interface ImpactUnitDefinition {
   description: string;
   environment: "TEST";
   providerCapability: "FIXTURE_ONLY";
+  publicTruthState: "TEST_ONLY";
 }
 
 export interface PersonalImpactRecord {
@@ -39,17 +40,19 @@ export const TEST_UNITS: Record<TestUnitSlug, ImpactUnitDefinition> = {
     description: "Exercises the contribution and proof-state contract. No tree is ordered, planted or delivered.",
     environment: "TEST",
     providerCapability: "FIXTURE_ONLY",
+    publicTruthState: "TEST_ONLY",
   },
   plastic: {
     id: "impact-unit:4p:test:plastic",
     slug: "plastic",
     name: "Plastic Unit",
-    missionId: "mission:4p:pl4stic",
+    missionId: "mission:4p:cle4n",
     unitQuantity: 1,
     unitLabel: "test kilogram request",
     description: "Exercises the contribution and proof-state contract. No plastic is collected, prevented or recycled.",
     environment: "TEST",
     providerCapability: "FIXTURE_ONLY",
+    publicTruthState: "TEST_ONLY",
   },
 };
 
@@ -145,5 +148,5 @@ export function displayContributionState(status: string): string {
 }
 
 export function shareText(record: PersonalImpactRecord) {
-  return `${record.unit.name} · ${record.contribution.quantity} ${record.unit.unitLabel}\nContribution: ${displayContributionState(record.contribution.status)}\nDelivery: ${record.delivery.status}\nOutcome: ${record.outcome.status}\nImpact: ${record.impact.status}\n${record.disclosure}`;
+  return `${record.unit.name} · ${record.contribution.quantity} ${record.unit.unitLabel}\nTruth state: ${record.unit.publicTruthState}\nContribution: ${displayContributionState(record.contribution.status)}\nDelivery: ${record.delivery.status}\nOutcome: ${record.outcome.status}\nImpact: ${record.impact.status}\n${record.disclosure}`;
 }
