@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { img } from "@/content/imageRegistry";
 import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
 import { SignalCard } from "@/components/phase04/SignalCard";
@@ -10,6 +9,7 @@ import {
   OSLOFJORD_SIGNALS,
   oslofjordSourceById,
 } from "@/data/oslofjordenProof";
+import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
 import type { RelationshipStep, SignalPresentation } from "@/phase04/model";
 
 const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
@@ -41,7 +41,7 @@ const jobs = [
 ] as const;
 
 export default function Phase04FrontDoor() {
-  const earth = img("heroEarth");
+  const hero = OSLOFJORD_HERO_MEDIA;
   const sprat = OSLOFJORD_LIFE.find((record) => record.id === "life-sprat-2025")!;
   const herring = OSLOFJORD_LIFE.find((record) => record.id === "life-herring-2025")!;
   const anchovy = OSLOFJORD_LIFE.find((record) => record.id === "life-anchovy-2025")!;
@@ -60,19 +60,19 @@ export default function Phase04FrontDoor() {
             </p>
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 24 }}>
               <Link to="/place/oslofjorden" style={primaryButton}>Enter Oslofjorden →</Link>
-              <Link to="/atlas" style={secondaryButton}>Explore the planet</Link>
+              <Link to="/atlas?m=OCE4N&journey=oslofjorden&z=6.40&c=10.62,59.67" style={secondaryButton}>Open Oslofjord in ATLAS</Link>
             </div>
           </div>
         </div>
         <div style={{ position: "relative", minHeight: 580, background: "#080808", overflow: "hidden" }}>
           <picture>
-            {earth.srcMobile && <source media="(max-width:760px)" srcSet={earth.srcMobile} />}
-            <img src={earth.src} alt={earth.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            {hero.mobileAssetUrl && <source media="(max-width:760px)" srcSet={hero.mobileAssetUrl} />}
+            <img src={hero.assetUrl} alt={hero.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 52%" }} />
           </picture>
-          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.28))" }} />
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.34))" }} />
           <div style={{ position: "absolute", left: 20, right: 20, bottom: 18, color: "#fff", display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-            <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>PLANETARY CONTEXT / NASA PUBLIC-DOMAIN FRAME</span>
-            <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>NOT OSLOFJORDEN LOCATION EVIDENCE · REAL HERO ASSET STILL REQUIRED</span>
+            <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>REAL OSLOFJORD PHOTO · 17 AUG 2022</span>
+            <a href={hero.sourcePage} target="_blank" rel="noreferrer" className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em", color: "#fff", textDecoration: "none" }}>{hero.creator} · CC0 · SOURCE ↗</a>
           </div>
         </div>
       </section>
