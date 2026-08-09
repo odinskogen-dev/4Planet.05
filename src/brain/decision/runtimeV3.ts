@@ -37,17 +37,11 @@ export interface DatabaseBackedDecisionPackV3 extends DatabaseBackedDecisionPack
 
 const claimRefsFromPack = (pack: DecisionPack): string[] => {
   const refs = new Set<string>();
-  for (const evidence of pack.evidence) {
-    if (evidence.claim.value && evidence.id) refs.add(evidence.id);
-  }
+  for (const evidence of pack.evidence) if (evidence.claim.value && evidence.id) refs.add(evidence.id);
   return [...refs];
 };
 
-/**
- * Human-feedback repair rule: material uncertainty must explain WHY it matters.
- * Keyword-only uncertainty is not sufficient when it changes interpretation,
- * applicability, transferability or decision risk.
- */
+/** Human-feedback repair: material uncertainty must explain WHY it matters. */
 export function explainMaterialUncertainty(evidence: DecisionEvidence): string | null {
   const limitations = evidence.claim.limitations.filter(Boolean);
   if (limitations.length === 0 && evidence.evidenceStrength !== "INSUFFICIENT" && evidence.evidenceStrength !== "LIMITED") return null;
@@ -57,14 +51,24 @@ export function explainMaterialUncertainty(evidence: DecisionEvidence): string |
   return `${evidence.direction}: ${why}`;
 }
 
+export function explainOptionUncertainty(pack: DecisionPack): string[] {
+  const explanations: string[] = [];
+  for (const option of pack.options) {
+    const uncertainty = option.dimensions.find((d) => d.dimension === "UNCERTAINTY");
+    if (!uncertainty) continue;
+    const unknowns = uncertainty.unknowns.filter(Boolean);
+    const why = uncertainty.basis.trim() || "The represented evidence does not justify a context-free certainty claim.";
+    explanations.push(`${option.label}: ${why}${unknowns.length ? ` Unknowns: ${unknowns.join(" ")}` : ""}`);
+  }
+  return explanations;
+}
+
 export function validateTraceableClaimEvidence(row: TraceableClaimEvidence): string[] {
   const errors: string[] = [];
   if (!row.claimRef || !row.sourceRef || !row.sourceRecordId) errors.push("claim/source/source-record identity required");
   if (!row.exactEvidenceLocation.trim()) errors.push("exact evidence location required");
   if (!row.evidenceTextSummary.trim()) errors.push("evidence summary required");
-  if (["AMBIGUOUS", "SOURCE_DOES_NOT_SUPPORT_CLAIM", "REQUIRES_DOMAIN_REVIEW"].includes(row.adjudication) && row.directness === "DIRECT") {
-    errors.push("unresolved/unsupported adjudication cannot be encoded as DIRECT evidence");
-  }
+  if (["AMBIGUOUS", "SOURCE_DOES_NOT_SUPPORT_CLAIM", "REQUIRES_DOMAIN_REVIEW"].includes(row.adjudication) && row.directness === "DIRECT") errors.push("unresolved/unsupported adjudication cannot be encoded as DIRECT evidence");
   return errors;
 }
 
@@ -83,15 +87,9 @@ export class DecisionRuntimeV3Service {
       const errors = validateTraceableClaimEvidence(row);
       if (errors.length) throw new Error(`invalid claim evidence ${row.claimRef}: ${errors.join("; ")}`);
     }
-    const uncertaintyExplanations = base.pack.evidence
-      .map(explainMaterialUncertainty)
-      .filter((x): x is string => Boolean(x));
-    return {
-      ...base,
-      traceableClaimEvidence,
-      uncertaintyExplanations,
-      runtimeVersion: "DECISION_RUNTIME_V3",
-    };
+    const evidenceUncertainty = base.pack.evidence.map(explainMaterialUncertainty).filter((x): x is string => Boolean(x));
+    const uncertaintyExplanations = [...evidenceUncertainty, ...explainOptionUncertainty(base.pack)];
+    return { ...base, traceableClaimEvidence, uncertaintyExplanations, runtimeVersion: "DECISION_RUNTIME_V3" };
   }
 }
 
