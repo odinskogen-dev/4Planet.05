@@ -36,6 +36,28 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Dependency security — classify full tree and block production runtime findings
+        shell: bash
+        run: |
+          mkdir -p artifacts/oslofjorden-product-proof/security
+          npm audit --json > artifacts/oslofjorden-product-proof/security/npm-audit-full.json || true
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'artifacts/oslofjorden-product-proof/security/npm-audit-full.json';
+          const audit = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const vulnerabilities = audit.vulnerabilities || {};
+          const summary = Object.entries(vulnerabilities).map(([name, value]) => ({
+            name,
+            severity: value.severity,
+            direct: Boolean(value.isDirect),
+            via: Array.isArray(value.via) ? value.via.map((item) => typeof item === 'string' ? item : item.source) : value.via,
+            fixAvailable: value.fixAvailable,
+          }));
+          console.log('FULL_AUDIT_METADATA', JSON.stringify(audit.metadata?.vulnerabilities || {}));
+          console.log('FULL_AUDIT_VULNERABILITIES', JSON.stringify(summary));
+          NODE
+          npm audit --omit=dev --audit-level=moderate
+
       - name: Typecheck
         run: npm run typecheck
 
