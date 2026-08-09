@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'scripts/phase04-contracts.test.mjs'
+      - 'scripts/prototype-contracts.test.mjs'
       - 'tests/**'
       - 'package.json'
       - 'package-lock.json'
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout candidate
         uses: actions/checkout@v4
@@ -53,3 +54,38 @@ jobs:
 
       - name: Asset control
         run: npm run assets:verify
+
+      - name: Install Chromium for isolated browser proof
+        run: npx playwright install --with-deps chromium
+
+      - name: Start built candidate locally
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/phase04-preview.log 2>&1 &
+          echo $! > /tmp/phase04-preview.pid
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/phase04-preview.log
+          exit 1
+
+      - name: Phase 04 desktop and mobile browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/phase04-convergence.spec.ts
+
+      - name: Upload Phase 04 browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase04-browser-evidence
+          path: |
+            artifacts/phase04-product-proof
+            playwright-report
+            test-results
+            /tmp/phase04-preview.log
+          if-no-files-found: warn
+          retention-days: 14
