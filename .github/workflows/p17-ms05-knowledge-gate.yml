@@ -1,0 +1,105 @@
+name: P17 Megasprint 05 Knowledge and Source Graph Gate
+
+on:
+  push:
+    branches:
+      - build/p17-knowledge-institutions-source-graph
+  pull_request:
+    branches:
+      - build/p17-organisations-discovery-scale-gate-final
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p17-ms05-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out exact MS05 candidate
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: MS05 source graph and connector contracts
+        run: npm run test:p17:ms05
+
+      - name: Full contract and smoke regression
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit and critical gate
+        shell: bash
+        run: |
+          mkdir -p artifacts/p17-ms05
+          npm audit --json > artifacts/p17-ms05/npm-audit.json || true
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const report = JSON.parse(readFileSync('artifacts/p17-ms05/npm-audit.json', 'utf8'));
+          const vulnerabilities = report.metadata?.vulnerabilities ?? {};
+          console.log('Dependency vulnerabilities:', vulnerabilities);
+          if ((vulnerabilities.critical ?? 0) > 0) process.exit(1);
+          NODE
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start private preview runtime
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/p17-ms05-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/actors > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/p17-ms05-preview.log
+          exit 1
+
+      - name: Organisations and knowledge browser journeys
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/actors-private-beta.spec.ts tests/e2e/actors-visual-proof.spec.ts tests/e2e/p17-ms05-knowledge.spec.ts
+
+      - name: Record exact candidate SHA
+        shell: bash
+        run: |
+          printf '%s\n' "$GITHUB_SHA" > artifacts/p17-ms05/exact-sha.txt
+          git diff --stat ${{ github.event.before || 'HEAD^' }}..HEAD > artifacts/p17-ms05/changed-files.txt || git show --stat --oneline HEAD > artifacts/p17-ms05/changed-files.txt
+
+      - name: Upload P17 Megasprint 05 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p17-ms05-knowledge-source-graph-evidence
+          path: |
+            artifacts/p17-ms05
+            artifacts/p17-organisations
+            playwright-report
+            test-results
+            /tmp/p17-ms05-preview.log
+          if-no-files-found: warn
+          retention-days: 21
