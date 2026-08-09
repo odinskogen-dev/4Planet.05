@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 import type { RelationshipStep } from "@/phase04/model";
 
@@ -24,7 +24,6 @@ export function RelationshipReveal({
 }) {
   const [mode, setMode] = useState<RelationshipMode>(initialMode);
   const [visible, setVisible] = useState(1);
-  const display = useMemo(() => steps.slice(0, Math.max(1, visible)), [steps, visible]);
 
   return (
     <section aria-label={title} style={{ borderTop: "1px solid rgba(10,10,10,.28)", borderBottom: "1px solid rgba(10,10,10,.28)" }}>
@@ -48,7 +47,7 @@ export function RelationshipReveal({
           {steps.map((step, i) => {
             const on = i < visible;
             return (
-              <div key={step.id} style={{ display: "grid", gridTemplateColumns: "48px minmax(0,1fr) minmax(110px,190px)", gap: 14, padding: "16px 0", borderBottom: "1px solid rgba(10,10,10,.14)", opacity: on ? 1 : .2, transition: "opacity .25s ease" }}>
+              <div key={step.id} className={on ? "phase04-thread-row is-visible" : "phase04-thread-row"} style={{ display: "grid", gridTemplateColumns: "48px minmax(0,1fr) minmax(110px,190px)", gap: 14, padding: "16px 0", borderBottom: "1px solid rgba(10,10,10,.14)", opacity: on ? 1 : .2, transform: on ? "translateY(0)" : "translateY(4px)" }}>
                 <span style={mono}>{String(i + 1).padStart(2, "0")}</span>
                 <span style={{ fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontSize: "clamp(22px,3vw,34px)", letterSpacing: "-.035em" }}>{step.label}</span>
                 <span style={{ ...mono, textAlign: "right", color: step.status === "SOURCE REVIEW PENDING" ? "#FF4D22" : "rgba(10,10,10,.58)" }}>{step.kind}{step.status ? ` · ${step.status}` : ""}</span>
@@ -64,13 +63,13 @@ export function RelationshipReveal({
       )}
 
       {mode === "ORBIT" && (
-        <div style={{ position: "relative", minHeight: 460, background: "#0A0A0A", color: "#fff", overflow: "hidden" }}>
-          <div aria-hidden style={{ position: "absolute", width: 310, height: 310, border: "1px solid rgba(255,255,255,.26)", borderRadius: "50%", left: "50%", top: "50%", transform: "translate(-50%,-50%)" }} />
-          <div aria-hidden style={{ position: "absolute", width: 430, height: 430, border: "1px solid rgba(255,255,255,.14)", borderRadius: "50%", left: "50%", top: "50%", transform: "translate(-50%,-50%)" }} />
-          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 150, height: 150, borderRadius: "50%", background: "#fff", color: "#0A0A0A", display: "grid", placeItems: "center", textAlign: "center", padding: 16, fontFamily: "'Instrument Sans',sans-serif", fontSize: 20 }}>{steps[0]?.label}</div>
+        <div className="phase04-orbit-stage" style={{ position: "relative", minHeight: 460, background: "#0A0A0A", color: "#fff", overflow: "hidden" }}>
+          <div aria-hidden className="phase04-orbit-ring ring-1" style={{ position: "absolute", width: 310, height: 310, border: "1px solid rgba(255,255,255,.26)", borderRadius: "50%", left: "50%", top: "50%", transform: "translate(-50%,-50%)" }} />
+          <div aria-hidden className="phase04-orbit-ring ring-2" style={{ position: "absolute", width: 430, height: 430, border: "1px solid rgba(255,255,255,.14)", borderRadius: "50%", left: "50%", top: "50%", transform: "translate(-50%,-50%)" }} />
+          <div className="phase04-orbit-core" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 150, height: 150, borderRadius: "50%", background: "#fff", color: "#0A0A0A", display: "grid", placeItems: "center", textAlign: "center", padding: 16, fontFamily: "'Instrument Sans',sans-serif", fontSize: 20 }}>{steps[0]?.label}</div>
           {steps.slice(1, 6).map((s, i) => {
             const pos = [[12,20],[73,18],[8,70],[72,72],[43,8]][i] ?? [42,75];
-            return <div key={s.id} style={{ position: "absolute", left: `${pos[0]}%`, top: `${pos[1]}%`, ...mono, border: `1px solid ${s.status === "SOURCE REVIEW PENDING" ? "#FF4D22" : "rgba(255,255,255,.78)"}`, padding: "8px 10px", maxWidth: 180 }}>{s.label}</div>;
+            return <div key={s.id} className="phase04-orbit-node" style={{ position: "absolute", left: `${pos[0]}%`, top: `${pos[1]}%`, ...mono, border: `1px solid ${s.status === "SOURCE REVIEW PENDING" ? "#FF4D22" : "rgba(255,255,255,.78)"}`, padding: "8px 10px", maxWidth: 180, animationDelay: `${i * 90}ms` }}>{s.label}</div>;
           })}
         </div>
       )}
@@ -88,6 +87,20 @@ export function RelationshipReveal({
           </div>
         </div>
       )}
+
+      <style>{`
+        @media(prefers-reduced-motion:no-preference){
+          .phase04-thread-row{transition:opacity .25s ease,transform .25s ease}
+          .phase04-orbit-core{animation:phase04-core-reveal .45s cubic-bezier(.2,.8,.2,1) both}
+          .phase04-orbit-node{animation:phase04-node-reveal .42s cubic-bezier(.2,.8,.2,1) both}
+          .phase04-orbit-ring{animation:phase04-ring-reveal .6s ease both}
+          .phase04-orbit-ring.ring-2{animation-delay:.08s}
+          @keyframes phase04-core-reveal{from{opacity:0;transform:translate(-50%,-50%) scale(.86)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+          @keyframes phase04-node-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+          @keyframes phase04-ring-reveal{from{opacity:0;transform:translate(-50%,-50%) scale(.82)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+        }
+        @media(prefers-reduced-motion:reduce){.phase04-thread-row,.phase04-orbit-core,.phase04-orbit-node,.phase04-orbit-ring{animation:none!important;transition:none!important}}
+      `}</style>
     </section>
   );
 }
