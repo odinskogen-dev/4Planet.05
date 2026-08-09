@@ -1,0 +1,22 @@
+{
+  "phase": "PHASE_06",
+  "record_type": "FOUNDER_HUMAN_FEEDBACK",
+  "review_date": "2026-08-09",
+  "reviewed_cards": ["HB-05", "HB-12", "HB-18", "HB-23"],
+  "reviewed_count": 4,
+  "founder_feedback_raw": "Jeg er ganske enig i at de er gode nok. Usikkerheten må kanskje forklares bedre enn bare i stikkord på noen av dem.",
+  "qualitative_judgement": "BROADLY_ACCEPTED_GOOD_ENOUGH_TO_CONTINUE",
+  "structured_per_card_labels": "NOT_EXPLICITLY_SUPPLIED",
+  "explicit_structured_passes": 0,
+  "explicit_structured_fails": 0,
+  "material_product_finding": {
+    "class": "PRODUCT_PRESENTATION_FAILURE",
+    "subclass": "UNCERTAINTY_EXPLANATION_TOO_COMPRESSED",
+    "finding": "Material uncertainty should be expressed in concise explanatory/causal prose when keyword shorthand alone does not explain why the uncertainty matters or how it limits the answer.",
+    "repair_target": "Context Pack / answer presentation layer",
+    "truth_rule": "Do not infer structured human labels from broad qualitative acceptance."
+  },
+  "adaptive_review_decision": "DO_NOT_FORCE_REMAINING_20_NOW",
+  "next_action": "Repair uncertainty presentation as a general system rule; regression-test the four reviewed cards plus contradiction and abstention cases; continue Phase 06 closure and request further founder judgement only if a new material decision gate emerges.",
+  "scale_status": "HOLD_PENDING_PHASE06_CLOSURE"
+}
