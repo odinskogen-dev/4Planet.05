@@ -17,6 +17,7 @@ import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const BrandOSReleaseBoard = lazy(() => import("@/pages/internal/BrandOSReleaseBoard"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -67,6 +68,7 @@ export function AppRoutes() {
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/telier" element={<CultureTelier />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+      <Route path="/internal/brand-os" element={<Suspense fallback={WorldFallback}><BrandOSReleaseBoard /></Suspense>} />
       <Route path="/os" element={toAbout} />
       <Route path="/os/*" element={toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
