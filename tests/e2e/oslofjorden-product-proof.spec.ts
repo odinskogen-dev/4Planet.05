@@ -40,6 +40,17 @@ test("Oslofjorden place identity does not silently become query geometry", async
   await expect(page.getByText(/representative point only/i)).toBeVisible();
 });
 
+test("Relationship Reveal exposes two bounded source-aware threads", async ({ page }) => {
+  await page.goto("/place/oslofjorden");
+  await expect(page.getByText("TWO SOURCE-AWARE THREADS", { exact: true })).toBeVisible();
+  await expect(page.getByText("THREAD A / THE LIFE BELOW VISIBILITY", { exact: true })).toBeVisible();
+  await expect(page.getByText("THREAD B / PRESSURE TO HABITAT", { exact: true })).toBeVisible();
+  await expect(page.getByText("Phytoplankton", { exact: true })).toBeVisible();
+  await expect(page.getByText(/high nitrogen acts together with other factors/i)).toBeVisible();
+  await expect(page.getByText(/not a current population estimate, trend or causal diagnosis/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /NIVA/i }).first()).toHaveAttribute("href", /niva\.no/);
+});
+
 test("pressure, actor and solution sections preserve evidence boundaries", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(page.getByRole("heading", { name: /There is no single cause/i })).toBeVisible();
