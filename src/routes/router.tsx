@@ -21,6 +21,7 @@ import { Stories, CultureFilm, CultureTelier, CulturePlay } from "@/pages/v5/Cul
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
+import { PlaceProductBridge } from "@/components/place/PlaceProductBridge";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 
@@ -36,6 +37,16 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
+
+function AtlasRoute() {
+  return <><PlaceProductBridge mode="ATLAS" /><Suspense fallback={WorldFallback}><PublicWorld /></Suspense></>;
+}
+function SpeciesIndexRoute() {
+  return <><PlaceProductBridge mode="SPECIES" /><SpeciesIndex /></>;
+}
+function SpeciesProfileRoute() {
+  return <><PlaceProductBridge mode="SPECIES" /><SpeciesProfilePage /></>;
+}
 
 export function AppRoutes() {
   return (
@@ -76,9 +87,9 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/cle4n" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
 
-      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/species" element={<SpeciesIndex />} />
-      <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/atlas" element={<AtlasRoute />} />
+      <Route path="/species" element={<SpeciesIndexRoute />} />
+      <Route path="/species/:slug" element={<SpeciesProfileRoute />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
