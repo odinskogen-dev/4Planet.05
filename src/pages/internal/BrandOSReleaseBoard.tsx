@@ -1,13 +1,18 @@
 import { useMemo, useState } from "react";
 import pilotData from "@/brand-os/pilots.json";
+import { BeeRelationshipReveal } from "@/brand-os/BeeRelationshipReveal";
 import {
   EXTERNAL_PUBLISHING_ENABLED,
   dryRunPublish,
   evaluateRelease,
   idempotencyKey,
+  recordFounderIntervention,
+  summarizeFounderBurden,
 } from "@/brand-os/runtime";
 import type {
   FounderDecision,
+  FounderInteractionType,
+  FounderIntervention,
   PublicationReceipt,
   ReleaseRecord,
   StoryRecord,
@@ -27,15 +32,25 @@ const makeRelease = (story: StoryRecord, decision: FounderDecision): ReleaseReco
   contentFingerprint: `${story.slug}-master-v1`,
 });
 
+const interactionTypeFor = (decision: FounderDecision): FounderInteractionType => {
+  if (decision === "APPROVED") return "APPROVE";
+  if (decision === "EDIT") return "EDIT";
+  if (decision === "KILL") return "KILL";
+  return "HOLD";
+};
+
 export default function BrandOSReleaseBoard() {
   const [selectedId, setSelectedId] = useState(stories[0]?.storyId ?? "");
   const [decisions, setDecisions] = useState<Record<string, FounderDecision>>({});
   const [receipts, setReceipts] = useState<PublicationReceipt[]>([]);
+  const [reviewStartedAt, setReviewStartedAt] = useState(() => Date.now());
+  const [interventions, setInterventions] = useState<FounderIntervention[]>([]);
 
   const story = stories.find((item) => item.storyId === selectedId) ?? stories[0];
   const decision = story ? decisions[story.storyId] ?? "OPEN" : "OPEN";
   const release = story ? makeRelease(story, decision) : null;
   const qa = story && release ? evaluateRelease(story, release) : null;
+  const burden = useMemo(() => summarizeFounderBurden(interventions), [interventions]);
 
   const storyReceipts = useMemo(
     () => (story ? receipts.filter((receipt) => receipt.storyId === story.storyId) : []),
@@ -44,8 +59,25 @@ export default function BrandOSReleaseBoard() {
 
   if (!story || !release || !qa) return null;
 
+  const selectStory = (storyId: string) => {
+    setSelectedId(storyId);
+    setReviewStartedAt(Date.now());
+  };
+
   const setFounderDecision = (next: FounderDecision) => {
+    const durationSeconds = Math.max(0, (Date.now() - reviewStartedAt) / 1000);
+    const intervention = recordFounderIntervention(
+      story.storyId,
+      release.releaseId,
+      interactionTypeFor(next),
+      durationSeconds,
+      "Founder Release Board review",
+      next,
+    );
+
     setDecisions((current) => ({ ...current, [story.storyId]: next }));
+    setInterventions((current) => [...current, intervention]);
+    setReviewStartedAt(Date.now());
   };
 
   const simulatePublish = () => {
@@ -74,7 +106,7 @@ export default function BrandOSReleaseBoard() {
           <button
             className={item.storyId === story.storyId ? "bos-pilot bos-pilot-active" : "bos-pilot"}
             key={item.storyId}
-            onClick={() => setSelectedId(item.storyId)}
+            onClick={() => selectStory(item.storyId)}
             type="button"
           >
             <span>{item.storyId}</span>
@@ -155,8 +187,24 @@ export default function BrandOSReleaseBoard() {
             SIMULATE PUBLISH / DRY RUN
           </button>
           <code className="bos-key">{idempotencyKey(release)}</code>
+
+          <div className="bos-section">
+            <h3>Founder burden / this session</h3>
+            <dl className="bos-data-list bos-burden-list">
+              <div><dt>Decisions</dt><dd>{burden.interventionCount}</dd></div>
+              <div><dt>Total</dt><dd>{burden.totalSeconds.toFixed(1)} s</dd></div>
+              <div><dt>Average</dt><dd>{burden.averageSeconds.toFixed(1)} s</dd></div>
+            </dl>
+            <p className="bos-measurement-note">Session measurement only until the Brand OS migration is deployed. No invented baseline.</p>
+          </div>
         </aside>
       </section>
+
+      {story.storyId === "STORY-BOS-BEE-001" ? (
+        <section className="bos-production-preview" aria-label="First Brand OS production object">
+          <BeeRelationshipReveal />
+        </section>
+      ) : null}
 
       <section className="bos-card bos-ledger">
         <div className="bos-card-head">
