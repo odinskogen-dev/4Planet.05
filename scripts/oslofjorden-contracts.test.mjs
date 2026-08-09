@@ -68,6 +68,14 @@ test("one real time-bounded public action exists without an impact promise", () 
   assert.match(page, /One credible action is better than ten generic buttons/);
 });
 
+test("Oslofjorden hero cannot imply non-local whale evidence while the real local hero is missing", () => {
+  assert.match(page, /img\("heroEarth"\)/);
+  assert.doesNotMatch(page, /img\("oce4nDomainHero"\)/);
+  assert.match(page, /NASA PUBLIC-DOMAIN FRAME/);
+  assert.match(page, /NOT OSLOFJORDEN LOCATION EVIDENCE/);
+  assert.match(page, /REAL OSLOFJORDEN HERO ASSET STILL REQUIRED/);
+});
+
 test("front door now exposes real Oslofjord LIFE evidence without calling it live data", () => {
   assert.match(front, /261 million/);
   assert.match(front, /75 million/);
