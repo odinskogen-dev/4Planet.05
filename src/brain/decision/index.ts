@@ -3,4 +3,7 @@ export * from "./lensSensitivity.js";
 export * from "./pollinationDecisionPacks.js";
 export * from "./runtime.js";
 export * from "./runtimeV2.js";
+export * from "./runtimeV3.js";
+export * from "./targetProblemPriorityV1.js";
+export * from "./learningLoopV3.js";
 export * from "./evaluation.js";

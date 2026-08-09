@@ -8,6 +8,7 @@ import {
   buildLensSensitivityView,
   projectDecisionPackForLivingSystems,
   type DecisionPack,
+  type ProvenancePointer,
 } from "@/brain/decision";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".11em" };
@@ -17,12 +18,22 @@ type ScenarioKey = (typeof scenarioKeys)[number];
 const scenarioLabel: Record<ScenarioKey, string> = { FARM: "LAND MANAGER", MUNICIPALITY: "MUNICIPALITY", FUNDER: "FUNDER", "4PLANET": "4PLANET" };
 
 function ScenarioButton({ id, active, onClick }: { id: ScenarioKey; active: boolean; onClick: () => void }) {
-  return <button onClick={onClick} style={{ ...mono, border: `1px solid ${active ? T.blue : T.line}`, background: active ? T.blue : "transparent", color: active ? "#fff" : T.ink, padding: "10px 12px", cursor: "pointer" }}>{scenarioLabel[id]}</button>;
+  return <button type="button" aria-pressed={active} onClick={onClick} style={{ ...mono, border: `1px solid ${active ? T.blue : T.line}`, background: active ? T.blue : "transparent", color: active ? "#fff" : T.ink, padding: "10px 12px", cursor: "pointer" }}>{scenarioLabel[id]}</button>;
 }
 
 function EvidenceState({ direction }: { direction: "SUPPORTS" | "QUALIFIES" | "CHALLENGES" }) {
   const color = direction === "SUPPORTS" ? T.acid : direction === "CHALLENGES" ? T.red : "#8A6500";
   return <span style={{ ...mono, border: `1px solid ${color}`, color, padding: "4px 6px" }}>{direction}</span>;
+}
+
+function SourceLinks({ sources }: { sources: ProvenancePointer[] }) {
+  if (!sources.length) return <span style={{ color: T.dim }}>No source pointer represented.</span>;
+  return <div style={{ display: "grid", gap: 7 }}>
+    {sources.map((source) => <div key={`${source.sourceRef}-${source.url ?? "no-url"}`} style={{ fontSize: 12.5, lineHeight: 1.45 }}>
+      {source.url ? <a href={source.url} target="_blank" rel="noreferrer" style={{ color: T.blue }}>{source.title ?? source.sourceRef}</a> : <span>{source.title ?? source.sourceRef}</span>}
+      <span style={{ color: T.dim }}> · {source.provenanceStatus.replace(/_/g, " ")}</span>
+    </div>)}
+  </div>;
 }
 
 export function PollinationDecisionProof() {
@@ -46,7 +57,7 @@ export function PollinationDecisionProof() {
           Pollination → Food · contextual Decision Pack v1 · not independently expert validated. Source Registry pointers shown by this prototype are not yet equivalent to immutable Source Records.
         </p>
 
-        <div style={{ marginTop: 34, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div role="group" aria-label="Decision scenario" style={{ marginTop: 34, display: "flex", gap: 8, flexWrap: "wrap" }}>
           {scenarioKeys.map((id) => <ScenarioButton key={id} id={id} active={scenario === id} onClick={() => setScenario(id)} />)}
         </div>
 
@@ -55,17 +66,15 @@ export function PollinationDecisionProof() {
           <h2 style={{ marginTop: 16, maxWidth: 1000, fontFamily: T.display, fontSize: "clamp(30px,4vw,52px)", lineHeight: 1.02, letterSpacing: "-.035em" }}>{pack.question.text}</h2>
           <p style={{ marginTop: 16, maxWidth: 820, color: T.dim, lineHeight: 1.55 }}>{pack.question.objective}</p>
           <div style={{ marginTop: 20, ...mono, color: "#8A6500" }}>PLACE / EVIDENCE SCOPE · {pack.context.place.label.toUpperCase()} · {pack.context.place.evidenceScope}</div>
-          <p style={{ marginTop: 10, fontSize: 12.5, color: T.dim }}>{pack.context.place.transferBoundary}</p>
+          <p style={{ marginTop: 10, fontSize: 12.5, color: T.dim, lineHeight: 1.5 }}><strong>WHY THIS LIMITS THE ANSWER:</strong> {pack.context.place.transferBoundary}</p>
         </div>
 
         <div className="tw" style={{ marginTop: 24 }}>
-          {projection.sections.map((section) => (
-            <article key={section.id} style={panel}>
-              <div style={{ ...mono, color: T.blue }}>{section.title}</div>
-              <p style={{ marginTop: 14, fontSize: 15.5, lineHeight: 1.6 }}>{section.summary}</p>
-              {section.disclosure && <p style={{ marginTop: 12, color: T.dim, fontSize: 12.5, lineHeight: 1.5 }}><strong>BOUNDARY:</strong> {section.disclosure}</p>}
-            </article>
-          ))}
+          {projection.sections.map((section) => <article key={section.id} style={panel}>
+            <div style={{ ...mono, color: T.blue }}>{section.title}</div>
+            <p style={{ marginTop: 14, fontSize: 15.5, lineHeight: 1.6 }}>{section.summary}</p>
+            {section.disclosure && <p style={{ marginTop: 12, color: T.dim, fontSize: 12.5, lineHeight: 1.5 }}><strong>BOUNDARY:</strong> {section.disclosure}</p>}
+          </article>)}
         </div>
 
         <section style={{ marginTop: 72 }}>
@@ -81,12 +90,17 @@ export function PollinationDecisionProof() {
                 <div style={{ ...mono, color: T.blue }}>{option.optionId}</div>
                 <h3 style={{ marginTop: 14, fontFamily: T.display, fontSize: 29, lineHeight: 1.03 }}>{option.label}</h3>
                 <p style={{ marginTop: 14, color: T.dim, lineHeight: 1.55 }}>{option.relevance.value}</p>
-                {metricRows.map(([label, dimension]) => dimension && <div key={label} style={{ marginTop: 16, borderTop: `1px solid ${T.line}`, paddingTop: 10 }}><span style={{ ...mono, color: T.dim }}>{label}</span><div style={{ marginTop: 6, fontSize: 13 }}>{dimension.rating} · {dimension.confidence}</div></div>)}
+                {metricRows.map(([label, dimension]) => dimension && <div key={label} style={{ marginTop: 16, borderTop: `1px solid ${T.line}`, paddingTop: 10 }}>
+                  <span style={{ ...mono, color: T.dim }}>{label}</span>
+                  <div style={{ marginTop: 6, fontSize: 13 }}>{dimension.rating} · {dimension.confidence}</div>
+                  <p style={{ marginTop: 7, fontSize: 12.5, lineHeight: 1.5, color: T.dim }}><strong>WHY:</strong> {dimension.basis}</p>
+                  {dimension.unknowns.length > 0 && <p style={{ marginTop: 5, fontSize: 12.5, lineHeight: 1.5, color: T.dim }}><strong>UNKNOWN:</strong> {dimension.unknowns.join(" ")}</p>}
+                </div>)}
               </article>;
             })}
           </div>
           <p style={{ marginTop: 16, maxWidth: 840, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>
-            LENS_SENSITIVITY_V1 compares explicit dimensions pairwise. “Dominates” inside a lens means only “no worse on the known priority dimensions represented here”; it is not a recommendation or universal ranking. No aggregate score exists.
+            Material uncertainty is explained in prose because a rating alone cannot show why it changes interpretation, transferability or decision risk. LENS_SENSITIVITY_V1 remains pairwise and contains no aggregate score.
           </p>
           <div style={{ ...panel, marginTop: 18 }}>
             <div style={{ ...mono, color: T.blue }}>EVIDENCE CONFIDENCE LENS · {lens.comparisons.length} PAIRWISE RELATIONS</div>
@@ -101,6 +115,11 @@ export function PollinationDecisionProof() {
               <EvidenceState direction={item.direction} />
               <p style={{ marginTop: 15, fontSize: 15, lineHeight: 1.58 }}>{item.claim.value}</p>
               <p style={{ marginTop: 12, ...mono, color: T.dim }}>{item.evidenceStrength} · {item.geography ?? "CONTEXT VARIES"}</p>
+              {item.claim.limitations.length > 0 && <p style={{ marginTop: 12, color: T.dim, fontSize: 12.5, lineHeight: 1.5 }}><strong>WHY THIS IS UNCERTAIN / LIMITED:</strong> {item.claim.limitations.join(" ")}</p>}
+              <details style={{ marginTop: 14 }}>
+                <summary style={{ ...mono, color: T.blue, cursor: "pointer" }}>DEEP MODE · SOURCES / PROVENANCE</summary>
+                <div style={{ marginTop: 12 }}><SourceLinks sources={item.claim.sources} /></div>
+              </details>
             </article>) : <div style={panel}><p style={{ color: T.dim }}>This scenario is primarily a 4PLANET assessment of evidence/gap infrastructure; no evidence item is silently invented to make the panel look complete.</p></div>}
           </div>
         </section>

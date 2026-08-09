@@ -1,0 +1,105 @@
+name: Decision Intelligence — Final Closure v3 Gate
+
+on:
+  push:
+    branches:
+      - agent/decision-intelligence-final-closure-v3
+  pull_request:
+    branches:
+      - agent/decision-intelligence-physical-runtime-v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: decision-intelligence-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  decision-runtime-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+          github-token: ${{ github.token }}
+
+      - name: Prove inherited BRAIN Postgres/PostGIS contracts and controlled relation migration
+        shell: bash
+        run: |
+          if [ ! -f supabase/config.toml ]; then supabase init; fi
+          supabase db start
+          supabase db reset
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          test -n "$name"
+          docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee decision-v3-postgres-version.txt
+          docker cp supabase/tests/phase05_brain_intelligence.sql "$name:/tmp/phase05.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05.sql | tee decision-v3-brain-gate.txt
+          grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' decision-v3-brain-gate.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "$name:/tmp/context.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/context.sql | tee decision-v3-context-gate.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' decision-v3-context-gate.txt
+          docker cp supabase/tests/decision_intelligence_relation_resolution_v3.sql "$name:/tmp/relation-v3.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/relation-v3.sql | tee decision-v3-relation-resolution.txt
+          grep -q 'DECISION_INTELLIGENCE_RELATION_RESOLUTION_V3_PASS' decision-v3-relation-resolution.txt
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile and execute Decision Runtime v3 gate
+        shell: bash
+        run: |
+          rm -rf .decision-v3-ci
+          npx tsc --outDir .decision-v3-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-runtime-v3-gate.mjs | tee decision-runtime-v3-report.json
+          grep -q '"pass": true' decision-runtime-v3-report.json
+          grep -q '"missingPriorityContextRefused": true' decision-runtime-v3-report.json
+          grep -q '"prioritySensitivityVisible": true' decision-runtime-v3-report.json
+          grep -q '"hiddenAggregateScore": false' decision-runtime-v3-report.json
+          grep -q '"materialUncertaintyExplained": true' decision-runtime-v3-report.json
+
+      - name: Preserve v2 and v1 Decision regression plus application build
+        shell: bash
+        run: |
+          rm -rf .decision-v2-ci
+          npx tsc --outDir .decision-v2-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-runtime-v2-gate.mjs | tee decision-runtime-v2-regression.json
+          grep -q '"pass": true' decision-runtime-v2-regression.json
+          rm -rf .decision-ci
+          npx tsc --outDir .decision-ci --rootDir src --noEmit false --module ESNext --moduleResolution bundler --target ES2020 --skipLibCheck src/brain/decision/*.ts
+          node scripts/decision-intelligence-gate.mjs | tee decision-v1-regression.json
+          grep -q '"pass": 28' decision-v1-regression.json
+          npm run typecheck
+          npm run build
+
+      - name: Assert public repository contains no private corpus bundle
+        shell: bash
+        run: |
+          test ! -f STAGING_DATA_MANIFEST.json || true
+          if find . -type f \( -name 'CLAIM_SOURCE_RESOLUTION.csv' -o -name 'SOLUTION_PROBLEM_RELATIONS.csv' -o -name 'PROBLEM_OBJECT_MIGRATION.csv' \) | grep -q .; then
+            echo 'Private corpus file detected in public checkout' >&2
+            exit 1
+          fi
+          echo 'PRIVATE_CORPUS_NOT_IN_PUBLIC_REPO' | tee decision-v3-private-boundary.txt
+
+      - name: Upload exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-intelligence-final-closure-v3-evidence
+          path: |
+            decision-v3-postgres-version.txt
+            decision-v3-brain-gate.txt
+            decision-v3-context-gate.txt
+            decision-v3-relation-resolution.txt
+            decision-runtime-v3-report.json
+            decision-runtime-v2-regression.json
+            decision-v1-regression.json
+            decision-v3-private-boundary.txt
+          if-no-files-found: warn
+          retention-days: 30
