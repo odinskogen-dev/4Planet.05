@@ -1,0 +1,82 @@
+[
+  {
+    "claimId": "CLM-BOS-BEE-001",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "BEES",
+    "claim": "Bees are one important group of animal pollinators; they are not the only pollinators.",
+    "scope": "Pollination-system context, not a claim that every bee species pollinates every crop.",
+    "sourceIds": ["SRC-017"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-002",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "POLLINATION",
+    "claim": "Many crop plants depend at least partly on animal pollination.",
+    "scope": "Global crop-production context. This does not mean all crops or all food depend on animal pollination.",
+    "sourceIds": ["SRC-017"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-003",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "APPLE_EXAMPLE",
+    "claim": "Insect pollination underpins apple production, and the contribution varies among pollinator groups and apple varieties.",
+    "scope": "Bounded apple example; the underlying study tested four commercial apple varieties in the UK and compared solitary bees, honeybees, bumblebees and hoverflies.",
+    "sourceIds": ["SRC-019"],
+    "sourceUrls": ["https://doi.org/10.1371/journal.pone.0153889"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-004",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "FOOD",
+    "claim": "Apple is one concrete food-production example through which a bee/pollinator relationship can be shown without claiming that all food depends on bees.",
+    "scope": "Editorial synthesis constrained by CLM-BOS-BEE-001–003. It must be labelled 4PLANET CONTEXT rather than an independent scientific result.",
+    "sourceIds": ["SRC-017", "SRC-019"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/", "https://doi.org/10.1371/journal.pone.0153889"],
+    "status": "CONTEXT_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-001",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "SOCIAL_RELATIONSHIP",
+    "claim": "Killer whales live in socially structured groups and use underwater sound for communication and navigation.",
+    "scope": "General species/population context; population- and ecotype-specific behaviour must remain scoped.",
+    "sourceIds": ["SRC-015"],
+    "sourceUrls": ["https://www.fisheries.noaa.gov/species/killer-whale/science"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-002",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "OCCURRENCE",
+    "claim": "One reported occurrence can support a bounded statement about one record, not range, abundance, trend or ecosystem condition.",
+    "scope": "Methodological evidence boundary. Exact public occurrence record remains OPEN.",
+    "sourceIds": ["SRC-016"],
+    "sourceUrls": ["https://www.gbif.org/species/2440483", "https://techdocs.gbif.org/en/openapi/v1/occurrence"],
+    "status": "EXACT_RECORD_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-001",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "WHOLE_PLACE_BOUNDARY",
+    "claim": "Oslofjorden should not be represented as one undifferentiated condition: recent assessments report improvement in ecological condition in inner Oslofjord while conditions in outer Oslofjord and Skagerrak have worsened.",
+    "scope": "High-level official synthesis. Exact map layers still require their own geography, period, method and coverage metadata.",
+    "sourceIds": ["SRC-018"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-002",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "PRESSURES",
+    "claim": "Official knowledge summaries identify pollution/nutrient pressure, overfishing and physical/coastal development among major pressures on Oslofjorden.",
+    "scope": "High-level pressure context. This claim does not establish that any one pressure caused any one mapped ecological observation.",
+    "sourceIds": ["SRC-018"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
+    "status": "SOURCE_LOCKED"
+  }
+]
