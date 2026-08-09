@@ -66,7 +66,7 @@ test("runtime local LIFE adapter exposes either source records or an explicit so
     await expect(page.getByText(/Reuse is under NLOD 2\.0 with attribution/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /VANNMILJØ API \/ SOURCE/i })).toHaveAttribute("href", /vannmiljoapi\.miljodirektoratet\.no/);
   } else {
-    expect(text).toMatch(/SOURCE UNAVAILABLE|TIMEOUT|INVALID RESPONSE/);
+    expect(text).toMatch(/SOURCE UNAVAILABLE|SOURCE CONTRACT REJECTED|TIMEOUT|INVALID RESPONSE/);
     await expect(page.getByText(/No local-life absence is inferred/i)).toBeVisible();
   }
 });
