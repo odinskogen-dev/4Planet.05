@@ -17,10 +17,11 @@ test("desktop front door communicates one product family and place journey", asy
   await capture(page, "front-door-desktop");
 });
 
-test("Oslofjorden exposes semantic truth gaps and does not claim live local data", async ({ page }) => {
+test("Oslofjorden exposes a source-backed semantic identity without inventing display geometry or live local data", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(page.getByRole("heading", { name: /OSLO\s*FJORDEN/i })).toBeVisible();
-  await expect(page.getByText(/OSLOFJORDEN ADAPTER \/ NOT YET IMPLEMENTED/i)).toBeVisible();
+  await expect(page.getByText(/MRGID 3379/i)).toBeVisible();
+  await expect(page.getByText(/DISPLAY GEOMETRY \/ NOT YET IMPLEMENTED/i)).toBeVisible();
   await expect(page.getByText(/do not manufacture local records/i)).toBeVisible();
   await expect(page.getByText("CURATED SOURCE").first()).toBeVisible();
   await expect(page.getByText("LIVE DATA", { exact: true })).toHaveCount(0);
