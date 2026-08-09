@@ -77,7 +77,6 @@ export function dryRunPublish(
     };
   }
 
-  const qa = evaluateRelease(story, release);
   const canSimulate = release.storyId === story.storyId && release.contentFingerprint.trim().length > 0;
 
   return {
