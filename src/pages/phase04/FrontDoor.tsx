@@ -5,19 +5,14 @@ import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
 import { SignalCard } from "@/components/phase04/SignalCard";
 import {
   OSLOFJORD_LIFE,
-  OSLOFJORD_RELATIONSHIP,
   OSLOFJORD_SIGNALS,
   oslofjordSourceById,
 } from "@/data/oslofjordenProof";
 import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
-import type { RelationshipStep, SignalPresentation } from "@/phase04/model";
+import { OSLOFJORD_RELATIONSHIP_CHAINS } from "@/data/oslofjordenRelationshipDeepening";
+import type { SignalPresentation } from "@/phase04/model";
 
-const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
-  id: step.id,
-  label: step.label,
-  kind: step.kind,
-  status: step.grade === "DOCUMENTED" ? "DOCUMENTED" : step.grade === "4PLANET_CONTEXT" ? "4PLANET CONTEXT" : "UNKNOWN",
-}));
+const relationship = OSLOFJORD_RELATIONSHIP_CHAINS[0].steps;
 
 const planSignal = OSLOFJORD_SIGNALS.find((signal) => signal.id === "signal-plan-hearing-2026")!;
 const planSource = oslofjordSourceById(planSignal.sourceIds[0]);
@@ -107,7 +102,7 @@ export default function Phase04FrontDoor() {
       </section>
 
       <section style={{ padding: "clamp(60px,8vw,110px) clamp(20px,5vw,72px)", maxWidth: 1440, margin: "0 auto" }}>
-        <RelationshipReveal steps={relationship} note="Oslofjorden eelgrass chain. Documented source-backed steps remain separate from 4PLANET context." />
+        <RelationshipReveal steps={relationship} initialMode="THREAD" title="THE LIFE BELOW VISIBILITY" note="Source-backed Oslofjord food-web relationship. Historical occurrence records remain separate from present abundance, trend and whole-fjord status." />
       </section>
 
       <section style={{ padding: "clamp(60px,8vw,110px) clamp(20px,5vw,72px)", maxWidth: 1440, margin: "0 auto" }}>
