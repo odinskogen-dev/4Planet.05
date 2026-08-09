@@ -12,6 +12,12 @@ export interface ScientificDatasetRecord {
   geographicScope: string;
   /** Source-reported data extent. Never a 4PLANET place boundary. */
   sourceExtent?: { south: number; west: number; north: number; east: number };
+  /**
+   * Optional exact GBIF dataset key approved for record-level runtime inspection.
+   * Presence means the UI may request records FROM THIS DATASET. It does not
+   * authorize using those records to manufacture a wider place polygon or trend.
+   */
+  runtimeOccurrenceDatasetKey?: string;
   temporalCoverage: string;
   metrics: Array<{ label: string; value: string; meaning: string }>;
   samplingContext: string;
@@ -38,6 +44,7 @@ export const INNER_OSLOFJORD_PHYTOPLANKTON: ScientificDatasetRecord = {
   licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
   geographicScope: "Inner Oslofjorden, Norway",
   sourceExtent: { south: 59.661, west: 10.415, north: 59.933, east: 10.956 },
+  runtimeOccurrenceDatasetKey: "777ea835-48a3-4136-bf3a-32c5b897563f",
   temporalCoverage: "1896-02-14 → 2020-12-14",
   metrics: [
     { label: "Sampling events", value: "732", meaning: "Event-core records in version 1.16." },
