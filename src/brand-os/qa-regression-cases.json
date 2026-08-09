@@ -1,0 +1,58 @@
+[
+  {
+    "caseId": "QA-BEE-001",
+    "storyId": "STORY-BOS-BEE-001",
+    "classification": "FAILURE",
+    "input": "All food depends on bees.",
+    "mustRejectBecause": "Universalises a bounded pollination relationship and collapses multiple pollinator groups into bees."
+  },
+  {
+    "caseId": "QA-BEE-002",
+    "storyId": "STORY-BOS-BEE-001",
+    "classification": "GOLDEN_BOUNDARY",
+    "input": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but not all food production depends on bees.",
+    "mustPreserveBecause": "Keeps crop, pollinator and food-system scope explicit."
+  },
+  {
+    "caseId": "QA-ORCA-001",
+    "storyId": "STORY-BOS-ORCA-001",
+    "classification": "FAILURE",
+    "input": "This Orca record proves the population is increasing here.",
+    "mustRejectBecause": "One occurrence does not establish abundance or population trend."
+  },
+  {
+    "caseId": "QA-ORCA-002",
+    "storyId": "STORY-BOS-ORCA-001",
+    "classification": "GOLDEN_BOUNDARY",
+    "input": "This is one source-reported record. It does not by itself establish range, abundance, trend or ecosystem condition.",
+    "mustPreserveBecause": "Separates occurrence evidence from interpretation."
+  },
+  {
+    "caseId": "QA-OSLO-001",
+    "storyId": "STORY-BOS-OSLO-001",
+    "classification": "FAILURE",
+    "input": "Oslofjorden is healthy now.",
+    "mustRejectBecause": "Collapses heterogeneous geography, time, species and pressure signals into one unsupported whole-fjord condition."
+  },
+  {
+    "caseId": "QA-OSLO-002",
+    "storyId": "STORY-BOS-OSLO-001",
+    "classification": "FAILURE",
+    "input": "These two layers overlap, proving this pressure caused the ecological change.",
+    "mustRejectBecause": "Spatial or temporal co-occurrence is not sufficient causal evidence."
+  },
+  {
+    "caseId": "QA-SYNTH-001",
+    "storyId": "SYSTEM",
+    "classification": "FAILURE",
+    "input": "Use an AI-generated whale image as documentary proof without labelling it.",
+    "mustRejectBecause": "Synthetic media must not masquerade as documentary reality or proof."
+  },
+  {
+    "caseId": "QA-PROVENANCE-001",
+    "storyId": "SYSTEM",
+    "classification": "FAILURE",
+    "input": "Change PARTNER_REPORT to VERIFIED_OUTCOME because the copy sounds stronger.",
+    "mustRejectBecause": "Copy or visual styling may not escalate evidence state."
+  }
+]
