@@ -1,8 +1,11 @@
 import { OSLOFJORD_PRIMARY_WATERBODY_ID } from "@/data/oslofjordenSpatial";
+import type { RuntimeProvenanceEnvelope } from "@/planet/runtimeTruth";
 
 const API = "https://vannmiljoapi.miljodirektoratet.no/api/Public";
 const SOURCE_URL = "https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index";
 const LICENSE_URL = "https://data.norge.no/nlod/no/2.0";
+const DATASET_URL = "https://kartkatalog.miljodirektoratet.no/dataset/Details/70";
+const KNOWLEDGE_OS_SOURCE_ID = "SRC-RUNTIME-VANNMILJO-001";
 
 export interface VannmiljoRegistration {
   id: string;
@@ -35,7 +38,10 @@ export interface VannmiljoRegistration {
   rights: "NLOD_2_0_ATTRIBUTION_REQUIRED";
   licenseUrl: string;
   issues: string[];
+  provenance: RuntimeProvenanceEnvelope;
 }
+
+export type VannmiljoError = "SOURCE_UNAVAILABLE" | "SOURCE_CONTRACT_REJECTED" | "TIMEOUT" | "INVALID_RESPONSE";
 
 export type VannmiljoResult =
   | {
@@ -45,6 +51,7 @@ export type VannmiljoResult =
       waterBodyId: string;
       total: number;
       records: VannmiljoRegistration[];
+      countMeaning: "REGISTRATION_RECORDS_NOT_ECOLOGICAL_STATUS";
       query: {
         contract: "WATERBODY_ID_FILTER";
         waterBodyIds: string[];
@@ -58,10 +65,10 @@ export type VannmiljoResult =
       checkedAt: string;
       source: "VANNMILJO";
       waterBodyId: string;
-      error: "SOURCE_UNAVAILABLE" | "TIMEOUT" | "INVALID_RESPONSE";
+      error: VannmiljoError;
     };
 
-type JsonResult = { ok: true; data: any } | { ok: false; error: "SOURCE_UNAVAILABLE" | "TIMEOUT" | "INVALID_RESPONSE" };
+type JsonResult = { ok: true; data: any } | { ok: false; error: VannmiljoError };
 
 const cleanDate = (value: unknown): string | undefined => {
   if (!value) return undefined;
@@ -79,6 +86,7 @@ const postJson = async (path: string, body: Record<string, unknown>): Promise<Js
       body: JSON.stringify(body),
       signal: controller.signal,
     });
+    if (response.status === 400) return { ok: false, error: "SOURCE_CONTRACT_REJECTED" };
     if (!response.ok) return { ok: false, error: "SOURCE_UNAVAILABLE" };
     const data = await response.json();
     if (!data || !Array.isArray(data.Result)) return { ok: false, error: "INVALID_RESPONSE" };
@@ -96,9 +104,10 @@ const postJson = async (path: string, body: Record<string, unknown>): Promise<Js
  * involved in membership. Coordinates are attached from Vannmiljø's own water
  * location result when available.
  *
- * Vannmiljø/Miljødirektoratet publishes the relevant water-data service under
- * NLOD. 4PLANET therefore preserves publisher/source/licence attribution on
- * every normalised record and does not imply source endorsement.
+ * Official Vannmiljø API documentation accepts WaterBodyIDFilter and the
+ * Miljødirektoratet dataset catalogue lists the Vannmiljø dataset under NLOD.
+ * A source-side HTTP 400 is therefore surfaced as SOURCE_CONTRACT_REJECTED,
+ * never as zero records.
  */
 export async function fetchVannmiljoRegistrations(options: {
   waterBodyId?: string;
@@ -149,9 +158,43 @@ export async function fetchVannmiljoRegistrations(options: {
       if (lat == null || lng == null) issues.push("NO_WGS84_LOCATION_RETURNED");
       if (!row.SamplingTime) issues.push("NO_SAMPLING_TIME_RETURNED");
       if (!row.VitenskapligNavn) issues.push("NOT_A_SPECIES_REGISTRATION");
+      const samplingTime = cleanDate(row.SamplingTime);
+      const registeredAt = cleanDate(row.RegDate);
+      const lastEditedAt = cleanDate(row.LastEditDate);
+      const waterRegistrationId = Number(row.WaterRegistrationID);
+      const sourceRecordId = `observation:vannmiljo:${waterRegistrationId}`;
+
+      const provenance: RuntimeProvenanceEnvelope = {
+        sourceRecordId,
+        sourceId: KNOWLEDGE_OS_SOURCE_ID,
+        provider: "Miljødirektoratet / Vannmiljø",
+        originalPublisher: "Miljødirektoratet",
+        dataset: "Miljøtilstand i vann / Vannmiljø",
+        upstreamRecordId: String(waterRegistrationId),
+        retrievedAt: checkedAt,
+        observationTime: samplingTime,
+        eventTime: samplingTime,
+        sourceProductDate: lastEditedAt ?? registeredAt,
+        datasetFreshness: samplingTime
+          ? { kind: "OBSERVATION_TIME", label: `SAMPLED ${samplingTime}`, asOf: samplingTime }
+          : { kind: "UNKNOWN", label: "SAMPLING DATE NOT RETURNED" },
+        licence: "NLOD 2.0",
+        rightsState: "CLEARED",
+        attribution: "Miljødirektoratet / Vannmiljø",
+        spatialPrecision: lat != null && lng != null ? "UNKNOWN" : "SOURCE_SUPPRESSED",
+        geographicScope: `Source-linked to Vann-Nett WaterBodyID ${String(row.WaterBodyID ?? waterBodyId)}; not a 4PLANET polygon inference.`,
+        temporalScope: samplingTime ? `Sampling event ${samplingTime}` : "Sampling time not returned",
+        limitations: [
+          "Registration record, not a complete ecological-status assessment or current condition by itself.",
+          "Source-reported station coordinates are not promoted to exact spatial precision without an explicit source precision field.",
+          `Dataset catalogue: ${DATASET_URL}`,
+        ],
+        sensitiveLocationPolicy: "PUBLIC_SOURCE_COORDINATES_ONLY",
+      };
+
       return {
-        id: `observation:vannmiljo:${row.WaterRegistrationID}`,
-        waterRegistrationId: Number(row.WaterRegistrationID),
+        id: sourceRecordId,
+        waterRegistrationId,
         waterLocationId: Number(row.WaterLocationID ?? 0),
         waterLocationCode: row.WaterLocationCode ? String(row.WaterLocationCode) : undefined,
         waterLocationName: row.Name ? String(row.Name) : undefined,
@@ -164,9 +207,9 @@ export async function fetchVannmiljoRegistrations(options: {
         activityName: row.ActivityName ? String(row.ActivityName) : undefined,
         samplingMethodName: row.SamplingMethodName ? String(row.SamplingMethodName) : undefined,
         analysisMethodName: row.AnalysisMethodName ? String(row.AnalysisMethodName) : undefined,
-        samplingTime: cleanDate(row.SamplingTime),
-        registeredAt: cleanDate(row.RegDate),
-        lastEditedAt: cleanDate(row.LastEditDate),
+        samplingTime,
+        registeredAt,
+        lastEditedAt,
         value: typeof row.RegValue === "number" ? row.RegValue : undefined,
         valueOperator: row.ValueOperator ? String(row.ValueOperator) : undefined,
         unit: row.Unit ? String(row.Unit) : undefined,
@@ -180,6 +223,7 @@ export async function fetchVannmiljoRegistrations(options: {
         rights: "NLOD_2_0_ATTRIBUTION_REQUIRED" as const,
         licenseUrl: LICENSE_URL,
         issues,
+        provenance,
       };
     });
 
@@ -190,6 +234,7 @@ export async function fetchVannmiljoRegistrations(options: {
     waterBodyId,
     total: typeof registrations.data.ResultCount === "number" ? registrations.data.ResultCount : records.length,
     records,
+    countMeaning: "REGISTRATION_RECORDS_NOT_ECOLOGICAL_STATUS",
     query: {
       contract: "WATERBODY_ID_FILTER",
       waterBodyIds: [waterBodyId],
