@@ -8,9 +8,11 @@ async function capture(page: import("@playwright/test").Page, name: string) {
   await page.screenshot({ path: `${proofDir}/${name}.png`, fullPage: true });
 }
 
+const oslofjordHero = (page: import("@playwright/test").Page) => page.getByRole("heading", { level: 1, name: "OSLO FJORDEN.", exact: true });
+
 test("Oslofjorden journey contains real bounded LIFE evidence", async ({ page }) => {
   await page.goto("/place/oslofjorden");
-  await expect(page.getByRole("heading", { name: /OSLO\s*FJORDEN/i })).toBeVisible();
+  await expect(oslofjordHero(page)).toBeVisible();
   await expect(page.getByText("European sprat", { exact: true })).toBeVisible();
   await expect(page.getByText("261 million", { exact: true })).toBeVisible();
   await expect(page.getByText("Atlantic herring", { exact: true })).toBeVisible();
@@ -65,7 +67,7 @@ test("front door includes real survey evidence but still marks hero image limita
 test("Oslofjorden remains usable at 390px mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/place/oslofjorden");
-  await expect(page.getByRole("heading", { name: /OSLO\s*FJORDEN/i })).toBeVisible();
+  await expect(oslofjordHero(page)).toBeVisible();
   await expect(page.getByText("European sprat", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Comment on the proposed Oslofjord plan" })).toBeVisible();
   const width = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
