@@ -36,64 +36,86 @@ const PATHWAYS: Pathway[] = [
     body: "Structure in development; sources and provider agreements are not yet in place." },
 ];
 
+const HUMAN_PATH: [string, string, string][] = [
+  ["01", "UNDERSTAND", "Begin with the life, place or living system — what matters, what is changing and what the evidence actually establishes."],
+  ["02", "ACT", "When a pathway is genuinely ready, take a defined action with a named delivery model. Until then the action stays closed."],
+  ["03", "SEE THE EVIDENCE", "Follow what was funded, what a provider reported, what evidence exists and what outcome is — or is not — established."],
+];
+
 const CHAIN: [string, string][] = [
-  ["Contribution", "what you put in"],
-  ["Provider", "who does the work"],
-  ["Delivery", "what actually happened"],
-  ["Evidence", "proof it happened"],
-  ["Outcome", "what it achieved"],
-  ["System impact", "long-term, inferred"],
+  ["Contribution", "what was committed"],
+  ["Provider", "who is responsible for delivery"],
+  ["Delivery", "what was reported as done"],
+  ["Evidence", "what supports the delivery record"],
+  ["Outcome", "what changed, if measured"],
+  ["System impact", "wider effects, never assumed"],
 ];
 
 export function ImpactPublicHome() {
   const location = useLocation();
   return (
     <PublicShell>
-      <Section pad="clamp(88px,10vw,138px)">
-        <p style={{ ...mono, color: T.blue, fontSize: 11, letterSpacing: ".18em" }}>4PLANET IMPACT_ · FOR A LIVING PLANET</p>
-        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(48px,7vw,92px)", lineHeight: .96, letterSpacing: "-.04em", maxWidth: "14ch" }}>
-          Action, made credible.
+      <Section pad="clamp(44px,7vw,92px)">
+        <p style={{ ...mono, color: T.blue, fontSize: 11, letterSpacing: ".18em" }}>IMPACT · FROM UNDERSTANDING TO CREDIBLE ACTION</p>
+        <h1 style={{ marginTop: 16, fontFamily: T.display, fontSize: "clamp(46px,7.5vw,96px)", lineHeight: .91, letterSpacing: "-.05em", maxWidth: "13ch" }}>
+          Understand. Act. See what happened.
         </h1>
-        <p style={{ marginTop: 24, maxWidth: "56ch", fontSize: "clamp(17px,2vw,21px)", lineHeight: 1.5, color: "rgba(8,8,8,.72)" }}>
-          IMPACT is being built to make credible action traceable — with every material claim linked to a source,
-          and nothing counted as done until evidence supports it.
+        <p style={{ marginTop: 22, maxWidth: "58ch", fontSize: "clamp(17px,2vw,21px)", lineHeight: 1.55, color: "rgba(8,8,8,.76)" }}>
+          IMPACT is the route from caring about a living system to taking a defined action — and then seeing the evidence without turning a contribution into a claim it cannot support.
         </p>
-        <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <a href="#pathways" style={{ ...mono, fontSize: 12, background: T.blue, color: "#fff", padding: "14px 20px", textDecoration: "none" }}>SEE THE PATHWAYS →</a>
-          <Link to={contextHref("/impact/lab", location.search)} style={{ ...mono, fontSize: 12, border: `1px solid ${T.ink}`, color: T.ink, padding: "14px 20px", textDecoration: "none" }}>INSPECT THE LAB</Link>
+        <div style={{ marginTop: 28, display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <a href="#pathways" style={{ ...mono, fontSize: 12, background: T.blue, color: "#fff", minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 18px", textDecoration: "none" }}>SEE WHAT IS BEING BUILT →</a>
+          <Link to={contextHref("/join", location.search)} style={{ ...mono, fontSize: 12, border: `1px solid ${T.ink}`, color: T.ink, minHeight: 44, display: "inline-flex", alignItems: "center", padding: "0 18px", textDecoration: "none" }}>REGISTER INTEREST</Link>
         </div>
 
-        <div style={{ marginTop: "clamp(56px,7vw,96px)" }}>
-          <div style={{ ...mono, color: T.blue }}>HOW IMPACT WORKS</div>
-          <div className="impact-chain" style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", border: `1px solid ${T.line}` }}>
-            {CHAIN.map(([step, desc], i) => (
-              <div key={step} style={{ padding: "14px 12px", borderLeft: i === 0 ? "none" : `1px solid ${T.line}` }}>
-                <div style={{ ...mono, color: T.blue, fontSize: 9.5 }}>0{i + 1}</div>
-                <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 500 }}>{step}</div>
-                <div style={{ marginTop: 4, fontSize: 11.5, color: "rgba(8,8,8,.6)", lineHeight: 1.4 }}>{desc}</div>
-              </div>
-            ))}
-          </div>
+        <div className="impact-human-path" style={{ marginTop: "clamp(44px,6vw,72px)", display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", borderTop: `1px solid ${T.lineStrong}`, borderBottom: `1px solid ${T.lineStrong}` }}>
+          {HUMAN_PATH.map(([n, title, text], i) => (
+            <div key={title} style={{ padding: "clamp(24px,3vw,38px) clamp(0px,2vw,28px)", borderLeft: i === 0 ? "none" : `1px solid ${T.line}` }}>
+              <div style={{ ...mono, color: T.blue }}>{n}</div>
+              <h2 style={{ marginTop: 12, fontFamily: T.display, fontSize: "clamp(26px,3.5vw,40px)", letterSpacing: "-.035em" }}>{title}</h2>
+              <p style={{ marginTop: 12, color: T.dim, fontSize: 14.5, lineHeight: 1.58 }}>{text}</p>
+            </div>
+          ))}
         </div>
 
-        <div id="pathways" style={{ marginTop: "clamp(44px,5vw,72px)" }}>
+        <div id="pathways" style={{ marginTop: "clamp(48px,6vw,76px)" }}>
           <div style={{ ...mono, color: T.blue }}>PATHWAYS IN DEVELOPMENT</div>
-          <div className="tw" style={{ marginTop: 16 }}>
+          <h2 style={{ marginTop: 12, fontFamily: T.display, fontSize: "clamp(32px,5vw,58px)", letterSpacing: "-.04em", lineHeight: .98, maxWidth: 820 }}>Action opens only when the delivery path is real.</h2>
+          <div className="tw" style={{ marginTop: 24 }}>
             {PATHWAYS.map((p) => (
               <div key={p.title} style={{ ...panel }}>
                 <Badge color="#8A6500">{p.status} · NOT OPEN</Badge>
-                <h2 style={{ marginTop: 14, fontFamily: T.display, fontSize: "clamp(24px,3vw,32px)", letterSpacing: "-.02em" }}>{p.title}</h2>
-                <p style={{ marginTop: 8, fontSize: 13, color: "rgba(8,8,8,.7)", lineHeight: 1.5 }}>{p.body}</p>
+                <h3 style={{ marginTop: 14, fontFamily: T.display, fontSize: "clamp(24px,3vw,32px)", letterSpacing: "-.02em" }}>{p.title}</h3>
+                <p style={{ marginTop: 8, fontSize: 13.5, color: "rgba(8,8,8,.7)", lineHeight: 1.55 }}>{p.body}</p>
                 <p style={{ marginTop: 12, ...mono, fontSize: 10, color: "rgba(8,8,8,.55)" }}>PLACE · {p.place}</p>
               </div>
             ))}
           </div>
         </div>
 
+        <div style={{ marginTop: "clamp(44px,6vw,72px)", maxWidth: 920 }}>
+          <details style={{ borderTop: `1px solid ${T.lineStrong}`, borderBottom: `1px solid ${T.lineStrong}`, padding: "18px 0" }}>
+            <summary style={{ cursor: "pointer", ...mono, color: T.blue, minHeight: 44, display: "flex", alignItems: "center" }}>HOW PROOF IS KEPT SEPARATE →</summary>
+            <p style={{ marginTop: 12, maxWidth: 680, color: T.dim, lineHeight: 1.6, fontSize: 14 }}>Contribution, delivery, evidence and outcome are different states. The system keeps them separate so support never becomes an automatic ecological result.</p>
+            <div className="impact-proof-chain" style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", border: `1px solid ${T.line}` }}>
+              {CHAIN.map(([step, desc], i) => (
+                <div key={step} style={{ padding: "16px 14px", borderLeft: i % 3 === 0 ? "none" : `1px solid ${T.line}`, borderTop: i < 3 ? "none" : `1px solid ${T.line}` }}>
+                  <div style={{ ...mono, color: T.blue, fontSize: 9.5 }}>0{i + 1}</div>
+                  <div style={{ marginTop: 6, fontSize: 13.5, fontWeight: 500 }}>{step}</div>
+                  <div style={{ marginTop: 4, fontSize: 11.5, color: "rgba(8,8,8,.6)", lineHeight: 1.4 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
+
         <p style={{ marginTop: 28, maxWidth: "70ch", fontSize: 13.5, color: "rgba(8,8,8,.7)", lineHeight: 1.6, borderLeft: `2px solid ${T.line}`, paddingLeft: 14 }}>
-          No production pathway is open yet. Nothing here takes payment, requests a provider or claims physical
-          delivery. When a pathway becomes real, it will say so — with sources.
+          No production pathway is open yet. Nothing here takes payment, requests a provider or claims physical delivery. When a pathway becomes real, it will say so — with sources and a visible status history.
         </p>
+        <div style={{ marginTop: 20 }}>
+          <Link to={contextHref("/impact/lab", location.search)} style={{ ...mono, fontSize: 11, color: T.dim }}>TECHNICAL TEST LAB →</Link>
+        </div>
+        <style>{`@media(max-width:760px){.impact-human-path{grid-template-columns:1fr!important}.impact-human-path>div{border-left:0!important;border-top:1px solid ${T.line}}.impact-human-path>div:first-child{border-top:0!important}.impact-proof-chain{grid-template-columns:1fr!important}.impact-proof-chain>div{border-left:0!important;border-top:1px solid ${T.line}!important}.impact-proof-chain>div:first-child{border-top:0!important}}`}</style>
       </Section>
     </PublicShell>
   );
