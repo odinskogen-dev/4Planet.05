@@ -18,6 +18,13 @@ async function expectRealHeroLoaded(page: import("@playwright/test").Page) {
   expect(width).toBeGreaterThan(100);
 }
 
+async function expectSourceRecordsReady(page: import("@playwright/test").Page) {
+  const ready = page.locator('[data-source-records-ready="true"]');
+  await expect(ready).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(/GBIF RECORD \//).first()).toBeVisible();
+  return ready;
+}
+
 test("Oslofjorden journey contains real bounded LIFE evidence", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(oslofjordHero(page)).toBeVisible();
@@ -34,10 +41,11 @@ test("Oslofjorden journey contains real bounded LIFE evidence", async ({ page })
 test("source-bounded Inner Oslofjord occurrence records load at record level", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(page.getByText("REAL SOURCE RECORDS / HISTORICAL OCCURRENCES", { exact: true })).toBeVisible();
-  await expect(page.getByText(/GBIF RECORD \//).first()).toBeVisible({ timeout: 15000 });
+  await expectSourceRecordsReady(page);
   await expect(page.getByText("SOURCE QUERY COUNT", { exact: true })).toBeVisible();
   await expect(page.getByText(/not live organism positions/i).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN SOURCE RECORD/i }).first()).toHaveAttribute("href", /gbif\.org\/occurrence\//);
+  await expect(page.getByRole("button", { name: /SHOW \d+ MORE SOURCE RECORDS/i })).toBeVisible();
 });
 
 test("Oslofjorden place identity does not silently become query geometry", async ({ page }) => {
@@ -106,13 +114,14 @@ test("Oslofjorden Follow persists locally across refresh without creating an acc
   await expect(page.getByRole("button", { name: /FOLLOWING OSLOFJORDEN ON THIS DEVICE/i })).toBeVisible();
 });
 
-test("Oslofjorden remains usable at 390px mobile", async ({ page }) => {
+test("Oslofjorden remains usable at 390px mobile after source records settle", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/place/oslofjorden");
   await expect(oslofjordHero(page)).toBeVisible();
   await expectRealHeroLoaded(page);
   await expect(page.getByText("European sprat", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Comment on the proposed Oslofjord plan" })).toBeVisible();
+  await expectSourceRecordsReady(page);
   const width = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   expect(width).toBeTruthy();
   await capture(page, "oslofjorden-mobile-390x844");
