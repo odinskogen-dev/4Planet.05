@@ -46,8 +46,8 @@ test("Relationship Reveal exposes two bounded source-aware threads", async ({ pa
   await expect(page.getByText("THREAD A / THE LIFE BELOW VISIBILITY", { exact: true })).toBeVisible();
   await expect(page.getByText("THREAD B / PRESSURE TO HABITAT", { exact: true })).toBeVisible();
   await expect(page.getByText("Phytoplankton", { exact: true })).toBeVisible();
-  await expect(page.getByText(/high nitrogen acts together with other factors/i)).toBeVisible();
-  await expect(page.getByText(/not a current population estimate, trend or causal diagnosis/i)).toBeVisible();
+  await expect(page.getByText(/high nitrogen acts together with other factors/i).first()).toBeVisible();
+  await expect(page.getByText(/not a current population estimate, trend or causal diagnosis/i).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /NIVA/i }).first()).toHaveAttribute("href", /niva\.no/);
 });
 
