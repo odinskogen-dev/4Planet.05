@@ -1,0 +1,52 @@
+{
+  "release": "PHASE06_1_INTEGRATION_CLOSURE",
+  "date": "2026-08-09",
+  "living_systems": {
+    "status": "HOLD",
+    "decision": "MAPPING_REQUIRED",
+    "reason": "The canonical Living Systems semantics are established, but concrete Living System / Function / Ecosystem Service IDs for the two ecological Decision Proofs are not physically seed-visible in the same tested BRAIN truth spine.",
+    "do_not": "Do not invent temporary ecological canonical IDs or duplicate Living Systems objects inside PSI/BRAIN Intelligence.",
+    "required_crosswalks": [
+      {
+        "decision_proof": "DP-01 / microfibres",
+        "problem": "4P-PROB-00082",
+        "pressure": "MICROFIBRE / MICROPLASTIC RELEASE",
+        "required_target": "existing freshwater/marine Living System IDs + water/ecosystem-quality function/service relationships",
+        "solution_examples": ["4P-SOL-000321", "4P-SOL-000322", "4P-SOL-000323", "4P-SOL-000324"]
+      },
+      {
+        "decision_proof": "DP-03 / coral restoration",
+        "problem": "4P-PROB-00045",
+        "pressure": "MARINE HEAT STRESS + LOCAL STRESSORS",
+        "required_target": "existing coral-reef Living System ID + habitat/biodiversity/coastal-service relationships",
+        "solution_examples": ["4P-SOL-000134", "4P-SOL-000346", "4P-SOL-000349"]
+      }
+    ]
+  },
+  "atlas": {
+    "status": "PASS_WITH_LIMITATION",
+    "read_model": "READY_WITHOUT_UNVERIFIED_GEOMETRY",
+    "places": [
+      {"label": "Parry Sound, Ontario, Canada", "precision": "ADMIN_LOCALITY_NAME_ONLY", "geometry": null},
+      {"label": "Florida Keys, USA", "precision": "REGIONAL_NAME_ONLY", "geometry": null},
+      {"label": "Norway", "precision": "COUNTRY_LEVEL", "geometry": null}
+    ],
+    "rule": "Omit exact geometry until a sourced canonical spatial object exists; do not fabricate coordinates."
+  },
+  "mission_engine": {
+    "status": "PASS_WITH_LIMITATION",
+    "cases": [
+      {"decision_proof": "DP-01", "classification": "DECISION_CONTEXT_READY", "reason": "Real source-control implementation/outcome evidence exists, but ecosystem impact and full lifecycle evidence remain incomplete."},
+      {"decision_proof": "DP-02", "classification": "RESEARCH_READY", "reason": "Pathway evidence is useful, but the bounded cohort has no directly linked observed cooling implementation and no comparable intervention-level economics."},
+      {"decision_proof": "DP-03", "classification": "DECISION_CONTEXT_READY", "reason": "Supporting, qualifying and challenging evidence plus real implementation outcomes are present; severe-warming limits remain material."},
+      {"decision_proof": "DP-04", "classification": "RESEARCH_READY", "reason": "Norway transferability remains a plausible hypothesis with local implementation, sludge, compatibility, regulatory and economics gaps."}
+    ],
+    "mission_candidates": 0,
+    "rule": "No Decision Proof is automatically promoted to MISSION_CANDIDATE; mission release remains founder-gated."
+  },
+  "public_read": {
+    "status": "PASS",
+    "anon_internal_staging_objects_visible": 0,
+    "rule": "Public omission is safer than exposing quarantine, weak matches, internal hypotheses or unsupported claims."
+  }
+}
