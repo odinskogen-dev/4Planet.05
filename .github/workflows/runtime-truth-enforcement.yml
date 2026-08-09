@@ -1,0 +1,41 @@
+name: Runtime Truth Enforcement Gate
+
+on:
+  push:
+    branches:
+      - agent/runtime-provenance-truth-enforcement-v1
+  pull_request:
+    paths:
+      - "src/**"
+      - "scripts/runtime-truth-contracts.test.mjs"
+      - ".github/workflows/runtime-truth-enforcement.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-truth:
+    name: Build + provenance + truth-drift contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Existing product truth contracts
+        run: npm run test:contracts
+
+      - name: Runtime provenance truth contracts
+        run: node --test scripts/runtime-truth-contracts.test.mjs
