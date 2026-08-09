@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const pilots = JSON.parse(readFileSync(resolve("src/brand-os/pilots.json"), "utf8"));
+const regressionCases = JSON.parse(readFileSync(resolve("src/brand-os/qa-regression-cases.json"), "utf8"));
 const runtime = readFileSync(resolve("src/brand-os/runtime.ts"), "utf8");
+const productionSystem = readFileSync(resolve("src/brand-os/production-system.ts"), "utf8");
 const migration = readFileSync(resolve("supabase/migrations/20260809201500_brand_os_activation.sql"), "utf8");
 const router = readFileSync(resolve("src/routes/router.tsx"), "utf8");
 
@@ -83,6 +85,35 @@ test("founder burden is instrumented as observed time, not an invented readiness
   assert.match(runtime, /totalMinutes: totalSeconds \/ 60/);
   assert.match(migration, /create table if not exists public\.brand_founder_interventions/);
   assert.match(migration, /duration_seconds numeric not null check \(duration_seconds >= 0\)/);
+});
+
+test("production system locks core primitives while leaving unvalidated distinctive behaviours provisional", () => {
+  assert.match(productionSystem, /Brand Blue #2E2EFF/);
+  assert.match(productionSystem, /Instrument Sans \/ DM Sans \/ Fragment Mono/);
+  assert.match(productionSystem, /Relationship Reveal/);
+  assert.match(productionSystem, /PROVISIONAL_UNTIL_RECOGNITION_TEST/);
+  assert.match(productionSystem, /ONE PLACE map grammar/);
+  assert.match(productionSystem, /Synthetic media cannot serve as verified-outcome evidence/);
+});
+
+test("production template IDs are explicit and cover documentary, relationship, place, signal, proof and motion", () => {
+  for (const id of ["TPL-DOC-01", "TPL-REL-01", "TPL-PLACE-01", "TPL-SIGNAL-01", "TPL-PROOF-01", "TPL-MOTION-01"]) {
+    assert.match(productionSystem, new RegExp(id));
+  }
+});
+
+test("regression corpus contains both failure and golden-boundary cases for the three pilots", () => {
+  const ids = new Set();
+  for (const item of regressionCases) {
+    assert.equal(ids.has(item.caseId), false, `duplicate regression case ${item.caseId}`);
+    ids.add(item.caseId);
+  }
+  assert.ok(regressionCases.some((item) => item.storyId === "STORY-BOS-BEE-001" && item.classification === "FAILURE"));
+  assert.ok(regressionCases.some((item) => item.storyId === "STORY-BOS-BEE-001" && item.classification === "GOLDEN_BOUNDARY"));
+  assert.ok(regressionCases.some((item) => item.storyId === "STORY-BOS-ORCA-001" && item.classification === "FAILURE"));
+  assert.ok(regressionCases.some((item) => item.storyId === "STORY-BOS-OSLO-001" && item.classification === "FAILURE"));
+  assert.ok(regressionCases.some((item) => item.caseId === "QA-SYNTH-001"));
+  assert.ok(regressionCases.some((item) => item.caseId === "QA-PROVENANCE-001"));
 });
 
 test("database enforces release gates and service-only access", () => {
