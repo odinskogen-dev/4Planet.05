@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { img } from "@/content/imageRegistry";
 import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
 import { DataStatePanel } from "@/components/phase04/DataStatePanel";
@@ -24,6 +23,8 @@ import {
   OSLOFJORD_SOLUTIONS,
   oslofjordSourceById,
 } from "@/data/oslofjordenProof";
+import { OSLOFJORD_HERO_MEDIA } from "@/data/oslofjordenMedia";
+import { useFollows } from "@/planet/follow";
 import type { RelationshipStep } from "@/phase04/model";
 
 const label: CSSProperties = {
@@ -71,9 +72,10 @@ function SourceRegister() {
 }
 
 export default function OslofjordenJourney() {
-  const [followed, setFollowed] = useState(false);
-  const contextImage = img("heroEarth");
   const place = OSLOFJORD_PLACE;
+  const media = OSLOFJORD_HERO_MEDIA;
+  const { following, toggle } = useFollows();
+  const followed = following(place.id);
   const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
     id: step.id,
     label: step.label,
@@ -81,15 +83,16 @@ export default function OslofjordenJourney() {
     status: step.grade === "DOCUMENTED" ? "DOCUMENTED" : step.grade === "4PLANET_CONTEXT" ? "4PLANET CONTEXT" : "UNKNOWN",
   }));
   const mainAction = OSLOFJORD_ACTIONS[0];
+  const atlasUrl = "/atlas?m=OCE4N&journey=oslofjorden&z=6.40&c=10.62,59.67";
 
   return (
     <PublicShell>
       <section style={{ minHeight: "88svh", position: "relative", background: "#0A0A0A", color: "#fff", overflow: "hidden" }}>
         <picture>
-          {contextImage.srcMobile && <source media="(max-width:760px)" srcSet={contextImage.srcMobile} />}
-          <img src={contextImage.src} alt={contextImage.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: contextImage.objectPosition }} />
+          {media.mobileAssetUrl && <source media="(max-width:760px)" srcSet={media.mobileAssetUrl} />}
+          <img src={media.assetUrl} alt={media.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 52%" }} />
         </picture>
-        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.9))" }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.88))" }} />
         <div style={{ position: "relative", minHeight: "88svh", padding: "clamp(90px,12vw,170px) clamp(20px,5vw,72px) clamp(36px,6vw,72px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
             <div style={{ ...label, color: "#fff" }}>PLACE JOURNEY 01 / OSLOFJORDEN / SOURCE-GROUNDED CANDIDATE</div>
@@ -98,9 +101,9 @@ export default function OslofjordenJourney() {
           <div>
             <h1 style={{ ...title, fontSize: "clamp(68px,12vw,178px)", margin: 0 }}>OSLO<br />FJORDEN.</h1>
             <p style={{ maxWidth: 820, fontSize: "clamp(20px,2.4vw,31px)", lineHeight: 1.18, letterSpacing: "-.025em", margin: "24px 0 0" }}>A real place, viewed through real surveys, pressures, decisions and the evidence needed to understand what changes next.</p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
-              <span style={{ ...label, color: "rgba(255,255,255,.78)" }}>PLANETARY CONTEXT / NASA PUBLIC-DOMAIN FRAME / NOT OSLOFJORDEN LOCATION EVIDENCE</span>
-              <span style={{ ...label, color: "#FF8C6A" }}>REAL OSLOFJORDEN HERO ASSET STILL REQUIRED</span>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24, alignItems: "center" }}>
+              <span style={{ ...label, color: "#3AE86F" }}>REAL OSLOFJORD PHOTO / 17 AUG 2022</span>
+              <a href={media.sourcePage} target="_blank" rel="noreferrer" style={{ ...label, color: "rgba(255,255,255,.9)", textDecoration: "none" }}>{media.creator} / CC0 / SOURCE ↗</a>
             </div>
           </div>
         </div>
@@ -124,7 +127,8 @@ export default function OslofjordenJourney() {
               ].map(([k, v]) => <div key={k} style={{ borderRight: "1px solid rgba(10,10,10,.24)", borderBottom: "1px solid rgba(10,10,10,.24)", padding: 14 }}><div style={{ ...label, color: "rgba(10,10,10,.52)" }}>{k}</div><div style={{ fontSize: 13.5, lineHeight: 1.4, marginTop: 7 }}>{v}</div></div>)}
             </div>
             <ProvenanceBar value={{ state: "SOURCE", actor: place.source.publisher, source: place.source.url, time: `Checked ${place.source.checkedAt}`, limitation: place.identityLimitation }} />
-            <div style={{ marginTop: 18 }}><DataStatePanel state="NOT YET IMPLEMENTED" title="A defensible biodiversity query area has not been selected." detail="GBIF/OBIS place queries stay disabled until we can say exactly what area was queried. A query result must not be confused with semantic membership in the fjord." action={<Link to="/atlas" style={linkButton}>Explore existing ATLAS sources →</Link>} /></div>
+            <div style={{ marginTop: 18 }}><DataStatePanel state="NOT YET IMPLEMENTED" title="A defensible biodiversity query area has not been selected." detail="GBIF/OBIS/Artskart place queries stay disabled until we can say exactly what area was queried. A query result must not be confused with semantic membership in the fjord." action={<Link to={atlasUrl} style={linkButton}>Open representative Oslofjord view in ATLAS →</Link>} /></div>
+            <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>ATLAS opens around the Marine Regions representative point only. It is a camera context, not an Oslofjord boundary or occurrence-query polygon.</p>
           </div>
         </section>
 
@@ -135,6 +139,8 @@ export default function OslofjordenJourney() {
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 14px" }}>Life is no longer a placeholder.</h2>
             <p style={body}>We begin with bounded evidence: a 2025 pelagic-fish survey, a limited multi-year research-trawl series and habitat-forming eelgrass. These records show what was measured or reported — not live animal positions, complete populations or the condition of the entire fjord.</p>
             <LifeEvidenceGrid records={OSLOFJORD_LIFE} sourceById={oslofjordSourceById} />
+            <div style={{ marginTop: 20 }}><Link to="/species" style={linkButton}>Browse the global SPECIES product →</Link></div>
+            <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>SPECIES is not filtered to Oslofjorden yet. Local occurrence integration remains blocked until a defensible query geometry and record-level rights/precision handling are selected.</p>
           </div>
         </section>
 
@@ -181,10 +187,11 @@ export default function OslofjordenJourney() {
         <section style={chapter}>
           <div style={chapterNo}>07 / FOLLOW</div>
           <div>
-            <StateTag>PRODUCT EXPERIMENT</StateTag>
+            <StateTag>LOCAL-FIRST WATCH STATE</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 0" }}>Follow the next survey, decision and measured response.</h2>
-            <p style={body}>The return logic is now concrete: the consultation closes, a final plan may follow, regulations can be evaluated, later surveys can be compared and measured nitrogen/oxygen indicators can change. The button is still local-session only; no account or notification is created.</p>
-            <button type="button" onClick={() => setFollowed((v) => !v)} style={{ ...linkButton, cursor: "pointer" }}>{followed ? "FOLLOWING IN THIS SESSION" : "FOLLOW OSLOFJORDEN — PROTOTYPE"}</button>
+            <p style={body}>The return logic is concrete: the consultation closes, a final plan may follow, regulations can be evaluated, later surveys can be compared and measured nitrogen/oxygen indicators can change. Follow now uses the same local-first canonical follow store as ATLAS/WATCH and survives refresh on this device. No account, telemetry or notification subscription is created.</p>
+            <button type="button" onClick={() => toggle({ id: place.id, type: "PLACE", label: place.name, sub: "FJORD · Marine Regions MRGID 3379" })} style={{ ...linkButton, cursor: "pointer" }}>{followed ? "✓ FOLLOWING OSLOFJORDEN ON THIS DEVICE" : "FOLLOW OSLOFJORDEN ON THIS DEVICE"}</button>
+            <p style={{ ...body, fontSize: 13.5, color: "rgba(10,10,10,.62)" }}>Persistence is real. Automated Oslofjord notifications are not built yet; future updates must still come from source-grounded Signals rather than manufactured engagement.</p>
           </div>
         </section>
 
@@ -217,6 +224,9 @@ export default function OslofjordenJourney() {
             <StateTag>VISIBLE SOURCE REGISTER</StateTag>
             <h2 style={{ ...title, fontSize: "clamp(40px,6vw,84px)", margin: "20px 0 26px" }}>The source is part of the product.</h2>
             <SourceRegister />
+            <div style={{ marginTop: 28 }}>
+              <ProvenanceBar value={{ state: "SOURCE", actor: media.creator, source: media.sourcePage, time: "Photographed 17 Aug 2022 · source checked Aug 2026", limitation: `${media.license}. ${media.limitation}` }} />
+            </div>
           </div>
         </section>
       </main>
