@@ -118,7 +118,7 @@ begin
 end $$;
 
 -- Public read model fails closed for internal staging cohort.
-set local role anon;
+set role anon;
 do $$
 declare n int;
 begin
