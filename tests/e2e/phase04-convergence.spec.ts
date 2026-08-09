@@ -64,7 +64,7 @@ test("mobile front door remains usable at iPhone-sized viewport", async ({ page 
   await page.getByRole("button", { name: "Open menu" }).click();
   await expect(page.getByRole("button", { name: "MISSIONS" })).toBeVisible();
   await page.getByRole("button", { name: "MISSIONS" }).click();
-  await expect(page.getByRole("link", { name: "AM4ZONIA_" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "AM4ZONIA_", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Close menu" }).click();
   await capture(page, "front-door-mobile-390x844");
 });
