@@ -1,0 +1,28 @@
+{
+  "sprint": "P17_MEGASPRINT_05",
+  "canonicalDriveRegisterId": "1O2wbXIw0bZ0bEeHNEqq_UZZc1-tkLUPoxBhVyw-P9RQ",
+  "canonicalDriveRegisterUrl": "https://docs.google.com/spreadsheets/d/1O2wbXIw0bZ0bEeHNEqq_UZZc1-tkLUPoxBhVyw-P9RQ",
+  "verifiedAt": "2026-08-09",
+  "verificationMethod": "Google Drive native range readback plus workbook metadata",
+  "counts": {
+    "knowledgeInstitutions": 151,
+    "datasetsProgrammesServices": 260,
+    "priority40": 40,
+    "deep20": 20,
+    "knowledgeProfiles": 12,
+    "sourceGraphNodes": 454,
+    "sourceGraphRelationships": 823,
+    "integrationQueue": 15,
+    "connectorProofs": 2
+  },
+  "minimums": {
+    "knowledgeInstitutions": 120,
+    "datasetsProgrammesServices": 180,
+    "priority40": 40,
+    "deep20": 20,
+    "knowledgeProfiles": 12,
+    "integrationQueue": 15
+  },
+  "qualityBoundary": "Counts establish coverage, not production integration readiness. Item-level licence, API, freshness and sensitivity states remain explicit and can be unresolved or require specialist review.",
+  "releaseState": "PRIVATE_BETA_NO_EXTERNAL_ACTIVATION"
+}
