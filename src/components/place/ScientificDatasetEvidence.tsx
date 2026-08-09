@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { ScientificDatasetRecord } from "@/data/oslofjordenDatasets";
 import type { PlaceRelationRef } from "@/planet/placeModel";
+import { DatasetOccurrenceEvidence } from "@/components/place/DatasetOccurrenceEvidence";
 
 const mono: CSSProperties = {
   fontFamily: "'Fragment Mono',ui-monospace,monospace",
@@ -39,6 +40,18 @@ export function ScientificDatasetEvidence({ records }: { records: readonly Scien
             <a href={record.licenseUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: "rgba(10,10,10,.62)", textDecoration: "none" }}>{record.license} ↗</a>
             <span style={{ ...mono, color: "rgba(10,10,10,.45)" }}>CHECKED {record.checkedAt}</span>
           </div>
+
+          {record.runtimeOccurrenceDatasetKey && (
+            <div style={{ marginTop: "clamp(30px,4vw,52px)", paddingTop: "clamp(26px,4vw,46px)", borderTop: "3px solid #0B7A39" }}>
+              <DatasetOccurrenceEvidence
+                datasetKey={record.runtimeOccurrenceDatasetKey}
+                datasetName={record.title}
+                datasetUrl={record.sourceUrl}
+                datasetLicense={record.license}
+                temporalBoundary={`Published archive coverage: ${record.temporalCoverage}`}
+              />
+            </div>
+          )}
         </article>
       ))}
     </div>
