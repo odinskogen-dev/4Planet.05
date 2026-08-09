@@ -72,7 +72,7 @@ function SourceRegister() {
 
 export default function OslofjordenJourney() {
   const [followed, setFollowed] = useState(false);
-  const ocean = img("oce4nDomainHero");
+  const contextImage = img("heroEarth");
   const place = OSLOFJORD_PLACE;
   const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
     id: step.id,
@@ -86,8 +86,8 @@ export default function OslofjordenJourney() {
     <PublicShell>
       <section style={{ minHeight: "88svh", position: "relative", background: "#0A0A0A", color: "#fff", overflow: "hidden" }}>
         <picture>
-          {ocean.srcMobile && <source media="(max-width:760px)" srcSet={ocean.srcMobile} />}
-          <img src={ocean.src} alt={ocean.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: ocean.objectPosition }} />
+          {contextImage.srcMobile && <source media="(max-width:760px)" srcSet={contextImage.srcMobile} />}
+          <img src={contextImage.src} alt={contextImage.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: contextImage.objectPosition }} />
         </picture>
         <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.9))" }} />
         <div style={{ position: "relative", minHeight: "88svh", padding: "clamp(90px,12vw,170px) clamp(20px,5vw,72px) clamp(36px,6vw,72px)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -99,7 +99,7 @@ export default function OslofjordenJourney() {
             <h1 style={{ ...title, fontSize: "clamp(68px,12vw,178px)", margin: 0 }}>OSLO<br />FJORDEN.</h1>
             <p style={{ maxWidth: 820, fontSize: "clamp(20px,2.4vw,31px)", lineHeight: 1.18, letterSpacing: "-.025em", margin: "24px 0 0" }}>A real place, viewed through real surveys, pressures, decisions and the evidence needed to understand what changes next.</p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
-              <span style={{ ...label, color: "rgba(255,255,255,.78)" }}>DOCUMENTARY OCEAN IMAGE / NOT OSLOFJORDEN LOCATION EVIDENCE</span>
+              <span style={{ ...label, color: "rgba(255,255,255,.78)" }}>PLANETARY CONTEXT / NASA PUBLIC-DOMAIN FRAME / NOT OSLOFJORDEN LOCATION EVIDENCE</span>
               <span style={{ ...label, color: "#FF8C6A" }}>REAL OSLOFJORDEN HERO ASSET STILL REQUIRED</span>
             </div>
           </div>
