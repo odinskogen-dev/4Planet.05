@@ -29,6 +29,13 @@ export type WaterbodyGeometryResult =
 
 const validWaterBodyId = (value: string) => /^[0-9A-Za-z-]{4,32}$/.test(value);
 
+const sourceDate = (value: unknown): string | undefined => {
+  if (value == null || value === "") return undefined;
+  const numeric = typeof value === "number" ? value : Number(value);
+  const date = Number.isFinite(numeric) ? new Date(numeric) : new Date(String(value));
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
 /**
  * Fetches one official Vann-Nett coastal-waterbody polygon at runtime.
  * The polygon is retained as WATERBODY_STATUS geography only. It is not cached
@@ -77,7 +84,7 @@ export async function fetchWaterbodyGeometry(
         deliveredCrs: "EPSG:4326",
         ecologicalStatusId: p.EcologicalStatusId ? String(p.EcologicalStatusId) : undefined,
         chemicalStatusId: p.ChemicalStatusId ? String(p.ChemicalStatusId) : undefined,
-        sourceLastChangedAt: p.LCDateTime ? new Date(Number(p.LCDateTime)).toISOString() : undefined,
+        sourceLastChangedAt: sourceDate(p.LCDateTime),
         sourceUrl,
         checkedAt,
         rights: "PUBLIC_SERVICE_REUSE_REVIEW_REQUIRED",
