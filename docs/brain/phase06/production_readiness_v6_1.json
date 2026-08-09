@@ -1,0 +1,32 @@
+{
+  "release": "PHASE06_1_PRODUCTION_READINESS_V6_1",
+  "date": "2026-08-09",
+  "validation_code_sha": "5bffa2b971b89beff0124f0309a858bd705409a3",
+  "validation_run_id": 31327015530,
+  "matrix": [
+    {"area":"DATABASE","status":"PASS","basis":"Fresh PostgreSQL 17.6 + PostGIS 3.3 CI runtime validated."},
+    {"area":"MIGRATIONS","status":"PASS","basis":"Clean start + reset/reapply passes."},
+    {"area":"RLS","status":"PASS","basis":"anon sees zero internal staging cohort objects."},
+    {"area":"DATA INGESTION","status":"PASS","basis":"Bounded real cohort passes staging, normalisation, validation and quarantine."},
+    {"area":"ENTITY RESOLUTION","status":"PASS_WITH_LIMITATION","basis":"Exact solution resolution and fail-safe actor quarantine pass; broad rename/subsidiary false-split benchmark remains limited."},
+    {"area":"PROVENANCE","status":"PASS","basis":"Claims retain source IDs, evidence lanes and Context Pack source linkage."},
+    {"area":"CLAIMS","status":"PASS_WITH_LIMITATION","basis":"19/19 bounded claims include source, measurement basis, directness, independence and limitations; not full-corpus/expert QA."},
+    {"area":"CONTRADICTIONS","status":"PASS","basis":"Coral Context Pack preserves SUPPORTS + QUALIFIES + CHALLENGES and explains scope/context of disagreement."},
+    {"area":"UNKNOWN HANDLING","status":"PASS","basis":"Cooling retains NO_IMPLEMENTATION_EVIDENCE rather than inventing implementation proof."},
+    {"area":"RETRIEVAL","status":"PASS","basis":"DB-derived bounded Context Packs resolve the three Decision-Proof roots and required evidence objects."},
+    {"area":"CONTEXT PACKS","status":"PASS","basis":"Context Pack v4 retained; current packs remain bounded at 10–11 objects, 5–8 claims and 1–4 sources."},
+    {"area":"ANSWER GENERATION","status":"PASS","basis":"Deterministic reviewed answers regenerate from DB Context Packs; uncertainty communication contract passes 4/4."},
+    {"area":"HUMAN VALIDATION","status":"PASS_WITH_LIMITATION","basis":"Four real founder reviews broadly accepted answers; no structured labels or external subject-matter expert validation."},
+    {"area":"ACTOR INTEGRATION","status":"PASS_WITH_LIMITATION","basis":"FPA-075 reused; four ambiguous actor candidates remain safely quarantined and four false merges were avoided."},
+    {"area":"LIVING SYSTEMS INTEGRATION","status":"HOLD","basis":"Concrete canonical Living Systems IDs are not seed-visible in the same tested BRAIN truth spine; physical shared graph remains MAPPING_REQUIRED."},
+    {"area":"ATLAS INTEGRATION","status":"PASS_WITH_LIMITATION","basis":"Place read model is truthful but exact geometry is not verified and remains null."},
+    {"area":"MISSION ENGINE","status":"PASS_WITH_LIMITATION","basis":"Decision contexts classify without automatic mission promotion; no case is MISSION_CANDIDATE."},
+    {"area":"PUBLIC READ SAFETY","status":"PASS","basis":"Public RLS fails closed; staging/quarantine stays internal."},
+    {"area":"OBSERVABILITY","status":"PASS","basis":"Three Context Pack runs persisted with retrieval version, DB revision/exact SHA, model ref and counts."},
+    {"area":"REMOTE STAGING","status":"HOLD","basis":"No authorised remote Supabase project ref/config was found; repository environments count is zero; secrets listing is not accessible and no credential was guessed."},
+    {"area":"ROLLBACK","status":"PASS_WITH_LIMITATION","basis":"Clean reset/reapply path is proven in ephemeral CI; remote staging rollback cannot be validated before a real staging target exists."},
+    {"area":"SCALE SAFETY","status":"HOLD","basis":"Remote canonical staging and physical Living Systems graph integration must close before controlled Wave 1 data-scale release."}
+  ],
+  "db_lint_note": "Supabase db lint completed without failing CI. Reported issues are in extension/helper functions such as authorization_table/addauth/PostGIS long-transaction helpers; no Phase06 BRAIN function issue was identified in the lint output. Preserve as environment/tooling limitation, not a silent clean-lint claim.",
+  "binary_recommendation": "HOLD"
+}

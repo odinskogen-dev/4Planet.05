@@ -1,0 +1,26 @@
+{
+  "release": "PHASE06_1_ANSWER_QUALITY_SCORECARD_V2",
+  "date": "2026-08-09",
+  "scope": "Four founder-reviewed questions + bounded Decision-Proof regression; not a universal model score.",
+  "dimensions": [
+    {"dimension":"RETRIEVAL PRECISION","pre":"PASS_MACHINE","post":"PASS_MACHINE","evidence":"Relevant bounded objects/claims remain within 10–11 objects and 5–8 claims per pack; no new retrieval broadening was introduced."},
+    {"dimension":"RETRIEVAL COMPLETENESS","pre":"PASS_WITH_LIMITATION","post":"PASS_WITH_LIMITATION","evidence":"Required claims, evidence lanes, implementations/outcomes/economics/gaps are returned for the bounded decision questions; no claim of full-world completeness."},
+    {"dimension":"SOURCE QUALITY","pre":"PASS_WITH_LIMITATION","post":"PASS_WITH_LIMITATION","evidence":"Bounded packs use independent research, peer-reviewed synthesis, government and multilateral sources; cooling pack remains source-thin with one principal authoritative assessment."},
+    {"dimension":"CLAIM FIDELITY","pre":"PASS_WITH_LIMITATION","post":"PASS_WITH_LIMITATION","evidence":"19/19 bounded claims preserve source, measurement basis, directness, independence and limitations; not expert-reviewed full corpus."},
+    {"dimension":"CONTRADICTION PRESERVATION","pre":"PASS","post":"PASS","evidence":"Coral SUPPORTS / QUALIFIES / CHALLENGES remain separate."},
+    {"dimension":"UNCERTAINTY CALIBRATION","pre":"PASS_WITH_PRESENTATION_LIMIT","post":"PASS","evidence":"No causal overclaim, no cooling implementation invention, Norway remains PLAUSIBLE_HYPOTHESIS."},
+    {"dimension":"UNCERTAINTY EXPLANATION QUALITY","pre":"HUMAN_FINDING_REPAIR_REQUIRED","post":"PASS_MACHINE_AFTER_HUMAN_REPAIR","evidence":"All four cards now state what is uncertain, why, decision implication and what remains supported."},
+    {"dimension":"CONTEXTUAL RELEVANCE","pre":"PASS_WITH_LIMITATION","post":"PASS_WITH_LIMITATION","evidence":"Decision-specific limitations and Norway transferability are preserved; broader expert review remains absent."},
+    {"dimension":"ANSWER COMPLETENESS","pre":"PASS_WITH_PRESENTATION_LIMIT","post":"PASS","evidence":"Post-repair answers add decision-relevant uncertainty without changing scientific meaning."},
+    {"dimension":"CITATION TRACEABILITY","pre":"PASS","post":"PASS","evidence":"Context Pack claims and sources remain linked; three audited Context Pack runs persisted."},
+    {"dimension":"UNSUPPORTED EXTRAPOLATION","pre":"PASS","post":"PASS","evidence":"System abstains from ecosystem benefit, universal cooling ranking, climate-proof coral restoration and Norway mission readiness."},
+    {"dimension":"HUMAN USEFULNESS","pre":"BROADLY_ACCEPTED_WITH_FEEDBACK","post":"NOT_RE_REVIEWED_AFTER_REPAIR","evidence":"Founder accepted original four as good enough with one presentation finding. Post-repair answers were machine-regressed; no second founder label was invented or required because meaning did not change."}
+  ],
+  "context_size": {
+    "microfibre":{"objects":11,"claims":8,"sources":4},
+    "cooling":{"objects":10,"claims":5,"sources":1},
+    "coral":{"objects":11,"claims":5,"sources":2}
+  },
+  "context_pack_decision":"RETAIN_CONTEXT_PACK_V4_0",
+  "reason":"The human finding was answer-presentation, not retrieval under-supply or context overload. Current packs are already small and retain material contradiction/unknown evidence."
+}

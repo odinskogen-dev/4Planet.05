@@ -1,0 +1,44 @@
+{
+  "release": "PHASE06_1_ACTOR_CANONICALISATION_CLOSURE",
+  "date": "2026-08-09",
+  "canonical_actor_universe": "4PLANET Field Partners & Global Nature Actor Intelligence v2.0",
+  "resolved_existing_actor": {
+    "name": "Coral Restoration Foundation",
+    "canonical_id": "FPA-075",
+    "status": "TRUE_MATCH"
+  },
+  "quarantined_candidates": [
+    {
+      "candidate": "Parry Sound households / study team / WWTP",
+      "status": "PENDING_ENTITY_RESOLUTION",
+      "closure": "FALSE_MERGE_AVOIDED",
+      "reason": "Composite implementation participants are not one defensible canonical organisation identity."
+    },
+    {
+      "candidate": "Mission: Iconic Reefs / NOAA and partners",
+      "status": "PENDING_ENTITY_RESOLUTION",
+      "closure": "FALSE_MERGE_AVOIDED",
+      "reason": "FPA-156 is NOAA Coral Reef Watch, a monitoring service; it is not equivalent to Mission: Iconic Reefs / NOAA and partners."
+    },
+    {
+      "candidate": "UNEP Cool Coalition",
+      "status": "PENDING_ENTITY_RESOLUTION",
+      "closure": "FALSE_MERGE_AVOIDED",
+      "reason": "The canonical actor universe contains UNEP-linked actors such as UNEP-WCMC, but no defensible exact Cool Coalition identity match."
+    },
+    {
+      "candidate": "Miljødirektoratet",
+      "status": "PENDING_ENTITY_RESOLUTION",
+      "closure": "FALSE_MERGE_AVOIDED",
+      "reason": "No exact canonical actor record was found in the current Actor Intelligence universe; do not infer a new ID."
+    }
+  ],
+  "metrics": {
+    "true_matches_in_bounded_cohort": 1,
+    "pending_entity_resolution": 4,
+    "false_merges_avoided": 4,
+    "forced_merges": 0
+  },
+  "gate_status": "PASS_WITH_LIMITATION",
+  "interpretation": "Quarantine is functioning as intended. Unresolved identity is safer than a false canonical merge; this does not by itself block bounded intelligence use."
+}

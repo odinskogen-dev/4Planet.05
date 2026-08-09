@@ -1,0 +1,164 @@
+name: PSI Phase 06 — Staging + Founder Validation Gate
+
+on:
+  push:
+    branches:
+      - agent/psi-phase06-staging-founder-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: psi-phase06-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bounded-staging-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+          github-token: ${{ github.token }}
+
+      - name: Ensure local Supabase config
+        shell: bash
+        run: |
+          if [ ! -f supabase/config.toml ]; then supabase init; fi
+
+      - name: Start fresh PostgreSQL/PostGIS and apply migrations
+        run: supabase db start
+
+      - name: Reapply canonical migrations from clean state
+        run: supabase db reset
+
+      - name: Locate database container
+        id: db
+        shell: bash
+        run: |
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          test -n "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee phase06-postgres-version.txt
+
+      - name: Normalise generated staging fixture quoting
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/fixtures/phase06_decision_proof_cohort.sql').read_text(encoding='utf-8')
+          start = "jsonb_array_elements('["
+          end = "]'::jsonb) loop"
+          if src.count(start) != 1 or src.count(end) != 1:
+              raise SystemExit('Unexpected Phase06 generated JSON staging block shape')
+          src = src.replace(start, 'jsonb_array_elements($phase06_json$[', 1)
+          src = src.replace(end, ']$phase06_json$::jsonb) loop', 1)
+          Path('phase06-decision-proof-cohort.runtime.sql').write_text(src, encoding='utf-8')
+          PY
+
+      - name: Load bounded real Decision-Proof cohort through staging
+        shell: bash
+        run: |
+          docker cp phase06-decision-proof-cohort.runtime.sql "${{ steps.db.outputs.name }}:/tmp/phase06-cohort.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase06-cohort.sql | tee phase06-cohort-load.txt
+
+      - name: Run Phase 06 SQL gates
+        shell: bash
+        run: |
+          docker cp supabase/tests/phase06_decision_proof.sql "${{ steps.db.outputs.name }}:/tmp/phase06-test.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase06-test.sql | tee phase06-sql-gate.txt
+          grep -q 'PHASE06_DECISION_PROOF_SQL_GATE_PASS' phase06-sql-gate.txt
+
+      - name: Export bounded DB-derived Context Packs
+        shell: bash
+        run: |
+          mkdir -p phase06-contexts
+          for spec in "microfibre:4P-PROB-00082" "cooling:4P-PROB-00013" "coral:4P-PROB-00045"; do
+            name="${spec%%:*}"
+            root="${spec#*:}"
+            docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -Atc "select public.brain_context_pack_v4('$root')::text;" > "phase06-contexts/$name.json"
+          done
+          jq -e '.status == "OK"' phase06-contexts/microfibre.json
+          jq -e '.status == "OK"' phase06-contexts/cooling.json
+          jq -e '.status == "OK"' phase06-contexts/coral.json
+          jq -e '.context_pack_version == "4.0"' phase06-contexts/microfibre.json
+
+      - name: Generate DB-derived review cards + human-feedback repair regression
+        run: |
+          node scripts/phase06-review-cards.mjs phase06-contexts | tee phase06-machine-review.txt
+          grep -q 'PHASE06_MACHINE_REVIEW_PRECHECK_PASS' phase06-machine-review.txt
+          grep -q 'PHASE06_HUMAN_FEEDBACK_REPAIR_PASS' phase06-machine-review.txt
+          jq -e '.context_pack_decision == "RETAIN_CONTEXT_PACK_V4_0"' phase06-machine-scorecard.json
+          jq -e '.human_review_completed == 4 and .explicit_structured_passes == 0 and .explicit_structured_fails == 0 and .structured_label_status == "NOT_EXPLICITLY_SUPPLIED"' phase06-machine-scorecard.json
+          jq -e 'length == 4 and all(.[]; .scientific_meaning_changed == false)' phase06-before-after-human-repair.json
+          jq -e '.schema_change == false and (.required_fields|length) == 4' phase06-uncertainty-presentation-contract.json
+
+      - name: Record auditable Context Pack runs
+        shell: bash
+        run: |
+          for spec in "4P-PROB-00082:microfibre" "4P-PROB-00013:cooling" "4P-PROB-00045:coral"; do
+            root="${spec%%:*}"
+            file="${spec#*:}"
+            obj="$(jq '.objects|length' "phase06-contexts/$file.json")"
+            clm="$(jq '.claims|length' "phase06-contexts/$file.json")"
+            src="$(jq '.sources|length' "phase06-contexts/$file.json")"
+            docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "insert into public.context_pack_runs(query_text,task_type,root_object_id,retrieval_version,database_revision,model_ref,object_count,claim_count,source_count) select 'Phase06 Decision Proof: $root','DECISION_PROOF',id,'brain_context_pack_v4','${{ github.sha }}','DETERMINISTIC_TEMPLATE_UNCERTAINTY_V1',$obj,$clm,$src from public.brain_objects where public_ref='$root';"
+          done
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -Atc "select count(*) from public.context_pack_runs where retrieval_version='brain_context_pack_v4';" | tee phase06-context-pack-audit-count.txt
+          grep -q '^3$' phase06-context-pack-audit-count.txt
+
+      - name: Generate schema types and lint database
+        shell: bash
+        run: |
+          supabase gen types typescript --local > phase06-schema.gen.ts
+          grep -q 'brain_context_pack_v4' phase06-schema.gen.ts
+          supabase db lint --level warning | tee phase06-db-lint.txt
+
+      - name: Application typecheck and build
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+
+      - name: Export quality snapshot
+        shell: bash
+        run: |
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -AtF $'\t' -c "
+          select 'problems',count(*) from public.problem_frames union all
+          select 'pathways',count(*) from public.solution_pathways union all
+          select 'interventions',count(*) from public.interventions union all
+          select 'claims',count(*) from public.claims union all
+          select 'implementations',count(*) from public.implementations union all
+          select 'outcomes',count(*) from public.brain_outcomes union all
+          select 'economics',count(*) from public.cost_observations union all
+          select 'quarantine',count(*) from public.brain_quarantine_records union all
+          select 'context_pack_runs',count(*) from public.context_pack_runs;
+          " | tee phase06-quality-snapshot.tsv
+
+      - name: Upload exact-SHA Phase 06.1 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: psi-phase06-1-closure-evidence
+          path: |
+            phase06-postgres-version.txt
+            phase06-decision-proof-cohort.runtime.sql
+            phase06-cohort-load.txt
+            phase06-sql-gate.txt
+            phase06-contexts/
+            phase06-founder-review-cards.json
+            phase06-before-after-human-repair.json
+            phase06-uncertainty-presentation-contract.json
+            phase06-machine-scorecard.json
+            phase06-machine-review.txt
+            phase06-context-pack-audit-count.txt
+            phase06-schema.gen.ts
+            phase06-db-lint.txt
+            phase06-quality-snapshot.tsv
+          if-no-files-found: warn
+          retention-days: 30

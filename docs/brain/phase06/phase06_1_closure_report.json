@@ -1,0 +1,76 @@
+{
+  "release": "4PLANET PSI Phase 06.1 Closure",
+  "date": "2026-08-09",
+  "status": "CLOSURE_ASSESSED_HOLD_SCALE",
+  "authority": "FOUNDER_DIRECTED_INTERNAL",
+  "branch": "agent/psi-phase06-staging-founder-validation",
+  "pull_request": 30,
+  "validation_code_sha": "5bffa2b971b89beff0124f0309a858bd705409a3",
+  "validation_run_id": 31327015530,
+  "validation_run_conclusion": "success",
+  "base_authority_branch": "agent/psi-phase05-canonical-convergence",
+  "base_authority_sha": "ff7cb419a06035434c3019e5ae10fdd604ea59e4",
+  "human_review": {
+    "reviewed_questions": ["HB-05", "HB-12", "HB-18", "HB-23"],
+    "completed": 4,
+    "qualitative_judgement": "BROADLY_ACCEPTED_GOOD_ENOUGH_TO_CONTINUE",
+    "explicit_structured_passes": 0,
+    "explicit_structured_fails": 0,
+    "structured_label_status": "NOT_EXPLICITLY_SUPPLIED",
+    "material_finding": "Material uncertainty was sometimes too compressed and should be explained in concise causal prose."
+  },
+  "repair": {
+    "classification": "PRODUCT_PRESENTATION_UNCERTAINTY_COMMUNICATION",
+    "context_pack_decision": "RETAIN_CONTEXT_PACK_V4_0",
+    "schema_change": false,
+    "contract": "UNCERTAINTY_PRESENTATION_V1",
+    "required_components": ["uncertainty_statement", "uncertainty_basis", "decision_implication", "still_supported"],
+    "scientific_meaning_changed": false
+  },
+  "regression": {
+    "machine_checks": "9/9 PASS",
+    "sql_gate": "PHASE06_DECISION_PROOF_SQL_GATE_PASS",
+    "postgres_postgis": "PASS_EPHEMERAL_CI",
+    "clean_migration_reapply": "PASS",
+    "staging_and_quarantine": "PASS",
+    "founder_gated_promotion": "FAILS_CLOSED_AS_DESIGNED",
+    "supports_qualifies_challenges": "PASS",
+    "unknown_preservation": "PASS",
+    "public_rls": "PASS",
+    "types": "PASS",
+    "application_typecheck": "PASS",
+    "application_build": "PASS"
+  },
+  "bounded_cohort": {
+    "problems": 3,
+    "pathways": 3,
+    "interventions": 21,
+    "claims": 19,
+    "claims_supports": 12,
+    "claims_qualifies": 6,
+    "claims_challenges": 1,
+    "implementations": 3,
+    "outcomes": 8,
+    "economics": 3,
+    "quarantine": 4,
+    "context_pack_runs": 3
+  },
+  "claim_quality": {
+    "status": "PASS_WITH_LIMITATION",
+    "claims_audited": 19,
+    "with_source": 19,
+    "with_measurement_basis": 19,
+    "with_directness": 19,
+    "with_independence": 19,
+    "with_limitations": 19,
+    "new_quarantines": 0,
+    "limitation": "This is bounded Decision-Proof claim QA, not full-corpus or expert review."
+  },
+  "remote_staging": "DEPLOYMENT_READY_NOT_EXECUTED",
+  "living_systems": "MAPPING_REQUIRED",
+  "scale_decision": "HOLD",
+  "scale_blockers": [
+    "REMOTE_INFRASTRUCTURE_BLOCKER: no authorised remote Supabase staging target/project ref is available in the current canonical repo/context.",
+    "INTEGRATION_BLOCKER: canonical Living Systems IDs are not physically seed-visible in the same tested BRAIN truth spine, so the shared ecological graph remains unmaterialised."
+  ]
+}
