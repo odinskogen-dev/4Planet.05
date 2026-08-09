@@ -46,7 +46,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
   await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, migration track or current location/i)).toBeVisible();
+  await expect(page.getByText(/do not establish range, abundance, migration track or current location/i)).toBeVisible();
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
@@ -78,7 +78,7 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
   await expect(page.getByText(/Species-level evidence is never silently converted/i)).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, migration track or current location/i)).toBeVisible();
+  await expect(page.getByText(/do not establish range, abundance, migration track or current location/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
 
