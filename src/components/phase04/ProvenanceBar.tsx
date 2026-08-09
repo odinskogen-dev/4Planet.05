@@ -1,6 +1,7 @@
+import type { CSSProperties } from "react";
 import type { ProvenancePresentation } from "@/phase04/model";
 
-const mono: React.CSSProperties = {
+const mono: CSSProperties = {
   fontFamily: "'Fragment Mono', ui-monospace, monospace",
   fontSize: 10,
   letterSpacing: ".08em",
@@ -17,10 +18,10 @@ export function ProvenanceBar({ value, dark = false }: { value: ProvenancePresen
     [value.source ? "SOURCE" : "METHOD", value.source ?? value.method ?? "NOT STATED"],
     ["TIME", value.time ?? "NOT STATED"],
     ["LIMIT", value.limitation],
-  ];
+  ] as const;
   return (
     <div aria-label={`Proof state ${value.state}`} style={{ border: `1px solid ${line}`, color: fg }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
+      <div className="phase04-provenance-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
         {items.map(([k, v], i) => (
           <div key={`${k}-${i}`} style={{ padding: "9px 11px", borderRight: `1px solid ${line}`, minWidth: 0 }}>
             <span style={{ ...mono, color: muted, display: "block", marginBottom: 5 }}>{k}</span>
