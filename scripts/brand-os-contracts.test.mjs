@@ -7,6 +7,9 @@ const pilots = JSON.parse(readFileSync(resolve("src/brand-os/pilots.json"), "utf
 const regressionCases = JSON.parse(readFileSync(resolve("src/brand-os/qa-regression-cases.json"), "utf8"));
 const runtime = readFileSync(resolve("src/brand-os/runtime.ts"), "utf8");
 const productionSystem = readFileSync(resolve("src/brand-os/production-system.ts"), "utf8");
+const channelEngine = readFileSync(resolve("src/brand-os/channel-engine.ts"), "utf8");
+const publishingAdapters = readFileSync(resolve("src/brand-os/publishing-adapters.ts"), "utf8");
+const learningEngine = readFileSync(resolve("src/brand-os/learning-engine.ts"), "utf8");
 const migration = readFileSync(resolve("supabase/migrations/20260809201500_brand_os_activation.sql"), "utf8");
 const router = readFileSync(resolve("src/routes/router.tsx"), "utf8");
 
@@ -116,6 +119,44 @@ test("regression corpus contains both failure and golden-boundary cases for the 
   assert.ok(regressionCases.some((item) => item.caseId === "QA-PROVENANCE-001"));
 });
 
+test("channel engine keeps one truth core and limits verification queues to 50", () => {
+  for (const surface of ["web", "instagram", "youtube", "linkedin", "tiktok", "newsletter"]) {
+    assert.match(channelEngine, new RegExp(`${surface}:`));
+  }
+  assert.match(channelEngine, /truthCore: story\.truthCore/);
+  assert.match(channelEngine, /audienceJob: story\.audienceJob/);
+  assert.match(channelEngine, /maximum > 50/);
+  assert.match(channelEngine, /topicalFit \* 0\.35/);
+  assert.match(channelEngine, /relationshipFit \* 0\.2/);
+});
+
+test("publishing adapters are fail-closed and contain no external execution path", () => {
+  for (const surface of ["instagram", "youtube", "linkedin", "tiktok", "newsletter"]) {
+    assert.match(publishingAdapters, new RegExp(`${surface}:`));
+  }
+  assert.match(publishingAdapters, /mode: "DRY_RUN_ONLY"/);
+  assert.match(publishingAdapters, /productionEnabled: false/);
+  assert.match(publishingAdapters, /authState: "AUTH_REQUIRED"/);
+  assert.match(publishingAdapters, /executeExternalPublication/);
+  assert.match(publishingAdapters, /intentionally unavailable in Brand OS Activation/);
+  assert.equal(publishingAdapters.includes("fetch("), false, "publishing adapter unexpectedly contains a network fetch");
+});
+
+test("learning engine requires pre-registered variants and never turns observations into silent canon", () => {
+  assert.match(learningEngine, /variants\.length < 2/);
+  assert.match(learningEngine, /minimumObservations/);
+  assert.match(learningEngine, /INSUFFICIENT_EVIDENCE/);
+  assert.match(learningEngine, /Treat as local evidence, not universal canon/);
+  assert.match(learningEngine, /canonEffect: "NONE"/);
+});
+
+test("autonomy cannot advance before controlled real public evidence exists", () => {
+  assert.match(learningEngine, /controlledPublicReleases < 1/);
+  assert.match(learningEngine, /No controlled real public release evidence exists yet/);
+  assert.match(learningEngine, /high-risk auto-publish/);
+  assert.match(learningEngine, /Fewer than ten controlled public releases exist/);
+});
+
 test("database enforces release gates and service-only access", () => {
   assert.match(migration, /create trigger brand_releases_guard/);
   assert.match(migration, /Brand release blocked: source, rights, QA, product, founder and public eligibility gates must pass/);
@@ -137,6 +178,7 @@ test("Bee pilot explicitly rejects the universal all-food-depends-on-bees simpli
   const bee = pilots.find((story) => story.storyId === "STORY-BOS-BEE-001");
   assert.ok(bee);
   assert.match(bee.truthCore, /not all food production depends on bees/i);
+  assert.equal(bee.gates.source, "PASS");
 });
 
 test("Oslofjorden pilot preserves coverage and causal limits", () => {
