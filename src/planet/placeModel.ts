@@ -51,7 +51,8 @@ export interface PlaceGeometryRef {
   id: string;
   /** Legacy adapter field retained while ATLAS moves to role. */
   use: PlaceGeometryUse;
-  role: PlaceGeometryRole;
+  /** New canonical role. Optional only for pre-migration records. */
+  role?: PlaceGeometryRole;
   label: string;
   availability: GeometryAvailability;
   source?: PlaceSourceRef;
@@ -61,10 +62,10 @@ export interface PlaceGeometryRef {
   sourceVersion?: string;
   effectiveAt?: string;
   rights?: GeometryRights;
-  intendedUse: string;
+  intendedUse?: string;
   precision?: string;
   resolution?: string;
-  supersessionState: SupersessionState;
+  supersessionState?: SupersessionState;
   /** Product-facing explanation of exactly what this geometry can and cannot mean. */
   limitation: string;
 }
