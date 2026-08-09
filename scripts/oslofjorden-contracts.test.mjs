@@ -7,6 +7,7 @@ const data = read("src/data/oslofjordenProof.ts");
 const media = read("src/data/oslofjordenMedia.ts");
 const datasets = read("src/data/oslofjordenDatasets.ts");
 const places = read("src/data/oslofjordenPlaces.ts");
+const evidenceComponent = read("src/components/place/ScientificDatasetEvidence.tsx");
 const model = read("src/planet/placeModel.ts");
 const follow = read("src/planet/follow.ts");
 const page = read("src/pages/phase04/OslofjordenJourney.tsx");
@@ -33,7 +34,8 @@ test("source-backed sub-place relation does not manufacture child geometry", () 
   assert.match(places, /relation: "PART_OF"/);
   assert.match(places, /toPlaceId: "place:marine-regions:3379"/);
   assert.match(places, /does not provide 4PLANET with a universal child polygon/i);
-  assert.match(page, /SOURCE-BACKED SUB-PLACE/);
+  assert.match(evidenceComponent, /SOURCE-BACKED SUB-PLACE/);
+  assert.match(page, /PlaceRelationEvidence/);
 });
 
 test("real LIFE proof uses bounded survey evidence and exposes uncertainty", () => {
@@ -47,12 +49,14 @@ test("real LIFE proof uses bounded survey evidence and exposes uncertainty", () 
 
 test("microscopic LIFE adds source-bounded datasets without turning archive counts into current abundance", () => {
   for (const token of ["22,635", "3,816", "411", "18", "1896-02-14", "2020-12-14", "CC-BY 4.0"]) assert.ok(datasets.includes(token), token);
-  assert.match(datasets, /DATASET EXTENT only/i);
+  assert.match(datasets, /DATASET/);
+  assert.match(datasets, /EXTENT only/i);
   assert.match(datasets, /not organism abundance or current ecological condition/i);
   assert.match(datasets, /living benthic foraminifera/i);
   assert.match(datasets, /three sites in one basin/i);
   assert.match(page, /MICROSCOPIC LIFE/);
   assert.match(page, /The life you do not see drives the place story too/i);
+  assert.match(evidenceComponent, /NOT A PLACE BOUNDARY/);
 });
 
 test("official future occurrence sources remain source-ready rather than silently queried", () => {
