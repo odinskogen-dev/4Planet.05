@@ -4,49 +4,59 @@ import { img } from "@/content/imageRegistry";
 import { RelationshipReveal } from "@/components/phase04/RelationshipReveal";
 import { ProvenanceBar } from "@/components/phase04/ProvenanceBar";
 import { SignalCard } from "@/components/phase04/SignalCard";
+import {
+  OSLOFJORD_LIFE,
+  OSLOFJORD_RELATIONSHIP,
+  OSLOFJORD_SIGNALS,
+  oslofjordSourceById,
+} from "@/data/oslofjordenProof";
 import type { RelationshipStep, SignalPresentation } from "@/phase04/model";
 
-const relationship: RelationshipStep[] = [
-  { id: "life", label: "Living communities", kind: "LIFE", status: "SOURCE REVIEW PENDING" },
-  { id: "place", label: "Oslofjorden", kind: "PLACE", status: "PROTOTYPE DATA" },
-  { id: "pressure", label: "Human pressures", kind: "PRESSURE", status: "CURATED SOURCE" },
-  { id: "response", label: "Measures + restoration", kind: "RESPONSE", status: "CURATED SOURCE" },
-  { id: "proof", label: "Change over time", kind: "PROOF", status: "NOT YET IMPLEMENTED" },
-];
+const relationship: RelationshipStep[] = OSLOFJORD_RELATIONSHIP.map((step) => ({
+  id: step.id,
+  label: step.label,
+  kind: step.kind,
+  status: step.grade === "DOCUMENTED" ? "DOCUMENTED" : step.grade === "4PLANET_CONTEXT" ? "4PLANET CONTEXT" : "UNKNOWN",
+}));
 
+const planSignal = OSLOFJORD_SIGNALS.find((signal) => signal.id === "signal-plan-hearing-2026")!;
+const planSource = oslofjordSourceById(planSignal.sourceIds[0]);
 const policySignal: SignalPresentation = {
-  what: "A proposed new Oslofjord plan is under consultation.",
+  what: planSignal.headline,
   where: "Oslofjorden · Norway",
   when: "19 JUN 2026",
-  source: "Norwegian Government · Ministry of Climate and Environment",
-  confidence: "HIGH",
-  whyItMatters: "The proposal changes the policy context around measures, monitoring and restoration for a fjord already described by government sources as being in poor ecological condition.",
-  relationship: "Policy → measures → pressures → ecological monitoring",
-  followNext: "Consultation outcome · final measures · monitoring · ecological indicators",
+  source: `${planSource.publisher} · ${planSource.label}`,
+  confidence: planSignal.confidence,
+  whyItMatters: planSignal.whyItMatters,
+  relationship: "Public decision → measures → implementation → monitoring → ecological response",
+  followNext: planSignal.followNext,
   dataState: "CURATED SOURCE",
 };
 
 const jobs = [
   ["SEE", "ATLAS", "Explore planetary data, places and source records.", "/atlas"],
   ["DISCOVER", "SPECIES", "Begin with life: identity, records, place and evidence.", "/species"],
-  ["UNDERSTAND", "LIVING SYSTEMS", "Reveal relationships, dependencies and pressures without hiding review state.", "/living-systems"],
+  ["UNDERSTAND", "LIVING SYSTEMS", "Reveal relationships, dependencies and pressures without hiding evidence status.", "/living-systems"],
   ["ACT + PROVE", "IMPACT", "Move from credible action pathways to explicit delivery and proof states.", "/impact"],
 ] as const;
 
 export default function Phase04FrontDoor() {
   const earth = img("heroEarth");
+  const sprat = OSLOFJORD_LIFE.find((record) => record.id === "life-sprat-2025")!;
+  const herring = OSLOFJORD_LIFE.find((record) => record.id === "life-herring-2025")!;
+  const anchovy = OSLOFJORD_LIFE.find((record) => record.id === "life-anchovy-2025")!;
   return (
     <PublicShell>
       <section style={{ minHeight: "calc(100svh - 64px)", display: "grid", gridTemplateColumns: "minmax(0,1.02fr) minmax(360px,.98fr)", borderBottom: "1px solid rgba(10,10,10,.22)" }}>
         <div style={{ padding: "clamp(42px,7vw,96px) clamp(20px,5vw,72px)", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 40 }}>
           <div>
-            <div className="mono" style={{ fontSize: 10.5, letterSpacing: ".12em", color: "#2E2EFF" }}>4PLANET_ / SELECTED PLACE / PUBLIC PROTOTYPE CANDIDATE</div>
+            <div className="mono" style={{ fontSize: 10.5, letterSpacing: ".12em", color: "#2E2EFF" }}>4PLANET_ / SELECTED PLACE / SOURCE-GROUNDED CANDIDATE</div>
             <h1 style={{ margin: "clamp(40px,8vw,100px) 0 0", fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 500, fontSize: "clamp(62px,9vw,142px)", letterSpacing: "-.06em", lineHeight: .86 }}>What is<br />happening<br />here?</h1>
           </div>
           <div style={{ maxWidth: 760 }}>
             <div className="mono" style={{ fontSize: 11, letterSpacing: ".1em", color: "rgba(10,10,10,.55)" }}>OSLOFJORDEN / NORWAY</div>
             <p style={{ margin: "12px 0 0", fontSize: "clamp(20px,2.2vw,30px)", lineHeight: 1.2, letterSpacing: "-.025em" }}>
-              A living place under pressure — viewed through life, relationships, changing evidence and the decisions around it.
+              A living place seen through real surveys, relationships, pressures, public decisions and the evidence needed to understand what changes next.
             </p>
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 24 }}>
               <Link to="/place/oslofjorden" style={primaryButton}>Enter Oslofjorden →</Link>
@@ -62,8 +72,21 @@ export default function Phase04FrontDoor() {
           <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.28))" }} />
           <div style={{ position: "absolute", left: 20, right: 20, bottom: 18, color: "#fff", display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
             <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>PLANETARY CONTEXT / NASA PUBLIC-DOMAIN FRAME</span>
-            <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>IMAGE IS NOT OSLOFJORDEN LOCATION EVIDENCE</span>
+            <span className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em" }}>NOT OSLOFJORDEN LOCATION EVIDENCE · REAL HERO ASSET STILL REQUIRED</span>
           </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 clamp(20px,5vw,72px)", maxWidth: 1440, margin: "0 auto" }}>
+        <div className="front-life-strip" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", borderLeft: "1px solid #0A0A0A" }}>
+          {[
+            [sprat, "261 million", "2,971 t"],
+            [herring, "75 million", "2,718 t"],
+            [anchovy, "50 million", "196 t"],
+          ].map(([record, count, biomass]) => {
+            const life = record as typeof sprat;
+            return <div key={life.id} style={{ padding: "22px 20px", borderRight: "1px solid #0A0A0A", borderBottom: "1px solid #0A0A0A" }}><div className="mono" style={{ fontSize: 9.5, letterSpacing: ".08em", color: "#2E2EFF" }}>HI SURVEY / DEC 2025 / ESTIMATE</div><div style={{ fontFamily: "'Instrument Sans',sans-serif", fontSize: 27, letterSpacing: "-.035em", marginTop: 11 }}>{life.commonName}</div><div style={{ display: "flex", gap: 18, marginTop: 18, flexWrap: "wrap" }}><span><strong>{count as string}</strong><small style={{ display: "block", marginTop: 3 }}>estimated individuals</small></span><span><strong>{biomass as string}</strong><small style={{ display: "block", marginTop: 3 }}>estimated biomass</small></span></div><div style={{ fontSize: 11.5, lineHeight: 1.45, color: "rgba(10,10,10,.58)", marginTop: 15 }}>Survey estimate with uncertainty. Not a live count or current position.</div></div>;
+          })}
         </div>
       </section>
 
@@ -84,7 +107,7 @@ export default function Phase04FrontDoor() {
       </section>
 
       <section style={{ padding: "clamp(60px,8vw,110px) clamp(20px,5vw,72px)", maxWidth: 1440, margin: "0 auto" }}>
-        <RelationshipReveal steps={relationship} note="Oslofjorden front-door relationship structure. Scientific edges remain source-review pending unless explicitly sourced." />
+        <RelationshipReveal steps={relationship} note="Oslofjorden eelgrass chain. Documented source-backed steps remain separate from 4PLANET context." />
       </section>
 
       <section style={{ padding: "clamp(60px,8vw,110px) clamp(20px,5vw,72px)", maxWidth: 1440, margin: "0 auto" }}>
@@ -93,10 +116,10 @@ export default function Phase04FrontDoor() {
         <div style={{ marginTop: 16 }}>
           <ProvenanceBar value={{
             state: "SOURCE",
-            actor: "Norwegian Government",
-            source: "Regjeringen.no · consultation notice dated 19 Jun 2026",
-            time: "Checked for Phase 04 · Aug 2026",
-            limitation: "This is a policy-event source. It does not by itself verify ecological outcomes from any measure.",
+            actor: planSource.publisher,
+            source: planSource.url,
+            time: "Published 19 Jun 2026 · consultation closes 15 Sep 2026",
+            limitation: "This is a live public decision process, not a final adopted plan and not evidence of ecological outcome.",
           }} />
         </div>
       </section>
@@ -118,7 +141,7 @@ export default function Phase04FrontDoor() {
         </div>
       </section>
 
-      <style>{`@media(max-width:900px){.phase04-job-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:760px){#main-content>section:first-child{grid-template-columns:1fr!important}.phase04-job-grid{grid-template-columns:1fr!important}}`}</style>
+      <style>{`@media(max-width:900px){.phase04-job-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:760px){#main-content>section:first-child{grid-template-columns:1fr!important}.phase04-job-grid,.front-life-strip{grid-template-columns:1fr!important}}`}</style>
     </PublicShell>
   );
 }
