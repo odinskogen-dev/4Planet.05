@@ -46,15 +46,23 @@ test("Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4
   // ── 1. ATLAS opens the deterministic verified whale occurrence ──
   await page.goto("/atlas?record=orca-bundled", { waitUntil: "load" });
   await mapReady(page);
-  await page.waitForTimeout(1500);
 
   // The real OBSERVATION panel must be open with the bundled, non-live record.
+  // Wait deterministically for the panel content rather than a fixed sleep.
+  await page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false }).waitFor({ state: "visible", timeout: 20_000 });
   await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
   await expect(page.getByText("OBSERVATION RECORD", { exact: false })).toBeVisible();
-  await expect(page.getByText("ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE", { exact: false })).toBeVisible();
+  // On mobile the panel is a scrollable bottom sheet; bring content into view.
+  const illus = page.getByText("ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE", { exact: false });
+  await illus.scrollIntoViewIfNeeded();
+  await expect(illus).toBeVisible();
   // Record truth fields present.
-  await expect(page.getByText("Orcinus orca", { exact: false })).toBeVisible();
-  await expect(page.getByText(/±?1[,.]?000\s*m/)).toBeVisible();
+  const sci = page.getByText("Orcinus orca", { exact: false });
+  await sci.scrollIntoViewIfNeeded();
+  await expect(sci).toBeVisible();
+  const uncert = page.getByText(/±?1[,.]?000\s*m/);
+  await uncert.first().scrollIntoViewIfNeeded();
+  await expect(uncert.first()).toBeVisible();
   const atlasUrlBefore = page.url();
   expect(atlasUrlBefore).toContain("record=orca-bundled");
   await shot("01-atlas-observation");
@@ -62,15 +70,20 @@ test("Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4
   // ── real pointer pan + zoom on the map (state must change) ──
   const before = await mapState(page);
   const box = page.viewportSize()!;
-  await page.mouse.move(box.width * 0.5, box.height * 0.5);
+  const isMobile = box.width < 760;
+  // On mobile the observation sheet covers the lower ~72vh, so interact in the
+  // visible map strip near the top; on desktop use the map centre.
+  const py = isMobile ? box.height * 0.16 : box.height * 0.5;
+  const px = isMobile ? box.width * 0.5 : box.width * 0.4;
+  await page.mouse.move(px, py);
   await page.mouse.down();
-  await page.mouse.move(box.width * 0.5 - 120, box.height * 0.5 - 90, { steps: 12 });
+  await page.mouse.move(px - 90, py + 60, { steps: 12 });
+  await page.mouse.move(px - 150, py + 90, { steps: 12 });
   await page.mouse.up();
   await page.waitForTimeout(1000);
   const midState = await mapState(page);
-  // real wheel zoom over a clear part of the map (left of the right-side panel)
-  const zx = box.width * 0.28, zy = box.height * 0.5;
-  await page.mouse.move(zx, zy);
+  // real wheel zoom over the visible map area
+  await page.mouse.move(px, py);
   for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(250); }
   await page.waitForTimeout(1200);
   const after = await mapState(page);
@@ -85,6 +98,7 @@ test("Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4
 
   // ── 2. → SPECIES Orca via the visible control (carries returnTo) ──
   const toSpecies = page.getByRole("link", { name: /Open Orca in SPECIES/i }).first();
+  await toSpecies.scrollIntoViewIfNeeded();
   await expect(toSpecies).toBeVisible();
   await toSpecies.click();
   await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
