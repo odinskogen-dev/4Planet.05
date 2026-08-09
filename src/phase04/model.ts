@@ -6,10 +6,15 @@ export type Phase04Maturity =
   | "EXPERIMENT"
   | "NOT YET BUILT";
 
+/**
+ * Public data state describes product/runtime availability, not observation time.
+ * Never infer "happening now" from LIVE DATA alone.
+ */
 export type PublicDataState =
   | "LIVE DATA"
   | "CACHED DATA"
   | "CURATED SOURCE"
+  | "HISTORICAL DATA"
   | "PROTOTYPE DATA"
   | "DEMO FIXTURE"
   | "NOT YET IMPLEMENTED";
@@ -25,14 +30,23 @@ export type ProofFlag =
   | "UNCERTAIN"
   | "CONTESTED"
   | "CORRECTED"
-  | "SUPERSEDED";
+  | "SUPERSEDED"
+  | "RIGHTS REVIEW"
+  | "CLAIM QUALIFIED";
 
 export interface ProvenancePresentation {
   state: ProofState;
   actor: string;
   source?: string;
+  sources?: string[];
   method?: string;
+  /** Legacy generic time label. Prefer dataDate / lastChecked for new surfaces. */
   time?: string;
+  dataDate?: string;
+  lastChecked?: string;
+  claimIds?: string[];
+  rightsState?: string;
+  whyWeSayThis?: string;
   limitation: string;
   flags?: ProofFlag[];
 }
