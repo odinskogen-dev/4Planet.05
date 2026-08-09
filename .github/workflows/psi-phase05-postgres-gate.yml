@@ -1,0 +1,128 @@
+name: PSI Phase 05 — BRAIN Postgres Gate
+
+on:
+  push:
+    branches:
+      - agent/psi-phase05-canonical-convergence
+  pull_request:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: psi-phase05-postgres-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  postgres-postgis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+          github-token: ${{ github.token }}
+
+      - name: Ensure local Supabase project config
+        shell: bash
+        run: |
+          if [ ! -f supabase/config.toml ]; then
+            supabase init
+          fi
+
+      - name: Start fresh Postgres/PostGIS and apply all migrations
+        run: supabase db start
+
+      - name: Reset and reapply migrations from clean state
+        run: supabase db reset
+
+      - name: Locate local database container
+        id: db
+        shell: bash
+        run: |
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          test -n "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          docker exec "$name" psql -U postgres -d postgres -Atc "select version(); select postgis_version();" | tee postgres-version.txt
+
+      - name: Run founder-approved BRAIN SQL contract tests
+        shell: bash
+        run: |
+          docker cp supabase/tests/phase05_brain_intelligence.sql "${{ steps.db.outputs.name }}:/tmp/phase05.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase05.sql | tee phase05-sql-gate-before-rollback.txt
+          grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' phase05-sql-gate-before-rollback.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "${{ steps.db.outputs.name }}:/tmp/phase05-context.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase05-context.sql | tee phase05-context-pack-gate-before-rollback.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' phase05-context-pack-gate-before-rollback.txt
+
+      - name: Execute bounded rollback and protect existing truth spine
+        shell: bash
+        run: |
+          docker cp supabase/rollback/20260809003000_brain_intelligence_service.down.sql "${{ steps.db.outputs.name }}:/tmp/phase05-down.sql"
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -f /tmp/phase05-down.sql | tee phase05-rollback.txt
+          docker exec "${{ steps.db.outputs.name }}" psql -U postgres -d postgres -Atc "
+            select case when to_regclass('public.brain_objects') is null then 'BRAIN_ROLLBACK_OK' else 'BRAIN_ROLLBACK_FAILED' end;
+            select case when to_regclass('public.source_records') is not null and to_regclass('public.taxon_observations') is not null and to_regclass('public.signals') is not null and to_regclass('public.outcomes') is not null then 'TRUTH_SPINE_PRESERVED' else 'TRUTH_SPINE_DAMAGED' end;
+          " | tee phase05-rollback-assertions.txt
+          grep -q 'BRAIN_ROLLBACK_OK' phase05-rollback-assertions.txt
+          grep -q 'TRUTH_SPINE_PRESERVED' phase05-rollback-assertions.txt
+
+      - name: Reapply all migrations after rollback
+        run: supabase db reset
+
+      - name: Re-run SQL gates after clean reapply
+        shell: bash
+        run: |
+          name="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+          docker cp supabase/tests/phase05_brain_intelligence.sql "$name:/tmp/phase05.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05.sql | tee phase05-sql-gate-after-reapply.txt
+          grep -q 'PHASE05_BRAIN_INTELLIGENCE_SQL_GATE_PASS' phase05-sql-gate-after-reapply.txt
+          docker cp supabase/tests/phase05_context_pack_review.sql "$name:/tmp/phase05-context.sql"
+          docker exec "$name" psql -U postgres -d postgres -f /tmp/phase05-context.sql | tee phase05-context-pack-gate-after-reapply.txt
+          grep -q 'PHASE05_CONTEXT_PACK_REVIEW_GATE_PASS' phase05-context-pack-gate-after-reapply.txt
+
+      - name: Generate canonical schema types
+        shell: bash
+        run: |
+          supabase gen types typescript --local > phase05-schema.gen.ts
+          grep -q 'brain_objects' phase05-schema.gen.ts
+          grep -q 'problem_frames' phase05-schema.gen.ts
+          grep -q 'solution_pathways' phase05-schema.gen.ts
+          grep -q 'interventions' phase05-schema.gen.ts
+          grep -q 'offerings' phase05-schema.gen.ts
+          grep -q 'needs' phase05-schema.gen.ts
+          grep -q 'claims' phase05-schema.gen.ts
+          grep -q 'context_pack_runs' phase05-schema.gen.ts
+
+      - name: Database lint
+        run: supabase db lint --level warning
+
+      - name: Application typecheck, loader syntax and build
+        run: |
+          npm ci
+          node --check scripts/psi-phase05-stage-package.mjs
+          npm run typecheck
+          npm run build
+
+      - name: Upload exact-SHA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: psi-phase05-postgres-evidence
+          path: |
+            postgres-version.txt
+            phase05-sql-gate-before-rollback.txt
+            phase05-context-pack-gate-before-rollback.txt
+            phase05-rollback.txt
+            phase05-rollback-assertions.txt
+            phase05-sql-gate-after-reapply.txt
+            phase05-context-pack-gate-after-reapply.txt
+            phase05-schema.gen.ts
+          if-no-files-found: warn
+          retention-days: 30
