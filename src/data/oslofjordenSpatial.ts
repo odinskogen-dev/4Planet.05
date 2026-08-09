@@ -7,6 +7,8 @@ import type { PlaceGeometryRef, PlaceSourceRef } from "@/planet/placeModel";
  * the canonical boundary of Oslofjorden by being useful for that job.
  */
 
+const NLOD_2_URL = "https://data.norge.no/nlod/no/2.0";
+
 export const MARINE_REGIONS_OSLOFJORD_SOURCE: PlaceSourceRef = {
   id: "marine-regions-3379",
   label: "Marine Regions — Oslofjorden (MRGID 3379)",
@@ -86,9 +88,10 @@ export const OSLOFJORD_SPATIAL_REGISTRY: PlaceGeometryRef[] = [
     crs: "ETRS89 / UTM zone 33N at source; requested as WGS 84 for display",
     sourceVersion: "Live Vann-Nett external map service; checked 2026-08-09",
     rights: {
-      status: "PUBLIC_SERVICE",
-      label: "Public environmental information service",
-      reuseNote: "4PLANET queries the service at runtime. Separate redistribution/caching terms are not treated as cleared in this candidate.",
+      status: "OPEN",
+      label: "Norsk lisens for offentlige data (NLOD) 2.0 — attribution required",
+      url: NLOD_2_URL,
+      reuseNote: "Miljødirektoratet is the source. 4PLANET must preserve attribution/source context, identify material transformations and must not imply source endorsement. NLOD permits copying, redistribution, modification and combination subject to its terms.",
     },
     intendedUse: "Show one official coastal-waterbody area and its source identity/status context; never define the whole fjord.",
     precision: "Source polygon; no 4PLANET simplification is treated as source geometry.",
@@ -105,9 +108,10 @@ export const OSLOFJORD_SPATIAL_REGISTRY: PlaceGeometryRef[] = [
     sourceRecordId: OSLOFJORD_PRIMARY_WATERBODY_ID,
     geometryType: "WATERBODY_SET",
     rights: {
-      status: "PUBLIC_SERVICE",
-      label: "Public environmental data API",
-      reuseNote: "The runtime query requests source records and preserves source identifiers. Public redistribution rights are not broadened by 4PLANET.",
+      status: "OPEN",
+      label: "Norsk lisens for offentlige data (NLOD) 2.0 — attribution required",
+      url: NLOD_2_URL,
+      reuseNote: "Miljødirektoratet is the source. 4PLANET must preserve attribution/source context, identify material transformations and must not imply source endorsement. Runtime access does not change the underlying NLOD conditions.",
     },
     intendedUse: "Retrieve Vannmiljø registrations explicitly attached by the source to WaterBodyID 0101020601-C.",
     precision: "Record coordinates are source-supplied; source attachment to the waterbody is authoritative for the query contract, not a 4PLANET point-in-polygon inference.",
@@ -153,6 +157,7 @@ export const OSLOFJORD_SPATIAL_REGISTRY: PlaceGeometryRef[] = [
     rights: {
       status: "REVIEW_REQUIRED",
       label: "Legal source available; geometry reuse not separately cleared in candidate",
+      reuseNote: "The regulatory geometry is intentionally not ingested or redistributed in this candidate. It cannot become a release dependency unless that use is separately cleared.",
     },
     intendedUse: "Explain the geographic scope of the fisheries regulation only.",
     supersessionState: "CURRENT",
