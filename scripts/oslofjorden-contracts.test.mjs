@@ -74,7 +74,7 @@ test("admitted Inner Oslofjord dataset can expose real record-level occurrences 
   assert.match(datasetOccurrenceConnector, /https:\/\/www\.gbif\.org\/occurrence/);
   assert.match(datasetOccurrenceComponent, /REAL SOURCE RECORDS \/ HISTORICAL OCCURRENCES/);
   assert.match(datasetOccurrenceComponent, /not live organism positions/i);
-  assert.match(datasetOccurrenceComponent, /record count/i);
+  assert.match(datasetOccurrenceComponent, /not organism abundance/i);
   assert.match(datasetOccurrenceComponent, /does not establish a universal 4PLANET Oslofjorden polygon/i);
   assert.match(evidenceComponent, /DatasetOccurrenceEvidence/);
 });
