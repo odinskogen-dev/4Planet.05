@@ -10,6 +10,14 @@ async function capture(page: import("@playwright/test").Page, name: string) {
 
 const oslofjordHero = (page: import("@playwright/test").Page) => page.getByRole("heading", { level: 1, name: "OSLO FJORDEN.", exact: true });
 
+async function expectRealHeroLoaded(page: import("@playwright/test").Page) {
+  const hero = page.locator('img[alt="Oslofjord seen from a ferry in August 2022"]');
+  await expect(hero).toHaveAttribute("src", /commons\.wikimedia\.org/);
+  await expect.poll(async () => hero.evaluate((el: HTMLImageElement) => ({ complete: el.complete, width: el.naturalWidth })), { timeout: 15000 }).toEqual(expect.objectContaining({ complete: true, width: expect.any(Number) }));
+  const width = await hero.evaluate((el: HTMLImageElement) => el.naturalWidth);
+  expect(width).toBeGreaterThan(100);
+}
+
 test("Oslofjorden journey contains real bounded LIFE evidence", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(oslofjordHero(page)).toBeVisible();
@@ -63,8 +71,7 @@ test("front door uses a real rights-classified Oslofjord photograph", async ({ p
   await expect(page.getByText("50 million", { exact: true })).toBeVisible();
   await expect(page.getByText(/REAL OSLOFJORD PHOTO/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /Leonhard Lenz.*CC0.*SOURCE/i })).toHaveAttribute("href", /commons\.wikimedia\.org/);
-  const hero = page.locator('img[alt="Oslofjord seen from a ferry in August 2022"]');
-  await expect(hero).toHaveAttribute("src", /upload\.wikimedia\.org/);
+  await expectRealHeroLoaded(page);
   await capture(page, "front-door-real-oslofjord-desktop");
 });
 
@@ -83,6 +90,7 @@ test("Oslofjorden remains usable at 390px mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/place/oslofjorden");
   await expect(oslofjordHero(page)).toBeVisible();
+  await expectRealHeroLoaded(page);
   await expect(page.getByText("European sprat", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Comment on the proposed Oslofjord plan" })).toBeVisible();
   const width = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
