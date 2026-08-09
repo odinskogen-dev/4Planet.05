@@ -14,7 +14,9 @@ test("Brand OS release board preserves gates and only dry-runs publication", asy
   await page.getByRole("button", { name: "APPROVE" }).click();
   await expect(page.getByText("APPROVED", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("NO", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Rights gate is BLOCKED/)).toBeVisible();
+  await expect(page.getByText(/Source gate is OPEN/)).toBeVisible();
+  await expect(page.getByText(/Rights gate is OPEN/)).toBeVisible();
+  await expect(page.getByText(/licensed route exists but binary ingest is still open/i)).toBeVisible();
 
   await page.getByRole("button", { name: "SIMULATE PUBLISH / DRY RUN" }).click();
   await expect(page.getByText("DRY_RUN_CREATED")).toBeVisible();
