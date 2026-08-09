@@ -31,6 +31,15 @@ test("Oslofjorden journey contains real bounded LIFE evidence", async ({ page })
   await expect(page.getByText("LIVE DATA", { exact: true })).toHaveCount(0);
 });
 
+test("source-bounded Inner Oslofjord occurrence records load at record level", async ({ page }) => {
+  await page.goto("/place/oslofjorden");
+  await expect(page.getByText("REAL SOURCE RECORDS / HISTORICAL OCCURRENCES", { exact: true })).toBeVisible();
+  await expect(page.getByText(/GBIF RECORD \//).first()).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText("SOURCE QUERY COUNT", { exact: true })).toBeVisible();
+  await expect(page.getByText(/not live organism positions/i).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /OPEN SOURCE RECORD/i }).first()).toHaveAttribute("href", /gbif\.org\/occurrence\//);
+});
+
 test("Oslofjorden place identity does not silently become query geometry", async ({ page }) => {
   await page.goto("/place/oslofjorden");
   await expect(page.getByText(/MRGID 3379/).first()).toBeVisible();
