@@ -87,6 +87,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/brand-os-release-board.spec.ts
 
+      - name: Oslofjord canonical Place browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/founder-gate.spec.ts --grep "Oslofjorden is a real canonical Place focus"
+
       - name: Record activation evidence
         if: always()
         shell: bash
