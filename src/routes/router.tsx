@@ -1,7 +1,9 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
-import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
-import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
+import PublicCredibilityHome from "@/pages/credibility/PublicCredibilityHome";
+import OrcaGold from "@/pages/credibility/OrcaGold";
+import OslofjordGold from "@/pages/credibility/OslofjordGold";
+import BeePollinationFoodGold from "@/pages/credibility/BeePollinationFoodGold";
 import OslofjordenValidation from "@/pages/phase04/OslofjordenValidation";
 import OslofjordenValidationReview from "@/pages/phase04/OslofjordenValidationReview";
 import Phase04StateLab from "@/pages/phase04/StateLab";
@@ -57,9 +59,9 @@ export function AppRoutes() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        <Route path="/" element={<Phase04FrontDoor />} />
+        <Route path="/" element={<PublicCredibilityHome />} />
         <Route path="/story" element={<Navigate to="/" replace />} />
-        <Route path="/place/oslofjorden" element={<OslofjordenJourney />} />
+        <Route path="/place/oslofjorden" element={<OslofjordGold />} />
         <Route path="/labs/oslofjorden-validation" element={<OslofjordenValidation />} />
         <Route path="/labs/oslofjorden-validation/review" element={<OslofjordenValidationReview />} />
         <Route path="/phase04/states" element={<Phase04StateLab />} />
@@ -96,7 +98,9 @@ export function AppRoutes() {
 
         <Route path="/atlas" element={<AtlasRoute />} />
         <Route path="/species" element={<SpeciesIndexRoute />} />
+        <Route path="/species/orca" element={<OrcaGold />} />
         <Route path="/species/:slug" element={<SpeciesProfileRoute />} />
+        <Route path="/living-systems/bee-pollination-food" element={<BeePollinationFoodGold />} />
         <Route path="/impact" element={<ImpactPublicHome />} />
         <Route path="/impact/lab" element={<ImpactLabIndex />} />
         <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
