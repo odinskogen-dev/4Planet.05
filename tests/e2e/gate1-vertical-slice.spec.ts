@@ -61,21 +61,61 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await expect(page.getByText("BUNDLED · NOT LIVE", { exact: false })).toBeVisible();
   await shot("01-atlas-observation");
 
-  // ── real user map interaction: pan + wheel zoom in the visible map strip ──
+  // ── real user map interaction ──
+  // Desktop: pointer drag + wheel zoom. Mobile: GENUINE touch — dispatched
+  // touchstart/move/end for a one-finger pan and a two-finger pinch, so this is
+  // real touch/pinch proof, not page.mouse emulation (audit override B).
   const before = await mapState(page);
   const box = page.viewportSize()!;
-  const px = isMobile ? box.width * 0.5 : box.width * 0.4;
-  const py = isMobile ? box.height * 0.16 : box.height * 0.5;
-  await page.mouse.move(px, py);
-  await page.mouse.down();
-  await page.mouse.move(px - 90, py + 60, { steps: 12 });
-  await page.mouse.move(px - 150, py + 90, { steps: 12 });
-  await page.mouse.up();
-  await page.waitForTimeout(900);
-  await page.mouse.move(px, py);
-  for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(220); }
-  // Let the wheel/inertial zoom fully settle so the captured camera is the final
-  // one (MapLibre keeps easing after the last wheel tick).
+  if (isMobile) {
+    const cx = box.width * 0.5;
+    const cy = box.height * 0.16; // above the bottom sheet, over the live map
+    const canvas = page.locator("canvas.maplibregl-canvas").first();
+    // One-finger pan via real touch events.
+    const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
+      page.evaluate(({ fromX, fromY, toX, toY }) => {
+        const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
+        const r = el.getBoundingClientRect();
+        const mk = (x: number, y: number) => {
+          const t = new Touch({ identifier: 1, target: el, clientX: r.left + x, clientY: r.top + y });
+          return { t, x: r.left + x, y: r.top + y };
+        };
+        const fire = (type: string, x: number, y: number) => {
+          const { t } = mk(x, y);
+          el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
+        };
+        fire("touchstart", fromX, fromY);
+        const steps = 10;
+        for (let i = 1; i <= steps; i++) fire("touchmove", fromX + ((toX - fromX) * i) / steps, fromY + ((toY - fromY) * i) / steps);
+        fire("touchend", toX, toY);
+      }, { fromX, fromY, toX, toY });
+    await canvas.waitFor({ state: "visible", timeout: 10_000 });
+    await touchDrag(cx, cy, cx - 120, cy + 70);
+    await page.waitForTimeout(700);
+    // Two-finger pinch-zoom via real touch events.
+    await page.evaluate(({ cx, cy }) => {
+      const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
+      const r = el.getBoundingClientRect();
+      const T = (id: number, x: number, y: number) => new Touch({ identifier: id, target: el, clientX: r.left + x, clientY: r.top + y });
+      const fire = (type: string, ts: Touch[]) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : ts, targetTouches: type === "touchend" ? [] : ts, changedTouches: ts }));
+      let a = 20, b = 20;
+      fire("touchstart", [T(1, cx - a, cy), T(2, cx + b, cy)]);
+      for (let i = 1; i <= 10; i++) { a = 20 + i * 6; b = 20 + i * 6; fire("touchmove", [T(1, cx - a, cy), T(2, cx + b, cy)]); }
+      fire("touchend", [T(1, cx - a, cy), T(2, cx + b, cy)]);
+    }, { cx, cy });
+  } else {
+    const px = box.width * 0.4, py = box.height * 0.5;
+    await page.mouse.move(px, py);
+    await page.mouse.down();
+    await page.mouse.move(px - 90, py + 60, { steps: 12 });
+    await page.mouse.move(px - 150, py + 90, { steps: 12 });
+    await page.mouse.up();
+    await page.waitForTimeout(900);
+    await page.mouse.move(px, py);
+    for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(220); }
+  }
+  // Let the wheel/inertial/pinch zoom fully settle so the captured camera is the
+  // final one (MapLibre keeps easing after the last input).
   await page.waitForFunction(() => {
     const m = (window as any).__4planet_map;
     return m && !m.isMoving() && !m.isZooming() && !m.isEasing();
