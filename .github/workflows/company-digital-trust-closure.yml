@@ -1,0 +1,74 @@
+name: Company + Digital Trust Closure
+
+on:
+  push:
+    branches:
+      - agent/company-digital-trust-closure-phase-02
+  pull_request:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+
+permissions:
+  contents: read
+
+concurrency:
+  group: company-digital-trust-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        run: git rev-parse HEAD
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Existing smoke and contract tests
+        run: npm run test:smoke
+
+      - name: Company and digital trust contracts
+        run: node --test scripts/company-digital-trust-contracts.test.mjs
+
+      - name: Lint without new warnings
+        run: npm run lint -- --max-warnings=0
+
+      - name: Secret-material control
+        shell: bash
+        run: |
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sb_secret_|sk_live_)' src public functions supabase scripts 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
+
+      - name: Trust-route build evidence
+        shell: bash
+        run: |
+          test -f dist/index.html
+          printf '%s\n' "/trust /company /contact /privacy /source-policy /corrections /impact-claims /editorial-independence /media-rights /ai-disclosure /terms /cookies" > trust-routes.txt
+
+      - name: Upload closure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: company-digital-trust-closure-evidence
+          path: trust-routes.txt
+          if-no-files-found: warn
+          retention-days: 30
