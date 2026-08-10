@@ -52,39 +52,49 @@
   {
     "claimId": "CLM-BOS-ORCA-002",
     "storyId": "STORY-BOS-ORCA-001",
-    "node": "OCCURRENCE_BOUNDARY",
-    "claim": "One reported occurrence can support a bounded statement about one record, not range, abundance, trend or ecosystem condition.",
-    "scope": "Methodological evidence boundary. Exact public occurrence record remains OPEN.",
-    "sourceIds": ["SRC-016", "SRC-020"],
-    "sourceUrls": ["https://www.gbif.org/species/2440483", "https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d"],
-    "status": "EXACT_RECORD_OPEN"
+    "node": "EXACT_OCCURRENCE",
+    "claim": "GBIF occurrence 5939349319 is one published human-observation record of Orcinus orca from 3 January 2026 in Norway, with source-provided rounded coordinates and a CC BY 4.0 record licence.",
+    "scope": "One source record only. It does not establish range, abundance, population trend, current location, place membership or ecosystem condition. Preserve dataset ID b124e1e0-4755-430f-9eab-894f25a9b59c, attribution, coordinate-rounding issue and the distinction Observation ≠ Signal.",
+    "sourceIds": ["SRC-025"],
+    "sourceUrls": ["https://www.gbif.org/occurrence/5939349319"],
+    "status": "SOURCE_LOCKED_EXACT_RECORD"
   },
   {
     "claimId": "CLM-BOS-ORCA-003",
     "storyId": "STORY-BOS-ORCA-001",
-    "node": "OCCURRENCE_DATASET",
-    "claim": "The Institute of Marine Research incidental-sightings dataset contains date, position and species records that can support selection of a single reported Orca occurrence.",
-    "scope": "Dataset-level statement only. The provider explicitly warns that incidental sightings are not suitable for abundance assessment and are biased by reporting effort; coordinate uncertainty is missing for the dataset in OBIS quality metadata.",
+    "node": "ALTERNATIVE_OCCURRENCE_DATASET",
+    "claim": "The Institute of Marine Research incidental-sightings dataset contains date, position and species records that can support future selection of additional reported Orca occurrences.",
+    "scope": "Optional dataset route, not required for the first vertical slice now that SRC-025 is locked. Provider caveats remain: incidental sightings are not suitable for abundance assessment and coordinate uncertainty is missing in OBIS quality metadata.",
     "sourceIds": ["SRC-020"],
     "sourceUrls": ["https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d"],
-    "status": "DATASET_LOCKED_EXACT_RECORD_OPEN"
+    "status": "DATASET_LOCKED_OPTIONAL_ROUTE"
   },
   {
     "claimId": "CLM-BOS-ORCA-004",
     "storyId": "STORY-BOS-ORCA-001",
     "node": "DOCUMENTARY_MEDIA_ROUTE",
     "claim": "Artsdatabanken provides Orca images published by Havforskningsinstituttet under CC BY-SA 4.0 that can support documentary species depiction when attribution and ShareAlike conditions are preserved.",
-    "scope": "Media-rights route only. The image does not establish occurrence location/date, abundance, trend or ecosystem condition; exact binary ingest and creator/credit metadata remain required before release.",
+    "scope": "Media-rights route only. The image does not establish occurrence location/date, abundance, trend or ecosystem condition; exact binary ingest and creator/credit metadata remain required before documentary-image release.",
     "sourceIds": [],
     "sourceUrls": ["https://artsdatabanken.no/arter/takson/31303"],
     "status": "LICENSE_ROUTE_LOCKED_INGEST_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-005",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "PRODUCT_PERSISTENCE_BOUNDARY",
+    "claim": "The accepted Orca journey now has its exact GBIF SourceRecord, Observation and ProductContext persisted in canonical 4planet-staging, with place membership UNASSESSED and no Signal created.",
+    "scope": "Internal product-state claim verified directly in staging on 10 August 2026. It is not an ecological claim and does not authorize public deployment.",
+    "sourceIds": ["SRC-025"],
+    "sourceUrls": ["https://www.gbif.org/occurrence/5939349319"],
+    "status": "STAGING_PERSISTENCE_VERIFIED"
   },
   {
     "claimId": "CLM-BOS-OSLO-001",
     "storyId": "STORY-BOS-OSLO-001",
     "node": "WHOLE_PLACE_BOUNDARY",
     "claim": "Oslofjorden should not be represented as one undifferentiated condition: recent assessments report improvement in ecological condition in inner Oslofjord while conditions in outer Oslofjord and Skagerrak have worsened.",
-    "scope": "High-level official synthesis. Exact map layers still require their own geography, period, method and coverage metadata.",
+    "scope": "High-level official synthesis. Exact map layers retain their own geography, period, method and coverage metadata.",
     "sourceIds": ["SRC-018"],
     "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
     "status": "SOURCE_LOCKED"
@@ -122,21 +132,21 @@
   {
     "claimId": "CLM-BOS-OSLO-005",
     "storyId": "STORY-BOS-OSLO-001",
-    "node": "WATERBODY_MEASUREMENT_ROUTE",
-    "claim": "The Vannmiljø public API supports querying environmental monitoring records by Vann-Nett WaterBodyID and returns the fields needed to build a bounded waterbody measurement layer.",
-    "scope": "Technical query route only. The exact Oslofjord WaterBodyID(s), parameter, sampling period, method, origin and quality context are still OPEN and must be locked before visualisation or comparison.",
+    "node": "COASTAL_MONITORING_COVERAGE",
+    "claim": "Miljødirektoratet's Vannmiljø map service exposes Økosystemovervåking i kystvann as a point Feature Layer with monitoring-location identifiers and fact-sheet links; the service is licensed under NLOD.",
+    "scope": "Monitoring-location coverage/reference layer only. For the first ONE PLACE object it may show where the official monitoring layer has point records inside the interface view; it does not by itself report parameter values, condition, trend or completeness. Exact measurements require separate parameter/time/method queries.",
     "sourceIds": ["SRC-023"],
-    "sourceUrls": ["https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index"],
-    "status": "QUERY_ROUTE_LOCKED_EXACT_LAYER_OPEN"
+    "sourceUrls": ["https://kart3.miljodirektoratet.no/arcgis/rest/services/vannmiljo/MapServer/4", "https://kartkatalog.miljodirektoratet.no/MapService/Details/vannmiljo"],
+    "status": "LAYER_SOURCE_LOCKED_COVERAGE_ONLY"
   },
   {
     "claimId": "CLM-BOS-OSLO-006",
     "storyId": "STORY-BOS-OSLO-001",
     "node": "LONG_RUN_NUTRIENT_PRESSURE_ROUTE",
     "claim": "Teotil calculates annual modelled nitrogen and phosphorus loads to Norwegian coastal areas by source and provides a time series back to 1990.",
-    "scope": "Modelled source-apportioned pressure route. Exact Oslofjord extract/subcatchment and data reuse metadata are still OPEN; do not present Teotil as direct in-fjord concentration measurement.",
+    "scope": "Optional future modelled source-apportioned pressure route. Exact Oslofjord extract/subcatchment remains OPEN; Teotil is not required for the first three-layer ONE PLACE object and must not be presented as direct in-fjord concentration measurement.",
     "sourceIds": ["SRC-024"],
     "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/miljoovervaking/overvakingsprogrammer/forurensning-og-klimagasser/teotil/"],
-    "status": "QUERY_ROUTE_LOCKED_EXACT_EXTRACT_OPEN"
+    "status": "QUERY_ROUTE_LOCKED_OPTIONAL_EXTRACT"
   }
 ]
