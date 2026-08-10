@@ -1,7 +1,10 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
-import Phase04FrontDoor from "@/pages/phase04/FrontDoor";
-import OslofjordenJourney from "@/pages/phase04/OslofjordenJourney";
+import PublicCredibilityHome from "@/pages/credibility/PublicCredibilityHome";
+import OrcaGold from "@/pages/credibility/OrcaGold";
+import OslofjordGold from "@/pages/credibility/OslofjordGold";
+import BeePollinationFoodGold from "@/pages/credibility/BeePollinationFoodGold";
+import { SpeciesCredibilityIndex, SpeciesCredibilityProfile } from "@/pages/credibility/SpeciesCredibility";
 import OslofjordenValidation from "@/pages/phase04/OslofjordenValidation";
 import OslofjordenValidationReview from "@/pages/phase04/OslofjordenValidationReview";
 import Phase04StateLab from "@/pages/phase04/StateLab";
@@ -23,8 +26,6 @@ import { NotFound } from "@/pages/system";
 import { PlaceProductBridge } from "@/components/place/PlaceProductBridge";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
-const SpeciesIndex = lazy(() => import("@/pages/integrated/Species").then((m) => ({ default: m.SpeciesIndex })));
-const SpeciesProfilePage = lazy(() => import("@/pages/integrated/Species").then((m) => ({ default: m.SpeciesProfilePage })));
 const ImpactPublicHome = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.ImpactPublicHome })));
 const ImpactLabIndex = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.ImpactLabIndex })));
 const ImpactTestJourney = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.ImpactTestJourney })));
@@ -46,20 +47,14 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 function AtlasRoute() {
   return <><PlaceProductBridge mode="ATLAS" /><Suspense fallback={WorldFallback}><PublicWorld /></Suspense></>;
 }
-function SpeciesIndexRoute() {
-  return <><PlaceProductBridge mode="SPECIES" /><SpeciesIndex /></>;
-}
-function SpeciesProfileRoute() {
-  return <><PlaceProductBridge mode="SPECIES" /><SpeciesProfilePage /></>;
-}
 
 export function AppRoutes() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        <Route path="/" element={<Phase04FrontDoor />} />
+        <Route path="/" element={<PublicCredibilityHome />} />
         <Route path="/story" element={<Navigate to="/" replace />} />
-        <Route path="/place/oslofjorden" element={<OslofjordenJourney />} />
+        <Route path="/place/oslofjorden" element={<OslofjordGold />} />
         <Route path="/labs/oslofjorden-validation" element={<OslofjordenValidation />} />
         <Route path="/labs/oslofjorden-validation/review" element={<OslofjordenValidationReview />} />
         <Route path="/phase04/states" element={<Phase04StateLab />} />
@@ -95,8 +90,10 @@ export function AppRoutes() {
         <Route path="/missions/:slug" element={<MissionDetail />} />
 
         <Route path="/atlas" element={<AtlasRoute />} />
-        <Route path="/species" element={<SpeciesIndexRoute />} />
-        <Route path="/species/:slug" element={<SpeciesProfileRoute />} />
+        <Route path="/species" element={<SpeciesCredibilityIndex />} />
+        <Route path="/species/orca" element={<OrcaGold />} />
+        <Route path="/species/:slug" element={<SpeciesCredibilityProfile />} />
+        <Route path="/living-systems/bee-pollination-food" element={<BeePollinationFoodGold />} />
         <Route path="/impact" element={<ImpactPublicHome />} />
         <Route path="/impact/lab" element={<ImpactLabIndex />} />
         <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
