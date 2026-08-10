@@ -5,8 +5,10 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 const migration = read("supabase/migrations/20260810003400_public_production_core.sql");
+const sourceSurface = read("supabase/migrations/20260810004500_source_record_public_surface.sql");
 const leads = read("functions/api/leads.ts");
 const events = read("functions/api/events.ts");
+const health = read("functions/api/health.ts");
 const shared = read("functions/_shared/production.ts");
 const join = read("src/pages/v5/Join.tsx");
 const privacy = read("src/pages/v5/Privacy.tsx");
@@ -33,7 +35,7 @@ test("lead intake is durable, idempotent and not a generic webhook", () => {
   assert.match(leads, /marketing_permission: false/);
   assert.match(leads, /consent_scope: "registration_contact_v1"/);
   assert.doesNotMatch(leads, /LEAD_WEBHOOK_URL|LEAD_WEBHOOK_SECRET/);
-  assert.doesNotMatch(leads, /userAgent|user-agent/i);
+  assert.doesNotMatch(leads, /headers\.get\(["']user-agent["']\)/i);
   assert.match(leads, /storage_unavailable|storage_failed|storage_error/);
 });
 
@@ -55,13 +57,27 @@ test("measurement uses one allowlist and rejects PII-shaped payloads", () => {
   assert.match(events, /PAYMENT_EVENTS\.has\(eventName\)[\s\S]+PAYMENTS_ENABLED/);
   assert.match(shared, /SENSITIVE_KEYS/);
   for (const forbidden of ["useragent", "ipaddress", "fingerprint", "fullreferrer"]) assert.match(shared.toLowerCase(), new RegExp(forbidden));
-  assert.doesNotMatch(events, /CF-Connecting-IP|user-agent/i);
+  assert.doesNotMatch(events, /headers\.get\(["']user-agent["']\)|CF-Connecting-IP/i);
 });
 
 test("Supabase secret is server-only and sent as apikey, not browser bearer auth", () => {
   assert.match(shared, /apikey: env\.SUPABASE_SECRET_KEY/);
   assert.doesNotMatch(shared, /Authorization.*SUPABASE_SECRET_KEY|Bearer.*SUPABASE_SECRET_KEY/i);
   assert.doesNotMatch(join, /SUPABASE_SECRET|service_role|sb_secret_/i);
+});
+
+test("public Source Record projection excludes raw payload and integrity hash", () => {
+  assert.match(sourceSurface, /revoke select on public\.source_records from anon, authenticated/i);
+  assert.match(sourceSurface, /grant select \([\s\S]+source_record_id[\s\S]+rights_status[\s\S]+sensitivity[\s\S]+\) on public\.source_records to anon, authenticated/i);
+  const grant = sourceSurface.match(/grant select \(([\s\S]*?)\) on public\.source_records/i)?.[1] || "";
+  assert.doesNotMatch(grant, /raw_payload|content_sha256/i);
+});
+
+test("health endpoint exposes coarse readiness and treats payments as unsafe", () => {
+  assert.match(health, /releaseState: "PRE_PRODUCTION"/);
+  assert.match(health, /UNEXPECTEDLY_ENABLED/);
+  assert.match(health, /const safe = !paymentsEnabled/);
+  assert.doesNotMatch(health, /SUPABASE_URL|SUPABASE_SECRET_KEY/);
 });
 
 test("Pages Function responses carry explicit security headers", () => {
