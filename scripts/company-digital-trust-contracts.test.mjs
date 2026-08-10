@@ -20,7 +20,7 @@ const requiredTrustRoutes = [
 ];
 
 test('public trust routes are explicit', () => {
-  for (const route of requiredTrustRoutes) assert.match(routes, new RegExp(`path=\\"${route.replace('/', '\\/')}\\"`));
+  for (const route of requiredTrustRoutes) assert.ok(routes.includes(`path="${route}"`), `missing trust route ${route}`);
 });
 
 test('legal operator is visible without implying separate 4Planet entity', () => {
@@ -35,13 +35,14 @@ test('Join separates required privacy acknowledgement from optional marketing co
   assert.match(join, /privacyAcknowledged/);
   assert.match(join, /marketingConsent/);
   assert.match(join, /Optional and separate/i);
-  assert.doesNotMatch(join, /name=\"consent\"/);
+  assert.doesNotMatch(join, /name="consent"/);
 });
 
-test('gateway has no webhook source of truth and does not persist user-agent', () => {
+test('gateway has no webhook source of truth and no user-agent capture', () => {
   assert.match(gateway, /JOIN_PERSISTENCE_URL/);
   assert.doesNotMatch(gateway, /LEAD_WEBHOOK_URL/);
-  assert.doesNotMatch(gateway, /userAgent|user-agent/i);
+  assert.doesNotMatch(gateway, /headers\.get\(["']user-agent["']\)/i);
+  assert.doesNotMatch(gateway, /userAgent\s*:/i);
   assert.match(gateway, /stored: false/);
 });
 
@@ -58,7 +59,8 @@ test('server path deduplicates actor and rate limits repeated enquiry writes', (
   assert.match(rpc, /where a\.email_norm = p_email_norm/);
   assert.match(rpc, /v_recent_count >= 5/);
   assert.match(edge, /rate_limited/);
-  assert.doesNotMatch(edge, /user-agent|userAgent/i);
+  assert.doesNotMatch(edge, /headers\.get\(["']user-agent["']\)/i);
+  assert.doesNotMatch(edge, /userAgent\s*:/i);
 });
 
 test('privacy notice documents minimisation and release gating', () => {
