@@ -117,7 +117,12 @@
 .search-wrap {
   position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
   z-index: 20; width: 460px; max-width: calc(100vw - 28px);
+  /* The wrap is a positioned block wider than its visible controls; without this
+     its empty margins swallowed taps meant for the map and the LAYERS/theme
+     buttons beneath it (especially on mobile). Only the real controls capture. */
+  pointer-events: none;
 }
+.search-line, .lens { pointer-events: auto; }
 .search-line {
   display: flex; align-items: center; gap: 10px;
   background: rgba(8,8,8,.82); backdrop-filter: blur(14px);
@@ -406,6 +411,14 @@
   .status-strip { font-size: 8.5px; gap: 12px; }
   /* The NOW/WATCH lens panel also drops to a bottom sheet on mobile. */
   .lens-panel { top: auto; right: 0; left: 0; bottom: 26px; width: 100%; max-width: none; max-height: 72vh; }
+  /* Premium mobile ergonomics: control buttons get real touch targets so they
+     stop feeling like they "crash" (miss-taps). Bigger padding + min height,
+     comfortable font, no layout break on desktop (scoped to this media query). */
+  .mbtn { padding: 10px 12px; font-size: 11px; min-height: 40px; }
+  .lens { padding: 9px 12px; min-height: 40px; }
+  .atlas-panel .mbtn { min-height: 38px; }
+  /* Bottom map controls clear of the iOS home indicator. */
+  .maplibregl-ctrl-bottom-right { margin-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
 /* ── V40 P0: RECENTER control ────────────────────────────────────────────── */
