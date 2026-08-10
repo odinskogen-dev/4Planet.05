@@ -41,8 +41,14 @@ export default defineConfig({
     { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
     { name: "mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
     { name: "mobile-430", use: { ...devices["Desktop Chrome"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
-    // NOTE: WebKit is a required matrix entry but its binary cannot be downloaded
-    // in this sandbox (network-blocked). It is documented as an environmental
-    // blocker and must be run at the exact-SHA preview stage.
+    // WebKit matrix (required by the convergence order): desktop + 390 + 430.
+    // These clear the pinned-Chromium executablePath so Playwright uses its own
+    // WebKit build. WebKit's binary could not be downloaded in the build sandbox
+    // (egress-blocked host), so these run at the exact-SHA CI/preview stage where
+    // `npx playwright install webkit` succeeds. Documented as an environmental
+    // blocker, not a code gap — the specs themselves are WebKit-ready.
+    { name: "webkit-desktop", use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, launchOptions: { executablePath: undefined, args: [] } } },
+    { name: "webkit-390", use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
+    { name: "webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
   ],
 });
