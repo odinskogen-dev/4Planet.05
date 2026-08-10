@@ -11,7 +11,13 @@ const channelEngine = readFileSync(resolve("src/brand-os/channel-engine.ts"), "u
 const publishingAdapters = readFileSync(resolve("src/brand-os/publishing-adapters.ts"), "utf8");
 const learningEngine = readFileSync(resolve("src/brand-os/learning-engine.ts"), "utf8");
 const migration = readFileSync(resolve("supabase/migrations/20260809201500_brand_os_activation.sql"), "utf8");
+const hardeningMigration = readFileSync(resolve("supabase/migrations/20260810135500_brand_os_security_performance_hardening.sql"), "utf8");
+const truthSpineMigration = readFileSync(resolve("supabase/migrations/20260722163000_truth_spine.sql"), "utf8");
+const seed = readFileSync(resolve("supabase/seed.sql"), "utf8");
 const router = readFileSync(resolve("src/routes/router.tsx"), "utf8");
+const places = readFileSync(resolve("src/planet/places.ts"), "utf8");
+const pilotObjects = readFileSync(resolve("src/brand-os/PilotSourceObjects.tsx"), "utf8");
+const beeObject = readFileSync(resolve("src/brand-os/BeeRelationshipReveal.tsx"), "utf8");
 
 const gatePasses = (gate) => gate === "PASS" || gate === "NOT_APPLICABLE";
 const releaseEligible = (story, founderDecision = "OPEN") =>
@@ -32,7 +38,7 @@ test("Brand OS starts with exactly the three authorised vertical-slice pilots", 
   );
 });
 
-test("persistent pilot IDs and canonical references are unique and populated", () => {
+test("persistent pilot IDs and canonical references are unique, populated and blocker lists are real", () => {
   const ids = new Set();
   for (const story of pilots) {
     assert.match(story.storyId, /^STORY-BOS-[A-Z]+-\d{3}$/);
@@ -40,7 +46,7 @@ test("persistent pilot IDs and canonical references are unique and populated", (
     ids.add(story.storyId);
     assert.ok(story.canonicalRefs.length >= 4, `${story.storyId} missing canonical references`);
     assert.ok(story.sourceRefs.length >= 1, `${story.storyId} missing source foundation`);
-    assert.ok(story.blockers.length >= 4, `${story.storyId} missing explicit blockers`);
+    assert.ok(story.blockers.length >= 1, `${story.storyId} has no explicit remaining blocker`);
   }
 });
 
@@ -55,6 +61,18 @@ test("rights failures remain explicit hard gates", () => {
     assert.notEqual(story.gates.rights, "PASS");
     assert.equal(story.publicReleaseEligible, false);
   }
+});
+
+test("Orca and Oslo source/product gates are closed only after bounded evidence routes exist", () => {
+  const orca = pilots.find((story) => story.storyId === "STORY-BOS-ORCA-001");
+  const oslo = pilots.find((story) => story.storyId === "STORY-BOS-OSLO-001");
+  assert.equal(orca.gates.source, "PASS");
+  assert.equal(orca.gates.product, "PASS");
+  assert.ok(orca.canonicalRefs.includes("SOURCE:SRC-025"));
+  assert.match(JSON.stringify(orca), /5939349319/);
+  assert.equal(oslo.gates.source, "PASS");
+  assert.equal(oslo.gates.product, "PASS");
+  assert.ok(oslo.canonicalRefs.includes("PLACE:place:4p:oslofjord"));
 });
 
 test("idempotency key is deterministic and version-scoped", () => {
@@ -103,6 +121,18 @@ test("production template IDs are explicit and cover documentary, relationship, 
   for (const id of ["TPL-DOC-01", "TPL-REL-01", "TPL-PLACE-01", "TPL-SIGNAL-01", "TPL-PROOF-01", "TPL-MOTION-01"]) {
     assert.match(productionSystem, new RegExp(id));
   }
+});
+
+test("all three first vertical slices have implemented internal production objects", () => {
+  assert.match(beeObject, /CLM-BOS-BEE-004/);
+  assert.match(beeObject, /4PLANET CONTEXT/);
+  assert.match(beeObject, /Bees are not all pollinators/);
+  assert.match(pilotObjects, /GBIF 5939349319/);
+  assert.match(pilotObjects, /OBSERVATION ≠ SIGNAL/);
+  assert.match(pilotObjects, /MODELLED PRESSURE/);
+  assert.match(pilotObjects, /MAPPED MARINE NATURE/);
+  assert.match(pilotObjects, /MONITORING COVERAGE/);
+  assert.match(pilotObjects, /Co-location is not causality/);
 });
 
 test("regression corpus contains both failure and golden-boundary cases for the three pilots", () => {
@@ -167,6 +197,20 @@ test("database enforces release gates and service-only access", () => {
   assert.match(migration, /alter table public\.brand_founder_interventions enable row level security/);
   assert.match(migration, /revoke all on public\.brand_releases from anon, authenticated/);
   assert.doesNotMatch(migration, /create policy .*brand_releases/i);
+});
+
+test("staging hardening is committed and truth-spine migrations are Supabase PostGIS portable", () => {
+  assert.match(hardeningMigration, /set search_path = public, pg_temp/);
+  assert.match(hardeningMigration, /publication_receipts_release_idx/);
+  assert.match(truthSpineMigration, /set search_path = public, gis/);
+  assert.match(truthSpineMigration, /reject_source_record_mutation\(\) set search_path = public, pg_temp/);
+  assert.match(seed, /set search_path = public, gis/);
+  assert.match(seed, /5939349319/);
+});
+
+test("Oslofjorden is a canonical seeded Place with an explicit non-scientific interface boundary", () => {
+  assert.match(places, /placeId\("oslofjord"\)/);
+  assert.match(places, /The box is an interface focus, not a scientific boundary/);
 });
 
 test("internal release board exists but is not inserted into public navigation", () => {
