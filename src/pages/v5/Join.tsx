@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label, Button, StatusLabel } from "@/components/ui";
+import { currentAttribution, trackProductEvent } from "@/lib/measurement";
 
 const LEADS_ENDPOINT = "/api/leads";
 
@@ -24,6 +25,8 @@ export default function Join() {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const attribution = currentAttribution();
+    const idempotencyKey = `join:${crypto.randomUUID()}`;
     const payload = {
       type: "4people",
       name: String(fd.get("name") || ""),
@@ -33,13 +36,18 @@ export default function Join() {
       consent: fd.get("consent") === "on",
       company_hp: String(fd.get("company_hp") || ""),
       sourceRoute: "/join",
+      attribution,
     };
 
     setState("sending");
+    void trackProductEvent("signup_start", { attribution, properties: { form: "join" } });
     try {
       const res = await fetch(LEADS_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify(payload),
       });
       const body = await res.json().catch(() => ({}));
@@ -96,23 +104,23 @@ export default function Join() {
               One real path. No dead CTA.
             </h2>
             <p style={{ color: T.dim, fontSize: 15, lineHeight: 1.6, marginTop: 16, maxWidth: 520 }}>
-              The form is wired to 4Planet's server-side lead endpoint. If the release environment has no approved data destination configured, the interface will say so and nothing will be stored or sent.
+              The form is wired to 4Planet&apos;s server-side registration endpoint. If the release environment has no approved persistent destination configured, the interface will say so and nothing will be stored or sent.
             </p>
           </div>
 
           {state === "delivered" ? (
             <div style={{ border: `1px solid ${T.lineStrong}`, padding: "clamp(22px,3vw,34px)" }}>
               <StatusLabel>INTEREST RECEIVED</StatusLabel>
-              <p style={{ marginTop: 14, fontSize: 16, lineHeight: 1.6 }}>Your registration was delivered to the configured 4Planet interest system.</p>
+              <p style={{ marginTop: 14, fontSize: 16, lineHeight: 1.6 }}>Your registration was stored in the configured 4Planet interest system. This is a registration receipt, not membership, partnership or funding status.</p>
             </div>
           ) : state === "pending" ? (
             <div style={{ border: `1px solid ${T.lineStrong}`, padding: "clamp(22px,3vw,34px)" }}>
               <StatusLabel>DATA CAPTURE NOT ACTIVE</StatusLabel>
-              <p style={{ marginTop: 14, fontSize: 16, lineHeight: 1.6 }}>The public form is ready, but this environment has no approved persistent destination configured. Nothing was stored or sent.</p>
+              <p style={{ marginTop: 14, fontSize: 16, lineHeight: 1.6 }}>The public form is ready, but this environment has no approved persistent destination enabled. Nothing was stored or sent.</p>
             </div>
           ) : (
             <form onSubmit={onSubmit} style={{ border: `1px solid ${T.lineStrong}`, padding: "clamp(22px,3vw,34px)", display: "grid", gap: 14 }}>
-              {state === "error" && <p className="mono" style={{ fontSize: 12, color: T.red }}>The registration could not be delivered. No success state has been recorded.</p>}
+              {state === "error" && <p className="mono" style={{ fontSize: 12, color: T.red }}>The registration could not be stored. No success state has been recorded.</p>}
               <input type="text" name="company_hp" tabIndex={-1} autoComplete="off" aria-hidden style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
               <div>
                 <Label style={{ marginBottom: 8 }}>Name</Label>
@@ -141,7 +149,7 @@ export default function Join() {
               </div>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, color: T.dim, fontSize: 13, lineHeight: 1.5 }}>
                 <input required type="checkbox" name="consent" style={{ marginTop: 3 }} />
-                <span>I agree that 4Planet may use these details to process my registration and contact me about this interest. No account or payment is created.</span>
+                <span>I agree that 4Planet may use these details to process my registration and contact me about this interest. This does not give separate permission for unrelated marketing. No account or payment is created.</span>
               </label>
               <button type="submit" disabled={state === "sending"} style={{ height: 46, padding: "0 20px", border: `1px solid ${T.blue}`, background: T.blue, color: "#fff", fontFamily: T.sans, fontSize: 13.5, fontWeight: 500, cursor: state === "sending" ? "default" : "pointer", opacity: state === "sending" ? .65 : 1 }}>
                 {state === "sending" ? "SENDING…" : "REGISTER INTEREST →"}
