@@ -1,0 +1,96 @@
+name: Public Production Hardening
+
+on:
+  push:
+    branches:
+      - agent/public-production-hardening-v1
+  pull_request:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-production-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        shell: bash
+        run: |
+          git rev-parse HEAD > public-production-exact-sha.txt
+          printf '%s\n' "${GITHUB_REF_NAME}" > public-production-exact-branch.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Existing smoke and truth contracts
+        run: npm run test:smoke
+
+      - name: Public production contracts
+        run: npm run test:production
+
+      - name: Lint without warnings
+        run: npm run lint -- --max-warnings=0
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit — high severity blocks
+        shell: bash
+        run: npm audit --audit-level=high 2>&1 | tee public-production-dependency-audit.txt
+
+      - name: Secret-pattern gate
+        shell: bash
+        run: |
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sb_secret_[A-Za-z0-9_-]{20,}|service_role[[:space:]]*[:=][[:space:]]*[A-Za-z0-9._-]{20,}|sk_live_)' src public functions supabase docs 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
+
+      - name: Payment activation remains closed in code defaults
+        shell: bash
+        run: |
+          grep -q 'PAYMENTS_ENABLED' functions/api/events.ts
+          grep -q 'payments_disabled' functions/api/events.ts
+          grep -q 'payment=()' public/_headers
+
+      - name: Migration remains unapplied in CI
+        shell: bash
+        run: |
+          test -f supabase/migrations/20260810003400_public_production_core.sql
+          test -f supabase/rollback/20260810003400_public_production_core_rollback.sql
+          printf '%s\n' 'MIGRATION_PRESENT_NOT_APPLIED_BY_CI' > public-production-database-state.txt
+
+      - name: Upload hardening evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-production-hardening-evidence
+          path: |
+            public-production-exact-sha.txt
+            public-production-exact-branch.txt
+            public-production-database-state.txt
+            public-production-dependency-audit.txt
+          if-no-files-found: warn
+          retention-days: 30
