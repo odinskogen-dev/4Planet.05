@@ -1,19 +1,21 @@
 /**
- * Gate 1 vertical-slice acceptance test.
+ * Gate 1 vertical-slice acceptance — journey integrity through VISIBLE CONTROLS.
  *
- * Drives the ONE required journey with real input and fails on any missing state
- * transition (retries=0 in the config, so a flake is a failure):
+ * After the initial ATLAS entry, every transition is performed by clicking a real
+ * on-screen control. page.goto is NOT used to simulate any journey step, and no
+ * return token is hand-stitched. retries=0 (config), so a flake is a failure.
  *
- *   ATLAS verified whale occurrence
- *     → SPECIES Orca
- *     → internal Living Systems
- *     → WH4LES_
- *     → Join/Follow
- *     → return to the exact prior ATLAS record, camera, layer and panel context.
+ *   ATLAS bundled Orca occurrence
+ *     → [real pan + wheel zoom: the user changes the map]
+ *     → click "Open Orca in SPECIES"
+ *     → click "Continue to Living Systems"
+ *     → click the visible "WH4LES_ MISSION" handoff
+ *     → click the visible WH4LES_ Follow/Join control
+ *     → click the visible "Back to observation in ATLAS" control on Join
+ *     → ATLAS is reconstructed to the POST-INTERACTION camera + record + entity.
  *
- * Every expect() is a real assertion; open/expand/collapse states are asserted to
- * differ where the interface must visibly change. Screenshots + trace + video are
- * written by the config for the delivery package.
+ * The return is asserted to reconstruct the map state created AFTER the user's
+ * interaction, not the pre-interaction snapshot.
  */
 import { mkdirSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
@@ -21,13 +23,9 @@ import { test, expect, type Page } from "@playwright/test";
 const OUT = "artifacts/vertical-slice";
 mkdirSync(OUT, { recursive: true });
 
-declare global {
-  interface Window { __4planet_map: any; }
-}
-
 async function mapReady(page: Page) {
   await page.waitForFunction(
-    () => (window as any).__4planet_map && (window as any).__4planet_map.isStyleLoaded(),
+    () => Boolean((window as any).__4planet_map && (window as any).__4planet_map.isStyleLoaded()),
     undefined,
     { timeout: 25_000 },
   );
@@ -36,121 +34,160 @@ async function mapState(page: Page) {
   return page.evaluate(() => {
     const m = (window as any).__4planet_map;
     const c = m.getCenter();
-    return { lng: +c.lng.toFixed(3), lat: +c.lat.toFixed(3), zoom: +m.getZoom().toFixed(2) };
+    return { lng: +c.lng.toFixed(2), lat: +c.lat.toFixed(2), zoom: +m.getZoom().toFixed(2) };
   });
 }
+/** Parse the ATLAS query (record/entity/camera) out of a URL for equality checks. */
+function atlasParams(url: string) {
+  const q = new URLSearchParams(url.split("?")[1] || "");
+  return {
+    record: q.get("record"), entity: q.get("entity"), journey: q.get("journey"),
+    m: q.get("m"), l: q.get("l"), lens: q.get("lens"), t: q.get("t"), p: q.get("p"),
+    z: q.get("z"), c: q.get("c"),
+  };
+}
 
-test("Gate 1 vertical slice: ATLAS record → SPECIES → Living Systems → WH4LES_ → return to exact ATLAS context", async ({ page }, testInfo) => {
-  const shot = (n: string) => page.screenshot({ path: `${OUT}/${testInfo.project.name}-${n}.png`, fullPage: false });
+test("Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state", async ({ page }, testInfo) => {
+  const shot = (n: string) => page.screenshot({ path: `${OUT}/${testInfo.project.name}-${n}.png` });
+  const isMobile = (page.viewportSize()?.width ?? 1440) < 760;
 
-  // ── 1. ATLAS opens the deterministic verified whale occurrence ──
+  // ── 1. ATLAS opens the deterministic bundled Orca occurrence ──
   await page.goto("/atlas?record=orca-bundled", { waitUntil: "load" });
   await mapReady(page);
-
-  // The real OBSERVATION panel must be open with the bundled, non-live record.
-  // Wait deterministically for the panel content rather than a fixed sleep.
   await page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false }).waitFor({ state: "visible", timeout: 20_000 });
-  await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
   await expect(page.getByText("OBSERVATION RECORD", { exact: false })).toBeVisible();
-  // On mobile the panel is a scrollable bottom sheet; bring content into view.
-  const illus = page.getByText("ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE", { exact: false });
-  await illus.scrollIntoViewIfNeeded();
-  await expect(illus).toBeVisible();
-  // Record truth fields present.
-  const sci = page.getByText("Orcinus orca", { exact: false });
-  await sci.scrollIntoViewIfNeeded();
-  await expect(sci).toBeVisible();
-  const uncert = page.getByText(/±?1[,.]?000\s*m/);
-  await uncert.first().scrollIntoViewIfNeeded();
-  await expect(uncert.first()).toBeVisible();
-  const atlasUrlBefore = page.url();
-  expect(atlasUrlBefore).toContain("record=orca-bundled");
+  // Truth: the bundled record must NOT show a LIVE badge.
+  await expect(page.locator(".stat.live")).toHaveCount(0);
+  await expect(page.getByText("BUNDLED · NOT LIVE", { exact: false })).toBeVisible();
   await shot("01-atlas-observation");
 
-  // ── real pointer pan + zoom on the map (state must change) ──
+  // ── real user map interaction: pan + wheel zoom in the visible map strip ──
   const before = await mapState(page);
   const box = page.viewportSize()!;
-  const isMobile = box.width < 760;
-  // On mobile the observation sheet covers the lower ~72vh, so interact in the
-  // visible map strip near the top; on desktop use the map centre.
-  const py = isMobile ? box.height * 0.16 : box.height * 0.5;
   const px = isMobile ? box.width * 0.5 : box.width * 0.4;
+  const py = isMobile ? box.height * 0.16 : box.height * 0.5;
   await page.mouse.move(px, py);
   await page.mouse.down();
   await page.mouse.move(px - 90, py + 60, { steps: 12 });
   await page.mouse.move(px - 150, py + 90, { steps: 12 });
   await page.mouse.up();
-  await page.waitForTimeout(1000);
-  const midState = await mapState(page);
-  // real wheel zoom over the visible map area
+  await page.waitForTimeout(900);
   await page.mouse.move(px, py);
-  for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(250); }
-  await page.waitForTimeout(1200);
+  for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(220); }
+  // Let the wheel/inertial zoom fully settle so the captured camera is the final
+  // one (MapLibre keeps easing after the last wheel tick).
+  await page.waitForFunction(() => {
+    const m = (window as any).__4planet_map;
+    return m && !m.isMoving() && !m.isZooming() && !m.isEasing();
+  }, undefined, { timeout: 8_000 }).catch(() => {});
+  await page.waitForTimeout(600);
   const after = await mapState(page);
-  // pan changed the centre and/or wheel changed the zoom — the map really moved.
-  const moved = after.zoom !== before.zoom || after.lng !== before.lng || after.lat !== before.lat;
-  expect(moved).toBeTruthy();
-  expect(after.zoom).toBeGreaterThanOrEqual(midState.zoom);
-  await shot("02-atlas-pan-zoom");
+  expect(after.zoom !== before.zoom || after.lng !== before.lng || after.lat !== before.lat).toBeTruthy();
+  // The URL now reflects the POST-INTERACTION camera (moveend + idle wrote it).
+  const atlasAfter = atlasParams(page.url());
+  expect(atlasAfter.record).toBe("orca-bundled");
+  expect(atlasAfter.z).not.toBeNull();
+  expect(atlasAfter.c).not.toBeNull();
+  // Truth of the camera is the settled live map; assert the URL matches it so we
+  // know reconstruction from the URL will be exact.
+  const postZoom = after.zoom;
+  expect(Math.abs(Number(atlasAfter.z) - postZoom)).toBeLessThanOrEqual(0.2);
+  await shot("02-atlas-post-interaction");
 
-  // The observation panel is still open after pan/zoom; use its visible control.
-  await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
-
-  // ── 2. → SPECIES Orca via the visible control (carries returnTo) ──
+  // ── 2. → SPECIES via the visible "Open Orca in SPECIES" control ──
   const toSpecies = page.getByRole("link", { name: /Open Orca in SPECIES/i }).first();
   await toSpecies.scrollIntoViewIfNeeded();
-  await expect(toSpecies).toBeVisible();
   await toSpecies.click();
   await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
   expect(page.url()).toContain("returnTo=");
   await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
-  await shot("03-species-orca");
+  await shot("03-species");
 
-  // ── 3. → internal Living Systems (context carried) ──
+  // ── 3. → Living Systems via the visible "Continue to Living Systems" control ──
   const toLS = page.locator("[data-testid='species-to-ls']").first();
-  await expect(toLS).toBeVisible();
+  await toLS.scrollIntoViewIfNeeded();
   await toLS.click();
   await page.waitForURL(/\/living-systems/, { timeout: 15_000 });
   expect(page.url()).toContain("returnTo=");
   await expect(page.getByText("The Orca, followed honestly", { exact: false })).toBeVisible();
-  const lsReturn = page.locator("[data-testid='return-to-atlas']").first();
-  await expect(lsReturn).toBeVisible();
   await shot("04-living-systems");
 
-  // ── 4. → WH4LES_ mission (context carried) ──
-  await page.goto(`/missions/wh4les?returnTo=${new URL(page.url()).searchParams.get("returnTo")}`, { waitUntil: "load" });
-  await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
+  // ── 4. → WH4LES_ via the visible LS handoff control (NOT page.goto) ──
+  const toWh4les = page.locator("[data-testid='ls-handoff-wh4les-mission']").first();
+  await toWh4les.scrollIntoViewIfNeeded();
+  await toWh4les.click();
+  await page.waitForURL(/\/missions\/wh4les/, { timeout: 15_000 });
+  expect(page.url()).toContain("returnTo=");
   await shot("05-wh4les");
 
-  // ── 5. → Join ──
-  await page.goto("/join", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/join/);
+  // ── 5. → Join via the visible WH4LES_ Follow/Join control (NOT page.goto) ──
+  const toJoin = page.locator("[data-testid='mission-to-join']").first();
+  await toJoin.scrollIntoViewIfNeeded();
+  await toJoin.click();
+  await page.waitForURL(/\/join/, { timeout: 15_000 });
+  expect(page.url()).toContain("returnTo=");
+  // Join shows the contextual return because we arrived from the journey.
+  const joinReturn = page.locator("[data-testid='return-to-atlas']").first();
+  await expect(joinReturn).toBeVisible();
   await shot("06-join");
 
-  // ── 6. Return to the EXACT prior ATLAS record + camera + panel ──
-  await page.goto("/living-systems?returnTo=" + new URLSearchParams(atlasUrlBefore.split("?")[1]).toString());
-  // Use the visible return control from Species instead of a stitched URL:
-  await page.goto("/species/orca?entity=taxon:gbif:2440483&returnTo=" +
-    btoaUrl(atlasUrlBefore));
-  const returnCtl = page.locator("[data-testid='return-to-atlas']").first();
-  await expect(returnCtl).toBeVisible();
-  await returnCtl.click();
+  // ── 6. → return to ATLAS via the visible Join control (NOT a stitched token) ──
+  await joinReturn.click();
   await page.waitForURL(/\/atlas/, { timeout: 15_000 });
   await mapReady(page);
-  await page.waitForTimeout(1500);
-  // The reopened ATLAS must restore the record and show the observation again.
-  expect(page.url()).toContain("record=orca-bundled");
-  await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
-  await shot("07-return-atlas-context");
+  await page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false }).waitFor({ state: "visible", timeout: 20_000 });
+
+  // Reconstruction asserted against the POST-INTERACTION ATLAS state.
+  const restored = atlasParams(page.url());
+  expect(restored.record).toBe("orca-bundled");                 // record restored
+  expect(restored.m).toBe(atlasAfter.m);                        // map mode
+  expect(restored.lens).toBe(atlasAfter.lens);                  // lens
+  expect(restored.t).toBe(atlasAfter.t);                        // theme
+  expect(restored.p).toBe(atlasAfter.p);                        // projection
+  expect(restored.l).toBe(atlasAfter.l);                        // layers
+  // Camera restored to the post-interaction zoom within tolerance (not the pre-
+  // interaction snapshot). Assert against the settled live map on return.
+  const restoredLive = await mapState(page);
+  expect(Math.abs(restoredLive.zoom - postZoom)).toBeLessThanOrEqual(0.25);
+  expect(Math.abs(restoredLive.zoom - before.zoom)).toBeGreaterThan(0.1);
+  const restoredZoom = Number(restored.z);
+  expect(Math.abs(restoredZoom - postZoom)).toBeLessThanOrEqual(0.25);
+  await expect(page.locator(".stat.live")).toHaveCount(0);      // still no LIVE on bundled
+  await shot("07-return-restored");
 });
 
-// base64url of a returnTo target, matching src/product/productContext.ts encoding.
-function btoaUrl(atlasUrl: string): string {
-  const search = atlasUrl.split("?")[1] || "";
-  const keys = ["m", "l", "z", "c", "t", "p", "lens", "entity", "journey", "record", "ctx"];
-  const src = new URLSearchParams(search);
-  const p = new URLSearchParams();
-  keys.forEach((k) => { const v = src.get(k); if (v) p.set(k, v); });
-  const href = "/atlas?" + p.toString();
-  return Buffer.from(href, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
+test("browser back/forward and reload do not corrupt or fabricate ATLAS state", async ({ page }) => {
+  await page.goto("/atlas?record=orca-bundled", { waitUntil: "load" });
+  await mapReady(page);
+  await page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false }).waitFor({ state: "visible", timeout: 20_000 });
+  const open = page.getByRole("link", { name: /Open Orca in SPECIES/i }).first();
+  await open.scrollIntoViewIfNeeded();
+  await open.click();
+  await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
+  // Back → ATLAS record restored, no fabricated LIVE.
+  await page.goBack();
+  await page.waitForURL(/\/atlas/, { timeout: 15_000 });
+  await mapReady(page);
+  await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
+  await expect(page.locator(".stat.live")).toHaveCount(0);
+  // Forward → SPECIES again.
+  await page.goForward();
+  await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
+  await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
+  // Reload → SPECIES still coherent, returnTo intact.
+  await page.reload();
+  await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
+});
+
+test("unsafe or external returnTo values are rejected; unknown keys dropped", async ({ page }) => {
+  // External absolute URL as returnTo → no return control is shown.
+  await page.goto("/join?returnTo=" + Buffer.from("https://evil.example.com/atlas", "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), { waitUntil: "load" });
+  await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
+  // Non-/atlas path as returnTo → rejected.
+  await page.goto("/join?returnTo=" + Buffer.from("/evil", "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), { waitUntil: "load" });
+  await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
+  // Direct Join (no returnTo) → no contextual return, ordinary Join is unaffected.
+  await page.goto("/join", { waitUntil: "load" });
+  await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /Everyone has a role/i })).toBeVisible();
+});

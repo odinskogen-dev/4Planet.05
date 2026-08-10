@@ -19,7 +19,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SPECIES_PROFILES } from "@/data/species";
 import { withReturnTo } from "@/product/productContext";
 import type {
@@ -378,6 +378,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
   following,
   onFollow,
 }) => {
+  const navigate = useNavigate();
   const color = TYPE_COLOR[ctx.kind] ?? "#fff";
   const ref = refOf(ctx);
   const isOn = ref ? following(ref.id) : false;
@@ -952,7 +953,16 @@ export const ContextLayer: React.FC<ContextProps> = ({
               )}
               {speciesMatch && (
                 <div className="src-line">
-                  <Link to={withReturnTo(`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`, window.location.search)}>
+                  <Link
+                    to={`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`}
+                    onClick={(e) => {
+                      // Encode returnTo from the LIVE ATLAS url at click time, so the
+                      // post-interaction camera (written by the last moveend) is the
+                      // one that returns — not a stale render-time snapshot.
+                      e.preventDefault();
+                      navigate(withReturnTo(`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`, window.location.search));
+                    }}
+                  >
                     Open {speciesMatch.commonName} in SPECIES →
                   </Link>
                 </div>

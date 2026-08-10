@@ -116,7 +116,7 @@ export function LivingSystems() {
 
         <div className="tw" style={{ marginTop: 40, border: `1px solid ${T.line}` }}>
           {handoffs.map(([label, desc, to], i) => (
-            <Link key={label} to={to} style={{ display: "block", padding: "clamp(22px,3vw,32px)", textDecoration: "none", color: T.ink, borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
+            <Link key={label} to={to} data-testid={`ls-handoff-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`} style={{ display: "block", padding: "clamp(22px,3vw,32px)", textDecoration: "none", color: T.ink, borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
               <div style={{ fontWeight: 600, fontSize: "clamp(16px,1.8vw,20px)" }}>{label} →</div>
               <p style={{ marginTop: 8, fontSize: 14, color: T.dim, lineHeight: 1.5 }}>{desc}</p>
             </Link>

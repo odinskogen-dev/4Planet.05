@@ -110,7 +110,12 @@ export function decodeReturnTo(token: string | null | undefined): string | null 
  * so that surface can offer a "Return to Atlas" control. No-op if empty.
  */
 export function withReturnTo(destHref: string, atlasSearch: string): string {
-  const token = encodeReturnTo(atlasSearch);
+  // Downstream products (SPECIES, Living Systems, WH4LES_) don't carry raw ATLAS
+  // state — they carry the already-encoded returnTo token. If one is present and
+  // valid, forward it as-is so context survives the whole chain. Only when the
+  // caller holds raw ATLAS state (the ATLAS page itself) do we encode afresh.
+  const existing = new URLSearchParams(atlasSearch).get("returnTo");
+  const token = (existing && decodeReturnTo(existing)) ? existing : encodeReturnTo(atlasSearch);
   if (!token) return destHref;
   const sep = destHref.includes("?") ? "&" : "?";
   return `${destHref}${sep}returnTo=${token}`;

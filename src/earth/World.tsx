@@ -824,6 +824,11 @@ function WorldInner() {
       }
     });
     m.on("moveend", () => writeUrlRef.current());
+    // Wheel/inertial zoom keeps easing after the last moveend, so the URL can lag
+    // the true camera. `idle` fires once the map has fully settled with no pending
+    // animation — write once more there so the URL exactly matches what the user
+    // sees. This is what makes returnTo reconstruction exact.
+    m.on("idle", () => writeUrlRef.current());
     // If the user grabs the camera mid-landing, their gesture wins: cancel the
     // choreography so a stale moveend can't yank them back or open the panel late.
     m.on("movestart", (e: any) => { if (e && e.originalEvent) { cancelLanding(); stopFocusPulse(); } });
@@ -863,7 +868,13 @@ function WorldInner() {
     const rec = new URLSearchParams(window.location.search).get("record");
     if (rec === "orca-bundled" || rec === DEMO_WHALE_OBSERVATION.provenance.sourceRecordId) {
       const o = DEMO_WHALE_OCCURRENCE;
-      const targetZoom = Math.max(init.current.zoom, 6);
+      // If the URL already carries a camera (returning from a journey via
+      // returnTo), the map has ALREADY initialised at that exact camera — we must
+      // reconstruct it, not re-fly. Only run the cinematic landing on a cold
+      // entry with no camera in the URL.
+      const urlp = new URLSearchParams(window.location.search);
+      const hasRestoredCamera = urlp.has("z") && urlp.has("c");
+      const targetZoom = hasRestoredCamera ? (map.current?.getZoom() ?? init.current.zoom) : Math.max(init.current.zoom, 6);
       paintFocus("focus", [{ lon: o.lng, lat: o.lat, col: C.blue, size: 9, eid: DEMO_WHALE_OBSERVATION.id, html: `<b>${o.commonName}</b>` }], C.blue, 8);
       focusTarget.current = { lng: o.lng, lat: o.lat, zoom: targetZoom };
       // Make the marker breathe so the eye finds it (no-op under reduced motion).
@@ -880,7 +891,11 @@ function WorldInner() {
       // cancels it so a stale moveend can never open the panel late.
       const openPanel = () => setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
       cancelLanding();
-      if (map.current) {
+      if (hasRestoredCamera || !map.current) {
+        // Reconstruction (or no map yet): do NOT re-fly. The camera is already the
+        // restored one; just open the panel so state equals the returned-to state.
+        openPanel();
+      } else {
         const landing = cinematicLanding(map.current as any, { lng: o.lng, lat: o.lat, zoom: targetZoom });
         landingRef.current = landing;
         landing.done.then((outcome) => {
@@ -891,8 +906,6 @@ function WorldInner() {
             openPanel();
           }, prefersReducedMotion() ? 0 : MOTION.panelBeatMs);
         });
-      } else {
-        openPanel();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
