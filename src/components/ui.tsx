@@ -17,10 +17,10 @@ export function Label({ children, color, style }: { children: ReactNode; color?:
   return <div className="lbl" style={{ color, ...style }}>{children}</div>;
 }
 
-export function Section({ children, bg = T.paper, pad = "clamp(68px,9vw,132px)", id, minH, center }:
-  { children: ReactNode; bg?: string; pad?: string; id?: string; minH?: string; center?: boolean }) {
+export function Section({ children, bg = T.paper, pad = "clamp(68px,9vw,132px)", id, minH, center, className }:
+  { children: ReactNode; bg?: string; pad?: string; id?: string; minH?: string; center?: boolean; className?: string }) {
   return (
-    <section id={id} style={{ background: bg, padding: `${pad} 0`, minHeight: minH,
+    <section id={id} className={className} style={{ background: bg, padding: `${pad} 0`, minHeight: minH,
       display: center ? "flex" : undefined, alignItems: center ? "center" : undefined }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 clamp(20px,5vw,72px)", width: "100%" }}>{children}</div>
     </section>

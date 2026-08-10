@@ -181,7 +181,7 @@ export function SpeciesProfilePage() {
 
   return (
     <PublicShell>
-      <Section pad="clamp(88px,10vw,138px)">
+      <Section pad="clamp(88px,10vw,138px)" className={returnHref ? "closer-look" : undefined}>
         {returnHref && (
           <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, ...mono, color: "#fff", background: T.blue, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
             ← BACK TO OBSERVATION IN ATLAS

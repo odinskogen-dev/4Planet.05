@@ -158,6 +158,7 @@ const STATUS_TEXT: Record<DataStatus, string> = {
   SOURCE_UNAVAILABLE: "SOURCE DOWN",
   SEEDED: "SEEDED",
   PLANNED: "PLANNED",
+  BUNDLED: "BUNDLED · NOT LIVE",
 };
 
 const STATUS_CLASS: Record<DataStatus, string> = {
@@ -169,6 +170,7 @@ const STATUS_CLASS: Record<DataStatus, string> = {
   SOURCE_UNAVAILABLE: "bad",
   SEEDED: "seeded",
   PLANNED: "none",
+  BUNDLED: "none",
 };
 
 /**
@@ -187,6 +189,8 @@ const STATUS_MEANING: Partial<Record<DataStatus, string>> = {
   SEEDED:
     "4PLANET prototype content. This is our reasoning, not a source record, and it has not been reviewed by a domain expert.",
   PLANNED: "Designed, not yet built.",
+  BUNDLED:
+    "A real source record shipped with the app as a checked historical snapshot. It is not a live read and not the animal's current position.",
 };
 
 export const Stat = ({ s }: { s: DataStatus }) => (
@@ -881,7 +885,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
     );
     // Source image shown ONLY when both URL and licence are present.
     const showImg = !!(o.mediaUrl && o.mediaLicence);
-    const bundled = ob.provenance?.interpretation === "SOURCE_RECORD" && ob.id.startsWith("observation:gbif:");
+    const bundled = ob.provenance?.delivery === "BUNDLED_SNAPSHOT";
     return (
       <div className="ctx">
         {head(o.commonName || ob.taxon.label, OBSERVATION_LABEL, ob.id)}
@@ -908,7 +912,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <div className="sec">
             <div className="sec-h">
               <span>WHAT WAS RECORDED</span>
-              <Stat s="LIVE" />
+              <Stat s={bundled ? "BUNDLED" : "LIVE"} />
             </div>
             <div className="sec-body">
               <div className="hrow">

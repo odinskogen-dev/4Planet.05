@@ -41,6 +41,7 @@ export const DEMO_WHALE_OBSERVATION: ObservationItem = {
     sourceRecordId: BUNDLED_ORCA_RECORD_ID,
     sourceUrl: BUNDLED_ORCA_SOURCE_URL,
     interpretation: "SOURCE_RECORD",
+    delivery: "BUNDLED_SNAPSHOT",
     confidence: "HIGH",
     occurredAt: "2026-01-03",
     checkedAt: BUNDLED_ORCA_SOURCE_CHECKED,

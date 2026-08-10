@@ -55,6 +55,7 @@ import { WorldBoundary } from "./Boundary";
 
 import { field } from "@/planet/types";
 import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleOccurrence";
+import { cinematicLanding, prefersReducedMotion, MOTION } from "@/earth/motion";
 import { authorityOf, placeId as mkPlaceId, sourceKeyOf, typeOf } from "@/planet/ids";
 import {
   occurrencesInWkt, searchTaxa, taxonOccurrences, taxonPhoto, taxonVernacular,
@@ -380,6 +381,53 @@ function WorldInner() {
     drawPoints(id, "FOCUS", "4PLANET", null, rows, color, radius);
     if (m.getLayer(id)) m.moveLayer(id);
   };
+
+  // A gentle "breathing" pulse on the focus marker so the eye lands on the
+  // record. Honours reduced-motion (no pulse), is BOUNDED (a small number of
+  // breaths, then rests — never mutates paint every frame forever), and cleans
+  // itself up on unmount or when a new landing starts.
+  const pulseRaf = useRef<number | null>(null);
+  const stopFocusPulse = () => {
+    if (pulseRaf.current) { cancelAnimationFrame(pulseRaf.current); pulseRaf.current = null; }
+  };
+  const startFocusPulse = () => {
+    const m = map.current; if (!m) return;
+    stopFocusPulse();
+    if (prefersReducedMotion()) return;
+    const t0 = performance.now();
+    const totalMs = MOTION.pulseBreaths * MOTION.pulsePeriodMs;
+    const tick = (t: number) => {
+      const mm = map.current;
+      if (!mm || !mm.getLayer("focus")) { pulseRaf.current = null; return; }
+      const elapsed = t - t0;
+      if (elapsed >= totalMs) {
+        // Bounded: settle to a calm resting marker and STOP the rAF loop.
+        try {
+          mm.setPaintProperty("focus", "circle-radius", ["get", "size"]);
+          mm.setPaintProperty("focus", "circle-stroke-width", 1);
+          mm.setPaintProperty("focus", "circle-stroke-opacity", 0.9);
+        } catch { /* layer swapped out */ }
+        pulseRaf.current = null;
+        return;
+      }
+      const phase = (Math.sin((elapsed / MOTION.pulsePeriodMs) * Math.PI * 2) + 1) / 2; // 0..1
+      try {
+        mm.setPaintProperty("focus", "circle-radius", ["+", ["get", "size"], phase * 5]);
+        mm.setPaintProperty("focus", "circle-stroke-width", 1 + phase * 3);
+        mm.setPaintProperty("focus", "circle-stroke-opacity", 0.9 - phase * 0.55);
+      } catch { /* layer swapped out mid-frame */ }
+      pulseRaf.current = requestAnimationFrame(tick);
+    };
+    pulseRaf.current = requestAnimationFrame(tick);
+  };
+  // In-flight cinematic landing, so we can cancel it on interaction/unmount.
+  const landingRef = useRef<{ cancel: () => void } | null>(null);
+  const panelTimer = useRef<number | null>(null);
+  const cancelLanding = () => {
+    if (landingRef.current) { landingRef.current.cancel(); landingRef.current = null; }
+    if (panelTimer.current) { clearTimeout(panelTimer.current); panelTimer.current = null; }
+  };
+  useEffect(() => () => { stopFocusPulse(); cancelLanding(); }, []);
 
   const clearFocus = (id) => {
     const m = map.current; if (!m) return;
@@ -776,6 +824,11 @@ function WorldInner() {
       }
     });
     m.on("moveend", () => writeUrlRef.current());
+    // If the user grabs the camera mid-landing, their gesture wins: cancel the
+    // choreography so a stale moveend can't yank them back or open the panel late.
+    m.on("movestart", (e: any) => { if (e && e.originalEvent) { cancelLanding(); stopFocusPulse(); } });
+    m.on("mousedown", () => { cancelLanding(); });
+    m.on("touchstart", () => { cancelLanding(); });
     // V40 P0: the moment the user takes the camera, no async response may fit or
     // reset it. A Place focuses ONCE on open; after that the world is theirs.
     ["dragstart", "zoomstart", "rotatestart", "pitchstart"].forEach((ev) =>
@@ -810,16 +863,36 @@ function WorldInner() {
     const rec = new URLSearchParams(window.location.search).get("record");
     if (rec === "orca-bundled" || rec === DEMO_WHALE_OBSERVATION.provenance.sourceRecordId) {
       const o = DEMO_WHALE_OCCURRENCE;
+      const targetZoom = Math.max(init.current.zoom, 6);
       paintFocus("focus", [{ lon: o.lng, lat: o.lat, col: C.blue, size: 9, eid: DEMO_WHALE_OBSERVATION.id, html: `<b>${o.commonName}</b>` }], C.blue, 8);
-      focusTarget.current = { lng: o.lng, lat: o.lat, zoom: Math.max(init.current.zoom, 6) };
-      map.current?.flyTo({ center: [o.lng, o.lat], zoom: Math.max(init.current.zoom, 6), duration: 1400 });
-      setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
-      // Normalise the record param so cross-product returnTo captures it reliably
-      // even before the first moveend writes the camera state.
+      focusTarget.current = { lng: o.lng, lat: o.lat, zoom: targetZoom };
+      // Make the marker breathe so the eye finds it (no-op under reduced motion).
+      startFocusPulse();
+      // Normalise the record param up-front so returnTo captures it.
       const sp = new URLSearchParams(window.location.search);
       if (sp.get("record") !== "orca-bundled") {
         sp.set("record", "orca-bundled");
         window.history.replaceState(null, "", `${window.location.pathname}?${sp.toString()}`);
+      }
+      // Cinematic landing, then let the panel arrive with rhythm (a beat after the
+      // camera settles) rather than snapping in at the same instant. The whole
+      // sequence is cancellation-safe: a user interaction, route change or unmount
+      // cancels it so a stale moveend can never open the panel late.
+      const openPanel = () => setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
+      cancelLanding();
+      if (map.current) {
+        const landing = cinematicLanding(map.current as any, { lng: o.lng, lat: o.lat, zoom: targetZoom });
+        landingRef.current = landing;
+        landing.done.then((outcome) => {
+          if (outcome !== "settled") return; // cancelled → do nothing
+          landingRef.current = null;
+          panelTimer.current = window.setTimeout(() => {
+            panelTimer.current = null;
+            openPanel();
+          }, prefersReducedMotion() ? 0 : MOTION.panelBeatMs);
+        });
+      } else {
+        openPanel();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

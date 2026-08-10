@@ -260,3 +260,13 @@ body:has(.product-nav--impact) .product-nav{top:66px}
   .product-nav__context{display:none}
   .product-nav a{font-size:9.5px;padding:7px 8px}
 }
+
+/* ATLAS → SPECIES "closer look": the profile settles in as if you moved closer
+   to the record, so the two products read as one continuous space. */
+/* ATLAS → SPECIES "closer look": the profile settles in as if you moved closer
+   to the record, so the two products read as one continuous space.
+   EXPERIMENTAL (Control Addendum 9 Aug 2026): the whole-Section scale/fade timing
+   stays provisional until the exact-SHA preview / founder feel review. */
+.closer-look { animation: closerLook .62s cubic-bezier(.16,.84,.28,1) both; }
+@keyframes closerLook { from { opacity: 0; transform: translateY(14px) scale(.992); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .closer-look { animation: none; } }

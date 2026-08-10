@@ -126,3 +126,16 @@ test("five cetacean profiles have consistent id/gbifKey and honest media state",
   // media only shows an image when cleared/founder-cleared + a local path exists
   assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "FOUNDER_CLEARED"/);
 });
+
+// ── Truth: a bundled / NOT LIVE record must never display LIVE (Control Addendum) ──
+test("bundled Orca record is delivered as a snapshot and never labelled LIVE", () => {
+  const demo = read("src/data/demoWhaleOccurrence.ts");
+  assert.match(demo, /delivery: "BUNDLED_SNAPSHOT"/);
+  const ctx = read("src/earth/Context.tsx");
+  // The WHAT WAS RECORDED badge is driven by the delivery flag, not hard-coded LIVE.
+  assert.match(ctx, /bundled\s*\?\s*"BUNDLED"\s*:\s*"LIVE"/);
+  // bundled is derived from the explicit delivery flag, not a loose heuristic.
+  assert.match(ctx, /delivery === "BUNDLED_SNAPSHOT"/);
+  // The BUNDLED status text must carry NOT LIVE.
+  assert.match(ctx, /BUNDLED:\s*"BUNDLED · NOT LIVE"/);
+});
