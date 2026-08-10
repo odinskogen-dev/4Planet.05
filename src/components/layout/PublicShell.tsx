@@ -10,16 +10,17 @@ import type { DomainKey } from "@/types/content";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const dslug = (k: string) => k.replace("_", "").toLowerCase();
+const LS_URL = "https://4p-living-systems-v1-4-1.pages.dev/";
+const ATLAS_URL = "https://4planet-atlas-mobile.pages.dev/";
 
 type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [string, string][] };
 const stripU = (k: string) => k.replace(/_$/, "");
 const MENU: Cat[] = [
-  { key: "PRODUCTS_", to: "/", kind: "list", items: [["4PLANET", "/"], ["ATLAS", "/atlas"], ["SPECIES", "/species"], ["IMPACT", "/impact"], ["LIVING SYSTEMS", "/living-systems"]] },
-  { key: "JOIN_", to: "/join", kind: "list", items: [["Join 4Planet", "/join"], ["Brands", "/brands"], ["Partners", "/partners"], ["Funders", "/funders"]] },
+  { key: "4_", to: "/people", kind: "list", items: [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
   { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
-  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4RT", "/missions/4rt"], ["M4GAZINE", "/stories"]] },
+  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
 
@@ -61,12 +62,12 @@ function MenuItems({ c, onMobile, onClose }: { c: Cat; onMobile: boolean; onClos
   );
 }
 
-function MenuPlane({ onClose, planeRef }: { onClose: () => void; planeRef?: React.Ref<HTMLDivElement> }) {
+function MenuPlane({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<string>(MENU[1].key);
   const [openCat, setOpenCat] = useState<string | null>(MENU[1].key);
   const cat = MENU.find((c) => c.key === active)!;
   return (
-    <div ref={planeRef} role="dialog" aria-modal="true" aria-label="Main menu" className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
+    <div className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(80px,9vw,104px) clamp(20px,5vw,72px) clamp(40px,8vw,72px)" }}>
         <div className="menu-desktop" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(24px,5vw,72px)" }}>
           <div role="menu" aria-label="Primary">
@@ -97,14 +98,14 @@ function MenuPlane({ onClose, planeRef }: { onClose: () => void; planeRef?: Reac
             );
           })}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-            <Link to="/living-systems" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
+            <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
             <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
             <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
           </div>
         </div>
 
         <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          <Link to="/living-systems" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
+          <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
           <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
           <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
         </div>
@@ -114,56 +115,25 @@ function MenuPlane({ onClose, planeRef }: { onClose: () => void; planeRef?: Reac
 }
 
 function Header() {
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const ctx = useDomainContext();
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const triggerFocusRef = useRef<HTMLElement | null>(null);
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpen(false); return; }
-      // P1.8 focus trap: keep Tab focus within the menu while it is modal
-      if (e.key === "Tab" && open && menuRef.current) {
-        const f = menuRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
-        );
-        if (f.length === 0) return;
-        const first = f[0], last = f[f.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-    };
-    if (open) {
-      triggerFocusRef.current = document.activeElement as HTMLElement;
-      window.addEventListener("keydown", onKey);
-      closeRef.current?.focus();
-    } else if (triggerFocusRef.current) {
-      // P1.8 focus return: send focus back to the element that opened the menu
-      triggerFocusRef.current.focus();
-      triggerFocusRef.current = null;
-    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    if (open) { window.addEventListener("keydown", onKey); closeRef.current?.focus(); }
     return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
   }, [open]);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
-  // WS-A: one transparent header that hides on downward scroll and returns on
-  // upward scroll. No blur, frosted glass or background panel is ever added.
-  const [hidden, setHidden] = useState(false);
-  const lastY = useRef(0);
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 24);
       setPastHero(y > window.innerHeight * 0.82);
-      const dy = y - lastY.current;
-      if (y < 80 || dy < -6) setHidden(false);
-      else if (dy > 6 && y > 120) setHidden(true);
-      lastY.current = y;
     };
-    lastY.current = window.scrollY;
     onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
@@ -179,11 +149,11 @@ function Header() {
 
   return (
     <>
-      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transform: hidden && !open ? "translateY(-100%)" : "translateY(0)", transition: "transform .32s cubic-bezier(.2,.7,.2,1)", paddingTop: "env(safe-area-inset-top,0px)" }}>
+      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transition: "none" }}>
         <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
           <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
-            {!open && <ProductSwitcher dark={overHero} accent={accent} variant={new URLSearchParams(search).get("sw") === "B" ? "B" : "A"} />}
+            {!open && <ProductSwitcher dark={overHero} />}
           </div>
 
           <button aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} ref={closeRef}
@@ -193,13 +163,13 @@ function Header() {
             {open ? "CLOSE" : "MENU"}
           </button>
 
-          <Link to="/join" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
+          <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
             background: "transparent", color: open ? T.ink : fg,
             border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
-            transition: "border-color .25s ease, color .25s ease", whiteSpace: "nowrap" }}>JOIN 4PLANET</Link>
+            transition: "border-color .25s ease, color .25s ease" }}>JOIN 4_</Link>
         </div>
       </header>
-      {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} planeRef={menuRef} /></>)}
+      {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} /></>)}
       <style>{`.menu-mobile{display:none}@media(max-width:760px){.menu-desktop{display:none!important}.menu-mobile{display:block}}`}</style>
     </>
   );
@@ -224,7 +194,7 @@ function Footer() {
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
-    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
+    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
@@ -277,7 +247,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       {!heroPage && <div aria-hidden style={{ height: 64 }} />}
       <main id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
-      <style>{`.skip-to-main{position:fixed;top:8px;left:8px;z-index:1000;padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(-160%);transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+      <style>{`.skip-to-main{position:fixed;top:72px;left:12px;z-index:1000;max-width:calc(100vw - 24px);padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(calc(-100% - 80px));transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
     </>
   );
 }
