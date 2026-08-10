@@ -76,7 +76,11 @@ const readUrl = () => {
   const c = (p.get("c") || "").split(",").map(Number);
   return {
     mode: MODES.some((m) => m.id === p.get("m")) ? p.get("m") : "PLANET",
-    on: (p.get("l") || "bluemarble").split(",").filter((x) => LAYERS.some((l) => l.id === x)),
+    // Premium default: start on the clean vector basemap so place names and
+    // street-level detail are visible immediately. Blue Marble and the other
+    // NASA rasters are opt-in overlays, never the default (they hid the labels
+    // and pixelated on zoom). An explicit ?l= in the URL is still honoured.
+    on: p.has("l") ? p.get("l").split(",").filter((x) => LAYERS.some((l) => l.id === x)) : [],
     light: p.get("t") === "light",
     flat: p.get("p") === "2d",
     lens: ["EARTH", "NOW", "WATCH"].includes(p.get("lens")) ? p.get("lens") : "EARTH",
@@ -259,7 +263,17 @@ function WorldInner() {
     const m = map.current;
     const i = RASTER_ORDER.indexOf(id);
     for (let j = i + 1; j < RASTER_ORDER.length; j++) if (m.getLayer(RASTER_ORDER[j])) return RASTER_ORDER[j];
-    return m.getLayer("lbls") ? "lbls" : undefined;
+    // Insert rasters BENEATH the basemap's place-name labels so names are never
+    // hidden. The raster-fallback style uses a layer literally named "lbls"; the
+    // vector basemap (OpenFreeMap) uses symbol layers with other names, so find
+    // the first symbol layer and anchor above it.
+    if (m.getLayer("lbls")) return "lbls";
+    try {
+      const layers = m.getStyle().layers || [];
+      const firstSymbol = layers.find((ly) => ly.type === "symbol");
+      if (firstSymbol) return firstSymbol.id;
+    } catch { /* style not ready */ }
+    return undefined;
   };
 
   const drawPoints = (id, label, srcName, note, rows, colorFallback, rFallback) => {
@@ -277,15 +291,41 @@ function WorldInner() {
     };
     if (m.getSource(id)) { m.getSource(id).setData(fc); return; }
     m.addSource(id, { type: "geojson", data: fc });
+    // Visible dot. Radius grows a little as you zoom in so points stay easy to
+    // read at street level without swamping the globe view.
     m.addLayer({
       id, type: "circle", source: id,
       paint: {
-        "circle-radius": ["get", "size"], "circle-color": ["get", "col"], "circle-opacity": 0.78,
-        "circle-stroke-width": 1, "circle-stroke-color": ["get", "col"], "circle-stroke-opacity": 0.9,
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          2, ["*", ["get", "size"], 0.9],
+          6, ["get", "size"],
+          12, ["*", ["get", "size"], 1.8],
+        ],
+        "circle-color": ["get", "col"], "circle-opacity": 0.82,
+        "circle-stroke-width": 1.25, "circle-stroke-color": ["get", "col"], "circle-stroke-opacity": 0.9,
       },
     });
+    // Invisible, larger HIT layer under the visible dot so taps/clicks land even
+    // when the point is small — a real premium/mobile ergonomics fix. It shares
+    // the same source and carries the click; it never paints anything visible.
+    const hitId = `${id}__hit`;
+    m.addLayer({
+      id: hitId, type: "circle", source: id,
+      paint: {
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          2, ["max", ["+", ["get", "size"], 8], 12],
+          12, ["max", ["+", ["get", "size"], 16], 22],
+        ],
+        "circle-color": "#000", "circle-opacity": 0.01,
+      },
+    }, id); // insert the hit layer BELOW the visible dot
+    // Pointer cursor over tappable points.
+    m.on("mouseenter", hitId, () => { m.getCanvas().style.cursor = "pointer"; });
+    m.on("mouseleave", hitId, () => { m.getCanvas().style.cursor = ""; });
 
-    m.on("click", id, (e) => {
+    const onPointClick = (e) => {
       const f = e.features && e.features[0]; if (!f) return;
 
       // v1: a point that carries a canonical id opens the shared context layer
@@ -319,8 +359,10 @@ function WorldInner() {
         planetaryContext: planetary,
         accent: col,
       });
-      return;
-    });
+    };
+    // Bind to the visible dot AND the larger invisible hit layer.
+    m.on("click", id, onPointClick);
+    m.on("click", hitId, onPointClick);
     m.on("mouseenter", id, () => { m.getCanvas().style.cursor = "pointer"; });
     m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; });
   };
@@ -369,6 +411,7 @@ function WorldInner() {
   const removeLayer = (l) => {
     const m = map.current; if (!m) return;
     if (timers.current[l.id]) { clearInterval(timers.current[l.id]); delete timers.current[l.id]; }
+    if (m.getLayer(`${l.id}__hit`)) m.removeLayer(`${l.id}__hit`); // remove the tap target too
     if (m.getLayer(l.id)) m.removeLayer(l.id);
     if (m.getSource(l.id)) m.removeSource(l.id);
   };
@@ -431,6 +474,7 @@ function WorldInner() {
 
   const clearFocus = (id) => {
     const m = map.current; if (!m) return;
+    if (m.getLayer(`${id}__hit`)) m.removeLayer(`${id}__hit`);
     if (m.getLayer(id)) m.removeLayer(id);
     if (m.getSource(id)) m.removeSource(id);
   };
