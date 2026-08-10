@@ -1,5 +1,9 @@
 create extension if not exists postgis;
 
+-- Supabase may install PostGIS outside public (canonical staging uses gis).
+-- Keep this migration portable without moving the extension or changing the data model.
+set search_path = public, gis;
+
 create table if not exists public.source_records (
   id text primary key,
   source_id text not null,
@@ -23,6 +27,7 @@ begin
   raise exception 'source_records are immutable; insert a new version';
 end;
 $$;
+alter function public.reject_source_record_mutation() set search_path = public, pg_temp;
 
 drop trigger if exists source_records_immutable on public.source_records;
 create trigger source_records_immutable
