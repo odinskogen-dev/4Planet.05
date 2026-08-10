@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label, Button } from "@/components/ui";
+import { returnHrefFromSearch } from "@/product/productContext";
 
 const ROLES: [string, string, string][] = [
   ["4PEOPLE MEMBER_", "Free membership and mission updates.", "Follow the domains you care about and take part as new pathways open."],
@@ -11,6 +12,8 @@ const ROLES: [string, string, string][] = [
 ];
 
 export default function Join() {
+  const location = useLocation();
+  const returnHref = returnHrefFromSearch(location.search);
   const NOW: [string, string, string][] = [
     ["FOLLOW", "Follow a Domain, Mission or species.", "Watch the living systems you care about and see what is reported about them over time."],
     ["EXPLORE THE EVIDENCE", "Use ATLAS and the test journeys.", "Explore real source records in ATLAS and walk the IMPACT test journeys — no account, no payment."],
@@ -22,6 +25,11 @@ export default function Join() {
   return (
     <PublicShell>
       <Section pad="clamp(48px,7vw,96px)">
+        {returnHref && (
+          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: T.blue, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
+            ← BACK TO OBSERVATION IN ATLAS
+          </Link>
+        )}
         <Label color={T.blue} style={{ marginBottom: 16 }}>Join 4PLANET</Label>
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.05 }}>Everyone has a role in bringing nature back into balance.</h1>
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 640, lineHeight: 1.55 }}>

@@ -33,8 +33,8 @@ export function Seam({ from = "#FFFFFF", to = "#080808" }: { from?: string; to?:
 }
 
 /* Brand OS button system — rectangular, ≤2px radius */
-type BtnProps = { to?: string; href?: string; newTab?: boolean; children: ReactNode; primary?: boolean; accent?: string; onDark?: boolean; arrow?: boolean; style?: CSSProperties };
-export function Button({ to, href, newTab, children, primary, accent = T.blue, onDark, arrow, style }: BtnProps) {
+type BtnProps = { to?: string; href?: string; newTab?: boolean; children: ReactNode; primary?: boolean; accent?: string; onDark?: boolean; arrow?: boolean; style?: CSSProperties; testId?: string };
+export function Button({ to, href, newTab, children, primary, accent = T.blue, onDark, arrow, style, testId }: BtnProps) {
   const base: CSSProperties = {
     display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 500,
     padding: "0 22px", textDecoration: "none", justifyContent: "center",
@@ -48,7 +48,7 @@ export function Button({ to, href, newTab, children, primary, accent = T.blue, o
   const inner = (<>{children}{arrow && <span className="btn-arr" style={{ display: "inline-block", transition: "transform .15s" }}>→</span>}</>);
   const cls = "btn4" + (primary ? " btn4-primary" : "") + (onDark ? " btn4-dark" : "");
   const dataAcc = { ["data-acc" as string]: accent };
-  if (to) return <Link to={to} className={cls} style={base} {...dataAcc}>{inner}</Link>;
+  if (to) return <Link to={to} className={cls} style={base} data-testid={testId} {...dataAcc}>{inner}</Link>;
   return <a href={href} target={newTab ? "_blank" : undefined} rel={newTab ? "noopener noreferrer" : undefined} className={cls} style={base} {...dataAcc}>{inner}</a>;
 }
 

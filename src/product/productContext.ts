@@ -7,17 +7,28 @@
  *
  * The ATLAS camera/panel state already lives in its own URL query as:
  *   m (map mode), l (layers), z (zoom), c (centre), t (theme), p (projection),
- *   lens, entity, and — for this slice — record (the opened occurrence) and
- *   ctx (context level). We capture that whole ATLAS query, encode it into a
- *   single `returnTo` token, carry it across products, and decode it on return.
+ *   lens, entity, journey, and record (the opened occurrence). We capture that
+ *   whole ATLAS query, encode it into a single `returnTo` token, carry it across
+ *   products, and decode it on return. (ctx was reserved earlier but never
+ *   round-tripped; it is deferred — see DEFERRED KEYS below.)
  *
  * Safety: `returnTo` only ever reconstructs an internal `/atlas` destination.
  * Any attempt to encode a different path, an absolute URL or a malformed token
  * is rejected and the caller falls back to a plain `/atlas` link.
  */
 
+/**
+ * DEFERRED KEYS (not in the active schema):
+ *   ctx — a context-level field was reserved in an earlier draft, but the ATLAS
+ *   URL writer never wrote it and the reader never consumed it, so it round-trips
+ *   nothing. Rather than ship a schema key with no behaviour, it is removed from
+ *   the active contract. When a real, reconstructable context level exists in the
+ *   map writer/reader, reintroduce it here with an actual read/write round-trip
+ *   and test. The current entity/record/journey keys already carry the panel's
+ *   subject, so no information is lost by deferring ctx.
+ */
 export const ATLAS_STATE_KEYS = [
-  "m", "l", "z", "c", "t", "p", "lens", "entity", "journey", "record", "ctx",
+  "m", "l", "z", "c", "t", "p", "lens", "entity", "journey", "record",
 ] as const;
 export type AtlasStateKey = (typeof ATLAS_STATE_KEYS)[number];
 export type AtlasState = Partial<Record<AtlasStateKey, string>>;

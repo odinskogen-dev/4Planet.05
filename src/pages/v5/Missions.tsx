@@ -5,7 +5,7 @@ import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { MissionStrip } from "@/components/MissionStrip";
 import { PRINTS } from "@/data/prints";
-import { returnHrefFromSearch } from "@/product/productContext";
+import { returnHrefFromSearch, withReturnTo } from "@/product/productContext";
 import { Editorial } from "@/components/Editorial";
 import { content } from "@/content/contentRepository";
 import { missionArticle, type Block } from "@/content/narratives";
@@ -197,7 +197,7 @@ export function MissionDetail() {
               Follow {strip(m.name)} as its evidence, partners and pathways come together.
             </h2>
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
-              <Button to="/join" primary accent={acc} arrow>{m.joinLabel || "FOLLOW THIS MISSION"}</Button>
+              <Button to={withReturnTo("/join", location.search)} primary accent={acc} arrow testId="mission-to-join">{m.joinLabel || "FOLLOW THIS MISSION"}</Button>
               {m.impactPathwaySlug
                 ? <Button to={"/impact/" + m.impactPathwaySlug} onDark accent="#fff">FOLLOW THE PATHWAY</Button>
                 : <Button to="/partners" onDark accent="#fff">EXPLORE PARTNERSHIP</Button>}

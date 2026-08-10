@@ -69,7 +69,7 @@ export function LivingSystems() {
     ["OPEN ORCA IN SPECIES", "The full profile, identity and records.", fwd("/species/orca?entity=taxon:gbif:2440483")],
     ["EXPLORE FREELY IN ATLAS", "Leave the guided path and inspect the data yourself.", returnHref ?? "/atlas?entity=taxon:gbif:2440483"],
     ["WH4LES_ MISSION", "What this connects to, and how to take part.", fwd("/missions/wh4les")],
-    ["FOLLOW & PARTICIPATE", "Follow the animal and its mission.", "/join"],
+    ["FOLLOW & PARTICIPATE", "Follow the animal and its mission.", fwd("/join")],
   ];
   return (
     <PublicShell>

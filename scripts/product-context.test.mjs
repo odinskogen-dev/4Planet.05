@@ -7,7 +7,7 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 // ── ProductContext (Workstream B) — behaviour mirrored here in plain JS so the
 //    encode/decode/validate contract is enforced without a bundler. Keep in sync
 //    with src/product/productContext.ts. ──
-const ATLAS_STATE_KEYS = ["m", "l", "z", "c", "t", "p", "lens", "entity", "journey", "record", "ctx"];
+const ATLAS_STATE_KEYS = ["m", "l", "z", "c", "t", "p", "lens", "entity", "journey", "record"];
 const b64urlEncode = (s) => Buffer.from(s, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const b64urlDecode = (s) => {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
