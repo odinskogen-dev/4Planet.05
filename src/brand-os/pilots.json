@@ -22,7 +22,11 @@
       "SOURCE:SRC-015",
       "SOURCE:SRC-016",
       "SOURCE:SRC-020",
-      "CLAIMS:CLM-BOS-ORCA-001..004"
+      "SOURCE:SRC-025",
+      "CLAIMS:CLM-BOS-ORCA-001..005",
+      "STAGING:source-record:gbif:5939349319",
+      "STAGING:observation:gbif:5939349319",
+      "STAGING:product-context:4p:orca-gbif-v1"
     ],
     "sourceRefs": [
       {
@@ -38,28 +42,32 @@
         "status": "SOURCE_LOCKED_TAXON_ONLY"
       },
       {
+        "label": "GBIF — occurrence 5939349319",
+        "url": "https://www.gbif.org/occurrence/5939349319",
+        "scope": "exact bounded human-observation record; CC BY 4.0; coordinate rounded; no range/trend/place-membership inference",
+        "status": "SOURCE_LOCKED_EXACT_RECORD_STAGING_PERSISTED"
+      },
+      {
         "label": "Institute of Marine Research / OBIS — Incidental sightings of marine mammals",
         "url": "https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d",
-        "scope": "licensed occurrence dataset route; exact single Orca record still open; dataset is not suitable for abundance assessment",
-        "status": "DATASET_LOCKED_EXACT_RECORD_OPEN"
+        "scope": "optional future occurrence dataset route; not required for the first slice and not suitable for abundance assessment",
+        "status": "DATASET_LOCKED_OPTIONAL_ROUTE"
       }
     ],
     "assetRefs": ["AST-0008", "AST-0012", "AST-0013", "AST-0023", "AST-0024"],
     "rightsDecisionRefs": ["RD-0006", "RD-0007", "RD-0017", "RD-0018"],
     "gates": {
-      "source": "OPEN",
+      "source": "PASS",
       "rights": "OPEN",
       "qa": "OPEN",
       "founder": "OPEN",
-      "product": "OPEN"
+      "product": "PASS"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Lock one exact Orca occurrence from the IMR/OBIS dataset with date, coordinates, provider/record identifiers, CC BY attribution and visible data-quality limitations.",
-      "Ingest/select one CC BY-SA 4.0 Havforskningsinstituttet/Artsdatabanken Orca image and preserve exact creator/credit metadata plus ShareAlike obligations; licensed route exists but binary ingest is still open.",
-      "Audit the exact ATLAS → record → SPECIES public route against the accepted product candidate.",
-      "Run scientific/claim, visual, accessibility and provenance QA on the exact production object.",
-      "Founder approval of exact final release remains required."
+      "Freeze the exact public asset route: ingest/select the conditional CC BY-SA Orca media with exact creator/credit/ShareAlike metadata, or use the original source/data/design treatment and close its internal ownership chain.",
+      "Run final production QA on the exact asset family: scientific/claim, visual, accessibility, provenance and release-sidecar checks.",
+      "Founder approval of the exact final release remains required; no external publication is authorised."
     ],
     "publicReleaseEligible": false
   },
@@ -67,7 +75,7 @@
     "storyId": "STORY-BOS-BEE-001",
     "title": "What Depends on What? Bee → Pollination → Food",
     "slug": "bee-pollination-food",
-    "state": "SOURCE_READY",
+    "state": "IN_PRODUCTION",
     "risk": "HIGH",
     "truthCore": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but pollination is performed by many animal groups and not all food production depends on bees. Apple is the bounded production example for the first vertical slice: the story shows how multiple bee groups contribute to apple pollination without turning this into an all-food or all-bees claim.",
     "audienceJob": "Understand one visible dependency chain without turning a complex food system into a false universal claim.",
@@ -78,7 +86,8 @@
       "RIGHTS:RD-0014",
       "SOURCE:SRC-017",
       "SOURCE:SRC-019",
-      "CLAIMS:CLM-BOS-BEE-001..004"
+      "CLAIMS:CLM-BOS-BEE-001..004",
+      "PRODUCTION:BeeRelationshipReveal"
     ],
     "sourceRefs": [
       {
@@ -105,10 +114,9 @@
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Close documentary media rights at asset level or use the original-data/design route without implying documentary evidence.",
-      "Produce the first Relationship Reveal using CLM-BOS-BEE-001..004 and run regression QA against all-food/all-bees simplification.",
-      "Run accessibility, visual and final claim QA on the exact production object.",
-      "Founder approval of exact final release remains required."
+      "Choose the first public asset route: the implemented original Relationship Reveal avoids documentary-media dependency, but its internal public-use/ownership chain must be closed before release.",
+      "Complete formal production QA after the rights state is resolved; content regression and accessibility tests run independently in CI.",
+      "Founder approval of the exact final release remains required; no external publication is authorised."
     ],
     "publicReleaseEligible": false
   },
@@ -116,7 +124,7 @@
     "storyId": "STORY-BOS-OSLO-001",
     "title": "Oslofjorden: One Place, Many Systems",
     "slug": "oslofjorden-one-place-many-systems",
-    "state": "RESEARCHING",
+    "state": "SOURCE_READY",
     "risk": "HIGH",
     "truthCore": "Oslofjorden is not one condition or score. Different parts, time periods, species and pressure layers can show different signals. 4PLANET should connect bounded source layers while keeping coverage, time, uncertainty and causal limits visible.",
     "audienceJob": "See one familiar place as a changing living system without mistaking partial observations for total condition or causal proof.",
@@ -131,7 +139,8 @@
       "SOURCE:SRC-022",
       "SOURCE:SRC-023",
       "SOURCE:SRC-024",
-      "CLAIMS:CLM-BOS-OSLO-001..006"
+      "CLAIMS:CLM-BOS-OSLO-001..006",
+      "PLACE:place:4p:oslofjord"
     ],
     "sourceRefs": [
       {
@@ -143,44 +152,42 @@
       {
         "label": "Miljødirektoratet — Modellering av Oslofjorden / M-3141",
         "url": "https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/oslofjorden-modellering/",
-        "scope": "modelled whole-Oslofjord pressure/scenario layer; not direct ecological outcome",
+        "scope": "first ONE PLACE layer 1: modelled whole-Oslofjord pressure/scenario; not direct ecological outcome",
         "status": "LAYER_SOURCE_LOCKED"
       },
       {
         "label": "Naturbase — Marine naturtyper (HB19)",
         "url": "https://kartkatalog.miljodirektoratet.no/MapService/Details/naturtyper_marine_hb19",
-        "scope": "NLOD spatial mapped-known-occurrence layer with explicit incomplete/older coverage",
+        "scope": "first ONE PLACE layer 2: NLOD mapped-known-occurrence layer with explicit incomplete/older coverage",
         "status": "LAYER_SOURCE_LOCKED_COVERAGE_LIMITED"
       },
       {
-        "label": "Vannmiljø API / Vann-Nett WaterBody route",
-        "url": "https://vannmiljoapi.miljodirektoratet.no/swagger/ui/index",
-        "scope": "exact waterbody measurement query route; WaterBodyID/parameter/time/method selection open",
-        "status": "QUERY_ROUTE_LOCKED_EXACT_LAYER_OPEN"
+        "label": "Vannmiljø — Økosystemovervåking i kystvann Feature Layer",
+        "url": "https://kart3.miljodirektoratet.no/arcgis/rest/services/vannmiljo/MapServer/4",
+        "scope": "first ONE PLACE layer 3: NLOD monitoring-location coverage/reference points only; no parameter value, condition or trend inference",
+        "status": "LAYER_SOURCE_LOCKED_COVERAGE_ONLY"
       },
       {
         "label": "Miljødirektoratet — Teotil",
         "url": "https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/miljoovervaking/overvakingsprogrammer/forurensning-og-klimagasser/teotil/",
-        "scope": "long-run modelled nutrient-load route; exact Oslofjord extract open",
-        "status": "QUERY_ROUTE_LOCKED_EXACT_EXTRACT_OPEN"
+        "scope": "optional future long-run modelled nutrient-load route; exact Oslofjord extract not required for first slice",
+        "status": "QUERY_ROUTE_LOCKED_OPTIONAL_EXTRACT"
       }
     ],
     "assetRefs": ["AST-0021", "AST-0022"],
     "rightsDecisionRefs": ["RD-0015", "RD-0016"],
     "gates": {
-      "source": "OPEN",
+      "source": "PASS",
       "rights": "BLOCKED",
       "qa": "OPEN",
       "founder": "OPEN",
-      "product": "OPEN"
+      "product": "PASS"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Choose the first exact 3–5 ONE PLACE layers and execute/lock their specific WaterBodyID, parameter, geography, period, method, extract and data-licence metadata. Source routes are now known; exact layer selection is the remaining source blocker.",
-      "Close documentary media rights and people consent at asset level or use source-cleared map/data/design treatments without implying documentary evidence.",
-      "Build the original ONE PLACE map/relationship visual with explicit coverage, model/observation distinction and uncertainty visible.",
-      "Audit the exact ATLAS/place public handoff against the accepted product candidate.",
-      "Run claim, visual, accessibility and provenance QA; founder approval of exact final release remains required."
+      "Build/freeze the original three-layer ONE PLACE production object and close the internal public-use/ownership chain; documentary media and people are not required for the first data/design route.",
+      "Run final claim, visual, accessibility, provenance and source-layer licence QA on the exact ONE PLACE release object.",
+      "Founder approval of the exact final release remains required; no external publication is authorised."
     ],
     "publicReleaseEligible": false
   }
