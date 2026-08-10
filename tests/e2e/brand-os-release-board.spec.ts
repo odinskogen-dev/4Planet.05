@@ -35,7 +35,7 @@ test("Bee production object preserves source scope, context state and accessibil
 
   await expect(page.getByText("STORY-BOS-BEE-001").first()).toBeVisible();
   await expect(page.getByText(/Rights gate is BLOCKED/)).toBeVisible();
-  await expect(page.getByRole("heading", { name: "What depends on what?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What depends on what?", exact: true })).toBeVisible();
   await expect(page.getByText("4PLANET CONTEXT", { exact: true })).toBeVisible();
   await expect(page.getByText(/Bees are not all pollinators\. Apples are not all food/i)).toBeVisible();
   await expect(page.getByRole("list", { name: "Source-scoped relationship chain" })).toBeVisible();
