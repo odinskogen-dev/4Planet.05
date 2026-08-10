@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import pilotData from "@/brand-os/pilots.json";
 import { BeeRelationshipReveal } from "@/brand-os/BeeRelationshipReveal";
+import { OrcaSourceObject, OslofjordOnePlaceObject } from "@/brand-os/PilotSourceObjects";
 import {
   EXTERNAL_PUBLISHING_ENABLED,
   dryRunPublish,
@@ -37,6 +38,13 @@ const interactionTypeFor = (decision: FounderDecision): FounderInteractionType =
   if (decision === "EDIT") return "EDIT";
   if (decision === "KILL") return "KILL";
   return "HOLD";
+};
+
+const ProductionPreview = ({ storyId }: { storyId: string }) => {
+  if (storyId === "STORY-BOS-BEE-001") return <BeeRelationshipReveal />;
+  if (storyId === "STORY-BOS-ORCA-001") return <OrcaSourceObject />;
+  if (storyId === "STORY-BOS-OSLO-001") return <OslofjordOnePlaceObject />;
+  return null;
 };
 
 export default function BrandOSReleaseBoard() {
@@ -195,16 +203,14 @@ export default function BrandOSReleaseBoard() {
               <div><dt>Total</dt><dd>{burden.totalSeconds.toFixed(1)} s</dd></div>
               <div><dt>Average</dt><dd>{burden.averageSeconds.toFixed(1)} s</dd></div>
             </dl>
-            <p className="bos-measurement-note">Session measurement only until the Brand OS migration is deployed. No invented baseline.</p>
+            <p className="bos-measurement-note">Session UI measurement is active. Canonical staging persistence exists, but this browser control does not write founder interventions to staging until a dedicated authenticated founder write path is accepted.</p>
           </div>
         </aside>
       </section>
 
-      {story.storyId === "STORY-BOS-BEE-001" ? (
-        <section className="bos-production-preview" aria-label="First Brand OS production object">
-          <BeeRelationshipReveal />
-        </section>
-      ) : null}
+      <section className="bos-production-preview" aria-label="Selected Brand OS production object">
+        <ProductionPreview storyId={story.storyId} />
+      </section>
 
       <section className="bos-card bos-ledger">
         <div className="bos-card-head">
