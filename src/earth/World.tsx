@@ -648,6 +648,23 @@ function WorldInner() {
     setOpen(false);
     setCtx({ kind: "COORDINATE", lat, lng, life: field("LOADING"), signals: field("LOADING") });
 
+    // Resolve a human place name for the header (coords are demoted to a small
+    // mono line). Free, keyless, CORS-open; on any failure we simply keep the
+    // coordinates as the header — never invent a name.
+    (async () => {
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+        if (!r.ok) return;
+        const j = await r.json();
+        const name = [j.city || j.locality, j.principalSubdivision, j.countryName]
+          .filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ")
+          || j.localityInfo?.informative?.find((x) => x.name)?.name;
+        if (name) {
+          setCtx((c) => (c && c.kind === "COORDINATE" && c.lat === lat && c.lng === lng ? { ...c, placeName: name } : c));
+        }
+      } catch { /* offline / blocked → keep coordinates as header */ }
+    })();
+
     const near = signalsNear(pool, { lat, lng }, 400);
     const sigField = poolLoading
       ? field("LOADING")
@@ -884,7 +901,8 @@ function WorldInner() {
       m.on(ev, () => { userMoved.current = true; }),
     );
     m.on("click", (e) => {
-      const ids = ["whales", "species", "events", "quakes", "iss", "focus", "lens"].filter((id) => m.getLayer(id));
+      const base = ["whales", "species", "events", "quakes", "iss", "focus", "lens"];
+      const ids = base.flatMap((id) => [id, `${id}__hit`]).filter((id) => m.getLayer(id));
       const hit = ids.length ? m.queryRenderedFeatures(e.point, { layers: ids }) : [];
       if (!hit.length) askHereRef.current(e.lngLat.lng, e.lngLat.lat);
     });

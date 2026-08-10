@@ -115,6 +115,7 @@ export type ContextState =
       kind: "COORDINATE";
       lat: number;
       lng: number;
+      placeName?: string;
       life: Field<{ total: number; names: string[] }>;
       signals: Field<Array<Signal & { distanceKm: number }>>;
     }
@@ -1277,14 +1278,14 @@ export const ContextLayer: React.FC<ContextProps> = ({
 
   /* ── COORDINATE (V36's "WHAT IS HAPPENING HERE", now a first-class object) ─ */
   if (ctx.kind === "COORDINATE") {
-    const { lat, lng, life, signals } = ctx;
+    const { lat, lng, life, signals, placeName } = ctx;
+    const coordText = `${Math.abs(lat).toFixed(3)}°${lat >= 0 ? "N" : "S"}  ${Math.abs(lng).toFixed(3)}°${lng >= 0 ? "E" : "W"}`;
     return (
       <div className="ctx">
         {head(
-          `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"} ${Math.abs(lng).toFixed(2)}°${
-            lng >= 0 ? "E" : "W"
-          }`,
+          placeName || "Selected location",
           "What is happening here",
+          coordText,
         )}
         <div className="ctx-body">
           <Section
