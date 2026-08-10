@@ -901,7 +901,7 @@ function WorldInner() {
       m.on(ev, () => { userMoved.current = true; }),
     );
     m.on("click", (e) => {
-      const base = ["whales", "species", "events", "quakes", "iss", "focus", "lens"];
+      const base = ["whales", "species", "events", "quakes", "iss", "emissions", "focus", "lens"];
       const ids = base.flatMap((id) => [id, `${id}__hit`]).filter((id) => m.getLayer(id));
       const hit = ids.length ? m.queryRenderedFeatures(e.point, { layers: ids }) : [];
       if (!hit.length) askHereRef.current(e.lngLat.lng, e.lngLat.lat);
