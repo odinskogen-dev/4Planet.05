@@ -71,7 +71,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       "It moves through rivers, coastlines, fisheries, beaches, stomachs, currents and food webs.",
       "Marine plastic is not only a waste problem.",
       "It is a systems problem: production, consumption, leakage, cleanup and recovery.",
-      "PL4STIC is being developed to make marine waste recovery easier to understand, support and follow.",
+      "CLE4N_ is being developed to make marine waste recovery easier to understand, support and follow.",
     ],
     article: [
       L("Plastic does not disappear when it leaves our hands. It moves — through rivers, coastlines, fisheries, beaches, stomachs, currents and food webs — long after the moment it was thrown away."),
