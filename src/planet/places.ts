@@ -17,7 +17,7 @@
    policy we have not assessed (Brief §35: an API existing is not permission).
    A place with no system context is a pin, and a pin is not intelligence.
 
-   Fourteen real places, each with a declared kind, a bbox and a system link, is
+   Real seeded places, each with a declared kind, a bbox and a system link, are
    a better proof of PLACE than a million pins. Widen this list, or swap it for a
    geocoder + entity-resolution layer, once Codex owns the Place contract.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -79,6 +79,21 @@ export const PLACES: Place[] = [
     geometryKind: "BOUNDING_BOX",
     livingSystemIds: [systemId("pollination")],
     pressureIds: [pressureId("habitat-loss"), pressureId("pesticide-pressure")],
+  },
+  {
+    id: placeId("oslofjord"),
+    name: "Oslofjorden",
+    kind: "MARINE_AREA",
+    lat: 59.45,
+    lng: 10.62,
+    bbox: [10.2, 58.9, 11.2, 59.95],
+    zoom: 7.3,
+    geometryKind: "BOUNDING_BOX",
+    altNames: ["Oslofjord", "The Oslo Fjord"],
+    blurb:
+      "A bounded public-proof view of the fjord system. The box is an interface focus, not a scientific boundary; source layers retain their own geography, period, method and coverage.",
+    livingSystemIds: [systemId("coastal-sea")],
+    pressureIds: [pressureId("habitat-loss"), pressureId("overexploitation")],
   },
   {
     id: placeId("amazon"),
@@ -176,6 +191,7 @@ export const PLACES: Place[] = [
     bbox: [-92.2, -1.6, -89, 0.8],
     zoom: 6.4,
     geometryKind: "BOUNDING_BOX",
+    blurb: "High-value marine proof place with a seeded interface extent; source layers keep their own scientific geometry.",
     livingSystemIds: [systemId("coastal-sea")],
     pressureIds: [pressureId("warming-water"), pressureId("overexploitation")],
   },
@@ -188,7 +204,7 @@ export const PLACES: Place[] = [
     bbox: [-106, 32, -95, 49],
     zoom: 4.2,
     geometryKind: "BOUNDING_BOX",
-    blurb: "Industrial-scale agriculture — the clearest place on Earth to see the food system depend on pollination.",
+    blurb: "Industrial-scale agriculture — a useful proof place for exploring food-system and pollination relationships.",
     livingSystemIds: [systemId("pollination")],
     pressureIds: [pressureId("pesticide-pressure"), pressureId("habitat-loss")],
   },
