@@ -14,6 +14,19 @@ import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { Stories, CultureFilm, CultureTelier, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
+import {
+  TrustHub,
+  CompanyPage,
+  ContactPage,
+  SourcePolicyPage,
+  CorrectionsPage,
+  ImpactClaimsPage,
+  EditorialIndependencePage,
+  MediaRightsPage,
+  AiDisclosurePage,
+  TermsPage,
+  CookiesPage,
+} from "@/pages/v5/TrustPolicy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
@@ -64,7 +77,18 @@ export function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/stories" element={<Stories />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
+      <Route path="/trust" element={<TrustHub />} />
+      <Route path="/company" element={<CompanyPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/source-policy" element={<SourcePolicyPage />} />
+      <Route path="/corrections" element={<CorrectionsPage />} />
+      <Route path="/impact-claims" element={<ImpactClaimsPage />} />
+      <Route path="/editorial-independence" element={<EditorialIndependencePage />} />
+      <Route path="/media-rights" element={<MediaRightsPage />} />
+      <Route path="/ai-disclosure" element={<AiDisclosurePage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/cookies" element={<CookiesPage />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/telier" element={<CultureTelier />} />
       <Route path="/culture/play" element={<CulturePlay />} />
