@@ -102,14 +102,14 @@ Deno.serve(async (request) => {
   if (!privacyNoticeVersion) return response({ ok: false, error: "privacy_notice_version_required" }, 400, origin);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  let secretKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  let secretKey = "";
   const secretMapRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
   if (secretMapRaw) {
     try {
       const secretMap = JSON.parse(secretMapRaw) as Record<string, string>;
-      secretKey = secretMap.default || secretKey;
+      secretKey = secretMap.default || "";
     } catch {
-      // Fall through to legacy server key if present.
+      // Invalid project-secret map: fail closed below.
     }
   }
   if (!supabaseUrl || !secretKey) return response({ ok: false, error: "storage_not_configured" }, 503, origin);
