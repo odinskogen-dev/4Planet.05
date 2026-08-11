@@ -141,7 +141,7 @@ function Header() {
 
   const heroPage = !!ctx;
   const missionSlug = pathname.startsWith("/missions/") ? pathname.split("/")[2] : "";
-  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || DARK_MISSIONS.has(missionSlug);
+  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/") || DARK_MISSIONS.has(missionSlug);
   const overHero = (darkWorld || (heroPage && !pastHero)) && !open;
   const accent = ctx ? ctx.accent : T.blue;
   const fg = overHero ? "#fff" : T.ink;
@@ -238,7 +238,7 @@ function Footer() {
 
 export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/");
+  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/");
   const heroPage = !!useDomainContext() || darkWorld;
   return (
     <>
