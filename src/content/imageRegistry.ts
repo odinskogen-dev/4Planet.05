@@ -52,7 +52,7 @@ export const IMAGES = {
 
   // ── MISSION HEROES ──────────────────────────────────────────────────
   wh4lesHero: { src: `${A}/missions/wh4les/hero.jpg`, alt: "A whale's tail rising from calm water", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 45%", role: "missionHero" },
-  cor4lHero: { src: `${A}/missions/cor4l/hero.jpg`, alt: "A living coral reef standing in clear water", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
+  cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
   rewildMarineHero: { src: `${A}/missions/rewild-marine/hero.jpg`, alt: "Seagrass and kelp rising through sunlit coastal water above a shellfish bed", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   clim4teHero: { src: `${A}/missions/clim4te/hero.jpg`, alt: "A green forest under drifting mist", mission: "clim4te", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
@@ -102,7 +102,7 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "species": { src: `${A2}/species/detail-01.jpg`, alt: "Aerial of wild terrain — habitat seen whole", aspectRatio: "3/2", role: "editorial" },
   "rewild-land": { src: `${A2}/rewild/detail-01.jpg`, alt: "Rugged land meeting water — habitat returning", aspectRatio: "3/2", role: "editorial" },
   "circular-city": { src: `${A2}/circular-city/detail-01.jpg`, alt: "Planted terraces stepping down a dense urban block", aspectRatio: "3/2", role: "editorial" },
-  "cor4l": { src: `${A2}/cor4l/detail-01.jpg`, alt: "Close detail of living coral structure", aspectRatio: "3/2", role: "editorial" },
+  "cor4l": { src: `${A2}/cor4l/detail-coral-01.jpg`, alt: "A table coral near the surface in clear blue water", aspectRatio: "3/2", role: "editorial" },
   "en4rgy": { src: `${A2}/en3rgy/detail-01.jpg`, alt: "Detail of energy infrastructure at work", aspectRatio: "3/2", role: "editorial" },
   "food": { src: `${A2}/food/detail-01.jpg`, alt: "Working farmland viewed from above", aspectRatio: "3/2", role: "editorial" },
   "m4gazine": { src: `${A2}/m4gazine/detail-01.jpg`, alt: "P4NTHER editorial frame with analog white border", aspectRatio: "3/2", role: "editorial" },

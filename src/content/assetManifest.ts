@@ -6,6 +6,15 @@ const dslug = (k: DomainKey) => k.replace("_", "").toLowerCase();
 // Real files used automatically if present (img onError → technical grid fallback).
 export function missionAssets(slug: string): AssetSet {
   const b = `/assets/missions/${slug}`;
+  // COR4L_ ships founder-supplied, rights-cleared, content-verified reef photos.
+  if (slug === "cor4l") {
+    return {
+      hero: missionHero(slug)?.src ?? `${b}/hero-real.jpg`,
+      heroMobile: `${b}/hero-real-mobile.jpg`,
+      detail1: `${b}/detail-coral-02.jpg`,
+      detail2: `${b}/detail-coral-03.jpg`,
+    };
+  }
   return { hero: missionHero(slug)?.src ?? `${b}/hero.jpg`, heroMobile: `${b}/hero-mobile.jpg`, detail1: `${b}/detail-01.jpg`, detail2: `${b}/detail-02.jpg` };
 }
 export function domainAssets(key: DomainKey): AssetSet {

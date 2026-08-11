@@ -44,6 +44,8 @@ export interface ImpactUnit {
   imageAlt: string;
   imagePending?: boolean;        // true → bank has no truthful photo yet
   imageCredit?: string;
+  /** optional supporting photos for the article (real, verified) */
+  detailImages?: { src: string; alt: string }[];
   /** one-line "what this is" */
   standfirst: string;
   /** the five WHYs, told plainly */
@@ -158,9 +160,15 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     action: "RESTORE CORAL",
     unitLabel: "1 CORAL FRAGMENT",
     accent: OCE4N,
-    image: "",
-    imageAlt: "Living coral reef — cleared photograph pending",
-    imagePending: true,
+    image: "/assets/impact/restore-coral/hero.jpg",
+    imageMobile: "/assets/impact/restore-coral/hero-mobile.jpg",
+    imageAlt: "A living coral reef — vivid soft corals lit by surface light",
+    imageCredit: "Founder-supplied, rights-cleared",
+    detailImages: [
+      { src: "/assets/missions/cor4l/detail-coral-01.jpg", alt: "A table coral near the surface in clear water" },
+      { src: "/assets/missions/cor4l/detail-coral-03.jpg", alt: "Pink soft corals and a reef fish lit by sun rays" },
+      { src: "/assets/missions/cor4l/detail-coral-04.jpg", alt: "A dense, colourful reef community" },
+    ],
     standfirst: "Support reef restoration where coral ecosystems are collapsing.",
     whyPlant:
       "Coral reefs are among the most alive places in the ocean — tiny animals building structures that shelter a quarter of all marine species. Restoration helps damaged reefs rebuild that structure where recovery is possible.",

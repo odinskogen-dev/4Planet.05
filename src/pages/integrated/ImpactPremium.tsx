@@ -152,6 +152,17 @@ export function ImpactStory() {
             </div>
           ))}
 
+          {/* Supporting photographs (real, verified) */}
+          {u.detailImages && u.detailImages.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 2, marginTop: 30 }}>
+              {u.detailImages.map((d) => (
+                <figure key={d.src} style={{ margin: 0, aspectRatio: "4/3", overflow: "hidden", background: "#05070f" }}>
+                  <img src={d.src} alt={d.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </figure>
+              ))}
+            </div>
+          )}
+
           {/* Field partner + honest delivery status */}
           <h2 className="impact-h">The field partner</h2>
           <p className="impact-p">{u.delivery.whyPartner}</p>
