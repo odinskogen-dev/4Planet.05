@@ -8,7 +8,7 @@ test("Brand OS release board freezes Orca copy and remains founder-gated", async
   await expect(page.getByRole("heading", { name: "Founder Release Board" })).toBeVisible();
   await expect(page.getByText("EXTERNAL PUBLISHING DISABLED")).toBeVisible();
   await expect(page.getByText("STORY-BOS-ORCA-001").first()).toBeVisible();
-  await expect(page.getByText("MAN-BOS-ORCA-001")).toBeVisible();
+  await expect(page.getByText("MAN-BOS-ORCA-001", { exact: true })).toBeVisible();
   await expect(page.getByText("Non-founder ready")).toBeVisible();
   await expect(page.getByText("YES", { exact: true })).toBeVisible();
   await expect(page.getByText(/Founder gate is OPEN/)).toBeVisible();
@@ -37,7 +37,7 @@ test("Bee production object is rights/QA ready while preserving source scope and
   await page.getByRole("button", { name: /What Depends on What\? Bee/ }).click();
 
   await expect(page.getByText("STORY-BOS-BEE-001").first()).toBeVisible();
-  await expect(page.getByText("MAN-BOS-BEE-001")).toBeVisible();
+  await expect(page.getByText("MAN-BOS-BEE-001", { exact: true })).toBeVisible();
   await expect(page.getByText(/Founder gate is OPEN/)).toBeVisible();
   await expect(page.getByText(/AST-0020 \/ RD-0014/)).toBeVisible();
   await expect(page.getByText(/A bee is not the whole food system/)).toBeVisible();
@@ -52,7 +52,7 @@ test("Oslofjorden release is rights/QA ready and exposes bounded evidence classe
   await page.getByRole("button", { name: /Oslofjorden: One Place, Many Systems/ }).click();
 
   await expect(page.getByText("STORY-BOS-OSLO-001").first()).toBeVisible();
-  await expect(page.getByText("MAN-BOS-OSLO-001")).toBeVisible();
+  await expect(page.getByText("MAN-BOS-OSLO-001", { exact: true })).toBeVisible();
   await expect(page.getByText(/Founder gate is OPEN/)).toBeVisible();
   await expect(page.getByText(/AST-0022 \/ RD-0016/)).toBeVisible();
   await expect(page.getByText(/To understand Oslofjorden, we have to keep different kinds of evidence different/)).toBeVisible();
