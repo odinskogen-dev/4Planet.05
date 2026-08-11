@@ -3,7 +3,7 @@
     "storyId": "STORY-BOS-ORCA-001",
     "title": "An Orca Is Never Only an Orca",
     "slug": "orca-never-only",
-    "state": "SOURCE_READY",
+    "state": "FOUNDER_REVIEW",
     "risk": "HIGH",
     "truthCore": "An Orca is a living individual inside social, acoustic, food-web and place relationships. A source-reported occurrence can support a bounded statement about one reported record; it does not by itself establish range, abundance, trend or ecosystem condition.",
     "audienceJob": "Distinguish evidence from interpretation while feeling the wider living system around one animal.",
@@ -15,10 +15,12 @@
       "ASSET:AST-0013",
       "ASSET:AST-0023",
       "ASSET:AST-0024",
+      "ASSET:AST-0025",
       "RIGHTS:RD-0006",
       "RIGHTS:RD-0007",
       "RIGHTS:RD-0017",
       "RIGHTS:RD-0018",
+      "RIGHTS:RD-0019",
       "SOURCE:SRC-015",
       "SOURCE:SRC-016",
       "SOURCE:SRC-020",
@@ -26,7 +28,8 @@
       "CLAIMS:CLM-BOS-ORCA-001..005",
       "STAGING:source-record:gbif:5939349319",
       "STAGING:observation:gbif:5939349319",
-      "STAGING:product-context:4p:orca-gbif-v1"
+      "STAGING:product-context:4p:orca-gbif-v1",
+      "MANIFEST:MAN-BOS-ORCA-001"
     ],
     "sourceRefs": [
       {
@@ -54,28 +57,27 @@
         "status": "DATASET_LOCKED_OPTIONAL_ROUTE"
       }
     ],
-    "assetRefs": ["AST-0008", "AST-0012", "AST-0013", "AST-0023", "AST-0024"],
-    "rightsDecisionRefs": ["RD-0006", "RD-0007", "RD-0017", "RD-0018"],
+    "assetRefs": ["AST-0008", "AST-0012", "AST-0013", "AST-0023", "AST-0024", "AST-0025"],
+    "rightsDecisionRefs": ["RD-0006", "RD-0007", "RD-0017", "RD-0018", "RD-0019"],
     "gates": {
       "source": "PASS",
-      "rights": "OPEN",
-      "qa": "OPEN",
+      "rights": "PASS",
+      "qa": "PASS",
       "founder": "OPEN",
       "product": "PASS"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Freeze the exact public asset route: ingest/select the conditional CC BY-SA Orca media with exact creator/credit/ShareAlike metadata, or use the original source/data/design treatment and close its internal ownership chain.",
-      "Run final production QA on the exact asset family: scientific/claim, visual, accessibility, provenance and release-sidecar checks.",
-      "Founder approval of the exact final release remains required; no external publication is authorised."
+      "Founder must APPROVE, EDIT, HOLD or KILL the exact frozen MAN-BOS-ORCA-001 release; founder gate remains OPEN.",
+      "External publication remains disabled and requires a separate explicit founder release plus authenticated live platform adapter."
     ],
-    "publicReleaseEligible": false
+    "publicReleaseEligible": true
   },
   {
     "storyId": "STORY-BOS-BEE-001",
     "title": "What Depends on What? Bee → Pollination → Food",
     "slug": "bee-pollination-food",
-    "state": "IN_PRODUCTION",
+    "state": "FOUNDER_REVIEW",
     "risk": "HIGH",
     "truthCore": "Many crop plants depend at least partly on animal pollination. Bees are important pollinators, but pollination is performed by many animal groups and not all food production depends on bees. Apple is the bounded production example for the first vertical slice: the story shows how multiple bee groups contribute to apple pollination without turning this into an all-food or all-bees claim.",
     "audienceJob": "Understand one visible dependency chain without turning a complex food system into a false universal claim.",
@@ -87,7 +89,8 @@
       "SOURCE:SRC-017",
       "SOURCE:SRC-019",
       "CLAIMS:CLM-BOS-BEE-001..004",
-      "PRODUCTION:BeeRelationshipReveal"
+      "PRODUCTION:BeeRelationshipReveal",
+      "MANIFEST:MAN-BOS-BEE-001"
     ],
     "sourceRefs": [
       {
@@ -107,24 +110,23 @@
     "rightsDecisionRefs": ["RD-0013", "RD-0014"],
     "gates": {
       "source": "PASS",
-      "rights": "BLOCKED",
-      "qa": "OPEN",
+      "rights": "PASS",
+      "qa": "PASS",
       "founder": "OPEN",
       "product": "NOT_APPLICABLE"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Choose the first public asset route: the implemented original Relationship Reveal avoids documentary-media dependency, but its internal public-use/ownership chain must be closed before release.",
-      "Complete formal production QA after the rights state is resolved; content regression and accessibility tests run independently in CI.",
-      "Founder approval of the exact final release remains required; no external publication is authorised."
+      "Founder must APPROVE, EDIT, HOLD or KILL the exact frozen MAN-BOS-BEE-001 release; founder gate remains OPEN.",
+      "External publication remains disabled and requires a separate explicit founder release plus authenticated live platform adapter."
     ],
-    "publicReleaseEligible": false
+    "publicReleaseEligible": true
   },
   {
     "storyId": "STORY-BOS-OSLO-001",
     "title": "Oslofjorden: One Place, Many Systems",
     "slug": "oslofjorden-one-place-many-systems",
-    "state": "SOURCE_READY",
+    "state": "FOUNDER_REVIEW",
     "risk": "HIGH",
     "truthCore": "Oslofjorden is not one condition or score. Different parts, time periods, species and pressure layers can show different signals. 4PLANET should connect bounded source layers while keeping coverage, time, uncertainty and causal limits visible.",
     "audienceJob": "See one familiar place as a changing living system without mistaking partial observations for total condition or causal proof.",
@@ -140,7 +142,8 @@
       "SOURCE:SRC-023",
       "SOURCE:SRC-024",
       "CLAIMS:CLM-BOS-OSLO-001..006",
-      "PLACE:place:4p:oslofjord"
+      "PLACE:place:4p:oslofjord",
+      "MANIFEST:MAN-BOS-OSLO-001"
     ],
     "sourceRefs": [
       {
@@ -178,17 +181,16 @@
     "rightsDecisionRefs": ["RD-0015", "RD-0016"],
     "gates": {
       "source": "PASS",
-      "rights": "BLOCKED",
-      "qa": "OPEN",
+      "rights": "PASS",
+      "qa": "PASS",
       "founder": "OPEN",
       "product": "PASS"
     },
     "targetChannels": ["web", "instagram", "youtube", "linkedin"],
     "blockers": [
-      "Build/freeze the original three-layer ONE PLACE production object and close the internal public-use/ownership chain; documentary media and people are not required for the first data/design route.",
-      "Run final claim, visual, accessibility, provenance and source-layer licence QA on the exact ONE PLACE release object.",
-      "Founder approval of the exact final release remains required; no external publication is authorised."
+      "Founder must APPROVE, EDIT, HOLD or KILL the exact frozen MAN-BOS-OSLO-001 release; founder gate remains OPEN.",
+      "External publication remains disabled and requires a separate explicit founder release plus authenticated live platform adapter."
     ],
-    "publicReleaseEligible": false
+    "publicReleaseEligible": true
   }
 ]
