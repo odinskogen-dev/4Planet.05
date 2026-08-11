@@ -7,6 +7,7 @@ const pilots = JSON.parse(readFileSync(resolve("src/brand-os/pilots.json"), "utf
 const regressionCases = JSON.parse(readFileSync(resolve("src/brand-os/qa-regression-cases.json"), "utf8"));
 const runtime = readFileSync(resolve("src/brand-os/runtime.ts"), "utf8");
 const productionSystem = readFileSync(resolve("src/brand-os/production-system.ts"), "utf8");
+const releaseManifests = readFileSync(resolve("src/brand-os/release-manifests.ts"), "utf8");
 const channelEngine = readFileSync(resolve("src/brand-os/channel-engine.ts"), "utf8");
 const publishingAdapters = readFileSync(resolve("src/brand-os/publishing-adapters.ts"), "utf8");
 const learningEngine = readFileSync(resolve("src/brand-os/learning-engine.ts"), "utf8");
@@ -20,12 +21,11 @@ const pilotObjects = readFileSync(resolve("src/brand-os/PilotSourceObjects.tsx")
 const beeObject = readFileSync(resolve("src/brand-os/BeeRelationshipReveal.tsx"), "utf8");
 
 const gatePasses = (gate) => gate === "PASS" || gate === "NOT_APPLICABLE";
-const releaseEligible = (story, founderDecision = "OPEN") =>
+const nonFounderReady = (story) =>
   gatePasses(story.gates.source)
   && gatePasses(story.gates.rights)
   && gatePasses(story.gates.qa)
   && gatePasses(story.gates.product)
-  && founderDecision === "APPROVED"
   && story.publicReleaseEligible === true;
 
 const keyFor = (storyId, releaseId, channel, version, fingerprint) =>
@@ -38,7 +38,7 @@ test("Brand OS starts with exactly the three authorised vertical-slice pilots", 
   );
 });
 
-test("persistent pilot IDs and canonical references are unique, populated and blocker lists are real", () => {
+test("persistent pilot IDs and canonical references are unique and populated", () => {
   const ids = new Set();
   for (const story of pilots) {
     assert.match(story.storyId, /^STORY-BOS-[A-Z]+-\d{3}$/);
@@ -50,17 +50,42 @@ test("persistent pilot IDs and canonical references are unique, populated and bl
   }
 });
 
-test("no pilot can become public merely through founder approval", () => {
+test("all three P0 pilots have closed non-founder gates and stop at founder review", () => {
   for (const story of pilots) {
-    assert.equal(releaseEligible(story, "APPROVED"), false, `${story.storyId} incorrectly became public eligible`);
+    assert.equal(nonFounderReady(story), true, `${story.storyId} is not non-founder ready`);
+    assert.equal(story.state, "FOUNDER_REVIEW");
+    assert.equal(story.gates.founder, "OPEN");
+    assert.equal(story.publicReleaseEligible, true);
   }
 });
 
-test("rights failures remain explicit hard gates", () => {
-  for (const story of pilots) {
-    assert.notEqual(story.gates.rights, "PASS");
-    assert.equal(story.publicReleaseEligible, false);
+test("founder approval cannot bypass the separate founder gate", () => {
+  assert.match(runtime, /if \(!gatePasses\(story\.gates\.founder\)\) reasons\.push\(`Founder gate is \$\{story\.gates\.founder\}\. `?/.source ?? /Founder gate is/);
+  assert.match(runtime, /Founder gate is \$\{story\.gates\.founder\}/);
+  assert.match(runtime, /release\.founderDecision !== "APPROVED"/);
+  assert.match(runtime, /EXTERNAL_PUBLISHING_ENABLED = false as const/);
+});
+
+test("frozen P0 manifests bind exact release IDs to source/data/design rights routes", () => {
+  for (const value of [
+    "MAN-BOS-ORCA-001",
+    "REL-BOS-ORCA-IG-001",
+    "AST-0025 / RD-0019",
+    "MAN-BOS-BEE-001",
+    "REL-BOS-BEE-IG-001",
+    "AST-0020 / RD-0014",
+    "MAN-BOS-OSLO-001",
+    "REL-BOS-OSLO-IG-001",
+    "AST-0022 / RD-0016",
+  ]) {
+    assert.match(releaseManifests, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
+  assert.match(releaseManifests, /frozenForFounderReview: true/g);
+  assert.match(releaseManifests, /sourceGate: "PASS"/g);
+  assert.match(releaseManifests, /rightsGate: "PASS"/g);
+  assert.match(releaseManifests, /provenanceLabel:/g);
+  assert.match(releaseManifests, /sourceFooter:/g);
+  assert.match(releaseManifests, /ownedDestination:/g);
 });
 
 test("Orca and Oslo source/product gates are closed only after bounded evidence routes exist", () => {
@@ -69,6 +94,8 @@ test("Orca and Oslo source/product gates are closed only after bounded evidence 
   assert.equal(orca.gates.source, "PASS");
   assert.equal(orca.gates.product, "PASS");
   assert.ok(orca.canonicalRefs.includes("SOURCE:SRC-025"));
+  assert.ok(orca.canonicalRefs.includes("ASSET:AST-0025"));
+  assert.ok(orca.canonicalRefs.includes("RIGHTS:RD-0019"));
   assert.match(JSON.stringify(orca), /5939349319/);
   assert.equal(oslo.gates.source, "PASS");
   assert.equal(oslo.gates.product, "PASS");
@@ -117,7 +144,7 @@ test("production system locks core primitives while leaving unvalidated distinct
   assert.match(productionSystem, /Synthetic media cannot serve as verified-outcome evidence/);
 });
 
-test("production template IDs are explicit and cover documentary, relationship, place, signal, proof and motion", () => {
+test("production template IDs cover documentary, relationship, place, signal, proof and motion", () => {
   for (const id of ["TPL-DOC-01", "TPL-REL-01", "TPL-PLACE-01", "TPL-SIGNAL-01", "TPL-PROOF-01", "TPL-MOTION-01"]) {
     assert.match(productionSystem, new RegExp(id));
   }
@@ -135,7 +162,7 @@ test("all three first vertical slices have implemented internal production objec
   assert.match(pilotObjects, /Co-location is not causality/);
 });
 
-test("regression corpus contains both failure and golden-boundary cases for the three pilots", () => {
+test("regression corpus contains failure and golden-boundary cases for the three pilots", () => {
   const ids = new Set();
   for (const item of regressionCases) {
     assert.equal(ids.has(item.caseId), false, `duplicate regression case ${item.caseId}`);
@@ -223,16 +250,22 @@ test("Bee pilot explicitly rejects the universal all-food-depends-on-bees simpli
   assert.ok(bee);
   assert.match(bee.truthCore, /not all food production depends on bees/i);
   assert.equal(bee.gates.source, "PASS");
+  assert.equal(bee.gates.rights, "PASS");
+  assert.equal(bee.gates.qa, "PASS");
 });
 
 test("Oslofjorden pilot preserves coverage and causal limits", () => {
   const oslo = pilots.find((story) => story.storyId === "STORY-BOS-OSLO-001");
   assert.ok(oslo);
   assert.match(oslo.truthCore, /coverage, time, uncertainty and causal limits/i);
+  assert.equal(oslo.gates.rights, "PASS");
+  assert.equal(oslo.gates.qa, "PASS");
 });
 
 test("Orca pilot preserves record versus range/trend distinction", () => {
   const orca = pilots.find((story) => story.storyId === "STORY-BOS-ORCA-001");
   assert.ok(orca);
   assert.match(orca.truthCore, /does not by itself establish range, abundance, trend or ecosystem condition/i);
+  assert.equal(orca.gates.rights, "PASS");
+  assert.equal(orca.gates.qa, "PASS");
 });
