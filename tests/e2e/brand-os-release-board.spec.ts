@@ -1,8 +1,13 @@
+import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 const baseURL = process.env.BASE_URL ?? "http://127.0.0.1:4173";
+const visualEvidenceDir = "visual-qa-evidence";
+mkdirSync(visualEvidenceDir, { recursive: true });
 
-test("Brand OS release board freezes Orca copy and remains founder-gated", async ({ page }, testInfo) => {
+const evidencePath = (fileName: string) => `${visualEvidenceDir}/${fileName}`;
+
+test("Brand OS release board freezes Orca copy and remains founder-gated", async ({ page }) => {
   await page.goto(`${baseURL}/internal/brand-os`);
 
   const frozen = page.getByRole("complementary");
@@ -25,9 +30,9 @@ test("Brand OS release board freezes Orca copy and remains founder-gated", async
   await expect(production.getByText(/does not establish range, abundance, population trend/i).first()).toBeVisible();
   await expect(page.getByText(/APPROVE AS SECOND CONTROLLED TEST CANDIDATE/)).toBeVisible();
 
-  await production.screenshot({ path: testInfo.outputPath("orca-production-desktop.png") });
+  await production.screenshot({ path: evidencePath("orca-production-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
-  await production.screenshot({ path: testInfo.outputPath("orca-production-mobile.png") });
+  await production.screenshot({ path: evidencePath("orca-production-mobile.png") });
 
   await frozen.getByRole("button", { name: "APPROVE" }).click();
   await expect(frozen.getByText("APPROVED", { exact: true }).first()).toBeVisible();
@@ -43,7 +48,7 @@ test("Brand OS release board freezes Orca copy and remains founder-gated", async
   expect(urls.every((url) => !url.includes("instagram.com") && !url.includes("linkedin.com") && !url.includes("youtube.com"))).toBe(true);
 });
 
-test("Bee production object is founder-review ready with exact first-test family and learning contract", async ({ page }, testInfo) => {
+test("Bee production object is founder-review ready with exact first-test family and learning contract", async ({ page }) => {
   await page.goto(`${baseURL}/internal/brand-os`);
   await page.getByRole("button", { name: /What Depends on What\? Bee/ }).click();
 
@@ -69,13 +74,13 @@ test("Bee production object is founder-review ready with exact first-test family
   await expect(production.getByRole("list", { name: "Source-scoped relationship chain" })).toBeVisible();
   await expect(liveTest.getByText(/No authentication, account binding, media hosting or external platform request has been performed/)).toBeVisible();
 
-  await production.screenshot({ path: testInfo.outputPath("bee-production-desktop.png") });
+  await production.screenshot({ path: evidencePath("bee-production-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
-  await production.screenshot({ path: testInfo.outputPath("bee-production-mobile.png") });
-  await page.screenshot({ path: testInfo.outputPath("bee-founder-board-mobile.png"), fullPage: true });
+  await production.screenshot({ path: evidencePath("bee-production-mobile.png") });
+  await page.screenshot({ path: evidencePath("bee-founder-board-mobile.png"), fullPage: true });
 });
 
-test("Oslofjorden release is founder-review ready and preserves bounded evidence classes", async ({ page }, testInfo) => {
+test("Oslofjorden release is founder-review ready and preserves bounded evidence classes", async ({ page }) => {
   await page.goto(`${baseURL}/internal/brand-os`);
   await page.getByRole("button", { name: /Oslofjorden: One Place, Many Systems/ }).click();
 
@@ -98,7 +103,7 @@ test("Oslofjorden release is founder-review ready and preserves bounded evidence
   await expect(production.getByRole("img", { name: /not a scientific boundary map/i })).toBeVisible();
   await expect(production.getByText(/Co-location is not causality/i)).toBeVisible();
 
-  await production.screenshot({ path: testInfo.outputPath("oslo-production-desktop.png") });
+  await production.screenshot({ path: evidencePath("oslo-production-desktop.png") });
   await page.setViewportSize({ width: 390, height: 844 });
-  await production.screenshot({ path: testInfo.outputPath("oslo-production-mobile.png") });
+  await production.screenshot({ path: evidencePath("oslo-production-mobile.png") });
 });
