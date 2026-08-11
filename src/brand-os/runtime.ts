@@ -49,6 +49,7 @@ export function evaluateRelease(story: StoryRecord, release: ReleaseRecord): QAR
   if (!gatePasses(story.gates.rights)) reasons.push(`Rights gate is ${story.gates.rights}.`);
   if (!gatePasses(story.gates.qa)) reasons.push(`QA gate is ${story.gates.qa}.`);
   if (!gatePasses(story.gates.product)) reasons.push(`Product gate is ${story.gates.product}.`);
+  if (!gatePasses(story.gates.founder)) reasons.push(`Founder gate is ${story.gates.founder}.`);
   if (release.founderDecision !== "APPROVED") reasons.push(`Founder decision is ${release.founderDecision}.`);
   if (story.publicReleaseEligible !== true) reasons.push("Story has not been marked public-release eligible by programme control.");
 
