@@ -37,7 +37,9 @@ test("motion production is bounded by learning and truth state", () => {
   assert.match(prelive, /QA-ready specification, not claimed rendered/);
   assert.ok(prelive.includes("VAR-BOS-ORCA-MOTION-001"));
   assert.ok(prelive.includes("VAR-BOS-OSLO-MOTION-001"));
-  assert.ok(occurrences(prelive, 'readiness: "DEFERRED_UNTIL_LEARNING"') >= 2);
+  assert.match(prelive, /DEFERRED_UNTIL_LEARNING/);
+  assert.match(prelive, /deferredMotion\("VAR-BOS-ORCA-MOTION-001"/);
+  assert.match(prelive, /deferredMotion\("VAR-BOS-OSLO-MOTION-001"/);
   assert.match(prelive, /Do not animate one observation into apparent movement, live location or trend/);
   assert.match(prelive, /Do not animate modelled or mapped layers in a way that implies temporal change or live monitoring/);
 });
@@ -121,7 +123,7 @@ test("founder board exposes exact families while preserving local-only decision 
   assert.match(board, /EXACT RELEASE FAMILY/);
   assert.match(board, /Project Lead recommendation/);
   assert.match(board, /Founder decision — local simulation only/);
-  assert.match(board, /does not persist a founder decision to staging and do not authorise live release/);
+  assert.match(board, /do not persist a founder decision to staging and do not authorise live release/);
   assert.match(board, /PLATFORM STATE/);
   assert.match(board, /PRE-REGISTERED LEARNING CONTRACT/);
   assert.match(board, /Nothing here can publish externally/);
