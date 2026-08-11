@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import pilotData from "@/brand-os/pilots.json";
 import { BeeRelationshipReveal } from "@/brand-os/BeeRelationshipReveal";
 import { OrcaSourceObject, OslofjordOnePlaceObject } from "@/brand-os/PilotSourceObjects";
+import { manifestForStory } from "@/brand-os/release-manifests";
 import {
   EXTERNAL_PUBLISHING_ENABLED,
   dryRunPublish,
@@ -15,7 +16,6 @@ import type {
   FounderInteractionType,
   FounderIntervention,
   PublicationReceipt,
-  ReleaseRecord,
   StoryRecord,
 } from "@/brand-os/types";
 import "./brand-os-release-board.css";
@@ -23,15 +23,6 @@ import "./brand-os-release-board.css";
 const stories = pilotData as unknown as StoryRecord[];
 
 const gateLabel = (value: string) => value.split("_").join(" ");
-
-const makeRelease = (story: StoryRecord, decision: FounderDecision): ReleaseRecord => ({
-  releaseId: `REL-${story.storyId.replace("STORY-", "")}-IG-001`,
-  storyId: story.storyId,
-  channel: "instagram",
-  version: 1,
-  founderDecision: decision,
-  contentFingerprint: `${story.slug}-master-v1`,
-});
 
 const interactionTypeFor = (decision: FounderDecision): FounderInteractionType => {
   if (decision === "APPROVED") return "APPROVE";
@@ -56,7 +47,8 @@ export default function BrandOSReleaseBoard() {
 
   const story = stories.find((item) => item.storyId === selectedId) ?? stories[0];
   const decision = story ? decisions[story.storyId] ?? "OPEN" : "OPEN";
-  const release = story ? makeRelease(story, decision) : null;
+  const manifest = story ? manifestForStory(story) : null;
+  const release = manifest ? { ...manifest.release, founderDecision: decision } : null;
   const qa = story && release ? evaluateRelease(story, release) : null;
   const burden = useMemo(() => summarizeFounderBurden(interventions), [interventions]);
 
@@ -65,7 +57,7 @@ export default function BrandOSReleaseBoard() {
     [receipts, story],
   );
 
-  if (!story || !release || !qa) return null;
+  if (!story || !manifest || !release || !qa) return null;
 
   const selectStory = (storyId: string) => {
     setSelectedId(storyId);
@@ -162,17 +154,35 @@ export default function BrandOSReleaseBoard() {
         </article>
 
         <aside className="bos-card bos-release-card">
-          <p className="bos-kicker">RELEASE OBJECT</p>
+          <p className="bos-kicker">FROZEN RELEASE OBJECT</p>
           <h2>{release.releaseId}</h2>
+          <p className="bos-id">{manifest.manifestId}</p>
 
           <dl className="bos-data-list">
             <div><dt>Channel</dt><dd>{release.channel}</dd></div>
             <div><dt>Version</dt><dd>v{release.version}</dd></div>
             <div><dt>Founder</dt><dd>{decision}</dd></div>
             <div><dt>External publish</dt><dd>{EXTERNAL_PUBLISHING_ENABLED ? "ENABLED" : "DISABLED"}</dd></div>
-            <div><dt>QA</dt><dd>{qa.status}</dd></div>
-            <div><dt>Public eligible</dt><dd>{qa.publicEligible ? "YES" : "NO"}</dd></div>
+            <div><dt>Release QA</dt><dd>{qa.status}</dd></div>
+            <div><dt>Non-founder ready</dt><dd>{story.publicReleaseEligible ? "YES" : "NO"}</dd></div>
           </dl>
+
+          <div className="bos-section">
+            <h3>Founder review copy</h3>
+            <strong>{manifest.content.headline}</strong>
+            <p>{manifest.content.deck}</p>
+            <p>{manifest.content.caption}</p>
+          </div>
+
+          <div className="bos-section">
+            <h3>Truth / accessibility / rights</h3>
+            <p><strong>ALT:</strong> {manifest.content.altText}</p>
+            <p><strong>PROVENANCE:</strong> {manifest.content.provenanceLabel}</p>
+            <p><strong>SOURCE FOOTER:</strong> {manifest.content.sourceFooter}</p>
+            <p><strong>RIGHTS:</strong> {manifest.content.rightsRoute}</p>
+            <p><strong>LIMIT:</strong> {manifest.content.limitation}</p>
+            <p><strong>DESTINATION:</strong> {manifest.content.ownedDestination}</p>
+          </div>
 
           <div className="bos-section">
             <h3>QA / release reasons</h3>
@@ -180,7 +190,7 @@ export default function BrandOSReleaseBoard() {
               <ul className="bos-reasons">
                 {qa.reasons.map((reason) => <li key={reason}>{reason}</li>)}
               </ul>
-            ) : <p>All content gates pass. External publishing is still controlled by runtime configuration.</p>}
+            ) : <p>All release gates pass. External publishing is still controlled by runtime configuration.</p>}
           </div>
 
           <div className="bos-actions" aria-label="Founder decision simulation">
