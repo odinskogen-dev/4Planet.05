@@ -146,6 +146,6 @@ export function buildBeeMotionManifest(story: StoryRecord): VideoRenderManifest 
     ],
     sourceFooter: "SOURCE: FAO / SRC-017; Garratt et al. / SRC-019. Editorial synthesis: 4PLANET CONTEXT.",
     coverageLimit: "Bounded apple example. Bees are not all pollinators; apples are not all food; study results are not universalised beyond source scope.",
-    status: "SOURCE_READY",
+    status: "QA_READY",
   };
 }
