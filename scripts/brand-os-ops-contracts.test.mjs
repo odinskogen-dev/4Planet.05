@@ -18,12 +18,12 @@ test("motion factory requires captions, transcript, source footer and bounded du
   assert.match(videoFactory, /uses synthetic media without disclosure/);
 });
 
-test("Bee motion manifest is source-ready but not rights- or release-ready", () => {
+test("Bee motion manifest is QA-ready but remains founder/live-release gated", () => {
   assert.match(videoFactory, /VID-BOS-BEE-001-V1/);
   assert.match(videoFactory, /SRC-017/);
   assert.match(videoFactory, /SRC-019/);
   assert.match(videoFactory, /RD-0014/);
-  assert.match(videoFactory, /status: "SOURCE_READY"/);
+  assert.match(videoFactory, /status: "QA_READY"/);
   assert.match(videoFactory, /NOT ALL FOOD\. NOT ALL POLLINATORS/);
 });
 
