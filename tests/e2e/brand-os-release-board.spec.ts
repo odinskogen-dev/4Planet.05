@@ -9,7 +9,7 @@ test("Brand OS release board freezes Orca copy and remains founder-gated", async
   await expect(page.getByText("EXTERNAL PUBLISHING DISABLED")).toBeVisible();
   await expect(page.getByText("STORY-BOS-ORCA-001").first()).toBeVisible();
   await expect(page.getByText("MAN-BOS-ORCA-001", { exact: true })).toBeVisible();
-  await expect(page.getByText("FAM-BOS-ORCA-001", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "FAM-BOS-ORCA-001", exact: true })).toBeVisible();
   await expect(page.getByText("VAR-BOS-ORCA-IGFEED-001", { exact: true })).toBeVisible();
   await expect(page.getByText("Non-founder ready")).toBeVisible();
   await expect(page.getByText("YES", { exact: true })).toBeVisible();
@@ -49,7 +49,7 @@ test("Bee production object is founder-review ready with exact first-test family
 
   await expect(page.getByText("STORY-BOS-BEE-001").first()).toBeVisible();
   await expect(page.getByText("MAN-BOS-BEE-001", { exact: true })).toBeVisible();
-  await expect(page.getByText("FAM-BOS-BEE-001", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "FAM-BOS-BEE-001", exact: true })).toBeVisible();
   await expect(page.getByText("VAR-BOS-BEE-IGFEED-001", { exact: true })).toBeVisible();
   await expect(page.getByText("LC-BOS-BEE-IG-001", { exact: true })).toBeVisible();
   await expect(page.getByText("AUTH_REQUIRED", { exact: true }).first()).toBeVisible();
@@ -79,7 +79,7 @@ test("Oslofjorden release is founder-review ready and preserves bounded evidence
 
   await expect(page.getByText("STORY-BOS-OSLO-001").first()).toBeVisible();
   await expect(page.getByText("MAN-BOS-OSLO-001", { exact: true })).toBeVisible();
-  await expect(page.getByText("FAM-BOS-OSLO-001", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "FAM-BOS-OSLO-001", exact: true })).toBeVisible();
   await expect(page.getByText("VAR-BOS-OSLO-IGFEED-001", { exact: true })).toBeVisible();
   await expect(page.getByText(/APPROVE AS THIRD CONTROLLED TEST CANDIDATE/)).toBeVisible();
   await expect(page.getByText(/Founder gate is OPEN/)).toBeVisible();
