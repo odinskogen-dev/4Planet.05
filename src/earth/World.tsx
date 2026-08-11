@@ -80,7 +80,11 @@ const readUrl = () => {
     // street-level detail are visible immediately. Blue Marble and the other
     // NASA rasters are opt-in overlays, never the default (they hid the labels
     // and pixelated on zoom). An explicit ?l= in the URL is still honoured.
-    on: p.has("l") ? p.get("l").split(",").filter((x) => LAYERS.some((l) => l.id === x)) : [],
+    // ATLAS opens on Blue Marble (founder decision — we do not ship our own
+    // world map for now). The label-ordering fix keeps place names on top of the
+    // raster, and rasters are still opt-out via the layer console. Explicit ?l=
+    // is honoured.
+    on: (p.get("l") || "bluemarble").split(",").filter((x) => LAYERS.some((l) => l.id === x)),
     light: p.get("t") === "light",
     flat: p.get("p") === "2d",
     lens: ["EARTH", "NOW", "WATCH"].includes(p.get("lens")) ? p.get("lens") : "EARTH",
