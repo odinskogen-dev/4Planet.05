@@ -127,6 +127,7 @@ jobs:
             brand-os-build.log
             brand-os-dependency-audit.txt
             brand-os-preview.log
+            visual-qa-evidence
             playwright-report
             test-results
           if-no-files-found: warn
