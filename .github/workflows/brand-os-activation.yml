@@ -42,7 +42,10 @@ jobs:
         run: npm run typecheck
 
       - name: Brand OS contracts
-        run: npm run test:brand-os
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:brand-os 2>&1 | tee brand-os-contracts.log
 
       - name: Production build
         run: npm run build
@@ -117,6 +120,7 @@ jobs:
             brand-os-exact-sha.txt
             brand-os-exact-branch.txt
             brand-os-activation-evidence.json
+            brand-os-contracts.log
             brand-os-dependency-audit.txt
             brand-os-preview.log
             playwright-report
