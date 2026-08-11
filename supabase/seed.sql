@@ -1,3 +1,6 @@
+-- Supabase may install PostGIS outside public (canonical staging uses gis).
+set search_path = public, gis;
+
 insert into public.source_records (
   id, source_id, source_record_id, source_url, dataset_id, retrieved_at, licence,
   attribution, rights_status, visibility, sensitivity, raw_payload

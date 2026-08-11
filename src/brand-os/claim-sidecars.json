@@ -1,0 +1,152 @@
+[
+  {
+    "claimId": "CLM-BOS-BEE-001",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "BEES",
+    "claim": "Bees are one important group of animal pollinators; they are not the only pollinators.",
+    "scope": "Pollination-system context, not a claim that every bee species pollinates every crop.",
+    "sourceIds": ["SRC-017"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-002",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "POLLINATION",
+    "claim": "Many crop plants depend at least partly on animal pollination.",
+    "scope": "Global crop-production context. This does not mean all crops or all food depend on animal pollination.",
+    "sourceIds": ["SRC-017"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-003",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "APPLE_EXAMPLE",
+    "claim": "Insect pollination underpins apple production, and the contribution varies among pollinator groups and apple varieties.",
+    "scope": "Bounded apple example; the underlying study tested four commercial apple varieties in the UK and compared solitary bees, honeybees, bumblebees and hoverflies.",
+    "sourceIds": ["SRC-019"],
+    "sourceUrls": ["https://doi.org/10.1371/journal.pone.0153889"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-BEE-004",
+    "storyId": "STORY-BOS-BEE-001",
+    "node": "FOOD",
+    "claim": "Apple is one concrete food-production example through which a bee/pollinator relationship can be shown without claiming that all food depends on bees.",
+    "scope": "Editorial synthesis constrained by CLM-BOS-BEE-001–003. It must be labelled 4PLANET CONTEXT rather than an independent scientific result.",
+    "sourceIds": ["SRC-017", "SRC-019"],
+    "sourceUrls": ["https://www.fao.org/pollination/en/", "https://doi.org/10.1371/journal.pone.0153889"],
+    "status": "CONTEXT_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-001",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "SOCIAL_RELATIONSHIP",
+    "claim": "Killer whales live in socially structured groups and use underwater sound for communication and navigation.",
+    "scope": "General species/population context; population- and ecotype-specific behaviour must remain scoped.",
+    "sourceIds": ["SRC-015"],
+    "sourceUrls": ["https://www.fisheries.noaa.gov/species/killer-whale/science"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-002",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "EXACT_OCCURRENCE",
+    "claim": "GBIF occurrence 5939349319 is one published human-observation record of Orcinus orca from 3 January 2026 in Norway, with source-provided rounded coordinates and a CC BY 4.0 record licence.",
+    "scope": "One source record only. It does not establish range, abundance, population trend, current location, place membership or ecosystem condition. Preserve dataset ID b124e1e0-4755-430f-9eab-894f25a9b59c, attribution, coordinate-rounding issue and the distinction Observation ≠ Signal.",
+    "sourceIds": ["SRC-025"],
+    "sourceUrls": ["https://www.gbif.org/occurrence/5939349319"],
+    "status": "SOURCE_LOCKED_EXACT_RECORD"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-003",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "ALTERNATIVE_OCCURRENCE_DATASET",
+    "claim": "The Institute of Marine Research incidental-sightings dataset contains date, position and species records that can support future selection of additional reported Orca occurrences.",
+    "scope": "Optional dataset route, not required for the first vertical slice now that SRC-025 is locked. Provider caveats remain: incidental sightings are not suitable for abundance assessment and coordinate uncertainty is missing in OBIS quality metadata.",
+    "sourceIds": ["SRC-020"],
+    "sourceUrls": ["https://obis.org/dataset/fa8176bc-d5dd-4c1c-ae78-6b9cb359dc8d"],
+    "status": "DATASET_LOCKED_OPTIONAL_ROUTE"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-004",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "DOCUMENTARY_MEDIA_ROUTE",
+    "claim": "Artsdatabanken provides Orca images published by Havforskningsinstituttet under CC BY-SA 4.0 that can support documentary species depiction when attribution and ShareAlike conditions are preserved.",
+    "scope": "Media-rights route only. The image does not establish occurrence location/date, abundance, trend or ecosystem condition; exact binary ingest and creator/credit metadata remain required before documentary-image release.",
+    "sourceIds": [],
+    "sourceUrls": ["https://artsdatabanken.no/arter/takson/31303"],
+    "status": "LICENSE_ROUTE_LOCKED_INGEST_OPEN"
+  },
+  {
+    "claimId": "CLM-BOS-ORCA-005",
+    "storyId": "STORY-BOS-ORCA-001",
+    "node": "PRODUCT_PERSISTENCE_BOUNDARY",
+    "claim": "The accepted Orca journey now has its exact GBIF SourceRecord, Observation and ProductContext persisted in canonical 4planet-staging, with place membership UNASSESSED and no Signal created.",
+    "scope": "Internal product-state claim verified directly in staging on 10 August 2026. It is not an ecological claim and does not authorize public deployment.",
+    "sourceIds": ["SRC-025"],
+    "sourceUrls": ["https://www.gbif.org/occurrence/5939349319"],
+    "status": "STAGING_PERSISTENCE_VERIFIED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-001",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "WHOLE_PLACE_BOUNDARY",
+    "claim": "Oslofjorden should not be represented as one undifferentiated condition: recent assessments report improvement in ecological condition in inner Oslofjord while conditions in outer Oslofjord and Skagerrak have worsened.",
+    "scope": "High-level official synthesis. Exact map layers retain their own geography, period, method and coverage metadata.",
+    "sourceIds": ["SRC-018"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-002",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "PRESSURES",
+    "claim": "Official knowledge summaries identify pollution/nutrient pressure, overfishing and physical/coastal development among major pressures on Oslofjorden.",
+    "scope": "High-level pressure context. This claim does not establish that any one pressure caused any one mapped ecological observation.",
+    "sourceIds": ["SRC-018"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/kunnskapsgrunnlag-for-oslofjordplanene/"],
+    "status": "SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-003",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "MODELLED_NITROGEN_LOAD",
+    "claim": "The official M-3141 model page reports whole-Oslofjord baseline nitrogen inputs of 15,068 tonnes/year from agriculture and 7,389 tonnes/year from wastewater, with lower modelled inputs under defined intervention scenarios.",
+    "scope": "Model/scenario layer only. These are not direct in-fjord concentration measurements or observed ecological outcomes; baseline and scenario definitions must remain visible.",
+    "sourceIds": ["SRC-021"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/oslofjorden/oslofjorden-modellering/"],
+    "status": "LAYER_SOURCE_LOCKED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-004",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "MARINE_NATURE_COVERAGE",
+    "claim": "Naturbase HB19 provides mapped occurrences of marine nature types such as eelgrass communities and kelp forests, but the official guidance states that there is no comprehensive marine nature map and that much HB19 information is based on older mapping.",
+    "scope": "Coverage/mapped-known-occurrence layer. It must not be presented as complete current distribution or ecological condition; map service metadata lists NLOD licensing.",
+    "sourceIds": ["SRC-022"],
+    "sourceUrls": ["https://kartkatalog.miljodirektoratet.no/MapService/Details/naturtyper_marine_hb19", "https://www.miljodirektoratet.no/ansvarsomrader/vann-hav-og-kyst/naturrestaurering-i-oslofjorden/hvilken-natur-kan-restaureres-i-kystomrader/"],
+    "status": "LAYER_SOURCE_LOCKED_COVERAGE_LIMITED"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-005",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "COASTAL_MONITORING_COVERAGE",
+    "claim": "Miljødirektoratet's Vannmiljø map service exposes Økosystemovervåking i kystvann as a point Feature Layer with monitoring-location identifiers and fact-sheet links; the service is licensed under NLOD.",
+    "scope": "Monitoring-location coverage/reference layer only. For the first ONE PLACE object it may show where the official monitoring layer has point records inside the interface view; it does not by itself report parameter values, condition, trend or completeness. Exact measurements require separate parameter/time/method queries.",
+    "sourceIds": ["SRC-023"],
+    "sourceUrls": ["https://kart3.miljodirektoratet.no/arcgis/rest/services/vannmiljo/MapServer/4", "https://kartkatalog.miljodirektoratet.no/MapService/Details/vannmiljo"],
+    "status": "LAYER_SOURCE_LOCKED_COVERAGE_ONLY"
+  },
+  {
+    "claimId": "CLM-BOS-OSLO-006",
+    "storyId": "STORY-BOS-OSLO-001",
+    "node": "LONG_RUN_NUTRIENT_PRESSURE_ROUTE",
+    "claim": "Teotil calculates annual modelled nitrogen and phosphorus loads to Norwegian coastal areas by source and provides a time series back to 1990.",
+    "scope": "Optional future modelled source-apportioned pressure route. Exact Oslofjord extract/subcatchment remains OPEN; Teotil is not required for the first three-layer ONE PLACE object and must not be presented as direct in-fjord concentration measurement.",
+    "sourceIds": ["SRC-024"],
+    "sourceUrls": ["https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/miljoovervaking/overvakingsprogrammer/forurensning-og-klimagasser/teotil/"],
+    "status": "QUERY_ROUTE_LOCKED_OPTIONAL_EXTRACT"
+  }
+]

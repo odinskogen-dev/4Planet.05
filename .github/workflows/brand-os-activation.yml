@@ -1,0 +1,134 @@
+name: Brand OS Activation
+
+on:
+  push:
+    branches:
+      - agent/brand-os-activation-runtime
+  pull_request:
+    branches:
+      - agent/founder-gate-one-interface-convergence
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brand-os-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        shell: bash
+        run: |
+          git rev-parse HEAD > brand-os-exact-sha.txt
+          printf '%s\n' "${GITHUB_REF_NAME}" > brand-os-exact-branch.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Brand OS contracts
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:brand-os 2>&1 | tee brand-os-contracts.log
+
+      - name: Production build
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee brand-os-build.log
+
+      - name: Existing smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint without new warnings
+        run: npm run lint -- --max-warnings=0
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit — high severity blocks
+        shell: bash
+        run: npm audit --audit-level=high 2>&1 | tee brand-os-dependency-audit.txt
+
+      - name: Secret scan
+        shell: bash
+        run: |
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_|instagram_business_content_publish)' src public functions supabase 2>/dev/null; then
+            echo 'Potential secret or production-publishing credential material found'
+            exit 1
+          fi
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > brand-os-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/internal/brand-os > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat brand-os-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Founder release-board browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/brand-os-release-board.spec.ts
+
+      - name: Oslofjord canonical Place browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/founder-gate.spec.ts --grep "Oslofjorden is a real canonical Place focus"
+
+      - name: Record activation evidence
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const pilots = JSON.parse(fs.readFileSync('src/brand-os/pilots.json', 'utf8'));
+          fs.writeFileSync('brand-os-activation-evidence.json', JSON.stringify({
+            exactSha: process.env.GITHUB_SHA,
+            externalPublishingEnabled: false,
+            pilotIds: pilots.map((pilot) => pilot.storyId),
+            allPilotsPublicEligible: pilots.every((pilot) => pilot.publicReleaseEligible === true),
+            generatedAt: new Date().toISOString()
+          }, null, 2));
+          NODE
+
+      - name: Upload exact-SHA activation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brand-os-activation-evidence
+          path: |
+            brand-os-exact-sha.txt
+            brand-os-exact-branch.txt
+            brand-os-activation-evidence.json
+            brand-os-contracts.log
+            brand-os-build.log
+            brand-os-dependency-audit.txt
+            brand-os-preview.log
+            visual-qa-evidence
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30

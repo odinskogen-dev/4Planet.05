@@ -80,9 +80,14 @@ test("mobile shell, menu, Orca and ATLAS remain keyboard-readable without overfl
   await page.screenshot({ path: `${OUTPUT}/03-orca-mobile.png`, fullPage: true });
 });
 
-test("Oslofjord and Amazonia routes are reachable and do not claim completeness", async ({ page }) => {
-  await page.goto(`${BASE}/atlas?place=oslofjord&journey=oslofjord-proof`);
+test("Oslofjorden is a real canonical Place focus and does not claim completeness", async ({ page }) => {
+  await page.goto(`${BASE}/atlas?entity=place%3A4p%3Aoslofjord&journey=oslofjord-proof`);
+  await page.waitForFunction(() => Boolean((window as any).__4planet_map?.isStyleLoaded?.()));
+  await expect(page.getByText("Oslofjorden", { exact: true }).first()).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/complete planetary intelligence|fully verified|live tracking/i);
+});
+
+test("Amazonia route remains reachable without false proof claims", async ({ page }) => {
   await page.goto(`${BASE}/missions/am4zonia`);
   await expect(page.locator("main")).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/fully protected|verified outcome|delivery complete/i);
