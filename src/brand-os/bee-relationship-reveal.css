@@ -50,7 +50,7 @@
 .bee-node {
   height: 100%;
   min-height: 260px;
-  padding: 22px;
+  padding: 22px 36px;
   border-right: 1px solid #0a0a0a;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
@@ -132,6 +132,7 @@
 
   .bee-node {
     min-height: 0;
+    padding: 22px;
     border-right: 0;
     border-bottom: 1px solid #0a0a0a;
   }
