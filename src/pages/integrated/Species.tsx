@@ -81,6 +81,81 @@ function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: str
   );
 }
 
+/** Derive the plain-language key facts a person actually needs, from profile data.
+ *  Works for ANY species: every field is optional and simply omitted if absent,
+ *  so the same template scales across the catalogue. Never invents a value. */
+function deriveKeyFacts(profile: SpeciesProfile): { k: string; v: string; note?: string }[] {
+  const facts: { k: string; v: string; note?: string }[] = [];
+  // IUCN status, pulled from a source-backed KNOWN/INTERPRETED claim if present.
+  const iucn = (profile.publicClaims || []).find((c) => /IUCN|Red List|Least Concern|Endangered|Vulnerable|Near Threatened|Critically/i.test(c.text));
+  if (iucn) {
+    const m = iucn.text.match(/\b(Least Concern|Near Threatened|Vulnerable|Endangered|Critically Endangered|Data Deficient|Not Evaluated)\b/i);
+    if (m) facts.push({ k: "CONSERVATION (IUCN)", v: m[1], note: `${iucn.state} · ${iucn.source}` });
+  }
+  if (profile.group) facts.push({ k: "GROUP", v: profile.group });
+  if (profile.region) facts.push({ k: "REGION", v: profile.region });
+  if (profile.habitat) facts.push({ k: "WHERE IT LIVES", v: profile.habitat, note: profile.descriptorSource ? `DESC · ${profile.descriptorSource.source}` : undefined });
+  facts.push({ k: "TAXON", v: `${profile.kingdom} · ${profile.rank}`, note: `GBIF ${profile.gbifKey} · ${profile.taxonomicStatus}` });
+  return facts.slice(0, 6);
+}
+
+/** Premium full-screen key-facts hero. Snøhetta-precision: whole viewport, tight
+ *  grid, plain language, sharp hairlines. Life-first image (existing 4PLANET
+ *  media, honestly labelled). The truth model stays intact below the fold. */
+function SpeciesHero({
+  profile, returnHref, actions,
+}: { profile: SpeciesProfile; returnHref: string | null; actions: React.ReactNode }) {
+  const facts = deriveKeyFacts(profile);
+  const media = speciesMedia(profile.slug);
+  const show = hasShowableImage(profile.slug);
+  const illustration = media?.illustration;
+  return (
+    <div className="sp-hero">
+      <figure className="sp-hero__media" style={{ margin: 0 }}>
+        {show ? (
+          <img src={media!.localPath} alt={`${profile.commonName} — ${profile.scientificName}`} />
+        ) : illustration ? (
+          <>
+            <img src={illustration.localPath} alt={`${profile.commonName} — illustration, not a photograph`} />
+            <div style={{ position: "absolute", top: 12, left: 12, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+          </>
+        ) : (
+          <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18, background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
+            <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 420, fontSize: 9 }}>
+              <strong style={{ display: "block", color: "#fff", marginBottom: 4, letterSpacing: ".14em" }}>NO CLEARED IMAGE</strong>
+              {media?.assetBlocker ?? "Awaiting a verified media-rights record. No unverified photo is shown."}
+            </div>
+          </div>
+        )}
+        <figcaption>{profile.commonName.toUpperCase()} · {profile.scientificName.toUpperCase()}</figcaption>
+      </figure>
+      <div className="sp-hero__body">
+        <div>
+          {returnHref && (
+            <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, ...mono, color: "#fff", background: T.blue, padding: "9px 13px", textDecoration: "none", marginBottom: 22 }}>
+              ← BACK TO OBSERVATION IN ATLAS
+            </Link>
+          )}
+          <div className="sp-hero__eyebrow">4PLANET SPECIES_ · {(profile.group || "LIFE").toUpperCase()}</div>
+          <h1 className="sp-hero__name">{profile.commonName}</h1>
+          <p className="sp-hero__sci">{profile.scientificName}</p>
+          {profile.intro && <p className="sp-hero__intro">{profile.intro}</p>}
+          <div className="sp-facts">
+            {facts.map((f) => (
+              <div className="sp-fact" key={f.k}>
+                <div className="sp-fact__k">{f.k}</div>
+                <div className="sp-fact__v">{f.v}</div>
+                {f.note && <div className="sp-fact__note">{f.note}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="sp-hero__actions">{actions}</div>
+      </div>
+    </div>
+  );
+}
+
 function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
   return (
     <Link
@@ -179,33 +254,42 @@ export function SpeciesProfilePage() {
   const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
   const followed = following(profile.id);
 
+  const actions = (
+    <>
+      <Link to={atlasHref} data-testid="species-to-atlas" style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
+      {isOrca && (
+        <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
+      )}
+      {profile.missionSlug && (
+        <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
+      )}
+      <button
+        onClick={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+        style={{ ...mono, background: "transparent", color: followed ? T.acid : T.ink, border: `1px solid ${followed ? T.acid : T.ink}`, padding: "11px 15px", cursor: "pointer" }}
+      >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
+    </>
+  );
+
   return (
     <PublicShell>
-      <Section pad="clamp(88px,10vw,138px)" className={returnHref ? "closer-look" : undefined}>
-        {returnHref && (
-          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, ...mono, color: "#fff", background: T.blue, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
-            ← BACK TO OBSERVATION IN ATLAS
-          </Link>
-        )}
+      <div className={returnHref ? "closer-look" : undefined}>
+        {/* Premium full-screen key-facts hero — the one screen a person needs. */}
+        <SpeciesHero profile={profile} returnHref={returnHref} actions={actions} />
+      </div>
+      <Section pad="clamp(48px,6vw,96px)">
         <Link to={contextHref("/species", location.search)} style={{ ...mono, color: T.blue }}>← SPECIES INDEX</Link>
-        <div style={{ marginTop: 38, display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Status>GBIF TAXON · ACCEPTED</Status>
           <Status color={T.acid}>IDENTITY PRESERVED</Status>
           <Status color="#8A6500">POPULATION-SPECIFIC CLAIMS CONTROLLED</Status>
         </div>
-        <div style={{ marginTop: 28 }}>
-          <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="16/9" />
-          {speciesMedia(profile.slug)?.illustration && !hasShowableImage(profile.slug) && (
-            <p style={{ margin: "10px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, fontSize: 10.5 }}>
-              PHOTOGRAPH · PENDING RIGHTS — {speciesMedia(profile.slug)?.assetBlocker ?? "no cleared photograph yet"} The image above is a 4PLANET illustration, not a photograph of this animal.
-            </p>
-          )}
-        </div>
-        <h1 style={{ marginTop: 30, fontFamily: T.display, fontSize: "clamp(52px,9vw,124px)", lineHeight: .86, letterSpacing: "-.055em" }}>{profile.commonName}</h1>
-        <p style={{ marginTop: 20, fontSize: "clamp(20px,2.6vw,30px)", fontStyle: "italic" }}>{profile.scientificName}</p>
-        {profile.intro && <p style={{ marginTop: 22, maxWidth: 760, fontSize: "clamp(16px,1.6vw,19px)", lineHeight: 1.55 }}>{profile.intro}</p>}
+        {speciesMedia(profile.slug)?.illustration && !hasShowableImage(profile.slug) && (
+          <p style={{ margin: "16px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, fontSize: 10.5, maxWidth: 760 }}>
+            PHOTOGRAPH · PENDING RIGHTS — {speciesMedia(profile.slug)?.assetBlocker ?? "no cleared photograph yet"} The hero image is a 4PLANET illustration, not a photograph of this animal.
+          </p>
+        )}
         {profile.habitat && (
-          <div style={{ ...panel, marginTop: 24, maxWidth: 760 }}>
+          <div style={{ ...panel, marginTop: 28, maxWidth: 760 }}>
             <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
             <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
             {profile.descriptorSource && (
@@ -233,20 +317,6 @@ export function SpeciesProfilePage() {
             </div>
           </div>
         )}
-        <div style={{ marginTop: 38, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Link to={atlasHref} data-testid="species-to-atlas" style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
-          {isOrca && (
-            <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
-          )}
-          {profile.missionSlug && (
-            <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
-          )}
-          <button
-            onClick={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
-            style={{ ...mono, background: "transparent", color: followed ? T.acid : T.ink, border: `1px solid ${followed ? T.acid : T.ink}`, padding: "11px 15px", cursor: "pointer" }}
-          >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
-        </div>
-
         <div className="tw" style={{ marginTop: 52 }}>
           <div style={panel}>
             <div style={{ ...mono, color: T.dim }}>TAXON IDENTITY</div>
