@@ -123,6 +123,7 @@
   .bos-source-object-grid article:last-child { border-bottom: 0; }
   .bos-source-limit { grid-template-columns: 1fr; gap: 8px; }
   .bos-place-layer { grid-template-columns: 34px 1fr; }
+  .bos-place-layer h4 { letter-spacing: -0.015em; word-spacing: 0.12em; }
   .bos-place-layer p,
   .bos-place-layer small { grid-column: 2; }
 }
