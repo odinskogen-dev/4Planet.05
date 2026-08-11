@@ -1,0 +1,64 @@
+name: Wave 0 Public Credibility + Trust Closure
+
+on:
+  push:
+    branches:
+      - agent/wave0-public-credibility-trust-closure
+
+permissions:
+  contents: read
+
+jobs:
+  wave0-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        run: git rev-parse HEAD
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Verify controlled assets
+        run: npm run assets:verify
+
+      - name: Build candidate
+        run: npm run build
+
+      - name: Existing prototype contracts
+        run: npm run test:contracts
+
+      - name: Public credibility contracts
+        run: node --test scripts/public-credibility-contracts.test.mjs
+
+      - name: Company and digital trust contracts
+        run: node --test scripts/company-digital-trust-contracts.test.mjs
+
+      - name: Smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint without warnings
+        run: npm run lint -- --max-warnings=0
+
+      - name: Block high-severity dependency vulnerabilities
+        run: npm audit --audit-level=high
+
+      - name: Secret scan
+        shell: bash
+        run: |
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
