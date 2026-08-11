@@ -4,8 +4,8 @@ import Home from "@/pages/v5/Home";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
-import { PathwayPage } from "@/pages/v5/Impact";
-import { ImpactPublicHome, ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
+import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
+import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
@@ -58,7 +58,7 @@ export function AppRoutes() {
       <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
-      <Route path="/impact/:slug" element={<PathwayPage />} />
+      <Route path="/impact/:slug" element={<ImpactStory />} />
       <Route path="/join" element={<Join />} />
       <Route path="/people" element={<Navigate to="/join" replace />} />
       <Route path="/brands" element={<Brands />} />
