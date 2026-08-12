@@ -188,7 +188,22 @@ export function SpeciesIndex() {
   });
   return (
     <PublicShell>
-      <Section pad="clamp(88px,10vw,138px)">
+      {/* Full-screen life-first hero — a single wild orca in deep water. */}
+      <section style={{ position: "relative", height: "100svh", overflow: "hidden", background: "#05081b" }}>
+        <img src="/assets/species/_index-hero.jpg" alt="A lone wild orca gliding through deep dark water, seen from above"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.5) 0%, rgba(5,8,27,.05) 30%, rgba(5,8,27,.15) 62%, rgba(5,8,27,.9) 100%)" }} />
+        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(28px,5vw,88px)", maxWidth: 1100 }}>
+          <div style={{ ...mono, color: "#fff", letterSpacing: ".18em", fontSize: 11, opacity: .9 }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
+          <h1 style={{ marginTop: 16, color: "#fff", fontFamily: T.display, fontSize: "clamp(40px,6vw,96px)", lineHeight: .92, letterSpacing: "-.05em", maxWidth: "16ch" }}>Life, without invented certainty.</h1>
+          <p style={{ marginTop: 20, maxWidth: "54ch", color: "rgba(255,255,255,.86)", fontSize: "clamp(15px,1.6vw,20px)", lineHeight: 1.5 }}>
+            Every profile begins with the living animal and its place — then opens honestly into what is known, what is
+            interpreted, and what is not.
+          </p>
+          <div style={{ ...mono, marginTop: 26, color: "rgba(255,255,255,.7)", letterSpacing: ".2em", fontSize: 10 }}>SCROLL ↓</div>
+        </div>
+      </section>
+      <Section pad="clamp(64px,8vw,120px)">
         <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
         <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(44px,7.5vw,104px)", lineHeight: .92, letterSpacing: "-.05em" }}>Life, without invented certainty.</h1>
         <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.5 }}>
@@ -382,6 +397,27 @@ export function SpeciesProfilePage() {
               ))}
             </section>
           </>
+        )}
+
+        {isOrca && (
+          <section style={{ marginTop: 72 }}>
+            <div style={{ ...mono, color: T.blue }}>FROM THE FIELD · FOUNDER-SUPPLIED</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 2, marginTop: 18 }}>
+              {[
+                { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
+                { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
+                { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping, head raised above the surface" },
+                { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas spy-hopping among Antarctic pack ice" },
+              ].map((im) => (
+                <figure key={im.src} style={{ margin: 0, aspectRatio: "4/5", overflow: "hidden", background: "#05081b" }}>
+                  <img src={im.src} alt={im.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </figure>
+              ))}
+            </div>
+            <p style={{ margin: "10px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", fontSize: 10.5 }}>
+              Real photographs of wild orcas, founder-supplied and rights-cleared. These are illustrative of the species, not tied to a specific observation record.
+            </p>
+          </section>
         )}
 
         <div className="tw" style={{ marginTop: 72 }}>

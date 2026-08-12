@@ -76,7 +76,17 @@ function pending(slug: string, sourcePage: string): MediaRecord {
  * is not. FOUNDER_CLEARED entries are added the moment the founder supplies images.
  */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
-  orca: pending("orca", "https://www.gbif.org/species/2440483"),
+  orca: {
+    localPath: "/assets/species/orca/hero.jpg",
+    sourcePage: "https://www.gbif.org/species/2440483",
+    photographer: "Founder-supplied", owner: "4PLANET / Skog Communications AS",
+    licence: "Founder-supplied, rights-cleared", licenceUrl: "",
+    attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",
+    cropAllowed: true, modificationAllowed: true, publicWebAllowed: true, commercialAllowed: true,
+    supportedUse: "Public web, hero + detail, crop/resize permitted.",
+    limitations: "Rights cleared by founder; keep record with the image bank manifest.",
+    rightsStatus: "FOUNDER_CLEARED", assetBlocker: "",
+  },
   "humpback-whale": pending("humpback-whale", "https://www.gbif.org/species/5220086"),
   "sperm-whale": pending("sperm-whale", "https://www.gbif.org/species/2440617"),
   "harbour-porpoise": pending("harbour-porpoise", "https://www.gbif.org/species/2440739"),

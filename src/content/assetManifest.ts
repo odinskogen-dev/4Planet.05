@@ -15,6 +15,15 @@ export function missionAssets(slug: string): AssetSet {
       detail2: `${b}/detail-coral-03.jpg`,
     };
   }
+  // WH4LES_ ships founder-supplied, rights-cleared, content-verified orca photos.
+  if (slug === "wh4les") {
+    return {
+      hero: missionHero(slug)?.src ?? `${b}/hero-real.jpg`,
+      heroMobile: `${b}/hero-real-mobile.jpg`,
+      detail1: "/assets/species/orca/detail-pod.jpg",
+      detail2: "/assets/species/orca/detail-spyhop.jpg",
+    };
+  }
   return { hero: missionHero(slug)?.src ?? `${b}/hero.jpg`, heroMobile: `${b}/hero-mobile.jpg`, detail1: `${b}/detail-01.jpg`, detail2: `${b}/detail-02.jpg` };
 }
 export function domainAssets(key: DomainKey): AssetSet {

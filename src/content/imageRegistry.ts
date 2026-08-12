@@ -51,7 +51,7 @@ export const IMAGES = {
   cultureEditorialSupport: { src: `${A}/missions/m4gazine/hero.jpg`, alt: "A printed editorial magazine spread laid out across a table", aspectRatio: "3/2", objectPosition: "50% 50%", domain: "4CULTURE_", role: "editorial" },
 
   // ── MISSION HEROES ──────────────────────────────────────────────────
-  wh4lesHero: { src: `${A}/missions/wh4les/hero.jpg`, alt: "A whale's tail rising from calm water", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 45%", role: "missionHero" },
+  wh4lesHero: { src: `${A}/missions/wh4les/hero-real.jpg`, srcMobile: `${A}/missions/wh4les/hero-real-mobile.jpg`, alt: "A wild orca surfacing off a green Norwegian coast", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
   rewildMarineHero: { src: `${A}/missions/rewild-marine/hero.jpg`, alt: "Seagrass and kelp rising through sunlit coastal water above a shellfish bed", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
@@ -94,7 +94,7 @@ export const impactImage = (slug: string): ImageMeta | undefined => IMPACT_IMAGE
 // Secondary documentary images that exist on disk (real second image moments for missions).
 const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
-  "wh4les": { src: `${A2}/wh4les/detail-01.jpg`, alt: "A whale at the surface — a second frame from the field", aspectRatio: "3/2", role: "editorial" },
+  "wh4les": { src: `${A}/species/orca/detail-pod.jpg`, alt: "A pod of orcas surfacing together", aspectRatio: "3/2", role: "editorial" },
   "rewild-marine": { src: `${A2}/rewild-marine/detail-01.jpg`, alt: "Restored seagrass and kelp in coastal water", aspectRatio: "3/2", role: "editorial" },
   "4rt": { src: `${A2}/4rt/detail-01.jpg`, alt: "An ecological art print in progress", aspectRatio: "3/2", role: "editorial" },
   "am4zonia": { src: `${A2}/am4zonia/detail-01.jpg`, alt: "Rainforest river winding through dense canopy", aspectRatio: "3/2", role: "editorial" },
