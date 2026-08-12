@@ -418,3 +418,11 @@ body:has(.product-nav--impact) .product-nav{top:66px}
 .ls-anchor { transition: background .2s; }
 .ls-anchor:hover { background: rgba(46,46,255,.03); }
 @media (max-width: 640px) { .ls-anchors { grid-template-columns: 1fr; } }
+
+/* IMPACT designed-pathway visualization */
+.impact-pathway { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 2px; border-top: 1px solid rgba(255,255,255,.16); }
+.impact-pathway__step { display: grid; grid-template-columns: auto 200px 1fr; gap: 16px; align-items: baseline; padding: 14px 4px; border-bottom: 1px solid rgba(255,255,255,.14); }
+.impact-pathway__no { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--acid); }
+.impact-pathway__k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: #fff; }
+.impact-pathway__d { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.8); }
+@media (max-width: 720px) { .impact-pathway__step { grid-template-columns: auto 1fr; } .impact-pathway__d { grid-column: 1 / -1; } }

@@ -163,6 +163,34 @@ export function ImpactStory() {
             </div>
           )}
 
+          {/* The designed delivery pathway — shown as an intended system, with the
+              current honest status marked. Not a claim that any stage is active. */}
+          <h2 className="impact-h">How it is designed to work</h2>
+          <p className="impact-p" style={{ color: "rgba(255,255,255,.66)", fontSize: 14.5 }}>
+            This is the pathway 4PLANET is building. It is shown so you can understand the intended system — not a claim
+            that any stage is active yet. The current status is marked below.
+          </p>
+          <ol className="impact-pathway">
+            {[
+              ["CONTRIBUTION", "A person chooses to support a unit of action."],
+              ["VERIFIED FIELD PARTNER", "A partner selected for transparent delivery and reporting."],
+              ["DELIVERY", "The partner carries out the work in the field."],
+              ["EVIDENCE", "Delivery is recorded with verifiable evidence."],
+              ["REVIEW", "The evidence is checked before anything is claimed."],
+              ["OUTCOME", "A verified per-contribution outcome record."],
+              ["SYSTEM IMPACT", "Longer-term ecological impact, followed over time."],
+            ].map(([k, d], i) => (
+              <li key={k} className="impact-pathway__step">
+                <span className="impact-pathway__no">{`0${i + 1}`}</span>
+                <span className="impact-pathway__k">{k}</span>
+                <span className="impact-pathway__d">{d}</span>
+              </li>
+            ))}
+          </ol>
+          <p style={{ ...mono, marginTop: 14, fontSize: 10.5, letterSpacing: ".06em", color: T.acid }}>
+            CURRENT STATUS · {DELIVERY_LABEL[u.delivery.status]} — {u.delivery.fieldPartner.startsWith("TO BE") ? "FIELD PARTNER NOT YET APPOINTED" : "PARTNER SELECTION IN PROGRESS"} · NO STAGE IS ACTIVE
+          </p>
+
           {/* Field partner + honest delivery status */}
           <h2 className="impact-h">The field partner</h2>
           <p className="impact-p">{u.delivery.whyPartner}</p>
