@@ -188,25 +188,33 @@ export function SpeciesIndex() {
   });
   return (
     <PublicShell>
-      {/* Full-screen life-first hero — a single wild orca in deep water. */}
+      {/* Full-screen life-first hero — MEET LIFE ON EARTH, with real search. */}
       <section style={{ position: "relative", height: "100svh", overflow: "hidden", background: "#05081b" }}>
         <img src="/assets/species/_index-hero.jpg" alt="A lone wild orca gliding through deep dark water, seen from above"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.5) 0%, rgba(5,8,27,.05) 30%, rgba(5,8,27,.15) 62%, rgba(5,8,27,.9) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.5) 0%, rgba(5,8,27,.05) 28%, rgba(5,8,27,.2) 60%, rgba(5,8,27,.92) 100%)" }} />
         <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(28px,5vw,88px)", maxWidth: 1100 }}>
-          <div style={{ ...mono, color: "#fff", letterSpacing: ".18em", fontSize: 11, opacity: .9 }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
-          <h1 style={{ marginTop: 16, color: "#fff", fontFamily: T.display, fontSize: "clamp(40px,6vw,96px)", lineHeight: .92, letterSpacing: "-.05em", maxWidth: "16ch" }}>Life, without invented certainty.</h1>
-          <p style={{ marginTop: 20, maxWidth: "54ch", color: "rgba(255,255,255,.86)", fontSize: "clamp(15px,1.6vw,20px)", lineHeight: 1.5 }}>
-            Every profile begins with the living animal and its place — then opens honestly into what is known, what is
-            interpreted, and what is not.
+          <div style={{ ...mono, color: "#fff", letterSpacing: ".18em", fontSize: 11, opacity: .9 }}>4PLANET SPECIES_</div>
+          <h1 style={{ marginTop: 16, color: "#fff", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,5vw,68px)", lineHeight: .98, letterSpacing: "-.035em", maxWidth: "16ch" }}>Meet life on Earth.</h1>
+          <p style={{ marginTop: 16, maxWidth: "52ch", color: "rgba(255,255,255,.88)", fontSize: "clamp(15px,1.5vw,19px)", lineHeight: 1.5 }}>
+            Explore species, their habitats and the relationships that shape life on Earth.
           </p>
-          <div style={{ ...mono, marginTop: 26, color: "rgba(255,255,255,.7)", letterSpacing: ".2em", fontSize: 10 }}>SCROLL ↓</div>
+          {/* Real species search — first-class, in the first viewport. */}
+          <div style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", maxWidth: 640 }}>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search a species — common or scientific name…" aria-label="Search species"
+              onKeyDown={(e) => { if (e.key === "Enter") document.getElementById("species-results")?.scrollIntoView({ behavior: "smooth" }); }}
+              style={{ flex: "1 1 320px", minWidth: 0, border: "1px solid rgba(255,255,255,.4)", padding: "14px 16px", fontSize: 15, fontFamily: T.sans, background: "rgba(5,8,27,.35)", color: "#fff" }} />
+            <a href="#species-results" style={{ ...mono, fontSize: 12, letterSpacing: ".1em", background: "#fff", color: "#000", padding: "14px 18px", textDecoration: "none" }}>SEARCH →</a>
+          </div>
+          <div style={{ ...mono, marginTop: 18, color: "rgba(255,255,255,.6)", letterSpacing: ".2em", fontSize: 10 }}>{SPECIES_PROFILES.length} SPECIES · SCROLL ↓</div>
         </div>
       </section>
-      <Section pad="clamp(64px,8vw,120px)">
-        <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_ · UNDERSTAND LIFE</div>
-        <h1 style={{ marginTop: 20, fontFamily: T.display, fontSize: "clamp(44px,7.5vw,104px)", lineHeight: .92, letterSpacing: "-.05em" }}>Life, without invented certainty.</h1>
-        <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.5 }}>
+      <Section pad="clamp(56px,7vw,104px)">
+        <span id="species-results" style={{ position: "relative", top: -80 }} aria-hidden />
+        <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_</div>
+        <h2 style={{ marginTop: 16, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3.2vw,44px)", lineHeight: 1.0, letterSpacing: "-.03em" }}>Meet life on Earth.</h2>
+        <p style={{ marginTop: 18, maxWidth: 720, fontSize: "clamp(15px,1.4vw,18px)", lineHeight: 1.55, color: T.dim }}>
           Each profile begins with the living animal and its place, then opens into what it depends on and what is
           reported about it. Occurrence records show where people have looked — not range, abundance or population.
         </p>
