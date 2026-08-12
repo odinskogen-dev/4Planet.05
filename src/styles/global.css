@@ -412,3 +412,9 @@ body:has(.product-nav--impact) .product-nav{top:66px}
 .atlas-embed .status-strip,
 .atlas-embed .maplibregl-control-container,
 .atlas-embed .maplibregl-ctrl { display: none !important; }
+
+/* Living Systems anchor index */
+.ls-anchors { display: grid; grid-template-columns: repeat(2, 1fr); }
+.ls-anchor { transition: background .2s; }
+.ls-anchor:hover { background: rgba(46,46,255,.03); }
+@media (max-width: 640px) { .ls-anchors { grid-template-columns: 1fr; } }

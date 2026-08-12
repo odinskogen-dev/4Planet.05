@@ -9,7 +9,7 @@ import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium"
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
-import { LivingSystems } from "@/pages/v5/LivingSystems";
+import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
@@ -65,6 +65,7 @@ export function AppRoutes() {
       <Route path="/partners" element={<Partners />} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
+      <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
       <Route path="/stories" element={<Stories />} />
