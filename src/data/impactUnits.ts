@@ -155,7 +155,7 @@ export const IMPACT_UNITS: ImpactUnit[] = [
   {
     slug: "restore-coral",
     index: "03",
-    code: "04_ COR4L_",
+    code: "03_ COR4L_",
     missionName: "COR4L_",
     action: "RESTORE CORAL",
     unitLabel: "1 CORAL FRAGMENT",

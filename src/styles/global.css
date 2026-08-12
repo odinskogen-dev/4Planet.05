@@ -390,3 +390,25 @@ body:has(.product-nav--impact) .product-nav{top:66px}
 /* responsive show/hide helpers for IMPACT corner info */
 .show-mobile { display: none; }
 @media (max-width: 720px) { .hide-mobile { display: none; } .show-mobile { display: grid; } }
+
+/* Home premium: product rows + worlds grid */
+.prod-row { transition: background .2s; }
+.prod-row:hover { background: rgba(46,46,255,.03); }
+.prod-row:hover .prod-arr { transform: translateX(6px); }
+.worlds-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+@media (max-width: 760px) { .worlds-grid { grid-template-columns: 1fr; } }
+
+/* Home ATLAS embed: contain the shared World engine and strip its chrome so the
+   hero shows only the living globe (attract mode). The full controls live in the
+   ATLAS product itself. */
+.atlas-embed { contain: strict; }
+.atlas-embed .world { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; }
+.atlas-embed .search-wrap,
+.atlas-embed .mbtn,
+.atlas-embed .lens-rail,
+.atlas-embed .drawer,
+.atlas-embed .grp,
+.atlas-embed .foot,
+.atlas-embed .status-strip,
+.atlas-embed .maplibregl-control-container,
+.atlas-embed .maplibregl-ctrl { display: none !important; }
