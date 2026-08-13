@@ -14,13 +14,15 @@ type Product = { key: ProductKey; label: string; descriptor: string; path: strin
 const PRODUCTS: Product[] = [
   { key: "4PLANET", label: "4PLANET", descriptor: "The public universe", path: "/", index: 0 },
   { key: "ATLAS", label: "ATLAS", descriptor: "Explore the living planet", path: "/atlas", index: 1 },
-  { key: "SPECIES", label: "SPECIES", descriptor: "Understand life", path: "/species", index: 2 },
-  { key: "IMPACT", label: "IMPACT", descriptor: "Join credible action", path: "/impact", index: 3 },
+  { key: "SPECIES", label: "SPECIES", descriptor: "Meet life on Earth", path: "/species", index: 2 },
+  { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "Understand the relationships", path: "/living-systems", index: 3 },
+  { key: "IMPACT", label: "IMPACT", descriptor: "Join credible action", path: "/impact", index: 4 },
 ];
 
 function activeProduct(pathname: string): ProductKey {
   if (pathname.startsWith("/atlas")) return "ATLAS";
   if (pathname.startsWith("/species")) return "SPECIES";
+  if (pathname.startsWith("/living-systems")) return "LIVING SYSTEMS";
   if (pathname.startsWith("/impact")) return "IMPACT";
   return "4PLANET";
 }
@@ -38,14 +40,19 @@ type SwitcherVariant = "A" | "B";
 
 function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { activeIndex: number; dark?: boolean; accent?: string; size?: number }) {
   const idle = dark ? "rgba(255,255,255,.5)" : "rgba(8,8,8,.4)";
-  const r = Math.max(2, Math.round(size * 0.11));
-  const cx = [0.18, 0.5, 0.82, 0.5];
-  const cy = [0.5, 0.2, 0.5, 0.8];
+  const r = Math.max(2, Math.round(size * 0.1));
+  // Five nodes on a quiet ring — a product-family relationship, not an app grid.
+  const n = 5;
+  const pts = Array.from({ length: n }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    return { x: 50 + 32 * Math.cos(a), y: 50 + 32 * Math.sin(a) };
+  });
+  const ring = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
   return (
     <svg aria-hidden width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
-      <path d="M18 50 L50 20 L82 50 L50 80 Z" fill="none" stroke={idle} strokeWidth={3} strokeOpacity={0.5} strokeLinejoin="round" />
-      {[0, 1, 2, 3].map((i) => (
-        <circle key={i} cx={cx[i] * 100} cy={cy[i] * 100} r={i === activeIndex ? r * 1.5 : r}
+      <path d={ring} fill="none" stroke={idle} strokeWidth={2.5} strokeOpacity={0.45} strokeLinejoin="round" />
+      {pts.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={i === activeIndex ? r * 1.5 : r}
           fill={i === activeIndex ? accent : idle} />
       ))}
     </svg>
@@ -146,7 +153,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => setOpen(false)}
                   style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 18px", textDecoration: "none",
-                    color: fg, borderBottom: p.index < 3 ? `1px solid ${panelLine}` : "none",
+                    color: fg, borderBottom: p.index < 4 ? `1px solid ${panelLine}` : "none",
                     background: isActive ? (dark ? "rgba(255,255,255,.06)" : "rgba(8,8,8,.03)") : "transparent" }}
                 >
                   <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, color: descColor, width: 22, flex: "none" }}>0{p.index + 1}</span>

@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 
-export type ProductKey = "4PLANET" | "ATLAS" | "SPECIES" | "IMPACT";
+export type ProductKey = "4PLANET" | "ATLAS" | "SPECIES" | "LIVING SYSTEMS" | "IMPACT";
 
 const PRODUCTS: Array<{ key: ProductKey; label: string; path: string }> = [
   { key: "4PLANET", label: "4PLANET", path: "/" },
   { key: "ATLAS", label: "ATLAS", path: "/atlas" },
   { key: "SPECIES", label: "SPECIES", path: "/species" },
+  { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", path: "/living-systems" },
   { key: "IMPACT", label: "IMPACT", path: "/impact" },
 ];
 
@@ -28,6 +29,7 @@ export function contextHref(path: string, currentSearch = "", overrides: Record<
 function activeProduct(pathname: string): ProductKey {
   if (pathname.startsWith("/atlas")) return "ATLAS";
   if (pathname.startsWith("/species")) return "SPECIES";
+  if (pathname.startsWith("/living-systems")) return "LIVING SYSTEMS";
   if (pathname.startsWith("/impact")) return "IMPACT";
   return "4PLANET";
 }
