@@ -84,6 +84,16 @@ export function MissionDetail() {
         </Reveal>
       </CinematicImage>
 
+      {/* ── thesis chapter — each mission opens into its own world ── */}
+      <section style={{ background: dark ? "#000" : acc, color: dark ? acc : "#fff", padding: "clamp(72px,12vw,180px) clamp(20px,6vw,120px)" }}>
+        <Reveal>
+          <div style={{ ...mono(dark ? acc : "rgba(255,255,255,.8)"), marginBottom: "clamp(24px,3vw,40px)" }}>{m.code} · THE STAKES</div>
+          <p style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3.4vw,52px)", lineHeight: 1.08, letterSpacing: "-.03em", maxWidth: "18ch" }}>
+            {m.thesis}
+          </p>
+        </Reveal>
+      </section>
+
       {/* ── WS-B Technical Mission Strip: after cinematic opening, before article ── */}
       <MissionStrip
         issue={m.issue}

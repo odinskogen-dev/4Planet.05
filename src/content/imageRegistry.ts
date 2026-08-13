@@ -95,18 +95,21 @@ export const impactImage = (slug: string): ImageMeta | undefined => IMPACT_IMAGE
 const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "wh4les": { src: `${A}/species/orca/detail-pod.jpg`, alt: "A pod of orcas surfacing together", aspectRatio: "3/2", role: "editorial" },
-  "rewild-marine": { src: `${A2}/rewild-marine/detail-01.jpg`, alt: "Restored seagrass and kelp in coastal water", aspectRatio: "3/2", role: "editorial" },
-  "4rt": { src: `${A2}/4rt/detail-01.jpg`, alt: "An ecological art print in progress", aspectRatio: "3/2", role: "editorial" },
+  "rewild-marine": { src: `${A2}/rewild-marine/bank-hero.jpg`, srcMobile: `${A2}/rewild-marine/bank-hero-mobile.jpg`, alt: "A living kelp forest in coastal water", aspectRatio: "3/2", role: "editorial" },
+  "4rt": { src: `${A2}/4rt/bank-hero.jpg`, srcMobile: `${A2}/4rt/bank-hero-mobile.jpg`, alt: "Screen-printing production in a working studio", aspectRatio: "3/2", role: "editorial" },
   "am4zonia": { src: `${A2}/am4zonia/detail-01.jpg`, alt: "Rainforest river winding through dense canopy", aspectRatio: "3/2", role: "editorial" },
-  "clim4te": { src: `${A2}/clim4te/detail-01.jpg`, alt: "Dark northern forest — slow restoration in low light", aspectRatio: "3/2", role: "editorial" },
+  "clim4te": { src: `${A2}/clim4te/bank-hero.jpg`, srcMobile: `${A2}/clim4te/bank-hero-mobile.jpg`, alt: "A misty forest canopy pierced by light", aspectRatio: "3/2", role: "editorial" },
   "species": { src: `${A2}/species/detail-01.jpg`, alt: "Aerial of wild terrain — habitat seen whole", aspectRatio: "3/2", role: "editorial" },
   "rewild-land": { src: `${A2}/rewild/detail-01.jpg`, alt: "Rugged land meeting water — habitat returning", aspectRatio: "3/2", role: "editorial" },
-  "circular-city": { src: `${A2}/circular-city/detail-01.jpg`, alt: "Planted terraces stepping down a dense urban block", aspectRatio: "3/2", role: "editorial" },
+  "circular-city": { src: `${A2}/circular-city/bank-hero.jpg`, srcMobile: `${A2}/circular-city/bank-hero-mobile.jpg`, alt: "Crushed aluminium cans gathered for recycling", aspectRatio: "3/2", role: "editorial" },
   "cor4l": { src: `${A2}/cor4l/detail-coral-01.jpg`, alt: "A table coral near the surface in clear blue water", aspectRatio: "3/2", role: "editorial" },
-  "en4rgy": { src: `${A2}/en3rgy/detail-01.jpg`, alt: "Detail of energy infrastructure at work", aspectRatio: "3/2", role: "editorial" },
-  "food": { src: `${A2}/food/detail-01.jpg`, alt: "Working farmland viewed from above", aspectRatio: "3/2", role: "editorial" },
-  "m4gazine": { src: `${A2}/m4gazine/detail-01.jpg`, alt: "P4NTHER editorial frame with analog white border", aspectRatio: "3/2", role: "editorial" },
+  "en4rgy": { src: `${A2}/en3rgy/bank-hero.jpg`, srcMobile: `${A2}/en3rgy/bank-hero-mobile.jpg`, alt: "Wind turbines and solar arrays across working farmland", aspectRatio: "3/2", role: "editorial" },
+  "food": { src: `${A2}/food/bank-hero.jpg`, srcMobile: `${A2}/food/bank-hero-mobile.jpg`, alt: "Farmers harvesting crops in the field", aspectRatio: "3/2", role: "editorial" },
+  "m4gazine": { src: `${A2}/m4gazine/bank-hero.jpg`, srcMobile: `${A2}/m4gazine/bank-hero-mobile.jpg`, alt: "An open editorial magazine spread", aspectRatio: "3/2", role: "editorial" },
   "cle4n": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
+  "4film": { src: `${A2}/4film/bank-hero.jpg`, srcMobile: `${A2}/4film/bank-hero-mobile.jpg`, alt: "A film camera rig on a working set", aspectRatio: "3/2", role: "editorial" },
+  "4play": { src: `${A2}/4play/bank-hero.jpg`, srcMobile: `${A2}/4play/bank-hero-mobile.jpg`, alt: "A game controller — play as a way in", aspectRatio: "3/2", role: "editorial" },
+  "f4shion": { src: `${A2}/f4shion/bank-hero.jpg`, srcMobile: `${A2}/f4shion/bank-hero-mobile.jpg`, alt: "Knitted textile in warm natural light", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];
 
