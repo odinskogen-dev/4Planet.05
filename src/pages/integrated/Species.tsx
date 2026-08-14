@@ -113,7 +113,15 @@ function SpeciesHero({
     <div className="sp-hero">
       <figure className="sp-hero__media" style={{ margin: 0 }}>
         {show ? (
-          <img src={media!.localPath} alt={`${profile.commonName} — ${profile.scientificName}`} />
+          <>
+            <img src={media!.localPath} alt={`${profile.commonName} — ${profile.scientificName}`} />
+            {media?.limitations && (
+              <div style={{ position: "absolute", top: 12, left: 12, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9, maxWidth: 320, lineHeight: 1.5 }}>{media.limitations}</div>
+            )}
+            {media?.attribution && (
+              <div style={{ position: "absolute", bottom: 34, right: 12, ...mono, background: "rgba(0,0,0,.6)", color: "rgba(255,255,255,.9)", padding: "3px 7px", fontSize: 8 }}>{media.attribution}{media.licence ? ` · ${media.licence}` : ""}</div>
+            )}
+          </>
         ) : illustration ? (
           <>
             <img src={illustration.localPath} alt={`${profile.commonName} — illustration, not a photograph`} />
