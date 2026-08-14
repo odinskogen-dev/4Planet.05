@@ -10,17 +10,14 @@ import type { DomainKey } from "@/types/content";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const dslug = (k: string) => k.replace("_", "").toLowerCase();
-const LS_URL = "https://4p-living-systems-v1-4-1.pages.dev/";
-const ATLAS_URL = "https://4planet-atlas-mobile.pages.dev/";
 
 type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [string, string][] };
 const stripU = (k: string) => k.replace(/_$/, "");
 const MENU: Cat[] = [
-  { key: "4_", to: "/people", kind: "list", items: [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]] },
+  { key: "PRODUCTS_", to: "/", kind: "list", items: [["ATLAS", "/atlas"], ["SPECIES", "/species"], ["LIVING SYSTEMS", "/living-systems"], ["IMPACT", "/impact"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
-  { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
-  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
+  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY_", "/missions/4play"], ["4FILM_", "/missions/4film"], ["4RT_", "/missions/4rt"], ["M4GAZINE_", "/missions/m4gazine"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
 
@@ -98,14 +95,14 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
             );
           })}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-            <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
+            <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
             <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
             <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
           </div>
         </div>
 
         <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
+          <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
           <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
           <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
         </div>
@@ -166,7 +163,7 @@ function Header() {
           <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
             background: "transparent", color: open ? T.ink : fg,
             border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
-            transition: "border-color .25s ease, color .25s ease" }}>JOIN 4_</Link>
+            transition: "border-color .25s ease, color .25s ease" }}>JOIN 4PLANET</Link>
         </div>
       </header>
       {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} /></>)}
@@ -192,7 +189,7 @@ function Footer() {
   const { pathname } = useLocation();
   const { acc } = footerCtx(pathname);
   const cols: [string, [string, string][]][] = [
-    ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
+    ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
     ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
   ];

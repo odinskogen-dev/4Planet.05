@@ -206,7 +206,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       "Energy powers nearly every system we live inside.",
       "How we heat, move, build, produce and connect shapes the pressure placed on land, water, climate and communities.",
       "Energy is often invisible until its consequences become impossible to ignore.",
-      "EN3RGY is being developed to make the transition toward cleaner, more resilient energy systems easier to understand and follow.",
+      "EN4RGY is being developed to make the transition toward cleaner, more resilient energy systems easier to understand and follow.",
     ],
     article: [
       L("Energy is not only a technical sector. It is the infrastructure behind homes, transport, industry, food, communication and public life — invisible until its consequences become impossible to ignore."),
@@ -216,7 +216,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       Q("The goal is to make complex system choices more legible — without reducing them to slogans."),
       S("What can help"),
       P("Efficiency and demand reduction. Clean generation and better grids. Responsible material use. Accessible public understanding, and transition models that actually account for people and ecosystems together."),
-      P("EN3RGY is being developed as a mission world for energy intelligence and public explanation — infrastructure, grids, materials and system choices made legible rather than loud."),
+      P("EN4RGY is being developed as a mission world for energy intelligence and public explanation — infrastructure, grids, materials and system choices made legible rather than loud."),
     ],
   },
   "circular-city": {

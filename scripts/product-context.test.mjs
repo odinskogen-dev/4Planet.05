@@ -123,8 +123,8 @@ test("five cetacean profiles have consistent id/gbifKey and honest media state",
     assert.ok(species.includes(`id: "taxon:gbif:${key}"`), `${slug} id matches taxon:gbif:${key}`);
     assert.ok(media.includes(`"${slug}"`) || media.includes(`${slug}:`), `${slug} has a media record`);
   });
-  // media only shows an image when cleared/founder-cleared + a local path exists
-  assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "FOUNDER_CLEARED"/);
+  // media only shows an image when a real licence is recorded + a local path exists
+  assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "LICENCE_VERIFIED"/);
 });
 
 // ── Truth: a bundled / NOT LIVE record must never display LIVE (Control Addendum) ──

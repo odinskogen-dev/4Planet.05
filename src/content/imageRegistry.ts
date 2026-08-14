@@ -108,7 +108,6 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "m4gazine": { src: `${A2}/m4gazine/bank-hero.jpg`, srcMobile: `${A2}/m4gazine/bank-hero-mobile.jpg`, alt: "An open editorial magazine spread", aspectRatio: "3/2", role: "editorial" },
   "cle4n": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
   "4film": { src: `${A2}/4film/bank-hero.jpg`, srcMobile: `${A2}/4film/bank-hero-mobile.jpg`, alt: "A film camera rig on a working set", aspectRatio: "3/2", role: "editorial" },
-  "4play": { src: `${A2}/4play/bank-hero.jpg`, srcMobile: `${A2}/4play/bank-hero-mobile.jpg`, alt: "A game controller — play as a way in", aspectRatio: "3/2", role: "editorial" },
   "f4shion": { src: `${A2}/f4shion/bank-hero.jpg`, srcMobile: `${A2}/f4shion/bank-hero-mobile.jpg`, alt: "Knitted textile in warm natural light", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];

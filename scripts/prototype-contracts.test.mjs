@@ -81,9 +81,9 @@ test("new source-aware journeys add no unregistered media rights burden", () => 
   assert.doesNotMatch(impact, /<img|backgroundImage|url\(/);
   // SPECIES may show images, but ONLY gated by the media-rights registry:
   // every <img> is guarded by a showable-rights check, and the registry refuses
-  // to show anything without a cleared/founder-cleared status + local asset.
+  // to show anything without a licence-verified status + local asset.
   assert.match(species, /hasShowableImage/);
-  assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "FOUNDER_CLEARED"/);
+  assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "LICENCE_VERIFIED"/);
   assert.match(media, /&& !!m\.localPath/);
   // Truth spine rights record preserved.
   assert.match(truth, /licence: "CC BY 4\.0"/);

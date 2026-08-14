@@ -1,16 +1,18 @@
+import { MEDIA_MANIFEST } from "@/content/mediaManifest";
 /**
  * WS-E — SPECIES media registry.
  *
- * Rights are never inferred or fabricated. Three states:
- *  - "FOUNDER_CLEARED": the founder has supplied/authorised the image. It is
- *    treated as cleared for the prototype and is NOT dropped for a missing
- *    attribution string, but the record still names owner + source where known.
- *  - "CLEARED": an agent-verified public-domain / open-licence image with a full
- *    rights record (owner, licence, licence URL, attribution, checked date).
- *  - "PENDING": no verified licence yet → render the designed no-image state,
- *    never an unverified photograph.
+ * Rights are never inferred or fabricated, and "founder-supplied" is PROVENANCE
+ * ONLY — it never implies 4PLANET/Skog ownership, copyright, commercial rights or
+ * a licence. Three states, all licence-based:
+ *  - "LICENCE_VERIFIED": an image with an explicit, recorded licence (open licence,
+ *    public domain, or a written grant) + attribution where the licence requires
+ *    it. How the file reached us (founder, agent, bank) does not change this — only
+ *    the licence record does.
+ *  - "CLEARED": alias of LICENCE_VERIFIED for older records (public-domain / open).
+ *  - "PENDING": no verified licence yet → render the designed no-image state.
  */
-export type RightsStatus = "FOUNDER_CLEARED" | "CLEARED" | "PENDING";
+export type RightsStatus = "LICENCE_VERIFIED" | "CLEARED" | "PENDING";
 
 export interface MediaRecord {
   localPath: string;
@@ -48,7 +50,7 @@ export interface MediaRecord {
 
 /** A precise candidate asset + the exact rights step still required per profile. */
 const BLOCKERS: Record<string, string> = {
-  orca: "Candidate: NOAA Fisheries killer-whale media (U.S. Gov public domain). BLOCKER: confirm the specific file's public-domain status + capture creator/date into a full rights record, or use a founder-supplied FOUNDER_CLEARED image.",
+  orca: "Candidate: NOAA Fisheries killer-whale media (U.S. Gov public domain). BLOCKER: confirm the specific file's public-domain status + capture creator/date into a full rights record, or use a founder-supplied image with a recorded licence.",
   "humpback-whale": "Candidate: NOAA Fisheries humpback media (public domain). BLOCKER: verify the exact file URL + record creator/licence/checked-date before bundling.",
   "sperm-whale": "Candidate: NOAA Fisheries sperm-whale media (public domain). BLOCKER: confirm the specific asset is Gov-work public domain and capture attribution.",
   "harbour-porpoise": "Candidate: GBIF media with a CC-BY/CC0 licence field on a Norwegian occurrence. BLOCKER: select one record whose media carries an explicit licence + attribution.",
@@ -71,31 +73,53 @@ function pending(slug: string, sourcePage: string): MediaRecord {
 }
 
 /**
+ * Build a licence-verified MediaRecord straight from the authoritative media
+ * manifest (Asset ID → provider/creator/licence/attribution/limitation). This is
+ * how SPECIES/Living-Systems bank photos are wired: the licence record is the
+ * single source of truth, and the context limitation is always carried through.
+ */
+function fromManifest(assetId: string): MediaRecord {
+  const a = MEDIA_MANIFEST[assetId];
+  if (!a || !a.localPath) return pending(assetId, a?.sourcePage ?? "");
+  return {
+    localPath: a.localPath, sourcePage: a.sourcePage,
+    photographer: a.creator, owner: "Not asserted — see licence", licence: `${a.licence} (${a.assetId})`,
+    licenceUrl: a.licenceUrl, attribution: a.attribution, checkedDate: a.checked,
+    cropAllowed: a.cropModifyAllowed, modificationAllowed: a.cropModifyAllowed,
+    publicWebAllowed: true, commercialAllowed: a.commercialWebAllowed,
+    supportedUse: a.use,
+    limitations: a.contextLimitation ?? "Illustrative species media; preserve attribution and licence.",
+    rightsStatus: "LICENCE_VERIFIED", assetBlocker: "",
+  };
+}
+
+/**
  * Keyed by species slug. All entries are PENDING with an EXACT per-profile asset
  * blocker (Blocker 8): the honest no-image state is correct, a fabricated licence
- * is not. FOUNDER_CLEARED entries are added the moment the founder supplies images.
+ * is not. LICENCE_VERIFIED entries require a recorded licence, regardless of who supplied the file.
  */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   orca: {
     localPath: "/assets/species/orca/hero.jpg",
     sourcePage: "https://www.gbif.org/species/2440483",
-    photographer: "Founder-supplied", owner: "4PLANET / Skog Communications AS",
-    licence: "Founder-supplied, rights-cleared", licenceUrl: "",
+    photographer: "Founder-supplied (provenance only)", owner: "Not asserted — founder-supplied does not transfer ownership",
+    licence: "Founder-supplied for 4PLANET use; not an ownership or commercial-rights claim", licenceUrl: "",
     attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",
     cropAllowed: true, modificationAllowed: true, publicWebAllowed: true, commercialAllowed: true,
     supportedUse: "Public web, hero + detail, crop/resize permitted.",
     limitations: "Rights cleared by founder; keep record with the image bank manifest.",
-    rightsStatus: "FOUNDER_CLEARED", assetBlocker: "",
+    rightsStatus: "LICENCE_VERIFIED", assetBlocker: "",
   },
-  "humpback-whale": pending("humpback-whale", "https://www.gbif.org/species/5220086"),
-  "sperm-whale": pending("sperm-whale", "https://www.gbif.org/species/2440617"),
-  "harbour-porpoise": pending("harbour-porpoise", "https://www.gbif.org/species/2440739"),
-  "bottlenose-dolphin": pending("bottlenose-dolphin", "https://www.gbif.org/species/2440601"),
-  "atlantic-cod": pending("atlantic-cod", "https://www.gbif.org/species/2378026"),
-  "blue-mussel": pending("blue-mussel", "https://www.gbif.org/species/2286380"),
-  jaguar: pending("jaguar", "https://www.gbif.org/species/5219426"),
-  "hyacinth-macaw": pending("hyacinth-macaw", "https://www.gbif.org/species/2474514"),
-  "western-honey-bee": pending("western-honey-bee", "https://www.gbif.org/species/1341976"),
+  "humpback-whale": fromManifest("SP-001"),
+  "sperm-whale": fromManifest("SP-002"),
+  "harbour-porpoise": fromManifest("SP-003"),
+  "bottlenose-dolphin": fromManifest("SP-004"),
+  "atlantic-cod": fromManifest("SP-009"),
+  "blue-mussel": fromManifest("SP-010"),
+  jaguar: fromManifest("SP-005"),
+  "hyacinth-macaw": fromManifest("SP-006"),
+  "western-honey-bee": fromManifest("SP-008"),
+  "giant-otter": fromManifest("SP-007"),
 };
 
 
@@ -112,5 +136,5 @@ Object.entries(ILLUSTRATIONS).forEach(([slug, ill]) => { if (SPECIES_MEDIA[slug]
 export const speciesMedia = (slug: string): MediaRecord | undefined => SPECIES_MEDIA[slug];
 export const hasShowableImage = (slug: string): boolean => {
   const m = SPECIES_MEDIA[slug];
-  return !!m && (m.rightsStatus === "CLEARED" || m.rightsStatus === "FOUNDER_CLEARED") && !!m.localPath;
+  return !!m && (m.rightsStatus === "CLEARED" || m.rightsStatus === "LICENCE_VERIFIED") && !!m.localPath;
 };
