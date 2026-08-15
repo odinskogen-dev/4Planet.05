@@ -1,29 +1,55 @@
 # 4PLANET ONE INTERFACE — Claude latest handoff — 2026-08-15
 
-Status: authoritative handoff archive received; remote source ingestion still pending.
+Status: exact Claude canonical delivery received and preserved; remote deployable source ingestion still pending.
 
 ## Why this exists
 The Cloudflare/GitHub deployment path and Claude's local premium-development path diverged. Claude produced local git commits/bundles without GitHub credentials, while remote deployment work used the repository state available on GitHub. This handoff record prevents the latest Claude work from being lost or mistaken for the older remote source.
 
-## Authoritative received archive
-Google Drive file:
-https://drive.google.com/file/d/1WrU3-rz-nt-a7PPxfaTbecOYnngn6Tyh/view?usp=drivesdk
+## NEWEST AUTHORITATIVE CLAUDE SOURCE — EXACT COMMIT
+Claude has now delivered an exact delta Git bundle with canonical branch/head:
 
-Drive file ID: `1WrU3-rz-nt-a7PPxfaTbecOYnngn6Tyh`
-Original upload SHA-256 (`files (7).zip`):
-`96fa0706e6aca728f6265bdccb66110f146791201206217bb3509435b347db90`
+- branch: `species-premium/one-interface`
+- exact Claude HEAD: `efdf3bcb69a8dfa97afdad0f58c42d8307a84280`
+- prior code commit: `40ba61b` — SPECIES profile credit/context limitation surface
+- prior code commit: `a88582d` — canon/truth cleanup + runtime media manifest + SP-001..SP-010 wiring
+- base premium pass: `5beae1de7207c745735a298b5a7737b021a6622e`
+- bundle prerequisite/audited ancestor: `ced077305814ad12411b6ce1e5896087ecca5f51`
 
-The duplicate user upload `files (6).zip` has different outer ZIP metadata but contains byte-identical inner artifacts.
+Original raw delivery preserved in Drive Code Vault:
+https://drive.google.com/file/d/1SigW48CV5aySzgZLYlTJCWndS87NElri/view?usp=drivesdk
 
-Inner artifacts:
-- `4planet-DIST-dragdrop.zip` SHA-256: `dfe3f91c5096a2e0d54072bdddce23b487fa146cc5dc2d46deb5b741bd2ed272`
-- `4planet-CHANGED-for-github.zip` SHA-256: `2dfe6677046d083f65583013a3cc05a5df8d66709cf9de7693e51e97a32f7810`
+Drive file ID: `1SigW48CV5aySzgZLYlTJCWndS87NElri`
+Raw delivery SHA-256: `0dfab7fe104c603e4d01dd0f0921e77edee6f1ecd497fa4a2914457c960f9597`
 
-## Reconciled development lineage
-Remote `claude/one-interface-premium-completion` is still at:
-`de9e01a37482b7678104690056cc6146e9b286a3`
+Exact Claude canonical source snapshot preserved in Drive Code Vault:
+https://drive.google.com/file/d/1mslwOrJmM6k_gPmEBRJ0rVlLYax-VsHC/view?usp=drivesdk
 
-Claude's local premium chain continued beyond that remote SHA and includes, among others:
+Drive file ID: `1mslwOrJmM6k_gPmEBRJ0rVlLYax-VsHC`
+Canonical snapshot SHA-256: `cd3ef4a1b34d9ee5010fa1781719aab7d48b1706a1c98fae1d176aec43bc2fc8`
+
+The raw delivery contains:
+- `4planet-one-interface.delta.bundle`
+- `GPT_HANDOFF.md`
+- `FINAL_SHA.txt`
+- `DEPLOY_README.md`
+- `CONTINUITY.md`
+
+## RELATION TO THE EARLIER OPENAI RECONSTRUCTION
+Before the exact Claude bundle arrived, the newest changed-files export had been reconstructed on top of `5beae1d` and committed locally for audit as:
+
+`d95ba66f8b5ac49db96ee9cf8ba5b53f2ceabe3c`
+
+That SHA remains preserved and MUST NOT be deleted, but it is no longer the best Claude-source authority.
+
+A direct tree comparison between audit-only `d95ba66` and exact Claude `efdf3bc` shows only three differences:
+- exact Claude adds `CONTINUITY.md`;
+- exact Claude removes `public/assets/missions/4play/bank-hero.jpg`;
+- exact Claude removes `public/assets/missions/4play/bank-hero-mobile.jpg`.
+
+Those two 4PLAY files were the previously identified wrong/duplicated bank-hero assets. Therefore `efdf3bc` is the preferred exact Claude source for the current premium lineage.
+
+## PREMIUM LINEAGE INCLUDED
+The exact Claude delivery sits on the recovered premium chain that includes, among others:
 - Climate TRACE layer/proxy: `129cdc5`
 - premium Orca/photo pass: `a652acd`
 - Home premium/four-product canon: `8b386d8`
@@ -32,25 +58,31 @@ Claude's local premium chain continued beyond that remote SHA and includes, amon
 - IMPACT designed pathway: `ba15c74`
 - Mission media/thesis pass: `3bb91cc`
 - Product switcher/LIVING SYSTEMS pass: `5beae1d`
-- latest received continuation: canon cleanup + SP-001..SP-010 media integration + runtime media manifest (delivered as changed-files export, without a canonical Claude final commit SHA)
+- canon/truth cleanup + runtime Asset-ID media manifest + SP-001..SP-010 integration: `a88582d`
+- SPECIES media credit/context surface: `40ba61b`
+- continuity documentation: `efdf3bc`
 
-For audit only, the latest received continuation was reconstructed locally on top of `5beae1d` and assigned local reconciliation SHA:
-`d95ba66f8b5ac49db96ee9cf8ba5b53f2ceabe3c`
-This is an OpenAI reconciliation SHA, not a Claude-authored canonical SHA.
+## CLAUDE-REPORTED GATES AT EXACT HEAD
+`typecheck 0 · build OK · smoke 28/28 · assets PASS`
 
-## Verified in the received production build
-The received DIST contains representative output from the premium chain, including:
-- `CLIM4TE TRACE`
-- `Meet life on Earth`
-- `The Orca, followed honestly.`
-- `How it is designed to work`
-- Mission `THE STAKES` chapters
-- LIVING SYSTEMS
-- SP-001 through SP-010 media IDs
-- current `EN4RGY`
-- current `JOIN 4PLANET`
+Status remains OUTPUT RECEIVED / AWAITING GPT AUDIT. No self-approval.
 
-It does not contain the stale public strings `4TELIER`, `EN3RGY` or `JOIN 4_`.
+## IMPORTANT REMAINING BLOCKERS FROM CLAUDE
+- MS-013 controller asset for 4PLAY is still not placed.
+- LS-001 eelgrass is registered but not placed/wired.
+- LIVING SYSTEMS still needs the deeper progressive relationship-intelligence render conversion.
+- the 16 Missions still need true per-mission signature mechanisms from `visualDirection` rather than only shared-template variation.
+- IMPACT still needs proof-rail refinement.
+- HOME chromeless ATLAS attract-mode remains pending if it can be done safely.
 
-## Remaining reconciliation warning
-This branch is an audit/handoff pointer only. It is NOT the deployable latest source branch yet. Do not deploy this branch as the final product. The full latest source plus binary media still needs to be ingested into a controlled remote source branch before Git-based deployment.
+## REMOTE GITHUB WARNING
+Remote `claude/one-interface-premium-completion` remains an older lineage and must not be treated as current.
+
+This handoff branch is only an audit/control pointer. Do not deploy this branch itself.
+
+For the next controlled remote product branch, prefer importing the exact Claude bundle at `efdf3bc` rather than reconstructing from the older audit-only `d95ba66` package, unless deployment work has already started and the exact three-file delta is applied explicitly.
+
+Target controlled product branch remains:
+`release/one-interface-premium-current`
+
+Before Cloudflare promotion, verify the remote branch tree contains the exact current premium code, binary media, `functions/api/climate-trace.ts`, and does NOT contain the two removed erroneous 4PLAY bank-hero files.
