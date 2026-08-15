@@ -125,28 +125,63 @@ function Header() {
   }, [open]);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
+  // Scroll-aware hide/reveal. Baselines (tunable, not dogma):
+  //   hide after ~80px accumulated downward intent past a small floor;
+  //   reveal after ~14px accumulated upward intent; always shown near the very top.
+  const [hidden, setHidden] = useState(false);
   useEffect(() => {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    let lastY = window.scrollY;
+    let downAcc = 0, upAcc = 0;
+    const HIDE_AFTER = 80, REVEAL_AFTER = 14, TOP_FLOOR = 64;
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 24);
       setPastHero(y > window.innerHeight * 0.82);
+      const dy = y - lastY; lastY = y;
+      if (reduce) { setHidden(false); return; }        // reduced-motion: never translate away
+      if (y <= TOP_FLOOR || open) { setHidden(false); downAcc = upAcc = 0; return; }
+      if (dy > 0) { downAcc += dy; upAcc = 0; if (downAcc > HIDE_AFTER) setHidden(true); }
+      else if (dy < 0) { upAcc -= dy; downAcc = 0; if (upAcc > REVEAL_AFTER) setHidden(false); }
     };
     onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+  }, [pathname, open]);
+
+  // Scroll-reveal: activate any .reveal element as it enters the viewport (progressive, reduced-motion safe via CSS).
+  useEffect(() => {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal:not(.is-in)"));
+    if (reduce || els.length === 0) { els.forEach((el) => el.classList.add("is-in")); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, [pathname]);
 
   const heroPage = !!ctx;
   const missionSlug = pathname.startsWith("/missions/") ? pathname.split("/")[2] : "";
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/") || DARK_MISSIONS.has(missionSlug);
-  const overHero = (darkWorld || (heroPage && !pastHero)) && !open;
+  // "detached" = scrolled away from the very top and not sitting over a hero → needs a solid/blurred backing so content never bleeds through.
+  const detached = scrolled && !open && !(heroPage && !pastHero);
+  const overHero = (darkWorld || (heroPage && !pastHero)) && !open && !detached;
   const accent = ctx ? ctx.accent : T.blue;
   const fg = overHero ? "#fff" : T.ink;
-  const outline = scrolled && !open;
+  const outline = (scrolled || detached) && !open;
+  const headerBg = detached ? (darkWorld ? "rgba(9,9,14,.82)" : "rgba(255,255,255,.86)") : "transparent";
 
   return (
     <>
-      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transition: "none" }}>
+      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        background: headerBg,
+        backdropFilter: detached ? "blur(14px) saturate(1.1)" : "none",
+        WebkitBackdropFilter: detached ? "blur(14px) saturate(1.1)" : "none",
+        borderBottom: detached ? `1px solid ${darkWorld ? "rgba(255,255,255,.10)" : "rgba(8,8,8,.08)"}` : "1px solid transparent",
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
+        transition: "transform .28s cubic-bezier(.4,0,.2,1), background-color .28s ease, border-color .28s ease",
+        paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
           <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>

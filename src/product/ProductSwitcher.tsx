@@ -116,12 +116,20 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
         aria-controls="product-switcher-panel"
         aria-label={`Switch product, current product ${active}`}
         className="product-switcher__trigger"
-        style={{ display: "inline-flex", alignItems: "center", justifyContent: variant === "B" ? "flex-start" : "center", minWidth: 44, height: 44,
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", gap: 8, minWidth: 44, height: 44,
           background: "transparent", border: "none", cursor: "pointer", padding: 0, color: fg }}
       >
         {variant === "B"
           ? <TypeMark activeLabel={active} dark={dark} accent={accent} />
           : <FamilyMark activeIndex={activeIdx} dark={dark} accent={accent} />}
+        {/* Discoverability: current product is legible as a label, not only an abstract mark. */}
+        <span className="ps-current" aria-hidden style={{ display: "inline-flex", alignItems: "center", gap: 5,
+          fontFamily: "'Fragment Mono', monospace", fontSize: 11.5, letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }}>
+          {active}
+          <svg width="9" height="6" viewBox="0 0 9 6" style={{ display: "block", opacity: .8 }} aria-hidden>
+            <path d="M1 1l3.5 3.5L8 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
       </button>
 
       {open && (
@@ -140,7 +148,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
               boxShadow: dark ? "0 24px 60px rgba(0,0,0,.5)" : "0 24px 60px rgba(8,8,8,.18)" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${panelLine}` }}>
-              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>Switch product</span>
+              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>4PLANET · four products</span>
               <button onClick={close} aria-label="Close product switcher"
                 style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, background: "none", border: "none", cursor: "pointer", color: descColor }}>ESC ✕</button>
             </div>
@@ -156,7 +164,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
                     color: fg, borderBottom: p.index < 4 ? `1px solid ${panelLine}` : "none",
                     background: isActive ? (dark ? "rgba(255,255,255,.06)" : "rgba(8,8,8,.03)") : "transparent" }}
                 >
-                  <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, color: descColor, width: 22, flex: "none" }}>0{p.index + 1}</span>
+                  <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: p.index === 0 ? 8.5 : 11, letterSpacing: ".08em", color: descColor, width: 30, flex: "none" }}>{p.index === 0 ? "HOME" : `0${p.index}`}</span>
                   <span style={{ flex: 1 }}>
                     <span style={{ display: "block", fontFamily: "'Instrument Sans', 'DM Sans', sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-.01em", color: isActive ? accent : fg }}>{p.label}</span>
                     <span style={{ display: "block", fontSize: 13, color: descColor, marginTop: 2 }}>{p.descriptor}</span>

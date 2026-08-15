@@ -8,7 +8,7 @@ import type { ImageMeta } from "@/content/imageRegistry";
  * copy) sits inside the same frame so a picture always feels composed, never dropped in.
  */
 export function CinematicImage({
-  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback,
+  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback, kenburns,
 }: {
   meta?: ImageMeta;
   height?: string;
@@ -17,6 +17,7 @@ export function CinematicImage({
   caption?: string;
   credit?: string;
   priority?: boolean;
+  kenburns?: boolean;          // calm breathing motion for fullbleed heroes (reduced-motion safe via CSS)
   children?: ReactNode;        // overlaid copy, if any
   align?: "start" | "center" | "end";
   accent?: string;
@@ -34,6 +35,7 @@ export function CinematicImage({
           <img
             src={active!.src} alt={active!.alt} loading={priority ? "eager" : "lazy"} decoding="async"
             onError={() => setErr(true)}
+            className={kenburns ? "kenburns" : undefined}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: position ?? active!.objectPosition ?? "50% 50%" }}
           />
         </picture>

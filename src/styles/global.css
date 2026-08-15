@@ -426,3 +426,19 @@ body:has(.product-nav--impact) .product-nav{top:66px}
 .impact-pathway__k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: #fff; }
 .impact-pathway__d { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.8); }
 @media (max-width: 720px) { .impact-pathway__step { grid-template-columns: auto 1fr; } .impact-pathway__d { grid-column: 1 / -1; } }
+
+/* ═══════════ PART 1 · MOTION FOUNDATION (calm, premium, reduced-motion safe) ═══════════ */
+/* Scroll-reveal: content rises 8–12px and fades in as it enters the viewport. */
+.reveal{opacity:0;transform:translateY(11px);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1)}
+.reveal.is-in{opacity:1;transform:none}
+/* Ken Burns: fullbleed heroes breathe — a slow, near-imperceptible scale/drift. */
+@keyframes kenburns{0%{transform:scale(1.02) translate3d(0,0,0)}100%{transform:scale(1.08) translate3d(0,-1.2%,0)}}
+.kenburns{animation:kenburns 26s ease-in-out infinite alternate;will-change:transform}
+/* Soft interactive states — expensive-feeling, never flashy. */
+a,button{transition:color .22s ease,border-color .22s ease,background-color .22s ease,opacity .22s ease}
+/* Product switcher: hide the long current-product label on narrow phones (mark stays tappable). */
+@media (max-width:559px){.product-switcher__trigger .ps-current{display:none!important}}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1!important;transform:none!important}
+  .kenburns{animation:none!important}
+}

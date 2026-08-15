@@ -71,7 +71,7 @@ export function MissionDetail() {
         </Link>
       )}
       {/* ── immersive entry (dark) ── */}
-      <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority accent={acc} align="end">
+      <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority kenburns accent={acc} align="end">
         <Reveal>
           <div style={{ ...mono("#fff"), marginBottom: 16 }}>
             <Link to={"/domains/" + dslug(m.domain)} style={{ color: acc, textDecoration: "none" }}>{m.code}</Link>
