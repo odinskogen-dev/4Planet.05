@@ -134,3 +134,4 @@ Part# · Part START_SHA · current SHA · commits · WHAT CHANGED · before/afte
 
 ## STATUS LOG
 - [PART 0] done @ working branch megasprint/planetary-experience-v1 off efdf3bc. Baseline gates green (typecheck 0, smoke 28/28). Next: PART 1 FIX THE FRAME.
+- [PART 1] done @ 7aff726 (off cc1364f). FIX THE FRAME: scroll-aware header (hide ~80px down / reveal ~14px up, solid/blur backing when detached, safe-area, reduced-motion), discoverable switcher (current-product label+caret, 4PLANET=HOME not 5th product, products 01-04), motion foundation (.reveal observer, Ken Burns hero, soft states). Gates green. iOS Safari = FOUNDER DEVICE SIGNOFF REQUIRED. Next: PART 2 EARTH→ORCA→LIVING SYSTEM.
