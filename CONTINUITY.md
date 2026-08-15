@@ -92,3 +92,45 @@ clone the repo, check out the branch, verify `git log` + gates, then act. See §
 5. Ask Odin: did GPT audit land? did anything deploy/merge? what is today's target?
 6. Only then implement — bounded, one concern at a time, re-run gates, deliver bundle + AWAITING GPT AUDIT.
 7. **Update this file** (§3 HEAD, §4 done, §5 pending) as the last step of every pass.
+
+---
+
+# ═══ LOCKED PROGRAMME: PLANETARY EXPERIENCE MEGASPRINT v1.0 ═══
+_Ledger only. Source truth = exact SHA + Git history + immutable bundle. Never assume remote GitHub == local._
+
+## SOURCE AUTHORITY
+- START_SHA (canonical Claude authority): efdf3bcb69a8dfa97afdad0f58c42d8307a84280
+- Working branch: megasprint/planetary-experience-v1 (non-destructive, off START_SHA)
+- Rules: NO code deletion · NO destructive history · NO main merge · NO production · NO self-approval · NO secrets in backups.
+
+## OPERATING METHOD
+- One coherent megasprint, delivered in sequential recoverable checkpoints.
+- After each Part: commit · update this ledger (§STATUS) · retain recovery bundle · produce evidence · return checkpoint · status "AWAITING PROJECT LEAD AUDIT".
+- Continue to next Part unless told STOP/HOLD, while token/context permits. If near exhaustion: STOP CLEANLY (commit, bundle, update ledger, state exact next action). Never leave material work only in an uncommitted tree.
+
+## NORTH STAR
+Turn a strong collection of pages/products into ONE LIVING PLANETARY UNIVERSE:
+PLANET → LIFE → RELATIONSHIPS → PRESSURES → RESPONSES → EVIDENCE/ACTION.
+Awe via planetary scale, life, photography, spatial continuity, progressive revelation, calm motion, intelligence, evidence, silence, precision — NOT via oversized type, decorative animation, or gratuitous effects.
+Preserve brand tension: cinematic AND source-backed · emotional AND precise · optimistic AND honest · beautiful AND explicit about uncertainty.
+Truth architecture (NOT OPEN / PARTNER VALIDATION PENDING / source state / context boundaries / KNOWN-INTERPRETED-UNKNOWN / planetary-context distinction) is a PREMIUM BRAND ASSET — strengthen, never hide.
+
+## PARTS (LOCKED)
+- PART 0 PROTECT THE SOURCE — verify SHA, working branch, backup/bundle, START_SHA, ledger. [done]
+- PART 1 FIX THE FRAME — canonical responsive shell; scroll-aware header (baselines ~80px hide / ~12–16px reveal / ~250–300ms, TUNE not dogma); zero content collision @390/430/768/1024/1440; env(safe-area-inset-*) (iOS = FOUNDER DEVICE SIGNOFF REQUIRED); product IA ATLAS/SPECIES/LIVING SYSTEMS/IMPACT, logo=HOME, no 5th product, don't mix Mission-domain IA; visible switcher + current-product label; universe colour law (rhythm not noise); ATLAS mobile control/tap cleanup; + calm MOTION FOUNDATION (scroll-reveal 8–12px/~500ms, Ken Burns hero ~1.05x/20s, soft hover/fade 200–250ms) all prefers-reduced-motion gated.
+- PART 2 CREATE THE MAGIC — EARTH→ORCA→LIVING SYSTEM continuity spine + reusable transition grammar (planet→place/species→relationship); preserve identity/location/image/state/source/context across handoffs; calm/spatial/physical/purposeful motion; preserve URLs/browser-nav/a11y/reduced-motion.
+- PART 3 MAKE THE INVISIBLE VISIBLE — (A) Living Systems: article+cards → anchor→relationship→deeper→pressure→response, one relationship at a time, photo/map/context reacts, no spaghetti graph, KNOWN/INTERPRETED/UNKNOWN+source+boundary inspectable without bureaucracy. (B) Mission worlds: one shared engine, activate per-Mission visualDirection; strong mechanisms first for WH4LES_/COR4L_/CLE4N_/AM4ZONIA_/FOOD_/EN4RGY_/4FILM_/4RT_, then all 16 get a deliberate signature state (distinguishable before reading names). CLE4N_ semantic fix: material→river/coast→ocean→recovery→measurement; whale-first belongs to WH4LES_. Preserve rights/provenance.
+- PART 4 PLANETARY FRONT DOOR — Home living-Earth attract-mode ("the planet before the interface"), no full ATLAS controls on Home. TECHNICAL VETO: if it destabilises ATLAS/WebGL/mobile/perf, keep strongest still + document blocker.
+- PART 5 EDITORIAL + AWE CONVERGENCE — whole-product creative-direction sweep; break heading→paragraph→border→card; sequence PLANET/LIFE/EDITORIAL/RELATIONSHIPS/DATA/EVIDENCE/ACTION; compress public story where visual evidence says it better (no arbitrary %); show thesis before explaining; preserve truth architecture.
+- PART 6 COMPLETE THE FLAGSHIP JOURNEY — extend spine to HOME→ATLAS→ORCA→SPECIES→LIVING SYSTEMS→WH4LES_→IMPACT; one connected experience; no dead ends; context-aware returns; sequential evidence.
+- PART 7 LAUNCH-READY CLOSURE — responsive/back-forward/keyboard/focus/reduced-motion/tap-targets/loading/layout-stability/image/empty/source-unavailable/graceful-degradation/false-LIVE/OG/perf. No fabricated fallback data. iOS Safari = FOUNDER DEVICE SIGNOFF REQUIRED.
+
+## QUALITATIVE SUCCESS TEST (harder than gates)
+1) A newcomer spends 3 min and leaves thinking "I understand the planet differently now" (not "nice environmental website").
+2) Founder can show it to a world-class designer/scientist/journalist/funder without apologising for any obvious interface flaw (no overlap, no placeholders, no dead buttons, no semantically-wrong imagery, no uncertainty disguised as fact).
+
+## PER-PART CHECKPOINT FIELDS
+Part# · Part START_SHA · current SHA · commits · WHAT CHANGED · before/after + 390/768/1440 · tests · blockers · bundle · updated ledger · status AWAITING PROJECT LEAD AUDIT.
+
+## STATUS LOG
+- [PART 0] done @ working branch megasprint/planetary-experience-v1 off efdf3bc. Baseline gates green (typecheck 0, smoke 28/28). Next: PART 1 FIX THE FRAME.
