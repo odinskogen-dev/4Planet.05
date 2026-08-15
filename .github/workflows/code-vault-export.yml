@@ -1,0 +1,49 @@
+name: Code Vault Export d06a148
+
+on:
+  push:
+    branches:
+      - archive/code-vault-d06a148-2026-08-15
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact archive branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record source authority
+        run: |
+          git rev-parse HEAD
+          git show -s --format='%H %cI %s' HEAD > CODE_VAULT_SOURCE.txt
+
+      - name: Secret-material guard
+        shell: bash
+        run: |
+          if find . -maxdepth 4 -type f \( -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' \) -print -quit | grep -q .; then
+            echo 'Potential local secret file present; refusing archive.'
+            exit 1
+          fi
+
+      - name: Create source ZIP
+        shell: bash
+        run: |
+          zip -rq 4PLANET_ONE_INTERFACE_2026-08-15_PRODUCTION_D06A148_SOURCE.zip . \
+            -x '.git/*' 'node_modules/*' 'dist/*' 'test-results/*' 'playwright-report/*' 'artifacts/*' '*.env' '.env*' '*.pem' '*.key'
+          sha256sum 4PLANET_ONE_INTERFACE_2026-08-15_PRODUCTION_D06A148_SOURCE.zip > SHA256.txt
+
+      - name: Upload immutable source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-vault-d06a148-source
+          path: |
+            4PLANET_ONE_INTERFACE_2026-08-15_PRODUCTION_D06A148_SOURCE.zip
+            CODE_VAULT_SOURCE.txt
+            SHA256.txt
+          retention-days: 90
+          if-no-files-found: error
