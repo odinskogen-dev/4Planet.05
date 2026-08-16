@@ -13,10 +13,10 @@ type Product = { key: ProductKey; label: string; descriptor: string; path: strin
 
 const PRODUCTS: Product[] = [
   { key: "4PLANET", label: "4PLANET", descriptor: "The living planet universe", path: "/", index: 0 },
-  { key: "ATLAS", label: "ATLAS", descriptor: "Explore the living planet", path: "/atlas", index: 1 },
-  { key: "SPECIES", label: "SPECIES", descriptor: "Meet life on Earth", path: "/species", index: 2 },
-  { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "Understand the relationships", path: "/living-systems", index: 3 },
-  { key: "IMPACT", label: "IMPACT", descriptor: "Join credible action", path: "/impact", index: 4 },
+  { key: "ATLAS", label: "ATLAS", descriptor: "See the planet", path: "/atlas", index: 1 },
+  { key: "SPECIES", label: "SPECIES", descriptor: "Meet the life", path: "/species", index: 2 },
+  { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "See what life depends on", path: "/living-systems", index: 3 },
+  { key: "IMPACT", label: "IMPACT", descriptor: "Make action easier — see what it proves", path: "/impact", index: 4 },
 ];
 
 function activeProduct(pathname: string): ProductKey {
@@ -38,11 +38,13 @@ function activeProduct(pathname: string): ProductKey {
  */
 type SwitcherVariant = "A" | "B";
 
-function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { activeIndex: number; dark?: boolean; accent?: string; size?: number }) {
+function FamilyMark({ lensIndex, dark, accent = "#2E2EFF", size = 20 }: { lensIndex: number; dark?: boolean; accent?: string; size?: number }) {
   const idle = dark ? "rgba(255,255,255,.5)" : "rgba(8,8,8,.4)";
-  const r = Math.max(2, Math.round(size * 0.1));
-  // Five nodes on a quiet ring — a product-family relationship, not an app grid.
-  const n = 5;
+  const r = Math.max(2, Math.round(size * 0.11));
+  // FOUR nodes = the four lenses. The ring = the 4PLANET universe that frames them.
+  // On HOME (lensIndex < 0) the ring itself is emphasised (you are in the universe, not a lens).
+  const n = 4;
+  const home = lensIndex < 0;
   const pts = Array.from({ length: n }, (_, i) => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
     return { x: 50 + 32 * Math.cos(a), y: 50 + 32 * Math.sin(a) };
@@ -50,10 +52,10 @@ function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { acti
   const ring = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
   return (
     <svg aria-hidden width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
-      <path d={ring} fill="none" stroke={idle} strokeWidth={2.5} strokeOpacity={0.45} strokeLinejoin="round" />
+      <path d={ring} fill="none" stroke={home ? accent : idle} strokeWidth={home ? 3.5 : 2.5} strokeOpacity={home ? 0.9 : 0.45} strokeLinejoin="round" />
       {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={i === activeIndex ? r * 1.5 : r}
-          fill={i === activeIndex ? accent : idle} />
+        <circle key={i} cx={p.x} cy={p.y} r={i === lensIndex ? r * 1.5 : r}
+          fill={i === lensIndex ? accent : idle} />
       ))}
     </svg>
   );
@@ -121,15 +123,17 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
       >
         {variant === "B"
           ? <TypeMark activeLabel={active} dark={dark} accent={accent} />
-          : <FamilyMark activeIndex={activeIdx} dark={dark} accent={accent} />}
-        {/* Discoverability: current product is legible as a label, not only an abstract mark. */}
-        <span className="ps-current" aria-hidden style={{ display: "inline-flex", alignItems: "center", gap: 5,
+          : <FamilyMark lensIndex={activeIdx - 1} dark={dark} accent={accent} />}
+        {/* Current lens label — hidden on the narrowest phones to protect the centred MENU. */}
+        <span className="ps-current" aria-hidden style={{ display: "inline-flex", alignItems: "center",
           fontFamily: "'Fragment Mono', monospace", fontSize: 11.5, letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }}>
           {active}
-          <svg width="9" height="6" viewBox="0 0 9 6" style={{ display: "block", opacity: .8 }} aria-hidden>
-            <path d="M1 1l3.5 3.5L8 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
         </span>
+        {/* Caret is ALWAYS visible — the unmistakable "tap to switch lens" affordance, so the
+            mark never reads as mere decoration on mobile. */}
+        <svg className="ps-caret" width="10" height="7" viewBox="0 0 9 6" style={{ display: "block", opacity: .85, color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }} aria-hidden>
+          <path d="M1 1l3.5 3.5L8 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       {open && (
