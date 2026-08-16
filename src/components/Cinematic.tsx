@@ -59,7 +59,24 @@ export function CinematicImage({
   );
 }
 
-/** Scroll-reveal wrapper: subtle fade + rise as an act enters. Honours reduced-motion. */
+/** Route-enter transition: a calm fade + rise on mount, so navigating DEEPER into the
+ *  4PLANET spine (EARTH → ORCA → LIVING SYSTEM) feels like descending into one world,
+ *  not loading an unrelated page. Honours reduced-motion. Key it on pathname to re-fire. */
+export function RouteEnter({ children, y = 14, style }: { children: ReactNode; y?: number; style?: CSSProperties }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) { setShown(true); return; }
+    const r = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+  return (
+    <div style={{ opacity: shown ? 1 : 0, transform: shown ? "none" : `translateY(${y}px)`,
+      transition: "opacity .55s cubic-bezier(.22,.61,.36,1), transform .55s cubic-bezier(.22,.61,.36,1)", ...style }}>
+      {children}
+    </div>
+  );
+}
+
 export function Reveal({ children, delay = 0, y = 22, as = "div", style, className }:
   { children: ReactNode; delay?: number; y?: number; as?: "div" | "section"; style?: CSSProperties; className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);

@@ -272,12 +272,22 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/");
   const heroPage = !!useDomainContext() || darkWorld;
+  // Calm cross-route continuity: an opacity-only fade on navigation so moving through the
+  // 4PLANET spine feels continuous, not like hard page swaps. Opacity (unlike transform) does
+  // NOT create a containing block for fixed elements, so ATLAS's full-screen globe is unaffected.
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) { setEntered(true); return; }
+    setEntered(false);
+    const r = requestAnimationFrame(() => requestAnimationFrame(() => setEntered(true)));
+    return () => cancelAnimationFrame(r);
+  }, [pathname]);
   return (
     <>
       <a href="#main-content" className="skip-to-main">SKIP TO MAIN CONTENT</a>
       <Header />
       {!heroPage && <div aria-hidden style={{ height: 64 }} />}
-      <main id="main-content" tabIndex={-1}>{children}</main>
+      <main id="main-content" tabIndex={-1} style={{ opacity: entered ? 1 : 0, transition: "opacity .4s ease" }}>{children}</main>
       <Footer />
       <style>{`.skip-to-main{position:fixed;top:72px;left:12px;z-index:1000;max-width:calc(100vw - 24px);padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(calc(-100% - 80px));transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
     </>

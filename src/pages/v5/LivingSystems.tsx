@@ -3,6 +3,7 @@ import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label } from "@/components/ui";
 import { returnHrefFromSearch } from "@/product/productContext";
+import { RouteEnter } from "@/components/Cinematic";
 import { LIVING_SYSTEM_ANCHORS, findAnchor, EVIDENCE_COLOR, type LivingSystemAnchor, type RelationshipStep } from "@/data/livingSystems";
 import { NotFound } from "@/pages/system";
 
@@ -57,8 +58,13 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
   const fwd = forwarder(search);
   const returnHref = returnHrefFromSearch(search);
   return (
-    <div>
-      <div style={{ ...mono, color: a.accent }}>{a.eyebrow}</div>
+    <RouteEnter>
+      {/* Continuity: the system visibly grows from the animal just met upstream. */}
+      <div style={{ ...mono, color: a.accent, display: "flex", alignItems: "center", gap: 8, opacity: .9 }}>
+        <span style={{ width: 6, height: 6, borderRadius: "50%", background: a.accent, flex: "none" }} />
+        ANCHORED ON · {a.anchorLabel.toUpperCase()}
+      </div>
+      <div style={{ ...mono, color: a.accent, marginTop: 14 }}>{a.eyebrow}</div>
       {/* EXACT title text preserved for the live Orca journey (E2E + human continuity). */}
       <h2 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,3.6vw,46px)", letterSpacing: "-.035em", lineHeight: 1.0, marginTop: 10 }}>{a.journeyTitle}</h2>
       <p style={{ marginTop: 16, fontSize: "clamp(15px,1.5vw,18px)", color: T.dim, maxWidth: 660, lineHeight: 1.6 }}>{a.standfirst}</p>
@@ -83,7 +89,7 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
           <Link to={returnHref} style={{ ...mono, color: a.accent }}>← BACK TO OBSERVATION IN ATLAS</Link>
         </div>
       )}
-    </div>
+    </RouteEnter>
   );
 }
 
