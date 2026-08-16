@@ -14,11 +14,11 @@ const dslug = (k: string) => k.replace("_", "").toLowerCase();
 type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [string, string][] };
 const stripU = (k: string) => k.replace(/_$/, "");
 const MENU: Cat[] = [
-  { key: "PRODUCTS_", to: "/", kind: "list", items: [["ATLAS", "/atlas"], ["SPECIES", "/species"], ["LIVING SYSTEMS", "/living-systems"], ["IMPACT", "/impact"]] },
+  { key: "LENSES_", to: "/", kind: "list", items: [["ATLAS", "/atlas"], ["SPECIES", "/species"], ["LIVING SYSTEMS", "/living-systems"], ["IMPACT", "/impact"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
   { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY_", "/missions/4play"], ["4FILM_", "/missions/4film"], ["4RT_", "/missions/4rt"], ["M4GAZINE_", "/missions/m4gazine"]] },
-  { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
+  { key: "ABOUT_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
 
 function useDomainContext() {
@@ -237,9 +237,9 @@ function Footer() {
   const { pathname } = useLocation();
   const { acc } = footerCtx(pathname);
   const cols: [string, [string, string][]][] = [
-    ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
+    ["EXPLORE", [["Atlas", "/atlas"], ["Species", "/species"], ["Living Systems", "/living-systems"], ["Impact", "/impact"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
-    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
+    ["4PLANET", [["The Story", "/about"], ["Domains", "/domains"], ["Missions", "/missions"], ["Proof & Reports", "/reports"]]],
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>

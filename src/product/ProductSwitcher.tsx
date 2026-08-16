@@ -124,11 +124,14 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
         {variant === "B"
           ? <TypeMark activeLabel={active} dark={dark} accent={accent} />
           : <FamilyMark lensIndex={activeIdx - 1} dark={dark} accent={accent} />}
-        {/* Current lens label — hidden on the narrowest phones to protect the centred MENU. */}
-        <span className="ps-current" aria-hidden style={{ display: "inline-flex", alignItems: "center",
-          fontFamily: "'Fragment Mono', monospace", fontSize: 11.5, letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }}>
-          {active}
-        </span>
+        {/* Current lens label — hidden on the narrowest phones, and on HOME where it would
+            duplicate the 4PLANET logo ("4PLANET 4PLANET"). */}
+        {active !== "4PLANET" && (
+          <span className="ps-current" aria-hidden style={{ display: "inline-flex", alignItems: "center",
+            fontFamily: "'Fragment Mono', monospace", fontSize: 11.5, letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }}>
+            {active}
+          </span>
+        )}
         {/* Caret is ALWAYS visible — the unmistakable "tap to switch lens" affordance, so the
             mark never reads as mere decoration on mobile. */}
         <svg className="ps-caret" width="10" height="7" viewBox="0 0 9 6" style={{ display: "block", opacity: .85, color: dark ? "rgba(255,255,255,.82)" : "rgba(8,8,8,.72)" }} aria-hidden>
