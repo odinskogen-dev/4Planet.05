@@ -131,3 +131,19 @@ test("rollback removes only the prototype truth-spine objects", () => {
   assert.match(down, /commit;/);
   assert.doesNotMatch(down, /drop schema|drop database/i);
 });
+
+// ── TRUTH CONTRACT (sprint 2, Part 1): a public KNOWN relationship MUST carry a source. ──
+// Enforces RC1 permanently: no confident public claim without evidence. Degrade to
+// INTERPRETED/UNKNOWN, or add a source — never ship a sourceless KNOWN.
+test("every KNOWN relationship in Living Systems carries a source", () => {
+  const ls = read("src/data/livingSystems.ts");
+  const lines = ls.split("\n");
+  const offenders = [];
+  lines.forEach((l, i) => {
+    if (l.includes('state: "KNOWN"')) {
+      const ctx = lines.slice(Math.max(0, i - 1), i + 3).join("\n");
+      if (!ctx.includes("source:")) offenders.push(i + 1);
+    }
+  });
+  assert.deepEqual(offenders, [], `KNOWN without source at lines ${offenders.join(", ")} — source it or degrade to INTERPRETED/UNKNOWN`);
+});

@@ -219,7 +219,7 @@ const OSLOFJORDEN: LivingSystemAnchor = {
       relationships: [
         { to: { id: "fjord", kind: "PLACE", label: "The Oslofjord", note: "A semi-enclosed fjord bordered by dense population." },
           relation: "A shallow, semi-enclosed marine system with limited water exchange.",
-          state: "KNOWN", boundary: "A general description; specific conditions vary across the inner and outer fjord." } ] },
+          state: "INTERPRETED", boundary: "A general description; specific conditions vary across the inner and outer fjord." } ] },
     { stage: "DEPENDS ON", intro: "Life needs oxygen, light and habitat.",
       relationships: [
         { to: { id: "habitat", kind: "SPECIES", label: "Cod, kelp, seabed life", note: "Species that depend on clear, oxygenated water." },
@@ -261,7 +261,8 @@ const BEE: LivingSystemAnchor = {
       relationships: [
         { to: { id: "bee", kind: "SPECIES", label: "Pollinators", note: "Bees and many other insects." },
           relation: "Pollinators move pollen between flowers as they feed.",
-          state: "KNOWN", boundary: "Many species contribute; honey bees are only part of the picture." } ] },
+          state: "KNOWN", boundary: "Many species contribute; honey bees are only part of the picture.",
+          source: "IPBES Pollinators Assessment 2016", sourceUrl: "https://www.ipbes.net/assessment-reports/pollinators" } ] },
     { stage: "DEPENDS ON", intro: "Plants and pollinators built each other.",
       relationships: [
         { to: { id: "plants", kind: "SPECIES", label: "Flowering plants & crops", note: "Wild plants and many food crops." },

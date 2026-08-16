@@ -157,7 +157,7 @@ export function LivingSystems() {
             <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor reveal" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, borderTop: `2px solid ${a.accent}`, position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ ...mono, color: a.accent }}>{a.index} · {a.kind} ANCHOR</span>
-                <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "LIVE" : "IN DEVELOPMENT"}</span>
+                <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "AVAILABLE" : "IN DEVELOPMENT"}</span>
               </div>
               <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(20px,2vw,26px)", letterSpacing: "-.02em", marginTop: 12 }}>{a.anchorLabel}</div>
               <p style={{ fontSize: 13.5, color: T.dim, marginTop: 8, lineHeight: 1.5, maxWidth: 340 }}>{a.standfirst.split(" — ")[0]}.</p>
@@ -166,13 +166,13 @@ export function LivingSystems() {
         </div>
 
         {/* The live journey, inline (Orca) — keeps journey contracts + human continuity. */}
-        <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY · 01 · LIVE</div>
+        <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY · 01 · AVAILABLE</div>
         <div style={{ marginTop: 10 }}>
           <AnchorJourney a={orca} search={location.search} showReturn={false} />
         </div>
 
         <p style={{ marginTop: 32, ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.7, maxWidth: 700 }}>
-          THE ORCA JOURNEY IS LIVE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD USE THE SAME
+          THE ORCA JOURNEY IS AVAILABLE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD USE THE SAME
           REUSABLE MODEL AND ARE IN DEVELOPMENT — OPEN THEM ABOVE TO SEE THE STRUCTURE.
         </p>
       </Section>
