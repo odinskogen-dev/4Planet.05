@@ -71,7 +71,7 @@ function ImpactUnitWorld({ unit: u, href }: { unit: ImpactUnit; href: string }) 
     <>
       <div className="impact-corner tl"><b>{u.index} · {u.missionName}</b>{u.standfirst}</div>
       <div className="impact-corner tr"><b>FIELD PARTNER</b>{u.delivery.fieldPartner}<br />{u.delivery.where}</div>
-      <div className="impact-corner bl"><b>WHAT YOU GET (PLANNED)</b>{u.delivery.proof}</div>
+      <div className="impact-corner bl"><b>PLANNED EVIDENCE</b>{u.delivery.proof}</div>
       <div className="impact-corner br"><b>STATUS</b>{DELIVERY_LABEL[u.delivery.status]}<br />NOT OPEN</div>
     </>
   );
@@ -172,13 +172,13 @@ export function ImpactStory() {
           </p>
           <ol className="impact-pathway">
             {[
-              ["CONTRIBUTION", "A person chooses to support a unit of action."],
-              ["VERIFIED FIELD PARTNER", "A partner selected for transparent delivery and reporting."],
-              ["DELIVERY", "The partner carries out the work in the field."],
-              ["EVIDENCE", "Delivery is recorded with verifiable evidence."],
+              ["CONTRIBUTION", "A person supports a unit of action."],
+              ["FIELD DELIVERY", "A verified field partner carries out the work."],
+              ["DELIVERY EVIDENCE", "The delivery is recorded with verifiable evidence."],
               ["REVIEW", "The evidence is checked before anything is claimed."],
-              ["OUTCOME", "A verified per-contribution outcome record."],
-              ["SYSTEM IMPACT", "Longer-term ecological impact, followed over time."],
+              ["VERIFIED OUTPUT", "What was actually done — e.g. a tree in the ground."],
+              ["OBSERVED OUTCOME", "What actually changed on the ground, monitored over time."],
+              ["LONGER-TERM SYSTEM EFFECT", "Wider ecological effect, followed over years."],
             ].map(([k, d], i) => (
               <li key={k} className="impact-pathway__step">
                 <span className="impact-pathway__no">{`0${i + 1}`}</span>
@@ -187,6 +187,9 @@ export function ImpactStory() {
               </li>
             ))}
           </ol>
+          <p style={{ ...mono, marginTop: 14, fontSize: 10.5, letterSpacing: ".04em", color: T.dim, lineHeight: 1.6, maxWidth: 620 }}>
+            OUTPUT ≠ OUTCOME · A verified output (the work done) is not automatically an ecological outcome. 4PLANET keeps them separate — what was delivered, and what actually changed.
+          </p>
           <p style={{ ...mono, marginTop: 14, fontSize: 10.5, letterSpacing: ".06em", color: T.acid }}>
             CURRENT STATUS · {DELIVERY_LABEL[u.delivery.status]} — {u.delivery.fieldPartner.startsWith("TO BE") ? "FIELD PARTNER NOT YET APPOINTED" : "PARTNER SELECTION IN PROGRESS"} · NO STAGE IS ACTIVE
           </p>
