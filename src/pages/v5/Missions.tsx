@@ -219,7 +219,7 @@ export function MissionDetail() {
               <Button to={withReturnTo("/join", location.search)} primary accent={acc} arrow testId="mission-to-join">{m.joinLabel || "FOLLOW THIS MISSION"}</Button>
               {m.impactPathwaySlug
                 ? <Button to={"/impact/" + m.impactPathwaySlug} onDark accent="#fff">FOLLOW THE PATHWAY</Button>
-                : <Button to="/partners" onDark accent="#fff">EXPLORE PARTNERSHIP</Button>}
+                : <Button to="/impact" onDark accent="#fff">SEE THE IMPACT MODEL</Button>}
             </div>
           </Reveal>
 
