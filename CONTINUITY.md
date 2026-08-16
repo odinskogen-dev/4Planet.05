@@ -149,3 +149,41 @@ Part# · Part START_SHA · current SHA · commits · WHAT CHANGED · before/afte
 - [PART 6] done @ 384baf9. COMPLETE FLAGSHIP JOURNEY: verified spine HOME->ATLAS->ORCA->SPECIES->LIVING SYSTEMS->WH4LES_->IMPACT end-to-end; removed soft dead-end (pathway-less missions -> SEE THE IMPACT MODEL -> /impact). Sequential evidence + contact sheet produced. Gates green. Next: PART 7 launch-ready closure.
 - [PART 7] done @ dfc40c6. LAUNCH-READY CLOSURE: per-route document.title; verified 404 handled, LIVE honestly source-gated (no false LIVE), reduced-motion comprehensive, switcher tap>=44px. iOS = FOUNDER DEVICE SIGNOFF REQUIRED. Gates green.
 - [MEGASPRINT COMPLETE] All 7 parts delivered on megasprint/planetary-experience-v1. FINAL status AWAITING GPT/PROJECT LEAD AUDIT. No main merge / production / self-approval. Remaining backlog: founder visual-needs list (LS visuals, 4+ per mission, missions nav, Magazine integration), ATLAS deep-zoom tiles + trace + biodiversity + dark-outline basemap mode, live Earth attract-mode (verify on real infra).
+
+---
+
+# ═══ LOCKED PROGRAMME 2: TRUTH · LENSES · AWE MEGASPRINT v2.0 ═══
+_Convergence of Founder + Project Lead 44-point review + prior backlog. Ledger only; source truth = SHA+history+bundle._
+START_SHA (accepted FINAL of sprint 1): 0cb3cfd · Working branch: megasprint/truth-lens-awe-v2
+Rules: NO code deletion · NO destructive history · NO main merge · NO production · NO self-approval · preserve assets (correct metadata, never delete).
+
+## MENTAL MODEL TO PROTECT (do not violate)
+4PLANET = universe/HOME → FOUR LENSES (ATLAS=see the planet, SPECIES=meet the life, LIVING SYSTEMS=see what life depends on, IMPACT=make action easier + see what it proves) → FOUR DOMAINS (OCE4N_/E4RTH_/S4PIENS_/4CULTURE_, KEEP "Domains" not "Worlds") → MISSIONS. "Lenses" not "products". Don't force labels where nav/experience explains itself.
+
+## ROOT-CAUSE FRAME (why this is few moves, not 44 tickets)
+- RC1 TRUTH NOT BOUND TO EVIDENCE: KNOWN w/o source, Missions sources:[] w/ claims, founder-supplied implying rights, LIVE as one status. (#16-19, #34)
+- RC2 NAV CONTRADICTS MODEL: FamilyMark 5 nodes, cryptic mobile switcher. (#29-30)
+- RC3 EXPLAIN INSTEAD OF SHOW: honesty-language, Species/Domains/Impact repetition, LS is disclosure not active intelligence. (#8-9,#11,#14,#22,#26)
+- One lens for all surfaces: 6 questions (Where am I/What/Why/What do we know/What can I do/What next) = dramaturgy AWE→ORIENTATION→DISCOVERY→UNDERSTANDING→EVIDENCE→AGENCY. (#5,#38)
+- Quality bar: 5s WOW · 3min "this is a real system" · 15min "holds under scrutiny". World-leading won at minute 15. (#39,#44)
+
+## PARTS (LOCKED) — delivered in audited checkpoints, continue unless STOP/HOLD
+- PART 0 SOURCE LOCK — branch off 0cb3cfd, plan in ledger. [done]
+- PART 1 TRUTH SPINE (P0, RC1) — audit every public KNOWN → source it or degrade (interpreted/unknown/in-development); claim-specific truth (identity-source ≠ diet/function/dependency/pressure source); Mission source architecture (claims open to evidence, no hero footnote-noise); founder-supplied = provenance-only everywhere (correct metadata, keep asset); replace universal LIVE with distinct concepts (journey-available / source-connected / source-fresh / real-time). CTAs literally true (#34). + calm motion continues.
+- PART 2 LENS CLARITY (P0, RC2) — switcher = FOUR lenses (ATLAS/SPECIES/LIVING SYSTEMS/IMPACT), 4PLANET logo=HOME/universe, FamilyMark 5→4 nodes; premium mobile switcher that clearly signals switching + shows current lens without fighting MENU; language "lenses" where category words help. SPECIES lens vs SPECIES_ mission legible without knowing internal architecture (#13).
+- PART 3 HOME WHY + SIGNATURE (RC3, #6-8,#10) — HOME leads with human WHY ("4PLANET exists to make the living systems under pressure easier to understand — and meaningful ways to help easier to find" — find best version; human/clear/warm/restrained/true-today/non-NGO/non-AI). KEEP "CAUSE THERE IS NO PLANET B." sparingly (footer). Remove self-praising honesty-language. One signature moment: Earth is the front door.
+- PART 4 LIVING SYSTEMS — ACTIVE relationship intelligence (#14-15) — from progressive disclosure → active: pick a relationship → it takes the scene → prior steps compress to a trail → image/map/context reacts → pressure → response as natural next. One relationship at a time; subject-first, evidence where it matters, technical on demand. "Makes an invisible relationship visible."
+- PART 5 IMPACT MEANING + PROOF RAIL (#20-23) — reframe to MAKE ACTION EASIER + SEE WHAT IT PROVES; proof rail concept CONTRIBUTION→FIELD DELIVERY→DELIVERY EVIDENCE→REVIEW→VERIFIED OUTPUT→OBSERVED OUTCOME→LONGER-TERM SYSTEM EFFECT (output ≠ outcome, don't weight all words equally); compress repeated WHY to ~ WHY THIS MATTERS / WHAT THE EVIDENCE SAYS / WHAT WOULD HAVE TO HAPPEN; CTA EXPLORE IMPACT (not MAKE AN IMPACT) until action open; "WHAT YOU GET (PLANNED)" → truer e.g. PLANNED EVIDENCE / WHAT WOULD BE RECORDED.
+- PART 6 MISSIONS — WHY THIS HELPS + question entrances + copy (#23-27) — structure problem→why it matters→why this could help→evidence→action→proof (not green e-commerce); strong question entrances where they help (FOOD/CIRCULAR CITY); protect strong subject-first lines; COMMON SYSTEM · INDIVIDUAL WORLD (common: nav/truth/components/evidence; individual: image/question/story/mechanism/tempo). Domains: subtract repetition (hero→brief system→Missions→one note). 4PLAY_ copy → "Bring the living world into culture" (or better).
+- PART 7 ATLAS DEPTH (prior backlog) — crisp deep-zoom tiles to street level as far in as possible; Climate TRACE traces + biodiversity density wired (verify on real infra; sandbox egress-blocked); restore/offer earlier dark-outline+labels basemap MODE (add mode, don't remove Blue Marble); ATLAS mobile control cleanup (search/layers/Earth/NOW/WATCH/close/sheets/tap) — STILL OPEN from sprint-1 Part 1, not complete.
+- PART 8 JOURNEY EVIDENCE + LAUNCH TRUTH (#28,#32-37) — full flagship evidence INCLUDING ATLAS (HOME→ATLAS→ORCA→SPECIES→LIVING SYSTEMS→WH4LES_→IMPACT); Join/lead-capture one true state (capture OFF = forms visibly disabled/opening-soon, OR ON = copy/privacy/consent match runtime); COMING/IN DEVELOPMENT/OPENING SOON where true; self-reconstructable recovery package (explicit baseline+incremental chain); evidence 390/430/768/1024/1440 + iPhone Safari = FOUNDER DEVICE SIGNOFF after Cloudflare preview.
+- PART 9 (deferred, after above lands) VISUAL-NEEDS LIST — the world-class image/visual brief (LS visuals, 4+ per mission + lower-page elements, missions nav, Magazine article integration per mission). Do NOT start until narrative/LS/Impact/source/lens landed (#42).
+
+## MOTION / AWE (weave through, esp. Parts 1-5 so deploys feel alive)
+Calm, physical, restrained. Max 1-2 signature moments per lens (#10): HOME Earth-as-door · ATLAS planet→place→context · SPECIES photography-first encounter · LIVING SYSTEMS active relationship changes the scene · IMPACT traceability action→evidence→effect. All reduced-motion safe. Never gimmicky.
+
+## DELIVERY (per part) + BACKLOG CARRY
+Part#, START/current SHA, commits, WHAT CHANGED, before/after + 390/768/1440, tests, blockers, bundle, updated ledger, AWAITING PROJECT LEAD AUDIT. Backlog still open from sprint 1: ATLAS items (now Part 7), visuals (Part 9), live Earth attract-mode (verify real infra).
+
+## STATUS LOG 2
+- [P0 v2] done — branch megasprint/truth-lens-awe-v2 off 0cb3cfd. Baseline gates green. Next: PART 1 TRUTH SPINE.
