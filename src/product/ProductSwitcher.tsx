@@ -145,18 +145,18 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
             id="product-switcher-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Switch product"
+            aria-label="Switch lens"
             className="product-switcher__panel"
             style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 61, width: 340, maxWidth: "calc(100vw - 32px)",
               background: panelBg, border: `1px solid ${panelLine}`,
               boxShadow: dark ? "0 24px 60px rgba(0,0,0,.5)" : "0 24px 60px rgba(8,8,8,.18)" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${panelLine}` }}>
-              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>4PLANET · four ways in</span>
+              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>One planet · four lenses</span>
               <button onClick={close} aria-label="Close product switcher"
                 style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, background: "none", border: "none", cursor: "pointer", color: descColor }}>ESC ✕</button>
             </div>
-            {PRODUCTS.map((p) => {
+            {PRODUCTS.filter((p) => p.index >= 1).map((p) => {
               const isActive = p.key === active;
               return (
                 <Link
@@ -168,7 +168,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
                     color: fg, borderBottom: p.index < 4 ? `1px solid ${panelLine}` : "none",
                     background: isActive ? (dark ? "rgba(255,255,255,.06)" : "rgba(8,8,8,.03)") : "transparent" }}
                 >
-                  <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: p.index === 0 ? 8.5 : 11, letterSpacing: ".08em", color: descColor, width: 30, flex: "none" }}>{p.index === 0 ? "HOME" : `0${p.index}`}</span>
+                  <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, letterSpacing: ".08em", color: descColor, width: 30, flex: "none" }}>{`0${p.index}`}</span>
                   <span style={{ flex: 1 }}>
                     <span style={{ display: "block", fontFamily: "'Instrument Sans', 'DM Sans', sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-.01em", color: isActive ? accent : fg }}>{p.label}</span>
                     <span style={{ display: "block", fontSize: 13, color: descColor, marginTop: 2 }}>{p.descriptor}</span>
