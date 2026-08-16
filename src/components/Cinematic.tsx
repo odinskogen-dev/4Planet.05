@@ -8,7 +8,7 @@ import type { ImageMeta } from "@/content/imageRegistry";
  * copy) sits inside the same frame so a picture always feels composed, never dropped in.
  */
 export function CinematicImage({
-  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback, kenburns,
+  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback, kenburns, signature,
 }: {
   meta?: ImageMeta;
   height?: string;
@@ -18,6 +18,7 @@ export function CinematicImage({
   credit?: string;
   priority?: boolean;
   kenburns?: boolean;          // calm breathing motion for fullbleed heroes (reduced-motion safe via CSS)
+  signature?: string;          // per-mission signature atmosphere class suffix (drift|depth|flow|rise|sweep|pulse|scan|gallery)
   children?: ReactNode;        // overlaid copy, if any
   align?: "start" | "center" | "end";
   accent?: string;
@@ -44,6 +45,7 @@ export function CinematicImage({
         <div aria-hidden style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(8,8,8,${overlay * 0.5}) 0%, rgba(8,8,8,${overlay * 0.15}) 42%, rgba(8,8,8,${overlay}) 100%)` }} />
       )}
       {accent && <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 96, height: 4, background: accent, zIndex: 2 }} />}
+      {signature && <div aria-hidden className={`sig sig--${signature}`} />}
       {children && (
         <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", justifyContent: align === "center" ? "center" : align === "start" ? "flex-start" : "flex-end" }}>
           <div style={{ maxWidth: 1320, width: "100%", margin: "0 auto", padding: "clamp(28px,5vw,72px) clamp(20px,5vw,72px)" }}>{children}</div>

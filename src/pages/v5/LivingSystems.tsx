@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
@@ -57,6 +58,13 @@ function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i:
 function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; search: string; showReturn: boolean }) {
   const fwd = forwarder(search);
   const returnHref = returnHrefFromSearch(search);
+  // Progressive relationship intelligence: the user reveals the system one relationship at a
+  // time, keeping focus on one dependency/pressure/response before the next. Not a vertical report.
+  const total = a.steps.length;
+  const [shown, setShown] = useState(1);
+  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const allShown = shown >= total;
+  const nextStage = allShown ? null : a.steps[shown].stage;
   return (
     <RouteEnter>
       {/* Continuity: the system visibly grows from the animal just met upstream. */}
@@ -69,21 +77,46 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
       <h2 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,3.6vw,46px)", letterSpacing: "-.035em", lineHeight: 1.0, marginTop: 10 }}>{a.journeyTitle}</h2>
       <p style={{ marginTop: 16, fontSize: "clamp(15px,1.5vw,18px)", color: T.dim, maxWidth: 660, lineHeight: 1.6 }}>{a.standfirst}</p>
 
-      <div style={{ marginTop: 24 }}>
-        {a.steps.map((s, i) => <RelationshipStepBlock key={s.stage} step={s} i={i} accent={a.accent} />)}
+      {/* Progress: how much of the system is revealed. */}
+      <div style={{ ...mono, color: T.dim, marginTop: 26, display: "flex", alignItems: "center", gap: 10 }}>
+        <span>RELATIONSHIP {String(Math.min(shown, total)).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
+        <span aria-hidden style={{ flex: 1, height: 1, background: T.line, position: "relative", maxWidth: 220 }}>
+          <span style={{ position: "absolute", left: 0, top: 0, height: 1, width: `${(shown / total) * 100}%`, background: a.accent, transition: reduce ? "none" : "width .5s cubic-bezier(.22,.61,.36,1)" }} />
+        </span>
       </div>
 
-      <div className="tw" style={{ marginTop: 36, border: `1px solid ${T.line}` }}>
-        {a.handoffs.map((h, i) => (
-          <Link key={h.label}
-            to={fwd(h.to)}
-            data-testid={h.testid ?? `ls-handoff-${h.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
-            style={{ display: "block", padding: "clamp(20px,3vw,30px)", textDecoration: "none", color: T.ink, borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
-            <div style={{ fontWeight: 500, fontSize: "clamp(15px,1.6vw,19px)" }}>{h.label} →</div>
-            <p style={{ marginTop: 8, fontSize: 14, color: T.dim, lineHeight: 1.5 }}>{h.desc}</p>
-          </Link>
+      <div style={{ marginTop: 8 }}>
+        {a.steps.slice(0, shown).map((s, i) => (
+          <div key={s.stage} className={i === shown - 1 && !reduce ? "ls-step-in" : undefined}>
+            <RelationshipStepBlock step={s} i={i} accent={a.accent} />
+          </div>
         ))}
       </div>
+
+      {/* Reveal-next affordance: the user builds the system by exploring it, one relationship at a time. */}
+      {!allShown ? (
+        <button type="button" onClick={() => setShown((n) => Math.min(n + 1, total))}
+          data-testid="ls-reveal-next"
+          style={{ marginTop: 22, display: "inline-flex", alignItems: "center", gap: 12, cursor: "pointer",
+            background: "transparent", border: `1px solid ${a.accent}`, color: T.ink, padding: "14px 20px",
+            fontFamily: T.display, fontWeight: 500, fontSize: "clamp(15px,1.6vw,18px)", letterSpacing: "-.01em" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: a.accent, flex: "none" }} />
+          Reveal what it depends on next
+          <span style={{ ...mono, color: a.accent }}>{nextStage} →</span>
+        </button>
+      ) : (
+        <div className="tw" style={{ marginTop: 36, border: `1px solid ${T.line}` }}>
+          {a.handoffs.map((h, i) => (
+            <Link key={h.label}
+              to={fwd(h.to)}
+              data-testid={h.testid ?? `ls-handoff-${h.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
+              style={{ display: "block", padding: "clamp(20px,3vw,30px)", textDecoration: "none", color: T.ink, borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
+              <div style={{ fontWeight: 500, fontSize: "clamp(15px,1.6vw,19px)" }}>{h.label} →</div>
+              <p style={{ marginTop: 8, fontSize: 14, color: T.dim, lineHeight: 1.5 }}>{h.desc}</p>
+            </Link>
+          ))}
+        </div>
+      )}
       {showReturn && returnHref && (
         <div style={{ marginTop: 24 }}>
           <Link to={returnHref} style={{ ...mono, color: a.accent }}>← BACK TO OBSERVATION IN ATLAS</Link>

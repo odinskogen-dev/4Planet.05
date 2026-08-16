@@ -442,3 +442,36 @@ a,button{transition:color .22s ease,border-color .22s ease,background-color .22s
   .reveal{opacity:1!important;transform:none!important}
   .kenburns{animation:none!important}
 }
+/* Living Systems progressive reveal: newly revealed relationship rises in calmly. */
+@keyframes ls-step-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.ls-step-in{animation:ls-step-in .55s cubic-bezier(.22,.61,.36,1)}
+@media (prefers-reduced-motion:reduce){.ls-step-in{animation:none}}
+
+/* ═══════════ PART 3B · MISSION WORLD SIGNATURES ═══════════ */
+/* Each mission gets one restrained subject-specific atmospheric behaviour on its hero,
+   so worlds are distinguishable before reading their names. All reduced-motion safe. */
+.sig{position:absolute;inset:0;pointer-events:none;z-index:1;mix-blend-mode:screen;opacity:.5}
+/* WH4LES_ — slow horizontal migration drift */
+@keyframes sig-drift-x{0%{transform:translateX(-3%)}100%{transform:translateX(3%)}}
+.sig--drift{background:radial-gradient(120% 60% at 50% 90%,rgba(46,46,255,.22),transparent 60%);animation:sig-drift-x 30s ease-in-out infinite alternate}
+/* COR4L_ — depth light shafts descending */
+@keyframes sig-depth{0%{opacity:.28;transform:translateY(-2%)}100%{opacity:.5;transform:translateY(2%)}}
+.sig--depth{background:linear-gradient(180deg,rgba(120,200,255,.28),transparent 55%);animation:sig-depth 14s ease-in-out infinite alternate}
+/* CLE4N_ — directional flow land→coast→ocean */
+@keyframes sig-flow{0%{transform:translateX(-4%) translateY(2%)}100%{transform:translateX(4%) translateY(-2%)}}
+.sig--flow{background:linear-gradient(115deg,rgba(255,255,255,.16),transparent 45%);animation:sig-flow 22s linear infinite alternate}
+/* AM4ZONIA_ — canopy mist rising */
+@keyframes sig-rise{0%{opacity:.22;transform:translateY(4%)}100%{opacity:.44;transform:translateY(-4%)}}
+.sig--rise{background:linear-gradient(0deg,rgba(58,232,111,.20),transparent 60%);animation:sig-rise 18s ease-in-out infinite alternate}
+/* FOOD_ — soil→pollinator warm sweep */
+@keyframes sig-sweep{0%{transform:translateX(-3%)}100%{transform:translateX(3%)}}
+.sig--sweep{background:radial-gradient(80% 50% at 30% 80%,rgba(255,180,90,.20),transparent 60%);animation:sig-sweep 20s ease-in-out infinite alternate}
+/* EN4RGY_ — generation→grid pulse */
+@keyframes sig-pulse{0%,100%{opacity:.24}50%{opacity:.52}}
+.sig--pulse{background:linear-gradient(90deg,transparent,rgba(255,77,34,.22),transparent);animation:sig-pulse 6s ease-in-out infinite}
+/* 4FILM_ — frames / timeline scan */
+@keyframes sig-scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+.sig--scan{background:linear-gradient(180deg,transparent,rgba(255,255,255,.10) 50%,transparent);height:40%;animation:sig-scan 9s linear infinite}
+/* 4RT_ — gallery edition, still, quiet vignette (no motion) */
+.sig--gallery{background:radial-gradient(90% 90% at 50% 50%,transparent 60%,rgba(0,0,0,.28));mix-blend-mode:multiply;opacity:.7}
+@media (prefers-reduced-motion:reduce){.sig{animation:none!important}.sig[class*="sig--"]{animation:none!important}}

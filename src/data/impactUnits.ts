@@ -122,9 +122,9 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     action: "CLEAN OCEAN PLASTIC",
     unitLabel: "1 KG OCEAN PLASTIC",
     accent: OCE4N,
-    image: "/assets/domains/oce4n/hero.jpg",
-    imageMobile: "/assets/domains/oce4n/hero-mobile.jpg",
-    imageAlt: "A humpback whale and a free-diver in open blue ocean",
+    image: "/assets/missions/pl4stic/hero.jpg",
+    imageMobile: "/assets/missions/pl4stic/hero-mobile.jpg",
+    imageAlt: "Recovered marine waste — plastic packaging tangled among fish pulled from the water",
     standfirst: "Recover measurable marine waste before it breaks down and spreads.",
     whyPlant:
       "Ocean plastic does not disappear — it fragments, travels through currents and food webs, and ends up inside marine life. Recovering it as measurable mass, close to where it leaks in, stops one kilogram from becoming millions of pieces.",

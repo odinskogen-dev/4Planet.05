@@ -62,6 +62,15 @@ export function MissionDetail() {
   const dhero = domainHero(m.domain);
   const second = missionSecondary(m.slug);
   const status = publicStatus(m.slug);
+  // PART 3B — activate visualDirection as one restrained subject-specific signature per mission,
+  // so worlds are distinguishable before reading their names. All reduced-motion safe (CSS).
+  const SIGNATURE: Record<string, string> = {
+    wh4les: "drift", cor4l: "depth", cle4n: "flow", "rewild-marine": "depth",
+    clim4te: "rise", am4zonia: "rise", species: "gallery", "rewild-land": "rise",
+    food: "sweep", en4rgy: "pulse", "circular-city": "pulse", f4shion: "sweep",
+    m4gazine: "scan", "4film": "scan", "4rt": "gallery", "4play": "pulse",
+  };
+  const signature = SIGNATURE[m.slug] ?? "depth";
 
   return (
     <PublicShell>
@@ -71,7 +80,7 @@ export function MissionDetail() {
         </Link>
       )}
       {/* ── immersive entry (dark) ── */}
-      <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority kenburns accent={acc} align="end">
+      <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority kenburns signature={signature} accent={acc} align="end">
         <Reveal>
           <div style={{ ...mono("#fff"), marginBottom: 16 }}>
             <Link to={"/domains/" + dslug(m.domain)} style={{ color: acc, textDecoration: "none" }}>{m.code}</Link>
