@@ -86,7 +86,10 @@ export function MissionDetail() {
             <Link to={"/domains/" + dslug(m.domain)} style={{ color: acc, textDecoration: "none" }}>{m.code}</Link>
           </div>
           <h1 style={{ ...display, color: acc, fontSize: "clamp(40px,6.6vw,100px)", lineHeight: .9 }}>{strip(m.name)}</h1>
-          <p style={{ fontSize: "clamp(17px,1.8vw,23px)", color: "rgba(255,255,255,.94)", marginTop: 18, maxWidth: 580, lineHeight: 1.38 }}>{m.hero}</p>
+          {m.question && (
+            <p style={{ fontFamily: T.display, fontWeight: 500, color: "#fff", fontSize: "clamp(19px,2.4vw,32px)", lineHeight: 1.2, letterSpacing: "-.02em", marginTop: 18, maxWidth: "20ch" }}>{m.question}</p>
+          )}
+          <p style={{ fontSize: "clamp(17px,1.8vw,23px)", color: "rgba(255,255,255,.94)", marginTop: m.question ? 12 : 18, maxWidth: 580, lineHeight: 1.38 }}>{m.hero}</p>
           <div style={{ ...mono("#fff"), fontSize: 10.5, marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8, border: `1px solid ${acc}`, padding: "7px 12px" }}>
             <span style={{ width: 6, height: 6, background: acc, display: "inline-block" }} />{status}
           </div>
@@ -138,7 +141,7 @@ export function MissionDetail() {
         {/* what can help / what 4planet is building */}
         <Reveal delay={60} style={{ marginTop: "clamp(44px,6vw,76px)" }}>
           <div className="tw-plain" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(28px,4vw,64px)" }}>
-            {([["WHAT CAN HELP", m.whatCanHelp], ["WHAT 4PLANET IS BUILDING", m.fourPlanetRole]] as [string, string][]).map(([h, b]) => (
+            {([["WHY THIS HELPS", m.whatCanHelp], ["WHAT 4PLANET IS BUILDING", m.fourPlanetRole]] as [string, string][]).map(([h, b]) => (
               <div key={h} style={{ borderTop: `1px solid ${dark ? acc : T.ink}`, paddingTop: 16 }}>
                 <div style={mono(dark ? acc : T.blue)}>{h}</div>
                 <p style={{ fontSize: "clamp(15px,1.3vw,17.5px)", color: secBody, marginTop: 12, lineHeight: 1.62, maxWidth: 520 }}>{b}</p>

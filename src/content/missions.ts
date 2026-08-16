@@ -28,6 +28,7 @@ export interface MissionContent {
   joinLabel: string;
   visualDirection: string;
   atStake?: string;
+  question?: string;           // optional narrative entrance where a question makes the mission clearer (#24)
   sources: MissionSource[];
 }
 
@@ -149,6 +150,7 @@ export const MISSION_CONTENT: MissionContent[] = [
   // ───────────── S4PIENS_ ─────────────
   {
     slug: "food", domain: "S4PIENS_", code: "S4PIENS_ / 01", name: "FOOD_",
+    question: "How can we feed a growing population without destroying the living systems food depends on?",
     hero: "Food is ecological infrastructure.",
     thesis: "Every meal connects land, water, soil, biodiversity, labour, energy, culture and health.",
     issue: "Food systems can place large pressure on land, water, climate and biodiversity while making lower-impact choices difficult to understand or access.",
@@ -175,6 +177,7 @@ export const MISSION_CONTENT: MissionContent[] = [
   },
   {
     slug: "circular-city", domain: "S4PIENS_", code: "S4PIENS_ / 03", name: "CIRCULAR CITY_",
+    question: "Can a city become a loop — where resources keep circulating instead of becoming waste?",
     hero: "Cities can become loops, not endpoints.",
     thesis: "Cities concentrate people, materials, energy, food, waste and knowledge. They can either accelerate extraction or become places where resources circulate longer and more intelligently.",
     issue: "Urban systems often treat materials, food, water and energy as linear flows: take, use, discard.",
@@ -242,7 +245,7 @@ export const MISSION_CONTENT: MissionContent[] = [
   },
   {
     slug: "4play", domain: "4CULTURE_", code: "4CULTURE_ / 04", name: "4PLAY_",
-    hero: "Music, events and cultural activation.",
+    hero: "Bring the living world into culture.",
     thesis: "Participation becomes stronger when ecological work enters the places where people already gather, listen, create and belong.",
     issue: "Environmental work can remain separate from public culture, even when the audiences needed for change are already present in music, art, fashion and social life.",
     whyItMatters: "Events and cultural formats can turn attention into participation, make missions socially visible and create routes into ecological action that do not begin with guilt or abstraction.",
