@@ -154,7 +154,7 @@ export function LivingSystems() {
         {/* Anchor index — proves the reusable model across four starting points. */}
         <div className="ls-anchors" style={{ marginTop: "clamp(32px,4vw,52px)", borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
           {LIVING_SYSTEM_ANCHORS.map((a) => (
-            <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+            <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor reveal" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, borderTop: `2px solid ${a.accent}`, position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ ...mono, color: a.accent }}>{a.index} · {a.kind} ANCHOR</span>
                 <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "LIVE" : "IN DEVELOPMENT"}</span>
