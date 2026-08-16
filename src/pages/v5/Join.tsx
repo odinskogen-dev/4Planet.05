@@ -34,8 +34,7 @@ export default function Join() {
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.05 }}>Everyone has a role in bringing nature back into balance.</h1>
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 640, lineHeight: 1.55 }}>
           4Planet is being built to bring people, partners, brands and funders into the same system for action.
-          Some ways to take part are open now; paid membership is not yet active. We would rather be honest about
-          that than pretend.
+          Some ways to take part are open now; paid membership is not yet active.
         </p>
 
         {/* Ways to take part NOW — honest, no payment or data capture */}

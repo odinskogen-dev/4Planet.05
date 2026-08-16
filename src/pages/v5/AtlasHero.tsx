@@ -29,12 +29,12 @@ export function AtlasHero() {
         <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 500, color: "#fff", letterSpacing: "-.035em", lineHeight: .98, fontSize: "clamp(34px,5vw,68px)", maxWidth: "18ch" }}>
           One connected living planet.
         </h1>
-        <p style={{ margin: "18px 0 0", maxWidth: "56ch", color: "rgba(255,255,255,.88)", fontSize: "clamp(15px,1.5vw,20px)", lineHeight: 1.5 }}>
-          4PLANET makes the living systems under pressure easier to understand, credible action easier to join, and real progress easier to follow.
+        <p style={{ margin: "18px 0 0", maxWidth: "58ch", color: "rgba(255,255,255,.9)", fontSize: "clamp(15px,1.5vw,20px)", lineHeight: 1.55 }}>
+          4PLANET exists to make the living systems under pressure easier to understand — and meaningful ways to help easier to find.
         </p>
         <div style={{ display: "flex", gap: 10, marginTop: "clamp(24px,3vw,36px)", flexWrap: "wrap" }}>
           <Link to="/atlas" style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: ".1em", background: "#fff", color: "#000", padding: "13px 20px", textDecoration: "none" }}>ENTER ATLAS →</Link>
-          <Link to="/impact" style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: ".1em", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,.5)", padding: "12px 20px", textDecoration: "none" }}>MAKE AN IMPACT</Link>
+          <Link to="/impact" style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: ".1em", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,.5)", padding: "12px 20px", textDecoration: "none" }}>EXPLORE IMPACT</Link>
         </div>
         <div style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".2em", color: "rgba(255,255,255,.66)", marginTop: "clamp(22px,3vw,34px)" }}>CAUSE THERE IS NO PLANET B.</div>
       </div>

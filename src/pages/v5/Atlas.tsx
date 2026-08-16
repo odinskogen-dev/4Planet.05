@@ -167,7 +167,7 @@ const LAYERS = [
     attr: "NOAA Coral Reef Watch" },
   { id: "protected", dom: "E4RTH", group: "EARTH", kind: "planned", domain: ["PLANET", "E4RTH", "OCE4N"],
     label: "PROTECTED AREAS", color: C.green, src: "Protected Planet / WDPA",
-    note: "The world's protected areas (WDPA). The API needs a free UNEP-WCMC token, which we have not wired up yet \u2014 so no protected-area polygons are drawn. We would rather show nothing than fake a boundary.",
+    note: "The world's protected areas (WDPA). The API needs a free UNEP-WCMC token, which we have not wired up yet \u2014 so no protected-area polygons are drawn.",
     attr: "" },
 
   { id: "biodiv", dom: "E4RTH", group: "LIFE", kind: "raster", domain: ["PLANET", "E4RTH", "OCE4N"],
