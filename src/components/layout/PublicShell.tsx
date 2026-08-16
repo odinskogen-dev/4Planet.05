@@ -161,6 +161,19 @@ function Header() {
     return () => io.disconnect();
   }, [pathname]);
 
+  // Launch-ready: give every route a meaningful <title> (tabs, history, a11y, basic sharing).
+  useEffect(() => {
+    const seg = pathname.split("/").filter(Boolean);
+    const cap = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+    let t = "4PLANET_ — For a Living Planet";
+    if (seg[0]) {
+      const top = seg[0] === "living-systems" ? "Living Systems" : cap(seg[0]);
+      const leaf = seg[1] ? " · " + cap(seg[1]) : "";
+      t = `${top}${leaf} — 4PLANET_`;
+    }
+    document.title = t;
+  }, [pathname]);
+
   const heroPage = !!ctx;
   const missionSlug = pathname.startsWith("/missions/") ? pathname.split("/")[2] : "";
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/") || DARK_MISSIONS.has(missionSlug);
