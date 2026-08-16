@@ -1,6 +1,9 @@
-4PLANET one-interface premium completion — local Gate 1 correction candidate
-Local candidate: derived from base de9e01a via branch claude/one-interface-premium-completion
-Status: LOCAL CANDIDATE — NOT PUBLISHED, NOT DEPLOYED, NOT GATE 1 PASSED
-Remote SHA: (to be added by GPT/Codex only after publication)
-Preview: (exact-SHA Cloudflare preview to be established after publication)
-Notes: No production release. No self-approval. Gate 2 not started.
+4PLANET_ ONE INTERFACE 03 release marker
+Build status: local-build
+Release branch: release/one-interface-03-db328bf
+Remote SHA: db328bf5a67cbc40aa21063068d6965a7ab62b3a
+Deployment URL: local-build-no-deployment-url
+Deployment ID: not exposed during build; verify via Cloudflare Pages metadata
+Build timestamp UTC: 2026-08-16T15:46:35.187Z
+Candidate baseline: Sprint 4 / living-missions-v4
+Notes: no Beta, launch, partner, payment, delivery or ecological-outcome claim is made here.

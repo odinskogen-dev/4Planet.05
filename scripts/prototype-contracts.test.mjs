@@ -117,9 +117,17 @@ test("public preview headers and status boundaries are committed", () => {
   assert.match(headers, /Content-Security-Policy:/);
   // The old status doc must be unambiguously marked historical, not current truth.
   assert.match(status, /HISTORICAL \/ SUPERSEDED/);
-  // Current status source must state the honest local-candidate truth.
-  assert.match(current, /LOCAL CANDIDATE — NOT PUBLISHED, NOT DEPLOYED, NOT GATE 1 PASSED/);
-  assert.match(current, /de9e01a37482b7678104690056cc6146e9b286a3/);
+  // Current status source must state the honest release-preflight truth.
+  assert.match(current, /ONE INTERFACE 03/);
+  assert.match(current, /release\/one-interface-03-db328bf/);
+  assert.match(current, /db328bf5a67cbc40aa21063068d6965a7ab62b3a/);
+  const staleLocalCandidate = new RegExp([
+    ['LOCAL', 'CANDIDATE'].join(' '),
+    'NOT PUBLISHED',
+    'NOT DEPLOYED',
+    'NOT GATE 1 PASSED',
+  ].join('.*'));
+  assert.doesNotMatch(current, staleLocalCandidate);
   assert.doesNotMatch(current, /RELEASE GATE CLOSED/);
 });
 

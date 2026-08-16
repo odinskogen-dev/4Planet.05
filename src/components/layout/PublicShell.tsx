@@ -95,16 +95,16 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
             );
           })}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-            <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
-            <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
-            <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
+            <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>LIVING SYSTEMS →</Link>
+            <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>ATLAS →</Link>
+            <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4PLANET →</Link>
           </div>
         </div>
 
         <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
-          <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
-          <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
+          <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>LIVING SYSTEMS →</Link>
+          <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>ATLAS →</Link>
+          <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4PLANET →</Link>
         </div>
       </div>
     </div>
