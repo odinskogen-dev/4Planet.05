@@ -118,7 +118,7 @@ export default function Home() {
       <Section pad="clamp(56px,7vw,110px)">
         <Reveal>
           <div style={{ ...eyebrow, color: T.blue, marginBottom: 8 }}>FOUR WAYS INTO THE LIVING PLANET</div>
-          <h2 style={{ ...actHead, fontSize: "clamp(24px,3vw,40px)", maxWidth: 820 }}>One planet model. Four products.</h2>
+          <h2 style={{ ...actHead, fontSize: "clamp(24px,3vw,40px)", maxWidth: 820 }}>One planet. Four ways in.</h2>
           <div style={{ marginTop: "clamp(28px,4vw,44px)" }}>
             {PRODUCTS.map((p, i) => <ProductRow key={p.name} p={p} i={i} />)}
           </div>

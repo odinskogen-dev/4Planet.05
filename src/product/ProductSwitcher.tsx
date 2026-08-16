@@ -12,7 +12,7 @@ import { contextHref, type ProductKey } from "@/product/ProductNav";
 type Product = { key: ProductKey; label: string; descriptor: string; path: string; index: number };
 
 const PRODUCTS: Product[] = [
-  { key: "4PLANET", label: "4PLANET", descriptor: "The public universe", path: "/", index: 0 },
+  { key: "4PLANET", label: "4PLANET", descriptor: "The living planet universe", path: "/", index: 0 },
   { key: "ATLAS", label: "ATLAS", descriptor: "Explore the living planet", path: "/atlas", index: 1 },
   { key: "SPECIES", label: "SPECIES", descriptor: "Meet life on Earth", path: "/species", index: 2 },
   { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "Understand the relationships", path: "/living-systems", index: 3 },
@@ -114,7 +114,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="product-switcher-panel"
-        aria-label={`Switch product, current product ${active}`}
+        aria-label={`Open 4PLANET navigation, currently in ${active}`}
         className="product-switcher__trigger"
         style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", gap: 8, minWidth: 44, height: 44,
           background: "transparent", border: "none", cursor: "pointer", padding: 0, color: fg }}
@@ -148,7 +148,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A
               boxShadow: dark ? "0 24px 60px rgba(0,0,0,.5)" : "0 24px 60px rgba(8,8,8,.18)" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${panelLine}` }}>
-              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>4PLANET · four products</span>
+              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>4PLANET · four ways in</span>
               <button onClick={close} aria-label="Close product switcher"
                 style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, background: "none", border: "none", cursor: "pointer", color: descColor }}>ESC ✕</button>
             </div>
