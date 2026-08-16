@@ -85,12 +85,23 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
         </span>
       </div>
 
-      <div style={{ marginTop: 8 }}>
-        {a.steps.slice(0, shown).map((s, i) => (
-          <div key={s.stage} className={i === shown - 1 && !reduce ? "ls-step-in" : undefined}>
-            <RelationshipStepBlock step={s} i={i} accent={a.accent} />
-          </div>
-        ))}
+      {/* Trail: prior relationships compress to a compact history you can jump back to.
+          One relationship holds the scene at a time — active intelligence, not a stacked report. */}
+      {shown > 1 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 22 }}>
+          {a.steps.slice(0, shown - 1).map((s, i) => (
+            <button key={s.stage} type="button" onClick={() => setShown(i + 1)}
+              aria-label={`Revisit relationship ${i + 1}: ${s.stage}`}
+              style={{ ...mono, cursor: "pointer", background: "transparent", border: `1px solid ${T.line}`, color: T.dim, padding: "7px 11px", display: "inline-flex", gap: 8, alignItems: "center" }}>
+              <span style={{ color: a.accent }}>0{i + 1}</span>{s.stage}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Active relationship — takes the scene. Keyed on `shown` so it re-enters as the scene changes. */}
+      <div key={shown} className={!reduce ? "ls-step-in" : undefined}>
+        <RelationshipStepBlock step={a.steps[shown - 1]} i={shown - 1} accent={a.accent} />
       </div>
 
       {/* Reveal-next affordance: the user builds the system by exploring it, one relationship at a time. */}
