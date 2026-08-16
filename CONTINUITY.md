@@ -187,3 +187,4 @@ Part#, START/current SHA, commits, WHAT CHANGED, before/after + 390/768/1440, te
 
 ## STATUS LOG 2
 - [P0 v2] done — branch megasprint/truth-lens-awe-v2 off 0cb3cfd. Baseline gates green. Next: PART 1 TRUTH SPINE.
+- [S2 PART 1] done @ 81ab394. TRUTH SPINE: KNOWN-requires-source enforced by new truth-contract test (smoke 29/29); fixed 2 violations (Oslofjord->INTERPRETED, Bee->IPBES source). Founder-supplied orca corrected to provenance-only (rights false, PENDING, blocker) -> falls back to 4PLANET-owned illustration. LIVE->AVAILABLE for LS journey availability (LIVE reserved for real-time data). CARRIED: mission sources:[] population (research task, not faked). Next: PART 2 LENS CLARITY (switcher 5->4 nodes, mobile switcher, logo=HOME).
