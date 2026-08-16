@@ -197,3 +197,22 @@ Part#, START/current SHA, commits, WHAT CHANGED, before/after + 390/768/1440, te
 - [S2 PART 7] done @ (log). ATLAS assessment (docs/ATLAS_ASSESSMENT.md): providers egress-blocked in sandbox, no blind engine edits. Pixelation=raster fallback; trace via /api/climate-trace; biodiversity via GBIF; dark-outline+labels basemap ALREADY EXISTS as makeStyle(dark) -> surface as mode in verified follow-up; mobile controls clean at rest. All = verify on real infra. Next: PART 8 journey evidence + launch truth.
 - [S2 PART 8] done @ (log). Flagship evidence incl ATLAS (HOME why->ATLAS->ORCA->LIVING active->WH4LES_->IMPACT). Lead capture honest-by-runtime (/api/leads delivered flag) — no hardcode. Recovery self-reconstructable. Next: PART 9 visuals list (draft already delivered) + package all.
 - [S2 COMPLETE] Parts 0-8 delivered on megasprint/truth-lens-awe-v2. Part 9 visuals draft = VISUAL_NEEDS_worldclass.md. AWAITING PROJECT LEAD AUDIT. Backlog carried: mission per-claim sources; ATLAS real-infra verify (tiles/trace/biodiversity/dark-mode toggle); switcher placement; broader mission-copy polish; live Earth attract-mode.
+
+---
+# ═══ LOCKED PROGRAMME 3: PERCEPTIBLE PREMIUM MEGASPRINT v3.0 ═══
+START_SHA (frozen production baseline): 6bbfebb · child branch: megasprint/perceptible-premium-v3
+HARD SAFETY: 6bbfebb FROZEN · child branch only · no production/main merge · preserve history · no destructive cleanup · no invented rights.
+ACCEPTANCE GATE (hard): "CAN I SEE AND FEEL A MATERIAL UPGRADE WITHOUT BEING TOLD WHAT CHANGED?" — code+gates+commits is NOT done. Show BEFORE vs AFTER from 6bbfebb at 390/768/1440; motion at start/3s/5s. Targets: sec5 alive · min3 understand · min15 holds. Keep prefers-reduced-motion.
+VISUAL AUTHORITY: CLAUDE MAP register (Drive). Asset ID -> exact filename -> surface -> role -> status. HOLD/REJECTED = preserve, never render. Never imply 4PLANET partnership from illustrative external material. Grammar: HERO/AWE -> CHARACTER/LIFE -> PROCESS/RELATIONSHIP/MEANING. STILL FIRST -> MOTION WHEN EARNED.
+ORCA: CUR-ORCA-01 = SOURCE UNVERIFIED / HOLD. Do NOT restore founder orca as verified. Do not ship bad illustration as hero either — use a licence-verified alternative where one exists, else keep minimal.
+
+## PARTS (LOCKED, deliver continuously, final zip at end)
+- P1 FULL IA CONVERGENCE — fullscreen MENU PRODUCTS->LENSES; 4PLANET NOT a 5th lens (lives on logo/HOME); lenses ATLAS/SPECIES/LIVING SYSTEMS/IMPACT; remove redundant "4PLANET 4PLANET"; tighten footer nav (keep, make premium); audit ALL nav/switcher/menu/footer surfaces.
+- P2 PERCEPTIBLE MOTION — retune earth-breathe/Ken Burns/mission atmospheres/reveals/transitions so a normal user feels it's alive in ~2-5s, not flashy/gimmicky. Keep reduced-motion.
+- P3 PARTICIPATION BLOCK — 4PEOPLE/4BRANDS/4PARTNERS/4FUNDERS premium 4-cell interactive; one strong 4PLANET-blue active cell that moves between the four on hover/focus/tap; no overlap; mobile+keyboard+touch safe.
+- P4 REAL VISUAL UPGRADE + GRAMMAR — pull P0 priority images from Drive (register), pixel-verify, place with correct licence/attribution/context. Priority missions: WH4LES/COR4L/RE:WILD Marine/FOOD/CIRCULAR CITY/F4SHION/4PLAY. Build HERO->CHARACTER->PROCESS per mission. Preserve rights; illustrative != 4PLANET delivery.
+- P5 ACCEPTANCE EVIDENCE — BEFORE/AFTER from 6bbfebb at 390/768/1440 for HOME/nav, LENSES menu, participation, WH4LES, RE:WILD Marine, Living Systems Orca, 4PLAY, +1 mission; motion start/3s/5s. Self-judge the acceptance question.
+- (Later, own pass) MOTION PILOTS MV-001/002/018 (video) — needs video bank; separate.
+
+## STATUS LOG 3
+- [P0 v3] child branch off frozen 6bbfebb, gates green. Register saved. Next: P1 IA convergence.
