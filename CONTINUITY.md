@@ -224,3 +224,26 @@ ORCA: CUR-ORCA-01 = SOURCE UNVERIFIED / HOLD. Do NOT restore founder orca as ver
 - [P4] 82b88d7 real visual upgrade (VS-014 RE:WILD Marine hero, VS-017 4PLAY hero, VS-003 WH4LES character; pixel-verified; rights preserved; orca stays HOLD).
 - [P5] acceptance evidence: BEFORE(6bbfebb) vs AFTER at 390/1440 for home/rewild/4play/wh4les. RE:WILD Marine + 4PLAY show unmistakable material upgrade. PASSES the acceptance gate.
 - CARRIED: more mission images (COR4L VS-001, FOOD VS-015, CIRCULAR CITY VS-006, F4SHION VS-007, +heroes MS-002/006/009) available in register for next pass; motion pilots MV-001/002/018 (video) separate.
+
+---
+# ═══ LOCKED PROGRAMME 4: LIVING MISSIONS MEGASPRINT v4.0 ═══
+START_SHA: 6a46114 (sprint-3 final) · child branch: megasprint/living-missions-v4
+HARD SAFETY: preserve history · no production/main merge · no destructive cleanup · no invented rights · 6bbfebb + sprint-3 frozen.
+VISUAL AUTHORITY: CLAUDE MAP register (Drive fileIds saved /tmp/register.tsv + full ids below). Grammar HERO/AWE -> CHARACTER/LIFE -> PROCESS/RELATIONSHIP/MEANING. Pixel-verify every image before wiring. Rights/attribution/context preserved. Illustrative != 4PLANET delivery. HOLD/REJECTED never rendered. STILL FIRST -> MOTION WHEN EARNED.
+
+## PARTS (deliver continuously, one final zip)
+- P1 FULL HERO->CHARACTER->PROCESS on 7 priority missions: WH4LES, COR4L, RE:WILD Marine, FOOD, CIRCULAR CITY, F4SHION, 4PLAY. Each: hero(awe) + character(life/human) + process(relationship/meaning) + Magazine article card at the bottom. Pull from Drive, pixel-verify, wire with attribution.
+- P2 MISSION NAVIGATION — one premium domain-accented prev/next rail to move between missions without returning to grid. Shared component, individual accents.
+- P3 MOTION PILOT MV-002 on RE:WILD Marine — living video hero (kelp motion) as proof-of-concept, still-poster first, muted loop, lazy, reduced-motion safe.
+- P4 LIVING SYSTEMS VISUALS — reactive images per relationship on the Orca anchor so it's not white/text-only.
+- P5 HOME VIDEO BREAK — a fitting video moment on HOME a couple sections down (NOT a hero replacement; a break after Domains before the next section). Choose a fitting clip; don't break anything.
+- P6 ACCEPTANCE EVIDENCE + one final zip.
+
+## DRIVE IDS (from CLAUDE MAP — for P1 wiring)
+HEROES: MS-002 COR4L 1KVymEwRfxG893fRAvGjlDpkKBf7BylXH · MS-006 FOOD 1j0WQRFU_b6qZvS7y7dIfkq17AVMJfvKO · MS-009 F4SHION 1e7j94y3wKXa8a4hkafvM2Danog6ErZaj
+CHARACTER/PROCESS: VS-001 COR4L diver-reef 1Py4-wbHL9lkrPOqMYYrP-fnC-Zke_Qls · VS-015 FOOD farmer-Senegal 1-u8hPbaLk6Pz3Qje2R8mwAy1mwU9TUFt · VS-006 CIRCULAR-CITY Lagos-sorting 1REf2SITXZfVk0CN9CSI7d5yQQ9kJjd5T · VS-007 F4SHION textile-Oaxaca 1LD8oDyG3ZmmCiHbqKynFOEw2kufjzuN5 · VS-016 4PLAY DJ-projection 1s1Q2g951O9iWdSQOAP4TCeBBJMey7Y9R · VS-018 4PLAY orange-stage 1oOZE2rVhkr9x_upN3AS4KDqH1fC-Ysol · IM-003 COR4L restoration-diver 10XPq4-E0zrGAJ08-wVOnweRPUsrXpWA1
+CIRCULAR CITY hero currently MS-008 crushed-cans (KEEP as materials); WH4LES already has MS-001 hero + VS-003 character (sprint3) -> add VS-004 process 1ZNPqZYKAN7UNrxgeyfhFgdv3V9QS9-T9. RE:WILD Marine hero VS-014(done) -> add VS-002 kelp-measurement process 1wPOkoGPCq3ejIKTtCDkxaqjobXwzsPt9. FOOD hero MS-006 -> also SP-008 bee.
+VIDEO (Pexels, commercial ok): MV-002 kelp-fish (source pexels.com/video/underwater-kelp-forest-with-fish-in-motion-32599986). Video not in Drive as fileId -> source separately; if unavailable in sandbox, ship still + document.
+
+## STATUS LOG 4
+- [P0 v4] child branch megasprint/living-missions-v4 off 6a46114. Next: P1 mission grammar.
