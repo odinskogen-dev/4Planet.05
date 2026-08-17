@@ -9,7 +9,7 @@ import { returnHrefFromSearch, withReturnTo } from "@/product/productContext";
 import { Editorial } from "@/components/Editorial";
 import { content } from "@/content/contentRepository";
 import { missionArticle, type Block } from "@/content/narratives";
-import { missionHero, missionSecondary, domainHero } from "@/content/imageRegistry";
+import { missionHero, missionSecondary, missionProcess, missionMagazine, domainHero } from "@/content/imageRegistry";
 import { publicStatus, evidenceStatus } from "@/content/status";
 import { NotFound } from "@/pages/system";
 
@@ -46,6 +46,11 @@ export function MissionDetail() {
   if (!m) return <NotFound />;
 
   const acc = DOMAIN_ACCENT[m.domain];
+  const missionAccent = (d: typeof m.domain) => DOMAIN_ACCENT[d];
+  const allM = content.getMissions();
+  const curIdx = allM.findIndex((x) => x.slug === m.slug);
+  const prevM = curIdx > 0 ? allM[curIdx - 1] : allM[allM.length - 1];
+  const nextM = curIdx < allM.length - 1 ? allM[curIdx + 1] : allM[0];
   const { label } = classify(m.slug);
   const flagship = FLAGSHIP.has(m.slug);
   const cultural = CULTURAL.has(m.slug);
@@ -162,6 +167,11 @@ export function MissionDetail() {
       {!flagship && !dark && missionSecondary(m.slug) && (
         <CinematicImage meta={missionSecondary(m.slug)!} height="min(66vh, 660px)" position="50% 50%" accent={acc} />
       )}
+      {/* PROCESS / RELATIONSHIP beat — the third image in the HERO -> CHARACTER -> PROCESS grammar. */}
+      {missionProcess(m.slug) && (
+        <CinematicImage meta={missionProcess(m.slug)!} height="min(70vh, 700px)" position="50% 45%" accent={acc}
+          caption={missionProcess(m.slug)!.alt} />
+      )}
       {/* ── action + evidence ending ── */}
       <section style={{ background: dark ? base : T.ink, color: "#fff" }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,8vw,110px) clamp(20px,5vw,72px)" }}>
@@ -252,6 +262,32 @@ export function MissionDetail() {
               </div>
             )}
           </Reveal>
+
+          {missionMagazine(m.slug) && (
+            <Reveal delay={80} style={{ marginTop: "clamp(48px,7vw,88px)" }}>
+              <div style={{ ...mono(acc), marginBottom: 18 }}>FROM THE MAGAZINE</div>
+              <Link to={missionMagazine(m.slug)!.to} className="mag-card"
+                style={{ display: "block", border: `1px solid rgba(255,255,255,.18)`, padding: "clamp(22px,3vw,34px)", textDecoration: "none", color: "#fff", maxWidth: 820 }}>
+                <div style={{ ...mono(acc), fontSize: 10.5, marginBottom: 12 }}>{missionMagazine(m.slug)!.kicker}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "baseline" }}>
+                  <h3 style={{ ...display, color: "#fff", fontSize: "clamp(20px,2.4vw,30px)", lineHeight: 1.1, letterSpacing: "-.02em" }}>{missionMagazine(m.slug)!.title}</h3>
+                  <span className="mag-arr" style={{ ...mono(acc), fontSize: 12, flex: "none", transition: "transform .2s" }}>{missionMagazine(m.slug)!.readTime} →</span>
+                </div>
+              </Link>
+            </Reveal>
+          )}
+
+          {/* Mission navigation rail — move between missions without returning to the grid. */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, marginTop: "clamp(48px,7vw,88px)", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.18)" }}>
+            {[prevM, nextM].map((nm, i) => nm ? (
+              <Link key={nm.slug} to={"/missions/" + nm.slug} className="mnav"
+                style={{ background: dark ? base : T.ink, padding: "clamp(20px,3vw,30px)", textDecoration: "none", color: "#fff", textAlign: i === 0 ? "left" : "right" }}>
+                <div style={{ ...mono(missionAccent(nm.domain)), fontSize: 10.5, marginBottom: 8 }}>{i === 0 ? "← PREVIOUS MISSION" : "NEXT MISSION →"}</div>
+                <div style={{ ...display, color: "#fff", fontSize: "clamp(20px,2.4vw,32px)", letterSpacing: "-.02em" }}>{strip(nm.name)}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", marginTop: 6 }}>{strip(nm.domain)}</div>
+              </Link>
+            ) : <div key={i} style={{ background: dark ? base : T.ink }} />)}
+          </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", borderTop: `1px solid rgba(255,255,255,.18)`, marginTop: "clamp(40px,6vw,72px)", paddingTop: 22 }}>
             <Link to={"/domains/" + dslug(m.domain)} className="link" style={{ fontSize: 14, color: acc }}>← {strip(m.domain)}</Link>

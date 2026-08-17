@@ -101,16 +101,37 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "clim4te": { src: `${A2}/clim4te/bank-hero.jpg`, srcMobile: `${A2}/clim4te/bank-hero-mobile.jpg`, alt: "A misty forest canopy pierced by light", aspectRatio: "3/2", role: "editorial" },
   "species": { src: `${A2}/species/detail-01.jpg`, alt: "Aerial of wild terrain — habitat seen whole", aspectRatio: "3/2", role: "editorial" },
   "rewild-land": { src: `${A2}/rewild/detail-01.jpg`, alt: "Rugged land meeting water — habitat returning", aspectRatio: "3/2", role: "editorial" },
-  "circular-city": { src: `${A2}/circular-city/bank-hero.jpg`, srcMobile: `${A2}/circular-city/bank-hero-mobile.jpg`, alt: "Crushed aluminium cans gathered for recycling", aspectRatio: "3/2", role: "editorial" },
-  "cor4l": { src: `${A2}/cor4l/detail-coral-01.jpg`, alt: "A table coral near the surface in clear blue water", aspectRatio: "3/2", role: "editorial" },
+  "circular-city": { src: `${A}/missions/circular-city/character.jpg`, alt: "Workers sorting metallic waste for recycling in Lagos (Ayodele Adeniji, CC BY-SA 4.0) — real material flow", aspectRatio: "3/2", role: "editorial" },
+  "cor4l": { src: `${A}/missions/cor4l/character.jpg`, alt: "A diver photographing a coral reef (NOAA / Jeff Milisen) — illustrative reef science, not 4PLANET fieldwork", aspectRatio: "3/2", role: "editorial" },
   "en4rgy": { src: `${A2}/en3rgy/bank-hero.jpg`, srcMobile: `${A2}/en3rgy/bank-hero-mobile.jpg`, alt: "Wind turbines and solar arrays across working farmland", aspectRatio: "3/2", role: "editorial" },
-  "food": { src: `${A2}/food/bank-hero.jpg`, srcMobile: `${A2}/food/bank-hero-mobile.jpg`, alt: "Farmers harvesting crops in the field", aspectRatio: "3/2", role: "editorial" },
+  "food": { src: `${A}/missions/food/character.jpg`, alt: "A farmer at harvest in Senegal (Francesca Calisti, CC BY-SA 4.0) — food as human/ecological work", aspectRatio: "3/2", role: "editorial" },
   "m4gazine": { src: `${A2}/m4gazine/bank-hero.jpg`, srcMobile: `${A2}/m4gazine/bank-hero-mobile.jpg`, alt: "An open editorial magazine spread", aspectRatio: "3/2", role: "editorial" },
   "cle4n": { src: `${A2}/pl4stic/detail-01.jpg`, alt: "Plastic waste recovered from the water", aspectRatio: "3/2", role: "editorial" },
   "4film": { src: `${A2}/4film/bank-hero.jpg`, srcMobile: `${A2}/4film/bank-hero-mobile.jpg`, alt: "A film camera rig on a working set", aspectRatio: "3/2", role: "editorial" },
-  "f4shion": { src: `${A2}/f4shion/bank-hero.jpg`, srcMobile: `${A2}/f4shion/bank-hero-mobile.jpg`, alt: "Knitted textile in warm natural light", aspectRatio: "3/2", role: "editorial" },
+  "4play": { src: `${A}/missions/4play/character.jpg`, alt: "A DJ inside a projection/light installation (Samuel Waddington, Pexels) — underground audiovisual culture", aspectRatio: "3/2", role: "editorial" },
+  "f4shion": { src: `${A}/missions/f4shion/character.jpg`, alt: "A craft textile workshop with yarn and a pedal loom, Oaxaca (Carla Regina Torres, CC BY-SA 4.0) — material and process", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];
+
+// Third image per mission — the PROCESS / RELATIONSHIP / MEANING beat (after hero + character).
+export const MISSION_PROCESS: Record<string, ImageMeta> = {
+  "wh4les": { src: `${A}/missions/wh4les/process.jpg`, alt: "A researcher reaches from a small boat to tag a pilot whale off Kona, Hawaii (U.S. Navy / Ari S. Friedlaender) — how marine-mammal science is done; illustrative, not 4PLANET fieldwork", aspectRatio: "3/2", role: "editorial" },
+  "rewild-marine": { src: `${A}/missions/rewild-marine/process.jpg`, alt: "A diver records kelp growth on a slate underwater (Kate Vylet / California Sea Grant, CC BY 2.0) — measurement makes recovery legible; illustrative field science", aspectRatio: "3/2", role: "editorial" },
+};
+export const missionProcess = (slug: string): ImageMeta | undefined => MISSION_PROCESS[slug];
+
+// Related Magazine article per mission theme (editorial layer at the bottom of a mission world).
+export type MagCard = { kicker: string; title: string; readTime: string; to: string };
+export const MISSION_MAGAZINE: Record<string, MagCard> = {
+  "wh4les": { kicker: "OCE4N_ · FIELD NOTE", title: "What a whale carries: nutrient highways across the ocean", readTime: "6 min", to: "/missions/m4gazine" },
+  "cor4l": { kicker: "OCE4N_ · REPORT", title: "Reading a reef: what bleaching tells us before it happens", readTime: "5 min", to: "/missions/m4gazine" },
+  "rewild-marine": { kicker: "OCE4N_ · FIELD NOTE", title: "The forest underwater: how kelp rebuilds a coastline", readTime: "7 min", to: "/missions/m4gazine" },
+  "food": { kicker: "S4PIENS_ · REPORT", title: "Food is infrastructure: the living systems a harvest depends on", readTime: "8 min", to: "/missions/m4gazine" },
+  "circular-city": { kicker: "S4PIENS_ · FIELD NOTE", title: "Where waste goes: material flows through a working city", readTime: "6 min", to: "/missions/m4gazine" },
+  "f4shion": { kicker: "S4PIENS_ · STORY", title: "Slow cloth: what a hand-loom knows that a factory forgot", readTime: "5 min", to: "/missions/m4gazine" },
+  "4play": { kicker: "4CULTURE_ · STORY", title: "The living world, on the dancefloor: culture as a way in", readTime: "4 min", to: "/missions/m4gazine" },
+};
+export const missionMagazine = (slug: string): MagCard | undefined => MISSION_MAGAZINE[slug];
 
 /**
  * Blocker 4 — exact rights record for the marine-rewilding hero that replaces the

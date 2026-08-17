@@ -507,3 +507,9 @@ a,button{transition:color .22s ease,border-color .22s ease,background-color .22s
 @keyframes hero-in{0%{transform:scale(1.14) translate3d(0,1.5%,0);opacity:.55}100%{transform:scale(1.03) translate3d(0,0,0);opacity:1}}
 @keyframes earth-in{0%{transform:scale(1.16) translate3d(0,1.5%,0);opacity:.5}100%{transform:scale(1.045) translate3d(0,0,0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.kenburns,.earth-breathe{animation:none!important}}
+/* Mission Magazine card + nav rail hover (premium, subtle) */
+.mag-card{ transition:background .25s, border-color .25s; }
+.mag-card:hover{ background:rgba(255,255,255,.05); }
+.mag-card:hover .mag-arr{ transform:translateX(4px); }
+.mnav{ transition:background .25s; }
+.mnav:hover{ background:rgba(255,255,255,.06) !important; }
