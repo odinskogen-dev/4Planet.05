@@ -429,11 +429,11 @@ body:has(.product-nav--impact) .product-nav{top:66px}
 
 /* ═══════════ PART 1 · MOTION FOUNDATION (calm, premium, reduced-motion safe) ═══════════ */
 /* Scroll-reveal: content rises 8–12px and fades in as it enters the viewport. */
-.reveal{opacity:0;transform:translateY(11px);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1)}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
 .reveal.is-in{opacity:1;transform:none}
 /* Ken Burns: fullbleed heroes breathe — a slow, near-imperceptible scale/drift. */
-@keyframes kenburns{0%{transform:scale(1.02) translate3d(0,0,0)}100%{transform:scale(1.08) translate3d(0,-1.2%,0)}}
-.kenburns{animation:kenburns 26s ease-in-out infinite alternate;will-change:transform}
+@keyframes kenburns{0%{transform:scale(1.03) translate3d(0,0,0)}100%{transform:scale(1.12) translate3d(0,-2.2%,0)}}
+.kenburns{animation:hero-in 2.4s cubic-bezier(.22,.61,.36,1) both, kenburns 16s ease-in-out 2.4s infinite alternate;will-change:transform}
 /* Soft interactive states — expensive-feeling, never flashy. */
 a,button{transition:color .22s ease,border-color .22s ease,background-color .22s ease,opacity .22s ease}
 /* Product switcher: hide the long current-product label on narrow phones (mark stays tappable). */
@@ -481,10 +481,14 @@ a,button{transition:color .22s ease,border-color .22s ease,background-color .22s
 /* ═══════════ PART 4 · PLANETARY FRONT DOOR (still-based, WebGL veto) ═══════════ */
 /* The planet breathes before the interface — a very slow, subtle drift on the Earth still.
    No WebGL dependency (the live vector globe is veto-deferred; see checkpoint). Reduced-motion safe. */
-@keyframes earth-breathe{0%{transform:scale(1.04) translate3d(0,0,0)}100%{transform:scale(1.09) translate3d(0,-1.4%,0)}}
-.earth-breathe{animation:earth-breathe 44s ease-in-out infinite alternate;will-change:transform}
+@keyframes earth-breathe{0%{transform:scale(1.045) translate3d(0,0,0)}100%{transform:scale(1.11) translate3d(0,-2.4%,0)}}
+.earth-breathe{animation:earth-in 2.2s cubic-bezier(.22,.61,.36,1) both, earth-breathe 26s ease-in-out 2.2s infinite alternate;will-change:transform}
 /* Atmospheric depth: a quiet rim glow + horizon deepening, pure CSS, no engine. */
 .earth-atmos{position:absolute;inset:0;pointer-events:none;background:
   radial-gradient(120% 80% at 50% 8%, rgba(120,150,255,.16), transparent 42%),
   radial-gradient(140% 90% at 50% 108%, rgba(4,6,15,.72), transparent 46%)}
 @media (prefers-reduced-motion:reduce){.earth-breathe{animation:none}}
+/* PART 2 (v3) — perceptible entrance: heroes settle in within ~2s of load, unmistakable it's alive. */
+@keyframes hero-in{0%{transform:scale(1.14) translate3d(0,1.5%,0);opacity:.55}100%{transform:scale(1.03) translate3d(0,0,0);opacity:1}}
+@keyframes earth-in{0%{transform:scale(1.16) translate3d(0,1.5%,0);opacity:.5}100%{transform:scale(1.045) translate3d(0,0,0);opacity:1}}
+@media (prefers-reduced-motion:reduce){.kenburns,.earth-breathe{animation:none!important}}
