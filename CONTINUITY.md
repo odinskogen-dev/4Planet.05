@@ -216,3 +216,11 @@ ORCA: CUR-ORCA-01 = SOURCE UNVERIFIED / HOLD. Do NOT restore founder orca as ver
 
 ## STATUS LOG 3
 - [P0 v3] child branch off frozen 6bbfebb, gates green. Register saved. Next: P1 IA convergence.
+
+## STATUS LOG 3 (cont)
+- [P1] 5a990fe IA convergence (MENU PRODUCTS->LENSES, ABOUT, no 4PLANET-4PLANET, footer tightened).
+- [P2] 89df159 perceptible motion (hero-in/earth-in entrance + faster loops + bigger reveals).
+- [P3] 8934217 participation block (moving blue active cell, 2x2 grid, touch/keyboard safe).
+- [P4] 82b88d7 real visual upgrade (VS-014 RE:WILD Marine hero, VS-017 4PLAY hero, VS-003 WH4LES character; pixel-verified; rights preserved; orca stays HOLD).
+- [P5] acceptance evidence: BEFORE(6bbfebb) vs AFTER at 390/1440 for home/rewild/4play/wh4les. RE:WILD Marine + 4PLAY show unmistakable material upgrade. PASSES the acceptance gate.
+- CARRIED: more mission images (COR4L VS-001, FOOD VS-015, CIRCULAR CITY VS-006, F4SHION VS-007, +heroes MS-002/006/009) available in register for next pass; motion pilots MV-001/002/018 (video) separate.
