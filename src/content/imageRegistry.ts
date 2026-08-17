@@ -54,7 +54,7 @@ export const IMAGES = {
   wh4lesHero: { src: `${A}/missions/wh4les/hero-real.jpg`, srcMobile: `${A}/missions/wh4les/hero-real-mobile.jpg`, alt: "A wild orca surfacing off a green Norwegian coast", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
-  rewildMarineHero: { src: `${A}/missions/rewild-marine/hero.jpg`, alt: "Seagrass and kelp rising through sunlit coastal water above a shellfish bed", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
+  rewildMarineHero: { src: `${A}/missions/rewild-marine/hero.jpg`, alt: "California sea lions moving through a sunlit kelp forest (Claire Fackler / NOAA, CC BY 2.0) — illustrative habitat, not 4PLANET evidence", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   clim4teHero: { src: `${A}/missions/clim4te/hero.jpg`, alt: "A green forest under drifting mist", mission: "clim4te", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   amazoniaHero: { src: `${A}/missions/am4zonia/hero.jpg`, alt: "A rainforest waterfall in dense canopy", mission: "am4zonia", domain: "E4RTH_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   speciesHero: { src: `${A}/missions/species/hero.jpg`, alt: "A wild animal watching from low light", mission: "species", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
@@ -65,7 +65,7 @@ export const IMAGES = {
   f4shionHero: { src: `${A}/missions/f4shion/hero.jpg`, alt: "Editorial fashion portrait in flowing silver fabric", mission: "f4shion", domain: "S4PIENS_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
   m4gazineHero: { src: `${A}/missions/m4gazine/hero.jpg`, alt: "An open editorial spread — print in detail", mission: "m4gazine", domain: "4CULTURE_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   artHero: { src: `${A}/missions/4rt/hero.jpg`, alt: "Three framed ecological art prints on a gallery wall", mission: "4rt", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
-  playHero: { src: `${A}/missions/4play/hero.jpg`, alt: "A figure in warm light — culture as a way in", mission: "4play", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
+  playHero: { src: `${A}/missions/4play/hero.jpg`, alt: "A young crowd under blue beams in a stripped industrial space (Laszlo Barta, Unsplash) — underground electronic culture", mission: "4play", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 45%", role: "missionHero" },
   filmHero: { src: `${A}/missions/4film/hero.jpg`, alt: "A cabin window framing a still lake and mountains", mission: "4film", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 55%", role: "missionHero" },
 } as const;
 
@@ -94,7 +94,7 @@ export const impactImage = (slug: string): ImageMeta | undefined => IMPACT_IMAGE
 // Secondary documentary images that exist on disk (real second image moments for missions).
 const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
-  "wh4les": { src: `${A}/species/orca/detail-pod.jpg`, alt: "A pod of orcas surfacing together", aspectRatio: "3/2", role: "editorial" },
+  "wh4les": { src: `${A}/missions/wh4les/character.jpg`, alt: "A marine ecologist beside a killer whale on Antarctic sea ice (NOAA / CC BY 2.0) — illustrative field science, not 4PLANET fieldwork", aspectRatio: "3/2", role: "editorial" },
   "rewild-marine": { src: `${A2}/rewild-marine/bank-hero.jpg`, srcMobile: `${A2}/rewild-marine/bank-hero-mobile.jpg`, alt: "A living kelp forest in coastal water", aspectRatio: "3/2", role: "editorial" },
   "4rt": { src: `${A2}/4rt/bank-hero.jpg`, srcMobile: `${A2}/4rt/bank-hero-mobile.jpg`, alt: "Screen-printing production in a working studio", aspectRatio: "3/2", role: "editorial" },
   "am4zonia": { src: `${A2}/am4zonia/detail-01.jpg`, alt: "Rainforest river winding through dense canopy", aspectRatio: "3/2", role: "editorial" },
