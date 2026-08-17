@@ -178,7 +178,8 @@ const AMAZONIA: LivingSystemAnchor = {
           relation: "A vast forest that stores carbon and holds extraordinary biodiversity.",
           state: "KNOWN", boundary: "Figures vary by source and boundary definition.",
           source: "FAO & UNEP, State of the World's Forests 2020", sourceUrl: "https://www.fao.org/state-of-forests/en/" } ] },
-    { stage: "DEPENDS ON", intro: "Rain, trees and life hold each other up.",
+    { stage: "DEPENDS ON", 
+      image: "/assets/species/bee/hero.jpg", imageAlt: "A pollinator on flowering heather (illustrative) — pollination as a living dependency", intro: "Rain, trees and life hold each other up.",
       relationships: [
         { to: { id: "rainfall", kind: "SYSTEM", label: "Its own rainfall cycle", note: "Forest moisture recycled through the canopy." },
           relation: "The forest recycles moisture that sustains its own rainfall.",

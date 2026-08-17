@@ -116,6 +116,7 @@ export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION
 // Third image per mission — the PROCESS / RELATIONSHIP / MEANING beat (after hero + character).
 export const MISSION_PROCESS: Record<string, ImageMeta> = {
   "wh4les": { src: `${A}/missions/wh4les/process.jpg`, alt: "A researcher reaches from a small boat to tag a pilot whale off Kona, Hawaii (U.S. Navy / Ari S. Friedlaender) — how marine-mammal science is done; illustrative, not 4PLANET fieldwork", aspectRatio: "3/2", role: "editorial" },
+  "cor4l": { src: `${A}/missions/cor4l/process.jpg`, alt: "A diver tends a coral nursery/restoration structure (illustrative reef restoration; not 4PLANET delivery)", aspectRatio: "3/2", role: "editorial" },
   "rewild-marine": { src: `${A}/missions/rewild-marine/process.jpg`, alt: "A diver records kelp growth on a slate underwater (Kate Vylet / California Sea Grant, CC BY 2.0) — measurement makes recovery legible; illustrative field science", aspectRatio: "3/2", role: "editorial" },
 };
 export const missionProcess = (slug: string): ImageMeta | undefined => MISSION_PROCESS[slug];
