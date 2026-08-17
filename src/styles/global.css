@@ -234,9 +234,24 @@ figure{margin:0}
 @media (max-width:760px){ .door-grid{ grid-template-columns:1fr !important; } }
 
 /* ── V19 participation boxes — restrained hover signal (no full fill) ── */
-.part-box{ background:#fff; color:var(--ink); transition:background .18s, color .18s; }
-.part-box:hover{ background:#FAFAFA; }
-.part-box:hover .pb-arr{ color:var(--blue) !important; transform:translateX(4px); }
+/* Participation block — premium 4-cell. A single 4PLANET-blue active cell rests on the first
+   cell and moves to whichever cell is hovered/focused/tapped. Pure CSS: touch + keyboard safe. */
+.part-grid{ display:grid; grid-template-columns:1fr 1fr; }
+@media (max-width:640px){ .part-grid{ grid-template-columns:1fr; } }
+.part-box{ background:#fff; color:var(--ink); transition:background .28s cubic-bezier(.22,.61,.36,1), color .28s; position:relative; }
+.part-box .pb-arr{ transition:color .28s, transform .28s; }
+/* resting active cell */
+.part-box:first-child{ background:var(--blue); color:#fff; }
+.part-box:first-child .pb-arr{ color:#fff !important; }
+.part-box:first-child p{ color:rgba(255,255,255,.82) !important; }
+/* release the resting cell once the user interacts elsewhere in the grid */
+.part-grid:hover .part-box:first-child, .part-grid:focus-within .part-box:first-child{ background:#fff; color:var(--ink); }
+.part-grid:hover .part-box:first-child .pb-arr, .part-grid:focus-within .part-box:first-child .pb-arr{ color:var(--faint) !important; }
+.part-grid:hover .part-box:first-child p, .part-grid:focus-within .part-box:first-child p{ color:var(--dim) !important; }
+/* active cell follows pointer / keyboard focus / tap */
+.part-box:hover, .part-box:focus-visible{ background:var(--blue); color:#fff; outline:none; }
+.part-box:hover .pb-arr, .part-box:focus-visible .pb-arr{ color:#fff !important; transform:translateX(5px); }
+.part-box:hover p, .part-box:focus-visible p{ color:rgba(255,255,255,.82) !important; }
 
 /* Four public products share one persistent identity/context rail. */
 .product-nav{
