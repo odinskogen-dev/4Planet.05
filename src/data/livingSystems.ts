@@ -45,6 +45,8 @@ export interface RelationshipStep {
   stage: string;
   intro: string;
   relationships: Relationship[];
+  image?: string;      // optional scene image for this relationship (reacts as the scene changes)
+  imageAlt?: string;
 }
 
 export interface LivingSystemAnchor {
@@ -94,6 +96,7 @@ const ORCA: LivingSystemAnchor = {
   steps: [
     {
       stage: "DISCOVER",
+      image: "/assets/species/orca/hero.jpg", imageAlt: "An orca at the surface (illustrative)",
       intro: "Start with the animal, not the metric.",
       relationships: [
         { to: { id: "orca", kind: "SPECIES", label: "Orca (Orcinus orca)", note: "The largest member of the dolphin family; found in every ocean." },
@@ -104,6 +107,7 @@ const ORCA: LivingSystemAnchor = {
     },
     {
       stage: "DEPENDS ON",
+      image: "/assets/species/orca/detail-fjord.jpg", imageAlt: "Coastal fjord water where prey and orcas meet (illustrative)",
       intro: "A whale is never only a whale.",
       relationships: [
         { to: { id: "prey", kind: "SPECIES", label: "Population-specific prey", note: "Fish-eating and mammal-eating populations differ." },
@@ -117,6 +121,7 @@ const ORCA: LivingSystemAnchor = {
     },
     {
       stage: "UNDER PRESSURE",
+      image: "/assets/missions/wh4les/process.jpg", imageAlt: "Researchers studying whales at sea — how pressure is measured (illustrative field science)",
       intro: "Pressure is specific, not general.",
       relationships: [
         { to: { id: "prey-decline", kind: "PRESSURE", label: "Reduced prey availability", note: "Fewer or less accessible prey." },
@@ -133,6 +138,7 @@ const ORCA: LivingSystemAnchor = {
     },
     {
       stage: "RESPONSE",
+      image: "/assets/missions/wh4les/character.jpg", imageAlt: "A marine ecologist beside a killer whale (NOAA / CC BY 2.0) — illustrative field science, not 4PLANET fieldwork",
       intro: "No single universal fix.",
       relationships: [
         { to: { id: "response", kind: "RESPONSE", label: "Population-specific action", note: "Science + responsible institutions + a competent field actor." },

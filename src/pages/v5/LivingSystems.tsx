@@ -26,6 +26,13 @@ function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i:
         <div>
           <div style={{ ...mono, color: accent, marginBottom: 10 }}>{step.stage}</div>
           <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(22px,2.6vw,34px)", lineHeight: 1.04, letterSpacing: "-.03em", maxWidth: 640 }}>{step.intro}</h3>
+          {step.image && (
+            <figure style={{ margin: "22px 0 0" }}>
+              <img src={step.image} alt={step.imageAlt || ""} loading="lazy"
+                style={{ width: "100%", maxWidth: 760, aspectRatio: "16/9", objectFit: "cover", display: "block", borderRadius: 2 }} />
+              {step.imageAlt && <figcaption style={{ ...mono, fontSize: 9.5, color: T.dim, marginTop: 8, maxWidth: 760 }}>{step.imageAlt}</figcaption>}
+            </figure>
+          )}
           <div style={{ marginTop: 20, display: "grid", gap: 10 }}>
             {step.relationships.map((r) => {
               const col = EVIDENCE_COLOR[r.state];
