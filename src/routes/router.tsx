@@ -7,6 +7,7 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import { JaguarHabitatLivePage } from "@/pages/integrated/JaguarHabitatLive";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
@@ -51,6 +52,7 @@ export function AppRoutes() {
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
+      <Route path="/species/jaguar" element={<JaguarHabitatLivePage />} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
