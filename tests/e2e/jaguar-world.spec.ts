@@ -11,9 +11,10 @@ test("Jaguar Species World exposes Atlas, living web, ecosystem and motion witho
   await expect(page.getByText(/Observation ≠ range ≠ population ≠ live tracking/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /share this species/i })).toBeVisible();
 
-  const atlas = page.getByRole("heading", { name: /Where has the jaguar been recorded/i });
+  const atlas = page.getByRole("heading", { name: /Where has jaguar been recorded/i });
   await atlas.scrollIntoViewIfNeeded();
   await expect(atlas).toBeVisible();
+  await expect(page.getByText(/ATLAS_ · SPECIES WINDOW · OBSERVATIONS/i)).toBeVisible();
   await expect(page.getByText(/not a range map, population estimate or live tracking feed/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN JAGUAR IN FULL ATLAS/i })).toBeVisible();
 
