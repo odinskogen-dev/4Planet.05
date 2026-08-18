@@ -15,6 +15,16 @@ type AtlasState =
   | { kind: "EMPTY" }
   | { kind: "UNAVAILABLE"; reason: string };
 
+type SpeciesAtlasMode = "OBSERVATIONS" | "ECOSYSTEMS";
+
+export interface SpeciesAtlasEcosystemAnchor {
+  id: string;
+  label: string;
+  href: string;
+  relationship: string;
+  boundary: string;
+}
+
 function safeHttpUrl(raw: unknown) {
   if (typeof raw !== "string" || !raw) return null;
   try {
@@ -54,18 +64,21 @@ export function SpeciesAtlasWindow({
   scientificName,
   entityId,
   journey,
+  ecosystems = [],
 }: {
   gbifKey: number;
   commonName: string;
   scientificName: string;
   entityId: string;
   journey?: string;
+  ecosystems?: SpeciesAtlasEcosystemAnchor[];
 }) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [armed, setArmed] = useState(false);
   const [state, setState] = useState<AtlasState>({ kind: "IDLE" });
   const [webgl, setWebgl] = useState(true);
+  const [mode, setMode] = useState<SpeciesAtlasMode>("OBSERVATIONS");
 
   useEffect(() => {
     if (armed) return;
@@ -89,9 +102,10 @@ export function SpeciesAtlasWindow({
   }, [armed]);
 
   useEffect(() => {
-    if (!armed || !boxRef.current) return;
+    if (mode !== "OBSERVATIONS" || !armed || !boxRef.current) return;
     let alive = true;
     let map: import("maplibre-gl").Map | null = null;
+    setWebgl(true);
     setState({ kind: "LOADING" });
 
     const boot = async () => {
@@ -207,46 +221,89 @@ export function SpeciesAtlasWindow({
       alive = false;
       map?.remove();
     };
-  }, [armed, gbifKey]);
+  }, [armed, gbifKey, mode]);
 
   const atlasHref = `/atlas?entity=${encodeURIComponent(entityId)}${journey ? `&journey=${encodeURIComponent(journey)}` : ""}`;
+  const observationMode = mode === "OBSERVATIONS";
 
   return (
     <section ref={sectionRef} aria-labelledby="species-atlas-title" style={{ background: "#050805", color: "#fff", borderTop: "1px solid rgba(255,255,255,.13)", borderBottom: "1px solid rgba(255,255,255,.13)" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(44px,7vw,92px) clamp(18px,5vw,72px)" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 30 }} aria-label="Species Atlas modes">
+          <button type="button" onClick={() => setMode("OBSERVATIONS")} aria-pressed={observationMode} style={{ ...mono, cursor: "pointer", border: `1px solid ${observationMode ? T.acid : "rgba(255,255,255,.28)"}`, background: observationMode ? T.acid : "transparent", color: observationMode ? "#071009" : "rgba(255,255,255,.78)", padding: "9px 12px" }}>OBSERVATIONS</button>
+          {ecosystems.length > 0 && <button type="button" onClick={() => setMode("ECOSYSTEMS")} aria-pressed={mode === "ECOSYSTEMS"} style={{ ...mono, cursor: "pointer", border: `1px solid ${mode === "ECOSYSTEMS" ? T.acid : "rgba(255,255,255,.28)"}`, background: mode === "ECOSYSTEMS" ? T.acid : "transparent", color: mode === "ECOSYSTEMS" ? "#071009" : "rgba(255,255,255,.78)", padding: "9px 12px" }}>ECOSYSTEMS</button>}
+          <span style={{ ...mono, border: "1px solid rgba(255,255,255,.16)", color: "rgba(255,255,255,.42)", padding: "9px 12px" }}>RANGE · NOT PUBLISHED</span>
+        </div>
+
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,.75fr) minmax(0,1.25fr)", gap: "clamp(28px,6vw,80px)", alignItems: "start" }} className="species-atlas-grid">
           <div>
-            <div style={{ ...mono, color: T.acid }}>02_ WHERE · ATLAS_ · REPORTED OBSERVATIONS</div>
-            <h2 id="species-atlas-title" style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(36px,5vw,70px)", letterSpacing: "-.045em", lineHeight: .94, margin: "18px 0 0" }}>Where has {commonName.toLowerCase()} been recorded?</h2>
-            <p style={{ margin: "22px 0 0", maxWidth: 520, fontSize: 16, lineHeight: 1.62, color: "rgba(255,255,255,.78)" }}>
-              Reported, georeferenced GBIF occurrence records for <em>{scientificName}</em>. These points are records submitted to a biodiversity data network — not a range map, population estimate or live tracking feed.
-            </p>
-            <div aria-live="polite" style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.18)", ...mono, color: "rgba(255,255,255,.64)", lineHeight: 1.7 }}>
-              {state.kind === "IDLE" && "MAP + RECORDS LOAD AS THIS VIEW APPROACHES."}
-              {state.kind === "LOADING" && "LOADING REPORTED OCCURRENCES…"}
-              {state.kind === "READY" && `${state.shown} POINTS SHOWN · ${state.total.toLocaleString()} GBIF RECORDS REPORTED`}
-              {state.kind === "EMPTY" && "NO GEOCODED OCCURRENCES RETURNED IN THIS CHECK."}
-              {state.kind === "UNAVAILABLE" && `ATLAS VIEW UNAVAILABLE · ${state.reason}`}
-            </div>
+            <div style={{ ...mono, color: T.acid }}>{observationMode ? "02_ WHERE · ATLAS_ · REPORTED OBSERVATIONS" : "02_ WHERE · ATLAS_ · ECOSYSTEM CONTEXT"}</div>
+            <h2 id="species-atlas-title" style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(36px,5vw,70px)", letterSpacing: "-.045em", lineHeight: .94, margin: "18px 0 0" }}>
+              {observationMode ? `Where has ${commonName.toLowerCase()} been recorded?` : `Which living systems can you enter from ${commonName.toLowerCase()}?`}
+            </h2>
+            {observationMode ? (
+              <p style={{ margin: "22px 0 0", maxWidth: 520, fontSize: 16, lineHeight: 1.62, color: "rgba(255,255,255,.78)" }}>
+                Reported, georeferenced GBIF occurrence records for <em>{scientificName}</em>. These points are records submitted to a biodiversity data network — not a range map, population estimate or live tracking feed.
+              </p>
+            ) : (
+              <p style={{ margin: "22px 0 0", maxWidth: 520, fontSize: 16, lineHeight: 1.62, color: "rgba(255,255,255,.78)" }}>
+                Ecosystem links are curated 4PLANET context objects. They are not generated from the occurrence dots and do not assert that a particular record, animal or population belongs to the linked place.
+              </p>
+            )}
+
+            {observationMode ? (
+              <div aria-live="polite" style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.18)", ...mono, color: "rgba(255,255,255,.64)", lineHeight: 1.7 }}>
+                {state.kind === "IDLE" && "MAP + RECORDS LOAD AS THIS VIEW APPROACHES."}
+                {state.kind === "LOADING" && "LOADING REPORTED OCCURRENCES…"}
+                {state.kind === "READY" && `${state.shown} POINTS SHOWN · ${state.total.toLocaleString()} GBIF RECORDS REPORTED`}
+                {state.kind === "EMPTY" && "NO GEOCODED OCCURRENCES RETURNED IN THIS CHECK."}
+                {state.kind === "UNAVAILABLE" && `ATLAS VIEW UNAVAILABLE · ${state.reason}`}
+              </div>
+            ) : (
+              <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.18)", ...mono, color: "rgba(255,255,255,.64)", lineHeight: 1.7 }}>
+                ECOSYSTEM CONTEXT ≠ OCCURRENCE-DERIVED PLACE MEMBERSHIP · PUBLIC CONTEXT ≠ FIELD AUTHORITY
+              </div>
+            )}
+
             <Link to={atlasHref} style={{ display: "inline-flex", marginTop: 28, color: "#080808", background: T.acid, padding: "13px 17px", textDecoration: "none", fontWeight: 650, fontSize: 13 }}>
               OPEN {commonName.toUpperCase()} IN FULL ATLAS →
             </Link>
           </div>
-          <div aria-busy={state.kind === "LOADING"} style={{ position: "relative", minHeight: 430, border: "1px solid rgba(255,255,255,.18)", background: "#0c100d", overflow: "hidden" }}>
-            <div ref={boxRef} aria-label={`${commonName} reported occurrence map`} style={{ width: "100%", height: 520, display: webgl ? "block" : "none" }} />
-            {(state.kind === "IDLE" || state.kind === "LOADING") && (
-              <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.58)", pointerEvents: "none" }}>
-                <div style={mono}>{state.kind === "IDLE" ? "ATLAS · LOADS ON APPROACH" : "ATLAS · LOADING"}</div>
-              </div>
-            )}
-            {state.kind === "UNAVAILABLE" && (
-              <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.66)" }}>
-                <div><strong style={{ display: "block", color: "#fff", marginBottom: 8 }}>ATLAS VIEW UNAVAILABLE</strong>{state.reason}<br />The source boundary is preserved; no substitute range is fabricated.</div>
-              </div>
-            )}
-            <div style={{ position: "absolute", left: 12, top: 12, zIndex: 2, ...mono, background: "rgba(0,0,0,.72)", padding: "7px 9px", color: "rgba(255,255,255,.82)" }}>● REPORTED OCCURRENCE · GBIF</div>
-          </div>
+
+          {observationMode ? (
+            <div aria-busy={state.kind === "LOADING"} style={{ position: "relative", minHeight: 430, border: "1px solid rgba(255,255,255,.18)", background: "#0c100d", overflow: "hidden" }}>
+              <div ref={boxRef} aria-label={`${commonName} reported occurrence map`} style={{ width: "100%", height: 520, display: webgl ? "block" : "none" }} />
+              {(state.kind === "IDLE" || state.kind === "LOADING") && (
+                <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.58)", pointerEvents: "none" }}>
+                  <div style={mono}>{state.kind === "IDLE" ? "ATLAS · LOADS ON APPROACH" : "ATLAS · LOADING"}</div>
+                </div>
+              )}
+              {state.kind === "UNAVAILABLE" && (
+                <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.66)" }}>
+                  <div><strong style={{ display: "block", color: "#fff", marginBottom: 8 }}>ATLAS VIEW UNAVAILABLE</strong>{state.reason}<br />The source boundary is preserved; no substitute range is fabricated.</div>
+                </div>
+              )}
+              <div style={{ position: "absolute", left: 12, top: 12, zIndex: 2, ...mono, background: "rgba(0,0,0,.72)", padding: "7px 9px", color: "rgba(255,255,255,.82)" }}>● REPORTED OCCURRENCE · GBIF</div>
+            </div>
+          ) : (
+            <div style={{ minHeight: 430, border: "1px solid rgba(255,255,255,.18)", background: "#0c100d", display: "grid", alignContent: "stretch" }}>
+              {ecosystems.map((ecosystem) => (
+                <Link key={ecosystem.id} to={ecosystem.href} style={{ padding: "clamp(26px,5vw,52px)", color: "#fff", textDecoration: "none", display: "flex", minHeight: 300, flexDirection: "column", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.16)" }}>
+                  <div>
+                    <div style={{ ...mono, color: T.acid }}>{ecosystem.relationship}</div>
+                    <h3 style={{ margin: "18px 0 0", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,5vw,68px)", letterSpacing: "-.045em", lineHeight: .95 }}>{ecosystem.label}</h3>
+                    <p style={{ margin: "24px 0 0", maxWidth: 620, color: "rgba(255,255,255,.68)", fontSize: 13.5, lineHeight: 1.62 }}><strong>BOUNDARY:</strong> {ecosystem.boundary}</p>
+                  </div>
+                  <div style={{ ...mono, marginTop: 34, color: T.acid }}>ENTER ECOSYSTEM →</div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
+
+        <p style={{ margin: "22px 0 0", ...mono, color: "rgba(255,255,255,.46)", lineHeight: 1.7 }}>
+          RANGE IS INTENTIONALLY NOT PUBLISHED HERE UNTIL AN AUTHORITATIVE RANGE GEOMETRY + SOURCE IS ADMITTED. OCCURRENCE POINTS WILL NOT BE CONVERTED INTO RANGE.
+        </p>
       </div>
       <style>{`@media(max-width:820px){.species-atlas-grid{grid-template-columns:1fr!important}}`}</style>
     </section>
