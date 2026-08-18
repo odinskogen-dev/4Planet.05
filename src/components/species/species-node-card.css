@@ -1,0 +1,14 @@
+@media (max-width: 540px) {
+  #food-web .jaguar-four button {
+    min-height: 168px !important;
+    padding: 20px !important;
+  }
+
+  #food-web .jaguar-four button > div:nth-child(2) {
+    margin-top: 20px !important;
+  }
+
+  #food-web .jaguar-four button > div:nth-child(3) {
+    margin-top: 18px !important;
+  }
+}

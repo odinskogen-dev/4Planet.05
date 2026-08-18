@@ -54,6 +54,13 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await capybara.click();
   await expect(page.getByText(/documented prey example/i).first()).toBeVisible();
   await expect(page.getByText(/FULL 4PLANET SPECIES PROFILE NOT YET IN GOLD SET/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Capybara", exact: true })).toBeVisible();
+  await expect(page.getByText(/Hydrochoerus hydrochaeris/i)).toBeVisible();
+  await expect(page.getByText(/taxon:gbif:2437610/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /OPEN IN ATLAS/i })).toHaveAttribute("href", /entity=taxon%3Agbif%3A2437610/);
+  await expect(page.getByRole("link", { name: /PERILLI ET AL\. 2016 · PLOS ONE/i })).toHaveAttribute("href", /10\.1371\/journal\.pone\.0151814/);
+  await expect(page.getByRole("link", { name: /OPEN SPECIES WORLD/i })).toHaveCount(0);
+  await page.locator("#food-web").screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-living-web-capybara.png` });
 
   const evidence = page.getByRole("heading", { name: /The evidence stays with the animal/i });
   await evidence.scrollIntoViewIfNeeded();
