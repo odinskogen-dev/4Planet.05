@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
 
-test("ATLAS Data Sandbox loads two EMODnet WMS sources and records visual proof", async ({ page }, testInfo) => {
+test("ATLAS Data Sandbox loads three EMODnet WMS sources and records visual proof", async ({ page }, testInfo) => {
   const bathymetryResponses: number[] = [];
   const habitatResponses: number[] = [];
+  const fishingDensityResponses: number[] = [];
   const habitatUrls: string[] = [];
+  const fishingDensityUrls: string[] = [];
 
   page.on("response", (response) => {
     const url = response.url();
@@ -13,6 +15,10 @@ test("ATLAS Data Sandbox loads two EMODnet WMS sources and records visual proof"
     if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms")) {
       habitatResponses.push(response.status());
       habitatUrls.push(url);
+    }
+    if (url.startsWith("https://ows.emodnet-humanactivities.eu/wms")) {
+      fishingDensityResponses.push(response.status());
+      fishingDensityUrls.push(url);
     }
   });
 
@@ -40,6 +46,22 @@ test("ATLAS Data Sandbox loads two EMODnet WMS sources and records visual proof"
   ).toBeTruthy();
   await page.screenshot({
     path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-emodnet-seabed-habitats.png`,
+    fullPage: true,
+  });
+
+  await page.getByRole("button", { name: "FISHING DENSITY" }).click();
+  await expect(page.getByText("EMODNET · HUMAN ACTIVITIES")).toBeVisible();
+  await expect(page.getByText("Vessel Density Annual Averages · Fishing")).toBeVisible();
+  await expect(page.getByText("vesseldensity_01avg")).toBeVisible();
+  await expect(page.getByText("VesselDensity")).toBeVisible();
+  await expect(page.getByText("SOURCE_LOADED")).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => fishingDensityResponses.some((status) => status >= 200 && status < 300), { timeout: 30_000 }).toBeTruthy();
+  await expect.poll(
+    () => fishingDensityUrls.some((url) => decodeURIComponent(url).includes("layers=vesseldensity_01avg") && decodeURIComponent(url).includes("styles=VesselDensity")),
+    { timeout: 30_000 },
+  ).toBeTruthy();
+  await page.screenshot({
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-emodnet-fishing-vessel-density.png`,
     fullPage: true,
   });
 });
