@@ -5,7 +5,7 @@ import { taxonOccurrences } from "@/planet/connectors";
 import type { Occurrence } from "@/planet/types";
 import { T } from "@/styles/tokens";
 
-const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/dark";
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 
 type AtlasState =
@@ -216,17 +216,17 @@ export function SpeciesAtlasWindow({
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(44px,7vw,92px) clamp(18px,5vw,72px)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,.75fr) minmax(0,1.25fr)", gap: "clamp(28px,6vw,80px)", alignItems: "start" }} className="species-atlas-grid">
           <div>
-            <div style={{ ...mono, color: T.acid }}>ATLAS_ · SPECIES WINDOW · OBSERVATIONS</div>
+            <div style={{ ...mono, color: T.acid }}>02_ WHERE · ATLAS_ · REPORTED OBSERVATIONS</div>
             <h2 id="species-atlas-title" style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(36px,5vw,70px)", letterSpacing: "-.045em", lineHeight: .94, margin: "18px 0 0" }}>Where has {commonName.toLowerCase()} been recorded?</h2>
             <p style={{ margin: "22px 0 0", maxWidth: 520, fontSize: 16, lineHeight: 1.62, color: "rgba(255,255,255,.78)" }}>
               Reported, georeferenced GBIF occurrence records for <em>{scientificName}</em>. These points are records submitted to a biodiversity data network — not a range map, population estimate or live tracking feed.
             </p>
             <div aria-live="polite" style={{ marginTop: 24, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.18)", ...mono, color: "rgba(255,255,255,.64)", lineHeight: 1.7 }}>
-              {state.kind === "IDLE" && "MAP + RECORDS LOAD AS THIS WINDOW APPROACHES VIEW."}
+              {state.kind === "IDLE" && "MAP + RECORDS LOAD AS THIS VIEW APPROACHES."}
               {state.kind === "LOADING" && "LOADING REPORTED OCCURRENCES…"}
               {state.kind === "READY" && `${state.shown} POINTS SHOWN · ${state.total.toLocaleString()} GBIF RECORDS REPORTED`}
               {state.kind === "EMPTY" && "NO GEOCODED OCCURRENCES RETURNED IN THIS CHECK."}
-              {state.kind === "UNAVAILABLE" && `ATLAS WINDOW UNAVAILABLE · ${state.reason}`}
+              {state.kind === "UNAVAILABLE" && `ATLAS VIEW UNAVAILABLE · ${state.reason}`}
             </div>
             <Link to={atlasHref} style={{ display: "inline-flex", marginTop: 28, color: "#080808", background: T.acid, padding: "13px 17px", textDecoration: "none", fontWeight: 650, fontSize: 13 }}>
               OPEN {commonName.toUpperCase()} IN FULL ATLAS →
@@ -236,12 +236,12 @@ export function SpeciesAtlasWindow({
             <div ref={boxRef} aria-label={`${commonName} reported occurrence map`} style={{ width: "100%", height: 520, display: webgl ? "block" : "none" }} />
             {(state.kind === "IDLE" || state.kind === "LOADING") && (
               <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.58)", pointerEvents: "none" }}>
-                <div style={mono}>{state.kind === "IDLE" ? "ATLAS WINDOW · LOADS ON APPROACH" : "ATLAS WINDOW · LOADING"}</div>
+                <div style={mono}>{state.kind === "IDLE" ? "ATLAS · LOADS ON APPROACH" : "ATLAS · LOADING"}</div>
               </div>
             )}
             {state.kind === "UNAVAILABLE" && (
               <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 32, textAlign: "center", color: "rgba(255,255,255,.66)" }}>
-                <div><strong style={{ display: "block", color: "#fff", marginBottom: 8 }}>ATLAS WINDOW UNAVAILABLE</strong>{state.reason}<br />The source boundary is preserved; no substitute range is fabricated.</div>
+                <div><strong style={{ display: "block", color: "#fff", marginBottom: 8 }}>ATLAS VIEW UNAVAILABLE</strong>{state.reason}<br />The source boundary is preserved; no substitute range is fabricated.</div>
               </div>
             )}
             <div style={{ position: "absolute", left: 12, bottom: 12, zIndex: 2, ...mono, background: "rgba(0,0,0,.72)", padding: "7px 9px", color: "rgba(255,255,255,.82)" }}>● REPORTED OCCURRENCE · GBIF</div>
