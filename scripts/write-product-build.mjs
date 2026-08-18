@@ -6,7 +6,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, "..", "public", "product-build.txt");
 const env = process.env;
 
-const releaseBranch = env.CF_PAGES_BRANCH || env.RELEASE_BRANCH || "release/one-interface-03-db328bf";
+const releaseBranch = env.CF_PAGES_BRANCH || env.RELEASE_BRANCH || "release/one-interface-sprint2-6bbfebb";
 const releaseSha = env.CF_PAGES_COMMIT_SHA || env.RELEASE_SHA || "local-build-sha-not-set";
 const deploymentUrl = env.CF_PAGES_URL || env.RELEASE_DEPLOYMENT_URL || "local-build-no-deployment-url";
 const deploymentId = env.CF_PAGES_DEPLOYMENT_ID || env.RELEASE_DEPLOYMENT_ID || "not exposed during build; verify via Cloudflare Pages metadata";
