@@ -1,6 +1,7 @@
 export type SandboxRasterDescriptor = {
   id: string;
   sourceId: string;
+  buttonLabel: string;
   label: string;
   authority: string;
   product: string;
@@ -17,6 +18,7 @@ export type SandboxRasterDescriptor = {
 export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-bathymetry",
   sourceId: "emodnet-bathymetry",
+  buttonLabel: "BATHYMETRY",
   label: "EMODNET · BATHYMETRY",
   authority: "European Marine Observation and Data Network (EMODnet)",
   product: "Mean depth in multi colour (no land)",
@@ -33,6 +35,7 @@ export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
 export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-seabed-habitats",
   sourceId: "emodnet-seabed-habitats",
+  buttonLabel: "SEABED HABITATS",
   label: "EMODNET · SEABED HABITATS",
   authority: "European Marine Observation and Data Network (EMODnet)",
   product: "EUSeaMap 2025 · MSFD habitat classification · 800 m simplification",
@@ -47,7 +50,29 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   opacity: 0.72,
 };
 
-export const SANDBOX_RASTERS = [EMODNET_BATHYMETRY, EMODNET_SEABED_HABITATS] as const;
+export const EMODNET_FISHING_VESSEL_DENSITY: SandboxRasterDescriptor = {
+  id: "sandbox-emodnet-fishing-vessel-density",
+  sourceId: "emodnet-human-activities",
+  buttonLabel: "FISHING DENSITY",
+  label: "EMODNET · HUMAN ACTIVITIES",
+  authority: "European Marine Observation and Data Network (EMODnet)",
+  product: "Vessel Density Annual Averages · Fishing",
+  layer: "vesseldensity_01avg",
+  style: "VesselDensity",
+  docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
+  service: "https://ows.emodnet-humanactivities.eu/wms",
+  attribution: "EMODnet Human Activities",
+  limitation:
+    "This is an AIS-derived vessel-density product expressed as hours per square kilometre per month and summarised as annual averages. Provider metadata currently describes coverage for 2017–2024 and reports reduced satellite-data density during part of 2024. It is historical/reference vessel-density context, not live fishing activity, catch, legality or ecological impact.",
+  checkedAt: "2026-08-19",
+  opacity: 0.74,
+};
+
+export const SANDBOX_RASTERS = [
+  EMODNET_BATHYMETRY,
+  EMODNET_SEABED_HABITATS,
+  EMODNET_FISHING_VESSEL_DENSITY,
+] as const;
 
 export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
   const query = [
