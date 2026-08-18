@@ -17,14 +17,30 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(hero.locator('source[media="(max-width: 640px)"]')).toHaveAttribute("srcset", "/assets/species/jaguar/SP-005-mobile.jpg");
   await hero.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-hero.png` });
 
+  const atlasWindow = page.locator("#atlas-window");
   const atlas = page.getByRole("heading", { name: /Where has jaguar been recorded/i });
   await atlas.scrollIntoViewIfNeeded();
   await expect(atlas).toBeVisible();
+  await expect(page.getByRole("button", { name: "OBSERVATIONS", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "ECOSYSTEMS", exact: true })).toBeVisible();
+  await expect(page.getByText(/RANGE · NOT PUBLISHED/i)).toBeVisible();
   await expect(page.getByText(/02_ WHERE · ATLAS_ · REPORTED OBSERVATIONS/i)).toBeVisible();
   await expect(page.getByText(/not a range map, population estimate or live tracking feed/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN JAGUAR IN FULL ATLAS/i })).toBeVisible();
   await expect(page.getByText(/REPORTED OCCURRENCE · GBIF/i)).toBeVisible();
-  await page.locator("#atlas-window").screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-atlas.png` });
+  await atlasWindow.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-atlas-observations.png` });
+
+  await page.getByRole("button", { name: "ECOSYSTEMS", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /Which living systems can you enter from jaguar/i })).toBeVisible();
+  await expect(page.getByText(/ECOSYSTEM CONTEXT ≠ OCCURRENCE-DERIVED PLACE MEMBERSHIP/i)).toBeVisible();
+  await expect(page.getByText(/RANGE IS INTENTIONALLY NOT PUBLISHED HERE/i)).toBeVisible();
+  await expect(atlasWindow.getByRole("link", { name: /AMAZON RAINFOREST/i })).toBeVisible();
+  await expect(atlasWindow.getByText(/not inferred from GBIF occurrence points/i)).toBeVisible();
+  await atlasWindow.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-atlas-ecosystems.png` });
+
+  await page.getByRole("button", { name: "OBSERVATIONS", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /Where has jaguar been recorded/i })).toBeVisible();
+  await expect(page.getByText(/REPORTED OCCURRENCE · GBIF/i)).toBeVisible();
 
   const ecosystem = page.getByRole("heading", { name: /The jaguar does not exist alone/i });
   await ecosystem.scrollIntoViewIfNeeded();
