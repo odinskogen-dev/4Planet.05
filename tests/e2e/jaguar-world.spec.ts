@@ -23,7 +23,7 @@ test("Jaguar Species World exposes Atlas, evidence, living web, ecosystem and mo
   await expect(evidence).toBeVisible();
   await expect(page.getByText(/SPECIES_ · EVIDENCE/i)).toBeVisible();
   await expect(page.getByText(/current presence, abundance or population status/i).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Panthera — Jaguar/i })).toHaveAttribute("href", /panthera\.org\/cat\/jaguar/);
+  await expect(page.getByRole("link", { name: /Panthera — Jaguar/i }).first()).toHaveAttribute("href", /panthera\.org\/cat\/jaguar/);
 
   const foodWeb = page.getByRole("heading", { name: /Predator becomes relationship/i });
   await foodWeb.scrollIntoViewIfNeeded();
