@@ -1,0 +1,47 @@
+name: Codex Import ONE INTERFACE 03
+
+on:
+  push:
+    branches:
+      - codex/import-one-interface-03
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-release:
+    name: Import verified release bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FILE_ID: 1lro1Qm396W-x2W1oWpti_F8HACB0lk3I
+      EXPECTED_SHA256: 7398c253516ba86e41a5bfa3d1d98d5dd61eb4869efab0a63b4499b913b699a3
+      EXPECTED_COMMIT: aaa2a228d1a1e7a670c12d927d3baaf9dcbb218b
+      RELEASE_BRANCH: release/one-interface-03-db328bf
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download verified Git bundle from Drive
+        run: |
+          set -euo pipefail
+          python3 -m pip install --user --disable-pip-version-check gdown
+          export PATH="$HOME/.local/bin:$PATH"
+          rm -f release.bundle
+          gdown "https://drive.google.com/uc?id=${FILE_ID}" -O release.bundle || \
+            curl -L --fail --retry 5 --retry-delay 5 "https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t" -o release.bundle
+          echo "${EXPECTED_SHA256}  release.bundle" | sha256sum -c -
+          git bundle verify release.bundle
+
+      - name: Push exact release branch
+        run: |
+          set -euo pipefail
+          git fetch release.bundle "refs/heads/${RELEASE_BRANCH}:refs/remotes/bundle/${RELEASE_BRANCH}"
+          ACTUAL="$(git rev-parse "refs/remotes/bundle/${RELEASE_BRANCH}")"
+          echo "Bundle release SHA: ${ACTUAL}"
+          test "${ACTUAL}" = "${EXPECTED_COMMIT}"
+          git push origin "refs/remotes/bundle/${RELEASE_BRANCH}:refs/heads/${RELEASE_BRANCH}" --force
