@@ -156,7 +156,13 @@ export default function AtlasDataSandbox() {
         <div style={{ marginTop: 18, paddingTop: 15, borderTop: "1px solid rgba(255,255,255,.18)" }}>
           <div style={{ ...mono, color: "#2E2EFF" }}>{active.label}</div>
           <div style={{ marginTop: 7, fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>{active.product}</div>
-          <div style={{ ...mono, marginTop: 9, color: "rgba(255,255,255,.52)", lineHeight: 1.55 }}>AUTHORITY · {active.authority}<br />LAYER · {active.layer}{active.style ? <><br />STYLE · {active.style}</> : null}<br />CHECKED · {active.checkedAt}</div>
+          <div style={{ ...mono, marginTop: 9, color: "rgba(255,255,255,.52)", lineHeight: 1.55 }}>
+            AUTHORITY · {active.authority}<br />
+            LAYER · {active.layer}
+            {active.style ? <><br />STYLE · {active.style}</> : null}
+            {active.time ? <><br />TIME · {active.time}</> : null}
+            <br />CHECKED · {active.checkedAt}
+          </div>
           <p style={{ margin: "11px 0 0", fontFamily: "'DM Sans', sans-serif", fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,.62)" }}>{active.limitation}</p>
           <a href={active.docs} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 12, color: "#fff" }}>OFFICIAL SERVICE DOCS ↗</a>
         </div>
