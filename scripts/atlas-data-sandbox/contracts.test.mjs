@@ -6,6 +6,12 @@ import {
   emodnetBathymetryRasterLayer,
   emodnetBathymetryRasterSource,
 } from "./adapters/emodnet-bathymetry.mjs";
+import {
+  GFW_DESCRIPTOR,
+  gfwAuthState,
+  gfwFishingEffortTileRequest,
+  redactGfwRequest,
+} from "./adapters/global-fishing-watch.mjs";
 
 test("EMODnet Bathymetry adapter is bounded to official WMS and contains no credential fields", () => {
   const source = emodnetBathymetryRasterSource();
@@ -38,5 +44,48 @@ test("EMODnet Bathymetry capabilities probe uses official service", () => {
   assert.equal(
     emodnetBathymetryGetCapabilitiesUrl(),
     "https://ows.emodnet-bathymetry.eu/wms?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0",
+  );
+});
+
+test("Global Fishing Watch remains explicitly auth-gated without a token", () => {
+  assert.equal(gfwAuthState(undefined), "AUTH_REQUIRED");
+  assert.equal(GFW_DESCRIPTOR.tokenHandling, "SERVER_SIDE_ONLY");
+  assert.match(GFW_DESCRIPTOR.semanticBoundary, /does not prove illegal fishing/i);
+
+  const request = gfwFishingEffortTileRequest({
+    z: 1,
+    x: 0,
+    y: 0,
+    startDate: "2026-08-01",
+    endDate: "2026-08-07",
+  });
+  assert.equal(request.state, "AUTH_REQUIRED");
+  assert.equal(request.headers, null);
+  assert.match(request.url, /^https:\/\/gateway\.api\.globalfishingwatch\.org\/v3\/4wings\/tile\/heatmap\/1\/0\/0\?/);
+  assert.match(decodeURIComponent(request.url), /datasets\[0\]=public-global-fishing-effort:latest/);
+  assert.match(decodeURIComponent(request.url), /date-range=2026-08-01,2026-08-07/);
+  assert.match(request.url, /format=MVT/);
+  assert.doesNotMatch(request.url, /(token|authorization|secret)=/i);
+});
+
+test("Global Fishing Watch token is header-only and redacted from evidence", () => {
+  const request = gfwFishingEffortTileRequest({
+    token: "sandbox-test-token",
+    z: 2,
+    x: 1,
+    y: 1,
+    startDate: "2026-08-01",
+    endDate: "2026-08-02",
+  });
+  assert.equal(request.state, "AUTH_AVAILABLE");
+  assert.equal(request.headers.authorization, "Bearer sandbox-test-token");
+  assert.doesNotMatch(request.url, /sandbox-test-token/);
+  assert.equal(redactGfwRequest(request).headers.authorization, "Bearer REDACTED");
+});
+
+test("Global Fishing Watch tile contract rejects invalid coordinates", () => {
+  assert.throws(
+    () => gfwFishingEffortTileRequest({ z: 1, x: 2, y: 0, startDate: "2026-08-01", endDate: "2026-08-02" }),
+    /GFW_INVALID_X/,
   );
 });
