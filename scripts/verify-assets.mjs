@@ -9,6 +9,7 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { execFileSync } from "node:child_process";
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
@@ -102,4 +103,17 @@ if (process.env.GITHUB_ACTIONS === "true") {
     line("AXE PREVIEW PROBE: FAIL — no matching Cloudflare branch preview observed within 120s.");
     process.exit(1);
   }
+
+  // TEST-BRANCH ONLY: let networked CI calculate the exact non-breaking npm security fix.
+  // We intentionally leave the workspace dirty so the later clean-tree gate cannot falsely pass.
+  line("AXE SECURITY FIX PROBE: running npm audit fix (non-breaking only)");
+  try {
+    execFileSync("npm", ["audit", "fix", "--no-fund"], { stdio: "inherit" });
+  } catch {
+    line("AXE SECURITY FIX PROBE: npm audit fix returned non-zero; remaining lower-severity advisories may still exist.");
+  }
+  const lockDiff = execFileSync("git", ["diff", "--", "package.json", "package-lock.json"], { encoding: "utf8" });
+  line("AXE SECURITY FIX DIFF BEGIN");
+  console.log(lockDiff || "NO PACKAGE DIFF");
+  line("AXE SECURITY FIX DIFF END");
 }
