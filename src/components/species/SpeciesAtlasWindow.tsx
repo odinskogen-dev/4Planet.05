@@ -244,7 +244,7 @@ export function SpeciesAtlasWindow({
                 <div><strong style={{ display: "block", color: "#fff", marginBottom: 8 }}>ATLAS VIEW UNAVAILABLE</strong>{state.reason}<br />The source boundary is preserved; no substitute range is fabricated.</div>
               </div>
             )}
-            <div style={{ position: "absolute", left: 12, bottom: 12, zIndex: 2, ...mono, background: "rgba(0,0,0,.72)", padding: "7px 9px", color: "rgba(255,255,255,.82)" }}>● REPORTED OCCURRENCE · GBIF</div>
+            <div style={{ position: "absolute", left: 12, top: 12, zIndex: 2, ...mono, background: "rgba(0,0,0,.72)", padding: "7px 9px", color: "rgba(255,255,255,.82)" }}>● REPORTED OCCURRENCE · GBIF</div>
           </div>
         </div>
       </div>
