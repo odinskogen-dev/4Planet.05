@@ -1,0 +1,188 @@
+/* ONE INTERFACE Slice 09 — restrained living-planet motion and cross-product bridges.
+   Motion is atmospheric, not decorative. All animation collapses under reduced-motion. */
+
+.planet-awe {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.planet-awe__orbit {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  border: 1px solid rgba(170, 205, 255, .16);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+}
+
+.planet-awe__orbit::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 0 18px rgba(160,205,255,.95);
+}
+
+.planet-awe__orbit--one {
+  width: min(72vw, 980px);
+  height: min(34vw, 460px);
+  animation: planet-orbit-one 42s linear infinite;
+}
+.planet-awe__orbit--one::after { right: 10%; top: 18%; }
+
+.planet-awe__orbit--two {
+  width: min(54vw, 760px);
+  height: min(48vw, 680px);
+  opacity: .62;
+  animation: planet-orbit-two 58s linear infinite;
+}
+.planet-awe__orbit--two::after { left: 19%; bottom: 9%; width: 3px; height: 3px; }
+
+.planet-awe__scan {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 72% 30%, rgba(86,137,255,.12), transparent 22%),
+    radial-gradient(circle at 23% 62%, rgba(255,255,255,.07), transparent 18%);
+  opacity: .42;
+  animation: planet-scan 10s ease-in-out infinite alternate;
+}
+
+@keyframes planet-orbit-one {
+  from { transform: translate(-50%, -50%) rotate(-8deg); }
+  to { transform: translate(-50%, -50%) rotate(352deg); }
+}
+@keyframes planet-orbit-two {
+  from { transform: translate(-50%, -50%) rotate(23deg); }
+  to { transform: translate(-50%, -50%) rotate(-337deg); }
+}
+@keyframes planet-scan {
+  from { opacity: .25; transform: scale(1); }
+  to { opacity: .5; transform: scale(1.025); }
+}
+
+.mission-human-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  border-left: 1px solid var(--mission-line, rgba(8,8,8,.12));
+}
+
+.mission-human-strip__cell {
+  border-right: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  border-bottom: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  padding: clamp(18px,2.1vw,28px);
+  min-height: 190px;
+}
+
+.mission-world-bridge {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: clamp(28px,4vw,44px);
+  border-top: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  border-left: 1px solid var(--mission-line, rgba(8,8,8,.12));
+}
+
+.mission-world-bridge__link {
+  display: flex;
+  min-height: 128px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: clamp(18px,2vw,26px);
+  border-right: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  border-bottom: 1px solid var(--mission-line, rgba(8,8,8,.12));
+  text-decoration: none;
+  transition: transform .25s cubic-bezier(.2,.7,.2,1), background .25s ease;
+}
+
+.mission-world-bridge__link:hover,
+.mission-world-bridge__link:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.human-world {
+  min-height: 100svh;
+  background: #050505;
+  color: #fff;
+}
+
+.human-world__hero {
+  min-height: 86svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(96px,12vw,170px) clamp(20px,6vw,96px) clamp(54px,8vw,110px);
+  background:
+    radial-gradient(circle at 72% 24%, rgba(46,46,255,.28), transparent 24%),
+    radial-gradient(circle at 18% 72%, rgba(58,232,111,.10), transparent 24%),
+    #050505;
+}
+
+.human-world__hero::before {
+  content: "";
+  position: absolute;
+  width: min(68vw, 860px);
+  aspect-ratio: 1;
+  right: min(-18vw, -120px);
+  top: min(-14vw, -80px);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 50%;
+  box-shadow: 0 0 120px rgba(46,46,255,.12) inset;
+}
+
+.human-dependency-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  border-top: 1px solid rgba(255,255,255,.18);
+  border-left: 1px solid rgba(255,255,255,.18);
+}
+
+.human-dependency-grid > a {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(22px,3vw,36px);
+  border-right: 1px solid rgba(255,255,255,.18);
+  border-bottom: 1px solid rgba(255,255,255,.18);
+  transition: background .22s ease, transform .22s ease;
+}
+
+.human-dependency-grid > a:hover,
+.human-dependency-grid > a:focus-visible {
+  background: rgba(255,255,255,.055);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+@media (max-width: 820px) {
+  .mission-human-strip,
+  .mission-world-bridge { grid-template-columns: 1fr 1fr; }
+  .human-dependency-grid { grid-template-columns: 1fr; }
+  .human-world__hero::before { width: 92vw; right: -42vw; top: -12vw; }
+}
+
+@media (max-width: 520px) {
+  .mission-human-strip,
+  .mission-world-bridge { grid-template-columns: 1fr; }
+  .mission-human-strip__cell { min-height: 0; }
+  .mission-world-bridge__link { min-height: 108px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planet-awe__orbit--one,
+  .planet-awe__orbit--two,
+  .planet-awe__scan { animation: none; }
+  .mission-world-bridge__link,
+  .human-dependency-grid > a { transition: none; }
+}
