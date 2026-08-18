@@ -6,13 +6,17 @@ mkdirSync(OUT, { recursive: true });
 
 test("Jaguar Species World stays life-first while Atlas, evidence, relationships and cause paths remain truthful", async ({ page }, testInfo) => {
   await page.goto("/species/jaguar", { waitUntil: "domcontentloaded" });
+  const hero = page.locator("header");
   await expect(page.getByRole("heading", { name: "JAGUAR", level: 1 })).toBeVisible();
   await expect(page.getByText(/4PLANET SPECIES_ · E4RTH_/i)).toBeVisible();
   await expect(page.getByText(/largest cat in the Western Hemisphere/i).first()).toBeVisible();
   await expect(page.getByText(/GOLD REFERENCE 02/i)).toHaveCount(0);
   await expect(page.getByRole("link", { name: /EXPLORE WHERE IT'S BEEN RECORDED/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /share this species/i })).toBeVisible();
+  await expect(hero.getByText(/PANTANAL · SPECIES PORTRAIT/i)).toBeVisible();
+  await expect(hero.locator('source[media="(max-width: 640px)"]')).toHaveAttribute("srcset", "/assets/species/jaguar/SP-005-mobile.jpg");
   await expect(page.getByText(/Observation ≠ range ≠ population ≠ live tracking/i)).toBeVisible();
+  await hero.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-hero.png` });
 
   const atlas = page.getByRole("heading", { name: /Where has jaguar been recorded/i });
   await atlas.scrollIntoViewIfNeeded();
@@ -20,6 +24,8 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(page.getByText(/02_ WHERE · ATLAS_ · REPORTED OBSERVATIONS/i)).toBeVisible();
   await expect(page.getByText(/not a range map, population estimate or live tracking feed/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN JAGUAR IN FULL ATLAS/i })).toBeVisible();
+  await expect(page.getByText(/REPORTED OCCURRENCE · GBIF/i)).toBeVisible();
+  await page.locator("#atlas-window").screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-atlas.png` });
 
   const ecosystem = page.getByRole("heading", { name: /The jaguar does not exist alone/i });
   await ecosystem.scrollIntoViewIfNeeded();
@@ -56,8 +62,6 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(page.getByRole("button", { name: /Load and play jaguar video/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /SOURCE \+ LICENCE/i }).first()).toHaveAttribute("href", /commons\.wikimedia\.org/);
 
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar.png`, fullPage: true });
-
   const ecosystemLink = page.getByRole("link", { name: /AMAZON RAINFOREST/i }).first();
   await ecosystemLink.scrollIntoViewIfNeeded();
   await ecosystemLink.click();
@@ -65,5 +69,4 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(page.getByRole("heading", { name: /AMAZON RAINFOREST/i, level: 1 })).toBeVisible();
   await expect(page.getByText(/A region, not one uniform ecosystem/i)).toBeVisible();
   await expect(page.getByText(/PUBLIC ECOSYSTEM INTELLIGENCE ≠ FIELD AUTHORITY OR REPRESENTATION/i)).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-amazon.png`, fullPage: true });
 });
