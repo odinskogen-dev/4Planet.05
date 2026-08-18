@@ -6,6 +6,7 @@ import { ProductSwitcher } from "@/product/ProductSwitcher";
 import "@/styles/global.css";
 import "@/styles/living-systems-s05.css";
 import "@/styles/responsive-footer.css";
+import "@/styles/one-interface-universe.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
