@@ -15,7 +15,6 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(page.getByRole("button", { name: /share this species/i })).toBeVisible();
   await expect(hero.getByText(/PANTANAL · SPECIES PORTRAIT/i)).toBeVisible();
   await expect(hero.locator('source[media="(max-width: 640px)"]')).toHaveAttribute("srcset", "/assets/species/jaguar/SP-005-mobile.jpg");
-  await expect(page.getByText(/Observation ≠ range ≠ population ≠ live tracking/i)).toBeVisible();
   await hero.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-hero.png` });
 
   const atlas = page.getByRole("heading", { name: /Where has jaguar been recorded/i });
@@ -45,6 +44,7 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await expect(evidence).toBeVisible();
   await expect(page.getByText(/SPECIES_ · EVIDENCE/i)).toBeVisible();
   await expect(page.getByText(/current presence, abundance or population status/i).first()).toBeVisible();
+  await expect(page.getByText(/SOURCE-BACKED SPECIES CONTEXT ≠ LOCAL PRESENCE/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /Panthera — Jaguar/i }).first()).toHaveAttribute("href", /panthera\.org\/cat\/jaguar/);
 
   const pressure = page.getByRole("heading", { name: /Threats have causes/i });
