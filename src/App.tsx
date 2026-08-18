@@ -4,6 +4,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import "@/styles/global.css";
+import "@/styles/living-systems-s05.css";
 import "@/styles/responsive-footer.css";
 
 function AtlasProductSwitcher() {
