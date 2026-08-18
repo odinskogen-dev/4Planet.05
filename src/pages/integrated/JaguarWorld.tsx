@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { SpeciesAtlasWindow } from "@/components/species/SpeciesAtlasWindow";
 import { SpeciesEvidence } from "@/components/species/SpeciesEvidence";
+import { SpeciesNodeCard, type SpeciesRelationshipNode } from "@/components/species/SpeciesNodeCard";
 import { SpeciesPressurePath, type SpeciesPressureItem } from "@/components/species/SpeciesPressurePath";
 import { speciesBySlug } from "@/data/species";
 import { speciesMedia } from "@/data/speciesMedia";
@@ -24,6 +25,18 @@ const PREY = [
   { name: "CAIMANS", kind: "REPTILE PREY", note: "Jaguars are documented taking crocodilians, including in wetland systems such as the Pantanal." },
   { name: "DEER", kind: "MAMMAL PREY", note: "A documented prey group; this card does not imply a single deer species or local diet share." },
 ];
+
+const CAPYBARA_NODE: SpeciesRelationshipNode = {
+  id: "taxon:gbif:2437610",
+  commonName: "Capybara",
+  scientificName: "Hydrochoerus hydrochaeris",
+  relationshipLabel: "DOCUMENTED JAGUAR PREY · SOUTHERN PANTANAL STUDY CONTEXT",
+  relationshipSummary: "Capybara is a documented jaguar prey taxon. A peer-reviewed Southern Pantanal diet study provides a bounded route into this relationship while also showing why jaguar diet must not be treated as fixed across places.",
+  boundary: "The cited study is from the Southern Pantanal and its field data span November 2001–April 2004. This relationship card does not claim that capybara has the same dietary importance everywhere, does not diagnose a local Jaguar diet in the Amazon, and does not create a Capybara Species World before that profile is ready.",
+  sourceLabel: "PERILLI ET AL. 2016 · PLOS ONE",
+  sourceUrl: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0151814",
+  atlasHref: "/atlas?entity=taxon%3Agbif%3A2437610&journey=jaguar-living-web",
+};
 
 const JAGUAR_PRESSURES: SpeciesPressureItem[] = [
   {
@@ -163,8 +176,9 @@ export default function JaguarWorld() {
                 </button>;
               })}
             </div>
+            {openNode === "CAPYBARAS" && <div style={{ marginTop: 18 }}><SpeciesNodeCard node={CAPYBARA_NODE} /></div>}
             <p style={{ margin: "20px 0 0", maxWidth: 760, fontSize: 12.5, color: "rgba(8,8,8,.58)", lineHeight: 1.6 }}>These are broad prey examples, not a local diet assessment or fixed food web. Relationship importance varies by place and prey availability.</p>
-            <a href="https://panthera.org/cat/jaguar" target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 15, color: T.blue }}>OPEN JAGUAR SOURCE ↗</a>
+            <a href="https://panthera.org/cat/jaguar" target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 15, color: T.blue }}>OPEN JAGUAR RANGE-WIDE SOURCE ↗</a>
           </div>
         </section>
 
