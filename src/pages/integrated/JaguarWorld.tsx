@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { SpeciesAtlasWindow } from "@/components/species/SpeciesAtlasWindow";
+import { SpeciesEvidence } from "@/components/species/SpeciesEvidence";
 import { speciesBySlug } from "@/data/species";
 import { speciesMedia } from "@/data/speciesMedia";
 import { T } from "@/styles/tokens";
@@ -91,6 +92,12 @@ export default function JaguarWorld() {
         </section>
 
         <div id="atlas-window"><SpeciesAtlasWindow gbifKey={profile.gbifKey} commonName={profile.commonName} scientificName={profile.scientificName} entityId={profile.id} journey={profile.journey} /></div>
+
+        <SpeciesEvidence
+          profile={profile}
+          title="The evidence stays with the animal."
+          intro="The first view remains life-first. When you go deeper, each material species-level statement carries a source, date and boundary — without turning the experience into a compliance wall."
+        />
 
         <section id="ecosystem" style={{ background: "#eef5ed" }}>
           <div style={{ ...max, paddingTop: "clamp(60px,9vw,116px)", paddingBottom: "clamp(60px,9vw,116px)" }}>
