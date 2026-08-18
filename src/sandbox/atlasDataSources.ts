@@ -5,6 +5,7 @@ export type SandboxRasterDescriptor = {
   authority: string;
   product: string;
   layer: string;
+  style?: string;
   docs: string;
   service: string;
   attribution: string;
@@ -36,9 +37,10 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   authority: "European Marine Observation and Data Network (EMODnet)",
   product: "EUSeaMap 2025 · MSFD habitat classification · 800 m simplification",
   layer: "eusm2025_msfd_800",
+  style: "eusm2019_msfd_800",
   docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
   service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
-  attribution: "EMODnet Seabed Habitats / EUSeaMap 2025",
+  attribution: "EMODnet Seabed Habitats / EUSeaMap 2025 · CC BY 4.0",
   limitation:
     "This is a broad-scale predictive habitat-map product. Classification, scale and model confidence must not be presented as direct field observation or current ecological condition.",
   checkedAt: "2026-08-19",
@@ -53,7 +55,7 @@ export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
     "request=GetMap",
     "version=1.1.1",
     `layers=${encodeURIComponent(descriptor.layer)}`,
-    "styles=",
+    `styles=${encodeURIComponent(descriptor.style || "")}`,
     "format=image%2Fpng",
     "transparent=true",
     "tiled=true",
