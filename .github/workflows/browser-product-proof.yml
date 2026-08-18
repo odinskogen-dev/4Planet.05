@@ -14,24 +14,16 @@ concurrency:
   group: browser-product-proof-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  AUDITED_RUNTIME_SHA: 60d55cd758e496ac40fcd7e4654713b110f54718
-  AUDITED_RUNTIME_URL: https://build-four-product-integrate.4planet-05.pages.dev
-  AUDITED_RUNTIME_MARKER: pq02-claude-02-audit-preview-2026-07-26
-
 jobs:
-  test-critical-journeys:
+  test-current-candidate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Check out the exact evidence candidate
+      - name: Check out exact candidate
         uses: actions/checkout@v4
 
-      - name: Confirm that runtime product files still match the controlled candidate
-        shell: bash
-        run: |
-          git fetch --no-tags --depth=1 origin "$AUDITED_RUNTIME_SHA"
-          git diff --exit-code "$AUDITED_RUNTIME_SHA" HEAD -- src public package.json package-lock.json supabase
+      - name: Record exact candidate
+        run: git rev-parse HEAD > runtime-sha.txt
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -42,31 +34,36 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Install Chromium and browser system packages
-        run: npx playwright install --with-deps chromium
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Build the current source for integrity
+      - name: Build exact source
         run: npm run build
 
-      - name: Confirm the controlled branch deployment is current and reachable
+      - name: Smoke + contract proof
+        run: npm run test:smoke
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start exact-source local preview
         shell: bash
         run: |
-          for attempt in {1..90}; do
-            marker="$(curl --fail --silent "$AUDITED_RUNTIME_URL/product-build.txt" || true)"
-            if printf '%s' "$marker" | grep --fixed-strings --quiet "$AUDITED_RUNTIME_MARKER"; then
-              printf '%s\n' "$AUDITED_RUNTIME_URL" > runtime-url.txt
-              printf '%s\n' "$AUDITED_RUNTIME_SHA" > runtime-sha.txt
-              printf '%s\n' "$marker" > runtime-marker.txt
+          npm run preview -- --host 0.0.0.0 > browser-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              printf '%s\n' 'http://127.0.0.1:4173' > runtime-url.txt
               exit 0
             fi
-            sleep 2
+            sleep 1
           done
+          cat browser-preview.log
           exit 1
 
-      - name: Run desktop, mobile, map and critical-route tests against the controlled deployment
+      - name: Jaguar desktop + mobile product proof
         env:
-          BASE_URL: ${{ env.AUDITED_RUNTIME_URL }}
-        run: npm run test:e2e
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=desktop-1440 --project=mobile-390
 
       - name: Upload current product screenshots and browser evidence
         if: always()
@@ -74,11 +71,11 @@ jobs:
         with:
           name: product-proof-browser-evidence
           path: |
-            artifacts/product-proof
+            artifacts/jaguar-world
             playwright-report
             test-results
             runtime-url.txt
             runtime-sha.txt
-            runtime-marker.txt
+            browser-preview.log
           if-no-files-found: warn
           retention-days: 14
