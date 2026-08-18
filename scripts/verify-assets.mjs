@@ -74,3 +74,32 @@ line("────────────────────────�
 
 if (missing.length) { line("RESULT: FAIL — missing asset references must be fixed."); process.exit(1); }
 line("RESULT: PASS — no missing asset references.");
+
+// TEST-BRANCH ONLY: prove whether a GitHub push can create a real Cloudflare Pages preview.
+// This branch is never production and this probe must not be merged into canonical source.
+if (process.env.GITHUB_ACTIONS === "true") {
+  const previewUrl = "https://release-axe-preview-0818.4planet-05.pages.dev/axe-cloudflare-preview-test.txt";
+  const expected = "4PLANET_ AXE CLOUDFLARE PREVIEW PROBE";
+  line(`AXE PREVIEW PROBE: ${previewUrl}`);
+  let reached = false;
+  for (let attempt = 1; attempt <= 60; attempt += 1) {
+    try {
+      const response = await fetch(previewUrl, { redirect: "follow" });
+      const body = await response.text();
+      if (response.ok && body.includes(expected)) {
+        line(`AXE PREVIEW PROBE: PASS on attempt ${attempt}`);
+        line(`AXE PREVIEW URL: ${previewUrl}`);
+        reached = true;
+        break;
+      }
+      line(`AXE PREVIEW PROBE: attempt ${attempt} HTTP ${response.status}`);
+    } catch (error) {
+      line(`AXE PREVIEW PROBE: attempt ${attempt} ${error?.message || error}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  if (!reached) {
+    line("AXE PREVIEW PROBE: FAIL — no matching Cloudflare branch preview observed within 120s.");
+    process.exit(1);
+  }
+}
