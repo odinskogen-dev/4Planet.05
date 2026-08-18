@@ -125,7 +125,23 @@ export default function JaguarWorld() {
           </div>
         </section>
 
-        <div id="atlas-window"><SpeciesAtlasWindow gbifKey={profile.gbifKey} commonName={profile.commonName} scientificName={profile.scientificName} entityId={profile.id} journey={profile.journey} /></div>
+        <div id="atlas-window">
+          <SpeciesAtlasWindow
+            gbifKey={profile.gbifKey}
+            commonName={profile.commonName}
+            scientificName={profile.scientificName}
+            entityId={profile.id}
+            journey={profile.journey}
+            ecosystems={[
+              {
+                label: "AMAZON RAINFOREST",
+                href: "/ecosystems/amazon-rainforest",
+                relationship: "CURATED REGIONAL LIVING-SYSTEM CONTEXT",
+                boundary: "A bounded 4PLANET learning bridge. It is not inferred from GBIF occurrence points and does not assert ecosystem membership for a particular observation, animal or population.",
+              },
+            ]}
+          />
+        </div>
 
         <section id="ecosystem" style={{ background: "#eef5ed" }}>
           <div style={{ ...max, paddingTop: "clamp(60px,9vw,116px)", paddingBottom: "clamp(60px,9vw,116px)" }}>
