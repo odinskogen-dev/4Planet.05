@@ -39,6 +39,11 @@ jobs:
           ATLAS_PROBE_CONCURRENCY: 4
         run: node scripts/atlas-data-sandbox/probe.mjs
 
+      - name: Inventory advertised OGC layers
+        env:
+          ATLAS_PROBE_TIMEOUT_MS: 12000
+        run: node scripts/atlas-data-sandbox/ogc-inventory.mjs
+
       - name: Upload source-health evidence
         if: always()
         uses: actions/upload-artifact@v4
