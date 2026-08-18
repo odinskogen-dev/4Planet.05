@@ -84,6 +84,7 @@ export default function JaguarWorld() {
   const [motion, setMotion] = useState(false);
   const [openNode, setOpenNode] = useState<string | null>(null);
   const hero = media?.localPath || "";
+  const heroMobile = "/assets/species/jaguar/SP-005-mobile.jpg";
   const profileHref = useMemo(() => "/species/jaguar", []);
 
   if (!profile) return null;
@@ -92,7 +93,12 @@ export default function JaguarWorld() {
     <PublicShell>
       <article style={{ background: "#fff", color: T.ink }}>
         <header style={{ position: "relative", minHeight: "min(880px,calc(100vh - 64px))", background: "#020603", color: "#fff", overflow: "hidden" }}>
-          {hero && <img src={hero} alt="Jaguar resting on a tree limb in the Pantanal" fetchPriority="high" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: .88 }} />}
+          {hero && (
+            <picture style={{ position: "absolute", inset: 0, display: "block" }}>
+              <source media="(max-width: 640px)" srcSet={heroMobile} />
+              <img src={hero} alt="Jaguar resting on a tree limb in the Pantanal" fetchPriority="high" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: .88 }} />
+            </picture>
+          )}
           <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.34) 50%,rgba(0,0,0,.10) 100%),linear-gradient(0deg,rgba(0,0,0,.70),transparent 58%)" }} />
           <div style={{ ...max, position: "relative", zIndex: 1, minHeight: "min(880px,calc(100vh - 64px))", display: "flex", flexDirection: "column", justifyContent: "flex-end", paddingTop: 100, paddingBottom: "clamp(42px,7vw,84px)" }}>
             <div style={{ ...mono, color: T.acid }}>4PLANET SPECIES_ · E4RTH_</div>
@@ -100,7 +106,7 @@ export default function JaguarWorld() {
             <div style={{ marginTop: 18, fontFamily: T.display, fontSize: "clamp(20px,3vw,34px)", fontStyle: "italic", opacity: .84 }}>{profile.scientificName}</div>
             <p style={{ margin: "28px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.3vw,25px)", lineHeight: 1.5, color: "rgba(255,255,255,.9)" }}>The largest cat in the Western Hemisphere. Follow one living animal outward — into place, prey, ecosystems and the pressures shaping its future.</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}><a href="#atlas-window" style={{ color: "#071009", background: T.acid, padding: "12px 15px", textDecoration: "none", fontSize: 12, fontWeight: 650 }}>EXPLORE WHERE IT'S BEEN RECORDED ↓</a><ShareButton /></div>
-            {media?.attribution && <div style={{ ...mono, position: "absolute", right: "clamp(18px,5vw,72px)", bottom: 14, maxWidth: 520, textAlign: "right", color: "rgba(255,255,255,.62)", fontSize: 8.5 }}>{media.attribution}</div>}
+            {media?.attribution && <div style={{ ...mono, position: "absolute", right: "clamp(18px,5vw,72px)", bottom: 14, maxWidth: 600, textAlign: "right", color: "rgba(255,255,255,.62)", fontSize: 8.5 }}>PANTANAL · SPECIES PORTRAIT · {media.attribution}</div>}
           </div>
         </header>
 
@@ -114,8 +120,6 @@ export default function JaguarWorld() {
               <div>
                 <Fact label="IDENTITY" value={`${profile.commonName} · ${profile.scientificName}`} boundary={`GBIF taxon ${profile.gbifKey} · ${profile.taxonomicStatus}`} />
                 <Fact label="RANGE-WIDE CONTEXT" value={profile.habitat || "Source review pending"} boundary="Descriptive species-level context; not a local range, presence or population claim." />
-                <Fact label="SOURCE CHECK" value={profile.descriptorSource?.source || "Source review pending"} boundary={profile.descriptorSource ? `Checked ${profile.descriptorSource.checkedAt} · ${profile.descriptorSource.note}` : undefined} />
-                <Fact label="EVIDENCE BOUNDARY" value="Observation ≠ range ≠ population ≠ live tracking." />
               </div>
             </div>
           </div>
@@ -166,7 +170,7 @@ export default function JaguarWorld() {
           <div style={{ ...max, paddingTop: "clamp(60px,9vw,116px)", paddingBottom: "clamp(60px,9vw,116px)" }}>
             <SectionHead dark kicker="07_ LIFE IN MOTION" title="See the animal move." intro="Motion loads only when you ask for it. Source, creator and licence stay visible. The clip is species context — not evidence of present location, range or population." />
             <div style={{ marginTop: 42, position: "relative", aspectRatio: "16/9", overflow: "hidden", border: "1px solid rgba(255,255,255,.18)", background: "#000" }}>
-              {!motion ? <><img src={hero} alt="Jaguar video poster" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: .62 }} /><button type="button" onClick={() => setMotion(true)} aria-label="Load and play jaguar video" style={{ position: "absolute", inset: 0, margin: "auto", width: 110, height: 110, borderRadius: "50%", border: "1px solid rgba(255,255,255,.65)", color: "#fff", background: "rgba(0,0,0,.45)", cursor: "pointer", fontSize: 32 }}>▶</button><div style={{ position: "absolute", left: 16, bottom: 14, ...mono, color: "rgba(255,255,255,.72)" }}>LOAD MOTION · NO AUTOPLAY · ~32 MB ORIGINAL SOURCE</div></> : <video controls autoPlay playsInline preload="metadata" poster={hero} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}><source src={VIDEO.src} type="video/webm" />Your browser does not support WebM video.</video>}
+              {!motion ? <><picture style={{ display: "block", width: "100%", height: "100%" }}><source media="(max-width: 640px)" srcSet={heroMobile} /><img src={hero} alt="Jaguar video poster" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: .62 }} /></picture><button type="button" onClick={() => setMotion(true)} aria-label="Load and play jaguar video" style={{ position: "absolute", inset: 0, margin: "auto", width: 110, height: 110, borderRadius: "50%", border: "1px solid rgba(255,255,255,.65)", color: "#fff", background: "rgba(0,0,0,.45)", cursor: "pointer", fontSize: 32 }}>▶</button><div style={{ position: "absolute", left: 16, bottom: 14, ...mono, color: "rgba(255,255,255,.72)" }}>LOAD MOTION · NO AUTOPLAY · ~32 MB ORIGINAL SOURCE</div></> : <video controls autoPlay playsInline preload="metadata" poster={heroMobile} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}><source src={VIDEO.src} type="video/webm" />Your browser does not support WebM video.</video>}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap", marginTop: 14, ...mono, color: "rgba(255,255,255,.58)", lineHeight: 1.6 }}><span>VIDEO: {VIDEO.creator} · WIKIMEDIA COMMONS · {VIDEO.licence}</span><a href={VIDEO.source} target="_blank" rel="noreferrer" style={{ color: T.acid }}>SOURCE + LICENCE ↗</a></div>
           </div>
