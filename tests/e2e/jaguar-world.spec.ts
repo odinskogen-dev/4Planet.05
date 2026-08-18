@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/jaguar-world";
 mkdirSync(OUT, { recursive: true });
 
-test("Jaguar Species World exposes Atlas, living web, ecosystem and motion without breaking truth boundaries", async ({ page }, testInfo) => {
+test("Jaguar Species World exposes Atlas, evidence, living web, ecosystem and motion without breaking truth boundaries", async ({ page }, testInfo) => {
   await page.goto("/species/jaguar", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "JAGUAR", level: 1 })).toBeVisible();
   await expect(page.getByText(/GOLD REFERENCE 02/i)).toBeVisible();
@@ -17,6 +17,13 @@ test("Jaguar Species World exposes Atlas, living web, ecosystem and motion witho
   await expect(page.getByText(/ATLAS_ · SPECIES WINDOW · OBSERVATIONS/i)).toBeVisible();
   await expect(page.getByText(/not a range map, population estimate or live tracking feed/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN JAGUAR IN FULL ATLAS/i })).toBeVisible();
+
+  const evidence = page.getByRole("heading", { name: /The evidence stays with the animal/i });
+  await evidence.scrollIntoViewIfNeeded();
+  await expect(evidence).toBeVisible();
+  await expect(page.getByText(/SPECIES_ · EVIDENCE/i)).toBeVisible();
+  await expect(page.getByText(/current presence, abundance or population status/i).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Panthera — Jaguar/i })).toHaveAttribute("href", /panthera\.org\/cat\/jaguar/);
 
   const foodWeb = page.getByRole("heading", { name: /Predator becomes relationship/i });
   await foodWeb.scrollIntoViewIfNeeded();
