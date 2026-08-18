@@ -32,7 +32,7 @@ export default function AtlasDataSandbox() {
         style: "https://tiles.openfreemap.org/styles/liberty",
         center: [8, 57],
         zoom: 3.4,
-        attributionControl: true,
+        attributionControl: { compact: true },
       });
       mapRef.current = map;
 
