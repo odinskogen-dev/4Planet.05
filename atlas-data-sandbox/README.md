@@ -5,6 +5,9 @@ Status: INTERNAL DATA-INTEGRATION LAB. NOT PRODUCTION. NOT A SECOND ATLAS.
 Baseline: `3364df8b5989582fbcbc31d1ff102ca5bb852954`
 Branch: `sandbox/atlas-data-lab-20260819`
 Control issue: `#71`
+Draft control PR: `#72` — DO NOT MERGE
+
+Current slice: SOURCE CATALOGUE + PROBE FACTORY + EMODNET BATHYMETRY ADAPTER CANDIDATE. Network and map proof remain required before promotion.
 
 ## Purpose
 
