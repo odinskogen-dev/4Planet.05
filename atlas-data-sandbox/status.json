@@ -52,6 +52,36 @@
         "interaction regression in production-shaped ATLAS"
       ]
     },
+    "emodnet-fishing-vessel-density": {
+      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
+      "mapGreen": true,
+      "promotionCandidate": false,
+      "evidence": {
+        "providerFamily": "EMODnet Human Activities",
+        "layer": "vesseldensity_01avg",
+        "style": "VesselDensity",
+        "time": "2023-01-01T00:00:00Z",
+        "desktopVisual": "VISIBLE_FISHING_VESSEL_DENSITY_RASTER",
+        "mobile390Visual": "VISIBLE_FISHING_VESSEL_DENSITY_RASTER",
+        "browserNetwork": "2XX_WMS",
+        "measure": "AIS-derived fishing-vessel density; provider product expressed as hours per square kilometre per month and summarised as annual averages",
+        "truthBoundary": "Historical/reference vessel-density context only. Not live fishing activity, catch, legality, illegal-fishing evidence or ecological impact."
+      },
+      "correctionHistory": [
+        "Initial annual-average layer requests were source-loaded but visually blank in the tested view.",
+        "Live WMS capabilities showed a time dimension with annual slices from 2017 through 2024.",
+        "The sandbox deliberately selected the 2023 slice instead of default 2024 because provider metadata reports reduced satellite-data density during part of 2024.",
+        "The explicit 2023 time parameter produced a visible fishing-vessel-density raster on desktop and 390px mobile.",
+        "MAP_GREEN was granted only after browser-network proof and human visual inspection."
+      ],
+      "remainingBeforePromotion": [
+        "legend/unit integration",
+        "full provider licence/attribution review",
+        "year selector and temporal disclosure",
+        "performance budget in full ATLAS",
+        "production-shaped ATLAS interaction regression"
+      ]
+    },
     "global-fishing-watch": {
       "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "ADAPTER_GREEN", "AUTH_REQUIRED"],
       "mapGreen": false,
