@@ -2,7 +2,7 @@ import { T } from "@/styles/tokens";
 
 export type PressureCauseClass = "HUMAN_SYSTEM" | "NATURAL_SYSTEM" | "MIXED" | "UNKNOWN";
 
-export interface SpeciesPressureItem {
+export interface PressurePathItem {
   id: string;
   label: string;
   summary: string;
@@ -13,6 +13,8 @@ export interface SpeciesPressureItem {
   boundary: string;
 }
 
+export type SpeciesPressureItem = PressurePathItem;
+
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 
 function causeCopy(cause: PressureCauseClass) {
@@ -22,21 +24,25 @@ function causeCopy(cause: PressureCauseClass) {
   return "CAUSE UNKNOWN";
 }
 
-export function SpeciesPressurePath({
+export function PressurePath({
   items,
-  title = "Threats have causes.",
+  eyebrow = "LIVING SYSTEM_ · PRESSURE → CAUSE",
+  title = "Pressures have causes.",
   intro = "A pressure is not the end of the chain. Follow the evidence into the systems and mechanisms that shape it — without assuming every pressure has the same kind of cause.",
+  ariaId = "pressure-path-title",
 }: {
-  items: SpeciesPressureItem[];
+  items: PressurePathItem[];
+  eyebrow?: string;
   title?: string;
   intro?: string;
+  ariaId?: string;
 }) {
   return (
-    <section aria-labelledby="species-pressure-title" style={{ background: "#0b0b0b", color: "#fff" }}>
+    <section aria-labelledby={ariaId} style={{ background: "#0b0b0b", color: "#fff" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(60px,9vw,116px) clamp(18px,5vw,72px)" }}>
         <div style={{ maxWidth: 860 }}>
-          <div style={{ ...mono, color: T.acid }}>SPECIES_ · PRESSURE → CAUSE</div>
-          <h2 id="species-pressure-title" style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(38px,6vw,78px)", letterSpacing: "-.05em", lineHeight: .94 }}>
+          <div style={{ ...mono, color: T.acid }}>{eyebrow}</div>
+          <h2 id={ariaId} style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(38px,6vw,78px)", letterSpacing: "-.05em", lineHeight: .94 }}>
             {title}
           </h2>
           <p style={{ margin: "24px 0 0", maxWidth: 720, fontSize: "clamp(16px,2vw,20px)", lineHeight: 1.58, color: "rgba(255,255,255,.74)" }}>{intro}</p>
@@ -67,5 +73,25 @@ export function SpeciesPressurePath({
       </div>
       <style>{`@media(max-width:760px){.species-pressure-grid{grid-template-columns:1fr!important}}`}</style>
     </section>
+  );
+}
+
+export function SpeciesPressurePath({
+  items,
+  title = "Threats have causes.",
+  intro = "A pressure is not the end of the chain. Follow the evidence into the systems and mechanisms that shape it — without assuming every pressure has the same kind of cause.",
+}: {
+  items: SpeciesPressureItem[];
+  title?: string;
+  intro?: string;
+}) {
+  return (
+    <PressurePath
+      items={items}
+      eyebrow="SPECIES_ · PRESSURE → CAUSE"
+      title={title}
+      intro={intro}
+      ariaId="species-pressure-title"
+    />
   );
 }
