@@ -6,7 +6,7 @@ mkdirSync(OUT, { recursive: true });
 
 test("Jaguar Species World stays life-first while Atlas, evidence, relationships and cause paths remain truthful", async ({ page }, testInfo) => {
   await page.goto("/species/jaguar", { waitUntil: "domcontentloaded" });
-  const hero = page.locator("header");
+  const hero = page.locator("article > header").first();
   await expect(page.getByRole("heading", { name: "JAGUAR", level: 1 })).toBeVisible();
   await expect(page.getByText(/4PLANET SPECIES_ · E4RTH_/i)).toBeVisible();
   await expect(page.getByText(/largest cat in the Western Hemisphere/i).first()).toBeVisible();
