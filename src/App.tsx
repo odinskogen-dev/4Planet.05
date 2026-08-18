@@ -1,5 +1,5 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
-import { AppRoutes } from "@/routes/router";
+import { AppRoutes, LabsHostRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
@@ -16,13 +16,27 @@ function AtlasProductSwitcher() {
   );
 }
 
+function ProductSurface() {
+  const isLabsHost = window.location.hostname.toLowerCase() === "labs.4planet.org";
+
+  if (isLabsHost) {
+    return <LabsHostRoutes />;
+  }
+
+  return (
+    <>
+      <ContextRetained />
+      <AtlasProductSwitcher />
+      <AppRoutes />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <ContextRetained />
-      <AtlasProductSwitcher />
-      <AppRoutes />
+      <ProductSurface />
     </BrowserRouter>
   );
 }
