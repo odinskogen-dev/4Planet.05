@@ -18,7 +18,6 @@ type AtlasState =
 type SpeciesAtlasMode = "OBSERVATIONS" | "ECOSYSTEMS";
 
 export interface SpeciesAtlasEcosystemAnchor {
-  id: string;
   label: string;
   href: string;
   relationship: string;
@@ -288,7 +287,7 @@ export function SpeciesAtlasWindow({
           ) : (
             <div style={{ minHeight: 430, border: "1px solid rgba(255,255,255,.18)", background: "#0c100d", display: "grid", alignContent: "stretch" }}>
               {ecosystems.map((ecosystem) => (
-                <Link key={ecosystem.id} to={ecosystem.href} style={{ padding: "clamp(26px,5vw,52px)", color: "#fff", textDecoration: "none", display: "flex", minHeight: 300, flexDirection: "column", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.16)" }}>
+                <Link key={ecosystem.href} to={ecosystem.href} style={{ padding: "clamp(26px,5vw,52px)", color: "#fff", textDecoration: "none", display: "flex", minHeight: 300, flexDirection: "column", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.16)" }}>
                   <div>
                     <div style={{ ...mono, color: T.acid }}>{ecosystem.relationship}</div>
                     <h3 style={{ margin: "18px 0 0", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,5vw,68px)", letterSpacing: "-.045em", lineHeight: .95 }}>{ecosystem.label}</h3>
