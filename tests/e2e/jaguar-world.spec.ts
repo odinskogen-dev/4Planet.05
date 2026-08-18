@@ -45,7 +45,7 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await pressure.scrollIntoViewIfNeeded();
   await expect(pressure).toBeVisible();
   await expect(page.getByText(/SPECIES_ · PRESSURE → CAUSE/i)).toBeVisible();
-  await expect(page.getByText("HUMAN SYSTEM")).toHaveCount(3);
+  await expect(page.getByText("HUMAN SYSTEM", { exact: true })).toHaveCount(3);
   await expect(page.getByText(/HUMAN SYSTEM ≠ DEFAULT/i)).toBeVisible();
   await expect(page.getByText(/DIRECT KILLING \+ ILLEGAL TRADE/i)).toHaveCount(0);
 
