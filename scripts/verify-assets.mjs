@@ -81,7 +81,6 @@ if (process.env.GITHUB_ACTIONS === "true") {
       const body = await response.text();
       if (response.ok && body.includes(expected)) {
         line(`AXE PRODUCTION PROBE: PASS on attempt ${attempt}`);
-        line(body.trim());
         reached = true;
         break;
       }
@@ -95,4 +94,17 @@ if (process.env.GITHUB_ACTIONS === "true") {
     line("AXE PRODUCTION PROBE: FAIL — production marker not observed within 120s.");
     process.exit(1);
   }
+
+  const buildUrl = "https://4planet.org/product-build.txt";
+  const expectedSha = "4039b549102be0d2cf42ee02022c81a34b00d0cd";
+  line(`AXE BUILD PROVENANCE PROBE: ${buildUrl}`);
+  const buildResponse = await fetch(buildUrl, { redirect: "follow", cache: "no-store" });
+  const buildBody = await buildResponse.text();
+  if (!buildResponse.ok || !buildBody.includes("Build status: cloudflare-pages-build") || !buildBody.includes(`Remote SHA: ${expectedSha}`)) {
+    line(`AXE BUILD PROVENANCE PROBE: FAIL HTTP ${buildResponse.status}`);
+    line(buildBody.trim());
+    process.exit(1);
+  }
+  line("AXE BUILD PROVENANCE PROBE: PASS");
+  line(buildBody.trim());
 }
