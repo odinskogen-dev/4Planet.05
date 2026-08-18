@@ -11,21 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Wait for exact production SHA
+      - name: Wait for exact production product SHA
         shell: bash
         run: |
-          expected='c7de7f796011003d9b12c20c8dcac0fd581027c7'
+          expected='5182d7c1b25be7b3bd731b505601217635397ef3'
           for attempt in {1..60}; do
             body="$(curl --fail --silent --show-error --max-time 15 https://4planet.org/product-build.txt || true)"
             if printf '%s' "$body" | grep -Fq "Remote SHA: $expected" && printf '%s' "$body" | grep -Fq 'Build status: cloudflare-pages-build'; then
               printf '%s\n' "$body"
-              echo "PASS — exact production SHA is live"
+              echo "PASS — audited Jaguar product SHA is live"
               exit 0
             fi
-            echo "Waiting for Cloudflare production ($attempt/60)…"
+            echo "Waiting for audited Cloudflare product deployment ($attempt/60)…"
             sleep 5
           done
-          echo 'Expected production SHA was not observed.'
+          echo 'Audited Jaguar product SHA was not observed.'
           printf '%s\n' "$body"
           exit 1
 
