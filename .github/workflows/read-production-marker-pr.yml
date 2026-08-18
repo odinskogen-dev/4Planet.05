@@ -1,0 +1,24 @@
+name: Read Production Marker PR
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  read-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read production build marker and routes
+        shell: bash
+        run: |
+          echo '=== PRODUCT BUILD ==='
+          curl --fail --silent --show-error https://4planet.org/product-build.txt
+          echo '=== ROUTES ==='
+          for url in https://4planet.org/species/jaguar https://4planet.org/ecosystems/amazon-rainforest https://4planet.org/atlas; do
+            code="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
+            echo "$code $url"
+            test "$code" = '200'
+          done
