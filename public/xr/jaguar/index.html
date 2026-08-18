@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#020b05" />
+  <title>Jaguar XR — 4PLANET SPECIES_</title>
+  <link rel="stylesheet" href="/xr/jaguar/jaguar-xr.css" />
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+  <script src="/xr/jaguar/jaguar-xr.js"></script>
+</head>
+<body>
+  <div id="truth-shell" role="region" aria-label="Jaguar XR truth and navigation controls">
+    <div class="topline">
+      <a href="/species/jaguar" class="brand">4PLANET SPECIES_</a>
+      <span id="xr-status">CHECKING WEBXR</span>
+    </div>
+    <div class="intro">
+      <div class="eyebrow">JAGUAR · PANTHERA ONCA · IMMERSIVE LENS v0.1</div>
+      <h1>Enter the living system.</h1>
+      <p>Look around. Select the green nodes. Move from the animal to relationships, pressures, evidence and possible responses.</p>
+      <div class="boundary">IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT A PRECISE ECOLOGICAL SIMULATION</div>
+    </div>
+    <div class="desktop-hint">DRAG / LOOK · WASD TO MOVE · SELECT GREEN NODES · HEADSET: USE ENTER VR</div>
+  </div>
+
+  <a-scene
+    background="color: #020b05"
+    fog="type: exponential; color: #031208; density: 0.035"
+    renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true"
+    webxr="optionalFeatures: local-floor, bounded-floor, hand-tracking"
+    vr-mode-ui="enabled: true"
+    loading-screen="backgroundColor: #020b05; dotsColor: #3AE86F"
+  >
+    <a-assets timeout="15000">
+      <img id="forest" src="/assets/missions/am4zonia/hero.jpg" crossorigin="anonymous" />
+      <img id="jaguar" src="/assets/species/jaguar/SP-005.jpg" crossorigin="anonymous" />
+    </a-assets>
+
+    <a-entity light="type: ambient; color: #91b79a; intensity: 0.55"></a-entity>
+    <a-entity light="type: directional; color: #d9ffe2; intensity: 0.75" position="-2 6 1"></a-entity>
+
+    <a-plane src="#forest" position="0 3 -11" width="21" height="13" material="shader: flat; opacity: 0.92"></a-plane>
+    <a-plane src="#forest" position="-9 3 -2" rotation="0 90 0" width="18" height="13" material="shader: flat; opacity: 0.52"></a-plane>
+    <a-plane src="#forest" position="9 3 -2" rotation="0 -90 0" width="18" height="13" material="shader: flat; opacity: 0.52"></a-plane>
+    <a-plane color="#06170b" position="0 0 -3" rotation="-90 0 0" width="26" height="26" material="roughness: 1"></a-plane>
+
+    <a-entity position="0 1.9 -5">
+      <a-plane src="#jaguar" width="5.2" height="3.35" material="shader: flat" position="0 0 0"></a-plane>
+      <a-text value="JAGUAR · PANTHERA ONCA" align="center" color="#FFFFFF" width="5.2" position="0 -1.92 0.03"></a-text>
+      <a-text value="SPECIES MEDIA · NOT AN OCCURRENCE RECORD" align="center" color="#9ccfa9" width="4.2" position="0 -2.18 0.03"></a-text>
+    </a-entity>
+
+    <a-sphere class="hotspot" radius="0.16" color="#3AE86F" position="-2.7 1.45 -3.8"
+      truth-hotspot="title: IDENTITY; body: Jaguar / Panthera onca. Canonical species identity is carried by the SPECIES layer.; source: GBIF TAXON 5219426; boundary: Identity does not establish local presence, population size or a live animal position."></a-sphere>
+    <a-text value="IDENTITY" color="#3AE86F" width="2.5" position="-3.05 1.12 -3.8" rotation="0 17 0"></a-text>
+
+    <a-sphere class="hotspot" radius="0.16" color="#3AE86F" position="2.65 1.35 -3.9"
+      truth-hotspot="title: RELATIONSHIP; body: Capybara is a documented jaguar prey taxon in a bounded Southern Pantanal study context.; source: PERILLI ET AL. 2016 · PLOS ONE; boundary: This does not imply the same dietary importance everywhere or diagnose an Amazon diet."></a-sphere>
+    <a-text value="PREY RELATIONSHIP" color="#3AE86F" width="2.8" position="2.05 1.02 -3.9" rotation="0 -16 0"></a-text>
+
+    <a-sphere class="hotspot" radius="0.16" color="#3AE86F" position="-3.25 2.75 -6.2"
+      truth-hotspot="title: LIVING SYSTEM; body: Connected habitats can support movement, prey access and gene flow across jaguar populations.; source: 4PLANET SPECIES SOURCE REVIEW · RANGE-WIDE CONTEXT; boundary: Connectivity needs and population effects are landscape-specific and require local evidence."></a-sphere>
+    <a-text value="CONNECTED HABITAT" color="#3AE86F" width="3" position="-4.1 3.02 -6.2" rotation="0 23 0"></a-text>
+
+    <a-sphere class="hotspot" radius="0.19" color="#FF4D22" position="3.25 2.8 -6.1"
+      truth-hotspot="title: PRESSURE → CAUSE; body: Habitat loss and fragmentation are documented range-wide pressure categories for jaguars. The immediate cause class in this current evidence path is human-driven habitat conversion and fragmentation.; source: PANTHERA — JAGUAR; boundary: Local intensity, mechanism and population effect require place-specific evidence."></a-sphere>
+    <a-text value="PRESSURE → CAUSE" color="#FF4D22" width="3" position="2.55 3.08 -6.1" rotation="0 -23 0"></a-text>
+
+    <a-entity id="truth-panel" position="0 3.8 -4.2">
+      <a-plane width="6.6" height="1.45" color="#061009" opacity="0.88"></a-plane>
+      <a-text id="panel-title" value="SELECT A NODE" color="#3AE86F" width="5.9" position="-3 0.42 0.02"></a-text>
+      <a-text id="panel-body" value="Truth stays attached to the experience." color="#FFFFFF" width="5.7" wrap-count="72" position="-3 0.12 0.02"></a-text>
+      <a-text id="panel-source" value="SOURCE · 4PLANET SPECIES_" color="#9ccfa9" width="5.7" wrap-count="82" position="-3 -0.30 0.02"></a-text>
+      <a-text id="panel-boundary" value="BOUNDARY · REPRESENTATION IS NOT OBSERVATION." color="#a9b5ad" width="5.7" wrap-count="88" position="-3 -0.55 0.02"></a-text>
+    </a-entity>
+
+    <a-box class="hotspot" position="0 1.2 -8.6" width="3.8" height="1" depth="0.18" color="#2E2EFF"
+      truth-hotspot="title: HOW DO WE SOLVE THIS?; body: Continue from pressure and cause into Solutions Intelligence. The XR lens should never stop at awareness.; source: 4PLANET SOLUTIONS INTELLIGENCE; boundary: Possible responses are not 4PLANET delivery claims.; href: /ecosystems/amazon-rainforest#pressures"></a-box>
+    <a-text value="HOW DO WE SOLVE THIS? →" align="center" color="#FFFFFF" width="4.6" position="0 1.2 -8.48"></a-text>
+
+    <a-entity id="rig" position="0 0 2.3">
+      <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+        <a-cursor fuse="true" fuse-timeout="850" raycaster="objects: .hotspot" color="#3AE86F" opacity="0.9"></a-cursor>
+      </a-camera>
+      <a-entity laser-controls="hand: left" raycaster="objects: .hotspot"></a-entity>
+      <a-entity laser-controls="hand: right" raycaster="objects: .hotspot"></a-entity>
+    </a-entity>
+  </a-scene>
+</body>
+</html>
