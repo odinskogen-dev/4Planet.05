@@ -1,0 +1,70 @@
+name: ATLAS Data Sandbox
+
+on:
+  push:
+    branches:
+      - sandbox/atlas-data-lab-20260819
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-data-sandbox-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-probes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout sandbox exact SHA
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate source catalogue
+        run: node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('atlas-data-sandbox/sources.json','utf8')); if(!Array.isArray(x.sources)||x.sources.length<10) throw new Error('source catalogue invalid'); console.log('catalogue sources='+x.sources.length)"
+
+      - name: Probe public source contracts
+        env:
+          ATLAS_PROBE_TIMEOUT_MS: 12000
+          ATLAS_PROBE_CONCURRENCY: 4
+        run: node scripts/atlas-data-sandbox/probe.mjs
+
+      - name: Upload source-health evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-data-source-probes
+          path: artifacts/atlas-data-sandbox
+          if-no-files-found: error
+          retention-days: 30
+
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout sandbox exact SHA
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Contract tests
+        run: npm run test:contracts
+
+      - name: Production build
+        run: npm run build
