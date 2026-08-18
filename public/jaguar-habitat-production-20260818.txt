@@ -1,0 +1,6 @@
+4PLANET_ JAGUAR HABITAT WORLD v1 — PRODUCTION DEPLOY MARKER
+Release source: release/jaguar-habitat-world-v1
+Candidate SHA before trigger: 75dff98bcc257a00e96427b77de1d00b70cff431
+Route: /species/jaguar
+Purpose: force and verify Cloudflare Pages production deployment after green core gates.
+Truth boundary: deployment marker only; no scientific endorsement, partner, delivery or ecological-impact claim.
