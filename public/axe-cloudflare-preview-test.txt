@@ -1,0 +1,5 @@
+4PLANET_ AXE CLOUDFLARE PREVIEW PROBE
+Branch: release/axe-preview-0818
+Purpose: prove whether AXE can trigger a real non-production Cloudflare Pages deployment through GitHub.
+Safety: TEST ONLY — NOT PRODUCTION — DO NOT PROMOTE.
+Date: 2026-08-18
