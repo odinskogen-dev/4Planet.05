@@ -15,6 +15,7 @@ import { About } from "@/pages/v5/About";
 import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
+import { LabsOverview, LabProjectPage } from "@/pages/labs/LabsOverview";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -33,6 +34,18 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
+
+export function LabsHostRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<LabsOverview />} />
+      <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs/:slug" element={<LabProjectPage />} />
+      <Route path="/:slug" element={<LabProjectPage />} />
+      <Route path="*" element={<LabsOverview />} />
+    </Routes>
+  );
+}
 
 export function AppRoutes() {
   return (
@@ -77,6 +90,8 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+      <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs/:slug" element={<LabProjectPage />} />
       <Route path="/os" element={toAbout} />
       <Route path="/os/*" element={toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
