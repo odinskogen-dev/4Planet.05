@@ -1,0 +1,76 @@
+name: Production Runtime Verify
+
+on:
+  push:
+    branches:
+      - release/one-interface-03-db328bf
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact production source
+        uses: actions/checkout@v4
+
+      - name: Wait for exact SHA on Cloudflare production
+        shell: bash
+        run: |
+          expected="${GITHUB_SHA}"
+          for attempt in {1..60}; do
+            body="$(curl --fail --silent --show-error --max-time 15 https://4planet.org/product-build.txt || true)"
+            if printf '%s' "$body" | grep -Fq "Remote SHA: $expected" && printf '%s' "$body" | grep -Fq 'Build status: cloudflare-pages-build'; then
+              printf '%s\n' "$body" | tee production-build.txt
+              echo "PASS — Cloudflare production serves exact SHA $expected"
+              exit 0
+            fi
+            echo "Waiting for Cloudflare production deployment ($attempt/60)…"
+            sleep 10
+          done
+          echo 'Cloudflare production did not expose the expected exact SHA within the verification window.'
+          printf '%s\n' "$body"
+          exit 1
+
+      - name: Basic production routes
+        shell: bash
+        run: |
+          curl --fail --silent --show-error https://4planet.org/species/jaguar > /dev/null
+          curl --fail --silent --show-error https://4planet.org/ecosystems/amazon-rainforest > /dev/null
+          curl --fail --silent --show-error https://4planet.org/atlas > /dev/null
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Jaguar production proof — desktop + iPhone-sized mobile
+        env:
+          BASE_URL: https://4planet.org
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=desktop-1440 --project=mobile-390
+
+      - name: Upload production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-runtime-evidence
+          path: |
+            production-build.txt
+            artifacts/jaguar-world
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30
