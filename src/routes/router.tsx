@@ -34,15 +34,11 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
-function RootEntry() {
-  const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
-  return host === "labs.4planet.org" || host.startsWith("labs.") ? <LabsOverview /> : <Home />;
-}
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<RootEntry />} />
+      <Route path="/" element={<Home />} />
       <Route path="/labs" element={<LabsOverview />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
