@@ -1,0 +1,4 @@
+4PLANET_ AXE CLOUDFLARE PREVIEW TEST
+Purpose: verify whether a non-production GitHub branch automatically produces a Cloudflare Pages preview.
+Safety: this file is test-only and must not be used as production evidence.
+Date: 2026-08-18
