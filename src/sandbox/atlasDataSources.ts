@@ -7,6 +7,7 @@ export type SandboxRasterDescriptor = {
   product: string;
   layer: string;
   style?: string;
+  time?: string;
   docs: string;
   service: string;
   attribution: string;
@@ -43,7 +44,7 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   style: "eusm2019_msfd_800",
   docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
   service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
-  attribution: "EMODnet Seabed Habitats / EUSeaMap 2025 · CC BY 4.0",
+  attribution: "EModnet Seabed Habitats / EUSeaMap 2025 · CC BY 4.0",
   limitation:
     "This is a broad-scale predictive habitat-map product. Classification, scale and model confidence must not be presented as direct field observation or current ecological condition.",
   checkedAt: "2026-08-19",
@@ -56,14 +57,15 @@ export const EMODNET_FISHING_VESSEL_DENSITY: SandboxRasterDescriptor = {
   buttonLabel: "FISHING DENSITY",
   label: "EMODNET · HUMAN ACTIVITIES",
   authority: "European Marine Observation and Data Network (EMODnet)",
-  product: "Vessel Density Annual Averages · Fishing",
+  product: "Fishing vessel density · annual average · 2023",
   layer: "vesseldensity_01avg",
   style: "VesselDensity",
+  time: "2023-01-01T00:00:00Z",
   docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
   service: "https://ows.emodnet-humanactivities.eu/wms",
   attribution: "EMODnet Human Activities",
   limitation:
-    "This is an AIS-derived vessel-density product expressed as hours per square kilometre per month and summarised as annual averages. Provider metadata currently describes coverage for 2017–2024 and reports reduced satellite-data density during part of 2024. It is historical/reference vessel-density context, not live fishing activity, catch, legality or ecological impact.",
+    "This is an AIS-derived vessel-density product expressed as hours per square kilometre per month and summarised as an annual average. The sandbox deliberately selects the provider-advertised 2023 slice; provider metadata reports reduced satellite-data density during part of 2024. It is historical/reference vessel-density context, not live fishing activity, catch, legality or ecological impact.",
   checkedAt: "2026-08-19",
   opacity: 0.74,
 };
@@ -81,6 +83,7 @@ export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
     "version=1.1.1",
     `layers=${encodeURIComponent(descriptor.layer)}`,
     `styles=${encodeURIComponent(descriptor.style || "")}`,
+    ...(descriptor.time ? [`time=${encodeURIComponent(descriptor.time)}`] : []),
     "format=image%2Fpng",
     "transparent=true",
     "tiled=true",
