@@ -1,0 +1,126 @@
+AXE_BROWSER_DIAGNOSTIC
+SOURCE_BASE_SHA=90cc435f62fbb2f7de924162388f5d8ba27aaecb
+CHROMIUM_EXIT=1
+WEBKIT_EXIT=124
+CLOUDFLARE_PREVIEW_EXIT=1
+--- CHROMIUM ---
+Error: Project(s) "chromium-desktop" not found. Available projects: "desktop-1440", "desktop-1280", "mobile-390", "mobile-430", "webkit-desktop", "webkit-390", "webkit-430"
+    at Object.filterProjects (/home/runner/work/4Planet.05/4Planet.05/node_modules/playwright/lib/runner/index.js:2096:11)
+    at runTests (/home/runner/work/4Planet.05/4Planet.05/node_modules/playwright/lib/cli/testActions.js:61:30)
+    at _Command.<anonymous> (/home/runner/work/4Planet.05/4Planet.05/node_modules/playwright/lib/program.js:53:7)
+--- WEBKIT ---
+
+Running 9 tests using 1 worker
+
+[1/9] [webkit-desktop] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state
+  1) [webkit-desktop] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state 
+
+    Test timeout of 150000ms exceeded.
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 150000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid=\'ls-handoff-wh4les-mission\']').first()
+
+
+      155 |   // ── 4. → WH4LES_ via the visible LS handoff control (NOT page.goto) ──
+      156 |   const toWh4les = page.locator("[data-testid='ls-handoff-wh4les-mission']").first();
+    > 157 |   await toWh4les.scrollIntoViewIfNeeded();
+          |                  ^
+      158 |   await toWh4les.click();
+      159 |   await page.waitForURL(/\/missions\/wh4les/, { timeout: 15_000 });
+      160 |   expect(page.url()).toContain("returnTo=");
+        at /home/runner/work/4Planet.05/4Planet.05/tests/e2e/gate1-vertical-slice.spec.ts:157:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[2/9] [webkit-desktop] › tests/e2e/gate1-vertical-slice.spec.ts:199:1 › browser back/forward and reload do not corrupt or fabricate ATLAS state
+[3/9] [webkit-desktop] › tests/e2e/gate1-vertical-slice.spec.ts:222:1 › unsafe or external returnTo values are rejected; unknown keys dropped
+[4/9] [webkit-390] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state
+  2) [webkit-390] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state 
+
+    Error: page.evaluate: TypeError: Illegal constructor
+
+      74 |     // One-finger pan via real touch events.
+      75 |     const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
+    > 76 |       page.evaluate(({ fromX, fromY, toX, toY }) => {
+         |            ^
+      77 |         const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
+      78 |         const r = el.getBoundingClientRect();
+      79 |         const mk = (x: number, y: number) => {
+        at touchDrag (/home/runner/work/4Planet.05/4Planet.05/tests/e2e/gate1-vertical-slice.spec.ts:76:12)
+        at /home/runner/work/4Planet.05/4Planet.05/tests/e2e/gate1-vertical-slice.spec.ts:93:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-390/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-390/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-390/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-390/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-390/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[5/9] [webkit-390] › tests/e2e/gate1-vertical-slice.spec.ts:199:1 › browser back/forward and reload do not corrupt or fabricate ATLAS state
+[6/9] [webkit-390] › tests/e2e/gate1-vertical-slice.spec.ts:222:1 › unsafe or external returnTo values are rejected; unknown keys dropped
+[7/9] [webkit-430] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state
+  3) [webkit-430] › tests/e2e/gate1-vertical-slice.spec.ts:50:1 › Gate 1 vertical slice completes through visible controls and restores the post-interaction ATLAS state 
+
+    Error: page.evaluate: TypeError: Illegal constructor
+
+      74 |     // One-finger pan via real touch events.
+      75 |     const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
+    > 76 |       page.evaluate(({ fromX, fromY, toX, toY }) => {
+         |            ^
+      77 |         const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
+      78 |         const r = el.getBoundingClientRect();
+      79 |         const mk = (x: number, y: number) => {
+        at touchDrag (/home/runner/work/4Planet.05/4Planet.05/tests/e2e/gate1-vertical-slice.spec.ts:76:12)
+        at /home/runner/work/4Planet.05/4Planet.05/tests/e2e/gate1-vertical-slice.spec.ts:93:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-430/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-430/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-430/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-430/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gate1-vertical-slice-Gate--53759-ost-interaction-ATLAS-state-webkit-430/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[8/9] [webkit-430] › tests/e2e/gate1-vertical-slice.spec.ts:199:1 › browser back/forward and reload do not corrupt or fabricate ATLAS state
+--- CLOUDFLARE PRODUCT BUILD ---
