@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { T } from "@/styles/tokens";
+import "./species-node-card.css";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 
