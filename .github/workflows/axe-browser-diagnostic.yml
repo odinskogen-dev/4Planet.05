@@ -1,0 +1,121 @@
+name: AXE browser release diagnostic
+
+on:
+  push:
+    branches:
+      - release/axe-browser-diag-current
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/axe-browser-diag-current
+
+      - name: Exit after recorded result
+        id: guard
+        shell: bash
+        run: |
+          if [ -f AXE_BROWSER_DIAG_RESULT.txt ]; then
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "done=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Use Node.js 24
+        if: steps.guard.outputs.done != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install and static gates
+        if: steps.guard.outputs.done != 'true'
+        shell: bash
+        run: |
+          set -o pipefail
+          npm ci
+          npm run typecheck
+          npm run build
+          npm run test:smoke
+          npm audit --audit-level=high
+
+      - name: Start local preview
+        if: steps.guard.outputs.done != 'true'
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/axe-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/axe-preview.log
+          exit 1
+
+      - name: Install browsers
+        if: steps.guard.outputs.done != 'true'
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run bounded browser proof
+        if: steps.guard.outputs.done != 'true'
+        id: browser
+        shell: bash
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          set +e
+          timeout 240s npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=chromium-desktop --workers=1 --reporter=line > /tmp/chromium.txt 2>&1
+          CHROMIUM=$?
+          timeout 240s npx playwright test tests/e2e/gate1-vertical-slice.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430 --workers=1 --reporter=line > /tmp/webkit.txt 2>&1
+          WEBKIT=$?
+          echo "chromium=$CHROMIUM" >> "$GITHUB_OUTPUT"
+          echo "webkit=$WEBKIT" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Verify Cloudflare branch preview
+        if: steps.guard.outputs.done != 'true'
+        id: cloudflare
+        shell: bash
+        run: |
+          URL='https://release-axe-browser-diag-current.4planet-05.pages.dev/product-build.txt'
+          OK=1
+          for attempt in {1..60}; do
+            BODY="$(curl -L --silent --show-error --max-time 10 "$URL" || true)"
+            if printf '%s' "$BODY" | grep -q 'release/axe-browser-diag-current'; then
+              OK=0
+              printf '%s\n' "$BODY" > /tmp/cloudflare-build.txt
+              break
+            fi
+            sleep 2
+          done
+          echo "code=$OK" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Record diagnostic result
+        if: steps.guard.outputs.done != 'true'
+        shell: bash
+        run: |
+          {
+            echo 'AXE_BROWSER_DIAGNOSTIC'
+            echo "SOURCE_BASE_SHA=90cc435f62fbb2f7de924162388f5d8ba27aaecb"
+            echo "CHROMIUM_EXIT=${{ steps.browser.outputs.chromium }}"
+            echo "WEBKIT_EXIT=${{ steps.browser.outputs.webkit }}"
+            echo "CLOUDFLARE_PREVIEW_EXIT=${{ steps.cloudflare.outputs.code }}"
+            echo '--- CHROMIUM ---'
+            tail -n 120 /tmp/chromium.txt 2>/dev/null || true
+            echo '--- WEBKIT ---'
+            tail -n 120 /tmp/webkit.txt 2>/dev/null || true
+            echo '--- CLOUDFLARE PRODUCT BUILD ---'
+            cat /tmp/cloudflare-build.txt 2>/dev/null || true
+          } > AXE_BROWSER_DIAG_RESULT.txt
+          git config user.name '4PLANET AXE automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add AXE_BROWSER_DIAG_RESULT.txt
+          git commit -m 'test: record bounded AXE browser diagnostic'
+          git push origin HEAD:release/axe-browser-diag-current
