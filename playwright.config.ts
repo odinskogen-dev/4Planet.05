@@ -5,6 +5,10 @@ import { defineConfig, devices } from "@playwright/test";
  * trace + video + screenshot are always ON for the vertical-slice run so the
  * delivery package carries machine-readable evidence. Four viewport projects
  * cover the required matrix: 1440x900, 1280x800, 390x844, 430x932.
+ *
+ * Browser binaries are resolved by Playwright from the version installed by CI.
+ * Do not pin an absolute executable path: that makes the gate depend on a stale
+ * runner image rather than the repository's locked Playwright version.
  */
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -26,7 +30,6 @@ export default defineConfig({
     video: "on",
     screenshot: "on",
     launchOptions: {
-      executablePath: process.env.PW_CHROMIUM || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
       args: [
         "--use-gl=angle",
         "--use-angle=swiftshader",
@@ -41,14 +44,10 @@ export default defineConfig({
     { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
     { name: "mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
     { name: "mobile-430", use: { ...devices["Desktop Chrome"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
-    // WebKit matrix (required by the convergence order): desktop + 390 + 430.
-    // These clear the pinned-Chromium executablePath so Playwright uses its own
-    // WebKit build. WebKit's binary could not be downloaded in the build sandbox
-    // (egress-blocked host), so these run at the exact-SHA CI/preview stage where
-    // `npx playwright install webkit` succeeds. Documented as an environmental
-    // blocker, not a code gap — the specs themselves are WebKit-ready.
-    { name: "webkit-desktop", use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, launchOptions: { executablePath: undefined, args: [] } } },
-    { name: "webkit-390", use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
-    { name: "webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
+    // WebKit matrix: desktop + 390 + 430. Clear Chromium-specific launch args so
+    // Playwright uses its own installed WebKit binary and defaults.
+    { name: "webkit-desktop", use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, launchOptions: { args: [] } } },
+    { name: "webkit-390", use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, launchOptions: { args: [] } } },
+    { name: "webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true, launchOptions: { args: [] } } },
   ],
 });
