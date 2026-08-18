@@ -2,13 +2,18 @@ import { expect, test } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
 
-test("ATLAS Data Sandbox renders two EMODnet layers through MapLibre", async ({ page }, testInfo) => {
+test("ATLAS Data Sandbox loads two EMODnet WMS sources and records visual proof", async ({ page }, testInfo) => {
   const bathymetryResponses: number[] = [];
   const habitatResponses: number[] = [];
+  const habitatUrls: string[] = [];
 
   page.on("response", (response) => {
-    if (response.url().startsWith("https://ows.emodnet-bathymetry.eu/wms")) bathymetryResponses.push(response.status());
-    if (response.url().startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms")) habitatResponses.push(response.status());
+    const url = response.url();
+    if (url.startsWith("https://ows.emodnet-bathymetry.eu/wms")) bathymetryResponses.push(response.status());
+    if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms")) {
+      habitatResponses.push(response.status());
+      habitatUrls.push(url);
+    }
   });
 
   await page.goto(`${BASE}/atlas-data-sandbox`, { waitUntil: "domcontentloaded" });
@@ -16,7 +21,7 @@ test("ATLAS Data Sandbox renders two EMODnet layers through MapLibre", async ({ 
 
   await expect(page.getByText("EMODNET · BATHYMETRY")).toBeVisible();
   await expect(page.getByText("emodnet:mean_multicolour")).toBeVisible();
-  await expect(page.getByText("MAP_GREEN")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("SOURCE_LOADED")).toBeVisible({ timeout: 30_000 });
   await expect.poll(() => bathymetryResponses.some((status) => status >= 200 && status < 300), { timeout: 30_000 }).toBeTruthy();
   await page.screenshot({
     path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-emodnet-bathymetry.png`,
@@ -26,8 +31,13 @@ test("ATLAS Data Sandbox renders two EMODnet layers through MapLibre", async ({ 
   await page.getByRole("button", { name: "SEABED HABITATS" }).click();
   await expect(page.getByText("EMODNET · SEABED HABITATS")).toBeVisible();
   await expect(page.getByText("eusm2025_msfd_800")).toBeVisible();
-  await expect(page.getByText("MAP_GREEN")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("eusm2019_msfd_800")).toBeVisible();
+  await expect(page.getByText("SOURCE_LOADED")).toBeVisible({ timeout: 30_000 });
   await expect.poll(() => habitatResponses.some((status) => status >= 200 && status < 300), { timeout: 30_000 }).toBeTruthy();
+  await expect.poll(
+    () => habitatUrls.some((url) => decodeURIComponent(url).includes("styles=eusm2019_msfd_800")),
+    { timeout: 30_000 },
+  ).toBeTruthy();
   await page.screenshot({
     path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-emodnet-seabed-habitats.png`,
     fullPage: true,
