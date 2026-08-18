@@ -19,21 +19,27 @@ function forwarder(search: string) {
 
 /* ── Progressive relationship reveal — the reusable core ── */
 function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i: number; accent: string }) {
+  const hasImg = !!step.image;
   return (
-    <div style={{ borderTop: `1px solid ${T.line}`, padding: "clamp(26px,3.6vw,44px) 0" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "clamp(14px,3vw,36px)" }}>
-        <div style={{ ...mono, color: accent }}>0{i + 1}</div>
+    <div style={{ borderTop: `1px solid ${T.line}`, padding: "clamp(26px,3.6vw,52px) 0" }}>
+      <div className="ls-scene" style={{ display: "grid", gridTemplateColumns: hasImg ? "minmax(0,1.05fr) minmax(0,1fr)" : "1fr", gap: "clamp(20px,3.4vw,48px)", alignItems: "start" }}>
+        {/* Scene — the living protagonist of this relationship */}
+        {hasImg && (
+          <figure style={{ margin: 0, position: "relative", overflow: "hidden", borderRadius: 2, aspectRatio: "4/5", background: "#0b0b12" }}>
+            <img src={step.image} alt={step.imageAlt || ""} loading="lazy" className="ls-scene-img"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <figcaption style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "40px 16px 12px", background: "linear-gradient(transparent, rgba(8,8,10,.82))" }}>
+              <span style={{ ...mono, color: "#fff", fontSize: 10.5, letterSpacing: ".14em" }}><span style={{ color: accent }}>0{i + 1}</span> · {step.stage}</span>
+              {step.imageAlt && <span style={{ ...mono, display: "block", color: "rgba(255,255,255,.62)", fontSize: 8.5, marginTop: 6, lineHeight: 1.5 }}>{step.imageAlt}</span>}
+            </figcaption>
+          </figure>
+        )}
+        {/* Content */}
         <div>
-          <div style={{ ...mono, color: accent, marginBottom: 10 }}>{step.stage}</div>
-          <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(22px,2.6vw,34px)", lineHeight: 1.04, letterSpacing: "-.03em", maxWidth: 640 }}>{step.intro}</h3>
-          {step.image && (
-            <figure style={{ margin: "22px 0 0" }}>
-              <img src={step.image} alt={step.imageAlt || ""} loading="lazy"
-                style={{ width: "100%", maxWidth: 760, aspectRatio: "16/9", objectFit: "cover", display: "block", borderRadius: 2 }} />
-              {step.imageAlt && <figcaption style={{ ...mono, fontSize: 9.5, color: T.dim, marginTop: 8, maxWidth: 760 }}>{step.imageAlt}</figcaption>}
-            </figure>
-          )}
-          <div style={{ marginTop: 20, display: "grid", gap: 10 }}>
+          {!hasImg && <div style={{ ...mono, color: accent, marginBottom: 10 }}>0{i + 1} · {step.stage}</div>}
+          {hasImg && <div style={{ ...mono, color: accent, marginBottom: 12 }}>{step.stage}</div>}
+          <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,2.9vw,40px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: 620 }}>{step.intro}</h3>
+          <div style={{ marginTop: 22, display: "grid", gap: 10 }}>
             {step.relationships.map((r) => {
               const col = EVIDENCE_COLOR[r.state];
               return (
@@ -83,6 +89,36 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
       {/* EXACT title text preserved for the live Orca journey (E2E + human continuity). */}
       <h2 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,3.6vw,46px)", letterSpacing: "-.035em", lineHeight: 1.0, marginTop: 10 }}>{a.journeyTitle}</h2>
       <p style={{ marginTop: 16, fontSize: "clamp(15px,1.5vw,18px)", color: T.dim, maxWidth: 660, lineHeight: 1.6 }}>{a.standfirst}</p>
+
+      {/* Cross-lens journey rail — the same living thing, seen through all four lenses.
+          This is why ONE INTERFACE exists: understanding here connects to seeing, meeting and acting. */}
+      {(() => {
+        const J: Record<string, { see: string; meet: string; act: string }> = {
+          orca: { see: "/atlas", meet: "/species/orca", act: "/missions/wh4les" },
+          bee: { see: "/atlas", meet: "/species", act: "/missions/food" },
+        };
+        const j = J[a.slug];
+        if (!j) return null;
+        const steps: [string, string, string | null, boolean][] = [
+          ["SEE / EXPLORE", "ATLAS", fwd(j.see), false],
+          ["MEET LIFE", "SPECIES", fwd(j.meet), false],
+          ["UNDERSTAND", "LIVING SYSTEMS", null, true],
+          ["ACT + PROVE", "MISSION", fwd(j.act), false],
+        ];
+        return (
+          <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: T.line, border: `1px solid ${T.line}` }} className="ls-journey">
+            {steps.map(([job, lens, to, active]) => {
+              const inner = (
+                <div style={{ padding: "12px 14px", background: active ? a.accent : "#fff", height: "100%" }}>
+                  <div style={{ ...mono, fontSize: 8.5, letterSpacing: ".12em", color: active ? "#fff" : T.dim }}>{job}</div>
+                  <div style={{ ...mono, fontSize: 11, marginTop: 5, color: active ? "#fff" : T.ink, fontWeight: 500 }}>{lens}{to ? " →" : ""}</div>
+                </div>
+              );
+              return to ? <Link key={lens} to={to} className="ls-jstep" style={{ textDecoration: "none" }}>{inner}</Link> : <div key={lens}>{inner}</div>;
+            })}
+          </div>
+        );
+      })()}
 
       {/* Progress: how much of the system is revealed. */}
       <div style={{ ...mono, color: T.dim, marginTop: 26, display: "flex", alignItems: "center", gap: 10 }}>
