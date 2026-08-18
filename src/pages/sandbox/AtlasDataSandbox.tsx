@@ -14,7 +14,7 @@ const mono: React.CSSProperties = {
   letterSpacing: ".11em",
 };
 
-type MapState = "LOADING" | "MAP_GREEN" | "SOURCE_ERROR" | "WEBGL_ERROR";
+type MapState = "LOADING" | "SOURCE_LOADED" | "SOURCE_ERROR" | "WEBGL_ERROR";
 
 export default function AtlasDataSandbox() {
   const container = useRef<HTMLDivElement | null>(null);
@@ -47,8 +47,8 @@ export default function AtlasDataSandbox() {
 
     const source = map.getSource(descriptor.id) as maplibregl.RasterTileSource | undefined;
     if (source?.loaded()) {
-      setState("MAP_GREEN");
-      setDetail(`${descriptor.product} is loaded through the sandbox MapLibre source.`);
+      setState("SOURCE_LOADED");
+      setDetail(`${descriptor.product} returned through the sandbox MapLibre source. Visual map acceptance is a separate gate.`);
     }
   };
 
@@ -92,8 +92,8 @@ export default function AtlasDataSandbox() {
 
       map.on("sourcedata", (event) => {
         if (!alive || event.sourceId !== activeRef.current.id || !event.isSourceLoaded || sourceErrors.current.has(event.sourceId)) return;
-        setState("MAP_GREEN");
-        setDetail(`${activeRef.current.product} is loaded through the sandbox MapLibre source.`);
+        setState("SOURCE_LOADED");
+        setDetail(`${activeRef.current.product} returned through the sandbox MapLibre source. Visual map acceptance is a separate gate.`);
       });
 
       map.on("error", (event) => {
@@ -133,7 +133,7 @@ export default function AtlasDataSandbox() {
       <section style={{ position: "absolute", zIndex: 3, left: 18, top: 18, width: "min(430px, calc(100vw - 36px))", maxHeight: "calc(100vh - 36px)", overflowY: "auto", background: "rgba(8,8,8,.92)", border: "1px solid rgba(255,255,255,.22)", padding: "18px 18px 16px" }}>
         <div style={{ ...mono, color: "rgba(255,255,255,.55)" }}>4PLANET_ · INTERNAL · DO NOT MERGE</div>
         <h1 style={{ margin: "13px 0 0", fontFamily: "'Instrument Sans', sans-serif", fontWeight: 520, fontSize: "clamp(25px,4vw,42px)", lineHeight: .95, letterSpacing: "-.045em" }}>ATLAS DATA SANDBOX</h1>
-        <div style={{ ...mono, marginTop: 18, color: state === "MAP_GREEN" ? "#3AE86F" : state === "LOADING" ? "#fff" : "#FF4D22" }}>{state}</div>
+        <div style={{ ...mono, marginTop: 18, color: state === "SOURCE_LOADED" ? "#3AE86F" : state === "LOADING" ? "#fff" : "#FF4D22" }}>{state}</div>
         <p style={{ margin: "9px 0 0", fontFamily: "'DM Sans', sans-serif", fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,.75)" }}>{detail}</p>
 
         <div aria-label="Sandbox data layers" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 16 }}>
@@ -156,7 +156,7 @@ export default function AtlasDataSandbox() {
         <div style={{ marginTop: 18, paddingTop: 15, borderTop: "1px solid rgba(255,255,255,.18)" }}>
           <div style={{ ...mono, color: "#2E2EFF" }}>{active.label}</div>
           <div style={{ marginTop: 7, fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>{active.product}</div>
-          <div style={{ ...mono, marginTop: 9, color: "rgba(255,255,255,.52)", lineHeight: 1.55 }}>AUTHORITY · {active.authority}<br />LAYER · {active.layer}<br />CHECKED · {active.checkedAt}</div>
+          <div style={{ ...mono, marginTop: 9, color: "rgba(255,255,255,.52)", lineHeight: 1.55 }}>AUTHORITY · {active.authority}<br />LAYER · {active.layer}{active.style ? <><br />STYLE · {active.style}</> : null}<br />CHECKED · {active.checkedAt}</div>
           <p style={{ margin: "11px 0 0", fontFamily: "'DM Sans', sans-serif", fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,.62)" }}>{active.limitation}</p>
           <a href={active.docs} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 12, color: "#fff" }}>OFFICIAL SERVICE DOCS ↗</a>
         </div>
