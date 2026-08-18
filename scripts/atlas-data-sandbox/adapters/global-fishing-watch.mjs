@@ -4,7 +4,7 @@ export const GFW_DESCRIPTOR = Object.freeze({
   id: "global-fishing-watch",
   authority: "Global Fishing Watch",
   docs: "https://globalfishingwatch.org/our-apis/documentation",
-  protocol: "REST / map visualization",
+  protocol: "REST / 4Wings map visualization",
   authentication: "Bearer token",
   tokenHandling: "SERVER_SIDE_ONLY",
   initialDataset: "public-global-fishing-effort:latest",
@@ -23,32 +23,48 @@ export function gfwHeaders(token) {
     throw new Error("GFW_AUTH_REQUIRED");
   }
   return {
-    accept: "application/json",
+    accept: "application/vnd.mapbox-vector-tile,application/x-protobuf,application/octet-stream",
     authorization: `Bearer ${token.trim()}`,
   };
 }
 
-export function gfwFishingEffortRequest({
+function assertTileCoordinate(name, value, max) {
+  if (!Number.isInteger(value) || value < 0 || value > max) throw new Error(`GFW_INVALID_${name.toUpperCase()}`);
+}
+
+/**
+ * Build one bounded 4Wings MVT heatmap-tile request using the documented v3
+ * `/4wings/tile/heatmap/{z}/{x}/{y}` contract. No request is executed here.
+ */
+export function gfwFishingEffortTileRequest({
   token,
+  z,
+  x,
+  y,
   startDate,
   endDate,
   dataset = GFW_DESCRIPTOR.initialDataset,
   interval = "DAY",
+  temporalAggregation = true,
 } = {}) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate || "") || !/^\d{4}-\d{2}-\d{2}$/.test(endDate || "")) {
     throw new Error("GFW_DATE_RANGE_REQUIRED");
   }
+  if (!Number.isInteger(z) || z < 0 || z > 12) throw new Error("GFW_INVALID_Z");
+  const maxIndex = 2 ** z - 1;
+  assertTileCoordinate("x", x, maxIndex);
+  assertTileCoordinate("y", y, maxIndex);
 
-  // Build a bounded request descriptor only. Spatial filtering/render strategy must
-  // be selected from the exact API operation before this seam is activated.
   const query = new URLSearchParams();
   query.set("datasets[0]", dataset);
   query.set("date-range", `${startDate},${endDate}`);
+  query.set("format", "MVT");
   query.set("interval", interval);
+  query.set("temporal-aggregation", String(Boolean(temporalAggregation)));
 
   return {
     state: gfwAuthState(token),
-    url: `${GFW_API}/4wings/tile/heatmap?${query.toString()}`,
+    url: `${GFW_API}/4wings/tile/heatmap/${z}/${x}/${y}?${query.toString()}`,
     headers: token ? gfwHeaders(token) : null,
     dataset,
     semanticBoundary: GFW_DESCRIPTOR.semanticBoundary,
