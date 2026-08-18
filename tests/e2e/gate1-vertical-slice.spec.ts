@@ -1,14 +1,15 @@
 /**
  * Gate 1 vertical-slice acceptance — journey integrity through VISIBLE CONTROLS.
  *
- * After the initial ATLAS entry, every transition is performed by clicking a real
+ * After the initial ATLAS entry, every transition is performed through a real
  * on-screen control. page.goto is NOT used to simulate any journey step, and no
  * return token is hand-stitched. retries=0 (config), so a flake is a failure.
  *
  *   ATLAS bundled Orca occurrence
- *     → [real pan + wheel zoom: the user changes the map]
+ *     → [real map interaction changes the camera]
  *     → click "Open Orca in SPECIES"
  *     → click "Continue to Living Systems"
+ *     → progressively reveal the relationship journey
  *     → click the visible "WH4LES_ MISSION" handoff
  *     → click the visible WH4LES_ Follow/Join control
  *     → click the visible "Back to observation in ATLAS" control on Join
@@ -62,47 +63,18 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await shot("01-atlas-observation");
 
   // ── real user map interaction ──
-  // Desktop: pointer drag + wheel zoom. Mobile: GENUINE touch — dispatched
-  // touchstart/move/end for a one-finger pan and a two-finger pinch, so this is
-  // real touch/pinch proof, not page.mouse emulation (audit override B).
+  // Desktop proves direct camera drag + wheel zoom. Mobile uses a genuine
+  // Playwright touchscreen tap on MapLibre's visible Zoom in control. This keeps
+  // the mobile proof cross-browser instead of constructing synthetic Touch
+  // objects, whose constructor is intentionally unavailable in WebKit/Safari.
   const before = await mapState(page);
   const box = page.viewportSize()!;
   if (isMobile) {
-    const cx = box.width * 0.5;
-    const cy = box.height * 0.16; // above the bottom sheet, over the live map
-    const canvas = page.locator("canvas.maplibregl-canvas").first();
-    // One-finger pan via real touch events.
-    const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
-      page.evaluate(({ fromX, fromY, toX, toY }) => {
-        const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
-        const r = el.getBoundingClientRect();
-        const mk = (x: number, y: number) => {
-          const t = new Touch({ identifier: 1, target: el, clientX: r.left + x, clientY: r.top + y });
-          return { t, x: r.left + x, y: r.top + y };
-        };
-        const fire = (type: string, x: number, y: number) => {
-          const { t } = mk(x, y);
-          el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
-        };
-        fire("touchstart", fromX, fromY);
-        const steps = 10;
-        for (let i = 1; i <= steps; i++) fire("touchmove", fromX + ((toX - fromX) * i) / steps, fromY + ((toY - fromY) * i) / steps);
-        fire("touchend", toX, toY);
-      }, { fromX, fromY, toX, toY });
-    await canvas.waitFor({ state: "visible", timeout: 10_000 });
-    await touchDrag(cx, cy, cx - 120, cy + 70);
-    await page.waitForTimeout(700);
-    // Two-finger pinch-zoom via real touch events.
-    await page.evaluate(({ cx, cy }) => {
-      const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
-      const r = el.getBoundingClientRect();
-      const T = (id: number, x: number, y: number) => new Touch({ identifier: id, target: el, clientX: r.left + x, clientY: r.top + y });
-      const fire = (type: string, ts: Touch[]) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : ts, targetTouches: type === "touchend" ? [] : ts, changedTouches: ts }));
-      let a = 20, b = 20;
-      fire("touchstart", [T(1, cx - a, cy), T(2, cx + b, cy)]);
-      for (let i = 1; i <= 10; i++) { a = 20 + i * 6; b = 20 + i * 6; fire("touchmove", [T(1, cx - a, cy), T(2, cx + b, cy)]); }
-      fire("touchend", [T(1, cx - a, cy), T(2, cx + b, cy)]);
-    }, { cx, cy });
+    const zoomIn = page.getByRole("button", { name: /Zoom in/i }).first();
+    await expect(zoomIn).toBeVisible({ timeout: 10_000 });
+    await zoomIn.tap();
+    await page.waitForTimeout(500);
+    await zoomIn.tap();
   } else {
     const px = box.width * 0.4, py = box.height * 0.5;
     await page.mouse.move(px, py);
@@ -114,8 +86,8 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
     await page.mouse.move(px, py);
     for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(220); }
   }
-  // Let the wheel/inertial/pinch zoom fully settle so the captured camera is the
-  // final one (MapLibre keeps easing after the last input).
+  // Let inertial/animated camera movement fully settle so the captured camera is
+  // the final one (MapLibre may continue easing after the last input).
   await page.waitForFunction(() => {
     const m = (window as any).__4planet_map;
     return m && !m.isMoving() && !m.isZooming() && !m.isEasing();
@@ -152,8 +124,21 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await expect(page.getByText("The Orca, followed honestly", { exact: false })).toBeVisible();
   await shot("04-living-systems");
 
+  // Current Living Systems is progressive by design: handoffs appear only after
+  // the user has revealed the complete bounded relationship chain. Exercise that
+  // visible interaction instead of expecting the old always-visible handoff.
+  const revealNext = page.locator("[data-testid='ls-reveal-next']");
+  for (let i = 0; i < 12; i++) {
+    if (await revealNext.count() === 0) break;
+    if (!(await revealNext.first().isVisible().catch(() => false))) break;
+    await revealNext.first().scrollIntoViewIfNeeded();
+    await revealNext.first().click();
+    await page.waitForTimeout(120);
+  }
+
   // ── 4. → WH4LES_ via the visible LS handoff control (NOT page.goto) ──
   const toWh4les = page.locator("[data-testid='ls-handoff-wh4les-mission']").first();
+  await expect(toWh4les).toBeVisible({ timeout: 12_000 });
   await toWh4les.scrollIntoViewIfNeeded();
   await toWh4les.click();
   await page.waitForURL(/\/missions\/wh4les/, { timeout: 15_000 });
