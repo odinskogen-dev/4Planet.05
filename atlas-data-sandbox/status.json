@@ -7,15 +7,7 @@
   "productionTouched": false,
   "states": {
     "emodnet-bathymetry": {
-      "lifecycle": [
-        "DISCOVERED",
-        "TERMS_CHECKED",
-        "ENDPOINT_VERIFIED",
-        "PROBED",
-        "ADAPTER_GREEN",
-        "SOURCE_LOADED",
-        "MAP_GREEN"
-      ],
+      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
       "mapGreen": true,
       "promotionCandidate": false,
       "evidence": {
@@ -33,15 +25,7 @@
       ]
     },
     "emodnet-seabed-habitats": {
-      "lifecycle": [
-        "DISCOVERED",
-        "TERMS_CHECKED",
-        "ENDPOINT_VERIFIED",
-        "PROBED",
-        "ADAPTER_GREEN",
-        "SOURCE_LOADED",
-        "MAP_GREEN"
-      ],
+      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
       "mapGreen": true,
       "promotionCandidate": false,
       "evidence": {
@@ -66,6 +50,28 @@
         "performance budget in full ATLAS",
         "source-detail and model-confidence disclosure",
         "interaction regression in production-shaped ATLAS"
+      ]
+    },
+    "global-fishing-watch": {
+      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "ADAPTER_GREEN", "AUTH_REQUIRED"],
+      "mapGreen": false,
+      "promotionCandidate": false,
+      "evidence": {
+        "apiVersion": "v3",
+        "initialDataset": "public-global-fishing-effort:latest",
+        "requestContract": "/v3/4wings/tile/heatmap/{z}/{x}/{y}",
+        "formatPrepared": "MVT",
+        "authentication": "Bearer token; server-side only",
+        "adapterTests": "AUTH gate, bounded z/x/y/date request, token URL exclusion, evidence redaction, coordinate validation",
+        "truthBoundary": "Apparent fishing effort is AIS-derived algorithmic activity estimation and does not prove illegal fishing, legal liability, catch or complete vessel presence."
+      },
+      "remainingBeforeMap": [
+        "founder/account token access",
+        "confirm 4PLANET intended use fits Global Fishing Watch non-commercial API terms",
+        "server-side secret/proxy path",
+        "live token probe",
+        "provider attribution and dataset caveats in UI",
+        "map and performance proof"
       ]
     }
   },
