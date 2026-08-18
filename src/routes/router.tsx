@@ -20,6 +20,7 @@ import { NotFound } from "@/pages/system";
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
+const AtlasDataSandbox = lazy(() => import("@/pages/sandbox/AtlasDataSandbox"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -52,6 +53,7 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+      <Route path="/atlas-data-sandbox" element={<Suspense fallback={WorldFallback}><AtlasDataSandbox /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
