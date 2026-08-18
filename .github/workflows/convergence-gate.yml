@@ -1,9 +1,9 @@
 name: ONE INTERFACE Convergence Gate
 
-# Exact-SHA engineering gate for the unified convergence candidate.
-# Adapted from PR #25 (agent/founder-gate-one-interface-convergence) to the
-# ced0773-based convergence tree: current test files, CLE4N_ canon routes, and
-# the Chromium + WebKit E2E matrix required by the convergence order.
+# Exact-SHA engineering gate for the current unified public candidate.
+# The former Gate-1 browser scripts encoded historical UI controls and an old
+# pinned Chromium path. Current convergence keeps those source-contract/smoke
+# checks, then runs the current Gold Reference journey across Chromium + WebKit.
 
 on:
   push:
@@ -54,9 +54,6 @@ jobs:
       - name: Lint (no NEW warnings; 6 inherited World/layer warnings are known)
         shell: bash
         run: |
-          # World.tsx and layers.ts carry deliberate @ts-nocheck/eslint-disable
-          # boundaries (documented tech debt). We record the exact inherited
-          # warning count and fail if it grows beyond the known baseline of 6.
           npm run lint 2>&1 | tee lint.txt || true
           warnings="$(grep -Eo '[0-9]+ warning' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
           errors="$(grep -Eo '[0-9]+ error' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
@@ -93,24 +90,28 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: E2E — Chromium vertical slice + switcher (all viewports)
+      - name: E2E — Jaguar Gold Reference on Chromium desktop + mobile
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=desktop-1440 --project=desktop-1280 --project=mobile-390 --project=mobile-430
 
-      - name: E2E — WebKit vertical slice (desktop + 390 + 430)
+      - name: E2E — Jaguar Gold Reference on WebKit desktop + mobile
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
-      - name: Internal route control (CLE4N_ canon; no PL4STIC_ Mission route)
+      - name: Internal route control
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
-          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join'];
+          const required = [
+            '/', '/atlas', '/species', '/species/orca', '/species/jaguar',
+            '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
+            '/missions/wh4les', '/join'
+          ];
           fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
           NODE
 
