@@ -136,7 +136,7 @@ export default function AtlasDataSandbox() {
         <div style={{ ...mono, marginTop: 18, color: state === "SOURCE_LOADED" ? "#3AE86F" : state === "LOADING" ? "#fff" : "#FF4D22" }}>{state}</div>
         <p style={{ margin: "9px 0 0", fontFamily: "'DM Sans', sans-serif", fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,.75)" }}>{detail}</p>
 
-        <div aria-label="Sandbox data layers" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 16 }}>
+        <div aria-label="Sandbox data layers" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6, marginTop: 16 }}>
           {SANDBOX_RASTERS.map((descriptor) => {
             const selected = descriptor.id === active.id;
             return (
@@ -147,7 +147,7 @@ export default function AtlasDataSandbox() {
                 onClick={() => activate(descriptor)}
                 style={{ ...mono, minHeight: 44, border: `1px solid ${selected ? "#fff" : "rgba(255,255,255,.22)"}`, background: selected ? "#fff" : "rgba(0,0,0,.25)", color: selected ? "#080808" : "#fff", padding: "9px 10px", textAlign: "left", cursor: "pointer" }}
               >
-                {descriptor.sourceId === "emodnet-bathymetry" ? "BATHYMETRY" : "SEABED HABITATS"}
+                {descriptor.buttonLabel}
               </button>
             );
           })}
