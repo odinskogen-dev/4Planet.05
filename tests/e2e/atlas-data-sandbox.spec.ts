@@ -51,13 +51,16 @@ test("ATLAS Data Sandbox loads three EMODnet WMS sources and records visual proo
 
   await page.getByRole("button", { name: "FISHING DENSITY" }).click();
   await expect(page.getByText("EMODNET · HUMAN ACTIVITIES")).toBeVisible();
-  await expect(page.getByText("Vessel Density Annual Averages · Fishing")).toBeVisible();
+  await expect(page.getByText("Fishing vessel density · annual average · 2023", { exact: true })).toBeVisible();
   await expect(page.getByText("vesseldensity_01avg")).toBeVisible();
   await expect(page.getByText("VesselDensity")).toBeVisible();
   await expect(page.getByText("SOURCE_LOADED")).toBeVisible({ timeout: 30_000 });
   await expect.poll(() => fishingDensityResponses.some((status) => status >= 200 && status < 300), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
-    () => fishingDensityUrls.some((url) => decodeURIComponent(url).includes("layers=vesseldensity_01avg") && decodeURIComponent(url).includes("styles=VesselDensity")),
+    () => fishingDensityUrls.some((url) => {
+      const decoded = decodeURIComponent(url);
+      return decoded.includes("layers=vesseldensity_01avg") && decoded.includes("styles=VesselDensity") && decoded.includes("time=2023-01-01T00:00:00Z");
+    }),
     { timeout: 30_000 },
   ).toBeTruthy();
   await page.screenshot({
