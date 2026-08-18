@@ -1,0 +1,38 @@
+name: Production Deploy Probe PR
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Wait for exact production SHA
+        shell: bash
+        run: |
+          expected='c7de7f796011003d9b12c20c8dcac0fd581027c7'
+          for attempt in {1..60}; do
+            body="$(curl --fail --silent --show-error --max-time 15 https://4planet.org/product-build.txt || true)"
+            if printf '%s' "$body" | grep -Fq "Remote SHA: $expected" && printf '%s' "$body" | grep -Fq 'Build status: cloudflare-pages-build'; then
+              printf '%s\n' "$body"
+              echo "PASS — exact production SHA is live"
+              exit 0
+            fi
+            echo "Waiting for Cloudflare production ($attempt/60)…"
+            sleep 5
+          done
+          echo 'Expected production SHA was not observed.'
+          printf '%s\n' "$body"
+          exit 1
+
+      - name: Verify public routes respond
+        shell: bash
+        run: |
+          curl --fail --silent --show-error https://4planet.org/species/jaguar > /dev/null
+          curl --fail --silent --show-error https://4planet.org/ecosystems/amazon-rainforest > /dev/null
+          curl --fail --silent --show-error https://4planet.org/atlas > /dev/null
+          echo 'PASS — Jaguar, Amazon ecosystem and ATLAS routes respond on 4planet.org.'
