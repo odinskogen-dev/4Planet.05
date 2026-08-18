@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - sandbox/atlas-data-lab-20260819
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,9 @@ jobs:
 
       - name: Validate source catalogue
         run: node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('atlas-data-sandbox/sources.json','utf8')); if(!Array.isArray(x.sources)||x.sources.length<10) throw new Error('source catalogue invalid'); console.log('catalogue sources='+x.sources.length)"
+
+      - name: Sandbox connector contracts
+        run: node --test scripts/atlas-data-sandbox/contracts.test.mjs
 
       - name: Probe public source contracts
         env:
