@@ -1,0 +1,46 @@
+name: Jaguar Production Verify
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for exact Jaguar production deploy
+        shell: bash
+        run: |
+          expected='912c64f4d72dd1363bce435a54b688b1555cd2f3'
+          for attempt in {1..120}; do
+            marker="$(curl --fail --silent https://4planet.org/jaguar-habitat-production-20260818.txt || true)"
+            provenance="$(curl --fail --silent https://4planet.org/product-build.txt || true)"
+            route_code="$(curl -L --silent --output /tmp/jaguar.html --write-out '%{http_code}' https://4planet.org/species/jaguar || true)"
+            if printf '%s' "$marker" | grep -q 'JAGUAR HABITAT WORLD v1' && printf '%s' "$provenance" | grep -q "$expected" && test "$route_code" = '200'; then
+              printf '%s\n' "$marker" > production-marker.txt
+              printf '%s\n' "$provenance" > production-provenance.txt
+              printf '%s\n' "$route_code" > jaguar-route-http.txt
+              echo 'JAGUAR PRODUCTION VERIFY: PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Timed out waiting for exact production SHA'
+          echo "$provenance"
+          exit 1
+
+      - name: Upload production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaguar-production-evidence
+          path: |
+            production-marker.txt
+            production-provenance.txt
+            jaguar-route-http.txt
+          if-no-files-found: warn
+          retention-days: 14
