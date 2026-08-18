@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const catalogue = JSON.parse(await fs.readFile(path.join(root, "atlas-data-sandbox", "sources.json"), "utf8"));
 const outDir = path.join(root, "artifacts", "atlas-data-sandbox");
+const rawDir = path.join(outDir, "ogc-capabilities");
 const timeoutMs = Number(process.env.ATLAS_PROBE_TIMEOUT_MS || 12000);
 const userAgent = "4PLANET-ATLAS-DATA-SANDBOX/1.0 (+https://4planet.org; non-production OGC inventory)";
 
@@ -27,9 +28,37 @@ function extractTag(xml, tag) {
   return match ? decodeXml(match[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")) : "";
 }
 
+function extractAllTags(xml, tag) {
+  const values = new Set();
+  const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, "gi");
+  let match;
+  while ((match = re.exec(xml))) {
+    const value = decodeXml(match[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " "));
+    if (value) values.add(value);
+  }
+  return [...values];
+}
+
+function styleNames(xml) {
+  const names = [];
+  const re = /<Style(?:\s[^>]*)?>([\s\S]*?)<\/Style>/gi;
+  let match;
+  while ((match = re.exec(xml))) {
+    const name = extractTag(match[1], "Name");
+    if (name && !names.includes(name)) names.push(name);
+  }
+  return names;
+}
+
+function toNumber(value) {
+  if (!value) return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function layerBlocks(xml) {
-  // Capture the innermost named Layer blocks. This deliberately favours useful
-  // advertised leaf layers over reconstructing the complete WMS inheritance tree.
+  // Capture the innermost named Layer blocks. The raw capability XML is also
+  // retained because WMS properties such as CRS can be inherited from parents.
   const blocks = [];
   const re = /<Layer(?:\s[^>]*)?>((?:(?!<Layer(?:\s|>))[\s\S])*?)<\/Layer>/gi;
   let match;
@@ -41,6 +70,10 @@ function layerBlocks(xml) {
       name,
       title: extractTag(body, "Title") || name,
       abstract: extractTag(body, "Abstract") || undefined,
+      crs: [...new Set([...extractAllTags(body, "CRS"), ...extractAllTags(body, "SRS")])],
+      styles: styleNames(body),
+      minScaleDenominator: toNumber(extractTag(body, "MinScaleDenominator")),
+      maxScaleDenominator: toNumber(extractTag(body, "MaxScaleDenominator")),
     });
   }
   return blocks;
@@ -57,12 +90,16 @@ async function inspect(source) {
     const xml = await response.text();
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const layers = layerBlocks(xml);
+    await fs.mkdir(rawDir, { recursive: true });
+    await fs.writeFile(path.join(rawDir, `${source.id}.xml`), xml);
     return {
       id: source.id,
       name: source.name,
       status: layers.length ? "OGC_INVENTORY_GREEN" : "OGC_INVENTORY_EMPTY",
       httpStatus: response.status,
+      contentType: response.headers.get("content-type"),
       serviceTitle: extractTag(xml, "Title") || source.name,
+      advertisedCrs: [...new Set([...extractAllTags(xml, "CRS"), ...extractAllTags(xml, "SRS")])],
       layerCount: layers.length,
       layers,
       checkedAt: new Date().toISOString(),
@@ -91,7 +128,7 @@ for (const source of ogc) {
 }
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   baselineSha: catalogue.baselineSha,
   sourcesInspected: results.length,
@@ -104,14 +141,21 @@ const md = [
   `Generated: ${report.generatedAt}`,
   `Sources inspected: ${report.sourcesInspected}`,
   "",
-  "Layer names below are provider-advertised service identifiers. Presence does not equal semantic, rights or production approval.",
+  "Layer names below are provider-advertised service identifiers. Presence does not equal semantic, rights, visible-map or production approval.",
   "",
   ...results.flatMap((result) => [
     `## ${result.name}`,
     "",
     `Status: ${result.status} · advertised leaf layers: ${result.layerCount}`,
+    `Advertised CRS: ${(result.advertisedCrs || []).slice(0, 16).join(", ") || "not parsed"}`,
     "",
-    ...result.layers.slice(0, 120).map((layer) => `- \`${layer.name}\` — ${layer.title}`),
+    ...result.layers.slice(0, 120).map((layer) => {
+      const scale = layer.minScaleDenominator || layer.maxScaleDenominator
+        ? ` · scale ${layer.minScaleDenominator ?? "—"} → ${layer.maxScaleDenominator ?? "—"}`
+        : "";
+      const styles = layer.styles?.length ? ` · styles ${layer.styles.join(", ")}` : "";
+      return `- \`${layer.name}\` — ${layer.title}${scale}${styles}`;
+    }),
     result.layers.length > 120 ? `- … ${result.layers.length - 120} additional advertised layers retained in JSON evidence.` : "",
     "",
   ]),
