@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-19",
+  "baselineSha": "3364df8b5989582fbcbc31d1ff102ca5bb852954",
+  "controlIssue": 71,
+  "draftPullRequest": 72,
+  "productionTouched": false,
+  "states": {
+    "emodnet-bathymetry": {
+      "lifecycle": [
+        "DISCOVERED",
+        "TERMS_CHECKED",
+        "ENDPOINT_VERIFIED",
+        "PROBED",
+        "ADAPTER_GREEN",
+        "SOURCE_LOADED",
+        "MAP_GREEN"
+      ],
+      "mapGreen": true,
+      "promotionCandidate": false,
+      "evidence": {
+        "layer": "emodnet:mean_multicolour",
+        "desktopVisual": "VISIBLE_REAL_RASTER",
+        "mobile390Visual": "VISIBLE_REAL_RASTER",
+        "browserNetwork": "2XX_WMS",
+        "truthBoundary": "Bathymetry is seabed depth/product coverage, not ecological condition or event."
+      },
+      "remainingBeforePromotion": [
+        "final licence/attribution review",
+        "legend/source-detail integration",
+        "performance budget in full ATLAS",
+        "interaction regression in production-shaped ATLAS"
+      ]
+    },
+    "emodnet-seabed-habitats": {
+      "lifecycle": [
+        "DISCOVERED",
+        "TERMS_CHECKED",
+        "ENDPOINT_VERIFIED",
+        "PROBED",
+        "ADAPTER_GREEN",
+        "SOURCE_LOADED",
+        "MAP_GREEN"
+      ],
+      "mapGreen": true,
+      "promotionCandidate": false,
+      "evidence": {
+        "layer": "eusm2025_msfd_800",
+        "style": "eusm2019_msfd_800",
+        "desktopVisual": "VISIBLE_PROVIDER_STYLED_HABITAT_RASTER",
+        "mobile390Visual": "VISIBLE_PROVIDER_STYLED_HABITAT_RASTER",
+        "browserNetwork": "2XX_WMS",
+        "licenceShownByProviderMetadata": "CC BY 4.0",
+        "truthBoundary": "EUSeaMap is a broad-scale predictive habitat-map product, not direct field observation or current ecological condition."
+      },
+      "correctionHistory": [
+        "Initial empty-style request returned 2xx but appeared visually blank.",
+        "Network success was therefore explicitly downgraded from MAP_GREEN to SOURCE_LOADED.",
+        "Live GetCapabilities inventory exposed the provider-advertised style eusm2019_msfd_800.",
+        "Explicit provider style produced visible habitat raster on desktop and 390px mobile.",
+        "MAP_GREEN was granted only after visual inspection of the corrected evidence."
+      ],
+      "remainingBeforePromotion": [
+        "legend/class-key integration",
+        "coverage and zoom disclosure",
+        "performance budget in full ATLAS",
+        "source-detail and model-confidence disclosure",
+        "interaction regression in production-shaped ATLAS"
+      ]
+    }
+  },
+  "programmeBoundary": "MAP_GREEN is a sandbox acceptance state only. Nothing is authorised for production merge or deployment."
+}
