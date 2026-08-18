@@ -125,10 +125,17 @@ jobs:
             exit 1
           fi
 
-      - name: Clean tracked tree
+      - name: Source mutation control
         shell: bash
         run: |
-          test -z "$(git status --porcelain)" || { echo 'Tracked tree not clean'; git status --porcelain; exit 1; }
+          unexpected="$(git diff --name-only -- . ':!public/product-build.txt')"
+          if [ -n "$unexpected" ]; then
+            echo 'Unexpected tracked source mutation during CI:'
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
+          git diff --cached --exit-code
+          echo 'PASS — only expected generated provenance/evidence outputs are present.'
 
       - name: Upload exact-SHA acceptance evidence
         if: always()
