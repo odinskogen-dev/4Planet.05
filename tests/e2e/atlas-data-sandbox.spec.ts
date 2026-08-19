@@ -17,7 +17,7 @@ async function loadScene(page, scene: string) {
   await expect(page.getByLabel("Search the living planet — life, places and living systems")).toBeVisible();
 }
 
-test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", async ({ page }, testInfo) => {
+test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME engine", async ({ page }, testInfo) => {
   const bathymetryResponses: number[] = [];
   const habitatResponses: number[] = [];
   const oxygenResponses: number[] = [];
@@ -48,6 +48,7 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab", "true");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-extensions", "4");
   await expect.poll(async () => Number(await page.locator("html").getAttribute("data-atlas-lab-legend-repairs")) > 0).toBeTruthy();
+  await expect.poll(async () => Number(await page.locator("html").getAttribute("data-atlas-lab-source-repairs")) >= 3).toBeTruthy();
   await expect(page.getByRole("button", { name: "LAYERS" })).toBeVisible();
   await expect.poll(() => new URL(page.url()).searchParams.get("m"), { timeout: 10_000 }).toBe("OCE4N");
   await expect.poll(() => successful(bathymetryResponses), { timeout: 30_000 }).toBeTruthy();
@@ -58,8 +59,6 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
-  // On narrow screens the expanded console must sit below the complete lens
-  // rail rather than letting OCE4N/E4RTH chips hide under EARTH/NOW/WATCH.
   const viewport = page.viewportSize();
   if (viewport && viewport.width <= 640) {
     const panelBox = await page.locator(".atlas-panel:not(.rest)").boundingBox();
@@ -71,8 +70,6 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
 
   const bathymetryRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · BATHYMETRY" });
   await expect(bathymetryRow).toContainText("ON");
-
-  // Existing ATLAS ON/OFF machinery, not a sandbox-specific switch.
   await bathymetryRow.locator(".alyr").click();
   await expect.poll(
     () => !(new URL(page.url()).searchParams.get("l") || "").includes("sandbox-emodnet-bathymetry"),
@@ -84,7 +81,6 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     { timeout: 10_000 },
   ).toBeTruthy();
 
-  // Existing ATLAS opacity drawer remains functional for extensions.
   await bathymetryRow.getByRole("button", { name: "i" }).click();
   const bathymetryDrawer = bathymetryRow.locator("..").locator(".drawer");
   const opacity = bathymetryDrawer.locator('input[type="range"]');
@@ -92,8 +88,6 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await opacity.fill("0.45");
   await expect(opacity).toHaveValue("0.45");
 
-  // Regression hardening: inherited legacy legend metadata is normalised without
-  // changing declared colours, so the old SST drawer no longer risks throwing.
   const sstRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · SEA SURFACE TEMP" });
   await sstRow.getByRole("button", { name: "i" }).click();
   await expect(sstRow.locator("..").locator(".drawer .ramp")).toBeVisible();
@@ -103,11 +97,7 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     fullPage: true,
   });
 
-  // ── HABITAT — stable recommended product by default ────────────────────
-  // The portal exposes 2025 candidates, but broad-Europe visual QA on their WMS
-  // path was not good enough for default acceptance. The lab therefore keeps the
-  // explicit 2023 scale-adaptive EUNIS 2019 group as the stable default until the
-  // 2025 path passes the same visual gate.
+  // ── HABITAT ─────────────────────────────────────────────────────────────
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
@@ -123,7 +113,7 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     fullPage: true,
   });
 
-  // ── CONDITION — climatology, never relabelled as current/live ──────────
+  // ── CONDITION + TIME: monthly climatology ───────────────────────────────
   await loadScene(page, "OCEAN_CONDITION");
   await expect.poll(() => successful(oxygenResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
@@ -138,12 +128,23 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
+
+  const timeToggleCondition = page.getByRole("button", { name: /TIME/ });
+  await expect(timeToggleCondition).toBeVisible();
+  await timeToggleCondition.click();
+  await page.getByRole("button", { name: "FEB", exact: true }).click();
+  await expect.poll(
+    () => oxygenUrls.some((url) => decodeURIComponent(url).includes("time=02")),
+    { timeout: 30_000 },
+  ).toBeTruthy();
+  await expect.poll(async () => (await page.locator("html").getAttribute("data-atlas-time-state") || "").includes('"sandbox-emodnet-dissolved-oxygen-climatology":"02"')).toBeTruthy();
+
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-condition.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-condition-time-feb.png`,
     fullPage: true,
   });
 
-  // ── PRESSURE — historical vessel density as the focal variable ─────────
+  // ── PRESSURE + TIME: annual slices ─────────────────────────────────────
   await loadScene(page, "OCEAN_PRESSURE");
   await expect.poll(() => successful(fishingResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
@@ -155,8 +156,19 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
+
+  const timeTogglePressure = page.getByRole("button", { name: /TIME/ });
+  await expect(timeTogglePressure).toBeVisible();
+  await timeTogglePressure.click();
+  await page.getByRole("button", { name: "2020", exact: true }).click();
+  await expect.poll(
+    () => fishingUrls.some((url) => decodeURIComponent(url).includes("time=2020-01-01T00:00:00Z")),
+    { timeout: 30_000 },
+  ).toBeTruthy();
+  await expect.poll(async () => (await page.locator("html").getAttribute("data-atlas-time-state") || "").includes('"sandbox-emodnet-fishing-vessel-density":"2020-01-01T00:00:00Z"')).toBeTruthy();
+
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure-time-2020.png`,
     fullPage: true,
   });
 });
