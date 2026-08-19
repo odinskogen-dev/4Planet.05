@@ -98,3 +98,5 @@ body.sapiens-immersive-nav header svg [fill]:not([fill="none"]) {
     min-height: 600svh !important;
   }
 }
+
+/* Head includes this file globally; this marker exists only to force an exact-head Cloudflare rebuild after wiring the import. */
