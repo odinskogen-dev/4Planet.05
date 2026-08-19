@@ -90,7 +90,7 @@ export const ATLAS_LAB_EXTENSIONS: AtlasLabExtension[] = [
     temporal: {
       kind: "SNAPSHOT",
       selected: "2025",
-      caveat: "Predictive broad-scale habitat classification; not current ecological condition. The 800 m layer is the verified broad-view entry; finer 400/200/full products are reserved for zoom-adaptive refinement.",
+      caveat: "Predictive habitat classification, not current ecological condition. The lab uses the provider-advertised cached full-detail WMTS layer in WebMercator for browser delivery; the slow WMS path is no longer the default map transport.",
     },
     journeyHooks: [
       { kind: "SPECIES", label: "Explore Species", route: "/species", status: "AVAILABLE" },
@@ -144,12 +144,7 @@ export const ATLAS_LAB_EXTENSIONS: AtlasLabExtension[] = [
   },
 ];
 
-/**
- * Scenes are curated reading states, not maximal layer stacks. One focal data
- * product should be immediately legible over Earth. The rest of the admitted
- * layers remain one tap away in the same canonical ON/OFF console, so advanced
- * comparison is possible without making visual overload the default.
- */
+/** Scenes are curated reading states, not maximal layer stacks. */
 export const ATLAS_LAB_SCENES = [
   {
     id: "OCEAN_FOUNDATION",
@@ -234,37 +229,27 @@ function insertAfter(order: string[], id: string, after: string) {
   else order.push(id);
 }
 
-/** Install sandbox-only extensions into the already-existing ATLAS runtime. */
 export function installAtlasLabExtensions() {
   const atlasLayers = LAYERS as any[];
   const rasterOrder = RASTER_ORDER as string[];
 
   for (const extension of ATLAS_LAB_EXTENSIONS) {
     const id = extension.descriptor.id;
-    if (!atlasLayers.some((layer) => layer.id === id)) {
-      atlasLayers.push(toAtlasLayer(extension));
-    }
+    if (!atlasLayers.some((layer) => layer.id === id)) atlasLayers.push(toAtlasLayer(extension));
     insertAfter(rasterOrder, id, extension.atlas.stackAfter);
     installed.add(id);
   }
 
-  return {
-    layerIds: [...installed],
-    extensionCount: installed.size,
-    sceneCount: ATLAS_LAB_SCENES.length,
-  };
+  return { layerIds: [...installed], extensionCount: installed.size, sceneCount: ATLAS_LAB_SCENES.length };
 }
 
-/** Legacy helper retained for callers that want the default scene only. */
 export function applyAtlasLabDefaultScene() {
   const params = new URLSearchParams(window.location.search);
   const scene = ATLAS_LAB_SCENES[0];
-
   if (!params.has("m")) params.set("m", scene.mode);
   if (!params.has("l")) params.set("l", scene.layers.join(","));
   if (!params.has("z")) params.set("z", "3.40");
   if (!params.has("c")) params.set("c", "8.00,57.00");
-
   window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   return scene;
 }
