@@ -1,5 +1,5 @@
 {
-  "version": "v0.4",
+  "version": "v1.0",
   "id": "species-jaguar-amazonia-01",
   "title": "Enter the living system.",
   "intro": "Follow one animal outward into habitat, relationships, pressure, evidence and response.",
@@ -13,7 +13,7 @@
     "detailSrc": "/assets/missions/am4zonia/detail-01.jpg",
     "subjectMobileSrc": "/assets/species/jaguar/SP-005-mobile.jpg",
     "particleCount": 34,
-    "ambientLabel": "PROCEDURAL ATMOSPHERE · NOT FIELD AUDIO"
+    "ambientLabel": "AMAZONIA SOUNDSCAPE · PROCEDURAL LAYERS · NOT FIELD AUDIO"
   },
   "entity": {
     "id": "taxon:gbif:5219426",
@@ -60,7 +60,24 @@
       "labelWidth": "2.5",
       "browserPosition": { "x": 24, "y": 55 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "identity",
+        "stageLabel": "MEET LIFE",
+        "sceneTitle": "Meet one life.",
+        "sceneCue": "LOOK FIRST · THEN FOLLOW WHAT THIS LIFE DEPENDS ON",
+        "backgroundX": 48,
+        "backgroundY": 48,
+        "backgroundScale": 1.18,
+        "detailOpacity": 0.20,
+        "subjectX": 46,
+        "subjectY": 50,
+        "subjectScale": 1.12,
+        "subjectOpacity": 1,
+        "worldBrightness": 0.72,
+        "worldSaturation": 1.02,
+        "veilOpacity": 0.92
+      }
     },
     {
       "id": "jaguar-capybara-prey",
@@ -74,7 +91,24 @@
       "labelWidth": "2.8",
       "browserPosition": { "x": 73, "y": 57 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "dependency",
+        "stageLabel": "FOLLOW A RELATIONSHIP",
+        "sceneTitle": "A predator becomes a relationship.",
+        "sceneCue": "FOLLOW THE LINE · DEPENDENCY IS PART OF THE ANIMAL",
+        "backgroundX": 58,
+        "backgroundY": 50,
+        "backgroundScale": 1.22,
+        "detailOpacity": 0.34,
+        "subjectX": 35,
+        "subjectY": 52,
+        "subjectScale": 0.92,
+        "subjectOpacity": 0.9,
+        "worldBrightness": 0.77,
+        "worldSaturation": 1.08,
+        "veilOpacity": 0.78
+      }
     },
     {
       "id": "jaguar-connected-habitat",
@@ -96,7 +130,24 @@
       "labelWidth": "3",
       "browserPosition": { "x": 28, "y": 31 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "habitat",
+        "stageLabel": "ENTER THE SYSTEM",
+        "sceneTitle": "The animal is not the whole story.",
+        "sceneCue": "PULL BACK · SEE THE HABITAT AROUND THE ANIMAL",
+        "backgroundX": 42,
+        "backgroundY": 42,
+        "backgroundScale": 1.08,
+        "detailOpacity": 0.46,
+        "subjectX": 25,
+        "subjectY": 62,
+        "subjectScale": 0.72,
+        "subjectOpacity": 0.58,
+        "worldBrightness": 0.86,
+        "worldSaturation": 1.12,
+        "veilOpacity": 0.58
+      }
     },
     {
       "id": "jaguar-habitat-loss-fragmentation",
@@ -119,7 +170,24 @@
       "browserPosition": { "x": 75, "y": 30 },
       "color": "#FF4D22",
       "shape": "sphere",
-      "radius": "0.19"
+      "radius": "0.19",
+      "scene": {
+        "state": "pressure",
+        "stageLabel": "UNDER PRESSURE",
+        "sceneTitle": "Now change the system.",
+        "sceneCue": "SEE FRAGMENTATION · THEN ASK WHAT DRIVES IT",
+        "backgroundX": 68,
+        "backgroundY": 40,
+        "backgroundScale": 1.28,
+        "detailOpacity": 0.18,
+        "subjectX": 31,
+        "subjectY": 58,
+        "subjectScale": 0.66,
+        "subjectOpacity": 0.44,
+        "worldBrightness": 0.55,
+        "worldSaturation": 0.68,
+        "veilOpacity": 0.96
+      }
     },
     {
       "id": "jaguar-solutions-transition",
@@ -146,7 +214,24 @@
       "shape": "box",
       "width": "3.8",
       "height": "1",
-      "depth": "0.18"
+      "depth": "0.18",
+      "scene": {
+        "state": "response",
+        "stageLabel": "RESPOND",
+        "sceneTitle": "Pressure is not the destination.",
+        "sceneCue": "MOVE INTO SOLUTIONS INTELLIGENCE · WHAT CAN CHANGE THIS?",
+        "backgroundX": 50,
+        "backgroundY": 48,
+        "backgroundScale": 1.10,
+        "detailOpacity": 0.42,
+        "subjectX": 27,
+        "subjectY": 60,
+        "subjectScale": 0.62,
+        "subjectOpacity": 0.48,
+        "worldBrightness": 0.78,
+        "worldSaturation": 0.94,
+        "veilOpacity": 0.66
+      }
     }
   ]
 }
