@@ -1,5 +1,6 @@
 import type { CanonicalFoodProduct } from "./core.js";
 import type { PickDecisionAxis } from "./pick-core.js";
+import type { PickWalletResult } from "./pick-wallet.js";
 
 export interface PickBasketItem {
   gtin: string;
@@ -14,6 +15,11 @@ export interface PickBasketItem {
   walletConfidence: string;
   planet: string;
   planetConfidence: string;
+  observedPrice: number | null;
+  observedPriceDate: string | null;
+  observedPricePlace: string | null;
+  observedUnitPrice: number | null;
+  observedUnitPriceUnit: string | null;
 }
 
 export interface PickBasketSummary {
@@ -21,6 +27,9 @@ export interface PickBasketSummary {
   healthCoverage: number;
   walletCoverage: number;
   planetCoverage: number;
+  priceObservationCoverage: number;
+  observedBasketPrice: number;
+  pricedItems: number;
   unknownWallet: number;
   unknownPlanet: number;
   categories: number;
@@ -29,7 +38,7 @@ export interface PickBasketSummary {
 
 export const PICK_BASKET_VERSION: string;
 export const PICK_BASKET_KEY: string;
-export function makeBasketItem(product: CanonicalFoodProduct, axes: PickDecisionAxis[]): PickBasketItem;
+export function makeBasketItem(product: CanonicalFoodProduct, axes: PickDecisionAxis[], context?: { wallet?: PickWalletResult | null }): PickBasketItem;
 export function addBasketItem(items: PickBasketItem[], item: PickBasketItem): PickBasketItem[];
 export function removeBasketItem(items: PickBasketItem[], gtin: string): PickBasketItem[];
 export function basketSummary(items: PickBasketItem[]): PickBasketSummary;
