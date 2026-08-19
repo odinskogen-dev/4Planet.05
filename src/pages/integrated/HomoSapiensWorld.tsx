@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { img } from "@/content/imageRegistry";
+import { FOOD_PROOF_SIGNALS } from "@/data/sapiensFoodEvidence";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { content } from "@/content/contentRepository";
 import { contextHref } from "@/product/ProductNav";
@@ -112,6 +113,16 @@ export default function HomoSapiensWorld() {
             <div style={{ ...mono, color: accent }}>GOLD STANDARD 01 · FOOD_</div>
             <h2>Follow one meal through the planet.</h2>
             <p>FOOD_ is the first chain because eating is universal and the system behind it crosses farms, fisheries, inputs, factories, trade, land, water, climate, biodiversity and waste. The Human Systems Atlas turns that chain into something a person can inspect instead of merely read about.</p>
+            <div className="hs-gold-proof" aria-label="Three source-backed global FOOD signals">
+              {FOOD_PROOF_SIGNALS.map((signal) => (
+                <a key={signal.id} href={signal.sourceUrl} target="_blank" rel="noreferrer">
+                  <span style={mono}>{signal.theme} · {signal.dataYear}</span>
+                  <strong>{signal.value}</strong>
+                  <p>{signal.label}</p>
+                  <small>{signal.source} · checked {signal.checkedOn}<br />LIMIT · {signal.limitation}</small>
+                </a>
+              ))}
+            </div>
             <Link to="/sandbox/s4piens" className="hs-gold-action is-primary" style={mono}>ENTER FOOD_ GOLD JOURNEY →</Link>
           </div>
         </section>
