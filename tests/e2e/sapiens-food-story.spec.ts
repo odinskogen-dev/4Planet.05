@@ -89,6 +89,11 @@ test("Homo sapiens Species route holds the same premium Gold grammar", async ({ 
   await expect(page.getByText(/GOLD STANDARD · FOOD_/i).first()).toBeAttached();
   await expect(page.getByText(/UNKNOWN WITHOUT MORE EVIDENCE/i)).toBeAttached();
   await expect(page.getByRole("heading", { name: /Follow one meal through the planet/i })).toBeAttached();
+  await expect(page.getByText("32%", { exact: true })).toBeAttached();
+  await expect(page.getByText("72%", { exact: true })).toBeAttached();
+  await expect(page.getByText("1.05B t", { exact: true })).toBeAttached();
+  await expect(page.getByText(/FAO · FAOSTAT/i)).toBeAttached();
+  await expect(page.getByText(/UNEP · Food Waste Index 2024/i)).toBeAttached();
   await expect(page.getByRole("link", { name: /ENTER FOOD_ GOLD JOURNEY/i })).toBeAttached();
   await expect(page.getByRole("link", { name: /SOURCE · GBIF · HOMO SAPIENS/i })).toBeAttached();
 
