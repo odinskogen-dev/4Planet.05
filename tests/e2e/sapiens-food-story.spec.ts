@@ -23,7 +23,7 @@ test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep
 
   // 02 — Homo sapiens becomes the human entry point and systems graph.
   await openChapter(page, /Open chapter 02/i, "One species. Many systems.");
-  await expect(page.getByLabel(/SPECIES: HOMO SAPIENS/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /SPECIES: HOMO SAPIENS/i })).toBeVisible();
   for (const need of [/FOOD_: EAT/i, /WATER: DRINK/i, /EN4RGY_: POWER/i, /BUILT SYSTEM: SHELTER/i, /F4SHION_: WEAR/i, /MOBILITY: MOVE/i]) {
     await expect(page.getByRole("button", { name: need })).toBeVisible();
   }
