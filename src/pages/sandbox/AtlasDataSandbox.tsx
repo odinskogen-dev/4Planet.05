@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import PublicWorld from "@/earth/PublicWorld";
-import {
-  applyAtlasLabDefaultScene,
-  installAtlasLabExtensions,
-} from "@/sandbox/atlasLabRegistry";
+import { installAtlasLabExtensions } from "@/sandbox/atlasLabRegistry";
+import { applyAtlasLabSceneFromUrl } from "@/sandbox/atlasLabScenes";
 
 // Install before PublicWorld/World reads the layer registry. This keeps the
 // sandbox visually and behaviourally identical to ATLAS while production stays
@@ -21,15 +19,17 @@ export default function AtlasDataSandbox() {
     robots.content = "noindex,nofollow,noarchive";
     document.head.appendChild(robots);
 
-    applyAtlasLabDefaultScene();
+    const scene = applyAtlasLabSceneFromUrl();
     document.documentElement.dataset.atlasLab = "true";
     document.documentElement.dataset.atlasLabExtensions = String(LAB.extensionCount);
+    document.documentElement.dataset.atlasLabScene = scene.id;
 
     setPrepared(true);
     return () => {
       robots.remove();
       delete document.documentElement.dataset.atlasLab;
       delete document.documentElement.dataset.atlasLabExtensions;
+      delete document.documentElement.dataset.atlasLabScene;
     };
   }, []);
 
