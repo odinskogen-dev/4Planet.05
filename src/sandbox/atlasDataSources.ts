@@ -1,6 +1,7 @@
 export type SandboxRasterDescriptor = {
   id: string;
   sourceId: string;
+  proxyKey: string;
   buttonLabel: string;
   label: string;
   authority: string;
@@ -20,9 +21,15 @@ export type SandboxRasterDescriptor = {
   opacity: number;
 };
 
+export type RasterRequestOverrides = {
+  time?: string;
+  elevation?: string;
+};
+
 export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-bathymetry",
   sourceId: "emodnet-bathymetry",
+  proxyKey: "emodnet-bathymetry",
   buttonLabel: "BATHYMETRY",
   label: "EMODNET · BATHYMETRY",
   authority: "European Marine Observation and Data Network (EMODnet)",
@@ -40,9 +47,10 @@ export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
 export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-seabed-habitats",
   sourceId: "emodnet-seabed-habitats",
+  proxyKey: "emodnet-seabed-habitats",
   buttonLabel: "SEABED HABITATS",
   label: "EMODNET · SEABED HABITATS",
-  authority: "European Marine Observation and Data Network (EMODnet)",
+  authority: "European Marine Observation and Data Network (EModnet)",
   product: "EUSeaMap 2023 · EUNIS 2019 classification group · scale-adaptive",
   layer: "eusm2023_eunis2019_group",
   style: "default-style-eusm2023_eunis2019_group",
@@ -58,9 +66,10 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
 export const EMODNET_FISHING_VESSEL_DENSITY: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-fishing-vessel-density",
   sourceId: "emodnet-human-activities",
+  proxyKey: "emodnet-human-activities",
   buttonLabel: "FISHING DENSITY",
   label: "EMODNET · HUMAN ACTIVITIES",
-  authority: "European Marine Observation and Data Network (EMODnet)",
+  authority: "European Marine Observation and Data Network (EModnet)",
   product: "Fishing vessel density · annual average · 2023",
   layer: "vesseldensity_01avg",
   style: "VesselDensity",
@@ -77,6 +86,7 @@ export const EMODNET_FISHING_VESSEL_DENSITY: SandboxRasterDescriptor = {
 export const EMODNET_DISSOLVED_OXYGEN_CLIMATOLOGY: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-dissolved-oxygen-climatology",
   sourceId: "emodnet-chemistry-eutrophication",
+  proxyKey: "emodnet-chemistry",
   buttonLabel: "DISSOLVED OXYGEN",
   label: "EMODNET · CHEMISTRY",
   authority: "EMODnet Chemistry / University of Liege, GeoHydrodynamics and Environment Research",
@@ -104,16 +114,23 @@ export const SANDBOX_RASTERS = [
   EMODNET_DISSOLVED_OXYGEN_CLIMATOLOGY,
 ] as const;
 
-export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
+function isLocalPreview() {
+  if (typeof window === "undefined") return true;
+  return window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+}
+
+export function directWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
   const version = descriptor.version || "1.1.1";
+  const time = overrides.time ?? descriptor.time;
+  const elevation = overrides.elevation ?? descriptor.elevation;
   const query = [
     "service=WMS",
     "request=GetMap",
     `version=${version}`,
     `layers=${encodeURIComponent(descriptor.layer)}`,
     `styles=${encodeURIComponent(descriptor.style || "")}`,
-    ...(descriptor.time ? [`time=${encodeURIComponent(descriptor.time)}`] : []),
-    ...(descriptor.elevation ? [`elevation=${encodeURIComponent(descriptor.elevation)}`] : []),
+    ...(time ? [`time=${encodeURIComponent(time)}`] : []),
+    ...(elevation ? [`elevation=${encodeURIComponent(elevation)}`] : []),
     "format=image%2Fpng",
     "transparent=true",
     "tiled=true",
@@ -125,10 +142,38 @@ export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
   return `${descriptor.service}?${query}`;
 }
 
-export function sandboxRasterSource(descriptor: SandboxRasterDescriptor) {
+export function proxiedWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
+  const time = overrides.time ?? descriptor.time;
+  const elevation = overrides.elevation ?? descriptor.elevation;
+  const params = new URLSearchParams({
+    source: descriptor.proxyKey,
+    version: descriptor.version || "1.1.1",
+    layers: descriptor.layer,
+    styles: descriptor.style || "",
+    width: "256",
+    height: "256",
+    bbox: "{bbox-epsg-3857}",
+  });
+  if (time) params.set("time", time);
+  if (elevation) params.set("elevation", elevation);
+  // URLSearchParams escapes the MapLibre bbox token. Restore it so MapLibre can
+  // substitute the real EPSG:3857 tile bounds before making the request.
+  return `/api/atlas-wms?${params.toString().replace(encodeURIComponent("{bbox-epsg-3857}"), "{bbox-epsg-3857}")}`;
+}
+
+export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
+  // Vite preview in CI has no Pages Functions runtime, so test provider WMS
+  // directly there. Every Cloudflare/production-shaped preview uses the
+  // same-origin bridge for CORS/CRS/reliability.
+  return isLocalPreview()
+    ? directWmsRasterTileUrl(descriptor, overrides)
+    : proxiedWmsRasterTileUrl(descriptor, overrides);
+}
+
+export function sandboxRasterSource(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}) {
   return {
     type: "raster" as const,
-    tiles: [wmsRasterTileUrl(descriptor)],
+    tiles: [wmsRasterTileUrl(descriptor, overrides)],
     tileSize: 256,
     attribution: descriptor.attribution,
   };
