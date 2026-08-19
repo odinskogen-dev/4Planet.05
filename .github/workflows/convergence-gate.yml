@@ -10,6 +10,7 @@ on:
     branches:
       - convergence/one-interface
       - claude/one-interface-premium-completion
+      - sandbox/s4piens-food-human-systems-atlas
   pull_request:
   workflow_dispatch:
 
