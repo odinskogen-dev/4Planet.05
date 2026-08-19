@@ -23,8 +23,6 @@ const wms3857 = (base, layer, { style = "", time, elevation, version = "1.1.1", 
   return `${base}?${p}`;
 };
 
-const HABITAT_WMTS_TILE = "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest/eusm2025_eunis2019_full/emodnet_view:eusm2021_eunis2019_l2_fulldetail/EPSG:900913/EPSG:900913:3/2/4?format=image/png8";
-
 const checks = [
   { id: "nasa-blue-marble", label: "Earth · Blue Marble", kind: "image", expected: "OPEN_BASELINE", url: "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/default/GoogleMapsCompatible_Level8/2/1/2.jpeg" },
   { id: "nasa-truecolor", label: "NASA Earthdata · True colour", kind: "image", expected: "OPEN_BASELINE", url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${daysAgo(2)}/GoogleMapsCompatible_Level9/2/1/2.jpg` },
@@ -42,7 +40,7 @@ const checks = [
   { id: "usgs-quakes", label: "Quakes", kind: "jsonRows", expected: "OPEN_BASELINE", url: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", rows: (d) => d?.features },
   { id: "climate-trace-v7-power", label: "CLIM4TE TRACE · Power 2024", kind: "jsonRows", expected: "OPEN_REPAIRED", url: "https://api.climatetrace.org/v7/sources?year=2024&gas=co2e_100yr&sectors=power&limit=5", rows: (d) => d },
   { id: "emodnet-bathymetry", label: "Ocean · Bathymetry", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-bathymetry.eu/wms", "emodnet:mean_multicolour", { style: "mean_multicolour", version: "1.3.0" }) },
-  { id: "emodnet-habitat", label: "Seabed habitats 2025 · cached WMTS", kind: "image", expected: "OPEN_LAB", url: HABITAT_WMTS_TILE },
+  { id: "emodnet-habitat", label: "Seabed habitats 2023 · scale-adaptive WMS", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms", "eusm2023_eunis2019_group", { style: "default-style-eusm2023_eunis2019_group" }) },
   { id: "emodnet-oxygen", label: "Ocean oxygen climatology · Aug surface", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ec.oceanbrowser.net/emodnet/Python/web/wms", "All_European_Seas/Water_body_dissolved_oxygen_concentration.nc*Water_body_dissolved_oxygen_concentration_L2", { style: "pcolor_flat", time: "08", elevation: "-0.0", version: "1.3.0" }) },
   { id: "emodnet-fishing-density", label: "Fishing vessel density · 2023", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-humanactivities.eu/wms", "vesseldensity_01avg", { style: "VesselDensity", time: "2023-01-01T00:00:00Z" }) },
   { id: "noaa-coral-dhw", label: "Coral heat stress · latest", kind: "image", expected: "OPEN_REPAIRED", url: "https://coastwatch.noaa.gov/erddap/wms/noaacrwdhwDaily/request?service=WMS&version=1.3.0&request=GetMap&layers=noaacrwdhwDaily%3Adegree_heating_week&styles=&format=image%2Fpng&transparent=true&crs=CRS%3A84&width=512&height=256&time=current&bbox=-180,-35,180,35" },
@@ -95,7 +93,7 @@ for (const check of checks) {
 
 const counts = Object.fromEntries([...new Set(results.map((r) => r.state))].sort().map((state) => [state, results.filter((r) => r.state === state).length]));
 const clean = results.map(({ rows, url, ...result }) => ({ ...result, url: new URL(url).origin + new URL(url).pathname }));
-const report = { schemaVersion: 4, generatedAt: new Date().toISOString(), commitSha: process.env.GITHUB_SHA || null, counts, results: clean };
+const report = { schemaVersion: 5, generatedAt: new Date().toISOString(), commitSha: process.env.GITHUB_SHA || null, counts, results: clean };
 
 const md = [
   "# ATLAS DATA LAB — EXACT LAYER CONTRACT REPORT",
