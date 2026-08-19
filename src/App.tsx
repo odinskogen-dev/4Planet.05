@@ -1,4 +1,6 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
+import { AnalyticsConsent } from "@/analytics/AnalyticsConsent";
+import { AnalyticsProvider } from "@/analytics/AnalyticsProvider";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
@@ -21,10 +23,12 @@ function AtlasProductSwitcher() {
 export default function App() {
   return (
     <BrowserRouter>
+      <AnalyticsProvider />
       <ScrollToTop />
       <ContextRetained />
       <AtlasProductSwitcher />
       <AppRoutes />
+      <AnalyticsConsent />
     </BrowserRouter>
   );
 }
