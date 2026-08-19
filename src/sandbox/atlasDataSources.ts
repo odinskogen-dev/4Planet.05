@@ -58,7 +58,7 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   style: "default-style-eusm2023_eunis2019_group",
   version: "1.3.0",
   docs: "https://emodnet.ec.europa.eu/en/seabed-habitats",
-  service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
+  service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/ows",
   attribution: "EModnet Seabed Habitats / EUSeaMap 2023 · CC BY 4.0",
   limitation:
     "This is the provider's EUSeaMap 2023 EUNIS 2019 scale-adaptive group, containing multiple simplification levels for WMS viewing across scales. EUSeaMap is a broad-scale predictive habitat map, not direct field observation or current ecological condition. EMODnet's portal now exposes 2025 products, but the lab keeps the 2025 WMS path as a candidate rather than the default until its broad-Europe rendering passes the same visual acceptance standard.",
