@@ -10,7 +10,9 @@
   <link rel="preload" as="image" href="/assets/missions/am4zonia/hero.jpg" media="(min-width: 721px)" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-xr.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-awe-v04.css" />
+  <link rel="stylesheet" href="/xr/jaguar/jaguar-journey-v10.css" />
   <script src="/xr/engine/nature-scene-adapter.js"></script>
+  <script src="/xr/engine/nature-journey-engine.js"></script>
   <script src="/xr/engine/nature-browser.js"></script>
   <script src="/xr/engine/nature-audio-v05.js"></script>
   <script src="/xr/jaguar/jaguar-xr.js"></script>
@@ -20,6 +22,7 @@
     <div class="nature-world" aria-hidden="true">
       <div class="nature-world__background"></div>
       <div class="nature-world__detail"></div>
+      <div class="nature-world__state"></div>
       <div class="nature-world__veil"></div>
       <div class="nature-world__light"></div>
       <div class="nature-particles"></div>
@@ -56,8 +59,21 @@
           <span class="nature-subject__boundary">SPECIES MEDIA · NOT AN OCCURRENCE RECORD</span>
         </div>
       </div>
+      <div class="nature-journey-route" aria-hidden="true"><span></span></div>
       <div class="nature-nodes" aria-label="Living-system truth nodes"></div>
       <div class="nature-stage__instruction">MOVE / LOOK · SELECT A NODE · FOLLOW THE SYSTEM</div>
+    </section>
+
+    <section class="nature-journey-hud" aria-live="polite" aria-label="Journey scene" data-visible="false">
+      <div class="nature-journey-hud__copy">
+        <span class="nature-journey-hud__stage">01 / 05 · IDENTITY</span>
+        <h2 class="nature-journey-hud__title">Meet the jaguar.</h2>
+        <span class="nature-journey-hud__cue">FOLLOW THE LIVING SYSTEM</span>
+      </div>
+      <div class="nature-journey-hud__actions">
+        <button class="nature-journey-hud__back" type="button" disabled>← BACK</button>
+        <button class="nature-journey-hud__next" type="button">FOLLOW THE SYSTEM · 02 →</button>
+      </div>
     </section>
 
     <nav class="nature-progress" aria-label="Journey chapters"></nav>
@@ -76,7 +92,7 @@
     </aside>
 
     <footer class="nature-footer">
-      <span>4PLANET_ NATURE RENDERER · JAGUAR GOLD PROTOTYPE v0.5</span>
+      <span>4PLANET_ JOURNEY ENGINE · JAGUAR GOLD PROTOTYPE v1.0</span>
       <span>AMAZONIA SOUNDSCAPE · PROCEDURAL LAYERS · NOT FIELD AUDIO</span>
     </footer>
   </main>
