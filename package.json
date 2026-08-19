@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "assets:verify": "node scripts/verify-assets.mjs",
     "lint": "eslint src",
-    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/xr-scene-contract.test.mjs",
+    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/xr-scene-contract.test.mjs scripts/jaguar-3d-contract.test.mjs",
     "test:contracts": "node --test scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs",
     "test:e2e": "playwright test"
   },
@@ -28,7 +28,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^6.0.4",
     "eslint": "^10.8.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-hooks": "^6.0.0",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.65.0",
     "vite": "^8.1.5"
