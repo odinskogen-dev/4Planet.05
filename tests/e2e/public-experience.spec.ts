@@ -18,8 +18,21 @@ test("homepage exposes the connected public system and premium navigation", asyn
   await menu.click();
   await expect(page.getByRole("button", { name: "Close menu" })).toBeVisible();
   await expect(page.getByText("4PLANET_ / NAVIGATION", { exact: true })).toHaveCount(2);
+
+  const isMobile = (page.viewportSize()?.width ?? 1280) <= 760;
+  if (isMobile) {
+    const about = page.locator(".menu-mobile").getByRole("button", { name: "ABOUT" });
+    await expect(about).toBeVisible();
+    await about.click();
+    await expect(page.locator(".menu-mobile").getByRole("link", { name: "THE FOUNDER" })).toBeVisible();
+  } else {
+    const about = page.locator(".menu-desktop").getByRole("link", { name: "ABOUT" });
+    await expect(about).toBeVisible();
+    await about.hover();
+    await expect(page.locator(".menu-desktop").getByRole("link", { name: "THE FOUNDER" })).toBeVisible();
+  }
+
   await expect(page.getByRole("link", { name: "M4GAZINE" }).first()).toBeAttached();
-  await expect(page.getByRole("link", { name: "THE FOUNDER" }).first()).toBeAttached();
   await noHorizontalOverflow(page);
 });
 
