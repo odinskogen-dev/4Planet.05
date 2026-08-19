@@ -3,7 +3,7 @@ import path from "node:path";
 
 const OUT_DIR = path.join(process.cwd(), "artifacts", "atlas-data-sandbox");
 const UA = "4PLANET-ATLAS-DATA-SANDBOX/1.0 (+https://4planet.org; layer-contract probe)";
-const TIMEOUT = 15000;
+const TIMEOUT = 30000;
 
 const daysAgo = (n) => {
   const d = new Date();
