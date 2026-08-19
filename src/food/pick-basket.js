@@ -1,8 +1,9 @@
-export const PICK_BASKET_VERSION = "p18-pick-basket-0.1.0";
+export const PICK_BASKET_VERSION = "p18-pick-basket-0.6.0";
 export const PICK_BASKET_KEY = "p18:pick:basket:v1";
 
-export function makeBasketItem(product, axes) {
+export function makeBasketItem(product, axes, context = {}) {
   const byId = Object.fromEntries((axes ?? []).map((axis) => [axis.id, axis]));
+  const observation = context.wallet?.observation ?? null;
   return {
     gtin: product.gtin,
     name: product.name || "Unnamed product",
@@ -16,6 +17,11 @@ export function makeBasketItem(product, axes) {
     walletConfidence: byId.wallet?.confidence ?? "UNKNOWN",
     planet: byId.planet?.state ?? "UNKNOWN",
     planetConfidence: byId.planet?.confidence ?? "UNKNOWN",
+    observedPrice: typeof observation?.price === "number" ? observation.price : null,
+    observedPriceDate: observation?.date ?? null,
+    observedPricePlace: observation ? [observation.location?.brand || observation.location?.name, observation.location?.city].filter(Boolean).join(" · ") : null,
+    observedUnitPrice: typeof observation?.unitPrice === "number" ? observation.unitPrice : null,
+    observedUnitPriceUnit: observation?.unitPriceUnit ?? null,
   };
 }
 
@@ -36,15 +42,20 @@ export function basketSummary(items) {
   const health = known("health");
   const wallet = known("wallet");
   const planet = known("planet");
+  const priced = list.filter((item) => typeof item.observedPrice === "number");
+  const observedBasketPrice = priced.reduce((sum, item) => sum + item.observedPrice, 0);
   return {
     total,
     healthCoverage: pct(health),
     walletCoverage: pct(wallet),
     planetCoverage: pct(planet),
+    priceObservationCoverage: pct(priced.length),
+    observedBasketPrice,
+    pricedItems: priced.length,
     unknownWallet: total - wallet,
     unknownPlanet: total - planet,
     categories: new Set(list.map((item) => item.category).filter(Boolean)).size,
-    rule: "Unknown data is never counted as favourable and cannot improve basket rank.",
+    rule: "Observed basket cost is only the sum of stored price observations; it is not a guaranteed live checkout total. Unknown data is never counted as favourable.",
   };
 }
 

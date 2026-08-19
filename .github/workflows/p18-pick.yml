@@ -4,14 +4,20 @@ on:
   push:
     branches:
       - agent/p18-pick-v1
+      - agent/p18-pick-v2
   pull_request:
     branches:
       - agent/p18-food-03-private-user-validation
+      - agent/p18-pick-v1
     paths:
       - "src/food/Pick*"
       - "src/food/pick-*"
+      - "src/food/category-control*"
+      - "functions/api/pick-*"
       - "src/routes/router.tsx"
       - "scripts/pick-contract.test.mjs"
+      - "scripts/pick-v2-contract.test.mjs"
+      - "tests/e2e/pick-v2.spec.ts"
       - ".github/workflows/p18-pick.yml"
 
 permissions:
@@ -28,8 +34,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: PICK truth contracts
+      - name: PICK v1 truth contracts
         run: node scripts/pick-contract.test.mjs
+      - name: PICK v2 truth contracts
+        run: node scripts/pick-v2-contract.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Production build
@@ -60,6 +68,10 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+      - name: PICK v2 browser tests
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/pick-v2.spec.ts
       - name: Upload PICK evidence
         if: always()
         uses: actions/upload-artifact@v4

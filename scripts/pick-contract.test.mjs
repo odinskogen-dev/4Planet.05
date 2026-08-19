@@ -12,28 +12,33 @@ const product = {
   nutrients: { energyKcal: 60, sugars: 4, salt: 0.1, protein: 4, fat: 3, fibre: 0 },
   comparisonCategory: "plain-yogurt",
   sourceComparisonCategory: "en:plain-yogurts",
-  dataQuality: { confidence: "high", completeness: 1, missingFields: [], conflicts: [] },
+  categoryTags: [],
+  categoryControl: { profileId: null, family: null, label: "Unsupported category" },
+  dataQuality: { state: "complete", confidence: "high", completeness: 1, missingFields: [], conflicts: [] },
   sourceRef: { sourceId: "open_food_facts", apiVersion: "v3", endpoint: "/api/food", retrievedAt: new Date().toISOString(), licence: { database: "ODbL" } },
 };
 
-assert.equal(PICK_MODEL_VERSION, "p18-pick-0.2.0");
+assert.equal(PICK_MODEL_VERSION, "p18-pick-0.5.0");
 const axes = buildDecisionAxes(product);
-assert.equal(axes.find((axis) => axis.id === "health")?.state, "COMPOSITION READABLE");
+assert.equal(axes.find((axis) => axis.id === "health")?.state, "UNKNOWN", "composition without controlled category evidence must not become a health verdict");
 assert.equal(axes.find((axis) => axis.id === "wallet")?.state, "UNKNOWN");
 assert.equal(axes.find((axis) => axis.id === "planet")?.state, "UNKNOWN");
-assert.match(axes.find((axis) => axis.id === "health")?.summary ?? "", /No health verdict/);
+assert.match(axes.find((axis) => axis.id === "health")?.summary ?? "", /No controlled health interpretation/);
 
 const passport = buildTruthPassport(product);
 assert.equal(passport.source.class, "COMMUNITY PRODUCT DATABASE");
+assert.equal(passport.facts.find((fact) => fact.id === "health")?.available, false);
 assert.equal(passport.facts.find((fact) => fact.id === "price")?.available, false);
 assert.equal(passport.facts.find((fact) => fact.id === "planet")?.available, false);
+assert.deepEqual(passport.chain, ["SOURCE", "RECORD", "FACT", "EVIDENCE", "INTERPRETATION"]);
 
 const basket = addBasketItem([], makeBasketItem(product, axes));
 const summary = basketSummary(basket);
 assert.equal(summary.total, 1);
+assert.equal(summary.healthCoverage, 0);
 assert.equal(summary.walletCoverage, 0);
 assert.equal(summary.planetCoverage, 0);
-assert.match(summary.rule, /never counted as favourable/);
+assert.match(summary.rule, /Unknown data is never counted as favourable/);
 
 let shop = {};
 shop = toggleNeed(shop, "produce");
