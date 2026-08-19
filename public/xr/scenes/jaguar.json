@@ -1,10 +1,20 @@
 {
-  "version": "v0.3",
+  "version": "v0.4",
   "id": "species-jaguar-amazonia-01",
   "title": "Enter the living system.",
-  "intro": "Look around. Select the nodes. Move from the animal to relationships, pressures, evidence and possible responses.",
+  "intro": "Follow one animal outward into habitat, relationships, pressure, evidence and response.",
   "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT A PRECISE ECOLOGICAL SIMULATION",
   "returnHref": "/species/jaguar",
+  "browser": {
+    "entryKicker": "AMAZONIA_ 01 · JAGUAR",
+    "entryTitle": "Enter the rainforest.",
+    "entryIntro": "Meet one life. Then follow the living system around it — what it depends on, what is changing, how we know, and where solutions begin.",
+    "entryCta": "ENTER THE LIVING SYSTEM",
+    "detailSrc": "/assets/missions/am4zonia/detail-01.jpg",
+    "subjectMobileSrc": "/assets/species/jaguar/SP-005-mobile.jpg",
+    "particleCount": 34,
+    "ambientLabel": "PROCEDURAL ATMOSPHERE · NOT FIELD AUDIO"
+  },
   "entity": {
     "id": "taxon:gbif:5219426",
     "slug": "jaguar",
@@ -16,6 +26,7 @@
   "environment": {
     "id": "am4zonia",
     "src": "/assets/missions/am4zonia/hero.jpg",
+    "mobileSrc": "/assets/missions/am4zonia/hero-mobile.jpg",
     "context": "CURATED REGIONAL LIVING-SYSTEM CONTEXT"
   },
   "subject": {
@@ -35,7 +46,7 @@
       "relationClass": null,
       "canonicalBinding": "species.identity",
       "truthState": "KNOWN",
-      "title": "IDENTITY",
+      "title": "MEET THE JAGUAR",
       "label": "IDENTITY",
       "body": "Jaguar / Panthera onca. Canonical species identity is carried by the SPECIES layer.",
       "source": {
@@ -47,6 +58,7 @@
       "labelPosition": "-3.05 1.12 -3.8",
       "labelRotation": "0 17 0",
       "labelWidth": "2.5",
+      "browserPosition": { "x": 24, "y": 55 },
       "color": "#3AE86F",
       "shape": "sphere"
     },
@@ -55,7 +67,7 @@
       "kind": "RELATIONSHIP",
       "relationClass": "DEPENDENCY",
       "truthState": "KNOWN",
-      "title": "RELATIONSHIP",
+      "title": "FOLLOW A RELATIONSHIP",
       "label": "PREY RELATIONSHIP",
       "body": "Capybara is a documented jaguar prey taxon in a bounded Southern Pantanal study context.",
       "source": {
@@ -67,6 +79,7 @@
       "labelPosition": "2.05 1.02 -3.9",
       "labelRotation": "0 -16 0",
       "labelWidth": "2.8",
+      "browserPosition": { "x": 73, "y": 57 },
       "color": "#3AE86F",
       "shape": "sphere"
     },
@@ -76,7 +89,7 @@
       "relationClass": "DEPENDENCY",
       "canonicalBinding": "species.publicClaims.2",
       "truthState": "INTERPRETED",
-      "title": "LIVING SYSTEM",
+      "title": "ENTER THE LIVING SYSTEM",
       "label": "CONNECTED HABITAT",
       "body": "Connected habitats can support movement, prey access and gene flow across jaguar populations.",
       "source": {
@@ -88,6 +101,7 @@
       "labelPosition": "-4.1 3.02 -6.2",
       "labelRotation": "0 23 0",
       "labelWidth": "3",
+      "browserPosition": { "x": 28, "y": 31 },
       "color": "#3AE86F",
       "shape": "sphere"
     },
@@ -98,7 +112,7 @@
       "canonicalBinding": "species.publicClaims.1",
       "truthState": "KNOWN",
       "title": "PRESSURE → CAUSE",
-      "label": "PRESSURE → CAUSE",
+      "label": "HABITAT PRESSURE",
       "body": "Habitat loss and fragmentation are documented range-wide pressure categories for jaguars. The immediate cause class in this current evidence path is human-driven habitat conversion and fragmentation.",
       "source": {
         "label": "PANTHERA — JAGUAR",
@@ -109,6 +123,7 @@
       "labelPosition": "2.55 3.08 -6.1",
       "labelRotation": "0 -23 0",
       "labelWidth": "3",
+      "browserPosition": { "x": 75, "y": 30 },
       "color": "#FF4D22",
       "shape": "sphere",
       "radius": "0.19"
@@ -120,7 +135,7 @@
       "canonicalBinding": "living.RESPONSE.0",
       "truthState": "UNKNOWN",
       "title": "HOW DO WE SOLVE THIS?",
-      "label": "HOW DO WE SOLVE THIS? →",
+      "label": "SOLUTIONS INTELLIGENCE",
       "body": "Continue from pressure and cause into Solutions Intelligence. The XR lens should never stop at awareness.",
       "source": {
         "label": "4PLANET SOLUTIONS INTELLIGENCE",
@@ -133,6 +148,7 @@
       "labelWidth": "4.6",
       "align": "center",
       "labelColor": "#FFFFFF",
+      "browserPosition": { "x": 50, "y": 78 },
       "color": "#2E2EFF",
       "shape": "box",
       "width": "3.8",
