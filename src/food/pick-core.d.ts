@@ -13,7 +13,7 @@ export interface PickDecisionAxis {
   directness: string;
   summary: string;
   limitation: string;
-  evidence: Array<Record<string, any>>;
+  evidence: Array<Record<string, unknown>>;
 }
 
 export interface PickTruthSummary {
@@ -30,7 +30,7 @@ export interface PickTruthPassport {
   completeness: number;
   conflictState: string;
   facts: Array<{ id: string; label: string; available: boolean; directness: string; interpretation: string }>;
-  evidenceSources: Array<Record<string, any>>;
+  evidenceSources: Array<Record<string, unknown>>;
   chain: string[];
 }
 
