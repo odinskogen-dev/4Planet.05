@@ -19,12 +19,13 @@
   const boot = async () => {
     await updateXRStatus();
     const scene = document.getElementById('nature-scene');
-    if (!scene || !window.NatureRenderer) return;
+    if (!scene || !window.NatureRenderer || !window.NatureSceneAdapter) return;
     try {
-      await window.NatureRenderer.render({
-        scene,
-        manifestUrl: '/xr/scenes/jaguar.json'
+      const manifest = await window.NatureSceneAdapter.load({
+        layoutUrl: '/xr/scenes/jaguar.json',
+        canonicalUrl: '/xr/generated/jaguar-canonical.json'
       });
+      await window.NatureRenderer.render({ scene, manifest });
     } catch (error) {
       const node = status();
       if (node) node.textContent = 'XR SCENE FAILED CLOSED';
