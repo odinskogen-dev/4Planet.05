@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
-import LabsOverview from "@/pages/labs/LabsOverview";
+import LabsV4 from "@/pages/labs/LabsV4";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
@@ -39,7 +39,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs" element={<LabsV4 />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
