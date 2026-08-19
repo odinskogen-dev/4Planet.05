@@ -33,17 +33,17 @@ export const projects: LabProject[] = baseProjects.map((project) => {
   };
 });
 
-export function projectBySlug(slug: string) {
+export function projectBySlug(slug: string): LabProject | undefined {
   return projects.find((project) => project.slug === slug);
 }
 
-export function childrenOf(slug: string) {
+export function childrenOf(slug: string): LabProject[] {
   return projects.filter((project) => project.parent === slug);
 }
 
-export function descendantsOf(slug: string) {
+export function descendantsOf(slug: string): LabProject[] {
   const direct = childrenOf(slug);
-  return direct.flatMap((project) => [project, ...descendantsOf(project.slug)]);
+  return direct.flatMap((project): LabProject[] => [project, ...descendantsOf(project.slug)]);
 }
 
 export const universeRoots = projects.filter((project) => project.kind === "ROOT");
@@ -74,7 +74,7 @@ export const portfolioStats = {
   ),
 };
 
-export const recentSystemMoves: Array<[string, string, string]> = [
+export const recentSystemMoves: Array<readonly [string, string, string]> = [
   ["AUG20-PR86", "ONE INTERFACE gained a newer stacked About × Founder narrative slice (PR #86); it remains draft/unmerged and is not promoted into BRAIN or production by LABS.", "CURRENT"],
   ["AUG20-PR74", "ONE INTERFACE PR #74 current GitHub head is 0338e94…; current implementation state is kept separate from the older durable BRAIN writeback.", "CURRENT"],
   ...baseRecentSystemMoves,
