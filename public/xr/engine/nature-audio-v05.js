@@ -4,25 +4,34 @@
   let started = false;
   let paused = false;
   const timers = [];
-  const beds = [];
+  const beds = {};
   let sceneState = 'identity';
 
   const root = () => document.getElementById('browser-experience');
   const soundButton = () => document.querySelector('.nature-sound');
   const AudioCtx = () => window.AudioContext || window.webkitAudioContext;
   const random = (min, max) => min + Math.random() * (max - min);
-  const sceneGain = { identity: 0.14, dependency: 0.125, habitat: 0.115, pressure: 0.085, response: 0.12 };
 
-  const noiseBuffer = (seconds = 2.4) => {
+  // Overall loudness per chapter. The separate layer mix below controls character.
+  const sceneGain = { identity: 0.105, dependency: 0.12, habitat: 0.11, pressure: 0.074, response: 0.105 };
+  const sceneMix = {
+    identity:   { insects: .52, canopy: .42, water: .03, low: .22, calls: .32 },
+    dependency: { insects: .58, canopy: .34, water: .78, low: .18, calls: .52 },
+    habitat:    { insects: .66, canopy: .76, water: .08, low: .14, calls: .72 },
+    pressure:   { insects: .12, canopy: .16, water: .01, low: .72, calls: .05 },
+    response:   { insects: .52, canopy: .72, water: .10, low: .16, calls: .68 },
+  };
+
+  const noiseBuffer = (seconds = 2.2) => {
     const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
     const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
     for (let c = 0; c < 2; c += 1) {
       const out = buffer.getChannelData(c);
-      let pink = 0;
+      let shaped = 0;
       for (let i = 0; i < length; i += 1) {
         const white = Math.random() * 2 - 1;
-        pink = pink * 0.985 + white * 0.015;
-        out[i] = pink * 2.2;
+        shaped = shaped * 0.972 + white * 0.028;
+        out[i] = shaped * 1.8;
       }
     }
     return buffer;
@@ -37,25 +46,25 @@
     return ctx.createGain();
   };
 
-  const bed = ({ frequency, q, gain, pan = 0, type = 'bandpass' }) => {
+  const bed = ({ name, frequency, q, gain, pan = 0, type = 'bandpass' }) => {
     const source = ctx.createBufferSource();
-    source.buffer = noiseBuffer(random(2.2, 3.8));
+    source.buffer = noiseBuffer(random(1.8, 3.0));
     source.loop = true;
     const filter = ctx.createBiquadFilter();
     filter.type = type;
     filter.frequency.value = frequency;
     filter.Q.value = q;
     const amp = ctx.createGain();
-    amp.gain.value = gain;
+    amp.gain.value = gain * 0.001;
     source.connect(filter).connect(amp).connect(panNode(pan)).connect(master);
     source.start();
-    const item = { source, amp, filter, baseGain: gain };
-    beds.push(item);
-    return item;
+    beds[name] = { source, amp, filter, baseGain: gain };
   };
 
-  const pulseTrain = ({ base = 2600, count = 3, pan = 0, gain = 0.02, step = 0.12 }) => {
-    if (!ctx || ctx.state !== 'running') return;
+  const pulseTrain = ({ base = 2800, count = 2, pan = 0, gain = 0.012, step = 0.12 }) => {
+    if (!ctx || ctx.state !== 'running' || paused) return;
+    const mix = sceneMix[sceneState] || sceneMix.habitat;
+    if (Math.random() > mix.calls) return;
     const now = ctx.currentTime + 0.03;
     for (let i = 0; i < count; i += 1) {
       const osc = ctx.createOscillator();
@@ -63,31 +72,31 @@
       const panner = panNode(pan);
       const t = now + i * step;
       osc.type = i % 2 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(base * random(0.94, 1.06), t);
-      osc.frequency.exponentialRampToValueAtTime(base * random(1.18, 1.48), t + 0.055);
-      osc.frequency.exponentialRampToValueAtTime(base * random(0.88, 1.03), t + 0.13);
+      osc.frequency.setValueAtTime(base * random(0.96, 1.04), t);
+      osc.frequency.exponentialRampToValueAtTime(base * random(1.14, 1.38), t + 0.05);
+      osc.frequency.exponentialRampToValueAtTime(base * random(0.9, 1.01), t + 0.12);
       amp.gain.setValueAtTime(0.0001, t);
-      amp.gain.exponentialRampToValueAtTime(gain, t + 0.016);
-      amp.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      amp.gain.exponentialRampToValueAtTime(gain, t + 0.014);
+      amp.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
       osc.connect(amp).connect(panner).connect(master);
       osc.start(t);
-      osc.stop(t + 0.18);
+      osc.stop(t + 0.17);
     }
   };
 
-  const lowPulse = ({ frequency = 190, pan = 0, gain = 0.012 }) => {
-    if (!ctx || ctx.state !== 'running') return;
+  const lowPulse = ({ frequency = 170, pan = 0, gain = 0.008 }) => {
+    if (!ctx || ctx.state !== 'running' || paused) return;
     const now = ctx.currentTime + 0.02;
     const osc = ctx.createOscillator();
     const amp = ctx.createGain();
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 720;
+    filter.frequency.value = 520;
     osc.type = 'sine';
     osc.frequency.setValueAtTime(frequency, now);
-    osc.frequency.exponentialRampToValueAtTime(frequency * 0.76, now + 0.48);
+    osc.frequency.exponentialRampToValueAtTime(frequency * 0.72, now + 0.52);
     amp.gain.setValueAtTime(0.0001, now);
-    amp.gain.exponentialRampToValueAtTime(gain, now + 0.045);
+    amp.gain.exponentialRampToValueAtTime(gain, now + 0.04);
     amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
     osc.connect(filter).connect(amp).connect(panNode(pan)).connect(master);
     osc.start(now);
@@ -95,55 +104,66 @@
   };
 
   const canopyRustle = () => {
-    if (!ctx || ctx.state !== 'running' || sceneState === 'pressure') return;
+    if (!ctx || ctx.state !== 'running' || paused || sceneState === 'pressure') return;
     const source = ctx.createBufferSource();
-    source.buffer = noiseBuffer(0.8);
+    source.buffer = noiseBuffer(0.65);
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = random(1300, 2400);
-    filter.Q.value = 0.75;
+    filter.frequency.value = random(1800, 3100);
+    filter.Q.value = 1.0;
     const amp = ctx.createGain();
     const now = ctx.currentTime;
     amp.gain.setValueAtTime(0.0001, now);
-    amp.gain.exponentialRampToValueAtTime(random(0.005, 0.011), now + 0.13);
-    amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
-    source.connect(filter).connect(amp).connect(panNode(random(-0.9, 0.9))).connect(master);
+    amp.gain.exponentialRampToValueAtTime(random(0.0035, 0.007), now + 0.1);
+    amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.58);
+    source.connect(filter).connect(amp).connect(panNode(random(-0.92, 0.92))).connect(master);
     source.start(now);
-    source.stop(now + 0.75);
+    source.stop(now + 0.62);
   };
 
   const chapterAccent = (state) => {
     if (!ctx || ctx.state !== 'running') return;
-    if (state === 'identity') lowPulse({ frequency: 170, pan: -0.2, gain: 0.011 });
-    if (state === 'dependency') pulseTrain({ base: 2850, count: 3, pan: 0.62, gain: 0.012, step: 0.11 });
-    if (state === 'habitat') {
-      pulseTrain({ base: 4200, count: 2, pan: -0.72, gain: 0.009, step: 0.19 });
-      window.setTimeout(canopyRustle, 220);
+    // Deliberately no synthetic Jaguar roar. MEET LIFE gets a brief attentional hush instead.
+    if (state === 'identity') {
+      const now = ctx.currentTime;
+      master.gain.cancelScheduledValues(now);
+      master.gain.setValueAtTime(master.gain.value, now);
+      master.gain.linearRampToValueAtTime(0.055, now + 0.24);
+      master.gain.linearRampToValueAtTime(sceneGain.identity, now + 1.5);
     }
-    if (state === 'pressure') lowPulse({ frequency: 118, pan: 0.15, gain: 0.018 });
+    if (state === 'dependency') pulseTrain({ base: 3000, count: 2, pan: 0.68, gain: 0.009, step: 0.14 });
+    if (state === 'habitat') {
+      pulseTrain({ base: 4450, count: 2, pan: -0.76, gain: 0.007, step: 0.2 });
+      window.setTimeout(canopyRustle, 260);
+    }
+    if (state === 'pressure') lowPulse({ frequency: 105, pan: 0.18, gain: 0.014 });
     if (state === 'response') {
-      pulseTrain({ base: 3400, count: 4, pan: -0.42, gain: 0.011, step: 0.14 });
-      window.setTimeout(() => pulseTrain({ base: 4700, count: 2, pan: 0.6, gain: 0.008, step: 0.18 }), 320);
+      pulseTrain({ base: 3500, count: 3, pan: -0.45, gain: 0.008, step: 0.15 });
+      window.setTimeout(() => pulseTrain({ base: 5050, count: 2, pan: 0.64, gain: 0.006, step: 0.2 }), 360);
     }
   };
 
   const applySceneMix = (state) => {
-    sceneState = state || 'identity';
+    sceneState = sceneMix[state] ? state : 'identity';
     const r = root();
-    if (r) r.dataset.audioChapter = sceneState;
+    if (r) {
+      r.dataset.audioChapter = sceneState;
+      r.dataset.audioProfile = `amazonia-procedural-v11`;
+    }
     if (!ctx || !master) return;
     const now = ctx.currentTime;
-    const target = sceneGain[sceneState] ?? 0.115;
+    const mix = sceneMix[sceneState];
+    const target = sceneGain[sceneState] ?? 0.105;
     master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value, now);
-    master.gain.linearRampToValueAtTime(target, now + 0.8);
+    master.gain.linearRampToValueAtTime(target, now + 0.72);
 
-    const highFactor = sceneState === 'pressure' ? 0.42 : sceneState === 'response' ? 0.9 : 1;
-    beds.forEach((item, index) => {
-      const factor = index < 2 ? highFactor : (sceneState === 'dependency' ? 0.55 : 0.38);
+    for (const [name, item] of Object.entries(beds)) {
+      const factor = mix[name] ?? 0;
       item.amp.gain.cancelScheduledValues(now);
-      item.amp.gain.linearRampToValueAtTime(item.baseGain * factor, now + 0.9);
-    });
+      item.amp.gain.setValueAtTime(item.amp.gain.value, now);
+      item.amp.gain.linearRampToValueAtTime(item.baseGain * factor, now + 0.8);
+    }
     chapterAccent(sceneState);
   };
 
@@ -167,30 +187,25 @@
     if (!Ctor) return;
     ctx = new Ctor({ latencyHint: 'playback' });
     master = ctx.createGain();
-    master.gain.value = 0.12;
+    master.gain.value = 0.09;
     master.connect(ctx.destination);
 
-    // Synthetic habitat texture only. Kept intentionally sparse so it does not read as a continuous waterfall.
-    bed({ frequency: 7200, q: 0.7, gain: 0.008, pan: -0.38 });
-    bed({ frequency: 4700, q: 0.85, gain: 0.006, pan: 0.42 });
-    bed({ frequency: 1250, q: 0.6, gain: 0.004, pan: 0.04 });
+    // Synthetic texture only. Water is an isolated layer and is not a constant full-journey bed.
+    bed({ name: 'insects', frequency: 7600, q: 1.15, gain: 0.009, pan: -0.34 });
+    bed({ name: 'canopy', frequency: 3900, q: 0.95, gain: 0.006, pan: 0.38 });
+    bed({ name: 'water', frequency: 620, q: 0.75, gain: 0.008, pan: 0.12, type: 'lowpass' });
+    bed({ name: 'low', frequency: 210, q: 1.2, gain: 0.006, pan: -0.08, type: 'bandpass' });
 
     await ctx.resume();
     started = true;
     paused = false;
-    const r = root();
-    if (r) r.dataset.audioProfile = 'amazonia-procedural-v11';
     applySceneMix(sceneState);
 
-    // Non-taxonomic procedural motifs for spatial richness. They are not labelled as real species calls.
-    schedule(() => {
-      if (sceneState !== 'pressure') pulseTrain({ base: random(2400, 3900), count: Math.random() > 0.62 ? 3 : 2, pan: random(-0.95, 0.95), gain: random(0.007, 0.014), step: random(0.10, 0.17) });
-    }, 3200, 8500);
-    schedule(() => {
-      if (sceneState === 'identity' || sceneState === 'habitat' || sceneState === 'response') pulseTrain({ base: random(4300, 6200), count: 2, pan: random(-0.95, 0.95), gain: random(0.005, 0.010), step: 0.19 });
-    }, 6500, 13000);
-    schedule(() => lowPulse({ frequency: random(135, 245), pan: random(-0.75, 0.75), gain: sceneState === 'pressure' ? 0.012 : 0.006 }), 9000, 18000);
-    schedule(canopyRustle, 5200, 12000);
+    // Non-taxonomic procedural motifs for spatial richness. Never label as real species calls.
+    schedule(() => pulseTrain({ base: random(2600, 3900), count: Math.random() > 0.7 ? 3 : 2, pan: random(-0.95, 0.95), gain: random(0.005, 0.010), step: random(0.11, 0.18) }), 4800, 11000);
+    schedule(() => pulseTrain({ base: random(4600, 6300), count: 2, pan: random(-0.95, 0.95), gain: random(0.004, 0.008), step: 0.2 }), 9000, 18000);
+    schedule(() => lowPulse({ frequency: random(125, 220), pan: random(-0.72, 0.72), gain: sceneState === 'pressure' ? 0.010 : 0.004 }), 12000, 24000);
+    schedule(canopyRustle, 7000, 15000);
   };
 
   const syncToggle = async () => {
