@@ -5,31 +5,36 @@ import fs from "node:fs";
 const legacyOverview = fs.readFileSync("src/pages/labs/LabsOverview.tsx", "utf8");
 const currentOverview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx", "utf8");
 const projection = fs.readFileSync("src/pages/labs/labsProjection.ts", "utf8");
+const freshProjection = fs.readFileSync("src/pages/labs/labsFreshProjection.ts", "utf8");
 const route = fs.readFileSync("src/pages/labs/LabsV4.tsx", "utf8");
 const detail = fs.readFileSync("src/pages/labs/LabsProjectDetailPremium.tsx", "utf8");
 const detailV5 = fs.readFileSync("src/pages/labs/LabsProjectDetailV5.tsx", "utf8");
 const projectMeta = fs.readFileSync("src/pages/labs/labsProjectMeta.ts", "utf8");
+const currentMeta = fs.readFileSync("src/pages/labs/labsCurrentMeta.ts", "utf8");
 const data = fs.readFileSync("src/pages/labs/labsData.ts", "utf8");
 const css = fs.readFileSync("src/pages/labs/labs.css", "utf8");
 const v4css = fs.readFileSync("src/pages/labs/labsV4.css", "utf8");
 const rootCss = fs.readFileSync("src/pages/labs/labsV4Root.css", "utf8");
+const mobileFix = fs.readFileSync("src/pages/labs/labsMobileFix.css", "utf8");
 
 test("LABS remains a read-only BRAIN projection, never an invented live status system", () => {
   assert.match(data, /MANUAL BRAIN PROJECTION · READ ONLY/);
   assert.match(currentOverview, /BRAIN remains the authority/);
   assert.match(currentOverview, /MISSING VALUES STAY UNKNOWN/);
   assert.match(currentOverview, /20 AUG RECONCILIATION/);
-  assert.match(projection, /verifiedAt = "20 AUG 2026"/);
+  assert.match(freshProjection, /verifiedAt = "20 AUG 2026"/);
   assert.match(detail, /UNKNOWN/);
   assert.doesNotMatch(data, /projectionState\s*=\s*["'`]LIVE/i);
 });
 
-test("LABS v5 preserves the founder-loved maze while routing project pages through current projection + goal metadata", () => {
+test("LABS preserves the founder-loved maze while routing project pages through current projection + Goal Contract metadata", () => {
   assert.match(route, /LabsOverviewCurrent/);
+  assert.match(route, /labsFreshProjection/);
   assert.match(route, /if \(!slug\) return <LabsOverview \/>/);
   assert.match(route, /LabsProjectDetailV5/);
   assert.match(detailV5, /LabsProjectDetailPremium/);
-  assert.match(detailV5, /withProjectMeta/);
+  assert.match(detailV5, /withCurrentProjectMeta/);
+  assert.match(currentMeta, /withProjectMeta/);
   assert.match(projectMeta, /goalMeta/);
   assert.match(currentOverview, /PROJECT MAZE \/ CONTROL MAP/);
 });
@@ -77,6 +82,50 @@ test("4PLANET hierarchy includes core systems, domains, missions and explicit BR
   assert.match(data, /EN3RGY \/ EN4RGY/);
 });
 
+test("main ATLAS, SPECIES and the public product family are visible on the front page without duplicate Project Homes", () => {
+  assert.match(currentOverview, /LEADING PRODUCT SURFACES/);
+  for (const slug of [
+    "4planet/product/one-interface",
+    "4planet/product/atlas",
+    "4planet/e4rth/species",
+    "4planet/product/living-systems",
+    "4planet/product/impact",
+  ]) assert.ok(currentOverview.includes(`"${slug}"`), `missing leading product surface: ${slug}`);
+  assert.match(currentOverview, /same Project Homes · surfaced here for direct access/);
+});
+
+test("current Goal Contracts and Leading One links are projected from controlled authority", () => {
+  for (const id of [
+    "SYS-P00-PRODUCT-G01",
+    "OCE-WH4LES-01-G01",
+    "OCE-COR4L-01-G01",
+    "OCE-PL4STIC-01-G01",
+    "OCE-REWILD-M-01-G01",
+    "EAR-CLIM4TE-01-G01",
+    "EAR-AM4ZONIA-01-G01",
+    "EAR-SPECIES-01-G01",
+    "EAR-REWILD-L-01-G01",
+    "SAP-FOOD-01-G01",
+    "SAP-EN3RGY-01-G01",
+    "SAP-CIRCULAR-01-G01",
+    "SAP-F4SHION-01-G01",
+    "CUL-M4GAZINE-01-G01",
+    "CUL-4FILM-01-G01",
+    "CUL-4RT-01-G01",
+    "CUL-4PLAY-01-G01",
+    "SAP-SAPIENS-01-G01",
+    "SYS-P00-PMAP-G01",
+  ]) assert.ok(currentMeta.includes(id), `missing Goal Contract: ${id}`);
+  assert.match(currentMeta, /BASELINE COMPLETE/);
+  assert.match(currentMeta, /INHERITED \/ CURRENT AUTHORITY/);
+  assert.match(currentMeta, /LEADING ONE/);
+  assert.match(currentMeta, /MISSION PAGE/);
+  assert.match(currentMeta, /https:\/\/4planet\.org\/atlas/);
+  assert.match(currentMeta, /https:\/\/4planet\.org\/species/);
+  assert.match(currentMeta, /https:\/\/4planet\.org\/missions\/wh4les/);
+  assert.match(currentMeta, /https:\/\/4planet\.org\/missions\/food/);
+});
+
 test("Aug 20 reconciliation surfaces the bounded early-stage 4PLANET set without creating a new PICK Project Home", () => {
   assert.match(currentOverview, /EARLY STAGE \/ CODE \+ SYSTEM LABS/);
   for (const token of [
@@ -96,9 +145,12 @@ test("Aug 20 reconciliation surfaces the bounded early-stage 4PLANET set without
   assert.match(projection, /15 historical submissions \/ 14 awaiting \/ 1 rejected \/ 0 secured or awarded \/ 0 cash/);
 });
 
-test("current project heads remain evidence-gated instead of inheriting stale green state", () => {
+test("base evidence gates are preserved while current GitHub implementation readback stays separate", () => {
   assert.match(projection, /ad7f14e09d0f565a5d534605f76996d1eca2e3c3/);
   assert.match(projection, /Convergence Gate #410 succeeded/i);
+  assert.match(freshProjection, /0338e94cea19942d99655239550cec72d75aa316/);
+  assert.match(freshProjection, /5b9f359dfceffbe134ef8ee64a5dac2a6f75909c/);
+  assert.match(freshProjection, /implementation evidence, not a BRAIN promotion or production release/i);
   assert.match(projection, /0dcc5268e0405ae78a4d27a41c155ef465be56d2/);
   assert.match(projection, /42\/44 smoke contracts/);
   assert.match(projection, /cd208fbee92598c90f5dbd3ab7677ea076d49b78/);
@@ -122,9 +174,12 @@ test("LABS dark mode maps brand and product blue to green without flattening sem
   assert.doesNotMatch(rootCss, /--accent-ocean:#39ff78/i);
 });
 
-test("LABS mobile keeps the project maze dense and removes the desktop inspector", () => {
+test("LABS mobile keeps the dense two-column maze, hides desktop inspector and guards the right edge", () => {
   assert.match(rootCss, /max-width:760px[^}]*\.labs-page--portfolio \.labs-inspector\s*\{\s*display:none/is);
   assert.match(rootCss, /max-width:620px[\s\S]*?\.labs-core-grid,\s*\.labs-early-grid\s*\{\s*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/i);
+  assert.match(mobileFix, /\.labs-grid-section\s*\{[\s\S]*?margin-inline:\s*14px;[\s\S]*?inset-inline:\s*auto;/i);
+  assert.match(mobileFix, /overflow-x:\s*clip/i);
+  assert.match(route, /labsMobileFix\.css/);
 });
 
 test("LABS project details fail visibly closed when structured state is absent", () => {
