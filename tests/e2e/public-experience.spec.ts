@@ -16,7 +16,8 @@ test("homepage exposes the connected public system and premium navigation", asyn
   const menu = page.getByRole("button", { name: "Open menu" });
   await expect(menu).toBeVisible();
   await menu.click();
-  await expect(page.getByText("4PLANET_ / NAVIGATION", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close menu" })).toBeVisible();
+  await expect(page.getByText("4PLANET_ / NAVIGATION", { exact: true })).toHaveCount(2);
   await expect(page.getByRole("link", { name: "M4GAZINE" }).first()).toBeAttached();
   await expect(page.getByRole("link", { name: "THE FOUNDER" }).first()).toBeAttached();
   await noHorizontalOverflow(page);
