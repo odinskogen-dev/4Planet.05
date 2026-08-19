@@ -14,6 +14,8 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(truthStrip).toBeVisible();
   await expect(truthStrip.getByText(/MANUAL BRAIN PROJECTION · READ ONLY/i)).toBeVisible();
   await expect(truthStrip.getByText(/BRAIN remains the authority/i)).toBeVisible();
+  await expect(truthStrip.getByText(/20 AUG RECONCILIATION/i)).toBeVisible();
+  await expect(page.getByText(/SNAPSHOT 20 AUG 2026/i)).toBeVisible();
   await expect(page.getByText(/FOUNDER COMMAND/i).first()).toBeVisible();
 
   const fourPlanetHeading = page.locator(".labs-universe--4planet h2").first();
@@ -48,12 +50,14 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
     "NATURE XR",
     "JAGUAR JOURNEY",
     "S4PIENS / FOOD GOLD",
+    "PICK_",
     "TREE OF LIFE",
     "CHOICE",
     "PLANETARY MAP",
   ]) {
     await expect(page.locator(".labs-project-box--early").filter({ hasText: title }).first()).toBeVisible();
   }
+  await expect(page.getByText(/8 bounded tracks/i)).toBeVisible();
 
   if (testInfo.project.name === "mobile-390") {
     await expect(page.locator(".labs-page--portfolio .labs-inspector")).toBeHidden();
