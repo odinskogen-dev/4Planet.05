@@ -3,7 +3,7 @@ import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
-import LabsOverview from "@/pages/labs/LabsOverview";
+import LabsV4 from "@/pages/labs/LabsV4";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
 
@@ -23,7 +23,7 @@ function isLabsHost() {
 }
 
 export default function App() {
-  if (isLabsHost()) return <LabsOverview />;
+  if (isLabsHost()) return <LabsV4 />;
 
   return (
     <BrowserRouter>
