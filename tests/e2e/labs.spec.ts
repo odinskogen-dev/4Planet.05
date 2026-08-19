@@ -121,7 +121,8 @@ test("LABS preserves the founder-loved maze, surfaces leading products and opens
   await species.click();
   await page.waitForURL(/project=4planet%2Fe4rth%2Fspecies/);
   await expect(page.getByRole("heading", { name: "SPECIES", level: 1 })).toBeVisible();
-  await expect(page.getByText(/Jaguar and Orca are Product Gold References/i).first()).toBeVisible();
+  await expect(page.getByText(/Jaguar Habitat World v1 is live on 4planet\.org/i).first()).toBeVisible();
+  await expect(page.getByText(/Orca remains the truth\/dependency flagship/i).first()).toBeVisible();
   await expect(page.getByText("UPCOMING TASKS / PRODUCTIONS", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("LINKED ASSETS", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/EAR-SPECIES-01-G01/i).first()).toBeVisible();
