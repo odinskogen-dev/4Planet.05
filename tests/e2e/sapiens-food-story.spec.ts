@@ -4,58 +4,78 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/sapiens-food-story";
 mkdirSync(OUT, { recursive: true });
 
-test("Homo sapiens × FOOD stays human-first, legible and progressively spatial", async ({ page }, testInfo) => {
+async function openChapter(page: import("@playwright/test").Page, label: RegExp, heading: string) {
+  await page.getByRole("button", { name: label }).click();
+  await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
+}
+
+test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep", async ({ page }, testInfo) => {
   await page.goto("/sandbox/s4piens", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "You are here.", level: 2 })).toBeVisible();
-  await expect(page.getByText(/SPECIES · HOMO SAPIENS/i)).toBeVisible();
-  await expect(page.getByText(/semantic map, not a personal footprint score/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: /EAT.*FOOD_/i })).toBeVisible();
-  await expect(page.getByText(/HOMO SAPIENS · GBIF 10856082/i)).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-01-human-space.png` });
+  // 01 — The Earth is the first visual, not a dashboard or explanatory page.
+  await expect(page.getByRole("heading", { name: "You are here.", level: 1 })).toBeVisible();
+  await expect(page.getByText(/4PLANET_ \/ S4PIENS_ \/ HUMAN SYSTEMS ATLAS/i)).toBeVisible();
+  await expect(page.getByText(/NASA EARTH/i)).toBeVisible();
+  await expect(page.getByLabel(/S4PIENS Atlas — NASA Earth/i)).toBeVisible();
+  await expect(page.getByText(/SPECIES_ · GBIF 10856082 · IDENTITY KNOWN/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /OPEN FREE ATLAS/i })).toBeVisible();
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-01-atlas-first.png` });
 
-  await page.getByRole("button", { name: /EAT.*FOOD_/i }).click();
+  // 02 — Homo sapiens becomes the human entry point and systems graph.
+  await openChapter(page, /Open chapter 02/i, "One species. Many systems.");
+  await expect(page.getByLabel(/SPECIES: HOMO SAPIENS/i)).toBeVisible();
+  for (const need of [/FOOD_: EAT/i, /WATER: DRINK/i, /EN4RGY_: POWER/i, /BUILT SYSTEM: SHELTER/i, /F4SHION_: WEAR/i, /MOBILITY: MOVE/i]) {
+    await expect(page.getByRole("button", { name: need })).toBeVisible();
+  }
+  await page.getByRole("button", { name: /FOOD_: EAT/i }).click();
   await expect(page.getByText(/Nutrition is a biological dependency/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: /FOLLOW FOOD_/i }).first()).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-02-food-node-open.png` });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-02-human-graph.png` });
 
-  const foodChapter = page.getByRole("heading", { name: "Follow one meal.", level: 2 });
-  await foodChapter.scrollIntoViewIfNeeded();
-  await expect(foodChapter).toBeVisible();
-  await expect(page.getByText(/What does a meal touch/i)).toBeVisible();
+  // 03 — FOOD is one understandable seven-stage Gold Standard chain.
+  await openChapter(page, /Open chapter 03/i, "Follow one meal.");
   await expect(page.getByLabel("FOOD journey stages").getByRole("button")).toHaveCount(7);
+  await expect(page.getByRole("button", { name: /01: DEMAND \+ DIET/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /07: LOSS \+ WASTE/i })).toBeVisible();
+  await page.getByRole("button", { name: /04: PROCESSING/i }).click();
+  await expect(page.getByText(/Milling, slaughter, refrigeration and manufacturing/i)).toBeVisible();
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-03-food-chain.png` });
 
-  const earthChapter = page.getByRole("heading", { name: "Now put it on Earth.", level: 2 });
-  await earthChapter.scrollIntoViewIfNeeded();
-  await expect(earthChapter).toBeVisible();
-  await expect(page.getByText(/Climate TRACE v7 agriculture source records/i)).toBeVisible();
-  await expect(page.getByText(/not live plumes/i)).toBeVisible();
-  await expect(page.getByRole("link", { name: /OPEN SHARED ATLAS/i })).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-04-earth-space.png` });
-
-  const pressureChapter = page.getByRole("heading", { name: "Where does demand meet pressure?", level: 2 });
-  await pressureChapter.scrollIntoViewIfNeeded();
-  await expect(pressureChapter).toBeVisible();
+  // 04 — Pressure moves back to the globe and preserves truth boundaries.
+  await openChapter(page, /Open chapter 04/i, "Now locate the pressure.");
+  await expect(page.getByText(/NASA Earth imagery \+ Climate TRACE agriculture-source records/i)).toBeVisible();
+  await expect(page.getByText(/not live plumes or proof of local ecological damage/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "DEPENDENCY", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "PRESSURE", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "RESPONSE", exact: true })).toBeVisible();
-  await expect(page.getByText(/co-location proves ecological causation/i)).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-05-pressure-space.png` });
+  await expect(page.getByRole("link", { name: /LAND CONVERSION/i })).toBeVisible();
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-04-pressure-atlas.png` });
 
-  const lifeChapter = page.getByRole("heading", { name: "Then find the living system.", level: 2 });
-  await lifeChapter.scrollIntoViewIfNeeded();
-  await expect(lifeChapter).toBeVisible();
+  // 05 — Living Systems becomes an explorable graph, not a second truth model.
+  await openChapter(page, /Open chapter 05/i, "Find what the system depends on.");
+  for (const node of [/LIVING FOUNDATION: SOILS/i, /DEPENDENCY: FRESHWATER/i, /CONDITION: CLIMATE/i, /LIFE: BIODIVERSITY/i, /LAND SYSTEM: FORESTS/i, /SEAFOOD: MARINE SYSTEMS/i]) {
+    await expect(page.getByRole("button", { name: node })).toBeVisible();
+  }
+  await page.getByRole("button", { name: /LIFE: BIODIVERSITY/i }).click();
+  await expect(page.getByText(/GBIF records are observations, not population estimates/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN LIVING SYSTEMS/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /EXPLORE SPECIES/i })).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-06-life-space.png` });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-05-living-systems.png` });
 
-  const responseChapter = page.getByRole("heading", { name: "Where can the system change?", level: 2 });
-  await responseChapter.scrollIntoViewIfNeeded();
-  await expect(responseChapter).toBeVisible();
+  // 06 — The story resolves into solution leverage rather than guilt.
+  await openChapter(page, /Open chapter 06/i, "Then find leverage.");
   await expect(page.getByText(/RESPONSE ≠ OUTCOME/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /LAND: AVOID HABITAT CONVERSION/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /WASTE: REDUCE FOOD LOSS \+ WASTE/i })).toBeVisible();
+  await page.getByRole("button", { name: /WASTE: REDUCE FOOD LOSS \+ WASTE/i }).click();
+  await expect(page.getByText(/Where in the chain is avoidable loss carrying the most embedded resources/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN FOOD_ MISSION/i })).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-07-response-space.png` });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-06-solutions-map.png` });
+
+  // Deeper editorial/source sections remain readable and expose real source states.
+  await expect(page.getByRole("heading", { name: /One human need touches almost the whole planet/i })).toBeAttached();
+  await expect(page.getByRole("heading", { name: /Evidence before interpretation/i })).toBeAttached();
+  await expect(page.getByText(/RIGHTS REVIEW/i)).toBeAttached();
+  await expect(page.getByText(/Trase/i)).toBeAttached();
+  await expect(page.getByText(/GLORIA/i)).toBeAttached();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(3);
