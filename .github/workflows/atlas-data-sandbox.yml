@@ -52,8 +52,12 @@ jobs:
         continue-on-error: true
         run: node scripts/atlas-data-sandbox/habitat-candidates.mjs
 
-      - name: Probe exact admitted ATLAS layer products
+      - name: Generate exact admitted ATLAS layer-product report
+        continue-on-error: true
         run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
+
+      - name: Enforce exact admitted layer-product gate
+        run: node scripts/atlas-data-sandbox/enforce-layer-contract-report.mjs
 
       - name: Inventory advertised OGC layers
         if: always()
