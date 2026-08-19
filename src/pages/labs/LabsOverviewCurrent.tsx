@@ -111,7 +111,7 @@ function FreshnessStrip() {
     <div className="labs-freshness labs-grid-section">
       <span>TRUTH MODE</span>
       <strong>{projectionState}</strong>
-      <span>BRAIN remains the authority · 19 AUG BRAIN + GITHUB RECONCILED · MISSING VALUES STAY UNKNOWN</span>
+      <span>BRAIN remains the authority · 20 AUG RECONCILIATION · CURRENT BRAIN + EXACT-HEAD GITHUB READBACK · MISSING VALUES STAY UNKNOWN</span>
     </div>
   );
 }
