@@ -1,18 +1,18 @@
 {
-  "version": "v1.0",
+  "version": "v1.1",
   "id": "species-jaguar-amazonia-01",
   "title": "Enter the living system.",
   "intro": "Follow one animal outward into habitat, relationships, pressure, evidence and response.",
   "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT A PRECISE ECOLOGICAL SIMULATION",
   "returnHref": "/species/jaguar",
   "browser": {
-    "entryKicker": "AMAZONIA_ 01 · JAGUAR",
+    "entryKicker": "AMAZONIA_ 00 · ENTER CANOPY",
     "entryTitle": "Enter the rainforest.",
-    "entryIntro": "Meet one life. Then follow the living system around it — what it depends on, what is changing, how we know, and where solutions begin.",
+    "entryIntro": "Meet one life. Then move through the living system around it — what it depends on, what is changing, how we know, and where solutions begin.",
     "entryCta": "ENTER THE LIVING SYSTEM",
     "detailSrc": "/assets/missions/am4zonia/detail-01.jpg",
     "subjectMobileSrc": "/assets/species/jaguar/SP-005-mobile.jpg",
-    "particleCount": 34,
+    "particleCount": 18,
     "ambientLabel": "AMAZONIA SOUNDSCAPE · PROCEDURAL LAYERS · NOT FIELD AUDIO"
   },
   "entity": {
@@ -47,7 +47,7 @@
       "canonicalBinding": "species.identity",
       "truthState": "KNOWN",
       "title": "MEET THE JAGUAR",
-      "label": "IDENTITY",
+      "label": "MEET THE JAGUAR",
       "body": "Jaguar / Panthera onca. Canonical species identity is carried by the SPECIES layer.",
       "source": {
         "label": "GBIF TAXON 5219426",
@@ -58,7 +58,7 @@
       "labelPosition": "-3.05 1.12 -3.8",
       "labelRotation": "0 17 0",
       "labelWidth": "2.5",
-      "browserPosition": { "x": 24, "y": 55 },
+      "browserPosition": { "x": 47, "y": 49 },
       "color": "#3AE86F",
       "shape": "sphere",
       "scene": {
@@ -66,17 +66,32 @@
         "stageLabel": "MEET LIFE",
         "sceneTitle": "Meet one life.",
         "sceneCue": "LOOK FIRST · THEN FOLLOW WHAT THIS LIFE DEPENDS ON",
+        "travel": "dolly-in",
+        "markerPosition": { "x": 47, "y": 50 },
+        "nextMarkerPosition": { "x": 80, "y": 60 },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/detail-01.jpg",
+          "backgroundPosition": "center 52%",
+          "enterScale": 1.13,
+          "activeScale": 1.04,
+          "originX": 50,
+          "originY": 52,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/ecosystems/amazon-rainforest"
+          }
+        },
         "backgroundX": 48,
         "backgroundY": 48,
         "backgroundScale": 1.18,
-        "detailOpacity": 0.20,
-        "subjectX": 46,
+        "detailOpacity": 0.12,
+        "subjectX": 47,
         "subjectY": 50,
         "subjectScale": 1.12,
         "subjectOpacity": 1,
         "worldBrightness": 0.72,
         "worldSaturation": 1.02,
-        "veilOpacity": 0.92
+        "veilOpacity": 0.78
       }
     },
     {
@@ -84,30 +99,46 @@
       "kind": "RELATIONSHIP",
       "canonicalBinding": "relationships.relationship:4p:jaguar-capybara-prey-southern-pantanal",
       "title": "FOLLOW A RELATIONSHIP",
-      "label": "PREY RELATIONSHIP",
+      "label": "FOLLOW PREY",
       "position": "2.65 1.35 -3.9",
       "labelPosition": "2.05 1.02 -3.9",
       "labelRotation": "0 -16 0",
       "labelWidth": "2.8",
-      "browserPosition": { "x": 73, "y": 57 },
+      "browserPosition": { "x": 78, "y": 59 },
       "color": "#3AE86F",
       "shape": "sphere",
       "scene": {
         "state": "dependency",
-        "stageLabel": "FOLLOW A RELATIONSHIP",
-        "sceneTitle": "A predator becomes a relationship.",
-        "sceneCue": "FOLLOW THE LINE · DEPENDENCY IS PART OF THE ANIMAL",
+        "stageLabel": "FOLLOW PREY",
+        "sceneTitle": "Follow the relationship.",
+        "sceneCue": "LEAVE THE PORTRAIT · MOVE TOWARD WATER AND PREY",
+        "travel": "river-pass",
+        "markerPosition": { "x": 76, "y": 59 },
+        "nextMarkerPosition": { "x": 31, "y": 34 },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/e/e4/River_RP.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.14,
+          "activeScale": 1.025,
+          "originX": 58,
+          "originY": 52,
+          "credit": {
+            "label": "AMAZON RAINFOREST RIVER · JLWAD",
+            "url": "https://commons.wikimedia.org/wiki/File:River_RP.jpg",
+            "license": "CC BY-SA 4.0"
+          }
+        },
         "backgroundX": 58,
         "backgroundY": 50,
-        "backgroundScale": 1.22,
-        "detailOpacity": 0.34,
-        "subjectX": 35,
-        "subjectY": 52,
-        "subjectScale": 0.92,
-        "subjectOpacity": 0.9,
-        "worldBrightness": 0.77,
+        "backgroundScale": 1.16,
+        "detailOpacity": 0.08,
+        "subjectX": 28,
+        "subjectY": 55,
+        "subjectScale": 0.72,
+        "subjectOpacity": 0.12,
+        "worldBrightness": 0.82,
         "worldSaturation": 1.08,
-        "veilOpacity": 0.78
+        "veilOpacity": 0.5
       }
     },
     {
@@ -128,25 +159,41 @@
       "labelPosition": "-4.1 3.02 -6.2",
       "labelRotation": "0 23 0",
       "labelWidth": "3",
-      "browserPosition": { "x": 28, "y": 31 },
+      "browserPosition": { "x": 30, "y": 34 },
       "color": "#3AE86F",
       "shape": "sphere",
       "scene": {
         "state": "habitat",
-        "stageLabel": "ENTER THE SYSTEM",
+        "stageLabel": "CONNECTED HABITAT",
         "sceneTitle": "The animal is not the whole story.",
-        "sceneCue": "PULL BACK · SEE THE HABITAT AROUND THE ANIMAL",
+        "sceneCue": "PULL BACK · SEE THE LANDSCAPE AROUND THE ANIMAL",
+        "travel": "pull-back",
+        "markerPosition": { "x": 31, "y": 34 },
+        "nextMarkerPosition": { "x": 79, "y": 31 },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Amazon_CIAT_%282%29.jpg/1280px-Amazon_CIAT_%282%29.jpg",
+          "backgroundPosition": "center 50%",
+          "enterScale": 1.08,
+          "activeScale": 1.015,
+          "originX": 45,
+          "originY": 48,
+          "credit": {
+            "label": "AMAZON RAINFOREST NEAR MANAUS · NEIL PALMER / CIAT",
+            "url": "https://commons.wikimedia.org/wiki/File:Amazon_CIAT_(2).jpg",
+            "license": "CC BY-SA 2.0"
+          }
+        },
         "backgroundX": 42,
         "backgroundY": 42,
-        "backgroundScale": 1.08,
-        "detailOpacity": 0.46,
+        "backgroundScale": 1.05,
+        "detailOpacity": 0.04,
         "subjectX": 25,
         "subjectY": 62,
-        "subjectScale": 0.72,
-        "subjectOpacity": 0.58,
-        "worldBrightness": 0.86,
-        "worldSaturation": 1.12,
-        "veilOpacity": 0.58
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.9,
+        "worldSaturation": 1.08,
+        "veilOpacity": 0.38
       }
     },
     {
@@ -167,26 +214,42 @@
       "labelPosition": "2.55 3.08 -6.1",
       "labelRotation": "0 -23 0",
       "labelWidth": "3",
-      "browserPosition": { "x": 75, "y": 30 },
+      "browserPosition": { "x": 79, "y": 31 },
       "color": "#FF4D22",
       "shape": "sphere",
       "radius": "0.19",
       "scene": {
         "state": "pressure",
         "stageLabel": "UNDER PRESSURE",
-        "sceneTitle": "Now change the system.",
+        "sceneTitle": "Now the landscape changes.",
         "sceneCue": "SEE FRAGMENTATION · THEN ASK WHAT DRIVES IT",
+        "travel": "rupture",
+        "markerPosition": { "x": 78, "y": 31 },
+        "nextMarkerPosition": { "x": 51, "y": 75 },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Amazon_Deforestation_%286348745148%29.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.09,
+          "activeScale": 1.015,
+          "originX": 67,
+          "originY": 48,
+          "credit": {
+            "label": "AMAZON DEFORESTATION · NASA GODDARD SPACE FLIGHT CENTER",
+            "url": "https://commons.wikimedia.org/wiki/File:Amazon_Deforestation_(6348745148).jpg",
+            "license": "CC BY 2.0"
+          }
+        },
         "backgroundX": 68,
         "backgroundY": 40,
-        "backgroundScale": 1.28,
-        "detailOpacity": 0.18,
+        "backgroundScale": 1.08,
+        "detailOpacity": 0.02,
         "subjectX": 31,
         "subjectY": 58,
-        "subjectScale": 0.66,
-        "subjectOpacity": 0.44,
-        "worldBrightness": 0.55,
-        "worldSaturation": 0.68,
-        "veilOpacity": 0.96
+        "subjectScale": 0.58,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.62,
+        "worldSaturation": 0.78,
+        "veilOpacity": 0.7
       }
     },
     {
@@ -209,7 +272,7 @@
       "labelWidth": "4.6",
       "align": "center",
       "labelColor": "#FFFFFF",
-      "browserPosition": { "x": 50, "y": 78 },
+      "browserPosition": { "x": 51, "y": 75 },
       "color": "#2E2EFF",
       "shape": "box",
       "width": "3.8",
@@ -220,17 +283,32 @@
         "stageLabel": "RESPOND",
         "sceneTitle": "Pressure is not the destination.",
         "sceneCue": "MOVE INTO SOLUTIONS INTELLIGENCE · WHAT CAN CHANGE THIS?",
+        "travel": "open",
+        "markerPosition": { "x": 51, "y": 75 },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundMobileSrc": "/assets/missions/am4zonia/hero-mobile.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.08,
+          "activeScale": 1.015,
+          "originX": 52,
+          "originY": 50,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/ecosystems/amazon-rainforest"
+          }
+        },
         "backgroundX": 50,
         "backgroundY": 48,
-        "backgroundScale": 1.10,
-        "detailOpacity": 0.42,
+        "backgroundScale": 1.06,
+        "detailOpacity": 0.08,
         "subjectX": 27,
         "subjectY": 60,
-        "subjectScale": 0.62,
-        "subjectOpacity": 0.48,
-        "worldBrightness": 0.78,
-        "worldSaturation": 0.94,
-        "veilOpacity": 0.66
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.84,
+        "worldSaturation": 1,
+        "veilOpacity": 0.45
       }
     }
   ]
