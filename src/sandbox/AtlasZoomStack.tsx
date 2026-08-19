@@ -4,6 +4,7 @@ type ZoomStackMap = {
   getZoom: () => number;
   getStyle: () => { layers?: any[] } | undefined;
   getLayer: (id: string) => any;
+  getLayoutProperty?: (id: string, name: string) => unknown;
   setLayoutProperty: (id: string, name: string, value: unknown) => void;
   setLayerZoomRange?: (id: string, minzoom: number, maxzoom: number) => void;
   setProjection?: (projection: { type: "globe" | "mercator" }) => void;
@@ -85,22 +86,29 @@ export default function AtlasZoomStack() {
         if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection });
       } catch { /* style/projection may be mid-transition; next event retries */ }
 
+      const styleLayers = map.getStyle()?.layers || [];
+
       // Do not let low-resolution planetary imagery pretend to be a street map.
-      // MapLibre handles the handoff naturally at the layer zoom boundary.
+      // Only mutate the range when needed; repeated style mutations can otherwise
+      // create a styledata feedback loop.
       try {
-        if (map.getLayer("bluemarble")) map.setLayerZoomRange?.("bluemarble", 0, ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
+        const blueMarble = styleLayers.find((layer) => layer?.id === "bluemarble");
+        if (map.getLayer("bluemarble") && (!Number.isFinite(blueMarble?.maxzoom) || blueMarble.maxzoom > ATLAS_ZOOM_POLICY.blueMarbleMaxZoom + 0.001)) {
+          map.setLayerZoomRange?.("bluemarble", 0, ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
+        }
       } catch { /* layer may not be mounted yet */ }
 
       let symbolLayers = 0;
       let visibleSymbolLayers = 0;
       const showLabels = zoom >= ATLAS_ZOOM_POLICY.labelsStart || projection === "mercator";
-      const styleLayers = map.getStyle()?.layers || [];
+      const targetVisibility = showLabels ? "visible" : "none";
 
       for (const layer of styleLayers) {
         if (layer?.type !== "symbol" || is4PlanetLayer(String(layer.id || ""))) continue;
         symbolLayers += 1;
         try {
-          map.setLayoutProperty(layer.id, "visibility", showLabels ? "visible" : "none");
+          const current = map.getLayoutProperty?.(layer.id, "visibility") ?? layer.layout?.visibility ?? "visible";
+          if (current !== targetVisibility) map.setLayoutProperty(layer.id, "visibility", targetVisibility);
           if (showLabels) visibleSymbolLayers += 1;
         } catch { /* source/style transition; retry later */ }
       }
