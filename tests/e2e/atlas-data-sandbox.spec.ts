@@ -93,16 +93,17 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   });
 
   // ── HABITAT — one focal variable by default ────────────────────────────
-  // Use the provider's Europe-wide EUNIS 2019 / 800 m product. A tested MSFD
-  // 800 m variant advertised an axis-swapped extent in GetCapabilities and was
-  // deliberately removed from the default scene rather than accepted on 2xx.
+  // Use EMODnet's scale-adaptive parent group. Provider capabilities explicitly
+  // describe this as the current EUNIS 2019 EUSeaMap group containing the full,
+  // 200 m, 400 m and 800 m source layers for fast WMS viewing at all scales.
+  // Internal simplification children are discovery inputs, not the ATLAS entry.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => {
       const decoded = decodeURIComponent(url);
-      return decoded.includes("layers=eusm2025_eunis2019_800")
-        && decoded.includes("styles=eusm2021_eunis2019_l2_800");
+      return decoded.includes("layers=eusm_eunis2019_group")
+        && decoded.includes("styles=default-style-eusm_eunis2019_group");
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
