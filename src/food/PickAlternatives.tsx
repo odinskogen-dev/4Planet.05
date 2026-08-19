@@ -1,14 +1,14 @@
 import type { PickAlternativeEvaluation } from "./pick-compare.js";
 
 export default function PickAlternatives({ items }: { items: PickAlternativeEvaluation[] }) {
-  const visible = items.slice(0, 5);
+  const visible = items.filter((item) => item.eligible).slice(0, 5);
   return (
     <section className="pick-alternatives" aria-labelledby="pick-alt-title">
       <div className="pick-section-head">
         <div><span className="pick-kicker">FAIR ALTERNATIVES</span><h2 id="pick-alt-title">Same job. Better evidence.</h2></div>
-        <span>Direct substitutes first. Missing comparison data never counts as a win.</span>
+        <span>Only controlled direct substitutes or upgrades. Missing comparison data never counts as a win.</span>
       </div>
-      {visible.length === 0 ? <p className="pick-alt-empty">No candidate alternatives were returned for this product.</p> : (
+      {visible.length === 0 ? <p className="pick-alt-empty">No controlled alternative is strong enough to recommend from the returned candidate set.</p> : (
         <div className="pick-alt-grid">
           {visible.map((item, index) => (
             <article key={item.product.gtin} className="pick-alt" data-state={item.state.toLowerCase().replaceAll(" ", "-")}>
