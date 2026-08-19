@@ -34,7 +34,12 @@
     "position": "0 1.9 -5",
     "width": "5.2",
     "height": "3.35",
-    "boundaryLabel": "SPECIES MEDIA · NOT AN OCCURRENCE RECORD"
+    "boundaryLabel": "SPECIES MEDIA · NOT AN OCCURRENCE RECORD",
+    "modelGate": {
+      "status": "PENDING_CONTROLLED_ANIMATED_GLB",
+      "target": "RIGGED · IDLE ANIMATION · WEB-OPTIMISED · LAZY-LOADED IN MEET SCENE",
+      "fallback": "CONTROLLED SPECIES MEDIA"
+    }
   },
   "panel": {
     "position": "0 3.8 -4.2"
@@ -69,6 +74,14 @@
         "travel": "dolly-in",
         "markerPosition": { "x": 47, "y": 50 },
         "nextMarkerPosition": { "x": 80, "y": 60 },
+        "interaction": {
+          "type": "identity",
+          "align": "right",
+          "tone": "life",
+          "primaryLabel": "FOCUS ON THE JAGUAR",
+          "activeLabel": "JAGUAR IN FOCUS",
+          "primaryAction": "focus"
+        },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg/1365px-Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg",
           "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
@@ -121,6 +134,23 @@
         "travel": "river-pass",
         "markerPosition": { "x": 76, "y": 59 },
         "nextMarkerPosition": { "x": 31, "y": 34 },
+        "interaction": {
+          "type": "relationship",
+          "align": "right",
+          "tone": "life",
+          "primaryLabel": "TRACE RELATIONSHIP",
+          "activeLabel": "RELATIONSHIP REVEALED",
+          "primaryAction": "trace",
+          "media": {
+            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Capybara%28Hydrochoerus_hydrochaeris%29_swimming.JPG/960px-Capybara%28Hydrochoerus_hydrochaeris%29_swimming.JPG",
+            "alt": "Capybara swimming in the Pantanal, Brazil — species media, not the prey-study evidence itself",
+            "credit": {
+              "label": "CAPYBARA · PANTANAL · CHARLES J. SHARP · SPECIES MEDIA",
+              "url": "https://commons.wikimedia.org/wiki/File:Capybara(Hydrochoerus_hydrochaeris)_swimming.JPG",
+              "license": "CC BY-SA 4.0"
+            }
+          }
+        },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/e/e4/River_RP.jpg",
           "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
@@ -177,6 +207,15 @@
         "travel": "pull-back",
         "markerPosition": { "x": 31, "y": 34 },
         "nextMarkerPosition": { "x": 79, "y": 31 },
+        "interaction": {
+          "type": "system",
+          "align": "left",
+          "tone": "life",
+          "relationship": "MOVEMENT · PREY ACCESS · GENE FLOW",
+          "primaryLabel": "OPEN THE SYSTEM",
+          "activeLabel": "SYSTEM VIEW OPEN",
+          "primaryAction": "system"
+        },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Amazon_CIAT_%282%29.jpg/1280px-Amazon_CIAT_%282%29.jpg",
           "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
@@ -234,6 +273,15 @@
         "travel": "rupture",
         "markerPosition": { "x": 78, "y": 31 },
         "nextMarkerPosition": { "x": 51, "y": 75 },
+        "interaction": {
+          "type": "pressure",
+          "align": "right",
+          "tone": "pressure",
+          "relationship": "HABITAT LOSS · FRAGMENTATION",
+          "primaryLabel": "REVEAL THE BREAK",
+          "activeLabel": "PRESSURE REVEALED",
+          "primaryAction": "pressure"
+        },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Amazon_Deforestation_%286348745148%29.jpg",
           "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
@@ -294,6 +342,14 @@
         "sceneCue": "MOVE INTO SOLUTIONS INTELLIGENCE · WHAT CAN CHANGE THIS?",
         "travel": "open",
         "markerPosition": { "x": 51, "y": 75 },
+        "interaction": {
+          "type": "response",
+          "align": "left",
+          "tone": "response",
+          "relationship": "PRESSURE → RESPONSE",
+          "primaryLabel": "OPEN SOLUTIONS INTELLIGENCE",
+          "primaryAction": "next"
+        },
         "media": {
           "backgroundSrc": "/assets/missions/am4zonia/hero.jpg",
           "backgroundMobileSrc": "/assets/missions/am4zonia/hero-mobile.jpg",
