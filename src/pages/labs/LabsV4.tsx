@@ -3,6 +3,7 @@ import LabsOverview from "./LabsOverview";
 import LabsProjectDetailPremium from "./LabsProjectDetailPremium";
 import { projectBySlug } from "./labsData";
 import "./labsV4.css";
+import "./labsV4Root.css";
 
 function isLabsHost() {
   if (typeof window === "undefined") return false;
