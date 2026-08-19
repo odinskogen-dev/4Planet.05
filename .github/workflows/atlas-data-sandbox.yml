@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -74,6 +76,8 @@ jobs:
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -99,6 +103,8 @@ jobs:
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -152,6 +158,8 @@ jobs:
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -162,18 +170,19 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Wait for Cloudflare branch preview to carry repaired v7 function
+      - name: Wait for Cloudflare branch preview to carry repaired NOAA + Climate TRACE functions
         run: |
           for attempt in {1..72}; do
             BODY="$(curl --silent --show-error --max-time 20 "$BASE_URL/api/climate-trace?sectors=power&year=2024&gas=co2e_100yr&limit=5" || true)"
-            if BODY="$BODY" node -e 'try{const x=JSON.parse(process.env.BODY||"{}"); process.exit(x.ok===true && x.apiVersion==="v7" && x.count>0 ? 0 : 1)}catch{process.exit(1)}'; then
-              echo "Cloudflare branch preview carries Climate TRACE v7 and real sources."
+            NOAA_CODE="$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 20 "$BASE_URL/api/atlas-wms?source=noaa-coral-dhw&bbox=-10018754.1714,-5009377.0857,0,5009377.0857&width=256&height=256" || true)"
+            if BODY="$BODY" NOAA_CODE="$NOAA_CODE" node -e 'try{const x=JSON.parse(process.env.BODY||"{}"); process.exit(x.ok===true && x.apiVersion==="v7" && x.count>0 && process.env.NOAA_CODE==="200" ? 0 : 1)}catch{process.exit(1)}'; then
+              echo "Cloudflare branch preview carries repaired NOAA DHW + Climate TRACE v7."
               exit 0
             fi
             echo "waiting for current branch deploy ($attempt/72)"
             sleep 10
           done
-          echo "Cloudflare branch preview did not converge to the current repaired function in time."
+          echo "Cloudflare branch preview did not converge to the repaired source functions in time."
           exit 1
 
       - name: Install Chromium
