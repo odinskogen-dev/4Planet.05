@@ -145,12 +145,13 @@ test("Aug 20 reconciliation surfaces the bounded early-stage 4PLANET set without
   assert.match(projection, /15 historical submissions \/ 14 awaiting \/ 1 rejected \/ 0 secured or awarded \/ 0 cash/);
 });
 
-test("base evidence gates are preserved while current GitHub implementation readback stays separate", () => {
+test("base evidence gates are preserved while current GitHub implementation snapshot stays separate", () => {
   assert.match(projection, /ad7f14e09d0f565a5d534605f76996d1eca2e3c3/);
   assert.match(projection, /Convergence Gate #410 succeeded/i);
   assert.match(freshProjection, /0338e94cea19942d99655239550cec72d75aa316/);
-  assert.match(freshProjection, /5b9f359dfceffbe134ef8ee64a5dac2a6f75909c/);
+  assert.match(freshProjection, /88fdc8552a532a9a269702e9fc3b063169eae3bb/);
   assert.match(freshProjection, /implementation evidence, not a BRAIN promotion or production release/i);
+  assert.match(freshProjection, /reconciliation snapshot/i);
   assert.match(projection, /0dcc5268e0405ae78a4d27a41c155ef465be56d2/);
   assert.match(projection, /42\/44 smoke contracts/);
   assert.match(projection, /cd208fbee92598c90f5dbd3ab7677ea076d49b78/);
