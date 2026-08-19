@@ -1,0 +1,19 @@
+.labs-shell {
+  --accent-fourplanet:#39ff78;
+}
+
+.labs-shell[data-theme="light"] {
+  --accent-fourplanet:#2e2eff;
+}
+
+.labs-shell[data-theme="dark"] .labs-universe--4planet {
+  --accent:var(--accent-fourplanet) !important;
+}
+
+.labs-shell[data-theme="dark"] .labs-universe--4planet .labs-universe-head {
+  --accent:var(--accent-fourplanet) !important;
+}
+
+.labs-shell[data-theme="light"] .labs-universe--4planet {
+  --accent:var(--accent-fourplanet) !important;
+}
