@@ -4,6 +4,8 @@
     return step?.relationships?.[index];
   };
 
+  const getSpeciesRelationship = (relationships, id) => relationships?.find((relationship) => relationship.id === id);
+
   const resolveBinding = (binding, canonical) => {
     const species = canonical.species;
     const anchor = canonical.livingSystemAnchor;
@@ -29,6 +31,19 @@
         body: claim.text,
         source: { label: claim.source, url: claim.sourceUrl },
         boundary: claim.limitation
+      };
+    }
+
+    if (binding?.startsWith('relationships.')) {
+      const relationshipId = binding.slice('relationships.'.length);
+      const relationship = getSpeciesRelationship(canonical.speciesRelationships, relationshipId);
+      if (!relationship) throw new Error(`Canonical species relationship missing for ${binding}`);
+      return {
+        relationClass: relationship.relationClass,
+        truthState: relationship.state,
+        body: relationship.relation,
+        source: { label: relationship.sourceLabel, url: relationship.sourceUrl },
+        boundary: relationship.boundary
       };
     }
 
@@ -67,7 +82,8 @@
     manifest.canonical = {
       generatedFrom: canonical.generatedFrom,
       speciesSlug: species.slug,
-      livingSystemAnchorSlug: canonical.livingSystemAnchor?.slug
+      livingSystemAnchorSlug: canonical.livingSystemAnchor?.slug,
+      speciesRelationshipCount: canonical.speciesRelationships?.length || 0
     };
 
     manifest.nodes = layout.nodes.map((node) => {
