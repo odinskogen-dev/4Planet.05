@@ -12,7 +12,8 @@ import {
   universeRoots,
   verifiedAt,
   type LabProject,
-} from "./labsProjection";
+} from "./labsFreshProjection";
+import { withCurrentProjectMeta } from "./labsCurrentMeta";
 import "./labs.css";
 
 type Theme = "dark" | "light";
@@ -111,7 +112,7 @@ function FreshnessStrip() {
     <div className="labs-freshness labs-grid-section">
       <span>TRUTH MODE</span>
       <strong>{projectionState}</strong>
-      <span>BRAIN remains the authority · 20 AUG RECONCILIATION · CURRENT BRAIN + EXACT-HEAD GITHUB READBACK · MISSING VALUES STAY UNKNOWN</span>
+      <span>BRAIN remains the authority · 20 AUG RECONCILIATION · CURRENT BRAIN + CURRENT GITHUB READBACK · MISSING VALUES STAY UNKNOWN</span>
     </div>
   );
 }
@@ -216,10 +217,38 @@ function DomainPanel({ project, onInspect }: { project: LabProject; onInspect: I
   );
 }
 
+const coreOrder = [
+  "4planet/product",
+  "4planet/naturebrain",
+  "4planet/capital",
+  "4planet/field-partners",
+  "4planet/research",
+  "4planet/brand",
+  "4planet/content",
+  "4planet/4mbassadors",
+];
+
+const leadingProductSlugs = [
+  "4planet/product/one-interface",
+  "4planet/product/atlas",
+  "4planet/e4rth/species",
+  "4planet/product/living-systems",
+  "4planet/product/impact",
+];
+
 function FourPlanetUniverse({ root, onInspect }: { root: LabProject; onInspect: InspectHandler }) {
   const children = childrenOf(root.slug);
-  const core = children.filter((project) => project.kind === "CORE" || project.kind === "SYSTEM");
+  const coreUnsorted = children.filter((project) => project.kind === "CORE" || project.kind === "SYSTEM");
+  const core = [...coreUnsorted].sort((a, b) => {
+    const aIndex = coreOrder.indexOf(a.slug);
+    const bIndex = coreOrder.indexOf(b.slug);
+    return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+  });
+  const leadingProducts = leadingProductSlugs
+    .map((slug) => projectBySlug(slug))
+    .filter((project): project is LabProject => Boolean(project));
   const domains = children.filter((project) => project.kind === "DOMAIN");
+
   return (
     <section className="labs-universe labs-universe--4planet" style={accentStyle(root)}>
       <a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--hero" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}>
@@ -236,9 +265,14 @@ function FourPlanetUniverse({ root, onInspect }: { root: LabProject; onInspect: 
         </div>
       </a>
 
-      <div className="labs-subhead"><span>CORE SYSTEMS + WORKSTREAMS</span><span>hover / focus for project intel</span></div>
+      <div className="labs-subhead"><span>ORGANISATION + SHARED MACHINE</span><span>core control / truth / capital / delivery</span></div>
       <div className="labs-core-grid">
         {core.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}
+      </div>
+
+      <div className="labs-subhead"><span>LEADING PRODUCT SURFACES</span><span>same Project Homes · surfaced here for direct access</span></div>
+      <div className="labs-core-grid labs-leading-product-grid">
+        {leadingProducts.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}
       </div>
 
       <div className="labs-subhead"><span>DOMAINS → MISSIONS</span><span>Wave 01 operational entry points</span></div>
@@ -299,7 +333,7 @@ function Inspector({ project }: { project: LabProject }) {
       </div>
       <section className="labs-inspector-block labs-inspector-block--truth"><span className="labs-label">CURRENT TRUTH</span><p>{project.now}</p></section>
       <div className="labs-inspector-two">
-        <section className="labs-inspector-block"><span className="labs-label">NEXT</span><p>{project.next}</p></section>
+        <section className="labs-inspector-block"><span className="labs-label">GOAL CONTRACT</span><p>{project.next}</p></section>
         <section className="labs-inspector-block"><span className="labs-label">AXE / AI PLAN</span><p>{project.aiPlan}</p></section>
       </div>
       <section className="labs-inspector-block">
@@ -308,8 +342,8 @@ function Inspector({ project }: { project: LabProject }) {
       </section>
       <section className={`labs-inspector-block ${founderDecision ? "labs-inspector-block--founder" : ""}`}><span className="labs-label">FOUNDER ACTION</span><p>{founderDecision ?? "No public-safe Founder blocker is projected for this project."}</p></section>
       <section className="labs-inspector-block">
-        <div className="labs-inspector-title"><span className="labs-label">LINKED ASSETS</span><span>{assets.length}</span></div>
-        {assets.length ? <div className="labs-asset-mini-list">{assets.slice(0, 4).map((asset) => <a key={`${asset.label}-${asset.href}`} href={asset.href} target="_blank" rel="noreferrer"><span>{asset.kind}</span><strong>{asset.label}</strong><b>↗</b></a>)}</div> : <p className="labs-unknown-copy">UNKNOWN — no public-safe linked assets are projected.</p>}
+        <div className="labs-inspector-title"><span className="labs-label">LEADING ONE / LINKED ASSETS</span><span>{assets.length}</span></div>
+        {assets.length ? <div className="labs-asset-mini-list">{assets.slice(0, 5).map((asset) => <a key={`${asset.label}-${asset.href}`} href={asset.href} target="_blank" rel="noreferrer"><span>{asset.kind}</span><strong>{asset.label}</strong><b>↗</b></a>)}</div> : <p className="labs-unknown-copy">UNKNOWN — no public-safe digital home is projected.</p>}
       </section>
       <section className="labs-inspector-evidence"><div><span>AUTHORITY</span><strong>{project.authority}</strong></div><div><span>FRESHNESS</span><strong>{project.freshness}</strong></div></section>
       <a className="labs-open-project" href={labHref(project.slug)}>OPEN FULL PROJECT PAGE <span>↗</span></a>
@@ -336,17 +370,19 @@ function SystemFeed() {
 }
 
 function PortfolioView() {
-  const defaultProject = projectBySlug("4planet")!;
+  const defaultProject = withCurrentProjectMeta(projectBySlug("4planet")!);
   const [selected, setSelected] = useState<LabProject>(defaultProject);
+  const inspect: InspectHandler = (project) => setSelected(withCurrentProjectMeta(project));
+
   return (
     <main className="labs-page labs-page--portfolio">
       <GridRails />
       <section className="labs-portfolio-layout labs-grid-section">
         <div className="labs-portfolio-main">
-          <CommandStrip onInspect={setSelected} />
+          <CommandStrip onInspect={inspect} />
           <FreshnessStrip />
-          <div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>importance + active state first · click to enter</span></div>
-          <div className="labs-universe-stack">{universeRoots.map((root, index) => <UniversePanel key={root.slug} root={root} index={index} onInspect={setSelected} />)}</div>
+          <div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>organisation → leading products → Missions → Labs</span></div>
+          <div className="labs-universe-stack">{universeRoots.map((root, index) => <UniversePanel key={root.slug} root={root} index={index} onInspect={inspect} />)}</div>
           <FounderQueue />
           <SystemFeed />
         </div>
