@@ -24,6 +24,25 @@ export function MissionStrip({
   const bg = dark ? "#0A0A0A" : "#fff";
   const mono = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase" as const };
 
+  const humanQuestion: Record<string, string> = {
+    cle4n: "How does waste reach the sea — and where can we stop it?",
+    wh4les: "What would it take for whales to move through safer oceans?",
+    cor4l: "What happens when the living structure of a reef begins to fail?",
+    "rewild-marine": "How do we bring life back to damaged coasts and shallow seas?",
+    clim4te: "Where can climate action also help living systems recover?",
+    am4zonia: "What happens when a rainforest that helps make its own rain is broken apart?",
+    species: "What disappears when a species disappears from its relationships?",
+    "rewild-land": "How do damaged landscapes become living systems again?",
+    food: "How can we feed ourselves without breaking the living systems food depends on?",
+    en4rgy: "How can we power human life with less pressure on the systems around us?",
+    "circular-city": "Can a city use materials without turning them into waste?",
+    f4shion: "What does what we wear ask from land, water, energy and people?",
+    m4gazine: "What stories make people see the living planet differently?",
+    "4film": "What can film make visible that data alone cannot?",
+    "4rt": "Can art change what people notice, value and protect?",
+    "4play": "Can play turn planetary complexity into something people can feel and act on?",
+  };
+
   const fields: [string, string][] = [
     ["WHAT IS HAPPENING", issue],
     ["WHY THIS MATTERS", whyItMatters],
@@ -76,16 +95,23 @@ export function MissionStrip({
         color: ink,
         borderTop: `1px solid ${line}`,
         borderBottom: `1px solid ${line}`,
-        padding: "clamp(30px,4vw,48px) clamp(20px,5vw,64px)",
+        padding: "clamp(34px,4.5vw,56px) clamp(20px,5vw,64px)",
         "--mission-line": line,
       } as React.CSSProperties}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "clamp(22px,3vw,32px)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
         <div style={{ ...mono, color: dim, display: "inline-flex", alignItems: "center", gap: 10 }}>
           <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", background: accent, display: "inline-block" }} />
           WHERE THIS MISSION STANDS · <span style={{ color: ink }}>{status}</span>
         </div>
         {nextMilestone && <div style={{ ...mono, color: dim }}>NEXT MILESTONE · <span style={{ color: ink }}>{nextMilestone}</span></div>}
+      </div>
+
+      <div style={{ marginTop: "clamp(34px,5vw,64px)", marginBottom: "clamp(34px,5vw,56px)", maxWidth: 980 }}>
+        <div style={{ ...mono, color: accent, marginBottom: 12 }}>START HERE</div>
+        <h2 style={{ margin: 0, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(30px,4.4vw,66px)", lineHeight: .98, letterSpacing: "-.045em", maxWidth: "18ch" }}>
+          {humanQuestion[slug] ?? "What is changing here — and what could help?"}
+        </h2>
       </div>
 
       <div className="mission-human-strip">
@@ -97,7 +123,7 @@ export function MissionStrip({
         ))}
       </div>
 
-      <div style={{ marginTop: "clamp(34px,5vw,56px)" }}>
+      <div style={{ marginTop: "clamp(42px,6vw,70px)" }}>
         <div style={{ ...mono, color: accent }}>FOLLOW THE CONNECTIONS</div>
         <h2 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3vw,42px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: "18ch" }}>
           The Mission is one part of a living system.
