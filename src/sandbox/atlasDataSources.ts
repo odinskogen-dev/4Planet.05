@@ -32,9 +32,11 @@ export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
   proxyKey: "emodnet-bathymetry",
   buttonLabel: "BATHYMETRY",
   label: "EMODNET · BATHYMETRY",
-  authority: "European Marine Observation and Data Network (EMODnet)",
+  authority: "European Marine Observation and Data Network (EModnet)",
   product: "Mean depth in multi colour (no land)",
   layer: "emodnet:mean_multicolour",
+  style: "mean_multicolour",
+  version: "1.3.0",
   docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
   service: "https://ows.emodnet-bathymetry.eu/wms",
   attribution: "EModnet Bathymetry",
@@ -54,6 +56,7 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   product: "EUSeaMap 2023 · EUNIS 2019 classification group · scale-adaptive",
   layer: "eusm2023_eunis2019_group",
   style: "default-style-eusm2023_eunis2019_group",
+  version: "1.3.0",
   docs: "https://emodnet.ec.europa.eu/en/seabed-habitats",
   service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
   attribution: "EModnet Seabed Habitats / EUSeaMap 2023 · CC BY 4.0",
@@ -156,15 +159,10 @@ export function proxiedWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, ove
   });
   if (time) params.set("time", time);
   if (elevation) params.set("elevation", elevation);
-  // URLSearchParams escapes the MapLibre bbox token. Restore it so MapLibre can
-  // substitute the real EPSG:3857 tile bounds before making the request.
   return `/api/atlas-wms?${params.toString().replace(encodeURIComponent("{bbox-epsg-3857}"), "{bbox-epsg-3857}")}`;
 }
 
 export function wmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
-  // Vite preview in CI has no Pages Functions runtime, so test provider WMS
-  // directly there. Every Cloudflare/production-shaped preview uses the
-  // same-origin bridge for CORS/CRS/reliability.
   return isLocalPreview()
     ? directWmsRasterTileUrl(descriptor, overrides)
     : proxiedWmsRasterTileUrl(descriptor, overrides);
