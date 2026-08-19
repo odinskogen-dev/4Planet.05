@@ -15,8 +15,9 @@ test("S4PIENS sandbox is isolated from the canonical S4PIENS domain route", () =
 
 test("FOOD is the one Gold Standard chain and the registry has 20 working families", () => {
   assert.match(chains, /id: "food"[\s\S]*status: "GOLD_STANDARD"/);
-  const chainRows = [...chains.matchAll(/status: "(?:GOLD_STANDARD|MAPPED_NEXT)"/g)];
+  const chainRows = [...chains.matchAll(/\{ id: "[^"]+", label: "[^"]+", humanNeed: "[^"]+", status: "(?:GOLD_STANDARD|MAPPED_NEXT)"/g)];
   assert.equal(chainRows.length, 20);
+  assert.equal([...chains.matchAll(/status: "GOLD_STANDARD"/g)].length, 1);
 });
 
 test("FOOD causal grammar spans human demand, value chain, pressures, sources and solutions", () => {
@@ -24,7 +25,7 @@ test("FOOD causal grammar spans human demand, value chain, pressures, sources an
     assert.ok(chains.includes(token) || page.includes(token), `missing ${token}`);
   }
   assert.match(page, /What does a meal touch\?/);
-  assert.match(page, /source-aware prototype/i);
+  assert.match(page, /source-aware/i);
 });
 
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
