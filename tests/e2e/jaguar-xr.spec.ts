@@ -4,11 +4,11 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/jaguar-xr";
 mkdirSync(OUT, { recursive: true });
 
-test("Jaguar Journey v1.1 travels through distinct scenes before evidence", async ({ page }, testInfo) => {
+test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidence", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
-  await page.goto("/xr/jaguar/", { waitUntil: "domcontentloaded" });
+  await page.goto("/journey/jaguar/", { waitUntil: "domcontentloaded" });
 
   const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-entity-id", "taxon:gbif:5219426", { timeout: 20_000 });
@@ -18,7 +18,7 @@ test("Jaguar Journey v1.1 travels through distinct scenes before evidence", asyn
   await expect(root).toHaveAttribute("data-performance-tier", /full|lite/);
   await expect(page.locator(".brand")).toHaveAttribute("href", "/species/jaguar");
   await expect(page.locator(".nature-entry__title")).toContainText(/Enter the rainforest/i);
-  await expect(page.locator(".nature-browser-status")).not.toContainText(/NOT AVAILABLE/i);
+  await expect(page.locator(".nature-browser-status")).toContainText(/BROWSER JOURNEY|SOURCE-AWARE/i);
   await expect(page.locator(".nature-footer")).toContainText(/JOURNEY ENGINE/i);
   await expect(page.locator('.nature-node[data-node-id="jaguar-solutions-transition"]')).toHaveAttribute("data-relation-class", "RESPONSE");
 
@@ -38,6 +38,7 @@ test("Jaguar Journey v1.1 travels through distinct scenes before evidence", asyn
   await expect(root).toHaveAttribute("data-scene-state", "dependency");
   await expect(root).toHaveAttribute("data-cinematic-index", "1", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-02-prey.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "habitat");
