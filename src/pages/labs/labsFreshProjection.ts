@@ -18,26 +18,26 @@ function prependAssets(project: LabProject, assets: NonNullable<LabProject["asse
 
 const currentOverrides: Record<string, Partial<LabProject>> = {
   "4planet": {
-    now: "Strategy & Goal Cascade v4.0 remains current authority. Current GitHub implementation evidence has advanced beyond the last durable BRAIN writeback: ONE INTERFACE PR #74 is OPEN / DRAFT / UNMERGED at exact head 0338e94cea19942d99655239550cec72d75aa316, and stacked About × Founder narrative PR #86 is OPEN / DRAFT / UNMERGED at 5b9f359dfceffbe134ef8ee64a5dac2a6f75909c. Neither is promoted into production by LABS. Capital truth remains 15 historical submissions / 14 awaiting / 1 rejected / 0 secured or awarded / 0 cash.",
-    freshness: "BRAIN through 19 Aug 23:15 + GitHub exact readback 20 Aug 2026",
+    now: "Strategy & Goal Cascade v4.0 remains current authority. Current GitHub implementation evidence has advanced beyond the last durable BRAIN writeback: ONE INTERFACE PR #74 is OPEN / DRAFT / UNMERGED at exact head 0338e94cea19942d99655239550cec72d75aa316, and stacked Public Experience Convergence PR #86 is OPEN / DRAFT / UNMERGED at reconciliation head 88fdc8552a532a9a269702e9fc3b063169eae3bb. PR #86 now spans About / Founder, Magazine, navigation, Missions and shared public-experience convergence. Neither candidate is promoted into production by LABS. Capital truth remains 15 historical submissions / 14 awaiting / 1 rejected / 0 secured or awarded / 0 cash.",
+    freshness: "BRAIN through 19 Aug 23:15 + GitHub reconciliation snapshot 20 Aug 2026",
   },
   "4planet/product": {
-    now: "ONE INTERFACE remains the controlled public-product path. PR #74 is OPEN / DRAFT / UNMERGED at 0338e94cea19942d99655239550cec72d75aa316. A newer stacked About × Founder narrative slice exists as PR #86 at 5b9f359dfceffbe134ef8ee64a5dac2a6f75909c. These are implementation-state deltas after the last durable BRAIN writeback, not automatic BRAIN, Gold or production promotion.",
-    freshness: "BRAIN + current GitHub exact readback · 20 Aug 2026",
+    now: "ONE INTERFACE remains the controlled public-product path. PR #74 is OPEN / DRAFT / UNMERGED at 0338e94cea19942d99655239550cec72d75aa316. The stacked Public Experience Convergence PR #86 is OPEN / DRAFT / UNMERGED at reconciliation head 88fdc8552a532a9a269702e9fc3b063169eae3bb and extends About / Founder, Magazine, navigation, Missions and shared public-experience convergence. These are implementation-state deltas after the last durable BRAIN writeback, not automatic BRAIN, Gold or production promotion.",
+    freshness: "BRAIN + GitHub reconciliation snapshot · 20 Aug 2026",
   },
   "4planet/product/one-interface": {
-    now: "20 AUG GITHUB READBACK — ONE INTERFACE PR #74 is OPEN / DRAFT / UNMERGED at exact head 0338e94cea19942d99655239550cec72d75aa316. A newer stacked About × Founder narrative slice exists as PR #86 at 5b9f359dfceffbe134ef8ee64a5dac2a6f75909c. BRAIN remains durable authority; its last Programme Log writeback predates PR #86, so the newer PR is implementation evidence, not a BRAIN promotion or production release.",
+    now: "20 AUG GITHUB RECONCILIATION — ONE INTERFACE PR #74 is OPEN / DRAFT / UNMERGED at exact head 0338e94cea19942d99655239550cec72d75aa316. The newer stacked Public Experience Convergence PR #86 is OPEN / DRAFT / UNMERGED at reconciliation head 88fdc8552a532a9a269702e9fc3b063169eae3bb and now spans About / Founder, Magazine, navigation, Missions and shared public-experience convergence. BRAIN remains durable authority; its last Programme Log writeback predates PR #86, so the newer PR is implementation evidence, not a BRAIN promotion or production release.",
     next: "Reconcile the current PR #74/#86 implementation line against exact-head QA and BRAIN, then present the same accepted artifact for Founder JUDGE / controlled release. Do not infer production promotion from draft PR state.",
-    freshness: "BRAIN through 19 Aug 23:15 + GitHub exact readback 20 Aug 2026",
+    freshness: "BRAIN through 19 Aug 23:15 + GitHub reconciliation snapshot 20 Aug 2026",
     assets: [
       { label: "CURRENT · ONE INTERFACE PR #74", href: "https://github.com/odinskogen-dev/4Planet.05/pull/74", kind: "PREVIEW" },
-      { label: "CURRENT · ABOUT / FOUNDER PR #86", href: "https://github.com/odinskogen-dev/4Planet.05/pull/86", kind: "PREVIEW" },
+      { label: "CURRENT · PUBLIC EXPERIENCE PR #86", href: "https://github.com/odinskogen-dev/4Planet.05/pull/86", kind: "PREVIEW" },
       { label: "BRANCH PREVIEW · ONE INTERFACE", href: "https://release-one-interface-univer.4planet-05.pages.dev", kind: "PREVIEW" },
     ],
   },
   "4planet/brand": {
-    now: "Brand core remains proof-led and Founder-controlled. Current GitHub implementation evidence now includes the stacked About × Founder narrative slice PR #86, OPEN / DRAFT / UNMERGED at 5b9f359dfceffbe134ef8ee64a5dac2a6f75909c. This is a candidate narrative/public-surface implementation, not a production or BRAIN promotion.",
-    freshness: "Founder Control + current GitHub readback · 20 Aug 2026",
+    now: "Brand core remains proof-led and Founder-controlled. Current GitHub implementation evidence includes the stacked Public Experience Convergence PR #86, OPEN / DRAFT / UNMERGED at reconciliation head 88fdc8552a532a9a269702e9fc3b063169eae3bb, covering About / Founder, Magazine, navigation, Missions and public-surface convergence. This is a candidate implementation, not a production or BRAIN promotion.",
+    freshness: "Founder Control + GitHub reconciliation snapshot · 20 Aug 2026",
   },
 
   "4planet/oce4n/wh4les": {
@@ -189,7 +189,7 @@ export const portfolioStats = {
 };
 
 export const recentSystemMoves: Array<readonly [string, string, string]> = [
-  ["AUG20-PR86", "ONE INTERFACE gained a newer stacked About × Founder narrative slice (PR #86); it remains draft/unmerged and is not promoted into BRAIN or production by LABS.", "CURRENT"],
+  ["AUG20-PR86", "ONE INTERFACE Public Experience Convergence PR #86 is captured at reconciliation head 88fdc85…; it remains draft/unmerged and is not promoted into BRAIN or production by LABS.", "CURRENT"],
   ["AUG20-PR74", "ONE INTERFACE PR #74 current GitHub head is 0338e94…; current implementation state is kept separate from the older durable BRAIN writeback.", "CURRENT"],
   ["AUG20-GOALS", "Wave-01 Mission Project Goal Contracts are BASELINE COMPLETE in Founder Control; current Mission states have been reconciled from the same packs.", "SYNCED"],
   ...baseRecentSystemMoves,
