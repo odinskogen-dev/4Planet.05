@@ -7,9 +7,11 @@ const renderer = readFileSync(new URL("../public/xr/engine/nature-renderer.js", 
 const browserRenderer = readFileSync(new URL("../public/xr/engine/nature-browser.js", import.meta.url), "utf8");
 const journeyRenderer = readFileSync(new URL("../public/xr/engine/nature-journey-engine.js", import.meta.url), "utf8");
 const cinematicRenderer = readFileSync(new URL("../public/xr/engine/nature-cinematic-journey-v11.js", import.meta.url), "utf8");
+const interactionRenderer = readFileSync(new URL("../public/xr/engine/nature-interaction-v13.js", import.meta.url), "utf8");
 const audioRenderer = readFileSync(new URL("../public/xr/engine/nature-audio-v05.js", import.meta.url), "utf8");
 const viewportGuard = readFileSync(new URL("../public/xr/engine/nature-viewport-guard-v12.js", import.meta.url), "utf8");
 const premiumCss = readFileSync(new URL("../public/xr/jaguar/jaguar-premium-v12.css", import.meta.url), "utf8");
+const goldCss = readFileSync(new URL("../public/xr/jaguar/jaguar-gold-v13.css", import.meta.url), "utf8");
 const journeyHtml = readFileSync(new URL("../public/journey/jaguar/index.html", import.meta.url), "utf8");
 const adapter = readFileSync(new URL("../public/xr/engine/nature-scene-adapter.js", import.meta.url), "utf8");
 const generator = readFileSync(new URL("./build-xr-canonical-data.mjs", import.meta.url), "utf8");
@@ -40,6 +42,8 @@ test("Every Journey node binds truth canonically while choreography stays presen
     assert.ok(node.scene?.stageLabel, `${node.id} requires a human journey stage`);
     assert.ok(node.scene?.sceneTitle, `${node.id} requires scene narrative copy`);
     assert.ok(node.scene?.media?.backgroundSrc, `${node.id} requires authored chapter media`);
+    assert.ok(node.scene?.interaction?.type, `${node.id} requires one authored world interaction`);
+    assert.ok(node.scene?.interaction?.primaryAction, `${node.id} requires an authored primary action`);
     assert.equal(typeof node.scene?.markerPosition?.x, "number", `${node.id} requires an authored marker position`);
     if (node.relationClass !== null && node.relationClass !== undefined) assert.ok(allowedRelationClasses.has(node.relationClass));
   }
@@ -67,16 +71,24 @@ test("Canonical Jaguar–capybara relationship owns prey truth, source, boundary
   assert.equal(prey.boundary, undefined);
   assert.equal(prey.truthState, undefined);
   assert.equal(prey.relationClass, undefined);
+  assert.equal(prey.scene.interaction.type, "relationship");
+  assert.match(prey.scene.interaction.media.src, /Capybara/);
+  assert.match(prey.scene.interaction.media.credit.license, /CC BY-SA 4\.0/);
 
   assert.match(relationshipSource, /relationship:4p:jaguar-capybara-prey-southern-pantanal/);
   assert.match(relationshipSource, /relationClass:\s*"DEPENDENCY"/);
   assert.match(relationshipSource, /state:\s*"KNOWN"/);
+  assert.match(relationshipSource, /commonName:\s*"Capybara"/);
+  assert.match(relationshipSource, /scientificName:\s*"Hydrochoerus hydrochaeris"/);
   assert.match(relationshipSource, /PERILLI ET AL\. 2016 · PLOS ONE/);
   assert.match(relationshipSource, /does not imply the same dietary importance elsewhere/i);
+  assert.match(adapter, /relatedEntity/);
+  assert.match(adapter, /relationship\.commonName/);
+  assert.match(adapter, /relationship\.scientificName/);
 });
 
-test("Nature, Journey and cinematic renderers stay species-agnostic", () => {
-  for (const source of [renderer, browserRenderer, journeyRenderer, cinematicRenderer]) {
+test("Nature, Journey, cinematic and interaction renderers stay species-agnostic", () => {
+  for (const source of [renderer, browserRenderer, journeyRenderer, cinematicRenderer, interactionRenderer]) {
     assert.doesNotMatch(source, /Panthera onca/i);
     assert.doesNotMatch(source, /5219426/);
   }
@@ -90,6 +102,9 @@ test("Nature, Journey and cinematic renderers stay species-agnostic", () => {
   assert.match(journeyRenderer, /4planet:nature-journey-scene/);
   assert.match(cinematicRenderer, /scene\.media/);
   assert.match(cinematicRenderer, /nature-cinematic__scene/);
+  assert.match(interactionRenderer, /relatedEntity/);
+  assert.match(interactionRenderer, /scene\?\.interaction/);
+  assert.match(interactionRenderer, /data-world-action/);
 });
 
 test("Browser Journey is scene-first, evidence-secondary and performance-tiered", () => {
@@ -104,6 +119,19 @@ test("Browser Journey is scene-first, evidence-secondary and performance-tiered"
   assert.match(cinematicRenderer, /fallbackSrc|manifest\?\.environment/);
 });
 
+test("Gold interaction pass adds in-world actions without turning cards into a second truth store", () => {
+  assert.match(journeyHtml, /jaguar-gold-v13\.css/);
+  assert.match(journeyHtml, /nature-interaction-v13\.js/);
+  assert.match(interactionRenderer, /node\.body/);
+  assert.match(interactionRenderer, /node\.truthState/);
+  assert.match(interactionRenderer, /node\.relatedEntity/);
+  assert.match(interactionRenderer, /HOW DO WE KNOW\?/);
+  assert.match(goldCss, /data-world-interaction=trace/);
+  assert.match(goldCss, /data-world-interaction=pressure/);
+  assert.match(goldCss, /data-tone=response/);
+  assert.doesNotMatch(interactionRenderer, /Capybara|Hydrochoerus|Jaguar/i);
+});
+
 test("Premium pass protects viewport safety and keeps uncontrolled 3D viewers out of the primary journey", () => {
   assert.match(journeyHtml, /jaguar-premium-v12\.css/);
   assert.match(journeyHtml, /nature-viewport-guard-v12\.js/);
@@ -111,6 +139,7 @@ test("Premium pass protects viewport safety and keeps uncontrolled 3D viewers ou
   assert.match(premiumCss, /data-cinematic-scene=response/);
   assert.match(viewportGuard, /window\.scrollTo\(0, 0\)/);
   assert.match(viewportGuard, /data\.viewportSafe|viewportSafe/);
+  assert.equal(manifest.subject.modelGate.status, "PENDING_CONTROLLED_ANIMATED_GLB");
   assert.doesNotMatch(journeyHtml, /sketchfab\.com|<iframe/i);
 });
 
@@ -156,5 +185,6 @@ test("Jaguar Journey reaches a RESPONSE handoff rather than ending at awareness"
   assert.ok(response);
   assert.match(response.title, /HOW DO WE SOLVE THIS/i);
   assert.equal(response.scene.state, "response");
+  assert.equal(response.scene.interaction.primaryAction, "next");
   assert.ok(response.href);
 });
