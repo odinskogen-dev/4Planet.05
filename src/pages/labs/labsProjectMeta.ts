@@ -220,23 +220,16 @@ const goalMeta: Record<string, ProjectGoalMeta> = {
     success: "Every active experiment has a hypothesis/test and reaches PROMOTE/HOLD/KILL without spawning a parallel truth system.",
     source: "D16 LABS doctrine",
   },
-  "sandbox/nature-game": { goal: "Prove the smallest playable ecological-relationship mechanic using verified nature intelligence.", success: "A bounded playable test produces real engagement/learning evidence without presenting simulation as observed truth.", source: "D16 Nature Game hypothesis" },
-  "sandbox/4planet-university": { goal: "Prove one source-linked learning journey built from an already mature Gold Reference.", success: "Users understand the target concept measurably better without a parallel knowledge system.", source: "D16 University hypothesis" },
-  "sandbox/okobrain": { goal: "Prove ØKOBRAIN solves a unique non-duplicate problem—or merge/kill it before architecture grows.", success: "A distinct use case survives red-team against NATUREBRAIN/BRAIN overlap.", source: "LABS idea intake" },
-  "4planet/product/atlas-data-lab": { goal: "Expand real ATLAS data breadth safely through individually qualified source layers on the canonical map runtime.", success: "Source probes, exact layer contracts and deployed desktop/mobile MAP_GREEN evidence pass without false-zero or credential leakage.", source: "ATLAS Data Lab / PR #72" },
-  "4planet/product/nature-xr": { goal: "Prove browser-first immersive rendering can improve understanding/felt relevance while remaining a lens over canonical SPECIES/Living Systems truth.", success: "Browser proof is strong, physical headset comfort/comprehension is separately validated, and no second ecological truth system appears.", source: "Nature XR / PR #73" },
-  "4planet/product/jaguar-journey": { goal: "Prove a premium multi-scene Jaguar journey from life → relationship → habitat → pressure → response using reusable canonical truth.", success: "Exact-head visual/browser acceptance passes and reusable journey machinery is identified beyond Jaguar.", source: "Jaguar Journey / PR #79" },
-  "4planet/s4piens/food-gold-lab": { goal: "Build one genuinely impressive Homo sapiens × FOOD Human Systems Atlas journey using shared ATLAS/SPECIES/Living Systems infrastructure.", success: "Founder can complete HUMAN → FOOD → PLACE/DATA → LIFE → RESPONSE with provenance visible, at least one live source and no causal/impact inflation.", source: "SAP-SAPIENS-01 / PR #81" },
-  "4planet/tree-of-life": { goal: "Make the entire 4PLANET machine legible as an interactive system map for Founder thinking, meetings and capital without inventing new architecture.", success: "Users can understand shared roots → products/Missions/actors/solutions/capital/Impact/learning and the map remains only a rendering of canonical objects.", source: "Tree of Life / PR #80" },
-  "4planet/choice-lab": { goal: "Test explainable solution/capital decision intelligence without a hidden universal score or fabricated relationship claims.", success: "A named decision can be traced problem → solution → actor → capital → proof with evidence and hypotheses visibly separated.", source: "CHOICE / PR #82" },
-  "4planet/naturebrain/planetary-map": { goal: "Materialise the minimum useful Planetary Map as the permanent world-description layer beneath Missions without building a competing ontology or map engine.", success: "Canonical place/life/pressure/source semantics support shared products/Missions and the bounded PMAP build can close cleanly.", source: "Planetary Architecture / PMAP WBS" },
+  "sandbox/nature-game": { goal: "Prove the smallest playable ecological-relationship mechanic using verified nature intelligence.", success: "A bounded playable test produces real engagement/learning evidence without presenting simulation as observed truth.", source: "D16 Nature Game" },
+  "sandbox/ecosystem-simulator": { goal: "Test whether a bounded ecological simulation can improve systems understanding while clearly separating model output from observed reality.", success: "A declared-assumption simulation yields interpretable learning with uncertainty visible and no prediction masquerading as fact.", source: "D16 Ecosystem Simulator" },
+  "sandbox/xr": { goal: "Test whether immersive spatial rendering improves comprehension or felt relevance of a verified ecological relationship.", success: "A browser-first bounded XR test creates observed learning without duplicating the canonical Species/Living Systems truth layer.", source: "D16 XR" },
+  "sandbox/hardware": { goal: "Test only hardware concepts that create a measurable advantage for sensing, restoration, field verification or learning.", success: "A bounded build closes a real capability gap and does not become gadget theatre.", source: "D16 Hardware" },
+  "sandbox/sapien-mirror": { goal: "Test a personal human-systems lens that makes selected consumption dependencies/pressures understandable without turning 4PLANET into a surveillance or moral-scoring product.", success: "One voluntary, bounded user journey creates useful insight with privacy, uncertainty and no synthetic virtue score.", source: "D16 Sapien Mirror" },
 };
 
 const prototypeMeta: Record<string, PrototypeMeta> = {
-  "4planet": { label: "4PLANET production", href: "https://4planet.org", state: "LIVE", source: "production", verified: "19 Aug 2026" },
-  "4planet/brand": { label: "4PLANET BRAND OS", href: "https://4planet-os.pages.dev/", state: "PROTOTYPE", source: "4P_ Websider", verified: "19 Aug 2026" },
-  "4planet/product": { label: "Latest ONE INTERFACE candidate", href: "https://release-one-interface-univer.4planet-05.pages.dev", state: "PREVIEW", source: "Cloudflare PR #74", verified: "19 Aug 2026" },
-  "4planet/product/one-interface": { label: "ONE INTERFACE candidate", href: "https://release-one-interface-univer.4planet-05.pages.dev", state: "PREVIEW", source: "Cloudflare PR #74", verified: "19 Aug 2026" },
+  "4planet": { label: "4PLANET", href: "https://4planet.org", state: "LIVE", source: "4PLANET production", verified: "19 Aug 2026" },
+  "4planet/product/one-interface": { label: "ONE INTERFACE Slice 09", href: "https://release-one-interface-univer.4planet-05.pages.dev", state: "PREVIEW", source: "Cloudflare PR #74", verified: "19 Aug 2026" },
   "4planet/product/atlas": { label: "ATLAS public surface", href: "https://4planet.org/atlas", state: "LIVE", source: "4PLANET production", verified: "19 Aug 2026" },
   "4planet/product/living-systems": { label: "Living Systems v1.4.1", href: "https://4p-living-systems-v1-4-1.pages.dev/", state: "PROTOTYPE", source: "4P_ Websider", verified: "19 Aug 2026" },
   "4planet/product/impact": { label: "IMPACT / OS v15.1", href: "https://4p-os-v15-1.pages.dev/impact", state: "PROTOTYPE", source: "4P_ Websider", verified: "19 Aug 2026" },
@@ -283,7 +276,9 @@ export function withProjectMeta(project: LabProject): LabProject {
   const deduped = assets.filter((item, index) => assets.findIndex((candidate) => candidate.href === item.href) === index);
   return {
     ...project,
-    next: goal.goal,
+    // `next` is an execution/gate field owned by the project projection. Do not
+    // overload it with a durable Project Goal. Goal metadata remains a separate
+    // read-only contract so LABS never hides the actual next gate.
     evidence: `${project.evidence} · GOAL SOURCE: ${goal.source}`,
     assets: deduped,
   };
