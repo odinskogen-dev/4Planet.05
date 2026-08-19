@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 
 const router = read("src/routes/router.tsx");
 const missions = read("src/components/MissionStrip.tsx");
+const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
 const universeCss = read("src/styles/one-interface-universe.css");
@@ -29,6 +30,18 @@ test("Missions preserve one connected ATLAS → SPECIES → LIVING SYSTEMS → I
   assert.match(missions, /journey: slug/);
   assert.match(missions, /START HERE/);
   assert.match(missions, /How can we feed ourselves without breaking the living systems food depends on\?/);
+});
+
+test("relevant Missions embed the proven shared Atlas Window instead of a second map engine", () => {
+  assert.match(missions, /<MissionAtlasWindow missionSlug=\{slug\} accent=\{accent\}/);
+  assert.match(missionAtlas, /SpeciesAtlasWindow/);
+  assert.match(missionAtlas, /speciesSlug: "orca"/);
+  assert.match(missionAtlas, /speciesSlug: "jaguar"/);
+  assert.match(missionAtlas, /speciesSlug: "western-honey-bee"/);
+  assert.match(missionAtlas, /speciesSlug: "blue-mussel"/);
+  assert.match(missionAtlas, /SHARED ATLAS ENGINE/);
+  assert.match(missionAtlas, /OCCURRENCE ≠ RANGE \/ POPULATION \/ LIVE TRACKING/);
+  assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
 test("front-door awe stays atmospheric rather than masquerading as live ATLAS data", () => {
