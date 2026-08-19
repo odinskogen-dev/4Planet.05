@@ -1,0 +1,15 @@
+/*
+ * ATLAS DATA LAB — bounded product-fix candidate.
+ *
+ * The canonical search wrapper intentionally uses pointer-events:none so its
+ * empty margins do not swallow map gestures. The visible input/lens controls
+ * opt back in, but the result dropdown and site menu were omitted. That lets
+ * the MapLibre canvas underneath intercept clicks on visible results.
+ *
+ * Keep the wrapper transparent to pointer input; only the visible interactive
+ * surfaces opt in. This is isolated in the sandbox until promotion review.
+ */
+.world .search-wrap .results,
+.world .search-wrap .site-menu {
+  pointer-events: auto;
+}
