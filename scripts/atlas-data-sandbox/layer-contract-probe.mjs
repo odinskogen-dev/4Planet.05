@@ -11,15 +11,11 @@ const daysAgo = (n) => {
   return d.toISOString().slice(0, 10);
 };
 
-// One real WebMercator z3 tile spanning central/northern Europe. Contract
-// probes should resemble what MapLibre actually requests, not a giant ad-hoc
-// WMS export whose rendering cost can create false negatives.
 const MAPLIBRE_TILE_BBOX_3857 = "0,5009377.085697311,5009377.085697311,10018754.171394622";
 const wms3857 = (base, layer, { style = "", time, elevation, version = "1.1.1", bbox = MAPLIBRE_TILE_BBOX_3857 } = {}) => {
   const p = new URLSearchParams({
     service: "WMS", request: "GetMap", version, layers: layer, styles: style,
-    format: "image/png", transparent: "true", width: "256", height: "256",
-    bbox,
+    format: "image/png", transparent: "true", width: "256", height: "256", bbox,
   });
   p.set(version === "1.3.0" ? "crs" : "srs", "EPSG:3857");
   if (time) p.set("time", time);
@@ -44,11 +40,11 @@ const checks = [
   { id: "usgs-quakes", label: "Quakes", kind: "jsonRows", expected: "OPEN_BASELINE", url: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson", rows: (d) => d?.features },
   { id: "climate-trace-v7-power", label: "CLIM4TE TRACE · Power 2024", kind: "jsonRows", expected: "OPEN_REPAIRED", url: "https://api.climatetrace.org/v7/sources?year=2024&gas=co2e_100yr&sectors=power&limit=5", rows: (d) => d },
   { id: "emodnet-bathymetry", label: "Ocean · Bathymetry", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-bathymetry.eu/wms", "emodnet:mean_multicolour", { style: "mean_multicolour", version: "1.3.0" }) },
-  { id: "emodnet-habitat", label: "Seabed habitats 2023", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/ows", "eusm2023_eunis2019_group", { style: "default-style-eusm2023_eunis2019_group", version: "1.3.0" }) },
+  { id: "emodnet-habitat", label: "Seabed habitats 2025 · EUNIS 800m", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms", "eusm2025_eunis2019_800", { style: "eusm2021_eunis2019_l2_800", version: "1.3.0" }) },
   { id: "emodnet-oxygen", label: "Ocean oxygen climatology · Aug surface", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ec.oceanbrowser.net/emodnet/Python/web/wms", "All_European_Seas/Water_body_dissolved_oxygen_concentration.nc*Water_body_dissolved_oxygen_concentration_L2", { style: "pcolor_flat", time: "08", elevation: "-0.0", version: "1.3.0" }) },
   { id: "emodnet-fishing-density", label: "Fishing vessel density · 2023", kind: "image", expected: "OPEN_LAB", url: wms3857("https://ows.emodnet-humanactivities.eu/wms", "vesseldensity_01avg", { style: "VesselDensity", time: "2023-01-01T00:00:00Z" }) },
   { id: "noaa-coral-dhw", label: "Coral heat stress · latest", kind: "image", expected: "OPEN_REPAIRED", url: "https://coastwatch.noaa.gov/erddap/wms/noaacrwdhwDaily/request?service=WMS&version=1.3.0&request=GetMap&layers=noaacrwdhwDaily%3Adegree_heating_week&styles=&format=image%2Fpng&transparent=true&crs=CRS%3A84&width=512&height=256&time=current&bbox=-180,-35,180,35" },
-  { id: "gfw-forest-loss", label: "Forest loss", kind: "image", expected: "VERIFY_LEGACY", url: "https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.11/tcd_30/3/4/3.png" },
+  { id: "gfw-forest-loss", label: "Forest loss", kind: "image", expected: "OPEN_BASELINE", url: "https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.11/tcd_30/3/4/3.png" },
   { id: "iss", label: "ISS tracker", kind: "jsonObject", expected: "CONTEXT_ONLY", url: "https://api.wheretheiss.at/v1/satellites/25544" },
 ];
 
@@ -97,7 +93,7 @@ for (const check of checks) {
 
 const counts = Object.fromEntries([...new Set(results.map((r) => r.state))].sort().map((state) => [state, results.filter((r) => r.state === state).length]));
 const clean = results.map(({ rows, url, ...result }) => ({ ...result, url: new URL(url).origin + new URL(url).pathname }));
-const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), commitSha: process.env.GITHUB_SHA || null, counts, results: clean };
+const report = { schemaVersion: 3, generatedAt: new Date().toISOString(), commitSha: process.env.GITHUB_SHA || null, counts, results: clean };
 
 const md = [
   "# ATLAS DATA LAB — EXACT LAYER CONTRACT REPORT",
@@ -120,3 +116,8 @@ await fs.mkdir(OUT_DIR, { recursive: true });
 await fs.writeFile(path.join(OUT_DIR, "layer-contract-report.json"), JSON.stringify(report, null, 2) + "\n");
 await fs.writeFile(path.join(OUT_DIR, "layer-contract-report.md"), md);
 console.log("\n" + md);
+
+const blockers = results.filter((result) => String(result.expected).startsWith("OPEN_") && result.state !== "LAYER_CONTRACT_GREEN");
+if (blockers.length) {
+  throw new Error(`Open ATLAS layer contract gate failed: ${blockers.map((b) => `${b.id}:${b.state}`).join(", ")}`);
+}
