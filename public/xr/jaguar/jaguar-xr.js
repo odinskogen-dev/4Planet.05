@@ -1,50 +1,36 @@
 (() => {
-  const setText = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.setAttribute('value', value);
-  };
+  const status = () => document.getElementById('xr-status');
 
-  const register = () => {
-    if (!window.AFRAME || window.AFRAME.components['truth-hotspot']) return;
-    window.AFRAME.registerComponent('truth-hotspot', {
-      schema: {
-        title: { type: 'string', default: 'TRUTH NODE' },
-        body: { type: 'string', default: '' },
-        source: { type: 'string', default: '' },
-        boundary: { type: 'string', default: '' },
-        href: { type: 'string', default: '' }
-      },
-      init() {
-        this.el.addEventListener('mouseenter', () => this.el.setAttribute('scale', '1.18 1.18 1.18'));
-        this.el.addEventListener('mouseleave', () => this.el.setAttribute('scale', '1 1 1'));
-        this.el.addEventListener('click', () => {
-          setText('panel-title', this.data.title);
-          setText('panel-body', this.data.body);
-          setText('panel-source', `SOURCE · ${this.data.source}`);
-          setText('panel-boundary', `BOUNDARY · ${this.data.boundary}`);
-          if (this.data.href) {
-            window.setTimeout(() => { window.location.assign(this.data.href); }, 650);
-          }
-        });
-      }
-    });
-  };
-
-  if (window.AFRAME) register();
-  else window.addEventListener('load', register, { once: true });
-
-  window.addEventListener('DOMContentLoaded', async () => {
-    const status = document.getElementById('xr-status');
-    if (!status) return;
+  const updateXRStatus = async () => {
+    const node = status();
+    if (!node) return;
     try {
       if (!navigator.xr || !navigator.xr.isSessionSupported) {
-        status.textContent = '3D BROWSER MODE · WEBXR NOT AVAILABLE';
+        node.textContent = '3D BROWSER MODE · WEBXR NOT AVAILABLE';
         return;
       }
       const supported = await navigator.xr.isSessionSupported('immersive-vr');
-      status.textContent = supported ? 'WEBXR HEADSET READY' : '3D BROWSER MODE · NO IMMERSIVE-VR DEVICE';
+      node.textContent = supported ? 'WEBXR HEADSET READY' : '3D BROWSER MODE · NO IMMERSIVE-VR DEVICE';
     } catch {
-      status.textContent = '3D BROWSER MODE · XR STATUS UNAVAILABLE';
+      node.textContent = '3D BROWSER MODE · XR STATUS UNAVAILABLE';
     }
-  });
+  };
+
+  const boot = async () => {
+    await updateXRStatus();
+    const scene = document.getElementById('nature-scene');
+    if (!scene || !window.NatureRenderer) return;
+    try {
+      await window.NatureRenderer.render({
+        scene,
+        manifestUrl: '/xr/scenes/jaguar.json'
+      });
+    } catch (error) {
+      const node = status();
+      if (node) node.textContent = 'XR SCENE FAILED CLOSED';
+      console.error('[4PLANET XR] Scene boot failed', error);
+    }
+  };
+
+  window.addEventListener('DOMContentLoaded', boot, { once: true });
 })();
