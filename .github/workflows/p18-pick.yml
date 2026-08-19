@@ -1,0 +1,73 @@
+name: P18 PICK Prototype Gate
+
+on:
+  push:
+    branches:
+      - agent/p18-pick-v1
+  pull_request:
+    branches:
+      - agent/p18-food-03-private-user-validation
+    paths:
+      - "src/food/Pick*"
+      - "src/food/pick-*"
+      - "src/routes/router.tsx"
+      - "scripts/pick-contract.test.mjs"
+      - ".github/workflows/p18-pick.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: PICK truth contracts
+        run: node scripts/pick-contract.test.mjs
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Existing FOOD contracts
+        run: npm run test:food
+      - name: Repository smoke contracts
+        run: npm run test:smoke
+      - name: Lint
+        run: npm run lint
+      - name: Asset control
+        run: npm run assets:verify
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start prototype preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > /tmp/p18-pick-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/labs/food-intelligence/pick > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/p18-pick-preview.log
+          exit 1
+      - name: Baseline FOOD browser tests
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/food-vertical-slice.spec.ts
+      - name: Upload PICK evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p18-pick-prototype-evidence
+          path: |
+            playwright-report
+            test-results
+            /tmp/p18-pick-preview.log
+          if-no-files-found: warn
+          retention-days: 30
