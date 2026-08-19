@@ -1,0 +1,117 @@
+{
+  "version": "v1.1",
+  "id": "species-jaguar-amazonia-journey-v11",
+  "title": "Jaguar Journey",
+  "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · SOURCE-AWARE · NOT LIVE TRACKING · NOT A PRECISE ECOLOGICAL SIMULATION",
+  "chapters": [
+    {
+      "id": "enter-canopy",
+      "order": 0,
+      "stageLabel": "ENTER CANOPY",
+      "title": "Enter the rainforest.",
+      "cue": "BEFORE THE ANIMAL, THERE IS THE SYSTEM.",
+      "sceneType": "PLACE",
+      "media": {
+        "background": "/assets/missions/am4zonia/hero.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+      },
+      "camera": { "x": 50, "y": 46, "scale": 1.04, "travel": "forward-slow" },
+      "subject": { "visible": false },
+      "audio": { "profile": "canopy", "intensity": 0.72 },
+      "nodes": ["jaguar-identity"],
+      "transition": { "type": "canopy-occlusion", "durationMs": 1400, "holdMs": 950 }
+    },
+    {
+      "id": "meet-jaguar",
+      "order": 1,
+      "stageLabel": "MEET LIFE",
+      "title": "Meet the jaguar.",
+      "cue": "ONE LIFE. ONE ENTRY INTO A MUCH LARGER SYSTEM.",
+      "sceneType": "SPECIES",
+      "media": {
+        "background": "/assets/missions/am4zonia/detail-01.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/hero.jpg"
+      },
+      "camera": { "x": 43, "y": 55, "scale": 1.22, "travel": "dolly-down" },
+      "subject": { "visible": true, "x": 46, "y": 54, "scale": 1.08, "mode": "media-hero" },
+      "audio": { "profile": "understory", "intensity": 0.82, "cue": "jaguar-presence-placeholder" },
+      "nodes": ["jaguar-identity", "jaguar-capybara-prey"],
+      "transition": { "type": "leaf-wipe", "durationMs": 1200, "holdMs": 1050 }
+    },
+    {
+      "id": "follow-prey",
+      "order": 2,
+      "stageLabel": "FOLLOW PREY",
+      "title": "Follow a relationship.",
+      "cue": "A PREDATOR IS A NETWORK OF DEPENDENCIES.",
+      "sceneType": "DEPENDENCY",
+      "media": {
+        "background": "/assets/missions/am4zonia/hero.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+      },
+      "camera": { "x": 61, "y": 62, "scale": 1.34, "travel": "lateral-water" },
+      "subject": { "visible": true, "x": 27, "y": 59, "scale": 0.72, "mode": "media-hero" },
+      "audio": { "profile": "water-edge", "intensity": 0.88 },
+      "nodes": ["jaguar-capybara-prey", "jaguar-connected-habitat"],
+      "transition": { "type": "mist-crossfade", "durationMs": 1300, "holdMs": 900 }
+    },
+    {
+      "id": "connected-habitat",
+      "order": 3,
+      "stageLabel": "CONNECTED HABITAT",
+      "title": "The animal is not the whole story.",
+      "cue": "PULL BACK. SEE THE HABITAT AROUND THE ANIMAL.",
+      "sceneType": "LIVING_SYSTEM",
+      "media": {
+        "background": "/assets/missions/am4zonia/hero.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+      },
+      "camera": { "x": 50, "y": 49, "scale": 1.02, "travel": "pull-back" },
+      "subject": { "visible": true, "x": 23, "y": 63, "scale": 0.54, "mode": "media-hero" },
+      "audio": { "profile": "corridor", "intensity": 0.68 },
+      "nodes": ["jaguar-connected-habitat", "jaguar-habitat-loss-fragmentation"],
+      "transition": { "type": "canopy-open", "durationMs": 1450, "holdMs": 1000 }
+    },
+    {
+      "id": "under-pressure",
+      "order": 4,
+      "stageLabel": "UNDER PRESSURE",
+      "title": "A living system can be broken apart.",
+      "cue": "SEE THE PRESSURE. FOLLOW IT TO ITS CAUSE.",
+      "sceneType": "PRESSURE",
+      "media": {
+        "background": "/assets/missions/am4zonia/detail-01.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/hero.jpg"
+      },
+      "camera": { "x": 72, "y": 45, "scale": 1.28, "travel": "fracture" },
+      "subject": { "visible": true, "x": 20, "y": 66, "scale": 0.46, "mode": "media-hero" },
+      "audio": { "profile": "pressure", "intensity": 0.62 },
+      "nodes": ["jaguar-habitat-loss-fragmentation", "jaguar-solutions-transition"],
+      "transition": { "type": "dark-occlusion", "durationMs": 1200, "holdMs": 1100 }
+    },
+    {
+      "id": "respond",
+      "order": 5,
+      "stageLabel": "RESPOND",
+      "title": "Pressure is not the destination.",
+      "cue": "FROM UNDERSTANDING TO SOLUTIONS INTELLIGENCE.",
+      "sceneType": "RESPONSE",
+      "media": {
+        "background": "/assets/missions/am4zonia/hero.jpg",
+        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+      },
+      "camera": { "x": 47, "y": 44, "scale": 1.08, "travel": "open-forward" },
+      "subject": { "visible": false },
+      "audio": { "profile": "response", "intensity": 0.7 },
+      "nodes": ["jaguar-solutions-transition"],
+      "transition": { "type": "light-open", "durationMs": 1500, "holdMs": 850 },
+      "handoff": "/ecosystems/amazon-rainforest#pressures"
+    }
+  ]
+}
