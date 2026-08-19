@@ -34,25 +34,26 @@ test("FOOD causal grammar spans human demand, chain, pressure, life and solution
   assert.match(page, /source records/i);
 });
 
-test("v0.3 is Atlas-first and uses the shared NASA globe from frame one", () => {
+test("v0.3 uses human-first narrative choreography and lets ATLAS arrive when place matters", () => {
+  assert.match(page, /id: "human"[\s\S]*title: "You are here\."[\s\S]*scene: "HUMAN_GRAPH"/);
+  assert.match(page, /id: "food"[\s\S]*title: "Follow one meal\."[\s\S]*scene: "CHAIN_GRAPH"/);
+  assert.match(page, /id: "atlas"[\s\S]*title: "Now put it on Earth\."[\s\S]*scene: "ATLAS"/);
   assert.match(page, /gibs\("BlueMarble_ShadedRelief_Bathymetry"/);
-  assert.match(page, /id: "atlas"[\s\S]*title: "You are here\."[\s\S]*scene: "ATLAS"/);
-  assert.doesNotMatch(page, /activeChapter >= 2/);
   assert.match(page, /sapiens-blue-marble/);
   assert.match(page, /NASA EARTH/);
-  assert.match(page, /OPEN FREE ATLAS/);
+  assert.match(page, /sapiens-human-glyph/);
+  assert.match(page, /sapiens-pressure-teaser/);
 });
 
-test("Homo sapiens Gold experience uses 4PLANET media-registry imagery and the shared graph", () => {
-  assert.match(page, /img\("storyHero"\)/);
-  assert.match(page, /HumanSpeciesCard/);
-  assert.match(page, /SPECIES_ · GBIF 10856082 · IDENTITY KNOWN/);
+test("Homo sapiens is the semantic centre and the same graph grammar opens human needs", () => {
+  assert.match(page, /HumanGlyph/);
   assert.match(page, /KnowledgeGraph/);
-  assert.match(page, /One species\. Many systems\./);
+  assert.match(page, /SPECIES · HOMO SAPIENS/);
   for (const token of ["EAT", "DRINK", "POWER", "SHELTER", "WEAR", "MOVE"]) assert.match(page, new RegExp(token));
+  assert.match(page, /A semantic map, not a personal footprint score/);
 });
 
-test("the linked Homo sapiens Species route is a photographic Gold reference, not a dead-end", () => {
+test("the linked Homo sapiens Species route remains a photographic Gold reference", () => {
   assert.match(profile, /img\("cultureAnchor"\)/);
   assert.match(profile, /img\("foodHero"\)/);
   assert.match(profile, /We are not outside the living system\./);
@@ -62,8 +63,6 @@ test("the linked Homo sapiens Species route is a photographic Gold reference, no
   for (const state of ["KNOWN", "INTERPRETED", "UNKNOWN WITHOUT MORE EVIDENCE"]) assert.match(profile, new RegExp(state));
   assert.match(profileStyles, /--hs-accent:#FF4D22/);
   assert.match(profileStyles, /hs-gold-proof/);
-  assert.match(profileStyles, /Instrument Sans/);
-  assert.match(profileStyles, /Fragment Mono/);
 });
 
 test("first-contact FOOD proof uses three bounded primary-source signals", () => {
@@ -75,30 +74,32 @@ test("first-contact FOOD proof uses three bounded primary-source signals", () =>
   assert.match(evidence, /value: "1\.05B t"/);
   assert.match(evidence, /UNEP · Food Waste Index 2024/);
   assert.equal([...evidence.matchAll(/checkedOn: "2026-08-19"/g)].length, 3);
-  assert.equal([...evidence.matchAll(/limitation:/g)].length, 4); // type + three records
+  assert.equal([...evidence.matchAll(/limitation:/g)].length, 4);
 });
 
 test("story choreography remains progressive and relation classes stay distinct", () => {
-  for (const token of ["You are here.", "One species. Many systems.", "Follow one meal.", "Now locate the pressure.", "Find what the system depends on.", "Then find leverage."]) {
+  for (const token of ["You are here.", "Follow one meal.", "Now put it on Earth.", "Where does demand meet pressure?", "Then find the living system.", "Where can the system change?"]) {
     assert.match(page, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   for (const relation of ["DEPENDENCY", "PRESSURE", "RESPONSE"]) assert.match(page, new RegExp(relation));
   assert.match(page, /data-sapiens-story-step/);
   assert.match(styles, /position:\s*sticky/);
   assert.match(styles, /sapiens-knowledge__node/);
-  assert.match(styles, /sapiens-chainrail/);
+  assert.match(styles, /sapiens-mini-rail/);
   assert.match(styles, /prefers-reduced-motion/);
 });
 
-test("4PLANET visual grammar replaces glass dashboard styling", () => {
+test("premium visual grammar is coded rather than flattened into a screenshot", () => {
   assert.match(styles, /--sapiens-accent:\s*#FF4D22/);
-  assert.match(styles, /background:\s*#000/);
-  assert.match(styles, /sapiens-editorial--paper/);
-  assert.match(styles, /sapiens-species-card/);
+  assert.match(styles, /sapiens-cosmos/);
+  assert.match(styles, /radial-gradient/);
+  assert.match(styles, /sapiens-orbits/);
+  assert.match(styles, /sapiens-human-glyph/);
+  assert.match(styles, /sapiens-pressure-teaser/);
+  assert.match(styles, /sapiens-immersive-nav/);
   assert.match(styles, /Instrument Sans/);
   assert.match(styles, /Fragment Mono/);
-  assert.doesNotMatch(styles, /backdrop-filter/);
-  assert.doesNotMatch(styles, /border-radius:\s*999px/);
+  assert.match(styles, /background:\s*#020608/);
 });
 
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
