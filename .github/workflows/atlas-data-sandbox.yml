@@ -17,7 +17,7 @@ concurrency:
 jobs:
   source-probes:
     runs-on: ubuntu-latest
-    timeout-minutes: 16
+    timeout-minutes: 18
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
@@ -44,6 +44,9 @@ jobs:
 
       - name: Probe exact ATLAS layer products
         run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
+
+      - name: Compare seabed habitat candidate products
+        run: node scripts/atlas-data-sandbox/habitat-candidates.mjs
 
       - name: Inventory advertised OGC layers
         env:
