@@ -65,7 +65,30 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await page.locator(".nature-world-card__primary").click();
   await expect(root).toHaveAttribute("data-world-interaction", "focus");
   await expectJourneyFrameSafe(page, root, "MEET LIFE");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v13-01-meet.png`, fullPage: true });
+
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width > 760) {
+    await expect(root).toHaveAttribute("data-jaguar3d", "ready", { timeout: 20_000 });
+    await expect(root).toHaveAttribute("data-jaguar3d-active", "true", { timeout: 5_000 });
+    const threeStudy = page.locator('.nature-3d-subject[data-visible="true"][data-ready="true"]');
+    await expect(threeStudy).toBeVisible();
+    await expect(threeStudy.locator("canvas")).toBeVisible();
+    await expect(page.locator(".nature-3d-subject__meta")).toContainText(/POLY BY GOOGLE|CC BY 3\.0/i);
+    await expectViewportSafe(page, threeStudy, "MEET LIFE 3D Jaguar");
+
+    const box = await threeStudy.boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.48);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.63, box.y + box.height * 0.48, { steps: 5 });
+      await page.mouse.up();
+      await expect(threeStudy).toHaveAttribute("data-dragging", "false");
+    }
+    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-01-meet-3d.png`, fullPage: true });
+  } else {
+    await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
+    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-01-meet-mobile.png`, fullPage: true });
+  }
 
   const next = page.locator(".nature-journey-hud__next");
   await next.click();
@@ -82,7 +105,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await page.locator(".nature-world-card__primary").click();
   await expect(root).toHaveAttribute("data-world-interaction", "trace");
   await expectJourneyFrameSafe(page, root, "FOLLOW PREY");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v13-02-prey.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-02-prey.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "habitat");
@@ -94,7 +117,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await page.locator(".nature-world-card__primary").click();
   await expect(root).toHaveAttribute("data-world-interaction", "system");
   await expectJourneyFrameSafe(page, root, "CONNECTED HABITAT");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v13-03-habitat.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-03-habitat.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "pressure");
@@ -110,7 +133,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
 
   const chapter = page.locator(".nature-chapter");
   await expect(chapter).not.toHaveClass(/is-open/);
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v13-04-pressure.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-04-pressure.png`, fullPage: true });
 
   // Evidence remains an explicit secondary action after the world interaction.
   await page.locator(".nature-journey-hud__evidence").click();
@@ -120,7 +143,6 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(page.locator("#nature-chapter-source")).toContainText(/PANTHERA/i);
   await expect(page.locator("#nature-chapter-boundary")).toContainText(/local diagnosis|place-specific evidence/i);
 
-  const viewport = page.viewportSize();
   if (viewport && viewport.width <= 760) {
     const box = await chapter.boundingBox();
     expect(box, "mobile truth panel should be measurable").not.toBeNull();
@@ -137,7 +159,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(card).toHaveAttribute("data-type", "response");
   await expect(page.locator(".nature-world-card__primary")).toContainText(/SOLUTIONS/i);
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v13-05-response.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-05-response.png`, fullPage: true });
 
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
 });
