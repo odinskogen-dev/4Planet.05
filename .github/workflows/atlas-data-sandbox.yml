@@ -17,7 +17,7 @@ concurrency:
 jobs:
   source-probes:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 16
     steps:
       - name: Checkout sandbox exact SHA
         uses: actions/checkout@v4
@@ -41,6 +41,9 @@ jobs:
 
       - name: Probe Climate TRACE v7 source shape
         run: node scripts/atlas-data-sandbox/climate-trace-v7-probe.mjs
+
+      - name: Probe exact ATLAS layer products
+        run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
 
       - name: Inventory advertised OGC layers
         env:
