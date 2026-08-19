@@ -189,7 +189,7 @@ export const ATLAS_LAB_SCENES = [
 const installed = new Set<string>();
 
 function temporalSummary(temporal: AtlasLabTemporal) {
-  const parts = [temporal.kind.replaceAll("_", " ")];
+  const parts = [temporal.kind.replace(/_/g, " ")];
   if (temporal.selected) parts.push(temporal.selected);
   if (temporal.advertisedRange) parts.push(temporal.advertisedRange);
   return parts.join(" · ");
@@ -220,8 +220,6 @@ function toAtlasLayer(extension: AtlasLabExtension) {
     note,
     tiles: () => wmsRasterTileUrl(descriptor),
     attr: descriptor.attribution,
-    // Extension metadata: ignored safely by current World, available to the
-    // next-generation source/detail/time/journey UI without another registry.
     atlasLab: {
       role: atlas.role,
       sourceId: descriptor.sourceId,
