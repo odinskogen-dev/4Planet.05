@@ -1,16 +1,21 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "updatedAt": "2026-08-19",
   "baselineSha": "3364df8b5989582fbcbc31d1ff102ca5bb852954",
   "controlIssue": 71,
   "draftPullRequest": 72,
   "productionTouched": false,
-  "statusRule": "Endpoint reachability is PROBE_GREEN only. A layer is not counted fixed until the exact product contract and real browser map path are proven. Source failure must never be rendered as zero/no records.",
+  "statusRule": "Endpoint reachability is PROBE_GREEN only. A layer is not counted fixed until the exact product contract and real browser map path are proven. Source failure must never be rendered as zero/no records. CI evidence must execute the sandbox branch exact head, not an implicit pull-request merge ref.",
   "currentSandboxCandidate": {
     "branch": "sandbox/atlas-data-lab-20260819",
-    "headAtStatusWrite": "913006fac84412bff7eb0d5ff59a1993cf115e4e",
-    "state": "QA_RUNNING_NOT_ACCEPTED",
-    "note": "Head may advance after this status write. Re-resolve PR #72 before making any acceptance claim."
+    "codeCandidateBeforeStatusWrite": "a650e2c57778ed9c5d0f166337fcfcbb87c7596f",
+    "state": "REPAIR_CODED_QA_PENDING_NOT_ACCEPTED",
+    "note": "This status write advances the branch head. Re-resolve PR #72 and require exact-head source probes, regression, local desktop/mobile browser proof, exact Cloudflare deployment and deployed desktop/mobile browser proof before acceptance or prototype-pointer promotion."
+  },
+  "qaLineage": {
+    "exactHeadCheckoutEnforced": true,
+    "repairCommit": "224b44ab85bfdc209c72b2cc69974bac614c7cf1",
+    "reason": "Prior pull_request jobs checked out GitHub's generated merge ref despite the step label saying exact SHA. The workflow now explicitly checks out github.event.pull_request.head.sha or github.sha."
   },
   "timeEngine": {
     "built": true,
@@ -36,8 +41,8 @@
     "emodnet-bathymetry": {
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
-      "layerContract": "GREEN_PREVIOUS_HEAD_AND_RETESTING_EXACT_HEAD",
-      "mapState": "MAP_GREEN_PREVIOUS_VISUAL_PROOF",
+      "layerContract": "GREEN_PREVIOUS_HEAD_RETESTING_EXACT_HEAD",
+      "mapState": "MAP_GREEN_PREVIOUS_VISUAL_PROOF_RETESTING_CURRENT_LINEAGE",
       "layer": "emodnet:mean_multicolour",
       "transport": "same-origin WMS bridge when hosted",
       "truthBoundary": "Bathymetry is seabed depth/product coverage, not ecological condition or event."
@@ -45,7 +50,7 @@
     "emodnet-seabed-habitats": {
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
-      "layerContract": "RETESTING_MAP_SCALE_EXACT_HEAD",
+      "layerContract": "LAYER_CONTRACT_GREEN_BOUNDED_Z7_PREVIOUS_RUN_RETESTING_EXACT_HEAD",
       "mapState": "NOT_MAP_GREEN_CURRENT_LINEAGE_PENDING_DESKTOP_MOBILE_DEPLOYED_PROOF",
       "currentProduct": {
         "layer": "eusm2025_msfd_800",
@@ -53,15 +58,15 @@
         "transport": "same-origin WMS bridge when hosted"
       },
       "candidateProduct2025Wmts": "RESEARCH_ONLY_NOT_DEFAULT",
-      "latestFailureEvidence": "On b3a80b59 lineage the source endpoint remained PROBE_GREEN, but the continental exact WMS contract timed out and the pixel-aware candidate sweep produced no current non-transparent candidate evidence. This is a layer-contract failure, not zero/no habitat records.",
-      "currentRepair": "Exact probe now uses a bounded z7 North Sea MapLibre tile request to test the same current MSFD 800 WMS product at real tiled-map scale. Deployed desktop/mobile MAP_GREEN is still mandatory and has not been inferred from the probe.",
+      "latestEvidence": "The 6f7d8b2 run proved the bounded z7 North Sea MSFD 800 image contract LAYER_CONTRACT_GREEN. Local browser QA then failed because one test still asserted the superseded EUNIS product, not because the current habitat request was zero/no-data. That stale assertion is repaired on 3af5d59296c491b4aa94a5e78dbd8c87f2a68450.",
+      "currentRepair": "Keep the visually proven MSFD 800 WMS product. Require current exact-head local and deployed desktop/mobile browser proof before restoring MAP_GREEN on current lineage.",
       "truthBoundary": "EUSeaMap is predictive habitat classification, not direct field observation, absence evidence or current ecological condition."
     },
     "emodnet-dissolved-oxygen-climatology": {
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
       "layerContract": "GREEN_PREVIOUS_DEPLOYED_MOBILE_AND_RETESTING_EXACT_HEAD",
-      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
+      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD_RETESTING_CURRENT_LINEAGE",
       "time": "MONTH_CLIMATOLOGY_01_12",
       "default": "08_SURFACE",
       "truthBoundary": "Monthly climatology is a long-term seasonal condition pattern, not a live oxygen reading or proof of hypoxia."
@@ -70,7 +75,7 @@
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
       "layerContract": "GREEN_PREVIOUS_DEPLOYED_MOBILE_AND_RETESTING_EXACT_HEAD",
-      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
+      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD_RETESTING_CURRENT_LINEAGE",
       "layer": "vesseldensity_01avg",
       "style": "VesselDensity",
       "time": "YEAR_2017_2024",
@@ -80,24 +85,26 @@
     "nasa-eonet": {
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
-      "mapState": "REPAIRED_HOSTED_PROXY_POSITIVE_COUNT_PREVIOUS_DEPLOYED_PROOF",
+      "mapState": "REPAIRED_HOSTED_PROXY_POSITIVE_COUNT_PREVIOUS_DEPLOYED_PROOF_RETESTING_CURRENT_LINEAGE",
       "repair": "Hosted runtime uses bounded same-origin atlas-feed proxy. Failure throws; it is not represented as zero or no events.",
       "truthBoundary": "Provider-reported open natural events are not automatically local alerts or ecological-impact determinations."
     },
     "climate-trace": {
       "access": "OPEN_NO_AUTH_V7",
       "sourceProbe": "PROBE_GREEN",
-      "layerContract": "V7_SOURCES_GREEN",
-      "mapState": "REPAIRED_REAL_SOURCE_DOTS_PREVIOUS_DEPLOYED_MOBILE_PROOF",
+      "layerContract": "V7_SOURCES_GREEN_PREVIOUS_RUN_RETESTING_EXACT_HEAD",
+      "mapState": "REPAIRED_REAL_SOURCE_DOTS_PREVIOUS_DEPLOYED_MOBILE_PROOF_RETESTING_CURRENT_LINEAGE",
       "repair": "Replaced stale v6 /assets adapter with current public v7 /sources. Empty/contract mismatch now fails explicitly instead of rendering misleading zero.",
-      "boundedEvidence": "2024 power, co2e_100yr, limit 5 returned five real sources with coordinates and emissions.",
+      "boundedEvidence": "2024 power, co2e_100yr, limit 5 returned five real sources with coordinates and emissions on prior verified lineage.",
       "truthBoundary": "Climate TRACE source records are emitting assets with reported/estimated emissions, not live plumes and not proof of legal liability."
     },
     "noaa-coral-reef-watch": {
       "access": "OPEN",
-      "sourceProbe": "PROBE_GREEN",
-      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
-      "repair": "Current NOAA CoastWatch ERDDAP DHW product is delivered through an allowlisted same-origin bridge that converts MapLibre EPSG:3857 bounds to supported CRS:84.",
+      "sourceProbe": "PROBE_GREEN_PROVIDER_ENDPOINT",
+      "layerContract": "REPAIR_CODED_RETESTING_EXACT_HEAD",
+      "mapState": "NOT_MAP_GREEN_CURRENT_LINEAGE_PENDING_CONTRACT_AND_DEPLOYED_BROWSER_PROOF",
+      "failedContract": "The 6f7d8b2 layer-contract run returned HTTP 404 for the stale noaacrwdhwDaily dataset ID. This is SOURCE_OR_CONTRACT_DOWN, not zero coral heat stress.",
+      "repair": "Same-origin NOAA bridge and exact layer probe now target the current official NOAA CoastWatch ERDDAP dataset NOAA_DHW and variable CRW_DHW using the NOAA_DHW:CRW_DHW WMS layer. Repair code commits: dd25ab077ff2e49a9364bbbaf38aaf5635f793bd and a650e2c57778ed9c5d0f166337fcfcbb87c7596f.",
       "truthBoundary": "Degree Heating Week is heat-stress pressure, not observed coral bleaching."
     },
     "gbif": {
@@ -156,13 +163,7 @@
       "access": "AUTH_AND_TERMS_GATED",
       "adapter": "GREEN_AUTH_SAFE_V3_SEAM",
       "mapState": "NOT_LIVE",
-      "remaining": [
-        "account/token access",
-        "confirm intended 4PLANET use against API terms",
-        "server-side secret path",
-        "live token probe",
-        "browser/map/performance proof"
-      ],
+      "remaining": ["account/token access", "confirm intended 4PLANET use against API terms", "server-side secret path", "live token probe", "browser/map/performance proof"],
       "truthBoundary": "Apparent fishing effort is algorithmic AIS-derived activity estimation, not proof of illegal fishing, catch or complete vessel presence."
     },
     "protected-planet": {
