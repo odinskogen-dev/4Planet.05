@@ -6,3 +6,35 @@
 .ls-journey .ls-jstep > div{ transition:background .2s; }
 .ls-journey .ls-jstep:hover > div{ background:#f6f6f8 !important; }
 @media (max-width:640px){ .ls-journey{ grid-template-columns:1fr 1fr !important; } }
+
+/* Shared-place visual continuity: the Amazonia anchor uses the same controlled visual context as
+   the Ecosystem and Nature XR entries. This changes presentation only; truth still comes from the
+   LivingSystemAnchor data model. */
+.ls-anchor[href*="/living-systems/amazonia"]{
+  min-height:260px;
+  display:flex !important;
+  flex-direction:column;
+  justify-content:flex-end;
+  overflow:hidden;
+  isolation:isolate;
+  background:#071009 url('/assets/missions/am4zonia/hero.jpg') center 48% / cover no-repeat;
+  color:#fff !important;
+  text-shadow:0 2px 18px rgba(0,0,0,.76);
+}
+.ls-anchor[href*="/living-systems/amazonia"]::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(180deg,rgba(0,8,3,.06),rgba(0,8,3,.18) 35%,rgba(0,8,3,.88) 100%);
+}
+.ls-anchor[href*="/living-systems/amazonia"] > *{ position:relative; z-index:1; }
+.ls-anchor[href*="/living-systems/amazonia"] p,
+.ls-anchor[href*="/living-systems/amazonia"] span{ color:#fff !important; }
+.ls-anchor[href*="/living-systems/amazonia"] > div:first-child > span:first-child{ color:#3AE86F !important; }
+@media(max-width:720px){
+  .ls-anchor[href*="/living-systems/amazonia"]{
+    min-height:220px;
+    background-image:url('/assets/missions/am4zonia/hero-mobile.jpg');
+  }
+}
