@@ -2,7 +2,6 @@
   const A = window.AFRAME;
   if (!A) throw new Error('A-Frame must load before NatureRenderer');
 
-  const esc = (value = '') => String(value).replace(/;/g, ',');
   const el = (tag, attrs = {}) => {
     const node = document.createElement(tag);
     Object.entries(attrs).forEach(([key, value]) => {
@@ -15,30 +14,13 @@
     if (node) node.setAttribute('value', value);
   };
 
-  if (!A.components['truth-hotspot']) {
-    A.registerComponent('truth-hotspot', {
-      schema: {
-        title: { type: 'string', default: 'TRUTH NODE' },
-        body: { type: 'string', default: '' },
-        source: { type: 'string', default: '' },
-        boundary: { type: 'string', default: '' },
-        truth: { type: 'string', default: '' },
-        href: { type: 'string', default: '' }
-      },
-      init() {
-        this.el.dataset.hotspotReady = 'true';
-        this.el.addEventListener('mouseenter', () => this.el.setAttribute('scale', '1.18 1.18 1.18'));
-        this.el.addEventListener('mouseleave', () => this.el.setAttribute('scale', '1 1 1'));
-        this.el.addEventListener('click', () => {
-          setText('panel-title', this.data.title);
-          setText('panel-body', this.data.body);
-          setText('panel-source', `${this.data.truth ? `${this.data.truth} · ` : ''}SOURCE · ${this.data.source}`);
-          setText('panel-boundary', `BOUNDARY · ${this.data.boundary}`);
-          if (this.data.href) window.setTimeout(() => window.location.assign(this.data.href), 650);
-        });
-      }
-    });
-  }
+  const activateTruthNode = (node) => {
+    setText('panel-title', node.title);
+    setText('panel-body', node.body);
+    setText('panel-source', `${node.truthState ? `${node.truthState} · ` : ''}SOURCE · ${node.source.label}`);
+    setText('panel-boundary', `BOUNDARY · ${node.boundary}`);
+    if (node.href) window.setTimeout(() => window.location.assign(node.href), 650);
+  };
 
   const renderPanel = (scene, manifest) => {
     const panel = el('a-entity', { id: 'truth-panel', position: manifest.panel?.position || '0 3.8 -4.2' });
@@ -88,19 +70,18 @@
       color: node.color || '#3AE86F',
       'data-node-id': node.id,
       'data-kind': node.kind,
-      'data-relation-class': node.relationClass || ''
+      'data-relation-class': node.relationClass || '',
+      'data-truth-state': node.truthState || '',
+      'data-hotspot-ready': 'true'
     };
     if (primitive === 'a-sphere') attrs.radius = node.radius || '0.16';
     else Object.assign(attrs, { width: node.width || '3.8', height: node.height || '1', depth: node.depth || '0.18' });
-    attrs['truth-hotspot'] = [
-      `title: ${esc(node.title)}`,
-      `body: ${esc(node.body)}`,
-      `source: ${esc(node.source.label)}`,
-      `boundary: ${esc(node.boundary)}`,
-      `truth: ${esc(node.truthState || '')}`,
-      `href: ${esc(node.href || '')}`
-    ].join('; ');
-    scene.appendChild(el(primitive, attrs));
+
+    const hotspot = el(primitive, attrs);
+    hotspot.addEventListener('mouseenter', () => hotspot.setAttribute('scale', '1.18 1.18 1.18'));
+    hotspot.addEventListener('mouseleave', () => hotspot.setAttribute('scale', '1 1 1'));
+    hotspot.addEventListener('click', () => activateTruthNode(node));
+    scene.appendChild(hotspot);
     scene.appendChild(el('a-text', {
       value: node.label,
       color: node.labelColor || node.color || '#3AE86F',
