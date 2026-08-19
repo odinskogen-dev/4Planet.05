@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-type AtlasMap = {
+type ZoomStackMap = {
   getZoom: () => number;
   getStyle: () => { layers?: any[] } | undefined;
   getLayer: (id: string) => any;
@@ -11,10 +11,6 @@ type AtlasMap = {
   on: (event: string, handler: () => void) => void;
   off: (event: string, handler: () => void) => void;
 };
-
-declare global {
-  interface Window { __4planet_map?: AtlasMap }
-}
 
 export type AtlasZoomBand = "GLOBAL" | "REGIONAL" | "LOCAL" | "STREET";
 
@@ -40,6 +36,13 @@ function userForcedFlat() {
   return new URLSearchParams(window.location.search).get("p") === "2d";
 }
 
+function sharedMap(): ZoomStackMap | undefined {
+  // World owns the canonical map. Other ATLAS sandbox controls also read this
+  // runtime bridge; keep the local interface private so TypeScript declarations
+  // from those controls do not have to be structurally identical.
+  return (window as unknown as { __4planet_map?: ZoomStackMap }).__4planet_map;
+}
+
 function is4PlanetLayer(id: string) {
   return id.startsWith("4planet-") || id.startsWith("sandbox-");
 }
@@ -59,7 +62,7 @@ function is4PlanetLayer(id: string) {
 export default function AtlasZoomStack() {
   useEffect(() => {
     let disposed = false;
-    let map: AtlasMap | undefined;
+    let map: ZoomStackMap | undefined;
     let attachTimer: number | undefined;
     let scheduled = 0;
     let autoLocalProjection = false;
@@ -118,7 +121,7 @@ export default function AtlasZoomStack() {
 
     const attach = () => {
       if (disposed) return;
-      map = window.__4planet_map;
+      map = sharedMap();
       if (!map) {
         attachTimer = window.setTimeout(attach, 100);
         return;
