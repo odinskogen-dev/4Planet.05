@@ -6,6 +6,9 @@ import { SANDBOX_RASTERS, wmsRasterTileUrl } from "@/sandbox/atlasDataSources";
 const SANDBOX_LAYER_IDS = SANDBOX_RASTERS.map((descriptor) => descriptor.id);
 
 function installSandboxLayers() {
+  const atlasLayers = LAYERS as any[];
+  const rasterOrder = RASTER_ORDER as string[];
+
   const definitions = SANDBOX_RASTERS.map((descriptor) => {
     const fishing = descriptor.id.includes("fishing-vessel-density");
     const habitat = descriptor.id.includes("seabed-habitats");
@@ -36,16 +39,16 @@ function installSandboxLayers() {
   });
 
   for (const definition of definitions) {
-    if (!LAYERS.some((layer) => layer.id === definition.id)) {
-      LAYERS.push(definition);
+    if (!atlasLayers.some((layer) => layer.id === definition.id)) {
+      atlasLayers.push(definition);
     }
   }
 
-  const missing = SANDBOX_LAYER_IDS.filter((id) => !RASTER_ORDER.includes(id));
+  const missing = SANDBOX_LAYER_IDS.filter((id) => !rasterOrder.includes(id));
   if (missing.length) {
-    const anchor = RASTER_ORDER.indexOf("sst");
-    if (anchor >= 0) RASTER_ORDER.splice(anchor + 1, 0, ...missing);
-    else RASTER_ORDER.push(...missing);
+    const anchor = rasterOrder.indexOf("sst");
+    if (anchor >= 0) rasterOrder.splice(anchor + 1, 0, ...missing);
+    else rasterOrder.push(...missing);
   }
 }
 
