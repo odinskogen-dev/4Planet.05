@@ -74,16 +74,5 @@
     }));
   };
 
-  const bind = ({ root, nodes, goTo, goNext, goBack }) => {
-    if (!root) return;
-    const hud = root.querySelector('.nature-journey-hud');
-    hud?.querySelector('.nature-journey-hud__next')?.addEventListener('click', goNext);
-    hud?.querySelector('.nature-journey-hud__back')?.addEventListener('click', goBack);
-    root.querySelectorAll('.nature-progress__step').forEach((button, index) => button.addEventListener('click', () => goTo(index, true)));
-    return {
-      apply: (index, userInitiated = false) => applyScene({ root, node: nodes[index], index, total: nodes.length, userInitiated })
-    };
-  };
-
-  window.NatureJourneyEngine = { bind, applyScene };
+  window.NatureJourneyEngine = { applyScene };
 })();
