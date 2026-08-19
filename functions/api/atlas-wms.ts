@@ -48,6 +48,8 @@ const PROFILES: Record<string, Profile> = {
   },
 };
 
+const TRANSPARENT_256_PNG = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAABFUlEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBPAAB2ClDBAAAAABJRU5ErkJggg==";
+
 const safeToken = (value: string | null, max = 240) =>
   value && value.length <= max && /^[A-Za-z0-9_:.\-/*]+$/.test(value) ? value : "";
 
@@ -69,6 +71,21 @@ function boundedTileCoordinate(value: string | null, z: number) {
   const n = Number(value);
   const max = 2 ** z;
   return Number.isInteger(n) && n >= 0 && n < max ? n : null;
+}
+
+function transparentTile(source: string, reason: string, maxAge: number) {
+  const binary = atob(TRANSPARENT_256_PNG);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      "content-type": "image/png",
+      "cache-control": `public, max-age=${maxAge}`,
+      "access-control-allow-origin": "*",
+      "x-4planet-atlas-source": source,
+      "x-4planet-atlas-empty": reason,
+    },
+  });
 }
 
 const errorJson = (error: string, status = 400) => new Response(JSON.stringify({ ok: false, error }), {
@@ -150,7 +167,16 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       },
       cf: { cacheTtl: profile.maxAge || 3600 } as RequestInit["cf"],
     });
+
+    // A cached WMTS tile can legitimately be absent outside the dataset's
+    // coverage/scale. That means "no habitat tile here", not "the source is
+    // unavailable". Return a transparent tile so MapLibre does not downgrade
+    // the entire layer because one world tile is outside coverage.
+    if (!response.ok && profile.mode === "WMTS_EPSG900913" && response.status === 404) {
+      return transparentTile(source, "outside-coverage", profile.maxAge || 86400);
+    }
     if (!response.ok) return errorJson(`UPSTREAM_${response.status}`, 502);
+
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.toLowerCase().includes("image")) return errorJson("UPSTREAM_NOT_IMAGE", 502);
     const bytes = await response.arrayBuffer();
