@@ -1,12 +1,12 @@
-import * as THREE from 'three';
-import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-
 const SOURCE_BASE = 'https://raw.githubusercontent.com/kristenmarcinek/game615-spring2023-06/728230086493b1f1cee6a410d0a8ea7c0991f6ff/exercise06/Assets/Models/Jaguar/';
 const SOURCE_PAGE = 'https://poly.pizza/m/4fb-oMr2uUF';
 const ATTRIBUTION = 'JAGUAR · POLY BY GOOGLE · CC BY 3.0 · VIA POLY PIZZA';
 
 const root = document.getElementById('browser-experience');
+let THREE;
+let MTLLoader;
+let OBJLoader;
+let runtimePromise;
 let host;
 let renderer;
 let scene;
@@ -25,6 +25,20 @@ let resizeObserver;
 
 const fullTier = () => root?.dataset.performanceTier !== 'lite';
 const identityScene = () => root?.dataset.sceneState === 'identity' || root?.dataset.cinematicScene === 'identity';
+
+const loadRuntime = () => {
+  if (runtimePromise) return runtimePromise;
+  runtimePromise = Promise.all([
+    import('three'),
+    import('three/addons/loaders/MTLLoader.js'),
+    import('three/addons/loaders/OBJLoader.js')
+  ]).then(([threeModule, mtlModule, objModule]) => {
+    THREE = threeModule;
+    MTLLoader = mtlModule.MTLLoader;
+    OBJLoader = objModule.OBJLoader;
+  });
+  return runtimePromise;
+};
 
 const ensureHost = () => {
   if (!root || host) return host;
@@ -123,6 +137,7 @@ const loadModel = async () => {
   root.dataset.jaguar3d = 'loading';
 
   try {
+    await loadRuntime();
     makeScene();
     const manager = new THREE.LoadingManager();
     manager.setURLModifier((url) => {
@@ -204,6 +219,7 @@ const setFocus = async (isActive) => {
     return;
   }
   if (!fullTier()) return;
+  active = true;
   await loadModel();
   if (ready) show();
 };
