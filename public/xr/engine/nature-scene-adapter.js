@@ -43,7 +43,15 @@
         truthState: relationship.state,
         body: relationship.relation,
         source: { label: relationship.sourceLabel, url: relationship.sourceUrl },
-        boundary: relationship.boundary
+        boundary: relationship.boundary,
+        relatedEntity: {
+          id: relationship.toEntityId,
+          commonName: relationship.commonName,
+          scientificName: relationship.scientificName,
+          relationshipType: relationship.relationshipType,
+          relationshipLabel: relationship.relationshipLabel,
+          atlasHref: relationship.atlasHref || null
+        }
       };
     }
 
