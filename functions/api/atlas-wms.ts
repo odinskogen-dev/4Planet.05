@@ -24,7 +24,7 @@ const PROFILES: Record<string, Profile> = {
     maxAge: 86400,
   },
   "emodnet-seabed-habitats": {
-    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/ows",
+    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
     mode: "PASSTHROUGH_3857",
     maxAge: 86400,
   },
