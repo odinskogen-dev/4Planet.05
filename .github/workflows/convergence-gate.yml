@@ -33,14 +33,14 @@ jobs:
           git rev-parse HEAD > exact-sha.txt
           printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
 
-      - name: Use Node.js 20
+      - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
-      - name: Install locked dependencies
-        run: npm ci
+      - name: Install locked dependencies including dev toolchain
+        run: npm ci --include=dev
 
       - name: Typecheck
         run: npm run typecheck
