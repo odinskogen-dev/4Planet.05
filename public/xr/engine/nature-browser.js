@@ -96,19 +96,38 @@
     }
   };
 
+  const hydrateHabitat = ({ root, background, detail, manifest, browser }) => {
+    const lowSrc = manifest.environment.mobileSrc || manifest.environment.src;
+    if (background) background.style.backgroundImage = `url("${lowSrc}")`;
+    if (detail) detail.style.backgroundImage = `url("${browser.detailSrc || lowSrc}")`;
+    root.dataset.habitatReady = 'preview';
+
+    const highSrc = manifest.environment.src;
+    if (!background || !highSrc || highSrc === lowSrc || window.matchMedia('(max-width: 720px)').matches) return;
+    const high = new Image();
+    high.decoding = 'async';
+    high.onload = () => {
+      background.style.backgroundImage = `url("${highSrc}")`;
+      root.dataset.habitatReady = 'high';
+    };
+    high.onerror = () => { root.dataset.habitatReady = 'preview'; };
+    high.src = highSrc;
+  };
+
   const render = ({ root, manifest }) => {
     if (!root) throw new Error('NatureBrowser root is required');
     const ambience = createAmbience();
     const state = { entered: false, activeIndex: 0, lookX: 0, lookY: 0 };
     const browser = manifest.browser || {};
     const nodes = manifest.nodes || [];
+    const isCompact = () => window.matchMedia('(max-width: 760px)').matches;
 
     root.dataset.sceneId = manifest.id;
     root.dataset.entityId = manifest.entity.id;
     root.dataset.manifestVersion = manifest.version;
     root.dataset.truthFeed = manifest.canonical ? 'canonical-adapter' : 'layout-manifest';
+    root.dataset.panelOpen = 'false';
 
-    const world = root.querySelector('.nature-world');
     const background = root.querySelector('.nature-world__background');
     const detail = root.querySelector('.nature-world__detail');
     const subject = root.querySelector('.nature-subject__image');
@@ -123,12 +142,13 @@
     const nodeLayer = root.querySelector('.nature-nodes');
     const chapter = root.querySelector('.nature-chapter');
     const soundButton = root.querySelector('.nature-sound');
+    const instruction = root.querySelector('.nature-stage__instruction');
 
-    if (background) background.style.backgroundImage = `url("${manifest.environment.src}")`;
-    if (detail) detail.style.backgroundImage = `url("${browser.detailSrc || manifest.environment.src}")`;
+    hydrateHabitat({ root, background, detail, manifest, browser });
     if (subject) {
       subject.src = browser.subjectMobileSrc && window.matchMedia('(max-width: 720px)').matches ? browser.subjectMobileSrc : manifest.subject.mediaSrc;
       subject.alt = `${manifest.entity.commonName} — species media, not a live animal`;
+      subject.addEventListener('load', () => { root.dataset.subjectReady = 'true'; }, { once: true });
     }
     if (subjectName) subjectName.textContent = `${manifest.entity.commonName.toUpperCase()} · ${manifest.entity.scientificName}`;
     if (subjectBoundary) subjectBoundary.textContent = manifest.subject.boundaryLabel || 'SPECIES MEDIA · NOT AN OCCURRENCE RECORD';
@@ -137,6 +157,7 @@
     if (entryIntro) entryIntro.textContent = browser.entryIntro || manifest.intro;
     if (entryButton) entryButton.textContent = browser.entryCta || 'ENTER THE LIVING SYSTEM';
     if (status) status.textContent = 'BROWSER IMMERSIVE · HEADSET OPTIONAL';
+    if (instruction) instruction.textContent = isCompact() ? 'DRAG TO LOOK · TAP A NODE · FOLLOW THE SYSTEM' : 'MOVE / LOOK · SELECT A NODE · FOLLOW THE SYSTEM';
 
     createParticles(root, browser.particleCount || 28);
 
@@ -187,6 +208,7 @@
       if (!node || !chapter) return;
       root.dataset.chapter = node.kind || 'TRUTH';
       root.dataset.relationClass = node.relationClass || '';
+      root.dataset.panelOpen = 'true';
       chapter.classList.add('is-open');
       byId(chapter, 'nature-chapter-index').textContent = `${String(state.activeIndex + 1).padStart(2, '0')} / ${String(nodes.length).padStart(2, '0')}`;
       byId(chapter, 'nature-chapter-kicker').textContent = node.relationClass ? `${node.relationClass} · ${node.truthState || 'SOURCE-AWARE'}` : `${node.kind || 'TRUTH'} · ${node.truthState || 'SOURCE-AWARE'}`;
@@ -201,11 +223,16 @@
       const next = byId(chapter, 'nature-chapter-next');
       if (next) next.textContent = state.activeIndex === nodes.length - 1 ? 'CONTINUE TO SOLUTIONS →' : `FOLLOW THE SYSTEM · ${String(state.activeIndex + 2).padStart(2, '0')} →`;
       setActiveMarkers();
-      root.style.setProperty('--chapter-shift', `${state.activeIndex * -1.4}vw`);
-      if (userInitiated && window.matchMedia('(max-width: 760px)').matches) chapter.focus({ preventScroll: true });
+      root.style.setProperty('--chapter-shift', `${state.activeIndex * -0.7}vw`);
+      if (userInitiated && isCompact()) chapter.focus({ preventScroll: true });
     };
 
-    const closeChapter = () => chapter?.classList.remove('is-open');
+    const closeChapter = () => {
+      chapter?.classList.remove('is-open');
+      root.dataset.panelOpen = 'false';
+      root.style.setProperty('--chapter-shift', '0vw');
+    };
+
     const nextNode = () => {
       const node = nodes[state.activeIndex];
       if (state.activeIndex >= nodes.length - 1) {
@@ -247,7 +274,7 @@
         soundButton.dataset.playing = String(audioRunning);
         soundButton.textContent = audioRunning ? 'SOUND ON' : 'SOUND OFF';
       }
-      window.setTimeout(() => openNode(0, false), 2100);
+      if (!isCompact()) window.setTimeout(() => openNode(0, false), 4300);
       window.dispatchEvent(new CustomEvent('4planet:nature-browser-enter', { detail: { manifest } }));
     };
 
