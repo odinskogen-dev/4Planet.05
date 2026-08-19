@@ -37,6 +37,12 @@ test("front-door awe stays atmospheric rather than masquerading as live ATLAS da
   assert.match(atlasHero, /Everything you love is connected/);
 });
 
+test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
+  assert.match(router, /path="\/magazine" element=\{<Stories \/>\}/);
+  assert.match(router, /path="\/magazine\/:slug" element=\{<StoryArticle \/>\}/);
+  assert.doesNotMatch(router, /path="\/magazine" element=\{toHome\}/);
+});
+
 test("new motion has an explicit reduced-motion boundary", () => {
   assert.match(universeCss, /prefers-reduced-motion:\s*reduce/);
   assert.match(universeCss, /animation:\s*none/);
