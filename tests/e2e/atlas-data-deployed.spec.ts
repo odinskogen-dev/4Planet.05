@@ -48,11 +48,12 @@ test("deployed ATLAS lab repairs every layer that was broken in founder screensh
   await expect.poll(async () => Number.parseInt(await events.locator(".st").innerText(), 10) > 0, { timeout: 40_000 }).toBeTruthy();
   await expect(events).not.toContainText("OFFLINE");
 
-  // Current-provider evidence selected this 2025 EUNIS 800 m WMS product after
-  // the previous 2023 group became invalid and the tested 2025 WMTS tiles were transparent.
+  // The current lab descriptor deliberately uses the broad MSFD 800 m WMS
+  // product. Keep this deployed proof bound to that exact layer/style so a
+  // previous EUNIS candidate can never create a false MAP_GREEN signal.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(
-    () => decodedHas(proxiedRaster, "source=emodnet-seabed-habitats", "layers=eusm2025_eunis2019_800", "styles=eusm2021_eunis2019_l2_800"),
+    () => decodedHas(proxiedRaster, "source=emodnet-seabed-habitats", "layers=eusm2025_msfd_800", "styles=eusm2019_msfd_800"),
     { timeout: 40_000 },
   ).toBeTruthy();
   await openLayers(page);
