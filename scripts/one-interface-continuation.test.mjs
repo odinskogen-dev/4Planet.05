@@ -25,9 +25,9 @@ test("M4GAZINE is a real editorial universe with visible stories and long-form r
   assert.match(culture, /COVER STORY/);
   assert.match(culture, /LATEST/);
   assert.match(culture, /FIELD NOTES/);
-  assert.match(culture, /to=\{`\/magazine\/\$\{slug\}`\}/);
+  assert.match(culture, /\/magazine\/\$\{slug\}/);
   assert.match(story, /CONTINUE THROUGH THE SYSTEM/);
-  assert.match(story, /\/magazine\/\$\{m\.slug\}/);
+  assert.match(story, /"\/magazine\/" \+ m\.slug/);
 });
 
 test("homepage now surfaces the best connected parts of the system and stronger culture", () => {
@@ -53,7 +53,8 @@ test("all Mission articles gain a colour narrative beat and provenance presentat
   assert.match(missions, /PROVENANCE/);
   assert.match(missions, /PUBLIC EVIDENCE STATE/);
   assert.match(missions, /SOURCES \/ PUBLIC EVIDENCE/);
-  assert.match(missions, /replace\(\/\^\\\/stories\/, "\/magazine"\)/);
+  assert.match(missions, /magazine\?\.to\.replace/);
+  assert.match(missions, /"\/magazine"/);
 });
 
 test("homepage Atlas remains a real source-aware shared-engine showcase", () => {
