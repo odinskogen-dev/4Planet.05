@@ -17,11 +17,13 @@ test("Jaguar immersive loads canonical Nature Renderer and works without WebXR",
   await expect(page.locator(".brand")).toHaveAttribute("href", "/species/jaguar");
   await expect(page.locator(".nature-entry__title")).toContainText(/Enter the rainforest/i);
   await expect(page.locator(".nature-browser-status")).not.toContainText(/NOT AVAILABLE/i);
+  await expect(page.locator(".nature-footer")).toContainText(/AMAZONIA SOUNDSCAPE/i);
   await expect(page.locator('.nature-node[data-node-id="jaguar-identity"]')).toHaveCount(1);
   await expect(page.locator('.nature-node[data-node-id="jaguar-solutions-transition"]')).toHaveAttribute("data-relation-class", "RESPONSE");
 
   await page.locator(".nature-entry__button").click();
   await expect(root).toHaveAttribute("data-entered", "true");
+  await expect(root).toHaveAttribute("data-audio-profile", "amazonia-procedural-v05", { timeout: 5_000 });
   await expect(page.locator(".nature-entry")).toHaveCSS("visibility", "hidden", { timeout: 5_000 });
   await expect(page.locator(".nature-subject__name")).toContainText(/JAGUAR/i);
 
