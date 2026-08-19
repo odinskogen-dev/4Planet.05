@@ -7,6 +7,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const router = read("src/routes/router.tsx");
 const missions = read("src/components/MissionStrip.tsx");
 const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
+const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
 const universeCss = read("src/styles/one-interface-universe.css");
@@ -44,10 +45,19 @@ test("relevant Missions embed the proven shared Atlas Window instead of a second
   assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
-test("front-door awe stays atmospheric rather than masquerading as live ATLAS data", () => {
+test("homepage opens from atmospheric awe into a real multi-state shared Atlas", () => {
   assert.match(atlasHero, /planet-awe/);
   assert.match(atlasHero, /ATLAS itself owns the live[\s*]+map engine/);
   assert.match(atlasHero, /Everything you love is connected/);
+  assert.match(atlasHero, /HomeAtlasShowcase/);
+  assert.match(atlasHero, /id="living-atlas"/);
+  assert.match(homeAtlas, /SpeciesAtlasWindow/);
+  assert.match(homeAtlas, /slug: "jaguar"/);
+  assert.match(homeAtlas, /slug: "orca"/);
+  assert.match(homeAtlas, /slug: "western-honey-bee"/);
+  assert.match(homeAtlas, /Change the lens\. Keep the planet\./);
+  assert.match(homeAtlas, /role="tab"/);
+  assert.doesNotMatch(homeAtlas, /new maplibre\.Map/);
 });
 
 test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
