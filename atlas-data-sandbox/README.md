@@ -12,7 +12,7 @@ Preview route: `/atlas-data-sandbox`
 
 **ONE ATLAS ENGINE. MORE VERIFIED DATA. CONTROLLED DEPTH.**
 
-The sandbox route now reuses the canonical `PublicWorld → World` runtime. It therefore keeps the real ATLAS globe, search, layer console, ON/OFF state, opacity, provenance drawers, PLANET/OCE4N/E4RTH/S4PIENS domain modes, EARTH/NOW/WATCH lenses, shared context and existing SPECIES / Living Systems intelligence.
+The sandbox route reuses the canonical `PublicWorld → World` runtime. It therefore keeps the real ATLAS globe, search, layer console, ON/OFF state, opacity, provenance drawers, PLANET/OCE4N/E4RTH/S4PIENS domain modes, EARTH/NOW/WATCH lenses, shared context and existing SPECIES / Living Systems intelligence.
 
 Sandbox data is injected as extensions into the existing layer registry before World mounts. The public/production branch is not mutated.
 
@@ -32,14 +32,16 @@ Do not overload the existing modes.
 
 - **DOMAIN MODE** — PLANET / OCE4N / E4RTH / S4PIENS. Answers *which planetary domain are we looking through?*
 - **LENS** — EARTH / NOW / WATCH. Answers *what kind of interpretation or time relationship are we asking for?*
-- **SCENE** — a bounded reusable layer preset. Answers *which verified stack helps answer this particular question?*
+- **SCENE** — a bounded reusable layer preset. Answers *which verified variable helps answer this particular question?*
+
+Scenes are deliberately curated for visual restraint: one focal data product over Earth by default. Other admitted layers remain one click away in the same canonical ON/OFF console for comparison.
 
 First sandbox scenes:
 
 - `OCEAN_FOUNDATION` — Blue Marble + bathymetry.
-- `OCEAN_HABITAT` — foundation + predictive seabed habitats.
-- `OCEAN_CONDITION` — foundation + habitat + dissolved-oxygen climatology.
-- `OCEAN_PRESSURE` — foundation + habitat + condition + historical fishing-vessel density.
+- `OCEAN_HABITAT` — Blue Marble + EUSeaMap 2025 EUNIS habitat classification.
+- `OCEAN_CONDITION` — Blue Marble + dissolved-oxygen climatology.
+- `OCEAN_PRESSURE` — Blue Marble + historical fishing-vessel density.
 
 Founder-test scenes can be opened with `/atlas-data-sandbox?scene=<SCENE_ID>`. Scene state resolves into the same canonical ATLAS URL/layer machinery; it is not a second renderer.
 
@@ -49,7 +51,9 @@ Founder-test scenes can be opened with `/atlas-data-sandbox?scene=<SCENE_ID>`. S
 Mean seabed depth / product coverage. Static physical context, not ecological condition.
 
 ### 2 — EMODnet Seabed Habitats / EUSeaMap 2025
-Broad-scale predictive habitat classification. Not direct field observation or current ecological condition.
+Current lab default: **EUNIS 2019 classification · 800 m simplification**, provider layer `eusm2025_eunis2019_800`, provider style `eusm2021_eunis2019_l2_800`.
+
+This is a broad-scale predictive habitat classification, not direct field observation or current ecological condition. During visual QA the earlier tested MSFD 800 m variant was found to carry an axis-swapped geographic extent in provider GetCapabilities metadata and produced an implausibly narrow Europe view. It was removed from the default scene rather than accepted on network success alone. The EUNIS 800 m variant advertises a coherent European geographic extent and must pass the same exact-head visual gate.
 
 ### 3 — EMODnet Chemistry dissolved oxygen climatology
 Surface dissolved-oxygen concentration monthly climatology, currently bounded to month 08 and provider relative-error mask 0.5. Units µmol/L. This is **climatology**, not current/live oxygen status and not proof of hypoxia at a specific place/time. Product-specific rights/attribution still require final review before any production promotion.
@@ -97,8 +101,14 @@ A source is not integrated because a label exists or an HTTP request returns 200
 `src/sandbox/atlasLabCompatibility.ts`
 : bounded sandbox hardening for inherited ATLAS metadata. It currently normalises legacy legend colour declarations without changing their scientific meaning or colours.
 
+`src/sandbox/atlasLabOverrides.css`
+: bounded sandbox interaction fixes. Current fix restores pointer events to visible search-result/site-menu surfaces while preserving map gestures through empty search-wrapper space.
+
 `tests/e2e/atlas-data-sandbox.spec.ts`
-: desktop + 390px browser proof that the extensions actually run in canonical ATLAS, use the exact provider style/time/depth request, and preserve legacy interface capability.
+: desktop + 390px browser proof that extensions run in canonical ATLAS, use exact provider style/time/depth requests, preserve ON/OFF + opacity, and generate scene evidence.
+
+`tests/e2e/atlas-data-journeys.spec.ts`
+: ATLAS → historical Orca observation → SPECIES with return context, plus canonical Living Systems search/context interaction.
 
 ## Source universe
 
