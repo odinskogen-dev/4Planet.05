@@ -1,0 +1,4 @@
+P18 PICK_ four-iteration review candidate
+Head target after marker: this commit
+Route: /labs/food-intelligence/pick
+No public release authorised.
