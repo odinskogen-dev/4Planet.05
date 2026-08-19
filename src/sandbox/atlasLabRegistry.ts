@@ -144,45 +144,40 @@ export const ATLAS_LAB_EXTENSIONS: AtlasLabExtension[] = [
   },
 ];
 
+/**
+ * Scenes are curated reading states, not maximal layer stacks. One focal data
+ * product should be immediately legible over Earth. The rest of the admitted
+ * layers remain one tap away in the same canonical ON/OFF console, so advanced
+ * comparison is possible without making visual overload the default.
+ */
 export const ATLAS_LAB_SCENES = [
   {
     id: "OCEAN_FOUNDATION",
     label: "OCEAN FOUNDATION",
     mode: "OCE4N",
     layers: ["bluemarble", EMODNET_BATHYMETRY.id],
-    purpose: "Read physical ocean form before adding habitat, condition or human pressure.",
+    purpose: "Read the shape of the seabed as physical ocean context.",
   },
   {
     id: "OCEAN_HABITAT",
-    label: "OCEAN + HABITAT",
+    label: "OCEAN HABITAT",
     mode: "OCE4N",
-    layers: ["bluemarble", EMODNET_BATHYMETRY.id, EMODNET_SEABED_HABITATS.id],
-    purpose: "Compare seabed form with predictive habitat classification.",
+    layers: ["bluemarble", EMODNET_SEABED_HABITATS.id],
+    purpose: "Read predictive seabed habitat classification clearly before adding other variables.",
   },
   {
     id: "OCEAN_CONDITION",
-    label: "OCEAN + CONDITION",
+    label: "OCEAN CONDITION",
     mode: "OCE4N",
-    layers: [
-      "bluemarble",
-      EMODNET_BATHYMETRY.id,
-      EMODNET_SEABED_HABITATS.id,
-      EMODNET_DISSOLVED_OXYGEN_CLIMATOLOGY.id,
-    ],
-    purpose: "Add a bounded climatological condition layer without presenting it as live status.",
+    layers: ["bluemarble", EMODNET_DISSOLVED_OXYGEN_CLIMATOLOGY.id],
+    purpose: "Read one bounded climatological condition variable without implying live status.",
   },
   {
     id: "OCEAN_PRESSURE",
-    label: "OCEAN + HUMAN PRESSURE",
+    label: "OCEAN PRESSURE",
     mode: "OCE4N",
-    layers: [
-      "bluemarble",
-      EMODNET_BATHYMETRY.id,
-      EMODNET_SEABED_HABITATS.id,
-      EMODNET_DISSOLVED_OXYGEN_CLIMATOLOGY.id,
-      EMODNET_FISHING_VESSEL_DENSITY.id,
-    ],
-    purpose: "Place historical vessel-density pressure context over physical, habitat and condition layers.",
+    layers: ["bluemarble", EMODNET_FISHING_VESSEL_DENSITY.id],
+    purpose: "Read historical vessel-density pressure context clearly; add habitat/condition manually for comparison.",
   },
 ] as const;
 
