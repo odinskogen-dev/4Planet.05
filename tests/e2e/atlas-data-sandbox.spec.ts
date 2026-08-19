@@ -29,7 +29,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   page.on("response", (response) => {
     const url = response.url();
     if (url.startsWith("https://ows.emodnet-bathymetry.eu/wms")) bathymetryResponses.push(response.status());
-    if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms")) {
+    if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest")) {
       habitatResponses.push(response.status());
       habitatUrls.push(url);
     }
@@ -93,17 +93,16 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
 
   await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-foundation.png`, fullPage: true });
 
-  // Broad-view habitat entry uses the provider-verified 2025 EUNIS 800 m layer.
-  // Finer 400/200/full products are zoom-refinement candidates, not simultaneous overlays.
+  // Habitat uses the provider's cached full-detail 2025 WMTS in EPSG:900913.
+  // This replaces the slow WMS renderer as the default web-map transport.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => {
       const decoded = decodeURIComponent(url);
-      return decoded.includes("layers=eusm2025_eunis2019_800")
-        && decoded.includes("styles=eusm2021_eunis2019_l2_800")
-        && decoded.includes("version=1.3.0")
-        && decoded.includes("crs=EPSG:3857");
+      return decoded.includes("eusm2025_eunis2019_full")
+        && decoded.includes("emodnet_view:eusm2021_eunis2019_l2_fulldetail")
+        && decoded.includes("EPSG:900913");
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
