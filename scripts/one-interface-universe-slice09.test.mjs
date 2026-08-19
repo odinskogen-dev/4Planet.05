@@ -33,7 +33,7 @@ test("Missions preserve one connected ATLAS → SPECIES → LIVING SYSTEMS → I
 
 test("front-door awe stays atmospheric rather than masquerading as live ATLAS data", () => {
   assert.match(atlasHero, /planet-awe/);
-  assert.match(atlasHero, /ATLAS itself owns the live\s+map engine/);
+  assert.match(atlasHero, /ATLAS itself owns the live[\s*]+map engine/);
   assert.match(atlasHero, /Everything you love is connected/);
 });
 
