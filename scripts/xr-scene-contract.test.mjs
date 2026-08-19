@@ -4,10 +4,13 @@ import test from "node:test";
 
 const manifest = JSON.parse(readFileSync(new URL("../public/xr/scenes/jaguar.json", import.meta.url), "utf8"));
 const renderer = readFileSync(new URL("../public/xr/engine/nature-renderer.js", import.meta.url), "utf8");
+const adapter = readFileSync(new URL("../public/xr/engine/nature-scene-adapter.js", import.meta.url), "utf8");
+const generator = readFileSync(new URL("./build-xr-canonical-data.mjs", import.meta.url), "utf8");
 const speciesSource = readFileSync(new URL("../src/data/species.ts", import.meta.url), "utf8");
+const livingSystemsSource = readFileSync(new URL("../src/data/livingSystems.ts", import.meta.url), "utf8");
 const allowedRelationClasses = new Set(["DEPENDENCY", "PRESSURE", "RESPONSE"]);
 
-test("Nature XR manifest stays attached to canonical Jaguar identity", () => {
+test("Nature XR layout stays attached to canonical Jaguar identity", () => {
   assert.equal(manifest.entity.id, "taxon:gbif:5219426");
   assert.equal(manifest.entity.gbifKey, 5219426);
   assert.match(speciesSource, /taxon:gbif:5219426/);
@@ -34,6 +37,24 @@ test("Nature renderer is species-agnostic rather than a second Jaguar page", () 
   assert.doesNotMatch(renderer, /5219426/);
   assert.match(renderer, /manifest\.nodes\.forEach/);
   assert.match(renderer, /manifest\.entity\.id/);
+  assert.match(renderer, /canonical-adapter/);
+});
+
+test("P4B adapter consumes canonical SPECIES and Living Systems feeds", () => {
+  assert.match(generator, /src\/data\/species\.ts/);
+  assert.match(generator, /src\/data\/livingSystems\.ts/);
+  assert.match(generator, /SPECIES_PROFILES/);
+  assert.match(generator, /LIVING_SYSTEM_ANCHORS/);
+  assert.match(adapter, /species\.publicClaims/);
+  assert.match(adapter, /livingSystemAnchor/);
+  assert.match(adapter, /canonicalBinding/);
+  assert.match(livingSystemsSource, /export const LIVING_SYSTEM_ANCHORS/);
+
+  const bound = manifest.nodes.filter((node) => node.canonicalBinding);
+  assert.ok(bound.length >= 4, "most truth nodes must now bind to canonical data");
+  assert.ok(bound.some((node) => node.canonicalBinding === "species.identity"));
+  assert.ok(bound.some((node) => node.canonicalBinding === "species.publicClaims.1"));
+  assert.ok(bound.some((node) => node.canonicalBinding === "living.RESPONSE.0"));
 });
 
 test("Jaguar XR reaches a RESPONSE handoff rather than ending at awareness", () => {
