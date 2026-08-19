@@ -9,21 +9,30 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
 
   await expect(page.getByText("4PLANET LABS", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/PROJECT MAZE \/ CONTROL MAP/i)).toBeVisible();
-  await expect(page.getByText(/MANUAL BRAIN PROJECTION · READ ONLY/i).first()).toBeVisible();
-  await expect(page.getByText(/BRAIN remains the authority/i)).toBeVisible();
+
+  const truthStrip = page.locator(".labs-freshness").first();
+  await expect(truthStrip).toBeVisible();
+  await expect(truthStrip.getByText(/MANUAL BRAIN PROJECTION · READ ONLY/i)).toBeVisible();
+  await expect(truthStrip.getByText(/BRAIN remains the authority/i)).toBeVisible();
   await expect(page.getByText(/FOUNDER COMMAND/i).first()).toBeVisible();
 
   const fourPlanetHeading = page.locator(".labs-universe--4planet h2").first();
   await expect(fourPlanetHeading).toBeVisible();
   await expect(fourPlanetHeading).toHaveCSS("color", "rgb(57, 255, 120)");
 
+  const shell = page.locator(".labs-shell").first();
+  expect(await shell.evaluate((element) => getComputedStyle(element).getPropertyValue("--accent-brand").trim())).toBe("#39ff78");
+  expect(await shell.evaluate((element) => getComputedStyle(element).getPropertyValue("--accent-product").trim())).toBe("#39ff78");
+
   const whiteButton = page.getByRole("button", { name: "WHITE" });
   await expect(whiteButton).toBeVisible();
   await whiteButton.click();
-  await expect(page.locator(".labs-shell")).toHaveAttribute("data-theme", "light");
+  await expect(shell).toHaveAttribute("data-theme", "light");
   await expect(fourPlanetHeading).toHaveCSS("color", "rgb(46, 46, 255)");
+  expect(await shell.evaluate((element) => getComputedStyle(element).getPropertyValue("--accent-brand").trim())).toBe("#2e2eff");
+  expect(await shell.evaluate((element) => getComputedStyle(element).getPropertyValue("--accent-product").trim())).toBe("#2e2eff");
   await page.getByRole("button", { name: "DARK" }).click();
-  await expect(page.locator(".labs-shell")).toHaveAttribute("data-theme", "dark");
+  await expect(shell).toHaveAttribute("data-theme", "dark");
   await expect(fourPlanetHeading).toHaveCSS("color", "rgb(57, 255, 120)");
 
   await expect(page.locator(".labs-project-box").filter({ hasText: "NATUREBRAIN" }).first()).toBeVisible();
@@ -32,6 +41,25 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(page.locator(".labs-universe-head").filter({ hasText: "ODIN" }).first()).toBeVisible();
   await expect(page.locator(".labs-universe-head").filter({ hasText: "P4NTHER" }).first()).toBeVisible();
   await expect(page.locator(".labs-universe-head").filter({ hasText: "SANDBOX / LABS" }).first()).toBeVisible();
+
+  await expect(page.getByText("EARLY STAGE / CODE + SYSTEM LABS", { exact: true })).toBeVisible();
+  for (const title of [
+    "ATLAS DATA LAB",
+    "NATURE XR",
+    "JAGUAR JOURNEY",
+    "S4PIENS / FOOD GOLD",
+    "TREE OF LIFE",
+    "CHOICE",
+    "PLANETARY MAP",
+  ]) {
+    await expect(page.locator(".labs-project-box--early").filter({ hasText: title }).first()).toBeVisible();
+  }
+
+  if (testInfo.project.name === "mobile-390") {
+    await expect(page.locator(".labs-page--portfolio .labs-inspector")).toBeHidden();
+    const earlyColumns = await page.locator(".labs-early-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length);
+    expect(earlyColumns).toBe(2);
+  }
 
   const fourPlanet = page.locator(".labs-universe-head").filter({ hasText: "4PLANET" }).first();
   await fourPlanet.click();
