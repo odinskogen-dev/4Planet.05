@@ -58,6 +58,17 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
+  // On narrow screens the expanded console must sit below the complete lens
+  // rail rather than letting OCE4N/E4RTH chips hide under EARTH/NOW/WATCH.
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 640) {
+    const panelBox = await page.locator(".atlas-panel:not(.rest)").boundingBox();
+    const lensBox = await page.locator(".lens-rail").boundingBox();
+    expect(panelBox).not.toBeNull();
+    expect(lensBox).not.toBeNull();
+    expect(panelBox!.y).toBeGreaterThanOrEqual(lensBox!.y + lensBox!.height + 4);
+  }
+
   const bathymetryRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · BATHYMETRY" });
   await expect(bathymetryRow).toContainText("ON");
 
