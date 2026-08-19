@@ -3,6 +3,7 @@ import PublicWorld from "@/earth/PublicWorld";
 import { hardenAtlasLegacyLayerMetadata } from "@/sandbox/atlasLabCompatibility";
 import { installAtlasLabExtensions } from "@/sandbox/atlasLabRegistry";
 import { applyAtlasLabSceneFromUrl } from "@/sandbox/atlasLabScenes";
+import "@/sandbox/atlasLabOverrides.css";
 
 // Harden inherited metadata and install extensions before PublicWorld/World reads
 // the registry. Production stays untouched on its own branch.
