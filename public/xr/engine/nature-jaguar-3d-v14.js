@@ -21,6 +21,7 @@ let pointerX = 0;
 let yaw = Math.PI / 2;
 let targetYaw = Math.PI / 2;
 let baseScale = 1;
+let basePosition = { x: 0, y: 0, z: 0 };
 let resizeObserver;
 
 const fullTier = () => root?.dataset.performanceTier !== 'lite';
@@ -96,8 +97,13 @@ const fitModel = (object) => {
   const size = box.getSize(new THREE.Vector3());
   const longest = Math.max(size.x, size.y, size.z) || 1;
   baseScale = 3.75 / longest;
-  object.position.set(-center.x, -center.y + size.y * 0.03, -center.z);
   object.scale.setScalar(baseScale);
+  basePosition = {
+    x: -center.x * baseScale,
+    y: (-center.y + size.y * 0.03) * baseScale,
+    z: -center.z * baseScale,
+  };
+  object.position.set(basePosition.x, basePosition.y, basePosition.z);
   object.rotation.y = yaw;
 };
 
@@ -130,7 +136,7 @@ const makeScene = () => {
 };
 
 const loadModel = async () => {
-  if (!root || !fullTier() || ready || loading) return;
+  if (!root || !fullTier() || ready || loading || !identityScene()) return;
   loading = true;
   ensureHost();
   host.dataset.loading = 'true';
@@ -190,7 +196,7 @@ const tick = (time) => {
   model.rotation.y = yaw;
   const breath = 1 + Math.sin(time * 0.00155) * 0.006;
   model.scale.setScalar(baseScale * breath);
-  model.position.y = Math.sin(time * 0.00125) * 0.012;
+  model.position.set(basePosition.x, basePosition.y + Math.sin(time * 0.00125) * 0.012, basePosition.z);
   renderer.render(scene, camera);
   frame = requestAnimationFrame(tick);
 };
@@ -228,7 +234,9 @@ if (root) {
   ensureHost();
   window.addEventListener('4planet:nature-browser-enter', () => {
     if (!fullTier()) return;
-    window.setTimeout(() => loadModel(), 950);
+    window.setTimeout(() => {
+      if (identityScene()) loadModel();
+    }, 950);
   });
   window.addEventListener('4planet:nature-journey-scene', (event) => {
     if (Number(event.detail?.index || 0) !== 0) hide();
