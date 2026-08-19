@@ -9,6 +9,7 @@
   const compact = () => window.matchMedia('(max-width: 760px)').matches;
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const LOAD_TIMEOUT_MS = 4200;
+  const TRANSITION_SETTLE_MS = 1450;
 
   const preload = (src) => {
     if (!src) return Promise.resolve(null);
@@ -139,6 +140,7 @@
     const scene = node?.scene || {};
     const media = scene.media || {};
     const token = ++sceneToken;
+    root.dataset.cinematicSettled = 'false';
 
     let resolved;
     try { resolved = await resolveSceneSrc(media); } catch { return; }
@@ -164,7 +166,13 @@
       incoming.classList.remove('is-prepared');
       outgoing.classList.remove('is-active');
       outgoing.classList.add('is-leaving');
-      window.setTimeout(() => outgoing.classList.remove('is-leaving'), reducedMotion() ? 0 : 1400);
+      const settleDelay = reducedMotion() ? 0 : TRANSITION_SETTLE_MS;
+      window.setTimeout(() => {
+        if (token !== sceneToken) return;
+        outgoing.classList.remove('is-leaving');
+        root.dataset.cinematicSettled = 'true';
+        root.dataset.cinematicSettledIndex = String(index);
+      }, settleDelay);
       activeLayer = incomingIndex;
       root.dataset.chapterMediaReady = 'true';
     };
