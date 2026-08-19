@@ -8,6 +8,7 @@
 
   const compact = () => window.matchMedia('(max-width: 760px)').matches;
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LOAD_TIMEOUT_MS = 4200;
 
   const preload = (src) => {
     if (!src) return Promise.resolve(null);
@@ -15,8 +16,18 @@
     const promise = new Promise((resolve, reject) => {
       const image = new Image();
       image.decoding = 'async';
-      image.onload = () => resolve(src);
-      image.onerror = () => reject(new Error(`Journey media failed: ${src}`));
+      let settled = false;
+      const finish = (fn, value) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        image.onload = null;
+        image.onerror = null;
+        fn(value);
+      };
+      const timeout = window.setTimeout(() => finish(reject, new Error(`Journey media timeout: ${src}`)), LOAD_TIMEOUT_MS);
+      image.onload = () => finish(resolve, src);
+      image.onerror = () => finish(reject, new Error(`Journey media failed: ${src}`));
       image.src = src;
     });
     imageCache.set(src, promise);
