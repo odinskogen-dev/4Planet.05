@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import LabsOverview from "./LabsOverviewCurrent";
-import LabsProjectDetailPremium from "./LabsProjectDetailPremium";
+import LabsProjectDetailV5 from "./LabsProjectDetailV5";
 import { projectBySlug } from "./labsProjection";
 import "./labsV4.css";
 import "./labsV4Root.css";
@@ -22,6 +22,6 @@ export default function LabsV4() {
   const project = projectBySlug(slug);
 
   if (!slug) return <LabsOverview />;
-  if (project) return <LabsProjectDetailPremium project={project} />;
+  if (project) return <LabsProjectDetailV5 project={project} />;
   return <LabsOverview />;
 }
