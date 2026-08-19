@@ -27,5 +27,5 @@ export interface PickWalletResult {
 
 export const PICK_WALLET_VERSION: string;
 export function unknownWallet(reason?: string): PickWalletResult;
-export function normaliseWalletEnvelope(envelope: Record<string, any> | null | undefined): PickWalletResult;
+export function normaliseWalletEnvelope(envelope: Record<string, unknown> | null | undefined): PickWalletResult;
 export function compareWallet(a: PickWalletResult | null | undefined, b: PickWalletResult | null | undefined): { known: boolean; favourable: boolean; delta: number | null; unit: string | null; explanation: string };
