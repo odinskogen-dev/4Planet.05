@@ -87,7 +87,7 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(page.getByText(/first-money target ≥NOK1\.5m/)).toBeVisible();
   await expect(page.getByText("CURRENT TRUTH", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("NEXT PIPE", { exact: true })).toBeVisible();
-  await expect(page.getByText("FOUNDER PORT", { exact: true })).toBeVisible();
+  await expect(page.getByText("FOUNDER PORT", { exact: true }).first()).toBeVisible();
 
   const earth = page.locator(".labs-project-link-grid a").filter({ hasText: "E4RTH" }).first();
   await expect(earth).toBeVisible();
