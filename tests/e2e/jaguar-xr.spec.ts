@@ -17,17 +17,14 @@ test("Jaguar XR loads the declarative Nature Renderer in flat browser mode", asy
   await expect(scene).toHaveAttribute("data-entity-id", "taxon:gbif:5219426", { timeout: 20_000 });
   await expect(scene).toHaveAttribute("data-manifest-version", "v0.2");
   await expect(page.locator('[data-node-id="jaguar-identity"]')).toHaveCount(1);
+
   const pressure = page.locator('[data-node-id="jaguar-habitat-loss-fragmentation"]');
   await expect(pressure).toHaveAttribute("data-relation-class", "PRESSURE");
+  await expect(pressure).toHaveAttribute("data-hotspot-ready", "true");
   await expect(page.locator('[data-node-id="jaguar-solutions-transition"]')).toHaveAttribute("data-relation-class", "RESPONSE");
   await expect(page.locator("#panel-title")).toHaveAttribute("value", "SELECT A NODE");
 
-  await expect(pressure).toHaveAttribute("data-hotspot-ready", "true", { timeout: 20_000 });
-  await pressure.evaluate((node) => {
-    const entity = node as HTMLElement & { emit?: (name: string, detail?: object, bubbles?: boolean) => void };
-    if (!entity.emit) throw new Error("A-Frame entity emit API not ready");
-    entity.emit("click", {}, false);
-  });
+  await pressure.evaluate((node) => node.dispatchEvent(new Event("click")));
   await expect(page.locator("#panel-title")).toHaveAttribute("value", "PRESSURE → CAUSE");
   await expect(page.locator("#panel-source")).toHaveAttribute("value", /KNOWN · SOURCE · PANTHERA — JAGUAR/);
   await expect(page.locator("#panel-boundary")).toHaveAttribute("value", /place-specific evidence/i);
