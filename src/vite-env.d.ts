@@ -7,5 +7,6 @@ interface ImportMetaEnv {
   readonly VITE_FOUNDING_MEMBER_MONTHLY_DISPLAY?: string;
   readonly VITE_FOUNDING_MEMBER_ANNUAL_DISPLAY?: string;
   readonly VITE_LIVING_SYSTEMS_URL?: string;
+  readonly VITE_GA4_MEASUREMENT_ID?: string;
 }
 interface ImportMeta { readonly env: ImportMetaEnv; }
