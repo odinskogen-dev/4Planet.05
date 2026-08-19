@@ -16,11 +16,25 @@
       const image = new Image();
       image.decoding = 'async';
       image.onload = () => resolve(src);
-      image.onerror = reject;
+      image.onerror = () => reject(new Error(`Journey media failed: ${src}`));
       image.src = src;
     });
     imageCache.set(src, promise);
     return promise;
+  };
+
+  const resolveSceneSrc = async (media) => {
+    const requested = compact() && media.backgroundMobileSrc ? media.backgroundMobileSrc : media.backgroundSrc;
+    const fallback = media.fallbackSrc || manifest?.environment?.src;
+    if (requested) {
+      try {
+        await preload(requested);
+        return { src: requested, fallback: false };
+      } catch { /* controlled fallback below */ }
+    }
+    if (!fallback) return { src: null, fallback: true };
+    await preload(fallback);
+    return { src: fallback, fallback: true };
   };
 
   const ensureDOM = () => {
@@ -76,9 +90,9 @@
     });
   };
 
-  const updateCredit = (scene) => {
+  const updateCredit = (scene, fallbackUsed) => {
     const credit = root?.querySelector('.nature-scene-credit');
-    const rights = scene?.media?.credit;
+    const rights = fallbackUsed ? scene?.media?.fallbackCredit : scene?.media?.credit;
     if (!credit) return;
     if (!rights?.label) {
       credit.hidden = true;
@@ -113,24 +127,24 @@
     const node = manifest.nodes?.[index];
     const scene = node?.scene || {};
     const media = scene.media || {};
-    const src = compact() && media.backgroundMobileSrc ? media.backgroundMobileSrc : (media.backgroundSrc || manifest.environment?.src);
-    if (!src) return;
-
     const token = ++sceneToken;
-    try { await preload(src); } catch { return; }
-    if (token !== sceneToken) return;
+
+    let resolved;
+    try { resolved = await resolveSceneSrc(media); } catch { return; }
+    if (token !== sceneToken || !resolved?.src) return;
 
     const incomingIndex = 1 - activeLayer;
     const incoming = layers[incomingIndex];
     const outgoing = layers[activeLayer];
-    setLayer(incoming, scene, src);
+    setLayer(incoming, scene, resolved.src);
     incoming.classList.remove('is-leaving');
     incoming.classList.add('is-prepared');
 
     root.dataset.cinematicScene = scene.state || node.kind?.toLowerCase() || 'life';
     root.dataset.cinematicIndex = String(index);
+    root.dataset.sceneMediaFallback = String(resolved.fallback);
     applyMarkerLayout(index);
-    updateCredit(scene);
+    updateCredit(scene, resolved.fallback);
     if (userInitiated) runShutter(scene.travel || 'dolly');
 
     const commit = () => {
@@ -147,8 +161,7 @@
     if (reducedMotion()) commit();
     else requestAnimationFrame(() => requestAnimationFrame(commit));
 
-    const nextScene = manifest.nodes?.[index + 1]?.scene;
-    const nextMedia = nextScene?.media;
+    const nextMedia = manifest.nodes?.[index + 1]?.scene?.media;
     const nextSrc = compact() && nextMedia?.backgroundMobileSrc ? nextMedia.backgroundMobileSrc : nextMedia?.backgroundSrc;
     if (nextSrc) window.setTimeout(() => preload(nextSrc).catch(() => {}), 450);
   };
