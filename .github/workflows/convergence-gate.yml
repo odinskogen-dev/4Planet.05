@@ -4,6 +4,7 @@ name: ONE INTERFACE Convergence Gate
 # The former Gate-1 browser scripts encoded historical UI controls and an old
 # pinned Chromium path. Current convergence keeps those source-contract/smoke
 # checks, then runs the current Gold Reference journeys across Chromium + WebKit.
+# Gate Watch retrigger: S4PIENS exact-head acceptance evidence.
 
 on:
   push:
