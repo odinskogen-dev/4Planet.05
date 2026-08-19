@@ -19,6 +19,7 @@ import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
+const HomoSapiensWorld = lazy(() => import("@/pages/integrated/HomoSapiensWorld"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
 
 const WorldFallback = (
@@ -54,6 +55,7 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
+      <Route path="/species/homo-sapiens" element={<Suspense fallback={WorldFallback}><HomoSapiensWorld /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforest /></Suspense>} />
       <Route path="/impact" element={<ImpactPublicHome />} />
@@ -74,6 +76,8 @@ export function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/stories" element={<Stories />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
+      <Route path="/magazine" element={<Stories />} />
+      <Route path="/magazine/:slug" element={<StoryArticle />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
@@ -94,7 +98,6 @@ export function AppRoutes() {
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
       <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
-      <Route path="/magazine" element={toHome} />
       <Route path="/system" element={toHome} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
