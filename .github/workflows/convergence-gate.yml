@@ -27,11 +27,18 @@ jobs:
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Record exact candidate
+      - name: Verify and record exact candidate
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          git rev-parse HEAD > exact-sha.txt
-          printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
+          actual_sha="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA actual=$actual_sha"
+          test "$actual_sha" = "$EXPECTED_SHA"
+          printf '%s\n' "$actual_sha" > exact-sha.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > exact-branch.txt
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
