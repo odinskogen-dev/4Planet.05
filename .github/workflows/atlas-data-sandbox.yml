@@ -42,13 +42,15 @@ jobs:
       - name: Probe Climate TRACE v7 source shape
         run: node scripts/atlas-data-sandbox/climate-trace-v7-probe.mjs
 
-      - name: Inventory seabed habitat WMTS contract
+      - name: Research candidate seabed habitat 2025 WMTS contract
+        continue-on-error: true
         run: node scripts/atlas-data-sandbox/habitat-wmts-probe.mjs
 
-      - name: Probe exact ATLAS layer products
+      - name: Probe exact admitted ATLAS layer products
         run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
 
       - name: Compare seabed habitat candidate products
+        continue-on-error: true
         run: node scripts/atlas-data-sandbox/habitat-candidates.mjs
 
       - name: Inventory advertised OGC layers
