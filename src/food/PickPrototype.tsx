@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import { normalizeGtin, normaliseSourceEnvelope, type CanonicalFoodProduct } from "./core.js";
 import { buildDecisionAxes, buildProductTruthSummary, buildTruthPassport } from "./pick-core.js";
 import { addBasketItem, basketSummary, makeBasketItem, persistBasket, removeBasketItem, safeReadBasket, type PickBasketItem } from "./pick-basket.js";
+import PickHouseholdPanel from "./PickHouseholdPanel";
 import "./food.css";
 import "./food-02.css";
 import "./pick.css";
+import "./pick-04.css";
 
 type LoadState = "idle" | "loading" | "found" | "not_found" | "source_error" | "malformed";
 interface PickResult { state: LoadState; product?: CanonicalFoodProduct; message?: string; }
@@ -70,6 +72,8 @@ export default function PickPrototype() {
     </>}
 
     <section className="pick-basket" id="basket" aria-labelledby="pick-basket-title"><div className="pick-section-head"><div><span className="pick-kicker">LOCAL · PRIVATE · HOUSEHOLD</span><h2 id="pick-basket-title">Your basket</h2></div><span>Stored only in this browser.</span></div><div className="pick-basket-stats"><div><strong>{basketStats.total}</strong><span>PRODUCTS</span></div><div><strong>{basketStats.healthCoverage}%</strong><span>HEALTH DATA</span></div><div><strong>{basketStats.walletCoverage}%</strong><span>WALLET DATA</span></div><div><strong>{basketStats.planetCoverage}%</strong><span>PLANET DATA</span></div></div>{basket.length === 0 ? <p className="pick-basket-empty">Add products to start a household basket.</p> : <div className="pick-basket-list">{basket.map((item) => <article key={item.gtin}><div><span className="pick-kicker">GTIN {item.gtin}</span><strong>{item.name}</strong><small>{item.brand} · {item.quantity}</small></div><div className="pick-basket-axis"><span>H {item.healthConfidence}</span><span>W {item.walletConfidence}</span><span>P {item.planetConfidence}</span></div><button type="button" onClick={() => saveBasket(removeBasketItem(basket, item.gtin))} aria-label={`Remove ${item.name}`}>×</button></article>)}</div>}<p className="pick-basket-rule">{basketStats.rule}</p></section>
+
+    <PickHouseholdPanel basketStats={basketStats} />
 
     <footer className="pick-footer"><strong>PICK_ / FOOD_</strong><p>PRIVATE PROTOTYPE · Missing data never improves rank · Verify allergens against the physical label.</p></footer>
   </main>;
