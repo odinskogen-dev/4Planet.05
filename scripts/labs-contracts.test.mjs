@@ -7,6 +7,8 @@ const currentOverview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx"
 const projection = fs.readFileSync("src/pages/labs/labsProjection.ts", "utf8");
 const route = fs.readFileSync("src/pages/labs/LabsV4.tsx", "utf8");
 const detail = fs.readFileSync("src/pages/labs/LabsProjectDetailPremium.tsx", "utf8");
+const detailV5 = fs.readFileSync("src/pages/labs/LabsProjectDetailV5.tsx", "utf8");
+const projectMeta = fs.readFileSync("src/pages/labs/labsProjectMeta.ts", "utf8");
 const data = fs.readFileSync("src/pages/labs/labsData.ts", "utf8");
 const css = fs.readFileSync("src/pages/labs/labs.css", "utf8");
 const v4css = fs.readFileSync("src/pages/labs/labsV4.css", "utf8");
@@ -20,10 +22,13 @@ test("LABS remains a read-only BRAIN projection, never an invented live status s
   assert.doesNotMatch(data, /projectionState\s*=\s*["'`]LIVE/i);
 });
 
-test("LABS v4 preserves the founder-loved maze while routing through the current projection", () => {
+test("LABS v5 preserves the founder-loved maze while routing project pages through current projection + goal metadata", () => {
   assert.match(route, /LabsOverviewCurrent/);
   assert.match(route, /if \(!slug\) return <LabsOverview \/>/);
-  assert.match(route, /LabsProjectDetailPremium/);
+  assert.match(route, /LabsProjectDetailV5/);
+  assert.match(detailV5, /LabsProjectDetailPremium/);
+  assert.match(detailV5, /withProjectMeta/);
+  assert.match(projectMeta, /goalMeta/);
   assert.match(currentOverview, /PROJECT MAZE \/ CONTROL MAP/);
 });
 
