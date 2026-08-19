@@ -18,6 +18,8 @@ test("LABS remains a read-only BRAIN projection, never an invented live status s
   assert.match(data, /MANUAL BRAIN PROJECTION · READ ONLY/);
   assert.match(currentOverview, /BRAIN remains the authority/);
   assert.match(currentOverview, /MISSING VALUES STAY UNKNOWN/);
+  assert.match(currentOverview, /20 AUG RECONCILIATION/);
+  assert.match(projection, /verifiedAt = "20 AUG 2026"/);
   assert.match(detail, /UNKNOWN/);
   assert.doesNotMatch(data, /projectionState\s*=\s*["'`]LIVE/i);
 });
@@ -75,18 +77,37 @@ test("4PLANET hierarchy includes core systems, domains, missions and explicit BR
   assert.match(data, /EN3RGY \/ EN4RGY/);
 });
 
-test("Aug 19 BRAIN projection surfaces the bounded early-stage 4PLANET project set", () => {
+test("Aug 20 reconciliation surfaces the bounded early-stage 4PLANET set without creating a new PICK Project Home", () => {
   assert.match(currentOverview, /EARLY STAGE \/ CODE \+ SYSTEM LABS/);
   for (const token of [
     'title: "ATLAS DATA LAB"',
     'title: "NATURE XR"',
     'title: "JAGUAR JOURNEY"',
     'title: "S4PIENS \/ FOOD GOLD"',
+    'title: "PICK_"',
     'title: "TREE OF LIFE"',
     'title: "CHOICE"',
     'title: "PLANETARY MAP"',
   ]) assert.ok(projection.includes(token), `missing early-stage project: ${token}`);
+  assert.match(projection, /slug: "4planet\/s4piens\/food\/pick"/);
+  assert.match(projection, /parent: "4planet\/s4piens\/food"/);
+  assert.match(projection, /not a new Project Home/i);
+  assert.match(projection, /"8 TRACKS"/);
   assert.match(projection, /15 historical submissions \/ 14 awaiting \/ 1 rejected \/ 0 secured or awarded \/ 0 cash/);
+});
+
+test("current project heads remain evidence-gated instead of inheriting stale green state", () => {
+  assert.match(projection, /ad7f14e09d0f565a5d534605f76996d1eca2e3c3/);
+  assert.match(projection, /Convergence Gate #410 succeeded/i);
+  assert.match(projection, /0dcc5268e0405ae78a4d27a41c155ef465be56d2/);
+  assert.match(projection, /42\/44 smoke contracts/);
+  assert.match(projection, /cd208fbee92598c90f5dbd3ab7677ea076d49b78/);
+  assert.match(projection, /current-head acceptance remains unresolved/i);
+  assert.match(projection, /f1149bc5c305ebbc4d6605e86debaf6637950c2b/);
+  assert.match(projection, /946041d04beaf5db86ad317f854b7986d731b694/);
+  assert.match(projection, /NOT presumed fixed or QA-passed/i);
+  assert.match(projection, /7abd18e0a66992c339b1654d9f01dd540d3441ae/);
+  assert.match(projection, /32310081759 completed SUCCESS/);
 });
 
 test("LABS dark mode maps brand and product blue to green without flattening semantic domain accents", () => {
