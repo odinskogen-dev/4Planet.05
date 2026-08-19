@@ -2,7 +2,7 @@ import {
   projects as baseProjects,
   earlyStageProjects as baseEarlyStageProjects,
   projectionState,
-  verifiedAt as baseVerifiedAt,
+  recentSystemMoves as baseRecentSystemMoves,
   type LabProject,
 } from "./labsProjection";
 
@@ -77,10 +77,5 @@ export const portfolioStats = {
 export const recentSystemMoves: Array<[string, string, string]> = [
   ["AUG20-PR86", "ONE INTERFACE gained a newer stacked About × Founder narrative slice (PR #86); it remains draft/unmerged and is not promoted into BRAIN or production by LABS.", "CURRENT"],
   ["AUG20-PR74", "ONE INTERFACE PR #74 current GitHub head is 0338e94…; current implementation state is kept separate from the older durable BRAIN writeback.", "CURRENT"],
-  ...baseProjects.length && baseVerifiedAt ? [] : [],
+  ...baseRecentSystemMoves,
 ];
-
-// Preserve the dated base feed after the two newest implementation deltas.
-// Imported lazily below to keep BRAIN authority wording unchanged.
-import { recentSystemMoves as baseRecentSystemMoves } from "./labsProjection";
-recentSystemMoves.push(...baseRecentSystemMoves);
