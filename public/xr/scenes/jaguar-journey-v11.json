@@ -3,6 +3,22 @@
   "id": "species-jaguar-amazonia-journey-v11",
   "title": "Jaguar Journey",
   "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · SOURCE-AWARE · NOT LIVE TRACKING · NOT A PRECISE ECOLOGICAL SIMULATION",
+  "performance": {
+    "preloadAhead": 1,
+    "desktopParticles": 10,
+    "mobileParticles": 0,
+    "lowTierParallax": false,
+    "modelTier": "high-desktop-only"
+  },
+  "model": {
+    "provider": "Sketchfab",
+    "uid": "91c61c329d2a4668816f81f08dfcd492",
+    "creator": "Ear.Rodriguez",
+    "sourceUrl": "https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492",
+    "licence": "Creative Commons Attribution — source-page declaration",
+    "productionState": "PROTOTYPE EMBED ONLY · SELF-HOSTED ASSET NOT YET RIGHTS-CAPTURED",
+    "embedUrl": "https://sketchfab.com/models/91c61c329d2a4668816f81f08dfcd492/embed?autostart=1&autospin=0.08&camera=0&dnt=1&max_texture_size=1024&ui_theme=dark"
+  },
   "chapters": [
     {
       "id": "enter-canopy",
@@ -14,13 +30,15 @@
       "media": {
         "background": "/assets/missions/am4zonia/hero.jpg",
         "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+        "midground": "/assets/missions/clim4te/bank-hero.jpg",
+        "mediaBoundary": "AMAZONIA mission habitat image + controlled forest atmosphere. Presentation media is not current-condition evidence."
       },
-      "camera": { "x": 50, "y": 46, "scale": 1.04, "travel": "forward-slow" },
+      "camera": { "x": 50, "y": 46, "scale": 1.03, "travel": "forward-slow" },
       "subject": { "visible": false },
-      "audio": { "profile": "canopy", "intensity": 0.72 },
-      "nodes": ["jaguar-identity"],
-      "transition": { "type": "canopy-occlusion", "durationMs": 1400, "holdMs": 950 }
+      "audio": { "profile": "canopy", "intensity": 0.68 },
+      "nodes": [],
+      "nodeLayout": [],
+      "transition": { "type": "canopy-occlusion", "durationMs": 1450, "holdMs": 1000 }
     },
     {
       "id": "meet-jaguar",
@@ -32,13 +50,18 @@
       "media": {
         "background": "/assets/missions/am4zonia/detail-01.jpg",
         "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/hero.jpg"
+        "midground": "/assets/species/jaguar/SP-005.jpg",
+        "mediaBoundary": "Jaguar species media is a wild Pantanal portrait, not an Amazon occurrence record."
       },
-      "camera": { "x": 43, "y": 55, "scale": 1.22, "travel": "dolly-down" },
-      "subject": { "visible": true, "x": 46, "y": 54, "scale": 1.08, "mode": "media-hero" },
-      "audio": { "profile": "understory", "intensity": 0.82, "cue": "jaguar-presence-placeholder" },
+      "camera": { "x": 43, "y": 55, "scale": 1.18, "travel": "dolly-down" },
+      "subject": { "visible": true, "x": 46, "y": 55, "scale": 1.02, "mode": "model-high-photo-fallback", "model": true },
+      "audio": { "profile": "understory", "intensity": 0.78, "cue": "presence" },
       "nodes": ["jaguar-identity", "jaguar-capybara-prey"],
-      "transition": { "type": "leaf-wipe", "durationMs": 1200, "holdMs": 1050 }
+      "nodeLayout": [
+        { "id": "jaguar-identity", "x": 21, "y": 54, "role": "primary" },
+        { "id": "jaguar-capybara-prey", "x": 77, "y": 67, "role": "next" }
+      ],
+      "transition": { "type": "leaf-wipe", "durationMs": 1250, "holdMs": 1100 }
     },
     {
       "id": "follow-prey",
@@ -48,15 +71,20 @@
       "cue": "A PREDATOR IS A NETWORK OF DEPENDENCIES.",
       "sceneType": "DEPENDENCY",
       "media": {
-        "background": "/assets/missions/am4zonia/hero.jpg",
-        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+        "background": "/assets/missions/clim4te/bank-hero.jpg",
+        "backgroundMobile": "/assets/missions/clim4te/bank-hero-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg",
+        "mediaBoundary": "Controlled forest atmosphere is illustrative; prey truth remains attached to the canonical relationship source."
       },
-      "camera": { "x": 61, "y": 62, "scale": 1.34, "travel": "lateral-water" },
-      "subject": { "visible": true, "x": 27, "y": 59, "scale": 0.72, "mode": "media-hero" },
-      "audio": { "profile": "water-edge", "intensity": 0.88 },
+      "camera": { "x": 63, "y": 60, "scale": 1.30, "travel": "lateral-water" },
+      "subject": { "visible": true, "x": 24, "y": 61, "scale": 0.68, "mode": "media-hero" },
+      "audio": { "profile": "water-edge", "intensity": 0.84 },
       "nodes": ["jaguar-capybara-prey", "jaguar-connected-habitat"],
-      "transition": { "type": "mist-crossfade", "durationMs": 1300, "holdMs": 900 }
+      "nodeLayout": [
+        { "id": "jaguar-capybara-prey", "x": 64, "y": 61, "role": "primary" },
+        { "id": "jaguar-connected-habitat", "x": 82, "y": 34, "role": "next" }
+      ],
+      "transition": { "type": "mist-crossfade", "durationMs": 1350, "holdMs": 950 }
     },
     {
       "id": "connected-habitat",
@@ -66,15 +94,20 @@
       "cue": "PULL BACK. SEE THE HABITAT AROUND THE ANIMAL.",
       "sceneType": "LIVING_SYSTEM",
       "media": {
-        "background": "/assets/missions/am4zonia/hero.jpg",
-        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+        "background": "/assets/domains/e4rth/hero.jpg",
+        "backgroundMobile": "/assets/domains/e4rth/hero-mobile.jpg",
+        "midground": "/assets/brand/why-forest.jpg",
+        "mediaBoundary": "Illustrative forest-system media, not a claim about a particular Jaguar population or Amazon location."
       },
-      "camera": { "x": 50, "y": 49, "scale": 1.02, "travel": "pull-back" },
-      "subject": { "visible": true, "x": 23, "y": 63, "scale": 0.54, "mode": "media-hero" },
-      "audio": { "profile": "corridor", "intensity": 0.68 },
+      "camera": { "x": 50, "y": 51, "scale": 1.01, "travel": "pull-back" },
+      "subject": { "visible": true, "x": 19, "y": 65, "scale": 0.48, "mode": "media-hero" },
+      "audio": { "profile": "corridor", "intensity": 0.64 },
       "nodes": ["jaguar-connected-habitat", "jaguar-habitat-loss-fragmentation"],
-      "transition": { "type": "canopy-open", "durationMs": 1450, "holdMs": 1000 }
+      "nodeLayout": [
+        { "id": "jaguar-connected-habitat", "x": 31, "y": 31, "role": "primary" },
+        { "id": "jaguar-habitat-loss-fragmentation", "x": 79, "y": 42, "role": "next" }
+      ],
+      "transition": { "type": "canopy-open", "durationMs": 1500, "holdMs": 1050 }
     },
     {
       "id": "under-pressure",
@@ -84,15 +117,20 @@
       "cue": "SEE THE PRESSURE. FOLLOW IT TO ITS CAUSE.",
       "sceneType": "PRESSURE",
       "media": {
-        "background": "/assets/missions/am4zonia/detail-01.jpg",
-        "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/hero.jpg"
+        "background": "/assets/brand/pressure-doc.jpg",
+        "backgroundMobile": "/assets/brand/pressure-doc-mobile.jpg",
+        "midground": "/assets/missions/am4zonia/detail-01.jpg",
+        "mediaBoundary": "Documentary pressure imagery is illustrative narrative media. It is not a local diagnosis of Amazonia or a Jaguar occurrence."
       },
-      "camera": { "x": 72, "y": 45, "scale": 1.28, "travel": "fracture" },
-      "subject": { "visible": true, "x": 20, "y": 66, "scale": 0.46, "mode": "media-hero" },
-      "audio": { "profile": "pressure", "intensity": 0.62 },
+      "camera": { "x": 72, "y": 47, "scale": 1.22, "travel": "fracture" },
+      "subject": { "visible": true, "x": 17, "y": 67, "scale": 0.42, "mode": "media-hero" },
+      "audio": { "profile": "pressure", "intensity": 0.58 },
       "nodes": ["jaguar-habitat-loss-fragmentation", "jaguar-solutions-transition"],
-      "transition": { "type": "dark-occlusion", "durationMs": 1200, "holdMs": 1100 }
+      "nodeLayout": [
+        { "id": "jaguar-habitat-loss-fragmentation", "x": 73, "y": 36, "role": "primary" },
+        { "id": "jaguar-solutions-transition", "x": 53, "y": 80, "role": "next" }
+      ],
+      "transition": { "type": "dark-occlusion", "durationMs": 1250, "holdMs": 1150 }
     },
     {
       "id": "respond",
@@ -104,13 +142,17 @@
       "media": {
         "background": "/assets/missions/am4zonia/hero.jpg",
         "backgroundMobile": "/assets/missions/am4zonia/hero-mobile.jpg",
-        "midground": "/assets/missions/am4zonia/detail-01.jpg"
+        "midground": "/assets/missions/am4zonia/detail-01.jpg",
+        "mediaBoundary": "Return to the Amazonia habitat image is a narrative reset, not proof of restoration outcome."
       },
-      "camera": { "x": 47, "y": 44, "scale": 1.08, "travel": "open-forward" },
+      "camera": { "x": 47, "y": 44, "scale": 1.06, "travel": "open-forward" },
       "subject": { "visible": false },
-      "audio": { "profile": "response", "intensity": 0.7 },
+      "audio": { "profile": "response", "intensity": 0.66 },
       "nodes": ["jaguar-solutions-transition"],
-      "transition": { "type": "light-open", "durationMs": 1500, "holdMs": 850 },
+      "nodeLayout": [
+        { "id": "jaguar-solutions-transition", "x": 61, "y": 69, "role": "primary" }
+      ],
+      "transition": { "type": "light-open", "durationMs": 1550, "holdMs": 900 },
       "handoff": "/ecosystems/amazon-rainforest#pressures"
     }
   ]
