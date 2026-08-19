@@ -1,19 +1,17 @@
 /**
  * GET /api/atlas-wms
  *
- * Allowlisted same-origin WMS bridge for ATLAS raster tiles. It solves two
- * recurring integration problems without becoming an open proxy:
- *   1) provider/browser CORS and edge behaviour;
- *   2) provider CRS differences (notably NOAA ERDDAP WMS, which supports
- *      CRS:84/EPSG:4326 while MapLibre's WMS tile placeholder is EPSG:3857).
+ * Allowlisted same-origin raster bridge for ATLAS. Despite the legacy route
+ * name it handles both WMS and WMTS. It is deliberately NOT an open proxy.
  */
 
 type Profile = {
   base: string;
-  mode: "PASSTHROUGH_3857" | "NOAA_ERDDAP_CRS84";
+  mode: "PASSTHROUGH_3857" | "NOAA_ERDDAP_CRS84" | "WMTS_EPSG900913";
   fixedLayer?: string;
   fixedStyle?: string;
-  attribution?: string;
+  fixedMatrixSet?: string;
+  fixedFormat?: string;
   maxAge?: number;
 };
 
@@ -23,9 +21,13 @@ const PROFILES: Record<string, Profile> = {
     mode: "PASSTHROUGH_3857",
     maxAge: 86400,
   },
-  "emodnet-seabed-habitats": {
-    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
-    mode: "PASSTHROUGH_3857",
+  "emodnet-seabed-habitats-wmts": {
+    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest",
+    mode: "WMTS_EPSG900913",
+    fixedLayer: "eusm2025_eunis2019_full",
+    fixedStyle: "emodnet_view:eusm2021_eunis2019_l2_fulldetail",
+    fixedMatrixSet: "EPSG:900913",
+    fixedFormat: "image/png8",
     maxAge: 86400,
   },
   "emodnet-human-activities": {
@@ -62,6 +64,13 @@ function parseBbox3857(value: string | null) {
   return { minX, minY, maxX, maxY };
 }
 
+function boundedTileCoordinate(value: string | null, z: number) {
+  if (!value || !/^\d+$/.test(value)) return null;
+  const n = Number(value);
+  const max = 2 ** z;
+  return Number.isInteger(n) && n >= 0 && n < max ? n : null;
+}
+
 const errorJson = (error: string, status = 400) => new Response(JSON.stringify({ ok: false, error }), {
   status,
   headers: { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" },
@@ -73,45 +82,64 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
   const profile = PROFILES[source];
   if (!profile) return errorJson("UNSUPPORTED_SOURCE");
 
-  const bbox = parseBbox3857(incoming.searchParams.get("bbox"));
-  if (!bbox) return errorJson("INVALID_BBOX");
+  let upstream: URL;
 
-  const width = Math.min(512, Math.max(64, Number(incoming.searchParams.get("width")) || 256));
-  const height = Math.min(512, Math.max(64, Number(incoming.searchParams.get("height")) || 256));
-  const upstream = new URL(profile.base);
-  upstream.searchParams.set("service", "WMS");
-  upstream.searchParams.set("request", "GetMap");
-  upstream.searchParams.set("format", "image/png");
-  upstream.searchParams.set("transparent", "true");
-  upstream.searchParams.set("width", String(width));
-  upstream.searchParams.set("height", String(height));
+  if (profile.mode === "WMTS_EPSG900913") {
+    const zText = incoming.searchParams.get("z") || "";
+    if (!/^\d+$/.test(zText)) return errorJson("INVALID_Z");
+    const z = Number(zText);
+    if (!Number.isInteger(z) || z < 0 || z > 22) return errorJson("INVALID_Z");
+    const x = boundedTileCoordinate(incoming.searchParams.get("x"), z);
+    const y = boundedTileCoordinate(incoming.searchParams.get("y"), z);
+    if (x == null || y == null) return errorJson("INVALID_TILE_COORDINATE");
 
-  if (profile.mode === "NOAA_ERDDAP_CRS84") {
-    upstream.searchParams.set("version", "1.3.0");
-    upstream.searchParams.set("layers", profile.fixedLayer!);
-    upstream.searchParams.set("styles", profile.fixedStyle || "");
-    upstream.searchParams.set("crs", "CRS:84");
-    upstream.searchParams.set("bbox", [
-      mercatorToLon(bbox.minX),
-      mercatorToLat(bbox.minY),
-      mercatorToLon(bbox.maxX),
-      mercatorToLat(bbox.maxY),
-    ].map((n) => n.toFixed(7)).join(","));
-    upstream.searchParams.set("time", incoming.searchParams.get("time") || "current");
+    const matrixSet = profile.fixedMatrixSet || "EPSG:900913";
+    const layer = profile.fixedLayer!;
+    const style = profile.fixedStyle!;
+    const format = profile.fixedFormat || "image/png8";
+    upstream = new URL(`${profile.base}/${layer}/${style}/${matrixSet}/${matrixSet}:${z}/${y}/${x}`);
+    upstream.searchParams.set("format", format);
   } else {
-    const version = incoming.searchParams.get("version") === "1.3.0" ? "1.3.0" : "1.1.1";
-    const layer = safeToken(incoming.searchParams.get("layers"));
-    const style = safeToken(incoming.searchParams.get("styles"));
-    if (!layer) return errorJson("INVALID_LAYER");
-    upstream.searchParams.set("version", version);
-    upstream.searchParams.set("layers", layer);
-    upstream.searchParams.set("styles", style);
-    upstream.searchParams.set(version === "1.3.0" ? "crs" : "srs", "EPSG:3857");
-    upstream.searchParams.set("bbox", [bbox.minX, bbox.minY, bbox.maxX, bbox.maxY].join(","));
-    const time = safeToken(incoming.searchParams.get("time"));
-    const elevation = safeToken(incoming.searchParams.get("elevation"));
-    if (time) upstream.searchParams.set("time", time);
-    if (elevation) upstream.searchParams.set("elevation", elevation);
+    const bbox = parseBbox3857(incoming.searchParams.get("bbox"));
+    if (!bbox) return errorJson("INVALID_BBOX");
+
+    const width = Math.min(512, Math.max(64, Number(incoming.searchParams.get("width")) || 256));
+    const height = Math.min(512, Math.max(64, Number(incoming.searchParams.get("height")) || 256));
+    upstream = new URL(profile.base);
+    upstream.searchParams.set("service", "WMS");
+    upstream.searchParams.set("request", "GetMap");
+    upstream.searchParams.set("format", "image/png");
+    upstream.searchParams.set("transparent", "true");
+    upstream.searchParams.set("width", String(width));
+    upstream.searchParams.set("height", String(height));
+
+    if (profile.mode === "NOAA_ERDDAP_CRS84") {
+      upstream.searchParams.set("version", "1.3.0");
+      upstream.searchParams.set("layers", profile.fixedLayer!);
+      upstream.searchParams.set("styles", profile.fixedStyle || "");
+      upstream.searchParams.set("crs", "CRS:84");
+      upstream.searchParams.set("bbox", [
+        mercatorToLon(bbox.minX),
+        mercatorToLat(bbox.minY),
+        mercatorToLon(bbox.maxX),
+        mercatorToLat(bbox.maxY),
+      ].map((n) => n.toFixed(7)).join(","));
+      upstream.searchParams.set("time", incoming.searchParams.get("time") || "current");
+    } else {
+      const version = incoming.searchParams.get("version") === "1.3.0" ? "1.3.0" : "1.1.1";
+      const layer = safeToken(incoming.searchParams.get("layers"));
+      const style = safeToken(incoming.searchParams.get("styles"));
+      if (!layer) return errorJson("INVALID_LAYER");
+      upstream.searchParams.set("version", version);
+      upstream.searchParams.set("layers", layer);
+      upstream.searchParams.set("styles", style);
+      upstream.searchParams.set(version === "1.3.0" ? "crs" : "srs", "EPSG:3857");
+      upstream.searchParams.set("bbox", [bbox.minX, bbox.minY, bbox.maxX, bbox.maxY].join(","));
+      const time = safeToken(incoming.searchParams.get("time"));
+      const elevation = safeToken(incoming.searchParams.get("elevation"));
+      if (time) upstream.searchParams.set("time", time);
+      if (elevation) upstream.searchParams.set("elevation", elevation);
+    }
   }
 
   try {
