@@ -21,6 +21,14 @@ const PROFILES: Record<string, Profile> = {
     mode: "PASSTHROUGH_3857",
     maxAge: 86400,
   },
+  "emodnet-seabed-habitats": {
+    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
+    mode: "PASSTHROUGH_3857",
+    maxAge: 86400,
+  },
+  // Candidate only. Keep the newer 2025 WMTS route available for controlled
+  // experiments, but do not use it as the default until a non-transparent
+  // Europe/North-Sea tile path passes the same browser-visible gate.
   "emodnet-seabed-habitats-wmts": {
     base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest",
     mode: "WMTS_EPSG900913",
@@ -48,7 +56,7 @@ const PROFILES: Record<string, Profile> = {
   },
 };
 
-const TRANSPARENT_256_PNG = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAABFUlEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBPAAB2ClDBAAAAABJRU5ErkJggg==";
+const TRANSPARENT_256_PNG = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAABFUlEQVR42u3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBPAAB2ClDBAAAAABJRU5ErkJggg==";
 
 const safeToken = (value: string | null, max = 240) =>
   value && value.length <= max && /^[A-Za-z0-9_:.\-/*]+$/.test(value) ? value : "";
@@ -168,10 +176,6 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       cf: { cacheTtl: profile.maxAge || 3600 } as RequestInit["cf"],
     });
 
-    // A cached WMTS tile can legitimately be absent outside the dataset's
-    // coverage/scale. That means "no habitat tile here", not "the source is
-    // unavailable". Return a transparent tile so MapLibre does not downgrade
-    // the entire layer because one world tile is outside coverage.
     if (!response.ok && profile.mode === "WMTS_EPSG900913" && response.status === 404) {
       return transparentTile(source, "outside-coverage", profile.maxAge || 86400);
     }
