@@ -14,7 +14,7 @@ export const EMODNET_BATHYMETRY_DESCRIPTOR = Object.freeze({
   temporalSemantics: "PRODUCT_VERSION_NOT_EVENT_TIME",
   limitation:
     "A bathymetric raster describes seabed depth/product coverage. It is not an ecological condition, habitat state or current event. Product/version metadata must remain available separately from map rendering.",
-  promotionState: "ADAPTER_CANDIDATE_AWAITING_NETWORK_AND_MAP_PROOF",
+  promotionState: "MAP_GREEN_SANDBOX_ONLY",
 });
 
 /**
@@ -46,7 +46,7 @@ export function emodnetBathymetryRasterSource() {
     type: "raster",
     tiles: [tileUrl],
     tileSize: 256,
-    attribution: "EMODnet Bathymetry",
+    attribution: "EModnet Bathymetry",
   };
 }
 
