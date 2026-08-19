@@ -39,6 +39,9 @@ jobs:
           ATLAS_PROBE_CONCURRENCY: 4
         run: node scripts/atlas-data-sandbox/probe.mjs
 
+      - name: Probe Climate TRACE v7 source shape
+        run: node scripts/atlas-data-sandbox/climate-trace-v7-probe.mjs
+
       - name: Inventory advertised OGC layers
         env:
           ATLAS_PROBE_TIMEOUT_MS: 12000
