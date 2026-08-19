@@ -54,7 +54,7 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
 
   await openLayers(page);
   await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
-  await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
+  await expect(page.getByText("SEABED · HABITATS 2023", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
@@ -92,18 +92,18 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     fullPage: true,
   });
 
-  // ── HABITAT — one focal variable by default ────────────────────────────
-  // Use EMODnet's scale-adaptive parent group. Provider capabilities explicitly
-  // describe this as the current EUNIS 2019 EUSeaMap group containing the full,
-  // 200 m, 400 m and 800 m source layers for fast WMS viewing at all scales.
-  // Internal simplification children are discovery inputs, not the ATLAS entry.
+  // ── HABITAT — stable recommended product by default ────────────────────
+  // The portal exposes 2025 candidates, but broad-Europe visual QA on their WMS
+  // path was not good enough for default acceptance. The lab therefore keeps the
+  // explicit 2023 scale-adaptive EUNIS 2019 group as the stable default until the
+  // 2025 path passes the same visual gate.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => {
       const decoded = decodeURIComponent(url);
-      return decoded.includes("layers=eusm_eunis2019_group")
-        && decoded.includes("styles=default-style-eusm_eunis2019_group");
+      return decoded.includes("layers=eusm2023_eunis2019_group")
+        && decoded.includes("styles=default-style-eusm2023_eunis2019_group");
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
