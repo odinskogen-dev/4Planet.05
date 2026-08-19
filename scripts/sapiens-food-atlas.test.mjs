@@ -42,6 +42,15 @@ test("cinematic story space keeps human first, globe progressive, and relationsh
   assert.match(styles, /prefers-reduced-motion/);
 });
 
+test("v0.4 preserves the alternating narrative article grammar and removes the black tail", () => {
+  assert.match(styles, /min-height:\s*600svh/);
+  assert.match(styles, /sapiens-story-chapter:nth-child\(even\)\{justify-content:flex-end\}/);
+  assert.match(styles, /sapiens-story-chapter:nth-child\(odd\).*sapiens-chapter-card/);
+  assert.match(styles, /sapiens-story-chapter\.is-active \.sapiens-chapter-card/);
+  assert.match(styles, /menu-trigger\{color:#FF4D22!important\}/);
+  assert.match(styles, /body:has\(\.sapiens-story\) header/);
+});
+
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
   assert.match(api, /api\.climatetrace\.org\/v7/);
   assert.match(api, /sectors: "agriculture"/);
