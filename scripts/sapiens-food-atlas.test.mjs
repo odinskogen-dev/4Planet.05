@@ -5,13 +5,16 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const router = read("src/routes/router.tsx");
 const page = read("src/pages/integrated/SapiensAtlasSandbox.tsx");
+const profile = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const styles = read("src/styles/sapiens-atlas-story.css");
+const profileStyles = read("src/styles/homo-sapiens-gold.css");
 const chains = read("src/data/sapiensChains.ts");
 const api = read("functions/api/sapiens-food.ts");
 
 test("S4PIENS sandbox is isolated from the canonical S4PIENS domain route", () => {
   assert.match(router, /path="\/sandbox\/s4piens"/);
   assert.match(router, /path="\/s4piens" element={<Navigate to="\/domains\/s4piens" replace \/>}/);
+  assert.match(router, /path="\/species\/homo-sapiens"/);
 });
 
 test("FOOD is the one Gold Standard chain and the registry has 20 working families", () => {
@@ -39,13 +42,25 @@ test("v0.3 is Atlas-first and uses the shared NASA globe from frame one", () => 
   assert.match(page, /OPEN FREE ATLAS/);
 });
 
-test("Homo sapiens Gold experience uses a real 4PLANET media-registry asset and a graph", () => {
+test("Homo sapiens Gold experience uses 4PLANET media-registry imagery and the shared graph", () => {
   assert.match(page, /img\("storyHero"\)/);
   assert.match(page, /HumanSpeciesCard/);
   assert.match(page, /SPECIES_ · GBIF 10856082 · IDENTITY KNOWN/);
   assert.match(page, /KnowledgeGraph/);
   assert.match(page, /One species\. Many systems\./);
   for (const token of ["EAT", "DRINK", "POWER", "SHELTER", "WEAR", "MOVE"]) assert.match(page, new RegExp(token));
+});
+
+test("the linked Homo sapiens Species route is a photographic Gold reference, not a dead-end", () => {
+  assert.match(profile, /img\("cultureAnchor"\)/);
+  assert.match(profile, /img\("foodHero"\)/);
+  assert.match(profile, /We are not outside the living system\./);
+  assert.match(profile, /OPEN HUMAN SYSTEMS ATLAS/);
+  assert.match(profile, /GOLD STANDARD 01 · FOOD_/);
+  for (const state of ["KNOWN", "INTERPRETED", "UNKNOWN WITHOUT MORE EVIDENCE"]) assert.match(profile, new RegExp(state));
+  assert.match(profileStyles, /--hs-accent:#FF4D22/);
+  assert.match(profileStyles, /Instrument Sans/);
+  assert.match(profileStyles, /Fragment Mono/);
 });
 
 test("story choreography remains progressive and relation classes stay distinct", () => {
