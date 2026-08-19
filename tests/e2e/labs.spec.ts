@@ -102,7 +102,7 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await species.click();
   await page.waitForURL(/project=4planet%2Fe4rth%2Fspecies/);
   await expect(page.getByRole("heading", { name: "SPECIES", level: 1 })).toBeVisible();
-  await expect(page.getByText(/Jaguar and Orca are Product Gold References/i)).toBeVisible();
+  await expect(page.getByText(/Jaguar and Orca are Product Gold References/i).first()).toBeVisible();
   await expect(page.getByText("UPCOMING TASKS / PRODUCTIONS", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("LINKED ASSETS", { exact: true }).first()).toBeVisible();
 
