@@ -30,18 +30,24 @@ function loadDataModule(relativePath) {
 
 const speciesModule = loadDataModule("src/data/species.ts");
 const livingSystemsModule = loadDataModule("src/data/livingSystems.ts");
+const speciesRelationshipsModule = loadDataModule("src/data/speciesRelationships.ts");
 
 const species = speciesModule.SPECIES_PROFILES.find((profile) => profile.slug === "jaguar");
 const livingSystemAnchor = livingSystemsModule.LIVING_SYSTEM_ANCHORS.find((anchor) => anchor.slug === "amazonia");
+const speciesRelationships = speciesRelationshipsModule.SPECIES_RELATIONSHIPS.filter(
+  (relationship) => relationship.fromEntityId === "taxon:gbif:5219426",
+);
 
 if (!species) throw new Error("Canonical Jaguar SPECIES profile missing");
 if (!livingSystemAnchor) throw new Error("Canonical Amazonia Living Systems anchor missing");
 if (species.id !== "taxon:gbif:5219426") throw new Error(`Unexpected Jaguar identity: ${species.id}`);
+if (!speciesRelationships.length) throw new Error("Canonical Jaguar species relationships missing");
 
 const payload = {
-  generatedFrom: ["src/data/species.ts", "src/data/livingSystems.ts"],
+  generatedFrom: ["src/data/species.ts", "src/data/livingSystems.ts", "src/data/speciesRelationships.ts"],
   species,
   livingSystemAnchor,
+  speciesRelationships,
 };
 
 const outputPath = resolve(root, "public/xr/generated/jaguar-canonical.json");
