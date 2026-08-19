@@ -16,11 +16,19 @@
     }
   };
 
+  const waitForSceneLoaded = (scene) => {
+    if (scene.hasLoaded) return Promise.resolve();
+    return new Promise((resolve) => scene.addEventListener('loaded', resolve, { once: true }));
+  };
+
   const boot = async () => {
     await updateXRStatus();
     const scene = document.getElementById('nature-scene');
     if (!scene || !window.NatureRenderer || !window.NatureSceneAdapter) return;
     try {
+      // A-Frame systems must finish scene initialisation before we append lights/materials.
+      // Chromium tolerates earlier mutation; WebKit does not reliably do so.
+      await waitForSceneLoaded(scene);
       const manifest = await window.NatureSceneAdapter.load({
         layoutUrl: '/xr/scenes/jaguar.json',
         canonicalUrl: '/xr/generated/jaguar-canonical.json'
