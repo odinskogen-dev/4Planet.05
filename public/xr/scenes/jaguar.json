@@ -1,0 +1,139 @@
+{
+  "version": "v0.2",
+  "id": "species-jaguar-amazonia-01",
+  "title": "Enter the living system.",
+  "intro": "Look around. Select the nodes. Move from the animal to relationships, pressures, evidence and possible responses.",
+  "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT A PRECISE ECOLOGICAL SIMULATION",
+  "returnHref": "/species/jaguar",
+  "entity": {
+    "id": "taxon:gbif:5219426",
+    "slug": "jaguar",
+    "commonName": "Jaguar",
+    "scientificName": "Panthera onca",
+    "gbifKey": 5219426,
+    "taxonSourceUrl": "https://www.gbif.org/species/5219426"
+  },
+  "environment": {
+    "id": "am4zonia",
+    "src": "/assets/missions/am4zonia/hero.jpg",
+    "context": "CURATED REGIONAL LIVING-SYSTEM CONTEXT"
+  },
+  "subject": {
+    "mediaSrc": "/assets/species/jaguar/SP-005.jpg",
+    "position": "0 1.9 -5",
+    "width": "5.2",
+    "height": "3.35",
+    "boundaryLabel": "SPECIES MEDIA · NOT AN OCCURRENCE RECORD"
+  },
+  "panel": {
+    "position": "0 3.8 -4.2"
+  },
+  "nodes": [
+    {
+      "id": "jaguar-identity",
+      "kind": "IDENTITY",
+      "relationClass": null,
+      "truthState": "KNOWN",
+      "title": "IDENTITY",
+      "label": "IDENTITY",
+      "body": "Jaguar / Panthera onca. Canonical species identity is carried by the SPECIES layer.",
+      "source": {
+        "label": "GBIF TAXON 5219426",
+        "url": "https://www.gbif.org/species/5219426"
+      },
+      "boundary": "Identity does not establish local presence, population size or a live animal position.",
+      "position": "-2.7 1.45 -3.8",
+      "labelPosition": "-3.05 1.12 -3.8",
+      "labelRotation": "0 17 0",
+      "labelWidth": "2.5",
+      "color": "#3AE86F",
+      "shape": "sphere"
+    },
+    {
+      "id": "jaguar-capybara-prey",
+      "kind": "RELATIONSHIP",
+      "relationClass": "DEPENDENCY",
+      "truthState": "KNOWN",
+      "title": "RELATIONSHIP",
+      "label": "PREY RELATIONSHIP",
+      "body": "Capybara is a documented jaguar prey taxon in a bounded Southern Pantanal study context.",
+      "source": {
+        "label": "PERILLI ET AL. 2016 · PLOS ONE",
+        "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0151814"
+      },
+      "boundary": "This does not imply the same dietary importance everywhere or diagnose an Amazon diet.",
+      "position": "2.65 1.35 -3.9",
+      "labelPosition": "2.05 1.02 -3.9",
+      "labelRotation": "0 -16 0",
+      "labelWidth": "2.8",
+      "color": "#3AE86F",
+      "shape": "sphere"
+    },
+    {
+      "id": "jaguar-connected-habitat",
+      "kind": "LIVING_SYSTEM",
+      "relationClass": "DEPENDENCY",
+      "truthState": "INTERPRETED",
+      "title": "LIVING SYSTEM",
+      "label": "CONNECTED HABITAT",
+      "body": "Connected habitats can support movement, prey access and gene flow across jaguar populations.",
+      "source": {
+        "label": "4PLANET SPECIES SOURCE REVIEW · RANGE-WIDE CONTEXT",
+        "url": "/species/jaguar#evidence"
+      },
+      "boundary": "Connectivity needs and population effects are landscape-specific and require local evidence.",
+      "position": "-3.25 2.75 -6.2",
+      "labelPosition": "-4.1 3.02 -6.2",
+      "labelRotation": "0 23 0",
+      "labelWidth": "3",
+      "color": "#3AE86F",
+      "shape": "sphere"
+    },
+    {
+      "id": "jaguar-habitat-loss-fragmentation",
+      "kind": "PRESSURE",
+      "relationClass": "PRESSURE",
+      "truthState": "KNOWN",
+      "title": "PRESSURE → CAUSE",
+      "label": "PRESSURE → CAUSE",
+      "body": "Habitat loss and fragmentation are documented range-wide pressure categories for jaguars. The immediate cause class in this current evidence path is human-driven habitat conversion and fragmentation.",
+      "source": {
+        "label": "PANTHERA — JAGUAR",
+        "url": "https://www.panthera.org/cat/jaguar"
+      },
+      "boundary": "Local intensity, mechanism and population effect require place-specific evidence.",
+      "position": "3.25 2.8 -6.1",
+      "labelPosition": "2.55 3.08 -6.1",
+      "labelRotation": "0 -23 0",
+      "labelWidth": "3",
+      "color": "#FF4D22",
+      "shape": "sphere",
+      "radius": "0.19"
+    },
+    {
+      "id": "jaguar-solutions-transition",
+      "kind": "RESPONSE",
+      "relationClass": "RESPONSE",
+      "truthState": "UNKNOWN",
+      "title": "HOW DO WE SOLVE THIS?",
+      "label": "HOW DO WE SOLVE THIS? →",
+      "body": "Continue from pressure and cause into Solutions Intelligence. The XR lens should never stop at awareness.",
+      "source": {
+        "label": "4PLANET SOLUTIONS INTELLIGENCE",
+        "url": "/ecosystems/amazon-rainforest#pressures"
+      },
+      "boundary": "Possible responses are not 4PLANET delivery claims.",
+      "href": "/ecosystems/amazon-rainforest#pressures",
+      "position": "0 1.2 -8.6",
+      "labelPosition": "0 1.2 -8.48",
+      "labelWidth": "4.6",
+      "align": "center",
+      "labelColor": "#FFFFFF",
+      "color": "#2E2EFF",
+      "shape": "box",
+      "width": "3.8",
+      "height": "1",
+      "depth": "0.18"
+    }
+  ]
+}
