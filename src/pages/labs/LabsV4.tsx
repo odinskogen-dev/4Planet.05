@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import LabsOverview from "./LabsOverview";
+import LabsOverview from "./LabsOverviewCurrent";
 import LabsProjectDetailPremium from "./LabsProjectDetailPremium";
 import { projectBySlug } from "./labsProjection";
 import "./labsV4.css";
