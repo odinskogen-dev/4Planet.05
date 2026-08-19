@@ -3,24 +3,28 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const legacyOverview = fs.readFileSync("src/pages/labs/LabsOverview.tsx", "utf8");
+const currentOverview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx", "utf8");
+const projection = fs.readFileSync("src/pages/labs/labsProjection.ts", "utf8");
 const route = fs.readFileSync("src/pages/labs/LabsV4.tsx", "utf8");
 const detail = fs.readFileSync("src/pages/labs/LabsProjectDetailPremium.tsx", "utf8");
 const data = fs.readFileSync("src/pages/labs/labsData.ts", "utf8");
 const css = fs.readFileSync("src/pages/labs/labs.css", "utf8");
 const v4css = fs.readFileSync("src/pages/labs/labsV4.css", "utf8");
+const rootCss = fs.readFileSync("src/pages/labs/labsV4Root.css", "utf8");
 
 test("LABS remains a read-only BRAIN projection, never an invented live status system", () => {
   assert.match(data, /MANUAL BRAIN PROJECTION · READ ONLY/);
-  assert.match(legacyOverview, /BRAIN remains the authority/);
-  assert.match(legacyOverview, /Missing values stay UNKNOWN/);
+  assert.match(currentOverview, /BRAIN remains the authority/);
+  assert.match(currentOverview, /MISSING VALUES STAY UNKNOWN/);
   assert.match(detail, /UNKNOWN/);
   assert.doesNotMatch(data, /projectionState\s*=\s*["'`]LIVE/i);
 });
 
-test("LABS v4 preserves the founder-loved v3 portfolio root", () => {
+test("LABS v4 preserves the founder-loved maze while routing through the current projection", () => {
+  assert.match(route, /LabsOverviewCurrent/);
   assert.match(route, /if \(!slug\) return <LabsOverview \/>/);
   assert.match(route, /LabsProjectDetailPremium/);
-  assert.match(legacyOverview, /PROJECT MAZE \/ CONTROL MAP/);
+  assert.match(currentOverview, /PROJECT MAZE \/ CONTROL MAP/);
 });
 
 test("LABS v4 exposes goals, phases, process overview and upcoming production early in project detail", () => {
@@ -66,15 +70,35 @@ test("4PLANET hierarchy includes core systems, domains, missions and explicit BR
   assert.match(data, /EN3RGY \/ EN4RGY/);
 });
 
-test("LABS preserves filled-colour maze and dark-white theme while 4PLANET becomes green on dark mode", () => {
+test("Aug 19 BRAIN projection surfaces the bounded early-stage 4PLANET project set", () => {
+  assert.match(currentOverview, /EARLY STAGE \/ CODE \+ SYSTEM LABS/);
+  for (const token of [
+    'title: "ATLAS DATA LAB"',
+    'title: "NATURE XR"',
+    'title: "JAGUAR JOURNEY"',
+    'title: "S4PIENS \/ FOOD GOLD"',
+    'title: "TREE OF LIFE"',
+    'title: "CHOICE"',
+    'title: "PLANETARY MAP"',
+  ]) assert.ok(projection.includes(token), `missing early-stage project: ${token}`);
+  assert.match(projection, /15 historical submissions \/ 14 awaiting \/ 1 rejected \/ 0 secured or awarded \/ 0 cash/);
+});
+
+test("LABS dark mode maps brand and product blue to green without flattening semantic domain accents", () => {
   assert.match(legacyOverview, /labs-project-box/);
-  assert.match(legacyOverview, /labs-box-hover/);
+  assert.match(currentOverview, /labs-box-hover/);
   assert.match(css, /grid-template-columns:repeat\(12/);
   assert.match(css, /--accent-brand:#2e2eff/i);
   assert.match(css, /background:var\(--accent\)/);
-  assert.match(css, /data-theme="light"/);
   assert.match(v4css, /--accent-fourplanet:#39ff78/i);
-  assert.match(v4css, /data-theme="light"[^}]*--accent-fourplanet:#2e2eff/is);
+  assert.match(rootCss, /data-theme="dark"[^}]*--accent-brand:#39ff78[^}]*--accent-product:#39ff78/is);
+  assert.match(rootCss, /data-theme="light"[^}]*--accent-brand:#2e2eff[^}]*--accent-product:#2e2eff/is);
+  assert.doesNotMatch(rootCss, /--accent-ocean:#39ff78/i);
+});
+
+test("LABS mobile keeps the project maze dense and removes the desktop inspector", () => {
+  assert.match(rootCss, /max-width:760px[^}]*\.labs-page--portfolio \.labs-inspector\s*\{\s*display:none/is);
+  assert.match(rootCss, /max-width:620px[\s\S]*?\.labs-core-grid,\s*\.labs-early-grid\s*\{\s*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/i);
 });
 
 test("LABS project details fail visibly closed when structured state is absent", () => {
@@ -85,6 +109,6 @@ test("LABS project details fail visibly closed when structured state is absent",
 });
 
 test("LABS public interface remains noindex", () => {
-  assert.match(legacyOverview, /noindex,nofollow,noarchive/);
+  assert.match(currentOverview, /noindex,nofollow,noarchive/);
   assert.match(detail, /noindex,nofollow,noarchive/);
 });
