@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/labs";
 mkdirSync(OUT, { recursive: true });
 
-test("LABS preserves the founder-loved maze and opens premium project control without inventing live truth", async ({ page }, testInfo) => {
+test("LABS preserves the founder-loved maze, surfaces leading products and opens premium project control without inventing live truth", async ({ page }, testInfo) => {
   await page.goto("/labs", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByText("4PLANET LABS", { exact: true }).first()).toBeVisible();
@@ -37,6 +37,13 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(shell).toHaveAttribute("data-theme", "dark");
   await expect(fourPlanetHeading).toHaveCSS("color", "rgb(57, 255, 120)");
 
+  await expect(page.getByText("ORGANISATION + SHARED MACHINE", { exact: true })).toBeVisible();
+  await expect(page.getByText("LEADING PRODUCT SURFACES", { exact: true })).toBeVisible();
+  const leading = page.locator(".labs-leading-product-grid .labs-project-box");
+  for (const title of ["ONE INTERFACE", "ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
+    await expect(leading.filter({ hasText: title }).first()).toBeVisible();
+  }
+
   await expect(page.locator(".labs-project-box").filter({ hasText: "NATUREBRAIN" }).first()).toBeVisible();
   await expect(page.locator(".labs-domain-head").filter({ hasText: "S4PIENS" }).first()).toBeVisible();
   await expect(page.locator(".labs-mission-row").filter({ hasText: "FOOD" }).first()).toBeVisible();
@@ -63,6 +70,13 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
     await expect(page.locator(".labs-page--portfolio .labs-inspector")).toBeHidden();
     const earlyColumns = await page.locator(".labs-early-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length);
     expect(earlyColumns).toBe(2);
+    const viewportContainment = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+    }));
+    expect(viewportContainment.document).toBeLessThanOrEqual(viewportContainment.viewport);
+    expect(viewportContainment.body).toBeLessThanOrEqual(viewportContainment.viewport);
   }
 
   const fourPlanet = page.locator(".labs-universe-head").filter({ hasText: "4PLANET" }).first();
@@ -92,6 +106,7 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(page.getByText("CURRENT TRUTH", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("NEXT PIPE", { exact: true })).toBeVisible();
   await expect(page.getByText("FOUNDER PORT", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/LEADING ONE · 4PLANET/i).first()).toBeVisible();
 
   const earth = page.locator(".labs-project-link-grid a").filter({ hasText: "E4RTH" }).first();
   await expect(earth).toBeVisible();
@@ -109,6 +124,9 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(page.getByText(/Jaguar and Orca are Product Gold References/i).first()).toBeVisible();
   await expect(page.getByText("UPCOMING TASKS / PRODUCTIONS", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("LINKED ASSETS", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/EAR-SPECIES-01-G01/i).first()).toBeVisible();
+  await expect(page.getByText(/LEADING ONE · SPECIES/i).first()).toBeVisible();
+  await expect(page.getByText(/MISSION PAGE · SPECIES/i).first()).toBeVisible();
 
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-labs-species-v4.png`, fullPage: true });
 });
