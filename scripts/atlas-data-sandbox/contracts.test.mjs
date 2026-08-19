@@ -7,6 +7,11 @@ import {
   emodnetBathymetryRasterSource,
 } from "./adapters/emodnet-bathymetry.mjs";
 import {
+  EMODNET_OXYGEN_DESCRIPTOR,
+  emodnetOxygenGetCapabilitiesUrl,
+  emodnetOxygenRasterSource,
+} from "./adapters/emodnet-chemistry-oxygen.mjs";
+import {
   GFW_DESCRIPTOR,
   gfwAuthState,
   gfwFishingEffortTileRequest,
@@ -31,7 +36,7 @@ test("EMODnet Bathymetry WMS metadata remains separate from ecological interpret
   assert.equal(EMODNET_BATHYMETRY_DESCRIPTOR.sourceClass, "RASTER_PRODUCT");
   assert.equal(EMODNET_BATHYMETRY_DESCRIPTOR.temporalSemantics, "PRODUCT_VERSION_NOT_EVENT_TIME");
   assert.match(EMODNET_BATHYMETRY_DESCRIPTOR.limitation, /not an ecological condition/i);
-  assert.match(EMODNET_BATHYMETRY_DESCRIPTOR.promotionState, /AWAITING_NETWORK_AND_MAP_PROOF/);
+  assert.equal(EMODNET_BATHYMETRY_DESCRIPTOR.promotionState, "MAP_GREEN_SANDBOX_ONLY");
 });
 
 test("EMODnet Bathymetry MapLibre layer is raster-only and opacity is clamped", () => {
@@ -44,6 +49,39 @@ test("EMODnet Bathymetry capabilities probe uses official service", () => {
   assert.equal(
     emodnetBathymetryGetCapabilitiesUrl(),
     "https://ows.emodnet-bathymetry.eu/wms?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0",
+  );
+});
+
+test("EMODnet oxygen climatology adapter keeps month, depth and climatology semantics explicit", () => {
+  const source = emodnetOxygenRasterSource();
+  assert.equal(source.type, "raster");
+  assert.equal(source.tileSize, 256);
+  assert.equal(source.tiles.length, 1);
+
+  const tile = decodeURIComponent(source.tiles[0]);
+  assert.match(tile, /^https:\/\/ec\.oceanbrowser\.net\/emodnet\/Python\/web\/wms\?/);
+  assert.match(tile, /version=1\.3\.0/);
+  assert.match(tile, /Water_body_dissolved_oxygen_concentration_L2/);
+  assert.match(tile, /styles=pcolor_flat/);
+  assert.match(tile, /time=08/);
+  assert.match(tile, /elevation=-0\.0/);
+  assert.match(tile, /crs=EPSG:3857/);
+  assert.match(tile, /bbox=\{bbox-epsg-3857\}/);
+  assert.doesNotMatch(tile, /(token|api[_-]?key|secret|password)=/i);
+
+  assert.equal(EMODNET_OXYGEN_DESCRIPTOR.temporalSemantics, "MONTHLY_CLIMATOLOGY_NOT_CURRENT_TIME");
+  assert.match(EMODNET_OXYGEN_DESCRIPTOR.limitation, /not a current dissolved-oxygen measurement/i);
+  assert.match(EMODNET_OXYGEN_DESCRIPTOR.limitation, /not be presented as live oxygen status/i);
+  assert.equal(
+    EMODNET_OXYGEN_DESCRIPTOR.rightsState,
+    "FINAL_PRODUCT_SPECIFIC_REVIEW_REQUIRED_BEFORE_PRODUCTION",
+  );
+});
+
+test("EMODnet oxygen capabilities probe uses the exact public service", () => {
+  assert.equal(
+    emodnetOxygenGetCapabilitiesUrl(),
+    "https://ec.oceanbrowser.net/emodnet/Python/web/wms?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0",
   );
 });
 
