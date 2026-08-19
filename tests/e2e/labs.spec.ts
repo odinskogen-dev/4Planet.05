@@ -15,7 +15,7 @@ test("LABS preserves the founder-loved maze and opens premium project control wi
   await expect(truthStrip.getByText(/MANUAL BRAIN PROJECTION · READ ONLY/i)).toBeVisible();
   await expect(truthStrip.getByText(/BRAIN remains the authority/i)).toBeVisible();
   await expect(truthStrip.getByText(/20 AUG RECONCILIATION/i)).toBeVisible();
-  await expect(page.getByText(/SNAPSHOT 20 AUG 2026/i)).toBeVisible();
+  await expect(page.getByText(/SNAPSHOT 20 AUG 2026/i)).toHaveCount(1);
   await expect(page.getByText(/FOUNDER COMMAND/i).first()).toBeVisible();
 
   const fourPlanetHeading = page.locator(".labs-universe--4planet h2").first();
