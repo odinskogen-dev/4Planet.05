@@ -8,6 +8,7 @@ import { PathwayPage } from "@/pages/v5/Impact";
 import { ImpactPublicHome, ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { ActorsIndex, ActorProfilePage } from "@/pages/integrated/Actors";
+import { TreeOfLifePage } from "@/pages/integrated/TreeOfLife";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import { LivingSystems } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
@@ -51,6 +52,7 @@ export function AppRoutes() {
       <Route path="/actors/:slug" element={<ActorProfilePage />} />
       <Route path="/organisations" element={<Navigate to="/actors" replace />} />
       <Route path="/organizations" element={<Navigate to="/actors" replace />} />
+      <Route path="/tree-of-life" element={<TreeOfLifePage />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
