@@ -1,11 +1,17 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "updatedAt": "2026-08-19",
   "baselineSha": "3364df8b5989582fbcbc31d1ff102ca5bb852954",
   "controlIssue": 71,
   "draftPullRequest": 72,
   "productionTouched": false,
   "statusRule": "Endpoint reachability is PROBE_GREEN only. A layer is not counted fixed until the exact product contract and real browser map path are proven. Source failure must never be rendered as zero/no records.",
+  "currentSandboxCandidate": {
+    "branch": "sandbox/atlas-data-lab-20260819",
+    "headAtStatusWrite": "913006fac84412bff7eb0d5ff59a1993cf115e4e",
+    "state": "QA_RUNNING_NOT_ACCEPTED",
+    "note": "Head may advance after this status write. Re-resolve PR #72 before making any acceptance claim."
+  },
   "timeEngine": {
     "built": true,
     "currentAxes": [
@@ -39,16 +45,17 @@
     "emodnet-seabed-habitats": {
       "access": "OPEN",
       "sourceProbe": "PROBE_GREEN",
-      "layerContract": "RETESTING_EXACT_HEAD",
-      "mapState": "STABLE_2023_DEFAULT_RESTORED_PENDING_EXACT_HEAD_DEPLOYED_PROOF",
-      "defaultProduct": {
-        "layer": "eusm2023_eunis2019_group",
-        "style": "default-style-eusm2023_eunis2019_group",
+      "layerContract": "RETESTING_MAP_SCALE_EXACT_HEAD",
+      "mapState": "NOT_MAP_GREEN_CURRENT_LINEAGE_PENDING_DESKTOP_MOBILE_DEPLOYED_PROOF",
+      "currentProduct": {
+        "layer": "eusm2025_msfd_800",
+        "style": "eusm2019_msfd_800",
         "transport": "same-origin WMS bridge when hosted"
       },
-      "candidateProduct2025": "RESEARCH_ONLY_NOT_DEFAULT",
-      "correction": "The newer 2025 cached WMTS candidate returned 200 but only a 149-byte transparent tile in bounded tests and caused desktop UNAVAILABLE. Stable broad-Europe 2023 WMS is restored as default until a 2025 route passes equivalent visual proof.",
-      "truthBoundary": "EUSeaMap is predictive habitat classification, not direct field observation or current ecological condition."
+      "candidateProduct2025Wmts": "RESEARCH_ONLY_NOT_DEFAULT",
+      "latestFailureEvidence": "On b3a80b59 lineage the source endpoint remained PROBE_GREEN, but the continental exact WMS contract timed out and the pixel-aware candidate sweep produced no current non-transparent candidate evidence. This is a layer-contract failure, not zero/no habitat records.",
+      "currentRepair": "Exact probe now uses a bounded z7 North Sea MapLibre tile request to test the same current MSFD 800 WMS product at real tiled-map scale. Deployed desktop/mobile MAP_GREEN is still mandatory and has not been inferred from the probe.",
+      "truthBoundary": "EUSeaMap is predictive habitat classification, not direct field observation, absence evidence or current ecological condition."
     },
     "emodnet-dissolved-oxygen-climatology": {
       "access": "OPEN",
