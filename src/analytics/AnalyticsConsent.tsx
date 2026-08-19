@@ -41,3 +41,41 @@ export function AnalyticsConsent() {
     </aside>
   );
 }
+
+export function AnalyticsPreferences() {
+  const [consent, setConsent] = useState(() => getAnalyticsConsent());
+
+  if (!isGa4Configured()) {
+    return (
+      <div className="analytics-preferences">
+        <span>Optional Google Analytics is not active on this site.</span>
+      </div>
+    );
+  }
+
+  const allow = () => {
+    setConsent("granted");
+    void enableAnalytics();
+  };
+
+  const decline = () => {
+    disableAnalytics();
+    setConsent("denied");
+  };
+
+  return (
+    <div className="analytics-preferences" aria-label="Analytics preferences">
+      <span>
+        Current choice: {consent === "granted" ? "analytics allowed" : consent === "denied" ? "analytics off" : "not chosen"}.
+      </span>
+      <div className="analytics-preferences__actions">
+        <button type="button" onClick={decline} aria-pressed={consent === "denied"}>
+          Turn analytics off
+        </button>
+        <button type="button" onClick={allow} aria-pressed={consent === "granted"}>
+          Allow analytics
+        </button>
+      </div>
+    </div>
+  );
+}
