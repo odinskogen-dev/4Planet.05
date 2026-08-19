@@ -55,6 +55,16 @@ const CHAPTERS = [
   ["solutions", "SOLUTIONS"],
 ] as const;
 
+const FOOD_STAGE_IMAGES = [
+  "/assets/missions/food/hero.jpg",
+  "/assets/missions/food/detail-01.jpg",
+  "/assets/missions/food/bank-hero.jpg",
+  "/assets/missions/food/detail-02.jpg",
+  "/assets/missions/food/hero.jpg",
+  "/assets/missions/food/character.jpg",
+  "/assets/missions/food/bank-hero.jpg",
+] as const;
+
 const HUMAN_NODES: HumanNode[] = [
   { id: "eat", label: "EAT", system: "FOOD_", x: 18, y: 28, detail: "Nutrition moves through farms, fisheries, inputs, factories, trade, retail and waste." },
   { id: "drink", label: "DRINK", system: "WATER", x: 50, y: 13, detail: "Freshwater is a direct human dependency and a critical input into food and ecosystems." },
@@ -113,10 +123,10 @@ function AtlasGlobe({ className = "", records = [], pressure = false, ariaLabel 
           type: "raster",
           source: "sapiens-blue-marble",
           paint: {
-            "raster-opacity": pressure ? 0.76 : 0.98,
-            "raster-saturation": pressure ? -0.02 : -0.16,
-            "raster-contrast": pressure ? 0.18 : 0.12,
-            "raster-brightness-max": pressure ? 0.68 : 0.84,
+            "raster-opacity": pressure ? 0.76 : 0.94,
+            "raster-saturation": pressure ? -0.02 : -0.12,
+            "raster-contrast": pressure ? 0.18 : 0.16,
+            "raster-brightness-max": pressure ? 0.68 : 0.82,
           },
         }, firstSymbol);
       } catch { /* vector basemap remains visible */ }
@@ -138,7 +148,7 @@ function AtlasGlobe({ className = "", records = [], pressure = false, ariaLabel 
             source: "food-agriculture",
             paint: {
               "circle-color": accent,
-              "circle-opacity": pressure ? 0.58 : 0.24,
+              "circle-opacity": pressure ? 0.58 : 0.22,
               "circle-radius": ["interpolate", ["linear"], ["zoom"], 1, 2.4, 6, 5.8, 10, 7.5],
               "circle-stroke-color": "#FF4D22",
               "circle-stroke-width": pressure ? 0.8 : 0.35,
@@ -173,6 +183,7 @@ function HumanGraph({ onFood }: { onFood: () => void }) {
         <span style={mono}>{active.system} · HUMAN NEED</span>
         <h3>{active.label}</h3>
         <p>{active.detail}</p>
+        {active.id === "eat" && <button type="button" className="s4x-inline-journey" onClick={onFood}>START FOOD_ JOURNEY →</button>}
       </aside>
     </div>
   );
@@ -204,6 +215,7 @@ function LivingGraph() {
 export default function SapiensAtlasSandbox() {
   const [activeChapter, setActiveChapter] = useState(0);
   const [activeStage, setActiveStage] = useState(0);
+  const [journeyActive, setJourneyActive] = useState(false);
   const [relationMode, setRelationMode] = useState<RelationMode>("PRESSURE");
   const [data, setData] = useState<FoodResponse>({ ok: false, state: "LOADING" });
 
@@ -244,6 +256,16 @@ export default function SapiensAtlasSandbox() {
   }, []);
 
   const scrollTo = (id: string) => document.getElementById(`s4x-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const startFoodJourney = () => {
+    setJourneyActive(true);
+    setActiveStage(0);
+    requestAnimationFrame(() => scrollTo("food"));
+  };
+  const nextFoodStage = () => {
+    if (activeStage < FOOD_STAGES.length - 1) setActiveStage((value) => value + 1);
+    else scrollTo("pressure");
+  };
+  const previousFoodStage = () => setActiveStage((value) => Math.max(0, value - 1));
   const liveLabel = data.ok ? `${data.returned ?? 0} CLIMATE TRACE RECORDS · ${data.apiVersion || "V7"}` : data.state === "LOADING" ? "CLIMATE TRACE · LOADING" : "CLIMATE TRACE · SOURCE UNAVAILABLE";
 
   return (
@@ -259,6 +281,10 @@ export default function SapiensAtlasSandbox() {
 
         <section id="s4x-earth" data-s4x-chapter="0" className="s4x-section s4x-earth">
           <AtlasGlobe ariaLabel="S4PIENS Atlas — NASA Blue Marble Earth" records={data.ok ? data.sources || [] : []} />
+          <picture className="s4x-earth-horizon" aria-hidden>
+            <source media="(max-width: 760px)" srcSet="/assets/brand/earth-iss-mobile.jpg" />
+            <img src="/assets/brand/earth-iss.jpg" alt="" />
+          </picture>
           <div className="s4x-earth-scrim" aria-hidden />
           <div className="s4x-topline"><span style={mono}>4PLANET_ / S4PIENS_ / HUMAN SYSTEMS ATLAS</span><span style={mono}>NASA GIBS · BLUE MARBLE · {liveLabel}</span></div>
           <div className="s4x-earth-copy">
@@ -278,33 +304,53 @@ export default function SapiensAtlasSandbox() {
               <Link to="/species/homo-sapiens">OPEN GOLD SPECIES CARD →</Link>
             </div>
           </aside>
+          <div className="s4x-earth-atlas-note"><span style={mono}>LIVE SPATIAL LAYER</span><strong>ATLAS remains interactive beneath the cinematic Earth layer.</strong></div>
           <div className="s4x-status"><span>VIEW <b>EARTH</b></span><span>RELATION <b>DEPENDENCY</b></span><span>ATLAS <b>NASA GIBS</b></span><span>SOURCE <b>{data.ok ? `${data.returned ?? 0} RECORDS` : "STATE VISIBLE"}</b></span><span>STATUS <b>INTERNAL PROTOTYPE</b></span></div>
         </section>
 
         <section id="s4x-human" data-s4x-chapter="1" className="s4x-section s4x-human">
+          <div className="s4x-human-watermark" aria-hidden>02</div>
           <div className="s4x-shell s4x-human-grid">
             <div className="s4x-human-copy">
               <span className="s4x-eyebrow s4x-eyebrow--ink">02 · HOMO SAPIENS · HUMAN SYSTEMS</span>
               <h2>One species.<br/>Many systems.</h2>
               <p>We depend on living systems. Then we build food, water, energy, cities, clothing and mobility systems that reshape the same planet.</p>
               <div className="s4x-human-rule" style={mono}>PLANET → HUMAN = DEPENDENCY · HUMAN SYSTEM → PLANET = PRESSURE · SYSTEM → CHANGE = RESPONSE</div>
-              <button type="button" onClick={() => scrollTo("food")}>FOLLOW FOOD_ ↓</button>
+              <button type="button" onClick={startFoodJourney}>START FOOD_ JOURNEY ↓</button>
             </div>
-            <HumanGraph onFood={() => scrollTo("food")} />
+            <HumanGraph onFood={startFoodJourney} />
           </div>
         </section>
 
-        <section id="s4x-food" data-s4x-chapter="2" className="s4x-section s4x-food">
+        <section id="s4x-food" data-s4x-chapter="2" className={`s4x-section s4x-food ${journeyActive ? "is-journey" : ""}`}>
           <div className="s4x-shell">
             <span className="s4x-eyebrow">03 · FOOD_ · GOLD STANDARD 01</span>
-            <div className="s4x-food-head"><h2>Follow one meal.</h2><p>One ordinary human need crosses production, water, energy, land, factories, ports, retail and waste. FOOD_ is the first chain because almost anyone can enter the system here.</p></div>
-            <div className="s4x-stage-rail" aria-label="FOOD journey stages">
-              {FOOD_STAGES.map((stage, index) => <button key={stage.id} type="button" className={activeStage === index ? "is-active" : ""} onClick={() => setActiveStage(index)}><span style={mono}>{String(index + 1).padStart(2, "0")}</span><strong>{stage.label}</strong></button>)}
+            <div className="s4x-food-head">
+              <div><h2>Follow one meal.</h2><button className="s4x-food-start" type="button" onClick={startFoodJourney}>{journeyActive ? "RESTART JOURNEY ↺" : "START FOOD_ JOURNEY →"}</button></div>
+              <p>One ordinary human need crosses production, water, energy, land, factories, ports, retail and waste. FOOD_ is the first chain because almost anyone can enter the system here.</p>
             </div>
-            <div className="s4x-stage-detail"><span style={mono}>STAGE {String(activeStage + 1).padStart(2, "0")} / 07</span><h3>{FOOD_STAGES[activeStage].label}</h3><p>{FOOD_STAGES[activeStage].text}</p><button type="button" onClick={() => scrollTo("pressure")}>PUT THIS BACK ON EARTH ↓</button></div>
+
+            <div className="s4x-food-cinema">
+              <img src={FOOD_STAGE_IMAGES[activeStage]} alt="FOOD_ system visual context" />
+              <div className="s4x-food-cinema-scrim" aria-hidden />
+              <div className="s4x-food-cinema-copy"><span style={mono}>JOURNEY {String(activeStage + 1).padStart(2, "0")} / 07 · {FOOD_STAGES[activeStage].label}</span><strong>One meal is never only one place.</strong><p>Trace the need outward. Keep the planet, source and relationship visible at every step.</p></div>
+              <div className="s4x-food-cinema-index" style={mono}>HUMAN NEED → VALUE CHAIN → PLACE → PRESSURE → LIFE → RESPONSE</div>
+            </div>
+
+            <div className="s4x-journey-progress" aria-label="FOOD journey progress"><i style={{ width: `${((activeStage + 1) / FOOD_STAGES.length) * 100}%` }} /><span style={mono}>{journeyActive ? "JOURNEY ACTIVE" : "EXPLORE MODE"}</span></div>
+            <div className="s4x-stage-rail" aria-label="FOOD journey stages">
+              {FOOD_STAGES.map((stage, index) => <button key={stage.id} type="button" className={activeStage === index ? "is-active" : ""} onClick={() => { setJourneyActive(true); setActiveStage(index); }}><span style={mono}>{String(index + 1).padStart(2, "0")}</span><strong>{stage.label}</strong></button>)}
+            </div>
+            <div className="s4x-stage-detail">
+              <span style={mono}>STAGE {String(activeStage + 1).padStart(2, "0")} / 07</span>
+              <h3>{FOOD_STAGES[activeStage].label}</h3>
+              <p>{FOOD_STAGES[activeStage].text}</p>
+              <div className="s4x-stage-actions"><button type="button" onClick={previousFoodStage} disabled={activeStage === 0}>← PREVIOUS</button><button className="is-primary" type="button" onClick={nextFoodStage}>{activeStage === FOOD_STAGES.length - 1 ? "PUT THIS BACK ON EARTH ↓" : "NEXT STAGE →"}</button></div>
+            </div>
             <div className="s4x-proof-grid">
               {FOOD_PROOF_SIGNALS.map((signal) => <a key={signal.id} href={signal.sourceUrl} target="_blank" rel="noreferrer"><span style={mono}>{signal.theme} · {signal.dataYear}</span><strong>{signal.value}</strong><p>{signal.label}</p><small>{signal.source}<br/>LIMIT · {signal.limitation}</small></a>)}
             </div>
+            <div className="s4x-food-bridge"><img src="/assets/missions/food/detail-01.jpg" alt="FOOD_ production landscape detail"/><div><span style={mono}>FROM PLATE → PLACE</span><strong>The next question is not “is food good or bad?” It is “where does this system meet pressure?”</strong><button type="button" onClick={() => scrollTo("pressure")}>OPEN PRESSURE ON EARTH ↓</button></div></div>
           </div>
         </section>
 
@@ -324,7 +370,8 @@ export default function SapiensAtlasSandbox() {
         </section>
 
         <section id="s4x-evidence" data-s4x-chapter="4" className="s4x-section s4x-evidence">
-          <div className="s4x-shell">
+          <div className="s4x-evidence-visual" aria-hidden><img src="/assets/missions/food/detail-02.jpg" alt="" /></div>
+          <div className="s4x-shell s4x-evidence-inner">
             <span className="s4x-eyebrow">05 · SOURCE LEDGER · CHECKED 2026-08-19</span>
             <div className="s4x-evidence-head"><h2>Evidence before interpretation.</h2><p>{sourceCounts.live} live API · {sourceCounts.atlas} existing ATLAS · {sourceCounts.open} open datasets · {sourceCounts.rights} rights review · {sourceCounts.gated} access gated. Missing or failed sources stay missing — never rendered as zero.</p></div>
             <div className="s4x-source-key"><span>LIVE API</span><span>EXISTING ATLAS</span><span>OPEN DATASET</span><span>RIGHTS REVIEW</span><span>ACCESS GATED</span></div>
@@ -336,6 +383,8 @@ export default function SapiensAtlasSandbox() {
         </section>
 
         <section id="s4x-living" data-s4x-chapter="5" className="s4x-section s4x-living">
+          <img className="s4x-living-image" src="/assets/domains/s4piens/hero.jpg" alt="S4PIENS human systems visual" />
+          <div className="s4x-living-scrim" aria-hidden />
           <div className="s4x-shell s4x-living-layout">
             <div className="s4x-living-copy"><span className="s4x-eyebrow">06 · LIVING SYSTEMS · UNDERSTAND SYSTEMS</span><h2>Find what the system depends on — and what it can pressure.</h2><p>The graph is the explanation layer. ATLAS is the spatial reality layer. Both sit over the same Planet Model.</p><Link to={`/living-systems?entity=${humanId}&journey=food`}>OPEN LIVING SYSTEMS →</Link></div>
             <LivingGraph />
@@ -343,7 +392,8 @@ export default function SapiensAtlasSandbox() {
         </section>
 
         <section id="s4x-solutions" data-s4x-chapter="6" className="s4x-section s4x-solutions">
-          <div className="s4x-shell">
+          <div className="s4x-solutions-portrait" aria-hidden><img src="/assets/missions/food/character.jpg" alt="" /></div>
+          <div className="s4x-shell s4x-solutions-inner">
             <span className="s4x-eyebrow s4x-eyebrow--ink">07 · SOLUTIONS MAP · RESPONSE</span>
             <div className="s4x-solutions-head"><h2>Then find leverage.</h2><p>The point is not guilt. It is to identify where systems can change — and keep response separate from verified outcome.</p></div>
             <div className="s4x-response-warning" style={mono}>RESPONSE ≠ OUTCOME · SOLUTION NODES ARE INTERVENTION HYPOTHESES UNTIL EFFECTIVENESS / OPERATOR / DELIVERY EVIDENCE EXISTS.</div>
