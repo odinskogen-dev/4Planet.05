@@ -118,10 +118,14 @@
     if (boundary) boundary.textContent = manifest.truthBoundary;
   };
 
-  const render = async ({ scene, manifestUrl }) => {
+  const loadManifest = async (manifestUrl) => {
     const response = await fetch(manifestUrl, { credentials: 'same-origin' });
     if (!response.ok) throw new Error(`XR manifest failed: ${response.status}`);
-    const manifest = await response.json();
+    return response.json();
+  };
+
+  const render = async ({ scene, manifest: providedManifest, manifestUrl }) => {
+    const manifest = providedManifest || await loadManifest(manifestUrl);
     hydrateShell(manifest);
     renderEnvironment(scene, manifest);
     renderPanel(scene, manifest);
@@ -130,6 +134,7 @@
     scene.dataset.sceneId = manifest.id;
     scene.dataset.entityId = manifest.entity.id;
     scene.dataset.manifestVersion = manifest.version;
+    scene.dataset.truthFeed = manifest.canonical ? 'canonical-adapter' : 'layout-manifest';
     window.dispatchEvent(new CustomEvent('4planet:xr-scene-ready', { detail: { manifest } }));
     return manifest;
   };
