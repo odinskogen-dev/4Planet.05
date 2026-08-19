@@ -39,6 +39,7 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab", "true");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-extensions", "4");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-scene", "OCEAN_FOUNDATION");
+  await expect.poll(async () => Number(await page.locator("html").getAttribute("data-atlas-lab-legend-repairs")) > 0).toBeTruthy();
   await expect(page.getByLabel("Search the living planet — life, places and living systems")).toBeVisible();
   await expect(page.getByRole("button", { name: "LAYERS" })).toBeVisible();
 
@@ -55,6 +56,13 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
   await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
+
+  // Regression hardening: inherited legend metadata is normalised without
+  // changing the declared colours, so opening a legacy info drawer cannot throw.
+  const sstRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · SEA SURFACE TEMP" });
+  await expect(sstRow).toBeVisible();
+  await sstRow.getByRole("button", { name: "i" }).click();
+  await expect(sstRow.locator("..").locator(".drawer .ramp")).toBeVisible();
 
   await page.screenshot({
     path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-canonical-atlas-bathymetry.png`,
