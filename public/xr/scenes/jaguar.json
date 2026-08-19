@@ -70,28 +70,34 @@
         "markerPosition": { "x": 47, "y": 50 },
         "nextMarkerPosition": { "x": 80, "y": 60 },
         "media": {
-          "backgroundSrc": "/assets/missions/am4zonia/detail-01.jpg",
-          "backgroundPosition": "center 52%",
-          "enterScale": 1.13,
-          "activeScale": 1.04,
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg/1365px-Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 56%",
+          "enterScale": 1.15,
+          "activeScale": 1.035,
           "originX": 50,
-          "originY": 52,
+          "originY": 58,
           "credit": {
-            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "label": "AMAZON ECOPARK JUNGLE PATH · DENNIS G. JARVIS",
+            "url": "https://commons.wikimedia.org/wiki/File:Brazil-00584_-_Jungle_Path_(48966265363).jpg",
+            "license": "CC BY-SA 2.0"
+          },
+          "fallbackCredit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL FALLBACK",
             "url": "/ecosystems/amazon-rainforest"
           }
         },
-        "backgroundX": 48,
-        "backgroundY": 48,
-        "backgroundScale": 1.18,
-        "detailOpacity": 0.12,
+        "backgroundX": 50,
+        "backgroundY": 56,
+        "backgroundScale": 1.16,
+        "detailOpacity": 0.04,
         "subjectX": 47,
         "subjectY": 50,
-        "subjectScale": 1.12,
+        "subjectScale": 1.08,
         "subjectOpacity": 1,
-        "worldBrightness": 0.72,
-        "worldSaturation": 1.02,
-        "veilOpacity": 0.78
+        "worldBrightness": 0.7,
+        "worldSaturation": 1.04,
+        "veilOpacity": 0.72
       }
     },
     {
@@ -117,6 +123,7 @@
         "nextMarkerPosition": { "x": 31, "y": 34 },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/e/e4/River_RP.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
           "backgroundPosition": "center 48%",
           "enterScale": 1.14,
           "activeScale": 1.025,
@@ -172,6 +179,7 @@
         "nextMarkerPosition": { "x": 79, "y": 31 },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Amazon_CIAT_%282%29.jpg/1280px-Amazon_CIAT_%282%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
           "backgroundPosition": "center 50%",
           "enterScale": 1.08,
           "activeScale": 1.015,
@@ -228,6 +236,7 @@
         "nextMarkerPosition": { "x": 51, "y": 75 },
         "media": {
           "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Amazon_Deforestation_%286348745148%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
           "backgroundPosition": "center 48%",
           "enterScale": 1.09,
           "activeScale": 1.015,
