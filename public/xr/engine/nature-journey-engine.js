@@ -1,6 +1,9 @@
 (() => {
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+  // Generic presentation-only scene choreography. Scientific truth remains in
+  // canonical SPECIES / Living Systems / relationship feeds and is composed
+  // upstream by NatureSceneAdapter.
   const DEFAULT_SCENE = {
     state: 'life',
     backgroundX: 50,
