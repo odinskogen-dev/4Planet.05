@@ -27,11 +27,19 @@ test("Jaguar immersive loads canonical Nature Renderer and works without WebXR",
 
   const pressure = page.locator('.nature-node[data-node-id="jaguar-habitat-loss-fragmentation"]');
   await pressure.click({ force: true });
-  await expect(page.locator(".nature-chapter")).toHaveClass(/is-open/);
+  const chapter = page.locator(".nature-chapter");
+  await expect(chapter).toHaveClass(/is-open/);
   await expect(page.locator("#nature-chapter-title")).toContainText(/PRESSURE/i);
   await expect(page.locator("#nature-chapter-kicker")).toContainText(/PRESSURE · KNOWN/i);
   await expect(page.locator("#nature-chapter-source")).toContainText(/PANTHERA/i);
   await expect(page.locator("#nature-chapter-boundary")).toContainText(/local diagnosis|place-specific evidence/i);
+
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 760) {
+    const box = await chapter.boundingBox();
+    expect(box, "mobile truth panel should be measurable").not.toBeNull();
+    expect(box!.width, "mobile truth panel should read as a full bottom sheet").toBeGreaterThan(viewport.width * 0.88);
+  }
 
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-browser-immersive.png`, fullPage: true });
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
