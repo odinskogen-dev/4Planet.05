@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { NITROGEN_GOLD, type NitrogenOption } from "@/data/nitrogenGold";
 import "@/styles/choice-lab.css";
+import "@/styles/choice-incentives.css";
 
 type View = "system" | "innovation" | "capital";
 type ParticipantRole = "innovator" | "capital" | "field" | "institution";
