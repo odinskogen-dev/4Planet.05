@@ -8,6 +8,9 @@ const browserRenderer = readFileSync(new URL("../public/xr/engine/nature-browser
 const journeyRenderer = readFileSync(new URL("../public/xr/engine/nature-journey-engine.js", import.meta.url), "utf8");
 const cinematicRenderer = readFileSync(new URL("../public/xr/engine/nature-cinematic-journey-v11.js", import.meta.url), "utf8");
 const audioRenderer = readFileSync(new URL("../public/xr/engine/nature-audio-v05.js", import.meta.url), "utf8");
+const viewportGuard = readFileSync(new URL("../public/xr/engine/nature-viewport-guard-v12.js", import.meta.url), "utf8");
+const premiumCss = readFileSync(new URL("../public/xr/jaguar/jaguar-premium-v12.css", import.meta.url), "utf8");
+const journeyHtml = readFileSync(new URL("../public/journey/jaguar/index.html", import.meta.url), "utf8");
 const adapter = readFileSync(new URL("../public/xr/engine/nature-scene-adapter.js", import.meta.url), "utf8");
 const generator = readFileSync(new URL("./build-xr-canonical-data.mjs", import.meta.url), "utf8");
 const speciesSource = readFileSync(new URL("../src/data/species.ts", import.meta.url), "utf8");
@@ -101,6 +104,16 @@ test("Browser Journey is scene-first, evidence-secondary and performance-tiered"
   assert.match(cinematicRenderer, /fallbackSrc|manifest\?\.environment/);
 });
 
+test("Premium pass protects viewport safety and keeps uncontrolled 3D viewers out of the primary journey", () => {
+  assert.match(journeyHtml, /jaguar-premium-v12\.css/);
+  assert.match(journeyHtml, /nature-viewport-guard-v12\.js/);
+  assert.match(premiumCss, /max-width:calc\(100vw/);
+  assert.match(premiumCss, /data-cinematic-scene=response/);
+  assert.match(viewportGuard, /window\.scrollTo\(0, 0\)/);
+  assert.match(viewportGuard, /data\.viewportSafe|viewportSafe/);
+  assert.doesNotMatch(journeyHtml, /sketchfab\.com|<iframe/i);
+});
+
 test("Browser-first experience uses explicit user activation for chaptered Amazonia audio", () => {
   assert.match(manifest.browser.entryCta, /ENTER THE LIVING SYSTEM/i);
   assert.match(manifest.browser.ambientLabel, /NOT FIELD AUDIO/i);
@@ -111,6 +124,9 @@ test("Browser-first experience uses explicit user activation for chaptered Amazo
   assert.match(audioRenderer, /amazonia-procedural-v11/);
   assert.match(audioRenderer, /4planet:nature-journey-scene/);
   assert.match(audioRenderer, /sceneGain/);
+  assert.match(audioRenderer, /sceneMix/);
+  assert.match(audioRenderer, /water:\s*\.78/);
+  assert.match(audioRenderer, /no synthetic Jaguar roar/i);
 });
 
 test("P4B adapter consumes canonical SPECIES, Living Systems and relationship feeds", () => {
