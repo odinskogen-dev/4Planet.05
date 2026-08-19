@@ -41,3 +41,9 @@ test("new motion has an explicit reduced-motion boundary", () => {
   assert.match(universeCss, /prefers-reduced-motion:\s*reduce/);
   assert.match(universeCss, /animation:\s*none/);
 });
+
+test("new cross-product bridges preserve a visible keyboard focus indicator", () => {
+  assert.match(universeCss, /\.mission-world-bridge__link:focus-visible\s*\{[\s\S]*?outline:\s*3px solid currentColor/);
+  assert.match(universeCss, /\.human-dependency-grid\s*>\s*a:focus-visible\s*\{[\s\S]*?outline:\s*3px solid currentColor/);
+  assert.doesNotMatch(universeCss, /:focus-visible\s*\{[\s\S]{0,180}?outline:\s*none/);
+});
