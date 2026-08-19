@@ -1,15 +1,27 @@
 /*
- * ATLAS DATA LAB — bounded product-fix candidate.
+ * ATLAS DATA LAB — bounded product-fix candidates.
  *
- * The canonical search wrapper intentionally uses pointer-events:none so its
- * empty margins do not swallow map gestures. The visible input/lens controls
- * opt back in, but the result dropdown and site menu were omitted. That lets
- * the MapLibre canvas underneath intercept clicks on visible results.
- *
- * Keep the wrapper transparent to pointer input; only the visible interactive
- * surfaces opt in. This is isolated in the sandbox until promotion review.
+ * These are corrections discovered while exercising the canonical ATLAS with
+ * real data on desktop and 390px mobile. They stay sandbox-only until promotion
+ * review proves they do not regress the public runtime.
  */
+
+/* The canonical search wrapper intentionally uses pointer-events:none so its
+ * empty margins do not swallow map gestures. The visible input/lens controls
+ * opt back in, but the result dropdown and site menu were omitted. Without this
+ * the MapLibre canvas underneath intercepts clicks on visible results. */
 .world .search-wrap .results,
 .world .search-wrap .site-menu {
   pointer-events: auto;
+}
+
+/* On narrow screens the expanded layer console used to start at the same Y
+ * position as the lens rail, causing OCE4N/E4RTH mode chips to sit underneath
+ * EARTH/NOW/WATCH. Keep the collapsed LAYERS+ instrument where it is, but move
+ * the expanded console below the complete search+lens control stack. */
+@media (max-width: 640px) {
+  .world .atlas-panel:not(.rest) {
+    top: 154px !important;
+    max-height: calc(100vh - 210px);
+  }
 }
