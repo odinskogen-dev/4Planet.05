@@ -1,10 +1,10 @@
 import { mkdirSync } from "node:fs";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
 
 const OUT = "artifacts/jaguar-xr";
 mkdirSync(OUT, { recursive: true });
 
-async function expectSettled(root: ReturnType<Parameters<typeof test>[0]> extends never ? never : any, index: number) {
+async function expectSettled(root: Locator, index: number) {
   await expect(root).toHaveAttribute("data-cinematic-settled", "true", { timeout: 20_000 });
   await expect(root).toHaveAttribute("data-cinematic-settled-index", String(index), { timeout: 20_000 });
 }
