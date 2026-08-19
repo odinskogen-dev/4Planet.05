@@ -57,6 +57,41 @@ const overrides: Record<string, Partial<LabProject>> = {
     evidence: "D12 FOOD Gold / FOOD-4 controls / GitHub PR #81",
     freshness: "BRAIN + specialist current-head reconciliation · 19 Aug 2026",
   },
+  "odin": {
+    now: "ODIN is no longer only an architecture direction. The owner-only Life Control System has a canonical recovery router, live Master Control Register, Semantic Canon, Governance/Bridge Contract and Universal Operating Kernel / Project Factory. LABS exposes only the public-safe structural state; private operational truth stays in ODIN OS.",
+    next: "Use the established authority chain in real work, keep public/private bridges minimal, and improve the Founder control interface without copying private control-state into LABS.",
+    evidence: "ODIN Life Control System Master Index v2.0 / Master Control Register / Universal Operating Kernel",
+    freshness: "Canonical ODIN recovery reconciliation · 19 Aug 2026",
+    milestones: [
+      { label: "Owner-only canonical authority spine established", done: true },
+      { label: "Universal Operating Kernel / Project Factory established", done: true },
+      { label: "Private Founder interface matured", done: false },
+    ],
+  },
+  "odin/brain": {
+    now: "ODIN BRAIN is the durable semantic layer inside a five-layer owner-only system: BRAIN, OS/Life Control System, Vault, Control Tower and Learning Loop. 4PLANET BRAIN remains separate; only minimum-derived bridge classes are allowed.",
+    next: "Strengthen bounded recovery and privacy while preserving one canonical owner for each important object and no silent bridge of sensitive content.",
+    evidence: "ODIN Master Index v2.0 / Semantic Canon / Governance & Bridge Contract",
+    freshness: "Canonical ODIN architecture reconciliation · 19 Aug 2026",
+  },
+  "odin/process-library": {
+    state: "ACTIVE",
+    now: "Process Library is now a canonical live registry in the ODIN Master Control Register, paired with CASES and WBS under the Universal Operating Kernel. It is no longer just a proposed direction.",
+    next: "Populate it case-by-case from demonstrated repeatable processes; do not mass-migrate legacy material or create duplicate task truth.",
+    evidence: "ODIN Master Index v2.0 / Universal Operating Kernel / MCR live control surfaces",
+    freshness: "Canonical ODIN operating-kernel reconciliation · 19 Aug 2026",
+    milestones: [
+      { label: "Canonical Process Library surface exists", done: true },
+      { label: "CASES + WBS live control surfaces exist", done: true },
+      { label: "High-value repeatable processes progressively instantiated", done: false },
+    ],
+  },
+  "odin/founder-os": {
+    now: "The Founder OS concept now sits on top of a real owner-only control spine rather than a hypothetical future BRAIN. LABS remains a public development analogue only; private Control Tower and current-state data are not projected here.",
+    next: "Build a smaller private Founder interface over canonical current state with minimum founder burden and no duplicate operational register.",
+    evidence: "ODIN Master Index v2.0 / Master Control Register / Founder Control doctrine",
+    freshness: "Public-safe ODIN structural projection · 19 Aug 2026",
+  },
 };
 
 const freshProjects: LabProject[] = [
@@ -260,6 +295,7 @@ export const earlyStageProjects = projects.filter((project) => project.labStage 
 
 export const recentSystemMoves = [
   ["AUG19", "LABS reconciled against current BRAIN + active GitHub project heads", "SYNCED"],
+  ["ODIN", "Owner-only authority spine + Universal Operating Kernel established", "CURRENT"],
   ["Q90-1", "ONE INTERFACE candidate CI green; production promotion remains separate", "ACTIVE"],
   ["EARLY", "ATLAS / XR / Journey / S4PIENS / Tree / CHOICE / Planetary Map surfaced", "7 TRACKS"],
   ["CAPITAL", "15 historical submissions / 14 awaiting / 1 rejected / 0 cash", "CURRENT"],
