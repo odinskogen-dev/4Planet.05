@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-19",
+  "qualityTarget": "Research-grade truth discipline + consumer-grade interaction + premium visual restraint",
+  "states": ["PASS", "PENDING_EXACT_HEAD_PROOF", "PARTIAL", "NOT_BUILT", "BLOCKED"],
+  "gates": [
+    {
+      "id": "ONE_ENGINE",
+      "state": "PASS",
+      "requirement": "Sandbox reuses canonical PublicWorld → World; no parallel ATLAS renderer."
+    },
+    {
+      "id": "PRODUCTION_ISOLATION",
+      "state": "PASS",
+      "requirement": "Production branch/domain remain untouched until explicit promotion authority."
+    },
+    {
+      "id": "SCALABLE_LAYER_REGISTRY",
+      "state": "PASS",
+      "requirement": "New source products enter through a declarative extension registry with domain, role, temporal semantics, source identity, truth boundary and journey hooks."
+    },
+    {
+      "id": "DOMAIN_LENS_SCENE_SEPARATION",
+      "state": "PASS",
+      "requirement": "PLANET/OCE4N/E4RTH/S4PIENS remain domain modes; EARTH/NOW/WATCH remain lenses; question-specific combinations are scenes/presets rather than new ontology."
+    },
+    {
+      "id": "LAYER_ON_OFF",
+      "state": "PENDING_EXACT_HEAD_PROOF",
+      "requirement": "Every admitted lab layer uses the existing ATLAS ON/OFF machinery."
+    },
+    {
+      "id": "LAYER_OPACITY",
+      "state": "PENDING_EXACT_HEAD_PROOF",
+      "requirement": "Raster opacity remains adjustable through the canonical ATLAS layer drawer."
+    },
+    {
+      "id": "SOURCE_PROVENANCE",
+      "state": "PASS",
+      "requirement": "Source authority, product description, checked date and truth caveat are carried with every extension."
+    },
+    {
+      "id": "SOURCE_FAILURE_NOT_ZERO",
+      "state": "PASS",
+      "requirement": "Source failure remains explicit and is never rendered or described as zero/no records."
+    },
+    {
+      "id": "TEMPORAL_SEMANTICS",
+      "state": "PASS",
+      "requirement": "STATIC, SNAPSHOT, TIME_SERIES, CLIMATOLOGY and NEAR_REAL_TIME are kept distinct in extension metadata."
+    },
+    {
+      "id": "GENERIC_TIME_CONTROL",
+      "state": "NOT_BUILT",
+      "requirement": "A single ATLAS time control must drive sources that actually expose time without pretending static/climatological layers are live."
+    },
+    {
+      "id": "LAB_LEGEND_METADATA",
+      "state": "PARTIAL",
+      "requirement": "Provider-backed legend/class/unit information is required for each promoted lab layer; legacy ATLAS legend metadata is hardened in the sandbox."
+    },
+    {
+      "id": "SOURCE_DETAIL_UI",
+      "state": "PARTIAL",
+      "requirement": "Current ATLAS drawer exposes source, caveat and opacity; next pass must expose time basis, coverage/resolution, licence and methodology without turning the interface into a GIS console."
+    },
+    {
+      "id": "SPECIES_JOURNEY",
+      "state": "PENDING_EXACT_HEAD_PROOF",
+      "requirement": "ATLAS context can continue into an existing SPECIES profile while preserving return context."
+    },
+    {
+      "id": "LIVING_SYSTEMS_JOURNEY",
+      "state": "PENDING_EXACT_HEAD_PROOF",
+      "requirement": "Living Systems search/context continues to work inside the extended ATLAS runtime."
+    },
+    {
+      "id": "LAYER_DISCOVERY_AT_SCALE",
+      "state": "NOT_BUILT",
+      "requirement": "Before dozens of layers are admitted, the layer console needs search/filter/favourites or progressive grouping so layer count does not become cognitive debt."
+    },
+    {
+      "id": "PERFORMANCE_BUDGET",
+      "state": "NOT_BUILT",
+      "requirement": "Define and test bounds for simultaneous raster/vector sources, tile requests, interaction latency, memory and mobile rendering."
+    },
+    {
+      "id": "DESKTOP_MOBILE_VISUAL_PROOF",
+      "state": "PENDING_EXACT_HEAD_PROOF",
+      "requirement": "Every accepted release candidate must be browser-proven at desktop 1440 and mobile 390 in the real ATLAS runtime."
+    },
+    {
+      "id": "ACCESSIBILITY_AND_REDUCED_MOTION",
+      "state": "PARTIAL",
+      "requirement": "Preserve existing keyboard/reduced-motion behaviour and add explicit tests as lab UI grows."
+    }
+  ]
+}
