@@ -9,6 +9,7 @@ const profile = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const styles = read("src/styles/sapiens-atlas-story.css");
 const profileStyles = read("src/styles/homo-sapiens-gold.css");
 const chains = read("src/data/sapiensChains.ts");
+const evidence = read("src/data/sapiensFoodEvidence.ts");
 const api = read("functions/api/sapiens-food.ts");
 
 test("S4PIENS sandbox is isolated from the canonical S4PIENS domain route", () => {
@@ -57,10 +58,24 @@ test("the linked Homo sapiens Species route is a photographic Gold reference, no
   assert.match(profile, /We are not outside the living system\./);
   assert.match(profile, /OPEN HUMAN SYSTEMS ATLAS/);
   assert.match(profile, /GOLD STANDARD 01 · FOOD_/);
+  assert.match(profile, /FOOD_PROOF_SIGNALS/);
   for (const state of ["KNOWN", "INTERPRETED", "UNKNOWN WITHOUT MORE EVIDENCE"]) assert.match(profile, new RegExp(state));
   assert.match(profileStyles, /--hs-accent:#FF4D22/);
+  assert.match(profileStyles, /hs-gold-proof/);
   assert.match(profileStyles, /Instrument Sans/);
   assert.match(profileStyles, /Fragment Mono/);
+});
+
+test("first-contact FOOD proof uses three bounded primary-source signals", () => {
+  assert.match(evidence, /value: "32%"/);
+  assert.match(evidence, /FAO · FAOSTAT/);
+  assert.match(evidence, /dataYear: "2023"/);
+  assert.match(evidence, /value: "72%"/);
+  assert.match(evidence, /FAO · Land & Water/);
+  assert.match(evidence, /value: "1\.05B t"/);
+  assert.match(evidence, /UNEP · Food Waste Index 2024/);
+  assert.equal([...evidence.matchAll(/checkedOn: "2026-08-19"/g)].length, 3);
+  assert.equal([...evidence.matchAll(/limitation:/g)].length, 4); // type + three records
 });
 
 test("story choreography remains progressive and relation classes stay distinct", () => {
