@@ -6,8 +6,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const router = read("src/routes/router.tsx");
 const page = read("src/pages/integrated/SapiensAtlasSandbox.tsx");
 const styles = read("src/styles/sapiens-atlas-story.css");
+const goldStyles = read("src/styles/sapiens-atlas-gold.css");
 const chains = read("src/data/sapiensChains.ts");
 const api = read("functions/api/sapiens-food.ts");
+const lifeApi = read("functions/api/sapiens-life.ts");
+const earthLayers = read("src/earth/layers.ts");
 
 test("S4PIENS sandbox is isolated from the canonical S4PIENS domain route", () => {
   assert.match(router, /path="\/sandbox\/s4piens"/);
@@ -21,34 +24,37 @@ test("FOOD is the one Gold Standard chain and the registry has 20 working famili
   assert.equal(chainRows.filter((match) => match[0].includes('status: "GOLD_STANDARD"')).length, 1);
 });
 
-test("FOOD causal grammar spans human demand, value chain, pressures, sources and solutions", () => {
+test("Gold story keeps one persistent scene and seven progressive chapters", () => {
+  for (const token of ["You are here.", "Follow one meal.", "Now put it on Earth.", "Where does demand meet pressure?", "Then find the living system.", "Where can the system change?", "The story stays open."]) {
+    assert.match(page, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(page, /data-sapiens-story-step/);
+  assert.match(styles, /position:\s*sticky/);
+  assert.match(styles, /sapiens-story-chapter:nth-child\(even\)/);
+  assert.match(goldStyles, /min-height:\s*700svh/);
+  assert.match(goldStyles, /sapiens-stage__aurora/);
+  assert.match(goldStyles, /prefers-reduced-motion/);
+});
+
+test("FOOD causal grammar spans demand, chain, pressure, life, source and response", () => {
   for (const token of ["DEMAND + DIET", "FARM + SEA", "INPUTS", "PROCESSING", "TRADE + LOGISTICS", "LOSS + WASTE", "LAND CONVERSION", "WATER", "CLIMATE", "LIFE", "SOLUTIONS MAP"]) {
     assert.ok(chains.includes(token) || page.includes(token), `missing ${token}`);
   }
-  assert.match(page, /What does a meal touch\?/);
-  assert.match(page, /source-aware/i);
-});
-
-test("cinematic story space keeps human first, globe progressive, and relationships explicit", () => {
-  for (const token of ["You are here.", "Follow one meal.", "Now put it on Earth.", "Where does demand meet pressure?", "Then find the living system.", "Where can the system change?"]) {
-    assert.match(page, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
   for (const relation of ["DEPENDENCY", "PRESSURE", "RESPONSE"]) assert.match(page, new RegExp(relation));
-  assert.match(page, /activeChapter >= 2/);
-  assert.match(page, /data-sapiens-story-step/);
-  assert.match(styles, /position:\s*sticky/);
-  assert.match(styles, /sapiens-node-line/);
-  assert.match(styles, /sapiens-chainrail/);
-  assert.match(styles, /prefers-reduced-motion/);
+  assert.match(page, /What does a meal touch\?/);
+  assert.match(page, /SYSTEM STAGE · NOT PRODUCT PROVENANCE/);
 });
 
-test("v0.4 preserves the alternating narrative article grammar and removes the black tail", () => {
-  assert.match(styles, /min-height:\s*600svh/);
-  assert.match(styles, /sapiens-story-chapter:nth-child\(even\)\{justify-content:flex-end\}/);
-  assert.match(styles, /sapiens-story-chapter:nth-child\(odd\).*sapiens-chapter-card/);
-  assert.match(styles, /sapiens-story-chapter\.is-active \.sapiens-chapter-card/);
-  assert.match(styles, /menu-trigger\{color:#FF4D22!important\}/);
-  assert.match(styles, /body:has\(\.sapiens-story\) header/);
+test("Gold uses the shared ATLAS layer registry rather than a second map truth system", () => {
+  assert.match(page, /import \{ LAYERS \} from "@\/earth\/layers"/);
+  assert.match(page, /sapiens-raster-/);
+  for (const token of ["bluemarble", "truecolor", "ndvi", "precip", "aerosol", "fires"]) assert.match(page, new RegExp(token));
+  assert.match(earthLayers, /NASA GIBS/);
+  assert.match(earthLayers, /BlueMarble_ShadedRelief_Bathymetry/);
+  assert.match(earthLayers, /MODIS_Terra_NDVI_8Day/);
+  assert.match(earthLayers, /IMERG_Precipitation_Rate/);
+  assert.match(page, /ONE SHARED MODEL/);
+  assert.match(page, /No second map/);
 });
 
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
@@ -60,7 +66,21 @@ test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly"
   assert.match(page, /not a live plume/i);
 });
 
-test("FOOD source stack keeps open, existing and gated sources distinct", () => {
+test("live life seam uses bounded GBIF occurrence search and preserves epistemic limits", () => {
+  assert.match(lifeApi, /api\.gbif\.org\/v1/);
+  assert.match(lifeApi, /occurrence\/search/);
+  assert.match(lifeApi, /hasCoordinate/);
+  assert.match(lifeApi, /occurrenceStatus/);
+  assert.match(lifeApi, /Apis mellifera/);
+  assert.match(lifeApi, /Panthera onca/);
+  assert.match(lifeApi, /not population estimates/i);
+  assert.match(lifeApi, /sampling effort/i);
+  assert.match(lifeApi, /does not establish causal ecological impact/i);
+  assert.match(page, /\/api\/sapiens-life/);
+  assert.match(page, /GBIF · LIVE OCCURRENCE API/);
+});
+
+test("source spine keeps live, existing, qualified-next and gated states distinct", () => {
   for (const token of ["FAOSTAT", "Gridded Livestock of the World v4", "AQUASTAT", "Global Forest Watch", "NASA GIBS", "GBIF", "UN Comtrade", "Global Fishing Watch"]) {
     assert.match(chains, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -68,4 +88,14 @@ test("FOOD source stack keeps open, existing and gated sources distinct", () => 
   assert.match(chains, /EXISTING_ATLAS/);
   assert.match(chains, /OPEN_DATASET/);
   assert.match(chains, /ACCESS_GATED/);
+  assert.match(page, /QUALIFIED NEXT/);
+  assert.match(page, /not falsely rendered as live/i);
+});
+
+test("Gold response remains evidence-bounded and mission-connected", () => {
+  assert.match(page, /INTERVENTION HYPOTHESIS · NOT VERIFIED OUTCOME/);
+  assert.match(page, /RESPONSE ≠ OUTCOME/);
+  assert.match(page, /\/missions\/food/);
+  assert.match(page, /OPEN LIVING SYSTEMS/);
+  assert.match(page, /EXPLORE SPECIES/);
 });
