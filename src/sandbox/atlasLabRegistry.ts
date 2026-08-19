@@ -78,7 +78,7 @@ export const ATLAS_LAB_EXTENSIONS: AtlasLabExtension[] = [
   {
     descriptor: EMODNET_SEABED_HABITATS,
     atlas: {
-      label: "SEABED · HABITATS 2025",
+      label: "SEABED · HABITATS 2023",
       dom: "OCE4N",
       domain: ["PLANET", "OCE4N"],
       group: "EARTH",
@@ -89,8 +89,8 @@ export const ATLAS_LAB_EXTENSIONS: AtlasLabExtension[] = [
     },
     temporal: {
       kind: "SNAPSHOT",
-      selected: "2025",
-      caveat: "Predictive habitat classification, not current ecological condition. The lab uses the provider-advertised cached full-detail WMTS layer in WebMercator for browser delivery; the slow WMS path is no longer the default map transport.",
+      selected: "2023",
+      caveat: "Predictive habitat classification, not current ecological condition. The lab deliberately uses the visually proven scale-adaptive 2023 WMS group as its stable default; newer 2025 products remain candidates until they pass the same broad-Europe map gate.",
     },
     journeyHooks: [
       { kind: "SPECIES", label: "Explore Species", route: "/species", status: "AVAILABLE" },
