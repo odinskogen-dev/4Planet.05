@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { contextHref } from "@/product/ProductNav";
+import { MissionAtlasWindow } from "@/components/MissionAtlasWindow";
 
 /**
  * Human-first Mission summary + cross-product bridge.
@@ -88,68 +89,72 @@ export function MissionStrip({
   ];
 
   return (
-    <section
-      aria-label="Mission summary and connected 4PLANET lenses"
-      style={{
-        background: bg,
-        color: ink,
-        borderTop: `1px solid ${line}`,
-        borderBottom: `1px solid ${line}`,
-        padding: "clamp(34px,4.5vw,56px) clamp(20px,5vw,64px)",
-        "--mission-line": line,
-      } as React.CSSProperties}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ ...mono, color: dim, display: "inline-flex", alignItems: "center", gap: 10 }}>
-          <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", background: accent, display: "inline-block" }} />
-          WHERE THIS MISSION STANDS · <span style={{ color: ink }}>{status}</span>
-        </div>
-        {nextMilestone && <div style={{ ...mono, color: dim }}>NEXT MILESTONE · <span style={{ color: ink }}>{nextMilestone}</span></div>}
-      </div>
-
-      <div style={{ marginTop: "clamp(34px,5vw,64px)", marginBottom: "clamp(34px,5vw,56px)", maxWidth: 980 }}>
-        <div style={{ ...mono, color: accent, marginBottom: 12 }}>START HERE</div>
-        <h2 style={{ margin: 0, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(30px,4.4vw,66px)", lineHeight: .98, letterSpacing: "-.045em", maxWidth: "18ch" }}>
-          {humanQuestion[slug] ?? "What is changing here — and what could help?"}
-        </h2>
-      </div>
-
-      <div className="mission-human-strip">
-        {fields.map(([label, value]) => (
-          <div className="mission-human-strip__cell" key={label}>
-            <div style={{ ...mono, color: accent, marginBottom: 10 }}>{label}</div>
-            <p style={{ margin: 0, color: ink, fontSize: "clamp(14.5px,1.05vw,16px)", lineHeight: 1.56 }}>{value}</p>
+    <>
+      <section
+        aria-label="Mission summary and connected 4PLANET lenses"
+        style={{
+          background: bg,
+          color: ink,
+          borderTop: `1px solid ${line}`,
+          borderBottom: `1px solid ${line}`,
+          padding: "clamp(34px,4.5vw,56px) clamp(20px,5vw,64px)",
+          "--mission-line": line,
+        } as React.CSSProperties}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ ...mono, color: dim, display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", background: accent, display: "inline-block" }} />
+            WHERE THIS MISSION STANDS · <span style={{ color: ink }}>{status}</span>
           </div>
-        ))}
-      </div>
+          {nextMilestone && <div style={{ ...mono, color: dim }}>NEXT MILESTONE · <span style={{ color: ink }}>{nextMilestone}</span></div>}
+        </div>
 
-      <div style={{ marginTop: "clamp(42px,6vw,70px)" }}>
-        <div style={{ ...mono, color: accent }}>FOLLOW THE CONNECTIONS</div>
-        <h2 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3vw,42px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: "18ch" }}>
-          The Mission is one part of a living system.
-        </h2>
-        <p style={{ marginTop: 14, color: dim, fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55, maxWidth: 650 }}>
-          Change lens without losing the thread.
-        </p>
+        <div style={{ marginTop: "clamp(34px,5vw,64px)", marginBottom: "clamp(34px,5vw,56px)", maxWidth: 980 }}>
+          <div style={{ ...mono, color: accent, marginBottom: 12 }}>START HERE</div>
+          <h2 style={{ margin: 0, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(30px,4.4vw,66px)", lineHeight: .98, letterSpacing: "-.045em", maxWidth: "18ch" }}>
+            {humanQuestion[slug] ?? "What is changing here — and what could help?"}
+          </h2>
+        </div>
 
-        <div className="mission-world-bridge">
-          {links.map((link) => (
-            <Link
-              key={link.no}
-              to={link.to}
-              className="mission-world-bridge__link"
-              style={{ color: ink, background: dark ? "rgba(255,255,255,.015)" : "#fff" }}
-            >
-              <div style={{ ...mono, color: accent }}>{link.no}</div>
-              <div>
-                <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(17px,1.6vw,22px)", lineHeight: 1.05, letterSpacing: "-.02em" }}>{link.name}</div>
-                <p style={{ marginTop: 9, color: dim, fontSize: 13.5, lineHeight: 1.5 }}>{link.line}</p>
-              </div>
-              <div style={{ ...mono, color: accent }}>OPEN →</div>
-            </Link>
+        <div className="mission-human-strip">
+          {fields.map(([label, value]) => (
+            <div className="mission-human-strip__cell" key={label}>
+              <div style={{ ...mono, color: accent, marginBottom: 10 }}>{label}</div>
+              <p style={{ margin: 0, color: ink, fontSize: "clamp(14.5px,1.05vw,16px)", lineHeight: 1.56 }}>{value}</p>
+            </div>
           ))}
         </div>
-      </div>
-    </section>
+
+        <div style={{ marginTop: "clamp(42px,6vw,70px)" }}>
+          <div style={{ ...mono, color: accent }}>FOLLOW THE CONNECTIONS</div>
+          <h2 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3vw,42px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: "18ch" }}>
+            The Mission is one part of a living system.
+          </h2>
+          <p style={{ marginTop: 14, color: dim, fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55, maxWidth: 650 }}>
+            Change lens without losing the thread.
+          </p>
+
+          <div className="mission-world-bridge">
+            {links.map((link) => (
+              <Link
+                key={link.no}
+                to={link.to}
+                className="mission-world-bridge__link"
+                style={{ color: ink, background: dark ? "rgba(255,255,255,.015)" : "#fff" }}
+              >
+                <div style={{ ...mono, color: accent }}>{link.no}</div>
+                <div>
+                  <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(17px,1.6vw,22px)", lineHeight: 1.05, letterSpacing: "-.02em" }}>{link.name}</div>
+                  <p style={{ marginTop: 9, color: dim, fontSize: 13.5, lineHeight: 1.5 }}>{link.line}</p>
+                </div>
+                <div style={{ ...mono, color: accent }}>OPEN →</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <MissionAtlasWindow missionSlug={slug} accent={accent} />
+    </>
   );
 }
