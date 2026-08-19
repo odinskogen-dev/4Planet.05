@@ -63,7 +63,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(() => habitatUrls.some((url) => {
     const decoded = decodeURIComponent(url);
-    return decoded.includes("layers=eusm2025_eunis2019_800") && decoded.includes("styles=eusm2021_eunis2019_l2_800");
+    return decoded.includes("layers=eusm2025_msfd_800") && decoded.includes("styles=eusm2019_msfd_800");
   }), { timeout: 30_000 }).toBeTruthy();
   await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-habitat.png`, fullPage: true });
 
