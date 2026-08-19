@@ -13,24 +13,33 @@
 .sapiens-story button,.sapiens-story a { -webkit-tap-highlight-color: transparent; }
 .sapiens-story button:focus-visible,.sapiens-story a:focus-visible { outline: 2px solid var(--sapiens-accent); outline-offset: 3px; }
 
-body.sapiens-immersive-nav header { background: transparent !important; border-bottom-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+body.sapiens-immersive-nav header { background: transparent !important; border-bottom-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow:none !important; }
 body.sapiens-immersive-nav header a, body.sapiens-immersive-nav header button { color: #fff !important; }
+body.sapiens-immersive-nav header .menu-trigger { color:#FF4D22 !important; }
+body.sapiens-immersive-nav header a[aria-label="4Planet home"] > span > span:first-child { color:#fff !important; }
+body.sapiens-immersive-nav header a[aria-label="4Planet home"] > span > span:first-child > span { color:#FF4D22 !important; }
+body.sapiens-immersive-nav header a[href="/people"] { color:#fff !important; border-color:rgba(255,255,255,.16) !important; }
 body.sapiens-immersive-nav header svg path, body.sapiens-immersive-nav header svg line, body.sapiens-immersive-nav header svg circle { stroke: #fff !important; }
 
-.sapiens-story-shell { position: relative; min-height: 600svh; background: #020608; }
+/* Six narrative viewports need one extra viewport of sticky runway. The first editorial plane
+   overlaps that release viewport so the stage never collapses into an empty black tail. */
+.sapiens-story-shell { position: relative; min-height: 700svh; background: #020608; }
 .sapiens-stage { position: sticky; top: 0; z-index: 1; height: 100svh; min-height: 680px; overflow: hidden; isolation: isolate; background: #020608; }
+.sapiens-story-shell + .sapiens-editorial { margin-top:-100svh; }
 .sapiens-cosmos { position: absolute; inset: 0; z-index: 0; pointer-events: none; background:
-  radial-gradient(circle at 40% 45%, rgba(255,77,34,.13), transparent 18%),
-  radial-gradient(circle at 74% 28%, rgba(35,89,130,.11), transparent 23%),
-  radial-gradient(circle at 21% 80%, rgba(255,77,34,.07), transparent 18%),
-  radial-gradient(circle at 50% 54%, rgba(0,0,0,0), rgba(1,5,7,.92) 72%),
+  radial-gradient(circle at 50% 46%, rgba(255,77,34,.20), transparent 19%),
+  radial-gradient(circle at 74% 27%, rgba(42,103,154,.18), transparent 25%),
+  radial-gradient(circle at 18% 78%, rgba(255,77,34,.12), transparent 21%),
+  radial-gradient(circle at 58% 72%, rgba(23,72,103,.08), transparent 24%),
+  radial-gradient(circle at 50% 54%, rgba(0,0,0,0), rgba(1,5,7,.78) 78%),
   #020608;
 }
-.sapiens-cosmos::before,.sapiens-cosmos::after { content:""; position:absolute; inset:0; opacity:.5; background-image:
-  radial-gradient(circle, rgba(255,255,255,.35) 0 1px, transparent 1.2px),
-  radial-gradient(circle, rgba(255,105,64,.25) 0 1px, transparent 1.2px);
-  background-size: 83px 83px, 137px 137px; background-position: 0 0, 41px 27px; }
-.sapiens-cosmos::after { opacity:.2; transform:scale(1.08); filter:blur(.4px); }
+.sapiens-cosmos::before,.sapiens-cosmos::after { content:""; position:absolute; inset:0; opacity:.72; background-image:
+  radial-gradient(circle, rgba(255,255,255,.42) 0 1px, transparent 1.25px),
+  radial-gradient(circle, rgba(255,105,64,.32) 0 1px, transparent 1.25px),
+  radial-gradient(circle, rgba(92,151,197,.25) 0 .8px, transparent 1.15px);
+  background-size: 83px 83px, 137px 137px, 211px 211px; background-position: 0 0, 41px 27px, 87px 63px; }
+.sapiens-cosmos::after { opacity:.28; transform:scale(1.08); filter:blur(.5px); }
 
 .sapiens-stage__map { position:absolute; inset:0; z-index:1; background:#020608; opacity:0; transform:scale(1.025); transition:opacity 1.05s ease,transform 1.35s cubic-bezier(.22,.8,.22,1),filter .8s ease; }
 .scene-atlas .sapiens-stage__map,.scene-pressure_atlas .sapiens-stage__map { opacity:1; transform:scale(1); }
@@ -38,8 +47,8 @@ body.sapiens-immersive-nav header svg path, body.sapiens-immersive-nav header sv
 .scene-pressure_atlas .sapiens-stage__map .maplibregl-canvas { filter: brightness(.7) saturate(.88) contrast(1.16); }
 .sapiens-stage__map .maplibregl-control-container { opacity:.38; transition:opacity .2s ease; }
 .sapiens-stage__map:hover .maplibregl-control-container { opacity:.8; }
-.sapiens-stage__scrim { position:absolute; inset:0; z-index:2; pointer-events:none; background: radial-gradient(circle at 62% 48%, transparent 0 26%, rgba(0,0,0,.12) 52%, rgba(0,0,0,.46) 100%),linear-gradient(180deg,rgba(0,0,0,.28),transparent 25%,transparent 72%,rgba(0,0,0,.48)); }
-.scene-human_graph .sapiens-stage__scrim,.scene-chain_graph .sapiens-stage__scrim,.scene-life_graph .sapiens-stage__scrim,.scene-solution_graph .sapiens-stage__scrim { background: radial-gradient(circle at 52% 50%, transparent 0 18%, rgba(0,0,0,.10) 40%, rgba(0,0,0,.38) 100%); }
+.sapiens-stage__scrim { position:absolute; inset:0; z-index:2; pointer-events:none; background: radial-gradient(circle at 62% 48%, transparent 0 26%, rgba(0,0,0,.10) 55%, rgba(0,0,0,.38) 100%),linear-gradient(180deg,rgba(0,0,0,.22),transparent 25%,transparent 72%,rgba(0,0,0,.40)); }
+.scene-human_graph .sapiens-stage__scrim,.scene-chain_graph .sapiens-stage__scrim,.scene-life_graph .sapiens-stage__scrim,.scene-solution_graph .sapiens-stage__scrim { background: radial-gradient(circle at 52% 50%, transparent 0 22%, rgba(0,0,0,.05) 48%, rgba(0,0,0,.22) 100%); }
 
 .sapiens-chrome { position:absolute; z-index:24; top:calc(86px + env(safe-area-inset-top,0px)); left:clamp(24px,3vw,48px); right:clamp(24px,3vw,48px); display:flex; justify-content:space-between; align-items:center; gap:24px; pointer-events:none; color:rgba(255,255,255,.66); }
 .sapiens-brandline,.sapiens-source-state { display:flex; align-items:center; gap:10px; }
@@ -96,7 +105,6 @@ body.sapiens-immersive-nav header svg path, body.sapiens-immersive-nav header sv
 .is-chain_graph .sapiens-knowledge__node.is-chain:first-of-type { width:126px; min-height:126px; border-color:var(--sapiens-accent); box-shadow:0 0 50px rgba(255,77,34,.12); }
 .is-life_graph .sapiens-knowledge__node.is-life { border-color:rgba(143,230,183,.32); }
 .is-solution_graph .sapiens-knowledge__node.is-solution { border-color:rgba(143,230,183,.42); }
-
 .sapiens-node-inspect { position:absolute; z-index:27; left:50%; bottom:clamp(28px,5vh,52px); transform:translateX(-50%); width:min(430px,36vw); padding:18px 20px 20px; background:rgba(4,8,10,.91); border:1px solid rgba(255,255,255,.2); }
 .sapiens-node-inspect h3 { margin:8px 0 0; font-family:'Instrument Sans',sans-serif; font-size:27px; line-height:1; letter-spacing:-.035em; font-weight:500; }
 .sapiens-node-inspect p { margin:10px 0 0; color:rgba(255,255,255,.62); font-size:13px; line-height:1.5; }
