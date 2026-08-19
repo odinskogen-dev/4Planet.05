@@ -16,7 +16,8 @@ export function MissionStrip({
   status: string; nextMilestone?: string; accent: string; dark?: boolean;
 }) {
   const location = useLocation();
-  const slug = location.pathname.split("/").filter(Boolean).at(-1) ?? "mission";
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const slug = pathParts[pathParts.length - 1] ?? "mission";
   const ink = dark ? "rgba(255,255,255,.94)" : T.ink;
   const dim = dark ? "rgba(255,255,255,.6)" : T.dim;
   const line = dark ? "rgba(255,255,255,.16)" : "rgba(8,8,8,.12)";
