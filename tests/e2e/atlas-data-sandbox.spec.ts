@@ -29,7 +29,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   page.on("response", (response) => {
     const url = response.url();
     if (url.startsWith("https://ows.emodnet-bathymetry.eu/wms")) bathymetryResponses.push(response.status());
-    if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest")) {
+    if (url.startsWith("https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms")) {
       habitatResponses.push(response.status());
       habitatUrls.push(url);
     }
@@ -54,7 +54,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
 
   await openLayers(page);
   await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
-  await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
+  await expect(page.getByText("SEABED · HABITATS 2023", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
@@ -93,16 +93,15 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
 
   await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-foundation.png`, fullPage: true });
 
-  // Habitat uses the provider's cached full-detail 2025 WMTS in EPSG:900913.
-  // This replaces the slow WMS renderer as the default web-map transport.
+  // Stable default: scale-adaptive EUSeaMap 2023 WMS group. Newer 2025 products
+  // remain candidate routes until they pass the same broad-Europe visual gate.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => {
       const decoded = decodeURIComponent(url);
-      return decoded.includes("eusm2025_eunis2019_full")
-        && decoded.includes("emodnet_view:eusm2021_eunis2019_l2_fulldetail")
-        && decoded.includes("EPSG:900913");
+      return decoded.includes("layers=eusm2023_eunis2019_group")
+        && decoded.includes("styles=default-style-eusm2023_eunis2019_group");
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
