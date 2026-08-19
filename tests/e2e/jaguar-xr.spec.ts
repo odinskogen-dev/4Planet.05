@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { test, expect, type Locator } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 const OUT = "artifacts/jaguar-xr";
 mkdirSync(OUT, { recursive: true });
@@ -7,6 +7,22 @@ mkdirSync(OUT, { recursive: true });
 async function expectSettled(root: Locator, index: number) {
   await expect(root).toHaveAttribute("data-cinematic-settled", "true", { timeout: 20_000 });
   await expect(root).toHaveAttribute("data-cinematic-settled-index", String(index), { timeout: 20_000 });
+}
+
+async function expectViewportSafe(page: Page, locator: Locator, label: string) {
+  const viewport = page.viewportSize();
+  const box = await locator.boundingBox();
+  expect(viewport, `${label}: viewport should exist`).not.toBeNull();
+  expect(box, `${label}: element should be measurable`).not.toBeNull();
+  expect(box!.x, `${label}: left edge may not clip`).toBeGreaterThanOrEqual(-1);
+  expect(box!.x + box!.width, `${label}: right edge may not clip`).toBeLessThanOrEqual(viewport!.width + 1);
+}
+
+async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) {
+  await expectViewportSafe(page, root, `${label} root`);
+  await expectViewportSafe(page, page.locator(".nature-journey-hud"), `${label} HUD`);
+  const scrollX = await page.evaluate(() => window.scrollX);
+  expect(scrollX, `${label}: journey must not horizontally scroll`).toBe(0);
 }
 
 test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidence", async ({ page }, testInfo) => {
@@ -37,6 +53,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidenc
   await expect(root).toHaveAttribute("data-chapter-media-ready", "true", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
   await expectSettled(root, 0);
+  await expectJourneyFrameSafe(page, root, "MEET LIFE");
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-01-meet.png`, fullPage: true });
 
   const next = page.locator(".nature-journey-hud__next");
@@ -45,6 +62,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidenc
   await expect(root).toHaveAttribute("data-cinematic-index", "1", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
   await expectSettled(root, 1);
+  await expectJourneyFrameSafe(page, root, "FOLLOW PREY");
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-02-prey.png`, fullPage: true });
 
   await next.click();
@@ -52,6 +70,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidenc
   await expect(root).toHaveAttribute("data-cinematic-index", "2", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the whole story/i);
   await expectSettled(root, 2);
+  await expectJourneyFrameSafe(page, root, "CONNECTED HABITAT");
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-03-habitat.png`, fullPage: true });
 
   await next.click();
@@ -60,6 +79,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidenc
   await expect(root).toHaveAttribute("data-journey-node", "jaguar-habitat-loss-fragmentation");
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/landscape changes/i);
   await expectSettled(root, 3);
+  await expectJourneyFrameSafe(page, root, "UNDER PRESSURE");
   const chapter = page.locator(".nature-chapter");
   await expect(chapter).not.toHaveClass(/is-open/);
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-04-pressure.png`, fullPage: true });
@@ -85,6 +105,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes before evidenc
   await expect(root).toHaveAttribute("data-cinematic-index", "4", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the destination/i);
   await expectSettled(root, 4);
+  await expectJourneyFrameSafe(page, root, "RESPOND");
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-05-response.png`, fullPage: true });
 
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
