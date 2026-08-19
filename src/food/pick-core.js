@@ -1,8 +1,12 @@
-export const PICK_MODEL_VERSION = "p18-pick-0.2.0";
+import { evaluateHealth } from "./pick-health.js";
+import { evaluatePlanet } from "./pick-planet.js";
+import { unknownWallet } from "./pick-wallet.js";
+
+export const PICK_MODEL_VERSION = "p18-pick-0.5.0";
 
 const knownNutrientCount = (product) => Object.values(product?.nutrients ?? {}).filter((value) => typeof value === "number" && Number.isFinite(value)).length;
 
-export function buildDecisionAxes(product) {
+export function buildDecisionAxes(product, context = {}) {
   if (!product) {
     return [
       unknownAxis("health", "HEALTH", "Product not loaded"),
@@ -11,26 +15,41 @@ export function buildDecisionAxes(product) {
     ];
   }
 
-  const hasConflicts = (product.dataQuality?.conflicts?.length ?? 0) > 0;
-  const compositionKnown = Boolean(product.ingredientsText) || knownNutrientCount(product) >= 3;
-  const health = hasConflicts
-    ? unknownAxis("health", "HEALTH", "Product record has unresolved conflicts")
-    : compositionKnown
-      ? {
-          id: "health",
-          label: "HEALTH",
-          state: "COMPOSITION READABLE",
-          confidence: "LIMITED",
-          directness: "PRODUCT DATA",
-          summary: "Ingredients and/or nutrition are available for inspection. No health verdict is inferred from label data alone.",
-          limitation: "Diet-pattern and category-specific health evidence is not connected in this iteration.",
-        }
-      : unknownAxis("health", "HEALTH", "Insufficient product composition data");
+  const health = evaluateHealth(product);
+  const wallet = context.wallet ?? unknownWallet();
+  const planet = context.planet ?? evaluatePlanet(product);
 
   return [
-    health,
-    unknownAxis("wallet", "WALLET", "No current price observation is connected to this GTIN."),
-    unknownAxis("planet", "PLANET", "No product-, ingredient- or category-level environmental evidence is connected yet."),
+    {
+      id: "health",
+      label: "HEALTH",
+      state: health.state,
+      confidence: health.confidence,
+      directness: health.directness,
+      summary: health.summary,
+      limitation: health.limitations?.join(" · ") || "No additional limitation recorded.",
+      evidence: health.evidence ?? [],
+    },
+    {
+      id: "wallet",
+      label: "WALLET",
+      state: wallet.state,
+      confidence: wallet.confidence,
+      directness: wallet.directness,
+      summary: wallet.summary,
+      limitation: wallet.limitation,
+      evidence: wallet.source ? [wallet.source] : [],
+    },
+    {
+      id: "planet",
+      label: "PLANET",
+      state: planet.state,
+      confidence: planet.confidence,
+      directness: planet.directness,
+      summary: planet.summary,
+      limitation: planet.limitation,
+      evidence: planet.evidence ?? [],
+    },
   ];
 }
 
@@ -43,6 +62,7 @@ export function unknownAxis(id, label, reason) {
     directness: "NONE",
     summary: reason,
     limitation: "Missing data is not treated as a positive signal and cannot improve rank.",
+    evidence: [],
   };
 }
 
@@ -66,7 +86,7 @@ function freshness(retrievedAt) {
     : { state: "CHECK AGE", detail: `Retrieved ${ageDays} days ago` };
 }
 
-export function buildTruthPassport(product) {
+export function buildTruthPassport(product, context = {}) {
   if (!product) {
     return {
       source: { id: "NONE", class: "UNKNOWN", licence: "UNKNOWN" },
@@ -75,7 +95,8 @@ export function buildTruthPassport(product) {
       completeness: 0,
       conflictState: "UNKNOWN",
       facts: [],
-      chain: ["SOURCE", "RECORD", "FACT", "INTERPRETATION"],
+      evidenceSources: [],
+      chain: ["SOURCE", "RECORD", "FACT", "EVIDENCE", "INTERPRETATION"],
     };
   }
 
@@ -83,13 +104,23 @@ export function buildTruthPassport(product) {
   const sourceId = ref?.sourceId ?? "UNKNOWN";
   const sourceClass = sourceId === "open_food_facts" ? "COMMUNITY PRODUCT DATABASE" : "SOURCE RECORD";
   const conflicts = product.dataQuality?.conflicts ?? [];
+  const health = evaluateHealth(product);
+  const planet = context.planet ?? evaluatePlanet(product);
+  const wallet = context.wallet ?? unknownWallet();
   const facts = [
     { id: "identity", label: "PRODUCT IDENTITY", available: Boolean(product.gtin && product.name), directness: "PRODUCT-SPECIFIC", interpretation: "Identity record only" },
     { id: "ingredients", label: "INGREDIENTS", available: Boolean(product.ingredientsText), directness: "PRODUCT-SPECIFIC", interpretation: "Label data; not a health verdict" },
-    { id: "nutrition", label: "NUTRITION", available: knownNutrientCount(product) >= 3, directness: "PRODUCT-SPECIFIC", interpretation: "Composition data; not a diet-pattern conclusion" },
-    { id: "price", label: "PRICE", available: false, directness: "NONE", interpretation: "Wallet source not connected" },
-    { id: "planet", label: "PLANET", available: false, directness: "NONE", interpretation: "Environmental evidence not connected" },
+    { id: "nutrition", label: "NUTRITION", available: knownNutrientCount(product) >= 3, directness: "PRODUCT-SPECIFIC", interpretation: "Composition data; interpreted only through controlled evidence rules" },
+    { id: "health", label: "HEALTH EVIDENCE", available: health.confidence !== "UNKNOWN", directness: health.directness, interpretation: `${health.state} · ${health.confidence}` },
+    { id: "price", label: "PRICE", available: Boolean(wallet.observation), directness: wallet.directness, interpretation: wallet.observation ? `${wallet.state} · observed price` : "No usable price observation" },
+    { id: "planet", label: "PLANET", available: planet.confidence !== "UNKNOWN", directness: planet.directness, interpretation: `${planet.state} · ${planet.exactSkuFootprint ? "SKU evidence" : "not an exact SKU footprint"}` },
   ];
+
+  const evidenceSources = [
+    ...(health.evidence ?? []),
+    ...(wallet.source ? [wallet.source] : []),
+    ...(planet.evidence ?? []),
+  ].filter((source, index, list) => source && list.findIndex((candidate) => (candidate.id ?? candidate.sourceId) === (source.id ?? source.sourceId)) === index);
 
   return {
     source: {
@@ -99,11 +130,12 @@ export function buildTruthPassport(product) {
       apiVersion: ref?.apiVersion ?? "UNKNOWN",
       endpoint: ref?.endpoint ?? "UNKNOWN",
     },
-    directness: "PRODUCT-SPECIFIC FOR LABEL/IDENTITY FIELDS ONLY",
+    directness: "PRODUCT-SPECIFIC FOR LABEL/IDENTITY; HEALTH AND PLANET MAY USE CATEGORY/PATTERN EVIDENCE",
     freshness: freshness(ref?.retrievedAt),
     completeness: Math.round((product.dataQuality?.completeness ?? 0) * 100),
     conflictState: conflicts.length ? `CONFLICTED · ${conflicts.length}` : "NO CONTROLLED CONFLICTS",
     facts,
-    chain: ["SOURCE", "RECORD", "FACT", "INTERPRETATION"],
+    evidenceSources,
+    chain: ["SOURCE", "RECORD", "FACT", "EVIDENCE", "INTERPRETATION"],
   };
 }
