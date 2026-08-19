@@ -26,7 +26,7 @@ test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep
     await expect(page.getByRole("button", { name: need })).toBeVisible();
   }
   await page.getByRole("button", { name: /FOOD_: EAT/i }).click();
-  await expect(page.getByText(/Nutrition is a biological dependency/i)).toBeVisible();
+  await expect(page.getByText(/Nutrition is a biological dependency/i).first()).toBeVisible();
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-02-human-graph.png` });
 
   await openChapter(page, /Open chapter 03/i, "Follow one meal.");
@@ -34,7 +34,7 @@ test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep
   await expect(page.getByRole("button", { name: /01: DEMAND \+ DIET/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /07: LOSS \+ WASTE/i })).toBeVisible();
   await page.getByRole("button", { name: /04: PROCESSING/i }).click();
-  await expect(page.getByText(/Milling, slaughter, refrigeration and manufacturing/i)).toBeVisible();
+  await expect(page.getByText(/Milling, slaughter, refrigeration and manufacturing/i).first()).toBeVisible();
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-03-food-chain.png` });
 
   await openChapter(page, /Open chapter 04/i, "Now locate the pressure.");
@@ -51,7 +51,7 @@ test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep
     await expect(page.getByRole("button", { name: node })).toBeVisible();
   }
   await page.getByRole("button", { name: /LIFE: BIODIVERSITY/i }).click();
-  await expect(page.getByText(/GBIF records are observations, not population estimates/i)).toBeVisible();
+  await expect(page.getByText(/GBIF records are observations, not population estimates/i).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN LIVING SYSTEMS/i })).toBeVisible();
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-05-living-systems.png` });
 
@@ -60,15 +60,15 @@ test("S4PIENS FOOD Gold stays Atlas-first, human-readable and progressively deep
   await expect(page.getByRole("button", { name: /LAND: AVOID HABITAT CONVERSION/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /WASTE: REDUCE FOOD LOSS \+ WASTE/i })).toBeVisible();
   await page.getByRole("button", { name: /WASTE: REDUCE FOOD LOSS \+ WASTE/i }).click();
-  await expect(page.getByText(/Where in the chain is avoidable loss carrying the most embedded resources/i)).toBeVisible();
+  await expect(page.getByText(/Where in the chain is avoidable loss carrying the most embedded resources/i).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN FOOD_ MISSION/i })).toBeVisible();
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-06-solutions-map.png` });
 
   await expect(page.getByRole("heading", { name: /One human need touches almost the whole planet/i })).toBeAttached();
   await expect(page.getByRole("heading", { name: /Evidence before interpretation/i })).toBeAttached();
-  await expect(page.getByText(/RIGHTS REVIEW/i)).toBeAttached();
-  await expect(page.getByText(/Trase/i)).toBeAttached();
-  await expect(page.getByText(/GLORIA/i)).toBeAttached();
+  await expect(page.getByText(/RIGHTS REVIEW/i).first()).toBeAttached();
+  await expect(page.getByText(/Trase/i).first()).toBeAttached();
+  await expect(page.getByText(/GLORIA/i).first()).toBeAttached();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(3);
@@ -86,7 +86,7 @@ test("Homo sapiens Species route holds the same premium Gold grammar", async ({ 
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-07-homo-sapiens-gold.png` });
 
   await expect(page.getByRole("heading", { name: /Start with what a human needs/i })).toBeAttached();
-  await expect(page.getByText(/GOLD STANDARD · FOOD_/i)).toBeAttached();
+  await expect(page.getByText(/GOLD STANDARD · FOOD_/i).first()).toBeAttached();
   await expect(page.getByText(/UNKNOWN WITHOUT MORE EVIDENCE/i)).toBeAttached();
   await expect(page.getByRole("heading", { name: /Follow one meal through the planet/i })).toBeAttached();
   await expect(page.getByRole("link", { name: /ENTER FOOD_ GOLD JOURNEY/i })).toBeAttached();
