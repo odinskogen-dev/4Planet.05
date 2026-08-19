@@ -43,14 +43,14 @@ export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   buttonLabel: "SEABED HABITATS",
   label: "EMODNET · SEABED HABITATS",
   authority: "European Marine Observation and Data Network (EMODnet)",
-  product: "EUSeaMap 2025 · MSFD habitat classification · 800 m simplification",
-  layer: "eusm2025_msfd_800",
-  style: "eusm2019_msfd_800",
+  product: "EUSeaMap 2025 · EUNIS 2019 habitat classification · 800 m simplification",
+  layer: "eusm2025_eunis2019_800",
+  style: "eusm2021_eunis2019_l2_800",
   docs: "https://emodnet.ec.europa.eu/en/emodnet-web-service-documentation",
   service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
   attribution: "EModnet Seabed Habitats / EUSeaMap 2025 · CC BY 4.0",
   limitation:
-    "This is a broad-scale predictive habitat-map product. Classification, scale and model confidence must not be presented as direct field observation or current ecological condition.",
+    "This is a broad-scale predictive habitat-map product in the EUNIS 2019 classification. Classification, scale and model confidence must not be presented as direct field observation or current ecological condition. The EUNIS 800 m product was selected for the lab because its provider-advertised Europe extent is coherent; the tested MSFD 800 m capabilities metadata carried an axis-swapped geographic extent and was removed from the default scene rather than accepted on HTTP success alone.",
   checkedAt: "2026-08-19",
   opacity: 0.72,
 };
