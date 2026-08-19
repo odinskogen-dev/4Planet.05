@@ -7,24 +7,9 @@ const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, l
 const max: React.CSSProperties = { maxWidth: 1240, margin: "0 auto", paddingLeft: "clamp(20px,5vw,72px)", paddingRight: "clamp(20px,5vw,72px)" };
 
 const DOORS = [
-  {
-    no: "01",
-    title: "THE STORY",
-    line: "Why a living planet needs better connective infrastructure — and why 4PLANET exists.",
-    to: "/about/story",
-  },
-  {
-    no: "02",
-    title: "THE SYSTEM",
-    line: "How ATLAS, SPECIES, LIVING SYSTEMS, IMPACT and Missions work from one shared truth core.",
-    to: "/about/system",
-  },
-  {
-    no: "03",
-    title: "THE FOUNDER",
-    line: "Odin Oddekalv on growing up close to environmental action, building systems and why he is building 4PLANET.",
-    to: "/about/founder",
-  },
+  { id: "story", no: "01", title: "THE STORY", line: "Why a living planet needs better connective infrastructure — and why 4PLANET exists.", to: "/about/story" },
+  { id: "system", no: "02", title: "THE SYSTEM", line: "How ATLAS, SPECIES, LIVING SYSTEMS, IMPACT and Missions work from one shared truth core.", to: "/about/system" },
+  { id: "founder", no: "03", title: "THE FOUNDER", line: "Odin Oddekalv on growing up close to environmental action, building systems and why he is building 4PLANET.", to: "/about/founder" },
 ] as const;
 
 export function About() {
@@ -48,7 +33,7 @@ export function About() {
 
           <div style={{ marginTop: "clamp(48px,7vw,86px)", borderTop: `1px solid ${T.lineStrong}` }}>
             {DOORS.map((door) => (
-              <Link key={door.no} to={door.to} className="about-door" style={{ display: "grid", gridTemplateColumns: "72px minmax(170px,.55fr) minmax(0,1fr) auto", gap: "clamp(14px,3vw,44px)", alignItems: "center", padding: "clamp(26px,4vw,46px) 0", borderBottom: `1px solid ${T.line}`, textDecoration: "none", color: T.ink }}>
+              <Link id={door.id} key={door.no} to={door.to} className="about-door" style={{ display: "grid", gridTemplateColumns: "72px minmax(170px,.55fr) minmax(0,1fr) auto", gap: "clamp(14px,3vw,44px)", alignItems: "center", padding: "clamp(26px,4vw,46px) 0", borderBottom: `1px solid ${T.line}`, textDecoration: "none", color: T.ink, scrollMarginTop: 90 }}>
                 <span style={{ ...mono, color: T.blue }}>{door.no}</span>
                 <span style={{ ...display, fontSize: "clamp(22px,2.6vw,38px)" }}>{door.title}</span>
                 <span style={{ color: T.dim, fontSize: "clamp(14px,1.25vw,17px)", lineHeight: 1.55, maxWidth: 600 }}>{door.line}</span>
