@@ -29,7 +29,6 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
     }
   });
 
-  // 01 — Bathymetry through real Cloudflare Pages Function path.
   await loadScene(page, "OCEAN_FOUNDATION");
   await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-bathymetry"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -37,15 +36,13 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect(bathy).toContainText("ON");
   await expect(bathy).not.toContainText("UNAVAILABLE");
 
-  // 02 — Seabed habitat through the same production-shaped bridge.
   await loadScene(page, "OCEAN_HABITAT");
-  await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-seabed-habitats", "layers=eusm2023_eunis2019_group"), { timeout: 40_000 }).toBeTruthy();
+  await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-seabed-habitats", "layers=eusm2025_eunis2019_800", "styles=eusm2021_eunis2019_l2_800"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
-  const habitat = page.locator(".atlas-row").filter({ hasText: "SEABED · HABITATS 2023" });
+  const habitat = page.locator(".atlas-row").filter({ hasText: "SEABED · HABITATS 2025" });
   await expect(habitat).toContainText("ON");
   await expect(habitat).not.toContainText("UNAVAILABLE");
 
-  // 03 — Oxygen climatology + real monthly TIME switch.
   await loadScene(page, "OCEAN_CONDITION");
   await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-chemistry", "time=08"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -56,7 +53,6 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await page.getByRole("button", { name: "FEB", exact: true }).click();
   await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-chemistry", "time=02"), { timeout: 40_000 }).toBeTruthy();
 
-  // 04 — Current NOAA coral product through CRS conversion bridge.
   await loadScene(page, "OCEAN_FOUNDATION");
   await openLayers(page);
   const coral = page.locator(".atlas-row").filter({ hasText: "CORAL · HEAT STRESS · LATEST" });
@@ -65,7 +61,6 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect(coral).toContainText("ON");
   await expect(coral).not.toContainText("UNAVAILABLE");
 
-  // 05 — Climate TRACE must return real source dots, never stale-contract zero.
   await page.getByRole("button", { name: "S4PIENS", exact: true }).click();
   const climate = page.locator(".atlas-row").filter({ hasText: "CLIM4TE TRACE · POWER 2024" });
   await expect(climate).toBeVisible();
@@ -77,7 +72,6 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   }, { timeout: 40_000 }).toBeTruthy();
   await expect(climate).not.toContainText("OFFLINE");
 
-  // 06 — Fishing density + real annual TIME switch.
   await loadScene(page, "OCEAN_PRESSURE");
   await expect.poll(() => decodedHas(proxiedWms, "source=emodnet-human-activities", "time=2023-01-01T00:00:00Z"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -91,8 +85,5 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await testInfo.attach("proxy-failures", { body: proxyFailures.join("\n") || "NONE", contentType: "text/plain" });
   expect(proxyFailures.filter((entry) => /emodnet-bathymetry|emodnet-seabed-habitats|emodnet-chemistry|noaa-coral-dhw|emodnet-human-activities/.test(decodeURIComponent(entry)))).toEqual([]);
 
-  await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-deployed-time-2020.png`,
-    fullPage: true,
-  });
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-deployed-time-2020.png`, fullPage: true });
 });
