@@ -21,25 +21,54 @@ test("FOOD is the one Gold Standard chain and the registry has 20 working famili
   assert.equal(chainRows.filter((match) => match[0].includes('status: "GOLD_STANDARD"')).length, 1);
 });
 
-test("FOOD causal grammar spans human demand, value chain, pressures, sources and solutions", () => {
-  for (const token of ["DEMAND + DIET", "FARM + SEA", "INPUTS", "PROCESSING", "TRADE + LOGISTICS", "LOSS + WASTE", "LAND CONVERSION", "WATER", "CLIMATE", "LIFE", "SOLUTIONS MAP"]) {
+test("FOOD causal grammar spans human demand, chain, pressure, life and solutions", () => {
+  for (const token of ["DEMAND + DIET", "FARM + SEA", "INPUTS", "PROCESSING", "TRADE + LOGISTICS", "LOSS + WASTE", "LAND CONVERSION", "WATER", "CLIMATE", "LIFE"]) {
     assert.ok(chains.includes(token) || page.includes(token), `missing ${token}`);
   }
-  assert.match(page, /What does a meal touch\?/);
-  assert.match(page, /source-aware/i);
+  assert.match(page, /SOLUTIONS MAP/);
+  assert.match(page, /Follow one meal\./);
+  assert.match(page, /source records/i);
 });
 
-test("cinematic story space keeps human first, globe progressive, and relationships explicit", () => {
-  for (const token of ["You are here.", "Follow one meal.", "Now put it on Earth.", "Where does demand meet pressure?", "Then find the living system.", "Where can the system change?"]) {
+test("v0.3 is Atlas-first and uses the shared NASA globe from frame one", () => {
+  assert.match(page, /gibs\("BlueMarble_ShadedRelief_Bathymetry"/);
+  assert.match(page, /id: "atlas"[\s\S]*title: "You are here\."[\s\S]*scene: "ATLAS"/);
+  assert.doesNotMatch(page, /activeChapter >= 2/);
+  assert.match(page, /sapiens-blue-marble/);
+  assert.match(page, /NASA EARTH/);
+  assert.match(page, /OPEN FREE ATLAS/);
+});
+
+test("Homo sapiens Gold experience uses a real 4PLANET media-registry asset and a graph", () => {
+  assert.match(page, /img\("storyHero"\)/);
+  assert.match(page, /HumanSpeciesCard/);
+  assert.match(page, /SPECIES_ · GBIF 10856082 · IDENTITY KNOWN/);
+  assert.match(page, /KnowledgeGraph/);
+  assert.match(page, /One species\. Many systems\./);
+  for (const token of ["EAT", "DRINK", "POWER", "SHELTER", "WEAR", "MOVE"]) assert.match(page, new RegExp(token));
+});
+
+test("story choreography remains progressive and relation classes stay distinct", () => {
+  for (const token of ["You are here.", "One species. Many systems.", "Follow one meal.", "Now locate the pressure.", "Find what the system depends on.", "Then find leverage."]) {
     assert.match(page, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   for (const relation of ["DEPENDENCY", "PRESSURE", "RESPONSE"]) assert.match(page, new RegExp(relation));
-  assert.match(page, /activeChapter >= 2/);
   assert.match(page, /data-sapiens-story-step/);
   assert.match(styles, /position:\s*sticky/);
-  assert.match(styles, /sapiens-node-line/);
+  assert.match(styles, /sapiens-knowledge__node/);
   assert.match(styles, /sapiens-chainrail/);
   assert.match(styles, /prefers-reduced-motion/);
+});
+
+test("4PLANET visual grammar replaces glass dashboard styling", () => {
+  assert.match(styles, /--sapiens-accent:\s*#FF4D22/);
+  assert.match(styles, /background:\s*#000/);
+  assert.match(styles, /sapiens-editorial--paper/);
+  assert.match(styles, /sapiens-species-card/);
+  assert.match(styles, /Instrument Sans/);
+  assert.match(styles, /Fragment Mono/);
+  assert.doesNotMatch(styles, /backdrop-filter/);
+  assert.doesNotMatch(styles, /border-radius:\s*999px/);
 });
 
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
@@ -51,12 +80,14 @@ test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly"
   assert.match(page, /not a live plume/i);
 });
 
-test("FOOD source stack keeps open, existing and gated sources distinct", () => {
-  for (const token of ["FAOSTAT", "Gridded Livestock of the World v4", "AQUASTAT", "Global Forest Watch", "NASA GIBS", "GBIF", "UN Comtrade", "Global Fishing Watch"]) {
+test("FOOD source ledger separates integration, open data, rights review and access gates", () => {
+  for (const token of ["FAOSTAT", "Gridded Livestock of the World v4", "AQUASTAT", "Trase", "GLORIA", "Global Forest Watch", "NASA GIBS", "GBIF", "UN Comtrade", "Global Fishing Watch"]) {
     assert.match(chains, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
   assert.match(chains, /LIVE_API/);
   assert.match(chains, /EXISTING_ATLAS/);
   assert.match(chains, /OPEN_DATASET/);
+  assert.match(chains, /RIGHTS_REVIEW/);
   assert.match(chains, /ACCESS_GATED/);
+  assert.match(chains, /checkedOn: "2026-08-19"/);
 });
