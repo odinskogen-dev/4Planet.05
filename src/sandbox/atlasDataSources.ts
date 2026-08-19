@@ -2,6 +2,7 @@ export type SandboxRasterDescriptor = {
   id: string;
   sourceId: string;
   proxyKey: string;
+  transport?: "WMS" | "WMTS";
   buttonLabel: string;
   label: string;
   authority: string;
@@ -11,6 +12,8 @@ export type SandboxRasterDescriptor = {
   time?: string;
   elevation?: string;
   version?: "1.1.1" | "1.3.0";
+  wmtsMatrixSet?: string;
+  wmtsFormat?: string;
   units?: string;
   docs: string;
   service: string;
@@ -32,7 +35,7 @@ export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
   proxyKey: "emodnet-bathymetry",
   buttonLabel: "BATHYMETRY",
   label: "EMODNET · BATHYMETRY",
-  authority: "European Marine Observation and Data Network (EMODnet)",
+  authority: "European Marine Observation and Data Network (EModnet)",
   product: "Mean depth in multi colour (no land)",
   layer: "emodnet:mean_multicolour",
   style: "mean_multicolour",
@@ -49,19 +52,21 @@ export const EMODNET_BATHYMETRY: SandboxRasterDescriptor = {
 export const EMODNET_SEABED_HABITATS: SandboxRasterDescriptor = {
   id: "sandbox-emodnet-seabed-habitats",
   sourceId: "emodnet-seabed-habitats",
-  proxyKey: "emodnet-seabed-habitats",
+  proxyKey: "emodnet-seabed-habitats-wmts",
+  transport: "WMTS",
   buttonLabel: "SEABED HABITATS",
   label: "EMODNET · SEABED HABITATS",
   authority: "European Marine Observation and Data Network (EModnet)",
-  product: "EUSeaMap 2025 · EUNIS 2019 habitat classification · 800 m simplification",
-  layer: "eusm2025_eunis2019_800",
-  style: "eusm2021_eunis2019_l2_800",
-  version: "1.3.0",
+  product: "EUSeaMap 2025 · EUNIS 2019 habitat classification · cached full-detail WMTS",
+  layer: "eusm2025_eunis2019_full",
+  style: "emodnet_view:eusm2021_eunis2019_l2_fulldetail",
+  wmtsMatrixSet: "EPSG:900913",
+  wmtsFormat: "image/png8",
   docs: "https://emodnet.ec.europa.eu/en/seabed-habitats",
-  service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
+  service: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/gwc/service/wmts/rest",
   attribution: "EModnet Seabed Habitats / EUSeaMap 2025 · CC BY 4.0",
   limitation:
-    "This is the provider's 800 m simplified EUSeaMap 2025 EUNIS 2019 product for broad-scale viewing. It is a predictive habitat classification, not direct field observation or current ecological condition. Provider capabilities also expose 400 m, 200 m and full-detail 2025 products for progressively closer zoom levels; those remain candidates for zoom-adaptive refinement rather than being stacked simultaneously.",
+    "This is the provider's cached EUSeaMap 2025 EUNIS 2019 full-detail WMTS layer in WebMercator. It is a predictive habitat classification, not direct field observation or current ecological condition. WMTS is used for web-map delivery because the tiles are cached; WMS remains a diagnostic/analysis route rather than the default browser transport.",
   checkedAt: "2026-08-19",
   opacity: 0.72,
 };
@@ -122,7 +127,19 @@ function isLocalPreview() {
   return window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
 }
 
+function directWmtsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
+  const matrixSet = descriptor.wmtsMatrixSet || "EPSG:900913";
+  const style = descriptor.style || "default";
+  const format = descriptor.wmtsFormat || "image/png";
+  return `${descriptor.service}/${descriptor.layer}/${style}/${matrixSet}/${matrixSet}:{z}/{y}/{x}?format=${encodeURIComponent(format)}`;
+}
+
+function proxiedWmtsRasterTileUrl(descriptor: SandboxRasterDescriptor): string {
+  return `/api/atlas-wms?source=${encodeURIComponent(descriptor.proxyKey)}&z={z}&x={x}&y={y}`;
+}
+
 export function directWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
+  if (descriptor.transport === "WMTS") return directWmtsRasterTileUrl(descriptor);
   const version = descriptor.version || "1.1.1";
   const time = overrides.time ?? descriptor.time;
   const elevation = overrides.elevation ?? descriptor.elevation;
@@ -146,6 +163,7 @@ export function directWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, over
 }
 
 export function proxiedWmsRasterTileUrl(descriptor: SandboxRasterDescriptor, overrides: RasterRequestOverrides = {}): string {
+  if (descriptor.transport === "WMTS") return proxiedWmtsRasterTileUrl(descriptor);
   const time = overrides.time ?? descriptor.time;
   const elevation = overrides.elevation ?? descriptor.elevation;
   const params = new URLSearchParams({
