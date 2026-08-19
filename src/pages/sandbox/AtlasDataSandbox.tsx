@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import PublicWorld from "@/earth/PublicWorld";
+import AtlasTimeControls from "@/sandbox/AtlasTimeControls";
 import { hardenAtlasLegacyLayerMetadata } from "@/sandbox/atlasLabCompatibility";
 import { installAtlasLabExtensions } from "@/sandbox/atlasLabRegistry";
 import { applyAtlasLabSceneFromUrl } from "@/sandbox/atlasLabScenes";
 import "@/sandbox/atlasLabOverrides.css";
 
-// Harden inherited metadata and install extensions before PublicWorld/World reads
-// the registry. Production stays untouched on its own branch.
+// Harden inherited metadata/source contracts and install extensions before
+// PublicWorld/World reads the registry. Production stays untouched on its branch.
 const HARDENING = hardenAtlasLegacyLayerMetadata();
 const LAB = installAtlasLabExtensions();
 
@@ -26,6 +27,7 @@ export default function AtlasDataSandbox() {
     document.documentElement.dataset.atlasLabExtensions = String(LAB.extensionCount);
     document.documentElement.dataset.atlasLabScene = scene.id;
     document.documentElement.dataset.atlasLabLegendRepairs = String(HARDENING.repairedLegends);
+    document.documentElement.dataset.atlasLabSourceRepairs = String(HARDENING.repairedSources);
 
     setPrepared(true);
     return () => {
@@ -34,6 +36,8 @@ export default function AtlasDataSandbox() {
       delete document.documentElement.dataset.atlasLabExtensions;
       delete document.documentElement.dataset.atlasLabScene;
       delete document.documentElement.dataset.atlasLabLegendRepairs;
+      delete document.documentElement.dataset.atlasLabSourceRepairs;
+      document.documentElement.removeAttribute("data-atlas-time-state");
     };
   }, []);
 
@@ -41,5 +45,10 @@ export default function AtlasDataSandbox() {
     return <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
   }
 
-  return <PublicWorld />;
+  return (
+    <>
+      <PublicWorld />
+      <AtlasTimeControls />
+    </>
+  );
 }
