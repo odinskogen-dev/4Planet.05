@@ -39,6 +39,7 @@ jobs:
           test "$actual_sha" = "$EXPECTED_SHA"
           printf '%s\n' "$actual_sha" > exact-sha.txt
           printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > exact-branch.txt
+          printf 'EXACT_CANDIDATE_SHA=%s\n' "$actual_sha" >> "$GITHUB_ENV"
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -119,7 +120,7 @@ jobs:
             '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
             '/missions/wh4les', '/join'
           ];
-          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
+          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.EXACT_CANDIDATE_SHA }, null, 2));
           NODE
 
       - name: Security and secret-pattern control
