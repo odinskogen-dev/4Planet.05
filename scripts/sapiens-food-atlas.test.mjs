@@ -5,6 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const router = read("src/routes/router.tsx");
 const page = read("src/pages/integrated/SapiensAtlasSandbox.tsx");
+const styles = read("src/styles/sapiens-atlas-story.css");
 const chains = read("src/data/sapiensChains.ts");
 const api = read("functions/api/sapiens-food.ts");
 
@@ -28,13 +29,26 @@ test("FOOD causal grammar spans human demand, value chain, pressures, sources an
   assert.match(page, /source-aware/i);
 });
 
+test("cinematic story space keeps human first, globe progressive, and relationships explicit", () => {
+  for (const token of ["You are here.", "Follow one meal.", "Now put it on Earth.", "Where does demand meet pressure?", "Then find the living system.", "Where can the system change?"]) {
+    assert.match(page, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  for (const relation of ["DEPENDENCY", "PRESSURE", "RESPONSE"]) assert.match(page, new RegExp(relation));
+  assert.match(page, /activeChapter >= 2/);
+  assert.match(page, /data-sapiens-story-step/);
+  assert.match(styles, /position:\s*sticky/);
+  assert.match(styles, /sapiens-node-line/);
+  assert.match(styles, /sapiens-chainrail/);
+  assert.match(styles, /prefers-reduced-motion/);
+});
+
 test("first live FOOD seam uses Climate TRACE v7 agriculture and fails honestly", () => {
   assert.match(api, /api\.climatetrace\.org\/v7/);
   assert.match(api, /sectors: "agriculture"/);
   assert.match(api, /SCHEMA_CHANGED/);
   assert.match(api, /REQUEST_FAILED/);
   assert.match(page, /\/api\/sapiens-food/);
-  assert.match(page, /not live plumes/i);
+  assert.match(page, /not a live plume/i);
 });
 
 test("FOOD source stack keeps open, existing and gated sources distinct", () => {
