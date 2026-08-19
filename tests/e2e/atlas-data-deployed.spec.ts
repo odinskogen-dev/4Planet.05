@@ -18,8 +18,9 @@ const decodedHas = (urls: string[], ...needles: string[]) =>
     return needles.every((needle) => decoded.includes(needle));
   });
 
-test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }, testInfo) => {
+test("deployed ATLAS lab repairs every layer that was broken in founder screenshots", async ({ page }, testInfo) => {
   const proxiedRaster: string[] = [];
+  const proxiedFeeds: string[] = [];
   const proxyFailures: string[] = [];
   page.on("response", (response) => {
     const url = response.url();
@@ -27,8 +28,13 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
       if (response.ok()) proxiedRaster.push(url);
       else proxyFailures.push(`${response.status()} ${url}`);
     }
+    if (url.includes("/api/atlas-feed?")) {
+      if (response.ok()) proxiedFeeds.push(url);
+      else proxyFailures.push(`${response.status()} ${url}`);
+    }
   });
 
+  // 01 Bathymetry
   await loadScene(page, "OCEAN_FOUNDATION");
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-bathymetry"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -36,6 +42,20 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect(bathy).toContainText("ON");
   await expect(bathy).not.toContainText("UNAVAILABLE");
 
+  // 02 Fire + Events — the screenshot showed OFFLINE. Hosted ATLAS must now use
+  // the bounded EONET same-origin feed and expose a positive record count.
+  const events = page.locator(".atlas-row").filter({ hasText: "FIRE + EVENTS" });
+  await expect(events).toBeVisible();
+  await events.locator(".alyr").click();
+  await expect.poll(() => decodedHas(proxiedFeeds, "source=eonet"), { timeout: 40_000 }).toBeTruthy();
+  await expect.poll(async () => {
+    const text = await events.locator(".st").innerText();
+    return Number.parseInt(text, 10) > 0;
+  }, { timeout: 40_000 }).toBeTruthy();
+  await expect(events).not.toContainText("OFFLINE");
+
+  // 03 Seabed habitat — cached WMTS, with outside-coverage tiles returned as
+  // transparent rather than poisoning the whole source as UNAVAILABLE.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-seabed-habitats-wmts"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -43,6 +63,7 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect(habitat).toContainText("ON");
   await expect(habitat).not.toContainText("UNAVAILABLE");
 
+  // 04 Oxygen + real TIME month switch.
   await loadScene(page, "OCEAN_CONDITION");
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-chemistry", "time=08"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -53,6 +74,7 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await page.getByRole("button", { name: "FEB", exact: true }).click();
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-chemistry", "time=02"), { timeout: 40_000 }).toBeTruthy();
 
+  // 05 NOAA Coral Heat Stress — current daily CRW through CRS-converting bridge.
   await loadScene(page, "OCEAN_FOUNDATION");
   await openLayers(page);
   const coral = page.locator(".atlas-row").filter({ hasText: "CORAL · HEAT STRESS · LATEST" });
@@ -61,6 +83,8 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect(coral).toContainText("ON");
   await expect(coral).not.toContainText("UNAVAILABLE");
 
+  // 06 Climate TRACE — the screenshot's '0' was a stale v6 /assets contract.
+  // v7 /sources must now produce real source dots, never false zero on failure.
   await page.getByRole("button", { name: "S4PIENS", exact: true }).click();
   const climate = page.locator(".atlas-row").filter({ hasText: "CLIM4TE TRACE · POWER 2024" });
   await expect(climate).toBeVisible();
@@ -72,6 +96,7 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   }, { timeout: 40_000 }).toBeTruthy();
   await expect(climate).not.toContainText("OFFLINE");
 
+  // 07 Fishing density + real TIME annual switch.
   await loadScene(page, "OCEAN_PRESSURE");
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-human-activities", "time=2023-01-01T00:00:00Z"), { timeout: 40_000 }).toBeTruthy();
   await openLayers(page);
@@ -83,7 +108,7 @@ test("deployed ATLAS lab uses working same-origin data bridges", async ({ page }
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-human-activities", "time=2020-01-01T00:00:00Z"), { timeout: 40_000 }).toBeTruthy();
 
   await testInfo.attach("proxy-failures", { body: proxyFailures.join("\n") || "NONE", contentType: "text/plain" });
-  expect(proxyFailures.filter((entry) => /emodnet-bathymetry|emodnet-seabed-habitats-wmts|emodnet-chemistry|noaa-coral-dhw|emodnet-human-activities/.test(decodeURIComponent(entry)))).toEqual([]);
+  expect(proxyFailures.filter((entry) => /emodnet-bathymetry|emodnet-seabed-habitats-wmts|emodnet-chemistry|noaa-coral-dhw|emodnet-human-activities|source=eonet/.test(decodeURIComponent(entry)))).toEqual([]);
 
-  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-deployed-time-2020.png`, fullPage: true });
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-repaired-founder-layers-time-2020.png`, fullPage: true });
 });
