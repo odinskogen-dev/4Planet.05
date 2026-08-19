@@ -30,12 +30,18 @@
     return new Promise((resolve) => scene.addEventListener('loaded', resolve, { once: true }));
   };
 
-  const loadManifest = () => {
+  const loadTruthManifest = () => {
     if (!window.NatureSceneAdapter) throw new Error('NatureSceneAdapter unavailable');
     return window.NatureSceneAdapter.load({
       layoutUrl: '/xr/scenes/jaguar.json',
       canonicalUrl: '/xr/generated/jaguar-canonical.json'
     });
+  };
+
+  const loadJourney = async () => {
+    const response = await fetch('/xr/scenes/jaguar-journey-v11.json', { credentials: 'same-origin' });
+    if (!response.ok) throw new Error(`Jaguar journey failed: ${response.status}`);
+    return response.json();
   };
 
   const bootOptionalXR = async (manifest) => {
@@ -49,7 +55,7 @@
       document.body.dataset.xrReady = 'true';
     } catch (error) {
       document.body.dataset.xrReady = 'failed-optional';
-      console.warn('[4PLANET NATURE XR] Optional headset renderer unavailable; browser experience remains active', error);
+      console.warn('[4PLANET NATURE XR] Optional headset renderer unavailable; browser journey remains active', error);
     }
   };
 
@@ -58,10 +64,11 @@
     const root = document.getElementById('browser-experience');
 
     try {
-      const manifest = await loadManifest();
+      const [manifest, journey] = await Promise.all([loadTruthManifest(), loadJourney()]);
       if (!root || !window.NatureBrowser) throw new Error('NatureBrowser unavailable');
-      window.NatureBrowser.render({ root, manifest });
+      window.NatureBrowser.render({ root, manifest, journey });
       document.body.dataset.browserReady = 'true';
+      document.body.dataset.journeyVersion = journey.version;
 
       const xrSupported = await xrSupportedPromise;
       if (xrSupported) void bootOptionalXR(manifest);
