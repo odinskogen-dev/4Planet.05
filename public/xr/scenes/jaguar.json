@@ -65,16 +65,9 @@
     {
       "id": "jaguar-capybara-prey",
       "kind": "RELATIONSHIP",
-      "relationClass": "DEPENDENCY",
-      "truthState": "KNOWN",
+      "canonicalBinding": "relationships.relationship:4p:jaguar-capybara-prey-southern-pantanal",
       "title": "FOLLOW A RELATIONSHIP",
       "label": "PREY RELATIONSHIP",
-      "body": "Capybara is a documented jaguar prey taxon in a bounded Southern Pantanal study context.",
-      "source": {
-        "label": "PERILLI ET AL. 2016 · PLOS ONE",
-        "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0151814"
-      },
-      "boundary": "This does not imply the same dietary importance everywhere or diagnose an Amazon diet.",
       "position": "2.65 1.35 -3.9",
       "labelPosition": "2.05 1.02 -3.9",
       "labelRotation": "0 -16 0",
