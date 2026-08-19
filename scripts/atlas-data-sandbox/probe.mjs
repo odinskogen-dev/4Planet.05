@@ -39,7 +39,18 @@ async function probe(source) {
     const body = (await response.text()).slice(0, 250000);
     const expected = source.probeExpect || "";
     const expectedFound = expected ? body.toLowerCase().includes(String(expected).toLowerCase()) : true;
-    const status = response.ok && expectedFound ? "PROBE_GREEN" : response.status === 401 || response.status === 403 ? "AUTH_OR_RIGHTS_BLOCK" : response.status === 429 ? "RATE_LIMITED" : "PROBE_DEGRADED";
+    const providerRequestBlock = source.id === "noaa-coral-reef-watch"
+      && response.status === 403
+      && /request blacklist|ip address|blacklist/i.test(body);
+    const status = response.ok && expectedFound
+      ? "PROBE_GREEN"
+      : providerRequestBlock
+        ? "CI_PROVIDER_REQUEST_BLOCKED"
+        : response.status === 401 || response.status === 403
+          ? "AUTH_OR_RIGHTS_BLOCK"
+          : response.status === 429
+            ? "RATE_LIMITED"
+            : "PROBE_DEGRADED";
 
     return {
       id: source.id,
@@ -53,7 +64,11 @@ async function probe(source) {
       finalUrl: redactUrl(response.url || source.probeUrl),
       startedAt,
       checkedAt: new Date().toISOString(),
-      note: response.ok ? (expectedFound ? "Endpoint responded and expected contract marker was present." : "Endpoint responded but expected contract marker was not found in bounded response sample.") : `HTTP ${response.status}`,
+      note: providerRequestBlock
+        ? "Provider rejected this shared CI egress IP after repeated requests. This is an environment/request-control state, not source absence or an auth/rights conclusion; deployed same-origin proof remains required."
+        : response.ok
+          ? (expectedFound ? "Endpoint responded and expected contract marker was present." : "Endpoint responded but expected contract marker was not found in bounded response sample.")
+          : `HTTP ${response.status}`,
     };
   } catch (error) {
     const aborted = error?.name === "AbortError";
@@ -85,7 +100,7 @@ async function runPool(items, concurrency) {
       if (index >= items.length) return;
       results[index] = await probe(items[index]);
       const r = results[index];
-      console.log(`${r.status.padEnd(22)} ${r.id.padEnd(30)} ${String(r.httpStatus ?? "-").padStart(3)} ${String(r.durationMs).padStart(6)}ms`);
+      console.log(`${r.status.padEnd(28)} ${r.id.padEnd(30)} ${String(r.httpStatus ?? "-").padStart(3)} ${String(r.durationMs).padStart(6)}ms`);
     }
   }
   await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
@@ -101,7 +116,7 @@ const counts = results.reduce((acc, r) => {
 }, {});
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   baselineSha: catalogue.baselineSha,
   branch: process.env.GITHUB_REF_NAME || "local",
   commitSha: process.env.GITHUB_SHA || null,
@@ -120,7 +135,7 @@ const md = [
   `Commit: ${report.commitSha || "local"}`,
   `Baseline: ${report.baselineSha}`,
   "",
-  "This is endpoint/contract health evidence only. PROBE_GREEN does not mean rights-approved, production-ready or map-integrated.",
+  "This is endpoint/contract health evidence only. PROBE_GREEN does not mean rights-approved, production-ready or map-integrated. Provider request blocking is kept separate from auth/rights and from source absence.",
   "",
   "| Source | Probe | HTTP | ms | Contract marker |",
   "|---|---:|---:|---:|---|",
