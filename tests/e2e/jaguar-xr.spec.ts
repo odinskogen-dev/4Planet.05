@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/jaguar-xr";
 mkdirSync(OUT, { recursive: true });
 
-test("Jaguar immersive Journey Engine changes the world before evidence", async ({ page }, testInfo) => {
+test("Jaguar Journey v1.1 travels through distinct scenes before evidence", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
@@ -12,33 +12,49 @@ test("Jaguar immersive Journey Engine changes the world before evidence", async 
 
   const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-entity-id", "taxon:gbif:5219426", { timeout: 20_000 });
-  await expect(root).toHaveAttribute("data-manifest-version", "v1.0");
+  await expect(root).toHaveAttribute("data-manifest-version", "v1.1");
   await expect(root).toHaveAttribute("data-truth-feed", "canonical-adapter");
+  await expect(root).toHaveAttribute("data-cinematic-engine", "v1.1");
+  await expect(root).toHaveAttribute("data-performance-tier", /full|lite/);
   await expect(page.locator(".brand")).toHaveAttribute("href", "/species/jaguar");
   await expect(page.locator(".nature-entry__title")).toContainText(/Enter the rainforest/i);
   await expect(page.locator(".nature-browser-status")).not.toContainText(/NOT AVAILABLE/i);
   await expect(page.locator(".nature-footer")).toContainText(/JOURNEY ENGINE/i);
-  await expect(page.locator(".nature-footer")).toContainText(/AMAZONIA SOUNDSCAPE/i);
-  await expect(page.locator('.nature-node[data-node-id="jaguar-identity"]')).toHaveCount(1);
   await expect(page.locator('.nature-node[data-node-id="jaguar-solutions-transition"]')).toHaveAttribute("data-relation-class", "RESPONSE");
 
   await page.locator(".nature-entry__button").click();
   await expect(root).toHaveAttribute("data-entered", "true");
-  await expect(root).toHaveAttribute("data-audio-profile", "amazonia-procedural-v05", { timeout: 5_000 });
+  await expect(root).toHaveAttribute("data-audio-profile", "amazonia-procedural-v11", { timeout: 5_000 });
   await expect(page.locator(".nature-entry")).toHaveCSS("visibility", "hidden", { timeout: 5_000 });
   await expect(page.locator(".nature-subject__name")).toContainText(/JAGUAR/i);
   await expect(root).toHaveAttribute("data-scene-state", "identity", { timeout: 5_000 });
+  await expect(root).toHaveAttribute("data-cinematic-scene", "identity", { timeout: 15_000 });
+  await expect(root).toHaveAttribute("data-chapter-media-ready", "true", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-01-meet.png`, fullPage: true });
 
-  // Selecting a node must transform the scene first; evidence is deliberately secondary.
-  const pressure = page.locator('.nature-node[data-node-id="jaguar-habitat-loss-fragmentation"]');
-  await pressure.click({ force: true });
+  const next = page.locator(".nature-journey-hud__next");
+  await next.click();
+  await expect(root).toHaveAttribute("data-scene-state", "dependency");
+  await expect(root).toHaveAttribute("data-cinematic-index", "1", { timeout: 15_000 });
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
+
+  await next.click();
+  await expect(root).toHaveAttribute("data-scene-state", "habitat");
+  await expect(root).toHaveAttribute("data-cinematic-index", "2", { timeout: 15_000 });
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the whole story/i);
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-03-habitat.png`, fullPage: true });
+
+  await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "pressure");
+  await expect(root).toHaveAttribute("data-cinematic-index", "3", { timeout: 15_000 });
   await expect(root).toHaveAttribute("data-journey-node", "jaguar-habitat-loss-fragmentation");
-  await expect(page.locator(".nature-journey-hud__title")).toContainText(/change the system/i);
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/landscape changes/i);
   const chapter = page.locator(".nature-chapter");
   await expect(chapter).not.toHaveClass(/is-open/);
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-04-pressure.png`, fullPage: true });
 
+  // Evidence remains an explicit secondary action.
   await page.locator(".nature-journey-hud__evidence").click();
   await expect(chapter).toHaveClass(/is-open/);
   await expect(page.locator("#nature-chapter-title")).toContainText(/PRESSURE/i);
@@ -54,10 +70,11 @@ test("Jaguar immersive Journey Engine changes the world before evidence", async 
   }
 
   await page.locator("#nature-chapter-close").click();
-  await page.locator(".nature-journey-hud__next").click();
+  await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "response");
+  await expect(root).toHaveAttribute("data-cinematic-index", "4", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the destination/i);
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v11-05-response.png`, fullPage: true });
 
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-jaguar-browser-journey-v10.png`, fullPage: true });
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
 });
