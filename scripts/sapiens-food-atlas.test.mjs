@@ -17,7 +17,7 @@ test("FOOD is the one Gold Standard chain and the registry has 20 working famili
   assert.match(chains, /id: "food"[\s\S]*status: "GOLD_STANDARD"/);
   const chainRows = [...chains.matchAll(/\{ id: "[^"]+", label: "[^"]+", humanNeed: "[^"]+", status: "(?:GOLD_STANDARD|MAPPED_NEXT)"/g)];
   assert.equal(chainRows.length, 20);
-  assert.equal([...chains.matchAll(/status: "GOLD_STANDARD"/g)].length, 1);
+  assert.equal(chainRows.filter((match) => match[0].includes('status: "GOLD_STANDARD"')).length, 1);
 });
 
 test("FOOD causal grammar spans human demand, value chain, pressures, sources and solutions", () => {
