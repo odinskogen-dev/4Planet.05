@@ -1,9 +1,5 @@
 name: ONE INTERFACE Convergence Gate
 
-# Exact-SHA engineering gate for the current unified public candidate.
-# Source-contract/smoke checks run before current public-product and LABS
-# browser journeys across the supported verification matrix.
-
 on:
   push:
     branches:
@@ -31,20 +27,21 @@ jobs:
           fetch-depth: 0
 
       - name: Materialize staged LABS v3 source
-        if: ${{ hashFiles('.labs-v3-payload.tar.gz') != '' }}
+        if: ${{ hashFiles('.labs-v3-chunks/*') != '' }}
         shell: bash
         run: |
           set -euo pipefail
+          cat .labs-v3-chunks/00 .labs-v3-chunks/01 .labs-v3-chunks/02 .labs-v3-chunks/03 | base64 -d > /tmp/labs-v3-payload.tar.gz
           mkdir -p /tmp/labs-v3
-          tar -xzf .labs-v3-payload.tar.gz -C /tmp/labs-v3
+          tar -xzf /tmp/labs-v3-payload.tar.gz -C /tmp/labs-v3
           cp /tmp/labs-v3/LabsOverview.tsx src/pages/labs/LabsOverview.tsx
           cp /tmp/labs-v3/labs.css src/pages/labs/labs.css
           cp /tmp/labs-v3/labs-contracts.test.mjs scripts/labs-contracts.test.mjs
           cp /tmp/labs-v3/labs.spec.ts tests/e2e/labs.spec.ts
-          rm .labs-v3-payload.tar.gz
+          rm -rf .labs-v3-chunks .labs-v3-payload.tar.gz
           git config user.name "4PLANET LABS build"
           git config user.email "actions@users.noreply.github.com"
-          git add src/pages/labs/LabsOverview.tsx src/pages/labs/labs.css scripts/labs-contracts.test.mjs tests/e2e/labs.spec.ts .labs-v3-payload.tar.gz
+          git add -A src/pages/labs/LabsOverview.tsx src/pages/labs/labs.css scripts/labs-contracts.test.mjs tests/e2e/labs.spec.ts .labs-v3-chunks .labs-v3-payload.tar.gz
           git commit -m "feat(labs): materialize luminous founder project OS v3"
           git push origin HEAD:${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
 
@@ -77,19 +74,16 @@ jobs:
           npm run lint 2>&1 | tee lint.txt || true
           warnings="$(grep -Eo '[0-9]+ warning' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
           errors="$(grep -Eo '[0-9]+ error' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
-          echo "lint errors=$errors warnings=$warnings"
           test "${errors:-0}" -eq 0
           test "${warnings:-0}" -le 6
 
       - name: Asset control
         run: npm run assets:verify
 
-      - name: Dependency audit — high severity blocks (moderate is known debt)
-        shell: bash
+      - name: Dependency audit — high severity blocks
         run: npm audit --audit-level=high 2>&1 | tee dependency-audit.txt
 
       - name: Record bundle evidence
-        shell: bash
         run: |
           find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2nr > bundle-sizes.csv
           largest="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
@@ -97,7 +91,6 @@ jobs:
           test "$largest" -lt 1800000
 
       - name: Start local preview
-        shell: bash
         run: |
           npm run preview -- --host 0.0.0.0 > preview.log 2>&1 &
           for attempt in {1..45}; do
@@ -126,41 +119,26 @@ jobs:
         run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: Internal route control
-        shell: bash
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
-          const required = [
-            '/', '/labs', '/atlas', '/species', '/species/orca', '/species/jaguar',
-            '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
-            '/missions/wh4les', '/join'
-          ];
+          const required = ['/', '/labs', '/atlas', '/species', '/species/orca', '/species/jaguar', '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join'];
           fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: require('child_process').execSync('git rev-parse HEAD').toString().trim() }, null, 2));
           NODE
 
       - name: Security and secret-pattern control
-        shell: bash
         run: |
           curl --silent --show-error --dump-header local-headers.txt --output /dev/null http://127.0.0.1:4173/
           grep -qi '^content-type:' local-headers.txt
-          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
-            echo 'Potential secret material found'
-            exit 1
-          fi
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then exit 1; fi
 
       - name: Source mutation control
-        shell: bash
         run: |
           unexpected="$(git diff --name-only -- . ':!public/product-build.txt')"
-          if [ -n "$unexpected" ]; then
-            echo 'Unexpected tracked source mutation during CI:'
-            printf '%s\n' "$unexpected"
-            exit 1
-          fi
+          if [ -n "$unexpected" ]; then printf '%s\n' "$unexpected"; exit 1; fi
           git diff --cached --exit-code
-          echo 'PASS — only expected generated provenance/evidence outputs are present.'
 
       - name: Upload exact-SHA acceptance evidence
         if: always()
