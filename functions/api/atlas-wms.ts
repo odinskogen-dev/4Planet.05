@@ -24,7 +24,7 @@ const PROFILES: Record<string, Profile> = {
     maxAge: 86400,
   },
   "emodnet-seabed-habitats": {
-    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms",
+    base: "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/ows",
     mode: "PASSTHROUGH_3857",
     maxAge: 86400,
   },
@@ -97,7 +97,6 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       mercatorToLon(bbox.maxX),
       mercatorToLat(bbox.maxY),
     ].map((n) => n.toFixed(7)).join(","));
-    // ERDDAP interprets "current" as the last available time value.
     upstream.searchParams.set("time", incoming.searchParams.get("time") || "current");
   } else {
     const version = incoming.searchParams.get("version") === "1.3.0" ? "1.3.0" : "1.1.1";
