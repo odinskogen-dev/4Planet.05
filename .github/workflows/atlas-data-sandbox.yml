@@ -46,14 +46,15 @@ jobs:
         continue-on-error: true
         run: node scripts/atlas-data-sandbox/habitat-wmts-probe.mjs
 
-      - name: Probe exact admitted ATLAS layer products
-        run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
-
       - name: Compare seabed habitat candidate products
         continue-on-error: true
         run: node scripts/atlas-data-sandbox/habitat-candidates.mjs
 
+      - name: Probe exact admitted ATLAS layer products
+        run: node scripts/atlas-data-sandbox/layer-contract-probe.mjs
+
       - name: Inventory advertised OGC layers
+        if: always()
         env:
           ATLAS_PROBE_TIMEOUT_MS: 12000
         run: node scripts/atlas-data-sandbox/ogc-inventory.mjs
