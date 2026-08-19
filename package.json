@@ -6,7 +6,7 @@
   "description": "4PLANET public mission platform.",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/write-product-build.mjs && tsc -b && vite build",
+    "build": "node scripts/build-xr-canonical-data.mjs && node scripts/write-product-build.mjs && tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "assets:verify": "node scripts/verify-assets.mjs",
