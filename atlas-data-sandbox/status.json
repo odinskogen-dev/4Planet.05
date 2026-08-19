@@ -1,109 +1,171 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "updatedAt": "2026-08-19",
   "baselineSha": "3364df8b5989582fbcbc31d1ff102ca5bb852954",
   "controlIssue": 71,
   "draftPullRequest": 72,
   "productionTouched": false,
+  "statusRule": "Endpoint reachability is PROBE_GREEN only. A layer is not counted fixed until the exact product contract and real browser map path are proven. Source failure must never be rendered as zero/no records.",
+  "timeEngine": {
+    "built": true,
+    "currentAxes": [
+      {
+        "layer": "emodnet-fishing-vessel-density",
+        "semantic": "YEAR",
+        "range": "2017-2024",
+        "default": "2023",
+        "implementedSwitchProof": ["2023", "2020"]
+      },
+      {
+        "layer": "emodnet-dissolved-oxygen-climatology",
+        "semantic": "MONTH_CLIMATOLOGY",
+        "range": "01-12",
+        "default": "08",
+        "implementedSwitchProof": ["08", "02"]
+      }
+    ],
+    "next": "Extend the same semantic time-axis contract to other temporal sources only after their base map contracts are solid."
+  },
   "states": {
     "emodnet-bathymetry": {
-      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
-      "mapGreen": true,
-      "promotionCandidate": false,
-      "evidence": {
-        "layer": "emodnet:mean_multicolour",
-        "desktopVisual": "VISIBLE_REAL_RASTER",
-        "mobile390Visual": "VISIBLE_REAL_RASTER",
-        "browserNetwork": "2XX_WMS",
-        "truthBoundary": "Bathymetry is seabed depth/product coverage, not ecological condition or event."
-      },
-      "remainingBeforePromotion": [
-        "final licence/attribution review",
-        "legend/source-detail integration",
-        "performance budget in full ATLAS",
-        "interaction regression in production-shaped ATLAS"
-      ]
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "layerContract": "GREEN_PREVIOUS_HEAD_AND_RETESTING_EXACT_HEAD",
+      "mapState": "MAP_GREEN_PREVIOUS_VISUAL_PROOF",
+      "layer": "emodnet:mean_multicolour",
+      "transport": "same-origin WMS bridge when hosted",
+      "truthBoundary": "Bathymetry is seabed depth/product coverage, not ecological condition or event."
     },
     "emodnet-seabed-habitats": {
-      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
-      "mapGreen": true,
-      "promotionCandidate": false,
-      "evidence": {
-        "layer": "eusm2025_msfd_800",
-        "style": "eusm2019_msfd_800",
-        "desktopVisual": "VISIBLE_PROVIDER_STYLED_HABITAT_RASTER",
-        "mobile390Visual": "VISIBLE_PROVIDER_STYLED_HABITAT_RASTER",
-        "browserNetwork": "2XX_WMS",
-        "licenceShownByProviderMetadata": "CC BY 4.0",
-        "truthBoundary": "EUSeaMap is a broad-scale predictive habitat-map product, not direct field observation or current ecological condition."
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "layerContract": "RETESTING_EXACT_HEAD",
+      "mapState": "STABLE_2023_DEFAULT_RESTORED_PENDING_EXACT_HEAD_DEPLOYED_PROOF",
+      "defaultProduct": {
+        "layer": "eusm2023_eunis2019_group",
+        "style": "default-style-eusm2023_eunis2019_group",
+        "transport": "same-origin WMS bridge when hosted"
       },
-      "correctionHistory": [
-        "Initial empty-style request returned 2xx but appeared visually blank.",
-        "Network success was therefore explicitly downgraded from MAP_GREEN to SOURCE_LOADED.",
-        "Live GetCapabilities inventory exposed the provider-advertised style eusm2019_msfd_800.",
-        "Explicit provider style produced visible habitat raster on desktop and 390px mobile.",
-        "MAP_GREEN was granted only after visual inspection of the corrected evidence."
-      ],
-      "remainingBeforePromotion": [
-        "legend/class-key integration",
-        "coverage and zoom disclosure",
-        "performance budget in full ATLAS",
-        "source-detail and model-confidence disclosure",
-        "interaction regression in production-shaped ATLAS"
-      ]
+      "candidateProduct2025": "RESEARCH_ONLY_NOT_DEFAULT",
+      "correction": "The newer 2025 cached WMTS candidate returned 200 but only a 149-byte transparent tile in bounded tests and caused desktop UNAVAILABLE. Stable broad-Europe 2023 WMS is restored as default until a 2025 route passes equivalent visual proof.",
+      "truthBoundary": "EUSeaMap is predictive habitat classification, not direct field observation or current ecological condition."
+    },
+    "emodnet-dissolved-oxygen-climatology": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "layerContract": "GREEN_PREVIOUS_DEPLOYED_MOBILE_AND_RETESTING_EXACT_HEAD",
+      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
+      "time": "MONTH_CLIMATOLOGY_01_12",
+      "default": "08_SURFACE",
+      "truthBoundary": "Monthly climatology is a long-term seasonal condition pattern, not a live oxygen reading or proof of hypoxia."
     },
     "emodnet-fishing-vessel-density": {
-      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "PROBED", "ADAPTER_GREEN", "SOURCE_LOADED", "MAP_GREEN"],
-      "mapGreen": true,
-      "promotionCandidate": false,
-      "evidence": {
-        "providerFamily": "EMODnet Human Activities",
-        "layer": "vesseldensity_01avg",
-        "style": "VesselDensity",
-        "time": "2023-01-01T00:00:00Z",
-        "desktopVisual": "VISIBLE_FISHING_VESSEL_DENSITY_RASTER",
-        "mobile390Visual": "VISIBLE_FISHING_VESSEL_DENSITY_RASTER",
-        "browserNetwork": "2XX_WMS",
-        "measure": "AIS-derived fishing-vessel density; provider product expressed as hours per square kilometre per month and summarised as annual averages",
-        "truthBoundary": "Historical/reference vessel-density context only. Not live fishing activity, catch, legality, illegal-fishing evidence or ecological impact."
-      },
-      "correctionHistory": [
-        "Initial annual-average layer requests were source-loaded but visually blank in the tested view.",
-        "Live WMS capabilities showed a time dimension with annual slices from 2017 through 2024.",
-        "The sandbox deliberately selected the 2023 slice instead of default 2024 because provider metadata reports reduced satellite-data density during part of 2024.",
-        "The explicit 2023 time parameter produced a visible fishing-vessel-density raster on desktop and 390px mobile.",
-        "MAP_GREEN was granted only after browser-network proof and human visual inspection."
-      ],
-      "remainingBeforePromotion": [
-        "legend/unit integration",
-        "full provider licence/attribution review",
-        "year selector and temporal disclosure",
-        "performance budget in full ATLAS",
-        "production-shaped ATLAS interaction regression"
-      ]
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "layerContract": "GREEN_PREVIOUS_DEPLOYED_MOBILE_AND_RETESTING_EXACT_HEAD",
+      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
+      "layer": "vesseldensity_01avg",
+      "style": "VesselDensity",
+      "time": "YEAR_2017_2024",
+      "default": "2023",
+      "truthBoundary": "Historical AIS-derived vessel-density context, not live fishing, catch, legality or ecological impact."
+    },
+    "nasa-eonet": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "REPAIRED_HOSTED_PROXY_POSITIVE_COUNT_PREVIOUS_DEPLOYED_PROOF",
+      "repair": "Hosted runtime uses bounded same-origin atlas-feed proxy. Failure throws; it is not represented as zero or no events.",
+      "truthBoundary": "Provider-reported open natural events are not automatically local alerts or ecological-impact determinations."
+    },
+    "climate-trace": {
+      "access": "OPEN_NO_AUTH_V7",
+      "sourceProbe": "PROBE_GREEN",
+      "layerContract": "V7_SOURCES_GREEN",
+      "mapState": "REPAIRED_REAL_SOURCE_DOTS_PREVIOUS_DEPLOYED_MOBILE_PROOF",
+      "repair": "Replaced stale v6 /assets adapter with current public v7 /sources. Empty/contract mismatch now fails explicitly instead of rendering misleading zero.",
+      "boundedEvidence": "2024 power, co2e_100yr, limit 5 returned five real sources with coordinates and emissions.",
+      "truthBoundary": "Climate TRACE source records are emitting assets with reported/estimated emissions, not live plumes and not proof of legal liability."
+    },
+    "noaa-coral-reef-watch": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "REPAIRED_DEPLOYED_MOBILE_PROOF_PREVIOUS_HEAD",
+      "repair": "Current NOAA CoastWatch ERDDAP DHW product is delivered through an allowlisted same-origin bridge that converts MapLibre EPSG:3857 bounds to supported CRS:84.",
+      "truthBoundary": "Degree Heating Week is heat-stress pressure, not observed coral bleaching."
+    },
+    "gbif": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "existingAtlasUses": ["BIODIVERSITY DENSITY", "SPECIES occurrences", "taxon search/context"],
+      "truthBoundary": "Occurrence and recording density are not abundance, range or live position."
+    },
+    "obis": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "existingAtlasUses": ["WH4LES occurrences"],
+      "truthBoundary": "Occurrence records are not live whale positions or migration routes."
+    },
+    "nasa-gibs": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "existingAtlasUses": ["Blue Marble", "True Colour", "SST", "Night Lights", "Thermal Anomalies", "NDVI", "Sea Ice", "Aerosols", "Precipitation"],
+      "note": "Each exact product is separately contract-probed because a green GIBS capabilities endpoint does not guarantee every dated layer request."
+    },
+    "usgs-earthquakes": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "existingAtlasUses": ["QU4KES"]
+    },
+    "emodnet-physics": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "NOT_YET_ADMITTED",
+      "nextUse": "Ocean conditions candidate: currents/waves/physical ocean variables after current repair gate closes."
+    },
+    "kartverket-stedsnavn": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "NOT_YET_ADMITTED",
+      "nextUse": "Authoritative Norwegian place identity/search."
+    },
+    "ices-datras": {
+      "access": "OPEN_PUBLIC_SERVICE",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "NOT_YET_ADMITTED",
+      "nextUse": "Research-trawl survey context with survey-design semantics preserved."
+    },
+    "inaturalist": {
+      "access": "OPEN_PUBLIC_READ",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "NOT_YET_ADMITTED_AS_GENERAL_OBSERVATION_LAYER",
+      "note": "Taxon/photo use exists elsewhere; observation and media licences/geoprivacy must be handled separately."
+    },
+    "worms": {
+      "access": "OPEN",
+      "sourceProbe": "PROBE_GREEN",
+      "mapState": "TAXONOMY_SUPPORT_NOT_SPATIAL_LAYER"
     },
     "global-fishing-watch": {
-      "lifecycle": ["DISCOVERED", "TERMS_CHECKED", "ENDPOINT_VERIFIED", "ADAPTER_GREEN", "AUTH_REQUIRED"],
-      "mapGreen": false,
-      "promotionCandidate": false,
-      "evidence": {
-        "apiVersion": "v3",
-        "initialDataset": "public-global-fishing-effort:latest",
-        "requestContract": "/v3/4wings/tile/heatmap/{z}/{x}/{y}",
-        "formatPrepared": "MVT",
-        "authentication": "Bearer token; server-side only",
-        "adapterTests": "AUTH gate, bounded z/x/y/date request, token URL exclusion, evidence redaction, coordinate validation",
-        "truthBoundary": "Apparent fishing effort is AIS-derived algorithmic activity estimation and does not prove illegal fishing, legal liability, catch or complete vessel presence."
-      },
-      "remainingBeforeMap": [
-        "founder/account token access",
-        "confirm 4PLANET intended use fits Global Fishing Watch non-commercial API terms",
-        "server-side secret/proxy path",
+      "access": "AUTH_AND_TERMS_GATED",
+      "adapter": "GREEN_AUTH_SAFE_V3_SEAM",
+      "mapState": "NOT_LIVE",
+      "remaining": [
+        "account/token access",
+        "confirm intended 4PLANET use against API terms",
+        "server-side secret path",
         "live token probe",
-        "provider attribution and dataset caveats in UI",
-        "map and performance proof"
-      ]
+        "browser/map/performance proof"
+      ],
+      "truthBoundary": "Apparent fishing effort is algorithmic AIS-derived activity estimation, not proof of illegal fishing, catch or complete vessel presence."
+    },
+    "protected-planet": {
+      "access": "RIGHTS_OR_TOKEN_GATED",
+      "mapState": "PLANNED_NOT_WORKING"
+    },
+    "forest-loss": {
+      "access": "CURRENT_CONTRACT_REQUIRES_REVERIFY",
+      "mapState": "EXISTING_BASELINE_EXACT_PRODUCT_GATE_REQUIRED"
     }
   },
-  "programmeBoundary": "MAP_GREEN is a sandbox acceptance state only. Nothing is authorised for production merge or deployment."
+  "programmeBoundary": "Nothing in this status authorises production merge or deployment. Stable sandbox evidence is a prerequisite for later founder promotion review."
 }
