@@ -6,6 +6,17 @@ function successful(statuses: number[]) {
   return statuses.some((status) => status >= 200 && status < 300);
 }
 
+async function openLayers(page) {
+  const layersButton = page.getByRole("button", { name: "LAYERS" });
+  if (await layersButton.isVisible()) await layersButton.click();
+}
+
+async function loadScene(page, scene: string) {
+  await page.goto(`${BASE}/atlas-data-sandbox?scene=${scene}`, { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-scene", scene);
+  await expect(page.getByLabel("Search the living planet — life, places and living systems")).toBeVisible();
+}
+
 test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", async ({ page }, testInfo) => {
   const bathymetryResponses: number[] = [];
   const habitatResponses: number[] = [];
@@ -32,59 +43,69 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     }
   });
 
-  await page.goto(`${BASE}/atlas-data-sandbox`, { waitUntil: "domcontentloaded" });
-
-  // Architecture proof: this route is the real World interface, not the old
-  // diagnostic viewer. Search, lens controls and canonical layer console remain.
+  // ── FOUNDATION ──────────────────────────────────────────────────────────
+  await loadScene(page, "OCEAN_FOUNDATION");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab", "true");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-extensions", "4");
-  await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-scene", "OCEAN_FOUNDATION");
   await expect.poll(async () => Number(await page.locator("html").getAttribute("data-atlas-lab-legend-repairs")) > 0).toBeTruthy();
-  await expect(page.getByLabel("Search the living planet — life, places and living systems")).toBeVisible();
   await expect(page.getByRole("button", { name: "LAYERS" })).toBeVisible();
-
-  // Default scene: OCE4N + Blue Marble + bathymetry.
   await expect.poll(() => new URL(page.url()).searchParams.get("m"), { timeout: 10_000 }).toBe("OCE4N");
-  await expect.poll(
-    () => (new URL(page.url()).searchParams.get("l") || "").includes("sandbox-emodnet-bathymetry"),
-    { timeout: 10_000 },
-  ).toBeTruthy();
   await expect.poll(() => successful(bathymetryResponses), { timeout: 30_000 }).toBeTruthy();
 
-  await page.getByRole("button", { name: "LAYERS" }).click();
+  await openLayers(page);
   await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
   await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
-  // Regression hardening: inherited legend metadata is normalised without
-  // changing the declared colours, so opening a legacy info drawer cannot throw.
+  const bathymetryRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · BATHYMETRY" });
+  await expect(bathymetryRow).toContainText("ON");
+
+  // Existing ATLAS ON/OFF machinery, not a sandbox-specific switch.
+  await bathymetryRow.locator(".alyr").click();
+  await expect.poll(
+    () => !(new URL(page.url()).searchParams.get("l") || "").includes("sandbox-emodnet-bathymetry"),
+    { timeout: 10_000 },
+  ).toBeTruthy();
+  await bathymetryRow.locator(".alyr").click();
+  await expect.poll(
+    () => (new URL(page.url()).searchParams.get("l") || "").includes("sandbox-emodnet-bathymetry"),
+    { timeout: 10_000 },
+  ).toBeTruthy();
+
+  // Existing ATLAS opacity drawer remains functional for extensions.
+  await bathymetryRow.getByRole("button", { name: "i" }).click();
+  const bathymetryDrawer = bathymetryRow.locator("..").locator(".drawer");
+  const opacity = bathymetryDrawer.locator('input[type="range"]');
+  await expect(opacity).toBeVisible();
+  await opacity.fill("0.45");
+  await expect(opacity).toHaveValue("0.45");
+
+  // Regression hardening: inherited legacy legend metadata is normalised without
+  // changing declared colours, so the old SST drawer no longer risks throwing.
   const sstRow = page.locator(".atlas-row").filter({ hasText: "OCEAN · SEA SURFACE TEMP" });
-  await expect(sstRow).toBeVisible();
   await sstRow.getByRole("button", { name: "i" }).click();
   await expect(sstRow.locator("..").locator(".drawer .ramp")).toBeVisible();
 
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-canonical-atlas-bathymetry.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-foundation.png`,
     fullPage: true,
   });
 
-  // Toggle habitat through the existing ATLAS ON/OFF layer row.
-  await page.getByText("SEABED · HABITATS 2025", { exact: true }).click();
+  // ── HABITAT — one focal variable by default ────────────────────────────
+  await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => decodeURIComponent(url).includes("styles=eusm2019_msfd_800")),
     { timeout: 30_000 },
   ).toBeTruthy();
-
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-canonical-atlas-habitats.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-habitat.png`,
     fullPage: true,
   });
 
-  // Condition layer: explicit monthly climatology at the surface. This must
-  // never be described as current/live oxygen state.
-  await page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true }).click();
+  // ── CONDITION — climatology, never relabelled as current/live ──────────
+  await loadScene(page, "OCEAN_CONDITION");
   await expect.poll(() => successful(oxygenResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => oxygenUrls.some((url) => {
@@ -98,14 +119,13 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
-
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-canonical-atlas-oxygen-climatology.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-condition.png`,
     fullPage: true,
   });
 
-  // Toggle historical fishing-density pressure in exactly the same layer machine.
-  await page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true }).click();
+  // ── PRESSURE — historical vessel density as the focal variable ─────────
+  await loadScene(page, "OCEAN_PRESSURE");
   await expect.poll(() => successful(fishingResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => fishingUrls.some((url) => {
@@ -116,9 +136,8 @@ test("ATLAS Data Lab is canonical ATLAS plus four sandbox-only EMODnet layers", 
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
-
   await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-canonical-atlas-fishing-density.png`,
+    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure.png`,
     fullPage: true,
   });
 });
