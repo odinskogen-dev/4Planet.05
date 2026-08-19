@@ -43,7 +43,6 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
     }
   });
 
-  // ── FOUNDATION ──────────────────────────────────────────────────────────
   await loadScene(page, "OCEAN_FOUNDATION");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab", "true");
   await expect(page.locator("html")).toHaveAttribute("data-atlas-lab-extensions", "4");
@@ -55,7 +54,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
 
   await openLayers(page);
   await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
-  await expect(page.getByText("SEABED · HABITATS 2023", { exact: true })).toBeVisible();
+  await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY 2023", { exact: true })).toBeVisible();
 
@@ -92,28 +91,24 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   await sstRow.getByRole("button", { name: "i" }).click();
   await expect(sstRow.locator("..").locator(".drawer .ramp")).toBeVisible();
 
-  await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-foundation.png`,
-    fullPage: true,
-  });
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-foundation.png`, fullPage: true });
 
-  // ── HABITAT ─────────────────────────────────────────────────────────────
+  // Broad-view habitat entry uses the provider-verified 2025 EUNIS 800 m layer.
+  // Finer 400/200/full products are zoom-refinement candidates, not simultaneous overlays.
   await loadScene(page, "OCEAN_HABITAT");
   await expect.poll(() => successful(habitatResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
     () => habitatUrls.some((url) => {
       const decoded = decodeURIComponent(url);
-      return decoded.includes("layers=eusm2023_eunis2019_group")
-        && decoded.includes("styles=default-style-eusm2023_eunis2019_group");
+      return decoded.includes("layers=eusm2025_eunis2019_800")
+        && decoded.includes("styles=eusm2021_eunis2019_l2_800")
+        && decoded.includes("version=1.3.0")
+        && decoded.includes("crs=EPSG:3857");
     }),
     { timeout: 30_000 },
   ).toBeTruthy();
-  await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-habitat.png`,
-    fullPage: true,
-  });
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-habitat.png`, fullPage: true });
 
-  // ── CONDITION + TIME: monthly climatology ───────────────────────────────
   await loadScene(page, "OCEAN_CONDITION");
   await expect.poll(() => successful(oxygenResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
@@ -133,18 +128,10 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   await expect(timeToggleCondition).toBeVisible();
   await timeToggleCondition.click();
   await page.getByRole("button", { name: "FEB", exact: true }).click();
-  await expect.poll(
-    () => oxygenUrls.some((url) => decodeURIComponent(url).includes("time=02")),
-    { timeout: 30_000 },
-  ).toBeTruthy();
+  await expect.poll(() => oxygenUrls.some((url) => decodeURIComponent(url).includes("time=02")), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(async () => (await page.locator("html").getAttribute("data-atlas-time-state") || "").includes('"sandbox-emodnet-dissolved-oxygen-climatology":"02"')).toBeTruthy();
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-condition-time-feb.png`, fullPage: true });
 
-  await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-condition-time-feb.png`,
-    fullPage: true,
-  });
-
-  // ── PRESSURE + TIME: annual slices ─────────────────────────────────────
   await loadScene(page, "OCEAN_PRESSURE");
   await expect.poll(() => successful(fishingResponses), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(
@@ -161,14 +148,7 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   await expect(timeTogglePressure).toBeVisible();
   await timeTogglePressure.click();
   await page.getByRole("button", { name: "2020", exact: true }).click();
-  await expect.poll(
-    () => fishingUrls.some((url) => decodeURIComponent(url).includes("time=2020-01-01T00:00:00Z")),
-    { timeout: 30_000 },
-  ).toBeTruthy();
+  await expect.poll(() => fishingUrls.some((url) => decodeURIComponent(url).includes("time=2020-01-01T00:00:00Z")), { timeout: 30_000 }).toBeTruthy();
   await expect.poll(async () => (await page.locator("html").getAttribute("data-atlas-time-state") || "").includes('"sandbox-emodnet-fishing-vessel-density":"2020-01-01T00:00:00Z"')).toBeTruthy();
-
-  await page.screenshot({
-    path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure-time-2020.png`,
-    fullPage: true,
-  });
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure-time-2020.png`, fullPage: true });
 });
