@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import PublicWorld from "@/earth/PublicWorld";
+import { hardenAtlasLegacyLayerMetadata } from "@/sandbox/atlasLabCompatibility";
 import { installAtlasLabExtensions } from "@/sandbox/atlasLabRegistry";
 import { applyAtlasLabSceneFromUrl } from "@/sandbox/atlasLabScenes";
 
-// Install before PublicWorld/World reads the layer registry. This keeps the
-// sandbox visually and behaviourally identical to ATLAS while production stays
-// untouched on its own branch.
+// Harden inherited metadata and install extensions before PublicWorld/World reads
+// the registry. Production stays untouched on its own branch.
+const HARDENING = hardenAtlasLegacyLayerMetadata();
 const LAB = installAtlasLabExtensions();
 
 export default function AtlasDataSandbox() {
@@ -23,6 +24,7 @@ export default function AtlasDataSandbox() {
     document.documentElement.dataset.atlasLab = "true";
     document.documentElement.dataset.atlasLabExtensions = String(LAB.extensionCount);
     document.documentElement.dataset.atlasLabScene = scene.id;
+    document.documentElement.dataset.atlasLabLegendRepairs = String(HARDENING.repairedLegends);
 
     setPrepared(true);
     return () => {
@@ -30,6 +32,7 @@ export default function AtlasDataSandbox() {
       delete document.documentElement.dataset.atlasLab;
       delete document.documentElement.dataset.atlasLabExtensions;
       delete document.documentElement.dataset.atlasLabScene;
+      delete document.documentElement.dataset.atlasLabLegendRepairs;
     };
   }, []);
 
