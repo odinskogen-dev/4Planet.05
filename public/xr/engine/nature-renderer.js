@@ -26,6 +26,7 @@
         href: { type: 'string', default: '' }
       },
       init() {
+        this.el.dataset.hotspotReady = 'true';
         this.el.addEventListener('mouseenter', () => this.el.setAttribute('scale', '1.18 1.18 1.18'));
         this.el.addEventListener('mouseleave', () => this.el.setAttribute('scale', '1 1 1'));
         this.el.addEventListener('click', () => {
