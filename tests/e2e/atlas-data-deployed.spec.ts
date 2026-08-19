@@ -54,12 +54,21 @@ test("deployed ATLAS lab repairs every layer that was broken in founder screensh
   }, { timeout: 40_000 }).toBeTruthy();
   await expect(events).not.toContainText("OFFLINE");
 
-  // 03 Seabed habitat — cached WMTS, with outside-coverage tiles returned as
-  // transparent rather than poisoning the whole source as UNAVAILABLE.
+  // 03 Seabed habitat — use the broad-Europe 2023 scale-adaptive WMS product
+  // that already passed desktop + 390 px visual QA. Newer 2025 paths remain
+  // candidates until they pass the same evidence gate.
   await loadScene(page, "OCEAN_HABITAT");
-  await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-seabed-habitats-wmts"), { timeout: 40_000 }).toBeTruthy();
+  await expect.poll(
+    () => decodedHas(
+      proxiedRaster,
+      "source=emodnet-seabed-habitats",
+      "layers=eusm2023_eunis2019_group",
+      "styles=default-style-eusm2023_eunis2019_group",
+    ),
+    { timeout: 40_000 },
+  ).toBeTruthy();
   await openLayers(page);
-  const habitat = page.locator(".atlas-row").filter({ hasText: "SEABED · HABITATS 2025" });
+  const habitat = page.locator(".atlas-row").filter({ hasText: "SEABED · HABITATS 2023" });
   await expect(habitat).toContainText("ON");
   await expect(habitat).not.toContainText("UNAVAILABLE");
 
@@ -108,7 +117,7 @@ test("deployed ATLAS lab repairs every layer that was broken in founder screensh
   await expect.poll(() => decodedHas(proxiedRaster, "source=emodnet-human-activities", "time=2020-01-01T00:00:00Z"), { timeout: 40_000 }).toBeTruthy();
 
   await testInfo.attach("proxy-failures", { body: proxyFailures.join("\n") || "NONE", contentType: "text/plain" });
-  expect(proxyFailures.filter((entry) => /emodnet-bathymetry|emodnet-seabed-habitats-wmts|emodnet-chemistry|noaa-coral-dhw|emodnet-human-activities|source=eonet/.test(decodeURIComponent(entry)))).toEqual([]);
+  expect(proxyFailures.filter((entry) => /emodnet-bathymetry|emodnet-seabed-habitats|emodnet-chemistry|noaa-coral-dhw|emodnet-human-activities|source=eonet/.test(decodeURIComponent(entry)))).toEqual([]);
 
   await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-repaired-founder-layers-time-2020.png`, fullPage: true });
 });
