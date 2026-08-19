@@ -6,15 +6,10 @@ import "@/styles/sapiens-atlas-story.css";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { gibs } from "@/earth/layers";
 import { DOMAIN_ACCENT, T } from "@/styles/tokens";
-import {
-  FOOD_PRESSURES,
-  FOOD_SOLUTION_LEVERS,
-  FOOD_SOURCES,
-  FOOD_STAGES,
-  SAPIENS_CHAINS,
-} from "@/data/sapiensChains";
+import { FOOD_PRESSURES, FOOD_SOLUTION_LEVERS, FOOD_SOURCES, FOOD_STAGES, SAPIENS_CHAINS } from "@/data/sapiensChains";
+import { FOOD_PROOF_SIGNALS } from "@/data/sapiensFoodEvidence";
 
-const accent = DOMAIN_ACCENT["S4PIENS_"];
+const accent = DOMAIN_ACCENT["S4PIENS_"] || "#FF4D22";
 const humanId = "taxon:gbif:10856082";
 const vectorStyle = "https://tiles.openfreemap.org/styles/liberty";
 
@@ -26,10 +21,7 @@ const mono: CSSProperties = {
 };
 
 type RelationMode = "DEPENDENCY" | "PRESSURE" | "RESPONSE";
-type SceneMode = "HUMAN_GRAPH" | "CHAIN_GRAPH" | "ATLAS" | "PRESSURE_ATLAS" | "LIFE_GRAPH" | "SOLUTION_GRAPH";
-type NodeKind = "human" | "need" | "chain" | "life" | "solution" | "pressure";
-
-type FoodSource = {
+type FoodSourceRecord = {
   id: string | null;
   name: string;
   sector: string;
@@ -41,234 +33,45 @@ type FoodSource = {
   gas: string;
   year: number;
 };
-
 type FoodResponse = {
   ok: boolean;
-  source?: string;
   apiVersion?: string;
-  retrievedAt?: string;
   returned?: number;
-  sources?: FoodSource[];
+  sources?: FoodSourceRecord[];
   state?: string;
   error?: string;
 };
 
-type StoryChapter = {
-  id: string;
-  number: string;
-  eyebrow: string;
-  title: string;
-  body: string;
-  truth: string;
-  scene: SceneMode;
-  mode: RelationMode;
-};
+type HumanNode = { id: string; label: string; system: string; x: number; y: number; detail: string };
+type LivingNode = { id: string; label: string; kicker: string; x: number; y: number; detail: string; relation: RelationMode };
 
-type GraphNode = {
-  id: string;
-  label: string;
-  kicker: string;
-  x: number;
-  y: number;
-  kind: NodeKind;
-  detail: string;
-};
+const CHAPTERS = [
+  ["earth", "EARTH / ATLAS"],
+  ["human", "HOMO SAPIENS"],
+  ["food", "FOOD_"],
+  ["pressure", "PRESSURE"],
+  ["evidence", "EVIDENCE"],
+  ["living", "LIVING SYSTEMS"],
+  ["solutions", "SOLUTIONS"],
+] as const;
 
-type GraphScene = { nodes: GraphNode[]; links: { from: string; to: string; relation: RelationMode }[] };
-
-const STORY: StoryChapter[] = [
-  {
-    id: "human",
-    number: "01",
-    eyebrow: "SPECIES · HOMO SAPIENS",
-    title: "You are here.",
-    body: "Start with one species — us. The circles are human needs. The lines are relationships into systems that make those needs possible.",
-    truth: "WHAT YOU ARE SEEING · A semantic map, not a personal footprint score. Relationships become claims only when source evidence supports them.",
-    scene: "HUMAN_GRAPH",
-    mode: "DEPENDENCY",
-  },
-  {
-    id: "food",
-    number: "02",
-    eyebrow: "HUMAN NEED · FOOD_",
-    title: "Follow one meal.",
-    body: "FOOD_ is the first Gold chain because one ordinary human need crosses biology, agriculture, fisheries, water, energy, land, processing, trade and waste.",
-    truth: "WHY THIS CHAPTER · It turns an abstract planetary system into something every human already understands: eating.",
-    scene: "CHAIN_GRAPH",
-    mode: "DEPENDENCY",
-  },
-  {
-    id: "atlas",
-    number: "03",
-    eyebrow: "SPATIAL VIEW · ATLAS_",
-    title: "Now put it on Earth.",
-    body: "The chain becomes spatial. Production assets, source records and environmental layers can be opened on the same globe instead of living in separate dashboards.",
-    truth: "SOURCE-AWARE · Climate TRACE agriculture source records are shown here as the first live seam. Inventory/model records are not a live plume.",
-    scene: "ATLAS",
-    mode: "DEPENDENCY",
-  },
-  {
-    id: "pressure",
-    number: "04",
-    eyebrow: "RELATION · PRESSURE",
-    title: "Where does demand meet pressure?",
-    body: "Open land, water, climate and biodiversity context around the food system. The system can show co-location and evidence without pretending co-location proves ecological causation.",
-    truth: "TRUTH RULE · Source → place → pressure context is visible. Local ecological outcome requires stronger evidence than a nearby marker.",
-    scene: "PRESSURE_ATLAS",
-    mode: "PRESSURE",
-  },
-  {
-    id: "life",
-    number: "05",
-    eyebrow: "RELATION · DEPENDENCY + LIFE",
-    title: "Then find the living system.",
-    body: "Food depends on water, soils, climate and ecological functions — while food-system pressures can overlap habitats, species and living systems. Those are different relationship classes and must stay distinguishable.",
-    truth: "NEXT DATA DEPTH · GBIF, forest, water and other qualified spatial layers let the same view move from human system to living context without a second truth model.",
-    scene: "LIFE_GRAPH",
-    mode: "DEPENDENCY",
-  },
-  {
-    id: "response",
-    number: "06",
-    eyebrow: "SOLUTIONS MAP · RESPONSE",
-    title: "Where can the system change?",
-    body: "The final step is not guilt. It is leverage: interventions, actors, Missions and — only when delivery evidence exists — credible action pathways.",
-    truth: "RESPONSE ≠ OUTCOME · The cards are intervention hypotheses until effectiveness, operator and delivery evidence support stronger claims.",
-    scene: "SOLUTION_GRAPH",
-    mode: "RESPONSE",
-  },
+const HUMAN_NODES: HumanNode[] = [
+  { id: "eat", label: "EAT", system: "FOOD_", x: 18, y: 28, detail: "Nutrition moves through farms, fisheries, inputs, factories, trade, retail and waste." },
+  { id: "drink", label: "DRINK", system: "WATER", x: 50, y: 13, detail: "Freshwater is a direct human dependency and a critical input into food and ecosystems." },
+  { id: "power", label: "POWER", system: "EN4RGY_", x: 82, y: 28, detail: "Energy enters fertiliser, machinery, factories, cold chains, transport, retail and homes." },
+  { id: "shelter", label: "SHELTER", system: "BUILT SYSTEM", x: 18, y: 76, detail: "Buildings and cities connect land, energy, water, materials and infrastructure." },
+  { id: "wear", label: "WEAR", system: "F4SHION_", x: 82, y: 76, detail: "Fibres and clothing connect agriculture, petrochemicals, water, manufacturing, trade and waste." },
+  { id: "move", label: "MOVE", system: "MOBILITY", x: 50, y: 91, detail: "Mobility connects energy, materials, infrastructure, trade and access." },
 ];
 
-const HUMAN_GRAPH: GraphScene = {
-  nodes: [
-    { id: "human", label: "HOMO SAPIENS", kicker: "SPECIES", x: 50, y: 51, kind: "human", detail: "One species inside the living planet — dependent on living systems and capable of changing human systems." },
-    { id: "food", label: "EAT", kicker: "FOOD_", x: 18, y: 27, kind: "need", detail: "Nutrition is a biological dependency delivered through farms, fisheries, inputs, factories, trade, retail and waste systems." },
-    { id: "water", label: "DRINK", kicker: "WATER", x: 50, y: 14, kind: "need", detail: "Freshwater is a direct dependency and a critical input into food production, processing and ecosystems." },
-    { id: "energy", label: "POWER", kicker: "EN4RGY_", x: 82, y: 28, kind: "need", detail: "Energy moves through fertiliser, machinery, factories, cold chains, transport, retail and homes." },
-    { id: "shelter", label: "SHELTER", kicker: "BUILT SYSTEM", x: 19, y: 77, kind: "need", detail: "Buildings and cities connect land, energy, water, materials and infrastructure back to the living planet." },
-    { id: "wear", label: "WEAR", kicker: "F4SHION_", x: 81, y: 77, kind: "need", detail: "Clothing links fibres, agriculture, petrochemicals, water, factories, logistics, consumers and waste." },
-    { id: "move", label: "MOVE", kicker: "MOBILITY", x: 50, y: 89, kind: "need", detail: "Mobility connects energy, materials, infrastructure, trade and access across human systems." },
-  ],
-  links: ["food", "water", "energy", "shelter", "wear", "move"].map((id) => ({ from: "human", to: id, relation: "DEPENDENCY" as RelationMode })),
-};
-
-const chainPositions = [[50, 15], [76, 25], [86, 52], [73, 79], [50, 88], [27, 79], [14, 52]];
-const CHAIN_GRAPH: GraphScene = {
-  nodes: [
-    { id: "food-core", label: "FOOD_", kicker: "HUMAN NEED", x: 50, y: 52, kind: "chain", detail: "One familiar human need becomes a spatial system when its stages, places, dependencies and pressures can be inspected together." },
-    ...FOOD_STAGES.map((stage, index) => ({
-      id: `stage:${stage.id}`,
-      label: stage.label,
-      kicker: String(index + 1).padStart(2, "0"),
-      x: chainPositions[index][0],
-      y: chainPositions[index][1],
-      kind: "chain" as NodeKind,
-      detail: stage.text,
-    })),
-  ],
-  links: FOOD_STAGES.map((stage) => ({ from: "food-core", to: `stage:${stage.id}`, relation: "DEPENDENCY" as RelationMode })),
-};
-
-const LIFE_GRAPH: GraphScene = {
-  nodes: [
-    { id: "food-system", label: "FOOD SYSTEM", kicker: "HUMAN SYSTEM", x: 50, y: 51, kind: "chain", detail: "The human system becomes a relationship hub rather than a single impact score." },
-    { id: "soil", label: "SOILS", kicker: "LIVING FOUNDATION", x: 19, y: 25, kind: "life", detail: "Soil condition, nutrients and food production can be related only at the depth supported by source evidence." },
-    { id: "freshwater", label: "FRESHWATER", kicker: "DEPENDENCY", x: 50, y: 14, kind: "life", detail: "Water resources, irrigation, withdrawals and water stress belong in the same relationship model with source-specific limits." },
-    { id: "climate", label: "CLIMATE", kicker: "CONDITION", x: 82, y: 27, kind: "life", detail: "Temperature, precipitation and greenhouse-gas pressure remain distinct signals rather than one collapsed score." },
-    { id: "biodiversity", label: "BIODIVERSITY", kicker: "LIFE", x: 18, y: 78, kind: "life", detail: "GBIF records are observations, not population estimates. They can add living context without becoming causal proof." },
-    { id: "forest", label: "FORESTS", kicker: "LAND SYSTEM", x: 50, y: 89, kind: "life", detail: "Tree-cover change can provide spatial context; tree-cover loss is not automatically deforestation or proof of a commodity driver." },
-    { id: "ocean", label: "MARINE SYSTEMS", kicker: "SEAFOOD", x: 82, y: 77, kind: "life", detail: "Fisheries, marine life and ocean conditions enter when the FOOD_ chain extends into seafood." },
-  ],
-  links: ["soil", "freshwater", "climate", "biodiversity", "forest", "ocean"].map((id) => ({ from: "food-system", to: id, relation: "DEPENDENCY" as RelationMode })),
-};
-
-const solutionPositions = [[19, 24], [50, 14], [82, 27], [18, 78], [50, 89], [82, 76]];
-const SOLUTION_GRAPH: GraphScene = {
-  nodes: [
-    { id: "pressure-core", label: "PRESSURE", kicker: "SYSTEM SIGNAL", x: 50, y: 51, kind: "pressure", detail: "Specific pressure classes make it possible to connect interventions to the part of the system they are intended to change." },
-    ...FOOD_SOLUTION_LEVERS.slice(0, 6).map((solution, index) => ({
-      id: `solution:${index}`,
-      label: solution.label,
-      kicker: solution.pressure,
-      x: solutionPositions[index][0],
-      y: solutionPositions[index][1],
-      kind: "solution" as NodeKind,
-      detail: solution.test,
-    })),
-  ],
-  links: FOOD_SOLUTION_LEVERS.slice(0, 6).map((_, index) => ({ from: "pressure-core", to: `solution:${index}`, relation: "RESPONSE" as RelationMode })),
-};
-
-const GRAPH_SCENES: Partial<Record<SceneMode, GraphScene>> = { HUMAN_GRAPH, CHAIN_GRAPH, LIFE_GRAPH, SOLUTION_GRAPH };
-
-const atlasFoodHref = (layers: readonly string[]) => {
-  const params = new URLSearchParams({ m: "S4PIENS", l: ["bluemarble", ...layers].join(","), journey: "food", entity: humanId });
-  return `/atlas?${params.toString()}`;
-};
-
-const livingSystemsHref = () => {
-  const params = new URLSearchParams({ entity: humanId, journey: "food" });
-  return `/living-systems?${params.toString()}`;
-};
-
-const formatEmissions = (value: number | null) => {
-  if (!Number.isFinite(value)) return "VALUE NOT EXPOSED";
-  const n = Number(value);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return Math.round(n).toLocaleString();
-};
-
-function relationStroke(relation: RelationMode) {
-  if (relation === "PRESSURE") return "var(--sapiens-accent)";
-  if (relation === "RESPONSE") return "#8FE6B7";
-  return "rgba(255,255,255,.34)";
-}
-
-function HumanGlyph() {
-  return (
-    <svg className="sapiens-human-glyph" viewBox="0 0 180 320" aria-hidden>
-      <circle cx="90" cy="35" r="25" />
-      <path d="M90 62 C64 62 53 82 55 116 L62 200 L45 292 M90 62 C116 62 127 82 125 116 L118 200 L135 292 M58 102 L31 182 M122 102 L149 182 M62 200 L90 155 L118 200" />
-      <circle className="sapiens-human-glyph__core" cx="90" cy="135" r="4" />
-    </svg>
-  );
-}
-
-function KnowledgeGraph({ scene, activeNode, onSelect }: { scene: SceneMode; activeNode: string | null; onSelect: (node: GraphNode) => void }) {
-  const graph = GRAPH_SCENES[scene];
-  if (!graph) return null;
-  const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
-  const humanScene = scene === "HUMAN_GRAPH";
-  return (
-    <div className={`sapiens-knowledge is-${scene.toLowerCase()}`} aria-label="Interactive S4PIENS system graph">
-      <div className="sapiens-orbits" aria-hidden><i /><i /><i /><i /></div>
-      <svg className="sapiens-knowledge__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-        {graph.links.map((link) => {
-          const from = nodeById.get(link.from);
-          const to = nodeById.get(link.to);
-          if (!from || !to) return null;
-          return <line key={`${link.from}-${link.to}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} style={{ stroke: relationStroke(link.relation) }} className={`sapiens-knowledge__link is-${link.relation.toLowerCase()}`} />;
-        })}
-      </svg>
-      {graph.nodes.map((node) => {
-        const isHuman = node.kind === "human";
-        return (
-          <button
-            key={node.id}
-            type="button"
-            className={`sapiens-knowledge__node is-${node.kind} ${activeNode === node.id ? "is-active" : ""}`}
-            style={{ left: `${node.x}%`, top: `${node.y}%` }}
-            onClick={() => onSelect(node)}
-            aria-label={`${node.kicker}: ${node.label}`}
-          >
-            {isHuman && humanScene ? <HumanGlyph /> : <><span className="sapiens-knowledge__kicker" style={mono}>{node.kicker}</span><strong>{node.label}</strong></>}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+const LIVING_NODES: LivingNode[] = [
+  { id: "soils", label: "SOILS", kicker: "LIVING FOUNDATION", x: 18, y: 28, relation: "DEPENDENCY", detail: "Soil condition, nutrients and production interact, but claims must stay at the depth supported by source evidence." },
+  { id: "freshwater", label: "FRESHWATER", kicker: "DEPENDENCY", x: 50, y: 13, relation: "DEPENDENCY", detail: "Water resources, irrigation and stress belong in the same system with source-specific time and geography limits." },
+  { id: "climate", label: "CLIMATE", kicker: "CONDITION", x: 82, y: 28, relation: "DEPENDENCY", detail: "Temperature, precipitation and greenhouse-gas pressure remain different signals rather than one collapsed score." },
+  { id: "forests", label: "FORESTS", kicker: "LAND SYSTEM", x: 18, y: 76, relation: "PRESSURE", detail: "Tree-cover change adds land context. Tree-cover loss is not automatically deforestation or proof of a commodity driver." },
+  { id: "biodiversity", label: "BIODIVERSITY", kicker: "RECORDED LIFE", x: 50, y: 91, relation: "PRESSURE", detail: "GBIF observations can add living context. Observation density is not abundance and co-location is not causal proof." },
+  { id: "marine", label: "MARINE SYSTEMS", kicker: "SEAFOOD", x: 82, y: 76, relation: "PRESSURE", detail: "Fisheries, marine life and ocean conditions enter the FOOD_ model when the chain extends into seafood." },
+];
 
 function sourceTone(state: string) {
   if (state === "LIVE_API") return "is-live";
@@ -278,20 +81,131 @@ function sourceTone(state: string) {
   return "is-gated";
 }
 
-export default function SapiensAtlasSandbox() {
-  const mapNode = useRef<HTMLDivElement | null>(null);
+function AtlasGlobe({ className = "", records = [], pressure = false, ariaLabel }: { className?: string; records?: FoodSourceRecord[]; pressure?: boolean; ariaLabel: string }) {
+  const node = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const [data, setData] = useState<FoodResponse>({ ok: false, state: "LOADING" });
-  const [mapReady, setMapReady] = useState(false);
-  const [activeChapter, setActiveChapter] = useState(0);
-  const [relationMode, setRelationMode] = useState<RelationMode>("DEPENDENCY");
-  const [activeStage, setActiveStage] = useState(0);
-  const [activeGraphNode, setActiveGraphNode] = useState<GraphNode | null>(null);
 
-  const chapter = STORY[activeChapter];
-  const currentGraph = GRAPH_SCENES[chapter.scene];
-  const liveLabel = data.ok ? `${data.returned ?? 0} LIVE RECORDS · ${data.apiVersion || "V7"}` : data.state === "LOADING" ? "SOURCE LOADING" : "SOURCE UNAVAILABLE";
-  const liveColour = data.ok ? "#8FE6B7" : data.state === "LOADING" ? "rgba(255,255,255,.55)" : accent;
+  useEffect(() => {
+    if (!node.current || mapRef.current) return;
+    const map = new maplibregl.Map({
+      container: node.current,
+      style: vectorStyle,
+      center: pressure ? [-56, -7] : [-18, 16],
+      zoom: pressure ? 2.35 : 0.82,
+      pitch: pressure ? 18 : 0,
+      bearing: pressure ? -8 : 0,
+      attributionControl: { compact: true },
+      renderWorldCopies: false,
+    });
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+    map.on("load", () => {
+      try { map.setProjection({ type: "globe" }); } catch { /* mercator fallback */ }
+      try {
+        map.addSource("sapiens-blue-marble", {
+          type: "raster",
+          tiles: [gibs("BlueMarble_ShadedRelief_Bathymetry", "default", 8, "jpeg")],
+          tileSize: 256,
+          attribution: "NASA GIBS / Blue Marble",
+        });
+        const firstSymbol = map.getStyle().layers?.find((layer) => layer.type === "symbol")?.id;
+        map.addLayer({
+          id: "sapiens-blue-marble",
+          type: "raster",
+          source: "sapiens-blue-marble",
+          paint: {
+            "raster-opacity": pressure ? 0.76 : 0.98,
+            "raster-saturation": pressure ? -0.02 : -0.16,
+            "raster-contrast": pressure ? 0.18 : 0.12,
+            "raster-brightness-max": pressure ? 0.68 : 0.84,
+          },
+        }, firstSymbol);
+      } catch { /* vector basemap remains visible */ }
+
+      if (records.length) {
+        try {
+          const collection = {
+            type: "FeatureCollection",
+            features: records.map((record) => ({
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [record.lon, record.lat] },
+              properties: { name: record.name, country: record.country || "", year: record.year },
+            })),
+          };
+          map.addSource("food-agriculture", { type: "geojson", data: collection as never });
+          map.addLayer({
+            id: "food-agriculture-points",
+            type: "circle",
+            source: "food-agriculture",
+            paint: {
+              "circle-color": accent,
+              "circle-opacity": pressure ? 0.58 : 0.24,
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 1, 2.4, 6, 5.8, 10, 7.5],
+              "circle-stroke-color": "#FF4D22",
+              "circle-stroke-width": pressure ? 0.8 : 0.35,
+            },
+          });
+        } catch { /* source layer remains optional */ }
+      }
+    });
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, [pressure, records]);
+
+  return <div ref={node} className={`s4x-atlas ${className}`} aria-label={ariaLabel} />;
+}
+
+function HumanGraph({ onFood }: { onFood: () => void }) {
+  const [active, setActive] = useState(HUMAN_NODES[0]);
+  return (
+    <div className="s4x-human-graph" aria-label="Homo sapiens human systems graph">
+      <svg className="s4x-graph-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+        {HUMAN_NODES.map((n) => <line key={n.id} x1="50" y1="52" x2={n.x} y2={n.y} />)}
+      </svg>
+      <button className="s4x-human-core" type="button" aria-label="Homo sapiens">
+        <span style={mono}>SPECIES_</span><strong>HOMO<br/>SAPIENS</strong><small>GBIF 10856082</small>
+      </button>
+      {HUMAN_NODES.map((n) => (
+        <button key={n.id} type="button" className={`s4x-graph-node ${active.id === n.id ? "is-active" : ""}`} style={{ left: `${n.x}%`, top: `${n.y}%` }} onClick={() => { setActive(n); if (n.id === "eat") onFood(); }}>
+          <span style={mono}>{n.system}</span><strong>{n.label}</strong>
+        </button>
+      ))}
+      <aside className="s4x-inspect s4x-inspect--orange">
+        <span style={mono}>{active.system} · HUMAN NEED</span>
+        <h3>{active.label}</h3>
+        <p>{active.detail}</p>
+      </aside>
+    </div>
+  );
+}
+
+function LivingGraph() {
+  const [active, setActive] = useState(LIVING_NODES[0]);
+  return (
+    <div className="s4x-living-graph" aria-label="FOOD Living Systems relationship graph">
+      <svg className="s4x-graph-lines s4x-graph-lines--living" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+        {LIVING_NODES.map((n) => <line key={n.id} x1="50" y1="52" x2={n.x} y2={n.y} className={`is-${n.relation.toLowerCase()}`} />)}
+      </svg>
+      <div className="s4x-living-core"><span style={mono}>HUMAN SYSTEM</span><strong>FOOD_</strong></div>
+      {LIVING_NODES.map((n) => (
+        <button key={n.id} type="button" className={`s4x-living-node is-${n.relation.toLowerCase()} ${active.id === n.id ? "is-active" : ""}`} style={{ left: `${n.x}%`, top: `${n.y}%` }} onClick={() => setActive(n)}>
+          <span style={mono}>{n.kicker}</span><strong>{n.label}</strong>
+        </button>
+      ))}
+      <aside className="s4x-inspect s4x-inspect--dark">
+        <span style={mono}>{active.relation} · {active.kicker}</span>
+        <h3>{active.label}</h3>
+        <p>{active.detail}</p>
+        <div className="s4x-relation-key"><i className="dep"/>DEPENDENCY <i className="press"/>PRESSURE <i className="resp"/>RESPONSE</div>
+      </aside>
+    </div>
+  );
+}
+
+export default function SapiensAtlasSandbox() {
+  const [activeChapter, setActiveChapter] = useState(0);
+  const [activeStage, setActiveStage] = useState(0);
+  const [relationMode, setRelationMode] = useState<RelationMode>("PRESSURE");
+  const [data, setData] = useState<FoodResponse>({ ok: false, state: "LOADING" });
 
   const sourceCounts = useMemo(() => ({
     live: FOOD_SOURCES.filter((source) => source.state === "LIVE_API").length,
@@ -301,72 +215,20 @@ export default function SapiensAtlasSandbox() {
     gated: FOOD_SOURCES.filter((source) => source.state === "ACCESS_GATED").length,
   }), []);
 
-  const scrollToChapter = (index: number) => {
-    document.getElementById(`sapiens-story-${STORY[index].id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
   useEffect(() => {
-    const updateNav = () => document.body.classList.toggle("sapiens-immersive-nav", window.scrollY < window.innerHeight * 5.85);
-    updateNav();
-    window.addEventListener("scroll", updateNav, { passive: true });
-    window.addEventListener("resize", updateNav, { passive: true });
-    return () => {
-      document.body.classList.remove("sapiens-immersive-nav");
-      window.removeEventListener("scroll", updateNav);
-      window.removeEventListener("resize", updateNav);
-    };
+    document.body.classList.add("sapiens-immersive-nav");
+    return () => document.body.classList.remove("sapiens-immersive-nav");
   }, []);
 
   useEffect(() => {
-    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-sapiens-story-step]"));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-s4x-chapter]"));
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       if (!visible) return;
-      const next = Number((visible.target as HTMLElement).dataset.sapiensStoryStep ?? 0);
-      setActiveChapter(next);
-      setRelationMode(STORY[next].mode);
-      setActiveGraphNode(null);
-    }, { threshold: [0.35, 0.55, 0.72], rootMargin: "-8% 0px -8% 0px" });
-    nodes.forEach((node) => observer.observe(node));
+      setActiveChapter(Number((visible.target as HTMLElement).dataset.s4xChapter || 0));
+    }, { threshold: [0.25, 0.45, 0.65], rootMargin: "-12% 0px -24% 0px" });
+    sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!mapNode.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: mapNode.current,
-      style: vectorStyle,
-      center: [-18, 16],
-      zoom: 0.82,
-      pitch: 0,
-      bearing: 0,
-      attributionControl: { compact: true },
-      renderWorldCopies: false,
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    map.on("load", () => {
-      try { map.setProjection({ type: "globe" }); } catch { /* honest mercator fallback */ }
-      try {
-        if (!map.getSource("sapiens-blue-marble")) {
-          map.addSource("sapiens-blue-marble", {
-            type: "raster",
-            tiles: [gibs("BlueMarble_ShadedRelief_Bathymetry", "default", 8, "jpeg")],
-            tileSize: 256,
-            attribution: "NASA GIBS / Blue Marble",
-          });
-          const firstSymbol = map.getStyle().layers?.find((layer) => layer.type === "symbol")?.id;
-          map.addLayer({
-            id: "sapiens-blue-marble",
-            type: "raster",
-            source: "sapiens-blue-marble",
-            paint: { "raster-opacity": 0.98, "raster-saturation": -0.16, "raster-contrast": 0.12, "raster-brightness-max": 0.82 },
-          }, firstSymbol);
-        }
-      } catch { /* vector basemap remains available */ }
-      setMapReady(true);
-    });
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
   useEffect(() => {
@@ -381,232 +243,122 @@ export default function SapiensAtlasSandbox() {
     return () => controller.abort();
   }, []);
 
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady || !data.ok || !Array.isArray(data.sources)) return;
-    const collection = {
-      type: "FeatureCollection",
-      features: data.sources.map((source) => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [source.lon, source.lat] },
-        properties: { id: source.id || "", name: source.name, sector: source.sector, subsector: source.subsector || "", country: source.country || "", emissions: source.emissions, gas: source.gas, year: source.year },
-      })),
-    } as const;
-
-    const existing = map.getSource("food-agriculture") as maplibregl.GeoJSONSource | undefined;
-    if (existing) existing.setData(collection as never);
-    else {
-      map.addSource("food-agriculture", { type: "geojson", data: collection as never });
-      map.addLayer({
-        id: "food-agriculture-points",
-        type: "circle",
-        source: "food-agriculture",
-        paint: {
-          "circle-color": accent,
-          "circle-opacity": 0.16,
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 1, 2.4, 6, 5.2, 10, 7],
-          "circle-stroke-color": "#FFFFFF",
-          "circle-stroke-width": 0.45,
-        },
-      });
-      map.on("click", "food-agriculture-points", (event) => {
-        const feature = event.features?.[0];
-        if (!feature || feature.geometry.type !== "Point") return;
-        const p = feature.properties || {};
-        const root = document.createElement("div");
-        root.style.cssText = "font:12px/1.5 system-ui;color:#0A0A0A;min-width:220px";
-        const title = document.createElement("strong");
-        title.textContent = String(p.name || "Agriculture source");
-        root.append(title, document.createElement("br"));
-        root.append(document.createTextNode(String(p.subsector || p.sector || "agriculture")), document.createElement("br"));
-        root.append(document.createTextNode(`${p.country ? `${String(p.country)} · ` : ""}${String(p.year || "")}`), document.createElement("br"));
-        root.append(document.createTextNode(`${formatEmissions(Number(p.emissions))} · ${String(p.gas || "source-defined gas")}`), document.createElement("br"));
-        const note = document.createElement("span");
-        note.style.opacity = ".58";
-        note.textContent = "Climate TRACE inventory/model source · not a live plume";
-        root.append(note);
-        new maplibregl.Popup({ closeButton: true, maxWidth: "330px" }).setLngLat(feature.geometry.coordinates as [number, number]).setDOMContent(root).addTo(map);
-      });
-    }
-  }, [data, mapReady]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-    if (chapter.scene === "ATLAS" || chapter.scene === "PRESSURE_ATLAS") {
-      map.easeTo({ center: chapter.scene === "ATLAS" ? [-18, 16] : [-43, 1], zoom: chapter.scene === "ATLAS" ? 0.85 : 1.15, duration: 1450 });
-    }
-    if (map.getLayer("food-agriculture-points")) {
-      map.setPaintProperty("food-agriculture-points", "circle-opacity", chapter.scene === "PRESSURE_ATLAS" ? 0.9 : chapter.scene === "ATLAS" ? 0.28 : 0.03);
-    }
-    if (map.getLayer("sapiens-blue-marble")) map.setPaintProperty("sapiens-blue-marble", "raster-opacity", chapter.scene === "ATLAS" || chapter.scene === "PRESSURE_ATLAS" ? 0.98 : 0.12);
-  }, [chapter.scene, mapReady]);
-
-  const handleGraphSelect = (node: GraphNode) => {
-    setActiveGraphNode(node);
-    if (node.id.startsWith("stage:")) {
-      const stageId = node.id.replace("stage:", "");
-      const index = FOOD_STAGES.findIndex((stage) => stage.id === stageId);
-      if (index >= 0) setActiveStage(index);
-    }
-  };
+  const scrollTo = (id: string) => document.getElementById(`s4x-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const liveLabel = data.ok ? `${data.returned ?? 0} CLIMATE TRACE RECORDS · ${data.apiVersion || "V7"}` : data.state === "LOADING" ? "CLIMATE TRACE · LOADING" : "CLIMATE TRACE · SOURCE UNAVAILABLE";
 
   return (
     <PublicShell>
-      <div className="sapiens-story" style={{ "--sapiens-accent": accent } as CSSProperties}>
-        <div className="sapiens-story-shell">
-          <div className={`sapiens-stage chapter-${activeChapter + 1} scene-${chapter.scene.toLowerCase()}`}>
-            <div className="sapiens-cosmos" aria-hidden />
-            <div ref={mapNode} aria-label="S4PIENS Atlas — NASA Earth with Climate TRACE agriculture sources" className="sapiens-stage__map" />
-            <div className="sapiens-stage__scrim" aria-hidden />
+      <main className="s4x" style={{ "--s4x-accent": accent } as CSSProperties}>
+        <nav className="s4x-rail" aria-label="S4PIENS chapters">
+          {CHAPTERS.map(([id], index) => (
+            <button key={id} type="button" className={activeChapter === index ? "is-active" : ""} onClick={() => scrollTo(id)} aria-label={`Open chapter ${String(index + 1).padStart(2, "0")}`}>
+              <span style={mono}>{String(index + 1).padStart(2, "0")}</span><i />
+            </button>
+          ))}
+        </nav>
 
-            <div className="sapiens-chrome" aria-hidden>
-              <div className="sapiens-brandline" style={mono}>S4PIENS_ · HUMAN SYSTEMS ATLAS · FOOD_ GOLD</div>
-              <div className="sapiens-source-state" style={{ ...mono, color: liveColour }}>NASA EARTH · {liveLabel}</div>
+        <section id="s4x-earth" data-s4x-chapter="0" className="s4x-section s4x-earth">
+          <AtlasGlobe ariaLabel="S4PIENS Atlas — NASA Blue Marble Earth" records={data.ok ? data.sources || [] : []} />
+          <div className="s4x-earth-scrim" aria-hidden />
+          <div className="s4x-topline"><span style={mono}>4PLANET_ / S4PIENS_ / HUMAN SYSTEMS ATLAS</span><span style={mono}>NASA GIBS · BLUE MARBLE · {liveLabel}</span></div>
+          <div className="s4x-earth-copy">
+            <div className="s4x-eyebrow">01 · EARTH / ATLAS · S4PIENS_</div>
+            <h1>You are here.</h1>
+            <p>S4PIENS is a map of how human needs become systems across the planet — and where those systems meet the living world.</p>
+            <div className="s4x-truth" style={mono}>START WITH EARTH · THE PLANET IS THE SHARED SPATIAL CANVAS.</div>
+            <div className="s4x-actions"><button className="is-orange" type="button" onClick={() => scrollTo("human")}>START WITH THE HUMAN ↓</button><Link to="/atlas">OPEN FREE ATLAS →</Link></div>
+          </div>
+          <aside className="s4x-species-card">
+            <img src="/assets/brand/story-hero.jpg" alt="A human figure in a landscape" />
+            <div>
+              <span className="s4x-eyebrow">SPECIES_ · GBIF 10856082 · IDENTITY KNOWN</span>
+              <h2>Homo sapiens</h2>
+              <p>Human. A species that depends on living systems — and builds systems capable of changing them.</p>
+              <dl><div><dt>DEPENDENCY</dt><dd>planet → human</dd></div><div><dt>PRESSURE</dt><dd>human system → planet</dd></div><div><dt>RESPONSE</dt><dd>system → change</dd></div></dl>
+              <Link to="/species/homo-sapiens">OPEN GOLD SPECIES CARD →</Link>
             </div>
+          </aside>
+          <div className="s4x-status"><span>VIEW <b>EARTH</b></span><span>RELATION <b>DEPENDENCY</b></span><span>ATLAS <b>NASA GIBS</b></span><span>SOURCE <b>{data.ok ? `${data.returned ?? 0} RECORDS` : "STATE VISIBLE"}</b></span><span>STATUS <b>INTERNAL PROTOTYPE</b></span></div>
+        </section>
 
-            <nav className="sapiens-progress" aria-label="S4PIENS story chapters">
-              {STORY.map((item, index) => (
-                <button key={item.id} type="button" className={index === activeChapter ? "is-active" : ""} onClick={() => scrollToChapter(index)} aria-label={`Open chapter ${item.number}: ${item.title}`}>
-                  <span style={mono}>{item.number}</span><span aria-hidden />
-                </button>
-              ))}
-            </nav>
-
-            {currentGraph && <KnowledgeGraph scene={chapter.scene} activeNode={activeGraphNode?.id ?? null} onSelect={handleGraphSelect} />}
-
-            {activeGraphNode && currentGraph && (
-              <aside className="sapiens-node-inspect" aria-live="polite">
-                <div style={{ ...mono, color: accent }}>{activeGraphNode.kicker}</div>
-                <h3>{activeGraphNode.label}</h3>
-                <p>{activeGraphNode.detail}</p>
-                {activeGraphNode.id === "food" && <button type="button" onClick={() => scrollToChapter(1)} style={mono}>FOLLOW FOOD_ →</button>}
-              </aside>
-            )}
-
-            <section className="sapiens-story-card" aria-live="polite">
-              <div className="sapiens-story-card__eyebrow" style={{ ...mono, color: accent }}>{chapter.number} · {chapter.eyebrow}</div>
-              <h1>{chapter.title}</h1>
-              <p>{chapter.body}</p>
-              <div className="sapiens-story-card__truth">{chapter.truth}</div>
-
-              {activeChapter === 0 && (
-                <div className="sapiens-action-row">
-                  <button type="button" className="sapiens-action is-primary" style={mono} onClick={() => scrollToChapter(1)}>FOLLOW FOOD_ ↓</button>
-                  <Link className="sapiens-action" style={mono} to="/species/homo-sapiens">OPEN SPECIES →</Link>
-                </div>
-              )}
-
-              {activeChapter === 1 && (
-                <>
-                  <div className="sapiens-card-question">What does a meal touch?</div>
-                  <div className="sapiens-mini-rail" aria-label="FOOD journey stages">
-                    {FOOD_STAGES.map((stage, index) => (
-                      <button key={stage.id} type="button" className={activeStage === index ? "is-active" : ""} aria-label={`${String(index + 1).padStart(2, "0")}: ${stage.label}`} onClick={() => { setActiveStage(index); setActiveGraphNode(CHAIN_GRAPH.nodes.find((node) => node.id === `stage:${stage.id}`) ?? null); }}>
-                        {String(index + 1).padStart(2, "0")}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="sapiens-action-row"><button type="button" className="sapiens-action is-primary" style={mono} onClick={() => scrollToChapter(2)}>PUT IT ON EARTH ↓</button></div>
-                </>
-              )}
-
-              {activeChapter === 2 && (
-                <div className="sapiens-action-row">
-                  <span className="sapiens-action is-status" style={mono}>{liveLabel}</span>
-                  <Link className="sapiens-action is-primary" style={mono} to={atlasFoodHref([])}>OPEN SHARED ATLAS →</Link>
-                </div>
-              )}
-
-              {activeChapter === 3 && (
-                <>
-                  <div className="sapiens-relation-switch" aria-label="Relationship mode">
-                    {(["DEPENDENCY", "PRESSURE", "RESPONSE"] as RelationMode[]).map((mode) => <button key={mode} type="button" className={relationMode === mode ? "is-active" : ""} style={mono} onClick={() => setRelationMode(mode)}>{mode}</button>)}
-                  </div>
-                  <div className="sapiens-action-row sapiens-action-row--pressures">
-                    {FOOD_PRESSURES.slice(0, 4).map((pressure) => <Link key={pressure.id} className="sapiens-action" style={mono} to={atlasFoodHref(pressure.atlasLayers)}>{pressure.label} →</Link>)}
-                  </div>
-                </>
-              )}
-
-              {activeChapter === 4 && (
-                <div className="sapiens-action-row">
-                  <Link className="sapiens-action is-primary" style={mono} to={livingSystemsHref()}>OPEN LIVING SYSTEMS →</Link>
-                  <Link className="sapiens-action" style={mono} to="/species">EXPLORE SPECIES →</Link>
-                </div>
-              )}
-
-              {activeChapter === 5 && (
-                <div className="sapiens-action-row">
-                  <Link className="sapiens-action is-primary" style={mono} to="/missions/food">OPEN FOOD_ MISSION →</Link>
-                  <Link className="sapiens-action" style={mono} to={atlasFoodHref(["ndvi", "forest", "precip", "fires", "biodiv"])}>EXPLORE IN ATLAS →</Link>
-                </div>
-              )}
-            </section>
-
-            {activeChapter === 2 && (
-              <aside className="sapiens-pressure-teaser">
-                <div style={{ ...mono, color: "#7CA8FF" }}>04 · PRESSURE · SYSTEM CONSEQUENCE_</div>
-                <h3>What&apos;s the pressure?</h3>
-                <div>{FOOD_PRESSURES.slice(0, 4).map((pressure) => <span key={pressure.id}>{pressure.label}</span>)}</div>
-                <button type="button" onClick={() => scrollToChapter(3)} aria-label="Continue to pressure">→</button>
-              </aside>
-            )}
-
-            {(chapter.scene === "ATLAS" || chapter.scene === "PRESSURE_ATLAS") && <div className="sapiens-orbit-hint" style={mono}>DRAG TO ORBIT</div>}
-            <div className="sapiens-microcopy sapiens-microcopy--left" style={mono}>SYSTEMS ARE CONNECTED.</div>
-            <div className="sapiens-microcopy sapiens-microcopy--right" style={mono}>EVIDENCE BEFORE INTERPRETATION.</div>
+        <section id="s4x-human" data-s4x-chapter="1" className="s4x-section s4x-human">
+          <div className="s4x-shell s4x-human-grid">
+            <div className="s4x-human-copy">
+              <span className="s4x-eyebrow s4x-eyebrow--ink">02 · HOMO SAPIENS · HUMAN SYSTEMS</span>
+              <h2>One species.<br/>Many systems.</h2>
+              <p>We depend on living systems. Then we build food, water, energy, cities, clothing and mobility systems that reshape the same planet.</p>
+              <div className="s4x-human-rule" style={mono}>PLANET → HUMAN = DEPENDENCY · HUMAN SYSTEM → PLANET = PRESSURE · SYSTEM → CHANGE = RESPONSE</div>
+              <button type="button" onClick={() => scrollTo("food")}>FOLLOW FOOD_ ↓</button>
+            </div>
+            <HumanGraph onFood={() => scrollTo("food")} />
           </div>
+        </section>
 
-          <div className="sapiens-story-track" aria-hidden>
-            {STORY.map((item, index) => <section key={item.id} id={`sapiens-story-${item.id}`} data-sapiens-story-step={index} className="sapiens-story-trigger" />)}
-          </div>
-        </div>
-
-        <section className="sapiens-editorial sapiens-editorial--paper">
-          <div className="sapiens-editorial__inner">
-            <div style={{ ...mono, color: accent }}>WHY FOOD_ FIRST · GOLD STANDARD 01</div>
-            <h2>One human need touches almost the whole planet.</h2>
-            <p className="sapiens-editorial__lead">FOOD_ is useful because it forces the product to connect human demand, production, trade, land, water, climate, biodiversity and solutions without collapsing them into one score.</p>
-            <div className="sapiens-editorial-lines">
-              <article><span style={mono}>01 · HUMAN</span><h3>Begin with something everybody understands.</h3><p>Eating earns attention before the product introduces systems language.</p></article>
-              <article><span style={mono}>02 · EARTH</span><h3>Let the globe arrive when place matters.</h3><p>ATLAS becomes the spatial canvas exactly when abstraction must become geography.</p></article>
-              <article><span style={mono}>03 · CHANGE</span><h3>End with leverage, not guilt.</h3><p>The journey reveals where actors, interventions and Missions can change the system.</p></article>
+        <section id="s4x-food" data-s4x-chapter="2" className="s4x-section s4x-food">
+          <div className="s4x-shell">
+            <span className="s4x-eyebrow">03 · FOOD_ · GOLD STANDARD 01</span>
+            <div className="s4x-food-head"><h2>Follow one meal.</h2><p>One ordinary human need crosses production, water, energy, land, factories, ports, retail and waste. FOOD_ is the first chain because almost anyone can enter the system here.</p></div>
+            <div className="s4x-stage-rail" aria-label="FOOD journey stages">
+              {FOOD_STAGES.map((stage, index) => <button key={stage.id} type="button" className={activeStage === index ? "is-active" : ""} onClick={() => setActiveStage(index)}><span style={mono}>{String(index + 1).padStart(2, "0")}</span><strong>{stage.label}</strong></button>)}
+            </div>
+            <div className="s4x-stage-detail"><span style={mono}>STAGE {String(activeStage + 1).padStart(2, "0")} / 07</span><h3>{FOOD_STAGES[activeStage].label}</h3><p>{FOOD_STAGES[activeStage].text}</p><button type="button" onClick={() => scrollTo("pressure")}>PUT THIS BACK ON EARTH ↓</button></div>
+            <div className="s4x-proof-grid">
+              {FOOD_PROOF_SIGNALS.map((signal) => <a key={signal.id} href={signal.sourceUrl} target="_blank" rel="noreferrer"><span style={mono}>{signal.theme} · {signal.dataYear}</span><strong>{signal.value}</strong><p>{signal.label}</p><small>{signal.source}<br/>LIMIT · {signal.limitation}</small></a>)}
             </div>
           </div>
         </section>
 
-        <section className="sapiens-editorial sapiens-editorial--dark">
-          <div className="sapiens-editorial__inner">
-            <div style={{ ...mono, color: accent }}>SOURCE STACK · FOOD_ · SOURCE-AWARE</div>
-            <h2>Evidence before interpretation.</h2>
-            <p className="sapiens-editorial__lead is-dark">{sourceCounts.live} live API · {sourceCounts.atlas} existing ATLAS · {sourceCounts.open} open datasets · {sourceCounts.rights} rights review · {sourceCounts.gated} access-gated. Missing or failed sources stay missing — never rendered as zero.</p>
-            <div className="sapiens-source-ledger">
-              {FOOD_SOURCES.map((source) => (
-                <a key={source.id} href={source.url} target="_blank" rel="noreferrer" className="sapiens-source-row">
-                  <div><span className={`sapiens-source-badge ${sourceTone(source.state)}`} style={mono}>{source.state.replace(/_/g, " ")}</span><span className="sapiens-source-authority" style={mono}>{source.authority}</span></div>
-                  <div><h3>{source.label}</h3><p>{source.role}</p><p className="sapiens-source-limit">LIMIT · {source.limitation}</p></div>
-                  <div className="sapiens-source-meta" style={mono}>{source.coverage}<br />CHECKED {source.checkedOn}<br />OPEN SOURCE ↗</div>
-                </a>
-              ))}
+        <section id="s4x-pressure" data-s4x-chapter="3" className="s4x-section s4x-pressure">
+          <img className="s4x-pressure-image" src="/assets/missions/food/hero.jpg" alt="Agricultural landscape" />
+          <div className="s4x-pressure-scrim" aria-hidden />
+          <div className="s4x-shell s4x-pressure-grid">
+            <div className="s4x-pressure-copy">
+              <span className="s4x-eyebrow">04 · PRESSURE ON EARTH · SOURCE CONTEXT</span>
+              <h2>The chain becomes visible when data layers meet the story.</h2>
+              <p>Production and inventory records can be located. Environmental context can be opened around them. Co-location is useful evidence — but it is not causation.</p>
+              <div className="s4x-relation-switch">{(["DEPENDENCY","PRESSURE","RESPONSE"] as RelationMode[]).map((mode) => <button key={mode} type="button" className={relationMode === mode ? "is-active" : ""} onClick={() => setRelationMode(mode)}>{mode}</button>)}</div>
+              <div className="s4x-pressure-list">{FOOD_PRESSURES.slice(0,5).map((pressure) => <Link key={pressure.id} to={`/atlas?m=S4PIENS&l=bluemarble,${pressure.atlasLayers.join(",")}&journey=food&entity=${humanId}`}><span style={mono}>{pressure.id.toUpperCase()}</span><strong>{pressure.label}</strong><p>{pressure.question}</p><b>OPEN IN ATLAS →</b></Link>)}</div>
+            </div>
+            <div className="s4x-pressure-map-wrap"><AtlasGlobe className="is-pressure" ariaLabel="FOOD pressure Atlas with NASA Blue Marble and Climate TRACE source records" records={data.ok ? data.sources || [] : []} pressure /><div className="s4x-map-label" style={mono}>PROTOTYPE SPATIAL VIEW · NASA GIBS + CLIMATE TRACE SOURCE RECORDS · NOT LOCAL CAUSAL PROOF</div></div>
+          </div>
+        </section>
+
+        <section id="s4x-evidence" data-s4x-chapter="4" className="s4x-section s4x-evidence">
+          <div className="s4x-shell">
+            <span className="s4x-eyebrow">05 · SOURCE LEDGER · CHECKED 2026-08-19</span>
+            <div className="s4x-evidence-head"><h2>Evidence before interpretation.</h2><p>{sourceCounts.live} live API · {sourceCounts.atlas} existing ATLAS · {sourceCounts.open} open datasets · {sourceCounts.rights} rights review · {sourceCounts.gated} access gated. Missing or failed sources stay missing — never rendered as zero.</p></div>
+            <div className="s4x-source-key"><span>LIVE API</span><span>EXISTING ATLAS</span><span>OPEN DATASET</span><span>RIGHTS REVIEW</span><span>ACCESS GATED</span></div>
+            <div className="s4x-source-ledger">
+              {FOOD_SOURCES.map((source) => <a key={source.id} href={source.url} target="_blank" rel="noreferrer" className={`s4x-source-row ${sourceTone(source.state)}`}><div><span className="s4x-source-state" style={mono}>{source.state.replaceAll("_"," ")}</span><small style={mono}>{source.authority}</small></div><div><strong>{source.label}</strong><p>{source.role}</p><small>LIMIT · {source.limitation}</small></div><div><span style={mono}>{source.coverage || "SOURCE-SPECIFIC"}</span><small style={mono}>CHECKED {source.checkedOn}</small><b>OPEN SOURCE ↗</b></div></a>)}
+            </div>
+            <div className="s4x-truth-strip"><span>CO-LOCATION ≠ CAUSATION</span><span>OBSERVATION DENSITY ≠ ABUNDANCE</span><span>SOURCE FAILURE ≠ ZERO</span></div>
+          </div>
+        </section>
+
+        <section id="s4x-living" data-s4x-chapter="5" className="s4x-section s4x-living">
+          <div className="s4x-shell s4x-living-layout">
+            <div className="s4x-living-copy"><span className="s4x-eyebrow">06 · LIVING SYSTEMS · UNDERSTAND SYSTEMS</span><h2>Find what the system depends on — and what it can pressure.</h2><p>The graph is the explanation layer. ATLAS is the spatial reality layer. Both sit over the same Planet Model.</p><Link to={`/living-systems?entity=${humanId}&journey=food`}>OPEN LIVING SYSTEMS →</Link></div>
+            <LivingGraph />
+          </div>
+        </section>
+
+        <section id="s4x-solutions" data-s4x-chapter="6" className="s4x-section s4x-solutions">
+          <div className="s4x-shell">
+            <span className="s4x-eyebrow s4x-eyebrow--ink">07 · SOLUTIONS MAP · RESPONSE</span>
+            <div className="s4x-solutions-head"><h2>Then find leverage.</h2><p>The point is not guilt. It is to identify where systems can change — and keep response separate from verified outcome.</p></div>
+            <div className="s4x-response-warning" style={mono}>RESPONSE ≠ OUTCOME · SOLUTION NODES ARE INTERVENTION HYPOTHESES UNTIL EFFECTIVENESS / OPERATOR / DELIVERY EVIDENCE EXISTS.</div>
+            <div className="s4x-solutions-grid">{FOOD_SOLUTION_LEVERS.map((solution, index) => <article key={solution.label}><span style={mono}>{String(index + 1).padStart(2,"0")} · {solution.pressure}</span><h3>{solution.label}</h3><p>{solution.test}</p><small style={mono}>INTERVENTION HYPOTHESIS</small></article>)}</div>
+            <div className="s4x-final-links"><Link to="/missions/food">OPEN FOOD_ MISSION →</Link><Link to="/atlas">OPEN ATLAS →</Link><Link to="/species/homo-sapiens">OPEN HOMO SAPIENS →</Link><button type="button" onClick={() => scrollTo("earth")}>RETURN TO EARTH ↑</button></div>
+
+            <div className="s4x-transfer">
+              <div><span className="s4x-eyebrow s4x-eyebrow--ink">TRANSFER · 20 HUMAN SYSTEM CHAINS</span><h3>FOOD_ proves the grammar. The same map can scale.</h3></div>
+              <div className="s4x-chain-grid">{SAPIENS_CHAINS.map((chain, index) => <article key={chain.id} className={chain.status === "GOLD_STANDARD" ? "is-gold" : ""}><span style={mono}>{String(index + 1).padStart(2,"0")}</span><strong>{chain.label}</strong><em>{chain.humanNeed}</em><b style={mono}>{chain.status === "GOLD_STANDARD" ? "GOLD STANDARD" : "MAPPED NEXT"}</b></article>)}</div>
             </div>
           </div>
         </section>
 
-        <section className="sapiens-editorial sapiens-editorial--dark sapiens-editorial--transfer">
-          <div className="sapiens-editorial__inner">
-            <div style={{ ...mono, color: accent }}>TRANSFER · 20 HUMAN SYSTEM CHAINS</div>
-            <h2>FOOD_ proves the grammar. Then the map can scale.</h2>
-            <div className="sapiens-chain-index">
-              {SAPIENS_CHAINS.slice(0, 8).map((chain, index) => (
-                <div key={chain.id} className={chain.status === "GOLD_STANDARD" ? "is-gold" : ""}>
-                  <span style={mono}>{String(index + 1).padStart(2, "0")}</span><strong>{chain.label}</strong><span>{chain.humanNeed}</span><span style={mono}>{chain.status === "GOLD_STANDARD" ? "GOLD" : "NEXT"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
+        <footer className="s4x-footer" style={mono}>INTERNAL GOLD PROTOTYPE · SOURCE-AWARE · NOT A PRODUCTION RELEASE</footer>
+      </main>
     </PublicShell>
   );
 }
