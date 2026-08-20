@@ -1,0 +1,47 @@
+name: Cloudflare Domain Inventory
+
+on:
+  push:
+    branches:
+      - ops/cloudflare-domain-inventory-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inventory zones and Pages projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+
+          zones="$(curl -fsS "${auth[@]}" "${api}/zones?per_page=50")"
+          echo "$zones" | jq -e '.success == true' >/dev/null
+          echo "=== CLOUDFLARE ZONES ==="
+          echo "$zones" | jq -r '.result | sort_by(.name)[] | [.name, .status, .type] | @tsv'
+
+          account_id="$(echo "$zones" | jq -r '.result[0].account.id // empty')"
+          test -n "$account_id"
+          echo "::add-mask::${account_id}"
+
+          projects="$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/pages/projects?per_page=100")"
+          echo "$projects" | jq -e '.success == true' >/dev/null
+          echo "=== PAGES PROJECTS ==="
+          echo "$projects" | jq -r '.result | sort_by(.name)[] | [.name, (.production_branch // ""), (.subdomain // "")] | @tsv'
+
+          echo "=== PAGES CUSTOM DOMAINS ==="
+          for p in $(echo "$projects" | jq -r '.result[].name'); do
+            domains="$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/${p}/domains" || true)"
+            if echo "$domains" | jq -e '.success == true' >/dev/null 2>&1; then
+              echo "$domains" | jq -r --arg p "$p" '.result[]? | [$p, .name, .status] | @tsv'
+            fi
+          done
