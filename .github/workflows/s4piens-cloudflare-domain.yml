@@ -72,7 +72,7 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           alias=""
           for attempt in $(seq 1 20); do
-            deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=100")"
+            deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
             echo "$deployments" | jq -e '.success == true' >/dev/null
             alias="$(echo "$deployments" | jq -r --arg branch "$S4PIENS_BRANCH" '
               [.result[] | select(.deployment_trigger.metadata.branch == $branch)]
