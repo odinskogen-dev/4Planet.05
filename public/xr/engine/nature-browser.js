@@ -218,9 +218,9 @@
       state.soundOn = true;
       root.classList.add('is-entered');
       root.dataset.entered = 'true';
-      // Entered is a runtime state contract, not merely a CSS animation hint.
-      // Apply the terminal presentation state directly so browser/full-tier
-      // compositing cannot leave the blocking entry surface interactive/visible.
+      // Entered and the first Journey scene are runtime state contracts, not
+      // cosmetic timer states. Commit scene 01 synchronously; the cinematic
+      // engine owns the visual travel/settle animation after that state exists.
       if (entry) {
         entry.setAttribute('aria-hidden', 'true');
         entry.style.setProperty('visibility', 'hidden', 'important');
@@ -233,7 +233,7 @@
         soundButton.dataset.playing = 'true';
         soundButton.textContent = 'SOUND ON';
       }
-      window.setTimeout(() => goTo(0, false), 760);
+      goTo(0, false);
       window.dispatchEvent(new CustomEvent('4planet:nature-browser-enter', { detail: { manifest } }));
     };
 
