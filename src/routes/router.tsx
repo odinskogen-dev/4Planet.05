@@ -55,7 +55,8 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/sandbox/s4piens" element={<Suspense fallback={WorldFallback}><SapiensBiologicalExperiment /></Suspense>} />
+      <Route path="/sandbox/s4piens" element={<Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>} />
+      <Route path="/sandbox/s4piens-bio" element={<Suspense fallback={WorldFallback}><SapiensBiologicalExperiment /></Suspense>} />
       <Route path="/sandbox/s4piens-classic" element={<Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
