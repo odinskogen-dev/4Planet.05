@@ -12,17 +12,27 @@
       </div>
       <div class="light-lens-projection">
         <svg class="light-lens-orca" viewBox="0 0 900 430" focusable="false">
-          <path class="major" d="M84 242 C151 176 278 132 407 137 C526 142 601 164 678 194 C738 216 792 217 836 199 C804 232 766 252 714 258 C639 267 579 285 517 310 C430 346 326 344 239 316 C171 294 116 270 84 242Z"/>
-          <path class="major" d="M427 138 C414 96 430 60 471 38 C470 86 486 115 522 146"/>
-          <path class="major" d="M303 155 C260 118 233 96 184 94 C211 125 218 149 214 176"/>
-          <path class="major" d="M522 310 C555 345 592 365 642 370 C617 337 613 311 622 281"/>
-          <path class="major" d="M83 242 C49 221 37 194 31 166 C66 184 91 200 113 221 M83 242 C49 265 37 293 31 321 C67 302 92 283 116 263"/>
-          <path class="mesh" d="M189 190 C251 222 300 256 346 309 M249 160 C309 202 358 254 394 330 M332 142 C378 198 412 257 432 337 M427 139 C457 193 475 255 477 326 M513 150 C519 209 514 261 503 313 M590 168 C576 216 556 260 532 305"/>
-          <path class="mesh" d="M129 229 C243 236 361 234 482 225 C596 216 681 221 769 236 M111 255 C244 268 369 275 497 269 C591 265 661 258 714 249 M166 292 C269 297 376 302 517 286"/>
-          <path class="soft" d="M642 188 C657 174 677 169 698 174 M649 237 C672 248 696 246 715 236"/>
-          <circle class="signal" cx="684" cy="211" r="4"/>
-          <circle class="signal" cx="146" cy="213" r="2.6"/><circle class="signal" cx="222" cy="270" r="2.6"/><circle class="signal" cx="310" cy="213" r="2.6"/><circle class="signal" cx="402" cy="270" r="2.6"/><circle class="signal" cx="493" cy="213" r="2.6"/><circle class="signal" cx="584" cy="270" r="2.6"/><circle class="signal" cx="675" cy="213" r="2.6"/>
+          <g class="light-lens-orca__body">
+            <path class="major" d="M84 242 C151 176 278 132 407 137 C526 142 601 164 678 194 C738 216 792 217 836 199 C804 232 766 252 714 258 C639 267 579 285 517 310 C430 346 326 344 239 316 C171 294 116 270 84 242Z"/>
+            <path class="major" d="M427 138 C414 96 430 60 471 38 C470 86 486 115 522 146"/>
+            <path class="major" d="M303 155 C260 118 233 96 184 94 C211 125 218 149 214 176"/>
+            <path class="major" d="M522 310 C555 345 592 365 642 370 C617 337 613 311 622 281"/>
+            <path class="major" d="M83 242 C49 221 37 194 31 166 C66 184 91 200 113 221 M83 242 C49 265 37 293 31 321 C67 302 92 283 116 263"/>
+          </g>
+          <g class="light-lens-orca__volume">
+            <path d="M139 229 C205 184 306 157 408 159 C512 161 603 182 704 220"/>
+            <path d="M124 244 C219 205 315 188 414 189 C513 190 594 205 676 231"/>
+            <path d="M131 261 C229 238 327 226 425 228 C513 230 578 238 635 252"/>
+            <path d="M159 281 C245 278 335 281 426 279 C495 278 548 274 590 266"/>
+          </g>
+          <g class="light-lens-orca__mesh">
+            <path class="mesh" d="M189 190 C251 222 300 256 346 309 M249 160 C309 202 358 254 394 330 M332 142 C378 198 412 257 432 337 M427 139 C457 193 475 255 477 326 M513 150 C519 209 514 261 503 313 M590 168 C576 216 556 260 532 305"/>
+            <path class="mesh" d="M129 229 C243 236 361 234 482 225 C596 216 681 221 769 236 M111 255 C244 268 369 275 497 269 C591 265 661 258 714 249 M166 292 C269 297 376 302 517 286"/>
+            <path class="soft" d="M642 188 C657 174 677 169 698 174 M649 237 C672 248 696 246 715 236"/>
+          </g>
+          <circle class="light-lens-orca__eye" cx="684" cy="211" r="3.3"/>
         </svg>
+        <div class="light-lens-source-note">INTERPRETIVE FORM · JOURNEY EVIDENCE REMAINS AUTHORITATIVE</div>
       </div>
       <div class="light-lens-relationship" aria-hidden="true">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" focusable="false">
@@ -32,6 +42,7 @@
         </svg>
         <span class="light-lens-relationship__from">ORCA</span>
         <span class="light-lens-relationship__to">FOLLOW THE SYSTEM</span>
+        <span class="light-lens-relationship__truth">CURRENT JOURNEY PATH · NOT LIVE DATA</span>
       </div>
       <div class="light-lens-scan"></div>
       <span class="light-lens-axis light-lens-axis--a">FORM / SCALE</span>
