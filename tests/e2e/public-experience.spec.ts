@@ -7,11 +7,12 @@ mkdirSync(OUT, { recursive: true });
 test("public homepage preserves premium hierarchy, shared Atlas truth and mobile width", async ({ page }, testInfo) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Everything you love is connected.", level: 1 })).toBeVisible();
-  await expect(page.getByText(/4PLANET_ · FOR A LIVING PLANET/i)).toBeVisible();
-  await expect(page.getByRole("link", { name: /EXPLORE THE PLANET/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /WHY 4PLANET/i })).toBeVisible();
-  await page.locator(".planet-hero").screenshot({ path: `${OUT}/${testInfo.project.name}-home-hero.png` });
+  const hero = page.locator(".planet-hero");
+  await expect(hero.getByRole("heading", { name: "Everything you love is connected.", level: 1 })).toBeVisible();
+  await expect(hero.getByText("4PLANET_ · FOR A LIVING PLANET", { exact: true })).toBeVisible();
+  await expect(hero.getByRole("link", { name: /EXPLORE THE PLANET/i })).toBeVisible();
+  await expect(hero.getByRole("link", { name: /WHY 4PLANET/i })).toBeVisible();
+  await hero.screenshot({ path: `${OUT}/${testInfo.project.name}-home-hero.png` });
 
   const atlas = page.locator(".home-atlas-showcase");
   await atlas.scrollIntoViewIfNeeded();
