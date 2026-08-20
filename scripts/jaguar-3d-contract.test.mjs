@@ -42,6 +42,13 @@ test('progressive 3D visibility is committed as terminal runtime state, not only
   assert.match(renderer, /resize\(\);/);
 });
 
+test('progressive 3D visibility never animates the discrete visibility property', () => {
+  const carrierRule = css.match(/\.nature-3d-subject\{([^}]*)\}/)?.[1] || '';
+  assert.match(carrierRule, /transition:opacity \.7s ease,transform \.9s/);
+  assert.doesNotMatch(carrierRule, /transition:[^;}]*visibility/i);
+  assert.match(css, /\.nature-3d-subject\[data-visible=true\]\[data-ready=true\]\{opacity:1;visibility:visible;pointer-events:auto;transform:none/);
+});
+
 test('Three.js import map is pinned and Journey CSP is narrowly widened only for required 3D origins', () => {
   assert.match(html, /three@0\.185\.1\/build\/three\.module\.js/);
   assert.match(html, /three@0\.185\.1\/examples\/jsm\//);
