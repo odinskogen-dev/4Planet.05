@@ -1,5 +1,6 @@
 import type { LabProject } from "./labsFreshProjection";
 import { currentControlFor, withGoldMeta, type GoldLabProject, type ProjectControl } from "./labsGoldMeta";
+import { reconcileCurrentControl } from "./labsCurrentControl";
 
 const nonAdditive = "Shared 4PLANET/P00 capability. No standalone additive budget is approved for this view; costs belong to the owning Project(s) and remain UNKNOWN unless source-mapped.";
 const noMoney = "No revenue, award, contract, cash or partnership is inferred from activity, lists, code or relationship inventory.";
@@ -76,7 +77,8 @@ const shared: Record<string, ProjectControl> = {
 };
 
 export function completeControlFor(project: LabProject): ProjectControl {
-  return shared[project.slug] ?? currentControlFor(project);
+  const base = shared[project.slug] ?? currentControlFor(project);
+  return reconcileCurrentControl(project, base);
 }
 
 export function withCompleteMeta(project: LabProject): GoldLabProject {
