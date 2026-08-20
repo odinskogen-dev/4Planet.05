@@ -8,21 +8,40 @@
 .light-lens-relationship__from{left:18%;top:61%}.light-lens-relationship__to{right:13%;top:31%;text-align:right}
 .nature-browser[data-light-lens="true"] .light-lens-relationship__line{animation:light-lens-flow 7s linear infinite}
 
+/* Projection-room depth is deliberately subdued: the animal stays dominant. */
+.nature-browser[data-light-lens="true"] .light-lens-room-grid{opacity:.42;filter:saturate(.72)}
+.nature-browser[data-light-lens="true"] .light-lens-horizon{opacity:.36}
+.nature-browser[data-light-lens="true"] .light-lens-projection:before{
+  content:"";position:absolute;inset:-8% -3% -2%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 58% 46%,rgba(var(--light-lens-rgb),.12) 0,rgba(var(--light-lens-rgb),.045) 31%,transparent 67%);
+  filter:blur(8px);opacity:.8
+}
+.nature-browser[data-light-lens="true"] .light-lens-projection:after{
+  content:"";position:absolute;left:19%;right:3%;bottom:5%;height:19%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(var(--light-lens-rgb),.18),rgba(var(--light-lens-rgb),.045) 43%,transparent 72%);
+  transform:perspective(620px) rotateX(67deg);transform-origin:center bottom;filter:blur(5px);opacity:.62
+}
+.nature-browser[data-light-lens="true"] .light-lens-orca .major{stroke-width:1.75;filter:drop-shadow(0 0 5px rgba(var(--light-lens-rgb),.22))}
+.nature-browser[data-light-lens="true"] .light-lens-orca .mesh{stroke:rgba(var(--light-lens-rgb),.42);stroke-width:.72}
+.nature-browser[data-light-lens="true"] .light-lens-orca .soft{stroke:rgba(var(--light-lens-rgb),.2)}
+
 /* The same projection object changes role with the current shared Journey chapter. */
-.nature-browser[data-light-lens-scene="identity"] .light-lens-relationship{opacity:.28}
+.nature-browser[data-light-lens-scene="identity"] .light-lens-relationship{opacity:.2}
 .nature-browser[data-light-lens-scene="identity"] .light-lens-orca{transform-origin:62% 50%}
+.nature-browser[data-light-lens-scene="identity"] .light-lens-room-grid{opacity:.28}
 .nature-browser[data-light-lens-scene="dependency"] .light-lens-relationship{opacity:.86}
 .nature-browser[data-light-lens-scene="dependency"] .light-lens-relationship__line{stroke-width:1.35;stroke-dasharray:4 7}
+.nature-browser[data-light-lens-scene="dependency"] .light-lens-room-grid{opacity:.34}
 .nature-browser[data-light-lens-scene="habitat"] .light-lens-room-grid{opacity:.45;background-size:62px 62px}
-.nature-browser[data-light-lens-scene="habitat"] .light-lens-horizon{top:51%;opacity:.72}
+.nature-browser[data-light-lens-scene="habitat"] .light-lens-horizon{top:51%;opacity:.58}
 .nature-browser[data-light-lens-scene="habitat"] .light-lens-projection{filter:drop-shadow(0 0 26px rgba(var(--light-lens-rgb),.2));transform:scale(.92) translateY(-1%)}
-.nature-browser[data-light-lens-scene="pressure"] .light-lens-room-grid{opacity:.28}
+.nature-browser[data-light-lens-scene="pressure"] .light-lens-room-grid{opacity:.22}
 .nature-browser[data-light-lens-scene="pressure"] .light-lens-relationship{filter:saturate(.75);opacity:.92}
 .nature-browser[data-light-lens-scene="pressure"] .light-lens-relationship__line{stroke-dasharray:1 9;stroke-width:1.5}
 .nature-browser[data-light-lens-scene="pressure"] .light-lens-orca .mesh{opacity:.34}
-.nature-browser[data-light-lens-scene="pressure"] .light-lens-scan{opacity:.32}
+.nature-browser[data-light-lens-scene="pressure"] .light-lens-scan{opacity:.26}
 .nature-browser[data-light-lens-scene="response"] .light-lens-relationship{opacity:.82}
-.nature-browser[data-light-lens-scene="response"] .light-lens-room-grid{opacity:.38}
+.nature-browser[data-light-lens-scene="response"] .light-lens-room-grid{opacity:.32}
 .nature-browser[data-light-lens-scene="response"] .light-lens-orca .soft{stroke:rgba(var(--light-lens-rgb),.5)}
 
 @keyframes light-lens-flow{to{stroke-dashoffset:-72}}
@@ -31,6 +50,8 @@
   .light-lens-relationship__to{right:5%;top:34%;max-width:128px}
   .light-lens-relationship__from,.light-lens-relationship__to{font-size:5.7px;letter-spacing:.1em}
   .nature-browser[data-light-lens-scene="habitat"] .light-lens-projection{transform:scale(.9) translateY(-1%)}
+  .nature-browser[data-light-lens="true"] .light-lens-room-grid{opacity:.26}
+  .nature-browser[data-light-lens="true"] .light-lens-projection:after{left:8%;right:-8%;bottom:8%;opacity:.42}
 }
 @media(prefers-reduced-motion:reduce){
   .nature-browser[data-light-lens="true"] .light-lens-relationship__line{animation:none!important}
