@@ -120,7 +120,11 @@
 
     root.dataset.worldInteraction = 'idle';
     root.dataset.worldInteractionNode = node.id;
-    requestAnimationFrame(() => requestAnimationFrame(() => { card.dataset.visible = 'true'; }));
+    // Visibility is a committed interaction state, not an animation dependency.
+    // The previous double-rAF reveal could remain pending in headless/WebKit even
+    // after the cinematic scene had settled. Commit the semantic state directly;
+    // CSS still owns the visual transition from opacity/transform.
+    card.dataset.visible = 'true';
   };
 
   const runPrimary = () => {
@@ -154,7 +158,9 @@
       renderCard(index);
       return;
     }
-    requestAnimationFrame(() => waitForSettled(index, token, startedAt));
+    // Poll independently of animation frames. The interaction state must not
+    // depend on requestAnimationFrame scheduling in reduced/headless browsers.
+    window.setTimeout(() => waitForSettled(index, token, startedAt), 50);
   };
 
   const onScene = (event) => {
@@ -174,6 +180,14 @@
     if (!root || !manifest) return;
     ensureDOM();
     root.dataset.interactionEngine = 'v1.3';
+
+    // Recover if setup occurs after an already-committed Journey scene. This is
+    // species-agnostic and avoids a missed-event race between reusable engines.
+    if (root.dataset.entered === 'true' && root.dataset.journeyIndex !== undefined) {
+      const index = Number(root.dataset.journeyIndex || 0);
+      const token = ++sceneToken;
+      window.setTimeout(() => waitForSettled(index, token), 0);
+    }
   };
 
   window.addEventListener('4planet:nature-browser-ready', setup);
