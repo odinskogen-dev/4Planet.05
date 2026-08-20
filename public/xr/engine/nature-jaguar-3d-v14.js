@@ -205,14 +205,28 @@ const show = () => {
   if (!host || !ready || !identityScene()) return;
   active = true;
   host.dataset.visible = 'true';
+  // Visibility is a runtime state contract, not only a CSS transition hint.
+  // Commit the terminal presentation directly so a browser compositing edge
+  // cannot leave a ready/active progressive subject computed as hidden.
+  host.style.setProperty('display', 'block', 'important');
+  host.style.setProperty('visibility', 'visible', 'important');
+  host.style.setProperty('opacity', '1', 'important');
+  host.style.setProperty('pointer-events', 'auto', 'important');
+  host.style.setProperty('transform', 'none', 'important');
   root.dataset.jaguar3dActive = 'true';
   root.querySelector('.nature-subject')?.setAttribute('data-three-replaced', 'true');
+  resize();
   if (!frame) frame = requestAnimationFrame(tick);
 };
 
 const hide = () => {
   active = false;
-  if (host) host.dataset.visible = 'false';
+  if (host) {
+    host.dataset.visible = 'false';
+    host.style.setProperty('visibility', 'hidden', 'important');
+    host.style.setProperty('opacity', '0', 'important');
+    host.style.setProperty('pointer-events', 'none', 'important');
+  }
   if (root) root.dataset.jaguar3dActive = 'false';
   root?.querySelector('.nature-subject')?.setAttribute('data-three-replaced', 'false');
   if (frame) cancelAnimationFrame(frame);
