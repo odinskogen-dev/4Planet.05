@@ -53,6 +53,11 @@ jobs:
           echo "Latest S4PIENS branch deployments: ${count}"
           echo "$latest" | jq '{url, aliases, created_on, branch: .deployment_trigger.metadata.branch, commit: .deployment_trigger.metadata.commit_hash, stage: .latest_stage.status}'
           test "$count" -ge 1
+          slug="$(printf '%s' "$S4PIENS_BRANCH" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | cut -c1-28)"
+          candidate="${slug}.${PAGES_PROJECT}.pages.dev"
+          echo "S4PIENS_BRANCH_ALIAS=${candidate}" >> "$GITHUB_ENV"
+          code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://${candidate}/" || true)"
+          echo "Candidate branch alias: https://${candidate}/ -> HTTP ${code}"
 
       - name: Inspect Pages custom domains
         shell: bash
@@ -67,26 +72,22 @@ jobs:
             echo "${domain}: ${state:-missing}"
           done
 
-      - name: Inspect DNS
+      - name: Inspect public DNS without API
         shell: bash
         run: |
           set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
-            records="$(curl -fsS "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records?name=${domain}")"
-            count="$(echo "$records" | jq '.result|length')"
-            echo "${domain} DNS records: ${count}"
-            if [ "$count" -gt 0 ]; then
-              echo "$records" | jq -r '.result[] | "DNS " + .name + " " + .type + " -> " + .content + " proxied=" + (.proxied|tostring)'
-            fi
+            echo "--- ${domain} ---"
+            echo "CNAME: $(dig +short CNAME "$domain" | tr '\n' ' ')"
+            echo "A/AAAA: $(dig +short "$domain" | tr '\n' ' ')"
           done
+          echo "Expected branch target: ${S4PIENS_BRANCH_ALIAS}"
 
       - name: Inspect public routes
         shell: bash
         run: |
           set -euo pipefail
-          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens"; do
+          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens" "https://${S4PIENS_WWW_DOMAIN}/"; do
             code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)"
             echo "${url} -> HTTP ${code}"
           done
