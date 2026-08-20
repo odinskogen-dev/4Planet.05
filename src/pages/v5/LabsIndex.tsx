@@ -5,6 +5,14 @@ import "@/styles/labs-index.css";
 
 const LABS = [
   {
+    id: "ENGINE FOUNDRY",
+    state: "EARLY STAGE · RUNNABLE",
+    title: "A machine for building bounded machines",
+    body: "A reusable engine compiler/runtime. The first working Priority Engine turns explicit programme inputs into an explainable ranked queue with blockers, authority gates and execution trace.",
+    href: "/labs/engines",
+    capability: "PROGRAMME × CODE × AUTONOMY",
+  },
+  {
     id: "CREATOR ENGINE",
     state: "EARLY STAGE",
     title: "Infrastructure for Creative Independence",
