@@ -3,6 +3,7 @@
   const MARGIN_COMPACT = 10;
   let lateTimer = 0;
   let cardObserver = null;
+  let premiumObserver = null;
 
   const resetOrigin = () => {
     if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
@@ -33,9 +34,6 @@
     const parentRect = (card.offsetParent || root).getBoundingClientRect();
     const safeWidth = Math.max(240, maxRight - minLeft);
 
-    // A visible interaction card is a control surface, not world geometry.
-    // Once visible it must be deterministically anchored inside the visual
-    // viewport instead of inheriting authored horizontal entrance transforms.
     card.style.setProperty('box-sizing', 'border-box', 'important');
     card.style.setProperty('max-width', `${safeWidth}px`, 'important');
     card.style.removeProperty('translate');
@@ -57,9 +55,6 @@
       rect = card.getBoundingClientRect();
     }
 
-    // Final defensive correction uses the positioned inset itself rather than
-    // the CSS individual-transform property, which proved non-deterministic in
-    // Chromium while the authored card transform was transitioning.
     if (!compact && rect.left < minLeft - 1) {
       const correction = minLeft - rect.left;
       if (card.dataset.align === 'left') {
@@ -95,16 +90,22 @@
     const bounds = viewportBounds();
     const { viewport, offsetLeft, compact, margin, minLeft, maxRight } = bounds;
 
-    // The HUD is a viewport-level navigation surface. Scene and interaction
-    // transitions may animate the world, but must never translate the HUD.
+    hud.style.setProperty('box-sizing', 'border-box', 'important');
     hud.style.setProperty('transform', 'none', 'important');
     hud.style.setProperty('max-width', `${Math.max(280, viewport - margin * 2)}px`, 'important');
 
     if (compact) {
+      // Compact Journey navigation is a viewport control, not scene geometry.
+      // Pin it directly to the visual viewport so Chromium compositing during
+      // cinematic/premium transitions cannot temporarily inherit a shifted
+      // containing block. This also transfers to Orca through the shared guard.
+      hud.style.setProperty('position', 'fixed', 'important');
       hud.style.setProperty('left', `${minLeft}px`, 'important');
       hud.style.setProperty('right', `${margin}px`, 'important');
       hud.style.setProperty('width', 'auto', 'important');
+      hud.style.setProperty('min-width', '0', 'important');
     } else {
+      hud.style.setProperty('position', 'absolute', 'important');
       hud.style.setProperty('left', `${minLeft}px`, 'important');
       hud.style.setProperty('right', 'auto', 'important');
       const desired = Math.min(720, Math.max(360, maxRight - minLeft));
@@ -113,7 +114,6 @@
 
     let hudRect = hud.getBoundingClientRect();
 
-    // Fail-safe against unexpected inherited/transitional geometry.
     if (hudRect.left < minLeft - 1) {
       hud.style.setProperty('transform', 'none', 'important');
       hud.style.setProperty('left', `${minLeft + (minLeft - hudRect.left)}px`, 'important');
@@ -137,8 +137,6 @@
   const settle = () => {
     resetOrigin();
     window.clearTimeout(lateTimer);
-    // Apply once synchronously for event-driven interaction checks, then again
-    // after layout/compositing and after the authored transition window.
     clampFrame();
     requestAnimationFrame(() => requestAnimationFrame(clampFrame));
     lateTimer = window.setTimeout(clampFrame, 1250);
@@ -157,13 +155,27 @@
     cardObserver.observe(card, { attributes: true, attributeFilter: ['data-visible', 'data-align', 'data-type'] });
   };
 
+  const observePremiumLayer = () => {
+    const root = document.getElementById('browser-experience');
+    const premium = root?.querySelector('.nature-premium');
+    premiumObserver?.disconnect();
+    premiumObserver = null;
+    if (!premium) return;
+    premiumObserver = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.type === 'attributes')) settle();
+    });
+    premiumObserver.observe(premium, { attributes: true, attributeFilter: ['data-detail-open', 'data-mode', 'data-has-panel'] });
+  };
+
   window.addEventListener('4planet:nature-browser-ready', () => {
     observeWorldCard();
+    requestAnimationFrame(observePremiumLayer);
     settle();
   });
   window.addEventListener('4planet:nature-browser-enter', settle);
   window.addEventListener('4planet:nature-journey-scene', settle);
   window.addEventListener('4planet:nature-world-interaction', settle);
+  window.addEventListener('4planet:nature-premium-hotspot', settle);
   window.addEventListener('resize', settle, { passive: true });
   window.addEventListener('orientationchange', settle, { passive: true });
 })();
