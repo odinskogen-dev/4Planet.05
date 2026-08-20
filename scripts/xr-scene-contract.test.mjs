@@ -107,7 +107,7 @@ test("Nature, Journey, cinematic and interaction renderers stay species-agnostic
   assert.match(interactionRenderer, /data-world-action/);
 });
 
-test("Browser Journey is scene-first, evidence-secondary and performance-tiered", () => {
+test("Browser Journey is scene-first, evidence-secondary, performance-tiered and commit-fail-safe", () => {
   assert.match(browserRenderer, /const goTo/);
   assert.match(browserRenderer, /closeChapter\(\);\s*applyScene/);
   assert.match(browserRenderer, /nature-journey-hud__evidence/);
@@ -117,6 +117,10 @@ test("Browser Journey is scene-first, evidence-secondary and performance-tiered"
   assert.doesNotMatch(browserRenderer, /setTimeout\(\(\) => openNode/);
   assert.match(cinematicRenderer, /preload/);
   assert.match(cinematicRenderer, /fallbackSrc|manifest\?\.environment/);
+  assert.match(cinematicRenderer, /COMMIT_FALLBACK_MS/);
+  assert.match(cinematicRenderer, /const commitFallback = window\.setTimeout\(commit, COMMIT_FALLBACK_MS\)/);
+  assert.match(cinematicRenderer, /if \(committed \|\| token !== sceneToken\) return/);
+  assert.match(cinematicRenderer, /window\.clearTimeout\(commitFallback\)/);
 });
 
 test("Gold interaction pass adds in-world actions without turning cards into a second truth store", () => {
