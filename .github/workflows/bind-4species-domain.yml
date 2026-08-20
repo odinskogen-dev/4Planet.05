@@ -40,7 +40,6 @@ jobs:
             exit 2
           fi
 
-          # Tolerate accidental whitespace, Bearer prefix, quotes or NAME=value paste.
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
           TOKEN="${TOKEN#Bearer }"
           TOKEN="${TOKEN#bearer }"
@@ -62,12 +61,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          VERIFY=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" https://api.cloudflare.com/client/v4/user/tokens/verify)
-          echo "$VERIFY" | jq -e '.success == true and .result.status == "active"' >/dev/null
-          ZONES=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
-          echo "$ZONES" | jq -e '.success == true' >/dev/null
-          ZONE_ID=$(echo "$ZONES" | jq -r '.result[0].id // empty')
-          ACCOUNT_ID=$(echo "$ZONES" | jq -r '.result[0].account.id // empty')
+
+          verify_file="$RUNNER_TEMP/cf-verify.json"
+          verify_status=$(curl -sS -o "$verify_file" -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify)
+
+          if [ "$verify_status" != "200" ]; then
+            echo "Cloudflare token verification HTTP status: $verify_status"
+            jq '{success, errors, messages}' "$verify_file" 2>/dev/null || cat "$verify_file"
+            exit 4
+          fi
+
+          jq -e '.success == true and .result.status == "active"' "$verify_file" >/dev/null
+
+          zones_file="$RUNNER_TEMP/cf-zones.json"
+          zones_status=$(curl -sS -o "$zones_file" -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
+
+          if [ "$zones_status" != "200" ]; then
+            echo "Cloudflare zone lookup HTTP status: $zones_status"
+            jq '{success, errors, messages}' "$zones_file" 2>/dev/null || cat "$zones_file"
+            exit 5
+          fi
+
+          jq -e '.success == true' "$zones_file" >/dev/null
+          ZONE_ID=$(jq -r '.result[0].id // empty' "$zones_file")
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' "$zones_file")
           if [ -z "$ZONE_ID" ] || [ -z "$ACCOUNT_ID" ]; then
             echo "4species.com was not found as an active Cloudflare zone accessible to this token."
             exit 3
