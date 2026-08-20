@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   childrenOf,
-  descendantsOf,
-  earlyStageProjects,
   founderQueue,
   labTracks,
   portfolioStats,
@@ -17,6 +15,7 @@ import {
   type LabProject,
 } from "./labsFreshProjection";
 import { currentControlFor, withGoldMeta } from "./labsGoldMeta";
+import { humanStateFor } from "./labsHumanState";
 import "./labs.css";
 import "./labsGold.css";
 
@@ -40,7 +39,7 @@ function accentStyle(project: LabProject) {
 }
 
 function humanText(text: string) {
-  return text.replace(/\b[a-f0-9]{32,40}\b/gi, "exact tested artifact").replace(/\s+/g, " ").trim();
+  return text.replace(/\b[a-f0-9]{32,40}\b/gi, "exact tested artifact").replace(/\b(?:run|workflow)\s+\d{8,}\b/gi, "exact QA run").replace(/\s+/g, " ").trim();
 }
 
 function GridRails() {
@@ -57,19 +56,7 @@ function Status({ project }: { project: LabProject }) {
 }
 
 function Header({ theme, setTheme }: { theme: Theme; setTheme: (theme: Theme) => void }) {
-  return (
-    <header className="labs-header">
-      <a className="labs-brand" href={labHref()}><span className="labs-online-dot" aria-hidden="true" />4PLANET LABS</a>
-      <div className="labs-header-center"><span>HUMAN PROJECT OS</span><span>{projectionState}</span><span className="labs-online"><i /> ONLINE</span></div>
-      <div className="labs-header-tools">
-        <span className="labs-snapshot">SNAPSHOT {verifiedAt}</span>
-        <div className="labs-theme-switch" aria-label="Appearance">
-          <button type="button" className={theme === "dark" ? "is-active" : ""} onClick={() => setTheme("dark")} aria-pressed={theme === "dark"}>DARK</button>
-          <button type="button" className={theme === "light" ? "is-active" : ""} onClick={() => setTheme("light")} aria-pressed={theme === "light"}>WHITE</button>
-        </div>
-      </div>
-    </header>
-  );
+  return <header className="labs-header"><a className="labs-brand" href={labHref()}><span className="labs-online-dot" aria-hidden="true" />4PLANET LABS</a><div className="labs-header-center"><span>HUMAN PROJECT OS</span><span>{projectionState}</span><span className="labs-online"><i /> ONLINE</span></div><div className="labs-header-tools"><span className="labs-snapshot">SNAPSHOT {verifiedAt}</span><div className="labs-theme-switch" aria-label="Appearance"><button type="button" className={theme === "dark" ? "is-active" : ""} onClick={() => setTheme("dark")} aria-pressed={theme === "dark"}>DARK</button><button type="button" className={theme === "light" ? "is-active" : ""} onClick={() => setTheme("light")} aria-pressed={theme === "light"}>WHITE</button></div></div></header>;
 }
 
 function FreshnessStrip() {
@@ -88,40 +75,21 @@ function CommandStrip({ filter, setFilter }: { filter: IndexFilter; setFilter: (
     { value: portfolioStats.labTracks, label: "LAB / PROTOTYPES", note: "Bounded code + reference tracks", filter: "LABS", target: "project-index" },
     { value: portfolioStats.conflicts, label: "OPEN CONFLICTS", note: "Explicit — never silently resolved", filter: "CONFLICTS", target: "project-index" },
   ];
-  return (
-    <section className="labs-command labs-grid-section" aria-label="Founder command">
-      <div className="labs-section-head labs-section-head--command"><span>FOUNDER COMMAND</span><span>click = filter project index · never jumps to an arbitrary project</span></div>
-      <div className="labs-command-grid">
-        {cards.map((item) => <button type="button" className={`labs-command-card ${filter === item.filter ? "is-selected" : ""}`} key={item.label} onClick={() => { setFilter(item.filter); scrollTo(item.target); }}><strong>{item.value}</strong><span>{item.label}</span><small>{item.note}</small><b aria-hidden="true">↓</b></button>)}
-      </div>
-    </section>
-  );
+  return <section className="labs-command labs-grid-section" aria-label="Founder command"><div className="labs-section-head labs-section-head--command"><span>FOUNDER COMMAND</span><span>click = filter project index · never jumps to an arbitrary project</span></div><div className="labs-command-grid">{cards.map((item) => <button type="button" className={`labs-command-card ${filter === item.filter ? "is-selected" : ""}`} key={item.label} onClick={() => { setFilter(item.filter); scrollTo(item.target); }}><strong>{item.value}</strong><span>{item.label}</span><small>{item.note}</small><b aria-hidden="true">↓</b></button>)}</div></section>;
 }
 
 function HoverIntel({ project }: { project: LabProject }) {
   const control = currentControlFor(project);
-  return <div className="labs-box-hover" aria-hidden="true"><span>GOAL</span><p>{control.mainGoal}</p><span>NOW</span><p>{humanText(project.now)}</p><span>NEXT</span><p>{control.nextGate}</p></div>;
+  return <div className="labs-box-hover" aria-hidden="true"><span>GOAL</span><p>{control.mainGoal}</p><span>NOW</span><p>{humanText(humanStateFor(project))}</p><span>NEXT</span><p>{control.nextGate}</p></div>;
 }
 
 function ProjectBox({ project, onInspect, compact = false, early = false }: { project: LabProject; onInspect: InspectHandler; compact?: boolean; early?: boolean }) {
-  return (
-    <a className={`labs-project-box ${compact ? "labs-project-box--compact" : ""} ${early ? "labs-project-box--early" : ""}`} style={accentStyle(project)} href={labHref(project.slug)} onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)} data-state={project.state} data-kind={project.kind}>
-      <div className="labs-box-top"><Glyph project={project} /><Status project={project} /></div>
-      <div className="labs-box-title"><strong>{project.title}</strong><span>{project.eyebrow}</span></div>
-      <div className="labs-box-bottom"><span>{project.projectClass ?? project.kind}</span><span>{project.priority}</span></div>
-      <HoverIntel project={project} />
-    </a>
-  );
+  return <a className={`labs-project-box ${compact ? "labs-project-box--compact" : ""} ${early ? "labs-project-box--early" : ""}`} style={accentStyle(project)} href={labHref(project.slug)} onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)} data-state={project.state} data-kind={project.kind}><div className="labs-box-top"><Glyph project={project} /><Status project={project} /></div><div className="labs-box-title"><strong>{project.title}</strong><span>{project.eyebrow}</span></div><div className="labs-box-bottom"><span>{project.projectClass ?? project.kind}</span><span>{project.priority}</span></div><HoverIntel project={project} /></a>;
 }
 
 function DomainPanel({ project, onInspect }: { project: LabProject; onInspect: InspectHandler }) {
   const missions = childrenOf(project.slug).filter((item) => item.kind === "MISSION");
-  return (
-    <section className="labs-domain" style={accentStyle(project)}>
-      <a href={labHref(project.slug)} className="labs-domain-head" onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)}><div><Glyph project={project} /><span>{project.title}</span></div><small>{missions.length} MISSIONS</small></a>
-      <div className="labs-domain-missions">{missions.map((mission) => <a className="labs-mission-row" href={labHref(mission.slug)} key={mission.slug} onMouseEnter={() => onInspect(mission)} onFocus={() => onInspect(mission)} data-state={mission.state}><span>{mission.title}</span><small>{mission.state === "CONFLICT" ? "CONFLICT" : mission.priority}</small></a>)}</div>
-    </section>
-  );
+  return <section className="labs-domain" style={accentStyle(project)}><a href={labHref(project.slug)} className="labs-domain-head" onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)}><div><Glyph project={project} /><span>{project.title}</span></div><small>{missions.length} MISSIONS</small></a><div className="labs-domain-missions">{missions.map((mission) => <a className="labs-mission-row" href={labHref(mission.slug)} key={mission.slug} onMouseEnter={() => onInspect(mission)} onFocus={() => onInspect(mission)} data-state={mission.state}><span>{mission.title}</span><small>{mission.state === "CONFLICT" ? "CONFLICT" : mission.priority}</small></a>)}</div></section>;
 }
 
 const coreOrder = ["4planet/strategy","4planet/product","4planet/naturebrain","4planet/proof","4planet/capital","4planet/company","4planet/relations","4planet/solutions","4planet/economy","4planet/brand","4planet/content","4planet/field-partners","4planet/research","4planet/4mbassadors","4planet/digital-pitch","4planet/labs-system"];
@@ -130,21 +98,9 @@ const leadingProductSlugs = ["4planet/product/one-interface","4planet/product/at
 function FourPlanetUniverse({ root, onInspect }: { root: LabProject; onInspect: InspectHandler }) {
   const children = childrenOf(root.slug);
   const core = children.filter((project) => project.kind === "CORE" || project.kind === "SYSTEM" || project.projectClass === "PROJECT HOME").sort((a,b) => (coreOrder.indexOf(a.slug) < 0 ? 999 : coreOrder.indexOf(a.slug)) - (coreOrder.indexOf(b.slug) < 0 ? 999 : coreOrder.indexOf(b.slug)));
-  const leading = leadingProductSlugs.map(projectBySlug).filter((project): project is LabProject => Boolean(project));
+  const leading = leadingProductSlugs.map((slug) => projectBySlug(slug)).filter((project): project is LabProject => Boolean(project));
   const domains = children.filter((project) => project.kind === "DOMAIN");
-  return (
-    <section className="labs-universe labs-universe--4planet" style={accentStyle(root)}>
-      <a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--hero" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}><div><span className="labs-label">01 / PRIMARY PROJECT UNIVERSE</span><h2>4PLANET</h2><p>{root.summary}</p></div><div className="labs-planet-visual" aria-hidden="true"><span /></div><div className="labs-universe-meta"><Status project={root} /><span>{projectHomes.length} PROJECT HOMES</span><span>4 DOMAINS</span></div></a>
-      <div className="labs-subhead"><span>ORGANISATION + SHARED MACHINE</span><span>Project Homes / truth / proof / capital / company / economy</span></div>
-      <div className="labs-core-grid">{core.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div>
-      <div className="labs-subhead"><span>LEADING PRODUCT SURFACES</span><span>same canonical projects · direct access</span></div>
-      <div className="labs-core-grid labs-leading-product-grid">{leading.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div>
-      <div className="labs-subhead"><span>DOMAINS → MISSIONS</span><span>16 Wave-01 Mission Project Homes</span></div>
-      <div className="labs-domain-grid">{domains.map((domain) => <DomainPanel key={domain.slug} project={domain} onInspect={onInspect} />)}</div>
-      <div id="labs-tracks" className="labs-subhead labs-subhead--early"><span>LAB / PROTOTYPE / REFERENCE TRACKS</span><span>{labTracks.length} bounded tracks · not automatically Project Homes</span></div>
-      <div className="labs-early-grid">{labTracks.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact early />)}</div>
-    </section>
-  );
+  return <section className="labs-universe labs-universe--4planet" style={accentStyle(root)}><a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--hero" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}><div><span className="labs-label">01 / PRIMARY PROJECT UNIVERSE</span><h2>4PLANET</h2><p>{root.summary}</p></div><div className="labs-planet-visual" aria-hidden="true"><span /></div><div className="labs-universe-meta"><Status project={root} /><span>{projectHomes.length} PROJECT HOMES</span><span>4 DOMAINS</span></div></a><div className="labs-subhead"><span>ORGANISATION + SHARED MACHINE</span><span>Project Homes / truth / proof / capital / company / economy</span></div><div className="labs-core-grid">{core.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div><div className="labs-subhead"><span>LEADING PRODUCT SURFACES</span><span>same canonical projects · direct access</span></div><div className="labs-core-grid labs-leading-product-grid">{leading.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div><div className="labs-subhead"><span>DOMAINS → MISSIONS</span><span>16 Wave-01 Mission Project Homes</span></div><div className="labs-domain-grid">{domains.map((domain) => <DomainPanel key={domain.slug} project={domain} onInspect={onInspect} />)}</div><div id="labs-tracks" className="labs-subhead labs-subhead--early"><span>LAB / PROTOTYPE / REFERENCE TRACKS</span><span>{labTracks.length} bounded tracks · not automatically Project Homes</span></div><div className="labs-early-grid">{labTracks.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact early />)}</div></section>;
 }
 
 function UniversePanel({ root, index, onInspect }: { root: LabProject; index: number; onInspect: InspectHandler }) {
@@ -156,17 +112,7 @@ function UniversePanel({ root, index, onInspect }: { root: LabProject; index: nu
 function Inspector({ project }: { project: LabProject }) {
   const gold = withGoldMeta(project);
   const control = gold.control;
-  return (
-    <aside className="labs-inspector labs-inspector--gold" style={accentStyle(project)} aria-live="polite">
-      <div className="labs-inspector-head"><div><span className="labs-label">PROJECT INSPECTOR</span><h2>{project.title}</h2><p>{control.classification}</p></div><Status project={project} /></div>
-      <section className="labs-inspector-block labs-inspector-block--truth"><span className="labs-label">MAIN GOAL</span><p>{control.mainGoal}</p></section>
-      <section className="labs-inspector-block"><span className="labs-label">NOW</span><p>{humanText(project.now)}</p></section>
-      <section className="labs-inspector-block"><span className="labs-label">NEXT GATE</span><p>{control.nextGate}</p></section>
-      <section className="labs-inspector-block"><span className="labs-label">ECONOMICS</span><p>{control.economics}</p></section>
-      {!!control.links.length && <div className="labs-inspector-links">{control.links.slice(0,2).map((link,index) => <a className={index===0?"is-primary":""} href={link.href} target="_blank" rel="noreferrer" key={link.href}>{link.label}<b>↗</b></a>)}</div>}
-      <a className="labs-open-project" href={labHref(project.slug)}>OPEN FULL PROJECT <span>→</span></a>
-    </aside>
-  );
+  return <aside className="labs-inspector labs-inspector--gold" style={accentStyle(project)} aria-live="polite"><div className="labs-inspector-head"><div><span className="labs-label">PROJECT INSPECTOR</span><h2>{project.title}</h2><p>{control.classification}</p></div><Status project={project} /></div><section className="labs-inspector-block labs-inspector-block--truth"><span className="labs-label">MAIN GOAL</span><p>{control.mainGoal}</p></section><section className="labs-inspector-block"><span className="labs-label">NOW</span><p>{humanText(humanStateFor(project))}</p></section><section className="labs-inspector-block"><span className="labs-label">NEXT GATE</span><p>{control.nextGate}</p></section><section className="labs-inspector-block"><span className="labs-label">ECONOMICS</span><p>{control.economics}</p></section>{!!control.links.length && <div className="labs-inspector-links">{control.links.slice(0,2).map((link,index) => <a className={index===0?"is-primary":""} href={link.href} target="_blank" rel="noreferrer" key={link.href}>{link.label}<b>↗</b></a>)}</div>}<a className="labs-open-project" href={labHref(project.slug)}>OPEN FULL PROJECT <span>→</span></a></aside>;
 }
 
 function ProjectIndex({ filter, setFilter, onInspect }: { filter: IndexFilter; setFilter: (filter: IndexFilter) => void; onInspect: InspectHandler }) {
@@ -178,28 +124,12 @@ function ProjectIndex({ filter, setFilter, onInspect }: { filter: IndexFilter; s
     if (!matchesQuery) return false;
     if (filter === "PROJECT HOMES") return project.projectClass === "PROJECT HOME" || control.classification.includes("PROJECT HOME");
     if (filter === "ACTIVE") return (project.projectClass === "PROJECT HOME" || control.classification.includes("PROJECT HOME")) && ["ACTIVE","BUILDING","PUBLIC"].includes(project.state);
-    if (filter === "PRODUCT") return productSurfaces.some((item) => item.slug === project.slug) || ["4planet/e4rth/species"].includes(project.slug);
+    if (filter === "PRODUCT") return productSurfaces.some((item) => item.slug === project.slug) || project.slug === "4planet/e4rth/species";
     if (filter === "LABS") return labTracks.some((item) => item.slug === project.slug) || control.classification.includes("PROTOTYPE") || control.classification.includes("REFERENCE");
     if (filter === "CONFLICTS") return project.state === "CONFLICT";
     return true;
   }).sort((a,b) => a.title.localeCompare(b.title));
-
-  return (
-    <section id="project-index" className="labs-project-index">
-      <div className="labs-section-head"><span>ALL 4PLANET PROJECTS + CONTROLLED TRACKS</span><span>{filtered.length} shown · every row opens a real LABS detail view</span></div>
-      <div className="labs-index-tools">
-        <label><span>FIND PROJECT</span><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="ATLAS, TREE OF LIFE, ECONOMY_, FOOD…" /></label>
-        <div>{(["ALL","PROJECT HOMES","ACTIVE","PRODUCT","LABS","CONFLICTS"] as IndexFilter[]).map((item)=><button key={item} className={filter===item?"is-active":""} onClick={()=>setFilter(item)}>{item}</button>)}</div>
-      </div>
-      <div className="labs-index-list">
-        {filtered.map((project) => {
-          const control = currentControlFor(project);
-          return <a href={labHref(project.slug)} style={accentStyle(project)} key={project.slug} onMouseEnter={()=>onInspect(project)} onFocus={()=>onInspect(project)}><div><Status project={project} /><span>{control.classification}</span></div><strong>{project.title}</strong><p>{control.mainGoal}</p><small>{control.phase}</small><b>→</b></a>;
-        })}
-        {!filtered.length && <p className="labs-unknown-copy">No project matches this filter/search.</p>}
-      </div>
-    </section>
-  );
+  return <section id="project-index" className="labs-project-index"><div className="labs-section-head"><span>ALL 4PLANET PROJECTS + CONTROLLED TRACKS</span><span>{filtered.length} shown · every row opens a real LABS detail view</span></div><div className="labs-index-tools"><label><span>FIND PROJECT</span><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="ATLAS, TREE OF LIFE, ECONOMY_, FOOD…" /></label><div>{(["ALL","PROJECT HOMES","ACTIVE","PRODUCT","LABS","CONFLICTS"] as IndexFilter[]).map((item)=><button type="button" key={item} className={filter===item?"is-active":""} onClick={()=>setFilter(item)}>{item}</button>)}</div></div><div className="labs-index-list">{filtered.map((project) => { const control=currentControlFor(project); return <a href={labHref(project.slug)} style={accentStyle(project)} key={project.slug} onMouseEnter={()=>onInspect(project)} onFocus={()=>onInspect(project)}><div><Status project={project} /><span>{control.classification}</span></div><strong>{project.title}</strong><p>{control.mainGoal}</p><small>{control.phase}</small><b>→</b></a>; })}{!filtered.length && <p className="labs-unknown-copy">No project matches this filter/search.</p>}</div></section>;
 }
 
 function FounderQueue() {
@@ -215,23 +145,7 @@ function PortfolioView() {
   const root = projectBySlug("4planet")!;
   const [selected,setSelected] = useState<LabProject>(root);
   const [filter,setFilter] = useState<IndexFilter>("ALL");
-  return (
-    <main className="labs-page labs-page--portfolio">
-      <GridRails />
-      <section className="labs-portfolio-layout labs-grid-section">
-        <div className="labs-portfolio-main">
-          <CommandStrip filter={filter} setFilter={setFilter} />
-          <FreshnessStrip />
-          <div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>organisation → products → Missions → controlled experiments</span></div>
-          <div className="labs-universe-stack">{universeRoots.map((universe,index)=><UniversePanel key={universe.slug} root={universe} index={index} onInspect={setSelected} />)}</div>
-          <ProjectIndex filter={filter} setFilter={setFilter} onInspect={setSelected} />
-          <FounderQueue />
-          <SystemFeed />
-        </div>
-        <Inspector project={selected} />
-      </section>
-    </main>
-  );
+  return <main className="labs-page labs-page--portfolio"><GridRails /><section className="labs-portfolio-layout labs-grid-section"><div className="labs-portfolio-main"><CommandStrip filter={filter} setFilter={setFilter} /><FreshnessStrip /><div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>organisation → products → Missions → controlled experiments</span></div><div className="labs-universe-stack">{universeRoots.map((universe,index)=><UniversePanel key={universe.slug} root={universe} index={index} onInspect={setSelected} />)}</div><ProjectIndex filter={filter} setFilter={setFilter} onInspect={setSelected} /><FounderQueue /><SystemFeed /></div><Inspector project={selected} /></section></main>;
 }
 
 export default function LabsOverviewCurrent() {
