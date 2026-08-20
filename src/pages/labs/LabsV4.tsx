@@ -5,6 +5,7 @@ import { projectBySlug } from "./labsFreshProjection";
 import "./labsV4.css";
 import "./labsV4Root.css";
 import "./labsMobileFix.css";
+import "./labsIndex.css";
 
 function isLabsHost() {
   if (typeof window === "undefined") return false;
