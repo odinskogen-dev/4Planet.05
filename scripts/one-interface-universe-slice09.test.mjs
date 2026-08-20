@@ -47,13 +47,26 @@ test("relevant Missions embed the proven shared Atlas Window instead of a second
   assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
-test("homepage opens from a restrained planetary hero into the actual shared Atlas runtime", () => {
-  assert.match(atlasHero, /hero is atmospheric presentation, not live map data/i);
+test("homepage establishes the brand premise before product proof and keeps flagship species subordinate", () => {
+  assert.match(atlasHero, /brand invitation, not a product module/i);
   assert.match(atlasHero, /Everything you love is connected/);
-  assert.match(atlasHero, /HomeAtlasShowcase/);
-  assert.match(atlasHero, /id="living-atlas"/);
+  assert.doesNotMatch(atlasHero, /HomeAtlasShowcase/);
   assert.match(atlasHero, /WHY 4PLANET/);
-  assert.doesNotMatch(atlasHero, /planet-awe/);
+  assert.match(home, /id="why-4planet"/);
+  assert.match(home, /A healthy living planet is infrastructure for human life\./);
+  assert.match(home, /<HomeAtlasShowcase \/>/);
+  assert.match(home, /id="living-atlas"/);
+  assert.match(home, /ENTER THROUGH LIFE/);
+  assert.doesNotMatch(home, /home-journey--primary/);
+
+  const premise = home.indexOf('id="why-4planet"');
+  const atlas = home.indexOf('<HomeAtlasShowcase />');
+  const worlds = home.indexOf('id="worlds"');
+  const livingEntries = home.indexOf('ENTER THROUGH LIFE');
+  assert.ok(premise >= 0 && atlas > premise, "brand premise must precede the Atlas product proof");
+  assert.ok(worlds > atlas, "connected world scope must follow the shared Atlas proof");
+  assert.ok(livingEntries > worlds, "Jaguar/Orca/Homo sapiens examples must not outrank the brand/world hierarchy");
+
   assert.match(homeAtlas, /SpeciesAtlasWindow/);
   assert.match(homeAtlas, /JAGUAR · AMAZON/);
   assert.match(homeAtlas, /ORCA · OCEAN/);

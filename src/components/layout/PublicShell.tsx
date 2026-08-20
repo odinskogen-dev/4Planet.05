@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
-import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { content } from "@/content/contentRepository";
+import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
@@ -229,12 +229,11 @@ function Header() {
   const detachedDark = topIsDark(pathname) && scrolled && !menuMode;
   const fg = menuMode ? T.ink : dark || detachedDark ? "#fff" : T.ink;
   const bg = menuMode ? "#fff" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
-  const border = scrolled || menuMode ? (detachedDark && !menuMode ? "rgba(255,255,255,.12)" : "rgba(8,8,8,.1)") : "transparent";
 
   return (
     <>
       <a href="#main-content" className="skip-link">SKIP TO CONTENT</a>
-      <header className="public-header" style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, borderBottomColor: border, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
+      <header className="public-header" style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
         <div className="public-header__bar">
           <Link to="/" className="public-brand" style={{ color: fg }} aria-label="4PLANET home">4PLANET_</Link>
 
@@ -256,7 +255,7 @@ function Header() {
           </nav>
 
           <div className="public-header__actions">
-            <Link to="/join" className="public-header__join" style={{ color: fg, borderColor: menuMode ? T.lineStrong : dark || detachedDark ? "rgba(255,255,255,.4)" : T.lineStrong }}>TAKE PART</Link>
+            <Link to="/join" className="public-header__join" style={{ color: fg }}>TAKE PART</Link>
             <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
               {mobileOpen ? "CLOSE" : "MENU"}
             </button>
@@ -270,26 +269,37 @@ function Header() {
 }
 
 function Footer() {
+  const footerPlanet = img("footerPlanet");
   const footerGroups = [
     ["EXPLORE", [["ATLAS", "/atlas"], ["SPECIES", "/species"], ["LIVING SYSTEMS", "/living-systems"], ["IMPACT", "/impact"]]],
-    ["4PLANET", [["DOMAINS", "/domains"], ["MISSIONS", "/missions"], ["MAGAZINE", "/magazine"], ["ABOUT", "/about"]]],
+    ["4PLANET", [["DOMAINS", "/domains"], ["MISSIONS", "/missions"], ["M4GAZINE", "/magazine"], ["ABOUT", "/about"]]],
     ["PARTICIPATE", [["PEOPLE", "/join"], ["BRANDS", "/brands"], ["PARTNERS", "/partners"], ["FUNDERS", "/funders"]]],
   ] as const;
+
   return (
     <footer className="public-footer">
+      <picture aria-hidden>
+        {footerPlanet.srcMobile && <source media="(max-width:640px)" srcSet={footerPlanet.srcMobile} />}
+        <img className="public-footer__planet" src={footerPlanet.src} alt="" loading="lazy" decoding="async" />
+      </picture>
+      <div aria-hidden className="public-footer__shade" />
+
       <div className="public-footer__inner">
         <div className="public-footer__mast">
           <div>
             <div style={{ ...mono, color: T.acid }}>4PLANET_ · FOR A LIVING PLANET</div>
-            <p style={{ ...display, marginTop: 18, fontSize: "clamp(34px,6vw,86px)", lineHeight: .92, maxWidth: "12ch" }}>Everything you love is connected.</p>
+            <p style={{ ...display, marginTop: 18, fontSize: "clamp(38px,6vw,82px)", lineHeight: .92, maxWidth: "12ch" }}>Everything you love is connected.</p>
           </div>
-          <p className="public-footer__status">4PLANET is in development. Impact Pathways open only when delivery, evidence and reporting are ready.</p>
+          <div>
+            <p className="public-footer__status">One planet. One connected living system. 4PLANET is in development; Impact Pathways open only when delivery, evidence and reporting are ready.</p>
+            <Link to="/about/story" className="public-footer__story">THE STORY →</Link>
+          </div>
         </div>
 
         <div className="public-footer__links">
           {footerGroups.map(([group, links]) => (
             <div key={group}>
-              <div style={{ ...mono, color: "rgba(255,255,255,.4)" }}>{group}_</div>
+              <div style={{ ...mono, color: T.acid }}>{group}_</div>
               <div style={{ display: "grid", gap: 9, marginTop: 16 }}>
                 {links.map(([label, to]) => <Link key={label} to={to}>{label}</Link>)}
               </div>
@@ -300,7 +310,7 @@ function Footer() {
         <div className="public-footer__bottom">
           <span>© 4PLANET</span>
           <Link to="/privacy">PRIVACY</Link>
-          <span>ONE PLANET · MANY WAYS TO HELP</span>
+          <span>NASA / ARTEMIS II · PUBLIC DOMAIN</span>
         </div>
       </div>
     </footer>
@@ -313,18 +323,18 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <Header />
       <main id="main-content">{children}</main>
       <Footer />
-      <ProductSwitcher />
       <style>{`
         .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#fff;color:#080808;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
         .skip-link:focus{transform:translateY(0)}
-        .public-header{position:fixed;z-index:90;top:0;left:0;right:0;border-bottom:1px solid transparent;transition:transform .24s cubic-bezier(.4,0,.2,1),background-color .22s ease,border-color .22s ease;color .22s ease;padding-top:env(safe-area-inset-top,0px)}
+        .public-header{position:fixed;z-index:90;top:0;left:0;right:0;border:0;transition:transform .24s cubic-bezier(.4,0,.2,1),background-color .22s ease,color .22s ease;padding-top:env(safe-area-inset-top,0px)}
         .public-header__bar{height:64px;padding:0 clamp(18px,4vw,56px);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px}
         .public-brand{font-family:${T.display};font-size:18px;font-weight:650;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
         .public-header__desktop{display:flex;align-items:center;justify-content:center;height:100%;gap:clamp(12px,2.2vw,34px)}
         .public-header__nav-button{appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:22px 2px;cursor:pointer;transition:color .16s ease}
         .public-header__nav-button:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
         .public-header__actions{display:flex;align-items:center;gap:14px}
-        .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:1px solid;padding:8px 10px;text-decoration:none;white-space:nowrap}
+        .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
+        .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__menu{display:none;appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 0;cursor:pointer}
         .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;background:#fff;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
         .nav-panel__inner{max-width:1440px;margin:0 auto;padding:clamp(28px,3.5vw,48px) clamp(20px,4vw,56px) clamp(34px,4vw,54px);display:grid;grid-template-columns:minmax(160px,.24fr) minmax(0,1fr);gap:clamp(30px,5vw,80px)}
@@ -344,16 +354,19 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .mobile-nav__lenses{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line};margin-top:18px}
         .mobile-nav__about{display:grid;margin-top:14px;border-top:1px solid ${T.line}}
         .mobile-nav__about a{padding:14px 0;border-bottom:1px solid ${T.line};font-family:${T.display};font-size:22px;color:${T.ink};text-decoration:none}
-        .public-footer{background:#050505;color:#fff;border-top:1px solid rgba(255,255,255,.12)}
-        .public-footer__inner{max-width:1440px;margin:0 auto;padding:clamp(60px,8vw,120px) clamp(20px,5vw,72px) 28px}
-        .public-footer__mast{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.55fr);gap:clamp(40px,7vw,110px);align-items:end}
-        .public-footer__status{margin:0;color:rgba(255,255,255,.56);font-size:13.5px;line-height:1.62;max-width:400px}
-        .public-footer__links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px;margin-top:clamp(56px,8vw,110px);padding-top:28px;border-top:1px solid rgba(255,255,255,.16)}
-        .public-footer__links a{color:rgba(255,255,255,.82);font-size:13px;text-decoration:none}.public-footer__links a:hover{text-decoration:underline;text-underline-offset:3px}.public-footer__links a:focus-visible{outline:3px solid #fff;outline-offset:4px}
-        .public-footer__bottom{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:60px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);font-family:${T.mono};font-size:9.5px;letter-spacing:.12em;color:rgba(255,255,255,.4)}
+        .public-footer{position:relative;min-height:clamp(600px,86vh,880px);background:#000;color:#fff;overflow:hidden;display:flex;align-items:flex-end}
+        .public-footer__planet{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+        .public-footer__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.06) 0%,rgba(0,0,0,.12) 32%,rgba(0,0,0,.52) 60%,rgba(0,0,0,.84) 84%,rgba(0,0,0,.92) 100%)}
+        .public-footer__inner{position:relative;z-index:2;width:100%;max-width:1440px;margin:0 auto;padding:clamp(72px,10vw,138px) clamp(20px,5vw,72px) 28px}
+        .public-footer__mast{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.55fr);gap:clamp(40px,7vw,110px);align-items:end}
+        .public-footer__status{margin:0;color:rgba(255,255,255,.76);font-size:13.5px;line-height:1.62;max-width:420px}
+        .public-footer__story{display:inline-flex;margin-top:18px;color:${T.acid};font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;text-decoration:none}
+        .public-footer__links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px;margin-top:clamp(54px,7vw,90px);padding-top:28px;border-top:1px solid rgba(255,255,255,.18)}
+        .public-footer__links a{color:rgba(255,255,255,.86);font-size:13px;text-decoration:none}.public-footer__links a:hover{text-decoration:underline;text-underline-offset:3px}.public-footer__links a:focus-visible,.public-footer__story:focus-visible{outline:3px solid #fff;outline-offset:4px}
+        .public-footer__bottom{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:56px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);font-family:${T.mono};font-size:9.5px;letter-spacing:.12em;color:rgba(255,255,255,.52)}
         .public-footer__bottom a{color:inherit;text-decoration:none}
         @media(max-width:920px){.public-header__desktop,.public-header__join{display:none}.public-header__bar{grid-template-columns:1fr auto}.public-header__menu{display:block}.nav-panel{display:none}.mobile-nav{display:block}.public-footer__mast{grid-template-columns:1fr}.public-footer__links{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media(max-width:560px){.nav-panel-link{grid-template-columns:3px 1fr auto;padding:17px 14px}.public-footer__links{grid-template-columns:1fr 1fr}.public-footer__bottom{display:grid}.public-footer__mast{gap:26px}}
+        @media(max-width:560px){.nav-panel-link{grid-template-columns:3px 1fr auto;padding:17px 14px}.public-footer{min-height:720px}.public-footer__links{grid-template-columns:1fr 1fr}.public-footer__bottom{display:grid}.public-footer__mast{gap:26px}}
         @media(prefers-reduced-motion:reduce){.public-header{transition:none}.nav-panel-link *{transition:none!important}}
       `}</style>
     </>

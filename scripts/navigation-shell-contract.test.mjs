@@ -22,6 +22,23 @@ test("header retreats on downward intent but never hides under reduced motion or
   assert.match(shell, /prefers-reduced-motion:reduce/);
 });
 
+test("top navigation remains visually quiet without a persistent divider or boxed TAKE PART control", () => {
+  assert.match(shell, /\.public-header\{[\s\S]*?border:0/);
+  assert.match(shell, /\.public-header__join\{[\s\S]*?border:0/);
+  assert.doesNotMatch(shell, /borderBottomColor/);
+});
+
+test("footer restores the controlled NASA Earthset brand closure with green hierarchy", () => {
+  assert.match(shell, /img\("footerPlanet"\)/);
+  assert.match(shell, /NASA \/ ARTEMIS II · PUBLIC DOMAIN/);
+  assert.match(shell, /color: T\.acid/);
+  assert.match(shell, /Everything you love is connected\./);
+});
+
+test("the redundant global product switcher is not rendered as a second navigation grammar", () => {
+  assert.doesNotMatch(shell, /ProductSwitcher/);
+});
+
 test("navigation and footer retain keyboard-visible focus boundaries", () => {
   assert.match(shell, /:focus-visible/);
   assert.match(shell, /outline:3px solid currentColor/);
