@@ -57,24 +57,10 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Verify token and resolve 4species.com account
+      - name: Resolve 4species.com zone and account
         shell: bash
         run: |
           set -euo pipefail
-
-          verify_file="$RUNNER_TEMP/cf-verify.json"
-          verify_status=$(curl -sS -o "$verify_file" -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            https://api.cloudflare.com/client/v4/user/tokens/verify)
-
-          if [ "$verify_status" != "200" ]; then
-            echo "Cloudflare token verification HTTP status: $verify_status"
-            jq '{success, errors, messages}' "$verify_file" 2>/dev/null || cat "$verify_file"
-            exit 4
-          fi
-
-          jq -e '.success == true and .result.status == "active"' "$verify_file" >/dev/null
 
           zones_file="$RUNNER_TEMP/cf-zones.json"
           zones_status=$(curl -sS -o "$zones_file" -w '%{http_code}' \
@@ -95,9 +81,10 @@ jobs:
             echo "4species.com was not found as an active Cloudflare zone accessible to this token."
             exit 3
           fi
+
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
           echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
-          echo "Cloudflare token verified and 4species.com zone resolved."
+          echo "Cloudflare token has zone access and 4species.com resolved."
 
       - name: Create isolated redirect Worker
         shell: bash
