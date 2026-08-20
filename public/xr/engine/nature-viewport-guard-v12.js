@@ -22,8 +22,8 @@
     const minLeft = offsetLeft + margin;
     const maxRight = offsetLeft + viewport - margin;
 
-    // The HUD is a viewport-level navigation surface. Scene transitions may
-    // animate children, but must never translate the HUD itself off-canvas.
+    // The HUD is a viewport-level navigation surface. Scene and interaction
+    // transitions may animate the world, but must never translate the HUD.
     hud.style.setProperty('transform', 'none', 'important');
     hud.style.setProperty('max-width', `${Math.max(280, viewport - margin * 2)}px`, 'important');
 
@@ -43,6 +43,7 @@
 
     // Fail-safe against unexpected inherited/transitional geometry.
     if (hudRect.left < minLeft - 1) {
+      hud.style.setProperty('transform', 'none', 'important');
       hud.style.setProperty('left', `${minLeft + (minLeft - hudRect.left)}px`, 'important');
       hudRect = hud.getBoundingClientRect();
     }
@@ -61,14 +62,17 @@
   const settle = () => {
     resetOrigin();
     window.clearTimeout(lateTimer);
+    // Apply once synchronously for event-driven interaction checks, then again
+    // after layout/compositing and after the authored transition window.
+    clampHud();
     requestAnimationFrame(() => requestAnimationFrame(clampHud));
-    // Re-clamp after the authored 0.8–1.2 s transition/hold window so a
-    // scene-specific CSS transition cannot reintroduce horizontal clipping.
     lateTimer = window.setTimeout(clampHud, 1250);
   };
 
   window.addEventListener('4planet:nature-browser-ready', settle);
+  window.addEventListener('4planet:nature-browser-enter', settle);
   window.addEventListener('4planet:nature-journey-scene', settle);
+  window.addEventListener('4planet:nature-world-interaction', settle);
   window.addEventListener('resize', settle, { passive: true });
   window.addEventListener('orientationchange', settle, { passive: true });
 })();
