@@ -47,7 +47,7 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           project="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}")"
           echo "$project" | jq -e '.success == true and .result.name == "4planet-05"' >/dev/null
-          deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=100")"
+          deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
           count="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | length')"
           if [ "$count" -lt 1 ]; then
             echo "No S4PIENS branch deployment found"
