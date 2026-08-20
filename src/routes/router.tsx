@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
+import Cre4torsHome from "@/pages/v5/Cre4torsHome";
 import LabsIndex from "@/pages/v5/LabsIndex";
 import CreatorEngineLab from "@/pages/v5/CreatorEngineLab";
 import HumanCapacityLab from "@/pages/v5/HumanCapacityLab";
@@ -41,11 +42,17 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
+function RootHome() {
+  const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
+  const isCre4torsHost = host === "cre4tors.com" || host === "www.cre4tors.com";
+  return isCre4torsHost ? <Cre4torsHome /> : <Home />;
+}
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<RootHome />} />
+      <Route path="/cre4tors" element={<Cre4torsHome />} />
       <Route path="/labs" element={<LabsIndex />} />
       <Route path="/labs/creator" element={<CreatorEngineLab />} />
       <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
