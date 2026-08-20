@@ -177,7 +177,7 @@ export default function Home() {
           <div style={{ ...mono, color: T.acid }}>THE LIVING WORLD</div>
           <div className="home-world-intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(24px,6vw,90px)", alignItems: "end", marginTop: 12 }}>
             <h2 style={{ ...display, margin: 0, fontSize: "clamp(36px,5.2vw,70px)", lineHeight: .92, maxWidth: "10ch" }}>Four connected domains.</h2>
-            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.62)", fontSize: "clamp(15px,1.35vw,18px)", lineHeight: 1.6 }}>The Planetary Map describes the world. Domains make that world navigable. Missions select where 4PLANET acts — without turning the homepage into a catalogue of all sixteen.</p>
+            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.62)", fontSize: "clamp(15px,1.35vw,18px)", lineHeight: 1.6 }}>The Planetary Map describes the world. Domains make that world navigable. Missions focus where 4PLANET acts inside those domains.</p>
           </div>
         </div>
         <div className="home-world-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(34px,5vw,58px)", background: "rgba(255,255,255,.12)" }}>
