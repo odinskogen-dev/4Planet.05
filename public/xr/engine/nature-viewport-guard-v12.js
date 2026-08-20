@@ -29,16 +29,57 @@
     const card = root.querySelector('.nature-world-card[data-visible="true"]');
     if (!card) return null;
 
-    const { minLeft, maxRight } = bounds;
-    card.style.setProperty('translate', '0px 0px', 'important');
+    const { compact, minLeft, maxRight } = bounds;
+    const parentRect = (card.offsetParent || root).getBoundingClientRect();
+    const safeWidth = Math.max(240, maxRight - minLeft);
+
+    // A visible interaction card is a control surface, not world geometry.
+    // Once visible it must be deterministically anchored inside the visual
+    // viewport instead of inheriting authored horizontal entrance transforms.
+    card.style.setProperty('box-sizing', 'border-box', 'important');
+    card.style.setProperty('max-width', `${safeWidth}px`, 'important');
+    card.style.removeProperty('translate');
+
+    if (!compact) {
+      card.style.setProperty('transform', 'translate3d(0,-46%,0) scale(1)', 'important');
+      if (card.dataset.align === 'left') {
+        card.style.setProperty('left', `${Math.max(0, minLeft - parentRect.left)}px`, 'important');
+        card.style.setProperty('right', 'auto', 'important');
+      } else {
+        card.style.setProperty('right', `${Math.max(0, parentRect.right - maxRight)}px`, 'important');
+        card.style.setProperty('left', 'auto', 'important');
+      }
+    }
+
     let rect = card.getBoundingClientRect();
-    let shiftX = 0;
+    if (rect.width > safeWidth + 1) {
+      card.style.setProperty('width', `${safeWidth}px`, 'important');
+      rect = card.getBoundingClientRect();
+    }
 
-    if (rect.left < minLeft - 1) shiftX += minLeft - rect.left;
-    if (rect.right + shiftX > maxRight + 1) shiftX -= rect.right + shiftX - maxRight;
-
-    if (Math.abs(shiftX) > 0.5) {
-      card.style.setProperty('translate', `${shiftX}px 0px`, 'important');
+    // Final defensive correction uses the positioned inset itself rather than
+    // the CSS individual-transform property, which proved non-deterministic in
+    // Chromium while the authored card transform was transitioning.
+    if (!compact && rect.left < minLeft - 1) {
+      const correction = minLeft - rect.left;
+      if (card.dataset.align === 'left') {
+        const current = Number.parseFloat(card.style.left) || 0;
+        card.style.setProperty('left', `${current + correction}px`, 'important');
+      } else {
+        const current = Number.parseFloat(card.style.right) || 0;
+        card.style.setProperty('right', `${Math.max(0, current - correction)}px`, 'important');
+      }
+      rect = card.getBoundingClientRect();
+    }
+    if (!compact && rect.right > maxRight + 1) {
+      const correction = rect.right - maxRight;
+      if (card.dataset.align === 'left') {
+        const current = Number.parseFloat(card.style.left) || 0;
+        card.style.setProperty('left', `${Math.max(0, current - correction)}px`, 'important');
+      } else {
+        const current = Number.parseFloat(card.style.right) || 0;
+        card.style.setProperty('right', `${current + correction}px`, 'important');
+      }
       rect = card.getBoundingClientRect();
     }
 
