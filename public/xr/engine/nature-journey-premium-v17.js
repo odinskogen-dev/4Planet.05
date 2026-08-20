@@ -115,17 +115,27 @@
     });
   };
 
+  const moduleNode = (item, index) => {
+    const node = document.createElement(sameOriginHref(item.href) ? 'a' : 'div');
+    node.className = 'nature-premium-module';
+    if (sameOriginHref(item.href)) node.href = item.href;
+    node.innerHTML = `<span class="nature-premium-module__icon">${String(index + 1).padStart(2, '0')}</span><div><b>${item.label}</b><span>${item.state || 'PATHWAY · REVIEW REQUIRED'}</span></div><i>→</i>`;
+    return node;
+  };
+
   const renderModules = (scene) => {
     const host = layer?.querySelector('.nature-premium__modules');
     if (!host) return;
     host.innerHTML = '';
-    (scene?.modules || []).forEach((item, index) => {
-      const node = document.createElement(sameOriginHref(item.href) ? 'a' : 'div');
-      node.className = 'nature-premium-module';
-      if (sameOriginHref(item.href)) node.href = item.href;
-      node.innerHTML = `<span class="nature-premium-module__icon">${String(index + 1).padStart(2, '0')}</span><div><b>${item.label}</b><span>${item.state || 'PATHWAY · REVIEW REQUIRED'}</span></div><i>→</i>`;
-      host.appendChild(node);
-    });
+    const modules = [...(scene?.modules || [])];
+    if (activeState === 'response' && manifest?.entity?.slug) {
+      modules.unshift({
+        label: 'OPEN SOLUTIONS INTELLIGENCE',
+        state: 'RESPONSE + ACTOR ROLE PROTOTYPE · NO DELIVERY CLAIM',
+        href: `/journey/solutions/?journey=${encodeURIComponent(manifest.entity.slug)}`
+      });
+    }
+    modules.forEach((item, index) => host.appendChild(moduleNode(item, index)));
   };
 
   const renderActors = (scene) => {
@@ -153,7 +163,7 @@
       return;
     }
     layer.dataset.mode = scene.mode || activeState;
-    layer.dataset.hasPanel = String(Boolean(scene.panel || scene.items?.length || scene.modules?.length));
+    layer.dataset.hasPanel = String(Boolean(scene.panel || scene.items?.length || scene.modules?.length || activeState === 'response'));
     layer.dataset.detailOpen = 'false';
     const kicker = layer.querySelector('.nature-premium__kicker span:first-child');
     const stateNode = layer.querySelector('.nature-premium__state');
