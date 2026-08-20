@@ -11,6 +11,7 @@
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const LOAD_TIMEOUT_MS = 4200;
   const TRANSITION_SETTLE_MS = 1450;
+  const COMMIT_FALLBACK_MS = 160;
 
   const preload = (src) => {
     if (!src) return Promise.resolve(null);
@@ -175,8 +176,10 @@
     updateCredit(scene, resolved.fallback);
     if (userInitiated) runShutter(scene.travel || 'dolly');
 
+    let committed = false;
     const commit = () => {
-      if (token !== sceneToken) return;
+      if (committed || token !== sceneToken) return;
+      committed = true;
       incoming.classList.add('is-active');
       incoming.classList.remove('is-prepared');
       outgoing.classList.remove('is-active');
@@ -193,8 +196,19 @@
       root.dataset.chapterMediaReady = 'true';
     };
 
-    if (reducedMotion()) commit();
-    else requestAnimationFrame(() => requestAnimationFrame(commit));
+    if (reducedMotion()) {
+      commit();
+    } else {
+      // Double-rAF preserves the authored prepared→active visual transition,
+      // but rAF is not allowed to be a liveness dependency. Headless/full-tier
+      // Chromium can delay frame callbacks under compositing/network pressure.
+      // The bounded timer commits the exact same state once if frames stall.
+      const commitFallback = window.setTimeout(commit, COMMIT_FALLBACK_MS);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.clearTimeout(commitFallback);
+        commit();
+      }));
+    }
 
     const nextMedia = manifest.nodes?.[index + 1]?.scene?.media;
     const nextSrc = compact() && nextMedia?.backgroundMobileSrc ? nextMedia.backgroundMobileSrc : nextMedia?.backgroundSrc;
