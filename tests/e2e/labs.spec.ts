@@ -62,11 +62,12 @@ test("ONE INTERFACE detail leads with a usable current preview and full project 
   await expect(primary).toHaveText(/OPEN CURRENT PREVIEW/i);
   await expect(primary).toHaveAttribute("href", "https://e32a35e9.4planet-05.pages.dev");
 
-  for (const label of ["PROJECT BRIEF", "CURRENT STATE", "WHY THIS PROJECT EXISTS", "OWNER / OPERATING MODEL", "GOAL CONTRACT", "MAIN GOAL", "SUCCESS / PROOF", "ECONOMIC GOAL", "EXECUTION", "WORK NOW", "WORK NEXT", "FOUNDER GATE", "WBS / PROCESS COVERAGE", "MONEY + PROOF", "ECONOMICS", "MONEY TRUTH", "EVIDENCE / PROOF"]) {
+  for (const label of ["PROJECT BRIEF", "CURRENT STATE", "WHY THIS PROJECT EXISTS", "OWNER / OPERATING MODEL", "GOAL CONTRACT", "MAIN GOAL", "SUCCESS / PROOF", "ECONOMIC GOAL", "EXECUTION", "WORK NOW", "WORK NEXT", "WAITING / BLOCKED", "FOUNDER GATE", "WBS / PROCESS COVERAGE", "MONEY + PROOF", "ECONOMICS", "MONEY TRUTH", "EVIDENCE / PROOF"]) {
     await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
   }
   await expect(page.getByText(/Founder visual/i).first()).toBeVisible();
   await expect(page.getByText(/No product-specific revenue or cash is verified/i)).toBeVisible();
+  await expect(page.getByText(/Founder Control 12_WBS/i).first()).toBeVisible();
 
   const technical = page.locator("details").filter({ hasText: "TECHNICAL / RECOVERY EVIDENCE" });
   await expect(technical).not.toHaveAttribute("open", "");
@@ -98,11 +99,12 @@ test("SPECIES separates accepted baseline from newer draft work and has unambigu
   await page.goto("/labs?project=4planet%2Fe4rth%2Fspecies", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "SPECIES", level: 1 })).toBeVisible();
   await expect(page.getByText(/accepted internal shared-context Jaguar baseline/i).first()).toBeVisible();
-  await expect(page.getByText(/newer exact-head work remains draft/i).first()).toBeVisible();
+  await expect(page.getByText(/PR #79 Journey line and stacked ORCA Light Lens PR #98 remain draft/i).first()).toBeVisible();
   await expect(page.getByText(/Planning model: NOK 700k minimum \/ NOK 1.8m base/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /OPEN SPECIES PRODUCT/i })).toHaveAttribute("href", "https://4planet.org/species");
   await expect(page.getByRole("link", { name: /OPEN SPECIES MISSION/i })).toHaveAttribute("href", "https://4planet.org/missions/species");
   await expect(page.getByRole("link", { name: /OPEN ACCEPTED JAGUAR BASELINE/i })).toHaveAttribute("href", "https://756dff8b.4planet-05.pages.dev/journey/jaguar/");
+  await expect(page.getByRole("link", { name: /OPEN CURRENT LIGHT LENS PR #98/i })).toHaveAttribute("href", "https://github.com/odinskogen-dev/4Planet.05/pull/98");
 });
 
 test("SONIC and CREATOR ENGINE are real routable current projects", async ({ page }, testInfo) => {
@@ -113,8 +115,10 @@ test("SONIC and CREATOR ENGINE are real routable current projects", async ({ pag
 
   await page.goto("/labs?project=4planet%2Flabs-system%2Fcreator-engine", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "CREATOR ENGINE", level: 1 })).toBeVisible();
-  await expect(page.getByRole("link", { name: /OPEN CRE4TORS_ V0.3/i })).toHaveAttribute("href", "https://e8c3e7d9.4planet-05.pages.dev/cre4tors");
-  await expect(page.getByText(/real creator workflow\/economic proof remain open/i).first()).toBeVisible();
+  await expect(page.locator(".labs-gold-actions a.is-primary")).toHaveAttribute("href", "https://cre4tors.com");
+  await expect(page.getByRole("link", { name: /OPEN EXACT CRE4TORS_ PREVIEW/i })).toHaveAttribute("href", "https://e8c3e7d9.4planet-05.pages.dev/cre4tors");
+  await expect(page.getByText(/apex\/www HTTPS, proxy identity and the host-aware CRE4TORS root were browser-verified/i).first()).toBeVisible();
+  await expect(page.getByText(/Real creator workflow\/economic proof remains open/i).first()).toBeVisible();
 
   if (testInfo.project.name.includes("390") || testInfo.project.name.includes("430")) await expectViewportContained(page);
 });
