@@ -121,6 +121,10 @@ test("Browser Journey is scene-first, evidence-secondary, performance-tiered and
   assert.match(cinematicRenderer, /const commitFallback = window\.setTimeout\(commit, COMMIT_FALLBACK_MS\)/);
   assert.match(cinematicRenderer, /if \(committed \|\| token !== sceneToken\) return/);
   assert.match(cinematicRenderer, /window\.clearTimeout\(commitFallback\)/);
+  assert.match(cinematicRenderer, /root\.dataset\.chapterMediaReady = 'true';[\s\S]*root\.dataset\.cinematicSettled = 'true';/);
+  assert.match(cinematicRenderer, /root\.dataset\.cinematicSettledIndex = String\(index\);/);
+  assert.match(cinematicRenderer, /const cleanupDelay = reducedMotion\(\) \? 0 : TRANSITION_SETTLE_MS;/);
+  assert.match(cinematicRenderer, /outgoing\.classList\.remove\('is-leaving'\)/);
 });
 
 test("Gold interaction pass adds in-world actions without turning cards into a second truth store", () => {
