@@ -29,11 +29,7 @@ const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
 const HomoSapiensWorld = lazy(() => import("@/pages/integrated/HomoSapiensWorld"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
-
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
@@ -49,80 +45,78 @@ function RootHome() {
 }
 
 export function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<RootHome />} />
-      <Route path="/cre4tors" element={<Cre4torsHome />} />
-      <Route path="/labs" element={<LabsIndex />} />
-      <Route path="/labs/creator" element={<CreatorEngineLab />} />
-      <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
-      <Route path="/labs/living-world" element={<LivingWorldLab />} />
-      <Route path="/labs/engines" element={<EngineFoundryLab />} />
-      <Route path="/story" element={<Navigate to="/" replace />} />
-      <Route path="/domains" element={<DomainsIndex />} />
-      <Route path="/domains/:key" element={<DomainWorld />} />
-      <Route path="/missions" element={<MissionsIndex />} />
-      <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
-      <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
-      <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
-      <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
-      <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
-      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
-      <Route path="/missions/:slug" element={<MissionDetail />} />
-      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/species" element={<SpeciesIndex />} />
-      <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
-      <Route path="/species/homo-sapiens" element={<Suspense fallback={WorldFallback}><HomoSapiensWorld /></Suspense>} />
-      <Route path="/species/:slug" element={<SpeciesProfilePage />} />
-      <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforest /></Suspense>} />
-      <Route path="/impact" element={<ImpactPublicHome />} />
-      <Route path="/impact/lab" element={<ImpactLabIndex />} />
-      <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
-      <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
-      <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
-      <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
-      <Route path="/impact/:slug" element={<ImpactStory />} />
-      <Route path="/join" element={<Join />} />
-      <Route path="/people" element={<Navigate to="/join" replace />} />
-      <Route path="/brands" element={<Brands />} />
-      <Route path="/partners" element={<Partners />} />
-      <Route path="/funders" element={<Funders />} />
-      <Route path="/living-systems" element={<LivingSystems />} />
-      <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
-      <Route path="/reports" element={<Reports />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/about/story" element={<AboutStory />} />
-      <Route path="/about/system" element={<AboutSystem />} />
-      <Route path="/about/founder" element={<Founder />} />
-      <Route path="/stories" element={<Stories />} />
-      <Route path="/stories/:slug" element={<StoryArticle />} />
-      <Route path="/magazine" element={<Magazine />} />
-      <Route path="/magazine/:slug" element={<MagazineArticle />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/culture/film" element={<CultureFilm />} />
-      <Route path="/culture/play" element={<CulturePlay />} />
-      <Route path="/os" element={toAbout} />
-      <Route path="/os/*" element={toAbout} />
-      <Route path="/m/:slug" element={<MtoMission />} />
-      <Route path="/m/:slug/support" element={toImpact} />
-      <Route path="/m/:slug/campaign" element={toImpact} />
-      <Route path="/marketplace" element={toImpact} />
-      <Route path="/store" element={toImpact} />
-      <Route path="/cart" element={toImpact} />
-      <Route path="/checkout" element={toImpact} />
-      <Route path="/members" element={toJoin} />
-      <Route path="/ambassadors" element={toJoin} />
-      <Route path="/portal/*" element={toImpact} />
-      <Route path="/sponsors" element={toBrands} />
-      <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
-      <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
-      <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
-      <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
-      <Route path="/system" element={toHome} />
-      <Route path="/404" element={<NotFound />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+  return <Routes>
+    <Route path="/" element={<RootHome />} />
+    <Route path="/cre4tors" element={<Cre4torsHome />} />
+    <Route path="/labs" element={<LabsIndex />} />
+    <Route path="/labs/creator" element={<CreatorEngineLab />} />
+    <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
+    <Route path="/labs/living-world" element={<LivingWorldLab />} />
+    <Route path="/labs/engines" element={<EngineFoundryLab />} />
+    <Route path="/story" element={<Navigate to="/" replace />} />
+    <Route path="/domains" element={<DomainsIndex />} />
+    <Route path="/domains/:key" element={<DomainWorld />} />
+    <Route path="/missions" element={<MissionsIndex />} />
+    <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
+    <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
+    <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+    <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+    <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
+    <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+    <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
+    <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
+    <Route path="/missions/:slug" element={<MissionDetail />} />
+    <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+    <Route path="/species" element={<SpeciesIndex />} />
+    <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
+    <Route path="/species/homo-sapiens" element={<Suspense fallback={WorldFallback}><HomoSapiensWorld /></Suspense>} />
+    <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+    <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforest /></Suspense>} />
+    <Route path="/impact" element={<ImpactPublicHome />} />
+    <Route path="/impact/lab" element={<ImpactLabIndex />} />
+    <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
+    <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
+    <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
+    <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
+    <Route path="/impact/:slug" element={<ImpactStory />} />
+    <Route path="/join" element={<Join />} />
+    <Route path="/people" element={<Navigate to="/join" replace />} />
+    <Route path="/brands" element={<Brands />} />
+    <Route path="/partners" element={<Partners />} />
+    <Route path="/funders" element={<Funders />} />
+    <Route path="/living-systems" element={<LivingSystems />} />
+    <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
+    <Route path="/reports" element={<Reports />} />
+    <Route path="/about" element={<About />} />
+    <Route path="/about/story" element={<AboutStory />} />
+    <Route path="/about/system" element={<AboutSystem />} />
+    <Route path="/about/founder" element={<Founder />} />
+    <Route path="/stories" element={<Stories />} />
+    <Route path="/stories/:slug" element={<StoryArticle />} />
+    <Route path="/magazine" element={<Magazine />} />
+    <Route path="/magazine/:slug" element={<MagazineArticle />} />
+    <Route path="/privacy" element={<Privacy />} />
+    <Route path="/culture/film" element={<CultureFilm />} />
+    <Route path="/culture/play" element={<CulturePlay />} />
+    <Route path="/os" element={toAbout} />
+    <Route path="/os/*" element={toAbout} />
+    <Route path="/m/:slug" element={<MtoMission />} />
+    <Route path="/m/:slug/support" element={toImpact} />
+    <Route path="/m/:slug/campaign" element={toImpact} />
+    <Route path="/marketplace" element={toImpact} />
+    <Route path="/store" element={toImpact} />
+    <Route path="/cart" element={toImpact} />
+    <Route path="/checkout" element={toImpact} />
+    <Route path="/members" element={toJoin} />
+    <Route path="/ambassadors" element={toJoin} />
+    <Route path="/portal/*" element={toImpact} />
+    <Route path="/sponsors" element={toBrands} />
+    <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
+    <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
+    <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
+    <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
+    <Route path="/system" element={toHome} />
+    <Route path="/404" element={<NotFound />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>;
 }
