@@ -48,7 +48,12 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
 
   await page.locator(".nature-entry__button").click();
   await expect(root).toHaveAttribute("data-entered", "true");
-  await expect(root).toHaveAttribute("data-audio-profile", "amazonia-procedural-v11", { timeout: 5_000 });
+  // Jaguar consumes the shared world-aware audio engine. Forest is the intentional
+  // world profile; Orca uses ocean. Keep readiness/playing assertions semantic and
+  // do not pin the retired Jaguar-only Amazonia audio implementation name.
+  await expect(root).toHaveAttribute("data-audio-profile", "forest-procedural-v06", { timeout: 5_000 });
+  await expect(root).toHaveAttribute("data-audio-ready", "true", { timeout: 5_000 });
+  await expect(root).toHaveAttribute("data-audio-playing", "true", { timeout: 5_000 });
   await expect(page.locator(".nature-entry")).toHaveCSS("visibility", "hidden", { timeout: 5_000 });
   await expect(page.locator(".nature-subject__name")).toContainText(/JAGUAR/i);
   await expect(root).toHaveAttribute("data-scene-state", "identity", { timeout: 5_000 });
