@@ -140,12 +140,17 @@ test("Gold interaction pass adds in-world actions without turning cards into a s
   assert.doesNotMatch(interactionRenderer, /Capybara|Hydrochoerus|Jaguar/i);
 });
 
-test("Premium pass protects viewport safety and keeps uncontrolled 3D viewers out of the primary journey", () => {
+test("Premium pass protects every visible journey control surface from viewport clipping", () => {
   assert.match(journeyHtml, /jaguar-premium-v12\.css/);
   assert.match(journeyHtml, /nature-viewport-guard-v12\.js/);
   assert.match(premiumCss, /max-width:calc\(100vw/);
   assert.match(premiumCss, /data-cinematic-scene=response/);
   assert.match(viewportGuard, /window\.scrollTo\(0, 0\)/);
+  assert.match(viewportGuard, /nature-world-card\[data-visible=/);
+  assert.match(viewportGuard, /const clampWorldCard/);
+  assert.match(viewportGuard, /card\.style\.setProperty\('translate'/);
+  assert.match(viewportGuard, /MutationObserver/);
+  assert.match(viewportGuard, /cardSafe/);
   assert.match(viewportGuard, /data\.viewportSafe|viewportSafe/);
   assert.equal(manifest.subject.modelGate.status, "PENDING_CONTROLLED_ANIMATED_GLB");
   assert.doesNotMatch(journeyHtml, /sketchfab\.com|<iframe/i);
