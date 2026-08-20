@@ -7,81 +7,114 @@ import { img, type ImageKey } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
 import { AtlasHero } from "./AtlasHero";
 
-const PRODUCTS = [
-  { no: "01", name: "ATLAS", tag: "EXPLORE", line: "See the living planet in place — observations, species, pressures and context.", to: "/atlas", accent: T.blue },
-  { no: "02", name: "SPECIES", tag: "MEET LIFE", line: "Enter the world of a species, then follow its habitat, relationships and evidence.", to: "/species", accent: "#3AE86F" },
-  { no: "03", name: "LIVING SYSTEMS", tag: "UNDERSTAND", line: "Follow dependencies, pressures and responses across connected living systems.", to: "/living-systems", accent: "#FF4D22" },
-  { no: "04", name: "IMPACT", tag: "ACT", line: "Follow credible action pathways as their delivery and proof systems become ready.", to: "/impact", accent: "#3AE86F" },
-] as const;
-
-const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
-const dslug = (k: string) => k.replace("_", "").toLowerCase();
-const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase" };
-const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.04em" };
-
-const WORLDS: Record<DomainKey, { line: string; image: ImageKey; missions: string[] }> = {
-  "OCE4N_": { line: "The living ocean — movement, coasts, reefs, migration and the systems beneath the surface.", image: "oce4nDomainHero", missions: ["CLE4N", "WH4LES", "COR4L", "RE:WILD"] },
-  "E4RTH_": { line: "The living land — forests, freshwater, soil, species and recovery.", image: "e4rthDomainHero", missions: ["CLIM4TE", "AM4ZONIA", "SPECIES", "RE:WILD"] },
-  "S4PIENS_": { line: "Human systems — food, energy, cities and materials shaping planetary pressure.", image: "s4piensDomainHero", missions: ["FOOD", "EN4RGY", "CIRCULAR CITY", "F4SHION"] },
-  "4CULTURE_": { line: "Culture — story, film, art and play that shape attention, meaning and participation.", image: "cultureAnchor", missions: ["M4GAZINE", "4FILM", "4RT", "4PLAY"] },
+const mono: React.CSSProperties = {
+  fontFamily: T.mono,
+  fontSize: 10.5,
+  letterSpacing: ".14em",
+  textTransform: "uppercase",
 };
 
-const FEATURED: { eyebrow: string; title: string; line: string; to: string; image: ImageKey; accent: string }[] = [
-  { eyebrow: "SPECIES × ATLAS × AM4ZONIA", title: "Jaguar", line: "Start with one species, then move into rainforest, observations, pressures and the wider system.", to: "/species/jaguar", image: "amazoniaHero", accent: DOMAIN_ACCENT.E4RTH_ },
-  { eyebrow: "SPECIES × ATLAS × WH4LES", title: "Orca", line: "A species world built around family, culture, place, pressure and evidence boundaries.", to: "/species/orca", image: "wh4lesHero", accent: DOMAIN_ACCENT.OCE4N_ },
-  { eyebrow: "S4PIENS × SPECIES", title: "Homo sapiens", line: "Put humans back inside the living system — as a species with dependencies, choices and pressures.", to: "/species/homo-sapiens", image: "s4piensDomainHero", accent: DOMAIN_ACCENT.S4PIENS_ },
-  { eyebrow: "4CULTURE × EDITORIAL", title: "M4GAZINE", line: "Stories and field intelligence for seeing the living planet more clearly.", to: "/magazine", image: "cultureAnchor", accent: DOMAIN_ACCENT["4CULTURE_"] },
-];
+const display: React.CSSProperties = {
+  fontFamily: T.display,
+  fontWeight: 500,
+  letterSpacing: "-.045em",
+};
 
-const PATHWAYS = [
-  ["01", "PLANT TREES", "PARTNER VALIDATION", "/impact/tree-unit"],
-  ["02", "CLEAN OCEAN PLASTIC", "IN DEVELOPMENT", "/impact/ocean-waste"],
-  ["03", "PROTECT AMAZON RAINFOREST", "IN DEVELOPMENT", "/impact/amazon-square"],
-  ["04", "REWILD DEGRADED LAND", "IN DEVELOPMENT", "/impact/habitat-recovery"],
+const PRODUCTS = [
+  ["01", "ATLAS", "SEE THE PLANET", "Move through place, observations and planetary context.", "/atlas", T.blue],
+  ["02", "SPECIES", "MEET LIFE", "Enter through a species, then follow habitat, relationships and evidence.", "/species", "#3AE86F"],
+  ["03", "LIVING SYSTEMS", "UNDERSTAND", "See dependencies, pressures and responses as one connected system.", "/living-systems", "#FF4D22"],
+  ["04", "IMPACT", "HELP", "Move from understanding toward credible action and proof.", "/impact", "#3AE86F"],
 ] as const;
 
-function ProductRow({ product }: { product: typeof PRODUCTS[number] }) {
+const WORLDS: Record<DomainKey, { line: string; image: ImageKey }> = {
+  OCE4N_: { line: "The living ocean — migration, coasts, reefs and the systems beneath the surface.", image: "oce4nDomainHero" },
+  E4RTH_: { line: "Forests, freshwater, soil, species and the recovery of living land.", image: "e4rthDomainHero" },
+  S4PIENS_: { line: "Human systems — food, energy, cities and materials shaping planetary pressure.", image: "s4piensDomainHero" },
+  "4CULTURE_": { line: "Story, film, art and play shaping attention, meaning and participation.", image: "cultureAnchor" },
+};
+
+const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
+const dslug = (key: string) => key.replace("_", "").toLowerCase();
+
+const FEATURED = [
+  {
+    eyebrow: "E4RTH_ · SPECIES × ATLAS × AM4ZONIA",
+    title: "Jaguar",
+    line: "Meet one animal, then move outward into rainforest, observations, relationships, pressure and response.",
+    to: "/species/jaguar",
+    image: "amazoniaHero" as ImageKey,
+    accent: DOMAIN_ACCENT.E4RTH_,
+  },
+  {
+    eyebrow: "OCE4N_ · SPECIES × WH4LES",
+    title: "Orca",
+    line: "Follow family, culture, place and pressure through a source-bounded species world.",
+    to: "/species/orca",
+    image: "wh4lesHero" as ImageKey,
+    accent: DOMAIN_ACCENT.OCE4N_,
+  },
+  {
+    eyebrow: "S4PIENS_ · HUMAN SYSTEMS",
+    title: "Homo sapiens",
+    line: "Put humans back inside the living system — dependent on nature and capable of changing pressure.",
+    to: "/species/homo-sapiens",
+    image: "s4piensDomainHero" as ImageKey,
+    accent: DOMAIN_ACCENT.S4PIENS_,
+  },
+] as const;
+
+const PATHWAYS = [
+  ["PLANT TREES", "PARTNER VALIDATION", "/impact/tree-unit"],
+  ["CLEAN OCEAN PLASTIC", "IN DEVELOPMENT", "/impact/ocean-waste"],
+  ["PROTECT AMAZON RAINFOREST", "IN DEVELOPMENT", "/impact/amazon-square"],
+  ["REWILD DEGRADED LAND", "IN DEVELOPMENT", "/impact/habitat-recovery"],
+] as const;
+
+function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
+  const [no, name, tag, line, to, accent] = item;
   return (
-    <Link to={product.to} className="home-product-row" style={{ display: "grid", gridTemplateColumns: "54px minmax(180px,.5fr) minmax(0,1fr) auto", gap: "clamp(14px,3vw,42px)", alignItems: "center", padding: "clamp(24px,3vw,38px) 0", borderBottom: `1px solid ${T.line}`, color: T.ink, textDecoration: "none" }}>
-      <span style={{ ...mono, color: product.accent }}>{product.no}</span>
-      <span style={{ ...display, fontSize: "clamp(23px,3vw,40px)" }}>{product.name}</span>
-      <span><span style={{ ...mono, color: T.dim }}>{product.tag}</span><span style={{ display: "block", marginTop: 6, color: T.dim, fontSize: "clamp(14px,1.1vw,16.5px)", lineHeight: 1.5, maxWidth: 620 }}>{product.line}</span></span>
-      <span aria-hidden style={{ ...mono, color: product.accent }}>OPEN →</span>
+    <Link to={to} className="home-lens" style={{ display: "block", color: T.ink, textDecoration: "none", padding: "28px 0 30px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
+        <span style={{ ...mono, color: accent }}>{no}</span>
+        <span aria-hidden style={{ ...mono, color: T.dim }}>OPEN ↗</span>
+      </div>
+      <h3 style={{ ...display, margin: "22px 0 0", fontSize: "clamp(24px,2.8vw,39px)", lineHeight: .96 }}>{name}</h3>
+      <div style={{ ...mono, color: T.dim, marginTop: 12 }}>{tag}</div>
+      <p style={{ margin: "12px 0 0", maxWidth: 300, color: T.dim, fontSize: 14.5, lineHeight: 1.55 }}>{line}</p>
     </Link>
   );
 }
 
-function WorldTile({ dk }: { dk: DomainKey }) {
+function WorldPanel({ dk }: { dk: DomainKey }) {
   const world = WORLDS[dk];
   const media = img(world.image);
   const accent = DOMAIN_ACCENT[dk];
   return (
-    <Link to={`/domains/${dslug(dk)}`} className="home-world" style={{ position: "relative", minHeight: "clamp(420px,52vw,720px)", display: "flex", alignItems: "flex-end", overflow: "hidden", color: "#fff", textDecoration: "none", background: "#050505" }}>
+    <Link to={`/domains/${dslug(dk)}`} className="home-world" style={{ position: "relative", minHeight: "clamp(360px,46vw,650px)", display: "flex", alignItems: "flex-end", overflow: "hidden", color: "#fff", textDecoration: "none", background: "#050505" }}>
       <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: media.objectPosition ?? "50% 50%" }} />
-      <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.12) 42%,rgba(0,0,0,.88))" }} />
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 92, height: 4, background: accent }} />
-      <div style={{ position: "relative", width: "100%", padding: "clamp(24px,4vw,54px)" }}>
+      <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.05) 10%,rgba(0,0,0,.16) 54%,rgba(0,0,0,.88) 100%)" }} />
+      <div style={{ position: "relative", width: "100%", padding: "clamp(22px,3.5vw,46px)" }}>
         <div style={{ ...mono, color: accent }}>{dk}</div>
-        <h3 style={{ ...display, marginTop: 11, fontSize: "clamp(38px,6vw,86px)", lineHeight: .86 }}>{dk.replace("_", "")}</h3>
-        <p style={{ marginTop: 18, maxWidth: 520, color: "rgba(255,255,255,.82)", fontSize: "clamp(15px,1.25vw,18px)", lineHeight: 1.55 }}>{world.line}</p>
-        <div style={{ ...mono, color: "rgba(255,255,255,.56)", marginTop: 18 }}>{world.missions.join(" · ")}</div>
+        <h3 style={{ ...display, margin: "10px 0 0", fontSize: "clamp(34px,5vw,68px)", lineHeight: .88 }}>{dk.replace("_", "")}</h3>
+        <p style={{ margin: "16px 0 0", maxWidth: 430, color: "rgba(255,255,255,.78)", fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55 }}>{world.line}</p>
       </div>
     </Link>
   );
 }
 
-function FeaturedCard({ item }: { item: typeof FEATURED[number] }) {
+function FeaturedJourney({ item, primary = false }: { item: typeof FEATURED[number]; primary?: boolean }) {
   const media = img(item.image);
   return (
-    <Link to={item.to} className="home-feature" style={{ display: "block", textDecoration: "none", color: T.ink }}>
-      <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "#050505" }}>
+    <Link to={item.to} className={`home-journey${primary ? " home-journey--primary" : ""}`} style={{ display: "block", color: "#fff", textDecoration: "none" }}>
+      <div style={{ position: "relative", height: "100%", minHeight: primary ? "clamp(520px,64vw,820px)" : "clamp(250px,31vw,400px)", overflow: "hidden", background: "#050505" }}>
         <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: media.objectPosition ?? "50% 50%" }} />
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 72, height: 4, background: item.accent }} />
-      </div>
-      <div style={{ paddingTop: 16 }}>
-        <div style={{ ...mono, color: item.accent }}>{item.eyebrow}</div>
-        <h3 style={{ ...display, marginTop: 8, fontSize: "clamp(25px,3vw,42px)", lineHeight: .96 }}>{item.title}</h3>
-        <p style={{ marginTop: 10, color: T.dim, fontSize: 14.5, lineHeight: 1.55, maxWidth: 460 }}>{item.line}</p>
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.12) 45%,rgba(0,0,0,.88))" }} />
+        <div style={{ position: "absolute", inset: "auto 0 0", padding: "clamp(22px,3.5vw,46px)" }}>
+          <div style={{ ...mono, color: item.accent }}>{item.eyebrow}</div>
+          <h3 style={{ ...display, margin: "10px 0 0", fontSize: primary ? "clamp(46px,7vw,94px)" : "clamp(30px,4vw,50px)", lineHeight: .88 }}>{item.title}</h3>
+          <p style={{ margin: "14px 0 0", maxWidth: 520, color: "rgba(255,255,255,.8)", fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.55 }}>{item.line}</p>
+        </div>
       </div>
     </Link>
   );
@@ -93,115 +126,131 @@ export default function Home() {
       <AtlasHero />
 
       <section style={{ background: "#fff", color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(60px,8vw,120px) clamp(20px,5vw,72px)" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(54px,7vw,96px) clamp(20px,5vw,72px)" }}>
           <Reveal>
-            <div style={{ ...mono, color: T.blue }}>ONE PLANET · FOUR PUBLIC LENSES</div>
-            <h2 style={{ ...display, marginTop: 12, fontSize: "clamp(34px,5vw,72px)", lineHeight: .94, maxWidth: "12ch" }}>Change lens without losing the world.</h2>
-            <p style={{ marginTop: 20, maxWidth: 720, color: T.dim, fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.65 }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are different ways into the same connected model — not four separate versions of reality.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,.72fr) minmax(280px,1fr)", gap: "clamp(28px,6vw,94px)", alignItems: "end" }} className="home-lens-intro">
+              <div>
+                <div style={{ ...mono, color: T.blue }}>ONE PLANET · FOUR PUBLIC LENSES</div>
+                <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "10ch" }}>One world. Different ways in.</h2>
+              </div>
+              <p style={{ margin: 0, maxWidth: 650, color: T.dim, fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.62 }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT stay connected to the same living-planet context. Change lens without losing the world.</p>
+            </div>
           </Reveal>
-          <div style={{ marginTop: "clamp(42px,6vw,72px)", borderTop: `1px solid ${T.lineStrong}` }}>
-            {PRODUCTS.map((product) => <ProductRow key={product.no} product={product} />)}
+          <div className="home-lens-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(18px,3vw,42px)", marginTop: "clamp(34px,5vw,58px)", borderTop: `1px solid ${T.lineStrong}` }}>
+            {PRODUCTS.map((item) => <ProductLens key={item[0]} item={item} />)}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: "#070707", color: "#fff" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(62px,8vw,112px) clamp(20px,5vw,72px)" }}>
+          <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ ...mono, color: "#3AE86F" }}>BEST OF 4PLANET · ENTER THROUGH LIFE</div>
+              <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "11ch" }}>Start with something alive.</h2>
+            </div>
+            <Link to="/species" style={{ ...mono, color: "rgba(255,255,255,.72)", textDecoration: "none" }}>EXPLORE SPECIES →</Link>
+          </div>
+          <div className="home-journey-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.35fr) minmax(280px,.65fr)", gap: 10, marginTop: "clamp(36px,5vw,64px)" }}>
+            <FeaturedJourney item={FEATURED[0]} primary />
+            <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 10 }}>
+              <FeaturedJourney item={FEATURED[1]} />
+              <FeaturedJourney item={FEATURED[2]} />
+            </div>
           </div>
         </div>
       </section>
 
       <section style={{ background: T.blue, color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(76px,11vw,170px) clamp(20px,5vw,72px)" }}>
-          <div style={{ ...mono, color: "rgba(255,255,255,.62)" }}>THE PREMISE</div>
-          <p style={{ ...display, marginTop: 20, fontSize: "clamp(40px,7vw,104px)", lineHeight: .9, maxWidth: "14ch" }}>A healthy living planet is infrastructure for human life.</p>
-          <p style={{ marginTop: 28, maxWidth: 760, color: "rgba(255,255,255,.8)", fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all sit inside living systems. Ecological integrity is not somewhere outside human self-interest.</p>
-        </div>
-      </section>
-
-      <section style={{ background: T.paper, color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(60px,8vw,120px) clamp(20px,5vw,72px)" }}>
-          <Reveal>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "end", flexWrap: "wrap" }}>
-              <div><div style={{ ...mono, color: T.blue }}>BEST OF 4PLANET</div><h2 style={{ ...display, marginTop: 10, fontSize: "clamp(34px,5vw,68px)", lineHeight: .94 }}>Start with a living world.</h2></div>
-              <Link to="/atlas" style={{ ...mono, color: T.blue, textDecoration: "none" }}>EXPLORE EVERYTHING IN ATLAS →</Link>
-            </div>
-          </Reveal>
-          <div className="home-feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: "clamp(34px,5vw,72px) clamp(22px,3vw,40px)", marginTop: "clamp(36px,5vw,64px)" }}>
-            {FEATURED.map((item) => <FeaturedCard key={item.title} item={item} />)}
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(70px,10vw,150px) clamp(20px,5vw,72px)" }}>
+          <div style={{ ...mono, color: "rgba(255,255,255,.6)" }}>THE PREMISE</div>
+          <p style={{ ...display, margin: "18px 0 0", fontSize: "clamp(40px,7vw,98px)", lineHeight: .9, maxWidth: "13ch" }}>A healthy living planet is infrastructure for human life.</p>
+          <div className="home-premise-foot" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 30, alignItems: "end", marginTop: 30 }}>
+            <p style={{ margin: 0, maxWidth: 760, color: "rgba(255,255,255,.78)", fontSize: "clamp(16px,1.55vw,20px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all sit inside living systems. 4PLANET connects understanding to credible action without pretending uncertainty is proof.</p>
+            <Link to="/about/story" style={{ ...mono, color: "#fff", textDecoration: "none" }}>READ THE STORY →</Link>
           </div>
         </div>
       </section>
 
       <section id="worlds" style={{ background: "#050505", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(60px,8vw,110px) clamp(20px,5vw,72px) 0" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,7vw,92px) clamp(20px,5vw,72px) 0" }}>
           <div style={{ ...mono, color: T.acid }}>THE LIVING WORLD</div>
-          <h2 style={{ ...display, marginTop: 12, fontSize: "clamp(36px,5.4vw,76px)", lineHeight: .92, maxWidth: "12ch" }}>Four connected domains.</h2>
-          <p style={{ marginTop: 20, maxWidth: 700, color: "rgba(255,255,255,.62)", fontSize: "clamp(16px,1.45vw,19px)", lineHeight: 1.6 }}>The Planetary Map describes the world. Domains make that world navigable. Missions choose where 4PLANET acts.</p>
+          <div className="home-world-intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(24px,6vw,90px)", alignItems: "end", marginTop: 12 }}>
+            <h2 style={{ ...display, margin: 0, fontSize: "clamp(36px,5.2vw,70px)", lineHeight: .92, maxWidth: "10ch" }}>Four connected domains.</h2>
+            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.62)", fontSize: "clamp(15px,1.35vw,18px)", lineHeight: 1.6 }}>The Planetary Map describes the world. Domains make that world navigable. Missions select where 4PLANET acts — without turning the homepage into a catalogue of all sixteen.</p>
+          </div>
         </div>
-        <div className="home-world-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", marginTop: "clamp(38px,5vw,70px)" }}>
-          {ORDER.map((dk) => <WorldTile key={dk} dk={dk} />)}
+        <div className="home-world-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(34px,5vw,58px)", background: "rgba(255,255,255,.12)" }}>
+          {ORDER.map((dk) => <WorldPanel key={dk} dk={dk} />)}
         </div>
       </section>
 
       <section style={{ background: "#fff", color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,9vw,130px) clamp(20px,5vw,72px)" }}>
-          <div className="culture-home" style={{ display: "grid", gridTemplateColumns: "minmax(0,.82fr) minmax(0,1.18fr)", gap: "clamp(34px,7vw,110px)", alignItems: "center" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(70px,9vw,126px) clamp(20px,5vw,72px)" }}>
+          <div className="culture-home" style={{ display: "grid", gridTemplateColumns: "minmax(0,.78fr) minmax(0,1.22fr)", gap: "clamp(34px,7vw,100px)", alignItems: "center" }}>
             <div>
-              <div style={{ ...mono, color: DOMAIN_ACCENT["4CULTURE_"] }}>4CULTURE_ · ATTENTION IS INFRASTRUCTURE TOO</div>
-              <h2 style={{ ...display, marginTop: 14, fontSize: "clamp(38px,6vw,82px)", lineHeight: .91, maxWidth: "10ch" }}>What people notice shapes what they protect.</h2>
-              <p style={{ marginTop: 24, maxWidth: 620, color: T.dim, fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.65 }}>M4GAZINE, film, art and play translate planetary intelligence into stories and experiences people can actually carry with them.</p>
+              <div style={{ ...mono, color: DOMAIN_ACCENT["4CULTURE_"] }}>4CULTURE_ · M4GAZINE</div>
+              <h2 style={{ ...display, margin: "14px 0 0", fontSize: "clamp(40px,6vw,80px)", lineHeight: .9, maxWidth: "9ch" }}>Attention changes what becomes possible.</h2>
+              <p style={{ margin: "22px 0 0", maxWidth: 570, color: T.dim, fontSize: "clamp(16px,1.35vw,18px)", lineHeight: 1.62 }}>M4GAZINE, film, art and play translate planetary intelligence into stories and experiences people can carry into culture.</p>
               <Link to="/magazine" style={{ ...mono, display: "inline-flex", marginTop: 24, color: DOMAIN_ACCENT["4CULTURE_"], textDecoration: "none" }}>ENTER M4GAZINE →</Link>
             </div>
-            <div style={{ position: "relative", minHeight: "clamp(500px,60vw,780px)", overflow: "hidden", background: "#050505" }}>
+            <Link to="/magazine" style={{ position: "relative", display: "block", minHeight: "clamp(430px,54vw,720px)", overflow: "hidden", background: "#050505" }}>
               <img src={img("cultureAnchor").src} alt={img("cultureAnchor").alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: img("cultureAnchor").objectPosition ?? "50% 50%" }} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: T.paper, color: T.ink }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,8vw,112px) clamp(20px,5vw,72px)" }}>
+          <div className="home-action-grid" style={{ display: "grid", gridTemplateColumns: "minmax(280px,.7fr) minmax(0,1.3fr)", gap: "clamp(40px,8vw,120px)" }}>
+            <div>
+              <div style={{ ...mono, color: T.blue }}>ACTION PATHWAYS · CURRENT PUBLIC STATUS</div>
+              <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(34px,5vw,66px)", lineHeight: .93, maxWidth: "10ch" }}>Understand first. Then help.</h2>
+              <p style={{ margin: "20px 0 0", maxWidth: 500, color: T.dim, fontSize: "clamp(15px,1.25vw,18px)", lineHeight: 1.6 }}>INTEL → ECOSYSTEM → SOLUTIONS → ACCELERATE → PROOF. Action stays closed or clearly marked while delivery and verification are still being built.</p>
+            </div>
+            <div style={{ borderTop: `1px solid ${T.lineStrong}` }}>
+              {PATHWAYS.map(([title, status, to], index) => (
+                <Link key={title} to={to} className="home-pathway" style={{ display: "grid", gridTemplateColumns: "38px 1fr auto", gap: "clamp(12px,3vw,28px)", alignItems: "center", padding: "clamp(20px,2.5vw,28px) 0", borderBottom: `1px solid ${T.line}`, color: T.ink, textDecoration: "none" }}>
+                  <span style={{ ...mono, color: T.blue }}>0{index + 1}</span>
+                  <span style={{ ...display, fontSize: "clamp(18px,2vw,27px)" }}>{title}</span>
+                  <span style={{ ...mono, color: T.dim }}>{status}</span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section id="how" style={{ background: T.paper, color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,9vw,130px) clamp(20px,5vw,72px)" }}>
-          <div style={{ ...mono, color: T.blue }}>HOW 4PLANET MOVES</div>
-          <h2 style={{ ...display, marginTop: 12, fontSize: "clamp(34px,5vw,70px)", lineHeight: .94, maxWidth: "13ch" }}>From understanding to action — without skipping the truth.</h2>
-          <div className="home-process" style={{ display: "grid", gridTemplateColumns: "repeat(5,minmax(0,1fr))", marginTop: "clamp(38px,5vw,64px)", borderTop: `1px solid ${T.lineStrong}` }}>
-            {[
-              ["01", "INTEL", "Understand what is happening and what is known."],
-              ["02", "ECOSYSTEM", "Map the species, places, actors and relationships."],
-              ["03", "SOLUTIONS", "Identify what could reduce pressure or restore function."],
-              ["04", "ACCELERATE", "Bring credible actors, capital and participation together."],
-              ["05", "PROOF", "Show what was actually delivered and evidenced."],
-            ].map(([no, title, line]) => <div key={no} style={{ padding: "24px clamp(12px,2vw,24px) 0 0" }}><div style={{ ...mono, color: T.blue }}>{no}</div><div style={{ ...display, marginTop: 10, fontSize: "clamp(18px,2vw,25px)" }}>{title}</div><p style={{ marginTop: 10, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{line}</p></div>)}
+      <Section pad="clamp(64px,8vw,112px)">
+        <div className="home-take-part" style={{ display: "grid", gridTemplateColumns: "minmax(250px,.7fr) minmax(0,1.3fr)", gap: "clamp(34px,8vw,120px)", alignItems: "start" }}>
+          <div>
+            <div style={{ ...mono, color: T.blue }}>TAKE PART</div>
+            <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(34px,5vw,64px)", lineHeight: .93, maxWidth: "9ch" }}>If you live here, you can help.</h2>
           </div>
-        </div>
-      </section>
-
-      <section style={{ background: "#fff", color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(60px,8vw,120px) clamp(20px,5vw,72px)" }}>
-          <div style={{ ...mono, color: T.blue }}>ACTION PATHWAYS · CURRENT PUBLIC STATUS</div>
-          <h2 style={{ ...display, marginTop: 12, fontSize: "clamp(32px,4.6vw,64px)", lineHeight: .95, maxWidth: "13ch" }}>Nothing opens before the delivery model is ready.</h2>
-          <div style={{ marginTop: 34, borderTop: `1px solid ${T.lineStrong}` }}>
-            {PATHWAYS.map(([no, title, status, to]) => (
-              <Link key={no} to={to} className="home-pathway" style={{ display: "grid", gridTemplateColumns: "54px 1fr auto auto", gap: "clamp(12px,3vw,34px)", alignItems: "center", padding: "clamp(21px,3vw,30px) 0", borderBottom: `1px solid ${T.line}`, textDecoration: "none", color: T.ink }}>
-                <span style={{ ...mono, color: T.blue }}>{no}</span><span style={{ ...display, fontSize: "clamp(19px,2.4vw,30px)" }}>{title}</span><span style={{ ...mono, color: T.dim }}>{status}</span><span style={{ ...mono, color: T.blue }}>VIEW →</span>
+          <div style={{ borderTop: `1px solid ${T.lineStrong}` }}>
+            {[
+              ["4PEOPLE", "Follow the work and participate as credible pathways open.", "/join"],
+              ["4BRANDS", "Build environmental action people can understand and follow.", "/brands"],
+              ["4PARTNERS", "Bring field delivery and ecological work into the system.", "/partners"],
+              ["4FUNDERS", "Help build long-term infrastructure for ecological action.", "/funders"],
+            ].map(([title, line, to]) => (
+              <Link key={title} to={to} className="home-participate" style={{ display: "grid", gridTemplateColumns: "minmax(120px,.35fr) minmax(0,1fr) auto", gap: 24, alignItems: "baseline", padding: "20px 0", borderBottom: `1px solid ${T.line}`, color: T.ink, textDecoration: "none" }}>
+                <span style={{ ...display, fontSize: "clamp(18px,2vw,26px)" }}>{title}</span>
+                <span style={{ color: T.dim, fontSize: 14, lineHeight: 1.5 }}>{line}</span>
+                <span style={{ ...mono, color: T.blue }}>ENTER →</span>
               </Link>
             ))}
           </div>
         </div>
-      </section>
-
-      <Section pad="clamp(64px,9vw,130px)">
-        <div style={{ ...mono, color: T.blue }}>TAKE PART</div>
-        <h2 style={{ ...display, marginTop: 12, fontSize: "clamp(34px,5vw,68px)", lineHeight: .94, maxWidth: "12ch" }}>There is more than one way to help.</h2>
-        <div className="participate-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", marginTop: 36, borderTop: `1px solid ${T.lineStrong}`, borderLeft: `1px solid ${T.line}` }}>
-          {[["4PEOPLE", "Follow the work and participate as credible pathways open.", "/join"], ["4BRANDS", "Build credible environmental action people can understand and follow.", "/brands"], ["4PARTNERS", "Bring field delivery and ecological work into the system.", "/partners"], ["4FUNDERS", "Help build long-term public infrastructure for ecological action.", "/funders"]].map(([title, line, to]) => (
-            <Link key={title} to={to} style={{ padding: "clamp(24px,3vw,36px)", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, textDecoration: "none", color: T.ink }}>
-              <div style={{ ...display, fontSize: "clamp(21px,2.2vw,30px)" }}>{title}</div><p style={{ marginTop: 12, color: T.dim, fontSize: 14, lineHeight: 1.55 }}>{line}</p><div style={{ ...mono, color: T.blue, marginTop: 18 }}>ENTER →</div>
-            </Link>
-          ))}
-        </div>
       </Section>
 
       <style>{`
-        .home-product-row,.home-pathway{transition:padding-left .18s ease}.home-product-row:hover,.home-pathway:hover{padding-left:8px}
-        .home-feature img,.home-world img{transition:transform .65s cubic-bezier(.2,.7,.2,1)}.home-feature:hover img,.home-world:hover img{transform:scale(1.018)}
-        @media(max-width:900px){.home-process{grid-template-columns:repeat(2,minmax(0,1fr))!important}.participate-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.culture-home{grid-template-columns:1fr!important}}
-        @media(max-width:720px){.home-product-row{grid-template-columns:42px 1fr auto!important}.home-product-row>span:nth-child(3){grid-column:2/4}.home-feature-grid,.home-world-grid{grid-template-columns:1fr!important}.home-pathway{grid-template-columns:42px 1fr auto!important}.home-pathway>span:nth-child(3){grid-column:2}.home-process,.participate-grid{grid-template-columns:1fr!important}}
-        @media(prefers-reduced-motion:reduce){.home-product-row,.home-pathway,.home-feature img,.home-world img{transition:none!important}.home-product-row:hover,.home-pathway:hover{padding-left:0}.home-feature:hover img,.home-world:hover img{transform:none}}
+        .home-lens,.home-pathway,.home-participate{transition:transform .2s ease,opacity .2s ease}.home-lens:hover,.home-pathway:hover,.home-participate:hover{transform:translateX(5px)}
+        .home-world img,.home-journey img,.culture-home img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}.home-world:hover img,.home-journey:hover img,.culture-home a:hover img{transform:scale(1.018)}
+        @media(max-width:900px){.home-lens-intro,.home-world-intro,.home-premise-foot,.home-action-grid,.home-take-part,.culture-home{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.home-journey-grid{grid-template-columns:1fr!important}.culture-home{gap:36px!important}}
+        @media(max-width:680px){.home-lens-grid,.home-world-grid{grid-template-columns:1fr!important}.home-journey--primary>div{min-height:520px!important}.home-participate{grid-template-columns:1fr auto!important;gap:8px 18px!important}.home-participate>span:nth-child(2){grid-column:1/3}.home-pathway{grid-template-columns:32px 1fr!important}.home-pathway>span:nth-child(3){grid-column:2}.home-lens{border-bottom:1px solid ${T.line}}}
+        @media(prefers-reduced-motion:reduce){.home-lens,.home-pathway,.home-participate,.home-world img,.home-journey img,.culture-home img{transition:none!important}.home-lens:hover,.home-pathway:hover,.home-participate:hover{transform:none}.home-world:hover img,.home-journey:hover img,.culture-home a:hover img{transform:none}}
       `}</style>
     </PublicShell>
   );
