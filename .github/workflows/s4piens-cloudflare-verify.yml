@@ -1,0 +1,95 @@
+name: S4PIENS Cloudflare Verify
+
+on:
+  pull_request:
+    branches:
+      - sandbox/s4piens-narrative-journey-v04
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  S4PIENS_DOMAIN: s4piens.com
+  S4PIENS_WWW_DOMAIN: www.s4piens.com
+  PAGES_PROJECT: 4planet-05
+  S4PIENS_BRANCH: build/s4piens-universe-domain
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Verify token and zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zones="$(curl -fsS "${auth[@]}" "${api}/zones?name=${S4PIENS_DOMAIN}")"
+          echo "$zones" | jq -e '.success == true and (.result|length) == 1' >/dev/null
+          zone_id="$(echo "$zones" | jq -r '.result[0].id')"
+          account_id="$(echo "$zones" | jq -r '.result[0].account.id')"
+          echo "::add-mask::${zone_id}"
+          echo "::add-mask::${account_id}"
+          echo "CF_ZONE_ID=${zone_id}" >> "$GITHUB_ENV"
+          echo "CF_ACCOUNT_ID=${account_id}" >> "$GITHUB_ENV"
+          echo "PASS token + zone access"
+
+      - name: Verify Pages project and S4PIENS branch deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          project="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}")"
+          echo "$project" | jq -e '.success == true and .result.name == "4planet-05"' >/dev/null
+          deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=100")"
+          count="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | length')"
+          if [ "$count" -lt 1 ]; then
+            echo "No S4PIENS branch deployment found"
+            exit 1
+          fi
+          alias="$(echo "$deployments" | jq -r --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | sort_by(.created_on) | reverse | .[0].aliases[]? | select(endswith(".4planet-05.pages.dev")) | select((split(".")[0] | test("^[0-9a-f]{8,}$")) | not)' | head -n 1)"
+          echo "Latest S4PIENS branch deployments: ${count}"
+          echo "Stable branch alias: ${alias:-not-found}"
+          test -n "$alias"
+
+      - name: Verify Pages custom domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          domains="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains")"
+          echo "$domains" | jq -e '.success == true' >/dev/null
+          for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
+            state="$(echo "$domains" | jq -r --arg d "$domain" '.result[]? | select(.name==$d) | .status')"
+            echo "${domain}: ${state:-missing}"
+            test -n "$state"
+          done
+
+      - name: Verify DNS
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
+            records="$(curl -fsS "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records?name=${domain}")"
+            echo "$records" | jq -e '.success == true and (.result|length) == 1' >/dev/null
+            echo "$records" | jq -r '.result[0] | "DNS " + .name + " " + .type + " -> " + .content + " proxied=" + (.proxied|tostring)'
+          done
+
+      - name: Public routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens"; do
+            code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)"
+            echo "${url} -> HTTP ${code}"
+            [[ "$code" =~ ^(200|301|302|307|308)$ ]]
+          done
