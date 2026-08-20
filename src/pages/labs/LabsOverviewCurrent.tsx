@@ -1,11 +1,14 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   childrenOf,
   descendantsOf,
   earlyStageProjects,
   founderQueue,
+  labTracks,
   portfolioStats,
+  productSurfaces,
   projectBySlug,
+  projectHomes,
   projects,
   projectionState,
   recentSystemMoves,
@@ -13,15 +16,16 @@ import {
   verifiedAt,
   type LabProject,
 } from "./labsFreshProjection";
-import { withCurrentProjectMeta } from "./labsCurrentMeta";
+import { currentControlFor, withGoldMeta } from "./labsGoldMeta";
 import "./labs.css";
+import "./labsGold.css";
 
 type Theme = "dark" | "light";
 type InspectHandler = (project: LabProject) => void;
+type IndexFilter = "ALL" | "PROJECT HOMES" | "ACTIVE" | "PRODUCT" | "LABS" | "CONFLICTS";
 
 function isLabsHost() {
-  if (typeof window === "undefined") return false;
-  return window.location.hostname.toLowerCase() === "labs.4planet.org";
+  return typeof window !== "undefined" && window.location.hostname.toLowerCase() === "labs.4planet.org";
 }
 
 function labHref(slug = "") {
@@ -35,47 +39,16 @@ function accentStyle(project: LabProject) {
   return { "--accent": accent } as CSSProperties;
 }
 
-function progressOf(project: LabProject) {
-  const milestones = project.milestones ?? [];
-  if (!milestones.length) return null;
-  const done = milestones.filter((item) => item.done).length;
-  return { done, total: milestones.length };
-}
-
-function nearestActiveTask(project: LabProject) {
-  return project.tasks?.find((task) => ["ACTIVE", "NEXT", "GATED", "AS NEEDED"].includes(task.state)) ?? project.tasks?.[0];
-}
-
-function firstFounderDecision(project: LabProject) {
-  return project.founderDecisions?.[0];
+function humanText(text: string) {
+  return text.replace(/\b[a-f0-9]{32,40}\b/gi, "exact tested artifact").replace(/\s+/g, " ").trim();
 }
 
 function GridRails() {
-  return (
-    <div className="labs-rails" aria-hidden="true">
-      {Array.from({ length: 13 }, (_, index) => <span key={index} />)}
-    </div>
-  );
+  return <div className="labs-rails" aria-hidden="true">{Array.from({ length: 13 }, (_, index) => <span key={index} />)}</div>;
 }
 
 function Glyph({ project }: { project: LabProject }) {
-  const glyph = project.kind === "DOMAIN"
-    ? "◫"
-    : project.kind === "MISSION"
-      ? "·"
-      : project.slug === "odin"
-        ? "✦"
-        : project.slug === "p4nther"
-          ? "◇"
-          : project.slug === "sandbox"
-            ? "□"
-            : project.title === "BRAIN" || project.title === "NATUREBRAIN"
-              ? "◎"
-              : project.kind === "PRODUCT"
-                ? "▣"
-                : project.kind === "LAB"
-                  ? "◇"
-                  : "＋";
+  const glyph = project.kind === "DOMAIN" ? "◫" : project.kind === "MISSION" ? "·" : project.kind === "PRODUCT" ? "▣" : project.kind === "LAB" ? "◇" : project.title.includes("BRAIN") ? "◎" : project.slug === "odin" ? "✦" : "＋";
   return <span className="labs-glyph" aria-hidden="true">{glyph}</span>;
 }
 
@@ -86,112 +59,56 @@ function Status({ project }: { project: LabProject }) {
 function Header({ theme, setTheme }: { theme: Theme; setTheme: (theme: Theme) => void }) {
   return (
     <header className="labs-header">
-      <a className="labs-brand" href={labHref()}>
-        <span className="labs-online-dot" aria-hidden="true" />
-        4PLANET LABS
-      </a>
-      <div className="labs-header-center">
-        <span>MISSION OS</span>
-        <span>{projectionState}</span>
-        <span className="labs-online"><i /> ONLINE</span>
-      </div>
+      <a className="labs-brand" href={labHref()}><span className="labs-online-dot" aria-hidden="true" />4PLANET LABS</a>
+      <div className="labs-header-center"><span>HUMAN PROJECT OS</span><span>{projectionState}</span><span className="labs-online"><i /> ONLINE</span></div>
       <div className="labs-header-tools">
         <span className="labs-snapshot">SNAPSHOT {verifiedAt}</span>
         <div className="labs-theme-switch" aria-label="Appearance">
           <button type="button" className={theme === "dark" ? "is-active" : ""} onClick={() => setTheme("dark")} aria-pressed={theme === "dark"}>DARK</button>
           <button type="button" className={theme === "light" ? "is-active" : ""} onClick={() => setTheme("light")} aria-pressed={theme === "light"}>WHITE</button>
         </div>
-        <span className="labs-founder-mark">FOUNDER</span>
       </div>
     </header>
   );
 }
 
 function FreshnessStrip() {
-  return (
-    <div className="labs-freshness labs-grid-section">
-      <span>TRUTH MODE</span>
-      <strong>{projectionState}</strong>
-      <span>BRAIN remains the authority · 20 AUG RECONCILIATION · CURRENT BRAIN + CURRENT GITHUB READBACK · MISSING VALUES STAY UNKNOWN</span>
-    </div>
-  );
+  return <div className="labs-freshness labs-grid-section"><span>TRUTH MODE</span><strong>{projectionState}</strong><span>BRAIN remains authority · goals + economics from Founder Control · code state from current GitHub reconciliation · missing values stay UNKNOWN</span></div>;
 }
 
-function CommandStrip({ onInspect }: { onInspect: InspectHandler }) {
-  const firstFounder = founderQueue[0] ? projectBySlug(founderQueue[0].slug) : undefined;
-  const firstConflict = projects.find((project) => project.state === "CONFLICT");
-  const firstMoving = projects.find((project) => project.kind !== "ROOT" && ["ACTIVE", "BUILDING"].includes(project.state));
-  const commands: Array<{ value: string | number; label: string; note: string; project?: LabProject }> = [
-    { value: portfolioStats.founder, label: "FOUNDER ACTIONS", note: firstFounder?.title ?? "No public-safe action projected", project: firstFounder },
-    { value: portfolioStats.aiActive, label: "AI NEXT / ACTIVE", note: "Derived from projected tasks", project: firstMoving },
-    { value: portfolioStats.active, label: "MOVING PROJECTS", note: "Active / building / public", project: firstMoving },
-    { value: earlyStageProjects.length, label: "EARLY STAGE", note: "Bounded code + system labs", project: earlyStageProjects[0] },
-    { value: portfolioStats.conflicts, label: "OPEN CONFLICTS", note: firstConflict?.title ?? "None", project: firstConflict },
-  ];
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
+function CommandStrip({ filter, setFilter }: { filter: IndexFilter; setFilter: (filter: IndexFilter) => void }) {
+  const cards: Array<{ value: number; label: string; note: string; filter: IndexFilter; target: string }> = [
+    { value: portfolioStats.projectHomes, label: "PROJECT HOMES", note: "Canonical 4PLANET Projects", filter: "PROJECT HOMES", target: "project-index" },
+    { value: portfolioStats.activeProjectHomes, label: "ACTIVE NOW", note: "Active / building Project Homes", filter: "ACTIVE", target: "project-index" },
+    { value: productSurfaces.length, label: "PRODUCT SURFACES", note: "ATLAS · SPECIES · LIVING SYSTEMS · IMPACT", filter: "PRODUCT", target: "project-index" },
+    { value: portfolioStats.labTracks, label: "LAB / PROTOTYPES", note: "Bounded code + reference tracks", filter: "LABS", target: "project-index" },
+    { value: portfolioStats.conflicts, label: "OPEN CONFLICTS", note: "Explicit — never silently resolved", filter: "CONFLICTS", target: "project-index" },
+  ];
   return (
     <section className="labs-command labs-grid-section" aria-label="Founder command">
-      <div className="labs-section-head labs-section-head--command">
-        <span>FOUNDER COMMAND</span>
-        <span>Current BRAIN projection · no invented progress %</span>
-      </div>
+      <div className="labs-section-head labs-section-head--command"><span>FOUNDER COMMAND</span><span>click = filter project index · never jumps to an arbitrary project</span></div>
       <div className="labs-command-grid">
-        {commands.map((item) => (
-          <button
-            type="button"
-            className="labs-command-card"
-            key={item.label}
-            onMouseEnter={() => item.project && onInspect(item.project)}
-            onFocus={() => item.project && onInspect(item.project)}
-            onClick={() => item.project && (window.location.href = labHref(item.project.slug))}
-            disabled={!item.project}
-          >
-            <strong>{item.value}</strong>
-            <span>{item.label}</span>
-            <small>{item.note}</small>
-            {item.project && <b aria-hidden="true">→</b>}
-          </button>
-        ))}
+        {cards.map((item) => <button type="button" className={`labs-command-card ${filter === item.filter ? "is-selected" : ""}`} key={item.label} onClick={() => { setFilter(item.filter); scrollTo(item.target); }}><strong>{item.value}</strong><span>{item.label}</span><small>{item.note}</small><b aria-hidden="true">↓</b></button>)}
       </div>
     </section>
   );
 }
 
 function HoverIntel({ project }: { project: LabProject }) {
-  return (
-    <div className="labs-box-hover" aria-hidden="true">
-      <span>WHY</span><p>{project.why}</p>
-      <span>NOW</span><p>{project.now}</p>
-      <span>NEXT</span><p>{project.next}</p>
-    </div>
-  );
+  const control = currentControlFor(project);
+  return <div className="labs-box-hover" aria-hidden="true"><span>GOAL</span><p>{control.mainGoal}</p><span>NOW</span><p>{humanText(project.now)}</p><span>NEXT</span><p>{control.nextGate}</p></div>;
 }
 
 function ProjectBox({ project, onInspect, compact = false, early = false }: { project: LabProject; onInspect: InspectHandler; compact?: boolean; early?: boolean }) {
-  const progress = progressOf(project);
-  const task = nearestActiveTask(project);
   return (
-    <a
-      className={`labs-project-box ${compact ? "labs-project-box--compact" : ""} ${early ? "labs-project-box--early" : ""}`}
-      style={accentStyle(project)}
-      href={labHref(project.slug)}
-      onMouseEnter={() => onInspect(project)}
-      onFocus={() => onInspect(project)}
-      data-state={project.state}
-      data-kind={project.kind}
-    >
-      <div className="labs-box-top">
-        <Glyph project={project} />
-        <Status project={project} />
-      </div>
-      <div className="labs-box-title">
-        <strong>{project.title}</strong>
-        <span>{project.eyebrow}</span>
-      </div>
-      <div className="labs-box-bottom">
-        <span>{task ? task.state : project.priority}</span>
-        <span>{progress ? `${progress.done}/${progress.total} MILESTONES` : project.priority}</span>
-      </div>
+    <a className={`labs-project-box ${compact ? "labs-project-box--compact" : ""} ${early ? "labs-project-box--early" : ""}`} style={accentStyle(project)} href={labHref(project.slug)} onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)} data-state={project.state} data-kind={project.kind}>
+      <div className="labs-box-top"><Glyph project={project} /><Status project={project} /></div>
+      <div className="labs-box-title"><strong>{project.title}</strong><span>{project.eyebrow}</span></div>
+      <div className="labs-box-bottom"><span>{project.projectClass ?? project.kind}</span><span>{project.priority}</span></div>
       <HoverIntel project={project} />
     </a>
   );
@@ -201,89 +118,31 @@ function DomainPanel({ project, onInspect }: { project: LabProject; onInspect: I
   const missions = childrenOf(project.slug).filter((item) => item.kind === "MISSION");
   return (
     <section className="labs-domain" style={accentStyle(project)}>
-      <a href={labHref(project.slug)} className="labs-domain-head" onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)}>
-        <div><Glyph project={project} /><span>{project.title}</span></div>
-        <small>{missions.length} MISSIONS</small>
-      </a>
-      <div className="labs-domain-missions">
-        {missions.map((missionProject) => (
-          <a className="labs-mission-row" href={labHref(missionProject.slug)} key={missionProject.slug} onMouseEnter={() => onInspect(missionProject)} onFocus={() => onInspect(missionProject)} data-state={missionProject.state}>
-            <span>{missionProject.title}</span>
-            <small>{missionProject.state === "CONFLICT" ? "CONFLICT" : missionProject.priority}</small>
-          </a>
-        ))}
-      </div>
+      <a href={labHref(project.slug)} className="labs-domain-head" onMouseEnter={() => onInspect(project)} onFocus={() => onInspect(project)}><div><Glyph project={project} /><span>{project.title}</span></div><small>{missions.length} MISSIONS</small></a>
+      <div className="labs-domain-missions">{missions.map((mission) => <a className="labs-mission-row" href={labHref(mission.slug)} key={mission.slug} onMouseEnter={() => onInspect(mission)} onFocus={() => onInspect(mission)} data-state={mission.state}><span>{mission.title}</span><small>{mission.state === "CONFLICT" ? "CONFLICT" : mission.priority}</small></a>)}</div>
     </section>
   );
 }
 
-const coreOrder = [
-  "4planet/product",
-  "4planet/naturebrain",
-  "4planet/capital",
-  "4planet/field-partners",
-  "4planet/research",
-  "4planet/brand",
-  "4planet/content",
-  "4planet/4mbassadors",
-];
-
-const leadingProductSlugs = [
-  "4planet/product/one-interface",
-  "4planet/product/atlas",
-  "4planet/e4rth/species",
-  "4planet/product/living-systems",
-  "4planet/product/impact",
-];
+const coreOrder = ["4planet/strategy","4planet/product","4planet/naturebrain","4planet/proof","4planet/capital","4planet/company","4planet/relations","4planet/solutions","4planet/economy","4planet/brand","4planet/content","4planet/field-partners","4planet/research","4planet/4mbassadors","4planet/digital-pitch","4planet/labs-system"];
+const leadingProductSlugs = ["4planet/product/one-interface","4planet/product/atlas","4planet/e4rth/species","4planet/product/living-systems","4planet/product/impact"];
 
 function FourPlanetUniverse({ root, onInspect }: { root: LabProject; onInspect: InspectHandler }) {
   const children = childrenOf(root.slug);
-  const coreUnsorted = children.filter((project) => project.kind === "CORE" || project.kind === "SYSTEM");
-  const core = [...coreUnsorted].sort((a, b) => {
-    const aIndex = coreOrder.indexOf(a.slug);
-    const bIndex = coreOrder.indexOf(b.slug);
-    return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-  });
-  const leadingProducts = leadingProductSlugs
-    .map((slug) => projectBySlug(slug))
-    .filter((project): project is LabProject => Boolean(project));
+  const core = children.filter((project) => project.kind === "CORE" || project.kind === "SYSTEM" || project.projectClass === "PROJECT HOME").sort((a,b) => (coreOrder.indexOf(a.slug) < 0 ? 999 : coreOrder.indexOf(a.slug)) - (coreOrder.indexOf(b.slug) < 0 ? 999 : coreOrder.indexOf(b.slug)));
+  const leading = leadingProductSlugs.map(projectBySlug).filter((project): project is LabProject => Boolean(project));
   const domains = children.filter((project) => project.kind === "DOMAIN");
-
   return (
     <section className="labs-universe labs-universe--4planet" style={accentStyle(root)}>
-      <a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--hero" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}>
-        <div>
-          <span className="labs-label">01 / PRIMARY PROJECT UNIVERSE</span>
-          <h2>4PLANET</h2>
-          <p>{root.summary}</p>
-        </div>
-        <div className="labs-planet-visual" aria-hidden="true"><span /></div>
-        <div className="labs-universe-meta">
-          <Status project={root} />
-          <span>{descendantsOf(root.slug).length} PROJECT VIEWS</span>
-          <span>4 DOMAINS</span>
-        </div>
-      </a>
-
-      <div className="labs-subhead"><span>ORGANISATION + SHARED MACHINE</span><span>core control / truth / capital / delivery</span></div>
-      <div className="labs-core-grid">
-        {core.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}
-      </div>
-
-      <div className="labs-subhead"><span>LEADING PRODUCT SURFACES</span><span>same Project Homes · surfaced here for direct access</span></div>
-      <div className="labs-core-grid labs-leading-product-grid">
-        {leadingProducts.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}
-      </div>
-
-      <div className="labs-subhead"><span>DOMAINS → MISSIONS</span><span>Wave 01 operational entry points</span></div>
-      <div className="labs-domain-grid">
-        {domains.map((domain) => <DomainPanel key={domain.slug} project={domain} onInspect={onInspect} />)}
-      </div>
-
-      <div className="labs-subhead labs-subhead--early"><span>EARLY STAGE / CODE + SYSTEM LABS</span><span>{earlyStageProjects.length} bounded tracks · isolated until promoted</span></div>
-      <div className="labs-early-grid">
-        {earlyStageProjects.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact early />)}
-      </div>
+      <a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--hero" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}><div><span className="labs-label">01 / PRIMARY PROJECT UNIVERSE</span><h2>4PLANET</h2><p>{root.summary}</p></div><div className="labs-planet-visual" aria-hidden="true"><span /></div><div className="labs-universe-meta"><Status project={root} /><span>{projectHomes.length} PROJECT HOMES</span><span>4 DOMAINS</span></div></a>
+      <div className="labs-subhead"><span>ORGANISATION + SHARED MACHINE</span><span>Project Homes / truth / proof / capital / company / economy</span></div>
+      <div className="labs-core-grid">{core.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div>
+      <div className="labs-subhead"><span>LEADING PRODUCT SURFACES</span><span>same canonical projects · direct access</span></div>
+      <div className="labs-core-grid labs-leading-product-grid">{leading.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div>
+      <div className="labs-subhead"><span>DOMAINS → MISSIONS</span><span>16 Wave-01 Mission Project Homes</span></div>
+      <div className="labs-domain-grid">{domains.map((domain) => <DomainPanel key={domain.slug} project={domain} onInspect={onInspect} />)}</div>
+      <div id="labs-tracks" className="labs-subhead labs-subhead--early"><span>LAB / PROTOTYPE / REFERENCE TRACKS</span><span>{labTracks.length} bounded tracks · not automatically Project Homes</span></div>
+      <div className="labs-early-grid">{labTracks.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact early />)}</div>
     </section>
   );
 }
@@ -291,98 +150,81 @@ function FourPlanetUniverse({ root, onInspect }: { root: LabProject; onInspect: 
 function UniversePanel({ root, index, onInspect }: { root: LabProject; index: number; onInspect: InspectHandler }) {
   if (root.slug === "4planet") return <FourPlanetUniverse root={root} onInspect={onInspect} />;
   const children = childrenOf(root.slug);
-  return (
-    <section className={`labs-universe labs-universe--${root.universe.toLowerCase()}`} style={accentStyle(root)}>
-      <a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--compact" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}>
-        <div className="labs-universe-symbol"><Glyph project={root} /></div>
-        <div>
-          <span className="labs-label">{String(index + 1).padStart(2, "0")} / {root.eyebrow}</span>
-          <h2>{root.title}</h2>
-          <p>{root.summary}</p>
-        </div>
-        <div className="labs-universe-meta"><Status project={root} /><span>{children.length} SUBPROJECTS</span></div>
-      </a>
-      <div className="labs-secondary-grid">
-        {children.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}
-      </div>
-    </section>
-  );
-}
-
-function MiniTask({ task }: { task: NonNullable<LabProject["tasks"]>[number] }) {
-  return <div className="labs-mini-task"><span>{task.owner}</span><p>{task.text}</p><small>{task.state}</small></div>;
+  return <section className={`labs-universe labs-universe--${root.universe.toLowerCase()}`} style={accentStyle(root)}><a href={labHref(root.slug)} className="labs-universe-head labs-universe-head--compact" onMouseEnter={() => onInspect(root)} onFocus={() => onInspect(root)}><div className="labs-universe-symbol"><Glyph project={root} /></div><div><span className="labs-label">{String(index + 1).padStart(2,"0")} / {root.eyebrow}</span><h2>{root.title}</h2><p>{root.summary}</p></div><div className="labs-universe-meta"><Status project={root} /><span>{children.length} SUBPROJECTS</span></div></a><div className="labs-secondary-grid">{children.map((project) => <ProjectBox key={project.slug} project={project} onInspect={onInspect} compact />)}</div></section>;
 }
 
 function Inspector({ project }: { project: LabProject }) {
-  const progress = progressOf(project);
-  const children = childrenOf(project.slug);
-  const assets = project.assets ?? [];
-  const activeTasks = (project.tasks ?? []).filter((task) => ["ACTIVE", "NEXT", "GATED", "AS NEEDED"].includes(task.state)).slice(0, 3);
-  const founderDecision = firstFounderDecision(project);
+  const gold = withGoldMeta(project);
+  const control = gold.control;
   return (
-    <aside className="labs-inspector" style={accentStyle(project)} aria-live="polite">
-      <div className="labs-inspector-head">
-        <div><span className="labs-label">PROJECT INSPECTOR</span><h2>{project.title}</h2><p>{project.eyebrow}</p></div>
-        <Status project={project} />
-      </div>
-      <div className="labs-inspector-strip">
-        <div><span>PRIORITY</span><strong>{project.priority}</strong></div>
-        <div><span>MILESTONES</span><strong>{progress ? `${progress.done}/${progress.total}` : "UNKNOWN"}</strong></div>
-        <div><span>CHILDREN</span><strong>{children.length}</strong></div>
-        <div><span>FOUNDER</span><strong>{project.founderDecisions?.length ?? 0}</strong></div>
-      </div>
-      <section className="labs-inspector-block labs-inspector-block--truth"><span className="labs-label">CURRENT TRUTH</span><p>{project.now}</p></section>
-      <div className="labs-inspector-two">
-        <section className="labs-inspector-block"><span className="labs-label">GOAL CONTRACT</span><p>{project.next}</p></section>
-        <section className="labs-inspector-block"><span className="labs-label">AXE / AI PLAN</span><p>{project.aiPlan}</p></section>
-      </div>
-      <section className="labs-inspector-block">
-        <div className="labs-inspector-title"><span className="labs-label">PIPE / TASKS</span><span>{activeTasks.length || "0"}</span></div>
-        {activeTasks.length ? activeTasks.map((task, index) => <MiniTask key={`${task.text}-${index}`} task={task} />) : <p className="labs-unknown-copy">UNKNOWN — no current tasks are projected.</p>}
-      </section>
-      <section className={`labs-inspector-block ${founderDecision ? "labs-inspector-block--founder" : ""}`}><span className="labs-label">FOUNDER ACTION</span><p>{founderDecision ?? "No public-safe Founder blocker is projected for this project."}</p></section>
-      <section className="labs-inspector-block">
-        <div className="labs-inspector-title"><span className="labs-label">LEADING ONE / LINKED ASSETS</span><span>{assets.length}</span></div>
-        {assets.length ? <div className="labs-asset-mini-list">{assets.slice(0, 5).map((asset) => <a key={`${asset.label}-${asset.href}`} href={asset.href} target="_blank" rel="noreferrer"><span>{asset.kind}</span><strong>{asset.label}</strong><b>↗</b></a>)}</div> : <p className="labs-unknown-copy">UNKNOWN — no public-safe digital home is projected.</p>}
-      </section>
-      <section className="labs-inspector-evidence"><div><span>AUTHORITY</span><strong>{project.authority}</strong></div><div><span>FRESHNESS</span><strong>{project.freshness}</strong></div></section>
-      <a className="labs-open-project" href={labHref(project.slug)}>OPEN FULL PROJECT PAGE <span>↗</span></a>
+    <aside className="labs-inspector labs-inspector--gold" style={accentStyle(project)} aria-live="polite">
+      <div className="labs-inspector-head"><div><span className="labs-label">PROJECT INSPECTOR</span><h2>{project.title}</h2><p>{control.classification}</p></div><Status project={project} /></div>
+      <section className="labs-inspector-block labs-inspector-block--truth"><span className="labs-label">MAIN GOAL</span><p>{control.mainGoal}</p></section>
+      <section className="labs-inspector-block"><span className="labs-label">NOW</span><p>{humanText(project.now)}</p></section>
+      <section className="labs-inspector-block"><span className="labs-label">NEXT GATE</span><p>{control.nextGate}</p></section>
+      <section className="labs-inspector-block"><span className="labs-label">ECONOMICS</span><p>{control.economics}</p></section>
+      {!!control.links.length && <div className="labs-inspector-links">{control.links.slice(0,2).map((link,index) => <a className={index===0?"is-primary":""} href={link.href} target="_blank" rel="noreferrer" key={link.href}>{link.label}<b>↗</b></a>)}</div>}
+      <a className="labs-open-project" href={labHref(project.slug)}>OPEN FULL PROJECT <span>→</span></a>
     </aside>
   );
 }
 
-function FounderQueue() {
+function ProjectIndex({ filter, setFilter, onInspect }: { filter: IndexFilter; setFilter: (filter: IndexFilter) => void; onInspect: InspectHandler }) {
+  const [query,setQuery] = useState("");
+  const indexProjects = useMemo(() => projects.filter((project) => project.universe === "4PLANET" && project.slug !== "4planet"), []);
+  const filtered = indexProjects.filter((project) => {
+    const control = currentControlFor(project);
+    const matchesQuery = !query.trim() || `${project.title} ${project.eyebrow} ${project.projectId ?? ""} ${control.mainGoal}`.toLowerCase().includes(query.trim().toLowerCase());
+    if (!matchesQuery) return false;
+    if (filter === "PROJECT HOMES") return project.projectClass === "PROJECT HOME" || control.classification.includes("PROJECT HOME");
+    if (filter === "ACTIVE") return (project.projectClass === "PROJECT HOME" || control.classification.includes("PROJECT HOME")) && ["ACTIVE","BUILDING","PUBLIC"].includes(project.state);
+    if (filter === "PRODUCT") return productSurfaces.some((item) => item.slug === project.slug) || ["4planet/e4rth/species"].includes(project.slug);
+    if (filter === "LABS") return labTracks.some((item) => item.slug === project.slug) || control.classification.includes("PROTOTYPE") || control.classification.includes("REFERENCE");
+    if (filter === "CONFLICTS") return project.state === "CONFLICT";
+    return true;
+  }).sort((a,b) => a.title.localeCompare(b.title));
+
   return (
-    <section className="labs-founder-queue">
-      <div className="labs-section-head"><span>FOUNDER QUEUE</span><span>projected decisions / judgements only</span></div>
-      {founderQueue.length ? <div className="labs-founder-list">{founderQueue.map((item, index) => <a href={labHref(item.slug)} key={`${item.slug}-${item.decision}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.project}</strong><p>{item.decision}</p><b>→</b></a>)}</div> : <p className="labs-unknown-copy">No public-safe Founder decisions are projected.</p>}
+    <section id="project-index" className="labs-project-index">
+      <div className="labs-section-head"><span>ALL 4PLANET PROJECTS + CONTROLLED TRACKS</span><span>{filtered.length} shown · every row opens a real LABS detail view</span></div>
+      <div className="labs-index-tools">
+        <label><span>FIND PROJECT</span><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="ATLAS, TREE OF LIFE, ECONOMY_, FOOD…" /></label>
+        <div>{(["ALL","PROJECT HOMES","ACTIVE","PRODUCT","LABS","CONFLICTS"] as IndexFilter[]).map((item)=><button key={item} className={filter===item?"is-active":""} onClick={()=>setFilter(item)}>{item}</button>)}</div>
+      </div>
+      <div className="labs-index-list">
+        {filtered.map((project) => {
+          const control = currentControlFor(project);
+          return <a href={labHref(project.slug)} style={accentStyle(project)} key={project.slug} onMouseEnter={()=>onInspect(project)} onFocus={()=>onInspect(project)}><div><Status project={project} /><span>{control.classification}</span></div><strong>{project.title}</strong><p>{control.mainGoal}</p><small>{control.phase}</small><b>→</b></a>;
+        })}
+        {!filtered.length && <p className="labs-unknown-copy">No project matches this filter/search.</p>}
+      </div>
     </section>
   );
+}
+
+function FounderQueue() {
+  const items = founderQueue.filter((item)=>item.slug.startsWith("4planet"));
+  return <section id="founder-queue" className="labs-founder-queue"><div className="labs-section-head"><span>FOUNDER QUEUE</span><span>{items.length} public-safe decisions</span></div>{items.length ? <div className="labs-founder-list">{items.map((item,index)=><a href={labHref(item.slug)} key={`${item.slug}-${index}`}><span>{String(index+1).padStart(2,"0")}</span><strong>{item.project}</strong><p>{humanText(item.decision)}</p><b>→</b></a>)}</div> : <p className="labs-unknown-copy">No public-safe Founder decision is projected.</p>}</section>;
 }
 
 function SystemFeed() {
-  return (
-    <section className="labs-feed-section">
-      <div className="labs-section-head"><span>SYSTEM FEED</span><span>control moves in this dated projection</span></div>
-      <div className="labs-feed">{recentSystemMoves.map(([id, text, state]) => <div className="labs-feed-row" key={id}><span>{id}</span><strong>{text}</strong><b>{state}</b></div>)}</div>
-    </section>
-  );
+  return <section className="labs-feed-section"><div className="labs-section-head"><span>SYSTEM FEED</span><span>latest controlled changes</span></div><div className="labs-feed">{recentSystemMoves.slice(0,10).map(([id,text,state])=><div className="labs-feed-row" key={id}><span>{id}</span><strong>{humanText(text)}</strong><b>{state}</b></div>)}</div></section>;
 }
 
 function PortfolioView() {
-  const defaultProject = withCurrentProjectMeta(projectBySlug("4planet")!);
-  const [selected, setSelected] = useState<LabProject>(defaultProject);
-  const inspect: InspectHandler = (project) => setSelected(withCurrentProjectMeta(project));
-
+  const root = projectBySlug("4planet")!;
+  const [selected,setSelected] = useState<LabProject>(root);
+  const [filter,setFilter] = useState<IndexFilter>("ALL");
   return (
     <main className="labs-page labs-page--portfolio">
       <GridRails />
       <section className="labs-portfolio-layout labs-grid-section">
         <div className="labs-portfolio-main">
-          <CommandStrip onInspect={inspect} />
+          <CommandStrip filter={filter} setFilter={setFilter} />
           <FreshnessStrip />
-          <div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>organisation → leading products → Missions → Labs</span></div>
-          <div className="labs-universe-stack">{universeRoots.map((root, index) => <UniversePanel key={root.slug} root={root} index={index} onInspect={inspect} />)}</div>
+          <div className="labs-section-head labs-section-head--portfolio"><span>PROJECT MAZE / CONTROL MAP</span><span>organisation → products → Missions → controlled experiments</span></div>
+          <div className="labs-universe-stack">{universeRoots.map((universe,index)=><UniversePanel key={universe.slug} root={universe} index={index} onInspect={setSelected} />)}</div>
+          <ProjectIndex filter={filter} setFilter={setFilter} onInspect={setSelected} />
           <FounderQueue />
           <SystemFeed />
         </div>
@@ -392,44 +234,9 @@ function PortfolioView() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="labs-footer">
-      <span>4PLANET LABS · NOINDEX · PUBLIC DEVELOPMENT</span>
-      <span>BRAIN → PROJECT → PROCESS → WBS → EVIDENCE → LEARNING → ECONOMICS → CAPITAL</span>
-      <a href="https://4planet.org">4PLANET.ORG ↗</a>
-    </footer>
-  );
-}
-
 export default function LabsOverviewCurrent() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark";
-    return window.localStorage.getItem("4planet-labs-theme") === "light" ? "light" : "dark";
-  });
-
-  useEffect(() => {
-    window.localStorage.setItem("4planet-labs-theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
-    document.title = "4PLANET LABS — Human Project OS";
-    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    if (!robots) {
-      robots = document.createElement("meta");
-      robots.name = "robots";
-      document.head.appendChild(robots);
-    }
-    const previous = robots.content;
-    robots.content = "noindex,nofollow,noarchive";
-    return () => { if (robots) robots.content = previous; };
-  }, []);
-
-  return (
-    <div className="labs-shell" data-theme={theme}>
-      <Header theme={theme} setTheme={setTheme} />
-      <PortfolioView />
-      <Footer />
-    </div>
-  );
+  const [theme,setTheme] = useState<Theme>(() => typeof window !== "undefined" && window.localStorage.getItem("4planet-labs-theme") === "light" ? "light" : "dark");
+  useEffect(()=>{ window.localStorage.setItem("4planet-labs-theme",theme); },[theme]);
+  useEffect(()=>{ document.title="4PLANET LABS — Human Project OS"; let robots=document.querySelector('meta[name="robots"]') as HTMLMetaElement|null; if(!robots){robots=document.createElement("meta");robots.name="robots";document.head.appendChild(robots);} const previous=robots.content;robots.content="noindex,nofollow,noarchive";return()=>{if(robots)robots.content=previous;};},[]);
+  return <div className="labs-shell" data-theme={theme}><Header theme={theme} setTheme={setTheme} /><PortfolioView /><footer className="labs-footer"><span>4PLANET LABS · NOINDEX · READ-ONLY PROJECTION</span><span>GOAL → PROJECT → EVIDENCE → ECONOMICS → NEXT GATE</span><a href="https://4planet.org">4PLANET.ORG ↗</a></footer></div>;
 }
