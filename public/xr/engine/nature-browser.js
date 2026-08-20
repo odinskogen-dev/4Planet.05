@@ -58,6 +58,7 @@
     const subject = root.querySelector('.nature-subject__image');
     const subjectName = root.querySelector('.nature-subject__name');
     const subjectBoundary = root.querySelector('.nature-subject__boundary');
+    const entry = root.querySelector('.nature-entry');
     const entryKicker = root.querySelector('.nature-entry__kicker');
     const entryTitle = root.querySelector('.nature-entry__title');
     const entryIntro = root.querySelector('.nature-entry__intro');
@@ -217,6 +218,15 @@
       state.soundOn = true;
       root.classList.add('is-entered');
       root.dataset.entered = 'true';
+      // Entered is a runtime state contract, not merely a CSS animation hint.
+      // Apply the terminal presentation state directly so browser/full-tier
+      // compositing cannot leave the blocking entry surface interactive/visible.
+      if (entry) {
+        entry.setAttribute('aria-hidden', 'true');
+        entry.style.setProperty('visibility', 'hidden', 'important');
+        entry.style.setProperty('opacity', '0', 'important');
+        entry.style.setProperty('pointer-events', 'none', 'important');
+      }
       if (status) status.textContent = 'IMMERSIVE JOURNEY · SOURCE-AWARE';
       if (soundButton) {
         soundButton.hidden = false;
