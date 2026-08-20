@@ -32,7 +32,9 @@ test('shared Journey context is species-agnostic and manifest-driven', () => {
 
 test('shared premium sensory renderer stays species-agnostic and config-driven', () => {
   assert.doesNotMatch(premium, /jaguar|orca|panthera|orcinus|gbif:5219426|gbif:2440483/i);
-  assert.match(premium, /data-premium-config/);
+  // HTML data-premium-config is exposed to the renderer as root.dataset.premiumConfig.
+  // Assert the runtime contract instead of requiring the literal HTML attribute spelling in JS.
+  assert.match(premium, /dataset\?\.premiumConfig|dataset\.premiumConfig/);
   assert.match(premium, /config\?\.scenes/);
   assert.match(premium, /scene\?\.hotspots/);
   assert.match(premium, /scene\?\.modules/);
