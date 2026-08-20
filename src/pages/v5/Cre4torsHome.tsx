@@ -210,7 +210,7 @@ export default function Cre4torsHome() {
       <footer className="c4-footer">
         <Link className="c4-wordmark" to="/cre4tors">CRE4TORS<span>_</span></Link>
         <p>EARLY-STAGE 4PLANET LAB · DEMO / NOT LIVE</p>
-        <a href="https://4planet.org" rel="noreferrer">A 4PLANET EXPERIMENT ↗</a>
+        <a href="https://4planet.org" target="_blank" rel="noopener noreferrer">A 4PLANET EXPERIMENT ↗</a>
       </footer>
     </main>
   );
