@@ -220,12 +220,18 @@ export function withCurrentProjectMeta(project: LabProject): LabProject {
 
   return {
     ...enriched,
-    next: contract?.goal ?? enriched.next,
+    // Keep the project's operational `next` field intact. Goal Contracts are
+    // durable intent; `next` is the current gate/action. Conflating them hides
+    // real movement and makes parallel compatible goals look serial.
     evidence: contract
       ? `${enriched.evidence} · GOAL CONTRACT ${contract.id} · ${contract.status} · SUCCESS / DoD: ${contract.success} · SOURCE: ${contract.source}`
       : enriched.evidence,
     assets,
   };
+}
+
+export function goalContractFor(project: LabProject): GoalContract | undefined {
+  return contracts[project.slug];
 }
 
 export const goalContractRegistry = contracts;
