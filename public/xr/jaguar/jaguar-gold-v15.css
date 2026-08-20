@@ -1,5 +1,14 @@
 /* Jaguar Journey Gold interaction regression guard.
-   Keeps 3D compositing explicit on full-tier desktop and separates mobile world cards from the bottom Journey HUD. */
+   Keeps 3D compositing explicit on full-tier desktop, makes entry dismissal
+   follow the explicit runtime state contract, and separates mobile world cards
+   from the bottom Journey HUD. */
+
+.nature-browser[data-entered="true"] .nature-entry{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:scale(1.035)!important;
+}
 
 .nature-3d-subject[data-visible="true"][data-ready="true"]{
   display:block!important;
