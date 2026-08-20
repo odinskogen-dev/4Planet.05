@@ -83,7 +83,7 @@ const FORBIDDEN_BY_DEFAULT = new Set([
   "secret_read",
 ]);
 
-const assertBlueprint = (condition: unknown, message: string): asserts condition => {
+const assertBlueprint: (condition: unknown, message: string) => asserts condition = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 
