@@ -17,6 +17,8 @@ const orcaManifest = JSON.parse(read('public/xr/scenes/orca.json'));
 const orcaPremium = JSON.parse(read('public/journey/orca/premium-v17.json'));
 const orcaCss = read('public/xr/orca/orca-cinematic-v17.css');
 const generator = read('scripts/build-xr-canonical-data.mjs');
+const solutionsHtml = read('public/journey/solutions/index.html');
+const solutionsJs = read('public/journey/solutions/solutions-intelligence-v1.js');
 
 test('shared Journey context is species-agnostic and manifest-driven', () => {
   assert.doesNotMatch(context, /jaguar|orca|panthera|orcinus|gbif:5219426|gbif:2440483/i);
@@ -96,6 +98,16 @@ test('canonical generator now emits both Gold-reference feeds without weakening 
   assert.match(generator, /jaguar-canonical\.json/);
   assert.match(generator, /orca-canonical\.json/);
   assert.match(generator, /requireSpeciesRelationships: true/);
+});
+
+test('Solutions Intelligence is a derived response surface, not a second actor or impact truth store', () => {
+  assert.match(solutionsHtml, /SOLUTIONS INTELLIGENCE/);
+  assert.match(solutionsHtml, /NOT A PARTNER|NOT A PHOTOGRAPH|SPECIFIC ACTORS REQUIRE VERIFICATION|SELECTED, FUNDED, CONTRACTED OR DELIVERED/i);
+  assert.match(solutionsJs, /ALLOWED/);
+  assert.match(solutionsJs, /premium-v17\.json/);
+  assert.match(solutionsJs, /config\?\.scenes\?\.response/);
+  assert.match(solutionsJs, /ROLE CATEGORY · NOT A PARTNER, ENDORSEMENT OR DELIVERY CLAIM/);
+  assert.doesNotMatch(solutionsJs, /hectares protected|tons co2|partnered with|verified impact/i);
 });
 
 test('transfer keeps bespoke craft in skins/config while shared scientific and interaction machinery remains common', () => {
