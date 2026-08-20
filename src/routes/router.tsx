@@ -14,6 +14,7 @@ import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 const Atlas = lazy(() => import("@/pages/v5/Atlas"));
+const Support = lazy(() => import("@/pages/v5/Support"));
 
 /* 4PLANET_ v1 — THE WORLD.
    Mandate: "I open 4PLANET_ and immediately see Earth." So Earth is "/".
@@ -28,7 +29,6 @@ const WorldFallback = (
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/people" replace />;
-const toDomains = <Navigate to="/domains" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
@@ -51,6 +51,7 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}><Atlas /></Suspense>} />
       <Route path="/impact" element={<ImpactIndex />} />
       <Route path="/impact/:slug" element={<PathwayPage />} />
+      <Route path="/support" element={<Suspense fallback={WorldFallback}><Support /></Suspense>} />
       <Route path="/join" element={<Navigate to="/people" replace />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
