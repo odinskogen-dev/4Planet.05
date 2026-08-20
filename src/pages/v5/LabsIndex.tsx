@@ -5,6 +5,14 @@ import "@/styles/labs-index.css";
 
 const LABS = [
   {
+    id: "ZERO FOUNDER CASH",
+    state: "ACTIVE BUILD · HIGH PRIORITY",
+    title: "A learning revenue machine with many income arms",
+    body: "One controlled commerce and conversion core for B2B support, pilots, membership, donations, Impact Units, sponsorship and later digital products — with Patagonia Quality, accounting integrity and BRAIN learning writeback.",
+    href: "/labs/revenue",
+    capability: "MONEY × PRODUCT × AUTONOMY",
+  },
+  {
     id: "ENGINE FOUNDRY",
     state: "EARLY STAGE · RUNNABLE",
     title: "A machine for building bounded machines",
