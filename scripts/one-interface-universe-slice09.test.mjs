@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -9,7 +9,7 @@ const missions = read("src/components/MissionStrip.tsx");
 const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
-const homeAtlas = read("src/pages/v5/HomeAtlasShowcase.tsx");
+const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
 const universeCss = read("src/styles/one-interface-universe.css");
 
 test("Homo sapiens is a first-class bounded SPECIES route before the generic species route", () => {
@@ -45,16 +45,21 @@ test("relevant Missions embed the proven shared Atlas Window instead of a second
   assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
-test("front-door awe stays atmospheric while a real shared Atlas Window follows immediately below", () => {
-  assert.match(atlasHero, /planet-awe/);
+test("homepage opens from a restrained planetary hero into the actual shared Atlas runtime", () => {
+  assert.match(atlasHero, /hero is atmospheric presentation, not live map data/i);
   assert.match(atlasHero, /Everything you love is connected/);
   assert.match(atlasHero, /HomeAtlasShowcase/);
+  assert.match(atlasHero, /id="living-atlas"/);
+  assert.match(atlasHero, /WHY 4PLANET/);
+  assert.doesNotMatch(atlasHero, /planet-awe/);
   assert.match(homeAtlas, /SpeciesAtlasWindow/);
   assert.match(homeAtlas, /JAGUAR · AMAZON/);
   assert.match(homeAtlas, /ORCA · OCEAN/);
   assert.match(homeAtlas, /BEE · FOOD/);
   assert.match(homeAtlas, /REPORTED OCCURRENCE ≠ RANGE · POPULATION · LIVE TRACKING/);
+  assert.match(homeAtlas, /The planet changes\. The evidence stays visible\./);
   assert.doesNotMatch(homeAtlas, /new maplibre\.Map/);
+  assert.equal(existsSync(new URL("../src/pages/v5/HomeAtlasShowcase.tsx", import.meta.url)), false, "dead duplicate homepage Atlas implementation must not exist");
 });
 
 test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
