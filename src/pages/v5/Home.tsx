@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
+import { HomeAtlasShowcase } from "@/components/HomeAtlasShowcase";
 import { Section } from "@/components/ui";
 import { Reveal } from "@/components/Cinematic";
 import { img, type ImageKey } from "@/content/imageRegistry";
@@ -103,17 +104,17 @@ function WorldPanel({ dk }: { dk: DomainKey }) {
   );
 }
 
-function FeaturedJourney({ item, primary = false }: { item: typeof FEATURED[number]; primary?: boolean }) {
+function FeaturedJourney({ item }: { item: typeof FEATURED[number] }) {
   const media = img(item.image);
   return (
-    <Link to={item.to} className={`home-journey${primary ? " home-journey--primary" : ""}`} style={{ display: "block", color: "#fff", textDecoration: "none" }}>
-      <div style={{ position: "relative", height: "100%", minHeight: primary ? "clamp(520px,64vw,820px)" : "clamp(250px,31vw,400px)", overflow: "hidden", background: "#050505" }}>
+    <Link to={item.to} className="home-journey" style={{ display: "block", color: "#fff", textDecoration: "none" }}>
+      <div style={{ position: "relative", minHeight: "clamp(360px,38vw,520px)", overflow: "hidden", background: "#050505" }}>
         <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: media.objectPosition ?? "50% 50%" }} />
         <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.12) 45%,rgba(0,0,0,.88))" }} />
-        <div style={{ position: "absolute", inset: "auto 0 0", padding: "clamp(22px,3.5vw,46px)" }}>
+        <div style={{ position: "absolute", inset: "auto 0 0", padding: "clamp(22px,3vw,38px)" }}>
           <div style={{ ...mono, color: item.accent }}>{item.eyebrow}</div>
-          <h3 style={{ ...display, margin: "10px 0 0", fontSize: primary ? "clamp(46px,7vw,94px)" : "clamp(30px,4vw,50px)", lineHeight: .88 }}>{item.title}</h3>
-          <p style={{ margin: "14px 0 0", maxWidth: 520, color: "rgba(255,255,255,.8)", fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.55 }}>{item.line}</p>
+          <h3 style={{ ...display, margin: "10px 0 0", fontSize: "clamp(32px,4vw,56px)", lineHeight: .9 }}>{item.title}</h3>
+          <p style={{ margin: "14px 0 0", maxWidth: 440, color: "rgba(255,255,255,.8)", fontSize: "clamp(14px,1.1vw,16.5px)", lineHeight: 1.55 }}>{item.line}</p>
         </div>
       </div>
     </Link>
@@ -125,15 +126,28 @@ export default function Home() {
     <PublicShell>
       <AtlasHero />
 
+      <section id="why-4planet" style={{ background: T.blue, color: "#fff" }}>
+        <div className="home-premise" style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(74px,10vw,152px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(300px,.85fr)", gap: "clamp(36px,8vw,120px)", alignItems: "end" }}>
+          <div>
+            <div style={{ ...mono, color: "rgba(255,255,255,.62)" }}>WHY 4PLANET_</div>
+            <h2 style={{ ...display, margin: "18px 0 0", fontSize: "clamp(42px,7vw,98px)", lineHeight: .9, maxWidth: "13ch" }}>A healthy living planet is infrastructure for human life.</h2>
+          </div>
+          <div>
+            <p style={{ margin: 0, maxWidth: 620, color: "rgba(255,255,255,.82)", fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all depend on living systems. 4PLANET exists to make those relationships easier to see — and credible ways to act on them easier to find.</p>
+            <Link to="/about/story" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>THE STORY →</Link>
+          </div>
+        </div>
+      </section>
+
       <section style={{ background: "#fff", color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(54px,7vw,96px) clamp(20px,5vw,72px)" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,7vw,100px) clamp(20px,5vw,72px)" }}>
           <Reveal>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,.72fr) minmax(280px,1fr)", gap: "clamp(28px,6vw,94px)", alignItems: "end" }} className="home-lens-intro">
               <div>
                 <div style={{ ...mono, color: T.blue }}>ONE PLANET · FOUR PUBLIC LENSES</div>
-                <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "10ch" }}>One world. Different ways in.</h2>
+                <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "10ch" }}>See the same planet from four angles.</h2>
               </div>
-              <p style={{ margin: 0, maxWidth: 650, color: T.dim, fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.62 }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT stay connected to the same living-planet context. Change lens without losing the world.</p>
+              <p style={{ margin: 0, maxWidth: 650, color: T.dim, fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.62 }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are connected ways into one shared living-planet model — not separate product worlds.</p>
             </div>
           </Reveal>
           <div className="home-lens-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(18px,3vw,42px)", marginTop: "clamp(34px,5vw,58px)", borderTop: `1px solid ${T.lineStrong}` }}>
@@ -142,38 +156,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ background: "#070707", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(62px,8vw,112px) clamp(20px,5vw,72px)" }}>
-          <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
-            <div>
-              <div style={{ ...mono, color: "#3AE86F" }}>BEST OF 4PLANET · ENTER THROUGH LIFE</div>
-              <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "11ch" }}>Start with something alive.</h2>
-            </div>
-            <Link to="/species" style={{ ...mono, color: "rgba(255,255,255,.72)", textDecoration: "none" }}>EXPLORE SPECIES →</Link>
-          </div>
-          <div className="home-journey-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.35fr) minmax(280px,.65fr)", gap: 10, marginTop: "clamp(36px,5vw,64px)" }}>
-            <FeaturedJourney item={FEATURED[0]} primary />
-            <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 10 }}>
-              <FeaturedJourney item={FEATURED[1]} />
-              <FeaturedJourney item={FEATURED[2]} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ background: T.blue, color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(70px,10vw,150px) clamp(20px,5vw,72px)" }}>
-          <div style={{ ...mono, color: "rgba(255,255,255,.6)" }}>THE PREMISE</div>
-          <p style={{ ...display, margin: "18px 0 0", fontSize: "clamp(40px,7vw,98px)", lineHeight: .9, maxWidth: "13ch" }}>A healthy living planet is infrastructure for human life.</p>
-          <div className="home-premise-foot" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 30, alignItems: "end", marginTop: 30 }}>
-            <p style={{ margin: 0, maxWidth: 760, color: "rgba(255,255,255,.78)", fontSize: "clamp(16px,1.55vw,20px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all sit inside living systems. 4PLANET connects understanding to credible action without pretending uncertainty is proof.</p>
-            <Link to="/about/story" style={{ ...mono, color: "#fff", textDecoration: "none" }}>READ THE STORY →</Link>
-          </div>
-        </div>
-      </section>
+      <div id="living-atlas">
+        <HomeAtlasShowcase />
+      </div>
 
       <section id="worlds" style={{ background: "#050505", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,7vw,92px) clamp(20px,5vw,72px) 0" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(62px,8vw,104px) clamp(20px,5vw,72px) 0" }}>
           <div style={{ ...mono, color: T.acid }}>THE LIVING WORLD</div>
           <div className="home-world-intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(24px,6vw,90px)", alignItems: "end", marginTop: 12 }}>
             <h2 style={{ ...display, margin: 0, fontSize: "clamp(36px,5.2vw,70px)", lineHeight: .92, maxWidth: "10ch" }}>Four connected domains.</h2>
@@ -182,6 +170,21 @@ export default function Home() {
         </div>
         <div className="home-world-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(34px,5vw,58px)", background: "rgba(255,255,255,.12)" }}>
           {ORDER.map((dk) => <WorldPanel key={dk} dk={dk} />)}
+        </div>
+      </section>
+
+      <section style={{ background: "#070707", color: "#fff" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,8vw,112px) clamp(20px,5vw,72px)" }}>
+          <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ ...mono, color: "#3AE86F" }}>ENTER THROUGH LIFE</div>
+              <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "12ch" }}>Meet life. Then follow the connections.</h2>
+            </div>
+            <Link to="/species" style={{ ...mono, color: "rgba(255,255,255,.72)", textDecoration: "none" }}>EXPLORE SPECIES →</Link>
+          </div>
+          <div className="home-journey-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 10, marginTop: "clamp(36px,5vw,64px)" }}>
+            {FEATURED.map((item) => <FeaturedJourney key={item.title} item={item} />)}
+          </div>
         </div>
       </section>
 
@@ -248,8 +251,8 @@ export default function Home() {
       <style>{`
         .home-lens,.home-pathway,.home-participate{transition:transform .2s ease,opacity .2s ease}.home-lens:hover,.home-pathway:hover,.home-participate:hover{transform:translateX(5px)}
         .home-world img,.home-journey img,.culture-home img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}.home-world:hover img,.home-journey:hover img,.culture-home a:hover img{transform:scale(1.018)}
-        @media(max-width:900px){.home-lens-intro,.home-world-intro,.home-premise-foot,.home-action-grid,.home-take-part,.culture-home{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.home-journey-grid{grid-template-columns:1fr!important}.culture-home{gap:36px!important}}
-        @media(max-width:680px){.home-lens-grid,.home-world-grid{grid-template-columns:1fr!important}.home-journey--primary>div{min-height:520px!important}.home-participate{grid-template-columns:1fr auto!important;gap:8px 18px!important}.home-participate>span:nth-child(2){grid-column:1/3}.home-pathway{grid-template-columns:32px 1fr!important}.home-pathway>span:nth-child(3){grid-column:2}.home-lens{border-bottom:1px solid ${T.line}}}
+        @media(max-width:900px){.home-premise,.home-lens-intro,.home-world-intro,.home-action-grid,.home-take-part,.culture-home{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.home-journey-grid{grid-template-columns:1fr!important}.culture-home{gap:36px!important}}
+        @media(max-width:680px){.home-lens-grid,.home-world-grid{grid-template-columns:1fr!important}.home-participate{grid-template-columns:1fr auto!important;gap:8px 18px!important}.home-participate>span:nth-child(2){grid-column:1/3}.home-pathway{grid-template-columns:32px 1fr!important}.home-pathway>span:nth-child(3){grid-column:2}.home-lens{border-bottom:1px solid ${T.line}}}
         @media(prefers-reduced-motion:reduce){.home-lens,.home-pathway,.home-participate,.home-world img,.home-journey img,.culture-home img{transition:none!important}.home-lens:hover,.home-pathway:hover,.home-participate:hover{transform:none}.home-world:hover img,.home-journey:hover img,.culture-home a:hover img{transform:none}}
       `}</style>
     </PublicShell>
