@@ -10,6 +10,7 @@ const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
 const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
+const home = read("src/pages/v5/Home.tsx");
 const universeCss = read("src/styles/one-interface-universe.css");
 
 test("Homo sapiens is a first-class bounded SPECIES route before the generic species route", () => {
@@ -60,6 +61,11 @@ test("homepage opens from a restrained planetary hero into the actual shared Atl
   assert.match(homeAtlas, /The planet changes\. The evidence stays visible\./);
   assert.doesNotMatch(homeAtlas, /new maplibre\.Map/);
   assert.equal(existsSync(new URL("../src/pages/v5/HomeAtlasShowcase.tsx", import.meta.url)), false, "dead duplicate homepage Atlas implementation must not exist");
+});
+
+test("homepage fails closed on the currently unverified Orca hero asset", () => {
+  assert.doesNotMatch(home, /wh4lesHero/);
+  assert.match(home, /title: "Orca"[\s\S]*?image: "heroEarth"/);
 });
 
 test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
