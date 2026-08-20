@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import LabsOverview from "./LabsOverviewCurrent";
 import LabsProjectDetailV5 from "./LabsProjectDetailV5";
-import { projectBySlug } from "./labsFreshProjection";
+import { projectBySlug } from "./labsCurrentProjection";
 import "./labsV4.css";
 import "./labsV4Root.css";
 import "./labsMobileFix.css";
 import "./labsIndex.css";
+import "./labsProjectPulse.css";
 
 function isLabsHost() {
   if (typeof window === "undefined") return false;
