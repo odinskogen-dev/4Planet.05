@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { SpeciesAtlasWindow, type SpeciesAtlasEcosystemAnchor } from "@/components/species/SpeciesAtlasWindow";
 import { speciesBySlug } from "@/data/species";
 import { T } from "@/styles/tokens";
@@ -13,32 +14,31 @@ const AMAZON: SpeciesAtlasEcosystemAnchor = {
 const STATES = [
   {
     slug: "jaguar",
-    label: "AMAZONIA · JAGUAR",
+    label: "JAGUAR · AMAZON",
     accent: "#3AE86F",
-    line: "Enter a forest system through one predator and its reported observations.",
+    line: "Reported Jaguar observations with bounded Amazon rainforest context.",
     ecosystems: [AMAZON],
   },
   {
     slug: "orca",
-    label: "OCEAN · ORCA",
+    label: "ORCA · OCEAN",
     accent: "#2E2EFF",
-    line: "Shift oceans and follow a wide-ranging marine species without inventing a migration route.",
+    line: "Reported Orca observations without inventing a migration route.",
     ecosystems: [] as SpeciesAtlasEcosystemAnchor[],
   },
   {
     slug: "western-honey-bee",
-    label: "FOOD · POLLINATOR",
+    label: "BEE · FOOD",
     accent: "#FF4D22",
-    line: "Move into human food systems through one familiar living dependency.",
+    line: "Reported pollinator observations as one entry into human food dependencies.",
     ecosystems: [] as SpeciesAtlasEcosystemAnchor[],
   },
 ] as const;
 
 /**
- * Full-frame front-page ATLAS showcase.
- * Reuses the same SpeciesAtlasWindow / MapLibre / GBIF seam as Jaguar Gold.
- * The state selector changes canonical entity context; it is not a slideshow of
- * fabricated map imagery and it never promotes occurrence into range/population.
+ * Source-aware homepage window into the shared ATLAS engine.
+ * The state selector changes canonical entity context; occurrence records remain
+ * distinct from range, abundance, population and live tracking.
  */
 export function HomeAtlasShowcase() {
   const [active, setActive] = useState(0);
@@ -47,46 +47,52 @@ export function HomeAtlasShowcase() {
   if (!profile) return null;
 
   return (
-    <section className="home-atlas-showcase" aria-label="Living planet Atlas states" style={{ background: "#050805", color: "#fff", minHeight: "100svh", overflow: "hidden" }}>
-      <div style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(58px,8vw,110px) clamp(20px,5vw,72px) 24px" }}>
-        <div style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".16em", color: state.accent }}>ATLAS_ · LIVING PLANET STATES</div>
-        <h2 style={{ margin: "16px 0 0", maxWidth: "13ch", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(42px,7vw,104px)", letterSpacing: "-.055em", lineHeight: .9 }}>
-          Change the lens. Keep the planet.
-        </h2>
-        <p style={{ margin: "22px 0 0", maxWidth: 720, color: "rgba(255,255,255,.76)", fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.58 }}>
-          One shared Atlas can move between species, places and human dependencies without losing source boundaries or context.
-        </p>
-
-        <div role="tablist" aria-label="Atlas state" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 30 }}>
-          {STATES.map((candidate, index) => {
-            const selected = index === active;
-            return (
-              <button
-                key={candidate.slug}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                onClick={() => setActive(index)}
-                style={{
-                  fontFamily: T.mono,
-                  fontSize: 10.5,
-                  letterSpacing: ".11em",
-                  padding: "10px 12px",
-                  border: `1px solid ${selected ? candidate.accent : "rgba(255,255,255,.26)"}`,
-                  background: selected ? candidate.accent : "transparent",
-                  color: selected ? "#050805" : "rgba(255,255,255,.76)",
-                  cursor: "pointer",
-                }}
-              >
-                {candidate.label}
-              </button>
-            );
-          })}
+    <section className="home-atlas-showcase" aria-label="Living planet Atlas states" style={{ background: "#050805", color: "#fff", overflow: "hidden" }}>
+      <div className="home-atlas-head" style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(42px,6vw,76px) clamp(20px,5vw,72px) clamp(28px,4vw,46px)" }}>
+        <div className="home-atlas-head__copy">
+          <div style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".16em", color: state.accent }}>ATLAS_ · SOURCE-AWARE PLANET VIEW</div>
+          <h2 style={{ margin: "12px 0 0", maxWidth: "12ch", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,4.8vw,66px)", letterSpacing: "-.05em", lineHeight: .92 }}>
+            The planet changes. The evidence stays visible.
+          </h2>
+          <p style={{ margin: "18px 0 0", maxWidth: 650, color: "rgba(255,255,255,.68)", fontSize: "clamp(15px,1.25vw,18px)", lineHeight: 1.56 }}>
+            Move between species and places through the same ATLAS engine. Reported occurrences remain observations — not range, population or live tracking.
+          </p>
         </div>
-        <p style={{ margin: "16px 0 0", maxWidth: 650, color: "rgba(255,255,255,.56)", fontSize: 13.5, lineHeight: 1.55 }}>{state.line}</p>
+
+        <div className="home-atlas-controls">
+          <div role="tablist" aria-label="Atlas state" style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {STATES.map((candidate, index) => {
+              const selected = index === active;
+              return (
+                <button
+                  key={candidate.slug}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActive(index)}
+                  style={{
+                    fontFamily: T.mono,
+                    fontSize: 10,
+                    letterSpacing: ".1em",
+                    padding: "9px 11px",
+                    border: `1px solid ${selected ? candidate.accent : "rgba(255,255,255,.24)"}`,
+                    background: selected ? candidate.accent : "transparent",
+                    color: selected ? "#050805" : "rgba(255,255,255,.72)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {candidate.label}
+                </button>
+              );
+            })}
+          </div>
+          <p style={{ margin: "13px 0 0", maxWidth: 520, color: "rgba(255,255,255,.5)", fontSize: 13, lineHeight: 1.5 }}>{state.line}</p>
+          <div style={{ fontFamily: T.mono, fontSize: 9.5, letterSpacing: ".1em", color: "rgba(255,255,255,.42)", marginTop: 14 }}>REPORTED OCCURRENCE ≠ RANGE · POPULATION · LIVE TRACKING</div>
+          <Link to={`/atlas?entity=${encodeURIComponent(profile.id)}&journey=${encodeURIComponent(`home-${profile.slug}`)}`} style={{ display: "inline-flex", marginTop: 16, fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".12em", color: "rgba(255,255,255,.8)", textDecoration: "none" }}>OPEN FULL ATLAS →</Link>
+        </div>
       </div>
 
-      <div className="home-atlas-stage" key={profile.slug} style={{ borderTop: `3px solid ${state.accent}` }}>
+      <div className="home-atlas-stage" key={profile.slug} style={{ borderTop: `2px solid ${state.accent}` }}>
         <SpeciesAtlasWindow
           gbifKey={profile.gbifKey}
           commonName={profile.commonName}
@@ -98,10 +104,12 @@ export function HomeAtlasShowcase() {
       </div>
 
       <style>{`
-        .home-atlas-stage > section > div { max-width: none !important; padding-left: clamp(20px,5vw,72px) !important; padding-right: clamp(20px,5vw,72px) !important; }
-        .home-atlas-stage [aria-label$="reported occurrence map"] { height: min(72svh, 820px) !important; }
-        .home-atlas-showcase [role="tab"]:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
-        @media(max-width:820px){ .home-atlas-stage [aria-label$="reported occurrence map"] { height: 58svh !important; min-height: 420px; } }
+        .home-atlas-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr);gap:clamp(32px,7vw,110px);align-items:end}
+        .home-atlas-stage > section > div{max-width:none!important;padding-left:clamp(20px,5vw,72px)!important;padding-right:clamp(20px,5vw,72px)!important}
+        .home-atlas-stage [aria-label$="reported occurrence map"]{height:min(54svh,620px)!important;min-height:420px}
+        .home-atlas-showcase [role="tab"]:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+        @media(max-width:820px){.home-atlas-head{grid-template-columns:1fr}.home-atlas-stage [aria-label$="reported occurrence map"]{height:48svh!important;min-height:390px}}
+        @media(max-width:520px){.home-atlas-stage [aria-label$="reported occurrence map"]{height:430px!important;min-height:430px}}
       `}</style>
     </section>
   );
