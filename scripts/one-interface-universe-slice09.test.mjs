@@ -45,18 +45,21 @@ test("relevant Missions embed the proven shared Atlas Window instead of a second
   assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
-test("homepage opens from atmospheric awe into a real multi-state shared Atlas", () => {
-  assert.match(atlasHero, /planet-awe/);
-  assert.match(atlasHero, /ATLAS itself owns the live[\s*]+map engine/);
+test("homepage opens from a restrained planetary hero into a real multi-state shared Atlas", () => {
+  assert.match(atlasHero, /The hero is atmospheric presentation, not live map data/);
   assert.match(atlasHero, /Everything you love is connected/);
   assert.match(atlasHero, /HomeAtlasShowcase/);
   assert.match(atlasHero, /id="living-atlas"/);
+  assert.match(atlasHero, /WHY 4PLANET/);
+  assert.doesNotMatch(atlasHero, /planet-awe/);
+  assert.doesNotMatch(atlasHero, /planet-awe__scan/);
   assert.match(homeAtlas, /SpeciesAtlasWindow/);
   assert.match(homeAtlas, /slug: "jaguar"/);
   assert.match(homeAtlas, /slug: "orca"/);
   assert.match(homeAtlas, /slug: "western-honey-bee"/);
-  assert.match(homeAtlas, /Change the lens\. Keep the planet\./);
+  assert.match(homeAtlas, /The planet changes\. The evidence stays visible\./);
   assert.match(homeAtlas, /role="tab"/);
+  assert.match(homeAtlas, /occurrences remain observations/i);
   assert.doesNotMatch(homeAtlas, /new maplibre\.Map/);
 });
 
