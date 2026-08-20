@@ -86,7 +86,6 @@ function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: str
  *  so the same template scales across the catalogue. Never invents a value. */
 function deriveKeyFacts(profile: SpeciesProfile): { k: string; v: string; note?: string }[] {
   const facts: { k: string; v: string; note?: string }[] = [];
-  // IUCN status, pulled from a source-backed KNOWN/INTERPRETED claim if present.
   const iucn = (profile.publicClaims || []).find((c) => /IUCN|Red List|Least Concern|Endangered|Vulnerable|Near Threatened|Critically/i.test(c.text));
   if (iucn) {
     const m = iucn.text.match(/\b(Least Concern|Near Threatened|Vulnerable|Endangered|Critically Endangered|Data Deficient|Not Evaluated)\b/i);
@@ -99,9 +98,7 @@ function deriveKeyFacts(profile: SpeciesProfile): { k: string; v: string; note?:
   return facts.slice(0, 6);
 }
 
-/** Premium full-screen key-facts hero. Snøhetta-precision: whole viewport, tight
- *  grid, plain language, sharp hairlines. Life-first image (existing 4PLANET
- *  media, honestly labelled). The truth model stays intact below the fold. */
+/** Premium full-screen key-facts hero. Life-first media is always rights-gated. */
 function SpeciesHero({
   profile, returnHref, actions,
 }: { profile: SpeciesProfile; returnHref: string | null; actions: React.ReactNode }) {
@@ -194,20 +191,28 @@ export function SpeciesIndex() {
     if (!q) return true;
     return p.commonName.toLowerCase().includes(q) || p.scientificName.toLowerCase().includes(q) || (p.group ?? "").toLowerCase().includes(q) || (p.region ?? "").toLowerCase().includes(q);
   });
+  const orcaIllustration = speciesMedia("orca")?.illustration;
   return (
     <PublicShell>
-      {/* Full-screen life-first hero — MEET LIFE ON EARTH, with real search. */}
       <section style={{ position: "relative", height: "100svh", overflow: "hidden", background: "#05081b" }}>
-        <img src="/assets/species/_index-hero.jpg" alt="A lone wild orca gliding through deep dark water, seen from above"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.5) 0%, rgba(5,8,27,.05) 28%, rgba(5,8,27,.2) 60%, rgba(5,8,27,.92) 100%)" }} />
+        {orcaIllustration ? (
+          <>
+            <img src={orcaIllustration.localPath} alt="Orca — 4PLANET illustration, not a photograph"
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%" }} />
+            <div style={{ position: "absolute", top: "clamp(74px,9vw,116px)", right: "clamp(18px,4vw,56px)", ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "7px 10px", fontSize: 9 }}>
+              4PLANET ILLUSTRATION · NOT A PHOTOGRAPH
+            </div>
+          </>
+        ) : (
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 40%,#172448,#05081b 68%)" }} />
+        )}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.45) 0%, rgba(5,8,27,.04) 28%, rgba(5,8,27,.2) 60%, rgba(5,8,27,.92) 100%)" }} />
         <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(28px,5vw,88px)", maxWidth: 1100 }}>
           <div style={{ ...mono, color: "#fff", letterSpacing: ".18em", fontSize: 11, opacity: .9 }}>4PLANET SPECIES_</div>
           <h1 style={{ marginTop: 16, color: "#fff", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,5vw,68px)", lineHeight: .98, letterSpacing: "-.035em", maxWidth: "16ch" }}>Meet life on Earth.</h1>
           <p style={{ marginTop: 16, maxWidth: "52ch", color: "rgba(255,255,255,.88)", fontSize: "clamp(15px,1.5vw,19px)", lineHeight: 1.5 }}>
             Explore species, their habitats and the relationships that shape life on Earth.
           </p>
-          {/* Real species search — first-class, in the first viewport. */}
           <div style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", maxWidth: 640 }}>
             <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search a species — common or scientific name…" aria-label="Search species"
@@ -280,8 +285,6 @@ export function SpeciesProfilePage() {
   if (!profile) return <NotFound />;
   const isOrca = profile.slug === "orca";
   const returnHref = returnHrefFromSearch(location.search);
-  // If we arrived from an ATLAS observation, "same entity in ATLAS" returns to
-  // the exact prior camera/record; otherwise it opens ATLAS on this entity.
   const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
   const followed = following(profile.id);
 
@@ -304,7 +307,6 @@ export function SpeciesProfilePage() {
   return (
     <PublicShell>
       <div className={returnHref ? "closer-look" : undefined}>
-        {/* Premium full-screen key-facts hero — the one screen a person needs. */}
         <SpeciesHero profile={profile} returnHref={returnHref} actions={actions} />
       </div>
       <Section pad="clamp(48px,6vw,96px)">
@@ -415,24 +417,21 @@ export function SpeciesProfilePage() {
           </>
         )}
 
-        {isOrca && (
-          <section style={{ marginTop: 72 }}>
-            <div style={{ ...mono, color: T.blue }}>FROM THE FIELD · FOUNDER-SUPPLIED</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 2, marginTop: 18 }}>
-              {[
-                { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
-                { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
-                { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping, head raised above the surface" },
-                { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas spy-hopping among Antarctic pack ice" },
-              ].map((im) => (
-                <figure key={im.src} style={{ margin: 0, aspectRatio: "4/5", overflow: "hidden", background: "#05081b" }}>
-                  <img src={im.src} alt={im.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </figure>
-              ))}
+        {isOrca && speciesMedia("orca")?.illustration && (
+          <section style={{ ...panel, marginTop: 72, borderColor: T.blue }} aria-label="Orca media rights boundary">
+            <div style={{ ...mono, color: T.blue }}>ORCA MEDIA · RIGHTS BOUNDARY</div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(180px,.45fr) minmax(0,1fr)", gap: "clamp(24px,5vw,64px)", alignItems: "center", marginTop: 20 }}>
+              <figure style={{ margin: 0, aspectRatio: "4/5", overflow: "hidden", background: "#05081b", position: "relative" }}>
+                <img src={speciesMedia("orca")!.illustration!.localPath} alt="Orca — 4PLANET illustration, not a photograph" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", top: 10, left: 10, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "5px 8px", fontSize: 8 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+              </figure>
+              <div>
+                <h2 style={{ margin: 0, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,4vw,48px)", letterSpacing: "-.035em", lineHeight: .98 }}>Photographs stay hidden until the exact licence is verified.</h2>
+                <p style={{ margin: "18px 0 0", maxWidth: 680, color: T.dim, fontSize: 15, lineHeight: 1.6 }}>
+                  Founder-supplied provenance does not establish copyright ownership or public-web rights. This public surface therefore uses the 4PLANET-owned illustration while the specific photo records are held back.
+                </p>
+              </div>
             </div>
-            <p style={{ margin: "10px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", fontSize: 10.5 }}>
-              Real photographs of wild orcas, founder-supplied and rights-cleared. These are illustrative of the species, not tied to a specific observation record.
-            </p>
           </section>
         )}
 
