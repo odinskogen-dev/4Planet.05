@@ -15,7 +15,7 @@ permissions:
 jobs:
   bind-domain:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Use Node 22
         uses: actions/setup-node@v4
@@ -80,7 +80,7 @@ jobs:
           echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
           echo "Cloudflare token has zone access and 4species.com resolved."
 
-      - name: Create isolated redirect Worker
+      - name: Keep 4species.com router live
         shell: bash
         run: |
           set -euo pipefail
@@ -88,68 +88,129 @@ jobs:
           export default {
             async fetch(request) {
               const incoming = new URL(request.url);
-              let path = incoming.pathname || "/";
+              const path = incoming.pathname || "/";
               let targetPath;
-              if (path === "/" || path === "") {
-                targetPath = "/species";
-              } else if (path === "/species" || path.startsWith("/species/")) {
-                targetPath = path;
-              } else {
-                targetPath = `/species${path.startsWith("/") ? path : `/${path}`}`;
-              }
+              if (path === "/" || path === "") targetPath = "/species";
+              else if (path === "/species" || path.startsWith("/species/")) targetPath = path;
+              else targetPath = `/species${path.startsWith("/") ? path : `/${path}`}`;
               const target = new URL(targetPath, "https://4planet.org");
               target.search = incoming.search;
               return Response.redirect(target.toString(), 302);
             }
           };
           EOF
-          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          cat > "$RUNNER_TEMP/4species-wrangler.toml" <<EOF
           name = "4species-router"
           main = "$RUNNER_TEMP/4species-worker.mjs"
           compatibility_date = "2026-08-20"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
-
           [[routes]]
           pattern = "4species.com"
           custom_domain = true
-
           [[routes]]
           pattern = "www.4species.com"
           custom_domain = true
           EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/4species-wrangler.toml"
 
-      - name: Deploy 4species.com router
+      - name: Verify fixed prototype upstreams
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+          tree="https://build-tree-of-life-action-in.4planet-05.pages.dev/tree-of-life"
+          labs="https://labs-overview-v1.4planet-05.pages.dev/labs"
+          for url in "$tree" "$labs"; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+            echo "$url -> HTTP $code"
+            test "$code" = "200"
+          done
 
-      - name: Verify live domain routing
+      - name: Bind n4turetech.com to TREE OF LIFE prototype
         shell: bash
         run: |
           set -euo pipefail
-          check_redirect() {
+          cat > "$RUNNER_TEMP/n4turetech-worker.mjs" <<'EOF'
+          const UPSTREAM = "https://build-tree-of-life-action-in.4planet-05.pages.dev";
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              let path = incoming.pathname || "/";
+              if (path === "/" || path === "") path = "/tree-of-life";
+              else if (path === "/choice") path = "/tree-of-life/choice";
+              const upstream = new URL(path, UPSTREAM);
+              upstream.search = incoming.search;
+              const response = await fetch(new Request(upstream.toString(), request));
+              const headers = new Headers(response.headers);
+              headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+              return new Response(response.body, {status: response.status, statusText: response.statusText, headers});
+            }
+          };
+          EOF
+          cat > "$RUNNER_TEMP/n4turetech-wrangler.toml" <<EOF
+          name = "n4turetech-treeoflife-proto"
+          main = "$RUNNER_TEMP/n4turetech-worker.mjs"
+          compatibility_date = "2026-08-20"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "n4turetech.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.n4turetech.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/n4turetech-wrangler.toml"
+
+      - name: Bind labs.4planet.org to current 4PLANET LABS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/labs-worker.mjs" <<'EOF'
+          const UPSTREAM = "https://labs-overview-v1.4planet-05.pages.dev";
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              let path = incoming.pathname || "/";
+              if (path === "/" || path === "") path = "/labs";
+              const upstream = new URL(path, UPSTREAM);
+              upstream.search = incoming.search;
+              const response = await fetch(new Request(upstream.toString(), request));
+              const headers = new Headers(response.headers);
+              headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+              return new Response(response.body, {status: response.status, statusText: response.statusText, headers});
+            }
+          };
+          EOF
+          cat > "$RUNNER_TEMP/labs-wrangler.toml" <<EOF
+          name = "4planet-labs-fixed-domain"
+          main = "$RUNNER_TEMP/labs-worker.mjs"
+          compatibility_date = "2026-08-20"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "labs.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/labs-wrangler.toml"
+
+      - name: Verify live fixed domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_200() {
             local url="$1"
-            local expected="$2"
-            for attempt in $(seq 1 18); do
-              headers=$(curl -sS -I --max-time 10 "$url" || true)
-              status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP\// {code=$2} END{print code}')
-              location=$(printf '%s' "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, ""); sub(/^location:[[:space:]]*/, ""); print; exit}')
-              if [[ "$status" =~ ^30[1278]$ ]] && [[ "$location" == "$expected"* ]]; then
-                echo "PASS $url -> $location"
-                return 0
-              fi
-              echo "Waiting for route: $url (attempt $attempt/18; status=${status:-none}; location=${location:-none})"
+            for attempt in $(seq 1 24); do
+              code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+              echo "$url -> HTTP $code (attempt $attempt/24)"
+              if [ "$code" = "200" ]; then return 0; fi
               sleep 10
             done
-            echo "Routing verification failed for $url"
             return 1
           }
-          check_redirect "https://4species.com/" "https://4planet.org/species"
-          check_redirect "https://4species.com/jaguar" "https://4planet.org/species/jaguar"
-          check_redirect "https://4species.com/orca" "https://4planet.org/species/orca"
+          check_200 "https://n4turetech.com/"
+          check_200 "https://n4turetech.com/choice"
+          check_200 "https://labs.4planet.org/"
+          check_200 "https://labs.4planet.org/labs"
 
-      - name: Inventory Cloudflare zones and Pages
+      - name: Inventory Cloudflare zones
         shell: bash
         run: |
           set -euo pipefail
@@ -159,18 +220,9 @@ jobs:
           echo "$zones" | jq -e '.success == true' >/dev/null
           echo "=== CLOUDFLARE ZONES ==="
           echo "$zones" | jq -r '.result | sort_by(.name)[] | [.name, .status, .type] | @tsv'
-          projects="$(curl -fsS "${auth[@]}" "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects?per_page=100")"
-          echo "$projects" | jq -e '.success == true' >/dev/null
-          echo "=== PAGES PROJECTS ==="
-          echo "$projects" | jq -r '.result | sort_by(.name)[] | [.name, (.production_branch // ""), (.subdomain // "")] | @tsv'
-          echo "=== PAGES CUSTOM DOMAINS ==="
-          for p in $(echo "$projects" | jq -r '.result[].name'); do
-            domains="$(curl -fsS "${auth[@]}" "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${p}/domains" || true)"
-            if echo "$domains" | jq -e '.success == true' >/dev/null 2>&1; then
-              echo "$domains" | jq -r --arg p "$p" '.result[]? | [$p, .name, .status] | @tsv'
-            fi
-          done
 
       - name: Record deployment intent
         run: |
-          echo "4species.com is an entry/redirect domain only. Canonical product remains 4PLANET SPECIES at https://4planet.org/species."
+          echo "4species.com stays a canonical SPECIES entry alias."
+          echo "n4turetech.com is a fixed noindex TREE OF LIFE prototype surface."
+          echo "labs.4planet.org is a fixed noindex 4PLANET LABS development surface."
