@@ -1,5 +1,6 @@
 import type { GoldLabProject } from "./labsGoldMeta";
 import { humanStateFor } from "./labsHumanState";
+import { wbsProjectionFor } from "./labsWbsProjection";
 
 export type PulseWorkItem = {
   state: string;
@@ -17,6 +18,7 @@ export type ProjectPulse = {
   freshness: string;
   workNow: PulseWorkItem[];
   workNext: PulseWorkItem[];
+  waiting: PulseWorkItem[];
   founder: PulseWorkItem[];
   wbsSummary: string;
   digitalState: string;
@@ -55,17 +57,35 @@ function roadmapItems(project: GoldLabProject, stage: RegExp): PulseWorkItem[] {
 }
 
 export function projectPulseFor(project: GoldLabProject): ProjectPulse {
-  const now = unique([
+  const brainWbs = wbsProjectionFor(project);
+
+  const derivedNow = unique([
     ...taskItems(project, ["ACTIVE", "NOW", "BUILDING", "READY"]),
     ...processItems(project),
     ...roadmapItems(project, /NOW|ACTIVE/i),
   ]).slice(0, 4);
 
-  const next = unique([
-    ...taskItems(project, ["NEXT", "QUEUED", "GATED", "WAITING"]),
+  const derivedNext = unique([
+    ...taskItems(project, ["NEXT", "QUEUED", "GATED"]),
     ...roadmapItems(project, /NEXT|LATER/i),
     { state: "NEXT GATE", text: project.control.nextGate },
   ]).slice(0, 4);
+
+  const derivedWaiting = unique([
+    ...taskItems(project, ["WAITING", "BLOCKED", "HOLD"]),
+  ]).slice(0, 4);
+
+  const workNow = brainWbs?.now.length
+    ? brainWbs.now.map((text) => ({ state: "BRAIN WBS", text, owner: "CURRENT PROJECT" }))
+    : derivedNow.length ? derivedNow : [{ state: "CURRENT", text: project.control.nextGate }];
+
+  const workNext = brainWbs?.next.length
+    ? brainWbs.next.map((text) => ({ state: "NEXT", text }))
+    : derivedNext;
+
+  const waiting = brainWbs?.waiting.length
+    ? brainWbs.waiting.map((text) => ({ state: "WAITING / GATED", text }))
+    : derivedWaiting;
 
   const founder = unique((project.founderDecisions ?? []).map((text) => ({
     state: "FOUNDER",
@@ -74,9 +94,11 @@ export function projectPulseFor(project: GoldLabProject): ProjectPulse {
   }))).slice(0, 3);
 
   const explicitWork = (project.tasks?.length ?? 0) + (project.processes?.length ?? 0) + (project.roadmap?.length ?? 0);
-  const wbsSummary = explicitWork
-    ? `${explicitWork} projected work / process / roadmap items available on this LABS view. Full task-detail truth remains in BRAIN / WBS / Atomic.`
-    : "No task-level WBS items are projected on this public-safe view yet. The controlled Project Goal and Next Gate remain the execution boundary; detailed WBS stays in BRAIN rather than being invented here.";
+  const wbsSummary = brainWbs
+    ? `${brainWbs.source}. Current gate: ${brainWbs.gate} Full task-detail truth remains in BRAIN / WBS / Atomic.`
+    : explicitWork
+      ? `${explicitWork} projected work / process / roadmap items available on this LABS view. Full task-detail truth remains in BRAIN / WBS / Atomic.`
+      : "No task-level WBS items are projected on this public-safe view yet. The controlled Project Goal and Next Gate remain the execution boundary; detailed WBS stays in BRAIN rather than being invented here.";
 
   const digitalState = project.control.links.length
     ? `${project.control.links.length} verified or controlled digital link${project.control.links.length === 1 ? "" : "s"} projected. Leading One is shown first.`
@@ -90,8 +112,9 @@ export function projectPulseFor(project: GoldLabProject): ProjectPulse {
     aiPlan: project.aiPlan || project.control.nextGate,
     proof: project.evidence || project.control.source,
     freshness: project.freshness || "UNKNOWN",
-    workNow: now.length ? now : [{ state: "CURRENT", text: project.control.nextGate }],
-    workNext: next,
+    workNow,
+    workNext,
+    waiting,
     founder,
     wbsSummary,
     digitalState,
