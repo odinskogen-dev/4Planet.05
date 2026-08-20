@@ -4,6 +4,7 @@
    from the bottom Journey HUD. */
 
 .nature-browser[data-entered="true"] .nature-entry{
+  transition:none!important;
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;
