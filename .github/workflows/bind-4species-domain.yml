@@ -39,6 +39,22 @@ jobs:
             echo "No supported Cloudflare API token secret is available in this repository."
             exit 2
           fi
+
+          # Tolerate accidental whitespace, Bearer prefix, quotes or NAME=value paste.
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"
+          TOKEN="${TOKEN%\"}"
+          TOKEN="${TOKEN#\'}"
+          TOKEN="${TOKEN%\'}"
+
+          if [ -z "$TOKEN" ]; then
+            echo "Cloudflare token secret became empty after safe normalization."
+            exit 2
+          fi
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
@@ -47,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           VERIFY=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" https://api.cloudflare.com/client/v4/user/tokens/verify)
-          echo "$VERIFY" | jq -e '.success == true' >/dev/null
+          echo "$VERIFY" | jq -e '.success == true and .result.status == "active"' >/dev/null
           ZONES=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
           echo "$ZONES" | jq -e '.success == true' >/dev/null
           ZONE_ID=$(echo "$ZONES" | jq -r '.result[0].id // empty')
