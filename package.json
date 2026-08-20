@@ -11,14 +11,14 @@
     "typecheck": "tsc --noEmit",
     "assets:verify": "node scripts/verify-assets.mjs",
     "lint": "eslint src",
-    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/species-media-rights-contract.test.mjs scripts/xr-scene-contract.test.mjs scripts/jaguar-3d-contract.test.mjs",
+    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/species-media-rights-contract.test.mjs scripts/xr-scene-contract.test.mjs scripts/jaguar-3d-contract.test.mjs scripts/journey-transfer-contract.test.mjs",
     "test:contracts": "node --test scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
     "maplibre-gl": "^5.24.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^18.3.0",
     "react-router-dom": "^6.30.4"
   },
   "devDependencies": {
