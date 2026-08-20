@@ -6,6 +6,7 @@ const overview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx", "utf8
 const baseFresh = fs.readFileSync("src/pages/labs/labsFreshProjection.ts", "utf8");
 const current = fs.readFileSync("src/pages/labs/labsCurrentProjection.ts", "utf8");
 const currentControl = fs.readFileSync("src/pages/labs/labsCurrentControl.ts", "utf8");
+const wbs = fs.readFileSync("src/pages/labs/labsWbsProjection.ts", "utf8");
 const gold = fs.readFileSync("src/pages/labs/labsGoldMeta.ts", "utf8");
 const complete = fs.readFileSync("src/pages/labs/labsCompleteMeta.ts", "utf8");
 const humanState = fs.readFileSync("src/pages/labs/labsHumanState.ts", "utf8");
@@ -17,7 +18,7 @@ const pulseCss = fs.readFileSync("src/pages/labs/labsProjectPulse.css", "utf8");
 const indexCss = fs.readFileSync("src/pages/labs/labsIndex.css", "utf8");
 const mobileFix = fs.readFileSync("src/pages/labs/labsMobileFix.css", "utf8");
 const data = fs.readFileSync("src/pages/labs/labsData.ts", "utf8");
-const inventory = `${baseFresh}\n${current}\n${gold}\n${currentControl}\n${humanState}`;
+const inventory = `${baseFresh}\n${current}\n${gold}\n${currentControl}\n${humanState}\n${wbs}`;
 
 test("LABS remains a dated read-only BRAIN projection", () => {
   assert.match(data, /MANUAL BRAIN PROJECTION · READ ONLY/);
@@ -26,6 +27,7 @@ test("LABS remains a dated read-only BRAIN projection", () => {
   assert.match(overview, /missing values stay UNKNOWN/i);
   assert.match(detail, /noindex,nofollow,noarchive/);
   assert.match(complete, /reconcileCurrentControl/);
+  assert.match(wbs, /not a second task database/i);
 });
 
 test("aggregate command cards filter the index instead of navigating to an arbitrary project", () => {
@@ -72,6 +74,16 @@ test("all 16 Wave-01 Mission Goal Contracts remain projected with economics", ()
   assert.match(gold, /actual spend\/committed cost remains UNKNOWN/);
 });
 
+test("current BRAIN WBS projection covers core control and all 16 Mission Project Homes", () => {
+  for (const id of [
+    "SYS-P00-STRAT","SYS-P00-PRODUCT","SYS-P00-TRUTH","SYS-P00-PROOF","SYS-P00-CAPITAL","SYS-P00-COMPANY","SYS-P00-REL","SYS-P00-BRAND","SYS-P00-PMAP",
+    "OCE-WH4LES-01","OCE-COR4L-01","OCE-PL4STIC-01","OCE-REWILD-M-01","EAR-CLIM4TE-01","EAR-AM4ZONIA-01","EAR-SPECIES-01","EAR-REWILD-L-01",
+    "SAP-FOOD-01","SAP-EN3RGY-01","SAP-CIRCULAR-01","SAP-F4SHION-01","CUL-M4GAZINE-01","CUL-4FILM-01","CUL-4RT-01","CUL-4PLAY-01",
+  ]) assert.ok(wbs.includes(`"${id}"`), `missing WBS projection ${id}`);
+  assert.match(pulse, /wbsProjectionFor/);
+  assert.match(pulse, /BRAIN WBS/);
+});
+
 test("shared Project Homes have real goals and money boundaries", () => {
   for (const id of ["SYS-P00-STRAT-G01","SYS-P00-PRODUCT-G01","SYS-P00-TRUTH-G01","SYS-P00-PROOF-G01","SYS-P00-CAPITAL-G01","SYS-P00-COMPANY-G01","SYS-P00-REL-G01","SYS-P00-SOLUTIONS-G01","SYS-P00-ECONOMY-G01","SYS-P00-DPITCH-G01","SYS-P00-LABS-G01","SYS-P00-PMAP-G01"]) assert.ok(gold.includes(id) || currentControl.includes(id), `missing ${id}`);
   assert.match(gold, /15 historical submissions · 14 awaiting · 1 rejected · 0 award\/secured · 0 contracted · 0 cash/);
@@ -83,7 +95,7 @@ test("shared Project Homes have real goals and money boundaries", () => {
 test("project detail is human-first and materially richer than the old status page", () => {
   for (const token of [
     "PROJECT BRIEF", "CURRENT STATE", "WHY THIS PROJECT EXISTS", "OWNER / OPERATING MODEL", "AI EXECUTION LOGIC",
-    "GOAL CONTRACT", "MAIN GOAL", "SUCCESS / PROOF", "ECONOMIC GOAL", "EXECUTION", "WORK NOW", "WORK NEXT", "FOUNDER GATE",
+    "GOAL CONTRACT", "MAIN GOAL", "SUCCESS / PROOF", "ECONOMIC GOAL", "EXECUTION", "WORK NOW", "WORK NEXT", "WAITING / BLOCKED", "FOUNDER GATE",
     "WBS / PROCESS COVERAGE", "MONEY + PROOF", "ECONOMICS", "MONEY TRUTH", "EVIDENCE / PROOF", "TECHNICAL / RECOVERY EVIDENCE",
   ]) assert.ok(detail.includes(token), `missing ${token}`);
   assert.match(detail, /PrimaryLinks/);
@@ -94,12 +106,13 @@ test("project detail is human-first and materially richer than the old status pa
   assert.doesNotMatch(detail, /<small>\{asset\.href/);
 });
 
-test("project pulse derives work, founder, evidence and WBS visibility without creating a new truth store", () => {
+test("project pulse derives work, waiting, founder, evidence and WBS visibility without creating a new truth store", () => {
   assert.match(pulse, /project\.tasks/);
   assert.match(pulse, /project\.processes/);
   assert.match(pulse, /project\.roadmap/);
   assert.match(pulse, /project\.founderDecisions/);
   assert.match(pulse, /project\.evidence/);
+  assert.match(pulse, /waiting/);
   assert.match(pulse, /Full task-detail truth remains in BRAIN \/ WBS \/ Atomic/);
   assert.match(pulse, /rather than being invented here/);
 });
@@ -114,12 +127,20 @@ test("human-facing current states cover Wave-01 and current high-value tracks", 
   ]) assert.ok(humanState.includes(slug), `missing current human state ${slug}`);
 });
 
-test("SPECIES is fail-closed between accepted baseline and newer draft head", () => {
+test("SPECIES is fail-closed between accepted baseline and newer draft experiments", () => {
   assert.match(humanState, /accepted internal shared-context Jaguar baseline/i);
   assert.match(currentControl, /OPEN ACCEPTED JAGUAR BASELINE/);
-  assert.match(currentControl, /newer exact-head work remains draft/i);
+  assert.match(currentControl, /latest checked Convergence runs failed/i);
+  assert.match(currentControl, /OPEN CURRENT LIGHT LENS PR #98/);
   assert.doesNotMatch(currentControl, /OPEN SPECIES",/);
   assert.match(currentControl, /OPEN SPECIES PRODUCT/);
+});
+
+test("CREATOR exposes the verified live domain but keeps economic proof fail-closed", () => {
+  assert.match(currentControl, /OPEN CRE4TORS\.COM/);
+  assert.match(currentControl, /https:\/\/cre4tors\.com/);
+  assert.match(currentControl, /apex\/www HTTPS and proxy identity verified/i);
+  assert.match(humanState, /Real creator workflow\/economic proof remains open/i);
 });
 
 test("TREE OF LIFE and ECONOMY remain correctly bounded", () => {
@@ -136,7 +157,7 @@ test("all literal LABS URLs are valid https URLs", () => {
   for (const raw of urls) {
     const url = new URL(raw);
     assert.equal(url.protocol, "https:");
-    assert.ok(url.hostname.includes("4planet") || url.hostname === "github.com", `unexpected host: ${url.hostname}`);
+    assert.ok(url.hostname.includes("4planet") || url.hostname === "github.com" || url.hostname === "cre4tors.com", `unexpected host: ${url.hostname}`);
   }
 });
 
@@ -151,7 +172,7 @@ test("mobile detail and index guard readable layout and horizontal containment",
 });
 
 test("private Founder finance/health/legal truth is not projected into current LABS metadata/states", () => {
-  const publicProjection = `${gold}\n${currentControl}\n${current}\n${humanState}`;
+  const publicProjection = `${gold}\n${currentControl}\n${current}\n${humanState}\n${wbs}`;
   assert.doesNotMatch(publicProjection, /forced sale/i);
   assert.doesNotMatch(publicProjection, /ulcerative/i);
   assert.doesNotMatch(publicProjection, /AAP/i);
