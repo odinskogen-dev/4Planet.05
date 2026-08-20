@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { childrenOf, projectBySlug, projectionState, verifiedAt } from "./labsCurrentProjection";
 import type { GoldLabProject } from "./labsGoldMeta";
 import { projectPulseFor, type PulseWorkItem } from "./labsProjectPulse";
+import LabsProjectContract from "./LabsProjectContract";
 import "./labsGold.css";
 
 type Theme = "dark" | "light";
@@ -117,5 +118,5 @@ export default function LabsProjectDetailPremium({ project }: { project: GoldLab
     robots.content = "noindex,nofollow,noarchive";
     return () => { if (robots) robots.content = previous; };
   }, [project]);
-  return <div className="labs-shell labs-shell--v4" data-theme={theme}><Header theme={theme} setTheme={setTheme} project={project} /><main className={`labs-page labs-page--detail labs-page--detail-v4 ${project.slug === "4planet" ? "labs-page--fourplanet" : ""}`} style={accentStyle(project)}><GridRails /><div className="labs-detail-wrap labs-detail-wrap--v4 labs-grid-section"><Hero project={project} /><ProjectBrief project={project} /><Goals project={project} /><Execution project={project} /><EconomicsProof project={project} /><FounderPort project={project} /><Children project={project} /><WorkDetails project={project} /><Evidence project={project} /><div className="labs-detail-actions"><a href={labHref(project.parent ?? "")}>← {project.parent ? (projectBySlug(project.parent)?.title ?? "PARENT") : "LABS"}</a><a href={labHref()}>ALL PROJECTS</a></div></div></main><footer className="labs-footer"><span>4PLANET LABS · NOINDEX · READ-ONLY PROJECTION</span><span>GOAL → PROJECT → WBS → EVIDENCE → ECONOMICS → NEXT GATE</span><a href="https://4planet.org">4PLANET.ORG ↗</a></footer></div>;
+  return <div className="labs-shell labs-shell--v4" data-theme={theme}><Header theme={theme} setTheme={setTheme} project={project} /><main className={`labs-page labs-page--detail labs-page--detail-v4 ${project.slug === "4planet" ? "labs-page--fourplanet" : ""}`} style={accentStyle(project)}><GridRails /><div className="labs-detail-wrap labs-detail-wrap--v4 labs-grid-section"><Hero project={project} /><ProjectBrief project={project} /><Goals project={project} /><LabsProjectContract project={project} /><Execution project={project} /><EconomicsProof project={project} /><FounderPort project={project} /><Children project={project} /><WorkDetails project={project} /><Evidence project={project} /><div className="labs-detail-actions"><a href={labHref(project.parent ?? "")}>← {project.parent ? (projectBySlug(project.parent)?.title ?? "PARENT") : "LABS"}</a><a href={labHref()}>ALL PROJECTS</a></div></div></main><footer className="labs-footer"><span>4PLANET LABS · NOINDEX · READ-ONLY PROJECTION</span><span>GOAL → PROJECT → WBS → EVIDENCE → ECONOMICS → NEXT GATE</span><a href="https://4planet.org">4PLANET.ORG ↗</a></footer></div>;
 }
