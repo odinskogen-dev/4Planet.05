@@ -32,6 +32,16 @@ test('3D runtime and model assets are true progressive enhancement with fail-clo
   assert.match(css, /data-jaguar3d-active=true/);
 });
 
+test('progressive 3D visibility is committed as terminal runtime state, not only CSS transition state', () => {
+  assert.match(renderer, /host\.style\.setProperty\('display', 'block', 'important'\)/);
+  assert.match(renderer, /host\.style\.setProperty\('visibility', 'visible', 'important'\)/);
+  assert.match(renderer, /host\.style\.setProperty\('opacity', '1', 'important'\)/);
+  assert.match(renderer, /host\.style\.setProperty\('pointer-events', 'auto', 'important'\)/);
+  assert.match(renderer, /host\.style\.setProperty\('visibility', 'hidden', 'important'\)/);
+  assert.match(renderer, /host\.style\.setProperty\('opacity', '0', 'important'\)/);
+  assert.match(renderer, /resize\(\);/);
+});
+
 test('Three.js import map is pinned and Journey CSP is narrowly widened only for required 3D origins', () => {
   assert.match(html, /three@0\.185\.1\/build\/three\.module\.js/);
   assert.match(html, /three@0\.185\.1\/examples\/jsm\//);
