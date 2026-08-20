@@ -13,6 +13,14 @@ const LABS = [
     capability: "PEOPLE × 4CULTURE × ECONOMY",
   },
   {
+    id: "HUMAN CAPACITY",
+    state: "INSIDE CREATOR ENGINE",
+    title: "People are the infrastructure",
+    body: "A bounded capacity experiment: map the friction tax, return time safely, keep private economy separate, and route only voluntary capacity toward meaningful 4PLANET needs.",
+    href: "/labs/creator/capacity",
+    capability: "PEOPLE × ECONOMY × MOVEMENT",
+  },
+  {
     id: "LIVING WORLD DESIGN",
     state: "EARLY STAGE",
     title: "Nature-derived interface behaviour",
