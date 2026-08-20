@@ -38,13 +38,13 @@ const overrides: Record<string, Partial<LabProject>> = {
     ],
   },
   "4planet/e4rth/species": {
-    now: "SPECIES is active Gold work. An accepted internal shared-context Jaguar baseline exists and has a verified immutable preview. PR #79 has advanced beyond that baseline into a premium Jaguar + Orca transfer line; the newer exact head remains draft until current exact-head convergence proves it.",
-    next: "Exact-head gate the current PR #79 premium line, then inspect Jaguar + Orca + Solutions on the same accepted artifact before any Gold or production promotion.",
-    freshness: "Founder Control EAR-SPECIES-01 + current PR #79 readback · 21 Aug 2026",
+    now: "SPECIES is active Gold work. An accepted internal shared-context Jaguar baseline exists with a verified immutable preview. Newer PR #79 Journey work and stacked ORCA Light Lens PR #98 remain draft and fail-closed after their latest checked convergence failures; neither replaces the accepted baseline or production.",
+    next: "Repair and exact-head gate the current shared Journey/Light Lens line, then inspect Jaguar + Orca + Solutions on one accepted artifact before any newer Gold or production promotion.",
+    freshness: "Founder Control EAR-SPECIES-01 + current PR #79/#98 readback · 21 Aug 2026",
     assets: [
       { label: "OPEN SPECIES PRODUCT", href: "https://4planet.org/species", kind: "WEB" },
       { label: "OPEN ACCEPTED JAGUAR BASELINE", href: "https://756dff8b.4planet-05.pages.dev/journey/jaguar/", kind: "PREVIEW" },
-      { label: "OPEN CURRENT JOURNEY PR #79", href: "https://github.com/odinskogen-dev/4Planet.05/pull/79", kind: "REPO" },
+      { label: "OPEN CURRENT LIGHT LENS PR #98", href: "https://github.com/odinskogen-dev/4Planet.05/pull/98", kind: "REPO" },
       { label: "OPEN SPECIES MISSION", href: "https://4planet.org/missions/species", kind: "WEB" },
     ],
   },
@@ -55,7 +55,7 @@ const overrides: Record<string, Partial<LabProject>> = {
     assets: [],
   },
   "4planet/labs-system": {
-    now: "LABS remains an open draft read-only projection over BRAIN. The current V6 pass is replacing stale hard-coded current-state seams with a controlled projection adapter and materially strengthening every Project Detail without changing the visual system.",
+    now: "LABS remains an open draft read-only projection over BRAIN. The current V6 pass is replacing stale hard-coded current-state seams with controlled current/WBS projection adapters and materially strengthening every Project Detail without changing the visual system.",
     next: "Close exact-head browser/link/mobile QA, verify the current preview identity and only then return the candidate for Founder use/judgement.",
     freshness: "Founder Control SYS-P00-LABS + PR #54 current work · 21 Aug 2026",
     assets: [{ label: "OPEN LABS PR #54", href: "https://github.com/odinskogen-dev/4Planet.05/pull/54", kind: "REPO" }],
@@ -100,16 +100,18 @@ const additions: LabProject[] = [
     accent: "culture",
     summary: "Creator operating infrastructure for reducing admin/economic friction and returning more time, agency and opportunity to independent creators.",
     why: "Creators experience work, rights, money, opportunities and time as one system. A complete loop may create more human value than isolated creator tools while supplying voluntary creative capacity to living-planet work.",
-    now: "CRE4TORS_ v0.3 is Founder-visible and exact-head technically verified. The exact Cloudflare preview is live; dedicated cre4tors.com custom-domain binding and real human/economic validation remain open.",
-    next: "Founder visual judgement → dedicated domain binding verification → two private creator workflow tests → one real complete rights-safe creator-value loop.",
+    now: "CRE4TORS_ v0.3 is technically verified and its isolated cre4tors.com binding now has newer GitHub operations proof: apex/www HTTPS, proxy identity and the host-aware root were browser-verified. Real creator workflow/economic validation remains open.",
+    next: "Founder visual/product judgement → two private unlike-creator workflow tests → one authorised real need → one complete rights-safe creator-value loop.",
     aiPlan: "Prototype → comprehension → typed contracts → private unlike-user tests → one real value/economic loop → scale / hold / kill from evidence.",
-    evidence: "Founder Control · LAB-CREATOR-01 · GitHub PR #95",
+    evidence: "Founder Control · LAB-CREATOR-01 · GitHub PR #95 + OPS PR #96",
     owner: "AXE / PRODUCT / ECONOMY / SONIC",
     authority: "LABS / BRAIN / FOUNDER RELEASE / PROFESSIONAL REGULATED BOUNDARIES",
-    freshness: "Founder Control + PR #95 readback · 21 Aug 2026",
+    freshness: "Founder Control + PR #95/#96 reconciliation · 21 Aug 2026",
     assets: [
-      { label: "OPEN CRE4TORS_ V0.3", href: "https://e8c3e7d9.4planet-05.pages.dev/cre4tors", kind: "PREVIEW" },
+      { label: "OPEN CRE4TORS.COM", href: "https://cre4tors.com", kind: "WEB" },
+      { label: "OPEN EXACT CRE4TORS_ PREVIEW", href: "https://e8c3e7d9.4planet-05.pages.dev/cre4tors", kind: "PREVIEW" },
       { label: "OPEN CREATOR ENGINE PR #95", href: "https://github.com/odinskogen-dev/4Planet.05/pull/95", kind: "REPO" },
+      { label: "OPEN DOMAIN OPS PR #96", href: "https://github.com/odinskogen-dev/4Planet.05/pull/96", kind: "REPO" },
     ],
   },
 ];
@@ -167,10 +169,10 @@ export const portfolioStats = {
 };
 
 export const recentSystemMoves: Array<readonly [string, string, string]> = [
-  ["AUG21-LABS", "LABS V6 is reconciling current BRAIN into a richer read-only Project Detail and removing stale/broken Founder-facing links.", "BUILDING"],
+  ["AUG21-LABS", "LABS V6 is reconciling current BRAIN into richer Project Details with current WBS, economics, proof and verified digital homes while withholding stale or broken links.", "BUILDING"],
   ["AUG20-PUBLIC", "PR #92 is the current verified immutable ONE INTERFACE Founder-review candidate; production remains unchanged until Founder visual acceptance.", "CURRENT"],
   ["AUG20-SONIC", "SONIC is now a bounded Project Home for shared rights-aware sound, beginning with Orca Gold and transfer proof.", "ACTIVE"],
-  ["AUG20-CREATOR", "CREATOR ENGINE / CRE4TORS_ v0.3 has exact-head technical proof; domain binding and real creator-value validation remain open.", "BUILDING"],
-  ["AUG20-SPECIES", "SPECIES has an accepted shared-context baseline; newer Jaguar + Orca premium work remains draft until exact-head acceptance.", "GATED"],
+  ["AUG20-CREATOR", "CREATOR ENGINE / CRE4TORS_ v0.3 is technically verified and cre4tors.com has isolated live-domain operations proof; real creator-value validation remains open.", "BUILDING"],
+  ["AUG20-SPECIES", "SPECIES keeps the accepted shared-context baseline while newer PR #79 / ORCA Light Lens #98 remain fail-closed draft experiments until a current exact artifact passes convergence.", "GATED"],
   ...baseRecentSystemMoves,
 ];
