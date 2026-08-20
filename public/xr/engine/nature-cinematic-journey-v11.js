@@ -138,11 +138,6 @@
 
   const show = async (index, userInitiated = false) => {
     if (!root || !manifest || !layers.length) return;
-
-    // The scene event can be emitted more than once while a browser is still
-    // composing the same chapter (for example around viewport/3D readiness).
-    // Re-entering the same pending scene must not invalidate its own settle
-    // timer. Different-scene requests still supersede immediately via token.
     if (pendingIndex === index) return;
     if (root.dataset.cinematicSettled === 'true' && root.dataset.cinematicSettledIndex === String(index)) return;
 
@@ -152,12 +147,17 @@
     const token = ++sceneToken;
     pendingIndex = index;
     root.dataset.cinematicSettled = 'false';
+    root.dataset.cinematicSettledIndex = '';
 
     let resolved;
     try {
       resolved = await resolveSceneSrc(media);
     } catch {
-      if (token === sceneToken) pendingIndex = null;
+      if (token === sceneToken) {
+        pendingIndex = null;
+        root.dataset.chapterMediaReady = 'false';
+        root.dataset.chapterMediaError = 'true';
+      }
       return;
     }
     if (token !== sceneToken || !resolved?.src) return;
@@ -172,6 +172,7 @@
     root.dataset.cinematicScene = scene.state || node.kind?.toLowerCase() || 'life';
     root.dataset.cinematicIndex = String(index);
     root.dataset.sceneMediaFallback = String(resolved.fallback);
+    root.dataset.chapterMediaError = 'false';
     applyMarkerLayout(index);
     updateCredit(scene, resolved.fallback);
     if (userInitiated) runShutter(scene.travel || 'dolly');
@@ -184,25 +185,26 @@
       incoming.classList.remove('is-prepared');
       outgoing.classList.remove('is-active');
       outgoing.classList.add('is-leaving');
-      const settleDelay = reducedMotion() ? 0 : TRANSITION_SETTLE_MS;
+      activeLayer = incomingIndex;
+      root.dataset.chapterMediaReady = 'true';
+
+      // Interaction readiness belongs to the committed scene state, not to the
+      // cosmetic cleanup timer. Headless/full-tier Chromium has proven that a
+      // delayed timer may stall even after the chapter is fully committed.
+      root.dataset.cinematicSettled = 'true';
+      root.dataset.cinematicSettledIndex = String(index);
+      pendingIndex = null;
+
+      const cleanupDelay = reducedMotion() ? 0 : TRANSITION_SETTLE_MS;
       window.setTimeout(() => {
         if (token !== sceneToken) return;
         outgoing.classList.remove('is-leaving');
-        root.dataset.cinematicSettled = 'true';
-        root.dataset.cinematicSettledIndex = String(index);
-        pendingIndex = null;
-      }, settleDelay);
-      activeLayer = incomingIndex;
-      root.dataset.chapterMediaReady = 'true';
+      }, cleanupDelay);
     };
 
     if (reducedMotion()) {
       commit();
     } else {
-      // Double-rAF preserves the authored prepared→active visual transition,
-      // but rAF is not allowed to be a liveness dependency. Headless/full-tier
-      // Chromium can delay frame callbacks under compositing/network pressure.
-      // The bounded timer commits the exact same state once if frames stall.
       const commitFallback = window.setTimeout(commit, COMMIT_FALLBACK_MS);
       requestAnimationFrame(() => requestAnimationFrame(() => {
         window.clearTimeout(commitFallback);
