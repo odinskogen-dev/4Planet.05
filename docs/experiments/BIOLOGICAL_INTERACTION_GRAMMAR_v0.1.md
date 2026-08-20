@@ -33,9 +33,17 @@ Existing premium typography, black/white master surfaces, one-active-accent rule
 
 Source branch: `sandbox/s4piens-food-human-systems-atlas`.
 
+Exact preserved base SHA: `ebe008c1adcad56bddc633a03314b15ed3269a34`.
+
 Experiment branch: `experiment/biomimetic-s4piens-food-tropism-20260821`.
 
-The original S4PIENS sandbox and the existing FOOD Gold Journey are preserved. The experiment adds a new Human Systems ingress before the existing deep journey.
+Baseline route: `/sandbox/s4piens` remains the existing S4PIENS sandbox.
+
+Experiment route: `/sandbox/s4piens-bio` adds the Biological Human Systems ingress and then renders the existing FOOD Gold Journey beneath it.
+
+Compatibility alias: `/sandbox/s4piens-classic` also renders the baseline.
+
+The existing structural contract that keeps biological experiments disabled by default is deliberately preserved. The experiment is therefore additive and directly A/B comparable rather than replacing the sandbox baseline.
 
 ### Mechanisms under test
 
@@ -72,6 +80,7 @@ Spatial proximity and line weight in this experiment represent **interface relev
 - Does `prefers-reduced-motion` remove non-essential transitions?
 - Does the experience remain legible at 390×844, 430×932 and 1440×900?
 - Does the existing FOOD Gold Journey remain intact after the new ingress?
+- Does the baseline `/sandbox/s4piens` remain unchanged and independently usable?
 
 ## Controlled next experiments
 
@@ -109,12 +118,13 @@ Test one clearly labelled 4PLANET interpretation field over raw source geometry.
 
 1. Additive experiments only; no automatic main merge or production replacement.
 2. Preserve the exact pre-experiment source branch/commit and rollback path.
-3. No biological metaphor may invent relationships, confidence, causality or ecological outcomes.
-4. Shared Product Context and canonical identities remain authoritative.
-5. Source Record, Observation, Signal, Interpretation, Pressure, Solution, Contribution, Delivery, Proof and Outcome remain distinct.
-6. Motion must improve hierarchy, state or comprehension; otherwise remove it.
-7. Reduced motion, keyboard/focus, mobile touch and performance are mandatory acceptance axes.
-8. Record expected mechanism, observed result, performance/accessibility cost and learning before cross-product promotion.
+3. Preserve existing structural tests and baseline routes; do not weaken guard rails merely to make an experiment pass.
+4. No biological metaphor may invent relationships, confidence, causality or ecological outcomes.
+5. Shared Product Context and canonical identities remain authoritative.
+6. Source Record, Observation, Signal, Interpretation, Pressure, Solution, Contribution, Delivery, Proof and Outcome remain distinct.
+7. Motion must improve hierarchy, state or comprehension; otherwise remove it.
+8. Reduced motion, keyboard/focus, mobile touch and performance are mandatory acceptance axes.
+9. Record expected mechanism, observed result, performance/accessibility cost and learning before cross-product promotion.
 
 ## Learning loop
 
