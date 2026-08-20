@@ -1,0 +1,135 @@
+name: Bind 4species.com to SPECIES
+
+on:
+  push:
+    branches:
+      - ops/4species-domain-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bind-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve Cloudflare API token without exposing it
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          if [ -z "$TOKEN" ]; then
+            echo "No supported Cloudflare API token secret is available in this repository."
+            exit 2
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Verify token and resolve 4species.com account
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERIFY=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" https://api.cloudflare.com/client/v4/user/tokens/verify)
+          echo "$VERIFY" | jq -e '.success == true' >/dev/null
+          ZONES=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
+          echo "$ZONES" | jq -e '.success == true' >/dev/null
+          ZONE_ID=$(echo "$ZONES" | jq -r '.result[0].id // empty')
+          ACCOUNT_ID=$(echo "$ZONES" | jq -r '.result[0].account.id // empty')
+          if [ -z "$ZONE_ID" ] || [ -z "$ACCOUNT_ID" ]; then
+            echo "4species.com was not found as an active Cloudflare zone accessible to this token."
+            exit 3
+          fi
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+          echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
+          echo "Cloudflare token verified and 4species.com zone resolved."
+
+      - name: Create isolated redirect Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/4species-worker.mjs" <<'EOF'
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              let path = incoming.pathname || "/";
+              let targetPath;
+
+              if (path === "/" || path === "") {
+                targetPath = "/species";
+              } else if (path === "/species" || path.startsWith("/species/")) {
+                targetPath = path;
+              } else {
+                targetPath = `/species${path.startsWith("/") ? path : `/${path}`}`;
+              }
+
+              const target = new URL(targetPath, "https://4planet.org");
+              target.search = incoming.search;
+              return Response.redirect(target.toString(), 302);
+            }
+          };
+          EOF
+
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4species-router"
+          main = "$RUNNER_TEMP/4species-worker.mjs"
+          compatibility_date = "2026-08-20"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+
+          [[routes]]
+          pattern = "4species.com"
+          custom_domain = true
+
+          [[routes]]
+          pattern = "www.4species.com"
+          custom_domain = true
+          EOF
+
+      - name: Deploy 4species.com router
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify live domain routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_redirect() {
+            local url="$1"
+            local expected="$2"
+            for attempt in $(seq 1 18); do
+              headers=$(curl -sS -I --max-time 10 "$url" || true)
+              status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP\// {code=$2} END{print code}')
+              location=$(printf '%s' "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, ""); sub(/^location:[[:space:]]*/, ""); print; exit}')
+              if [[ "$status" =~ ^30[1278]$ ]] && [[ "$location" == "$expected"* ]]; then
+                echo "PASS $url -> $location"
+                return 0
+              fi
+              echo "Waiting for route: $url (attempt $attempt/18; status=${status:-none}; location=${location:-none})"
+              sleep 10
+            done
+            echo "Routing verification failed for $url"
+            return 1
+          }
+
+          check_redirect "https://4species.com/" "https://4planet.org/species"
+          check_redirect "https://4species.com/jaguar" "https://4planet.org/species/jaguar"
+          check_redirect "https://4species.com/orca" "https://4planet.org/species/orca"
+
+      - name: Record deployment intent
+        run: |
+          echo "4species.com is an entry/redirect domain only. Canonical product remains 4PLANET SPECIES at https://4planet.org/species."
