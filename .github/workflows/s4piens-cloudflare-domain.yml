@@ -6,6 +6,9 @@ on:
       - build/s4piens-universe-domain
     paths:
       - .github/workflows/s4piens-cloudflare-domain.yml
+  pull_request:
+    branches:
+      - sandbox/s4piens-narrative-journey-v04
   workflow_dispatch:
 
 permissions:
@@ -24,37 +27,24 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Verify Cloudflare secret exists
+      - name: Resolve Cloudflare account and zone
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "CLOUDFLARE_API_TOKEN is missing"
-            exit 1
-          fi
-
-      - name: Resolve S4PIENS zone and account
-        shell: bash
-        run: |
-          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           zones="$(curl -fsS "${auth[@]}" "${api}/zones?name=${S4PIENS_DOMAIN}")"
-          echo "$zones" | jq -e '.success == true' >/dev/null
-          count="$(echo "$zones" | jq '.result | length')"
-          if [ "$count" -ne 1 ]; then
-            echo "Expected exactly one Cloudflare zone for ${S4PIENS_DOMAIN}; found ${count}. No changes made."
-            exit 1
-          fi
+          echo "$zones" | jq -e '.success == true and (.result|length) == 1' >/dev/null
           zone_id="$(echo "$zones" | jq -r '.result[0].id')"
           account_id="$(echo "$zones" | jq -r '.result[0].account.id')"
           echo "::add-mask::${zone_id}"
           echo "::add-mask::${account_id}"
           echo "CF_ZONE_ID=${zone_id}" >> "$GITHUB_ENV"
           echo "CF_ACCOUNT_ID=${account_id}" >> "$GITHUB_ENV"
-          echo "Cloudflare token works and S4PIENS zone is accessible."
+          echo "PASS Cloudflare token + S4PIENS zone"
 
-      - name: Verify existing Pages project
+      - name: Verify S4PIENS branch target
         shell: bash
         run: |
           set -euo pipefail
@@ -62,38 +52,20 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           project="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}")"
           echo "$project" | jq -e '.success == true and .result.name == "4planet-05"' >/dev/null
-          echo "Existing 4planet-05 Pages project is accessible."
-
-      - name: Find latest S4PIENS branch alias
-        shell: bash
-        run: |
-          set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          alias=""
-          for attempt in $(seq 1 20); do
-            deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
-            echo "$deployments" | jq -e '.success == true' >/dev/null
-            alias="$(echo "$deployments" | jq -r --arg branch "$S4PIENS_BRANCH" '
-              [.result[] | select(.deployment_trigger.metadata.branch == $branch)]
-              | sort_by(.created_on) | reverse | .[0].aliases[]?
-              | select(endswith(".4planet-05.pages.dev"))
-              | select((split(".")[0] | test("^[0-9a-f]{8,}$")) | not)
-            ' | head -n 1)"
-            if [ -n "$alias" ] && [ "$alias" != "null" ]; then
-              break
-            fi
-            echo "Waiting for Cloudflare branch deployment/alias (${attempt}/20)..."
-            sleep 15
-          done
-          if [ -z "$alias" ] || [ "$alias" = "null" ]; then
-            echo "No stable Pages branch alias found for ${S4PIENS_BRANCH}. No DNS changes made."
+          deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
+          count="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | length')"
+          test "$count" -ge 1
+          slug="$(printf '%s' "$S4PIENS_BRANCH" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | cut -c1-28)"
+          alias="${slug}.${PAGES_PROJECT}.pages.dev"
+          code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://${alias}/" || true)"
+          if [ "$code" != "200" ]; then
+            echo "S4PIENS branch alias is not ready: HTTP ${code}"
             exit 1
           fi
           echo "S4PIENS_BRANCH_ALIAS=${alias}" >> "$GITHUB_ENV"
-          echo "Resolved current S4PIENS branch alias: ${alias}"
+          echo "PASS branch target https://${alias}/"
 
-      - name: Register S4PIENS custom domains with Pages
+      - name: Register Pages custom domains
         shell: bash
         run: |
           set -euo pipefail
@@ -103,16 +75,16 @@ jobs:
           echo "$existing" | jq -e '.success == true' >/dev/null
           for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
             if echo "$existing" | jq -e --arg d "$domain" '.result[]? | select(.name == $d)' >/dev/null; then
-              echo "Pages custom domain already registered: ${domain}"
+              echo "Pages domain already registered: ${domain}"
             else
               payload="$(jq -nc --arg d "$domain" '{name:$d}')"
               created="$(curl -fsS -X POST "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains" --data "$payload")"
               echo "$created" | jq -e '.success == true' >/dev/null
-              echo "Registered Pages custom domain: ${domain}"
+              echo "Registered Pages domain: ${domain}"
             fi
           done
 
-      - name: Point S4PIENS DNS to branch alias
+      - name: Point DNS to S4PIENS branch
         shell: bash
         run: |
           set -euo pipefail
@@ -126,63 +98,52 @@ jobs:
             if [ "$count" -eq 0 ]; then
               created="$(curl -fsS -X POST "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records" --data "$payload")"
               echo "$created" | jq -e '.success == true' >/dev/null
-              echo "Created proxied CNAME for ${domain}."
-              continue
-            fi
-            if [ "$count" -ne 1 ]; then
-              echo "Multiple DNS records exist for ${domain}; refusing automatic modification."
-              exit 1
-            fi
-            record_type="$(echo "$records" | jq -r '.result[0].type')"
-            record_content="$(echo "$records" | jq -r '.result[0].content')"
-            record_id="$(echo "$records" | jq -r '.result[0].id')"
-            if [ "$record_type" = "CNAME" ] && [ "$record_content" = "$S4PIENS_BRANCH_ALIAS" ]; then
-              echo "DNS already correct for ${domain}."
-            elif [ "$record_type" = "CNAME" ] && [[ "$record_content" == *.pages.dev ]]; then
-              updated="$(curl -fsS -X PUT "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records/${record_id}" --data "$payload")"
-              echo "$updated" | jq -e '.success == true' >/dev/null
-              echo "Updated existing Pages CNAME for ${domain}."
+              echo "Created DNS for ${domain}"
+            elif [ "$count" -eq 1 ]; then
+              record_type="$(echo "$records" | jq -r '.result[0].type')"
+              record_content="$(echo "$records" | jq -r '.result[0].content')"
+              record_id="$(echo "$records" | jq -r '.result[0].id')"
+              if [ "$record_type" = "CNAME" ] && [ "$record_content" = "$S4PIENS_BRANCH_ALIAS" ]; then
+                echo "DNS already correct for ${domain}"
+              elif [ "$record_type" = "CNAME" ] && [[ "$record_content" == *.pages.dev ]]; then
+                updated="$(curl -fsS -X PUT "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records/${record_id}" --data "$payload")"
+                echo "$updated" | jq -e '.success == true' >/dev/null
+                echo "Updated Pages DNS for ${domain}"
+              else
+                echo "Refusing to overwrite non-Pages DNS for ${domain}: ${record_type} ${record_content}"
+                exit 1
+              fi
             else
-              echo "Existing non-Pages DNS record for ${domain}: ${record_type}. Refusing overwrite."
+              echo "Refusing to modify multiple existing DNS records for ${domain}"
               exit 1
             fi
           done
 
-      - name: Check Pages domain state
+      - name: Wait for domain activation
         shell: bash
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          for attempt in $(seq 1 20); do
+          for attempt in $(seq 1 24); do
             domains="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains")"
             apex="$(echo "$domains" | jq -r --arg d "$S4PIENS_DOMAIN" '.result[] | select(.name==$d) | .status')"
             www="$(echo "$domains" | jq -r --arg d "$S4PIENS_WWW_DOMAIN" '.result[] | select(.name==$d) | .status')"
             echo "Domain state: apex=${apex:-missing}, www=${www:-missing}"
             if [ "$apex" = "active" ] && [ "$www" = "active" ]; then
-              break
+              exit 0
             fi
-            sleep 15
+            sleep 10
           done
+          echo "Domains are configured but activation is still pending"
+          exit 1
 
       - name: Public smoke test
         shell: bash
         run: |
           set -euo pipefail
-          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens"; do
-            ok=0
-            for attempt in $(seq 1 12); do
-              code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)"
-              if [[ "$code" =~ ^(200|301|302|307|308)$ ]]; then
-                echo "PASS ${url} -> HTTP ${code}"
-                ok=1
-                break
-              fi
-              echo "Waiting for public route ${url} (HTTP ${code}, ${attempt}/12)..."
-              sleep 10
-            done
-            if [ "$ok" -ne 1 ]; then
-              echo "Public route not ready yet: ${url}"
-              exit 1
-            fi
+          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens" "https://${S4PIENS_WWW_DOMAIN}/"; do
+            code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url")"
+            echo "${url} -> HTTP ${code}"
+            [[ "$code" =~ ^(200|301|302|307|308)$ ]]
           done
