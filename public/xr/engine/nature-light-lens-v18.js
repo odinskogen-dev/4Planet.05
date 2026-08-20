@@ -24,17 +24,60 @@
           <circle class="signal" cx="146" cy="213" r="2.6"/><circle class="signal" cx="222" cy="270" r="2.6"/><circle class="signal" cx="310" cy="213" r="2.6"/><circle class="signal" cx="402" cy="270" r="2.6"/><circle class="signal" cx="493" cy="213" r="2.6"/><circle class="signal" cx="584" cy="270" r="2.6"/><circle class="signal" cx="675" cy="213" r="2.6"/>
         </svg>
       </div>
+      <div class="light-lens-relationship" aria-hidden="true">
+        <svg viewBox="0 0 1000 600" preserveAspectRatio="none" focusable="false">
+          <path class="light-lens-relationship__line" d="M210 360 C390 270 570 280 790 210" />
+          <circle class="light-lens-relationship__anchor" cx="210" cy="360" r="4" />
+          <circle class="light-lens-relationship__target" cx="790" cy="210" r="4" />
+        </svg>
+        <span class="light-lens-relationship__from">ORCA</span>
+        <span class="light-lens-relationship__to">FOLLOW THE SYSTEM</span>
+      </div>
       <div class="light-lens-scan"></div>
       <span class="light-lens-axis light-lens-axis--a">FORM / SCALE</span>
       <span class="light-lens-axis light-lens-axis--b">RELATION / SIGNAL</span>
       <span class="light-lens-axis light-lens-axis--c">PLACE / OCEAN</span>
     </div>`;
 
+  const cleanLabel = (text = '') => text.replace(/\s+/g, ' ').trim();
+
+  function syncJourneyProjection(root, detail = {}) {
+    const state = detail.state || root.dataset.sceneState || 'identity';
+    const index = Number(detail.index ?? root.dataset.journeyIndex ?? 0);
+    root.dataset.lightLensScene = state;
+    root.dataset.lightLensIndex = String(index);
+
+    const active = root.querySelector('.nature-node[data-journey-role="active"]');
+    const next = root.querySelector('.nature-node[data-journey-role="next"]');
+    const from = root.querySelector('.light-lens-relationship__from');
+    const to = root.querySelector('.light-lens-relationship__to');
+    const captionMode = root.querySelector('.light-lens-caption__mode');
+    const captionBody = root.querySelector('.light-lens-caption p');
+
+    const activeLabel = cleanLabel(active?.querySelector('.nature-node__label')?.textContent || root.querySelector('.nature-journey-hud__stage')?.textContent || 'ORCA');
+    const nextLabel = cleanLabel(next?.querySelector('.nature-node__label')?.textContent || 'RESPONSE');
+    if (from) from.textContent = activeLabel;
+    if (to) to.textContent = nextLabel;
+    if (captionMode) captionMode.textContent = `LIGHT LENS · ${state.toUpperCase()} · INTERPRETIVE MODE`;
+
+    if (captionBody) {
+      const sceneCopy = {
+        identity: 'Form is projected; species identity and evidence remain unchanged beneath the lens.',
+        dependency: 'The line follows the current Journey relationship. It is a visual reading of the existing evidence path, not a new ecological claim.',
+        habitat: 'Projection opens the spatial system around the animal while the real Journey remains the source of place and habitat context.',
+        pressure: 'Signal geometry marks the current pressure chapter without implying live intensity, causation or measured condition.',
+        response: 'The projection carries the Journey into response pathways; solution and actor claims remain evidence-gated.'
+      };
+      captionBody.textContent = sceneCopy[state] || 'Same Journey truth. A different presentation lens.';
+    }
+  }
+
   function install(root) {
     if (!root || root.dataset.lightLensInstalled === 'true') return;
     root.dataset.lightLensInstalled = 'true';
     root.dataset.lightLens = 'false';
     root.dataset.lightLensPalette = 'green';
+    root.dataset.lightLensScene = root.dataset.sceneState || 'identity';
 
     const stage = root.querySelector('.nature-stage');
     if (stage) stage.insertAdjacentHTML('beforeend', projectionMarkup);
@@ -63,6 +106,7 @@
       toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
       toggle.textContent = enabled ? 'REAL WORLD' : 'LIGHT LENS';
       document.body.dataset.lightLens = enabled ? 'true' : 'false';
+      syncJourneyProjection(root);
       root.dispatchEvent(new CustomEvent('4planet:light-lens-change', { detail: { enabled, palette: root.dataset.lightLensPalette } }));
     };
 
@@ -76,14 +120,20 @@
       root.dispatchEvent(new CustomEvent('4planet:light-lens-change', { detail: { enabled: root.dataset.lightLens === 'true', palette: next } }));
     });
 
+    window.addEventListener('4planet:nature-journey-scene', (event) => {
+      requestAnimationFrame(() => syncJourneyProjection(root, event.detail || {}));
+    });
+
     // Keyboard access for exhibition / desktop testing. Does not intercept form fields.
     window.addEventListener('keydown', (event) => {
       const target = event.target;
       if (target && /INPUT|TEXTAREA|SELECT/.test(target.tagName)) return;
       if (event.key.toLowerCase() === 'l' && !event.metaKey && !event.ctrlKey && !event.altKey) setMode(root.dataset.lightLens !== 'true');
     });
+
+    syncJourneyProjection(root);
   }
 
   window.addEventListener('DOMContentLoaded', () => install(document.getElementById('browser-experience')), { once: true });
-  window.NatureLightLens = { install };
+  window.NatureLightLens = { install, syncJourneyProjection };
 })();
