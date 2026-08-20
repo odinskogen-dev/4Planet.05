@@ -148,7 +148,11 @@ test("Premium pass protects every visible journey control surface from viewport 
   assert.match(viewportGuard, /window\.scrollTo\(0, 0\)/);
   assert.match(viewportGuard, /nature-world-card\[data-visible=/);
   assert.match(viewportGuard, /const clampWorldCard/);
-  assert.match(viewportGuard, /card\.style\.setProperty\('translate'/);
+  assert.match(viewportGuard, /card\.offsetParent/);
+  assert.match(viewportGuard, /card\.dataset\.align === 'left'/);
+  assert.match(viewportGuard, /card\.style\.setProperty\('left'/);
+  assert.match(viewportGuard, /card\.style\.setProperty\('right'/);
+  assert.match(viewportGuard, /translate3d\(0,-46%,0\) scale\(1\)/);
   assert.match(viewportGuard, /MutationObserver/);
   assert.match(viewportGuard, /cardSafe/);
   assert.match(viewportGuard, /data\.viewportSafe|viewportSafe/);
