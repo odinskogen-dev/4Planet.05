@@ -49,6 +49,7 @@ test('Jaguar and Orca both consume the same context, premium and audio engines',
     assert.match(html, /nature-journey-premium-v17\.css/);
     assert.match(html, /nature-journey-premium-v17\.js/);
     assert.match(html, /nature-audio-v06\.js/);
+    assert.match(html, /SOUND STARTS ON ENTRY/);
   }
   assert.match(jaguarHtml, /data-premium-config="\/journey\/jaguar\/premium-v17\.json"/);
   assert.match(orcaHtml, /data-premium-config="\/journey\/orca\/premium-v17\.json"/);
@@ -59,6 +60,8 @@ test('Jaguar and Orca both consume the same context, premium and audio engines',
   assert.match(audio, /AudioContext|webkitAudioContext/);
   assert.match(audio, /4planet:nature-browser-enter/);
   assert.match(audio, /ctx\.resume\(\)/);
+  assert.match(audio, /dataset\.audioPlaying/);
+  assert.match(audio, /PROFILES|WORLD_PROFILES/);
 });
 
 test('Jaguar premium configuration covers five frames and truthful response machinery', () => {
