@@ -5,14 +5,16 @@ import fs from "node:fs";
 const overview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx", "utf8");
 const fresh = fs.readFileSync("src/pages/labs/labsFreshProjection.ts", "utf8");
 const gold = fs.readFileSync("src/pages/labs/labsGoldMeta.ts", "utf8");
+const humanState = fs.readFileSync("src/pages/labs/labsHumanState.ts", "utf8");
 const detail = fs.readFileSync("src/pages/labs/LabsProjectDetailPremium.tsx", "utf8");
 const route = fs.readFileSync("src/pages/labs/LabsV4.tsx", "utf8");
 const goldCss = fs.readFileSync("src/pages/labs/labsGold.css", "utf8");
 const indexCss = fs.readFileSync("src/pages/labs/labsIndex.css", "utf8");
 const mobileFix = fs.readFileSync("src/pages/labs/labsMobileFix.css", "utf8");
 const data = fs.readFileSync("src/pages/labs/labsData.ts", "utf8");
+const inventory = `${fresh}\n${gold}\n${humanState}`;
 
-test("LABS remains a dated read-only projection", () => {
+test("LABS remains a dated read-only BRAIN projection", () => {
   assert.match(data, /MANUAL BRAIN PROJECTION · READ ONLY/);
   assert.match(fresh, /verifiedAt = "20 AUG 2026"/);
   assert.match(overview, /BRAIN remains authority/);
@@ -54,7 +56,7 @@ test("important canonical and bounded projects are present and routable", () => 
     "4planet/product/organisations",
     "4planet/product/oslofjorden",
     "4planet/naturebrain/decision-intelligence",
-  ]) assert.ok(fresh.includes(`slug: "${slug}"`) || fresh.includes(`"${slug}"`), `missing ${slug}`);
+  ]) assert.ok(inventory.includes(slug), `missing ${slug}`);
   assert.match(route, /projectBySlug/);
   assert.match(route, /LabsProjectDetailV5/);
 });
@@ -89,8 +91,20 @@ test("project detail is human-first and puts usable links before technical evide
   for (const token of ["MAIN GOAL","CURRENT STATE","NEXT GATE","ECONOMICS","SUCCESS LOOKS LIKE","ECONOMIC GOAL","TECHNICAL EVIDENCE"]) assert.ok(detail.includes(token), `missing ${token}`);
   assert.match(detail, /PrimaryLinks/);
   assert.match(detail, /collapsed by default/);
-  assert.match(detail, /replace\(\/\\b\[a-f0-9\]/);
+  assert.match(detail, /exact tested artifact/);
   assert.doesNotMatch(detail, /<small>\{asset\.href/);
+});
+
+test("human-facing current states cover every Wave-01 mission plus high-value bounded tracks", () => {
+  for (const slug of [
+    "4planet/oce4n/wh4les","4planet/oce4n/cor4l","4planet/oce4n/plastic-clean","4planet/oce4n/rewild-marine",
+    "4planet/e4rth/clim4te","4planet/e4rth/am4zonia","4planet/e4rth/species","4planet/e4rth/rewild-land",
+    "4planet/s4piens/food","4planet/s4piens/energy","4planet/s4piens/circular-city","4planet/s4piens/f4shion",
+    "4planet/4culture/m4gazine","4planet/4culture/4film","4planet/4culture/4rt","4planet/4culture/4play",
+    "4planet/tree-of-life","4planet/economy","4planet/product/jaguar-journey",
+  ]) assert.ok(humanState.includes(slug), `missing current human state ${slug}`);
+  assert.match(detail, /humanStateFor\(project\)/);
+  assert.match(overview, /humanStateFor\(project\)/);
 });
 
 test("technical hashes are confined to audit data, not user-facing current-state strings", () => {
@@ -100,7 +114,7 @@ test("technical hashes are confined to audit data, not user-facing current-state
 });
 
 test("SPECIES current gate is fail-closed after exact-head XR regression", () => {
-  assert.match(fresh, /Nature XR flat-browser runtime/);
+  assert.match(humanState, /Nature XR flat-browser runtime/);
   assert.match(gold, /Run 32356696261 \/ #511: FAILURE/);
   assert.match(gold, /Nature XR flat-browser runtime FAIL/);
 });
@@ -131,9 +145,10 @@ test("mobile detail and index guard readable layout and horizontal containment",
   assert.match(mobileFix, /overflow-x:\s*clip/i);
 });
 
-test("private Founder finance/health/legal truth is not projected into the Gold metadata", () => {
-  assert.doesNotMatch(gold, /forced sale/i);
-  assert.doesNotMatch(gold, /ulcerative/i);
-  assert.doesNotMatch(gold, /AAP/i);
-  assert.doesNotMatch(gold, /Nordnet/i);
+test("private Founder finance/health/legal truth is not projected into Gold metadata/current states", () => {
+  const publicProjection = `${gold}\n${humanState}`;
+  assert.doesNotMatch(publicProjection, /forced sale/i);
+  assert.doesNotMatch(publicProjection, /ulcerative/i);
+  assert.doesNotMatch(publicProjection, /AAP/i);
+  assert.doesNotMatch(publicProjection, /Nordnet/i);
 });
