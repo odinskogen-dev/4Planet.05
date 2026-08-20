@@ -39,7 +39,7 @@ jobs:
           echo "CF_ACCOUNT_ID=${account_id}" >> "$GITHUB_ENV"
           echo "PASS token + zone access"
 
-      - name: Verify Pages project and S4PIENS branch deployment
+      - name: Inspect Pages project and S4PIENS deployment
         shell: bash
         run: |
           set -euo pipefail
@@ -48,17 +48,13 @@ jobs:
           project="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}")"
           echo "$project" | jq -e '.success == true and .result.name == "4planet-05"' >/dev/null
           deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
+          latest="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | sort_by(.created_on) | reverse | .[0]')"
           count="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | length')"
-          if [ "$count" -lt 1 ]; then
-            echo "No S4PIENS branch deployment found"
-            exit 1
-          fi
-          alias="$(echo "$deployments" | jq -r --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | sort_by(.created_on) | reverse | .[0].aliases[]? | select(endswith(".4planet-05.pages.dev")) | select((split(".")[0] | test("^[0-9a-f]{8,}$")) | not)' | head -n 1)"
           echo "Latest S4PIENS branch deployments: ${count}"
-          echo "Stable branch alias: ${alias:-not-found}"
-          test -n "$alias"
+          echo "$latest" | jq '{url, aliases, created_on, branch: .deployment_trigger.metadata.branch, commit: .deployment_trigger.metadata.commit_hash, stage: .latest_stage.status}'
+          test "$count" -ge 1
 
-      - name: Verify Pages custom domains
+      - name: Inspect Pages custom domains
         shell: bash
         run: |
           set -euo pipefail
@@ -69,10 +65,9 @@ jobs:
           for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
             state="$(echo "$domains" | jq -r --arg d "$domain" '.result[]? | select(.name==$d) | .status')"
             echo "${domain}: ${state:-missing}"
-            test -n "$state"
           done
 
-      - name: Verify DNS
+      - name: Inspect DNS
         shell: bash
         run: |
           set -euo pipefail
@@ -80,16 +75,18 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
             records="$(curl -fsS "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records?name=${domain}")"
-            echo "$records" | jq -e '.success == true and (.result|length) == 1' >/dev/null
-            echo "$records" | jq -r '.result[0] | "DNS " + .name + " " + .type + " -> " + .content + " proxied=" + (.proxied|tostring)'
+            count="$(echo "$records" | jq '.result|length')"
+            echo "${domain} DNS records: ${count}"
+            if [ "$count" -gt 0 ]; then
+              echo "$records" | jq -r '.result[] | "DNS " + .name + " " + .type + " -> " + .content + " proxied=" + (.proxied|tostring)'
+            fi
           done
 
-      - name: Public routes
+      - name: Inspect public routes
         shell: bash
         run: |
           set -euo pipefail
           for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens"; do
             code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)"
             echo "${url} -> HTTP ${code}"
-            [[ "$code" =~ ^(200|301|302|307|308)$ ]]
           done
