@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -7,9 +7,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const router = read("src/routes/router.tsx");
 const missions = read("src/components/MissionStrip.tsx");
 const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
-const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
+const species = read("src/pages/integrated/Species.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
+const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
+const home = read("src/pages/v5/Home.tsx");
 const universeCss = read("src/styles/one-interface-universe.css");
 
 test("Homo sapiens is a first-class bounded SPECIES route before the generic species route", () => {
@@ -45,24 +47,41 @@ test("relevant Missions embed the proven shared Atlas Window instead of a second
   assert.doesNotMatch(missionAtlas, /new maplibre\.Map/);
 });
 
-test("homepage opens from atmospheric awe into a real multi-state shared Atlas", () => {
-  assert.match(atlasHero, /planet-awe/);
-  assert.match(atlasHero, /ATLAS itself owns the live[\s*]+map engine/);
+test("homepage opens from a restrained planetary hero into the actual shared Atlas runtime", () => {
+  assert.match(atlasHero, /hero is atmospheric presentation, not live map data/i);
   assert.match(atlasHero, /Everything you love is connected/);
   assert.match(atlasHero, /HomeAtlasShowcase/);
   assert.match(atlasHero, /id="living-atlas"/);
+  assert.match(atlasHero, /WHY 4PLANET/);
+  assert.doesNotMatch(atlasHero, /planet-awe/);
   assert.match(homeAtlas, /SpeciesAtlasWindow/);
-  assert.match(homeAtlas, /slug: "jaguar"/);
-  assert.match(homeAtlas, /slug: "orca"/);
-  assert.match(homeAtlas, /slug: "western-honey-bee"/);
-  assert.match(homeAtlas, /Change the lens\. Keep the planet\./);
-  assert.match(homeAtlas, /role="tab"/);
+  assert.match(homeAtlas, /JAGUAR · AMAZON/);
+  assert.match(homeAtlas, /ORCA · OCEAN/);
+  assert.match(homeAtlas, /BEE · FOOD/);
+  assert.match(homeAtlas, /REPORTED OCCURRENCE ≠ RANGE · POPULATION · LIVE TRACKING/);
+  assert.match(homeAtlas, /The planet changes\. The evidence stays visible\./);
   assert.doesNotMatch(homeAtlas, /new maplibre\.Map/);
+  assert.equal(existsSync(new URL("../src/pages/v5/HomeAtlasShowcase.tsx", import.meta.url)), false, "dead duplicate homepage Atlas implementation must not exist");
+});
+
+test("homepage fails closed on the currently unverified Orca hero asset", () => {
+  assert.doesNotMatch(home, /wh4lesHero/);
+  assert.match(home, /title: "Orca"[\s\S]*?image: "heroEarth"/);
+});
+
+test("SPECIES public Orca media fails closed to the owned illustration", () => {
+  assert.doesNotMatch(species, /\/assets\/species\/_index-hero\.jpg/);
+  assert.doesNotMatch(species, /\/assets\/species\/orca\/detail-(?:fjord|pod|spyhop|ice)\.jpg/);
+  assert.doesNotMatch(species, /founder-supplied and rights-cleared/i);
+  assert.match(species, /const orcaIllustration = speciesMedia\("orca"\)\?\.illustration/);
+  assert.match(species, /4PLANET ILLUSTRATION · NOT A PHOTOGRAPH/);
+  assert.match(species, /Photographs stay hidden until the exact licence is verified\./);
+  assert.match(species, /Founder-supplied provenance does not establish copyright ownership or public-web rights\./);
 });
 
 test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
-  assert.match(router, /path="\/magazine" element=\{<Stories \/>\}/);
-  assert.match(router, /path="\/magazine\/:slug" element=\{<StoryArticle \/>\}/);
+  assert.match(router, /path="\/magazine" element=\{<Magazine \/>\}/);
+  assert.match(router, /path="\/magazine\/:slug" element=\{<MagazineArticle \/>\}/);
   assert.doesNotMatch(router, /path="\/magazine" element=\{toHome\}/);
 });
 
