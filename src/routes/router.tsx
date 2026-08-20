@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
 import Cre4torsHome from "@/pages/v5/Cre4torsHome";
 import LabsIndex from "@/pages/v5/LabsIndex";
+import RevenueMachineLab from "@/pages/v5/RevenueMachineLab";
 import CreatorEngineLab from "@/pages/v5/CreatorEngineLab";
 import HumanCapacityLab from "@/pages/v5/HumanCapacityLab";
 import LivingWorldLab from "@/pages/v5/LivingWorldLab";
@@ -54,6 +55,7 @@ export function AppRoutes() {
       <Route path="/" element={<RootHome />} />
       <Route path="/cre4tors" element={<Cre4torsHome />} />
       <Route path="/labs" element={<LabsIndex />} />
+      <Route path="/labs/revenue" element={<RevenueMachineLab />} />
       <Route path="/labs/creator" element={<CreatorEngineLab />} />
       <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
       <Route path="/labs/living-world" element={<LivingWorldLab />} />
