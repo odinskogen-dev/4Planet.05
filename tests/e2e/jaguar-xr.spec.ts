@@ -21,13 +21,24 @@ async function expectViewportSafe(page: Page, locator: Locator, label: string) {
 async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) {
   await expectViewportSafe(page, root, `${label} root`);
   await expectViewportSafe(page, page.locator(".nature-journey-hud"), `${label} HUD`);
-  const card = page.locator(".nature-world-card[data-visible=true]");
-  if (await card.count()) await expectViewportSafe(page, card, `${label} world card`);
+  const panel = page.locator(".nature-premium__panel");
+  if (await panel.count()) await expectViewportSafe(page, panel, `${label} premium panel`);
   const scrollX = await page.evaluate(() => window.scrollX);
   expect(scrollX, `${label}: journey must not horizontally scroll`).toBe(0);
 }
 
-test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored world interactions before evidence", async ({ page }, testInfo) => {
+async function exercisePremiumHotspot(page: Page, root: Locator, label: RegExp, detailTitle: RegExp) {
+  const hotspot = page.locator(".nature-premium-hotspot").filter({ hasText: label }).first();
+  await expect(hotspot).toBeVisible({ timeout: 8_000 });
+  await hotspot.click();
+  await expect(root.locator(".nature-premium")).toHaveAttribute("data-detail-open", "true");
+  await expect(root.locator(".nature-premium__detail-title")).toContainText(detailTitle);
+  await expect(root.locator(".nature-premium__detail")).toBeVisible();
+  await root.locator(".nature-premium__detail button").click();
+  await expect(root.locator(".nature-premium")).toHaveAttribute("data-detail-open", "false");
+}
+
+test("Jaguar premium Browser Journey travels through distinct scenes with authored world interaction before evidence", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
@@ -39,6 +50,7 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(root).toHaveAttribute("data-truth-feed", "canonical-adapter");
   await expect(root).toHaveAttribute("data-cinematic-engine", "v1.1");
   await expect(root).toHaveAttribute("data-interaction-engine", "v1.3");
+  await expect(root).toHaveAttribute("data-premium-layer", "premium-v17", { timeout: 8_000 });
   await expect(root).toHaveAttribute("data-performance-tier", /full|lite/);
   await expect(page.locator(".brand")).toHaveAttribute("href", "/species/jaguar");
   await expect(page.locator(".nature-entry__title")).toContainText(/Enter the rainforest/i);
@@ -48,9 +60,6 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
 
   await page.locator(".nature-entry__button").click();
   await expect(root).toHaveAttribute("data-entered", "true");
-  // Jaguar consumes the shared world-aware audio engine. Forest is the intentional
-  // world profile; Orca uses ocean. Keep readiness/playing assertions semantic and
-  // do not pin the retired Jaguar-only Amazonia audio implementation name.
   await expect(root).toHaveAttribute("data-audio-profile", "forest-procedural-v06", { timeout: 5_000 });
   await expect(root).toHaveAttribute("data-audio-ready", "true", { timeout: 5_000 });
   await expect(root).toHaveAttribute("data-audio-playing", "true", { timeout: 5_000 });
@@ -62,13 +71,19 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
   await expectSettled(root, 0);
 
-  const card = page.locator(".nature-world-card");
-  await expect(card).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
-  await expect(card).toHaveAttribute("data-type", "identity");
+  // Premium v17 intentionally suppresses the retired world card so the Journey has
+  // one visible interaction grammar. The legacy engine remains hydrated underneath
+  // for shared truth/state compatibility, but it is not a public control surface.
+  const legacyCard = page.locator(".nature-world-card");
+  await expect(legacyCard).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
+  await expect(legacyCard).toHaveCSS("display", "none");
+  await expect(legacyCard).toHaveAttribute("data-type", "identity");
   await expect(page.locator(".nature-world-card__title")).toContainText(/Jaguar/i);
   await expect(page.locator(".nature-world-card__scientific")).toContainText(/Panthera onca/i);
-  await page.locator(".nature-world-card__primary").click();
-  await expect(root).toHaveAttribute("data-world-interaction", "focus");
+
+  await expect(page.locator(".nature-premium__panel")).toBeVisible();
+  await expect(page.locator(".nature-premium__title")).toContainText(/Meet one life/i);
+  await exercisePremiumHotspot(page, root, /JAGUAR/i, /JAGUAR/i);
   await expectJourneyFrameSafe(page, root, "MEET LIFE");
 
   const viewport = page.viewportSize();
@@ -89,10 +104,10 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
       await page.mouse.up();
       await expect(threeStudy).toHaveAttribute("data-dragging", "false");
     }
-    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-01-meet-3d.png`, fullPage: true });
+    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-3d.png`, fullPage: true });
   } else {
     await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
-    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-01-meet-mobile.png`, fullPage: true });
+    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-mobile.png`, fullPage: true });
   }
 
   const next = page.locator(".nature-journey-hud__next");
@@ -101,28 +116,23 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(root).toHaveAttribute("data-cinematic-index", "1", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
   await expectSettled(root, 1);
-  await expect(card).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
-  await expect(card).toHaveAttribute("data-type", "relationship");
+  await expect(legacyCard).toHaveAttribute("data-type", "relationship");
   await expect(page.locator(".nature-world-card__title")).toContainText(/Capybara/i);
   await expect(page.locator(".nature-world-card__scientific")).toContainText(/Hydrochoerus hydrochaeris/i);
   await expect(page.locator(".nature-world-card__relationship")).toContainText(/DOCUMENTED JAGUAR PREY/i);
-  await expect(page.locator(".nature-world-card__image")).toHaveAttribute("src", /Capybara/);
-  await page.locator(".nature-world-card__primary").click();
-  await expect(root).toHaveAttribute("data-world-interaction", "trace");
+  await exercisePremiumHotspot(page, root, /CAPYBARA/i, /CAPYBARA/i);
   await expectJourneyFrameSafe(page, root, "FOLLOW PREY");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-02-prey.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-02-prey.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "habitat");
   await expect(root).toHaveAttribute("data-cinematic-index", "2", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the whole story/i);
   await expectSettled(root, 2);
-  await expect(card).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
-  await expect(card).toHaveAttribute("data-type", "system");
-  await page.locator(".nature-world-card__primary").click();
-  await expect(root).toHaveAttribute("data-world-interaction", "system");
+  await expect(legacyCard).toHaveAttribute("data-type", "system");
+  await exercisePremiumHotspot(page, root, /RIVER SYSTEM/i, /RIVER SYSTEM/i);
   await expectJourneyFrameSafe(page, root, "CONNECTED HABITAT");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-03-habitat.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-03-habitat.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "pressure");
@@ -130,17 +140,15 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(root).toHaveAttribute("data-journey-node", "jaguar-habitat-loss-fragmentation");
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/landscape changes/i);
   await expectSettled(root, 3);
-  await expect(card).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
-  await expect(card).toHaveAttribute("data-type", "pressure");
-  await page.locator(".nature-world-card__primary").click();
-  await expect(root).toHaveAttribute("data-world-interaction", "pressure");
+  await expect(legacyCard).toHaveAttribute("data-type", "pressure");
+  await exercisePremiumHotspot(page, root, /FRAGMENTATION/i, /FRAGMENTATION/i);
   await expectJourneyFrameSafe(page, root, "UNDER PRESSURE");
 
   const chapter = page.locator(".nature-chapter");
   await expect(chapter).not.toHaveClass(/is-open/);
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-04-pressure.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-04-pressure.png`, fullPage: true });
 
-  // Evidence remains an explicit secondary action after the world interaction.
+  // Evidence remains an explicit secondary action after the visible world interaction.
   await page.locator(".nature-journey-hud__evidence").click();
   await expect(chapter).toHaveClass(/is-open/);
   await expect(page.locator("#nature-chapter-title")).toContainText(/PRESSURE/i);
@@ -160,11 +168,13 @@ test("Jaguar Browser Journey v1.1 travels through distinct scenes with authored 
   await expect(root).toHaveAttribute("data-cinematic-index", "4", { timeout: 15_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/not the destination/i);
   await expectSettled(root, 4);
-  await expect(card).toHaveAttribute("data-visible", "true", { timeout: 8_000 });
-  await expect(card).toHaveAttribute("data-type", "response");
-  await expect(page.locator(".nature-world-card__primary")).toContainText(/SOLUTIONS/i);
+  await expect(legacyCard).toHaveAttribute("data-type", "response");
+  await expect(page.locator(".nature-premium__title")).toContainText(/Pressure is not the destination/i);
+  await expect(page.locator(".nature-premium__modules")).toContainText(/Restore habitat/i);
+  await expect(page.locator(".nature-premium__modules")).toContainText(/Protect connectivity/i);
+  await expect(page.locator(".nature-premium__actors")).toContainText(/SCIENCE \+ MONITORING/i);
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v14-05-response.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-05-response.png`, fullPage: true });
 
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
 });
