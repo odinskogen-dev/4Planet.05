@@ -1,7 +1,7 @@
 import LabsProjectDetailPremium from "./LabsProjectDetailPremium";
-import { withGoldMeta } from "./labsGoldMeta";
+import { withCompleteMeta } from "./labsCompleteMeta";
 import type { LabProject } from "./labsFreshProjection";
 
 export default function LabsProjectDetailV5({ project }: { project: LabProject }) {
-  return <LabsProjectDetailPremium project={withGoldMeta(project)} />;
+  return <LabsProjectDetailPremium project={withCompleteMeta(project)} />;
 }
