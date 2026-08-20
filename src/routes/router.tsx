@@ -21,6 +21,7 @@ const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
 const HomoSapiensWorld = lazy(() => import("@/pages/integrated/HomoSapiensWorld"));
 const SapiensAtlasSandbox = lazy(() => import("@/pages/integrated/SapiensAtlasSandbox"));
+const SapiensBiologicalExperiment = lazy(() => import("@/pages/integrated/SapiensBiologicalExperiment"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
 
 const WorldFallback = (
@@ -54,7 +55,8 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/sandbox/s4piens" element={<Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>} />
+      <Route path="/sandbox/s4piens" element={<Suspense fallback={WorldFallback}><SapiensBiologicalExperiment /></Suspense>} />
+      <Route path="/sandbox/s4piens-classic" element={<Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
       <Route path="/species/homo-sapiens" element={<Suspense fallback={WorldFallback}><HomoSapiensWorld /></Suspense>} />
