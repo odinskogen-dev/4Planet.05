@@ -1,0 +1,184 @@
+name: Bind cre4tors.com to CRE4TORS prototype
+
+on:
+  push:
+    branches:
+      - ops/cre4tors-domain-20260820
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bind-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout control branch
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Resolve Cloudflare API token without exposing it
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          if [ -z "$TOKEN" ]; then
+            echo "No supported Cloudflare API token secret is available in this repository."
+            exit 2
+          fi
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"
+          TOKEN="${TOKEN%\"}"
+          TOKEN="${TOKEN#\'}"
+          TOKEN="${TOKEN%\'}"
+          test -n "$TOKEN"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Resolve cre4tors.com zone and account
+        shell: bash
+        run: |
+          set -euo pipefail
+          zones_file="$RUNNER_TEMP/cf-zones.json"
+          status=$(curl -sS -o "$zones_file" -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            'https://api.cloudflare.com/client/v4/zones?name=cre4tors.com&status=active')
+          test "$status" = "200"
+          jq -e '.success == true' "$zones_file" >/dev/null
+          ZONE_ID=$(jq -r '.result[0].id // empty' "$zones_file")
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' "$zones_file")
+          if [ -z "$ZONE_ID" ] || [ -z "$ACCOUNT_ID" ]; then
+            echo "cre4tors.com is not an active zone accessible to the configured token."
+            exit 3
+          fi
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+          echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
+          echo "PASS — cre4tors.com zone resolved."
+
+      - name: Verify immutable CRE4TORS upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in \
+            "https://b8a8f6c1.4planet-05.pages.dev/" \
+            "https://b8a8f6c1.4planet-05.pages.dev/cre4tors"; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+            echo "$url -> HTTP $code"
+            test "$code" = "200"
+          done
+
+      - name: Deploy isolated CRE4TORS custom-domain proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/cre4tors-worker.mjs" <<'EOF'
+          const UPSTREAM = "https://b8a8f6c1.4planet-05.pages.dev";
+
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              const upstream = new URL(incoming.pathname || "/", UPSTREAM);
+              upstream.search = incoming.search;
+
+              const upstreamRequest = new Request(upstream.toString(), request);
+              const response = await fetch(upstreamRequest);
+              const headers = new Headers(response.headers);
+              headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+              headers.set("x-4planet-prototype", "cre4tors-v0.3-78cdebc");
+
+              return new Response(response.body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers,
+              });
+            }
+          };
+          EOF
+
+          cat > "$RUNNER_TEMP/cre4tors-wrangler.toml" <<EOF
+          name = "cre4tors-prototype"
+          main = "$RUNNER_TEMP/cre4tors-worker.mjs"
+          compatibility_date = "2026-08-20"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+
+          [[routes]]
+          pattern = "cre4tors.com"
+          custom_domain = true
+
+          [[routes]]
+          pattern = "www.cre4tors.com"
+          custom_domain = true
+          EOF
+
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/cre4tors-wrangler.toml"
+
+      - name: Verify HTTPS and proxy identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_live() {
+            local url="$1"
+            for attempt in $(seq 1 30); do
+              headers="$RUNNER_TEMP/headers-${attempt}.txt"
+              code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+              marker=$(grep -i '^x-4planet-prototype:' "$headers" | tr -d '\r' || true)
+              robots=$(grep -i '^x-robots-tag:' "$headers" | tr -d '\r' || true)
+              echo "$url -> HTTP $code · $marker · $robots (attempt $attempt/30)"
+              if [ "$code" = "200" ] && echo "$marker" | grep -q 'cre4tors-v0.3-78cdebc'; then
+                return 0
+              fi
+              sleep 10
+            done
+            return 1
+          }
+          check_live "https://cre4tors.com/"
+          check_live "https://www.cre4tors.com/"
+          check_live "https://cre4tors.com/cre4tors"
+          check_live "https://cre4tors.com/labs/creator"
+
+      - name: Browser-check host-aware CRE4TORS root
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await page.goto('https://cre4tors.com/', { waitUntil: 'networkidle', timeout: 60000 });
+          const body = (await page.locator('body').innerText()).toLowerCase();
+          if (!body.includes('create more') || !body.includes('operate less') || !body.includes('own your time')) {
+            throw new Error('CRE4TORS host-aware root did not render the expected creator front door.');
+          }
+          if (new URL(page.url()).hostname !== 'cre4tors.com') {
+            throw new Error(`Unexpected live hostname: ${page.url()}`);
+          }
+          console.log('PASS — cre4tors.com renders CRE4TORS front door on live HTTPS.');
+          await browser.close();
+          NODE
+
+      - name: Record reversible binding state
+        run: |
+          echo "cre4tors.com + www.cre4tors.com -> isolated Cloudflare Worker -> immutable Creator Engine preview b8a8f6c1."
+          echo "4planet.org and its production deployment were not modified."
+          echo "Prototype remains noindex and reversible by deleting/replacing the cre4tors-prototype Worker custom-domain routes."
