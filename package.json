@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "assets:verify": "node scripts/verify-assets.mjs",
     "lint": "eslint src",
-    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/one-interface-universe-slice09.test.mjs scripts/analytics-contract.test.mjs",
+    "test:smoke": "node --test scripts/smoke-v40.mjs scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs scripts/species-gold-truth.test.mjs scripts/one-interface-universe-slice09.test.mjs scripts/analytics-contract.test.mjs scripts/about-founder-contract.test.mjs scripts/one-interface-continuation.test.mjs",
     "test:contracts": "node --test scripts/prototype-contracts.test.mjs scripts/product-context.test.mjs",
     "test:e2e": "playwright test"
   },

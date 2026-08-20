@@ -12,6 +12,7 @@ import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
+import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
@@ -74,6 +75,9 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
+      <Route path="/about/story" element={<AboutStory />} />
+      <Route path="/about/system" element={<AboutSystem />} />
+      <Route path="/about/founder" element={<Founder />} />
       <Route path="/stories" element={<Stories />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
       <Route path="/magazine" element={<Stories />} />

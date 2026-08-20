@@ -3,13 +3,7 @@ import { T } from "@/styles/tokens";
 import { contextHref } from "@/product/ProductNav";
 import { MissionAtlasWindow } from "@/components/MissionAtlasWindow";
 
-/**
- * Human-first Mission summary + cross-product bridge.
- *
- * A Mission is not a dead-end dossier. It is one doorway into the same living
- * system, so the strip deliberately connects people to ATLAS, SPECIES,
- * LIVING SYSTEMS and IMPACT without creating new truth or status claims.
- */
+/** Human-first Mission summary + cross-product bridge. One Mission, one shared truth spine. */
 export function MissionStrip({
   issue, whyItMatters, approach, contribution, status, nextMilestone, accent, dark = false,
 }: {
@@ -59,48 +53,66 @@ export function MissionStrip({
     return "/species";
   })();
 
+  const speciesLabel = (() => {
+    if (slug === "species") return "OPEN THE SPECIES LENS";
+    if (slug === "am4zonia") return "MEET JAGUAR";
+    if (slug === "wh4les") return "MEET ORCA";
+    if (["food", "en4rgy", "circular-city", "f4shion"].includes(slug)) return "MEET THE SPECIES INSIDE IT";
+    return "MEET THE LIFE INSIDE IT";
+  })();
+
   const links = [
     {
       no: "01",
       name: "SEE IT IN ATLAS",
-      line: "Put the Mission back into place. Explore the planet, observations and spatial context.",
+      line: "Put the Mission back into place. Explore observations and spatial context without confusing records with range or live tracking.",
       to: contextHref("/atlas", location.search, { journey: slug }),
     },
     {
       no: "02",
-      name: slug === "food" || ["en4rgy", "circular-city", "f4shion"].includes(slug) ? "MEET THE SPECIES INSIDE IT" : "MEET THE LIFE INSIDE IT",
+      name: speciesLabel,
       line: ["en4rgy", "circular-city", "f4shion"].includes(slug)
         ? "Start with Homo sapiens — then follow the species and living systems our choices touch."
-        : "Move from the problem to the species living through it.",
+        : slug === "species"
+          ? "Move from the Mission into SPECIES as a first-class public lens."
+          : "Move from the problem to a species living through the system.",
       to: contextHref(speciesPath, location.search, { journey: slug }),
     },
     {
       no: "03",
       name: "UNDERSTAND THE SYSTEM",
-      line: "Follow the relationships: what depends on what, where pressure enters and what can change.",
+      line: "Follow dependencies, pressures and responses across the relationships underneath the Mission.",
       to: contextHref("/living-systems", location.search, { journey: slug }),
     },
     {
       no: "04",
       name: "FIND A WAY TO HELP",
-      line: "Continue into action pathways without pretending a pathway is operational before the evidence is ready.",
+      line: "Continue into action pathways without pretending a pathway is operational before its delivery and evidence are ready.",
       to: contextHref("/impact", location.search, { journey: slug }),
     },
   ];
 
+  const deepContext: Record<string, { label: string; line: string; to: string }[]> = {
+    am4zonia: [
+      { label: "JAGUAR GOLD STANDARD", line: "Enter the Jaguar species world.", to: contextHref("/species/jaguar", location.search, { journey: "am4zonia" }) },
+      { label: "AMAZON RAINFOREST", line: "Enter the ecosystem context directly.", to: contextHref("/ecosystems/amazon-rainforest", location.search, { journey: "am4zonia" }) },
+      { label: "AMAZONIA IN ATLAS", line: "Return to spatial context without losing the Mission thread.", to: contextHref("/atlas", location.search, { journey: "am4zonia" }) },
+    ],
+    species: [
+      { label: "SPECIES LENS", line: "Browse the public SPECIES world.", to: contextHref("/species", location.search, { journey: "species" }) },
+      { label: "JAGUAR GOLD STANDARD", line: "See the current land-species reference profile.", to: contextHref("/species/jaguar", location.search, { journey: "species" }) },
+      { label: "SPECIES IN ATLAS", line: "Move from profiles into spatial records and context.", to: contextHref("/atlas", location.search, { journey: "species" }) },
+    ],
+    wh4les: [
+      { label: "ORCA GOLD STANDARD", line: "Enter the Orca species world.", to: contextHref("/species/orca", location.search, { journey: "wh4les" }) },
+      { label: "WH4LES IN ATLAS", line: "Move into the shared spatial engine.", to: contextHref("/atlas", location.search, { journey: "wh4les" }) },
+    ],
+  };
+  const deep = deepContext[slug] ?? [];
+
   return (
     <>
-      <section
-        aria-label="Mission summary and connected 4PLANET lenses"
-        style={{
-          background: bg,
-          color: ink,
-          borderTop: `1px solid ${line}`,
-          borderBottom: `1px solid ${line}`,
-          padding: "clamp(34px,4.5vw,56px) clamp(20px,5vw,64px)",
-          "--mission-line": line,
-        } as React.CSSProperties}
-      >
+      <section aria-label="Mission summary and connected 4PLANET lenses" style={{ background: bg, color: ink, borderTop: `1px solid ${line}`, borderBottom: `1px solid ${line}`, padding: "clamp(34px,4.5vw,56px) clamp(20px,5vw,64px)", "--mission-line": line } as React.CSSProperties}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div style={{ ...mono, color: dim, display: "inline-flex", alignItems: "center", gap: 10 }}>
             <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", background: accent, display: "inline-block" }} />
@@ -127,34 +139,38 @@ export function MissionStrip({
 
         <div style={{ marginTop: "clamp(42px,6vw,70px)" }}>
           <div style={{ ...mono, color: accent }}>FOLLOW THE CONNECTIONS</div>
-          <h2 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3vw,42px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: "18ch" }}>
-            The Mission is one part of a living system.
-          </h2>
-          <p style={{ marginTop: 14, color: dim, fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55, maxWidth: 650 }}>
-            Change lens without losing the thread.
-          </p>
+          <h2 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3vw,42px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: "18ch" }}>The Mission is one part of a living system.</h2>
+          <p style={{ marginTop: 14, color: dim, fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55, maxWidth: 650 }}>Change lens without losing the thread.</p>
 
           <div className="mission-world-bridge">
             {links.map((link) => (
-              <Link
-                key={link.no}
-                to={link.to}
-                className="mission-world-bridge__link"
-                style={{ color: ink, background: dark ? "rgba(255,255,255,.015)" : "#fff" }}
-              >
+              <Link key={link.no} to={link.to} className="mission-world-bridge__link" style={{ color: ink, background: dark ? "rgba(255,255,255,.015)" : "#fff" }}>
                 <div style={{ ...mono, color: accent }}>{link.no}</div>
-                <div>
-                  <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(17px,1.6vw,22px)", lineHeight: 1.05, letterSpacing: "-.02em" }}>{link.name}</div>
-                  <p style={{ marginTop: 9, color: dim, fontSize: 13.5, lineHeight: 1.5 }}>{link.line}</p>
-                </div>
+                <div><div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(17px,1.6vw,22px)", lineHeight: 1.05, letterSpacing: "-.02em" }}>{link.name}</div><p style={{ marginTop: 9, color: dim, fontSize: 13.5, lineHeight: 1.5 }}>{link.line}</p></div>
                 <div style={{ ...mono, color: accent }}>OPEN →</div>
               </Link>
             ))}
           </div>
         </div>
+
+        {deep.length > 0 && (
+          <div style={{ marginTop: "clamp(42px,6vw,68px)", paddingTop: 22, borderTop: `1px solid ${line}` }}>
+            <div style={{ ...mono, color: accent }}>DEEPER CONTEXT</div>
+            <div className="mission-deep-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(deep.length, 3)},minmax(0,1fr))`, gap: 1, marginTop: 16, background: line, border: `1px solid ${line}` }}>
+              {deep.map((item) => (
+                <Link key={item.to} to={item.to} style={{ background: bg, color: ink, textDecoration: "none", padding: "clamp(20px,2.6vw,30px)" }} className="mission-deep-link">
+                  <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(18px,1.8vw,24px)", lineHeight: 1.05 }}>{item.label}</div>
+                  <p style={{ marginTop: 10, color: dim, fontSize: 13.5, lineHeight: 1.5 }}>{item.line}</p>
+                  <div style={{ ...mono, color: accent, marginTop: 18 }}>OPEN →</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <MissionAtlasWindow missionSlug={slug} accent={accent} />
+      <style>{`@media(max-width:760px){.mission-deep-grid{grid-template-columns:1fr!important}}.mission-deep-link:focus-visible{outline:3px solid currentColor;outline-offset:-4px}`}</style>
     </>
   );
 }
