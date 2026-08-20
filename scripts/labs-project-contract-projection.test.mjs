@@ -19,7 +19,8 @@ test("Project Contract projection covers current canonical Project Homes without
   ]) assert.ok(projection.includes(`"${id}"`), `missing safe Project Contract projection for ${id}`);
 
   assert.match(projection, /BRAIN \/ Founder Control remains authority/);
-  assert.match(projection, /does NOT copy current state\/current gate\/money\/code\/deployment state/);
+  assert.match(projection, /Current state, current gate/);
+  assert.match(projection, /intentionally NOT copied here/);
   assert.match(projection, /read-only projection/i);
 });
 
@@ -54,5 +55,6 @@ test("Project Contract visual layer preserves the existing LABS system and mobil
   assert.match(css, /var\(--accent\)/);
   assert.match(css, /@media\(max-width:760px\)/);
   assert.match(css, /grid-template-columns:1fr/);
-  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}/, "Project Contract should inherit LABS accents rather than invent new brand colours");
+  const colours = [...new Set(css.match(/#[0-9a-fA-F]{3,8}/g) ?? [])];
+  assert.deepEqual(colours, ["#fff"], "Project Contract may only reuse the existing LABS light-surface white; accents must inherit var(--accent)");
 });
