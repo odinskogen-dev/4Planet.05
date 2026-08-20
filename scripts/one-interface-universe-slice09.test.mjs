@@ -8,6 +8,7 @@ const router = read("src/routes/router.tsx");
 const missions = read("src/components/MissionStrip.tsx");
 const missionAtlas = read("src/components/MissionAtlasWindow.tsx");
 const human = read("src/pages/integrated/HomoSapiensWorld.tsx");
+const species = read("src/pages/integrated/Species.tsx");
 const atlasHero = read("src/pages/v5/AtlasHero.tsx");
 const homeAtlas = read("src/components/HomeAtlasShowcase.tsx");
 const home = read("src/pages/v5/Home.tsx");
@@ -66,6 +67,16 @@ test("homepage opens from a restrained planetary hero into the actual shared Atl
 test("homepage fails closed on the currently unverified Orca hero asset", () => {
   assert.doesNotMatch(home, /wh4lesHero/);
   assert.match(home, /title: "Orca"[\s\S]*?image: "heroEarth"/);
+});
+
+test("SPECIES public Orca media fails closed to the owned illustration", () => {
+  assert.doesNotMatch(species, /\/assets\/species\/_index-hero\.jpg/);
+  assert.doesNotMatch(species, /\/assets\/species\/orca\/detail-(?:fjord|pod|spyhop|ice)\.jpg/);
+  assert.doesNotMatch(species, /founder-supplied and rights-cleared/i);
+  assert.match(species, /const orcaIllustration = speciesMedia\("orca"\)\?\.illustration/);
+  assert.match(species, /4PLANET ILLUSTRATION · NOT A PHOTOGRAPH/);
+  assert.match(species, /Photographs stay hidden until the exact licence is verified\./);
+  assert.match(species, /Founder-supplied provenance does not establish copyright ownership or public-web rights\./);
 });
 
 test("M4GAZINE has a real editorial entry instead of redirecting to the homepage", () => {
