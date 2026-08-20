@@ -1,0 +1,4 @@
+4PLANET_ AXE PRODUCTION DEPLOY PROBE
+Expected production source lineage: Claude Sprint 05 reconciled with AXE release controls
+Created: 2026-08-18
+Purpose: harmless production-branch webhook/deploy trigger and runtime verification marker.

@@ -1,0 +1,8 @@
+/* Claude Sprint 05 — Living Systems spatial scene + cross-lens journey rail. */
+@media (max-width:820px){ .ls-scene{ grid-template-columns:1fr !important; } .ls-scene figure{ aspect-ratio:16/10 !important; } }
+.ls-scene-img{ animation: ls-scene-breathe 22s ease-in-out infinite alternate; will-change:transform; }
+@keyframes ls-scene-breathe{ 0%{ transform:scale(1.02) } 100%{ transform:scale(1.09) } }
+@media (prefers-reduced-motion:reduce){ .ls-scene-img{ animation:none } }
+.ls-journey .ls-jstep > div{ transition:background .2s; }
+.ls-journey .ls-jstep:hover > div{ background:#f6f6f8 !important; }
+@media (max-width:640px){ .ls-journey{ grid-template-columns:1fr 1fr !important; } }

@@ -34,7 +34,7 @@ export function StoryArticle() {
         <Editorial blocks={s.blocks} />
         <div style={{ marginTop: "clamp(48px,6vw,80px)", borderTop: `1px solid ${T.line}`, paddingTop: 22, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <Link to="/stories" className="link" style={{ fontSize: 14, color: T.blue }}>← M4GAZINE</Link>
-          <Link to="/people" className="link" style={{ fontSize: 14, color: T.ink }}>Join 4Planet →</Link>
+          <Link to="/join" className="link" style={{ fontSize: 14, color: T.ink }}>Join 4Planet →</Link>
         </div>
       </Section>
 

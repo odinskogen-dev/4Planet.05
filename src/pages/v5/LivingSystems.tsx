@@ -1,37 +1,267 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { Section, Label, Button } from "@/components/ui";
+import { Section, Label } from "@/components/ui";
+import { returnHrefFromSearch } from "@/product/productContext";
+import { RouteEnter } from "@/components/Cinematic";
+import { LIVING_SYSTEM_ANCHORS, findAnchor, EVIDENCE_COLOR, type LivingSystemAnchor, type RelationshipStep } from "@/data/livingSystems";
+import { NotFound } from "@/pages/system";
 
+const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".12em" };
+
+/* Forward captured ATLAS returnTo onto the next hop so the journey can return. */
+function forwarder(search: string) {
+  const returnHref = returnHrefFromSearch(search);
+  const token = new URLSearchParams(search).get("returnTo");
+  return (href: string) => (returnHref && token ? `${href}${href.includes("?") ? "&" : "?"}returnTo=${token}` : href);
+}
+
+/* ── Progressive relationship reveal — the reusable core ── */
+function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i: number; accent: string }) {
+  const hasImg = !!step.image;
+  return (
+    <div style={{ borderTop: `1px solid ${T.line}`, padding: "clamp(26px,3.6vw,52px) 0" }}>
+      <div className="ls-scene" style={{ display: "grid", gridTemplateColumns: hasImg ? "minmax(0,1.05fr) minmax(0,1fr)" : "1fr", gap: "clamp(20px,3.4vw,48px)", alignItems: "start" }}>
+        {/* Scene — the living protagonist of this relationship */}
+        {hasImg && (
+          <figure style={{ margin: 0, position: "relative", overflow: "hidden", borderRadius: 2, aspectRatio: "4/5", background: "#0b0b12" }}>
+            <img src={step.image} alt={step.imageAlt || ""} loading="lazy" className="ls-scene-img"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <figcaption style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "40px 16px 12px", background: "linear-gradient(transparent, rgba(8,8,10,.82))" }}>
+              <span style={{ ...mono, color: "#fff", fontSize: 10.5, letterSpacing: ".14em" }}><span style={{ color: accent }}>0{i + 1}</span> · {step.stage}</span>
+              {step.imageAlt && <span style={{ ...mono, display: "block", color: "rgba(255,255,255,.62)", fontSize: 8.5, marginTop: 6, lineHeight: 1.5 }}>{step.imageAlt}</span>}
+            </figcaption>
+          </figure>
+        )}
+        {/* Content */}
+        <div>
+          {!hasImg && <div style={{ ...mono, color: accent, marginBottom: 10 }}>0{i + 1} · {step.stage}</div>}
+          {hasImg && <div style={{ ...mono, color: accent, marginBottom: 12 }}>{step.stage}</div>}
+          <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,2.9vw,40px)", lineHeight: 1.02, letterSpacing: "-.035em", maxWidth: 620 }}>{step.intro}</h3>
+          <div style={{ marginTop: 22, display: "grid", gap: 10 }}>
+            {step.relationships.map((r) => {
+              const col = EVIDENCE_COLOR[r.state];
+              return (
+                <div key={r.to.id} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${col}`, padding: "16px 18px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 500, fontSize: "clamp(15px,1.5vw,18px)", letterSpacing: "-.01em" }}>
+                      <span style={{ ...mono, color: T.dim, fontSize: 9.5, marginRight: 8 }}>{r.to.kind}</span>{r.to.label}
+                    </div>
+                    <div style={{ ...mono, color: col, fontSize: 9.5 }}>{r.state}</div>
+                  </div>
+                  <p style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.55, color: T.ink }}>{r.relation}</p>
+                  <p style={{ margin: "8px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>BOUNDARY · {r.boundary}</p>
+                  {r.source && (
+                    r.sourceUrl
+                      ? <a href={r.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: accent, display: "inline-block", marginTop: 8 }}>{r.source} ↗</a>
+                      : <div style={{ ...mono, color: accent, marginTop: 8 }}>{r.source}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── The reusable anchor journey (used inline for Orca + standalone per anchor) ── */
+function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; search: string; showReturn: boolean }) {
+  const fwd = forwarder(search);
+  const returnHref = returnHrefFromSearch(search);
+  // Progressive relationship intelligence: the user reveals the system one relationship at a
+  // time, keeping focus on one dependency/pressure/response before the next. Not a vertical report.
+  const total = a.steps.length;
+  const [shown, setShown] = useState(1);
+  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const allShown = shown >= total;
+  const nextStage = allShown ? null : a.steps[shown].stage;
+  return (
+    <RouteEnter>
+      {/* Continuity: the system visibly grows from the animal just met upstream. */}
+      <div style={{ ...mono, color: a.accent, display: "flex", alignItems: "center", gap: 8, opacity: .9 }}>
+        <span style={{ width: 6, height: 6, borderRadius: "50%", background: a.accent, flex: "none" }} />
+        ANCHORED ON · {a.anchorLabel.toUpperCase()}
+      </div>
+      <div style={{ ...mono, color: a.accent, marginTop: 14 }}>{a.eyebrow}</div>
+      {/* EXACT title text preserved for the live Orca journey (E2E + human continuity). */}
+      <h2 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,3.6vw,46px)", letterSpacing: "-.035em", lineHeight: 1.0, marginTop: 10 }}>{a.journeyTitle}</h2>
+      <p style={{ marginTop: 16, fontSize: "clamp(15px,1.5vw,18px)", color: T.dim, maxWidth: 660, lineHeight: 1.6 }}>{a.standfirst}</p>
+
+      {/* Cross-lens journey rail — the same living thing, seen through all four lenses.
+          This is why ONE INTERFACE exists: understanding here connects to seeing, meeting and acting. */}
+      {(() => {
+        const J: Record<string, { see: string; meet: string; act: string }> = {
+          orca: { see: "/atlas", meet: "/species/orca", act: "/missions/wh4les" },
+          bee: { see: "/atlas", meet: "/species", act: "/missions/food" },
+        };
+        const j = J[a.slug];
+        if (!j) return null;
+        const steps: [string, string, string | null, boolean][] = [
+          ["SEE / EXPLORE", "ATLAS", fwd(j.see), false],
+          ["MEET LIFE", "SPECIES", fwd(j.meet), false],
+          ["UNDERSTAND", "LIVING SYSTEMS", null, true],
+          ["ACT + PROVE", "MISSION", fwd(j.act), false],
+        ];
+        return (
+          <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: T.line, border: `1px solid ${T.line}` }} className="ls-journey">
+            {steps.map(([job, lens, to, active]) => {
+              const inner = (
+                <div style={{ padding: "12px 14px", background: active ? a.accent : "#fff", height: "100%" }}>
+                  <div style={{ ...mono, fontSize: 8.5, letterSpacing: ".12em", color: active ? "#fff" : T.dim }}>{job}</div>
+                  <div style={{ ...mono, fontSize: 11, marginTop: 5, color: active ? "#fff" : T.ink, fontWeight: 500 }}>{lens}{to ? " →" : ""}</div>
+                </div>
+              );
+              return to ? <Link key={lens} to={to} className="ls-jstep" style={{ textDecoration: "none" }}>{inner}</Link> : <div key={lens}>{inner}</div>;
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Progress: how much of the system is revealed. */}
+      <div style={{ ...mono, color: T.dim, marginTop: 26, display: "flex", alignItems: "center", gap: 10 }}>
+        <span>RELATIONSHIP {String(Math.min(shown, total)).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
+        <span aria-hidden style={{ flex: 1, height: 1, background: T.line, position: "relative", maxWidth: 220 }}>
+          <span style={{ position: "absolute", left: 0, top: 0, height: 1, width: `${(shown / total) * 100}%`, background: a.accent, transition: reduce ? "none" : "width .5s cubic-bezier(.22,.61,.36,1)" }} />
+        </span>
+      </div>
+
+      {/* Trail: prior relationships compress to a compact history you can jump back to.
+          One relationship holds the scene at a time — active intelligence, not a stacked report. */}
+      {shown > 1 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 22 }}>
+          {a.steps.slice(0, shown - 1).map((s, i) => (
+            <button key={s.stage} type="button" onClick={() => setShown(i + 1)}
+              aria-label={`Revisit relationship ${i + 1}: ${s.stage}`}
+              style={{ ...mono, cursor: "pointer", background: "transparent", border: `1px solid ${T.line}`, color: T.dim, padding: "7px 11px", display: "inline-flex", gap: 8, alignItems: "center" }}>
+              <span style={{ color: a.accent }}>0{i + 1}</span>{s.stage}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Active relationship — takes the scene. Keyed on `shown` so it re-enters as the scene changes. */}
+      <div key={shown} className={!reduce ? "ls-step-in" : undefined}>
+        <RelationshipStepBlock step={a.steps[shown - 1]} i={shown - 1} accent={a.accent} />
+      </div>
+
+      {/* Reveal-next affordance: the user builds the system by exploring it, one relationship at a time. */}
+      {!allShown ? (
+        <button type="button" onClick={() => setShown((n) => Math.min(n + 1, total))}
+          data-testid="ls-reveal-next"
+          style={{ marginTop: 22, display: "inline-flex", alignItems: "center", gap: 12, cursor: "pointer",
+            background: "transparent", border: `1px solid ${a.accent}`, color: T.ink, padding: "14px 20px",
+            fontFamily: T.display, fontWeight: 500, fontSize: "clamp(15px,1.6vw,18px)", letterSpacing: "-.01em" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: a.accent, flex: "none" }} />
+          Reveal what it depends on next
+          <span style={{ ...mono, color: a.accent }}>{nextStage} →</span>
+        </button>
+      ) : (
+        <div className="tw" style={{ marginTop: 36, border: `1px solid ${T.line}` }}>
+          {a.handoffs.map((h, i) => (
+            <Link key={h.label}
+              to={fwd(h.to)}
+              data-testid={h.testid ?? `ls-handoff-${h.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
+              style={{ display: "block", padding: "clamp(20px,3vw,30px)", textDecoration: "none", color: T.ink, borderLeft: i % 2 ? `1px solid ${T.line}` : "none", borderTop: i >= 2 ? `1px solid ${T.line}` : "none" }}>
+              <div style={{ fontWeight: 500, fontSize: "clamp(15px,1.6vw,19px)" }}>{h.label} →</div>
+              <p style={{ marginTop: 8, fontSize: 14, color: T.dim, lineHeight: 1.5 }}>{h.desc}</p>
+            </Link>
+          ))}
+        </div>
+      )}
+      {showReturn && returnHref && (
+        <div style={{ marginTop: 24 }}>
+          <Link to={returnHref} style={{ ...mono, color: a.accent }}>← BACK TO OBSERVATION IN ATLAS</Link>
+        </div>
+      )}
+    </RouteEnter>
+  );
+}
+
+/* ── LIVING SYSTEMS home — features the live Orca journey inline + anchor index ── */
 export function LivingSystems() {
-  const LS = "https://4p-living-systems-v1-4-1.pages.dev/";
-  const ATLAS = "https://4planet-atlas-mobile.pages.dev/";
+  const location = useLocation();
+  const returnHref = returnHrefFromSearch(location.search);
+  const orca = findAnchor("orca")!;
+  const others = LIVING_SYSTEM_ANCHORS.filter((a) => a.slug !== "orca");
+  const fwd = forwarder(location.search);
   return (
     <PublicShell>
       <Section pad="clamp(48px,7vw,96px)">
+        {returnHref && (
+          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: T.blue, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
+            ← BACK TO OBSERVATION IN ATLAS
+          </Link>
+        )}
         <Label color={T.blue} style={{ marginBottom: 16 }}>4PLANET_ LIVING SYSTEMS_</Label>
-        <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(32px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.04, maxWidth: 820 }}>
-          Making the relationships that make life possible visible.
+        <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,46px)", letterSpacing: "-.035em", lineHeight: 1.05, maxWidth: 860 }}>
+          Understand how life, places and human systems depend on one another.
         </h1>
-        <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.ink, marginTop: 18, maxWidth: 660, lineHeight: 1.6 }}>
-          4Planet Living Systems explains how species, ecosystems, ecological functions, ecosystem services, human systems, threats and solutions connect.
+        <p style={{ fontSize: "clamp(15px,1.6vw,18px)", color: T.dim, marginTop: 18, maxWidth: 680, lineHeight: 1.6 }}>
+          ATLAS shows what is here, where and when. Living Systems reads the same shared planet as relationships —
+          revealed step by step, each one labelled by what is known, interpreted or unknown. Start from a species, a
+          place or a system.
         </p>
 
-        <div className="os-two" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 38, border: `1px solid ${T.line}` }}>
-          <div style={{ padding: "clamp(24px,3vw,40px)" }}>
-            <div className="mono meta-blue" style={{ fontSize: 11, letterSpacing: ".08em" }}>4PLANET LIVING SYSTEMS_</div>
-            <p style={{ fontSize: 15.5, color: T.ink, marginTop: 12, lineHeight: 1.55, maxWidth: 420 }}>
-              Making the relationships that make life possible visible.
+        {/* Anchor index — proves the reusable model across four starting points. */}
+        <div className="ls-anchors" style={{ marginTop: "clamp(32px,4vw,52px)", borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
+          {LIVING_SYSTEM_ANCHORS.map((a) => (
+            <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor reveal" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, borderTop: `2px solid ${a.accent}`, position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span style={{ ...mono, color: a.accent }}>{a.index} · {a.kind} ANCHOR</span>
+                <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "AVAILABLE" : "IN DEVELOPMENT"}</span>
+              </div>
+              <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(20px,2vw,26px)", letterSpacing: "-.02em", marginTop: 12 }}>{a.anchorLabel}</div>
+              <p style={{ fontSize: 13.5, color: T.dim, marginTop: 8, lineHeight: 1.5, maxWidth: 340 }}>{a.standfirst.split(" — ")[0]}.</p>
+            </Link>
+          ))}
+        </div>
+
+        {/* The live journey, inline (Orca) — keeps journey contracts + human continuity. */}
+        <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY · 01 · AVAILABLE</div>
+        <div style={{ marginTop: 10 }}>
+          <AnchorJourney a={orca} search={location.search} showReturn={false} />
+        </div>
+
+        <p style={{ marginTop: 32, ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.7, maxWidth: 700 }}>
+          THE ORCA JOURNEY IS AVAILABLE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD USE THE SAME
+          REUSABLE MODEL AND ARE IN DEVELOPMENT — OPEN THEM ABOVE TO SEE THE STRUCTURE.
+        </p>
+      </Section>
+    </PublicShell>
+  );
+}
+
+/* ── Standalone anchor journey page ── */
+export function LivingSystemJourney() {
+  const { slug } = useParams();
+  const location = useLocation();
+  const a = slug ? findAnchor(slug) : undefined;
+  if (!a) return <NotFound />;
+  const returnHref = returnHrefFromSearch(location.search);
+  const fwd = forwarder(location.search);
+  return (
+    <PublicShell>
+      <Section pad="clamp(48px,7vw,96px)">
+        {returnHref && (
+          <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: a.accent, padding: "10px 14px", textDecoration: "none", marginBottom: 20 }}>
+            ← BACK TO OBSERVATION IN ATLAS
+          </Link>
+        )}
+        <Link to={fwd("/living-systems")} style={{ ...mono, color: a.accent }}>← LIVING SYSTEMS</Link>
+        {a.status !== "LIVE" && (
+          <div style={{ marginTop: 16 }}>
+            <span style={{ ...mono, color: "#000", background: "#8A6500", padding: "5px 9px", fontSize: 10 }}>IN DEVELOPMENT · STRUCTURE PREVIEW</span>
+            <p style={{ margin: "12px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, maxWidth: 640 }}>
+              This anchor uses the same reusable relationship model as the live Orca journey. Its relationships are shown
+              at honest evidence states; the journey is still being built out.
             </p>
-            <div style={{ marginTop: 20 }}><Button href={LS} newTab arrow>EXPLORE LIVING SYSTEMS ↗</Button></div>
           </div>
-          <div style={{ padding: "clamp(24px,3vw,40px)", borderLeft: `1px solid ${T.line}` }}>
-            <div className="mono meta-blue" style={{ fontSize: 11, letterSpacing: ".08em" }}>4PLANET ATLAS_</div>
-            <p style={{ fontSize: 15.5, color: T.ink, marginTop: 12, lineHeight: 1.55, maxWidth: 420 }}>
-              A spatial prototype for exploring ecological systems, places and pathways.
-            </p>
-            <div style={{ marginTop: 20 }}><Button href={ATLAS} newTab arrow>EXPLORE ATLAS — PROTOTYPE ↗</Button></div>
-          </div>
+        )}
+        <div style={{ marginTop: 24 }}>
+          <AnchorJourney a={a} search={location.search} showReturn />
         </div>
       </Section>
     </PublicShell>

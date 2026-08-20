@@ -1,0 +1,176 @@
+name: ONE INTERFACE Convergence Gate
+
+# Exact-SHA engineering gate for the current unified public candidate.
+# Source/contracts are followed by browser acceptance across the Gold Reference
+# and the material public experience. No flake retries mask a failure.
+
+on:
+  push:
+    branches:
+      - convergence/one-interface
+      - claude/one-interface-premium-completion
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: convergence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify and record exact candidate
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual_sha="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA actual=$actual_sha"
+          test "$actual_sha" = "$EXPECTED_SHA"
+          printf '%s\n' "$actual_sha" > exact-sha.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > exact-branch.txt
+          printf 'EXACT_CANDIDATE_SHA=%s\n' "$actual_sha" >> "$GITHUB_ENV"
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+
+      - name: Lint (no NEW warnings; 6 inherited World/layer warnings are known)
+        shell: bash
+        run: |
+          npm run lint 2>&1 | tee lint.txt || true
+          warnings="$(grep -Eo '[0-9]+ warning' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
+          errors="$(grep -Eo '[0-9]+ error' lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
+          echo "lint errors=$errors warnings=$warnings"
+          test "${errors:-0}" -eq 0
+          test "${warnings:-0}" -le 6
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency audit — high severity blocks (moderate is known debt)
+        shell: bash
+        run: npm audit --audit-level=high 2>&1 | tee dependency-audit.txt
+
+      - name: Record bundle evidence
+        shell: bash
+        run: |
+          find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2nr > bundle-sizes.csv
+          largest="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
+          test -n "$largest"
+          test "$largest" -lt 1800000
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: E2E — Public experience on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/public-experience.spec.ts --project=desktop-1280 --project=mobile-390
+
+      - name: E2E — Public experience on WebKit desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/public-experience.spec.ts --project=webkit-desktop --project=webkit-390
+
+      - name: E2E — Jaguar Gold Reference on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=desktop-1440 --project=desktop-1280 --project=mobile-390 --project=mobile-430
+
+      - name: E2E — Jaguar Gold Reference on WebKit desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      - name: Internal route control
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('dist/index.html','utf8');
+          if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
+          const required = [
+            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/species/homo-sapiens',
+            '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n', '/missions/wh4les',
+            '/missions/am4zonia', '/missions/species', '/magazine', '/about', '/about/story',
+            '/about/system', '/about/founder', '/impact', '/join'
+          ];
+          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.EXACT_CANDIDATE_SHA }, null, 2));
+          NODE
+
+      - name: Security and secret-pattern control
+        shell: bash
+        run: |
+          curl --silent --show-error --dump-header local-headers.txt --output /dev/null http://127.0.0.1:4173/
+          grep -qi '^content-type:' local-headers.txt
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
+
+      - name: Source mutation control
+        shell: bash
+        run: |
+          unexpected="$(git diff --name-only -- . ':!public/product-build.txt')"
+          if [ -n "$unexpected" ]; then
+            echo 'Unexpected tracked source mutation during CI:'
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
+          git diff --cached --exit-code
+          echo 'PASS — only expected generated provenance/evidence outputs are present.'
+
+      - name: Upload exact-SHA acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: convergence-evidence
+          path: |
+            exact-sha.txt
+            exact-branch.txt
+            dependency-audit.txt
+            bundle-sizes.csv
+            lint.txt
+            preview.log
+            local-headers.txt
+            required-routes.json
+            artifacts
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30

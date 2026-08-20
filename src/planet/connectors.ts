@@ -112,13 +112,25 @@ export const taxonVernacular = async (gbifKey: number | string): Promise<string 
 
 const toOccurrence = (o: any): Occurrence | null => {
   if (typeof o.decimalLatitude !== "number" || typeof o.decimalLongitude !== "number") return null;
+  // Only accept a media image when the record also carries a licence, so the
+  // observation panel never shows an image without rights (ORCA-05, §13E).
+  const media = Array.isArray(o.media)
+    ? o.media.find((m: any) => m?.type === "StillImage" && m?.identifier && (m?.license || m?.rights))
+    : undefined;
   return {
     lat: o.decimalLatitude,
     lng: o.decimalLongitude,
     scientificName: o.scientificName ?? o.species ?? "Unidentified",
+    commonName: o.vernacularName || undefined,
     eventDate: o.eventDate ? String(o.eventDate).slice(0, 10) : undefined,
     sourceRecordId: o.key ? String(o.key) : undefined,
     sourceUrl: o.key ? `https://www.gbif.org/occurrence/${o.key}` : undefined,
+    taxonKey: typeof o.taxonKey === "number" ? o.taxonKey : undefined,
+    coordinateUncertaintyM:
+      typeof o.coordinateUncertaintyInMeters === "number" ? o.coordinateUncertaintyInMeters : undefined,
+    mediaUrl: media?.identifier,
+    mediaLicence: media?.license || media?.rights,
+    mediaAttribution: media?.rightsHolder || media?.creator || "GBIF contributor",
   };
 };
 

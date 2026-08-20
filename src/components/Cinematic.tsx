@@ -8,7 +8,7 @@ import type { ImageMeta } from "@/content/imageRegistry";
  * copy) sits inside the same frame so a picture always feels composed, never dropped in.
  */
 export function CinematicImage({
-  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback,
+  meta, height = "min(78vh, 760px)", overlay = 0, position, caption, credit, priority, children, align = "end", accent, fallback, kenburns, signature,
 }: {
   meta?: ImageMeta;
   height?: string;
@@ -17,6 +17,8 @@ export function CinematicImage({
   caption?: string;
   credit?: string;
   priority?: boolean;
+  kenburns?: boolean;          // calm breathing motion for fullbleed heroes (reduced-motion safe via CSS)
+  signature?: string;          // per-mission signature atmosphere class suffix (drift|depth|flow|rise|sweep|pulse|scan|gallery)
   children?: ReactNode;        // overlaid copy, if any
   align?: "start" | "center" | "end";
   accent?: string;
@@ -34,6 +36,7 @@ export function CinematicImage({
           <img
             src={active!.src} alt={active!.alt} loading={priority ? "eager" : "lazy"} decoding="async"
             onError={() => setErr(true)}
+            className={kenburns ? "kenburns" : undefined}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: position ?? active!.objectPosition ?? "50% 50%" }}
           />
         </picture>
@@ -42,6 +45,7 @@ export function CinematicImage({
         <div aria-hidden style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(8,8,8,${overlay * 0.5}) 0%, rgba(8,8,8,${overlay * 0.15}) 42%, rgba(8,8,8,${overlay}) 100%)` }} />
       )}
       {accent && <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 96, height: 4, background: accent, zIndex: 2 }} />}
+      {signature && <div aria-hidden className={`sig sig--${signature}`} />}
       {children && (
         <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", justifyContent: align === "center" ? "center" : align === "start" ? "flex-start" : "flex-end" }}>
           <div style={{ maxWidth: 1320, width: "100%", margin: "0 auto", padding: "clamp(28px,5vw,72px) clamp(20px,5vw,72px)" }}>{children}</div>
@@ -57,7 +61,24 @@ export function CinematicImage({
   );
 }
 
-/** Scroll-reveal wrapper: subtle fade + rise as an act enters. Honours reduced-motion. */
+/** Route-enter transition: a calm fade + rise on mount, so navigating DEEPER into the
+ *  4PLANET spine (EARTH → ORCA → LIVING SYSTEM) feels like descending into one world,
+ *  not loading an unrelated page. Honours reduced-motion. Key it on pathname to re-fire. */
+export function RouteEnter({ children, y = 14, style }: { children: ReactNode; y?: number; style?: CSSProperties }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) { setShown(true); return; }
+    const r = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+  return (
+    <div style={{ opacity: shown ? 1 : 0, transform: shown ? "none" : `translateY(${y}px)`,
+      transition: "opacity .55s cubic-bezier(.22,.61,.36,1), transform .55s cubic-bezier(.22,.61,.36,1)", ...style }}>
+      {children}
+    </div>
+  );
+}
+
 export function Reveal({ children, delay = 0, y = 22, as = "div", style, className }:
   { children: ReactNode; delay?: number; y?: number; as?: "div" | "section"; style?: CSSProperties; className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);

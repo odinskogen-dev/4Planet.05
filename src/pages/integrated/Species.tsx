@@ -1,0 +1,461 @@
+import { useEffect, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
+import { PublicShell } from "@/components/layout/PublicShell";
+import { Section } from "@/components/ui";
+import { T } from "@/styles/tokens";
+import {
+  SPECIES_PROFILES,
+  speciesById,
+  speciesBySlug,
+  type EvidenceClaim,
+  type EvidenceState,
+  type SpeciesProfile,
+} from "@/data/species";
+import { ORCA_INTERPRETATION, ORCA_OBSERVATION, ORCA_PRODUCT_CONTEXT, ORCA_SOURCE_RECORD } from "@/data/truthSpine";
+import { taxonOccurrences } from "@/planet/connectors";
+import type { Occurrence } from "@/planet/types";
+import { useFollows } from "@/planet/follow";
+import { contextHref } from "@/product/ProductNav";
+import { NotFound } from "@/pages/system";
+import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
+import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
+
+const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
+const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
+
+function Status({ children, color = T.blue }: { children: React.ReactNode; color?: string }) {
+  return <span style={{ ...mono, display: "inline-flex", border: `1px solid ${color}`, color, padding: "4px 7px" }}>{children}</span>;
+}
+
+const evidenceColor = (state: EvidenceState) => {
+  if (state === "KNOWN") return T.acid;
+  if (state === "INTERPRETED") return T.blue;
+  return "#8A6500";
+};
+
+function EvidenceClaimCard({ claim }: { claim: EvidenceClaim }) {
+  const color = evidenceColor(claim.state);
+  return (
+    <article style={{ ...panel, display: "flex", minHeight: 290, flexDirection: "column", borderColor: color }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <Status color={color}>{claim.state}</Status>
+        <span style={{ ...mono, color: T.dim }}>CHECKED {claim.checkedAt}</span>
+      </div>
+      <h3 style={{ marginTop: 22, fontFamily: T.display, fontSize: "clamp(25px,3vw,36px)", lineHeight: 1.02, letterSpacing: "-.025em" }}>{claim.label}</h3>
+      <p style={{ marginTop: 16, fontSize: 15, lineHeight: 1.6 }}>{claim.text}</p>
+      {claim.limitation && <p style={{ marginTop: 16, color: T.dim, fontSize: 12.5, lineHeight: 1.55 }}><strong>BOUNDARY:</strong> {claim.limitation}</p>}
+      {claim.sourceUrl && (
+        <a href={claim.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, marginTop: "auto", paddingTop: 24, color: T.blue }}>
+          {claim.sourceLabel ?? "OPEN SOURCE"} ↗
+        </a>
+      )}
+    </article>
+  );
+}
+
+/** Life-first image plane: a rights-cleared photo, a self-owned illustration, or a designed no-image state. */
+function LifeImage({ slug, name, sci, ratio = "4/3" }: { slug: string; name: string; sci: string; ratio?: string }) {
+  const media = speciesMedia(slug);
+  const show = hasShowableImage(slug);
+  const illustration = media?.illustration;
+  return (
+    <figure style={{ margin: 0, position: "relative", aspectRatio: ratio, overflow: "hidden", background: "#05081b", border: `1px solid ${T.line}` }}>
+      {show ? (
+        <img src={media!.localPath} alt={`${name} — ${sci}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : illustration ? (
+        <>
+          <img src={illustration.localPath} alt={`${name} — illustration, not a photograph`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{ position: "absolute", top: 10, left: 10, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+        </>
+      ) : (
+        <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18,
+          background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
+          <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 420, fontSize: 9 }}>
+            <strong style={{ display: "block", color: "#fff", marginBottom: 4, letterSpacing: ".14em" }}>NO CLEARED IMAGE</strong>
+            {media?.assetBlocker ? media.assetBlocker : "Awaiting a verified media-rights record. No unverified photo is shown."}
+          </div>
+        </div>
+      )}
+      <figcaption style={{ position: "absolute", left: 12, bottom: 10, ...mono, color: "rgba(255,255,255,.7)" }}>{name.toUpperCase()} · {sci.toUpperCase()}</figcaption>
+    </figure>
+  );
+}
+
+/** Derive the plain-language key facts a person actually needs, from profile data.
+ *  Works for ANY species: every field is optional and simply omitted if absent,
+ *  so the same template scales across the catalogue. Never invents a value. */
+function deriveKeyFacts(profile: SpeciesProfile): { k: string; v: string; note?: string }[] {
+  const facts: { k: string; v: string; note?: string }[] = [];
+  const iucn = (profile.publicClaims || []).find((c) => /IUCN|Red List|Least Concern|Endangered|Vulnerable|Near Threatened|Critically/i.test(c.text));
+  if (iucn) {
+    const m = iucn.text.match(/\b(Least Concern|Near Threatened|Vulnerable|Endangered|Critically Endangered|Data Deficient|Not Evaluated)\b/i);
+    if (m) facts.push({ k: "CONSERVATION (IUCN)", v: m[1], note: `${iucn.state} · ${iucn.source}` });
+  }
+  if (profile.group) facts.push({ k: "GROUP", v: profile.group });
+  if (profile.region) facts.push({ k: "REGION", v: profile.region });
+  if (profile.habitat) facts.push({ k: "WHERE IT LIVES", v: profile.habitat, note: profile.descriptorSource ? `DESC · ${profile.descriptorSource.source}` : undefined });
+  facts.push({ k: "TAXON", v: `${profile.kingdom} · ${profile.rank}`, note: `GBIF ${profile.gbifKey} · ${profile.taxonomicStatus}` });
+  return facts.slice(0, 6);
+}
+
+/** Premium full-screen key-facts hero. Life-first media is always rights-gated. */
+function SpeciesHero({
+  profile, returnHref, actions,
+}: { profile: SpeciesProfile; returnHref: string | null; actions: React.ReactNode }) {
+  const facts = deriveKeyFacts(profile);
+  const media = speciesMedia(profile.slug);
+  const show = hasShowableImage(profile.slug);
+  const illustration = media?.illustration;
+  return (
+    <div className="sp-hero">
+      <figure className="sp-hero__media" style={{ margin: 0 }}>
+        {show ? (
+          <>
+            <img src={media!.localPath} alt={`${profile.commonName} — ${profile.scientificName}`} />
+            {media?.limitations && (
+              <div style={{ position: "absolute", top: 12, left: 12, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9, maxWidth: 320, lineHeight: 1.5 }}>{media.limitations}</div>
+            )}
+            {media?.attribution && (
+              <div style={{ position: "absolute", bottom: 34, right: 12, ...mono, background: "rgba(0,0,0,.6)", color: "rgba(255,255,255,.9)", padding: "3px 7px", fontSize: 8 }}>{media.attribution}{media.licence ? ` · ${media.licence}` : ""}</div>
+            )}
+          </>
+        ) : illustration ? (
+          <>
+            <img src={illustration.localPath} alt={`${profile.commonName} — illustration, not a photograph`} />
+            <div style={{ position: "absolute", top: 12, left: 12, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 8px", fontSize: 9 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+          </>
+        ) : (
+          <div aria-hidden style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 18, background: "repeating-linear-gradient(135deg,#0a0f26,#0a0f26 22px,#0c1230 22px,#0c1230 44px)" }}>
+            <div style={{ ...mono, textAlign: "center", color: "rgba(255,255,255,.66)", lineHeight: 1.8, border: "1px dashed rgba(255,255,255,.28)", padding: "12px 16px", maxWidth: 420, fontSize: 9 }}>
+              <strong style={{ display: "block", color: "#fff", marginBottom: 4, letterSpacing: ".14em" }}>NO CLEARED IMAGE</strong>
+              {media?.assetBlocker ?? "Awaiting a verified media-rights record. No unverified photo is shown."}
+            </div>
+          </div>
+        )}
+        <figcaption>{profile.commonName.toUpperCase()} · {profile.scientificName.toUpperCase()}</figcaption>
+      </figure>
+      <div className="sp-hero__body">
+        <div>
+          {returnHref && (
+            <Link to={returnHref} data-testid="return-to-atlas" style={{ display: "inline-flex", alignItems: "center", gap: 8, ...mono, color: "#fff", background: T.blue, padding: "9px 13px", textDecoration: "none", marginBottom: 22 }}>
+              ← BACK TO OBSERVATION IN ATLAS
+            </Link>
+          )}
+          <div className="sp-hero__eyebrow">4PLANET SPECIES_ · {(profile.group || "LIFE").toUpperCase()}</div>
+          <h1 className="sp-hero__name">{profile.commonName}</h1>
+          <p className="sp-hero__sci">{profile.scientificName}</p>
+          {profile.intro && <p className="sp-hero__intro">{profile.intro}</p>}
+          <div className="sp-facts">
+            {facts.map((f) => (
+              <div className="sp-fact" key={f.k}>
+                <div className="sp-fact__k">{f.k}</div>
+                <div className="sp-fact__v">{f.v}</div>
+                {f.note && <div className="sp-fact__note">{f.note}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="sp-hero__actions">{actions}</div>
+      </div>
+    </div>
+  );
+}
+
+function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
+  return (
+    <Link
+      to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.slug === "orca" ? "orca-gbif" : null })}
+      style={{ display: "flex", flexDirection: "column", color: T.ink, textDecoration: "none", minWidth: 0, border: `1px solid ${T.line}` }}
+    >
+      <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="4/3" />
+      <div style={{ padding: "18px 20px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+        {profile.group && <div style={{ ...mono, color: T.dim }}>{profile.group.toUpperCase()}{profile.region ? ` · ${profile.region.toUpperCase()}` : ""}</div>}
+        <h2 style={{ marginTop: 10, fontFamily: T.display, fontSize: "clamp(22px,2.6vw,32px)", lineHeight: 1, letterSpacing: "-.03em" }}>{profile.commonName}</h2>
+        <p style={{ marginTop: 6, fontStyle: "italic", color: T.dim, fontSize: 14 }}>{profile.scientificName}</p>
+        {profile.intro && <p style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.5, color: T.dim, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{profile.intro}</p>}
+        <div style={{ marginTop: "auto", paddingTop: 18, ...mono, color: T.blue }}>OPEN PROFILE →</div>
+      </div>
+    </Link>
+  );
+}
+
+export function SpeciesIndex() {
+  const location = useLocation();
+  const contextProfile = speciesById(new URLSearchParams(location.search).get("entity") ?? undefined);
+  const [query, setQuery] = useState("");
+  const [group, setGroup] = useState("ALL");
+  const groups = ["ALL", ...Array.from(new Set(SPECIES_PROFILES.map((p) => p.group).filter(Boolean)))] as string[];
+  const q = query.trim().toLowerCase();
+  const filtered = SPECIES_PROFILES.filter((p) => {
+    if (group !== "ALL" && p.group !== group) return false;
+    if (!q) return true;
+    return p.commonName.toLowerCase().includes(q) || p.scientificName.toLowerCase().includes(q) || (p.group ?? "").toLowerCase().includes(q) || (p.region ?? "").toLowerCase().includes(q);
+  });
+  const orcaIllustration = speciesMedia("orca")?.illustration;
+  return (
+    <PublicShell>
+      <section style={{ position: "relative", height: "100svh", overflow: "hidden", background: "#05081b" }}>
+        {orcaIllustration ? (
+          <>
+            <img src={orcaIllustration.localPath} alt="Orca — 4PLANET illustration, not a photograph"
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 46%" }} />
+            <div style={{ position: "absolute", top: "clamp(74px,9vw,116px)", right: "clamp(18px,4vw,56px)", ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "7px 10px", fontSize: 9 }}>
+              4PLANET ILLUSTRATION · NOT A PHOTOGRAPH
+            </div>
+          </>
+        ) : (
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 40%,#172448,#05081b 68%)" }} />
+        )}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,27,.45) 0%, rgba(5,8,27,.04) 28%, rgba(5,8,27,.2) 60%, rgba(5,8,27,.92) 100%)" }} />
+        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "clamp(28px,5vw,88px)", maxWidth: 1100 }}>
+          <div style={{ ...mono, color: "#fff", letterSpacing: ".18em", fontSize: 11, opacity: .9 }}>4PLANET SPECIES_</div>
+          <h1 style={{ marginTop: 16, color: "#fff", fontFamily: T.display, fontWeight: 500, fontSize: "clamp(34px,5vw,68px)", lineHeight: .98, letterSpacing: "-.035em", maxWidth: "16ch" }}>Meet life on Earth.</h1>
+          <p style={{ marginTop: 16, maxWidth: "52ch", color: "rgba(255,255,255,.88)", fontSize: "clamp(15px,1.5vw,19px)", lineHeight: 1.5 }}>
+            Explore species, their habitats and the relationships that shape life on Earth.
+          </p>
+          <div style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", maxWidth: 640 }}>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search a species — common or scientific name…" aria-label="Search species"
+              onKeyDown={(e) => { if (e.key === "Enter") document.getElementById("species-results")?.scrollIntoView({ behavior: "smooth" }); }}
+              style={{ flex: "1 1 320px", minWidth: 0, border: "1px solid rgba(255,255,255,.4)", padding: "14px 16px", fontSize: 15, fontFamily: T.sans, background: "rgba(5,8,27,.35)", color: "#fff" }} />
+            <a href="#species-results" style={{ ...mono, fontSize: 12, letterSpacing: ".1em", background: "#fff", color: "#000", padding: "14px 18px", textDecoration: "none" }}>SEARCH →</a>
+          </div>
+          <div style={{ ...mono, marginTop: 18, color: "rgba(255,255,255,.6)", letterSpacing: ".2em", fontSize: 10 }}>{SPECIES_PROFILES.length} SPECIES · SCROLL ↓</div>
+        </div>
+      </section>
+      <Section pad="clamp(56px,7vw,104px)">
+        <span id="species-results" style={{ position: "relative", top: -80 }} aria-hidden />
+        <div style={{ ...mono, color: T.blue }}>4PLANET SPECIES_</div>
+        <h2 style={{ marginTop: 16, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3.2vw,44px)", lineHeight: 1.0, letterSpacing: "-.03em" }}>Meet life on Earth.</h2>
+        <p style={{ marginTop: 18, maxWidth: 720, fontSize: "clamp(15px,1.4vw,18px)", lineHeight: 1.55, color: T.dim }}>
+          Each profile begins with the living animal and its place, then opens into what it depends on and what is
+          reported about it. Occurrence records show where people have looked — not range, abundance or population.
+        </p>
+        {contextProfile && (
+          <div style={{ marginTop: 24 }}>
+            <Status color={T.acid}>CONTEXT CONTINUED · {contextProfile.commonName.toUpperCase()}</Status>
+          </div>
+        )}
+        <div style={{ marginTop: 44, display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search species…" aria-label="Search species"
+            style={{ flex: "1 1 240px", minWidth: 0, border: `1px solid ${T.line}`, padding: "12px 14px", fontSize: 15, fontFamily: T.sans, background: "transparent", color: T.ink }} />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {groups.map((g) => (
+              <button key={g} onClick={() => setGroup(g)} style={{ ...mono, padding: "8px 12px", cursor: "pointer", background: group === g ? T.ink : "transparent", color: group === g ? "#fff" : T.dim, border: `1px solid ${group === g ? T.ink : T.line}` }}>
+                {g === "ALL" ? "ALL" : g.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ ...mono, color: T.dim, marginTop: 16 }}>{filtered.length} PROFILE{filtered.length === 1 ? "" : "S"}</div>
+        <div className="three" style={{ marginTop: 28 }}>
+          {filtered.map((profile) => <SpeciesCard key={profile.id} profile={profile} search={location.search} />)}
+        </div>
+        {filtered.length === 0 && <p style={{ marginTop: 40, color: T.dim }}>No species match that search yet.</p>}
+      </Section>
+    </PublicShell>
+  );
+}
+
+type ObservationState =
+  | { status: "LOADING"; rows: Occurrence[]; total: number }
+  | { status: "LIVE"; rows: Occurrence[]; total: number }
+  | { status: "NO_RECORDS"; rows: Occurrence[]; total: number }
+  | { status: "SOURCE_UNAVAILABLE"; rows: Occurrence[]; total: number };
+
+export function SpeciesProfilePage() {
+  const { slug } = useParams();
+  const profile = speciesBySlug(slug);
+  const location = useLocation();
+  const { following, toggle } = useFollows();
+  const [occurrences, setOccurrences] = useState<ObservationState>({ status: "LOADING", rows: [], total: 0 });
+
+  useEffect(() => {
+    if (!profile) return;
+    let alive = true;
+    setOccurrences({ status: "LOADING", rows: [], total: 0 });
+    taxonOccurrences(profile.gbifKey, 24).then((result) => {
+      if (!alive) return;
+      if (!result.ok) setOccurrences({ status: "SOURCE_UNAVAILABLE", rows: [], total: 0 });
+      else setOccurrences({ status: result.data.total > 0 ? "LIVE" : "NO_RECORDS", rows: result.data.rows, total: result.data.total });
+    });
+    return () => { alive = false; };
+  }, [profile]);
+
+  if (!profile) return <NotFound />;
+  const isOrca = profile.slug === "orca";
+  const returnHref = returnHrefFromSearch(location.search);
+  const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
+  const followed = following(profile.id);
+
+  const actions = (
+    <>
+      <Link to={atlasHref} data-testid="species-to-atlas" style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
+      {isOrca && (
+        <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
+      )}
+      {profile.missionSlug && (
+        <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
+      )}
+      <button
+        onClick={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+        style={{ ...mono, background: "transparent", color: followed ? T.acid : T.ink, border: `1px solid ${followed ? T.acid : T.ink}`, padding: "11px 15px", cursor: "pointer" }}
+      >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
+    </>
+  );
+
+  return (
+    <PublicShell>
+      <div className={returnHref ? "closer-look" : undefined}>
+        <SpeciesHero profile={profile} returnHref={returnHref} actions={actions} />
+      </div>
+      <Section pad="clamp(48px,6vw,96px)">
+        <Link to={contextHref("/species", location.search)} style={{ ...mono, color: T.blue }}>← SPECIES INDEX</Link>
+        <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Status>GBIF TAXON · ACCEPTED</Status>
+          <Status color={T.acid}>IDENTITY PRESERVED</Status>
+          <Status color="#8A6500">POPULATION-SPECIFIC CLAIMS CONTROLLED</Status>
+        </div>
+        {speciesMedia(profile.slug)?.illustration && !hasShowableImage(profile.slug) && (
+          <p style={{ margin: "16px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, fontSize: 10.5, maxWidth: 760 }}>
+            PHOTOGRAPH · PENDING RIGHTS — {speciesMedia(profile.slug)?.assetBlocker ?? "no cleared photograph yet"} The hero image is a 4PLANET illustration, not a photograph of this animal.
+          </p>
+        )}
+        {profile.habitat && (
+          <div style={{ ...panel, marginTop: 28, maxWidth: 760 }}>
+            <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
+            <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
+            {profile.descriptorSource && (
+              <p style={{ margin: "12px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>
+                DESCRIPTION SOURCE · <a href={profile.descriptorSource.sourceUrl} target="_blank" rel="noreferrer" style={{ color: T.blue }}>{profile.descriptorSource.source} ↗</a> · CHECKED {profile.descriptorSource.checkedAt} · {profile.descriptorSource.note}
+              </p>
+            )}
+          </div>
+        )}
+        {profile.publicClaims && profile.publicClaims.length > 0 && (
+          <div style={{ marginTop: 24, maxWidth: 760 }}>
+            <div style={{ ...mono, color: T.blue, marginBottom: 12 }}>WHAT IS KNOWN · SOURCE-BACKED</div>
+            <div style={{ display: "grid", gap: 12 }}>
+              {profile.publicClaims.map((c, i) => {
+                const col = c.state === "KNOWN" ? T.acid : c.state === "INTERPRETED" ? T.blue : "#8A6500";
+                return (
+                  <div key={i} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${col}`, padding: "14px 16px" }}>
+                    <div style={{ ...mono, color: col }}>{c.state} · CHECKED {c.checkedAt}</div>
+                    <p style={{ margin: "8px 0 0", fontSize: 15, lineHeight: 1.5 }}>{c.text}</p>
+                    <p style={{ margin: "8px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>BOUNDARY · {c.limitation}</p>
+                    <a href={c.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: T.blue, display: "inline-block", marginTop: 8 }}>{c.source} ↗</a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className="tw" style={{ marginTop: 52 }}>
+          <div style={panel}>
+            <div style={{ ...mono, color: T.dim }}>TAXON IDENTITY</div>
+            <dl style={{ marginTop: 20, display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 18px", fontSize: 14 }}>
+              <dt>Canonical ID</dt><dd style={{ wordBreak: "break-all" }}>{profile.id}</dd>
+              <dt>GBIF key</dt><dd>{profile.gbifKey}</dd>
+              <dt>Rank</dt><dd>{profile.rank}</dd>
+              <dt>Status</dt><dd>{profile.taxonomicStatus}</dd>
+              <dt>Kingdom</dt><dd>{profile.kingdom}</dd>
+            </dl>
+            <a href={profile.taxonSourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 22, color: T.blue }}>OPEN GBIF TAXON RECORD ↗</a>
+          </div>
+          <div style={panel}>
+            <div style={{ ...mono, color: T.dim }}>OCCURRENCE RECORDS</div>
+            <div style={{ marginTop: 18 }}><Status color={occurrences.status === "LIVE" ? T.acid : occurrences.status === "SOURCE_UNAVAILABLE" ? T.red : "#8A6500"}>{occurrences.status === "LIVE" ? "RECORDS RETRIEVED" : occurrences.status.replace(/_/g, " ")}</Status></div>
+            {occurrences.status === "LIVE" && <p style={{ marginTop: 18, fontSize: 15 }}>{occurrences.total.toLocaleString()} records reported by GBIF; {occurrences.rows.length} loaded in this view.</p>}
+            <p style={{ marginTop: 14, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>Records show reporting activity. They do not establish range, abundance, population trend or live tracking.</p>
+            {occurrences.rows.slice(0, 3).map((row) => (
+              <a key={row.sourceRecordId} href={row.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 12, color: T.ink, fontSize: 12 }}>
+                {row.eventDate ?? "DATE NOT SUPPLIED"} · {row.lat.toFixed(3)}, {row.lng.toFixed(3)} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {isOrca && (
+          <>
+            <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ ...mono, color: T.blue }}>WHAT THIS RECORD SHOWS · AND WHAT IT DOES NOT</div>
+                <Status color="#8A6500">{ORCA_PRODUCT_CONTEXT.persistedBy.replace(/_/g, " ")}</Status>
+              </div>
+              <p style={{ marginTop: 18, maxWidth: 840, lineHeight: 1.55 }}>{ORCA_INTERPRETATION.text}</p>
+              <div className="four" style={{ marginTop: 24 }}>
+                {[
+                  ["SOURCE RECORD", ORCA_SOURCE_RECORD.sourceRecordId],
+                  ["OBSERVATION", ORCA_OBSERVATION.id],
+                  ["SIGNAL", "NONE CREATED"],
+                  ["INTERPRETATION", ORCA_INTERPRETATION.reviewStatus],
+                ].map(([label, value]) => <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}><div style={{ ...mono, color: T.dim }}>{label}</div><div style={{ marginTop: 8, fontSize: 12, wordBreak: "break-all" }}>{value}</div></div>)}
+              </div>
+              <p style={{ marginTop: 18, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>{ORCA_PRODUCT_CONTEXT.disclosure}</p>
+              <a href={ORCA_SOURCE_RECORD.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 14, color: T.blue }}>SOURCE RECORD + LICENCE ↗</a>
+            </div>
+
+            <section style={{ marginTop: 72 }} aria-labelledby="whales-evidence-title">
+              <div style={{ ...mono, color: T.blue }}>WH4LES_ · FOUR EVIDENCE CHAPTERS</div>
+              <h2 id="whales-evidence-title" style={{ marginTop: 16, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(38px,6vw,78px)", lineHeight: .95, letterSpacing: "-.045em" }}>
+                From one animal to the living relationships around it.
+              </h2>
+              <p style={{ marginTop: 24, maxWidth: 780, fontSize: 17, lineHeight: 1.6, color: T.dim }}>
+                Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. Species-level evidence is never silently converted into a claim about one population, pod or individual.
+              </p>
+              {profile.narrativeChapters?.map((chapter, index) => (
+                <article key={chapter.id} style={{ marginTop: index === 0 ? 48 : 72 }}>
+                  <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow}</div>
+                  <h3 style={{ marginTop: 14, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(34px,5vw,64px)", lineHeight: .98, letterSpacing: "-.04em" }}>{chapter.title}</h3>
+                  <p style={{ marginTop: 20, maxWidth: 820, fontSize: 17, lineHeight: 1.62 }}>{chapter.summary}</p>
+                  <div className="tw" style={{ marginTop: 28 }}>
+                    {chapter.claims.map((claim) => <EvidenceClaimCard key={claim.id} claim={claim} />)}
+                  </div>
+                </article>
+              ))}
+            </section>
+          </>
+        )}
+
+        {isOrca && speciesMedia("orca")?.illustration && (
+          <section style={{ ...panel, marginTop: 72, borderColor: T.blue }} aria-label="Orca media rights boundary">
+            <div style={{ ...mono, color: T.blue }}>ORCA MEDIA · RIGHTS BOUNDARY</div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(180px,.45fr) minmax(0,1fr)", gap: "clamp(24px,5vw,64px)", alignItems: "center", marginTop: 20 }}>
+              <figure style={{ margin: 0, aspectRatio: "4/5", overflow: "hidden", background: "#05081b", position: "relative" }}>
+                <img src={speciesMedia("orca")!.illustration!.localPath} alt="Orca — 4PLANET illustration, not a photograph" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", top: 10, left: 10, ...mono, background: "rgba(0,0,0,.72)", color: "#fff", padding: "5px 8px", fontSize: 8 }}>ILLUSTRATION · NOT A PHOTOGRAPH</div>
+              </figure>
+              <div>
+                <h2 style={{ margin: 0, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,4vw,48px)", letterSpacing: "-.035em", lineHeight: .98 }}>Photographs stay hidden until the exact licence is verified.</h2>
+                <p style={{ margin: "18px 0 0", maxWidth: 680, color: T.dim, fontSize: 15, lineHeight: 1.6 }}>
+                  Founder-supplied provenance does not establish copyright ownership or public-web rights. This public surface therefore uses the 4PLANET-owned illustration while the specific photo records are held back.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <div className="tw" style={{ marginTop: 72 }}>
+          <div style={panel}>
+            <div style={{ ...mono, color: T.red }}>PRESSURE</div>
+            <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.issue.label}</h2>
+            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>The connection to this species exists. The public wording is held back until its ecological source pack is audited — no unsourced claim is shown.</p>
+            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
+          </div>
+          <div style={panel}>
+            <div style={{ ...mono, color: T.acid }}>RESPONSE</div>
+            <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.solution.label}</h2>
+            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>A connected prototype path — not a recommendation, an efficacy claim or a 4PLANET delivery offer.</p>
+            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
+          </div>
+        </div>
+
+        <div style={{ ...panel, marginTop: 24 }}>
+          <div style={{ ...mono, color: T.blue }}>PRODUCT NOTE</div>
+          <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.5 }}>{profile.commonName} retains the same canonical identity across SPECIES, ATLAS and local WATCH.</p>
+          <p style={{ marginTop: 10, color: T.dim, fontSize: 13 }}>Working prototype · evidence layer checked 3 August 2026 · not a population assessment, live tracker or ecological outcome claim.</p>
+        </div>
+      </Section>
+    </PublicShell>
+  );
+}

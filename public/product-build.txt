@@ -1,0 +1,9 @@
+4PLANET_ ONE INTERFACE 03 release marker
+Build status: local-build
+Release branch: release/one-interface-03-db328bf
+Remote SHA: db328bf5a67cbc40aa21063068d6965a7ab62b3a
+Deployment URL: local-build-no-deployment-url
+Deployment ID: not exposed during build; verify via Cloudflare Pages metadata
+Build timestamp UTC: 2026-08-16T15:46:35.187Z
+Candidate baseline: Sprint 4 / living-missions-v4
+Notes: no Beta, launch, partner, payment, delivery or ecological-outcome claim is made here.
