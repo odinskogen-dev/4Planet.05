@@ -51,7 +51,7 @@ const FEATURED = [
     title: "Orca",
     line: "Follow family, culture, place and pressure through a source-bounded species world.",
     to: "/species/orca",
-    image: "wh4lesHero" as ImageKey,
+    image: "heroEarth" as ImageKey,
     accent: DOMAIN_ACCENT.OCE4N_,
   },
   {
