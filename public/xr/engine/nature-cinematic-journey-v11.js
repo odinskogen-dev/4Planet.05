@@ -5,6 +5,7 @@
   let layers = [];
   let activeLayer = 0;
   let sceneToken = 0;
+  let pendingIndex = null;
 
   const compact = () => window.matchMedia('(max-width: 760px)').matches;
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -136,14 +137,28 @@
 
   const show = async (index, userInitiated = false) => {
     if (!root || !manifest || !layers.length) return;
+
+    // The scene event can be emitted more than once while a browser is still
+    // composing the same chapter (for example around viewport/3D readiness).
+    // Re-entering the same pending scene must not invalidate its own settle
+    // timer. Different-scene requests still supersede immediately via token.
+    if (pendingIndex === index) return;
+    if (root.dataset.cinematicSettled === 'true' && root.dataset.cinematicSettledIndex === String(index)) return;
+
     const node = manifest.nodes?.[index];
     const scene = node?.scene || {};
     const media = scene.media || {};
     const token = ++sceneToken;
+    pendingIndex = index;
     root.dataset.cinematicSettled = 'false';
 
     let resolved;
-    try { resolved = await resolveSceneSrc(media); } catch { return; }
+    try {
+      resolved = await resolveSceneSrc(media);
+    } catch {
+      if (token === sceneToken) pendingIndex = null;
+      return;
+    }
     if (token !== sceneToken || !resolved?.src) return;
 
     const incomingIndex = 1 - activeLayer;
@@ -172,6 +187,7 @@
         outgoing.classList.remove('is-leaving');
         root.dataset.cinematicSettled = 'true';
         root.dataset.cinematicSettledIndex = String(index);
+        pendingIndex = null;
       }, settleDelay);
       activeLayer = incomingIndex;
       root.dataset.chapterMediaReady = 'true';
