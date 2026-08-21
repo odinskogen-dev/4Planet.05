@@ -15,6 +15,7 @@
     let animationDuration = 14.667;
     let cameraHome = null;
     let hoverTimer = 0;
+    let interactionCooldown = false;
 
     const identityScene = () => root.dataset.cinematicScene === 'identity' || root.dataset.sceneState === 'identity';
     const desktopViewport = () => window.innerWidth > 760;
@@ -41,8 +42,14 @@
         <a class="nature-ear-live-v23__credit" href="${MODEL_SOURCE}" target="_blank" rel="noreferrer">3D JAGUAR · EAR.RODRIGUEZ · CC BY 4.0</a>`;
       root.appendChild(shell);
       iframe = shell.querySelector('iframe');
-      shell.querySelector('[data-ear-action="observe"]')?.addEventListener('click', observe);
-      shell.querySelector('[data-ear-action="move"]')?.addEventListener('click', move);
+      shell.querySelector('[data-ear-action="observe"]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        observe();
+      });
+      shell.querySelector('[data-ear-action="move"]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        move();
+      });
       shell.addEventListener('pointerenter', () => {
         clearTimeout(hoverTimer);
         hoverTimer = window.setTimeout(() => root.dataset.jaguarAttention = 'visitor', 220);
@@ -79,7 +86,10 @@
     function readAnimations() {
       if (!api?.getAnimations) return;
       api.getAnimations((error, animations) => {
-        if (error || !Array.isArray(animations) || !animations.length) return;
+        if (error || !Array.isArray(animations) || !animations.length) {
+          root.dataset.jaguarAnimation = 'unavailable';
+          return;
+        }
         currentAnimation = animations[0];
         animationUid = currentAnimation?.[0] || currentAnimation?.uid || null;
         const duration = Number(currentAnimation?.[2] || currentAnimation?.duration);
@@ -87,8 +97,8 @@
         root.dataset.jaguarAnimation = 'available';
         root.dataset.jaguarAnimationDuration = animationDuration.toFixed(3);
         if (animationUid && api.setCurrentAnimationByUID) api.setCurrentAnimationByUID(animationUid);
-        api.setCycleMode?.('loop');
-        api.setSpeed?.(0.62);
+        api.setCycleMode?.('loopOne');
+        api.setSpeed?.(0.58);
         api.play?.();
       });
     }
@@ -97,6 +107,22 @@
       if (!api?.getCameraLookAt) return;
       api.getCameraLookAt((error, camera) => {
         if (!error && camera) cameraHome = camera;
+      });
+    }
+
+    function integrateViewerBackground() {
+      // Transparent backgrounds are account-tier dependent in Sketchfab. A
+      // deterministic rainforest-black background works on every account and
+      // is then optically fused with the v22 room by the radial CSS mask.
+      api?.setBackground?.({ color: [0.004, 0.016, 0.008] });
+    }
+
+    function bindViewerInteraction() {
+      api?.addEventListener?.('click', () => {
+        if (interactionCooldown) return;
+        interactionCooldown = true;
+        observe();
+        window.setTimeout(() => { interactionCooldown = false; }, 1200);
       });
     }
 
@@ -112,6 +138,7 @@
           autostart: 1,
           preload: 1,
           transparent: 1,
+          animation_autoplay: 1,
           ui_controls: 0,
           ui_infos: 0,
           ui_stop: 0,
@@ -132,8 +159,10 @@
               root.dataset.jaguar3d = 'ear-live-bridge';
               root.dataset.jaguar3dSource = 'ear-rodriguez-jaguar';
               root.dataset.jaguar3dActive = String(active && identityScene() && budgetAllows());
+              integrateViewerBackground();
               readAnimations();
               readCameraHome();
+              bindViewerInteraction();
               if (active && identityScene() && budgetAllows()) show();
             });
           },
@@ -175,7 +204,8 @@
       if (animationUid) {
         api.setCurrentAnimationByUID?.(animationUid);
         api.seekTo?.(Math.min(animationDuration * .54, 8.2));
-        api.setSpeed?.(.35);
+        api.setCycleMode?.('one');
+        api.setSpeed?.(.34);
         api.play?.();
       }
       if (cameraHome && api.setCameraLookAt) {
@@ -189,7 +219,9 @@
         }
       }
       window.setTimeout(() => {
-        api?.setSpeed?.(.58);
+        api?.setCycleMode?.('loopOne');
+        api?.setSpeed?.(.5);
+        api?.play?.();
         root.dataset.jaguarAttention = 'rest';
       }, 1900);
     }
@@ -203,8 +235,9 @@
       api.setSpeed?.(.82);
       api.play?.();
       window.setTimeout(() => {
-        api?.setCycleMode?.('loop');
-        api?.setSpeed?.(.55);
+        api?.setCycleMode?.('loopOne');
+        api?.setSpeed?.(.52);
+        api?.play?.();
         root.dataset.jaguarAttention = 'rest';
       }, Math.min(5200, animationDuration * 350));
     }
