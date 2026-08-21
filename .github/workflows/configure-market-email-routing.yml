@@ -1,0 +1,56 @@
+name: Configure CRE4TORS + 4MARKET email routing
+
+on:
+  push:
+    branches:
+      - ops/market-business-activation-20260821
+    paths:
+      - 'scripts/configure-market-email-routing.sh'
+      - '.github/workflows/configure-market-email-routing.yml'
+      - '.github/email-routing-retry-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-email-routing
+  cancel-in-progress: true
+
+jobs:
+  configure-routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact ops candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Configure Cloudflare Email Routing fail-closed
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+          DESTINATION_EMAIL: odin.skogen@gmail.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          if [ -z "$TOKEN" ]; then
+            echo "FAIL — no supported Cloudflare API token secret is available."
+            exit 2
+          fi
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"
+          TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          CLOUDFLARE_API_TOKEN="$TOKEN" bash scripts/configure-market-email-routing.sh
