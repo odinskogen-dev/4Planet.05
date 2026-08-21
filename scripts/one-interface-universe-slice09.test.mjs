@@ -17,8 +17,9 @@ test("Homo sapiens is a first-class bounded SPECIES route before the generic spe
   assert.ok(generic >= 0, "Generic species route is missing");
   assert.ok(exact < generic, "Homo sapiens route must resolve before generic species route");
   assert.match(human, /taxon:gbif:10856082/);
-  assert.match(human, /UNKNOWN/);
-  assert.match(human, /cannot infer an individual's footprint/i);
+  assert.match(human, /UNKNOWN WITHOUT MORE EVIDENCE/);
+  assert.match(human, /global profile cannot infer one person.s footprint/i);
+  assert.match(human, /not a claim that every person contributes equally/i);
 });
 
 test("Missions preserve one connected ATLAS → SPECIES → LIVING SYSTEMS → IMPACT journey", () => {
