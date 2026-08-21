@@ -47,9 +47,8 @@ function RootHome() {
   const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   const isCre4torsHost = host === "cre4tors.com" || host === "www.cre4tors.com";
   const isMarketHost = host === "4planetmarket.com" || host === "www.4planetmarket.com";
-  if (isCre4torsHost) return <Cre4torsHome />;
   if (isMarketHost) return <ImpactMarketGold />;
-  return <Home />;
+  return isCre4torsHost ? <Cre4torsHome /> : <Home />;
 }
 
 export function AppRoutes() {
