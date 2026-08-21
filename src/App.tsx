@@ -3,6 +3,7 @@ import { AnalyticsConsent } from "@/analytics/AnalyticsConsent";
 import { AnalyticsProvider } from "@/analytics/AnalyticsProvider";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { Cre4torsMarketEntry } from "@/components/labs/Cre4torsMarketEntry";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import "@/styles/global.css";
@@ -27,6 +28,7 @@ export default function App() {
       <ScrollToTop />
       <ContextRetained />
       <AtlasProductSwitcher />
+      <Cre4torsMarketEntry />
       <AppRoutes />
       <AnalyticsConsent />
     </BrowserRouter>

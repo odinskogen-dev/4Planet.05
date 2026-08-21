@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
 import Cre4torsHome from "@/pages/v5/Cre4torsHome";
+import ImpactMarketGold from "@/pages/v5/ImpactMarketGold";
 import LabsIndex from "@/pages/v5/LabsIndex";
 import CreatorEngineLab from "@/pages/v5/CreatorEngineLab";
 import HumanCapacityLab from "@/pages/v5/HumanCapacityLab";
@@ -45,6 +46,8 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 function RootHome() {
   const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   const isCre4torsHost = host === "cre4tors.com" || host === "www.cre4tors.com";
+  const isMarketHost = host === "4planetmarket.com" || host === "www.4planetmarket.com";
+  if (isMarketHost) return <ImpactMarketGold />;
   return isCre4torsHost ? <Cre4torsHome /> : <Home />;
 }
 
@@ -53,6 +56,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootHome />} />
       <Route path="/cre4tors" element={<Cre4torsHome />} />
+      <Route path="/market" element={<ImpactMarketGold />} />
+      <Route path="/cre4tors/market" element={<Navigate to="/market" replace />} />
+      <Route path="/4rt/market" element={<Navigate to="/market" replace />} />
       <Route path="/labs" element={<LabsIndex />} />
       <Route path="/labs/creator" element={<CreatorEngineLab />} />
       <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
