@@ -7,6 +7,8 @@ const context = read('public/xr/engine/nature-journey-context-v16.js');
 const contextCss = read('public/xr/engine/nature-journey-context-v16.css');
 const premium = read('public/xr/engine/nature-journey-premium-v17.js');
 const premiumCss = read('public/xr/engine/nature-journey-premium-v17.css');
+const goldCss = read('public/xr/engine/nature-journey-gold-v18.css');
+const browser = read('public/xr/engine/nature-browser.js');
 const audio = read('public/xr/engine/nature-audio-v06.js');
 const jaguarBoot = read('public/journey/jaguar/jaguar-journey.js');
 const jaguarHtml = read('public/journey/jaguar/index.html');
@@ -32,8 +34,6 @@ test('shared Journey context is species-agnostic and manifest-driven', () => {
 
 test('shared premium sensory renderer stays species-agnostic and config-driven', () => {
   assert.doesNotMatch(premium, /jaguar|orca|panthera|orcinus|gbif:5219426|gbif:2440483/i);
-  // HTML data-premium-config is exposed to the renderer as root.dataset.premiumConfig.
-  // Assert the runtime contract instead of requiring the literal HTML attribute spelling in JS.
   assert.match(premium, /dataset\?\.premiumConfig|dataset\.premiumConfig/);
   assert.match(premium, /config\?\.scenes/);
   assert.match(premium, /scene\?\.hotspots/);
@@ -42,7 +42,7 @@ test('shared premium sensory renderer stays species-agnostic and config-driven',
   assert.match(premium, /4planet:nature-journey-scene/);
 });
 
-test('Jaguar and Orca both consume the same context, premium and audio engines', () => {
+test('Jaguar and Orca both consume the same context, premium, Gold cleanup and audio engines', () => {
   assert.match(jaguarBoot, /NatureJourneyContext\?\.render\(\{ root, manifest \}\)/);
   assert.match(orcaBoot, /NatureJourneyContext\?\.render\(\{ root, manifest \}\)/);
   for (const html of [jaguarHtml, orcaHtml]) {
@@ -50,9 +50,14 @@ test('Jaguar and Orca both consume the same context, premium and audio engines',
     assert.match(html, /nature-journey-context-v16\.js/);
     assert.match(html, /nature-journey-premium-v17\.css/);
     assert.match(html, /nature-journey-premium-v17\.js/);
+    assert.match(html, /nature-journey-gold-v18\.css/);
     assert.match(html, /nature-audio-v06\.js/);
-    assert.match(html, /SOUND STARTS ON ENTRY/);
+    assert.match(html, /SOUND ON BY DEFAULT AFTER ENTRY/);
   }
+  assert.match(browser, /TURN SOUND OFF/);
+  assert.match(browser, /TURN SOUND ON/);
+  assert.match(goldCss, /nature-nodes/);
+  assert.match(goldCss, /nature-premium__audio\{display:none!important/);
   assert.match(jaguarHtml, /data-premium-config="\/journey\/jaguar\/premium-v17\.json"/);
   assert.match(orcaHtml, /data-premium-config="\/journey\/orca\/premium-v17\.json"/);
   assert.match(orcaHtml, /data-audio-world="ocean"/);
@@ -133,6 +138,8 @@ test('shared Journey visual layers preserve accessibility, mobile and reduced-mo
   assert.match(premiumCss, /@media\(max-width:760px\)/);
   assert.match(premiumCss, /@media\(prefers-reduced-motion:reduce\)/);
   assert.match(premiumCss, /safe-area-inset/);
+  assert.match(goldCss, /@media\(max-width:760px\)/);
+  assert.match(goldCss, /safe-area-inset/);
   assert.match(orcaCss, /@media\(max-width:760px\)/);
   assert.match(orcaCss, /@media\(prefers-reduced-motion:reduce\)/);
 });
