@@ -12,10 +12,10 @@ test.describe("ENGINE FOUNDRY · Partner Engine transfer proof", () => {
 
     await page.getByRole("button", { name: "RUN PARTNER ENGINE" }).click();
 
-    await expect(page.getByText("SUCCEEDED", { exact: true })).toBeVisible();
-    await expect(page.getByText(/#1 ·/)).toBeVisible();
+    await expect(page.getByText("SUCCEEDED", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/#1 ·/).first()).toBeVisible();
     await expect(page.getByText("FOUNDER_NORWAY_OUTBOUND_APPROVAL")).toBeVisible();
-    await expect(page.getByText("INELIGIBLE", { exact: true })).toBeVisible();
+    await expect(page.locator(".pe-result.is-blocked").getByText("INELIGIBLE", { exact: true })).toBeVisible();
     await expect(page.getByText("HOLD / REJECT")).toBeVisible();
 
     for (const stage of ["validate", "fit", "diligence", "block", "rank"]) {
