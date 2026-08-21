@@ -1,13 +1,13 @@
-type MarketProductId = "print:tidal-memory-01";
+type MarketProductId = "photo:arctic-white-angel-01";
 
 interface Env {
   STRIPE_TEST_SECRET_KEY?: string;
-  STRIPE_MARKET_TEST_PRICE_TIDAL_MEMORY_01?: string;
   MARKET_STRIPE_TEST_ENABLED?: string;
 }
 
-const FALLBACK_TEST_PRICE = "price_1U6qNKBIIif9wShMqKsefBys";
-const MARKET_PRODUCT: MarketProductId = "print:tidal-memory-01";
+const MARKET_PRODUCT: MarketProductId = "photo:arctic-white-angel-01";
+const TEST_AMOUNT_MINOR = 300; // NOK 3.00 — Stripe minimum for NOK card charges.
+const TEST_CURRENCY = "nok";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -60,23 +60,31 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
     return json({ ok: false, error: "unsupported_market_product" }, 400);
   }
 
-  const price = env.STRIPE_MARKET_TEST_PRICE_TIDAL_MEMORY_01?.trim() || FALLBACK_TEST_PRICE;
-  if (!price.startsWith("price_")) return json({ ok: false, error: "stripe_test_price_invalid" }, 503);
-
   const form = new URLSearchParams();
   form.set("mode", "payment");
-  form.set("line_items[0][price]", price);
+  form.set("line_items[0][price_data][currency]", TEST_CURRENCY);
+  form.set("line_items[0][price_data][unit_amount]", String(TEST_AMOUNT_MINOR));
+  form.set("line_items[0][price_data][product_data][name]", "Arctic White Angel — 4MARKET Checkout Canary (TEST)");
+  form.set(
+    "line_items[0][price_data][product_data][description]",
+    "Technical payment-path validation only. This is not the commercial fine-art print price.",
+  );
   form.set("line_items[0][quantity]", "1");
   form.set("customer_creation", "always");
   form.set("billing_address_collection", "auto");
   form.set("shipping_address_collection[allowed_countries][0]", "NO");
-  form.set("success_url", `${origin}/?stripe_test=1&checkout=success&session_id={CHECKOUT_SESSION_ID}`);
-  form.set("cancel_url", `${origin}/?stripe_test=1&checkout=cancel`);
+  form.set(
+    "success_url",
+    `${origin}/4market-stripe-test.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+  );
+  form.set("cancel_url", `${origin}/4market-stripe-test.html?checkout=cancel`);
   form.set("metadata[market_product_id]", MARKET_PRODUCT);
   form.set("metadata[truth_state]", "DEMO");
   form.set("metadata[integration]", "4market_test_checkout");
+  form.set("metadata[test_amount_nok]", "3");
   form.set("payment_intent_data[metadata][market_product_id]", MARKET_PRODUCT);
   form.set("payment_intent_data[metadata][truth_state]", "DEMO");
+  form.set("payment_intent_data[metadata][integration]", "4market_test_checkout");
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
@@ -93,7 +101,7 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
     error?: { message?: string; type?: string };
   };
 
-  if (!stripeResponse.ok || !stripePayload.url) {
+  if (!stripeResponse.ok || !stripePayload.url || !stripePayload.id?.startsWith("cs_test_")) {
     return json(
       {
         ok: false,
@@ -110,6 +118,7 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
     sessionId: stripePayload.id,
     url: stripePayload.url,
     productId: MARKET_PRODUCT,
+    amountNok: 3,
   });
 };
 
