@@ -1,0 +1,169 @@
+/* 4PLANET Jaguar v21 — performance + presence pass.
+   Goal: preserve the cinematic visual language while reducing continuous GPU
+   compositing, full-screen filters and unnecessary encounter work. */
+
+.nature-browser[data-runtime-controller="v21"]{
+  --runtime-motion-scale:1;
+}
+
+/* Remove expensive backdrop blurs from the always-on interface. The darker
+   optical surfaces remain, but no full-screen region is repeatedly re-sampled. */
+.nature-browser[data-runtime-controller="v21"] .nature-topbar,
+.nature-browser[data-runtime-controller="v21"] .nature-journey-hud__copy,
+.nature-browser[data-runtime-controller="v21"] .nature-journey-hud__actions button,
+.nature-browser[data-runtime-controller="v21"] .nature-progress__step,
+.nature-browser[data-runtime-controller="v21"] .nature-node__label,
+.nature-browser[data-runtime-controller="v21"] .nature-premium__panel,
+.nature-browser[data-runtime-controller="v21"] .nature-premium__detail,
+.nature-browser[data-runtime-controller="v21"] .nature-premium__audio,
+.nature-browser[data-runtime-controller="v21"] .nature-sound{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* The v19 room used eight continuously composited layers. Keep the depth but
+   stop promoting every layer to its own GPU surface. */
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__layer{
+  will-change:auto!important;
+  transition:opacity calc(.48s * var(--runtime-motion-scale)) ease!important;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__mid,
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__foreground-right{
+  filter:saturate(.82) contrast(1.08) brightness(.38)!important;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__fog{
+  animation-duration:24s!important;
+  filter:none!important;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-depth-room__shafts{
+  filter:none!important;
+}
+
+/* Scene travel should feel deliberate, not keep a giant texture animating for
+   almost seven seconds after every chapter switch. */
+.nature-browser[data-runtime-controller="v21"] .nature-cinematic__scene,
+.nature-browser[data-runtime-controller="v21"] .nature-cinematic__scene.is-active{
+  transition:
+    opacity calc(.62s * var(--runtime-motion-scale)) ease,
+    transform calc(1.55s * var(--runtime-motion-scale)) cubic-bezier(.16,.72,.24,1)!important;
+}
+
+/* Once the encounter is over, the photographic encounter room is removed from
+   layout/compositing completely. Only cheap atmospheric overlays remain. */
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="dependency"] .nature-depth-room__far,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="dependency"] .nature-depth-room__mid,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="dependency"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="dependency"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="dependency"] .nature-depth-room__foreground-right,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="habitat"] .nature-depth-room__far,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="habitat"] .nature-depth-room__mid,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="habitat"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="habitat"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="habitat"] .nature-depth-room__foreground-right,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="pressure"] .nature-depth-room__far,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="pressure"] .nature-depth-room__mid,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="pressure"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="pressure"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="pressure"] .nature-depth-room__foreground-right,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="response"] .nature-depth-room__far,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="response"] .nature-depth-room__mid,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="response"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="response"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="response"] .nature-depth-room__foreground-right{
+  display:none!important;
+}
+
+/* The giant CSS drop-shadow on the live WebGL canvas forced another expensive
+   full-size filter pass every rendered frame. Contact is now painted with a
+   cheap ground shadow and foliage occlusion instead. */
+.nature-browser[data-runtime-controller="v21"] .nature-3d-subject--v19{
+  filter:none!important;
+  contain:layout paint style;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-3d-subject--v19 .nature-3d-subject__viewport{
+  contain:strict;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-3d-subject--v19 .nature-3d-subject__depth{
+  inset:60% 13% 5%!important;
+  background:radial-gradient(ellipse at 52% 68%,rgba(0,0,0,.68) 0 18%,rgba(0,0,0,.34) 38%,transparent 72%)!important;
+  filter:none!important;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-3d-subject--v19:after{
+  content:"";
+  position:absolute;
+  z-index:4;
+  pointer-events:none;
+  left:-4%;right:-4%;bottom:-1%;height:25%;
+  background:
+    radial-gradient(ellipse 14% 64% at 9% 100%,rgba(2,12,5,.86),transparent 72%),
+    radial-gradient(ellipse 18% 70% at 89% 105%,rgba(2,12,5,.82),transparent 74%),
+    linear-gradient(180deg,transparent,rgba(1,8,3,.28) 78%,rgba(1,6,2,.54));
+}
+
+/* Until the controlled Ear Rodriguez binary is locally ingested, make the
+   photographic safety fallback read as part of the space rather than a hard
+   rectangular card. */
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="identity"] .nature-subject{
+  overflow:visible!important;
+}
+.nature-browser[data-runtime-controller="v21"][data-cinematic-scene="identity"] .nature-subject__image{
+  -webkit-mask-image:radial-gradient(ellipse 58% 58% at 52% 52%,#000 0 52%,rgba(0,0,0,.88) 66%,rgba(0,0,0,.28) 84%,transparent 100%);
+  mask-image:radial-gradient(ellipse 58% 58% at 52% 52%,#000 0 52%,rgba(0,0,0,.88) 66%,rgba(0,0,0,.28) 84%,transparent 100%);
+}
+.nature-browser[data-runtime-controller="v21"][data-jaguar3d-active="true"] .nature-subject{
+  opacity:0!important;
+  filter:none!important;
+}
+
+/* Balanced is the default high-resolution Retina path. It keeps the encounter
+   architecture but removes secondary photo layers and decorative animation. */
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__mid,
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__shafts{
+  display:none!important;
+}
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__canopy{opacity:.42!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__foreground-right{opacity:.42!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-depth-room__fog{animation:none!important;opacity:.52!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-particles{display:none!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-premium__wave i{animation:none!important;opacity:.42!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-world__light{animation:none!important;}
+.nature-browser[data-runtime-budget="balanced"] .nature-3d-subject__scan{animation-duration:4.2s!important;}
+
+/* Lite stays visually coherent rather than collapsing to an unrelated layout. */
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__mid,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__canopy,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__foreground-right,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__shafts,
+.nature-browser[data-runtime-budget="lite"] .nature-particles,
+.nature-browser[data-runtime-budget="lite"] .nature-3d-subject--v19{
+  display:none!important;
+}
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__fog{animation:none!important;opacity:.28!important;}
+.nature-browser[data-runtime-budget="lite"] .nature-cinematic__scene{transition-duration:.4s,.8s!important;}
+
+/* Page in background = zero decorative animation cost. */
+.nature-browser[data-runtime-paused="true"] .nature-depth-room__fog,
+.nature-browser[data-runtime-paused="true"] .nature-particle,
+.nature-browser[data-runtime-paused="true"] .nature-premium__wave i,
+.nature-browser[data-runtime-paused="true"] .nature-world__light,
+.nature-browser[data-runtime-paused="true"] .nature-3d-subject__scan{
+  animation-play-state:paused!important;
+}
+
+@media(max-width:760px){
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__mid,
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__canopy,
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__shafts{display:none!important;}
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__foreground-left,
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__foreground-right{opacity:.3!important;filter:none!important;}
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__fog{animation:none!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-runtime-controller="v21"] .nature-cinematic__scene,
+  .nature-browser[data-runtime-controller="v21"] .nature-depth-room__layer{transition:none!important;}
+}
