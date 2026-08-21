@@ -9,33 +9,33 @@ const renderer = readFileSync(new URL('../public/xr/engine/nature-jaguar-3d-v19.
 const choreography = readFileSync(new URL('../public/xr/engine/nature-creature-choreography-v19.js', import.meta.url), 'utf8');
 const fieldAudio = readFileSync(new URL('../public/xr/engine/nature-field-audio-v19.js', import.meta.url), 'utf8');
 const legacyCss = readFileSync(new URL('../public/xr/jaguar/jaguar-3d-v14.css', import.meta.url), 'utf8');
-const cinematicCss = readFileSync(new URL('../public/xr/jaguar/jaguar-cinematic-v17.css', import.meta.url), 'utf8');
 const goldCss = readFileSync(new URL('../public/xr/jaguar/jaguar-gold-v19.css', import.meta.url), 'utf8');
+const perfCss = readFileSync(new URL('../public/xr/jaguar/jaguar-performance-v21.css', import.meta.url), 'utf8');
 const headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8');
 
-const sourceCommit = '728230086493b1f1cee6a410d0a8ea7c0991f6ff';
-
-test('Ear Rodriguez is locked as preferred free prototype creature without pretending the binary is controlled', () => {
+test('Ear Rodriguez is the only preferred 3D prototype creature without pretending the binary is controlled', () => {
   assert.equal(creature.actor.preferred.id, 'ear-rodriguez-jaguar');
   assert.equal(creature.actor.preferred.role, 'PREFERRED_FREE_PROTOTYPE_CREATURE');
   assert.equal(creature.actor.preferred.binaryState, 'NOT_YET_LOCAL');
-  assert.equal(creature.actor.preferred.rightsState, 'VERIFY_AT_BINARY_INGEST');
+  assert.equal(creature.actor.preferred.rightsState, 'CC_ATTRIBUTION_METADATA_CONFIRMED_BINARY_RECORD_PENDING');
+  assert.equal(creature.actor.preferred.triangles, 25900);
+  assert.equal(creature.actor.preferred.vertices, 13500);
   assert.match(creature.actor.preferred.sourcePage, /sketchfab\.com\/3d-models\/jaguar-91c61c329d2a4668816f81f08dfcd492/);
   assert.equal(creature.actor.preferred.runtimePath, '/assets/species/jaguar/jaguar-ear-rodriguez.glb');
   assert.match(renderer, /preferred\.binaryState !== 'CONTROLLED_LOCAL'/);
-  assert.match(renderer, /preferred GLB failed closed; using controlled fallback/i);
+  assert.match(renderer, /preferred-pending/);
 });
 
-test('controlled fallback remains immutable, rights-labelled and subordinate to the preferred creature gate', () => {
-  assert.equal(creature.actor.fallback.sourceCommit, sourceCommit);
-  assert.equal(creature.actor.fallback.licence, 'CC BY 3.0');
-  assert.match(renderer, new RegExp(sourceCommit));
-  assert.match(renderer, /poly\.pizza\/m\/4fb-oMr2uUF/);
+test('low-fidelity Poly WebGL fallback is retired in favour of controlled photo fallback', () => {
+  assert.equal(creature.actor.fallback.status, 'PHOTO_ONLY_NO_WEBGL');
+  assert.equal(creature.actor.fallback.id, 'controlled-jaguar-species-media');
+  assert.doesNotMatch(renderer, /MTLLoader|OBJLoader|FALLBACK_BASE|poly\.pizza/);
   assert.equal(manifest.subject.modelGate.status, 'PENDING_CONTROLLED_ANIMATED_GLB');
   assert.doesNotMatch(html, /<iframe|sketchfab\.com/i);
+  assert.match(perfCss, /jaguarPhotoBreathV21/);
 });
 
-test('Gold v19 uses a reusable creature choreography engine instead of Jaguar-only timer choreography', () => {
+test('Gold runtime uses reusable creature choreography and can map real GLB clips or reactive bones', () => {
   assert.match(html, /nature-creature-choreography-v19\.js/);
   assert.match(html, /nature-jaguar-3d-v19\.js/);
   assert.doesNotMatch(html, /nature-jaguar-3d-v17\.js/);
@@ -46,23 +46,24 @@ test('Gold v19 uses a reusable creature choreography engine instead of Jaguar-on
   assert.match(choreography, /prefers-reduced-motion: reduce/);
   assert.match(renderer, /GLTFLoader/);
   assert.match(renderer, /AnimationMixer/);
-  assert.match(renderer, /findAction\('walk', 'prowl', 'move'\)/);
+  assert.match(renderer, /findAction\('walk', 'prowl', 'move'/);
+  assert.match(renderer, /detectReactiveBones/);
+  assert.match(renderer, /jaguarMotionCapability/);
 });
 
-test('Jaguar runtime keeps progressive enhancement and controlled media fallback', () => {
+test('Jaguar runtime remains progressive but protects performance before 3D fidelity is ready', () => {
   assert.match(html, /jaguar-3d-v14\.css/);
-  assert.match(html, /jaguar-cinematic-v17\.css/);
   assert.match(html, /jaguar-gold-v19\.css/);
-  assert.match(renderer, /MTLLoader/);
-  assert.match(renderer, /OBJLoader/);
-  assert.match(renderer, /fullTier/);
+  assert.match(html, /jaguar-performance-v21\.css/);
+  assert.match(renderer, /runtimeBudget/);
+  assert.match(renderer, /rendererPixelRatio/);
+  assert.match(renderer, /renderInterval/);
   assert.match(renderer, /dataset\.jaguar3d/);
-  assert.match(renderer, /failed closed; controlled photographic subject remains/i);
+  assert.match(renderer, /photographic creature remains/i);
   assert.match(legacyCss, /data-performance-tier=lite/);
-  assert.match(cinematicCss, /@media\(max-width:760px\).*nature-3d-subject--v17\{display:none!important\}/s);
 });
 
-test('Gold v19 builds a layered rainforest depth room with mobile and reduced-motion controls', () => {
+test('Gold room keeps layered rainforest depth, scene reveal and adaptive controls', () => {
   assert.match(html, /nature-depth-room__far/);
   assert.match(html, /nature-depth-room__mid/);
   assert.match(html, /nature-depth-room__foreground-left/);
@@ -71,8 +72,9 @@ test('Gold v19 builds a layered rainforest depth room with mobile and reduced-mo
   assert.match(goldCss, /am4zonia\/detail-01\.jpg/);
   assert.match(goldCss, /data-creature-reveal/);
   assert.match(goldCss, /jaguarScanV19/);
-  assert.match(goldCss, /@media\(max-width:760px\)/);
-  assert.match(goldCss, /@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(perfCss, /data-runtime-budget="balanced"/);
+  assert.match(perfCss, /@media\(max-width:760px\)/);
+  assert.match(perfCss, /@media\(prefers-reduced-motion:reduce\)/);
 });
 
 test('Amazon field ambience is verified media while Jaguar presence cue remains explicitly designed', () => {
@@ -93,6 +95,5 @@ test('Three.js and Wikimedia audio stay inside the existing narrow Jaguar Journe
   assert.match(html, /three@0\.185\.1\/examples\/jsm\//);
   assert.match(headers, /\/journey\/jaguar\/\*/);
   assert.match(headers, /script-src 'self'[^\n]*https:\/\/cdn\.jsdelivr\.net/);
-  assert.match(headers, /connect-src 'self' https:\/\/raw\.githubusercontent\.com https:\/\/cdn\.jsdelivr\.net/);
   assert.match(headers, /media-src 'self' blob: https:\/\/upload\.wikimedia\.org/);
 });
