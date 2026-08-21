@@ -1,0 +1,191 @@
+/* 4PLANET Jaguar Gold Illusion v19
+   Layered habitat depth + creature choreography + LUME reveal.
+   Presentation media remains separate from ecological evidence. */
+
+.nature-browser[data-creature-engine="v19"]{
+  --creature-reveal:0;
+  --jungle-drift-x:0px;
+  --jungle-drift-y:0px;
+  background:#010703!important;
+  overflow:hidden;
+}
+
+.nature-depth-room{
+  position:absolute;
+  inset:-5%;
+  z-index:3;
+  overflow:hidden;
+  pointer-events:none;
+  transform:translateZ(0);
+  isolation:isolate;
+}
+.nature-depth-room__layer{position:absolute;inset:-5%;background-repeat:no-repeat;background-size:cover;will-change:transform,opacity,filter;}
+.nature-depth-room__far{
+  inset:-7%;
+  background-image:linear-gradient(180deg,rgba(0,7,3,.08),rgba(0,8,4,.16)),url('/assets/missions/am4zonia/hero.jpg');
+  background-position:center 48%;
+  filter:saturate(.88) contrast(1.08) brightness(.58);
+  transform:scale(1.09) translate3d(calc(var(--jungle-drift-x)*-.2),calc(var(--jungle-drift-y)*-.2),0);
+}
+.nature-depth-room__mid{
+  inset:-9%;
+  background-image:url('/assets/missions/am4zonia/detail-01.jpg');
+  background-position:58% 50%;
+  filter:saturate(.78) contrast(1.12) brightness(.42) blur(.25px);
+  opacity:.42;
+  transform:scale(1.15) translate3d(calc(var(--jungle-drift-x)*-.42),calc(var(--jungle-drift-y)*-.35),0);
+  -webkit-mask-image:radial-gradient(ellipse 72% 66% at 56% 52%,rgba(0,0,0,.86) 0 32%,rgba(0,0,0,.38) 61%,transparent 92%);
+  mask-image:radial-gradient(ellipse 72% 66% at 56% 52%,rgba(0,0,0,.86) 0 32%,rgba(0,0,0,.38) 61%,transparent 92%);
+}
+.nature-depth-room__canopy{
+  inset:-8% -4% 42%;
+  background-image:url('/assets/missions/am4zonia/detail-01.jpg');
+  background-position:50% 14%;
+  filter:saturate(.82) contrast(1.2) brightness(.33) blur(.6px);
+  opacity:.68;
+  transform:scale(1.18) translate3d(calc(var(--jungle-drift-x)*-.64),calc(var(--jungle-drift-y)*-.5),0);
+  -webkit-mask-image:linear-gradient(180deg,#000 0 48%,rgba(0,0,0,.72) 66%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0 48%,rgba(0,0,0,.72) 66%,transparent 100%);
+}
+.nature-depth-room__foreground-left,
+.nature-depth-room__foreground-right{
+  inset:-10%;
+  background-image:url('/assets/missions/am4zonia/detail-01.jpg');
+  background-size:118% auto;
+  opacity:.62;
+  filter:saturate(.62) contrast(1.28) brightness(.22) blur(1.4px);
+  transform:scale(1.2);
+}
+.nature-depth-room__foreground-left{
+  background-position:left 53%;
+  clip-path:polygon(0 0,39% 0,28% 28%,36% 54%,22% 73%,33% 100%,0 100%);
+  transform:scale(1.2) translate3d(calc(var(--jungle-drift-x)*-.95),calc(var(--jungle-drift-y)*-.78),0);
+}
+.nature-depth-room__foreground-right{
+  background-position:right 48%;
+  clip-path:polygon(70% 0,100% 0,100% 100%,73% 100%,82% 74%,69% 58%,79% 29%);
+  transform:scale(1.2) translate3d(calc(var(--jungle-drift-x)*-.88),calc(var(--jungle-drift-y)*-.75),0);
+}
+.nature-depth-room__fog{
+  inset:-3%;
+  background:
+    radial-gradient(ellipse 55% 34% at 59% 58%,rgba(156,198,161,.1),transparent 70%),
+    radial-gradient(ellipse 80% 42% at 50% 88%,rgba(119,159,129,.08),transparent 66%),
+    linear-gradient(180deg,rgba(1,9,5,.04),rgba(5,20,11,.15));
+  mix-blend-mode:screen;
+  opacity:.72;
+  animation:jaguarMistV19 13s ease-in-out infinite alternate;
+}
+.nature-depth-room__shafts{
+  inset:-20% -5%;
+  background:
+    linear-gradient(111deg,transparent 18%,rgba(181,245,193,.055) 31%,transparent 39%),
+    linear-gradient(103deg,transparent 50%,rgba(181,245,193,.04) 61%,transparent 68%);
+  filter:blur(8px);
+  opacity:.72;
+  transform:translate3d(calc(var(--jungle-drift-x)*-.22),0,0);
+}
+.nature-depth-room__vignette{
+  inset:0;
+  background:
+    radial-gradient(ellipse 58% 68% at 61% 49%,transparent 0 24%,rgba(0,5,2,.08) 46%,rgba(0,4,2,.62) 100%),
+    linear-gradient(90deg,rgba(0,5,2,.72) 0,rgba(0,5,2,.18) 28%,transparent 53%,rgba(0,5,2,.22) 100%);
+}
+
+.nature-browser[data-creature-engine="v19"] .nature-world__background{opacity:.14!important;}
+.nature-browser[data-creature-engine="v19"] .nature-world__detail{opacity:.16!important;}
+.nature-browser[data-creature-engine="v19"] .nature-world__veil{z-index:7!important;opacity:.62!important;}
+.nature-browser[data-creature-engine="v19"] .nature-world__light{z-index:8!important;mix-blend-mode:screen;opacity:.68!important;}
+.nature-browser[data-creature-engine="v19"] .nature-particles{z-index:9!important;opacity:.58!important;}
+
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject--v19{
+  position:fixed!important;
+  inset:9vh 5vw 10vh 34vw!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:none!important;
+  z-index:28!important;
+  pointer-events:auto;
+  transition:opacity .7s ease,filter .7s ease;
+  filter:drop-shadow(0 28px 42px rgba(0,0,0,.44));
+}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject--v19 .nature-3d-subject__viewport{position:absolute!important;inset:0!important;overflow:visible!important;}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject--v19 canvas{width:100%!important;height:100%!important;display:block;}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject__scan{
+  position:absolute;inset:8% 8% 10%;pointer-events:none;opacity:calc(var(--jaguar-reveal,0)*.88);
+  background:linear-gradient(180deg,transparent 0,rgba(58,232,111,.12) 48%,rgba(58,232,111,.46) 50%,rgba(58,232,111,.08) 52%,transparent 100%);
+  background-size:100% 38%;
+  animation:jaguarScanV19 2.7s linear infinite;
+  mix-blend-mode:screen;
+}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject__halo{
+  opacity:calc(.1 + var(--creature-reveal)*.42)!important;
+  background:radial-gradient(ellipse at 53% 56%,rgba(58,232,111,.18),rgba(58,232,111,.04) 38%,transparent 69%)!important;
+  filter:blur(18px)!important;
+}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject__meta{
+  left:auto!important;right:4%!important;bottom:5%!important;max-width:270px!important;
+  background:rgba(0,7,3,.48)!important;border-left:1px solid rgba(58,232,111,.42)!important;
+  padding:9px 10px!important;backdrop-filter:blur(5px)!important;
+}
+.nature-browser[data-creature-engine="v19"] .nature-3d-subject__gesture{opacity:.46!important;}
+.nature-browser[data-creature-phase="emerge"] .nature-3d-subject--v19,
+.nature-browser[data-creature-phase="walk"] .nature-3d-subject--v19{pointer-events:none;}
+.nature-browser[data-creature-phase="observe"] .nature-3d-subject--v19,
+.nature-browser[data-creature-phase="reveal"] .nature-3d-subject--v19,
+.nature-browser[data-creature-phase="hold"] .nature-3d-subject--v19{pointer-events:auto;}
+
+.nature-browser[data-creature-engine="v19"] .nature-subject[data-three-replaced="true"]{opacity:.12!important;filter:blur(2px) saturate(.7)!important;transition:opacity .75s ease,filter .75s ease!important;}
+.nature-browser[data-creature-reveal="active"] .nature-world:after,
+.nature-browser[data-creature-reveal="complete"] .nature-world:after{
+  content:"";position:absolute;inset:0;z-index:12;pointer-events:none;
+  opacity:calc(var(--creature-reveal)*.62);
+  background:
+    linear-gradient(rgba(58,232,111,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(58,232,111,.035) 1px,transparent 1px),
+    radial-gradient(circle at 68% 48%,rgba(58,232,111,.13),transparent 30%);
+  background-size:48px 48px,48px 48px,100% 100%;
+  -webkit-mask-image:radial-gradient(ellipse 45% 55% at 68% 48%,#000 0 50%,transparent 82%);
+  mask-image:radial-gradient(ellipse 45% 55% at 68% 48%,#000 0 50%,transparent 82%);
+}
+
+.nature-audio-provenance-v19{
+  position:fixed;right:20px;bottom:72px;z-index:38;display:flex;flex-direction:column;align-items:flex-end;gap:3px;
+  pointer-events:none;color:rgba(255,255,255,.53);font:500 6px/1.3 'Fragment Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+}
+.nature-audio-provenance-v19__field{color:rgba(180,255,196,.66);}
+.nature-audio-provenance-v19__cue{color:rgba(255,255,255,.38);}
+
+.nature-browser[data-creature-phase="observe"] .nature-depth-room__vignette,
+.nature-browser[data-creature-phase="reveal"] .nature-depth-room__vignette,
+.nature-browser[data-creature-phase="hold"] .nature-depth-room__vignette{opacity:.82;}
+.nature-browser[data-creature-phase="reveal"] .nature-depth-room__far,
+.nature-browser[data-creature-phase="hold"] .nature-depth-room__far{filter:saturate(.72) contrast(1.12) brightness(.5);}
+
+@keyframes jaguarMistV19{0%{transform:translate3d(-1.2%,.3%,0) scale(1.02);opacity:.5}100%{transform:translate3d(1.4%,-.5%,0) scale(1.05);opacity:.78}}
+@keyframes jaguarScanV19{0%{background-position:0 -45%}100%{background-position:0 145%}}
+
+@media(max-width:760px){
+  .nature-depth-room{inset:-2%;}
+  .nature-depth-room__far{background-image:linear-gradient(180deg,rgba(0,7,3,.06),rgba(0,8,4,.18)),url('/assets/missions/am4zonia/hero-mobile.jpg');background-position:55% 50%;}
+  .nature-depth-room__mid{opacity:.28;background-position:58% 50%;}
+  .nature-depth-room__foreground-left{clip-path:polygon(0 0,32% 0,23% 28%,30% 55%,18% 75%,28% 100%,0 100%);}
+  .nature-depth-room__foreground-right{clip-path:polygon(80% 0,100% 0,100% 100%,79% 100%,86% 71%,77% 48%,86% 25%);}
+  .nature-browser[data-creature-engine="v19"] .nature-3d-subject--v19{inset:14vh -25vw 22vh -4vw!important;z-index:27!important;}
+  .nature-browser[data-creature-engine="v19"] .nature-3d-subject__gesture,
+  .nature-browser[data-creature-engine="v19"] .nature-3d-subject__meta{display:none!important;}
+  .nature-audio-provenance-v19{display:none!important;}
+  .nature-browser[data-creature-reveal="active"] .nature-world:after,
+  .nature-browser[data-creature-reveal="complete"] .nature-world:after{background-size:34px 34px,34px 34px,100% 100%;}
+}
+
+@media(max-width:430px){
+  .nature-depth-room__mid{opacity:.2;}
+  .nature-depth-room__shafts{opacity:.48;}
+  .nature-browser[data-creature-engine="v19"] .nature-3d-subject--v19{inset:16vh -31vw 24vh -9vw!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-depth-room__fog,.nature-3d-subject__scan{animation:none!important;}
+  .nature-depth-room__layer{transition:none!important;}
+}
