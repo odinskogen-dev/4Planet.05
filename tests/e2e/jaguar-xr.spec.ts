@@ -40,20 +40,30 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar Gold Browser Journey stays world-first and travels through distinct scenes", async ({ page }, testInfo) => {
+test("Jaguar Gold v19 keeps the living world first and travels through distinct source-aware scenes", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
   const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-species-id", "jaguar");
   await expect(root).toHaveAttribute("data-premium-version", "17");
-  await expect(root).toHaveAttribute("data-jaguar3d-mode", /manual-study|disabled/);
+  await expect(root).toHaveAttribute("data-creature-engine", "v19");
+  await expect(root).toHaveAttribute("data-creature-preferred-asset", "ear-rodriguez-jaguar");
+  await expect(root).toHaveAttribute("data-creature-preferred-binary", "NOT_YET_LOCAL");
+  await expect(root).toHaveAttribute("data-jaguar3d-mode", "creature-choreography-v19");
+
+  await expect(page.locator(".nature-depth-room")).toBeVisible();
+  await expect(page.locator(".nature-depth-room__far")).toBeVisible();
+  await expect(page.locator(".nature-depth-room__foreground-left")).toBeVisible();
+  await expect(page.locator(".nature-audio-provenance-v19")).toHaveCount(1);
 
   const enter = page.locator(".nature-entry__button");
   await expect(enter).toBeVisible();
   await expect(page.locator(".nature-premium__enter")).toHaveCount(0);
   await enter.click();
   await expect(root).toHaveAttribute("data-entered", "true");
+  await expect(root).toHaveAttribute("data-creature-phase", /emerge|walk|stop|breathe|observe|reveal|hold/, { timeout: 3_000 });
+  await expect(root).toHaveAttribute("data-creature-audio", "designed-not-field");
 
   const sound = page.locator(".nature-sound");
   await expect(sound).toBeVisible();
@@ -72,24 +82,13 @@ test("Jaguar Gold Browser Journey stays world-first and travels through distinct
   await expectJourneyFrameSafe(page, root, "MEET LIFE");
 
   const viewport = page.viewportSize();
-  if (viewport && viewport.width <= 760) {
-    await expect(legacyCard).toBeHidden();
-  }
+  if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
 
   if (viewport && viewport.width > 760) {
-    await expect(root).toHaveAttribute("data-jaguar3d-mode", "manual-study");
-    await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
     const controlledSubject = page.locator(".nature-subject");
     await expect(controlledSubject).toBeVisible();
-    await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
 
-    await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent("4planet:nature-world-interaction", {
-        detail: { action: "focus", active: true }
-      }));
-    });
-
-    await page.waitForTimeout(3_000);
+    await page.waitForTimeout(2_800);
     let threeState = await root.getAttribute("data-jaguar3d");
     if (threeState === "loading") {
       await page.waitForFunction(() => {
@@ -103,39 +102,31 @@ test("Jaguar Gold Browser Journey stays world-first and travels through distinct
 
     if (threeState === "ready") {
       await expect(root).toHaveAttribute("data-jaguar3d-active", "true", { timeout: 5_000 });
-      const threeStudy = page.locator('.nature-3d-subject[data-visible="true"][data-ready="true"]');
+      const threeStudy = page.locator('.nature-3d-subject--v19[data-visible="true"][data-ready="true"]');
       await expect(threeStudy).toBeVisible();
       await expect(threeStudy.locator("canvas")).toBeVisible();
-      await expect(page.locator(".nature-3d-subject__meta")).toContainText(/POLY BY GOOGLE|CC BY 3\.0/i);
-      await expectViewportSafe(page, threeStudy, "MEET LIFE optional 3D Jaguar study");
+      await expect(page.locator(".nature-3d-subject__source-state")).toContainText(/CONTROLLED 3D FALLBACK|PREFERRED FREE CREATURE/i);
+      await expectViewportSafe(page, threeStudy, "MEET LIFE creature layer");
       const box = await threeStudy.boundingBox();
       if (box) {
-        await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.48);
+        await page.mouse.move(box.x + box.width * .45, box.y + box.height * .48);
         await page.mouse.down();
-        await page.mouse.move(box.x + box.width * 0.63, box.y + box.height * 0.48, { steps: 5 });
+        await page.mouse.move(box.x + box.width * .6, box.y + box.height * .48, { steps: 5 });
         await page.mouse.up();
         await expect(threeStudy).toHaveAttribute("data-dragging", "false");
       }
     } else {
-      await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
+      await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
       await expect(controlledSubject).toBeVisible();
-      await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
     }
-
-    await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent("4planet:nature-world-interaction", {
-        detail: { action: "focus", active: false }
-      }));
-    });
-    await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
-  } else {
-    await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
   }
 
-  const next = page.locator(".nature-journey-hud__next");
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v19-01-encounter.png`, fullPage: true });
 
+  const next = page.locator(".nature-journey-hud__next");
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "dependency");
+  await expect(root).toHaveAttribute("data-creature-phase", "dormant");
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
   await expect(legacyCard).toHaveAttribute("data-type", "relationship");
   await expect(page.locator(".nature-world-card__title")).toContainText(/Capybara/i);
@@ -144,7 +135,6 @@ test("Jaguar Gold Browser Journey stays world-first and travels through distinct
     await expectViewportSafe(page, legacyCard, "FOLLOW RELATIONSHIP prey card");
   }
   await expectJourneyFrameSafe(page, root, "FOLLOW RELATIONSHIP");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v18-02-prey.png`, fullPage: true });
 
   await next.click();
   await expect(root).toHaveAttribute("data-scene-state", "habitat");
@@ -163,9 +153,10 @@ test("Jaguar Gold Browser Journey stays world-first and travels through distinct
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Pressure is not the destination/i);
   if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v18-05-response.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v19-05-response.png`, fullPage: true });
 
   await sound.click();
   await expect(sound).toHaveText(/TURN SOUND ON/i);
   await expect(sound).toHaveAttribute("aria-pressed", "false");
+  await expect(root).toHaveAttribute("data-field-audio", /paused|ready|blocked-or-unavailable|failed-optional/);
 });
