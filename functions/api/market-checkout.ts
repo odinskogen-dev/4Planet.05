@@ -73,6 +73,12 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   form.set("customer_creation", "always");
   form.set("billing_address_collection", "auto");
   form.set("shipping_address_collection[allowed_countries][0]", "NO");
+  form.set("phone_number_collection[enabled]", "true");
+  form.set("consent_collection[terms_of_service]", "required");
+  form.set(
+    "custom_text[submit][message]",
+    "TEST MODE — verifies Checkout and order confirmation only. No print is produced or shipped.",
+  );
   form.set(
     "success_url",
     `${origin}/4market-stripe-test.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
