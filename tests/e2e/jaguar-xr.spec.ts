@@ -40,7 +40,7 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar Gold v19 keeps the living world first and travels through distinct source-aware scenes", async ({ page }, testInfo) => {
+test("Jaguar Gold v21 keeps the living world first, adapts performance and travels through distinct source-aware scenes", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
@@ -51,6 +51,8 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
   await expect(root).toHaveAttribute("data-creature-preferred-asset", "ear-rodriguez-jaguar");
   await expect(root).toHaveAttribute("data-creature-preferred-binary", "NOT_YET_LOCAL");
   await expect(root).toHaveAttribute("data-jaguar3d-mode", "creature-choreography-v19");
+  await expect(root).toHaveAttribute("data-runtime-controller", "v21");
+  await expect(root).toHaveAttribute("data-runtime-budget", /full|balanced|lite/);
 
   await expect(page.locator(".nature-depth-room")).toBeVisible();
   await expect(page.locator(".nature-depth-room__far")).toBeVisible();
@@ -88,7 +90,7 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
     const controlledSubject = page.locator(".nature-subject");
     await expect(controlledSubject).toBeVisible();
 
-    await page.waitForTimeout(2_800);
+    await page.waitForTimeout(1_200);
     let threeState = await root.getAttribute("data-jaguar3d");
     if (threeState === "loading") {
       await page.waitForFunction(() => {
@@ -98,14 +100,14 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
       }, undefined, { timeout: 5_000 }).catch(() => undefined);
       threeState = await root.getAttribute("data-jaguar3d");
     }
-    expect(["ready", "loading", "failed", null]).toContain(threeState);
+    expect(["ready", "loading", "preferred-pending", "failed", null]).toContain(threeState);
 
     if (threeState === "ready") {
       await expect(root).toHaveAttribute("data-jaguar3d-active", "true", { timeout: 5_000 });
       const threeStudy = page.locator('.nature-3d-subject--v19[data-visible="true"][data-ready="true"]');
       await expect(threeStudy).toBeVisible();
       await expect(threeStudy.locator("canvas")).toBeVisible();
-      await expect(page.locator(".nature-3d-subject__source-state")).toContainText(/CONTROLLED 3D FALLBACK|PREFERRED FREE CREATURE/i);
+      await expect(page.locator(".nature-3d-subject__source-state")).toContainText(/EAR RODRIGUEZ JAGUAR/i);
       await expectViewportSafe(page, threeStudy, "MEET LIFE creature layer");
       const box = await threeStudy.boundingBox();
       if (box) {
@@ -121,7 +123,7 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
     }
   }
 
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v19-01-encounter.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v21-01-encounter.png`, fullPage: true });
 
   const next = page.locator(".nature-journey-hud__next");
   await next.click();
@@ -130,6 +132,7 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
   await expect(legacyCard).toHaveAttribute("data-type", "relationship");
   await expect(page.locator(".nature-world-card__title")).toContainText(/Capybara/i);
+  await expect(page.locator(".nature-depth-room__far")).toHaveCSS("display", "none");
   if (viewport && viewport.width <= 760) {
     await expect(legacyCard).toBeVisible();
     await expectViewportSafe(page, legacyCard, "FOLLOW RELATIONSHIP prey card");
@@ -153,7 +156,7 @@ test("Jaguar Gold v19 keeps the living world first and travels through distinct 
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Pressure is not the destination/i);
   if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v19-05-response.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v21-05-response.png`, fullPage: true });
 
   await sound.click();
   await expect(sound).toHaveText(/TURN SOUND ON/i);
