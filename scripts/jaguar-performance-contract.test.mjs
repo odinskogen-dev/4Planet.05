@@ -4,12 +4,13 @@ import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('Jaguar v23 protects smooth runtime, Ear-only 3D fidelity and physical encounter room', () => {
+test('Jaguar v24 protects smooth runtime, Ear-only 3D fidelity and physical encounter room', () => {
   const index = read('public/journey/jaguar/index.html');
   const config = JSON.parse(read('public/journey/jaguar/creature-v19.json'));
   const budget = read('public/xr/engine/nature-runtime-budget-v21.js');
   const renderer = read('public/xr/engine/nature-jaguar-3d-v19.js');
   const liveBridge = read('public/xr/engine/nature-jaguar-sketchfab-v23.js');
+  const liveCss = read('public/xr/jaguar/jaguar-ear-live-v23.css');
   const css = read('public/xr/jaguar/jaguar-performance-v21.css');
   const room = read('public/xr/jaguar/jaguar-room-v22.css');
 
@@ -31,17 +32,20 @@ test('Jaguar v23 protects smooth runtime, Ear-only 3D fidelity and physical enco
   assert.doesNotMatch(renderer, /wire\.traverse\([\s\S]*requestAnimationFrame\(tick\)/, 'wireframe material traversal must not live in the frame loop');
 
   assert.match(budget, /data\.runtimeBudget|dataset\.runtimeBudget/, 'runtime budget must be observable');
-  assert.match(budget, /measured-jank/, 'runtime must be able to downgrade from measured jank');
+  assert.match(budget, /measured-jank/, 'runtime must be able to downgrade secondary effects from measured jank');
   assert.match(budget, /visibilitychange/, 'background tabs must stop decorative runtime work');
 
-  assert.match(liveBridge, /budgetAllows/, 'live bridge must obey performance budget');
+  assert.match(liveBridge, /viewerAllowed/, 'live bridge must expose an explicit desktop viewer policy');
+  assert.match(liveBridge, /const viewerAllowed = \(\) => desktopViewport\(\)/, 'desktop creature must survive lite visual budget');
   assert.match(liveBridge, /api\?\.pause/, 'live bridge must pause when inactive');
   assert.match(liveBridge, /identityScene/, 'live bridge must remain encounter-only');
+  assert.match(liveBridge, /iframe\.src = EMBED_URL/, 'direct 3D embed must render before API enhancement');
+  assert.match(liveCss, /data-runtime-budget="lite"[\s\S]*nature-ear-live-v23[\s\S]*display:block!important/, 'lite budget must simplify room, not delete creature');
 
   assert.match(css, /display:none!important;/, 'non-encounter depth layers must leave compositing, not merely become transparent');
   assert.match(css, /backdrop-filter:none!important;/, 'always-on backdrop blur must be removed');
   assert.match(css, /contain:strict/, 'WebGL viewport must be paint-contained');
-  assert.match(css, /jaguarPhotoBreathV21/, 'photo safety fallback should preserve subtle living presence if 3D fails');
+  assert.match(css, /jaguarPhotoBreathV21/, 'photo safety fallback should preserve subtle living presence if 3D cannot render');
 
   assert.match(room, /perspective:1100px/, 'encounter room must retain a bounded spatial perspective');
   assert.match(room, /Ground contact|Ground contact:/, 'room must include explicit creature grounding');
