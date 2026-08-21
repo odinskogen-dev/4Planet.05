@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/dark";
+const EMPTY_CORRIDOR: [number, number][] = [];
 
 type MapState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -26,13 +27,15 @@ export function EcosystemAtlasEmbed({
   centre,
   zoom,
   region,
-  corridor = [],
+  corridor = EMPTY_CORRIDOR,
   boundaryNote,
 }: Props) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [armed, setArmed] = useState(false);
   const [state, setState] = useState<MapState>("IDLE");
+  const centreLng = centre[0];
+  const centreLat = centre[1];
 
   useEffect(() => {
     if (armed) return;
@@ -71,7 +74,7 @@ export function EcosystemAtlasEmbed({
         map = new maplibre.Map({
           container: mapRef.current,
           style: VECTOR_STYLE,
-          center: centre,
+          center: [centreLng, centreLat],
           zoom,
           minZoom: 3,
           maxZoom: 9,
@@ -84,7 +87,10 @@ export function EcosystemAtlasEmbed({
 
         map.on("load", () => {
           if (!map || !alive) return;
-          const closedRegion = region.length && region[0] !== region[region.length - 1] ? [...region, region[0]] : region;
+          const first = region[0];
+          const last = region[region.length - 1];
+          const isClosed = Boolean(first && last && first[0] === last[0] && first[1] === last[1]);
+          const closedRegion = region.length && !isClosed ? [...region, region[0]] : region;
           const regionGeoJSON: GeoJSON.FeatureCollection<GeoJSON.Polygon> = {
             type: "FeatureCollection",
             features: [{
@@ -153,7 +159,7 @@ export function EcosystemAtlasEmbed({
       alive = false;
       map?.remove();
     };
-  }, [accent, armed, centre, corridor, region, zoom]);
+  }, [accent, armed, centreLat, centreLng, corridor, region, zoom]);
 
   return (
     <section ref={sectionRef} className="eco-atlas-embed" aria-labelledby="eco-atlas-title">
