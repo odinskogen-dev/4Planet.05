@@ -144,6 +144,9 @@
 
 @media(max-width:760px){
   .nature-ear-live-v23{display:none!important;}
+  /* Mobile has one authored story HUD. Do not resurrect the legacy prey card
+     above it; the relationship remains available through the scene + hotspots. */
+  .nature-browser[data-premium-layer][data-scene-state="dependency"] .nature-world-card[data-type="relationship"][data-visible="true"]{display:none!important;}
 }
 
 @media(prefers-reduced-motion:reduce){
