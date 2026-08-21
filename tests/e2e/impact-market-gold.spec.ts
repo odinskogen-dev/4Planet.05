@@ -14,10 +14,13 @@ test.describe("4PLANET MARKET — Creator × Impact Gold", () => {
 
     const price = page.getByLabel("Demo print price");
     await price.fill("1500");
-    await expect(page.getByText("NOK 1 500").first()).toBeVisible();
+    await expect(page.getByText(/NOK\s*1\s*500/).first()).toBeVisible();
 
     await expect(page.getByText(/ALLOCATED/)).toBeVisible();
-    await expect(page.getByText(/NOK 1 500 \/ NOK 1 500/)).toBeVisible();
+    const allocation = page.locator(".mkt-waterfall-check strong");
+    await expect(allocation).toBeVisible();
+    const allocationText = (await allocation.textContent()) ?? "";
+    expect(allocationText.replace(/\s/g, "")).toBe("NOK1500/NOK1500");
     await expect(page.getByText("Creator retained")).toBeVisible();
     await expect(page.getByText("Not granted")).toBeVisible();
 
