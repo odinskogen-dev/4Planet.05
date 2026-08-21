@@ -49,7 +49,7 @@
       if (stage) stage.textContent = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')} · ${scene.stageLabel || node.label}`;
       if (title) title.textContent = scene.sceneTitle || node.title;
       if (cue) cue.textContent = scene.sceneCue || (node.relationClass === 'PRESSURE' ? 'SEE WHAT CHANGES' : node.relationClass === 'RESPONSE' ? 'MOVE FROM UNDERSTANDING TO RESPONSE' : 'FOLLOW THE LIVING SYSTEM');
-      if (next) next.textContent = index >= total - 1 ? 'CONTINUE TO SOLUTIONS →' : `FOLLOW THE SYSTEM · ${String(index + 2).padStart(2, '0')} →`;
+      if (next) next.textContent = index >= total - 1 ? (scene.finalCta || 'CONTINUE →') : `FOLLOW THE SYSTEM · ${String(index + 2).padStart(2, '0')} →`;
       if (back) back.disabled = index <= 0;
       hud.dataset.visible = 'true';
     }
