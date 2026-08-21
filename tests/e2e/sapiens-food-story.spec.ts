@@ -13,7 +13,7 @@ test("S4PIENS FOOD Gold uses a human-first story space and progressively reveals
   await page.goto("/sandbox/s4piens", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "You are here.", level: 1 })).toBeVisible();
-  await expect(page.getByText(/S4PIENS_ · HUMAN SYSTEMS ATLAS · FOOD_ GOLD/i)).toBeVisible();
+  await expect(page.getByText(/4PLANET_ \/ S4PIENS_ \/ HUMAN SYSTEMS ATLAS/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /SPECIES: HOMO SAPIENS/i })).toBeVisible();
   for (const need of [/FOOD_: EAT/i, /WATER: DRINK/i, /EN4RGY_: POWER/i, /BUILT SYSTEM: SHELTER/i, /F4SHION_: WEAR/i, /MOBILITY: MOVE/i]) {
     await expect(page.getByRole("button", { name: need })).toBeVisible();
