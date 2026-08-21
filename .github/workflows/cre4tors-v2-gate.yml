@@ -1,0 +1,72 @@
+name: CRE4TORS v02 Product Gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/pages/v5/Cre4torsHome.tsx'
+      - 'src/components/labs/Cre4torsProjectOS.tsx'
+      - 'src/styles/cre4tors-*.css'
+      - 'tests/e2e/cre4tors-v2.spec.ts'
+      - '.github/workflows/cre4tors-v2-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cre4tors-v02-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  product-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start preview
+        run: |
+          npm run preview -- --host 0.0.0.0 > cre4tors-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/cre4tors > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat cre4tors-preview.log
+          exit 1
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: CRE4TORS desktop + mobile acceptance
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/cre4tors-v2.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-desktop --project=webkit-390
+
+      - name: Upload CRE4TORS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cre4tors-v02-evidence
+          path: |
+            artifacts/
+            test-results/
+            playwright-report/
+            cre4tors-preview.log
