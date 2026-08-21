@@ -1,5 +1,5 @@
 {
-  "version": "creature-v21",
+  "version": "creature-v23",
   "journeyId": "jaguar-amazonia",
   "entityId": "taxon:gbif:5219426",
   "species": {
@@ -12,23 +12,46 @@
       "role": "PREFERRED_FREE_PROTOTYPE_CREATURE",
       "sourcePage": "https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492",
       "runtimePath": "/assets/species/jaguar/jaguar-ear-rodriguez.glb",
-      "rightsState": "CC_ATTRIBUTION_METADATA_CONFIRMED_BINARY_RECORD_PENDING",
-      "binaryState": "NOT_YET_LOCAL",
+      "rightsState": "CC_BY_4_0_VERIFIED_FROM_DOWNLOADED_LICENSE",
+      "binaryState": "FOUNDER_SUPPLIED_VERIFIED_PENDING_REPO_BINARY_INGEST",
+      "creator": "Ear.Rodriguez",
+      "licence": "CC BY 4.0",
       "triangles": 25900,
       "vertices": 13500,
-      "creator": "Ear.Rodriguez",
-      "note": "Founder-selected free prototype creature. Sketchfab lists the model as downloadable under Creative Commons Attribution. Runtime activates only after the authenticated Sketchfab download is ingested as a controlled local GLB and exact attribution is stored with the binary."
+      "uploadedCandidate": {
+        "profile": "1K_RUNTIME",
+        "bytes": 7198456,
+        "sha256": "8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13",
+        "glbVersion": 2,
+        "nodes": 319,
+        "meshes": 4,
+        "materials": 4,
+        "textures": 2,
+        "skins": 1,
+        "animations": 1,
+        "animationDurationSeconds": 14.667,
+        "largestTexture": "1024x1024 JPEG",
+        "secondaryTexture": "512x512 JPEG",
+        "decision": "Use 1K for the interactive prototype now. Re-evaluate 2K only if founder review shows visible texture softness at the final hero camera distance."
+      },
+      "liveBridge": {
+        "status": "ACTIVE_UNTIL_LOCAL_BINARY_COMMIT",
+        "provider": "Sketchfab official viewer",
+        "modelUid": "91c61c329d2a4668816f81f08dfcd492",
+        "truthBoundary": "Same Ear.Rodriguez source model; external viewer is an interim delivery bridge, not the final self-hosted runtime."
+      },
+      "attribution": "This work is based on ‘jaguar’ by Ear.Rodriguez, licensed under CC BY 4.0."
     },
     "fallback": {
       "id": "controlled-jaguar-species-media",
-      "role": "PHOTO_FALLBACK_UNTIL_PREFERRED_BINARY",
+      "role": "PHOTO_FALLBACK_IF_3D_UNAVAILABLE",
       "sourcePage": "/species/jaguar",
       "status": "PHOTO_ONLY_NO_WEBGL",
-      "reason": "The prior lightweight Poly/OBJ study is intentionally retired from automatic runtime because its fidelity is below the Gold bar and its extra WebGL/network/compositing cost materially hurts the prototype."
+      "reason": "Fail-closed visual fallback if the live 3D bridge or later controlled local GLB cannot load."
     }
   },
   "environment": {
-    "strategy": "FULL_BLEED_LAYERED_DEPTH_ROOM",
+    "strategy": "PHYSICAL_FULL_BLEED_JUNGLE_ROOM_V22",
     "far": "/assets/missions/am4zonia/hero.jpg",
     "mid": "/assets/missions/am4zonia/detail-01.jpg",
     "subject": "/assets/species/jaguar/SP-005.jpg",
@@ -36,12 +59,17 @@
   },
   "choreography": [
     { "phase": "emerge", "durationMs": 1500, "cue": "The forest resolves around the animal." },
-    { "phase": "walk", "durationMs": 2200, "cue": "Locomotion is used only when the controlled creature asset contains a suitable animation; otherwise the camera closes distance without fake sliding." },
+    { "phase": "walk", "durationMs": 2200, "cue": "Use the real Ear animation where available; never fake locomotion by sliding a static animal." },
     { "phase": "stop", "durationMs": 650, "cue": "Movement settles." },
     { "phase": "breathe", "durationMs": 1700, "cue": "Hold presence; keep the body alive." },
     { "phase": "observe", "durationMs": 1800, "cue": "Turn attention toward the visitor." },
     { "phase": "reveal", "durationMs": 2200, "cue": "LUME intelligence layer emerges without replacing the living animal." },
     { "phase": "hold", "durationMs": 0, "cue": "Remain available for exploration." }
+  ],
+  "interactions": [
+    { "id": "drag-turn", "label": "DRAG JAGUAR TO TURN", "mode": "viewer-orbit" },
+    { "id": "look-at-me", "label": "LOOK AT ME", "mode": "camera-plus-animation-cue" },
+    { "id": "move", "label": "MOVE", "mode": "restart-baked-animation" }
   ],
   "audio": {
     "fieldAmbience": {
