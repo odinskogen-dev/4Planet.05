@@ -12,6 +12,8 @@ type Props = {
 export function EcosystemSystemGraph({ nodes, centreLabel, activeId, accent, onSelect }: Props) {
   const active = useMemo(() => nodes.find((node) => node.id === activeId) ?? nodes[0], [activeId, nodes]);
 
+  if (!active) return null;
+
   return (
     <div className="eco-graph-wrap" style={{ "--eco-accent": accent } as React.CSSProperties}>
       <div className="eco-graph" aria-label={`${centreLabel} living-system relationship map`}>
