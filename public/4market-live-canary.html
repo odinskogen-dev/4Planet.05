@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>4MARKET_ Live Canary</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Arial, sans-serif; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:#070707; color:#f5f5f5; }
+    main { width:min(720px, calc(100vw - 48px)); border:1px solid #2a2a2a; padding:40px; }
+    .kicker { font:12px/1.4 monospace; letter-spacing:.12em; color:#ffcc66; }
+    h1 { font-size:clamp(42px,8vw,84px); line-height:.9; margin:22px 0; letter-spacing:-.05em; }
+    p { max-width:62ch; color:#bdbdbd; line-height:1.6; }
+    .warning { border:1px solid #554722; padding:16px; color:#f5d88f; margin:22px 0; }
+    label { display:flex; gap:10px; align-items:flex-start; color:#ddd; line-height:1.5; }
+    button { width:100%; margin-top:24px; padding:18px 20px; border:0; background:#f5f5f5; color:#070707; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+    #state { margin-top:16px; font:12px/1.5 monospace; color:#8b8b8b; white-space:pre-wrap; }
+    #state.ok { color:#b9ff2f; }
+    #state.bad { color:#ff8f8f; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">4MARKET_ · LIVE PAYMENT CANARY · FOUNDER QA</div>
+    <h1>ARCTIC<br>WHITE ANGEL</h1>
+    <div class="warning">This charges a real card NOK 3.00 in Stripe LIVE mode. It does not purchase a print and must never trigger fulfilment.</div>
+    <p>This is a controlled production-payment proof: real card → Stripe LIVE Checkout → server verifies the live Checkout Session → confirmation. It exists only to prove the payment rail before the commercial product is released.</p>
+    <label><input id="ack" type="checkbox" /> <span>I understand this is a real NOK 3 payment and no physical print will be produced or shipped.</span></label>
+    <button id="checkout" disabled>PAY NOK 3 LIVE CANARY →</button>
+    <div id="state">LOCKED · explicit acknowledgement required.</div>
+  </main>
+  <script>
+    const ack = document.getElementById('ack');
+    const button = document.getElementById('checkout');
+    const state = document.getElementById('state');
+    const params = new URLSearchParams(location.search);
+
+    function setState(text, kind) {
+      state.textContent = text;
+      state.className = kind || '';
+    }
+
+    ack.addEventListener('change', () => {
+      button.disabled = !ack.checked;
+      setState(ack.checked ? 'ARMED · NOK 3 live payment.' : 'LOCKED · explicit acknowledgement required.');
+    });
+
+    async function verifyReturn() {
+      const outcome = params.get('checkout');
+      const sessionId = params.get('session_id');
+      if (outcome === 'cancel') {
+        setState('CANCELLED · no live payment confirmed.', 'bad');
+        return;
+      }
+      if (outcome !== 'success' || !sessionId) return;
+
+      ack.disabled = true;
+      button.disabled = true;
+      setState('VERIFYING LIVE PAYMENT WITH STRIPE…');
+      try {
+        const response = await fetch(`/api/market-live-canary-status?session_id=${encodeURIComponent(sessionId)}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'verification_failed');
+        if (!payload.confirmed) {
+          setState(`NOT CONFIRMED\nCHECKOUT · ${payload.checkoutStatus || 'unknown'}\nPAYMENT · ${payload.paymentStatus || 'unknown'}\nFULFILMENT · NONE`, 'bad');
+          return;
+        }
+        setState(
+          `LIVE PAYMENT CONFIRMED\nSESSION · ${payload.sessionId}\nPAYMENT INTENT · ${payload.paymentIntentId || '—'}\nAMOUNT · NOK ${Number(payload.amountNok).toFixed(2)}\nPAYMENT · ${payload.paymentStatus}\nFULFILMENT AUTHORITY · ${payload.fulfilmentAuthority}\nRESULT · LIVE PAYMENT RAIL PROVEN`,
+          'ok'
+        );
+      } catch (error) {
+        setState(`VERIFY FAILED · ${error instanceof Error ? error.message : 'verification_failed'}`, 'bad');
+      }
+    }
+
+    button.addEventListener('click', async () => {
+      if (!ack.checked) return;
+      button.disabled = true;
+      setState('CREATING STRIPE LIVE CHECKOUT…');
+      try {
+        const response = await fetch('/api/market-live-canary', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ productId: 'photo:arctic-white-angel-01', acknowledge: true })
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.url) throw new Error(payload.error || 'checkout_failed');
+        location.assign(payload.url);
+      } catch (error) {
+        setState(`BLOCKED · ${error instanceof Error ? error.message : 'checkout_failed'}`, 'bad');
+        button.disabled = false;
+      }
+    });
+
+    verifyReturn();
+  </script>
+</body>
+</html>

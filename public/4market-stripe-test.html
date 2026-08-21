@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>4MARKET_ Stripe Test</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Arial, sans-serif; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:#070707; color:#f5f5f5; }
+    main { width:min(720px, calc(100vw - 48px)); border:1px solid #2a2a2a; padding:40px; }
+    .kicker { font:12px/1.4 monospace; letter-spacing:.12em; color:#b9ff2f; }
+    h1 { font-size:clamp(42px,8vw,84px); line-height:.9; margin:22px 0; letter-spacing:-.05em; }
+    p { max-width:62ch; color:#bdbdbd; line-height:1.6; }
+    button { width:100%; margin-top:24px; padding:18px 20px; border:0; background:#f5f5f5; color:#070707; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:wait; }
+    #state { margin-top:16px; font:12px/1.5 monospace; color:#8b8b8b; white-space:pre-wrap; }
+    #state.ok { color:#b9ff2f; }
+    #state.bad { color:#ff8f8f; }
+    a { color:#f5f5f5; }
+    .rule { height:1px; background:#222; margin:28px 0; }
+    .facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:22px; }
+    .facts div { border:1px solid #222; padding:14px; }
+    .facts span { display:block; font:10px/1.4 monospace; color:#777; letter-spacing:.1em; }
+    .facts strong { display:block; margin-top:7px; font-size:15px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">4MARKET_ · STRIPE TEST MODE · NO LIVE COMMERCE</div>
+    <h1>ARCTIC<br>WHITE ANGEL</h1>
+    <p>This is the controlled Stripe Checkout canary for 4MARKET. It validates the payment path and server-side order confirmation without creating a real commercial print order.</p>
+    <p>Stripe's minimum card charge for NOK is NOK 3, so the canary is NOK 3 rather than NOK 1. The amount is server-owned and cannot be changed in the browser.</p>
+
+    <div class="facts">
+      <div><span>MODE</span><strong>STRIPE TEST</strong></div>
+      <div><span>AMOUNT</span><strong>NOK 3.00</strong></div>
+      <div><span>PRODUCT</span><strong>ARCTIC WHITE ANGEL</strong></div>
+      <div><span>FULFILMENT</span><strong>DISABLED</strong></div>
+    </div>
+
+    <button id="checkout">RUN NOK 3 STRIPE TEST →</button>
+    <div id="state">READY · requires server-side test secret + explicit enable flag.</div>
+    <div class="rule"></div>
+    <p><a href="/">← 4MARKET_</a></p>
+  </main>
+  <script>
+    const button = document.getElementById('checkout');
+    const state = document.getElementById('state');
+    const params = new URLSearchParams(location.search);
+
+    function setState(text, kind) {
+      state.textContent = text;
+      state.className = kind || '';
+    }
+
+    async function verifyReturnedCheckout() {
+      const outcome = params.get('checkout');
+      const sessionId = params.get('session_id');
+
+      if (outcome === 'cancel') {
+        setState('CANCELLED · no payment was confirmed.', 'bad');
+        return;
+      }
+      if (outcome !== 'success' || !sessionId) return;
+
+      button.disabled = true;
+      setState('VERIFYING WITH STRIPE SERVER-SIDE…');
+      try {
+        const response = await fetch(`/api/market-order-status?session_id=${encodeURIComponent(sessionId)}`, {
+          headers: { 'accept': 'application/json' }
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'verification_failed');
+
+        if (payload.confirmed) {
+          setState(
+            `PAYMENT CONFIRMED\nSESSION · ${payload.sessionId}\nAMOUNT · NOK ${Number(payload.amountNok).toFixed(2)}\nPAYMENT STATUS · ${payload.paymentStatus}\nORDER STATE · VERIFIED TEST CANARY\nFULFILMENT · NOT TRIGGERED`,
+            'ok'
+          );
+          button.textContent = 'RUN ANOTHER NOK 3 TEST →';
+          button.disabled = false;
+        } else {
+          setState(
+            `NOT CONFIRMED\nCHECKOUT · ${payload.checkoutStatus || 'unknown'}\nPAYMENT · ${payload.paymentStatus || 'unknown'}\nNo production action is authorised.`,
+            'bad'
+          );
+          button.disabled = false;
+        }
+      } catch (error) {
+        setState(`VERIFY FAILED · ${error instanceof Error ? error.message : 'verification_failed'}`, 'bad');
+        button.disabled = false;
+      }
+    }
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      setState('CREATING STRIPE TEST CHECKOUT…');
+      try {
+        const response = await fetch('/api/market-checkout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ productId: 'photo:arctic-white-angel-01' })
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.url) throw new Error(payload.error || 'checkout_failed');
+        location.assign(payload.url);
+      } catch (error) {
+        setState(`BLOCKED · ${error instanceof Error ? error.message : 'checkout_failed'}`, 'bad');
+        button.disabled = false;
+      }
+    });
+
+    verifyReturnedCheckout();
+  </script>
+</body>
+</html>
