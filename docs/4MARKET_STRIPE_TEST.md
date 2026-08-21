@@ -13,6 +13,8 @@ Founder-selected launch works:
 
 Source masters are founder-controlled in the 4PLANET photo bank. Production files are not committed to the public repository.
 
+Current inspected exports for both launch works are 2048 × 1365 px and are NOT accepted as premium 40 × 60 / 50 × 70 production masters. Their embedded Lightroom lineage names the original captures `DSCF2871.RAF` for Arctic White Angel and `DSCF6474.RAF` for Mulafossur. Drive also contains older folders/files with reused numeric camera counters 2871/6474; those have inconsistent dates and must not be treated as the same captures without checksum/visual lineage proof. No upscale substitution is authorised.
+
 The current 4MARKET prototype remains DEMO truth. Stripe TEST checkout is isolated from the synthetic creator/Impact ledger and does not promote any DEMO state to real.
 
 ## Production partner qualification — 2026-08-21
@@ -48,7 +50,7 @@ Required server environment:
 - `STRIPE_TEST_SECRET_KEY` — must begin `sk_test_`; secret store only.
 - `MARKET_STRIPE_TEST_ENABLED=true` — explicit kill-switch release.
 
-Shipping-address collection is intentionally restricted to Norway during this technical test.
+Shipping-address collection is intentionally restricted to Norway during this technical test. Checkout collects customer contact details and requires terms-of-service consent; the test page explicitly states that no print is produced or shipped.
 
 ## Verified order confirmation
 
@@ -108,7 +110,7 @@ This route is `noindex,nofollow`, states TEST / NO LIVE COMMERCE explicitly, lau
 Do not activate a live 4MARKET purchase until all are closed:
 
 1. actual creator and product approved, with rights evidence;
-2. physical print/POD provider and product quality validated;
+2. genuine high-resolution print master + physical print/POD provider and product quality validated;
 3. exact customer price and unit economics approved;
 4. tax/VAT/accounting treatment confirmed for the exact transaction;
 5. shipping geography, shipping price, returns/refunds and customer terms defined;
