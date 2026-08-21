@@ -1,0 +1,49 @@
+/* Retina compositor budget — loaded after the v21 visual pass.
+   High-resolution laptops keep the composition and scene travel, while
+   optional parallax/blurs/persistent GPU promotion are removed. */
+
+.nature-browser[data-runtime-controller="v21"] .nature-cinematic__scene,
+.nature-browser[data-runtime-controller="v21"] .nature-world__background,
+.nature-browser[data-runtime-controller="v21"] .nature-world__detail,
+.nature-browser[data-runtime-controller="v21"] .nature-subject{
+  will-change:auto!important;
+}
+
+.nature-browser[data-runtime-controller="v21"] .nature-subject{
+  filter:none!important;
+}
+.nature-browser[data-runtime-controller="v21"] .nature-subject__halo{
+  filter:none!important;
+  opacity:.28!important;
+}
+
+/* Balanced is expected on large Retina screens. Kill pointer-driven full-screen
+   parallax there; chapter travel still provides intentional motion. */
+.nature-browser[data-runtime-budget="balanced"],
+.nature-browser[data-runtime-budget="lite"]{
+  --look-x:0!important;
+  --look-y:0!important;
+}
+.nature-browser[data-runtime-budget="balanced"] .nature-world__detail,
+.nature-browser[data-runtime-budget="lite"] .nature-world__detail{
+  display:none!important;
+}
+.nature-browser[data-runtime-budget="balanced"] .nature-world__light{
+  mix-blend-mode:normal!important;
+  opacity:.22!important;
+}
+.nature-browser[data-runtime-budget="balanced"] .nature-node__pulse::after,
+.nature-browser[data-runtime-budget="balanced"] .nature-entry__signal span{
+  animation:none!important;
+  opacity:.42!important;
+}
+
+/* Do not animate transforms on invisible outgoing scene buffers for seconds. */
+.nature-browser[data-runtime-controller="v21"] .nature-cinematic__scene.is-leaving{
+  transition:opacity .38s ease!important;
+}
+
+@media(max-width:760px){
+  .nature-browser[data-runtime-controller="v21"] .nature-world__detail,
+  .nature-browser[data-runtime-controller="v21"] .nature-subject__halo{display:none!important;}
+}
