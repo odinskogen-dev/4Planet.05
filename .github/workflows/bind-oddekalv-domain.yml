@@ -1,0 +1,157 @@
+name: Bind oddekalv.com to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - ops/oddekalv-domain
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bind-domain:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.GOODAPI_TEST_KEY }}
+      TARGET_DOMAIN: oddekalv.com
+      TARGET_PROJECT: odinoddekalv
+    steps:
+      - name: Validate Cloudflare token
+        shell: bash
+        run: |
+          if [ -z "$CF_API_TOKEN" ]; then
+            echo "GOODAPI_TEST_KEY is not available to this repository workflow."
+            exit 1
+          fi
+          echo "Cloudflare token is present."
+
+      - name: Discover account, Pages project, zone and bind domain
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request, urllib.error
+
+          token = os.environ["CF_API_TOKEN"]
+          domain = os.environ["TARGET_DOMAIN"]
+          target_project = os.environ["TARGET_PROJECT"]
+          api = "https://api.cloudflare.com/client/v4"
+
+          def call(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              req = urllib.request.Request(
+                  api + path,
+                  data=data,
+                  method=method,
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Content-Type": "application/json",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      body = json.load(r)
+              except urllib.error.HTTPError as e:
+                  try:
+                      body = json.loads(e.read().decode())
+                  except Exception:
+                      body = {"success": False, "errors": [{"message": str(e)}]}
+              return body
+
+          accounts = call("GET", "/accounts?per_page=50")
+          if not accounts.get("success"):
+              print("Cloudflare account lookup failed:", accounts.get("errors"))
+              sys.exit(2)
+
+          account_id = None
+          project = None
+          seen = []
+          for acct in accounts.get("result", []):
+              aid = acct["id"]
+              projects = call("GET", f"/accounts/{aid}/pages/projects")
+              if not projects.get("success"):
+                  continue
+              for p in projects.get("result", []):
+                  seen.append((acct.get("name"), p.get("name"), p.get("subdomain")))
+                  if p.get("name") == target_project or p.get("subdomain") == f"{target_project}.pages.dev":
+                      account_id = aid
+                      project = p
+                      break
+              if project:
+                  break
+
+          if not project:
+              print("Could not find target Pages project. Available Pages projects:")
+              for row in seen:
+                  print(" - account=%s project=%s subdomain=%s" % row)
+              sys.exit(3)
+
+          project_name = project["name"]
+          print(f"Using Cloudflare Pages project: {project_name} ({project.get('subdomain')})")
+
+          zones = call("GET", f"/zones?name={domain}&account.id={account_id}&per_page=50")
+          zone = None
+          if zones.get("success") and zones.get("result"):
+              zone = zones["result"][0]
+              print(f"Existing zone: {zone.get('name')} status={zone.get('status')}")
+          else:
+              print("No existing Cloudflare zone found. Creating zone in the same account.")
+              created = call("POST", "/zones", {"name": domain, "account": {"id": account_id}, "type": "full"})
+              if not created.get("success"):
+                  print("Zone creation failed:", created.get("errors"))
+                  sys.exit(4)
+              zone = created["result"]
+              print(f"Created zone: {zone.get('name')} status={zone.get('status')}")
+              print("Assigned nameservers:", ", ".join(zone.get("name_servers") or []))
+
+          zone_id = zone["id"]
+
+          # Ensure DNS records route apex and www to the Pages project.
+          target = project.get("subdomain") or f"{project_name}.pages.dev"
+          for host in (domain, f"www.{domain}"):
+              existing = call("GET", f"/zones/{zone_id}/dns_records?type=CNAME&name={host}&per_page=100")
+              if existing.get("success") and existing.get("result"):
+                  rec = existing["result"][0]
+                  if rec.get("content") != target or not rec.get("proxied"):
+                      upd = call("PUT", f"/zones/{zone_id}/dns_records/{rec['id']}", {
+                          "type": "CNAME", "name": host, "content": target, "ttl": 1, "proxied": True
+                      })
+                      if not upd.get("success"):
+                          print(f"DNS update failed for {host}:", upd.get("errors"))
+                          sys.exit(5)
+                      print(f"Updated DNS: {host} -> {target}")
+                  else:
+                      print(f"DNS already correct: {host} -> {target}")
+              else:
+                  add = call("POST", f"/zones/{zone_id}/dns_records", {
+                      "type": "CNAME", "name": host, "content": target, "ttl": 1, "proxied": True
+                  })
+                  if not add.get("success"):
+                      print(f"DNS create failed for {host}:", add.get("errors"))
+                      sys.exit(6)
+                  print(f"Created DNS: {host} -> {target}")
+
+          # Bind custom domains to Pages. Duplicate/already-present is handled by checking first.
+          domains = call("GET", f"/accounts/{account_id}/pages/projects/{project_name}/domains")
+          current = {d.get("name") for d in domains.get("result", [])} if domains.get("success") else set()
+          for host in (domain, f"www.{domain}"):
+              if host in current:
+                  print(f"Pages custom domain already present: {host}")
+                  continue
+              added = call("POST", f"/accounts/{account_id}/pages/projects/{project_name}/domains", {"name": host})
+              if not added.get("success"):
+                  print(f"Pages domain bind failed for {host}:", added.get("errors"))
+                  sys.exit(7)
+              print(f"Bound Pages custom domain: {host}")
+
+          # Final status readback.
+          domains = call("GET", f"/accounts/{account_id}/pages/projects/{project_name}/domains")
+          if domains.get("success"):
+              print("Final Pages custom-domain states:")
+              for d in domains.get("result", []):
+                  if d.get("name") in {domain, f"www.{domain}"}:
+                      print(" -", d.get("name"), "status=", d.get("status"))
+
+          print("Zone status:", zone.get("status"))
+          print("Zone nameservers:", ", ".join(zone.get("name_servers") or []))
+          PY
