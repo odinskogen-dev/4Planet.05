@@ -148,7 +148,7 @@
         source.href = node.source?.url || '#';
       }
       const next = byId(chapter, 'nature-chapter-next');
-      if (next) next.textContent = state.activeIndex === nodes.length - 1 ? 'CONTINUE TO SOLUTIONS →' : `FOLLOW THE SYSTEM · ${String(state.activeIndex + 2).padStart(2, '0')} →`;
+      if (next) next.textContent = state.activeIndex === nodes.length - 1 ? (node.scene?.finalCta || 'CONTINUE →') : `FOLLOW THE SYSTEM · ${String(state.activeIndex + 2).padStart(2, '0')} →`;
       if (isCompact()) chapter.focus({ preventScroll: true });
     };
 
