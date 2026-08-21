@@ -11,7 +11,23 @@ Founder-selected launch works:
 - `photo:arctic-white-angel-01` — Arctic White Angel — current controlled Checkout canary.
 - `photo:mulafossur-01` — Mulafossur — second launch candidate; commercial checkout not enabled yet.
 
+Source masters are founder-controlled in the 4PLANET photo bank. Production files are not committed to the public repository.
+
 The current 4MARKET prototype remains DEMO truth. Stripe TEST checkout is isolated from the synthetic creator/Impact ledger and does not promote any DEMO state to real.
+
+## Production partner qualification — 2026-08-21
+
+Five candidate production routes have been contacted for concrete qualification:
+
+1. PIGS Digitaltrykk, Oslo — Hahnemühle Certified Studio, print-on-demand, Scandinavian shipping. Strong candidate for first Norwegian physical proof and premium paper control.
+2. Oslo Digitaltrykk — Hahnemühle-certified local fine-art printer, 12-colour printing, short local turnaround. Strong manual/local backup.
+3. Prodigi — fine-art-focused global POD, white-label dropshipping and Print API. Strong candidate for automated fulfilment.
+4. theprintspace — premium fine-art giclée and C-type photographic printing, white-label fulfilment from UK/Germany. Strong premium/global benchmark.
+5. Gelato — large local-production network, fine-art products and custom-store API. Strong low-burden global scaling route.
+
+Qualification asks cover paper/process, 40 × 60 / 50 × 70 availability, unit cost, Norway shipping, white-label packaging, direct-to-customer fulfilment, file/ICC requirements, proofing, damage/reprint rules, editions/CoA, API/order automation and shipment/tracking status.
+
+No production provider is promoted to APPROVED until physical output and operating terms are verified.
 
 ## Checkout endpoint
 
