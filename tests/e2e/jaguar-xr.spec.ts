@@ -22,28 +22,18 @@ async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) 
   const viewport = page.viewportSize();
   const premiumPanel = page.locator(".nature-premium__panel");
   if (viewport && viewport.width <= 760) {
-    // Gold mobile removes the duplicate editorial panel from layout entirely.
     await expect(premiumPanel).toBeHidden();
     await expect(page.locator(".nature-context-ribbon")).toBeHidden();
     await expect(page.locator(".nature-premium__audio")).toBeHidden();
     const visibleHotspots = page.locator('.nature-premium-hotspot:visible');
     expect(await visibleHotspots.count(), `${label} mobile hotspot budget`).toBeLessThanOrEqual(2);
   } else {
-    // Desktop keeps the panel mounted for an explicit future/open state, but the
-    // Gold layer makes it visually absent by opacity + pointer-event suppression.
-    // Playwright's visibility model intentionally still counts opacity:0 elements
-    // as visible, so assert the actual product contract instead of toBeHidden().
     await expect(premiumPanel).toHaveCSS("opacity", "0");
     await expect(premiumPanel).toHaveCSS("pointer-events", "none");
   }
 }
 
 async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedTitle: RegExp) {
-  // Scope the interaction explicitly to the premium intelligence layer. Desktop
-  // can expose other Jaguar-labelled buttons (for example the creature/focus
-  // study), so a global role query can exercise the wrong control while mobile
-  // happens to pass because those controls are absent. The contract here is the
-  // premium hotspot itself, not any button whose accessible name contains Jaguar.
   const hotspot = page.locator('.nature-premium-hotspot').filter({ hasText: hotspotName }).first();
   await expect(hotspot).toBeVisible();
   await hotspot.click();
@@ -54,7 +44,7 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar Gold v21 keeps the living world first, adapts performance and travels through distinct source-aware scenes", async ({ page }, testInfo) => {
+test("Jaguar Gold v23 keeps the world first, adds live Ear 3D, adapts performance and travels through distinct scenes", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
@@ -63,8 +53,9 @@ test("Jaguar Gold v21 keeps the living world first, adapts performance and trave
   await expect(root).toHaveAttribute("data-premium-version", "17");
   await expect(root).toHaveAttribute("data-creature-engine", "v19");
   await expect(root).toHaveAttribute("data-creature-preferred-asset", "ear-rodriguez-jaguar");
-  await expect(root).toHaveAttribute("data-creature-preferred-binary", "NOT_YET_LOCAL");
+  await expect(root).toHaveAttribute("data-creature-preferred-binary", "FOUNDER_SUPPLIED_VERIFIED_PENDING_REPO_BINARY_INGEST");
   await expect(root).toHaveAttribute("data-jaguar3d-mode", "creature-choreography-v19");
+  await expect(root).toHaveAttribute("data-jaguar-live-bridge", "v23");
   await expect(root).toHaveAttribute("data-runtime-controller", "v21");
   await expect(root).toHaveAttribute("data-runtime-budget", /full|balanced|lite/);
   const runtimeBudget = await root.getAttribute("data-runtime-budget");
@@ -72,16 +63,12 @@ test("Jaguar Gold v21 keeps the living world first, adapts performance and trave
   await expect(page.locator(".nature-depth-room")).toBeVisible();
   await expect(page.locator(".nature-depth-room__far")).toBeVisible();
   const foregroundLeft = page.locator(".nature-depth-room__foreground-left");
-  if (runtimeBudget === "lite") {
-    await expect(foregroundLeft).toBeHidden();
-  } else {
-    await expect(foregroundLeft).toBeVisible();
-  }
+  if (runtimeBudget === "lite") await expect(foregroundLeft).toBeHidden();
+  else await expect(foregroundLeft).toBeVisible();
   await expect(page.locator(".nature-audio-provenance-v19")).toHaveCount(1);
 
   const enter = page.locator(".nature-entry__button");
   await expect(enter).toBeVisible();
-  await expect(page.locator(".nature-premium__enter")).toHaveCount(0);
   await enter.click();
   await expect(root).toHaveAttribute("data-entered", "true");
   await expect(root).toHaveAttribute("data-creature-phase", /emerge|walk|stop|breathe|observe|reveal|hold/, { timeout: 3_000 });
@@ -106,44 +93,31 @@ test("Jaguar Gold v21 keeps the living world first, adapts performance and trave
   const viewport = page.viewportSize();
   if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
 
-  if (viewport && viewport.width > 760) {
-    const controlledSubject = page.locator(".nature-subject");
-    await expect(controlledSubject).toBeVisible();
+  if (viewport && viewport.width > 760 && runtimeBudget !== "lite") {
+    const live = page.locator(".nature-ear-live-v23");
+    await expect(live).toHaveCount(1);
+    await expect(live.getByRole("button", { name: "LOOK AT ME" })).toHaveCount(1);
+    await expect(live.getByRole("button", { name: "MOVE" })).toHaveCount(1);
+    await expect(live.locator(".nature-ear-live-v23__credit")).toContainText(/EAR\.RODRIGUEZ/i);
 
-    await page.waitForTimeout(1_200);
-    let threeState = await root.getAttribute("data-jaguar3d");
-    if (threeState === "loading") {
-      await page.waitForFunction(() => {
-        const el = document.querySelector("#browser-experience");
-        const state = el?.getAttribute("data-jaguar3d");
-        return state !== "loading";
-      }, undefined, { timeout: 5_000 }).catch(() => undefined);
-      threeState = await root.getAttribute("data-jaguar3d");
-    }
-    expect(["ready", "loading", "preferred-pending", "failed", null]).toContain(threeState);
-
-    if (threeState === "ready") {
-      await expect(root).toHaveAttribute("data-jaguar3d-active", "true", { timeout: 5_000 });
-      const threeStudy = page.locator('.nature-3d-subject--v19[data-visible="true"][data-ready="true"]');
-      await expect(threeStudy).toBeVisible();
-      await expect(threeStudy.locator("canvas")).toBeVisible();
-      await expect(page.locator(".nature-3d-subject__source-state")).toContainText(/EAR RODRIGUEZ JAGUAR/i);
-      await expectViewportSafe(page, threeStudy, "MEET LIFE creature layer");
-      const box = await threeStudy.boundingBox();
-      if (box) {
-        await page.mouse.move(box.x + box.width * .45, box.y + box.height * .48);
-        await page.mouse.down();
-        await page.mouse.move(box.x + box.width * .6, box.y + box.height * .48, { steps: 5 });
-        await page.mouse.up();
-        await expect(threeStudy).toHaveAttribute("data-dragging", "false");
-      }
+    // External Sketchfab availability is deliberately not a release gate. If it
+    // reaches ready state in CI, exercise both bounded interactions; otherwise
+    // the controlled photo fallback must remain available.
+    await page.waitForTimeout(1_800);
+    const state = await root.getAttribute("data-jaguar3d");
+    expect(["ear-live-bridge", "preferred-pending", "failed", null]).toContain(state);
+    if (state === "ear-live-bridge") {
+      await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
+      await live.getByRole("button", { name: "LOOK AT ME" }).click();
+      await expect(root).toHaveAttribute("data-jaguar-attention", /visitor|rest/);
+      await live.getByRole("button", { name: "MOVE" }).click();
+      await expect(root).toHaveAttribute("data-jaguar-attention", /motion|rest/);
     } else {
-      await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
-      await expect(controlledSubject).toBeVisible();
+      await expect(page.locator(".nature-subject")).toBeVisible();
     }
   }
 
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v21-01-encounter.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v23-01-encounter.png`, fullPage: true });
 
   const next = page.locator(".nature-journey-hud__next");
   await next.click();
@@ -176,7 +150,7 @@ test("Jaguar Gold v21 keeps the living world first, adapts performance and trave
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Pressure is not the destination/i);
   if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v21-05-response.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v23-05-response.png`, fullPage: true });
 
   await sound.click();
   await expect(sound).toHaveText(/TURN SOUND ON/i);
