@@ -48,7 +48,9 @@ const SAPIENS_UNIVERSE_HOSTS = new Set([
 const isSapiensUniverseHost = () => {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
-  return SAPIENS_UNIVERSE_HOSTS.has(host) || host.startsWith("build-s4piens-universe-domain.");
+  return SAPIENS_UNIVERSE_HOSTS.has(host)
+    || host.startsWith("build-s4piens-universe-domain.")
+    || host.startsWith("build-s4piens-universe-domai.");
 };
 
 const toImpact = <Navigate to="/impact" replace />;
