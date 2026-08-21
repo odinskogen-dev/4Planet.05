@@ -2,9 +2,11 @@
    Projection motion is interpretive presentation. Procedural audio is not field audio. */
 
 /* Pass 05 brand QA: canonical 4PLANET type system only. */
-.orca-lume-intel__primary{font-family:"Instrument Sans",ui-sans-serif,system-ui,sans-serif!important}
-.orca-lume-intel__header,.orca-lume-intel__secondary,.orca-lume-module,.orca-lume-acoustic__meta,.orca-lume-rail span,.orca-lume-echo-trigger,.orca-lume-photo figcaption{font-family:"Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace!important}
-.orca-lume-intel__primary,.orca-lume-intel__modules{font-synthesis:none}
+.orca-lume-intel__primary,.nature-browser[data-light-lens="true"] .light-lens-caption strong{font-family:"Instrument Sans",ui-sans-serif,system-ui,sans-serif!important}
+.nature-browser[data-light-lens="true"] .light-lens-caption p{font-family:"DM Sans",ui-sans-serif,system-ui,sans-serif!important}
+.orca-lume-intel__header,.orca-lume-intel__secondary,.orca-lume-module,.orca-lume-acoustic__meta,.orca-lume-rail span,.orca-lume-echo-trigger,.orca-lume-photo figcaption,.nature-browser[data-light-lens="true"] .light-lens-caption__mode,.nature-browser[data-light-lens="true"] .light-lens-axis{font-family:"Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace!important}
+.orca-lume-intel__primary,.orca-lume-intel__modules,.nature-browser[data-light-lens="true"] .light-lens-caption{font-synthesis:none}
+.nature-browser[data-light-lens="true"] .nature-premium-hotspot{background:rgba(1,13,23,.58)!important;border-color:rgba(141,232,255,.26)!important;box-shadow:0 0 0 1px rgba(247,253,255,.018),0 0 26px rgba(86,216,255,.055)!important}
 
 .nature-browser[data-light-lens="true"] .orca-lume-photo{animation:orca-lume-photo-drift 12s ease-in-out infinite}
 .nature-browser[data-light-lens="true"] .orca-lume-photo img{transform:translate3d(var(--lume-shift-x,0px),var(--lume-shift-y,0px),0) scale(1.025);transition:transform .22s ease-out}
