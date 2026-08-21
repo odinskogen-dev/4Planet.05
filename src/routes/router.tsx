@@ -20,6 +20,7 @@ import { NotFound } from "@/pages/system";
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
+const BayOfBiscay = lazy(() => import("@/pages/integrated/BayOfBiscay"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -56,6 +57,7 @@ export function AppRoutes() {
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforest /></Suspense>} />
+      <Route path="/ecosystems/bay-of-biscay" element={<Suspense fallback={WorldFallback}><BayOfBiscay /></Suspense>} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
