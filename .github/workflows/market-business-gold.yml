@@ -1,0 +1,51 @@
+name: 4PLANET MARKET Business Gold Gate
+
+on:
+  pull_request:
+    branches:
+      - cre4tors
+    paths:
+      - 'src/market/liveCommerce.ts'
+      - 'supabase/migrations/20260821120000_market_business_gold.sql'
+      - 'scripts/market-business-contract.test.mjs'
+      - '.github/workflows/market-business-gold.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  business-gold-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Business Gold contract tests
+        run: node --test scripts/market-business-contract.test.mjs
+
+      - name: Secret-pattern control
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(src/market/liveCommerce.ts supabase/migrations/20260821120000_market_business_gold.sql scripts/market-business-contract.test.mjs)
+          if grep -nEi '(sk_live_|sk_test_[A-Za-z0-9]{12,}|whsec_|prodigi.{0,12}(key|secret)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_-]{12,}|goodapi.{0,12}(key|secret)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_-]{12,}|service_role[[:space:]]*[:=][[:space:]]*[A-Za-z0-9._-]{12,})' "${files[@]}"; then
+            echo 'FAIL — possible provider secret committed to source.'
+            exit 1
+          fi
+          echo 'PASS — no payment/POD/Impact/Supabase secret pattern found.'
