@@ -60,8 +60,22 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Contract and smoke tests
-        run: npm run test:smoke
+      - name: Contract and smoke tests — isolated diagnostics
+        shell: bash
+        run: |
+          status=0
+          for test_file in \
+            scripts/smoke-v40.mjs \
+            scripts/prototype-contracts.test.mjs \
+            scripts/product-context.test.mjs \
+            scripts/species-gold-truth.test.mjs \
+            scripts/one-interface-universe-slice09.test.mjs \
+            scripts/sapiens-food-atlas.test.mjs; do
+            echo "::group::$test_file"
+            node --test "$test_file" || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"
 
       - name: Lint (no NEW warnings; 6 inherited World/layer warnings are known)
         shell: bash
