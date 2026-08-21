@@ -44,7 +44,7 @@ test('live bridge uses the exact Ear model and exposes multiple bounded interact
   assert.match(liveBridge, /setCameraLookAt/);
   assert.match(liveBridge, /LOOK AT ME/);
   assert.match(liveBridge, /MOVE/);
-  assert.match(liveCss, /DRAG JAGUAR TO TURN/);
+  assert.match(liveBridge, /DRAG JAGUAR TO TURN/);
   assert.match(liveCss, /data-runtime-budget="lite"/);
 });
 
