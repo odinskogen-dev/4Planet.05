@@ -99,6 +99,7 @@
         { "label": "Outcome", "note": "No protection claim before evidence", "state": "BOUNDARY" }
       ],
       "modules": [
+        { "label": "ORCA · monitoring + conservation actor", "state": "GOLD ACTOR PROFILE · DIRECT DIALOGUE · NO PARTNERSHIP CLAIM", "href": "/actors/orca/" },
         { "label": "Open WH4LES_ mission", "state": "MISSION CONTEXT · NO DELIVERY CLAIM", "href": "/missions/wh4les" },
         { "label": "Inspect Orca in SPECIES", "state": "SOURCE-AWARE PROFILE", "href": "/species/orca?entity=taxon:gbif:2440483" },
         { "label": "Explore reported records in ATLAS", "state": "OCCURRENCE ≠ RANGE", "href": "/atlas?entity=taxon:gbif:2440483" }
