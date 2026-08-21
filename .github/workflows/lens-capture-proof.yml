@@ -1,0 +1,104 @@
+name: LENS 01 Capture Proof Gate
+
+on:
+  push:
+    branches:
+      - feature/lens-01-capture-proof
+  pull_request:
+    paths:
+      - "src/pages/lens/**"
+      - "src/routes/router.tsx"
+      - "tests/e2e/lens-capture.spec.ts"
+      - ".github/workflows/lens-capture-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lens-01-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Record exact candidate
+        run: |
+          git rev-parse HEAD > lens-exact-sha.txt
+          printf '%s\n' "${GITHUB_REF_NAME}" > lens-exact-branch.txt
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Contract and smoke regression
+        run: npm run test:smoke
+
+      - name: Lint without new errors
+        shell: bash
+        run: |
+          npm run lint 2>&1 | tee lens-lint.txt || true
+          errors="$(grep -Eo '[0-9]+ error' lens-lint.txt | grep -Eo '[0-9]+' | tail -1 || echo 0)"
+          test "${errors:-0}" -eq 0
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > lens-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/lens > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat lens-preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: LENS mobile capture fallback + location proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/lens-capture.spec.ts --project=mobile-390 --project=mobile-430 --project=webkit-390 --project=webkit-430
+
+      - name: LENS route and truth-boundary control
+        shell: bash
+        run: |
+          grep -q 'path="/lens"' src/routes/router.tsx
+          grep -q 'CAPTURED · NOT UPLOADED' src/pages/lens/LensCapture.tsx
+          grep -q 'No species ID, verification or research-grade status is created in Pass 01.' src/pages/lens/LensCapture.tsx
+          if grep -R --line-number -E '(AI VERIFIED|RESEARCH GRADE|LIVE OBSERVATION)' src/pages/lens; then
+            echo 'Disallowed maturity language found in LENS 01'
+            exit 1
+          fi
+
+      - name: Upload LENS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lens-01-capture-proof-evidence
+          path: |
+            lens-exact-sha.txt
+            lens-exact-branch.txt
+            lens-lint.txt
+            lens-preview.log
+            artifacts
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30
