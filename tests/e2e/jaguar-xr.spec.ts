@@ -88,13 +88,27 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
 
   const viewport = page.viewportSize();
   if (viewport && viewport.width > 760) {
+    // Controlled species media is the default encounter. The licensed stylised 3D
+    // study is a deliberate optional focus mode and may not silently replace nature.
+    await expect(root).toHaveAttribute("data-jaguar3d-mode", "manual-study");
+    await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
+    const controlledSubject = page.locator(".nature-subject");
+    await expect(controlledSubject).toBeVisible();
+    await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent("4planet:nature-world-interaction", {
+        detail: { action: "focus", active: true }
+      }));
+    });
+
     await expect(root).toHaveAttribute("data-jaguar3d", "ready", { timeout: 20_000 });
     await expect(root).toHaveAttribute("data-jaguar3d-active", "true", { timeout: 5_000 });
     const threeStudy = page.locator('.nature-3d-subject[data-visible="true"][data-ready="true"]');
     await expect(threeStudy).toBeVisible();
     await expect(threeStudy.locator("canvas")).toBeVisible();
     await expect(page.locator(".nature-3d-subject__meta")).toContainText(/POLY BY GOOGLE|CC BY 3\.0/i);
-    await expectViewportSafe(page, threeStudy, "MEET LIFE 3D Jaguar");
+    await expectViewportSafe(page, threeStudy, "MEET LIFE optional 3D Jaguar study");
 
     const box = await threeStudy.boundingBox();
     if (box) {
@@ -104,7 +118,15 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
       await page.mouse.up();
       await expect(threeStudy).toHaveAttribute("data-dragging", "false");
     }
-    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-3d.png`, fullPage: true });
+    await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-3d-optional.png`, fullPage: true });
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent("4planet:nature-world-interaction", {
+        detail: { action: "focus", active: false }
+      }));
+    });
+    await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
+    await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
   } else {
     await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
     await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-mobile.png`, fullPage: true });
