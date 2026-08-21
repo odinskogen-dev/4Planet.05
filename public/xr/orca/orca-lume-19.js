@@ -1,6 +1,6 @@
 (() => {
   const NOAA_ORCA = {
-    src: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Orcinus_orca_NOAA.jpg',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Orcinus_orca_NOAA.jpg',
     source: 'https://commons.wikimedia.org/wiki/File:Orcinus_orca_NOAA.jpg',
     credit: 'NOAA',
     rights: 'PUBLIC DOMAIN',
