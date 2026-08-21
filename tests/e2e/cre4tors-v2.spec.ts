@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("CRE4TORS_ v02", () => {
+test.describe("CRE4TORS_ 02", () => {
   test("creator operating story and interactions hold together", async ({ page }) => {
     await page.goto("/cre4tors");
 
@@ -11,12 +11,9 @@ test.describe("CRE4TORS_ v02", () => {
 
     const metric = page.locator(".c4-tax-panel strong").first();
     const before = await metric.textContent();
-    await page.getByLabel("Demo system effectiveness").evaluate((element) => {
-      const input = element as HTMLInputElement;
-      input.value = "80";
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    });
+    const slider = page.getByLabel("Demo system effectiveness");
+    await slider.focus();
+    await slider.press("End");
     await expect(metric).not.toHaveText(before ?? "");
 
     await page.getByRole("tab", { name: "MUSICIAN" }).click();
@@ -45,7 +42,7 @@ test.describe("CRE4TORS_ v02", () => {
 
   test("prototype truth labels remain explicit", async ({ page }) => {
     await page.goto("/cre4tors");
-    await expect(page.getByText("EARLY STAGE · 4PLANET LABS")).toBeVisible();
+    await expect(page.getByText("INFRASTRUCTURE FOR CREATIVE INDEPENDENCE · V2 LAB")).toBeVisible();
     await expect(page.getByText(/Every object below is DEMO \/ CONCEPT/)).toBeVisible();
     await expect(page.getByText("DEMO NEED · NOT A LIVE OPPORTUNITY").first()).toBeVisible();
     await expect(page.getByText(/V2 remains a LABS instrument/)).toBeVisible();
