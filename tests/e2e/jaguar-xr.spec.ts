@@ -53,10 +53,16 @@ test("Jaguar Gold v21 keeps the living world first, adapts performance and trave
   await expect(root).toHaveAttribute("data-jaguar3d-mode", "creature-choreography-v19");
   await expect(root).toHaveAttribute("data-runtime-controller", "v21");
   await expect(root).toHaveAttribute("data-runtime-budget", /full|balanced|lite/);
+  const runtimeBudget = await root.getAttribute("data-runtime-budget");
 
   await expect(page.locator(".nature-depth-room")).toBeVisible();
   await expect(page.locator(".nature-depth-room__far")).toBeVisible();
-  await expect(page.locator(".nature-depth-room__foreground-left")).toBeVisible();
+  const foregroundLeft = page.locator(".nature-depth-room__foreground-left");
+  if (runtimeBudget === "lite") {
+    await expect(foregroundLeft).toBeHidden();
+  } else {
+    await expect(foregroundLeft).toBeVisible();
+  }
   await expect(page.locator(".nature-audio-provenance-v19")).toHaveCount(1);
 
   const enter = page.locator(".nature-entry__button");
