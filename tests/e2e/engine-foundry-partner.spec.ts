@@ -6,9 +6,9 @@ test.describe("ENGINE FOUNDRY · Partner Engine transfer proof", () => {
 
     await expect(page.getByRole("heading", { name: /Find the right partner/i })).toBeVisible();
     await expect(page.getByText("INPUT-DRIVEN / NO OUTREACH")).toBeVisible();
-    await expect(page.getByText("Candidate A · field operator")).toBeVisible();
-    await expect(page.getByText("Candidate B · research consortium")).toBeVisible();
-    await expect(page.getByText("Candidate C · unverified implementer")).toBeVisible();
+    await expect(page.getByDisplayValue("Candidate A · field operator")).toBeVisible();
+    await expect(page.getByDisplayValue("Candidate B · research consortium")).toBeVisible();
+    await expect(page.getByDisplayValue("Candidate C · unverified implementer")).toBeVisible();
 
     await page.getByRole("button", { name: "RUN PARTNER ENGINE" }).click();
 
