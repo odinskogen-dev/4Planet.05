@@ -18,7 +18,7 @@ jobs:
     env:
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Inspect zone, DNS and Pages status
+      - name: Inspect zone, DNS, Pages status and deployments
         shell: bash
         run: |
           python3 - <<'PY'
@@ -47,10 +47,20 @@ jobs:
               for p in projects.get('result',[]):
                   if p.get('name')=='odinoddekalv' or p.get('subdomain')=='odinoddekalv.pages.dev':
                       print('PAGES_PROJECT:',p.get('name'),p.get('subdomain'),'production_branch=',p.get('production_branch'))
+                      print('PAGES_SOURCE:',json.dumps(p.get('source'),sort_keys=True))
                       ds=cf('GET',f"/accounts/{aid}/pages/projects/{p['name']}/domains")
                       for d in ds.get('result',[]):
                           if d.get('name') in {domain,'www.'+domain}:
                               print('PAGES_DOMAIN:',d.get('name'),'status=',d.get('status'))
+                      deps=cf('GET',f"/accounts/{aid}/pages/projects/{p['name']}/deployments?per_page=30")
+                      print('DEPLOYMENTS_SUCCESS:',deps.get('success'))
+                      for dep in deps.get('result',[]):
+                          meta=(dep.get('deployment_trigger') or {}).get('metadata') or {}
+                          branch=meta.get('branch')
+                          if branch in {'build/odin-universe-01','main'}:
+                              stages=dep.get('stages') or []
+                              last=stages[-1] if stages else {}
+                              print('DEPLOYMENT:',dep.get('id'),'branch=',branch,'env=',dep.get('environment'),'url=',dep.get('url'),'created=',dep.get('created_on'),'latest_stage=',json.dumps(last,sort_keys=True))
                       break
               break
           PY
