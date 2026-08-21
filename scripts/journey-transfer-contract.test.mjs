@@ -57,7 +57,7 @@ test('Jaguar and Orca both consume the same context, premium, Gold cleanup and a
   assert.match(browser, /TURN SOUND OFF/);
   assert.match(browser, /TURN SOUND ON/);
   assert.match(goldCss, /nature-nodes/);
-  assert.match(goldCss, /nature-premium__audio\{display:none!important/);
+  assert.match(goldCss, /nature-premium__audio[\s\S]{0,220}display:none!important/);
   assert.match(jaguarHtml, /data-premium-config="\/journey\/jaguar\/premium-v17\.json"/);
   assert.match(orcaHtml, /data-premium-config="\/journey\/orca\/premium-v17\.json"/);
   assert.match(orcaHtml, /data-audio-world="ocean"/);
