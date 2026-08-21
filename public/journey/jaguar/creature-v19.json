@@ -1,0 +1,65 @@
+{
+  "version": "creature-v19",
+  "journeyId": "jaguar-amazonia",
+  "entityId": "taxon:gbif:5219426",
+  "species": {
+    "commonName": "Jaguar",
+    "scientificName": "Panthera onca"
+  },
+  "actor": {
+    "preferred": {
+      "id": "ear-rodriguez-jaguar",
+      "role": "PREFERRED_FREE_PROTOTYPE_CREATURE",
+      "sourcePage": "https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492",
+      "runtimePath": "/assets/species/jaguar/jaguar-ear-rodriguez.glb",
+      "rightsState": "VERIFY_AT_BINARY_INGEST",
+      "binaryState": "NOT_YET_LOCAL",
+      "note": "Founder-selected free prototype creature. Runtime activates this path only after a controlled local GLB and exact licence record exist."
+    },
+    "fallback": {
+      "id": "poly-google-jaguar-study",
+      "role": "CONTROLLED_RUNTIME_FALLBACK",
+      "sourcePage": "https://poly.pizza/m/4fb-oMr2uUF",
+      "sourceCommit": "728230086493b1f1cee6a410d0a8ea7c0991f6ff",
+      "licence": "CC BY 3.0",
+      "attribution": "Jaguar · Poly by Google · via Poly Pizza",
+      "status": "ACTIVE_UNTIL_PREFERRED_BINARY_IS_CONTROLLED"
+    }
+  },
+  "environment": {
+    "strategy": "LAYERED_DEPTH_ROOM",
+    "far": "/assets/missions/am4zonia/hero.jpg",
+    "mid": "/assets/missions/am4zonia/detail-01.jpg",
+    "subject": "/assets/species/jaguar/SP-005.jpg",
+    "truthBoundary": "Habitat imagery is cinematic context, not a live view or ecological measurement."
+  },
+  "choreography": [
+    { "phase": "emerge", "durationMs": 1900, "cue": "The forest resolves around the animal." },
+    { "phase": "walk", "durationMs": 3300, "cue": "Slow controlled approach." },
+    { "phase": "stop", "durationMs": 850, "cue": "Movement settles." },
+    { "phase": "breathe", "durationMs": 1850, "cue": "Hold presence; keep the body alive." },
+    { "phase": "observe", "durationMs": 2200, "cue": "Turn attention toward the visitor." },
+    { "phase": "reveal", "durationMs": 2800, "cue": "LUME intelligence layer emerges without replacing the living animal." },
+    { "phase": "hold", "durationMs": 0, "cue": "Remain available for exploration." }
+  ],
+  "audio": {
+    "fieldAmbience": {
+      "id": "amazon-felix-blume-toucans-cc0",
+      "kind": "FIELD_RECORDING",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:404114_felix-blume_toucans-singing-in-the-amazonian-rainforest-brazil.ogg",
+      "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/4/43/404114_felix-blume_toucans-singing-in-the-amazonian-rainforest-brazil.ogg",
+      "creator": "Felix Blume",
+      "licence": "CC0",
+      "label": "AMAZON RAINFOREST FIELD AMBIENCE · FELIX BLUME · CC0",
+      "status": "OPTIONAL_FAIL_CLOSED"
+    },
+    "creatureCue": {
+      "id": "jaguar-presence-designed-v19",
+      "kind": "DESIGNED_AUDIO",
+      "label": "JAGUAR PRESENCE CUE · DESIGNED · NOT FIELD AUDIO",
+      "status": "ACTIVE",
+      "truthBoundary": "The prototype does not claim this designed cue is an authentic Panthera onca recording."
+    }
+  },
+  "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · PRESENTATION MEDIA IS NOT ECOLOGICAL EVIDENCE"
+}
