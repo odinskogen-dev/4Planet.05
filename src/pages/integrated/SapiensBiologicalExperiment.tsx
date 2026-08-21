@@ -16,14 +16,19 @@ type SpatialNode = {
   relevance: "core" | "near" | "context" | "recede";
 };
 
+// Coverage map for the major human consumption / value-chain families.
+// FOOD_ is the first proof journey; the other nodes describe model coverage,
+// not a claim that those systems are already Gold or decision-grade.
 const SYSTEM_NODES: SpatialNode[] = [
-  { id: "food", label: "FOOD_", kicker: "HUMAN NEED", rest: [19, 27], food: [50, 22], relevance: "core" },
-  { id: "water", label: "WATER", kicker: "DEPENDENCY", rest: [49, 10], food: [37, 34], relevance: "near" },
-  { id: "energy", label: "EN3RGY_", kicker: "SYSTEM", rest: [81, 27], food: [68, 35], relevance: "context" },
-  { id: "city", label: "CIRCULAR CITY_", kicker: "SYSTEM", rest: [18, 78], food: [24, 80], relevance: "context" },
-  { id: "fashion", label: "F4SHION_", kicker: "SYSTEM", rest: [82, 78], food: [91, 83], relevance: "recede" },
-  { id: "mobility", label: "MOBILITY", kicker: "SYSTEM", rest: [50, 92], food: [78, 84], relevance: "context" },
-  { id: "shipping", label: "SHIPPING", kicker: "WIDER SYSTEM", rest: [88, 55], food: [96, 57], relevance: "recede" },
+  { id: "food", label: "FOOD_", kicker: "LIVE GOLD JOURNEY", rest: [18, 25], food: [50, 22], relevance: "core" },
+  { id: "water", label: "WATER_", kicker: "HUMAN SYSTEM", rest: [47, 9], food: [36, 34], relevance: "near" },
+  { id: "energy", label: "EN4RGY_", kicker: "HUMAN SYSTEM", rest: [78, 19], food: [69, 34], relevance: "context" },
+  { id: "fashion", label: "F4SHION_", kicker: "HUMAN SYSTEM", rest: [89, 41], food: [93, 28], relevance: "recede" },
+  { id: "technology", label: "TECHNOLOGY_", kicker: "HUMAN SYSTEM", rest: [87, 68], food: [95, 56], relevance: "recede" },
+  { id: "circularity", label: "WASTE / CIRCULARITY_", kicker: "HUMAN SYSTEM", rest: [69, 88], food: [91, 84], relevance: "context" },
+  { id: "mobility", label: "MOBILITY_", kicker: "HUMAN SYSTEM", rest: [42, 92], food: [77, 87], relevance: "context" },
+  { id: "home", label: "HOME_", kicker: "HUMAN SYSTEM", rest: [14, 78], food: [18, 84], relevance: "context" },
+  { id: "materials", label: "MATERIALS_", kicker: "HUMAN SYSTEM", rest: [7, 49], food: [8, 56], relevance: "context" },
 ];
 
 const FOOD_NODES: SpatialNode[] = [
@@ -95,7 +100,7 @@ function BiologicalHumanSystems({ onEnterFood }: { onEnterFood: () => void }) {
     >
       <div className="bio-topline" aria-label="Prototype identity">
         <span>4PLANET_ / S4PIENS_ / HUMAN SYSTEMS</span>
-        <span>BIOLOGICAL INTERACTION EXPERIMENT · BI-07 / BI-04 / BI-02 / BI-03</span>
+        <span>BIOLOGICAL INTERACTION STUDY · DESIGN METAPHOR, NOT ECOLOGICAL EVIDENCE</span>
       </div>
 
       <div className="bio-intro">
