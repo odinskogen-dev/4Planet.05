@@ -55,24 +55,33 @@ jobs:
               break
           PY
 
-      - name: Public production route readback
+      - name: Visual Truth 02 production readback
         shell: bash
         run: |
           set -u
           for url in \
             https://oddekalv.org/ \
             https://www.oddekalv.org/ \
-            https://oddekalv.org/story \
-            https://oddekalv.org/manifest \
-            https://oddekalv.org/projects \
-            https://oddekalv.org/journal \
-            https://oddekalv.org/now \
-            https://oddekalv.org/contact; do
+            https://oddekalv.org/story/ \
+            https://oddekalv.org/photography/ \
+            https://oddekalv.org/journal/ \
+            https://oddekalv.org/manifest/ \
+            https://oddekalv.org/projects/; do
             code=$(curl -LsS -o /tmp/page --max-time 20 -w '%{http_code}' "$url" || true)
             title=$(tr '\n' ' ' </tmp/page 2>/dev/null | grep -oEi '<title>[^<]*</title>' | head -1 || true)
             echo "ROUTE: $url status=$code title=$title"
           done
-          echo "HOME_BRAND_MARKERS:"
-          curl -LsS --max-time 20 https://oddekalv.org/ | tr '\n' ' ' | grep -Eo 'ODIN ODDEKALV|ALT JEG ELSKER LEVER|Read the manifest' | sort -u || true
-          echo "MANIFEST_MARKERS:"
-          curl -LsS --max-time 20 https://oddekalv.org/manifest | tr '\n' ' ' | grep -Eo 'ALT JEG ELSKER LEVER|Everything I Love Is Alive|Therefore I build|For all that lives' | sort -u || true
+          home=$(curl -LsS --max-time 20 https://oddekalv.org/ || true)
+          story=$(curl -LsS --max-time 20 https://oddekalv.org/story/ || true)
+          photo=$(curl -LsS --max-time 20 https://oddekalv.org/photography/ || true)
+          echo "HOME_MARKERS:"
+          printf '%s' "$home" | grep -Eo 'Selected photography|faroe-portrait-02.jpg|mulafossur.jpg|ALT JEG ELSKER LEVER' | sort -u || true
+          echo "STORY_MARKERS:"
+          printf '%s' "$story" | grep -Eo 'LOVE → THREAT → LOSS / RESPONSIBILITY → BUILD → TOGETHER|faroe-field-walk.jpg|hope-4planet.jpg|Kurt Oddekalv' | sort -u || true
+          echo "PHOTOGRAPHY_MARKERS:"
+          printf '%s' "$photo" | grep -Eo 'The world, as I have seen it|Múlafossur|Arctic White Angel|No stock world' | sort -u || true
+          echo "IMAGE_STATUS:"
+          for img in faroe-portrait-02.jpg mulafossur.jpg arctic-white-angel.jpg long-way-home.jpg hope-4planet.jpg; do
+            code=$(curl -LsS -o /dev/null --max-time 20 -w '%{http_code}' "https://oddekalv.org/images/odin/$img" || true)
+            echo "$img=$code"
+          done
