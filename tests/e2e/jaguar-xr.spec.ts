@@ -30,7 +30,12 @@ async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) 
 }
 
 async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedTitle: RegExp) {
-  const hotspot = page.getByRole("button", { name: hotspotName }).first();
+  // Scope the interaction explicitly to the premium intelligence layer. Desktop
+  // can expose other Jaguar-labelled buttons (for example the creature/focus
+  // study), so a global role query can exercise the wrong control while mobile
+  // happens to pass because those controls are absent. The contract here is the
+  // premium hotspot itself, not any button whose accessible name contains Jaguar.
+  const hotspot = page.locator('.nature-premium-hotspot').filter({ hasText: hotspotName }).first();
   await expect(hotspot).toBeVisible();
   await hotspot.click();
   const premium = page.locator(".nature-premium");
