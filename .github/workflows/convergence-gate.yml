@@ -98,6 +98,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts
 
+      - name: E2E — LENS 01 capture proof (mobile Chromium + WebKit)
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/lens-capture.spec.ts --project=mobile-390 --project=mobile-430 --project=webkit-390 --project=webkit-430
+
       - name: E2E — WebKit vertical slice (desktop + 390 + 430)
         env:
           BASE_URL: http://127.0.0.1:4173
@@ -110,7 +115,7 @@ jobs:
           const fs = require('fs');
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
-          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join'];
+          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join', '/lens'];
           fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
           NODE
 
