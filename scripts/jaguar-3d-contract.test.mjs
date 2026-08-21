@@ -34,7 +34,7 @@ test('Founder-supplied Ear Rodriguez GLB metadata is locked without pretending r
   assert.match(renderer, /preferred\.binaryState !== 'CONTROLLED_LOCAL'/);
 });
 
-test('live bridge uses the exact Ear model and exposes multiple bounded interactions', () => {
+test('live bridge uses exact Ear model with official animation semantics and multiple bounded interactions', () => {
   assert.match(html, /nature-jaguar-sketchfab-v23\.js/);
   assert.match(html, /jaguar-ear-live-v23\.css/);
   assert.match(liveBridge, /91c61c329d2a4668816f81f08dfcd492/);
@@ -42,6 +42,10 @@ test('live bridge uses the exact Ear model and exposes multiple bounded interact
   assert.match(liveBridge, /setCurrentAnimationByUID/);
   assert.match(liveBridge, /seekTo/);
   assert.match(liveBridge, /setCameraLookAt/);
+  assert.match(liveBridge, /setCycleMode\?\.\('loopOne'\)/);
+  assert.doesNotMatch(liveBridge, /setCycleMode\?\.\('loop'\)/);
+  assert.match(liveBridge, /setBackground\?\.\(\{ color:/);
+  assert.match(liveBridge, /addEventListener\?\.\('click'/);
   assert.match(liveBridge, /LOOK AT ME/);
   assert.match(liveBridge, /MOVE/);
   assert.match(liveBridge, /DRAG JAGUAR TO TURN/);
@@ -78,6 +82,7 @@ test('Jaguar runtime remains progressive and performance bounded', () => {
   assert.match(legacyCss, /data-performance-tier=lite/);
   assert.match(liveBridge, /budgetAllows/);
   assert.match(liveBridge, /api\?\.pause/);
+  assert.match(liveBridge, /window\.innerWidth > 760/);
 });
 
 test('Gold room keeps layered rainforest depth and live creature occlusion', () => {
