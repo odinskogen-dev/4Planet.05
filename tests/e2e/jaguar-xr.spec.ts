@@ -128,8 +128,9 @@ test("Jaguar Gold v23 keeps the world first, adds live Ear 3D, adapts performanc
   await expect(page.locator(".nature-world-card__title")).toContainText(/Capybara/i);
   await expect(page.locator(".nature-depth-room__far")).toHaveCSS("display", "none");
   if (viewport && viewport.width <= 760) {
-    await expect(legacyCard).toBeVisible();
-    await expectViewportSafe(page, legacyCard, "FOLLOW RELATIONSHIP prey card");
+    // Founder mobile rule: the relationship stays in the scene + hotspots; do
+    // not stack a second legacy prey card above the authored story HUD.
+    await expect(legacyCard).toBeHidden();
   }
   await expectJourneyFrameSafe(page, root, "FOLLOW RELATIONSHIP");
 
