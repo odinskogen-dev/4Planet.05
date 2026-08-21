@@ -7,6 +7,7 @@ import CreatorEngineLab from "@/pages/v5/CreatorEngineLab";
 import HumanCapacityLab from "@/pages/v5/HumanCapacityLab";
 import LivingWorldLab from "@/pages/v5/LivingWorldLab";
 import EngineFoundryLab from "@/pages/v5/EngineFoundryLab";
+import PartnerEngineLab from "@/pages/v5/PartnerEngineLab";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
@@ -58,6 +59,7 @@ export function AppRoutes() {
       <Route path="/labs/creator/capacity" element={<HumanCapacityLab />} />
       <Route path="/labs/living-world" element={<LivingWorldLab />} />
       <Route path="/labs/engines" element={<EngineFoundryLab />} />
+      <Route path="/labs/engines/partner" element={<PartnerEngineLab />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
