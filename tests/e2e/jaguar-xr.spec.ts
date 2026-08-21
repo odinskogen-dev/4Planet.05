@@ -34,7 +34,9 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
-  const root = page.locator(".nature-world");
+  // Runtime state contracts live on the Journey root. `.nature-world` is the
+  // visual background layer only and must not become a second state surface.
+  const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-species-id", "jaguar");
   await expect(root).toHaveAttribute("data-premium-version", "17");
   await expect(root).toHaveAttribute("data-jaguar3d-mode", /manual-study|disabled/);
@@ -55,10 +57,6 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
 
   const viewport = page.viewportSize();
   if (viewport && viewport.width > 760) {
-    // Controlled species media is the default encounter. The licensed stylised 3D
-    // study is a deliberate optional focus mode and may not silently replace nature.
-    // External enhancement availability is not a release gate: if the pinned 3D
-    // runtime/model is slow or unavailable, the controlled species media must remain.
     await expect(root).toHaveAttribute("data-jaguar3d-mode", "manual-study");
     await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
     const controlledSubject = page.locator(".nature-subject");
@@ -71,15 +69,11 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
       }));
     });
 
-    // Give the optional enhancement a bounded opportunity to resolve. If it is still
-    // loading after the first grace period, wait briefly for a terminal ready/failed
-    // state before choosing the assertion branch. This avoids racing a late successful
-    // load into the fail-closed fallback assertion.
     await page.waitForTimeout(3_000);
     let threeState = await root.getAttribute("data-jaguar3d");
     if (threeState === "loading") {
       await page.waitForFunction(() => {
-        const el = document.querySelector(".nature-world");
+        const el = document.querySelector("#browser-experience");
         const state = el?.getAttribute("data-jaguar3d");
         return state !== "loading";
       }, undefined, { timeout: 5_000 }).catch(() => undefined);
