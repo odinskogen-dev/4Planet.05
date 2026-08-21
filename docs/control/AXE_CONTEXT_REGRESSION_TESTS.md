@@ -54,3 +54,24 @@ Fail: continuity depends materially on the prior chat transcript.
 
 ## Acceptance rule
 Context hardening is not `VERIFIED` merely because these instructions exist. It becomes verified only after the tests are exercised against fresh/long-running sessions and the observed failures are zero or explicitly contained/corrected. Preserve failures as evidence.
+
+---
+
+# Regression Run 01 — 22 Aug 2026 00:41 CEST
+
+Method: same-runtime blind bootstrap emulation. The reconstruction deliberately used freshly retrieved 4PLANET control surfaces and live GitHub evidence as its basis and did not use local conversation history as programme truth. This is stronger than a normal same-chat response, but it is not falsely classified as a truly independent new-chat run.
+
+| Test | Result | Evidence / limitation |
+|---|---|---|
+| CR-01 Fresh BRAIN bootstrap | PASS — EMULATED | Recovered locked Strategy v4, current WBS/control, Project Health and exact live GitHub state before current-state synthesis. |
+| CR-02 AXE semantic trigger | PARTIAL | Literal AXE trigger exercised. Semantic rule without literal AXE is persisted in Project Lead + repo instructions, but a separate independent invocation remains to be regression-tested. |
+| CR-03 Capability probe before denial | PASS | GitHub and Drive capabilities were probed and used in the current run before capability claims. |
+| CR-04 Status-level separation | PASS | Open/draft/unmerged PRs were kept distinct from Founder accepted, deployed and production states; PR #92 remains Founder-gated and production unchanged. |
+| CR-05 Autonomous production reconciliation | PASS | Agent/control state was reconciled against live heads for PRs #92, #103, #113, #115, #116, #117, #119 and #120 and written to Agent Ledger + bootstrap packet. |
+| CR-06 Stale founder surface detection | PASS | `00_FOUNDER NOW` identified as historical 4 Aug snapshot; `01_ACTIVE PROCESSES` and `02_PROJECT PORTFOLIO` identified as mixed/stale surfaces. |
+| CR-07 Material writeback/readback | PASS | `00_CURRENT BOOTSTRAP` was written inside existing Founder Control and read back; Agent Ledger and Project Lead were updated. Final supporting readbacks are part of this run. |
+| CR-08 Learning persistence | PARTIAL / STRUCTURAL PASS | Failure, root cause, changed procedure and regression suite are persisted. Longitudinal proof requires later regression runs showing non-recurrence. |
+| CR-09 Parallel ownership / duplicate-work control | PARTIAL / IMPLEMENTED | Derived execution leases now identify active seams/branches and collision rules. Must be exercised by subsequent dispatches to prove duplicate prevention. |
+| CR-10 Recovery from fresh chat | EMULATION PASS / INDEPENDENT TEST PENDING | Blind reconstruction recovered North Star, rails, current bottleneck, active artifacts, Founder gates and next safe work without Founder restatement. A truly separate ChatGPT conversation cannot be spawned from this runtime, so independent fresh-chat proof remains explicitly open. |
+
+Run 01 summary: 5 full PASS, 3 PARTIAL/STRUCTURAL, 1 EMULATION PASS, 1 PASS with explicit emulation qualifier (CR-01). No test is upgraded beyond the evidence above. The control change remains DRAFT/UNMERGED until later regression evidence is sufficient for promotion.
