@@ -212,15 +212,19 @@
       pointerLook(event.touches[0]);
     };
 
+    const syncSoundLabel = () => {
+      if (!soundButton) return;
+      soundButton.dataset.playing = String(state.soundOn);
+      soundButton.textContent = state.soundOn ? 'TURN SOUND OFF' : 'TURN SOUND ON';
+      soundButton.setAttribute('aria-pressed', String(state.soundOn));
+    };
+
     const enter = async () => {
       if (state.entered) return;
       state.entered = true;
       state.soundOn = true;
       root.classList.add('is-entered');
       root.dataset.entered = 'true';
-      // Entered and the first Journey scene are runtime state contracts, not
-      // cosmetic timer states. Commit scene 01 synchronously; the cinematic
-      // engine owns the visual travel/settle animation after that state exists.
       if (entry) {
         entry.setAttribute('aria-hidden', 'true');
         entry.style.setProperty('visibility', 'hidden', 'important');
@@ -230,8 +234,7 @@
       if (status) status.textContent = 'IMMERSIVE JOURNEY · SOURCE-AWARE';
       if (soundButton) {
         soundButton.hidden = false;
-        soundButton.dataset.playing = 'true';
-        soundButton.textContent = 'SOUND ON';
+        syncSoundLabel();
       }
       goTo(0, false);
       window.dispatchEvent(new CustomEvent('4planet:nature-browser-enter', { detail: { manifest } }));
@@ -240,8 +243,7 @@
     entryButton?.addEventListener('click', enter);
     soundButton?.addEventListener('click', () => {
       state.soundOn = !state.soundOn;
-      soundButton.dataset.playing = String(state.soundOn);
-      soundButton.textContent = state.soundOn ? 'SOUND ON' : 'SOUND OFF';
+      syncSoundLabel();
     });
     byId(root, 'nature-chapter-close')?.addEventListener('click', closeChapter);
     byId(root, 'nature-chapter-next')?.addEventListener('click', nextNode);
