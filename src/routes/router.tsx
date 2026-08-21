@@ -7,6 +7,7 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import { SapiensFrontDoor, ActorsIndex, ActorProfilePage, InnovationProfilePage } from "@/pages/integrated/SapiensSystemsProfiles";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
@@ -30,8 +31,8 @@ const WorldFallback = (
 /**
  * S4PIENS can have its own domain surface without becoming a separate product,
  * repository, map engine or truth system. Whichever of these founder-owned
- * domains is attached in Cloudflare will land directly in the same Human
- * Systems Atlas build. 4planet.org keeps its existing home route unchanged.
+ * domains is attached in Cloudflare lands in the same Human Systems product.
+ * 4planet.org keeps its existing home route unchanged.
  */
 const SAPIENS_UNIVERSE_HOSTS = new Set([
   "s4piens.com",
@@ -59,7 +60,7 @@ function MtoMission() { const { slug } = useParams(); return <Navigate to={"/mis
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
 
-function SapiensUniverseEntry() {
+function SapiensFoodEntry() {
   return <Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>;
 }
 
@@ -67,7 +68,7 @@ export function AppRoutes() {
   const sapiensHost = isSapiensUniverseHost();
   return (
     <Routes>
-      <Route path="/" element={sapiensHost ? <SapiensUniverseEntry /> : <Home />} />
+      <Route path="/" element={sapiensHost ? <SapiensFrontDoor /> : <Home />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
@@ -82,9 +83,13 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/sandbox/s4piens" element={<SapiensUniverseEntry />} />
-      <Route path="/food" element={sapiensHost ? <SapiensUniverseEntry /> : <Navigate to="/missions/food" replace />} />
-      <Route path="/human-systems" element={sapiensHost ? <SapiensUniverseEntry /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/sandbox/s4piens" element={<SapiensFoodEntry />} />
+      <Route path="/food" element={sapiensHost ? <SapiensFoodEntry /> : <Navigate to="/missions/food" replace />} />
+      <Route path="/human-systems" element={sapiensHost ? <SapiensFrontDoor /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/actors" element={<ActorsIndex />} />
+      <Route path="/actors/:slug" element={<ActorProfilePage />} />
+      <Route path="/innovations/precision-nutrient-management" element={<InnovationProfilePage />} />
+      <Route path="/innovations/:slug" element={<InnovationProfilePage />} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarWorld /></Suspense>} />
       <Route path="/species/homo-sapiens" element={<Suspense fallback={WorldFallback}><HomoSapiensWorld /></Suspense>} />
@@ -126,7 +131,7 @@ export function AppRoutes() {
       <Route path="/sponsors" element={toBrands} />
       <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
-      <Route path="/s4piens" element={sapiensHost ? <SapiensUniverseEntry /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/s4piens" element={sapiensHost ? <SapiensFrontDoor /> : <Navigate to="/domains/s4piens" replace />} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
       <Route path="/magazine" element={toHome} />
       <Route path="/system" element={toHome} />
