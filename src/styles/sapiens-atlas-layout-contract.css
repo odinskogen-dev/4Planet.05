@@ -1,0 +1,21 @@
+/* S4PIENS Atlas layout contract.
+ * MapLibre adds its own .maplibregl-map positioning. Keep the Atlas viewport
+ * explicitly dimensioned so the Earth-first Atlas remains a real rendered
+ * surface across Chromium/WebKit desktop and mobile, not merely a DOM node.
+ */
+.s4x-earth > .s4x-atlas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 1px;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.s4x-pressure-map-wrap > .s4x-atlas {
+  width: 100%;
+  height: 100%;
+  min-width: 1px;
+  min-height: 1px;
+}
