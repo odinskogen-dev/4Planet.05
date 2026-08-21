@@ -30,8 +30,10 @@
   pointer-events: none;
 }
 
-/* The base story stylesheet hides the chapter rail below 820px. Override that
- * at the contract layer: mobile must retain a compact, tappable chapter index.
+/* The base story stylesheet hides the chapter rail and FOOD causal index below
+ * 820px. Override that at the contract layer: mobile must retain both the
+ * tappable chapter index and the causal grammar needed to understand why the
+ * FOOD journey exists. Compress presentation; never delete semantic context.
  */
 @media (max-width: 820px) {
   .s4x .s4x-rail {
@@ -66,5 +68,14 @@
   .s4x .s4x-rail button i {
     width: 6px;
     height: 6px;
+  }
+
+  .s4x .s4x-food-cinema-index {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 7.5px;
+    line-height: 1.55;
+    letter-spacing: .08em;
   }
 }
