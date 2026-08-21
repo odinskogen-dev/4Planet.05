@@ -11,9 +11,13 @@ test.describe("CRE4TORS_ v02", () => {
 
     const metric = page.locator(".c4-tax-panel strong").first();
     const before = await metric.textContent();
-    await page.getByLabel("Demo system effectiveness").fill("80");
-    const after = await metric.textContent();
-    expect(after).not.toBe(before);
+    await page.getByLabel("Demo system effectiveness").evaluate((element) => {
+      const input = element as HTMLInputElement;
+      input.value = "80";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await expect(metric).not.toHaveText(before ?? "");
 
     await page.getByRole("tab", { name: "MUSICIAN" }).click();
     await expect(page.locator(".c4-archetype-main").getByRole("heading", { name: "Musician" })).toBeVisible();
