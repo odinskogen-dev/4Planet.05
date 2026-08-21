@@ -1,0 +1,175 @@
+/* 4PLANET Jaguar MASTER v26 — premium encounter room + eight-stage Journey.
+   Jaguar master: PR #79 / agent/jaguar-journey-v11.
+   Presentation-only styling. Ecological truth remains canonical. */
+
+.nature-browser[data-jaguar-local-runtime="v26"] .nature-ear-live-v23{display:none!important;}
+
+.nature-browser[data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26{
+  display:block!important;
+  position:fixed!important;
+  z-index:29!important;
+  inset:7vh 2vw 9vh 25vw!important;
+  width:auto!important;
+  height:auto!important;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translate3d(2%,1%,0) scale(.975);
+  transition:opacity .55s ease,transform 1s cubic-bezier(.2,.75,.2,1);
+  contain:layout paint style;
+}
+.nature-browser[data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26[data-visible="true"][data-ready="true"]{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  cursor:grab;
+}
+.nature-browser[data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26[data-dragging="true"]{cursor:grabbing;}
+.nature-browser:not([data-cinematic-scene="identity"]) .nature-3d-subject--room-v26{display:none!important;}
+
+.nature-3d-subject--room-v26 .nature-3d-subject__viewport{
+  position:absolute;
+  inset:0;
+  isolation:isolate;
+  touch-action:none;
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__viewport canvas{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  background:transparent!important;
+  touch-action:none;
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__halo{
+  position:absolute;
+  inset:14% 4% 6% 7%;
+  z-index:-2;
+  opacity:.34;
+  background:radial-gradient(ellipse at 55% 58%,rgba(88,174,105,.12),rgba(0,8,3,.03) 48%,transparent 75%);
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__depth{
+  position:absolute;
+  left:18%;right:9%;bottom:0;height:17%;
+  z-index:-1;
+  opacity:.64;
+  background:radial-gradient(ellipse at 52% 50%,rgba(0,0,0,.62) 0 24%,rgba(0,0,0,.28) 47%,transparent 76%);
+  transform:perspective(600px) rotateX(70deg);
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__scan{
+  position:absolute;
+  inset:10% 7% 13%;
+  pointer-events:none;
+  opacity:calc(var(--jaguar-reveal,0) * .32);
+  background:linear-gradient(180deg,transparent 0 46%,rgba(58,232,111,.16) 49%,rgba(58,232,111,.02) 52%,transparent 57%);
+  mix-blend-mode:screen;
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__gesture{
+  position:absolute;
+  left:7%;bottom:4.5%;z-index:4;
+  display:flex;gap:9px;align-items:center;
+  pointer-events:none;
+  font:600 6px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.11em;color:rgba(255,255,255,.38);
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__gesture b{color:rgba(58,232,111,.78);font-weight:700;}
+.nature-3d-subject--room-v26 .nature-3d-subject__controls{
+  position:absolute;right:4%;bottom:4.5%;z-index:5;display:flex;gap:7px;
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__controls button{
+  min-height:34px;
+  border:1px solid rgba(58,232,111,.35);
+  background:rgba(2,9,4,.78);
+  backdrop-filter:blur(10px);
+  color:#e8ffed;
+  padding:8px 11px;
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.12em;
+  cursor:pointer;
+}
+.nature-3d-subject--room-v26 .nature-3d-subject__controls button:hover,
+.nature-3d-subject--room-v26 .nature-3d-subject__controls button:focus-visible{border-color:#3ae86f;color:#3ae86f;outline:none;}
+
+/* The authored 3D room is the Encounter subject. Controlled photo remains fail-closed fallback only. */
+.nature-browser[data-jaguar3d="local-room-ready"] .nature-subject,
+.nature-browser[data-jaguar3d-active="true"][data-jaguar-local-runtime="v26"] .nature-subject{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+
+/* Keep near photographic vegetation in front of the 3D canvas for a hybrid physical room. */
+.nature-browser[data-jaguar-local-runtime="v26"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-jaguar-local-runtime="v26"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+  display:block!important;z-index:31!important;pointer-events:none!important;opacity:.62!important;
+}
+.nature-browser[data-jaguar-local-runtime="v26"][data-cinematic-scene="identity"] .nature-depth-room__canopy{
+  display:block!important;z-index:30!important;pointer-events:none!important;opacity:.58!important;
+}
+
+/* The physical Encounter room must not leak into later authored frames. */
+.nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__far,
+.nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__mid,
+.nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__canopy,
+.nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__foreground-left,
+.nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__foreground-right{display:none!important;}
+
+/* Eight stages: one restrained rail, not a second dashboard. */
+.nature-browser[data-master-line="PR79"] .nature-progress{
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:0!important;
+  background:rgba(1,7,3,.78)!important;
+  backdrop-filter:blur(14px);
+}
+.nature-browser[data-master-line="PR79"] .nature-progress__step{
+  min-width:0!important;
+  padding-inline:7px!important;
+}
+.nature-browser[data-master-line="PR79"] .nature-progress__step b{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* Final frames stay visually distinct while using the same 4PLANET black-box grammar. */
+.nature-browser[data-cinematic-scene="actors"] .nature-premium__panel,
+.nature-browser[data-cinematic-scene="action"] .nature-premium__panel,
+.nature-browser[data-cinematic-scene="proof"] .nature-premium__panel{
+  background:linear-gradient(180deg,rgba(5,12,7,.92),rgba(2,7,4,.88))!important;
+  border-color:rgba(58,232,111,.2)!important;
+}
+.nature-browser[data-cinematic-scene="action"] .nature-premium-module:last-child{
+  opacity:.7;
+  border-style:dashed!important;
+}
+.nature-browser[data-cinematic-scene="proof"] .nature-premium__title{max-width:16ch;}
+
+/* Lite: keep creature and room silhouette; remove costly atmosphere first. */
+.nature-browser[data-runtime-budget="lite"][data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26{display:block!important;}
+.nature-browser[data-runtime-budget="lite"] .nature-3d-subject--room-v26 .nature-3d-subject__halo,
+.nature-browser[data-runtime-budget="lite"] .nature-3d-subject--room-v26 .nature-3d-subject__scan{display:none!important;}
+
+@media(max-width:760px){
+  .nature-browser[data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26{
+    inset:9vh -18vw 22vh -16vw!important;
+    z-index:29!important;
+  }
+  .nature-3d-subject--room-v26 .nature-3d-subject__gesture{left:16%;bottom:3.5%;}
+  .nature-3d-subject--room-v26 .nature-3d-subject__gesture span{display:none;}
+  .nature-3d-subject--room-v26 .nature-3d-subject__controls{right:16%;bottom:3.5%;}
+  .nature-3d-subject--room-v26 .nature-3d-subject__controls button{min-height:32px;padding:7px 8px;font-size:6px;}
+  .nature-browser[data-master-line="PR79"] .nature-progress{
+    display:flex!important;
+    overflow-x:auto!important;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+    scroll-snap-type:x proximity;
+  }
+  .nature-browser[data-master-line="PR79"] .nature-progress::-webkit-scrollbar{display:none;}
+  .nature-browser[data-master-line="PR79"] .nature-progress__step{
+    flex:0 0 88px!important;
+    scroll-snap-align:center;
+  }
+  .nature-browser[data-master-line="PR79"] .nature-progress__step b{font-size:6px!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-jaguar-local-runtime="v26"] .nature-3d-subject--room-v26{transition:none!important;}
+  .nature-3d-subject--room-v26 .nature-3d-subject__scan{display:none!important;}
+}
