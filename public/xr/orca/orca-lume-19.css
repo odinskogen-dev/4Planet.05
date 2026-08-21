@@ -1,0 +1,118 @@
+/* ORCA LUME 19 — Pass 01 / LUME foundation
+   Presentation layer only. Existing Journey truth, identity and evidence remain authoritative. */
+
+.nature-browser{
+  --lume-white:#f7fdff;
+  --lume-ice:#dff8ff;
+  --lume-blue:#8de8ff;
+  --lume-cyan:#56d8ff;
+  --lume-deep:#02101b;
+  --lume-rgb:141,232,255;
+}
+
+/* Founder direction: ORCA Light/LUME is predominantly pale blue + white. */
+.nature-browser[data-light-lens="true"]{
+  --light-lens-accent:var(--lume-blue)!important;
+  --light-lens-soft:var(--lume-white)!important;
+  --light-lens-rgb:var(--lume-rgb)!important;
+  color:var(--lume-white);
+  background:
+    radial-gradient(circle at 61% 43%,rgba(86,216,255,.12),transparent 26%),
+    radial-gradient(circle at 48% 74%,rgba(141,232,255,.08),transparent 38%),
+    linear-gradient(180deg,#020a12 0%,#01070d 52%,#010408 100%)!important;
+}
+
+/* Remove coloured-tech feel; make controls read as projected instruments. */
+.nature-browser[data-light-lens="true"] .light-lens-colour{display:none!important}
+.nature-browser[data-light-lens="true"] .light-lens-toggle{
+  color:var(--lume-white)!important;
+  border-color:rgba(var(--lume-rgb),.42)!important;
+  background:rgba(1,13,23,.42)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 0 24px rgba(86,216,255,.08)!important;
+  backdrop-filter:none!important;
+}
+.nature-browser[data-light-lens="true"] .light-lens-toggle[aria-pressed="true"]{
+  color:#011019!important;
+  background:var(--lume-white)!important;
+  box-shadow:0 0 34px rgba(141,232,255,.28)!important;
+}
+
+/* Projection volume: calm, spatial and luminous instead of neon dashboard. */
+.nature-browser[data-light-lens="true"] .light-lens-layer:before{
+  background:
+    radial-gradient(ellipse at 62% 46%,rgba(247,253,255,.055) 0%,rgba(141,232,255,.035) 28%,transparent 58%),
+    linear-gradient(180deg,rgba(2,16,27,.12),rgba(0,4,8,.82))!important;
+}
+.nature-browser[data-light-lens="true"] .light-lens-room-grid{
+  opacity:.24!important;
+  background-image:
+    linear-gradient(rgba(141,232,255,.11) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(141,232,255,.11) 1px,transparent 1px)!important;
+  background-size:64px 64px!important;
+}
+.nature-browser[data-light-lens="true"] .light-lens-horizon{
+  opacity:.30!important;
+  background:linear-gradient(90deg,transparent,rgba(247,253,255,.62),transparent)!important;
+  box-shadow:0 0 30px rgba(141,232,255,.18)!important;
+}
+
+/* Luminous editorial typography. */
+.nature-browser[data-light-lens="true"] .light-lens-caption{
+  max-width:390px;
+  text-shadow:0 0 22px rgba(141,232,255,.08);
+}
+.nature-browser[data-light-lens="true"] .light-lens-caption__mode{
+  color:rgba(223,248,255,.74)!important;
+  letter-spacing:.24em!important;
+}
+.nature-browser[data-light-lens="true"] .light-lens-caption strong{
+  color:var(--lume-white)!important;
+  font-weight:340!important;
+  letter-spacing:-.065em!important;
+  text-shadow:0 0 28px rgba(141,232,255,.13);
+}
+.nature-browser[data-light-lens="true"] .light-lens-caption em{
+  color:rgba(223,248,255,.035)!important;
+  -webkit-text-stroke:1px rgba(223,248,255,.68)!important;
+  text-shadow:0 0 20px rgba(141,232,255,.14);
+}
+.nature-browser[data-light-lens="true"] .light-lens-caption p{color:rgba(223,248,255,.62)!important}
+
+/* Projected panels / borders. */
+.nature-browser[data-light-lens="true"] .nature-journey-hud__copy,
+.nature-browser[data-light-lens="true"] .nature-premium__panel,
+.nature-browser[data-light-lens="true"] .nature-premium__detail,
+.nature-browser[data-light-lens="true"] .nature-chapter{
+  background:linear-gradient(135deg,rgba(3,20,31,.78),rgba(2,12,20,.48))!important;
+  border-color:rgba(141,232,255,.22)!important;
+  box-shadow:inset 0 0 0 1px rgba(247,253,255,.025),0 16px 70px rgba(0,0,0,.28),0 0 36px rgba(86,216,255,.045)!important;
+  backdrop-filter:none!important;
+}
+.nature-browser[data-light-lens="true"] .nature-journey-hud__copy{border-left:1px solid rgba(223,248,255,.50)!important}
+.nature-browser[data-light-lens="true"] .nature-journey-hud__stage,
+.nature-browser[data-light-lens="true"] .nature-premium__kicker{color:var(--lume-ice)!important}
+
+/* Fine projected rails. */
+.nature-browser[data-light-lens="true"] .nature-progress{
+  border-color:rgba(141,232,255,.16)!important;
+  box-shadow:0 0 30px rgba(86,216,255,.025)!important;
+}
+.nature-browser[data-light-lens="true"] .nature-progress__step{
+  border-color:rgba(141,232,255,.12)!important;
+  color:rgba(223,248,255,.54)!important;
+}
+.nature-browser[data-light-lens="true"] .nature-progress__step[data-active="true"]{
+  border-color:rgba(223,248,255,.66)!important;
+  background:rgba(141,232,255,.055)!important;
+  color:var(--lume-white)!important;
+  box-shadow:0 0 24px rgba(86,216,255,.07)!important;
+}
+
+@media(max-width:760px){
+  .nature-browser[data-light-lens="true"] .light-lens-room-grid{background-size:42px 42px!important;opacity:.18!important}
+  .nature-browser[data-light-lens="true"] .light-lens-caption{max-width:270px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-light-lens="true"] *{scroll-behavior:auto!important}
+}
