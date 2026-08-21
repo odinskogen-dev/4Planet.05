@@ -134,9 +134,13 @@
       dependency: .095,
       habitat: .12,
       pressure: .045,
-      response: .105
+      response: .105,
+      actors: .09,
+      action: .082,
+      proof: .118
     }[state] ?? .09;
     ambient.volume = enabled ? clamp(target, 0, .16) : 0;
+    root()?.setAttribute('data-field-audio-chapter', state || 'identity');
   };
 
   const start = async () => {
@@ -200,5 +204,5 @@
     try { ctx?.close?.(); } catch { /* no-op */ }
   }, { once: true });
 
-  window.NatureFieldAudioV19 = { start, playDesignedPresenceCue };
+  window.NatureFieldAudioV19 = { start, playDesignedPresenceCue, setAmbientLevel };
 })();
