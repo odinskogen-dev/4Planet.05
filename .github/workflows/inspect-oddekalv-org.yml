@@ -1,0 +1,87 @@
+name: Inspect oddekalv.org Cloudflare state
+
+on:
+  push:
+    branches:
+      - ops/oddekalv-domain
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect zone, DNS and Pages status
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse, urllib.error
+          token=os.environ['CF_API_TOKEN']; api='https://api.cloudflare.com/client/v4'; domain='oddekalv.org'
+          def cf(method,path,payload=None):
+              data=None if payload is None else json.dumps(payload).encode()
+              req=urllib.request.Request(api+path,data=data,method=method,headers={'Authorization':f'Bearer {token}','Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try:return json.loads(e.read().decode())
+                  except Exception:return {'success':False,'errors':[{'message':str(e)}]}
+          accounts=cf('GET','/accounts?per_page=50')
+          for acct in accounts.get('result',[]):
+              aid=acct['id']
+              zones=cf('GET','/zones?name='+urllib.parse.quote(domain)+'&account.id='+aid+'&per_page=50')
+              if not (zones.get('success') and zones.get('result')): continue
+              z=zones['result'][0]; zid=z['id']
+              print('ZONE_STATUS:',z.get('status'))
+              recs=cf('GET',f'/zones/{zid}/dns_records?per_page=100')
+              for r in recs.get('result',[]):
+                  if r.get('name') in {domain,'www.'+domain}:
+                      print('DNS_RECORD:',r.get('type'),r.get('name'),'->',r.get('content'),'proxied=',r.get('proxied'))
+              projects=cf('GET',f'/accounts/{aid}/pages/projects')
+              for p in projects.get('result',[]):
+                  if p.get('name')=='odinoddekalv' or p.get('subdomain')=='odinoddekalv.pages.dev':
+                      print('PAGES_PROJECT:',p.get('name'),p.get('subdomain'),'production_branch=',p.get('production_branch'))
+                      ds=cf('GET',f"/accounts/{aid}/pages/projects/{p['name']}/domains")
+                      for d in ds.get('result',[]):
+                          if d.get('name') in {domain,'www.'+domain}:
+                              print('PAGES_DOMAIN:',d.get('name'),'status=',d.get('status'))
+                      break
+              break
+          PY
+
+      - name: Visual Truth 02 production readback
+        shell: bash
+        run: |
+          set -u
+          for url in \
+            https://oddekalv.org/ \
+            https://www.oddekalv.org/ \
+            https://oddekalv.org/story/ \
+            https://oddekalv.org/photography/ \
+            https://oddekalv.org/journal/ \
+            https://oddekalv.org/manifest/ \
+            https://oddekalv.org/projects/; do
+            code=$(curl -LsS -o /tmp/page --max-time 20 -w '%{http_code}' "$url" || true)
+            title=$(tr '\n' ' ' </tmp/page 2>/dev/null | grep -oEi '<title>[^<]*</title>' | head -1 || true)
+            echo "ROUTE: $url status=$code title=$title"
+          done
+          home=$(curl -LsS --max-time 20 https://oddekalv.org/ || true)
+          story=$(curl -LsS --max-time 20 https://oddekalv.org/story/ || true)
+          photo=$(curl -LsS --max-time 20 https://oddekalv.org/photography/ || true)
+          echo "HOME_MARKERS:"
+          printf '%s' "$home" | grep -Eo 'Selected photography|faroe-portrait-02.jpg|mulafossur.jpg|ALT JEG ELSKER LEVER' | sort -u || true
+          echo "STORY_MARKERS:"
+          printf '%s' "$story" | grep -Eo 'LOVE → THREAT → LOSS / RESPONSIBILITY → BUILD → TOGETHER|faroe-field-walk.jpg|hope-4planet.jpg|Kurt Oddekalv' | sort -u || true
+          echo "PHOTOGRAPHY_MARKERS:"
+          printf '%s' "$photo" | grep -Eo 'The world, as I have seen it|Múlafossur|Arctic White Angel|No stock world' | sort -u || true
+          echo "IMAGE_STATUS:"
+          for img in faroe-portrait-02.jpg mulafossur.jpg arctic-white-angel.jpg long-way-home.jpg hope-4planet.jpg; do
+            code=$(curl -LsS -o /dev/null --max-time 20 -w '%{http_code}' "https://oddekalv.org/images/odin/$img" || true)
+            echo "$img=$code"
+          done
