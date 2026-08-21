@@ -112,16 +112,19 @@
 .nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__foreground-left,
 .nature-browser:is([data-cinematic-scene="dependency"],[data-cinematic-scene="habitat"],[data-cinematic-scene="pressure"],[data-cinematic-scene="response"],[data-cinematic-scene="actors"],[data-cinematic-scene="action"],[data-cinematic-scene="proof"]) .nature-depth-room__foreground-right{display:none!important;}
 
-/* Eight stages: one restrained rail, not a second dashboard. */
+/* Eight stages: one restrained desktop rail. Mobile uses the single HUD counter to avoid overlap. */
 .nature-browser[data-master-line="PR79"] .nature-progress{
+  display:grid!important;
   grid-template-columns:repeat(8,minmax(0,1fr))!important;
-  gap:0!important;
-  background:rgba(1,7,3,.78)!important;
+  width:min(640px,calc(100vw - 440px))!important;
+  gap:1px!important;
+  background:rgba(1,7,3,.72)!important;
   backdrop-filter:blur(14px);
 }
 .nature-browser[data-master-line="PR79"] .nature-progress__step{
   min-width:0!important;
-  padding-inline:7px!important;
+  padding:9px 7px!important;
+  justify-content:center;
 }
 .nature-browser[data-master-line="PR79"] .nature-progress__step b{
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -154,19 +157,7 @@
   .nature-3d-subject--room-v26 .nature-3d-subject__gesture span{display:none;}
   .nature-3d-subject--room-v26 .nature-3d-subject__controls{right:16%;bottom:3.5%;}
   .nature-3d-subject--room-v26 .nature-3d-subject__controls button{min-height:32px;padding:7px 8px;font-size:6px;}
-  .nature-browser[data-master-line="PR79"] .nature-progress{
-    display:flex!important;
-    overflow-x:auto!important;
-    overscroll-behavior-x:contain;
-    scrollbar-width:none;
-    scroll-snap-type:x proximity;
-  }
-  .nature-browser[data-master-line="PR79"] .nature-progress::-webkit-scrollbar{display:none;}
-  .nature-browser[data-master-line="PR79"] .nature-progress__step{
-    flex:0 0 88px!important;
-    scroll-snap-align:center;
-  }
-  .nature-browser[data-master-line="PR79"] .nature-progress__step b{font-size:6px!important;}
+  .nature-browser[data-master-line="PR79"] .nature-progress{display:none!important;}
 }
 
 @media(prefers-reduced-motion:reduce){
