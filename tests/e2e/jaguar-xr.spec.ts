@@ -15,52 +15,68 @@ async function expectViewportSafe(page: Page, locator: Locator, label: string) {
 
 async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) {
   await expect(root).toBeVisible();
-  await expectViewportSafe(page, page.locator(".nature-premium__panel"), `${label} panel`);
-  await expectViewportSafe(page, page.locator(".nature-premium__progress"), `${label} progress`);
-  await expectViewportSafe(page, page.locator(".nature-premium__chapter-nav"), `${label} chapter nav`);
+  const hud = page.locator(".nature-journey-hud");
+  await expect(hud).toBeVisible();
+  await expectViewportSafe(page, hud, `${label} HUD`);
+  await expect(page.locator(".nature-premium__panel")).toBeHidden();
+
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 760) {
+    await expect(page.locator(".nature-context-ribbon")).toBeHidden();
+    await expect(page.locator(".nature-premium__audio")).toBeHidden();
+    const visibleHotspots = page.locator('.nature-premium-hotspot:visible');
+    expect(await visibleHotspots.count(), `${label} mobile hotspot budget`).toBeLessThanOrEqual(2);
+  }
 }
 
-async function exercisePremiumHotspot(page: Page, root: Locator, hotspotName: RegExp, expectedTitle: RegExp) {
+async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedTitle: RegExp) {
   const hotspot = page.getByRole("button", { name: hotspotName }).first();
   await expect(hotspot).toBeVisible();
   await hotspot.click();
-  await expect(root).toHaveAttribute("data-context-open", "true");
-  await expect(page.locator(".nature-world-card__title")).toContainText(expectedTitle);
-  await page.keyboard.press("Escape");
-  await expect(root).toHaveAttribute("data-context-open", "false");
+  const premium = page.locator(".nature-premium");
+  await expect(premium).toHaveAttribute("data-detail-open", "true");
+  await expect(page.locator(".nature-premium__detail-title")).toContainText(expectedTitle);
+  await page.locator('.nature-premium__detail button[aria-label="Close hotspot detail"]').click();
+  await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar premium Browser Journey travels through distinct scenes with authored world interaction before evidence", async ({ page }, testInfo) => {
+test("Jaguar Gold Browser Journey stays world-first and travels through distinct scenes", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
-  // Runtime state contracts live on the Journey root. `.nature-world` is the
-  // visual background layer only and must not become a second state surface.
   const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-species-id", "jaguar");
   await expect(root).toHaveAttribute("data-premium-version", "17");
   await expect(root).toHaveAttribute("data-jaguar3d-mode", /manual-study|disabled/);
 
-  await expect(page.locator(".nature-premium__enter")).toBeVisible();
-  await page.locator(".nature-premium__enter").click();
+  const enter = page.locator(".nature-entry__button");
+  await expect(enter).toBeVisible();
+  await expect(page.locator(".nature-premium__enter")).toHaveCount(0);
+  await enter.click();
   await expect(root).toHaveAttribute("data-entered", "true");
+
+  const sound = page.locator(".nature-sound");
+  await expect(sound).toBeVisible();
+  await expect(sound).toHaveText(/TURN SOUND OFF/i);
+  await expect(sound).toHaveAttribute("aria-pressed", "true");
 
   const legacyCard = page.locator(".nature-world-card");
   await expect(legacyCard).toHaveAttribute("data-type", "identity");
   await expect(page.locator(".nature-world-card__title")).toContainText(/Jaguar/i);
   await expect(page.locator(".nature-world-card__scientific")).toContainText(/Panthera onca/i);
 
-  await expect(page.locator(".nature-premium__panel")).toBeVisible();
+  await expect(root).toHaveAttribute("data-scene-state", "identity");
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
   await expect(page.locator(".nature-premium__title")).toContainText(/Meet one life/i);
-  await exercisePremiumHotspot(page, root, /JAGUAR/i, /JAGUAR/i);
+  await exercisePremiumHotspot(page, /JAGUAR/i, /JAGUAR/i);
   await expectJourneyFrameSafe(page, root, "MEET LIFE");
 
   const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 760) {
+    await expect(legacyCard).toBeHidden();
+  }
+
   if (viewport && viewport.width > 760) {
-    // Controlled species media is the default encounter. The licensed stylised 3D
-    // study is a deliberate optional focus mode and may not silently replace nature.
-    // External enhancement availability is not a release gate: if the pinned 3D
-    // runtime/model is slow or unavailable, the controlled species media must remain.
     await expect(root).toHaveAttribute("data-jaguar3d-mode", "manual-study");
     await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
     const controlledSubject = page.locator(".nature-subject");
@@ -73,10 +89,6 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
       }));
     });
 
-    // Give the optional enhancement a bounded opportunity to resolve. If it is still
-    // loading after the first grace period, wait briefly for a terminal ready/failed
-    // state before choosing the assertion branch. This avoids racing a late successful
-    // load into the fail-closed fallback assertion.
     await page.waitForTimeout(3_000);
     let threeState = await root.getAttribute("data-jaguar3d");
     if (threeState === "loading") {
@@ -96,7 +108,6 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
       await expect(threeStudy.locator("canvas")).toBeVisible();
       await expect(page.locator(".nature-3d-subject__meta")).toContainText(/POLY BY GOOGLE|CC BY 3\.0/i);
       await expectViewportSafe(page, threeStudy, "MEET LIFE optional 3D Jaguar study");
-
       const box = await threeStudy.boundingBox();
       if (box) {
         await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.48);
@@ -105,12 +116,10 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
         await page.mouse.up();
         await expect(threeStudy).toHaveAttribute("data-dragging", "false");
       }
-      await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-3d-optional.png`, fullPage: true });
     } else {
       await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
       await expect(controlledSubject).toBeVisible();
       await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
-      await page.screenshot({ path: `${OUT}/${testInfo.project.name}-journey-v17-01-meet-controlled-fallback.png`, fullPage: true });
     }
 
     await page.evaluate(() => {
@@ -119,26 +128,44 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
       }));
     });
     await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
-    await expect(controlledSubject).toHaveAttribute("data-three-replaced", "false");
   } else {
     await expect(root).not.toHaveAttribute("data-jaguar3d-active", "true");
   }
 
-  const next = page.getByRole("button", { name: /Next chapter/i });
-  await next.click();
-  await expect(page.locator(".nature-premium__title")).toContainText(/Follow the relationship/i);
-  await expectJourneyFrameSafe(page, root, "FOLLOW RELATIONSHIP");
+  const next = page.locator(".nature-journey-hud__next");
 
   await next.click();
-  await expect(page.locator(".nature-premium__title")).toContainText(/animal is not the whole story/i);
+  await expect(root).toHaveAttribute("data-scene-state", "dependency");
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/Follow the relationship/i);
+  await expect(legacyCard).toHaveAttribute("data-type", "relationship");
+  await expect(page.locator(".nature-world-card__title")).toContainText(/Capybara/i);
+  if (viewport && viewport.width <= 760) {
+    await expect(legacyCard).toBeVisible();
+    await expectViewportSafe(page, legacyCard, "FOLLOW RELATIONSHIP prey card");
+  }
+  await expectJourneyFrameSafe(page, root, "FOLLOW RELATIONSHIP");
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v18-02-prey.png`, fullPage: true });
+
+  await next.click();
+  await expect(root).toHaveAttribute("data-scene-state", "habitat");
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/animal is not the whole story/i);
+  if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "CONNECTED HABITAT");
 
   await next.click();
-  await expect(page.locator(".nature-premium__title")).toContainText(/landscape changes/i);
+  await expect(root).toHaveAttribute("data-scene-state", "pressure");
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/landscape changes/i);
+  if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "PRESSURE");
 
   await next.click();
-  await expect(page.locator(".nature-premium__title")).toContainText(/Pressure is not the destination/i);
+  await expect(root).toHaveAttribute("data-scene-state", "response");
+  await expect(page.locator(".nature-journey-hud__title")).toContainText(/Pressure is not the destination/i);
+  if (viewport && viewport.width <= 760) await expect(legacyCard).toBeHidden();
   await expectJourneyFrameSafe(page, root, "RESPOND");
-  await expect(page.getByRole("link", { name: /Explore solutions/i })).toBeVisible();
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-gold-v18-05-response.png`, fullPage: true });
+
+  await sound.click();
+  await expect(sound).toHaveText(/TURN SOUND ON/i);
+  await expect(sound).toHaveAttribute("aria-pressed", "false");
 });
