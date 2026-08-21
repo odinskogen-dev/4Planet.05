@@ -113,6 +113,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/jaguar-xr.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-desktop --project=webkit-390
 
+      - name: E2E — Orca LUME on Chromium + WebKit desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/orca-lume.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-desktop --project=webkit-390
+
       - name: Internal route control
         shell: bash
         run: |
@@ -121,11 +126,11 @@ jobs:
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
           const required = [
-            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/journey/jaguar/', '/xr/jaguar/',
+            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/journey/jaguar/', '/journey/orca/', '/xr/jaguar/',
             '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
             '/missions/wh4les', '/join'
           ];
-          for (const route of ['/journey/jaguar/index.html', '/xr/jaguar/index.html']) {
+          for (const route of ['/journey/jaguar/index.html', '/journey/orca/index.html', '/xr/jaguar/index.html']) {
             const file = `dist${route}`;
             if (!fs.existsSync(file)) throw new Error(`Static immersive route missing: ${file}`);
           }
