@@ -1,0 +1,87 @@
+name: Inspect oddekalv.org Cloudflare state
+
+on:
+  push:
+    branches:
+      - ops/oddekalv-domain
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect zone, DNS, Pages and registrar
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse, urllib.error
+
+          token = os.environ['CF_API_TOKEN']
+          api = 'https://api.cloudflare.com/client/v4'
+          domain = 'oddekalv.org'
+
+          def cf(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              req = urllib.request.Request(api + path, data=data, method=method,
+                  headers={'Authorization': f'Bearer {token}', 'Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try: return json.loads(e.read().decode())
+                  except Exception: return {'success':False,'errors':[{'message':str(e)}]}
+
+          accounts = cf('GET','/accounts?per_page=50')
+          print('ACCOUNTS_SUCCESS:', accounts.get('success'))
+          found = False
+          for acct in accounts.get('result', []):
+              aid = acct['id']
+              zones = cf('GET','/zones?name=' + urllib.parse.quote(domain) + '&account.id=' + aid + '&per_page=50')
+              if not (zones.get('success') and zones.get('result')):
+                  continue
+              z = zones['result'][0]
+              zid = z['id']
+              found = True
+              print('ACCOUNT:', acct.get('name'))
+              print('ZONE_STATUS:', z.get('status'))
+              print('ZONE_PAUSED:', z.get('paused'))
+              print('ZONE_TYPE:', z.get('type'))
+              print('CLOUDFLARE_NAMESERVERS:', ', '.join(z.get('name_servers') or []))
+              print('ORIGINAL_REGISTRAR:', z.get('original_registrar'))
+
+              recs = cf('GET', f'/zones/{zid}/dns_records?per_page=100')
+              print('DNS_SUCCESS:', recs.get('success'))
+              for r in recs.get('result', []):
+                  if r.get('name') in {domain, 'www.'+domain}:
+                      print('DNS_RECORD:', r.get('type'), r.get('name'), '->', r.get('content'), 'proxied=', r.get('proxied'))
+
+              projects = cf('GET', f'/accounts/{aid}/pages/projects')
+              for p in projects.get('result', []):
+                  if p.get('name') == 'odinoddekalv' or p.get('subdomain') == 'odinoddekalv.pages.dev':
+                      print('PAGES_PROJECT:', p.get('name'), p.get('subdomain'), 'production_branch=', p.get('production_branch'))
+                      ds = cf('GET', f"/accounts/{aid}/pages/projects/{p['name']}/domains")
+                      for d in ds.get('result', []):
+                          if d.get('name') in {domain, 'www.'+domain}:
+                              print('PAGES_DOMAIN:', d.get('name'), 'status=', d.get('status'))
+                      break
+              break
+          print('ZONE_FOUND:', found)
+          PY
+
+      - name: Public DNS readback
+        shell: bash
+        run: |
+          echo "PUBLIC_NS:"
+          dig +short NS oddekalv.org || true
+          echo "PUBLIC_A:"
+          dig +short A oddekalv.org || true
+          echo "PUBLIC_CNAME_WWW:"
+          dig +short CNAME www.oddekalv.org || true
