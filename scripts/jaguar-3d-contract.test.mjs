@@ -6,8 +6,8 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const manifest = JSON.parse(read('public/xr/scenes/jaguar.json'));
 const creature = JSON.parse(read('public/journey/jaguar/creature-v19.json'));
 const html = read('public/journey/jaguar/index.html');
-const localRenderer = read('public/xr/engine/nature-jaguar-local-v25.js');
-const localCss = read('public/xr/jaguar/jaguar-ear-local-v25.css');
+const localRenderer = read('public/xr/engine/nature-jaguar-local-v26.js');
+const localCss = read('public/xr/jaguar/jaguar-master-v26.css');
 const choreography = read('public/xr/engine/nature-creature-choreography-v19.js');
 const fieldAudio = read('public/xr/engine/nature-field-audio-v19.js');
 const goldCss = read('public/xr/jaguar/jaguar-gold-v19.css');
@@ -26,14 +26,15 @@ test('Founder-supplied Ear Rodriguez asset metadata and licence are locked', () 
   assert.equal(creature.actor.preferred.uploadedCandidate.animationDurationSeconds, 14.667);
 });
 
-test('Journey uses first-party local Three.js creature runtime rather than blocked Sketchfab iframe', () => {
-  assert.match(html, /jaguar-ear-local-v25\.css/);
+test('Journey uses first-party local Three.js creature runtime inside the authored v26 jungle room rather than a blocked iframe', () => {
+  assert.match(html, /jaguar-master-v26\.css/);
   assert.match(html, /jaguar-ear-proxy-v25\.js/);
-  assert.match(html, /nature-jaguar-local-v25\.js/);
+  assert.match(html, /nature-jaguar-local-v26\.js/);
   assert.doesNotMatch(html, /nature-jaguar-sketchfab-v23\.js|jaguar-ear-live-v23\.css|<iframe/i);
   assert.match(localRenderer, /new THREE\.WebGLRenderer/);
   assert.match(localRenderer, /JaguarEarProxyV25/);
-  assert.match(localRenderer, /local-proxy-ready/);
+  assert.match(localRenderer, /jaguar-authored-jungle-room-v26/);
+  assert.match(localRenderer, /local-room-ready/);
 });
 
 test('local creature exposes bounded interactions and shared choreography', () => {
@@ -51,15 +52,15 @@ test('local creature exposes bounded interactions and shared choreography', () =
 
 test('mobile and lite runtime keep the creature and simplify secondary effects', () => {
   assert.match(localRenderer, /runtimeBudget\(\) === 'full' \? 1000 \/ 40 : runtimeBudget\(\) === 'balanced' \? 1000 \/ 30 : 1000 \/ 24/);
-  assert.match(localRenderer, /return Math\.min\(dpr, \.85\)/);
-  assert.match(localCss, /@media\(max-width:760px\)[\s\S]*nature-3d-subject--v25[\s\S]*display:block!important/);
-  assert.match(localCss, /data-runtime-budget="lite"[\s\S]*nature-3d-subject--v25\{display:block!important/);
-  assert.doesNotMatch(localCss, /@media\(max-width:760px\)[\s\S]*nature-3d-subject--v25\{[^}]*display:none!important/);
+  assert.match(localRenderer, /return Math\.min\(dpr, \.82\)/);
+  assert.match(localCss, /@media\(max-width:760px\)[\s\S]*nature-3d-subject--room-v26/);
+  assert.match(localCss, /data-runtime-budget="lite"[\s\S]*nature-3d-subject--room-v26\{display:block!important/);
+  assert.doesNotMatch(localCss, /@media\(max-width:760px\)[\s\S]*nature-3d-subject--room-v26\{[^}]*display:none!important/);
 });
 
-test('locally controlled 3D retires photo and remains grounded inside the Gold room', () => {
+test('locally controlled 3D retires photo and remains grounded inside the premium room', () => {
   assert.equal(manifest.subject.modelGate.status, 'PENDING_CONTROLLED_ANIMATED_GLB');
-  assert.match(localCss, /data-jaguar3d="local-proxy-ready"[\s\S]*nature-subject[\s\S]*visibility:hidden!important/);
+  assert.match(localCss, /data-jaguar3d="local-room-ready"[\s\S]*nature-subject[\s\S]*visibility:hidden!important/);
   assert.match(localCss, /nature-depth-room__foreground-left/);
   assert.match(localCss, /nature-depth-room__canopy/);
   assert.match(goldCss, /am4zonia\/hero\.jpg/);
