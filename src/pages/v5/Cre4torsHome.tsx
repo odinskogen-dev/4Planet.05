@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import { Cre4torsProjectOS } from "@/components/labs/Cre4torsProjectOS";
 import "@/styles/cre4tors-home.css";
 
 type CreatorKey = "photographer" | "artist" | "filmmaker" | "musician" | "writer";
@@ -327,9 +328,11 @@ export default function Cre4torsHome() {
         <div className="c4-loop-spine"><span>TALENT</span><i>→</i><span>WORK</span><i>→</i><span>DEMAND</span><i>→</i><span>RIGHTS</span><i>→</i><span>MONEY</span><i>→</i><span>SECURITY</span><i>→</i><span>TIME</span><i>→</i><span>BETTER WORK</span></div>
       </section>
 
+      <Cre4torsProjectOS creator={creator} />
+
       <section className="c4-opportunities">
         <div className="c4-section-heading">
-          <div className="c4-section-label is-pink">04 · OPPORTUNITY INTELLIGENCE</div>
+          <div className="c4-section-label is-pink">05 · OPPORTUNITY INTELLIGENCE</div>
           <div><h2>Not more jobs.<br/>Better matches.</h2><p>The hypothesis is a small number of opportunities worth attention, with fit, rights and value visible before the creator spends time pursuing them. Every object below is DEMO / CONCEPT.</p></div>
         </div>
         <div className="c4-opportunity-shell">
@@ -352,26 +355,26 @@ export default function Cre4torsHome() {
 
       <section className="c4-rights">
         <div className="c4-rights-grid">
-          <div className="c4-rights-copy"><div className="c4-section-label">05 · RIGHTS INTELLIGENCE</div><h2>Rights should not be a mystery.</h2><p>Independent work becomes safer when ownership and permission are first-class product states rather than legal text nobody can inspect later.</p></div>
+          <div className="c4-rights-copy"><div className="c4-section-label">06 · RIGHTS INTELLIGENCE</div><h2>Rights should not be a mystery.</h2><p>Independent work becomes safer when ownership and permission are first-class product states rather than legal text nobody can inspect later.</p></div>
           <div className="c4-rights-table">{RIGHTS.map(([label, body]) => <div className="c4-rights-row" key={label}><b>{label}</b><span>{body}</span></div>)}</div>
           <div className="c4-rights-callout">PAID ≠ LICENSED ≠ CONTRIBUTED. CONTRIBUTED ≠ FREE-FOR-ALL.</div>
         </div>
       </section>
 
       <section className="c4-economy">
-        <div className="c4-section-label is-lime">06 · REALTIME ECONOMY SEAM</div>
+        <div className="c4-section-label is-lime">07 · REALTIME ECONOMY SEAM</div>
         <h2>See the reality.<br/>Not the bookkeeping.</h2>
         <div className="c4-economy-map"><div><small>PRIVATE SOURCES</small><strong>bank · invoices · accounting · contracts</strong></div><i>→</i><div className="is-accent"><small>CREATOR ECONOMY</small><strong>event → state → reconciliation → forecast</strong></div><i>→</i><div><small>HUMAN DECISION</small><strong>say yes · wait · price · protect · take time</strong></div></div>
         <div className="c4-economy-metrics">{ECONOMY_METRICS.map(([title, state, body]) => <article key={title}><small>{state}</small><strong>{title}</strong><p>{body}</p></article>)}</div>
       </section>
 
       <section className="c4-system">
-        <div className="c4-section-heading"><div className="c4-section-label">07 · THE CREATOR ENGINE</div><div><h2>One operating layer.<br/>Six core jobs.</h2></div></div>
+        <div className="c4-section-heading"><div className="c4-section-label">08 · THE CREATOR ENGINE</div><div><h2>One operating layer.<br/>Six core jobs.</h2></div></div>
         <div className="c4-system-grid">{SYSTEMS.map(([index, title, body]) => <article key={title}><small>{index}</small><h3>{title}</h3><p>{body}</p></article>)}</div>
       </section>
 
       <section className="c4-safety">
-        <div className="c4-safety-title"><div className="c4-section-label">08 · SAFETY FLOOR</div><h2>Useful enough to lean on.<br/>Safe enough to leave.</h2></div>
+        <div className="c4-safety-title"><div className="c4-section-label">09 · SAFETY FLOOR</div><h2>Useful enough to lean on.<br/>Safe enough to leave.</h2></div>
         <div className="c4-safety-list">
           <div><span>01</span><b>YOUR WORK STAYS YOURS</b><p>Ownership and licence state stay explicit.</p></div>
           <div><span>02</span><b>PRIVATE ECONOMY STAYS PRIVATE</b><p>Creator finance is a separate data plane from 4PLANET organisational finance.</p></div>
@@ -382,17 +385,17 @@ export default function Cre4torsHome() {
       </section>
 
       <section className="c4-force" id="force">
-        <div className="c4-force-head"><div className="c4-section-label">09 · CREATIVES AS A FORCE FOR NATURE</div><h2>Your abilities can meet<br/>real planetary needs.</h2><p>4PLANET can become the first differentiated demand layer: mission-linked creative work with explicit value, rights and choice. The examples below are prototype fixtures only.</p></div>
+        <div className="c4-force-head"><div className="c4-section-label">10 · CREATIVES AS A FORCE FOR NATURE</div><h2>Your abilities can meet<br/>real planetary needs.</h2><p>4PLANET can become the first differentiated demand layer: mission-linked creative work with explicit value, rights and choice. The examples below are prototype fixtures only.</p></div>
         <div className="c4-force-grid">{FORCE.map(([mission, need, valueClass]) => <article key={mission}><div><span>{mission}</span><b>{valueClass}</b></div><h3>{need}</h3><p>DEMO NEED · NOT A LIVE OPPORTUNITY</p></article>)}</div>
         <div className="c4-force-loop"><span>TALENT</span><i>→</i><span>VALUES</span><i>→</i><span>QUALIFIED NEED</span><i>→</i><span>FAIR VALUE</span><i>→</i><span>CREATE</span><i>→</i><span>PEOPLE + PLANET</span></div>
       </section>
 
       <section className="c4-culture">
-        <div className="c4-culture-grid"><div className="c4-culture-copy"><div className="c4-section-label is-pink">10 · 4CULTURE × SONIC</div><h2>Culture is not decoration.<br/>It is capacity.</h2><p>Artists, filmmakers, musicians, writers and photographers already operate across rights, projects, money and distribution. 4CULTURE and SONIC are natural first seams where Creator Engine primitives can become useful inside real 4PLANET work.</p></div><div className="c4-culture-rail">{CULTURE.map(([title, subtitle, body]) => <article key={title}><small>{subtitle.toUpperCase()}</small><h3>{title}</h3><p>{body}</p></article>)}</div></div>
+        <div className="c4-culture-grid"><div className="c4-culture-copy"><div className="c4-section-label is-pink">11 · 4CULTURE × SONIC</div><h2>Culture is not decoration.<br/>It is capacity.</h2><p>Artists, filmmakers, musicians, writers and photographers already operate across rights, projects, money and distribution. 4CULTURE and SONIC are natural first seams where Creator Engine primitives can become useful inside real 4PLANET work.</p></div><div className="c4-culture-rail">{CULTURE.map(([title, subtitle, body]) => <article key={title}><small>{subtitle.toUpperCase()}</small><h3>{title}</h3><p>{body}</p></article>)}</div></div>
       </section>
 
       <section className="c4-proof">
-        <div className="c4-section-heading"><div className="c4-section-label">11 · PROOF BEFORE SCALE</div><div><h2>Beautiful is not evidence.</h2><p>V2 remains a LABS instrument. Scale requires observed friction, real creator value and one complete rights-safe economic loop.</p></div></div>
+        <div className="c4-section-heading"><div className="c4-section-label">12 · PROOF BEFORE SCALE</div><div><h2>Beautiful is not evidence.</h2><p>V2 remains a LABS instrument. Scale requires observed friction, real creator value and one complete rights-safe economic loop.</p></div></div>
         <div className="c4-proof-grid">
           <article><small>NOW</small><strong>DEMO SYSTEM</strong><p>Architecture, interactions and mental model. No live creator economy or opportunity feed.</p></article>
           <article><small>NEXT</small><strong>2 UNLIKE CREATORS</strong><p>Observe real time loss, decisions, missing controls and what transfers across disciplines.</p></article>
