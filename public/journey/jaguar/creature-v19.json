@@ -47,9 +47,11 @@
       "id": "amazon-felix-blume-toucans-cc0",
       "kind": "FIELD_RECORDING",
       "sourcePage": "https://commons.wikimedia.org/wiki/File:404114_felix-blume_toucans-singing-in-the-amazonian-rainforest-brazil.ogg",
-      "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/4/43/404114_felix-blume_toucans-singing-in-the-amazonian-rainforest-brazil.ogg",
+      "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/404114_felix-blume_toucans-singing-in-the-amazonian-rainforest-brazil.ogg",
       "creator": "Felix Blume",
-      "licence": "CC0",
+      "recordedAt": "Tauary, Amazonas, Brazil",
+      "recordedDate": "2017-10-09",
+      "licence": "CC0 1.0",
       "label": "AMAZON RAINFOREST FIELD AMBIENCE · FELIX BLUME · CC0",
       "status": "OPTIONAL_FAIL_CLOSED"
     },
