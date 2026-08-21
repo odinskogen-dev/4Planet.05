@@ -1,0 +1,38 @@
+Model Information
+=================
+Title: jaguar
+Source: https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492
+Author: Ear.Rodriguez
+Author profile: https://sketchfab.com/Ear.Rodriguez
+
+Licence
+=======
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Requirements
+============
+Author must be credited. Commercial use is allowed.
+
+Required attribution
+====================
+This work is based on "jaguar" by Ear.Rodriguez, licensed under CC BY 4.0.
+
+4PLANET controlled prototype asset record
+=========================================
+Founder-supplied runtime candidate received 2026-08-21.
+Selected profile: 1K GLB.
+Measured bytes: 7,198,456.
+SHA-256: 8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13
+GLB version: 2.
+Nodes: 319.
+Meshes: 4.
+Materials: 4.
+Textures: 2.
+Skins: 1.
+Animations: 1.
+Animation duration: approximately 14.667 seconds.
+Largest embedded texture: 1024 x 1024 JPEG.
+Secondary embedded texture: 512 x 512 JPEG.
+
+This record preserves the licence/provenance of the exact founder-supplied binary. The binary itself must only be marked CONTROLLED_LOCAL after its bytes are present in the repository/runtime and match the SHA-256 above.
