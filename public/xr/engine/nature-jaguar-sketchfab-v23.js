@@ -16,7 +16,8 @@
   let hoverTimer = 0;
 
   const identityScene = () => root.dataset.cinematicScene === 'identity' || root.dataset.sceneState === 'identity';
-  const budgetAllows = () => root.dataset.runtimeBudget !== 'lite';
+  const desktopViewport = () => window.innerWidth > 760;
+  const budgetAllows = () => root.dataset.runtimeBudget !== 'lite' && desktopViewport();
 
   function ensureShell() {
     if (shell) return shell;
@@ -57,8 +58,11 @@
     return new Promise((resolve, reject) => {
       const existing = document.querySelector('script[data-sketchfab-viewer-api]');
       if (existing) {
-        existing.addEventListener('load', resolve, { once: true });
-        existing.addEventListener('error', reject, { once: true });
+        if (window.Sketchfab) resolve();
+        else {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', reject, { once: true });
+        }
         return;
       }
       const script = document.createElement('script');
@@ -96,6 +100,7 @@
   }
 
   async function init() {
+    if (!budgetAllows()) return;
     ensureShell();
     if (ready || iframe.dataset.loading === 'true') return;
     iframe.dataset.loading = 'true';
@@ -125,10 +130,10 @@
             iframe.dataset.loading = 'false';
             root.dataset.jaguar3d = 'ear-live-bridge';
             root.dataset.jaguar3dSource = 'ear-rodriguez-jaguar';
-            root.dataset.jaguar3dActive = String(active && identityScene());
+            root.dataset.jaguar3dActive = String(active && identityScene() && budgetAllows());
             readAnimations();
             readCameraHome();
-            if (active && identityScene()) show();
+            if (active && identityScene() && budgetAllows()) show();
           });
         },
         error() {
@@ -218,13 +223,16 @@
     }
   }
 
-  window.addEventListener('4planet:nature-browser-enter', onEnter);
-  window.addEventListener('4planet:nature-journey-scene', onScene);
-  window.addEventListener('4planet:nature-runtime-budget', () => {
+  function reconcileViewport() {
     if (!budgetAllows()) hide();
     else if (root.dataset.entered === 'true' && identityScene()) onEnter();
-  });
-  document.addEventListener('visibilitychange', () => document.hidden ? hide() : (identityScene() && active && show()));
+  }
+
+  window.addEventListener('4planet:nature-browser-enter', onEnter);
+  window.addEventListener('4planet:nature-journey-scene', onScene);
+  window.addEventListener('4planet:nature-runtime-budget', reconcileViewport);
+  window.addEventListener('resize', reconcileViewport, { passive: true });
+  document.addEventListener('visibilitychange', () => document.hidden ? hide() : reconcileViewport());
   window.addEventListener('pagehide', hide, { once: true });
 
   root.dataset.jaguarLiveBridge = 'v23';
