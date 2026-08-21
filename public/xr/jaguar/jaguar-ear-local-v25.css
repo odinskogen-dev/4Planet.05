@@ -1,0 +1,151 @@
+/* 4PLANET Jaguar v25 — local browser-native Ear.Rodriguez creature.
+   This layer deliberately overrides legacy mobile/lite rules that hid 3D.
+   The creature is the priority; performance adaptation removes atmosphere first. */
+
+.nature-browser[data-jaguar-local-runtime="v25"] .nature-ear-live-v23{display:none!important;}
+
+.nature-browser[data-jaguar-local-runtime="v25"] .nature-3d-subject--v25{
+  display:block!important;
+  position:fixed!important;
+  z-index:29!important;
+  inset:9vh 3vw 10vh 29vw!important;
+  width:auto!important;
+  height:auto!important;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translate3d(2.5%,1%,0) scale(.97);
+  transition:opacity .55s ease,transform 1s cubic-bezier(.2,.75,.2,1);
+  contain:layout paint style;
+}
+.nature-browser[data-jaguar-local-runtime="v25"] .nature-3d-subject--v25[data-visible="true"][data-ready="true"]{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  cursor:grab;
+}
+.nature-browser[data-jaguar-local-runtime="v25"] .nature-3d-subject--v25[data-dragging="true"]{cursor:grabbing;}
+.nature-browser:not([data-cinematic-scene="identity"]) .nature-3d-subject--v25{display:none!important;}
+
+.nature-3d-subject--v25 .nature-3d-subject__viewport{
+  position:absolute;
+  inset:0;
+  filter:none!important;
+  isolation:isolate;
+  touch-action:none;
+}
+.nature-3d-subject--v25 .nature-3d-subject__viewport canvas{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  touch-action:none;
+  background:transparent!important;
+}
+
+.nature-3d-subject--v25 .nature-3d-subject__halo{
+  position:absolute;
+  inset:20% 8% 9% 12%;
+  z-index:-2;
+  opacity:.42;
+  filter:none!important;
+  background:radial-gradient(ellipse at 52% 56%,rgba(72,157,91,.12),rgba(0,8,3,.04) 45%,transparent 73%);
+}
+.nature-3d-subject--v25 .nature-3d-subject__depth{
+  position:absolute;
+  left:18%;right:10%;bottom:1%;height:22%;
+  z-index:-1;
+  opacity:.9;
+  background:radial-gradient(ellipse at 52% 52%,rgba(0,0,0,.72) 0 20%,rgba(0,0,0,.34) 43%,transparent 74%);
+  transform:perspective(600px) rotateX(70deg);
+  transform-origin:center;
+}
+.nature-3d-subject--v25 .nature-3d-subject__scan{
+  position:absolute;
+  inset:11% 8% 13%;
+  pointer-events:none;
+  opacity:calc(var(--jaguar-reveal,0) * .42);
+  background:linear-gradient(180deg,transparent 0 46%,rgba(58,232,111,.18) 49%,rgba(58,232,111,.03) 52%,transparent 57%);
+  mix-blend-mode:screen;
+}
+.nature-3d-subject--v25 .nature-3d-subject__gesture{
+  position:absolute;
+  left:8%;
+  bottom:5%;
+  z-index:4;
+  display:flex;
+  gap:9px;
+  align-items:center;
+  pointer-events:none;
+  font:600 6px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.11em;
+  color:rgba(255,255,255,.4);
+}
+.nature-3d-subject--v25 .nature-3d-subject__gesture b{color:rgba(58,232,111,.72);font-weight:700;}
+.nature-3d-subject--v25 .nature-3d-subject__controls{
+  position:absolute;
+  right:4%;
+  bottom:5%;
+  z-index:5;
+  display:flex;
+  gap:7px;
+}
+.nature-3d-subject--v25 .nature-3d-subject__controls button{
+  border:1px solid rgba(58,232,111,.42);
+  background:rgba(2,9,4,.8);
+  color:#d9ffe2;
+  padding:8px 10px;
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.12em;
+  cursor:pointer;
+}
+.nature-3d-subject--v25 .nature-3d-subject__controls button:hover,
+.nature-3d-subject--v25 .nature-3d-subject__controls button:focus-visible{border-color:#3ae86f;color:#3ae86f;}
+
+/* Locally controlled 3D retires the photographic Jaguar completely. */
+.nature-browser[data-jaguar3d="local-proxy-ready"] .nature-subject,
+.nature-browser[data-jaguar3d-active="true"][data-jaguar-local-runtime="v25"] .nature-subject{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* Jungle closes in front of the canvas; this is what makes it a room rather than a widget. */
+.nature-browser[data-jaguar-local-runtime="v25"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-jaguar-local-runtime="v25"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+  display:block!important;
+  z-index:31!important;
+  pointer-events:none!important;
+}
+.nature-browser[data-jaguar-local-runtime="v25"][data-cinematic-scene="identity"] .nature-depth-room__canopy{
+  display:block!important;
+  z-index:30!important;
+  pointer-events:none!important;
+}
+
+/* Lite keeps the Jaguar and drops atmosphere. */
+.nature-browser[data-runtime-budget="lite"][data-jaguar-local-runtime="v25"] .nature-3d-subject--v25{display:block!important;}
+.nature-browser[data-runtime-budget="lite"] .nature-3d-subject--v25 .nature-3d-subject__halo,
+.nature-browser[data-runtime-budget="lite"] .nature-3d-subject--v25 .nature-3d-subject__scan{display:none!important;}
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__mid,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__fog,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__shafts{display:none!important;}
+
+@media(max-width:760px){
+  .nature-browser[data-jaguar-local-runtime="v25"] .nature-3d-subject--v25{
+    display:block!important;
+    inset:10vh -14vw 22vh -13vw!important;
+    z-index:29!important;
+  }
+  .nature-3d-subject--v25 .nature-3d-subject__gesture{left:14%;bottom:3.5%;}
+  .nature-3d-subject--v25 .nature-3d-subject__gesture span{display:none;}
+  .nature-3d-subject--v25 .nature-3d-subject__controls{right:14%;bottom:3.5%;}
+  .nature-3d-subject--v25 .nature-3d-subject__controls button{padding:7px 8px;font-size:6px;}
+  .nature-browser[data-jaguar-local-runtime="v25"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left{opacity:.54!important;}
+  .nature-browser[data-jaguar-local-runtime="v25"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{opacity:.52!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-jaguar-local-runtime="v25"] .nature-3d-subject--v25{transition:none!important;}
+  .nature-3d-subject--v25 .nature-3d-subject__scan{display:none!important;}
+}
