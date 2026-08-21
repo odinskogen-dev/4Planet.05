@@ -192,6 +192,9 @@
       config = await loadConfig();
       if (!config) return;
       root.dataset.premiumLayer = config.version || 'v17';
+      root.dataset.premiumVersion = String((config.version || '17').match(/(\d+)/)?.[1] || '17');
+      root.dataset.speciesId = manifest.entity?.slug || '';
+      root.dataset.journeyId = config.journeyId || manifest.id || '';
       const initial = manifest.nodes?.[0]?.scene?.state || 'identity';
       renderScene(initial, { detail: { index: 0 } });
     } catch (error) {
