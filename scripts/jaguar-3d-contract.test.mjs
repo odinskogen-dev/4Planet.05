@@ -35,9 +35,13 @@ test('3D runtime remains progressive enhancement with fail-closed controlled spe
   assert.match(cinematicCss, /@media\(max-width:760px\).*nature-3d-subject--v17\{display:none!important\}/s);
 });
 
-test('3D encounter automatically loads and becomes visible after the explicit browser-entry gesture', () => {
-  assert.match(renderer, /4planet:nature-browser-enter/);
-  assert.match(renderer, /active=true/);
+test('controlled species media stays primary and the 3D Jaguar is an explicit optional focus study', () => {
+  assert.match(renderer, /dataset\.jaguar3dMode='manual-study'/);
+  assert.match(renderer, /4planet:nature-browser-enter[^\n]*hide\(\)/);
+  assert.match(renderer, /4planet:nature-world-interaction/);
+  assert.match(renderer, /action==='focus'/);
+  assert.match(renderer, /setFocus\(Boolean\(event\.detail\?\.active\)\)/);
+  assert.match(renderer, /const setFocus=async isActive/);
   assert.match(renderer, /await loadModel\(\)/);
   assert.match(renderer, /show\(\{restartReveal:true\}\)/);
   assert.match(renderer, /data-three-replaced/);
