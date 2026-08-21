@@ -1,0 +1,100 @@
+/* 4PLANET Journey Gold v18 — founder mobile cleanup + world-first composition.
+   Loaded last. This file intentionally removes legacy duplicate controls when the
+   premium sensory layer is active, without changing canonical truth. */
+
+.nature-browser[data-premium-layer]{--journey-safe-bottom:max(18px,env(safe-area-inset-bottom));}
+
+/* One interaction grammar only: premium hotspots replace legacy node glyphs. */
+.nature-browser[data-premium-layer] .nature-nodes,
+.nature-browser[data-premium-layer] .nature-journey-route,
+.nature-browser[data-premium-layer] .nature-stage__instruction{display:none!important;}
+
+/* Top bar = brand + explicit audio state. */
+.nature-browser[data-premium-layer] .nature-topbar{z-index:80!important;}
+.nature-browser[data-premium-layer] .nature-sound{min-width:118px!important;padding:10px 13px!important;font-size:7px!important;letter-spacing:.14em!important;white-space:nowrap;}
+
+/* Do not auto-cover the world with a second editorial card. Evidence/modules stay
+   available via hotspots / HOW DO WE KNOW / response pathway. */
+.nature-browser[data-premium-layer] .nature-premium__panel{opacity:0!important;pointer-events:none!important;transform:translateX(18px)!important;}
+.nature-browser[data-premium-layer] .nature-premium[data-panel-open="true"] .nature-premium__panel{opacity:1!important;pointer-events:auto!important;transform:none!important;}
+
+/* Audio presence belongs in the header. The waveform is decorative and was
+   colliding with narrative controls on small viewports. */
+.nature-browser[data-premium-layer] .nature-premium__audio{right:22px!important;bottom:22px!important;opacity:.72;z-index:30;}
+
+/* Desktop story HUD: compact, authored, never taller than the world it explains. */
+.nature-browser[data-premium-layer] .nature-journey-hud{left:22px!important;right:auto!important;bottom:78px!important;width:min(600px,46vw)!important;max-width:calc(100vw - 420px)!important;grid-template-columns:1fr!important;gap:8px!important;z-index:42!important;}
+.nature-browser[data-premium-layer] .nature-journey-hud__copy{padding:15px 16px 13px!important;background:linear-gradient(90deg,rgba(1,7,4,.9),rgba(1,7,4,.38))!important;backdrop-filter:blur(10px) saturate(1.04);}
+.nature-browser[data-premium-layer] .nature-journey-hud__title{font-size:clamp(28px,3.2vw,50px)!important;line-height:.95!important;letter-spacing:-.045em!important;max-width:12ch;}
+.nature-browser[data-premium-layer] .nature-journey-hud__cue{font-size:6.5px!important;line-height:1.3!important;}
+.nature-browser[data-premium-layer] .nature-journey-hud__actions{display:grid!important;grid-template-columns:auto 1fr auto!important;gap:6px!important;}
+.nature-browser[data-premium-layer] .nature-journey-hud__actions button{min-height:38px!important;padding:0 12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Jaguar: feather the controlled 2D subject into the habitat instead of showing a rectangle. */
+.nature-browser[data-premium-config*="/jaguar/"] .nature-subject{left:61%!important;top:49%!important;width:min(57vw,880px)!important;z-index:24!important;}
+.nature-browser[data-premium-config*="/jaguar/"] .nature-subject__image{
+  -webkit-mask-image:radial-gradient(ellipse 60% 67% at 52% 52%,#000 0 50%,rgba(0,0,0,.96) 59%,rgba(0,0,0,.58) 73%,transparent 94%)!important;
+  mask-image:radial-gradient(ellipse 60% 67% at 52% 52%,#000 0 50%,rgba(0,0,0,.96) 59%,rgba(0,0,0,.58) 73%,transparent 94%)!important;
+  filter:saturate(1.04) contrast(1.08) brightness(.96)!important;
+}
+.nature-browser[data-premium-config*="/jaguar/"] .nature-subject__meta{opacity:.72;}
+
+/* Orca owns an ocean visual system; never inherit rainforest ambience visually. */
+.nature-browser[data-premium-config*="/orca/"]{background:#020914!important;}
+.nature-browser[data-premium-config*="/orca/"] .nature-entry:before{background:linear-gradient(90deg,rgba(1,7,18,.72),rgba(1,7,18,.16) 62%,rgba(1,7,18,.1))!important;}
+.nature-browser[data-premium-config*="/orca/"] .nature-world__veil{background:radial-gradient(ellipse at 55% 44%,transparent 0 18%,rgba(2,12,27,.08) 38%,rgba(1,6,16,.52) 100%),linear-gradient(90deg,rgba(1,6,16,.48),transparent 48%,rgba(1,6,16,.2))!important;}
+
+/* Small-screen product: one story card, one next action, one sound control. */
+@media(max-width:760px){
+  .nature-browser[data-premium-layer] .nature-topbar{height:58px!important;padding:0 12px!important;background:linear-gradient(180deg,rgba(1,7,4,.9),rgba(1,7,4,.42))!important;backdrop-filter:none!important;}
+  .nature-browser[data-premium-config*="/orca/"] .nature-topbar{background:linear-gradient(180deg,rgba(2,9,21,.94),rgba(2,9,21,.45))!important;}
+  .nature-browser[data-premium-layer] .nature-topbar .brand{font-size:9px!important;}
+  .nature-browser[data-premium-layer] .nature-sound{min-width:116px!important;padding:9px 10px!important;font-size:6.5px!important;}
+
+  /* no duplicate top intelligence panel on mobile */
+  .nature-browser[data-premium-layer] .nature-premium__panel{display:none!important;}
+  .nature-browser[data-premium-layer] .nature-premium__audio{display:none!important;}
+  .nature-browser[data-premium-layer] .nature-progress{display:none!important;}
+
+  .nature-browser[data-premium-layer] .nature-journey-hud{
+    position:fixed!important;
+    left:10px!important;right:10px!important;bottom:calc(var(--journey-safe-bottom) + 8px)!important;
+    width:auto!important;max-width:none!important;display:block!important;z-index:60!important;
+  }
+  .nature-browser[data-premium-layer] .nature-journey-hud__copy{
+    min-height:0!important;padding:12px 13px 11px!important;
+    background:linear-gradient(90deg,rgba(1,7,4,.94),rgba(1,7,4,.72))!important;
+    border:1px solid rgba(255,255,255,.12)!important;border-left:1px solid #3ae86f!important;
+    backdrop-filter:none!important;box-shadow:0 18px 54px rgba(0,0,0,.34)!important;
+  }
+  .nature-browser[data-premium-config*="/orca/"] .nature-journey-hud__copy{background:linear-gradient(90deg,rgba(2,10,24,.95),rgba(2,10,24,.78))!important;border-left-color:#6aa7ff!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__stage{font-size:6.5px!important;line-height:1!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__title{margin-top:7px!important;font-size:clamp(31px,10vw,44px)!important;line-height:.92!important;max-width:10.5ch!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__cue{margin-top:8px!important;font-size:6px!important;line-height:1.25!important;letter-spacing:.12em!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__actions{display:grid!important;grid-template-columns:72px 1fr 1.05fr!important;gap:6px!important;margin-top:7px!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__actions button{height:42px!important;min-height:42px!important;padding:0 7px!important;font-size:6px!important;letter-spacing:.08em!important;}
+
+  /* keep scene hotspots out of the editorial and browser chrome safe zones */
+  .nature-browser[data-premium-layer] .nature-premium__hotspots{inset:58px 0 170px!important;}
+  .nature-browser[data-premium-layer] .nature-premium-hotspot__label{display:none!important;}
+  .nature-browser[data-premium-layer] .nature-premium-hotspot__dot{width:11px!important;height:11px!important;}
+
+  .nature-browser[data-premium-config*="/jaguar/"] .nature-subject{left:53%!important;top:45%!important;width:112vw!important;max-width:none!important;}
+  .nature-browser[data-premium-config*="/jaguar/"] .nature-subject__image{
+    -webkit-mask-image:radial-gradient(ellipse 58% 58% at 52% 50%,#000 0 43%,rgba(0,0,0,.9) 58%,rgba(0,0,0,.48) 72%,transparent 92%)!important;
+    mask-image:radial-gradient(ellipse 58% 58% at 52% 50%,#000 0 43%,rgba(0,0,0,.9) 58%,rgba(0,0,0,.48) 72%,transparent 92%)!important;
+  }
+  .nature-browser[data-premium-config*="/jaguar/"] .nature-subject__meta{left:9%!important;right:auto!important;bottom:17%!important;width:74%!important;font-size:6px!important;}
+
+  .nature-browser[data-premium-config*="/orca/"] .nature-subject{left:52%!important;top:43%!important;width:105vw!important;}
+  .nature-browser[data-premium-layer] .nature-chapter{z-index:90!important;left:10px!important;right:10px!important;width:auto!important;max-height:calc(100dvh - 92px)!important;overflow:auto!important;}
+}
+
+@media(max-width:430px){
+  .nature-browser[data-premium-layer] .nature-journey-hud__title{font-size:36px!important;}
+  .nature-browser[data-premium-layer] .nature-journey-hud__actions{grid-template-columns:64px 1fr 1fr!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-premium-layer] .nature-subject__image{transition:none!important;}
+}
