@@ -4,14 +4,16 @@ import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('Jaguar v21 protects smooth runtime and Ear-only 3D fidelity path', () => {
+test('Jaguar v22 protects smooth runtime, Ear-only 3D fidelity and physical encounter room', () => {
   const index = read('public/journey/jaguar/index.html');
   const config = JSON.parse(read('public/journey/jaguar/creature-v19.json'));
   const budget = read('public/xr/engine/nature-runtime-budget-v21.js');
   const renderer = read('public/xr/engine/nature-jaguar-3d-v19.js');
   const css = read('public/xr/jaguar/jaguar-performance-v21.css');
+  const room = read('public/xr/jaguar/jaguar-room-v22.css');
 
   assert.match(index, /jaguar-performance-v21\.css/, 'performance CSS must be loaded');
+  assert.match(index, /jaguar-room-v22\.css/, 'physical room CSS must be loaded');
   assert.match(index, /nature-runtime-budget-v21\.js/, 'runtime budget controller must be loaded');
 
   assert.equal(config.actor.preferred.id, 'ear-rodriguez-jaguar');
@@ -33,4 +35,11 @@ test('Jaguar v21 protects smooth runtime and Ear-only 3D fidelity path', () => {
   assert.match(css, /backdrop-filter:none!important;/, 'always-on backdrop blur must be removed');
   assert.match(css, /contain:strict/, 'WebGL viewport must be paint-contained');
   assert.match(css, /jaguarPhotoBreathV21/, 'photo safety fallback should preserve subtle living presence without WebGL');
+
+  assert.match(room, /perspective:1100px/, 'encounter room must retain a bounded spatial perspective');
+  assert.match(room, /Ground contact|Ground contact:/, 'room must include explicit creature grounding');
+  assert.match(room, /data-jaguar3d="preferred-pending"/, 'photo fallback must share the physical room');
+  assert.match(room, /data-jaguar3d-active="true"/, 'controlled Ear GLB must share the same physical room');
+  assert.match(room, /data-runtime-budget="balanced"/, 'room must preserve a balanced laptop path');
+  assert.match(room, /data-cinematic-scene="dependency"[\s\S]*display:none!important;/, 'encounter room must not leak into later landscape chapters');
 });
