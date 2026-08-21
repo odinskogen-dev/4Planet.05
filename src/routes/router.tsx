@@ -46,7 +46,10 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 function RootHome() {
   const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   const isCre4torsHost = host === "cre4tors.com" || host === "www.cre4tors.com";
-  return isCre4torsHost ? <Cre4torsHome /> : <Home />;
+  const isMarketHost = host === "4planetmarket.com" || host === "www.4planetmarket.com";
+  if (isCre4torsHost) return <Cre4torsHome />;
+  if (isMarketHost) return <ImpactMarketGold />;
+  return <Home />;
 }
 
 export function AppRoutes() {
