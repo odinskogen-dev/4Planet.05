@@ -1,0 +1,426 @@
+.lens-page {
+  min-height: 100dvh;
+  background: #080808;
+  color: #fff;
+  padding-bottom: max(28px, env(safe-area-inset-bottom));
+}
+
+.lens-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 68px;
+  padding: max(14px, env(safe-area-inset-top)) clamp(16px, 3vw, 34px) 14px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: rgba(8,8,8,.94);
+}
+
+.lens-brand,
+.lens-exit {
+  font-family: 'Instrument Sans','DM Sans',sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+
+.lens-exit { justify-self: end; }
+
+.lens-topbar-meta,
+.lens-kicker {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.lens-topbar-meta { color: rgba(255,255,255,.52); }
+.lens-kicker { color: #7d7dff; }
+
+.lens-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(38px, 7vw, 92px) 0 0;
+}
+
+.lens-intro {
+  max-width: 760px;
+  margin-bottom: clamp(30px, 5vw, 54px);
+}
+
+.lens-intro h1 {
+  margin-top: 10px;
+  font-size: clamp(42px, 7.2vw, 104px);
+  line-height: .94;
+  letter-spacing: -.055em;
+  font-weight: 520;
+}
+
+.lens-lede {
+  max-width: 680px;
+  margin-top: 22px;
+  font-size: clamp(16px, 2vw, 21px);
+  line-height: 1.48;
+  color: rgba(255,255,255,.72);
+}
+
+.lens-stage {
+  display: grid;
+  gap: 14px;
+}
+
+.lens-viewfinder {
+  position: relative;
+  width: 100%;
+  min-height: clamp(420px, 68vh, 820px);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.16);
+  background:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px),
+    #0d0d0d;
+  background-size: 48px 48px;
+}
+
+.lens-viewfinder::before,
+.lens-viewfinder::after {
+  content: '';
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.lens-viewfinder::before {
+  inset: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.lens-viewfinder::after {
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 48px;
+  background: rgba(255,255,255,.18);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 0 transparent;
+}
+
+.lens-video,
+.lens-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: clamp(420px, 68vh, 820px);
+  object-fit: cover;
+  background: #0d0d0d;
+}
+
+.lens-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: rgba(255,255,255,.64);
+  padding: 24px;
+}
+
+.lens-empty .mono {
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: .16em;
+}
+
+.lens-empty span:last-child {
+  font-size: 14px;
+  color: rgba(255,255,255,.5);
+}
+
+.lens-reticle {
+  width: 92px;
+  height: 92px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  position: relative;
+}
+
+.lens-reticle::before,
+.lens-reticle::after {
+  content: '';
+  position: absolute;
+  background: #2e2eff;
+}
+
+.lens-reticle::before {
+  width: 18px;
+  height: 1px;
+  left: calc(50% - 9px);
+  top: 50%;
+}
+
+.lens-reticle::after {
+  width: 1px;
+  height: 18px;
+  top: calc(50% - 9px);
+  left: 50%;
+}
+
+.lens-live-badge,
+.lens-capture-badge {
+  position: absolute;
+  z-index: 8;
+  left: 28px;
+  bottom: 26px;
+  padding: 9px 11px 8px;
+  font-size: 9px;
+  letter-spacing: .14em;
+  background: #fff;
+  color: #080808;
+}
+
+.lens-live-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: #ff4d22;
+}
+
+.lens-capture-badge {
+  background: #2e2eff;
+  color: #fff;
+}
+
+.lens-actions {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lens-action {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(255,255,255,.24);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 620;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.lens-action:hover,
+.lens-action:focus-visible {
+  border-color: #fff;
+  background: #fff;
+  color: #080808;
+}
+
+.lens-action:disabled {
+  opacity: .45;
+  cursor: wait;
+}
+
+.lens-action-primary {
+  border-color: #2e2eff;
+  background: #2e2eff;
+}
+
+.lens-action-primary:hover,
+.lens-action-primary:focus-visible {
+  border-color: #6d6dff;
+  background: #6d6dff;
+  color: #fff;
+}
+
+.lens-shutter {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: grid;
+  place-items: center;
+}
+
+.lens-shutter span {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .15s ease;
+}
+
+.lens-shutter:hover span,
+.lens-shutter:focus-visible span {
+  transform: scale(.88);
+}
+
+.lens-file-input { display: none; }
+
+.lens-state {
+  min-height: 21px;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+}
+
+.lens-state-denied,
+.lens-state-error,
+.lens-state-unsupported { color: #ffb7a6; }
+
+.lens-context {
+  margin-top: clamp(62px, 9vw, 118px);
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,255,255,.16);
+}
+
+.lens-context-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.lens-context h2 {
+  margin-top: 8px;
+  max-width: 700px;
+  font-size: clamp(28px, 4vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+  font-weight: 520;
+}
+
+.lens-location-action { flex: 0 0 auto; }
+
+.lens-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid rgba(255,255,255,.16);
+  border-bottom: 1px solid rgba(255,255,255,.16);
+}
+
+.lens-evidence {
+  min-height: 190px;
+  padding: 22px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  border-left: 1px solid rgba(255,255,255,.16);
+}
+
+.lens-evidence:first-child { border-left: none; }
+
+.lens-evidence > span {
+  font-size: 9px;
+  letter-spacing: .15em;
+  color: #7d7dff;
+}
+
+.lens-evidence strong {
+  font-family: 'Instrument Sans','DM Sans',sans-serif;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 540;
+}
+
+.lens-evidence small {
+  margin-top: auto;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.47);
+}
+
+.lens-foot {
+  padding: 28px 0 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,.48);
+}
+
+.lens-foot .mono {
+  color: rgba(255,255,255,.78);
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+@media (max-width: 820px) {
+  .lens-topbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .lens-topbar-meta { display: none; }
+
+  .lens-viewfinder,
+  .lens-video,
+  .lens-preview {
+    min-height: min(66dvh, 640px);
+  }
+
+  .lens-evidence-grid { grid-template-columns: 1fr 1fr; }
+  .lens-evidence:nth-child(odd) { border-left: none; }
+  .lens-evidence:nth-child(n+3) { border-top: 1px solid rgba(255,255,255,.16); }
+}
+
+@media (max-width: 560px) {
+  .lens-shell { width: calc(100% - 24px); }
+
+  .lens-intro h1 { font-size: clamp(48px, 15vw, 74px); }
+
+  .lens-viewfinder,
+  .lens-video,
+  .lens-preview {
+    min-height: 58dvh;
+  }
+
+  .lens-viewfinder::before { inset: 10px; }
+  .lens-live-badge,
+  .lens-capture-badge { left: 18px; bottom: 18px; }
+
+  .lens-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .lens-actions .lens-shutter {
+    justify-self: center;
+  }
+
+  .lens-action { width: 100%; }
+
+  .lens-context-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lens-evidence-grid { grid-template-columns: 1fr; }
+  .lens-evidence,
+  .lens-evidence:nth-child(odd) {
+    min-height: 154px;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,.16);
+  }
+  .lens-evidence:first-child { border-top: none; }
+
+  .lens-foot {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lens-action,
+  .lens-shutter span { transition: none; }
+}
