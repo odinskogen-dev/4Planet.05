@@ -23,6 +23,7 @@
   position:absolute;
   inset:0;
   overflow:hidden;
+  pointer-events:none;
   background:radial-gradient(ellipse at 54% 55%,rgba(2,12,5,.16),rgba(1,7,3,.58) 76%,rgba(1,5,2,.92));
   -webkit-mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
   mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
@@ -34,6 +35,7 @@
   height:114%;
   border:0;
   background:#010703;
+  pointer-events:none;
 }
 .nature-ear-live-v23__ground{
   position:absolute;
