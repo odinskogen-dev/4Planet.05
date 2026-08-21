@@ -1,6 +1,11 @@
 /* ORCA LUME 19 — Pass 04 / motion + interaction.
    Projection motion is interpretive presentation. Procedural audio is not field audio. */
 
+/* Pass 05 brand QA: canonical 4PLANET type system only. */
+.orca-lume-intel__primary{font-family:"Instrument Sans",ui-sans-serif,system-ui,sans-serif!important}
+.orca-lume-intel__header,.orca-lume-intel__secondary,.orca-lume-module,.orca-lume-acoustic__meta,.orca-lume-rail span,.orca-lume-echo-trigger,.orca-lume-photo figcaption{font-family:"Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace!important}
+.orca-lume-intel__primary,.orca-lume-intel__modules{font-synthesis:none}
+
 .nature-browser[data-light-lens="true"] .orca-lume-photo{animation:orca-lume-photo-drift 12s ease-in-out infinite}
 .nature-browser[data-light-lens="true"] .orca-lume-photo img{transform:translate3d(var(--lume-shift-x,0px),var(--lume-shift-y,0px),0) scale(1.025);transition:transform .22s ease-out}
 .nature-browser[data-orca-lume-photo="unavailable-wireframe-fallback"] .orca-lume-photo{opacity:0!important;visibility:hidden}
@@ -8,7 +13,7 @@
 .nature-browser[data-light-lens="true"] .orca-lume-wireframe{animation:orca-lume-wire-drift 9s ease-in-out infinite}
 .nature-browser[data-light-lens="true"] .light-lens-scan{height:1px;opacity:.11!important;box-shadow:0 0 16px rgba(141,232,255,.32),0 0 42px rgba(86,216,255,.10)!important;animation:orca-lume-scan 7.5s cubic-bezier(.42,0,.58,1) infinite!important}
 
-.orca-lume-echo-trigger{pointer-events:auto;appearance:none;width:100%;min-height:30px;margin-top:9px;border:1px solid rgba(141,232,255,.18);background:rgba(2,16,27,.24);color:rgba(247,253,255,.72);font:600 5.7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:border-color .22s ease,color .22s ease,background .22s ease,box-shadow .22s ease}
+.orca-lume-echo-trigger{pointer-events:auto;appearance:none;width:100%;min-height:30px;margin-top:9px;border:1px solid rgba(141,232,255,.18);background:rgba(2,16,27,.24);color:rgba(247,253,255,.72);font:600 5.7px/1 "Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:border-color .22s ease,color .22s ease,background .22s ease,box-shadow .22s ease}
 .orca-lume-echo-trigger:hover,.orca-lume-echo-trigger:focus-visible{outline:none;color:#f7fdff;border-color:rgba(223,248,255,.68);background:rgba(141,232,255,.055);box-shadow:0 0 24px rgba(86,216,255,.08),inset 0 0 0 1px rgba(247,253,255,.025)}
 .orca-lume-echo-trigger:focus-visible{outline:1px solid rgba(247,253,255,.88);outline-offset:3px}
 .orca-lume-echo{position:absolute;left:66%;top:48%;z-index:14;width:1px;height:1px;pointer-events:none}
