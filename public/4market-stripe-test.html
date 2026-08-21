@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>4MARKET_ Stripe Test</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Arial, sans-serif; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:#070707; color:#f5f5f5; }
+    main { width:min(720px, calc(100vw - 48px)); border:1px solid #2a2a2a; padding:40px; }
+    .kicker { font:12px/1.4 monospace; letter-spacing:.12em; color:#b9ff2f; }
+    h1 { font-size:clamp(42px,8vw,84px); line-height:.9; margin:22px 0; letter-spacing:-.05em; }
+    p { max-width:58ch; color:#bdbdbd; line-height:1.6; }
+    button { width:100%; margin-top:24px; padding:18px 20px; border:0; background:#f5f5f5; color:#070707; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:wait; }
+    #state { margin-top:16px; font:12px/1.5 monospace; color:#8b8b8b; }
+    a { color:#f5f5f5; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">4MARKET_ · STRIPE TEST MODE · NO LIVE COMMERCE</div>
+    <h1>TIDAL<br>MEMORY 01</h1>
+    <p>Technical Stripe Checkout QA for the 4MARKET physical-print path. Test mode only. No real fulfilment, creator payout, Impact funding or ecological outcome is represented.</p>
+    <p>The server controls the Stripe Price ID. This page cannot set amount or currency.</p>
+    <button id="checkout">OPEN STRIPE TEST CHECKOUT →</button>
+    <div id="state">READY · requires server-side test secret + explicit enable flag.</div>
+    <p><a href="/">← 4MARKET_</a></p>
+  </main>
+  <script>
+    const button = document.getElementById('checkout');
+    const state = document.getElementById('state');
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      state.textContent = 'CREATING TEST CHECKOUT…';
+      try {
+        const response = await fetch('/api/market-checkout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ productId: 'print:tidal-memory-01' })
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.url) throw new Error(payload.error || 'checkout_failed');
+        location.assign(payload.url);
+      } catch (error) {
+        state.textContent = `BLOCKED · ${error instanceof Error ? error.message : 'checkout_failed'}`;
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
