@@ -1,14 +1,11 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-const FALLBACK_BASE = 'https://raw.githubusercontent.com/kristenmarcinek/game615-spring2023-06/728230086493b1f1cee6a410d0a8ea7c0991f6ff/exercise06/Assets/Models/Jaguar/';
-const FALLBACK_PAGE = 'https://poly.pizza/m/4fb-oMr2uUF';
 const root = document.getElementById('browser-experience');
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const fullTier = () => root?.dataset.performanceTier !== 'lite';
 const identityScene = () => root?.dataset.sceneState === 'identity' || root?.dataset.cinematicScene === 'identity';
+const runtimeBudget = () => root?.dataset.runtimeBudget || (root?.dataset.performanceTier === 'lite' ? 'lite' : 'full');
+const modelAllowed = () => runtimeBudget() !== 'lite';
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
 const damp = (value, target, amount) => value + (target - value) * amount;
@@ -23,6 +20,8 @@ let wire;
 let mixer;
 let animationClips = [];
 let actions = new Map();
+let playingAction = null;
+let wireMaterials = [];
 let resizeObserver;
 let frame = 0;
 let ready = false;
@@ -35,10 +34,20 @@ let dragging = false;
 let pointerX = 0;
 let userYaw = 0;
 let targetUserYaw = 0;
-let baseScale = 1;
 let sourceState = 'none';
-let sourcePage = FALLBACK_PAGE;
-let lastTime = performance.now();
+let sourcePage = '#';
+let lastRenderAt = 0;
+let lastMixerAt = performance.now();
+let hasLocomotion = false;
+let headBone = null;
+let headBaseY = 0;
+let headBaseX = 0;
+
+const renderInterval = () => runtimeBudget() === 'full' ? 1000 / 48 : 1000 / 30;
+const rendererPixelRatio = () => {
+  const dpr = window.devicePixelRatio || 1;
+  return runtimeBudget() === 'full' ? Math.min(dpr, 1.25) : Math.min(dpr, 1);
+};
 
 const ensureHost = () => {
   if (!root || host) return host;
@@ -54,7 +63,7 @@ const ensureHost = () => {
     <div class="nature-3d-subject__viewport"></div>
     <div class="nature-3d-subject__scan" aria-hidden="true"></div>
     <div class="nature-3d-subject__gesture" aria-hidden="true"><b>DRAG TO TURN</b><span>LIVING CREATURE STUDY · BROWSER NATIVE</span></div>
-    <div class="nature-3d-subject__meta"><span class="nature-3d-subject__source-state">CREATURE ASSET · LOADING</span><a class="nature-3d-subject__source" target="_blank" rel="noreferrer">SOURCE</a></div>
+    <div class="nature-3d-subject__meta"><span class="nature-3d-subject__source-state">EAR RODRIGUEZ JAGUAR · INGEST PENDING</span><a class="nature-3d-subject__source" target="_blank" rel="noreferrer">SOURCE</a></div>
     <div class="nature-3d-subject__loading">ASSEMBLING CREATURE LAYER…</div>`;
   root.appendChild(host);
   host.addEventListener('pointerdown', (event) => {
@@ -68,7 +77,7 @@ const ensureHost = () => {
     if (!dragging || !active) return;
     const delta = event.clientX - pointerX;
     pointerX = event.clientX;
-    targetUserYaw = clamp(targetUserYaw + delta * .0045, -.5, .5);
+    targetUserYaw = clamp(targetUserYaw + delta * .004, -.42, .42);
   });
   const endDrag = (event) => {
     dragging = false;
@@ -80,11 +89,28 @@ const ensureHost = () => {
   return host;
 };
 
+const updateSourceMeta = (config) => {
+  if (!host) return;
+  const preferred = config?.actor?.preferred;
+  const label = host.querySelector('.nature-3d-subject__source-state');
+  const link = host.querySelector('.nature-3d-subject__source');
+  if (label) {
+    label.textContent = ready
+      ? 'EAR RODRIGUEZ JAGUAR · CONTROLLED LOCAL GLB'
+      : 'EAR RODRIGUEZ JAGUAR · AUTHENTICATED INGEST PENDING';
+  }
+  if (link) {
+    link.href = preferred?.sourcePage || '#';
+    link.textContent = 'SKETCHFAB · CC ATTRIBUTION';
+  }
+};
+
 const resize = () => {
   if (!host || !renderer || !camera) return;
   const viewport = host.querySelector('.nature-3d-subject__viewport');
   const width = Math.max(1, viewport?.clientWidth || host.clientWidth);
   const height = Math.max(1, viewport?.clientHeight || host.clientHeight);
+  renderer.setPixelRatio(rendererPixelRatio());
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
@@ -93,27 +119,28 @@ const resize = () => {
 const makeScene = () => {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(24, 1, .01, 100);
-  camera.position.set(0, .08, 6.2);
+  camera.position.set(0, .08, 6.1);
   camera.lookAt(0, .02, 0);
   const viewport = host.querySelector('.nature-3d-subject__viewport');
-  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.65));
+  const antialias = runtimeBudget() === 'full' && (window.devicePixelRatio || 1) <= 1.35;
+  renderer = new THREE.WebGLRenderer({ alpha: true, antialias, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(rendererPixelRatio());
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = 1.05;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   viewport.appendChild(renderer.domElement);
 
-  scene.add(new THREE.HemisphereLight(0xdfffe7, 0x020804, 2.15));
-  const sun = new THREE.DirectionalLight(0xfff0ce, 4.4);
-  sun.position.set(-4.5, 5.8, 5.2);
-  scene.add(sun);
-  const canopy = new THREE.DirectionalLight(0x52ff8a, 1.45);
-  canopy.position.set(4.6, 3.2, -3.4);
+  scene.add(new THREE.HemisphereLight(0xdfffe7, 0x020804, 1.8));
+  const key = new THREE.DirectionalLight(0xffefcf, 3.4);
+  key.position.set(-4.2, 5.2, 4.8);
+  scene.add(key);
+  const canopy = new THREE.DirectionalLight(0x52ff8a, 1.05);
+  canopy.position.set(4.4, 3.1, -3.1);
   scene.add(canopy);
-  const fill = new THREE.DirectionalLight(0x4b739a, .72);
-  fill.position.set(-2, -1.4, 4.2);
+  const fill = new THREE.DirectionalLight(0x557c9f, .48);
+  fill.position.set(-2, -1.2, 4);
   scene.add(fill);
 
   resizeObserver = new ResizeObserver(resize);
@@ -122,10 +149,11 @@ const makeScene = () => {
 };
 
 const makeWire = (object) => {
+  wireMaterials = [];
   const clone = object.clone(true);
   clone.traverse((child) => {
     if (!child.isMesh) return;
-    child.material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
       color: 0x3ae86f,
       wireframe: true,
       transparent: true,
@@ -133,7 +161,10 @@ const makeWire = (object) => {
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });
+    child.material = material;
+    wireMaterials.push(material);
   });
+  clone.visible = false;
   return clone;
 };
 
@@ -142,15 +173,9 @@ const fit = (object) => {
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   const longest = Math.max(size.x, size.y, size.z) || 1;
-  baseScale = 4.25 / longest;
+  const scale = 4.2 / longest;
   object.position.set(-center.x, -center.y + size.y * .015, -center.z);
-  object.scale.setScalar(baseScale);
-};
-
-const buildActions = () => {
-  actions = new Map();
-  if (!mixer) return;
-  animationClips.forEach((clip) => actions.set(clip.name.toLowerCase(), mixer.clipAction(clip)));
+  object.scale.setScalar(scale);
 };
 
 const findAction = (...tokens) => {
@@ -160,18 +185,56 @@ const findAction = (...tokens) => {
   return null;
 };
 
-let playingAction = null;
+const buildActions = () => {
+  actions = new Map();
+  if (!mixer) return;
+  animationClips.forEach((clip) => actions.set(clip.name.toLowerCase(), mixer.clipAction(clip)));
+  hasLocomotion = Boolean(findAction('walk', 'prowl', 'move'));
+  if (root) root.dataset.jaguarMotionCapability = hasLocomotion ? 'animated-locomotion' : animationClips.length ? 'animated-no-walk' : 'pose-only';
+};
+
 const playAnimationForPhase = (nextPhase) => {
   if (!mixer || !actions.size) return;
   const desired = nextPhase === 'walk' || nextPhase === 'emerge'
-    ? findAction('walk', 'prowl', 'move')
+    ? findAction('walk', 'prowl', 'move', 'idle')
     : nextPhase === 'observe'
-      ? findAction('look', 'alert', 'idle')
+      ? findAction('look', 'alert', 'idle', 'breath')
       : findAction('idle', 'breath', 'stand');
   if (!desired || desired === playingAction) return;
-  desired.reset().fadeIn(.32).play();
-  playingAction?.fadeOut(.32);
+  desired.reset().fadeIn(.28).play();
+  playingAction?.fadeOut(.28);
   playingAction = desired;
+};
+
+const detectReactiveBones = (object) => {
+  headBone = null;
+  object.traverse((child) => {
+    if (!child.isBone || headBone) return;
+    if (/(^|[_ .-])(head|neck)([_ .-]|$)/i.test(child.name || '')) headBone = child;
+  });
+  if (headBone) {
+    headBaseY = headBone.rotation.y;
+    headBaseX = headBone.rotation.x;
+    if (root) root.dataset.jaguarReactiveHead = 'true';
+  } else if (root) root.dataset.jaguarReactiveHead = 'false';
+};
+
+const prepareSubject = (object) => {
+  object.traverse((child) => {
+    if (!child.isMesh) return;
+    child.frustumCulled = true;
+    child.castShadow = false;
+    child.receiveShadow = false;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach((material) => {
+      if (!material) return;
+      material.transparent = false;
+      material.depthWrite = true;
+      if ('roughness' in material) material.roughness = Math.max(.46, material.roughness || .46);
+      if ('metalness' in material) material.metalness = 0;
+    });
+  });
+  detectReactiveBones(object);
 };
 
 const loadPreferred = async (config) => {
@@ -179,69 +242,46 @@ const loadPreferred = async (config) => {
   if (!preferred?.runtimePath || preferred.binaryState !== 'CONTROLLED_LOCAL') return null;
   const gltf = await new GLTFLoader().loadAsync(preferred.runtimePath);
   animationClips = Array.isArray(gltf.animations) ? gltf.animations : [];
-  sourceState = preferred.id || 'preferred-local-glb';
+  sourceState = preferred.id || 'ear-rodriguez-jaguar';
   sourcePage = preferred.sourcePage || '#';
   return gltf.scene;
 };
 
-const loadFallback = async (config) => {
-  const manager = new THREE.LoadingManager();
-  manager.setURLModifier((url) => /Jaguar_BaseColor\.png(?:\?|$)/i.test(url) ? `${FALLBACK_BASE}Jaguar_BaseColor.png` : url);
-  const mtl = new MTLLoader(manager);
-  mtl.setResourcePath(FALLBACK_BASE);
-  const materials = await mtl.loadAsync(`${FALLBACK_BASE}Jaguar.mtl`);
-  materials.preload();
-  const obj = new OBJLoader(manager);
-  obj.setMaterials(materials);
-  const object = await obj.loadAsync(`${FALLBACK_BASE}Jaguar.obj`);
-  sourceState = config?.actor?.fallback?.id || 'poly-google-jaguar-study';
-  sourcePage = config?.actor?.fallback?.sourcePage || FALLBACK_PAGE;
-  return object;
-};
-
-const updateSourceMeta = () => {
-  if (!host) return;
-  const label = host.querySelector('.nature-3d-subject__source-state');
-  const link = host.querySelector('.nature-3d-subject__source');
-  const preferred = window.NatureCreatureV19?.getConfig?.()?.actor?.preferred;
-  if (label) {
-    label.textContent = sourceState === preferred?.id
-      ? 'PREFERRED FREE CREATURE · CONTROLLED LOCAL GLB'
-      : 'CONTROLLED 3D FALLBACK · PREFERRED CREATURE INGEST GATED';
+const markPreferredPending = (config) => {
+  ensureHost();
+  const preferred = config?.actor?.preferred;
+  sourceState = preferred?.id || 'ear-rodriguez-jaguar';
+  sourcePage = preferred?.sourcePage || '#';
+  if (root) {
+    root.dataset.jaguar3d = 'preferred-pending';
+    root.dataset.jaguar3dSource = sourceState;
+    root.dataset.jaguar3dActive = 'false';
+    root.dataset.jaguarMotionCapability = 'photo-fallback';
   }
-  if (link) {
-    link.href = sourcePage;
-    link.textContent = sourceState === preferred?.id ? 'ASSET SOURCE' : 'FALLBACK · CC BY 3.0';
-  }
+  host.dataset.ready = 'false';
+  host.dataset.visible = 'false';
+  host.dataset.loading = 'false';
+  updateSourceMeta(config);
 };
 
 const loadModel = async () => {
-  if (!root || loading || ready || !fullTier()) return;
+  if (!root || loading || ready || !modelAllowed()) return;
+  const config = window.NatureCreatureV19?.getConfig?.();
+  const preferred = config?.actor?.preferred;
+  if (!preferred || preferred.binaryState !== 'CONTROLLED_LOCAL') {
+    markPreferredPending(config);
+    return;
+  }
+
   loading = true;
   ensureHost();
   host.dataset.loading = 'true';
   root.dataset.jaguar3d = 'loading';
   try {
     makeScene();
-    const config = window.NatureCreatureV19?.getConfig?.();
-    let object = null;
-    try { object = await loadPreferred(config); } catch (error) { console.warn('[4PLANET JAGUAR] preferred GLB failed closed; using controlled fallback', error); }
-    if (!object) object = await loadFallback(config);
-    object.traverse((child) => {
-      if (!child.isMesh) return;
-      child.frustumCulled = true;
-      child.castShadow = false;
-      child.receiveShadow = false;
-      const materials = Array.isArray(child.material) ? child.material : [child.material];
-      materials.forEach((material) => {
-        if (!material) return;
-        material.transparent = false;
-        material.depthWrite = true;
-        if ('roughness' in material) material.roughness = Math.max(.48, material.roughness || .48);
-        if ('metalness' in material) material.metalness = 0;
-        if ('shininess' in material) material.shininess = 9;
-      });
-    });
+    const object = await loadPreferred(config);
+    if (!object) throw new Error('Preferred controlled Jaguar GLB unavailable');
+    prepareSubject(object);
     fit(object);
     subject = object;
     wire = makeWire(object);
@@ -252,6 +292,8 @@ const loadModel = async () => {
     if (animationClips.length) {
       mixer = new THREE.AnimationMixer(subject);
       buildActions();
+    } else if (root) {
+      root.dataset.jaguarMotionCapability = 'pose-only';
     }
     ready = true;
     loading = false;
@@ -260,29 +302,32 @@ const loadModel = async () => {
     host.dataset.assetSource = sourceState;
     root.dataset.jaguar3d = 'ready';
     root.dataset.jaguar3dSource = sourceState;
-    updateSourceMeta();
+    updateSourceMeta(config);
+    setReveal(reveal);
     show();
   } catch (error) {
     loading = false;
     root.dataset.jaguar3d = 'failed';
     host.dataset.loading = 'false';
     host.dataset.ready = 'false';
-    console.warn('[4PLANET JAGUAR] 3D creature layer failed closed; controlled photographic subject remains.', error);
+    console.warn('[4PLANET JAGUAR] preferred controlled GLB failed closed; photographic creature remains.', error);
   }
 };
 
 const show = () => {
-  if (!ready || !host || !identityScene()) return;
+  if (!ready || !host || !identityScene() || !modelAllowed()) return;
   active = true;
   host.dataset.visible = 'true';
   host.style.setProperty('display', 'block', 'important');
   host.style.setProperty('visibility', 'visible', 'important');
   host.style.setProperty('opacity', '1', 'important');
+  host.style.setProperty('pointer-events', 'auto', 'important');
   root.dataset.jaguar3dActive = 'true';
   root.querySelector('.nature-subject')?.setAttribute('data-three-replaced', 'true');
   resize();
   if (!frame) {
-    lastTime = performance.now();
+    lastRenderAt = 0;
+    lastMixerAt = performance.now();
     frame = requestAnimationFrame(tick);
   }
 };
@@ -306,93 +351,106 @@ const setPhase = (nextPhase) => {
   if (host) host.dataset.phase = phase;
   if (root) root.dataset.jaguarActorPhase = phase;
   playAnimationForPhase(phase);
-  if (phase === 'dormant') {
+  if (phase === 'dormant' || !modelAllowed()) {
     hide();
     return;
   }
-  if (identityScene()) {
-    loadModel().then(() => show());
-  }
+  if (identityScene()) loadModel().then(() => show());
 };
 
 const setReveal = (progress) => {
   reveal = clamp(Number(progress || 0), 0, 1);
   if (host) host.style.setProperty('--jaguar-reveal', reveal.toFixed(4));
+  if (wire) wire.visible = reveal > .005;
+  const opacity = Math.min(.58, reveal * .58);
+  for (const material of wireMaterials) material.opacity = opacity;
 };
 
 const phasePose = (time) => {
   const elapsed = Math.max(0, time - phaseStarted);
   const duration = {
-    emerge: 1900,
-    walk: 3300,
-    stop: 850,
-    breathe: 1850,
-    observe: 2200,
-    reveal: 2800
+    emerge: 1500,
+    walk: 2200,
+    stop: 650,
+    breathe: 1700,
+    observe: 1800,
+    reveal: 2200
   }[phase] || 1000;
   const t = reduced() ? 1 : clamp(elapsed / duration, 0, 1);
   const smooth = t * t * (3 - 2 * t);
   const pose = { x: 0, y: 0, z: 0, yaw: Math.PI / 2, scale: 1, bob: 0 };
 
   if (phase === 'emerge') {
-    pose.x = lerp(1.35, .72, smooth);
-    pose.z = lerp(-.7, -.42, smooth);
-    pose.scale = lerp(.82, .9, smooth);
-    pose.bob = Math.sin(time * .008) * .018;
+    pose.x = hasLocomotion ? lerp(.72, .35, smooth) : .08;
+    pose.z = hasLocomotion ? lerp(-.42, -.2, smooth) : lerp(-.16, 0, smooth);
+    pose.scale = lerp(.92, .98, smooth);
+    pose.bob = hasLocomotion ? Math.sin(time * .008) * .012 : 0;
   } else if (phase === 'walk') {
-    pose.x = lerp(.72, 0, smooth);
-    pose.z = lerp(-.42, 0, smooth);
-    pose.scale = lerp(.9, 1, smooth);
-    pose.bob = Math.sin(time * .0095) * .028;
+    if (hasLocomotion) {
+      pose.x = lerp(.35, 0, smooth);
+      pose.z = lerp(-.2, 0, smooth);
+      pose.bob = Math.sin(time * .009) * .018;
+    } else {
+      pose.scale = lerp(.98, 1, smooth);
+      pose.z = lerp(-.05, 0, smooth);
+    }
   } else if (phase === 'stop') {
-    pose.x = lerp(.03, 0, smooth);
-    pose.bob = Math.sin(time * .006) * .01 * (1 - smooth);
+    pose.x = lerp(.02, 0, smooth);
   } else if (phase === 'breathe' || phase === 'reveal' || phase === 'hold') {
-    pose.scale = 1 + Math.sin(time * .00155) * .008;
-    pose.y = Math.sin(time * .00115) * .009;
+    pose.scale = 1 + Math.sin(time * .00145) * .0045;
+    pose.y = Math.sin(time * .00105) * .006;
   } else if (phase === 'observe') {
-    pose.yaw = lerp(Math.PI / 2, Math.PI / 2 - .28, smooth);
-    pose.scale = 1 + Math.sin(time * .0016) * .006;
+    pose.yaw = lerp(Math.PI / 2, Math.PI / 2 - .22, smooth);
+    pose.scale = 1 + Math.sin(time * .0014) * .0035;
   }
   return pose;
 };
 
+const updateReactiveHead = (time) => {
+  if (!headBone) return;
+  const engaged = phase === 'observe' || phase === 'reveal' || phase === 'hold';
+  const targetY = engaged ? headBaseY - .055 + Math.sin(time * .00055) * .018 : headBaseY;
+  const targetX = engaged ? headBaseX + Math.sin(time * .00072) * .01 : headBaseX;
+  headBone.rotation.y = damp(headBone.rotation.y, targetY, .08);
+  headBone.rotation.x = damp(headBone.rotation.x, targetX, .08);
+};
+
 const tick = (time) => {
   frame = 0;
-  if (!active || !ready || !renderer || !scene || !camera || !group || !identityScene()) return;
-  const dt = Math.min(.05, Math.max(.001, (time - lastTime) / 1000));
-  lastTime = time;
+  if (!active || !ready || !renderer || !scene || !camera || !group || !identityScene() || document.hidden || !modelAllowed()) return;
+  const interval = renderInterval();
+  if (lastRenderAt && time - lastRenderAt < interval) {
+    frame = requestAnimationFrame(tick);
+    return;
+  }
+  lastRenderAt = time;
+  const dt = Math.min(.05, Math.max(.001, (time - lastMixerAt) / 1000));
+  lastMixerAt = time;
   mixer?.update(dt);
 
   const pose = phasePose(time);
-  userYaw = damp(userYaw, targetUserYaw, dragging ? .16 : .07);
+  userYaw = damp(userYaw, targetUserYaw, dragging ? .15 : .065);
   group.position.set(pose.x, pose.y + pose.bob, pose.z);
   group.rotation.y = pose.yaw + userYaw;
   group.scale.setScalar(pose.scale);
-
-  if (wire) {
-    wire.visible = reveal > .005;
-    wire.traverse((child) => {
-      if (child.isMesh && child.material) child.material.opacity = Math.min(.62, reveal * .62);
-    });
-  }
-  if (subject) {
-    subject.traverse((child) => {
-      if (!child.isMesh) return;
-      const materials = Array.isArray(child.material) ? child.material : [child.material];
-      materials.forEach((material) => {
-        if (!material || !('opacity' in material)) return;
-        material.opacity = 1;
-      });
-    });
-  }
+  updateReactiveHead(time);
 
   const cinematic = phase === 'observe' || phase === 'reveal' || phase === 'hold';
-  camera.position.z = damp(camera.position.z, cinematic ? 5.85 : 6.15, .025);
-  camera.position.x = Math.sin(time * .00019) * .025;
+  camera.position.z = damp(camera.position.z, cinematic ? 5.82 : 6.08, .035);
+  camera.position.x = Math.sin(time * .00015) * .018;
   camera.lookAt(0, .025, 0);
   renderer.render(scene, camera);
   frame = requestAnimationFrame(tick);
+};
+
+const applyRuntimeBudget = () => {
+  if (!root) return;
+  if (runtimeBudget() === 'lite') {
+    hide();
+    return;
+  }
+  if (renderer) resize();
+  if (ready && identityScene() && phase !== 'dormant') show();
 };
 
 if (root) {
@@ -403,15 +461,21 @@ if (root) {
   if (window.NatureCreatureV19) register();
   else window.addEventListener('4planet:nature-creature-ready', register, { once: true });
   window.addEventListener('4planet:nature-browser-enter', () => {
-    if (fullTier() && identityScene()) loadModel().then(() => show());
+    if (modelAllowed() && identityScene()) loadModel().then(() => show());
   });
   window.addEventListener('4planet:nature-journey-scene', (event) => {
     if (Number(event.detail?.index || 0) !== 0 || !identityScene()) hide();
+  });
+  window.addEventListener('4planet:nature-runtime-budget', applyRuntimeBudget);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) hide();
+    else if (ready && identityScene() && phase !== 'dormant' && modelAllowed()) show();
   });
   window.addEventListener('pagehide', () => {
     hide();
     resizeObserver?.disconnect();
     mixer?.stopAllAction();
+    for (const material of wireMaterials) material.dispose?.();
     renderer?.dispose();
   }, { once: true });
 }
