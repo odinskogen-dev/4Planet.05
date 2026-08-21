@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ops/oddekalv-domain
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -105,9 +108,8 @@ jobs:
               print("Assigned nameservers:", ", ".join(zone.get("name_servers") or []))
 
           zone_id = zone["id"]
-
-          # Ensure DNS records route apex and www to the Pages project.
           target = project.get("subdomain") or f"{project_name}.pages.dev"
+
           for host in (domain, f"www.{domain}"):
               existing = call("GET", f"/zones/{zone_id}/dns_records?type=CNAME&name={host}&per_page=100")
               if existing.get("success") and existing.get("result"):
@@ -131,7 +133,6 @@ jobs:
                       sys.exit(6)
                   print(f"Created DNS: {host} -> {target}")
 
-          # Bind custom domains to Pages. Duplicate/already-present is handled by checking first.
           domains = call("GET", f"/accounts/{account_id}/pages/projects/{project_name}/domains")
           current = {d.get("name") for d in domains.get("result", [])} if domains.get("success") else set()
           for host in (domain, f"www.{domain}"):
@@ -144,7 +145,6 @@ jobs:
                   sys.exit(7)
               print(f"Bound Pages custom domain: {host}")
 
-          # Final status readback.
           domains = call("GET", f"/accounts/{account_id}/pages/projects/{project_name}/domains")
           if domains.get("success"):
               print("Final Pages custom-domain states:")
