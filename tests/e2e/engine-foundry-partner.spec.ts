@@ -20,7 +20,7 @@ test.describe("ENGINE FOUNDRY · Partner Engine transfer proof", () => {
     await expect(page.getByText("HOLD / REJECT")).toBeVisible();
 
     for (const stage of ["validate", "fit", "diligence", "block", "rank"]) {
-      await expect(page.getByText(stage, { exact: true })).toBeVisible();
+      await expect(page.locator(".ef-trace-row b").filter({ hasText: stage })).toHaveCount(2);
     }
   });
 
