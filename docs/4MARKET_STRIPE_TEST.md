@@ -47,7 +47,9 @@ The browser redirect is never treated as payment proof. The server retrieves the
 - total is exactly NOK 3.00;
 - metadata binds the session to `photo:arctic-white-angel-01` and `4market_test_checkout`.
 
-The test launcher renders `PAYMENT CONFIRMED` only after this server-side verification.
+The test launcher renders `PAYMENT CONFIRMED` only after this server-side verification. This closes the first-order confirmation requirement for the controlled canary: production is not authorised from a browser redirect alone.
+
+Customer email confirmation is a separate presentation/delivery layer. For the canary, the verified confirmation page plus Stripe's own Dashboard/receipt configuration are used; a bespoke 4MARKET transactional email is not yet claimed as implemented.
 
 ## Signed webhook gate
 
