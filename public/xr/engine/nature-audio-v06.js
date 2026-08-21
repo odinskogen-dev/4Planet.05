@@ -19,14 +19,20 @@
       dependency: { master:.235,high:.54, mid:.42, water:.88, low:.12, air:.28, motif:.48 },
       habitat:    { master:.23, high:.62, mid:.82, water:.38, low:.10, air:.34, motif:.64 },
       pressure:   { master:.19, high:.12, mid:.14, water:.03, low:.84, air:.20, motif:.05 },
-      response:   { master:.235,high:.48, mid:.72, water:.22, low:.15, air:.38, motif:.58 }
+      response:   { master:.235,high:.48, mid:.72, water:.22, low:.15, air:.38, motif:.58 },
+      actors:     { master:.225,high:.32, mid:.68, water:.16, low:.20, air:.31, motif:.46 },
+      action:     { master:.23, high:.38, mid:.74, water:.14, low:.27, air:.34, motif:.62 },
+      proof:      { master:.215,high:.45, mid:.52, water:.29, low:.12, air:.42, motif:.31 }
     },
     ocean: {
       identity:   { master:.215,high:.08, mid:.22, water:.86, low:.46, air:.10, motif:.22 },
       dependency: { master:.225,high:.10, mid:.26, water:.92, low:.36, air:.08, motif:.32 },
       habitat:    { master:.22, high:.06, mid:.18, water:.96, low:.42, air:.07, motif:.18 },
       pressure:   { master:.19, high:.03, mid:.08, water:.48, low:.94, air:.04, motif:.04 },
-      response:   { master:.225,high:.09, mid:.24, water:.82, low:.32, air:.09, motif:.28 }
+      response:   { master:.225,high:.09, mid:.24, water:.82, low:.32, air:.09, motif:.28 },
+      actors:     { master:.218,high:.08, mid:.29, water:.76, low:.34, air:.08, motif:.26 },
+      action:     { master:.224,high:.09, mid:.32, water:.72, low:.42, air:.08, motif:.34 },
+      proof:      { master:.21, high:.07, mid:.20, water:.88, low:.26, air:.11, motif:.18 }
     }
   };
 
@@ -143,6 +149,9 @@
     if (state === 'habitat') { tonalMotif({ base:ocean?480:4300, count:ocean?2:3, pan:-.72, level:.011, step:ocean?.36:.18 }); window.setTimeout(textureBurst,230); }
     if (state === 'pressure') { lowPulse(ocean?.044:.038); window.setTimeout(() => lowPulse(ocean?.025:.022), ocean?720:520); }
     if (state === 'response') { tonalMotif({ base:ocean?690:3400, count:3, pan:-.45, level:.013, step:ocean?.25:.13 }); window.setTimeout(() => tonalMotif({ base:ocean?980:5100, count:2, pan:.65, level:.009, step:ocean?.3:.19 }),360); }
+    if (state === 'actors') { tonalMotif({ base:ocean?610:2700, count:2, pan:-.35, level:.011, step:ocean?.30:.16 }); window.setTimeout(() => lowPulse(ocean?.014:.012), 260); }
+    if (state === 'action') { tonalMotif({ base:ocean?820:3900, count:3, pan:.25, level:.013, step:ocean?.23:.11 }); window.setTimeout(() => lowPulse(ocean?.026:.022), 170); }
+    if (state === 'proof') { tonalMotif({ base:ocean?520:3200, count:2, pan:0, level:.009, step:ocean?.36:.2 }); window.setTimeout(textureBurst, 420); }
   };
 
   const applyProfile = (state) => {
