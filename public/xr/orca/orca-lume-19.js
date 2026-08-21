@@ -15,18 +15,29 @@
     response:{kicker:'RESPONSE INTELLIGENCE',primary:'Specificity before intervention.',secondary:'NO UNIVERSAL FIX · NO OUTCOME CLAIM',modules:[['POPULATION','IDENTIFY','GATE'],['ACTOR','VERIFY CAPACITY','GATE'],['OUTCOME','NOT CLAIMED','EVIDENCE REQUIRED']]}
   };
 
-  const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
   function installPhotoBase(root) {
     const projection = root?.querySelector('.light-lens-projection');
     if (!projection || projection.querySelector('.orca-lume-photo')) return;
     const frame = document.createElement('figure');
     frame.className = 'orca-lume-photo';
-    frame.innerHTML = `<img src="${NOAA_ORCA.src}" alt="" referrerpolicy="no-referrer" /><span class="orca-lume-photo__wash" aria-hidden="true"></span><span class="orca-lume-photo__contour" aria-hidden="true"></span><figcaption><a href="${NOAA_ORCA.source}" target="_blank" rel="noreferrer">${NOAA_ORCA.credit} · ${NOAA_ORCA.rights}</a><span>${NOAA_ORCA.note}</span></figcaption>`;
+    frame.innerHTML = `<img src="${NOAA_ORCA.src}" alt="" loading="eager" decoding="async" referrerpolicy="no-referrer" /><span class="orca-lume-photo__wash" aria-hidden="true"></span><span class="orca-lume-photo__contour" aria-hidden="true"></span><figcaption><a href="${NOAA_ORCA.source}" target="_blank" rel="noreferrer">${NOAA_ORCA.credit} · ${NOAA_ORCA.rights}</a><span>${NOAA_ORCA.note}</span></figcaption>`;
     projection.prepend(frame);
+    const image = frame.querySelector('img');
+    image?.addEventListener('load', () => {
+      frame.classList.add('is-ready');
+      root.dataset.orcaLumePhoto = 'noaa-public-domain';
+    }, { once:true });
+    image?.addEventListener('error', () => {
+      frame.classList.add('is-unavailable');
+      root.dataset.orcaLumePhoto = 'unavailable-wireframe-fallback';
+      const note = frame.querySelector('figcaption span');
+      if (note) note.textContent = 'PHOTO BASE UNAVAILABLE · WIREFRAME FALLBACK';
+    }, { once:true });
     const vector = projection.querySelector('.light-lens-orca');
     if (vector) { vector.classList.add('orca-lume-wireframe'); vector.setAttribute('aria-hidden','true'); }
-    root.dataset.orcaLumePhoto = 'noaa-public-domain';
+    root.dataset.orcaLumePhoto = 'loading';
   }
 
   const waveformMarkup = () => Array.from({length:28},(_,i)=>`<i style="--i:${i}" aria-hidden="true"></i>`).join('');
@@ -92,11 +103,20 @@
         const rect=stage.getBoundingClientRect();
         const x=((event.clientX-rect.left)/Math.max(rect.width,1)-.5);
         const y=((event.clientY-rect.top)/Math.max(rect.height,1)-.5);
-        root.style.setProperty('--lume-pointer-x',x.toFixed(3));
-        root.style.setProperty('--lume-pointer-y',y.toFixed(3));
+        root.style.setProperty('--lume-shift-x',`${(x*8).toFixed(2)}px`);
+        root.style.setProperty('--lume-shift-y',`${(y*5).toFixed(2)}px`);
       });
     },{passive:true});
-    stage.addEventListener('pointerleave',()=>{root.style.setProperty('--lume-pointer-x','0');root.style.setProperty('--lume-pointer-y','0')},{passive:true});
+    stage.addEventListener('pointerleave',()=>{
+      root.style.setProperty('--lume-shift-x','0px');
+      root.style.setProperty('--lume-shift-y','0px');
+    },{passive:true});
+  }
+
+  function activateDefaultLume(root) {
+    if (root.dataset.lumeDefault !== 'true' || root.dataset.lightLens === 'true') return;
+    const toggle = root.querySelector('.light-lens-toggle');
+    if (toggle instanceof HTMLButtonElement) toggle.click();
   }
 
   function install(root) {
@@ -105,8 +125,9 @@
     installPhotoBase(root);installIntel(root);syncIntel(root);installInteraction(root);
     root.addEventListener('4planet:light-lens-change',()=>{installPhotoBase(root);installIntel(root);syncIntel(root);installInteraction(root)});
     window.addEventListener('4planet:nature-journey-scene',event=>requestAnimationFrame(()=>{installPhotoBase(root);installIntel(root);syncIntel(root,event.detail||{});installInteraction(root)}));
+    requestAnimationFrame(()=>activateDefaultLume(root));
   }
 
   window.addEventListener('DOMContentLoaded',()=>install(document.getElementById('browser-experience')),{once:true});
-  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,emitEcho,media:NOAA_ORCA,intel:INTEL};
+  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,emitEcho,activateDefaultLume,media:NOAA_ORCA,intel:INTEL};
 })();
