@@ -47,6 +47,13 @@ const safeRef = (value?: string) => {
 
 export async function onRequestPost(context: PagesContext): Promise<Response> {
   const { request, env } = context;
+  const requestUrl = new URL(request.url);
+  const origin = requestUrl.origin;
+  const requestOrigin = request.headers.get("Origin");
+
+  if (requestOrigin && requestOrigin !== origin) {
+    return json({ error: "origin_not_allowed" }, 403);
+  }
 
   if (!env.STRIPE_SECRET_KEY) {
     return json({ error: "stripe_not_configured" }, 503);
@@ -82,8 +89,6 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
     return json({ error: "shipping_countries_not_configured" }, 503);
   }
 
-  const requestUrl = new URL(request.url);
-  const origin = requestUrl.origin;
   const orderRef = safeRef(input.orderRef);
   const customerEmail = safeEmail(input.customerEmail);
 
