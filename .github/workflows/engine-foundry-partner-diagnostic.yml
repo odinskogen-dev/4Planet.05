@@ -1,0 +1,89 @@
+name: Engine Foundry Partner Transfer Diagnostic
+
+on:
+  pull_request:
+    paths:
+      - 'src/labs/engine-foundry/**'
+      - 'src/pages/v5/EngineFoundryLab.tsx'
+      - 'src/pages/v5/PartnerEngineLab.tsx'
+      - 'src/styles/engine-foundry-lab.css'
+      - 'src/styles/partner-engine-lab.css'
+      - 'src/routes/router.tsx'
+      - 'tests/e2e/engine-foundry-partner.spec.ts'
+      - '.github/workflows/engine-foundry-partner-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  transfer-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify Foundry runtime reuse
+        shell: bash
+        run: |
+          test -f src/labs/engine-foundry/runtime.ts
+          test -f src/labs/engine-foundry/priorityEngine.ts
+          test -f src/labs/engine-foundry/partnerEngine.ts
+          grep -q 'from "@/labs/engine-foundry/runtime"' src/labs/engine-foundry/priorityEngine.ts
+          grep -q 'from "@/labs/engine-foundry/runtime"' src/labs/engine-foundry/partnerEngine.ts
+          grep -q 'compileEngine' src/pages/v5/EngineFoundryLab.tsx
+          grep -q 'compileEngine' src/pages/v5/PartnerEngineLab.tsx
+          if grep -E -q '(fetch\(|axios\.|external_send|sendEmail|production_deploy|canon_write|payment)' src/labs/engine-foundry/partnerEngine.ts src/pages/v5/PartnerEngineLab.tsx; then
+            echo 'Partner Engine contains a forbidden execution surface'
+            exit 1
+          fi
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > partner-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/labs/engines/partner > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat partner-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser transfer proof — desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/engine-foundry-partner.spec.ts --project=desktop-1280 --project=mobile-390
+
+      - name: Upload transfer evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-foundry-partner-transfer-evidence
+          path: |
+            partner-preview.log
+            artifacts
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30
