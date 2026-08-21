@@ -9,6 +9,7 @@ const journeyRenderer = readFileSync(new URL("../public/xr/engine/nature-journey
 const cinematicRenderer = readFileSync(new URL("../public/xr/engine/nature-cinematic-journey-v11.js", import.meta.url), "utf8");
 const interactionRenderer = readFileSync(new URL("../public/xr/engine/nature-interaction-v13.js", import.meta.url), "utf8");
 const audioRenderer = readFileSync(new URL("../public/xr/engine/nature-audio-v05.js", import.meta.url), "utf8");
+const fieldAudioRenderer = readFileSync(new URL("../public/xr/engine/nature-field-audio-v19.js", import.meta.url), "utf8");
 const viewportGuard = readFileSync(new URL("../public/xr/engine/nature-viewport-guard-v12.js", import.meta.url), "utf8");
 const premiumCss = readFileSync(new URL("../public/xr/jaguar/jaguar-premium-v12.css", import.meta.url), "utf8");
 const goldCss = readFileSync(new URL("../public/xr/jaguar/jaguar-gold-v13.css", import.meta.url), "utf8");
@@ -162,7 +163,9 @@ test("Premium pass protects every visible journey control surface from viewport 
 
 test("Browser-first experience uses explicit user activation for chaptered Amazonia audio", () => {
   assert.match(manifest.browser.entryCta, /ENTER THE LIVING SYSTEM/i);
-  assert.match(manifest.browser.ambientLabel, /NOT FIELD AUDIO/i);
+  assert.match(manifest.browser.ambientLabel, /FIELD AMBIENCE WHERE AVAILABLE/i);
+  assert.match(fieldAudioRenderer, /JAGUAR PRESENCE CUE · DESIGNED · NOT FIELD AUDIO/i);
+  assert.match(fieldAudioRenderer, /creatureAudio = 'designed-not-field'/i);
   assert.match(browserRenderer, /entryButton\?\.addEventListener\('click', enter\)/);
   assert.match(browserRenderer, /4planet:nature-browser-enter/);
   assert.match(audioRenderer, /AudioContext|webkitAudioContext/);
