@@ -8,7 +8,8 @@ test("four public products have distinct routes and a context-preserving switche
   const routes = read("src/routes/router.tsx");
   const nav = read("src/product/ProductNav.tsx");
   for (const route of ["/atlas", "/species", "/impact"]) assert.match(routes + nav, new RegExp(route.replace("/", "\\/")));
-  assert.match(routes, /<Route path="\/" element=\{<Home \/>\}/);
+  assert.match(routes, /const isSapiensUniverseHost/);
+  assert.match(routes, /<Route path="\/" element=\{sapiensHost \? <SapiensFrontDoor \/> : <Home \/>\} \/>/);
   assert.match(routes, /<Route path="\/story" element=\{<Navigate to="\/" replace \/>\}/);
   assert.match(routes, /<Route path="\/atlas"[\s\S]+<PublicWorld/);
   assert.match(nav, /key: "4PLANET", label: "4PLANET", path: "\/"/);
@@ -77,15 +78,10 @@ test("new source-aware journeys add no unregistered media rights burden", () => 
   const impact = read("src/pages/integrated/ImpactPrototype.tsx");
   const truth = read("src/data/truthSpine.ts");
   const media = read("src/data/speciesMedia.ts");
-  // IMPACT must still embed no images.
   assert.doesNotMatch(impact, /<img|backgroundImage|url\(/);
-  // SPECIES may show images, but ONLY gated by the media-rights registry:
-  // every <img> is guarded by a showable-rights check, and the registry refuses
-  // to show anything without a licence-verified status + local asset.
   assert.match(species, /hasShowableImage/);
   assert.match(media, /rightsStatus === "CLEARED" \|\| m\.rightsStatus === "LICENCE_VERIFIED"/);
   assert.match(media, /&& !!m\.localPath/);
-  // Truth spine rights record preserved.
   assert.match(truth, /licence: "CC BY 4\.0"/);
   assert.match(truth, /attribution: "Karl Anders Olaussen; record published through GBIF"/);
   assert.match(truth, /rightsStatus: "CONDITIONAL"/);
@@ -115,9 +111,7 @@ test("public preview headers and status boundaries are committed", () => {
   const current = read("docs/CURRENT_STATUS.md");
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Content-Security-Policy:/);
-  // The old status doc must be unambiguously marked historical, not current truth.
   assert.match(status, /HISTORICAL \/ SUPERSEDED/);
-  // Current status source must state the honest release-preflight truth.
   assert.match(current, /ONE INTERFACE 03/);
   assert.match(current, /release\/one-interface-03-db328bf/);
   assert.match(current, /db328bf5a67cbc40aa21063068d6965a7ab62b3a/);
@@ -140,9 +134,6 @@ test("rollback removes only the prototype truth-spine objects", () => {
   assert.doesNotMatch(down, /drop schema|drop database/i);
 });
 
-// ── TRUTH CONTRACT (sprint 2, Part 1): a public KNOWN relationship MUST carry a source. ──
-// Enforces RC1 permanently: no confident public claim without evidence. Degrade to
-// INTERPRETED/UNKNOWN, or add a source — never ship a sourceless KNOWN.
 test("every KNOWN relationship in Living Systems carries a source", () => {
   const ls = read("src/data/livingSystems.ts");
   const lines = ls.split("\n");
