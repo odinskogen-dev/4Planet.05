@@ -1,0 +1,41 @@
+name: Bind 4planetmarket.com — audited PR control
+
+on:
+  pull_request:
+    branches:
+      - cre4tors
+    paths:
+      - '.github/workflows/bind-4planetmarket-domain-pr.yml'
+      - 'scripts/bind-4planetmarket-domain.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bind-4planetmarket-domain
+  cancel-in-progress: true
+
+jobs:
+  bind-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact ops candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Bind and verify 4MARKET domain fail-closed
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: bash scripts/bind-4planetmarket-domain.sh
