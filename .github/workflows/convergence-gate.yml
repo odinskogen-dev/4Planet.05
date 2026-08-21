@@ -64,6 +64,8 @@ jobs:
         shell: bash
         run: |
           status=0
+          : > contract-diagnostics.log
+          : > contract-summary.txt
           for test_file in \
             scripts/smoke-v40.mjs \
             scripts/prototype-contracts.test.mjs \
@@ -72,9 +74,21 @@ jobs:
             scripts/one-interface-universe-slice09.test.mjs \
             scripts/sapiens-food-atlas.test.mjs; do
             echo "::group::$test_file"
-            node --test "$test_file" || status=1
+            printf '\n===== %s =====\n' "$test_file" | tee -a contract-diagnostics.log
+            set +e
+            node --test "$test_file" 2>&1 | tee -a contract-diagnostics.log
+            test_status=${PIPESTATUS[0]}
+            set -e
+            if [ "$test_status" -eq 0 ]; then
+              printf 'PASS\t%s\n' "$test_file" | tee -a contract-summary.txt
+            else
+              printf 'FAIL\t%s\n' "$test_file" | tee -a contract-summary.txt
+              status=1
+            fi
             echo "::endgroup::"
           done
+          echo "Contract/smoke diagnostic summary:"
+          cat contract-summary.txt
           exit "$status"
 
       - name: Lint (no NEW warnings; 6 inherited World/layer warnings are known)
@@ -171,6 +185,8 @@ jobs:
           path: |
             exact-sha.txt
             exact-branch.txt
+            contract-diagnostics.log
+            contract-summary.txt
             dependency-audit.txt
             bundle-sizes.csv
             lint.txt
