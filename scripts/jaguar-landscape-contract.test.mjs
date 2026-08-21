@@ -24,7 +24,7 @@ test('Jaguar Journey preserves distinct chapter landscapes beneath the v19 depth
   assert.equal(new Set(backgrounds).size, backgrounds.length, 'Jaguar chapters must not collapse onto one repeated background');
 
   for (const state of expectedStates.slice(1)) {
-    assert.match(v20, new RegExp(`data-cinematic-scene=\\?"${state}\\?"`), `${state} must have a depth-room release rule`);
+    assert.ok(v20.includes(`data-cinematic-scene="${state}"`), `${state} must have a depth-room release rule`);
   }
   assert.match(v20, /opacity:0!important;/, 'Static v19 photographic depth layers must become transparent outside Encounter');
   assert.match(v20, /\.nature-cinematic__scene\.is-active[\s\S]*opacity:1!important;/, 'Active cinematic scene must be explicitly visible');
