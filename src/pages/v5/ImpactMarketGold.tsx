@@ -11,6 +11,7 @@ import {
 import "@/styles/impact-market-gold.css";
 
 const nok = (value: number) => `NOK ${value.toLocaleString("nb-NO")}`;
+const stateLabel = (value: string) => value.replace(/_/g, " ");
 
 function TruthPill({ children }: { children: React.ReactNode }) {
   return <span className="mkt-truth">{children}</span>;
@@ -219,13 +220,13 @@ export default function ImpactMarketGold() {
               <div key={event.state} className={`mkt-event ${index <= eventIndex ? "is-done" : ""} ${index === eventIndex ? "is-current" : ""}`}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <b>{event.label}</b>
-                <strong>{event.state.replaceAll("_", " ")}</strong>
+                <strong>{stateLabel(event.state)}</strong>
               </div>
             ))}
           </div>
           <aside className="mkt-event-control">
             <TruthPill>DEMO EVENT ENGINE</TruthPill>
-            <h3>{currentEvent ? currentEvent.state.replaceAll("_", " ") : approved ? "READY TO RUN" : "CURATION REQUIRED"}</h3>
+            <h3>{currentEvent ? stateLabel(currentEvent.state) : approved ? "READY TO RUN" : "CURATION REQUIRED"}</h3>
             <p>{currentEvent?.detail ?? (approved ? "Run one synthetic order through the complete commerce state machine." : "Approve the product fixture before a transaction can begin.")}</p>
             <div className="mkt-output-mini">
               <div><span>CREATOR PAYABLE</span><strong>{eventIndex >= 3 ? nok(waterfall.creatorPayableNok) : "—"}</strong></div>
