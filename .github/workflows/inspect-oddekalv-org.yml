@@ -18,7 +18,7 @@ jobs:
     env:
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Inspect zone, DNS, Pages status and deployments
+      - name: Inspect zone, DNS and Pages status
         shell: bash
         run: |
           python3 - <<'PY'
@@ -47,36 +47,32 @@ jobs:
               for p in projects.get('result',[]):
                   if p.get('name')=='odinoddekalv' or p.get('subdomain')=='odinoddekalv.pages.dev':
                       print('PAGES_PROJECT:',p.get('name'),p.get('subdomain'),'production_branch=',p.get('production_branch'))
-                      print('PAGES_SOURCE:',json.dumps(p.get('source'),sort_keys=True))
                       ds=cf('GET',f"/accounts/{aid}/pages/projects/{p['name']}/domains")
                       for d in ds.get('result',[]):
                           if d.get('name') in {domain,'www.'+domain}:
                               print('PAGES_DOMAIN:',d.get('name'),'status=',d.get('status'))
-                      deps=cf('GET',f"/accounts/{aid}/pages/projects/{p['name']}/deployments?per_page=30")
-                      print('DEPLOYMENTS_SUCCESS:',deps.get('success'))
-                      for dep in deps.get('result',[]):
-                          meta=(dep.get('deployment_trigger') or {}).get('metadata') or {}
-                          branch=meta.get('branch')
-                          if branch in {'build/odin-universe-01','main'}:
-                              stages=dep.get('stages') or []
-                              last=stages[-1] if stages else {}
-                              print('DEPLOYMENT:',dep.get('id'),'branch=',branch,'env=',dep.get('environment'),'url=',dep.get('url'),'created=',dep.get('created_on'),'latest_stage=',json.dumps(last,sort_keys=True))
                       break
               break
           PY
 
-      - name: Public DNS and HTTPS readback
+      - name: Public production route readback
         shell: bash
         run: |
-          echo "PUBLIC_NS:"
-          dig +short NS oddekalv.org || true
-          echo "PUBLIC_A:"
-          dig +short A oddekalv.org || true
-          echo "PUBLIC_WWW_A:"
-          dig +short A www.oddekalv.org || true
-          echo "HTTPS_APEX:"
-          curl -LIsS --max-time 20 https://oddekalv.org/ | sed -n '1,12p' || true
-          echo "HTTPS_WWW:"
-          curl -LIsS --max-time 20 https://www.oddekalv.org/ | sed -n '1,12p' || true
-          echo "HTML_TITLE_APEX:"
-          curl -LsS --max-time 20 https://oddekalv.org/ | tr '\n' ' ' | grep -oEi '<title>[^<]*</title>' | head -1 || true
+          set -u
+          for url in \
+            https://oddekalv.org/ \
+            https://www.oddekalv.org/ \
+            https://oddekalv.org/story \
+            https://oddekalv.org/manifest \
+            https://oddekalv.org/projects \
+            https://oddekalv.org/journal \
+            https://oddekalv.org/now \
+            https://oddekalv.org/contact; do
+            code=$(curl -LsS -o /tmp/page --max-time 20 -w '%{http_code}' "$url" || true)
+            title=$(tr '\n' ' ' </tmp/page 2>/dev/null | grep -oEi '<title>[^<]*</title>' | head -1 || true)
+            echo "ROUTE: $url status=$code title=$title"
+          done
+          echo "HOME_BRAND_MARKERS:"
+          curl -LsS --max-time 20 https://oddekalv.org/ | tr '\n' ' ' | grep -Eo 'ODIN ODDEKALV|ALT JEG ELSKER LEVER|Read the manifest' | sort -u || true
+          echo "MANIFEST_MARKERS:"
+          curl -LsS --max-time 20 https://oddekalv.org/manifest | tr '\n' ' ' | grep -Eo 'ALT JEG ELSKER LEVER|Everything I Love Is Alive|Therefore I build|For all that lives' | sort -u || true
