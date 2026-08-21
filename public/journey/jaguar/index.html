@@ -8,6 +8,7 @@
   <title>Jaguar Journey — 4PLANET SPECIES_</title>
   <link rel="preload" as="image" href="/assets/missions/am4zonia/hero-mobile.jpg" media="(max-width: 720px)" />
   <link rel="preload" as="image" href="/assets/missions/am4zonia/hero.jpg" media="(min-width: 721px)" />
+  <link rel="preload" as="image" href="/assets/missions/am4zonia/detail-01.jpg" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-xr.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-awe-v04.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-journey-v10.css" />
@@ -20,6 +21,7 @@
   <link rel="stylesheet" href="/xr/engine/nature-journey-premium-v17.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-cinematic-v17.css" />
   <link rel="stylesheet" href="/xr/engine/nature-journey-gold-v18.css" />
+  <link rel="stylesheet" href="/xr/jaguar/jaguar-gold-v19.css" />
   <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"}}</script>
   <script src="/xr/engine/nature-scene-adapter.js"></script>
   <script src="/xr/engine/nature-journey-engine.js"></script>
@@ -30,12 +32,24 @@
   <script src="/xr/engine/nature-interaction-v13.js"></script>
   <script src="/xr/engine/nature-journey-context-v16.js"></script>
   <script src="/xr/engine/nature-journey-premium-v17.js"></script>
-  <script type="module" src="/xr/engine/nature-jaguar-3d-v17.js"></script>
+  <script src="/xr/engine/nature-creature-choreography-v19.js"></script>
+  <script src="/xr/engine/nature-field-audio-v19.js"></script>
+  <script type="module" src="/xr/engine/nature-jaguar-3d-v19.js"></script>
   <script src="/journey/jaguar/jaguar-journey.js"></script>
 </head>
 <body>
-  <main id="browser-experience" class="nature-browser" data-premium-config="/journey/jaguar/premium-v17.json" aria-label="Jaguar immersive living-system journey">
+  <main id="browser-experience" class="nature-browser" data-premium-config="/journey/jaguar/premium-v17.json" data-creature-config="/journey/jaguar/creature-v19.json" aria-label="Jaguar immersive living-system journey">
     <div class="nature-world" aria-hidden="true">
+      <div class="nature-depth-room">
+        <div class="nature-depth-room__layer nature-depth-room__far"></div>
+        <div class="nature-depth-room__layer nature-depth-room__mid"></div>
+        <div class="nature-depth-room__layer nature-depth-room__canopy"></div>
+        <div class="nature-depth-room__layer nature-depth-room__foreground-left"></div>
+        <div class="nature-depth-room__layer nature-depth-room__foreground-right"></div>
+        <div class="nature-depth-room__layer nature-depth-room__fog"></div>
+        <div class="nature-depth-room__layer nature-depth-room__shafts"></div>
+        <div class="nature-depth-room__layer nature-depth-room__vignette"></div>
+      </div>
       <div class="nature-world__background"></div>
       <div class="nature-world__detail"></div>
       <div class="nature-world__state"></div>
@@ -109,8 +123,8 @@
     </aside>
 
     <footer class="nature-footer">
-      <span>4PLANET_ BROWSER JOURNEY ENGINE · JAGUAR GOLD v18</span>
-      <span>3D STUDY = CC BY 3.0 POLY BY GOOGLE · AUDIO = PROCEDURAL / NOT FIELD AUDIO</span>
+      <span>4PLANET_ CREATURE JOURNEY ENGINE · JAGUAR GOLD ILLUSION 19</span>
+      <span>AMAZON FIELD AMBIENCE = FELIX BLUME · CC0 · JAGUAR PRESENCE CUE = DESIGNED / NOT FIELD AUDIO</span>
     </footer>
   </main>
 
