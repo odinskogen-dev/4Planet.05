@@ -154,17 +154,21 @@
 
   const renderScene = (state, event) => {
     if (!layer || !config) return;
-    activeState = state || 'identity';
+    const nextState = state || 'identity';
+    const sameState = activeState === nextState;
+    const preserveDetail = sameState && layer.dataset.detailOpen === 'true';
+    activeState = nextState;
     const scene = sceneConfig(activeState);
     const node = currentNode(event);
     if (!scene) {
       layer.dataset.hasPanel = 'false';
+      layer.dataset.detailOpen = 'false';
       layer.querySelector('.nature-premium__hotspots').innerHTML = '';
       return;
     }
     layer.dataset.mode = scene.mode || activeState;
     layer.dataset.hasPanel = String(Boolean(scene.panel || scene.items?.length || scene.modules?.length || activeState === 'response'));
-    layer.dataset.detailOpen = 'false';
+    if (!preserveDetail) layer.dataset.detailOpen = 'false';
     const kicker = layer.querySelector('.nature-premium__kicker span:first-child');
     const stateNode = layer.querySelector('.nature-premium__state');
     const title = layer.querySelector('.nature-premium__title');
