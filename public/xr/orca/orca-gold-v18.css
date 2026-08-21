@@ -1,0 +1,46 @@
+/* Orca Gold v18 — rights-safe ocean world. No unresolved photographs. */
+.nature-browser[data-premium-config*="/orca/"] .nature-world__background{
+  background-image:
+    radial-gradient(ellipse at 50% 18%,rgba(89,167,255,.3),transparent 34%),
+    radial-gradient(ellipse at 50% 70%,rgba(17,92,125,.2),transparent 52%),
+    linear-gradient(180deg,#0a2940 0%,#071c31 34%,#03101f 72%,#010711 100%)!important;
+  background-color:#03101f!important;
+  filter:none!important;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-world__detail{
+  background-image:
+    linear-gradient(112deg,transparent 0 42%,rgba(112,183,255,.075) 43% 43.5%,transparent 44% 100%),
+    linear-gradient(68deg,transparent 0 58%,rgba(112,183,255,.055) 59% 59.5%,transparent 60% 100%)!important;
+  opacity:.7!important;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-world:before{
+  content:"";position:absolute;inset:-20%;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at 50% 0%,rgba(130,196,255,.16),transparent 46%);
+  animation:orca-caustic-v18 12s ease-in-out infinite alternate;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-cinematic__scene{
+  background-color:#03101f!important;
+  background-blend-mode:screen,normal;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-cinematic__scene.is-active{
+  box-shadow:inset 0 0 180px rgba(0,16,40,.32);
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-entry{
+  background:linear-gradient(180deg,rgba(4,20,38,.08),rgba(2,9,20,.34))!important;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-entry__title,
+.nature-browser[data-premium-config*="/orca/"] .nature-entry__intro{text-shadow:0 14px 50px rgba(0,0,0,.55);}
+.nature-browser[data-premium-config*="/orca/"] .nature-subject__image{
+  mix-blend-mode:screen;
+  filter:contrast(1.15) brightness(.88) saturate(.9) drop-shadow(0 0 26px rgba(90,170,255,.16))!important;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-subject__halo{opacity:1!important;}
+.nature-browser[data-premium-config*="/orca/"] .nature-premium-hotspot__dot{box-shadow:0 0 0 1px rgba(255,255,255,.58),0 0 0 10px rgba(106,167,255,.1),0 0 28px rgba(106,167,255,.42)!important;}
+@media(max-width:760px){
+  .nature-browser[data-premium-config*="/orca/"] .nature-entry__content{padding-top:18vh!important;}
+  .nature-browser[data-premium-config*="/orca/"] .nature-entry__title{font-size:clamp(48px,14.5vw,70px)!important;line-height:.9!important;}
+  .nature-browser[data-premium-config*="/orca/"] .nature-subject{top:42%!important;width:112vw!important;opacity:.88;}
+  .nature-browser[data-premium-config*="/orca/"] .nature-premium-hotspot:nth-child(n+3){display:none!important;}
+}
+@keyframes orca-caustic-v18{from{transform:translate3d(-2%,-1%,0) scale(1);opacity:.65}to{transform:translate3d(2%,2%,0) scale(1.04);opacity:1}}
+@media(prefers-reduced-motion:reduce){.nature-browser[data-premium-config*="/orca/"] .nature-world:before{animation:none!important}}
