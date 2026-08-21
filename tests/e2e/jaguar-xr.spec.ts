@@ -18,14 +18,23 @@ async function expectJourneyFrameSafe(page: Page, root: Locator, label: string) 
   const hud = page.locator(".nature-journey-hud");
   await expect(hud).toBeVisible();
   await expectViewportSafe(page, hud, `${label} HUD`);
-  await expect(page.locator(".nature-premium__panel")).toBeHidden();
 
   const viewport = page.viewportSize();
+  const premiumPanel = page.locator(".nature-premium__panel");
   if (viewport && viewport.width <= 760) {
+    // Gold mobile removes the duplicate editorial panel from layout entirely.
+    await expect(premiumPanel).toBeHidden();
     await expect(page.locator(".nature-context-ribbon")).toBeHidden();
     await expect(page.locator(".nature-premium__audio")).toBeHidden();
     const visibleHotspots = page.locator('.nature-premium-hotspot:visible');
     expect(await visibleHotspots.count(), `${label} mobile hotspot budget`).toBeLessThanOrEqual(2);
+  } else {
+    // Desktop keeps the panel mounted for an explicit future/open state, but the
+    // Gold layer makes it visually absent by opacity + pointer-event suppression.
+    // Playwright's visibility model intentionally still counts opacity:0 elements
+    // as visible, so assert the actual product contract instead of toBeHidden().
+    await expect(premiumPanel).toHaveCSS("opacity", "0");
+    await expect(premiumPanel).toHaveCSS("pointer-events", "none");
   }
 }
 
