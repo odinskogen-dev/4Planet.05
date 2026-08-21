@@ -10,13 +10,14 @@
       "truthLabel": "SPECIES MEDIA · SOURCE-AWARE",
       "audioLabel": "CANOPY + INSECTS · PROCEDURAL · NOT FIELD AUDIO",
       "hotspots": [
-        { "label": "JAGUAR", "sublabel": "DRAG THE 3D STUDY", "x": 67, "y": 53, "tone": "life", "kicker": "INTERACTIVE SUBJECT", "detail": "Progressive 3D study for presence and inspection. It is presentation media, not a live animal or occurrence record." },
+        { "label": "JAGUAR", "sublabel": "OPEN 3D STUDY", "x": 67, "y": 53, "tone": "life", "kicker": "INTERACTIVE SUBJECT", "detail": "Controlled species media stays primary. Open the optional stylised 3D study for inspection; it is presentation media, not a live animal or occurrence record." },
         { "label": "CANOPY LIFE", "sublabel": "LOOK CLOSER", "x": 28, "y": 29, "tone": "life", "kicker": "LIVING WORLD", "detail": "The encounter begins inside a living place rather than on a catalogue page. Scene media remains illustrative context." },
         { "label": "RIVER SYSTEM", "sublabel": "FOLLOW THE WATER", "x": 80, "y": 31, "tone": "life", "kicker": "PLACE CONTEXT", "detail": "Water becomes a route into habitat and relationships. This label is scene context, not a local condition measurement." }
       ],
       "items": [
         { "label": "Species identity", "note": "Panthera onca · canonical SPECIES identity", "state": "KNOWN" },
-        { "label": "3D subject", "note": "CC BY model study · presentation layer only", "state": "MEDIA" },
+        { "label": "Primary subject", "note": "Controlled species media · presentation layer only", "state": "MEDIA" },
+        { "label": "3D study", "note": "Optional CC BY model study · explicit user action", "state": "MEDIA" },
         { "label": "Location", "note": "Amazonia journey context · not a live position", "state": "BOUNDARY" }
       ]
     },
