@@ -1,0 +1,49 @@
+name: Inspect Odin Universe preview deployment
+
+on:
+  push:
+    branches:
+      - ops/oddekalv-domain
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect Pages project deployments
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          token=os.environ['CF_API_TOKEN']; api='https://api.cloudflare.com/client/v4'
+          def cf(path):
+              req=urllib.request.Request(api+path,headers={'Authorization':f'Bearer {token}','Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try:return json.loads(e.read().decode())
+                  except Exception:return {'success':False,'errors':[{'message':str(e)}]}
+          accounts=cf('/accounts?per_page=50')
+          for acct in accounts.get('result',[]):
+              aid=acct['id']
+              projects=cf(f'/accounts/{aid}/pages/projects')
+              p=next((x for x in projects.get('result',[]) if x.get('name')=='odinoddekalv'),None)
+              if not p: continue
+              print('PROJECT:',p.get('name'),'subdomain=',p.get('subdomain'),'production_branch=',p.get('production_branch'))
+              print('SOURCE:',json.dumps(p.get('source'),sort_keys=True))
+              deps=cf(f'/accounts/{aid}/pages/projects/odinoddekalv/deployments?per_page=20')
+              print('DEPLOYMENTS_SUCCESS:',deps.get('success'))
+              for d in deps.get('result',[]):
+                  trig=d.get('deployment_trigger') or {}
+                  meta=trig.get('metadata') or {}
+                  branch=meta.get('branch')
+                  if branch in {'build/odin-universe-01','main'}:
+                      stages=d.get('stages') or []
+                      print('DEPLOYMENT:',d.get('id'),'branch=',branch,'env=',d.get('environment'),'url=',d.get('url'),'created=',d.get('created_on'),'latest_stage=',json.dumps(stages[-1] if stages else {}))
+              break
+          PY
