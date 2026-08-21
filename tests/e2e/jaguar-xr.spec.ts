@@ -34,7 +34,9 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
-  const root = page.locator(".nature-world");
+  // Runtime state contracts live on the Journey root. `.nature-world` is the
+  // visual background layer only and must not become a second state surface.
+  const root = page.locator("#browser-experience");
   await expect(root).toHaveAttribute("data-species-id", "jaguar");
   await expect(root).toHaveAttribute("data-premium-version", "17");
   await expect(root).toHaveAttribute("data-jaguar3d-mode", /manual-study|disabled/);
@@ -79,7 +81,7 @@ test("Jaguar premium Browser Journey travels through distinct scenes with author
     let threeState = await root.getAttribute("data-jaguar3d");
     if (threeState === "loading") {
       await page.waitForFunction(() => {
-        const el = document.querySelector(".nature-world");
+        const el = document.querySelector("#browser-experience");
         const state = el?.getAttribute("data-jaguar3d");
         return state !== "loading";
       }, undefined, { timeout: 5_000 }).catch(() => undefined);
