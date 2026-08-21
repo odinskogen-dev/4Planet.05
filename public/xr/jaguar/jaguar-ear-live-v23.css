@@ -1,7 +1,6 @@
-/* 4PLANET Jaguar v23 — immediate live Ear.Rodriguez 3D bridge.
-   The controlled downloaded GLB remains the canonical target asset. Until the
-   binary can be committed into the repository, the same public Sketchfab model
-   is rendered through the official viewer inside the v22 physical jungle room. */
+/* 4PLANET Jaguar v24 — visible-first Ear.Rodriguez 3D bridge.
+   The actual Ear model is now creature-priority on desktop. Performance
+   adaptation may simplify the room but may not silently replace it with photo. */
 
 .nature-ear-live-v23{
   position:fixed;
@@ -10,8 +9,8 @@
   opacity:0;
   visibility:hidden;
   pointer-events:none;
-  transition:opacity .65s ease,transform 1.1s cubic-bezier(.2,.75,.2,1);
-  transform:translate3d(2.5%,1%,0) scale(.975);
+  transition:opacity .5s ease,transform .85s cubic-bezier(.2,.75,.2,1);
+  transform:translate3d(2%,.6%,0) scale(.982);
   contain:layout paint style;
 }
 .nature-ear-live-v23[data-active="true"]{
@@ -24,8 +23,9 @@
   position:absolute;
   inset:0;
   overflow:hidden;
-  -webkit-mask-image:radial-gradient(ellipse 67% 65% at 53% 54%,#000 0 58%,rgba(0,0,0,.86) 68%,rgba(0,0,0,.28) 83%,transparent 100%);
-  mask-image:radial-gradient(ellipse 67% 65% at 53% 54%,#000 0 58%,rgba(0,0,0,.86) 68%,rgba(0,0,0,.28) 83%,transparent 100%);
+  background:radial-gradient(ellipse at 54% 55%,rgba(2,12,5,.16),rgba(1,7,3,.58) 76%,rgba(1,5,2,.92));
+  -webkit-mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
+  mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
 }
 .nature-ear-live-v23__viewer{
   position:absolute;
@@ -33,16 +33,16 @@
   width:118%;
   height:114%;
   border:0;
-  background:transparent;
+  background:#010703;
 }
 .nature-ear-live-v23__ground{
   position:absolute;
   left:18%;right:9%;bottom:2%;height:24%;
   z-index:-1;
-  background:radial-gradient(ellipse at 52% 52%,rgba(0,0,0,.66) 0 20%,rgba(0,0,0,.34) 42%,transparent 74%);
+  background:radial-gradient(ellipse at 52% 52%,rgba(0,0,0,.7) 0 20%,rgba(0,0,0,.36) 42%,transparent 74%);
   transform:perspective(600px) rotateX(70deg);
   transform-origin:center;
-  opacity:.86;
+  opacity:.9;
 }
 .nature-ear-live-v23__veil{
   position:absolute;
@@ -50,8 +50,18 @@
   pointer-events:none;
   z-index:2;
   background:
-    linear-gradient(180deg,rgba(0,7,3,.12),transparent 23% 71%,rgba(0,6,3,.42)),
-    radial-gradient(ellipse 54% 48% at 53% 55%,transparent 0 61%,rgba(0,5,2,.26) 83%,rgba(0,5,2,.58) 100%);
+    linear-gradient(180deg,rgba(0,7,3,.1),transparent 24% 70%,rgba(0,6,3,.38)),
+    radial-gradient(ellipse 56% 50% at 53% 55%,transparent 0 64%,rgba(0,5,2,.22) 84%,rgba(0,5,2,.55) 100%);
+}
+.nature-ear-live-v23__status{
+  position:absolute;
+  z-index:4;
+  left:8%;
+  top:8%;
+  color:rgba(58,232,111,.82);
+  font:700 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.13em;
+  pointer-events:none;
 }
 .nature-ear-live-v23__controls{
   position:absolute;
@@ -61,26 +71,23 @@
   display:flex;
   align-items:center;
   gap:7px;
-  opacity:.56;
+  opacity:.74;
   transition:opacity .25s ease;
 }
 .nature-ear-live-v23:hover .nature-ear-live-v23__controls{opacity:1;}
 .nature-ear-live-v23__controls button{
-  border:1px solid rgba(58,232,111,.35);
-  background:rgba(2,9,4,.72);
-  color:#cffff0;
+  border:1px solid rgba(58,232,111,.42);
+  background:rgba(2,9,4,.8);
+  color:#d7ffe1;
   padding:8px 10px;
   cursor:pointer;
   font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
   letter-spacing:.12em;
 }
 .nature-ear-live-v23__controls button:hover,
-.nature-ear-live-v23__controls button:focus-visible{
-  border-color:#3ae86f;
-  color:#3ae86f;
-}
+.nature-ear-live-v23__controls button:focus-visible{border-color:#3ae86f;color:#3ae86f;}
 .nature-ear-live-v23__controls span{
-  color:rgba(255,255,255,.42);
+  color:rgba(255,255,255,.5);
   font:600 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
   letter-spacing:.1em;
 }
@@ -89,57 +96,50 @@
   z-index:4;
   left:8%;
   bottom:7%;
-  color:rgba(255,255,255,.38);
+  color:rgba(255,255,255,.42);
   text-decoration:none;
   font:600 6px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;
   letter-spacing:.09em;
 }
 .nature-ear-live-v23__credit:hover{color:#3ae86f;}
 
-/* Once the live Ear study is ready, the photographic Jaguar retreats. */
-.nature-browser[data-jaguar3d="ear-live-bridge"] .nature-subject{
-  opacity:.08!important;
+/* Direct embed and API-enhanced states both retire the photograph. */
+.nature-browser[data-jaguar3d="ear-live-bridge"] .nature-subject,
+.nature-browser[data-jaguar3d="ear-direct-embed"] .nature-subject{
+  opacity:.03!important;
   pointer-events:none!important;
 }
 
 /* The physical room closes around the live creature. */
-.nature-browser[data-jaguar3d="ear-live-bridge"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
-.nature-browser[data-jaguar3d="ear-live-bridge"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
   z-index:31!important;
   pointer-events:none!important;
 }
-.nature-browser[data-jaguar3d="ear-live-bridge"][data-cinematic-scene="identity"] .nature-depth-room__canopy{
+.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__canopy{
   z-index:30!important;
   pointer-events:none!important;
 }
-.nature-browser[data-jaguar-attention="visitor"] .nature-depth-room__shafts{
-  opacity:.62!important;
-}
-.nature-browser[data-jaguar-attention="motion"] .nature-ear-live-v23{
-  transform:translate3d(-.5%,0,0) scale(1.012);
-}
+.nature-browser[data-jaguar-attention="visitor"] .nature-depth-room__shafts{opacity:.62!important;}
+.nature-browser[data-jaguar-attention="motion"] .nature-ear-live-v23{transform:translate3d(-.5%,0,0) scale(1.012);}
 
 /* Never carry the live viewer into later chapters. */
-.nature-browser:not([data-cinematic-scene="identity"]) .nature-ear-live-v23{
-  display:none!important;
-}
+.nature-browser:not([data-cinematic-scene="identity"]) .nature-ear-live-v23{display:none!important;}
 
-/* Keep the live iframe out of the aggressive lite path. */
+/* Critical v24 change: LITE simplifies everything around the Jaguar instead
+   of deleting the Jaguar itself. */
 .nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23{
-  display:none!important;
+  display:block!important;
+  inset:10vh 2vw 12vh 28vw;
 }
+.nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23__veil{opacity:.72;}
+.nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23__controls span{display:none;}
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__mid,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__shafts,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__fog{display:none!important;}
 
 @media(max-width:760px){
-  .nature-ear-live-v23{
-    inset:12vh -23vw 23vh -8vw;
-  }
-  .nature-ear-live-v23__controls{
-    right:17%;
-    bottom:4%;
-  }
-  .nature-ear-live-v23__controls span,
-  .nature-ear-live-v23__credit{display:none;}
-  .nature-ear-live-v23__controls button{padding:7px 9px;}
+  .nature-ear-live-v23{display:none!important;}
 }
 
 @media(prefers-reduced-motion:reduce){
