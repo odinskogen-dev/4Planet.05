@@ -1,7 +1,8 @@
 (() => {
   const boot = () => {
     const root = document.getElementById('browser-experience');
-    if (!root || root.dataset.jaguarLiveBridge === 'v24') return;
+    if (!root || root.dataset.jaguarLiveBridgeBooted === 'true') return;
+    root.dataset.jaguarLiveBridgeBooted = 'true';
 
     const MODEL_UID = '91c61c329d2a4668816f81f08dfcd492';
     const MODEL_SOURCE = 'https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492';
@@ -22,8 +23,6 @@
 
     const identityScene = () => root.dataset.cinematicScene === 'identity' || root.dataset.sceneState === 'identity';
     const desktopViewport = () => window.innerWidth > 760;
-    // Creature fidelity is now the priority. Performance adaptation may remove
-    // secondary atmosphere, but it may not silently replace Ear with the old photo.
     const viewerAllowed = () => desktopViewport();
 
     function markViewerVisible(state = 'ear-direct-embed') {
@@ -54,8 +53,6 @@
         <a class="nature-ear-live-v23__credit" href="${MODEL_SOURCE}" target="_blank" rel="noreferrer">3D JAGUAR · EAR.RODRIGUEZ · CC BY 4.0</a>`;
       root.appendChild(shell);
       iframe = shell.querySelector('iframe');
-      // Critical fix: render the actual model immediately. Viewer API is only
-      // an enhancement layer; it is no longer a prerequisite for 3D visibility.
       iframe.src = EMBED_URL;
 
       shell.querySelector('[data-ear-action="observe"]')?.addEventListener('click', (event) => {
@@ -176,7 +173,6 @@
             });
           },
           error() {
-            // Direct iframe remains the working 3D experience.
             shell.dataset.ready = 'direct-embed';
             markViewerVisible('ear-direct-embed');
           }
@@ -285,7 +281,9 @@
     document.addEventListener('visibilitychange', () => document.hidden ? hide() : reconcileViewport());
     window.addEventListener('pagehide', hide, { once: true });
 
-    root.dataset.jaguarLiveBridge = 'v24';
+    // Keep the established public data-contract so existing Journey QA remains
+    // stable while the implementation is hardened underneath it.
+    root.dataset.jaguarLiveBridge = 'v23';
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
