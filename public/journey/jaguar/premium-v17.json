@@ -1,57 +1,55 @@
 {
-  "version": "premium-v17",
+  "version": "premium-v26",
   "journeyId": "jaguar-amazonia",
   "scenes": {
     "identity": {
       "mode": "encounter",
-      "kicker": "01 / 05 · ENCOUNTER",
+      "kicker": "01 / 08 · ENCOUNTER",
       "title": "Meet one life.",
       "body": "Start with the living animal. Look, listen and move before the system opens around it.",
-      "truthLabel": "SPECIES MEDIA · SOURCE-AWARE",
-      "audioLabel": "CANOPY + INSECTS · PROCEDURAL · NOT FIELD AUDIO",
+      "truthLabel": "SPECIES IDENTITY · SOURCE-AWARE",
+      "audioLabel": "AMAZON FIELD AMBIENCE + DESIGNED PRESENCE · SOURCE-LABELLED",
       "hotspots": [
-        { "label": "JAGUAR", "sublabel": "OPEN 3D STUDY", "x": 67, "y": 53, "tone": "life", "kicker": "INTERACTIVE SUBJECT", "detail": "Controlled species media stays primary. Open the optional stylised 3D study for inspection; it is presentation media, not a live animal or occurrence record." },
-        { "label": "CANOPY LIFE", "sublabel": "LOOK CLOSER", "x": 28, "y": 29, "tone": "life", "kicker": "LIVING WORLD", "detail": "The encounter begins inside a living place rather than on a catalogue page. Scene media remains illustrative context." },
-        { "label": "RIVER SYSTEM", "sublabel": "FOLLOW THE WATER", "x": 80, "y": 31, "tone": "life", "kicker": "PLACE CONTEXT", "detail": "Water becomes a route into habitat and relationships. This label is scene context, not a local condition measurement." }
+        { "label": "JAGUAR", "sublabel": "INTERACTIVE 3D", "x": 67, "y": 53, "tone": "life", "kicker": "INTERACTIVE SUBJECT", "detail": "Ear.Rodriguez Jaguar presentation asset, CC BY 4.0. The current local proxy is presentation media, not a live animal or occurrence record." },
+        { "label": "CANOPY", "sublabel": "LOOK UP", "x": 28, "y": 29, "tone": "life", "kicker": "AUTHORED JUNGLE ROOM", "detail": "The 3D room creates depth around the animal. It is a designed scene, not a measured habitat reconstruction." },
+        { "label": "WATER", "sublabel": "FOLLOW THE SYSTEM", "x": 80, "y": 31, "tone": "life", "kicker": "PLACE CONTEXT", "detail": "Water becomes a visual route into habitat and relationships. This is context, not a local condition measurement." }
       ],
       "items": [
-        { "label": "Species identity", "note": "Panthera onca · canonical SPECIES identity", "state": "KNOWN" },
-        { "label": "Primary subject", "note": "Controlled species media · presentation layer only", "state": "MEDIA" },
-        { "label": "3D study", "note": "Optional CC BY model study · explicit user action", "state": "MEDIA" },
-        { "label": "Location", "note": "Amazonia journey context · not a live position", "state": "BOUNDARY" }
+        { "label": "Species", "note": "Panthera onca · canonical SPECIES identity", "state": "KNOWN" },
+        { "label": "3D creature", "note": "Ear.Rodriguez · CC BY 4.0 · presentation asset", "state": "MEDIA" },
+        { "label": "Jungle room", "note": "Authored Three.js space · not habitat evidence", "state": "INTERPRETIVE" }
       ]
     },
     "dependency": {
       "mode": "relationship",
-      "kicker": "02 / 05 · RELATIONSHIP",
+      "kicker": "02 / 08 · LIVING WEB",
       "title": "Follow the relationship.",
       "body": "Leave the portrait. Trace one sourced relationship outward into prey, water and the wider living web.",
       "truthLabel": "RELATIONSHIP · EVIDENCE-BOUND",
-      "audioLabel": "RIVER + CANOPY · PROCEDURAL · NOT FIELD AUDIO",
+      "audioLabel": "RIVER + FIELD AMBIENCE + RELATIONSHIP MOTIF",
       "hotspots": [
         { "label": "JAGUAR", "sublabel": "ANCHOR", "x": 38, "y": 49, "tone": "life", "kicker": "SPECIES ANCHOR", "detail": "The journey remains anchored to canonical Jaguar identity while the relationship layer expands." },
-        { "label": "CAPYBARA", "sublabel": "PREY RELATIONSHIP", "x": 66, "y": 43, "tone": "life", "kicker": "SOURCED RELATIONSHIP", "detail": "A relationship node from the shared SPECIES relationship contract. Open HOW DO WE KNOW? for the source and boundary." },
-        { "label": "WATER", "sublabel": "HABITAT CONTEXT", "x": 53, "y": 68, "tone": "ocean", "kicker": "SYSTEM CONTEXT", "detail": "Water is shown as spatial context around the relationship. Co-location alone is not presented as causation." }
+        { "label": "CAPYBARA", "sublabel": "PREY RELATIONSHIP", "x": 66, "y": 43, "tone": "life", "kicker": "SOURCED RELATIONSHIP", "detail": "A sourced Jaguar–capybara relationship. Open HOW DO WE KNOW? for the exact evidence and geographic boundary." },
+        { "label": "WATER", "sublabel": "HABITAT CONTEXT", "x": 53, "y": 68, "tone": "ocean", "kicker": "SYSTEM CONTEXT", "detail": "Water is shown as spatial context. Co-location alone is not presented as causation." }
       ],
       "items": [
-        { "label": "Relationship class", "note": "Canonical relation + source boundary", "state": "KNOWN" },
+        { "label": "Relationship", "note": "Canonical relation + source boundary", "state": "KNOWN" },
         { "label": "Spatial context", "note": "Context only; not inferred causation", "state": "BOUNDARY" },
-        { "label": "Next move", "note": "Pull back from animal to habitat", "state": "JOURNEY" }
+        { "label": "Next", "note": "Pull back from animal to ecosystem", "state": "JOURNEY" }
       ]
     },
     "habitat": {
       "mode": "habitat",
-      "kicker": "03 / 05 · CONNECTED HABITAT",
+      "kicker": "03 / 08 · ECOSYSTEM + ATLAS",
       "title": "The animal is not the whole story.",
       "body": "Pull back. Rivers, floodplain forest, canopy and movement corridors turn one species encounter into a living-system view.",
       "truthLabel": "PLACE + SYSTEM CONTEXT",
-      "audioLabel": "RIVER + CANOPY + DISTANT CALLS · PROCEDURAL",
+      "audioLabel": "WIDE CANOPY + RIVER + DISTANT FIELD AMBIENCE",
       "hotspots": [
         { "label": "RIVER SYSTEM", "sublabel": "MOVEMENT + WATER", "x": 47, "y": 51, "tone": "ocean", "kicker": "HABITAT CONTEXT", "detail": "The river is a spatial organising feature in this scene. No water-quality condition is inferred from the image." },
         { "label": "FLOODPLAIN FOREST", "sublabel": "CONNECTED HABITAT", "x": 65, "y": 31, "tone": "life", "kicker": "HABITAT LAYER", "detail": "A habitat concept layer used to help the user see the wider system around the animal." },
         { "label": "UPPER CANOPY", "sublabel": "VERTICAL LIFE", "x": 31, "y": 31, "tone": "life", "kicker": "HABITAT LAYER", "detail": "The canopy is presented as part of the living place, not as a measured biodiversity inventory for this exact view." },
-        { "label": "RIPARIAN CORRIDOR", "sublabel": "CONNECTIVITY", "x": 77, "y": 49, "tone": "life", "kicker": "CONNECTIVITY CONCEPT", "detail": "Connectivity is a product concept here. Any local corridor claim requires mapped evidence before publication." },
-        { "label": "SOIL NETWORK", "sublabel": "BELOW THE CANOPY", "x": 66, "y": 72, "tone": "life", "kicker": "LIVING SYSTEM", "detail": "A prompt to explore below-ground relationships later. No species or process is asserted from this scene alone." }
+        { "label": "CONNECTIVITY", "sublabel": "MOVEMENT", "x": 77, "y": 49, "tone": "life", "kicker": "CONNECTIVITY CONCEPT", "detail": "Connectivity is a system concept here. Any local corridor claim requires mapped evidence before publication." }
       ],
       "items": [
         { "label": "Animal", "note": "One entrance into a larger system", "state": "ANCHOR" },
@@ -64,20 +62,19 @@
     },
     "pressure": {
       "mode": "pressure",
-      "kicker": "04 / 05 · UNDER PRESSURE",
+      "kicker": "04 / 08 · PRESSURE + UNDERSTANDING",
       "title": "Now the landscape changes.",
-      "body": "See fragmentation as a change in the system, then inspect what the evidence actually supports before moving to response.",
+      "body": "See fragmentation as pressure, then inspect what the evidence actually supports before moving to response.",
       "truthLabel": "PRESSURE · SOURCE-BOUND",
-      "audioLabel": "LOW TENSION + REDUCED CANOPY · PROCEDURAL",
+      "audioLabel": "REDUCED CANOPY + LOW PRESSURE BED + FIELD AMBIENCE DUCKED",
       "hotspots": [
-        { "label": "FRAGMENTATION", "sublabel": "HABITAT BREAK", "x": 47, "y": 59, "tone": "pressure", "kicker": "PRESSURE", "detail": "The Journey uses fragmentation as the pressure concept. The scene must not be read as a live or exact quantitative condition map." },
+        { "label": "FRAGMENTATION", "sublabel": "HABITAT BREAK", "x": 47, "y": 59, "tone": "pressure", "kicker": "PRESSURE", "detail": "Fragmentation is used as a pressure concept. This frame is not a live or exact quantitative condition map." },
         { "label": "LAND CONVERSION", "sublabel": "DRIVER CATEGORY", "x": 70, "y": 34, "tone": "pressure", "kicker": "DRIVER", "detail": "Land conversion is a documented Amazon pressure category. Local attribution requires place- and time-specific evidence." },
-        { "label": "ROADS + ACCESS", "sublabel": "DRIVER CONTEXT", "x": 59, "y": 47, "tone": "pressure", "kicker": "DRIVER CONTEXT", "detail": "Infrastructure can open new access, but no percentage or local causal contribution is asserted in this prototype frame." },
-        { "label": "EVIDENCE", "sublabel": "HOW DO WE KNOW?", "x": 78, "y": 68, "tone": "pressure", "kicker": "EVIDENCE", "detail": "Use the Journey evidence control for the exact source record and limitation attached to this node." }
+        { "label": "EVIDENCE", "sublabel": "HOW DO WE KNOW?", "x": 78, "y": 68, "tone": "pressure", "kicker": "UNDERSTANDING", "detail": "Use HOW DO WE KNOW? to inspect the source record and limitation attached to the pressure node." }
       ],
       "items": [
-        { "label": "Occurrence", "note": "Never treated as range or population", "state": "BOUNDARY" },
         { "label": "Pressure", "note": "Sourced category; local magnitude not inferred", "state": "KNOWN / BOUNDED" },
+        { "label": "Occurrence", "note": "Never treated as range or population", "state": "BOUNDARY" },
         { "label": "Time", "note": "No false live-state claim", "state": "BOUNDARY" }
       ],
       "modules": [
@@ -86,27 +83,25 @@
     },
     "response": {
       "mode": "response",
-      "kicker": "05 / 05 · RESPONSE",
+      "kicker": "05 / 08 · SOLUTIONS",
       "title": "Pressure is not the destination.",
-      "body": "Move from problem intelligence into response pathways. These are solution classes and actor roles — not claims that 4PLANET has selected, funded or delivered them.",
+      "body": "Compare response classes against the problem. A solution class is not evidence of delivery or impact.",
       "truthLabel": "SOLUTIONS INTELLIGENCE · PROTOTYPE",
-      "audioLabel": "CANOPY RETURN + FORWARD MOTIF · PROCEDURAL",
+      "audioLabel": "CANOPY RETURN + FORWARD RESPONSE MOTIF",
       "hotspots": [
-        { "label": "RESTORE", "sublabel": "RIPARIAN + HABITAT", "x": 42, "y": 31, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Restoration can be explored as a response class. Delivery effectiveness depends on ecology, governance, permanence and local stewardship." },
+        { "label": "RESTORE", "sublabel": "HABITAT", "x": 42, "y": 31, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Restoration can be explored as a response class. Effectiveness depends on ecology, governance, permanence and local stewardship." },
         { "label": "PROTECT", "sublabel": "CONNECTIVITY", "x": 69, "y": 37, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Protection is a pathway class, not a generic outcome claim. A real project requires an accountable actor and evidence." },
-        { "label": "MONITOR", "sublabel": "LAND-USE CHANGE", "x": 58, "y": 58, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Monitoring can strengthen evidence and accountability. Monitoring alone is not ecological recovery." },
-        { "label": "LOCAL STEWARDSHIP", "sublabel": "PEOPLE + PLACE", "x": 77, "y": 63, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Local and Indigenous stewardship is represented as an actor-role category only. No partnership or endorsement is implied." }
+        { "label": "MONITOR", "sublabel": "LAND-USE CHANGE", "x": 58, "y": 58, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Monitoring can strengthen evidence and accountability. Monitoring alone is not ecological recovery." }
       ],
       "items": [
-        { "label": "Solution intelligence", "note": "Compare response classes, evidence and fit", "state": "PROTOTYPE" },
-        { "label": "Actor intelligence", "note": "Role classes only until organisations are verified", "state": "FAIL-CLOSED" },
-        { "label": "Action", "note": "No impact claim before delivery evidence", "state": "BOUNDARY" }
+        { "label": "Restore", "note": "Habitat recovery pathway", "state": "SOLUTION CLASS" },
+        { "label": "Protect", "note": "Connectivity / habitat protection pathway", "state": "SOLUTION CLASS" },
+        { "label": "Monitor", "note": "Evidence / accountability pathway", "state": "SOLUTION CLASS" }
       ],
       "modules": [
         { "label": "Restore habitat", "state": "SOLUTION CLASS · REVIEW REQUIRED", "href": "/missions/am4zonia" },
         { "label": "Protect connectivity", "state": "SOLUTION CLASS · REVIEW REQUIRED", "href": "/missions/am4zonia" },
-        { "label": "Monitor change", "state": "EVIDENCE / MONITORING PATHWAY", "href": "/atlas?journey=jaguar-amazonia" },
-        { "label": "Open Solutions pathway", "state": "PRODUCT PROTOTYPE · NO DELIVERY CLAIM", "href": "/missions/am4zonia" }
+        { "label": "Monitor change", "state": "EVIDENCE / MONITORING PATHWAY", "href": "/atlas?journey=jaguar-amazonia" }
       ],
       "actorRoles": [
         "LOCAL / INDIGENOUS STEWARDSHIP",
@@ -114,6 +109,75 @@
         "PUBLIC AUTHORITIES",
         "RESTORATION OPERATORS",
         "CAPITAL / FUNDERS"
+      ]
+    },
+    "actors": {
+      "mode": "actors",
+      "kicker": "06 / 08 · ACTORS",
+      "title": "Solutions need accountable actors.",
+      "body": "Match each response to the actor roles capable of delivering it in place. Named organisations require separate verification before publication.",
+      "truthLabel": "ACTOR ROLES · NOT PARTNERSHIPS",
+      "audioLabel": "HUMAN-SCALE PULSE + CANOPY BED · NO PARTNERSHIP SIGNAL",
+      "hotspots": [
+        { "label": "STEWARDSHIP", "sublabel": "PEOPLE + PLACE", "x": 31, "y": 42, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Local and Indigenous stewardship is represented as an actor-role category only. No partnership or endorsement is implied." },
+        { "label": "SCIENCE", "sublabel": "MONITORING + EVIDENCE", "x": 58, "y": 34, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Science and monitoring actors can establish evidence, but monitoring is not itself ecological recovery." },
+        { "label": "DELIVERY", "sublabel": "RESTORATION + PROTECTION", "x": 73, "y": 57, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Delivery actors require verified competence, geography and project accountability before any action is offered." }
+      ],
+      "items": [
+        { "label": "Actor identity", "note": "Specific organisations remain fail-closed until verified", "state": "VERIFY FIRST" },
+        { "label": "Actor fit", "note": "Solution + geography + capability", "state": "MATCH" },
+        { "label": "Partnership", "note": "Never inferred from a profile or reference", "state": "BOUNDARY" }
+      ],
+      "actorRoles": [
+        "LOCAL / INDIGENOUS STEWARDSHIP",
+        "SCIENCE + MONITORING",
+        "PUBLIC AUTHORITIES",
+        "RESTORATION OPERATORS",
+        "CAPITAL / FUNDERS"
+      ]
+    },
+    "action": {
+      "mode": "action",
+      "kicker": "07 / 08 · ACTION + IMPACT UNITS",
+      "title": "Action begins only when delivery is real.",
+      "body": "The action path is Project → Actor → Unit → Evidence. If a verified Jaguar-linked unit does not exist, the interface says so instead of inventing one.",
+      "truthLabel": "ACTION · FAIL-CLOSED UNTIL VERIFIED",
+      "audioLabel": "FORWARD MOTIF + LOW CANOPY BED · NO TRANSACTION SOUND",
+      "hotspots": [
+        { "label": "PROJECT", "sublabel": "DEFINED DELIVERY", "x": 32, "y": 48, "tone": "response", "kicker": "ACTION OBJECT", "detail": "A real action starts with a defined project and scope, not a generic donation button." },
+        { "label": "ACTOR", "sublabel": "ACCOUNTABLE DELIVERY", "x": 55, "y": 38, "tone": "response", "kicker": "DELIVERY ACCOUNTABILITY", "detail": "The responsible actor must be verified before action can be presented as deliverable." },
+        { "label": "IMPACT UNIT", "sublabel": "VERIFICATION REQUIRED", "x": 72, "y": 61, "tone": "response", "kicker": "UNIT GATE", "detail": "No Jaguar-specific verified purchasable impact unit is asserted in this prototype. The gate remains visible rather than fabricated." }
+      ],
+      "items": [
+        { "label": "Project", "note": "Must have a defined scope and owner", "state": "REQUIRED" },
+        { "label": "Actor", "note": "Must be verified for capability + geography", "state": "REQUIRED" },
+        { "label": "Impact Unit", "note": "No Jaguar-specific verified unit active in this prototype", "state": "NOT ACTIVE" }
+      ],
+      "modules": [
+        { "label": "Open AM4ZONIA mission", "state": "MISSION CONTEXT · NOT A VERIFIED UNIT", "href": "/missions/am4zonia" },
+        { "label": "Jaguar impact unit", "state": "NO VERIFIED UNIT ACTIVE · FAIL-CLOSED" }
+      ]
+    },
+    "proof": {
+      "mode": "proof",
+      "kicker": "08 / 08 · PROOF + REPORTING",
+      "title": "The journey does not end at a click.",
+      "body": "Proof closes the loop: what happened, where, who delivered it, what evidence exists, and what ecological result can honestly be claimed.",
+      "truthLabel": "PROOF · EVIDENCE BEFORE OUTCOME",
+      "audioLabel": "CALM RESOLUTION + FIELD AMBIENCE RETURN",
+      "hotspots": [
+        { "label": "WHERE", "sublabel": "PLACE + TIME", "x": 31, "y": 44, "tone": "response", "kicker": "PROOF FIELD", "detail": "Reporting needs a place and time boundary before it can be interpreted." },
+        { "label": "WHO", "sublabel": "DELIVERY ACCOUNTABILITY", "x": 55, "y": 36, "tone": "response", "kicker": "PROOF FIELD", "detail": "The delivery actor and its responsibility must be explicit." },
+        { "label": "EVIDENCE", "sublabel": "WHAT ACTUALLY HAPPENED", "x": 72, "y": 57, "tone": "response", "kicker": "PROOF FIELD", "detail": "Evidence precedes any ecological outcome claim. Delivery evidence and ecological impact are not the same thing." }
+      ],
+      "items": [
+        { "label": "Delivery", "note": "What happened and who delivered it", "state": "EVIDENCE" },
+        { "label": "Place + time", "note": "Where and when the action occurred", "state": "EVIDENCE" },
+        { "label": "Ecological result", "note": "Claim only what monitoring supports", "state": "VERIFY" }
+      ],
+      "modules": [
+        { "label": "Return to AM4ZONIA", "state": "MISSION CONTEXT", "href": "/missions/am4zonia" },
+        { "label": "Inspect Jaguar in ATLAS", "state": "SPATIAL EVIDENCE HANDOFF", "href": "/atlas?entity=taxon:gbif:5219426" }
       ]
     }
   }
