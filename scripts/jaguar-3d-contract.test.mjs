@@ -38,6 +38,8 @@ test('live bridge uses exact Ear model with official animation semantics and mul
   assert.match(html, /nature-jaguar-sketchfab-v23\.js/);
   assert.match(html, /jaguar-ear-live-v23\.css/);
   assert.match(liveBridge, /91c61c329d2a4668816f81f08dfcd492/);
+  assert.match(liveBridge, /iframe\.src = EMBED_URL/);
+  assert.match(liveBridge, /ear-direct-embed/);
   assert.match(liveBridge, /getAnimations/);
   assert.match(liveBridge, /setCurrentAnimationByUID/);
   assert.match(liveBridge, /seekTo/);
@@ -73,16 +75,18 @@ test('Gold runtime uses reusable creature choreography and can map real GLB clip
   assert.match(renderer, /detectReactiveBones/);
 });
 
-test('Jaguar runtime remains progressive and performance bounded', () => {
+test('Jaguar runtime remains progressive and performance bounded without deleting the creature on desktop', () => {
   assert.match(html, /jaguar-performance-v21\.css/);
   assert.match(renderer, /runtimeBudget/);
   assert.match(renderer, /rendererPixelRatio/);
   assert.match(renderer, /renderInterval/);
   assert.match(renderer, /dataset\.jaguar3d/);
   assert.match(legacyCss, /data-performance-tier=lite/);
-  assert.match(liveBridge, /budgetAllows/);
+  assert.match(liveBridge, /viewerAllowed/);
+  assert.match(liveBridge, /const viewerAllowed = \(\) => desktopViewport\(\)/);
   assert.match(liveBridge, /api\?\.pause/);
   assert.match(liveBridge, /window\.innerWidth > 760/);
+  assert.match(liveCss, /data-runtime-budget="lite"[\s\S]*nature-ear-live-v23[\s\S]*display:block!important/);
 });
 
 test('Gold room keeps layered rainforest depth and live creature occlusion', () => {
