@@ -398,8 +398,8 @@
         "subjectScale": 0.6,
         "subjectOpacity": 0,
         "worldBrightness": 0.76,
-        "worldSaturation": .96,
-        "veilOpacity": .5
+        "worldSaturation": 0.96,
+        "veilOpacity": 0.5
       }
     },
     {
@@ -454,7 +454,7 @@
         "subjectOpacity": 0,
         "worldBrightness": 0.8,
         "worldSaturation": 1.02,
-        "veilOpacity": .4
+        "veilOpacity": 0.4
       }
     },
     {
@@ -509,7 +509,7 @@
         "subjectOpacity": 0,
         "worldBrightness": 0.9,
         "worldSaturation": 1.04,
-        "veilOpacity": .32
+        "veilOpacity": 0.32
       }
     }
   ]
