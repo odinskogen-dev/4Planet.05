@@ -4,6 +4,16 @@ import { test, expect } from "@playwright/test";
 const OUT = "artifacts/jaguar-world";
 mkdirSync(OUT, { recursive: true });
 
+test("Orca local asset provenance review sheet renders every candidate photo", async ({ page }) => {
+  await page.goto("/internal/orca-assets-review.html", { waitUntil: "networkidle" });
+  for (const name of ["hero", "pod", "fjord", "spyhop", "ice"]) {
+    const image = page.getByRole("img", { name });
+    await expect(image).toBeVisible();
+    await expect(image).toHaveJSProperty("complete", true);
+  }
+  await page.screenshot({ path: `${OUT}/orca-local-assets-contact-sheet.png`, fullPage: true });
+});
+
 test("Jaguar Species World stays life-first while Atlas, evidence, relationships and cause paths remain truthful", async ({ page }, testInfo) => {
   await page.goto("/species/jaguar", { waitUntil: "domcontentloaded" });
   const hero = page.locator("article > header").first();
