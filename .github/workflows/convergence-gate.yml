@@ -4,8 +4,7 @@ name: ONE INTERFACE Convergence Gate
 on:
   push:
     branches:
-      - convergence/one-interface
-      - claude/one-interface-premium-completion
+      - king/test
   pull_request:
   workflow_dispatch:
 
@@ -25,6 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
 
       - name: Assert exact PR head
         shell: bash
@@ -46,6 +46,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: GOLD authority contract
+        run: node scripts/gold-policy-check.mjs --mode=quality-contract
 
       - name: Install locked dependencies
         run: npm ci
