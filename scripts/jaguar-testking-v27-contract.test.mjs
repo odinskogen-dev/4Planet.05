@@ -29,7 +29,7 @@ test('TEST KING Jaguar 27 uses controlled local Ear runtime and keeps the creatu
 
 test('TEST KING Jaguar local GLB is structurally complete before browser parse',()=>{
   const cfg=JSON.parse(read('public/journey/jaguar/creature-v27.json'));
-  const runtimePath=cfg.actor.preferred.runtimePath.replace(/^\//,'');
+  const runtimePath=`public/${cfg.actor.preferred.runtimePath.replace(/^\//,'')}`;
   const compressed=readFileSync(url(runtimePath));
   const glb=gunzipSync(compressed);
 
