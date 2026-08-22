@@ -5,6 +5,7 @@ import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
+import "@/styles/gold-human-craft.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
