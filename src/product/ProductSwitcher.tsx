@@ -56,11 +56,25 @@ function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { acti
 
 function TypeMark({ activeLabel, dark, accent = "#2E2EFF" }: { activeLabel: string; dark?: boolean; accent?: string }) {
   const fg = dark ? "#fff" : "#080808";
+  const muted = dark ? "rgba(255,255,255,.7)" : "rgba(8,8,8,.6)";
+
+  // On the 4PLANET umbrella shell the wordmark is already immediately beside
+  // this trigger. Repeating “4PLANET” a second time creates false hierarchy and
+  // launcher noise, so the control names its job instead. Product pages keep the
+  // compact 4·PRODUCT orientation mark because there is no adjacent umbrella name.
+  if (activeLabel === "4PLANET") {
+    return (
+      <span aria-hidden style={{ fontSize: 10.5, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".13em", color: muted, lineHeight: 1 }}>
+        PRODUCTS
+      </span>
+    );
+  }
+
   return (
     <span aria-hidden style={{ display: "inline-flex", alignItems: "baseline", gap: 3, fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1 }}>
       <span style={{ fontSize: 17, color: fg }}>4</span>
       <span style={{ width: 4, height: 4, borderRadius: "50%", background: accent, alignSelf: "center" }} />
-      <span style={{ fontSize: 11, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".1em", color: dark ? "rgba(255,255,255,.7)" : "rgba(8,8,8,.6)" }}>{activeLabel}</span>
+      <span style={{ fontSize: 11, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".1em", color: muted }}>{activeLabel}</span>
     </span>
   );
 }
