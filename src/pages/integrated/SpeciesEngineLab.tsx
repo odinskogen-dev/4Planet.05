@@ -125,7 +125,7 @@ function UniversalProfileView({ profile }: { profile: UniversalTaxonProfile }) {
           </div>
         </div>
 
-        <aside style={{ padding: "clamp(28px,4vw,52px)", background: T.mist }}>
+        <aside style={{ padding: "clamp(28px,4vw,52px)", background: "#F5F5F4" }}>
           <div style={{ ...mono, color: T.dim }}>Norway context</div>
           <div style={{ marginTop: 15, fontFamily: T.display, fontSize: 30, lineHeight: 1 }}>
             {profile.norwegianContext?.existsInCountry === true
