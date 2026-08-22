@@ -44,7 +44,7 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar MASTER v26 renders the local interactive 3D room and travels through all eight Gold frames", async ({ page }, testInfo) => {
+test("Jaguar MASTER rejects the degraded proxy, uses the real Ear source model on desktop, and preserves all eight Gold frames", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
@@ -54,14 +54,12 @@ test("Jaguar MASTER v26 renders the local interactive 3D room and travels throug
   await expect(root).toHaveAttribute("data-premium-version", "26");
   await expect(root).toHaveAttribute("data-creature-engine", "v19");
   await expect(root).toHaveAttribute("data-creature-preferred-asset", "ear-rodriguez-jaguar");
-  await expect(root).toHaveAttribute("data-jaguar-local-runtime", "v26");
-  await expect(root).toHaveAttribute("data-jaguar3d", "local-room-ready");
-  await expect(root).toHaveAttribute("data-jaguar-room", "three-v26");
-  await expect(root).toHaveAttribute("data-jaguar-master", "pr79-agent-jaguar-journey-v11");
   await expect(root).toHaveAttribute("data-runtime-controller", "v21");
   await expect(root).toHaveAttribute("data-runtime-budget", /full|balanced|lite/);
-  await expect(page.locator("iframe")).toHaveCount(0);
 
+  // Regression: the 457-vertex derived proxy must never be promoted as the Gold creature again.
+  await expect(page.locator(".nature-3d-subject--room-v26")).toHaveCount(0);
+  await expect(page.locator('script[src*="nature-jaguar-local-v26.js"]')).toHaveCount(0);
   await expect(page.locator(".nature-depth-room")).toBeVisible();
   await expect(page.locator(".nature-audio-provenance-v19")).toHaveCount(1);
 
@@ -70,49 +68,34 @@ test("Jaguar MASTER v26 renders the local interactive 3D room and travels throug
   await enter.click();
   await expect(root).toHaveAttribute("data-entered", "true");
   await expect(root).toHaveAttribute("data-creature-phase", /emerge|walk|stop|breathe|observe|reveal|hold/, { timeout: 3_000 });
-  await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
   await expect(root).toHaveAttribute("data-audio-chapter", "identity");
 
-  const creature = page.locator('.nature-3d-subject--room-v26[data-visible="true"][data-ready="true"]');
-  await expect(creature).toBeVisible();
-  const canvas = creature.locator("canvas");
-  await expect(canvas).toBeVisible();
-  const canvasBox = await canvas.boundingBox();
-  expect(canvasBox?.width || 0, "local 3D canvas width").toBeGreaterThan(100);
-  expect(canvasBox?.height || 0, "local 3D canvas height").toBeGreaterThan(100);
-
-  const photo = page.locator(".nature-subject");
-  await expect(photo).toHaveCSS("visibility", "hidden");
-
-  const look = creature.getByRole("button", { name: "LOOK AT ME" });
-  const move = creature.getByRole("button", { name: "MOVE" });
-  await expect(look).toBeVisible();
-  await expect(move).toBeVisible();
-  await look.click();
-  await expect(root).toHaveAttribute("data-jaguar-attention", /visitor|rest/);
-  await move.click();
-  await expect(root).toHaveAttribute("data-jaguar-attention", /motion|rest/);
-
-  const creatureBox = await creature.boundingBox();
-  if (creatureBox) {
-    await page.mouse.move(creatureBox.x + creatureBox.width * .48, creatureBox.y + creatureBox.height * .45);
-    await page.mouse.down();
-    await page.mouse.move(creatureBox.x + creatureBox.width * .57, creatureBox.y + creatureBox.height * .45, { steps: 4 });
-    await page.mouse.up();
-    await expect(creature).toHaveAttribute("data-dragging", "false");
-  }
-
   const viewport = page.viewportSize();
-  if (viewport && viewport.width <= 760) {
-    await expect(creature).toHaveCSS("display", "block");
-    await expect(page.locator(".nature-world-card")).toBeHidden();
+  const desktop = Boolean(viewport && viewport.width > 760);
+  const photo = page.locator(".nature-subject");
+
+  if (desktop) {
+    const live = page.locator('.nature-ear-live-v23[data-active="true"]');
+    await expect(live).toBeVisible({ timeout: 10_000 });
+    await expect(root).toHaveAttribute("data-jaguar3d", /ear-direct-embed|ear-live-bridge/);
+    await expect(root).toHaveAttribute("data-jaguar3d-source", "ear-rodriguez-jaguar");
+    await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
+    const iframe = live.locator('iframe[title="Interactive 3D Jaguar by Ear.Rodriguez"]');
+    await expect(iframe).toHaveCount(1);
+    await expect(iframe).toHaveAttribute("src", /sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/);
+    await expect(photo).toHaveCSS("pointer-events", "none");
+    await expect(live.getByRole("link", { name: /3D JAGUAR · EAR.RODRIGUEZ/i })).toHaveAttribute("href", /sketchfab\.com\/3d-models\/jaguar-91c61c329d2a4668816f81f08dfcd492/);
+  } else {
+    // Mobile remains fail-closed on controlled species media until the actual 1K GLB is self-hosted.
+    await expect(page.locator(".nature-ear-live-v23")).toHaveCount(0);
+    await expect(photo).toBeVisible();
   }
 
   await expect(page.locator(".nature-progress__step")).toHaveCount(8);
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
   await exercisePremiumHotspot(page, /JAGUAR/i, /JAGUAR/i);
   await expectJourneyFrameSafe(page, root, "01 ENCOUNTER");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-v26-01-encounter.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-real-source-01-encounter.png`, fullPage: true });
 
   const next = page.locator(".nature-journey-hud__next");
   const frame = async (state: string, title: RegExp, label: string) => {
@@ -125,8 +108,7 @@ test("Jaguar MASTER v26 renders the local interactive 3D room and travels throug
 
   await frame("dependency", /Follow the relationship/i, "02 LIVING WEB");
   await expect(root).toHaveAttribute("data-creature-phase", "dormant");
-  await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
-  await expect(creature).toBeHidden();
+  if (desktop) await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
   await expect(page.locator(".nature-depth-room__far")).toHaveCSS("display", "none");
 
   await frame("habitat", /animal is not the whole story/i, "03 ECOSYSTEM + ATLAS");
@@ -140,7 +122,7 @@ test("Jaguar MASTER v26 renders the local interactive 3D room and travels throug
   await frame("proof", /journey does not end at a click/i, "08 PROOF + REPORTING");
   await expect(page.locator(".nature-premium")).toHaveAttribute("data-mode", "proof");
   await expect(page.locator(".nature-premium")).toContainText(/EVIDENCE BEFORE OUTCOME|Evidence precedes/i);
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-v26-08-proof.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-real-source-08-proof.png`, fullPage: true });
 
   const sound = page.locator(".nature-sound");
   await expect(sound).toBeVisible();
