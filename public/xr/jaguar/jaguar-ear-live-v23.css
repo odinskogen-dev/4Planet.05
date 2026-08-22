@@ -1,6 +1,6 @@
 /* 4PLANET Jaguar v24 — visible-first Ear.Rodriguez 3D bridge.
-   The actual Ear model is now creature-priority on desktop. Performance
-   adaptation may simplify the room but may not silently replace it with photo. */
+   The actual Ear model is creature-priority on desktop only after the Viewer API
+   has confirmed the model scene graph. Until then, controlled species media remains visible. */
 
 .nature-ear-live-v23{
   position:fixed;
@@ -13,7 +13,7 @@
   transform:translate3d(2%,.6%,0) scale(.982);
   contain:layout paint style;
 }
-.nature-ear-live-v23[data-active="true"]{
+.nature-ear-live-v23[data-active="true"][data-ready="true"]{
   opacity:1;
   visibility:visible;
   pointer-events:none;
@@ -107,20 +107,19 @@
 }
 .nature-ear-live-v23__credit:hover{color:#3ae86f;}
 
-/* Direct embed and API-enhanced states both retire the photograph. */
-.nature-browser[data-jaguar3d="ear-live-bridge"] .nature-subject,
-.nature-browser[data-jaguar3d="ear-direct-embed"] .nature-subject{
+/* Only a verified-ready Ear viewer may retire the controlled photograph. */
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"] .nature-subject{
   opacity:.03!important;
   pointer-events:none!important;
 }
 
-/* The physical room closes around the live creature. */
-.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
-.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+/* The physical room closes around the verified-ready live creature. */
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
   z-index:31!important;
   pointer-events:none!important;
 }
-.nature-browser:is([data-jaguar3d="ear-live-bridge"],[data-jaguar3d="ear-direct-embed"])[data-cinematic-scene="identity"] .nature-depth-room__canopy{
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__canopy{
   z-index:30!important;
   pointer-events:none!important;
 }
@@ -130,8 +129,7 @@
 /* Never carry the live viewer into later chapters. */
 .nature-browser:not([data-cinematic-scene="identity"]) .nature-ear-live-v23{display:none!important;}
 
-/* Critical v24 change: LITE simplifies everything around the Jaguar instead
-   of deleting the Jaguar itself. */
+/* LITE simplifies the room around a verified-ready Jaguar instead of deleting it. */
 .nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23{
   display:block!important;
   inset:10vh 2vw 12vh 28vw;
@@ -144,8 +142,6 @@
 
 @media(max-width:760px){
   .nature-ear-live-v23{display:none!important;}
-  /* Mobile has one authored story HUD. Do not resurrect the legacy prey card
-     above it; the relationship remains available through the scene + hotspots. */
   .nature-browser[data-premium-layer][data-scene-state="dependency"] .nature-world-card[data-type="relationship"][data-visible="true"]{display:none!important;}
 }
 
