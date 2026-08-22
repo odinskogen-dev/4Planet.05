@@ -19,22 +19,36 @@ const CAMERA_RETRY_MS = 250;
 const CAMERA_RETRY_WINDOW_MS = 20_000;
 let cameraRetryTimer: number | null = null;
 let cameraRetryDeadline = 0;
+let orcaIntentLatched = false;
 
 function normalise(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function hasOrcaIntent(url = new URL(window.location.href)) {
+function urlHasOrcaIntent(url = new URL(window.location.href)) {
   return url.searchParams.get("intent") === "taxon" && url.searchParams.get("entity") === ORCA_INTENT.id;
 }
 
+function hasOrcaIntent(url = new URL(window.location.href)) {
+  return orcaIntentLatched || urlHasOrcaIntent(url);
+}
+
+function preserveIntentParams(url: URL) {
+  if (!hasOrcaIntent(url) && !orcaIntentLatched) return url;
+  url.searchParams.set("entity", ORCA_INTENT.id);
+  url.searchParams.set("intent", "taxon");
+  url.searchParams.set("context", ORCA_INTENT.context.id);
+  return url;
+}
+
 function buildSpeciesHref() {
-  const returnTo = new URL(window.location.href);
+  const returnTo = preserveIntentParams(new URL(window.location.href));
   returnTo.searchParams.delete("record");
   return `/species/orca?entity=${encodeURIComponent(ORCA_INTENT.id)}&returnTo=${encodeURIComponent(`${returnTo.pathname}${returnTo.search}${returnTo.hash}`)}`;
 }
 
 function activateOrcaIntent() {
+  orcaIntentLatched = true;
   const url = new URL(window.location.href);
   url.searchParams.set("entity", ORCA_INTENT.id);
   url.searchParams.set("intent", "taxon");
@@ -101,8 +115,6 @@ function installContextBadge() {
     return;
   }
 
-  // Mount independently of World internals. PublicWorld may replace its map
-  // subtree while resolving the entity, but the taxon boundary and handoff must survive.
   const badge = document.createElement("aside");
   badge.className = "atlas-intent-context";
   badge.setAttribute("data-atlas-intent-context", ORCA_INTENT.context.id);
@@ -113,6 +125,14 @@ function installContextBadge() {
     <small>${ORCA_INTENT.context.boundary}</small>
     <a data-atlas-species-handoff href="${buildSpeciesHref()}">OPEN ORCA IN SPECIES →</a>`;
   document.body.appendChild(badge);
+}
+
+function restoreIntentUrl() {
+  if (!orcaIntentLatched) return;
+  const current = new URL(window.location.href);
+  if (urlHasOrcaIntent(current) && current.searchParams.get("context") === ORCA_INTENT.context.id) return;
+  preserveIntentParams(current);
+  window.history.replaceState(null, "", `${current.pathname}${current.search}${current.hash}`);
 }
 
 function restoreContextCamera() {
@@ -136,21 +156,20 @@ function clearCameraRetry() {
 }
 
 function observationSectionReady() {
-  // Treat the canonical context panel's rendered text as the contract. World is
-  // free to evolve its internal section wrappers; taxon camera truth must not
-  // depend on a private `.sec` DOM shape. The browser gate also verifies this
-  // same public text before asserting the regional camera.
   const panel = document.querySelector<HTMLElement>(".ctx");
   return Boolean(panel?.textContent?.includes("RECORDED OBSERVATIONS"));
 }
 
 function attemptContextStabilisation() {
   if (!hasOrcaIntent() || !observationSectionReady()) return false;
+  restoreIntentUrl();
   if (!restoreContextCamera()) return false;
 
   document.documentElement.dataset.atlasTaxonContextStabilised = "true";
   window.setTimeout(() => {
-    if (hasOrcaIntent()) restoreContextCamera();
+    if (!hasOrcaIntent()) return;
+    restoreIntentUrl();
+    restoreContextCamera();
   }, 900);
   clearCameraRetry();
   return true;
@@ -161,14 +180,10 @@ function stabiliseContextCamera() {
     clearCameraRetry();
     return;
   }
+  restoreIntentUrl();
   if (document.documentElement.dataset.atlasTaxonContextStabilised === "true") return;
   if (attemptContextStabilisation()) return;
 
-  // World and MapLibre can materialise after the taxon panel. DOM mutation alone
-  // is therefore not a reliable map-readiness signal. Once taxon intent exists,
-  // retry for a bounded window until both the observations section and canonical
-  // map instance exist. This prevents a late arbitrary occurrence camera from
-  // becoming the taxon context while remaining fail-closed if the map never loads.
   if (cameraRetryTimer !== null) return;
   if (!cameraRetryDeadline) cameraRetryDeadline = Date.now() + CAMERA_RETRY_WINDOW_MS;
   const retry = () => {
@@ -177,6 +192,7 @@ function stabiliseContextCamera() {
       clearCameraRetry();
       return;
     }
+    restoreIntentUrl();
     if (attemptContextStabilisation()) return;
     if (Date.now() >= cameraRetryDeadline) {
       clearCameraRetry();
@@ -192,6 +208,7 @@ export default function AtlasTaxonIntentGuard() {
   useEffect(() => {
     let scheduled = false;
     let boundInput: HTMLInputElement | null = null;
+    orcaIntentLatched = urlHasOrcaIntent();
 
     const sync = () => {
       const input = document.querySelector<HTMLInputElement>(`input[aria-label="${SEARCH_LABEL}"]`);
@@ -245,6 +262,7 @@ export default function AtlasTaxonIntentGuard() {
       }
       observer.disconnect();
       clearCameraRetry();
+      orcaIntentLatched = false;
       document.querySelector("[data-atlas-taxon-intent]")?.remove();
       document.querySelector("[data-atlas-intent-context]")?.remove();
       delete document.documentElement.dataset.atlasTaxonContextStabilised;
