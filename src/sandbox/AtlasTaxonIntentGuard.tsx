@@ -20,6 +20,10 @@ function normalise(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function hasOrcaIntent(url = new URL(window.location.href)) {
+  return url.searchParams.get("intent") === "taxon" && url.searchParams.get("entity") === ORCA_INTENT.id;
+}
+
 function activateOrcaIntent() {
   const url = new URL(window.location.href);
   url.searchParams.set("entity", ORCA_INTENT.id);
@@ -79,10 +83,12 @@ function installCanonicalResult(query: string) {
 }
 
 function installContextBadge() {
-  const url = new URL(window.location.href);
-  if (url.searchParams.get("intent") !== "taxon" || url.searchParams.get("entity") !== ORCA_INTENT.id) return;
-  if (document.querySelector("[data-atlas-intent-context]") || !document.querySelector(".world")) return;
+  if (!hasOrcaIntent()) return;
+  if (document.querySelector("[data-atlas-intent-context]")) return;
 
+  // Mount independently of World internals. The previous implementation waited
+  // for `.world`, but PublicWorld can replace that subtree while resolving the
+  // entity, which made the taxon boundary disappear on both desktop and mobile.
   const badge = document.createElement("aside");
   badge.className = "atlas-intent-context";
   badge.setAttribute("data-atlas-intent-context", ORCA_INTENT.context.id);
@@ -91,12 +97,11 @@ function installContextBadge() {
     <span>${ORCA_INTENT.label.toUpperCase()} · TAXON INTENT</span>
     <b>${ORCA_INTENT.context.label}</b>
     <small>${ORCA_INTENT.context.boundary}</small>`;
-  document.querySelector(".world")?.appendChild(badge);
+  document.body.appendChild(badge);
 }
 
 function stabiliseContextCamera() {
-  const url = new URL(window.location.href);
-  if (url.searchParams.get("intent") !== "taxon" || url.searchParams.get("entity") !== ORCA_INTENT.id) return;
+  if (!hasOrcaIntent()) return;
   const map = (window as typeof window & { __4planet_map?: any }).__4planet_map;
   const panel = document.querySelector<HTMLElement>(".ctx");
   if (!map || !panel || !panel.textContent?.includes(ORCA_INTENT.label)) return;
