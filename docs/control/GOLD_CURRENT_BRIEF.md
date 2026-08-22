@@ -2,46 +2,46 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. For any material user-facing mutation, update this file in the same bounded change before implementation. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** GOLD-HARDEN-01  
-**STATUS:** CONTROL / NON-USER-FACING ENFORCEMENT  
-**BASE AUTHORITY:** `king/test` / PR #131  
-**DONOR DECISION:** ALREADY PRESENT / CONTROL HARDENING — no user-facing donor adopted by this change.
+**CHANGE ID:** GOLD-F0-HUMAN-CRAFT-01  
+**STATUS:** TEST / ONE INTERFACE F0 QUALITY CONTRACT  
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #132  
+**DONOR DECISION:** `ALREADY PRESENT + REVIEW/EXTRACT` — current shell is baseline; PR #92 remains a selective donor, not a wholesale winner.
 
 ## USER ARRIVES BECAUSE
-The end user does not arrive for this control-only change. The internal user is the product/code agent that needs one unavoidable quality path before changing a public experience.
+A normal person arrives at 4PLANET without internal project context and needs to understand what this is, where they can go and what the natural next action is.
 
 ## ONE THING TO UNDERSTAND
-GOLD quality, REDUCE BEFORE GENERATE and TEST KING/LIVE KING are execution gates, not optional design advice.
+4PLANET is one connected living-planet system. The homepage must communicate that before navigation/product machinery becomes the experience.
 
 ## PRIMARY ACTION
-Run the canonical pre-code brief and quality gates before any future user-facing mutation; converge accepted work only through `king/test`.
+Enter the living planet through the current hero/ATLAS handoff or choose the one relevant public product without losing orientation.
 
 ## SECONDARY DEPTH
-Detailed donor archaeology, primitive evidence, rendered comparisons and human testing remain in their existing control/evidence layers.
+Domains, Missions, sources, evidence, participation and advanced product controls remain available after the primary meaning/orientation is clear.
 
 ## P1 DOMINANT
-One canonical GOLD authority and one TEST KING.
+The living planet / page premise: `One connected living planet.`
 
 ## P2 ORIENTATION
-BRAIN owns programme quality authority; this repository enforces that authority at the coding surface.
+4PLANET identity plus the public product-family context; navigation chrome remains subordinate to the page.
 
 ## P3 ACTION / NEXT
-Close known bypasses, verify machine gates, then resume ONE INTERFACE-first convergence under issue #132.
+A clear hero continuation (`ENTER ATLAS`) and explicit product navigation when requested.
 
 ## P4 DEPTH
-Repository inventory, donor ledger, exact SHAs, workflow evidence, visual baseline hashes, limitations and learning writeback.
+Detailed products, domains, missions, source/status information, participation options and technical metadata.
 
 ## WHAT CAN BE REMOVED
-Duplicate quality systems, stale active-line references, old workflow push targets and any implication that an open donor PR is an active product line.
+Duplicate navigation cues, stale canon, generic app-launcher signals, repeated labels, hidden horizontal overflow and any chrome that competes visually with the hero/premise.
 
 ## WHAT MUST BE REUSED
-Existing GOLD/WORLD CLASS authority, QUAL-GOLD WBS overlay, Code Lineage Register, issue #132 donor programme, current CI/browser gates and Product Context/truth controls.
+Current TEST KING PublicShell, skip-to-main behaviour, canonical ProductSwitcher, shared Product Context, existing homepage hero, current truth/status contracts and existing Chromium/WebKit evidence machinery. PR #92 may donate only individually proven shell behaviours.
 
 ## TRUTH BOUNDARY
-This pass hardens process/control and may adjust tests/workflows. It does not by itself make any product GOLD, Founder-accepted, deployed or LIVE. GitHub hosting-level branch protection/rulesets are not claimed changed unless independently verified.
+This change adds machine browser assertions for human-facing hierarchy and mobile/navigation integrity. It does not itself claim that subjective visual hierarchy is Founder-approved, that every donor has been adopted, or that TEST KING is LIVE. Browser assertions are evidence, not human validation.
 
 ## MOBILE-FIRST RISK
-No runtime UI delta is intended in the enforcement tranche. Subsequent ONE INTERFACE work must use 390×844, 430×932 and desktop evidence before GOLD judgement.
+Navigation could overflow, touch controls could become unreachable, a hidden menu layer could trap the viewport, or old labels could appear at 390/430 widths. The test therefore checks horizontal overflow, mobile menu reachability and the same dominant heading at 390 and 430.
 
 ## HUMAN SUCCESS
-A future code agent cannot plausibly start user-facing work without encountering the GOLD contract, and TEST KING changes automatically produce the relevant engineering/rendered evidence. A Founder still receives one coherent TEST KING candidate rather than competing branches.
+Without assistance, the first viewport has one dominant H1, the skip-link reaches main content, the menu exposes current public product labels without obsolete canon, mobile has no material horizontal overflow, and the page offers a clear next action while preserving one coherent family.
