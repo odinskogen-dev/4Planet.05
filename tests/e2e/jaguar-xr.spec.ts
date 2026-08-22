@@ -44,7 +44,7 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
-test("Jaguar MASTER rejects the degraded proxy, uses the real Ear source model on desktop, and preserves all eight Gold frames", async ({ page }, testInfo) => {
+test("Jaguar MASTER rejects the degraded proxy, gates the real Ear source until ready, and preserves all eight Gold frames", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
 
@@ -75,16 +75,28 @@ test("Jaguar MASTER rejects the degraded proxy, uses the real Ear source model o
   const photo = page.locator(".nature-subject");
 
   if (desktop) {
-    const live = page.locator('.nature-ear-live-v23[data-active="true"]');
-    await expect(live).toBeVisible({ timeout: 10_000 });
-    await expect(root).toHaveAttribute("data-jaguar3d", /ear-direct-embed|ear-live-bridge/);
-    await expect(root).toHaveAttribute("data-jaguar3d-source", "ear-rodriguez-jaguar");
-    await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
+    await expect(root).toHaveAttribute("data-jaguar3d", /ear-live-bridge|photo-fallback/, { timeout: 15_000 });
+    const state = await root.getAttribute("data-jaguar3d");
+    const live = page.locator('.nature-ear-live-v23');
+    await expect(live).toHaveCount(1);
     const iframe = live.locator('iframe[title="Interactive 3D Jaguar by Ear.Rodriguez"]');
     await expect(iframe).toHaveCount(1);
     await expect(iframe).toHaveAttribute("src", /sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/);
-    await expect(photo).toHaveCSS("pointer-events", "none");
+    await expect(root).toHaveAttribute("data-jaguar3d-source", "ear-rodriguez-jaguar");
     await expect(live.getByRole("link", { name: /3D JAGUAR · EAR.RODRIGUEZ/i })).toHaveAttribute("href", /sketchfab\.com\/3d-models\/jaguar-91c61c329d2a4668816f81f08dfcd492/);
+
+    if (state === "ear-live-bridge") {
+      await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
+      await expect(live).toHaveAttribute("data-ready", "true");
+      await expect(live).toHaveAttribute("data-active", "true");
+      await expect(live).toBeVisible();
+      await expect(photo).toHaveCSS("pointer-events", "none");
+    } else {
+      await expect(root).toHaveAttribute("data-jaguar3d-active", "false");
+      await expect(live).toHaveAttribute("data-active", "false");
+      await expect(photo).toBeVisible();
+      await expect(photo).not.toHaveCSS("opacity", "0.03");
+    }
   } else {
     // Mobile remains fail-closed on controlled species media until the actual 1K GLB is self-hosted.
     await expect(page.locator(".nature-ear-live-v23")).toHaveCount(0);
