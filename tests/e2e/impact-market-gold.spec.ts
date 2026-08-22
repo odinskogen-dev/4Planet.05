@@ -40,7 +40,8 @@ test.describe("4PLANET MARKET — SALE 01 physical-commerce boundary", () => {
 
     await expect(page.getByRole("heading", { name: /THE SHOP.*THE WORK.*THE PAYMENT ROUTE/i })).toBeVisible();
     await expect(page.getByText(/current Stripe link is sandbox-only and is not a live physical order/i)).toBeVisible();
-    await expect(page.getByText(/Production starts only after a physical POD variant and provider SKU are approved/i)).toBeVisible();
+    await expect(page.getByText(/Supplier pricing is verified, but production starts only after physical sample approval and live fulfilment credentials/i)).toBeVisible();
+    await expect(page.getByText(/Current supplier quote: EUR 7\.00 production \+ EUR 10\.25 tracked Norway shipping before Norwegian VAT or carrier handling; true landed cost remains open/i)).toBeVisible();
     await expect(page.getByText(/Payment, production, dispatch, creator payable and Impact remain separate states/i)).toBeVisible();
     await expect(page.getByText(/No ecological outcome is claimed from a product purchase/i)).toBeVisible();
 
