@@ -23,13 +23,14 @@ async function assertCurrentMenu(page) {
   await expect(page.getByRole("button", { name: "Close menu" })).toBeVisible();
 
   // Desktop and mobile shells intentionally keep parallel menu markup in the DOM.
-  // Assert the currently rendered menu instance rather than `.first()`, which can
-  // resolve to a hidden responsive duplicate and create a false mobile failure.
+  // Assert the active responsive shell by semantic role + accessible name. Mobile
+  // buttons include an aria-hidden +/– glyph, so raw textContent is not the label
+  // contract and must not be used to decide whether the category exists.
+  const mobile = (page.viewportSize()?.width ?? 1440) <= 760;
   for (const label of ["PRODUCTS", "DOMAINS", "MISSIONS", "4CULTURE", "4PLANET"]) {
-    const renderedCategory = page
-      .locator(".menu-cat:visible")
-      .filter({ hasText: new RegExp(`^${label}$`) })
-      .first();
+    const renderedCategory = mobile
+      ? page.getByRole("button", { name: label, exact: true })
+      : page.getByRole("menuitem", { name: label, exact: true });
     await expect(renderedCategory).toBeVisible();
   }
 
