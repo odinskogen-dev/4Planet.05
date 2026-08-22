@@ -23,7 +23,8 @@ test('Jaguar master protects bounded real-source 3D, mobile fallback and the aut
   assert.equal(config.actor.preferred.uploadedCandidate.profile, '1K_RUNTIME');
   assert.equal(config.actor.preferred.binaryState, 'FOUNDER_SUPPLIED_VERIFIED_PENDING_REPO_BINARY_INGEST');
 
-  assert.match(bridge, /window\.innerWidth <= 760/);
+  assert.match(bridge, /window\.innerWidth > 760/);
+  assert.match(bridge, /const viewerAllowed = \(\) => desktopViewport\(\)/);
   assert.match(bridge, /requestAnimationFrame|setTimeout/);
   assert.match(bridge, /identityScene/);
   assert.match(bridgeCss, /@media\(max-width:760px\)/);
