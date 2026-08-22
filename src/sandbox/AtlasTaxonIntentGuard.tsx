@@ -15,6 +15,10 @@ const ORCA_INTENT = {
 };
 
 const SEARCH_LABEL = "Search the living planet — life, places and living systems";
+const CAMERA_RETRY_MS = 250;
+const CAMERA_RETRY_WINDOW_MS = 20_000;
+let cameraRetryTimer: number | null = null;
+let cameraRetryDeadline = 0;
 
 function normalise(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
@@ -125,26 +129,61 @@ function restoreContextCamera() {
   return true;
 }
 
-function stabiliseContextCamera() {
-  if (!hasOrcaIntent()) return;
-  const panel = document.querySelector<HTMLElement>(".ctx");
-  if (!panel) return;
+function clearCameraRetry() {
+  if (cameraRetryTimer !== null) window.clearTimeout(cameraRetryTimer);
+  cameraRetryTimer = null;
+  cameraRetryDeadline = 0;
+}
 
-  // The URL taxon intent is the authority. Once the canonical taxon panel has
-  // materialised its observations section, restore the bounded regional context
-  // even if individual occurrence rows are still loading. Occurrence loading may
-  // never be allowed to own the taxon camera or silently replace it with one
-  // arbitrary point. A short second restore contains late World camera updates.
-  const observationSection = Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
-    .find((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
-  if (!observationSection) return;
-  if (document.documentElement.dataset.atlasTaxonContextStabilised === "true") return;
-  if (!restoreContextCamera()) return;
+function observationSectionReady() {
+  const panel = document.querySelector<HTMLElement>(".ctx");
+  if (!panel) return false;
+  return Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
+    .some((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
+}
+
+function attemptContextStabilisation() {
+  if (!hasOrcaIntent() || !observationSectionReady()) return false;
+  if (!restoreContextCamera()) return false;
 
   document.documentElement.dataset.atlasTaxonContextStabilised = "true";
   window.setTimeout(() => {
     if (hasOrcaIntent()) restoreContextCamera();
   }, 900);
+  clearCameraRetry();
+  return true;
+}
+
+function stabiliseContextCamera() {
+  if (!hasOrcaIntent()) {
+    clearCameraRetry();
+    return;
+  }
+  if (document.documentElement.dataset.atlasTaxonContextStabilised === "true") return;
+  if (attemptContextStabilisation()) return;
+
+  // World and MapLibre can materialise after the taxon panel. DOM mutation alone
+  // is therefore not a reliable map-readiness signal. Once taxon intent exists,
+  // retry for a bounded window until both the observations section and canonical
+  // map instance exist. This prevents a late arbitrary occurrence camera from
+  // becoming the taxon context while remaining fail-closed if the map never loads.
+  if (cameraRetryTimer !== null) return;
+  if (!cameraRetryDeadline) cameraRetryDeadline = Date.now() + CAMERA_RETRY_WINDOW_MS;
+  const retry = () => {
+    cameraRetryTimer = null;
+    if (!hasOrcaIntent() || document.documentElement.dataset.atlasTaxonContextStabilised === "true") {
+      clearCameraRetry();
+      return;
+    }
+    if (attemptContextStabilisation()) return;
+    if (Date.now() >= cameraRetryDeadline) {
+      clearCameraRetry();
+      document.documentElement.dataset.atlasTaxonContextStabilisation = "timeout";
+      return;
+    }
+    cameraRetryTimer = window.setTimeout(retry, CAMERA_RETRY_MS);
+  };
+  cameraRetryTimer = window.setTimeout(retry, CAMERA_RETRY_MS);
 }
 
 export default function AtlasTaxonIntentGuard() {
@@ -203,9 +242,11 @@ export default function AtlasTaxonIntentGuard() {
         boundInput.removeEventListener("keydown", onKeyDown, true);
       }
       observer.disconnect();
+      clearCameraRetry();
       document.querySelector("[data-atlas-taxon-intent]")?.remove();
       document.querySelector("[data-atlas-intent-context]")?.remove();
       delete document.documentElement.dataset.atlasTaxonContextStabilised;
+      delete document.documentElement.dataset.atlasTaxonContextStabilisation;
     };
   }, []);
 
