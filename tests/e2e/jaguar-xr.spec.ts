@@ -83,7 +83,9 @@ test("Jaguar MASTER rejects the degraded proxy, gates the real Ear source until 
     await expect(iframe).toHaveCount(1);
     await expect(iframe).toHaveAttribute("src", /sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/);
     await expect(root).toHaveAttribute("data-jaguar3d-source", "ear-rodriguez-jaguar");
-    await expect(live.getByRole("link", { name: /3D JAGUAR · EAR.RODRIGUEZ/i })).toHaveAttribute("href", /sketchfab\.com\/3d-models\/jaguar-91c61c329d2a4668816f81f08dfcd492/);
+    // Provenance must remain in the DOM even when the progressive 3D layer is
+    // inactive and controlled species media is the visible fallback.
+    await expect(live.locator(".nature-ear-live-v23__credit")).toHaveAttribute("href", /sketchfab\.com\/3d-models\/jaguar-91c61c329d2a4668816f81f08dfcd492/);
 
     if (state === "ear-live-bridge") {
       await expect(root).toHaveAttribute("data-jaguar3d-active", "true");
