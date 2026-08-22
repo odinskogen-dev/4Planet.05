@@ -10,20 +10,20 @@ const allOpenFailures = (report.results || []).filter(
 );
 
 const noaaSource = (sourceReport.results || []).find((result) => result.id === "noaa-coral-reef-watch");
-const noaaSourceHealthy = noaaSource?.status === "PROBE_GREEN";
+const noaaSourceHealthyOrCiBlocked = noaaSource?.status === "PROBE_GREEN"
+  || noaaSource?.status === "CI_PROVIDER_REQUEST_BLOCKED";
 
 const delegatedEnvironmentChecks = [];
 const blockers = [];
 for (const result of allOpenFailures) {
-  // NOAA's exact WMS request can reject or drop GitHub Actions egress after
-  // repeated automated requests even when the provider's public ERDDAP endpoint
-  // is healthy. Do not convert that CI-network behaviour into source absence.
-  // We delegate ONLY the NOAA exact-tile acceptance to the separately hard
-  // Cloudflare same-origin + deployed-browser gate, and only when the same run's
-  // bounded provider source probe is healthy. Any other source/product failure
-  // remains a blocker here.
+  // NOAA's exact WMS request can reject GitHub Actions egress after repeated
+  // automated requests. The bounded source probe explicitly classifies that
+  // state as CI_PROVIDER_REQUEST_BLOCKED instead of source absence. In that
+  // exact case, delegate the tile acceptance to the separate Cloudflare
+  // same-origin + deployed-browser gate; never mark it green here. Any other
+  // source/product failure remains a blocker.
   const noaaCiEgressCondition = result.id === "noaa-coral-dhw"
-    && noaaSourceHealthy
+    && noaaSourceHealthyOrCiBlocked
     && (
       (result.httpStatus === 403 && /request blacklist|ip address|blacklist/i.test(String(result.errorSnippet || "")))
       || result.state === "NETWORK_OR_TLS_ERROR"
