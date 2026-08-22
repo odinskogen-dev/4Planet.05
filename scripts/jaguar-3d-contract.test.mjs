@@ -38,7 +38,8 @@ test('Journey rejects the degraded proxy and uses the official Ear source model 
 });
 
 test('real-source bridge stays bounded to the encounter and mobile fails closed to controlled species media', () => {
-  assert.match(bridge, /window\.innerWidth <= 760/);
+  assert.match(bridge, /window\.innerWidth > 760/);
+  assert.match(bridge, /const viewerAllowed = \(\) => desktopViewport\(\)/);
   assert.match(bridge, /identityScene/);
   assert.match(bridge, /data-jaguar3d|dataset\.jaguar3d/);
   assert.match(bridge, /ear-direct-embed|ear-live-bridge/);
