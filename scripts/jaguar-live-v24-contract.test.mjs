@@ -19,7 +19,8 @@ test('Ear 3D uses the verified official source bridge; degraded proxy runtime is
   assert.match(bridge, /91c61c329d2a4668816f81f08dfcd492/);
   assert.match(bridge, /sketchfab\.com\/models/);
   assert.match(bridge, /ear-rodriguez-jaguar/);
-  assert.match(bridge, /window\.innerWidth <= 760/);
+  assert.match(bridge, /window\.innerWidth > 760/);
+  assert.match(bridge, /const viewerAllowed = \(\) => desktopViewport\(\)/);
   assert.match(bridge, /identityScene/);
   assert.match(css, /nature-ear-live-v23/);
   assert.match(css, /@media\(max-width:760px\)/);
