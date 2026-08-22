@@ -2,6 +2,14 @@
 
 This repository is an execution surface. It is **not** the sole source of programme truth. Current programme state, priorities, authority, Founder decisions and cross-project context live in the 4PLANET BRAIN / Knowledge OS and are synthesised by AXE / GPT Project Lead.
 
+## AXE / AXE PL current-context fail-safe
+
+Every material 4PLANET request addressed to **AXE / AXE PL** — and every semantically equivalent material 4PLANET request even when those words are omitted — requires a **fresh connected BRAIN bootstrap before substantive current-state reasoning, prioritisation, architecture changes or execution**. Local chat context and model memory are orientation only, never programme authority.
+
+Minimum current-state path: `READ FIRST → GPT_PROJECT_LEAD_CURRENT → KNOWLEDGE_OS_STATE → relevant Founder Control / Project Pack / WBS / Active Engine / Prototype SAFE → fresh GitHub or other connected evidence when the task depends on live state`.
+
+If the required BRAIN/current-state read cannot be completed, fail closed on the affected claim with `CURRENT BRAIN READ REQUIRED` rather than guessing. Continue only bounded work that does not depend on missing state. After a material Founder decision, accepted/rejected artifact, code-line change or durable learning, write back to existing canonical authorities and read back in the same work cycle. Do not create another memory or management system.
+
 ## Mandatory start-of-task bootstrap
 
 Before material work:
