@@ -22,8 +22,15 @@ async function assertCurrentMenu(page) {
   await menu.click();
   await expect(page.getByRole("button", { name: "Close menu" })).toBeVisible();
 
+  // Desktop and mobile shells intentionally keep parallel menu markup in the DOM.
+  // Assert the currently rendered menu instance rather than `.first()`, which can
+  // resolve to a hidden responsive duplicate and create a false mobile failure.
   for (const label of ["PRODUCTS", "DOMAINS", "MISSIONS", "4CULTURE", "4PLANET"]) {
-    await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
+    const renderedCategory = page
+      .locator(".menu-cat:visible")
+      .filter({ hasText: new RegExp(`^${label}$`) })
+      .first();
+    await expect(renderedCategory).toBeVisible();
   }
 
   await expect(page.getByText(/4NTARCTICA/i)).toHaveCount(0);
