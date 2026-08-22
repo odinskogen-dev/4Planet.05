@@ -99,23 +99,10 @@ function installContextBadge() {
   document.body.appendChild(badge);
 }
 
-function stabiliseContextCamera() {
-  if (!hasOrcaIntent()) return;
+function restoreContextCamera() {
+  if (!hasOrcaIntent()) return false;
   const map = (window as typeof window & { __4planet_map?: any }).__4planet_map;
-  const panel = document.querySelector<HTMLElement>(".ctx");
-  if (!map || !panel) return;
-
-  // URL taxon intent is the authority. Do not key camera stabilisation to
-  // presentation copy such as "Orca" in the context panel: that panel can be
-  // re-rendered with scientific-name/observation copy while the canonical
-  // entity intent remains unchanged. Wait only for the observations section to
-  // finish resolving, then restore the bounded Bay of Biscay context once.
-  const observationSection = Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
-    .find((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
-  if (!observationSection || observationSection.textContent?.includes("···")) return;
-  if (document.documentElement.dataset.atlasTaxonContextStabilised === "true") return;
-
-  document.documentElement.dataset.atlasTaxonContextStabilised = "true";
+  if (!map) return false;
   map.stop?.();
   map.easeTo?.({
     center: ORCA_INTENT.context.center,
@@ -123,6 +110,29 @@ function stabiliseContextCamera() {
     duration: 700,
     essential: true,
   });
+  return true;
+}
+
+function stabiliseContextCamera() {
+  if (!hasOrcaIntent()) return;
+  const panel = document.querySelector<HTMLElement>(".ctx");
+  if (!panel) return;
+
+  // The URL taxon intent is the authority. Once the canonical taxon panel has
+  // materialised its observations section, restore the bounded regional context
+  // even if individual occurrence rows are still loading. Occurrence loading may
+  // never be allowed to own the taxon camera or silently replace it with one
+  // arbitrary point. A short second restore contains late World camera updates.
+  const observationSection = Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
+    .find((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
+  if (!observationSection) return;
+  if (document.documentElement.dataset.atlasTaxonContextStabilised === "true") return;
+  if (!restoreContextCamera()) return;
+
+  document.documentElement.dataset.atlasTaxonContextStabilised = "true";
+  window.setTimeout(() => {
+    if (hasOrcaIntent()) restoreContextCamera();
+  }, 900);
 }
 
 export default function AtlasTaxonIntentGuard() {
