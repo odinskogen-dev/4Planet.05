@@ -3,7 +3,7 @@ import type { EcosystemProfile } from "@/ecosystems/types";
 export const AMAZONIA_GOLD: EcosystemProfile = {
   id: "ecosystem:amazonia:gold-01",
   slug: "amazon-rainforest",
-  name: "AMAZONIA",
+  name: "AMAZON RAINFOREST",
   eyebrow: "ECOSYSTEM_ · E4RTH_ · GOLD STANDARD 01",
   lead: "A living system of forests, rivers, floodplains, species and human societies.",
   body: "Amazonia is not one uniform ecosystem. It is a vast connected region where water, climate, soils, forests, animals, plants, fungi and people interact across many scales. This experience is a doorway into those relationships — not a claim that one map, one metric or one story can represent the whole region.",
