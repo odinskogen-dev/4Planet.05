@@ -20,6 +20,7 @@ import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const JaguarGold = lazy(() => import("@/pages/integrated/JaguarGold"));
 const SapiensGold = lazy(() => import("@/pages/integrated/SapiensGold"));
 const BayOfBiscay = lazy(() => import("@/pages/integrated/BayOfBiscay"));
 const AmazonRainforestGold = lazy(() => import("@/pages/integrated/AmazonRainforestGold"));
@@ -51,6 +52,7 @@ export function AppRoutes() {
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
+      <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarGold /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
       <Route path="/ecosystems/bay-of-biscay" element={<Suspense fallback={WorldFallback}><BayOfBiscay /></Suspense>} />
       <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforestGold /></Suspense>} />
