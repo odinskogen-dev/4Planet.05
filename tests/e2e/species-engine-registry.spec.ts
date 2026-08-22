@@ -50,12 +50,12 @@ test("universal profile reuses the same TEST registry id", async ({ page }) => {
   await expect(page.getByText("CANONICAL_4P_TEST_REGISTRY")).toBeVisible();
   await expect(page.getByText("Gran", { exact: true })).toBeVisible();
 
-  const registryCell = page.locator("text=4PLANET").locator("..").locator("div").nth(1);
-  const firstId = await registryCell.textContent();
+  const registryId = page.getByText(/^taxon:4p:/).first();
+  const firstId = await registryId.textContent();
   expect(firstId).toMatch(/^taxon:4p:/);
 
   await page.getByRole("button", { name: /BUILD PROFILE/i }).click();
   await expect(page.getByText("CANONICAL_4P_TEST_REGISTRY")).toBeVisible();
-  const secondId = await registryCell.textContent();
+  const secondId = await page.getByText(/^taxon:4p:/).first().textContent();
   expect(secondId).toBe(firstId);
 });
