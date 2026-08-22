@@ -105,21 +105,30 @@ test('Jaguar master is one eight-frame end-to-end Gold Journey with truthful act
   }
 });
 
-test('Orca transfer preserves canonical identity, rights-safe media and population-specific truth boundaries', () => {
+test('Orca transfer reaches the same eight-frame Gold grammar while preserving population-specific truth boundaries', () => {
   assert.equal(orcaManifest.entity.id, 'taxon:gbif:2440483');
   assert.equal(orcaManifest.entity.gbifKey, 2440483);
   assert.match(orcaManifest.subject.mediaSrc, /orca\/illustration\.jpg/);
   assert.match(orcaManifest.subject.boundaryLabel, /ILLUSTRATION · NOT A PHOTOGRAPH/);
   assert.doesNotMatch(JSON.stringify(orcaManifest), /\/assets\/species\/orca\/hero\.jpg/);
-  assert.deepEqual(orcaManifest.nodes.map((node) => node.scene.state), ['identity','dependency','habitat','pressure','response']);
+  assert.equal(orcaManifest.nodes.length, 8);
+  assert.deepEqual(orcaManifest.nodes.map((node) => node.scene.state), ['identity','dependency','habitat','pressure','response','actors','action','proof']);
+  assert.deepEqual(Object.keys(orcaPremium.scenes).sort(), ['action','actors','dependency','habitat','identity','pressure','proof','response']);
   assert.ok(orcaManifest.nodes.every((node) => node.canonicalBinding));
   assert.match(orcaManifest.nodes[1].canonicalBinding, /living\.DEPENDS ON\.0/);
   assert.match(orcaManifest.nodes[3].canonicalBinding, /living\.UNDER PRESSURE\.1/);
-  assert.match(orcaManifest.nodes[4].canonicalBinding, /living\.RESPONSE\.0/);
-  const copy = JSON.stringify(orcaPremium);
-  assert.match(copy, /POPULATION-SPECIFIC|population-specific/i);
-  assert.match(copy, /NO UNIVERSAL FIX|No single intervention/i);
-  assert.match(copy, /not partnerships|not a photograph/i);
+  assert.ok(orcaManifest.nodes.slice(4).every((node) => node.canonicalBinding === 'living.RESPONSE.0'));
+  assert.match(orcaHtml, /01 \/ 08 · ENCOUNTER/);
+  assert.match(orcaHtml, /SHARED 8-FRAME TRANSFER/);
+  const response = JSON.stringify(orcaPremium.scenes.response);
+  const actors = JSON.stringify(orcaPremium.scenes.actors);
+  const action = JSON.stringify(orcaPremium.scenes.action);
+  const proof = JSON.stringify(orcaPremium.scenes.proof);
+  assert.match(response, /POPULATION|NO DELIVERY CLAIM|NO UNIVERSAL FIX/i);
+  assert.match(actors, /NOT PARTNERSHIPS|No partnership|verify/i);
+  assert.match(action, /NO VERIFIED UNIT ACTIVE|FAIL-CLOSED|not active/i);
+  assert.match(proof, /Evidence precedes|EVIDENCE BEFORE OUTCOME|monitoring supports/i);
+  assert.doesNotMatch(`${response}${actors}${action}${proof}`, /hectares protected|tons co2|solutions activated|communities supported|partnered with/i);
 });
 
 test('canonical generator now emits both Gold-reference feeds without weakening Jaguar relationship requirements', () => {
