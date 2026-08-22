@@ -113,7 +113,17 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   expect(mobileLayout).not.toBeNull();
   expect(mobileLayout!.columns).toBe(1);
   expect(mobileLayout!.pageWidth).toBeLessThanOrEqual(mobileLayout!.viewportWidth + 1);
-  await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png`, fullPage: true });
+
+  // WebKit has a hard 32767px screenshot dimension limit. The Orca page can be
+  // taller than that on mobile, so fullPage capture is not a valid product gate.
+  // Capture the current proof viewport, then the verified footer itself. This
+  // keeps visual evidence while preventing browser-engine limits from being
+  // misclassified as a product failure.
+  await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png` });
+  const footer = page.locator(".foot-grid").first();
+  await footer.scrollIntoViewIfNeeded();
+  await expect(footer).toBeVisible();
+  await footer.screenshot({ path: `${OUTPUT}/05b-orca-footer-mobile.png` });
 });
 
 test("IMPACT direct routes remain explicit local tests with no physical delivery", async ({ page }) => {
