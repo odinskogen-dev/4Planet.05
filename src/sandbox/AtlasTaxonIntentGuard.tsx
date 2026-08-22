@@ -24,6 +24,12 @@ function hasOrcaIntent(url = new URL(window.location.href)) {
   return url.searchParams.get("intent") === "taxon" && url.searchParams.get("entity") === ORCA_INTENT.id;
 }
 
+function buildSpeciesHref() {
+  const returnTo = new URL(window.location.href);
+  returnTo.searchParams.delete("record");
+  return `/species/orca?entity=${encodeURIComponent(ORCA_INTENT.id)}&returnTo=${encodeURIComponent(`${returnTo.pathname}${returnTo.search}${returnTo.hash}`)}`;
+}
+
 function activateOrcaIntent() {
   const url = new URL(window.location.href);
   url.searchParams.set("entity", ORCA_INTENT.id);
@@ -84,10 +90,15 @@ function installCanonicalResult(query: string) {
 
 function installContextBadge() {
   if (!hasOrcaIntent()) return;
-  if (document.querySelector("[data-atlas-intent-context]")) return;
+  const existing = document.querySelector<HTMLElement>("[data-atlas-intent-context]");
+  if (existing) {
+    const speciesLink = existing.querySelector<HTMLAnchorElement>("[data-atlas-species-handoff]");
+    if (speciesLink) speciesLink.href = buildSpeciesHref();
+    return;
+  }
 
   // Mount independently of World internals. PublicWorld may replace its map
-  // subtree while resolving the entity, but the taxon boundary must survive.
+  // subtree while resolving the entity, but the taxon boundary and handoff must survive.
   const badge = document.createElement("aside");
   badge.className = "atlas-intent-context";
   badge.setAttribute("data-atlas-intent-context", ORCA_INTENT.context.id);
@@ -95,7 +106,8 @@ function installContextBadge() {
   badge.innerHTML = `
     <span>${ORCA_INTENT.label.toUpperCase()} · TAXON INTENT</span>
     <b>${ORCA_INTENT.context.label}</b>
-    <small>${ORCA_INTENT.context.boundary}</small>`;
+    <small>${ORCA_INTENT.context.boundary}</small>
+    <a data-atlas-species-handoff href="${buildSpeciesHref()}">OPEN ORCA IN SPECIES →</a>`;
   document.body.appendChild(badge);
 }
 
