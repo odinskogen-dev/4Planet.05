@@ -38,6 +38,7 @@
     function failClosed(reason) {
       failed = true;
       modelReady = false;
+      delete root.dataset.jaguar3dPending;
       if (readyTimer) {
         clearTimeout(readyTimer);
         readyTimer = 0;
@@ -174,6 +175,7 @@
           readyTimer = 0;
         }
         modelReady = true;
+        delete root.dataset.jaguar3dPending;
         shell.dataset.ready = 'true';
         delete shell.dataset.failure;
         delete root.dataset.jaguar3dFailure;
@@ -236,12 +238,16 @@
         publishState('photo-fallback');
         return;
       }
-      if (!readyTimer) {
+      if (!readyTimer && !modelReady) {
+        root.dataset.jaguar3dPending = 'true';
         readyTimer = window.setTimeout(() => {
           if (!modelReady) failClosed('viewer-ready-timeout');
         }, READY_TIMEOUT_MS);
       }
-      publishState(modelReady ? 'ear-live-bridge' : 'ear-loading');
+      // Truth-safe progressive enhancement: controlled species media is the
+      // stable public state until the external 3D source proves ready. Loading
+      // is internal metadata, never a user-visible/runtime-blocking state.
+      publishState(modelReady ? 'ear-live-bridge' : 'photo-fallback');
       enhanceWithApi();
     }
 
@@ -251,7 +257,7 @@
       active = true;
       shell.dataset.active = String(modelReady && !failed);
       shell.style.removeProperty('display');
-      publishState(failed ? 'photo-fallback' : (modelReady ? 'ear-live-bridge' : 'ear-loading'));
+      publishState(modelReady && !failed ? 'ear-live-bridge' : 'photo-fallback');
       if (!failed && apiReady && modelReady) {
         api?.start?.();
         api?.play?.();
