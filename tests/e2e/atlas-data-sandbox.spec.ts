@@ -93,3 +93,44 @@ test("ATLAS Data Lab is canonical ATLAS plus admitted layers and a real TIME eng
   await expect.poll(async () => (await page.locator("html").getAttribute("data-atlas-time-state") || "").includes('"sandbox-emodnet-fishing-vessel-density":"2020-01-01T00:00:00Z"')).toBeTruthy();
   await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-scene-ocean-pressure-time-2020.png`, fullPage: true });
 });
+
+test("Orca search preserves canonical taxon intent and bounded Bay of Biscay context", async ({ page }, testInfo) => {
+  await page.goto(`${BASE}/atlas-data-sandbox?scene=OCEAN_FOUNDATION`, { waitUntil: "domcontentloaded" });
+  const search = page.getByLabel("Search the living planet — life, places and living systems");
+  await expect(search).toBeVisible();
+  await search.fill("orca");
+
+  const canonical = page.locator('[data-atlas-taxon-intent="taxon:gbif:2440483"]');
+  await expect(canonical).toBeVisible({ timeout: 10_000 });
+  await expect(canonical).toContainText("Orcinus orca");
+  await expect(canonical).toContainText("CANONICAL TAXON");
+  await expect(canonical).toContainText("observations remain source records");
+
+  await search.press("Enter");
+  await expect.poll(() => new URL(page.url()).searchParams.get("entity"), { timeout: 15_000 }).toBe("taxon:gbif:2440483");
+  await expect.poll(() => new URL(page.url()).searchParams.get("intent"), { timeout: 15_000 }).toBe("taxon");
+  await expect.poll(() => new URL(page.url()).searchParams.get("context"), { timeout: 15_000 }).toBe("bay-of-biscay-proof-context");
+
+  const context = page.locator('[data-atlas-intent-context="bay-of-biscay-proof-context"]');
+  await expect(context).toBeVisible({ timeout: 15_000 });
+  await expect(context).toContainText("ORCA · TAXON INTENT");
+  await expect(context).toContainText("not a range map");
+  await expect(page.locator(".ctx")).toContainText("Orca", { timeout: 20_000 });
+  await expect(page.locator(".ctx")).toContainText("taxon:gbif:2440483");
+  await expect(page.locator(".ctx")).toContainText("RECORDED OBSERVATIONS");
+
+  await expect.poll(async () => await page.locator("html").getAttribute("data-atlas-taxon-context-stabilised"), { timeout: 25_000 }).toBe("true");
+  const camera = await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    const c = map?.getCenter?.();
+    return { lng: c?.lng, lat: c?.lat, zoom: map?.getZoom?.() };
+  });
+  expect(camera.lng).toBeGreaterThan(-7.5);
+  expect(camera.lng).toBeLessThan(-2.5);
+  expect(camera.lat).toBeGreaterThan(43.5);
+  expect(camera.lat).toBeLessThan(47.5);
+  expect(camera.zoom).toBeGreaterThan(3.5);
+  expect(camera.zoom).toBeLessThan(5.2);
+
+  await page.screenshot({ path: `artifacts/atlas-data-sandbox/${testInfo.project.name}-orca-taxon-intent.png`, fullPage: true });
+});
