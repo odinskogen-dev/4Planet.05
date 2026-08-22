@@ -136,10 +136,12 @@ function clearCameraRetry() {
 }
 
 function observationSectionReady() {
+  // Treat the canonical context panel's rendered text as the contract. World is
+  // free to evolve its internal section wrappers; taxon camera truth must not
+  // depend on a private `.sec` DOM shape. The browser gate also verifies this
+  // same public text before asserting the regional camera.
   const panel = document.querySelector<HTMLElement>(".ctx");
-  if (!panel) return false;
-  return Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
-    .some((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
+  return Boolean(panel?.textContent?.includes("RECORDED OBSERVATIONS"));
 }
 
 function attemptContextStabilisation() {
