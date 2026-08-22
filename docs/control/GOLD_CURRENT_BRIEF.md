@@ -2,46 +2,53 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. For any material user-facing mutation, update this file in the same bounded change before implementation. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** GOLD-F0-HUMAN-CRAFT-01  
-**STATUS:** TEST / ONE INTERFACE F0 QUALITY CONTRACT  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #132  
-**DONOR DECISION:** `ALREADY PRESENT + REVIEW/EXTRACT` — current shell is baseline; PR #92 remains a selective donor, not a wholesale winner.
+**CHANGE ID:** MAGAZINE-GOLD-01  
+**STATUS:** TEST / 4PLANET MAGAZINE GOLD FOUNDATION  
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #132 / `CUL-M4GAZINE-01`  
+**FOUNDER DIRECTION:** 23 AUG 2026 — public name `4PLANET MAGAZINE`; premium standalone-feeling editorial surface inside ONE INTERFACE/shared core.  
+**DONOR DECISION:** `ADOPT SELECTIVELY` — current TEST KING stories/article machinery is the base; PR #123 remains donor evidence only. No wholesale donor merge.
 
 ## USER ARRIVES BECAUSE
-A normal person arrives at 4PLANET without internal project context and needs to understand what this is, where they can go and what the natural next action is.
+They found one compelling story, species, place, person, field organisation, innovation or cultural object and want an intelligent, beautiful, low-friction way to understand more.
 
 ## ONE THING TO UNDERSTAND
-4PLANET is one connected living-planet system. The homepage must communicate that before navigation/product machinery becomes the experience.
+`4PLANET MAGAZINE` is a premium editorial doorway into the living planet — nature, science, people, systems, solutions, innovation and culture — powered by the same source-aware 4PLANET intelligence beneath the rest of ONE INTERFACE.
 
 ## PRIMARY ACTION
-Enter the living planet through the current hero/ATLAS handoff or choose the one relevant public product without losing orientation.
+Read one excellent story.
 
 ## SECONDARY DEPTH
-Domains, Missions, sources, evidence, participation and advanced product controls remain available after the primary meaning/orientation is clear.
+Move naturally from the story into relevant SPECIES, ATLAS, Ecosystem, Actor, Mission or evidence-bounded action pathways. The reader never needs to understand the whole 4PLANET architecture first.
 
 ## P1 DOMINANT
-The living planet / page premise: `One connected living planet.`
+Documentary image + story premise. The story is always the hero.
 
 ## P2 ORIENTATION
-4PLANET identity plus the public product-family context; navigation chrome remains subordinate to the page.
+4PLANET MAGAZINE identity, section/category, reading time and clear editorial context.
 
 ## P3 ACTION / NEXT
-A clear hero continuation (`ENTER ATLAS`) and explicit product navigation when requested.
+Read story; then one contextually useful deeper path or next story. No forced Impact CTA.
 
 ## P4 DEPTH
-Detailed products, domains, missions, source/status information, participation options and technical metadata.
+Sources, rights, related entities, ATLAS/SPECIES/Actor/Mission pathways, further stories, provenance and limitations.
 
 ## WHAT CAN BE REMOVED
-Duplicate navigation cues, stale canon, generic app-launcher signals, repeated labels, hidden horizontal overflow and any chrome that competes visually with the hero/premise.
+Generic dashboard chrome, card-wall repetition, excessive boxes, environmental-campaign clichés, generic AI-magazine layouts, fake urgency, decorative motion, duplicated product explanations and any element that competes with photography/story hierarchy.
 
 ## WHAT MUST BE REUSED
-Current TEST KING PublicShell, skip-to-main behaviour, canonical ProductSwitcher, shared Product Context, existing homepage hero, current truth/status contracts and existing Chromium/WebKit evidence machinery. PR #92 may donate only individually proven shell behaviours.
+One repository; `king/test`; PublicShell; 4PLANET Brand OS tokens; existing image registry and rights controls; existing `STORIES`/StoryArticle content model; shared entity/source/provenance systems; shared analytics/event contract when available. No separate truth/content backend.
+
+## DESIGN / HUMAN CRAFT TARGET
+A high-end independent publication that still unmistakably belongs to 4PLANET: large documentary photography, editorial typography, generous whitespace, confident white/dark fields, controlled use of 4PLANET blue/green/red/pink, cinematic but restrained motion, strong rhythm, mobile-first reading and clear visual hierarchy. Reference bar = world-class architecture/design/editorial craft, not a literal imitation of any named brand or studio.
 
 ## TRUTH BOUNDARY
-This change adds machine browser assertions for human-facing hierarchy and mobile/navigation integrity. It does not itself claim that subjective visual hierarchy is Founder-approved, that every donor has been adopted, or that TEST KING is LIVE. Browser assertions are evidence, not human validation.
+Editorial may cover external nature/science/people/innovation/culture topics when source-grounded. Coverage or an Actor profile never implies partnership or endorsement. 4PLANET delivery/impact stories require actual delivery evidence. No unsupported ecological, scientific or causal claim is added for visual effect.
 
 ## MOBILE-FIRST RISK
-Navigation could overflow, touch controls could become unreachable, a hidden menu layer could trap the viewport, or old labels could appear at 390/430 widths. The test therefore checks horizontal overflow, mobile menu reachability and the same dominant heading at 390 and 430.
+Hero crops, type scale, long titles, article grids and dark/light transitions must remain legible at 390/430 widths. Motion must have reduced-motion fallback. No horizontal overflow or inaccessible interaction.
 
 ## HUMAN SUCCESS
-Without assistance, the first viewport has one dominant H1, the skip-link reaches main content, the menu exposes current public product labels without obsolete canon, mobile has no material horizontal overflow, and the page offers a clear next action while preserving one coherent family.
+A first-time reader can arrive from search/social/direct, understand the story immediately, enjoy reading without learning the 4PLANET org chart, recognise the 4PLANET identity, find one relevant deeper path, share or continue reading, and have a credible reason to return for new editorial.
+
+## MEASUREMENT
+Source/referrer → magazine/story entry → meaningful read/journey depth → embedded-path click → share/referral → return. Pageviews alone are not proof.
