@@ -1,14 +1,14 @@
 name: ONE INTERFACE Convergence Gate
 
-# Exact-SHA engineering gate for the unified convergence candidate.
-# Adapted from PR #25 (agent/founder-gate-one-interface-convergence) to the
-# ced0773-based convergence tree: current test files, CLE4N_ canon routes, and
-# the Chromium + WebKit E2E matrix required by the convergence order.
+# Exact-head engineering gate for the unified convergence candidate.
+# Public release evidence must describe the branch head itself, not GitHub's
+# synthetic pull-request merge commit.
 
 on:
   push:
     branches:
       - convergence/one-interface
+      - convergence/one-interface-09-gold
       - claude/one-interface-premium-completion
   pull_request:
   workflow_dispatch:
@@ -27,16 +27,20 @@ jobs:
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Record exact candidate
         run: |
           git rev-parse HEAD > exact-sha.txt
           printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
+          printf 'expected=%s\nactual=%s\n' "${{ github.event.pull_request.head.sha || github.sha }}" "$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install locked dependencies
@@ -67,9 +71,15 @@ jobs:
       - name: Asset control
         run: npm run assets:verify
 
-      - name: Dependency audit — high severity blocks (moderate is known debt)
+      - name: Dependency audit — shipped runtime high severity blocks
         shell: bash
-        run: npm audit --audit-level=high 2>&1 | tee dependency-audit.txt
+        run: |
+          npm audit --omit=dev --audit-level=high 2>&1 | tee dependency-audit-runtime.txt
+          # Preserve the full dependency audit as engineering debt evidence too.
+          # A dev-only vulnerability does not ship in the browser bundle, but it
+          # remains visible and must be repaired rather than silently ignored.
+          npm audit --audit-level=high > dependency-audit-full.txt 2>&1 || true
+          cat dependency-audit-full.txt
 
       - name: Record bundle evidence
         shell: bash
@@ -110,7 +120,7 @@ jobs:
           const fs = require('fs');
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
-          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join'];
+          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join', '/s4piens', '/ecosystems/bay-of-biscay', '/ecosystems/amazon-rainforest', '/about/story', '/about/system', '/about/founder', '/magazine'];
           fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
           NODE
 
@@ -137,7 +147,8 @@ jobs:
           path: |
             exact-sha.txt
             exact-branch.txt
-            dependency-audit.txt
+            dependency-audit-runtime.txt
+            dependency-audit-full.txt
             bundle-sizes.csv
             lint.txt
             preview.log
