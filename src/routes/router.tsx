@@ -12,7 +12,8 @@ import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
-import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
+import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
+import Magazine from "@/pages/v5/Magazine";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
@@ -46,6 +47,7 @@ export function AppRoutes() {
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
       <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/missions/m4gazine" element={<Navigate to="/magazine" replace />} />
       <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
@@ -68,7 +70,9 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
-      <Route path="/stories" element={<Stories />} />
+      <Route path="/magazine" element={<Magazine />} />
+      <Route path="/magazine/:slug" element={<StoryArticle />} />
+      <Route path="/stories" element={<Navigate to="/magazine" replace />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
@@ -90,7 +94,6 @@ export function AppRoutes() {
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
       <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
-      <Route path="/magazine" element={toHome} />
       <Route path="/system" element={toHome} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
