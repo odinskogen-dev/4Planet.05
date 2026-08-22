@@ -29,6 +29,26 @@ async function verifySharedNavigation(page: import("@playwright/test").Page) {
   await expect(dialog).toBeHidden();
 }
 
+async function waitForAtlasRenderable(page: import("@playwright/test").Page) {
+  // `Map#isStyleLoaded()` is stricter than the user-visible readiness contract:
+  // it can remain false while optional remote style resources are still settling,
+  // even though the MapLibre canvas and style layers are already rendered and
+  // interactive. Product proof therefore verifies the actual rendered map seam,
+  // not indefinite third-party network quiescence.
+  await page.waitForFunction(() => {
+    const map = (window as any).__4planet_map;
+    const canvas = document.querySelector<HTMLCanvasElement>(".maplibregl-canvas");
+    if (!map || !canvas || canvas.width < 100 || canvas.height < 100) return false;
+    try {
+      const style = map.getStyle?.();
+      return map.getCanvas?.() === canvas && Array.isArray(style?.layers) && style.layers.length > 0;
+    } catch {
+      return false;
+    }
+  });
+  await expect(page.locator(".maplibregl-canvas")).toBeVisible();
+}
+
 test("desktop proof captures the public entry, source-aware Orca profile and retained ATLAS context", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
 
@@ -58,7 +78,7 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(page).toHaveURL(/\/atlas\?/);
   await expect(page).toHaveURL(/entity=taxon%3Agbif%3A2440483/);
   await expect(page).toHaveURL(/journey=orca-gbif/);
-  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  await waitForAtlasRenderable(page);
   await page.waitForTimeout(2500);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png` });
