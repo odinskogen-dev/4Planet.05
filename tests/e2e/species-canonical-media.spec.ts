@@ -1,12 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page, type Route } from "@playwright/test";
 
 const onePixelPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2n+8AAAAASUVORK5CYII=",
   "base64",
 );
 
-async function mockSpeciesSources(page: Parameters<typeof test>[0] extends never ? never : any) {
-  await page.route("https://api.gbif.org/v2/species/match**", async (route: any) => {
+async function mockSpeciesSources(page: Page) {
+  await page.route("https://api.gbif.org/v2/species/match**", async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -27,7 +27,7 @@ async function mockSpeciesSources(page: Parameters<typeof test>[0] extends never
     });
   });
 
-  await page.route("https://artskart.artsdatabanken.no/publicapi/api/taxon**", async (route: any) => {
+  await page.route("https://artskart.artsdatabanken.no/publicapi/api/taxon**", async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -42,7 +42,7 @@ async function mockSpeciesSources(page: Parameters<typeof test>[0] extends never
     });
   });
 
-  await page.route("https://api.gbif.org/v1/occurrence/search**", async (route: any) => {
+  await page.route("https://api.gbif.org/v1/occurrence/search**", async (route: Route) => {
     const url = new URL(route.request().url());
     if (url.searchParams.get("mediaType") === "StillImage") {
       await route.fulfill({
@@ -80,7 +80,7 @@ async function mockSpeciesSources(page: Parameters<typeof test>[0] extends never
     });
   });
 
-  await page.route("https://images.example/picea.png", async (route: any) => {
+  await page.route("https://images.example/picea.png", async (route: Route) => {
     await route.fulfill({ status: 200, contentType: "image/png", body: onePixelPng });
   });
 }
