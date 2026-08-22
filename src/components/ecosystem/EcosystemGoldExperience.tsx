@@ -72,6 +72,7 @@ export function EcosystemGoldExperience({ profile }: Props) {
             <h1>{profile.name}</h1>
             <p className="eco-hero__lead">{profile.lead}</p>
             <p className="eco-hero__body">{profile.body}</p>
+            <p className="eco-mono eco-hero__authority-boundary">PUBLIC ECOSYSTEM INTELLIGENCE ≠ FIELD AUTHORITY OR REPRESENTATION</p>
             <div className="eco-actions">
               {profile.primaryActions.map((action, index) => (
                 <Link key={action.href} to={action.href} className={index === 0 ? "is-primary" : ""}>
