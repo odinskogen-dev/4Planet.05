@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PublicWorld from "@/earth/PublicWorld";
 import AtlasTimeControls from "@/sandbox/AtlasTimeControls";
 import AtlasZoomStack from "@/sandbox/AtlasZoomStack";
+import AtlasTaxonIntentGuard from "@/sandbox/AtlasTaxonIntentGuard";
 import { hardenAtlasLegacyLayerMetadata } from "@/sandbox/atlasLabCompatibility";
 import { installAtlasLabExtensions } from "@/sandbox/atlasLabRegistry";
 import { applyAtlasLabSceneFromUrl } from "@/sandbox/atlasLabScenes";
@@ -38,6 +39,7 @@ export default function AtlasDataSandbox() {
       delete document.documentElement.dataset.atlasLabScene;
       delete document.documentElement.dataset.atlasLabLegendRepairs;
       delete document.documentElement.dataset.atlasLabSourceRepairs;
+      delete document.documentElement.dataset.atlasTaxonContextStabilised;
       document.documentElement.removeAttribute("data-atlas-time-state");
     };
   }, []);
@@ -49,6 +51,7 @@ export default function AtlasDataSandbox() {
   return (
     <>
       <PublicWorld />
+      <AtlasTaxonIntentGuard />
       <AtlasZoomStack />
       <AtlasTimeControls />
     </>
