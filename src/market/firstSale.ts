@@ -23,8 +23,9 @@ export type MarketSaleProduct = {
 
 /**
  * SALE 01 now has a supplier-verified Prodigi Budget Poster SKU and current
- * Norway pricing evidence. Physical sample approval, VAT/handling treatment and
- * live commercial credentials remain open, so fulfilment stays fail-closed.
+ * Norway product + tracked-shipping quote. Physical sample approval,
+ * VAT/handling treatment and live commercial credentials remain open, so
+ * fulfilment stays fail-closed and true landed cost is not yet known.
  *
  * The Stripe URL below is the existing sandbox payment-route fixture. It must be
  * replaced by a physical-product Checkout/Payment Link before LIVE sale.
@@ -58,7 +59,7 @@ export const FIRST_SALE: MarketSaleProduct = {
 export const SALE_01_BOUNDARIES = [
   "The current Stripe link is sandbox-only and is not a live physical order.",
   "Supplier pricing is verified, but production starts only after physical sample approval and live fulfilment credentials.",
-  "Current supplier evidence: EUR 7.00 production + EUR 10.25 tracked Norway shipping before Norwegian VAT or carrier handling.",
+  "Current supplier quote: EUR 7.00 production + EUR 10.25 tracked Norway shipping before Norwegian VAT or carrier handling; true landed cost remains open.",
   "Payment, production, dispatch, creator payable and Impact remain separate states.",
   "No ecological outcome is claimed from a product purchase.",
 ] as const;
