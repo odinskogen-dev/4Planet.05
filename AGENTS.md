@@ -7,12 +7,32 @@ This repository is an execution surface. It is **not** the sole source of progra
 Before material work:
 1. Read this file.
 2. Inspect the assigned task/issue/PR and exact branch.
-3. Read recent git history for the affected area.
-4. Search for existing components/contracts before creating new architecture.
-5. Run a baseline check appropriate to the task before changing code.
-6. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+3. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
+4. Inspect recent git history for the affected area.
+5. Search for existing components/contracts before creating new architecture.
+6. Run a baseline check appropriate to the task before changing code.
+7. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
+
+## Mandatory code-lineage control
+
+Every material code project uses a simple whole-number product sequence: `01`, `02`, `03`, `04`… recorded in `docs/control/CODE_LINEAGE_REGISTER.md`. Git branch names remain technical implementation details; they are not the product-version authority.
+
+Before creating or materially editing a branch:
+- confirm one and only one current `ACTIVE DEVELOPMENT` line for the affected product seam;
+- record or confirm project version, role, parent/base SHA, branch, PR/issue, current exact SHA, preview when known, WHY, allowed donors and MUST PRESERVE set;
+- classify sibling branches as `FIXED REVIEW`, `DONOR`, `SUPERSEDED`, `RECOVERY` or `PRODUCTION` rather than treating recency as authority;
+- if a new branch is genuinely required, link it explicitly as a child of the current line before first material code change.
+
+Before Founder review, merge or production promotion:
+- compare the candidate against recent sibling/fixed-review/donor lines;
+- record every material donor delta as `ADOPT | ALREADY PRESENT | REJECT WITH REASON | DEFER WITH REASON`;
+- do not assume the newest branch is a superset;
+- do not wholesale-merge a divergent donor merely to recover features;
+- preserve exact rollback identity.
+
+A material coding task that cannot resolve lineage is blocked as `CODE LINEAGE UNRESOLVED`; resolve control first rather than creating another candidate.
 
 ## Capability verification
 
@@ -56,11 +76,13 @@ Run the smallest sufficient set during iteration, then the full relevant gate be
 
 Every material agent return must include:
 - project/task identity
+- product version from the Code Lineage Register
 - branch
 - exact commit SHA
 - PR or issue when applicable
 - changed files / human-visible change
 - tests and runtime evidence
+- donor decisions made in this iteration
 - known limitations or unresolved conflicts
 - status using the vocabulary above
 - next gate / next safe action
