@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+test('TEST KING Jaguar 27 uses controlled local Ear runtime and keeps the creature on mobile',()=>{
+  const html=read('public/journey/jaguar/index.html');
+  const js=read('public/journey/jaguar/jaguar-testking-v27.js');
+  const css=read('public/journey/jaguar/jaguar-testking-v27.css');
+  const cfg=JSON.parse(read('public/journey/jaguar/creature-v27.json'));
+  assert.equal(cfg.assetId,'4P-JAG-3D-EARROD-01');
+  assert.equal(cfg.actor.preferred.runtimeState,'CONTROLLED_LOCAL');
+  assert.match(cfg.actor.preferred.runtimePath,/jaguar-ear-rodriguez-runtime\.glb\.gz$/);
+  assert.match(js,/DecompressionStream/);
+  assert.match(js,/GLTFLoader/);
+  assert.doesNotMatch(html,/<iframe/i);
+  assert.match(html,/three-stage/);
+  assert.match(js,/makeSoilTexture/);
+  assert.match(js,/makeShadowTexture/);
+  assert.match(js,/action==='look'/);
+  assert.match(js,/action==='move'/);
+  assert.match(js,/action==='lume'/);
+  assert.match(css,/@media\(max-width:760px\)/);
+  assert.doesNotMatch(css,/@media\(max-width:760px\)[\s\S]{0,1800}\.three-stage\s*\{[^}]*display:none/i);
+});
