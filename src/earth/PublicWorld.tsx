@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const World = lazy(() => import("./World"));
@@ -23,6 +23,15 @@ function retainedContext(search: string) {
   return query ? `?${query}` : "";
 }
 
+function restoredCamera(search: string) {
+  const params = new URLSearchParams(search);
+  if (!params.has("z") || !params.has("c")) return null;
+  const zoom = Number(params.get("z"));
+  const center = (params.get("c") || "").split(",").map(Number);
+  if (!Number.isFinite(zoom) || center.length !== 2 || center.some((value) => !Number.isFinite(value))) return null;
+  return { zoom, center: center as [number, number] };
+}
+
 function webglAvailable() {
   if (typeof document === "undefined") return false;
   try {
@@ -41,6 +50,58 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+
+  // Return-navigation must reconstruct the camera the user actually left, not
+  // merely seed MapLibre with it before the vector style switches to globe and
+  // the mobile context sheet changes the canvas box. On narrow viewports that
+  // projection/layout sequence can otherwise settle at a materially different
+  // live zoom even though ?z= and ?c= remain correct. Reapply the explicit URL
+  // camera after style readiness and across two layout frames. This is bounded:
+  // it runs only when the route itself carries an explicit saved camera and it
+  // never follows later user movement.
+  useEffect(() => {
+    if (!supported) return;
+    const target = restoredCamera(location.search);
+    if (!target) return;
+
+    let cancelled = false;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    let probeFrame = 0;
+
+    const apply = (map: any) => {
+      if (cancelled) return;
+      firstFrame = requestAnimationFrame(() => {
+        if (cancelled) return;
+        map.resize();
+        map.jumpTo({ center: target.center, zoom: target.zoom });
+        secondFrame = requestAnimationFrame(() => {
+          if (cancelled) return;
+          map.resize();
+          map.jumpTo({ center: target.center, zoom: target.zoom });
+        });
+      });
+    };
+
+    const attach = () => {
+      if (cancelled) return;
+      const map = (window as any).__4planet_map;
+      if (!map) {
+        probeFrame = requestAnimationFrame(attach);
+        return;
+      }
+      if (map.isStyleLoaded()) apply(map);
+      else map.once("style.load", () => apply(map));
+    };
+
+    attach();
+    return () => {
+      cancelled = true;
+      if (probeFrame) cancelAnimationFrame(probeFrame);
+      if (firstFrame) cancelAnimationFrame(firstFrame);
+      if (secondFrame) cancelAnimationFrame(secondFrame);
+    };
+  }, [supported, location.pathname, location.search]);
 
   if (supported) {
     return (
