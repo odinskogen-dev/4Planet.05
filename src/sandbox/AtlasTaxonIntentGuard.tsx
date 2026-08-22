@@ -69,8 +69,6 @@ function installCanonicalResult(query: string) {
     existing?.remove();
     return;
   }
-  // MutationObserver also sees this injected row. Reuse it rather than remove /
-  // recreate on every observer pass, which would create self-triggering churn.
   if (existing) return;
 
   const row = makeCanonicalResult();
@@ -120,42 +118,59 @@ function stabiliseContextCamera() {
 
 export default function AtlasTaxonIntentGuard() {
   useEffect(() => {
-    const input = document.querySelector<HTMLInputElement>(`input[aria-label="${SEARCH_LABEL}"]`);
-    if (!input) return;
-
     let scheduled = false;
+    let boundInput: HTMLInputElement | null = null;
+
     const sync = () => {
-      installCanonicalResult(input.value);
+      const input = document.querySelector<HTMLInputElement>(`input[aria-label="${SEARCH_LABEL}"]`);
+      if (input) installCanonicalResult(input.value);
       installContextBadge();
       stabiliseContextCamera();
     };
+
     const scheduleSync = () => {
       if (scheduled) return;
       scheduled = true;
       window.requestAnimationFrame(() => {
         scheduled = false;
+        bindSearchInput();
         sync();
       });
     };
 
     const onInput = () => scheduleSync();
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Enter" || !ORCA_INTENT.aliases.has(normalise(input.value))) return;
+      const input = event.currentTarget as HTMLInputElement | null;
+      if (!input || event.key !== "Enter" || !ORCA_INTENT.aliases.has(normalise(input.value))) return;
       event.preventDefault();
       event.stopPropagation();
       activateOrcaIntent();
     };
 
-    input.addEventListener("input", onInput);
-    input.addEventListener("keydown", onKeyDown, true);
+    const bindSearchInput = () => {
+      const next = document.querySelector<HTMLInputElement>(`input[aria-label="${SEARCH_LABEL}"]`);
+      if (next === boundInput) return;
+      if (boundInput) {
+        boundInput.removeEventListener("input", onInput);
+        boundInput.removeEventListener("keydown", onKeyDown, true);
+      }
+      boundInput = next;
+      if (boundInput) {
+        boundInput.addEventListener("input", onInput);
+        boundInput.addEventListener("keydown", onKeyDown, true);
+      }
+    };
 
     const observer = new MutationObserver(scheduleSync);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    bindSearchInput();
     sync();
 
     return () => {
-      input.removeEventListener("input", onInput);
-      input.removeEventListener("keydown", onKeyDown, true);
+      if (boundInput) {
+        boundInput.removeEventListener("input", onInput);
+        boundInput.removeEventListener("keydown", onKeyDown, true);
+      }
       observer.disconnect();
       document.querySelector("[data-atlas-taxon-intent]")?.remove();
       document.querySelector("[data-atlas-intent-context]")?.remove();
