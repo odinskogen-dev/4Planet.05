@@ -12,6 +12,7 @@ This is a quality overlay, not a new product architecture. ONE INTERFACE / Share
 4. Every visible element must improve understanding, orientation, action, life/emotion, trust, evidence or accessibility. Otherwise remove or subordinate it.
 5. Premium visual quality never waives usability, truth, accessibility or performance defects.
 6. Recurrence of an already learned quality defect is a programme-control failure.
+7. REDUCE BEFORE GENERATE: **DELETE → PRIORITISE → CONSOLIDATE → HUMANISE → TEST → REFINE**.
 
 ## Mandatory pre-code questions
 
@@ -28,7 +29,7 @@ Before implementation begins, record:
 - **MOBILE-FIRST RISK** — what can fail at 390/430 px or touch.
 - **HUMAN SUCCESS** — observable behaviour that proves the experience works.
 
-A user-facing build is not GOLD-ready with unanswered fields.
+In TEST KING, a material user-facing mutation must update `docs/control/GOLD_CURRENT_BRIEF.md` in the same bounded change. A user-facing build is not GOLD-ready with unanswered fields.
 
 ## Visual hierarchy model
 
@@ -108,11 +109,26 @@ The learning record states what failed, why, what rule changed, where else it ma
 
 - **TEST KING** is the only active convergence/integration tree for assembling materially better product slices.
 - **LIVE KING** is production and receives only verified, Founder-accepted slices from TEST KING.
-- Historical branches remain donor/recovery evidence, not competing active candidates.
-- Every donor delta is classified **ADOPT / ALREADY PRESENT / REJECT WITH REASON / DEFER WITH REASON**.
+- Historical branches and repositories remain donor/recovery/reference evidence, not competing active candidates.
+- Every material donor delta is classified **ADOPT / ALREADY PRESENT / REJECT WITH REASON / DEFER WITH REASON**.
 - Never newest-branch-wins and never wholesale-merge divergent candidates.
 - Promotion is feature-by-feature and must preserve a rollback anchor to the exact prior LIVE SHA.
 
-For the current repository, `release/one-interface-premium-current` / PR #121 is TEST KING until a later explicit Founder decision changes the active line.
+For the current repository, **`king/test` / PR #131 is the only moving TEST KING line**. Former PR #121 / `release/one-interface-premium-current` is frozen predecessor/donor evidence. LIVE KING remains unchanged until a separately authorised promotion.
+
+## Permanent enforcement projection
+
+Implementation details that make this authority difficult to bypass live under:
+- `docs/control/GOLD_ENFORCEMENT_MATRIX.md`
+- `docs/control/GOLD_CURRENT_BRIEF.md`
+- `docs/control/GOLD_PRIMITIVE_REGISTRY.md`
+- `docs/control/GOLD_VISUAL_BASELINES.json`
+- `docs/control/LIVE_PROMOTION_MANIFEST.json`
+- `docs/control/REPOSITORY_AUTHORITY_REGISTER.md`
+- `scripts/gold-policy-check.mjs`
+- `scripts/gold-visual-lock-check.mjs`
+- `.github/workflows/gold-enforcement.yml`
+
+CANDIDATE visual evidence is not Founder-approved. APPROVED visual baselines require an exact image hash and Founder decision reference. A production promotion requires TEST KING provenance, exact prior LIVE rollback identity, evidence and explicit Founder authority.
 
 Canonical programme reference: `4PLANET_ GOLD / WORLD CLASS PRODUCT QUALITY SYSTEM v1.0 — HUMAN CRAFT, HIERARCHY & AI-WASH` in 4PLANET Knowledge OS.
