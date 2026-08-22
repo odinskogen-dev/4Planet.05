@@ -7,6 +7,10 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
+import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
+import { LensCapture } from "@/pages/lens/LensCapture";
+import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
@@ -18,10 +22,7 @@ import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
-
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -51,7 +52,11 @@ export function AppRoutes() {
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
-      <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/species/lab" element={<SpeciesEngineLab />} />
+      <Route path="/species/:slug" element={<SpeciesRoute curatedElement={<SpeciesProfilePage />} />} />
+      <Route path="/lens" element={<LensCapture />} />
+      <Route path="/food/lens" element={<FoodCapture />} />
+      <Route path="/s4piens/food/lens" element={<FoodCapture />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
