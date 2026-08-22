@@ -3,10 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import { contextHref, type ProductKey } from "@/product/ProductNav";
 
 /**
- * PRD-PQ02 — Four-square Product Switcher.
- * Replaces the floating product rail. Quiet, discoverable, accessible.
- * Fixed order 4PLANET · ATLAS · SPECIES · IMPACT; active node in the contextual accent.
- * Governing spec: Product Switcher & Shared Shell Specification v1.0.
+ * Product-family switcher for ONE INTERFACE.
+ * Quiet, discoverable, accessible and context-retaining.
+ * Fixed family order: 4PLANET umbrella + ATLAS + SPECIES + LIVING SYSTEMS + IMPACT.
+ * The typographic trigger is the default GOLD grammar because it reduces app-launcher
+ * icon noise while preserving the explicit family list inside the panel.
  */
 
 type Product = { key: ProductKey; label: string; descriptor: string; path: string; index: number };
@@ -28,20 +29,14 @@ function activeProduct(pathname: string): ProductKey {
 }
 
 /**
- * WS-A — Product Switcher, two founder-review options.
- * OPTION A: a refined family mark — four nodes on a quiet baseline that reads as a
- *   product-family relationship, not a generic app grid; the active node carries
- *   the contextual accent.
- * OPTION B: a typographic product-family trigger — "4·" wordmark with the active
- *   product initial, subtle and editorial.
- * Neither repeats the same icon inside every panel row.
+ * Variant A is retained as a reversible donor/reference treatment.
+ * Variant B is the restrained typographic GOLD default.
  */
 type SwitcherVariant = "A" | "B";
 
 function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { activeIndex: number; dark?: boolean; accent?: string; size?: number }) {
   const idle = dark ? "rgba(255,255,255,.5)" : "rgba(8,8,8,.4)";
   const r = Math.max(2, Math.round(size * 0.1));
-  // Five nodes on a quiet ring — a product-family relationship, not an app grid.
   const n = 5;
   const pts = Array.from({ length: n }, (_, i) => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
@@ -70,7 +65,7 @@ function TypeMark({ activeLabel, dark, accent = "#2E2EFF" }: { activeLabel: stri
   );
 }
 
-export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "A" }: { dark?: boolean; accent?: string; variant?: SwitcherVariant }) {
+export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "B" }: { dark?: boolean; accent?: string; variant?: SwitcherVariant }) {
   const location = useLocation();
   const active = activeProduct(location.pathname);
   const activeIdx = PRODUCTS.find((p) => p.key === active)!.index;
