@@ -14,11 +14,6 @@ concurrency:
   group: browser-product-proof-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  AUDITED_RUNTIME_SHA: 60d55cd758e496ac40fcd7e4654713b110f54718
-  AUDITED_RUNTIME_URL: https://build-four-product-integrate.4planet-05.pages.dev
-  AUDITED_RUNTIME_MARKER: pq02-claude-02-audit-preview-2026-07-26
-
 jobs:
   test-critical-journeys:
     runs-on: ubuntu-latest
@@ -26,12 +21,19 @@ jobs:
     steps:
       - name: Check out the exact evidence candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Confirm that runtime product files still match the controlled candidate
+      - name: Assert exact candidate head
         shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          git fetch --no-tags --depth=1 origin "$AUDITED_RUNTIME_SHA"
-          git diff --exit-code "$AUDITED_RUNTIME_SHA" HEAD -- src public package.json package-lock.json supabase
+          actual="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA"
+          echo "actual=$actual"
+          test "$actual" = "$EXPECTED_SHA"
+          printf '%s\n' "$actual" > runtime-sha.txt
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -45,28 +47,34 @@ jobs:
       - name: Install Chromium and browser system packages
         run: npx playwright install --with-deps chromium
 
-      - name: Build the current source for integrity
+      - name: Build the exact current source
         run: npm run build
 
-      - name: Confirm the controlled branch deployment is current and reachable
+      - name: Start exact-head local preview
         shell: bash
         run: |
-          for attempt in {1..90}; do
-            marker="$(curl --fail --silent "$AUDITED_RUNTIME_URL/product-build.txt" || true)"
-            if printf '%s' "$marker" | grep --fixed-strings --quiet "$AUDITED_RUNTIME_MARKER"; then
-              printf '%s\n' "$AUDITED_RUNTIME_URL" > runtime-url.txt
-              printf '%s\n' "$AUDITED_RUNTIME_SHA" > runtime-sha.txt
-              printf '%s\n' "$marker" > runtime-marker.txt
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4planet-preview.log 2>&1 &
+          echo $! > /tmp/4planet-preview.pid
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              printf '%s\n' "http://127.0.0.1:4173" > runtime-url.txt
               exit 0
             fi
-            sleep 2
+            sleep 1
           done
+          cat /tmp/4planet-preview.log || true
           exit 1
 
-      - name: Run desktop, mobile, map and critical-route tests against the controlled deployment
+      - name: Run desktop, mobile, map and critical-route tests against exact head
         env:
-          BASE_URL: ${{ env.AUDITED_RUNTIME_URL }}
-        run: npm run test:e2e
+          BASE_URL: http://127.0.0.1:4173
+        run: npm run test:e2e -- --project=desktop-1440 --project=desktop-1280 --project=mobile-390 --project=mobile-430
+
+      - name: Confirm tracked product tree stayed clean
+        shell: bash
+        run: |
+          git diff --exit-code --
+          git diff --cached --exit-code --
 
       - name: Upload current product screenshots and browser evidence
         if: always()
@@ -79,6 +87,5 @@ jobs:
             test-results
             runtime-url.txt
             runtime-sha.txt
-            runtime-marker.txt
           if-no-files-found: warn
           retention-days: 14
