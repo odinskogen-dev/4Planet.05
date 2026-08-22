@@ -27,11 +27,23 @@ jobs:
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact PR head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA"
+          echo "actual=$actual"
+          test "$actual" = "$EXPECTED_SHA"
 
       - name: Record exact candidate
         run: |
           git rev-parse HEAD > exact-sha.txt
-          printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > exact-branch.txt
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -127,7 +139,10 @@ jobs:
       - name: Clean tracked tree
         shell: bash
         run: |
-          test -z "$(git status --porcelain)" || { echo 'Tracked tree not clean'; git status --porcelain; exit 1; }
+          # Evidence files are intentionally generated as untracked artifacts by this
+          # workflow. Fail only when tracked repository content was mutated by the gate.
+          git diff --exit-code --
+          git diff --cached --exit-code --
 
       - name: Upload exact-SHA acceptance evidence
         if: always()
