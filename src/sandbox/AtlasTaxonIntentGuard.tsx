@@ -63,8 +63,15 @@ function makeCanonicalResult() {
 function installCanonicalResult(query: string) {
   const results = document.querySelector<HTMLElement>(".results");
   if (!results) return;
-  results.querySelector("[data-atlas-taxon-intent]")?.remove();
-  if (!ORCA_INTENT.aliases.has(normalise(query))) return;
+  const existing = results.querySelector<HTMLElement>("[data-atlas-taxon-intent]");
+  const matches = ORCA_INTENT.aliases.has(normalise(query));
+  if (!matches) {
+    existing?.remove();
+    return;
+  }
+  // MutationObserver also sees this injected row. Reuse it rather than remove /
+  // recreate on every observer pass, which would create self-triggering churn.
+  if (existing) return;
 
   const row = makeCanonicalResult();
   const firstLifeGroup = Array.from(results.querySelectorAll<HTMLElement>(".rgrp"))
@@ -113,18 +120,25 @@ function stabiliseContextCamera() {
 
 export default function AtlasTaxonIntentGuard() {
   useEffect(() => {
-    let query = "";
     const input = document.querySelector<HTMLInputElement>(`input[aria-label="${SEARCH_LABEL}"]`);
     if (!input) return;
 
+    let scheduled = false;
     const sync = () => {
-      query = input.value;
-      installCanonicalResult(query);
+      installCanonicalResult(input.value);
       installContextBadge();
       stabiliseContextCamera();
     };
+    const scheduleSync = () => {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(() => {
+        scheduled = false;
+        sync();
+      });
+    };
 
-    const onInput = () => sync();
+    const onInput = () => scheduleSync();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Enter" || !ORCA_INTENT.aliases.has(normalise(input.value))) return;
       event.preventDefault();
@@ -135,7 +149,7 @@ export default function AtlasTaxonIntentGuard() {
     input.addEventListener("input", onInput);
     input.addEventListener("keydown", onKeyDown, true);
 
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver(scheduleSync);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     sync();
 
