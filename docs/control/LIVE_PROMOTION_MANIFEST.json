@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_AUTHORISED",
+  "sourceBranch": "king/test",
+  "testKingSha": null,
+  "priorLiveSha": null,
+  "founderDecisionRef": null,
+  "evidenceRef": null,
+  "rollbackRef": null,
+  "note": "Fail-closed placeholder. A TEST KING commit, CI/visual evidence and explicit Founder release decision are required before any LIVE KING promotion. This file being present is not release authority."
+}
