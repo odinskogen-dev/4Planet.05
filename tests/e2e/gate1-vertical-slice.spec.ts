@@ -62,47 +62,70 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await shot("01-atlas-observation");
 
   // ── real user map interaction ──
-  // Desktop: pointer drag + wheel zoom. Mobile: GENUINE touch — dispatched
-  // touchstart/move/end for a one-finger pan and a two-finger pinch, so this is
-  // real touch/pinch proof, not page.mouse emulation (audit override B).
+  // Desktop: pointer drag + wheel zoom. Mobile: touchstart/move/end with the
+  // browser creating the base Event and an explicit TouchList-shaped payload.
+  // This avoids non-portable direct `new Touch()` construction in WebKit while
+  // still exercising MapLibre's touch handlers rather than page.mouse emulation.
   const before = await mapState(page);
   const box = page.viewportSize()!;
   if (isMobile) {
     const cx = box.width * 0.5;
     const cy = box.height * 0.16; // above the bottom sheet, over the live map
     const canvas = page.locator("canvas.maplibregl-canvas").first();
-    // One-finger pan via real touch events.
-    const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
-      page.evaluate(({ fromX, fromY, toX, toY }) => {
-        const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
-        const r = el.getBoundingClientRect();
-        const mk = (x: number, y: number) => {
-          const t = new Touch({ identifier: 1, target: el, clientX: r.left + x, clientY: r.top + y });
-          return { t, x: r.left + x, y: r.top + y };
-        };
-        const fire = (type: string, x: number, y: number) => {
-          const { t } = mk(x, y);
-          el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
-        };
-        fire("touchstart", fromX, fromY);
-        const steps = 10;
-        for (let i = 1; i <= steps; i++) fire("touchmove", fromX + ((toX - fromX) * i) / steps, fromY + ((toY - fromY) * i) / steps);
-        fire("touchend", toX, toY);
-      }, { fromX, fromY, toX, toY });
     await canvas.waitFor({ state: "visible", timeout: 10_000 });
-    await touchDrag(cx, cy, cx - 120, cy + 70);
+
+    const touchSequence = (points: Array<Array<{ id: number; x: number; y: number }>>) =>
+      page.evaluate((frames) => {
+        const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
+        if (!el) throw new Error("ATLAS map canvas missing");
+        const r = el.getBoundingClientRect();
+        const touchLike = (p: { id: number; x: number; y: number }) => ({
+          identifier: p.id,
+          target: el,
+          clientX: r.left + p.x,
+          clientY: r.top + p.y,
+          pageX: r.left + p.x + window.scrollX,
+          pageY: r.top + p.y + window.scrollY,
+          screenX: r.left + p.x,
+          screenY: r.top + p.y,
+          radiusX: 1,
+          radiusY: 1,
+          rotationAngle: 0,
+          force: 0.5,
+        });
+        const fire = (type: "touchstart" | "touchmove" | "touchend", pts: Array<{ id: number; x: number; y: number }>) => {
+          const changed = pts.map(touchLike);
+          const active = type === "touchend" ? [] : changed;
+          const event = new Event(type, { bubbles: true, cancelable: true });
+          Object.defineProperties(event, {
+            touches: { value: active },
+            targetTouches: { value: active },
+            changedTouches: { value: changed },
+          });
+          el.dispatchEvent(event);
+        };
+        const first = frames[0] || [];
+        fire("touchstart", first);
+        for (const frame of frames.slice(1)) fire("touchmove", frame);
+        fire("touchend", frames.at(-1) || first);
+      }, points);
+
+    const dragFrames: Array<Array<{ id: number; x: number; y: number }>> = [];
+    for (let i = 0; i <= 10; i++) {
+      dragFrames.push([{ id: 1, x: cx - (120 * i) / 10, y: cy + (70 * i) / 10 }]);
+    }
+    await touchSequence(dragFrames);
     await page.waitForTimeout(700);
-    // Two-finger pinch-zoom via real touch events.
-    await page.evaluate(({ cx, cy }) => {
-      const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
-      const r = el.getBoundingClientRect();
-      const T = (id: number, x: number, y: number) => new Touch({ identifier: id, target: el, clientX: r.left + x, clientY: r.top + y });
-      const fire = (type: string, ts: Touch[]) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : ts, targetTouches: type === "touchend" ? [] : ts, changedTouches: ts }));
-      let a = 20, b = 20;
-      fire("touchstart", [T(1, cx - a, cy), T(2, cx + b, cy)]);
-      for (let i = 1; i <= 10; i++) { a = 20 + i * 6; b = 20 + i * 6; fire("touchmove", [T(1, cx - a, cy), T(2, cx + b, cy)]); }
-      fire("touchend", [T(1, cx - a, cy), T(2, cx + b, cy)]);
-    }, { cx, cy });
+
+    const pinchFrames: Array<Array<{ id: number; x: number; y: number }>> = [];
+    for (let i = 0; i <= 10; i++) {
+      const d = 20 + i * 6;
+      pinchFrames.push([
+        { id: 1, x: cx - d, y: cy },
+        { id: 2, x: cx + d, y: cy },
+      ]);
+    }
+    await touchSequence(pinchFrames);
   } else {
     const px = box.width * 0.4, py = box.height * 0.5;
     await page.mouse.move(px, py);
