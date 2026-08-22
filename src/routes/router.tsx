@@ -22,18 +22,13 @@ const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const JaguarWorld = lazy(() => import("@/pages/integrated/JaguarWorld"));
 const HomoSapiensWorld = lazy(() => import("@/pages/integrated/HomoSapiensWorld"));
 const SapiensAtlasSandbox = lazy(() => import("@/pages/integrated/SapiensAtlasSandbox"));
+const SapiensBiologicalExperiment = lazy(() => import("@/pages/integrated/SapiensBiologicalExperiment"));
 const AmazonRainforest = lazy(() => import("@/pages/integrated/AmazonRainforest"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
 );
 
-/**
- * S4PIENS can have its own domain surface without becoming a separate product,
- * repository, map engine or truth system. Whichever of these founder-owned
- * domains is attached in Cloudflare lands in the same Human Systems product.
- * 4planet.org keeps its existing home route unchanged.
- */
 const SAPIENS_UNIVERSE_HOSTS = new Set([
   "s4piens.com",
   "www.s4piens.com",
@@ -66,11 +61,15 @@ function SapiensFoodEntry() {
   return <Suspense fallback={WorldFallback}><SapiensAtlasSandbox /></Suspense>;
 }
 
+function SapiensLeadingEntry() {
+  return <Suspense fallback={WorldFallback}><SapiensBiologicalExperiment /></Suspense>;
+}
+
 export function AppRoutes() {
   const sapiensHost = isSapiensUniverseHost();
   return (
     <Routes>
-      <Route path="/" element={sapiensHost ? <SapiensFrontDoor /> : <Home />} />
+      <Route path="/" element={sapiensHost ? <SapiensLeadingEntry /> : <Home />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
@@ -85,9 +84,12 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/sandbox/s4piens" element={<SapiensFoodEntry />} />
+      <Route path="/sandbox/s4piens" element={<SapiensLeadingEntry />} />
+      <Route path="/sandbox/s4piens-bio" element={<SapiensLeadingEntry />} />
+      <Route path="/sandbox/s4piens-classic" element={<SapiensFoodEntry />} />
       <Route path="/food" element={sapiensHost ? <SapiensFoodEntry /> : <Navigate to="/missions/food" replace />} />
-      <Route path="/human-systems" element={sapiensHost ? <SapiensFrontDoor /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/human-systems" element={sapiensHost ? <SapiensLeadingEntry /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/classic" element={sapiensHost ? <SapiensFrontDoor /> : <Navigate to="/domains/s4piens" replace />} />
       <Route path="/actors" element={<ActorsIndex />} />
       <Route path="/actors/:slug" element={<ActorProfilePage />} />
       <Route path="/innovations/precision-nutrient-management" element={<InnovationProfilePage />} />
@@ -133,7 +135,7 @@ export function AppRoutes() {
       <Route path="/sponsors" element={toBrands} />
       <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
-      <Route path="/s4piens" element={sapiensHost ? <SapiensFrontDoor /> : <Navigate to="/domains/s4piens" replace />} />
+      <Route path="/s4piens" element={sapiensHost ? <SapiensLeadingEntry /> : <Navigate to="/domains/s4piens" replace />} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
       <Route path="/magazine" element={toHome} />
       <Route path="/system" element={toHome} />
