@@ -75,3 +75,24 @@ Method: same-runtime blind bootstrap emulation. The reconstruction deliberately 
 | CR-10 Recovery from fresh chat | EMULATION PASS / INDEPENDENT TEST PENDING | Blind reconstruction recovered North Star, rails, current bottleneck, active artifacts, Founder gates and next safe work without Founder restatement. A truly separate ChatGPT conversation cannot be spawned from this runtime, so independent fresh-chat proof remains explicitly open. |
 
 Run 01 summary: 5 full PASS, 3 PARTIAL/STRUCTURAL, 1 EMULATION PASS, 1 PASS with explicit emulation qualifier (CR-01). No test is upgraded beyond the evidence above. The control change remains DRAFT/UNMERGED until later regression evidence is sufficient for promotion.
+
+---
+
+# Regression Run 02 — 22 Aug 2026 10:42 CEST
+
+Method: recurring autonomous Project Lead invocation with explicit instruction that chat memory is orientation only, never authority. The run recovered fresh Drive/BRAIN control surfaces, Prototype SAFE references, live GitHub open-PR state and fresh Gmail delivery evidence before choosing work. It then selected this bounded control-only lane because ONE INTERFACE remained Founder-gated and the mature product candidates were frozen for review rather than spawning a competing product build.
+
+| Test | Result | Evidence / limitation |
+|---|---|---|
+| CR-01 Fresh BRAIN bootstrap | PASS — SECOND RUN | Fresh Google Drive reads recovered Founder Control, Prototype SAFE, Project Lead/current snapshots and current programme-log evidence before work selection. |
+| CR-02 AXE semantic trigger | PARTIAL | The invocation is a Project Lead automation and contains AXE semantics, so the no-literal-AXE path is still not independently isolated. Keep open. |
+| CR-03 Capability probe before denial | PASS — REPEATED | Drive, GitHub and Gmail were capability-probed and used in-run; no access claim was made by assumption. |
+| CR-04 Status-level separation | PASS — REPEATED | PR #92 stayed Founder-gated; PR #117 stayed draft/unmerged despite accepted recovery evidence; PR #120 stayed control-only/draft despite this new commit. |
+| CR-05 Autonomous production reconciliation | PASS — SECOND RUN | Fresh GitHub open-PR state was reconciled against current control/SAFE orientation; latest Prodigi reply was read as delivery evidence rather than credited as cash. |
+| CR-06 Stale founder surface detection | PASS — REPEATED | Older Program Log snippets referring to PR #90 were not promoted over fresher Founder Control/SAFE + live PR #92 evidence. |
+| CR-07 Material writeback/readback | PASS — THIS FILE | This regression run is persisted on the existing PR #120 control branch and must be read back after commit before reporting. No unrelated canonical surface is sprayed. |
+| CR-08 Learning persistence | IMPROVED / LONGITUDINAL PASS 02 | The original context failure now has a second dated regression execution with preserved limitations. More independent sessions remain desirable before merge/promotion. |
+| CR-09 Parallel ownership / duplicate-work control | PASS — BOUNDED EXERCISE | Live PR inventory was inspected first; work stayed on existing control PR #120 and did not mutate Founder-frozen ONE INTERFACE, Jaguar/Orca, Ecosystems or create a parallel engine. |
+| CR-10 Recovery from fresh chat | STRONGER EMULATION / INDEPENDENT TEST STILL OPEN | Current priorities, Founder gate, safe parallel work and delivery evidence were reconstructed from connected current sources without requiring Founder restatement. The runtime still has conversation context available, so this is not labelled a clean-room fresh-chat proof. |
+
+Run 02 summary: repeatability improved materially. CR-08 and CR-09 moved forward on real subsequent-run evidence. CR-02 and a fully independent CR-10 remain explicitly open. PR #120 remains DRAFT / UNMERGED / CONTROL-ONLY; Cloudflare Pages deployment failure is not treated as product-runtime evidence because this change contains no runtime product mutation.
