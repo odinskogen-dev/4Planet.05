@@ -15,6 +15,7 @@ import { About } from "@/pages/v5/About";
 import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
+import LensCapture from "@/pages/lens/LensCapture";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -52,6 +53,7 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/lens" element={<LensCapture />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
