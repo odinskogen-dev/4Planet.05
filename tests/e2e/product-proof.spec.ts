@@ -76,7 +76,7 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("ECOLOGICAL SOURCE REVIEW PENDING")).toBeVisible();
+  await expect(page.getByText("SOURCE REVIEW PENDING", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/do not establish range, abundance, population trend or live tracking/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
