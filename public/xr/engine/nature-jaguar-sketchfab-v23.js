@@ -7,17 +7,20 @@
     const MODEL_UID = '91c61c329d2a4668816f81f08dfcd492';
     const MODEL_SOURCE = 'https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492';
     const EMBED_URL = `https://sketchfab.com/models/${MODEL_UID}/embed?autostart=1&preload=1&animation_autoplay=1&ui_controls=0&ui_infos=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&dnt=1&transparent=1`;
+    const READY_TIMEOUT_MS = 12000;
 
     let shell = null;
     let iframe = null;
     let api = null;
     let apiReady = false;
+    let modelReady = false;
     let active = false;
     let currentAnimation = null;
     let animationUid = null;
     let animationDuration = 14.667;
     let cameraHome = null;
     let hoverTimer = 0;
+    let readyTimer = 0;
     let interactionCooldown = false;
     let enhancementStarted = false;
 
@@ -25,17 +28,29 @@
     const desktopViewport = () => window.innerWidth > 760;
     const viewerAllowed = () => desktopViewport();
 
-    function markViewerVisible(state = 'ear-direct-embed') {
+    function publishState(state) {
       root.dataset.jaguar3d = state;
       root.dataset.jaguar3dSource = 'ear-rodriguez-jaguar';
-      root.dataset.jaguar3dActive = String(active && identityScene() && viewerAllowed());
+      root.dataset.jaguar3dActive = String(Boolean(modelReady && active && identityScene() && viewerAllowed()));
+    }
+
+    function failClosed(reason) {
+      modelReady = false;
+      if (shell) {
+        shell.dataset.ready = 'false';
+        shell.dataset.active = 'false';
+        shell.dataset.failure = reason || 'viewer-unavailable';
+      }
+      publishState('photo-fallback');
+      root.dataset.jaguar3dFailure = reason || 'viewer-unavailable';
+      console.warn(`[4PLANET JAGUAR] Ear 3D bridge failed closed to controlled species media: ${reason || 'viewer-unavailable'}`);
     }
 
     function ensureShell() {
       if (shell) return shell;
       shell = document.createElement('section');
       shell.className = 'nature-ear-live-v23';
-      shell.dataset.ready = 'direct-embed';
+      shell.dataset.ready = 'false';
       shell.dataset.active = 'false';
       shell.setAttribute('aria-label', 'Interactive Jaguar 3D study by Ear.Rodriguez');
       shell.innerHTML = `
@@ -136,6 +151,30 @@
       });
     }
 
+    function verifyModelReady() {
+      if (!api?.getSceneGraph) {
+        failClosed('scene-graph-check-unavailable');
+        return;
+      }
+      api.getSceneGraph((error, graph) => {
+        if (error || !graph) {
+          failClosed('scene-graph-unavailable');
+          return;
+        }
+        clearTimeout(readyTimer);
+        modelReady = true;
+        shell.dataset.ready = 'true';
+        delete shell.dataset.failure;
+        delete root.dataset.jaguar3dFailure;
+        publishState('ear-live-bridge');
+        integrateViewerBackground();
+        readAnimations();
+        readCameraHome();
+        bindViewerInteraction();
+        if (active && identityScene() && viewerAllowed()) show();
+      });
+    }
+
     async function enhanceWithApi() {
       if (enhancementStarted || !iframe) return;
       enhancementStarted = true;
@@ -163,31 +202,28 @@
             api.start?.();
             api.addEventListener?.('viewerready', () => {
               apiReady = true;
-              shell.dataset.ready = 'api';
-              markViewerVisible('ear-live-bridge');
-              integrateViewerBackground();
-              readAnimations();
-              readCameraHome();
-              bindViewerInteraction();
-              if (active && identityScene() && viewerAllowed()) show();
+              verifyModelReady();
             });
           },
           error() {
-            shell.dataset.ready = 'direct-embed';
-            markViewerVisible('ear-direct-embed');
+            failClosed('viewer-init-error');
           }
         });
       } catch (error) {
-        shell.dataset.ready = 'direct-embed';
-        markViewerVisible('ear-direct-embed');
-        console.warn('[4PLANET JAGUAR] Viewer API enhancement failed; direct Ear 3D embed remains active.', error);
+        failClosed('viewer-api-unavailable');
+        console.warn('[4PLANET JAGUAR] Viewer API enhancement failed.', error);
       }
     }
 
     function init() {
       if (!viewerAllowed()) return;
       ensureShell();
-      markViewerVisible(apiReady ? 'ear-live-bridge' : 'ear-direct-embed');
+      if (!readyTimer) {
+        readyTimer = window.setTimeout(() => {
+          if (!modelReady) failClosed('viewer-ready-timeout');
+        }, READY_TIMEOUT_MS);
+      }
+      publishState(modelReady ? 'ear-live-bridge' : 'ear-loading');
       enhanceWithApi();
     }
 
@@ -195,10 +231,10 @@
       if (!viewerAllowed() || !identityScene()) return;
       ensureShell();
       active = true;
-      shell.dataset.active = 'true';
+      shell.dataset.active = String(modelReady);
       shell.style.removeProperty('display');
-      markViewerVisible(apiReady ? 'ear-live-bridge' : 'ear-direct-embed');
-      if (apiReady) {
+      publishState(modelReady ? 'ear-live-bridge' : 'ear-loading');
+      if (apiReady && modelReady) {
         api?.start?.();
         api?.play?.();
       }
@@ -213,7 +249,7 @@
 
     function observe() {
       root.dataset.jaguarAttention = 'visitor';
-      if (!apiReady || !api) return;
+      if (!apiReady || !modelReady || !api) return;
       if (animationUid) {
         api.setCurrentAnimationByUID?.(animationUid);
         api.seekTo?.(Math.min(animationDuration * .54, 8.2));
@@ -241,7 +277,7 @@
 
     function move() {
       root.dataset.jaguarAttention = 'motion';
-      if (!apiReady || !api || !animationUid) return;
+      if (!apiReady || !modelReady || !api || !animationUid) return;
       api.setCurrentAnimationByUID?.(animationUid);
       api.seekTo?.(0);
       api.setCycleMode?.('one');
@@ -281,8 +317,6 @@
     document.addEventListener('visibilitychange', () => document.hidden ? hide() : reconcileViewport());
     window.addEventListener('pagehide', hide, { once: true });
 
-    // Keep the established public data-contract so existing Journey QA remains
-    // stable while the implementation is hardened underneath it.
     root.dataset.jaguarLiveBridge = 'v23';
   };
 
