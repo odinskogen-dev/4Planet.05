@@ -1,10 +1,10 @@
 {
-  "version": "premium-v17-orca-transfer",
+  "version": "premium-v19-orca-eight-frame-transfer",
   "journeyId": "orca-living-ocean",
   "scenes": {
     "identity": {
       "mode": "ocean",
-      "kicker": "01 / 05 · ENCOUNTER",
+      "kicker": "01 / 08 · ENCOUNTER",
       "title": "Meet one life.",
       "body": "Begin with the animal — then keep population, pod, ecotype and live location unknown until a source supports them.",
       "truthLabel": "SPECIES IDENTITY · POPULATION UNKNOWN",
@@ -22,7 +22,7 @@
     },
     "dependency": {
       "mode": "ocean",
-      "kicker": "02 / 05 · FOOD WEB",
+      "kicker": "02 / 08 · LIVING WEB",
       "title": "What it eats depends on who it is.",
       "body": "Follow the animal into a population-specific food web. Different groups can specialise in different prey and hunting strategies.",
       "truthLabel": "DEPENDENCY · POPULATION-SPECIFIC",
@@ -40,7 +40,7 @@
     },
     "habitat": {
       "mode": "ocean",
-      "kicker": "03 / 05 · PLACE",
+      "kicker": "03 / 08 · ECOSYSTEM + ATLAS",
       "title": "A whale is never only a whale.",
       "body": "Pull back into shelves, fjords and open water. Place matters because prey, movement and human pressure are not uniform across the ocean.",
       "truthLabel": "PLACE · SOURCE-BOUND",
@@ -63,7 +63,7 @@
     },
     "pressure": {
       "mode": "pressure",
-      "kicker": "04 / 05 · UNDER PRESSURE",
+      "kicker": "04 / 08 · PRESSURE + UNDERSTANDING",
       "title": "The ocean gets louder.",
       "body": "Noise and vessel interaction affect some killer-whale populations. The strength and consequence of that pressure depend on population, place and exposure.",
       "truthLabel": "PRESSURE · POPULATION-SPECIFIC",
@@ -82,34 +82,93 @@
     },
     "response": {
       "mode": "response",
-      "kicker": "05 / 05 · RESPONSE",
+      "kicker": "05 / 08 · SOLUTIONS",
       "title": "Response starts with specificity.",
-      "body": "No single intervention protects every orca. A credible response starts by identifying the population, place, evidence and competent actor.",
-      "truthLabel": "RESPONSE · NO UNIVERSAL FIX",
+      "body": "No single intervention protects every orca. Compare response classes only after population, place and pressure evidence are bounded.",
+      "truthLabel": "SOLUTION CLASS · NO DELIVERY CLAIM · NO UNIVERSAL FIX",
       "audioLabel": "OPEN WATER RETURN + FORWARD MOTIF · PROCEDURAL",
       "hotspots": [
         { "label": "IDENTIFY POPULATION", "sublabel": "BEFORE INTERVENTION", "x": 31, "y": 34, "tone": "response", "kicker": "RESPONSE RULE", "detail": "Population identity changes which pressure and response evidence is relevant." },
-        { "label": "REDUCE DISTURBANCE", "sublabel": "CONTEXT-DEPENDENT", "x": 68, "y": 35, "tone": "response", "kicker": "RESPONSE CLASS", "detail": "Disturbance reduction is a response class, not a claim of effectiveness for an unspecified population or place." },
-        { "label": "PREY + HABITAT", "sublabel": "SYSTEM CONTEXT", "x": 57, "y": 60, "tone": "response", "kicker": "RESPONSE CONTEXT", "detail": "Prey and habitat can matter to response design. A concrete action requires local science and accountable institutions." },
-        { "label": "RESPONSIBLE ACTOR", "sublabel": "SCIENCE + AUTHORITY + FIELD CAPACITY", "x": 78, "y": 64, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Actor categories are not partnerships or endorsements. Specific organisations require verification before public attribution." }
+        { "label": "REDUCE DISTURBANCE", "sublabel": "CONTEXT-DEPENDENT", "x": 68, "y": 35, "tone": "response", "kicker": "SOLUTION CLASS", "detail": "Disturbance reduction is a response class, not a claim of effectiveness for an unspecified population or place." },
+        { "label": "PREY + HABITAT", "sublabel": "SYSTEM CONTEXT", "x": 57, "y": 60, "tone": "response", "kicker": "RESPONSE CONTEXT", "detail": "Prey and habitat can matter to response design. A concrete action requires local science and accountable institutions." }
       ],
       "items": [
         { "label": "Population", "note": "Must be identified where response depends on it", "state": "GATE" },
-        { "label": "Actor", "note": "Competence and authority must be verified", "state": "GATE" },
+        { "label": "Solution class", "note": "Possible pathway only; review required", "state": "NOT A DELIVERY CLAIM" },
         { "label": "Outcome", "note": "No protection claim before evidence", "state": "BOUNDARY" }
       ],
       "modules": [
-        { "label": "ORCA · monitoring + conservation actor", "state": "GOLD ACTOR PROFILE · DIRECT DIALOGUE · NO PARTNERSHIP CLAIM", "href": "/actors/orca/" },
         { "label": "Open WH4LES_ mission", "state": "MISSION CONTEXT · NO DELIVERY CLAIM", "href": "/missions/wh4les" },
         { "label": "Inspect Orca in SPECIES", "state": "SOURCE-AWARE PROFILE", "href": "/species/orca?entity=taxon:gbif:2440483" },
         { "label": "Explore reported records in ATLAS", "state": "OCCURRENCE ≠ RANGE", "href": "/atlas?entity=taxon:gbif:2440483" }
       ],
-      "actorRoles": [
-        "POPULATION SCIENTISTS",
-        "MARINE AUTHORITIES",
-        "VESSEL / FISHERY OPERATORS",
-        "FIELD + MONITORING TEAMS",
-        "LOCAL / INDIGENOUS KNOWLEDGE HOLDERS"
+      "actorRoles": ["POPULATION SCIENTISTS","MARINE AUTHORITIES","VESSEL / FISHERY OPERATORS","FIELD + MONITORING TEAMS","LOCAL / INDIGENOUS KNOWLEDGE HOLDERS"]
+    },
+    "actors": {
+      "mode": "response",
+      "kicker": "06 / 08 · ACTORS",
+      "title": "Solutions need accountable actors.",
+      "body": "Move from a response class to the actor roles with the science, authority or field capacity to assess and deliver it. Roles are not partnerships.",
+      "truthLabel": "ACTOR ROLES · NOT PARTNERSHIPS · VERIFY SPECIFIC ORGANISATIONS",
+      "audioLabel": "COORDINATION SIGNAL · PROCEDURAL",
+      "hotspots": [
+        { "label": "SCIENCE", "sublabel": "POPULATION + PRESSURE", "x": 31, "y": 34, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Population scientists can establish whether a pressure and response evidence base applies to the population in question." },
+        { "label": "AUTHORITY", "sublabel": "RULES + MANAGEMENT", "x": 68, "y": 36, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Relevant authorities may control vessel rules, protected-area measures or other management instruments. No specific authority relationship is implied." },
+        { "label": "FIELD CAPACITY", "sublabel": "MONITORING + DELIVERY", "x": 57, "y": 62, "tone": "response", "kicker": "ACTOR ROLE", "detail": "Field and monitoring teams can collect evidence or deliver bounded activities when competence, mandate and method are verified." }
+      ],
+      "items": [
+        { "label": "Named organisation", "note": "Not inferred from actor role", "state": "VERIFY" },
+        { "label": "Partnership", "note": "No partnership or endorsement implied", "state": "NOT CLAIMED" },
+        { "label": "Competence / mandate", "note": "Must be verified before public attribution", "state": "GATE" }
+      ],
+      "modules": [
+        { "label": "ORCA organisation profile", "state": "ACTOR PROFILE · DIRECT DIALOGUE · NO PARTNERSHIP CLAIM", "href": "/actors/orca/" },
+        { "label": "WH4LES_ mission", "state": "MISSION CONTEXT", "href": "/missions/wh4les" }
+      ],
+      "actorRoles": ["POPULATION SCIENTISTS","MARINE AUTHORITIES","VESSEL / FISHERY OPERATORS","FIELD + MONITORING TEAMS","LOCAL / INDIGENOUS KNOWLEDGE HOLDERS"]
+    },
+    "action": {
+      "mode": "response",
+      "kicker": "07 / 08 · ACTION + IMPACT UNITS",
+      "title": "Action begins only when delivery is real.",
+      "body": "A solution becomes action only when a specific project, accountable actor, method, resources and evidence path exist. No verified Orca Impact Unit is active in this prototype.",
+      "truthLabel": "NO VERIFIED UNIT ACTIVE · FAIL-CLOSED UNTIL DELIVERY EVIDENCE",
+      "audioLabel": "FORWARD SIGNAL · PROCEDURAL",
+      "hotspots": [
+        { "label": "PROJECT", "sublabel": "DEFINED SCOPE", "x": 30, "y": 34, "tone": "response", "kicker": "ACTION GATE", "detail": "A real action needs a bounded project and place, not a generic conservation intention." },
+        { "label": "ACTOR", "sublabel": "ACCOUNTABLE DELIVERY", "x": 67, "y": 37, "tone": "response", "kicker": "ACTION GATE", "detail": "The delivery actor must be specifically verified. Actor role does not equal contractor, partner or recipient." },
+        { "label": "EVIDENCE PATH", "sublabel": "BEFORE CLAIM", "x": 57, "y": 62, "tone": "response", "kicker": "ACTION GATE", "detail": "Method, monitoring and reporting requirements must exist before an Impact Unit or outcome claim can be activated." }
+      ],
+      "items": [
+        { "label": "Impact Unit", "note": "No verified Orca unit active", "state": "NOT ACTIVE" },
+        { "label": "Funding / contract", "note": "Not implied by this Journey", "state": "NOT CLAIMED" },
+        { "label": "Delivery", "note": "Requires project-specific evidence", "state": "GATE" }
+      ],
+      "modules": [
+        { "label": "WH4LES_ mission", "state": "ACTION CONTEXT · NO DELIVERY CLAIM", "href": "/missions/wh4les" },
+        { "label": "4PLANET IMPACT", "state": "SHARED ACTION LAYER · UNIT MUST VERIFY", "href": "/impact" }
+      ]
+    },
+    "proof": {
+      "mode": "response",
+      "kicker": "08 / 08 · PROOF + REPORTING",
+      "title": "Proof closes the loop.",
+      "body": "Evidence precedes outcome. A credible record must separate what was funded or delivered from what monitoring can actually support about ecological change.",
+      "truthLabel": "EVIDENCE BEFORE OUTCOME · MONITORING SUPPORTS ONLY WHAT IT MEASURES",
+      "audioLabel": "SETTLE + OPEN WATER · PROCEDURAL",
+      "hotspots": [
+        { "label": "DELIVERY RECORD", "sublabel": "WHAT HAPPENED", "x": 31, "y": 35, "tone": "response", "kicker": "PROOF", "detail": "Record the activity, place, actor, date and method before discussing ecological outcome." },
+        { "label": "MONITORING", "sublabel": "WHAT WAS MEASURED", "x": 67, "y": 36, "tone": "response", "kicker": "PROOF", "detail": "Monitoring can support only the variables and time period actually measured. Delivery evidence is not ecological outcome evidence." },
+        { "label": "CORRECTION", "sublabel": "KEEP CLAIMS REVERSIBLE", "x": 56, "y": 62, "tone": "response", "kicker": "PROOF", "detail": "If later evidence changes the interpretation, the public record must be correctable without erasing the original evidence trail." }
+      ],
+      "items": [
+        { "label": "Delivery", "note": "Separate from ecological outcome", "state": "EVIDENCE CLASS" },
+        { "label": "Ecological outcome", "note": "Requires appropriate monitoring", "state": "NOT INFERRED" },
+        { "label": "Reporting", "note": "Source-linked and correctable", "state": "REQUIRED" }
+      ],
+      "modules": [
+        { "label": "4PLANET Reports", "state": "SHARED REPORTING LAYER", "href": "/reports" },
+        { "label": "WH4LES_ mission", "state": "MISSION CONTEXT", "href": "/missions/wh4les" }
       ]
     }
   }
