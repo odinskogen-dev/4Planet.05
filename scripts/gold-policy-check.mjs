@@ -35,14 +35,12 @@ const REQUIRED_BRIEF_HEADINGS = [
   "## HUMAN SUCCESS",
 ];
 
-const PRODUCT_PREFIXES = [
-  "src/",
-  "public/",
-  "functions/",
-  "supabase/",
-  "tests/e2e/",
-];
+const PRODUCT_PREFIXES = ["src/", "public/", "functions/", "supabase/", "tests/e2e/"];
 const PRODUCT_FILES = new Set(["package.json", "package-lock.json", "vite.config.ts", "vite.config.js"]);
+// Legacy URLs may intentionally remain as redirects so old links do not break.
+// They are recovery/navigation compatibility, not public canon. Do not make the
+// anti-obsolete check so broad that it forces us to delete valid redirect history.
+const LEGACY_COMPATIBILITY_FILES = new Set(["src/routes/router.tsx"]);
 
 function fail(message) {
   console.error(`GOLD POLICY FAIL: ${message}`);
@@ -104,26 +102,33 @@ function validateAuthorityFiles() {
       continue;
     }
     if (screen.state === "APPROVED") {
-      if (!/^[a-f0-9]{64}$/i.test(screen.expectedSha256 || "")) {
-        fail(`APPROVED visual ${screen.id} has no exact SHA-256 lock`);
-      }
-      if (!screen.founderDecisionRef || !String(screen.founderDecisionRef).trim()) {
-        fail(`APPROVED visual ${screen.id} has no Founder decision reference`);
-      }
+      if (!/^[a-f0-9]{64}$/i.test(screen.expectedSha256 || "")) fail(`APPROVED visual ${screen.id} has no exact SHA-256 lock`);
+      if (!screen.founderDecisionRef || !String(screen.founderDecisionRef).trim()) fail(`APPROVED visual ${screen.id} has no Founder decision reference`);
     }
   }
 }
 
+function stripComments(content) {
+  return content
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+}
+
 function validateNoObsoletePublicCanon(files) {
-  const runtimeFiles = files.filter((file) => file.startsWith("src/") && fs.existsSync(file) && fs.statSync(file).isFile());
+  const runtimeFiles = files.filter((file) =>
+    file.startsWith("src/") &&
+    !LEGACY_COMPATIBILITY_FILES.has(file) &&
+    fs.existsSync(file) &&
+    fs.statSync(file).isFile(),
+  );
   const forbidden = [
-    { re: /4ntarctica/i, label: "obsolete 4NTARCTICA canon" },
-    { re: /4telier/i, label: "obsolete 4TELIER canon" },
+    { re: /4ntarctica/i, label: "obsolete 4NTARCTICA public canon" },
+    { re: /4telier/i, label: "obsolete 4TELIER public canon" },
   ];
   for (const file of runtimeFiles) {
-    const content = fs.readFileSync(file, "utf8");
+    const content = stripComments(fs.readFileSync(file, "utf8"));
     for (const rule of forbidden) {
-      if (rule.re.test(content)) fail(`${rule.label} found in runtime file ${file}`);
+      if (rule.re.test(content)) fail(`${rule.label} found in user-facing runtime source ${file}`);
     }
   }
 }
@@ -166,8 +171,6 @@ if (mode === "pr-main") {
   if (hasProductDelta && head !== "king/test") {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test`);
   }
-  // PR #131 remains a TEST KING review vessel while draft. The moment a product
-  // promotion is marked ready for merge, release authority must be explicit.
   if (hasProductDelta && head === "king/test" && !draft) validateLivePromotion();
 }
 
