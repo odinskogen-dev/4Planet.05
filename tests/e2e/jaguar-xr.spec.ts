@@ -44,6 +44,15 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
   await expect(premium).toHaveAttribute("data-detail-open", "false");
 }
 
+async function captureJourneyViewport(page: Page, path: string) {
+  // The Journey is a fixed full-viewport surface. A fullPage capture forces
+  // Chromium to repaint the cross-origin progressive 3D bridge and can stall
+  // long after all product assertions have passed. Capture the actual review
+  // viewport instead, with an explicit evidence timeout, so visual QA cannot
+  // turn a healthy product run into a false global timeout.
+  await page.screenshot({ path, fullPage: false, animations: "disabled", caret: "hide", timeout: 15_000 });
+}
+
 test("Jaguar MASTER rejects the degraded proxy, gates the real Ear source until ready, and preserves all eight Gold frames", async ({ page }, testInfo) => {
   await page.goto("/journey/jaguar/");
   await page.waitForLoadState("domcontentloaded");
@@ -109,7 +118,7 @@ test("Jaguar MASTER rejects the degraded proxy, gates the real Ear source until 
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/Meet one life/i);
   await exercisePremiumHotspot(page, /JAGUAR/i, /JAGUAR/i);
   await expectJourneyFrameSafe(page, root, "01 ENCOUNTER");
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-real-source-01-encounter.png`, fullPage: true });
+  await captureJourneyViewport(page, `${OUT}/${testInfo.project.name}-real-source-01-encounter.png`);
 
   const next = page.locator(".nature-journey-hud__next");
   const frame = async (state: string, title: RegExp, label: string) => {
@@ -136,7 +145,7 @@ test("Jaguar MASTER rejects the degraded proxy, gates the real Ear source until 
   await frame("proof", /journey does not end at a click/i, "08 PROOF + REPORTING");
   await expect(page.locator(".nature-premium")).toHaveAttribute("data-mode", "proof");
   await expect(page.locator(".nature-premium")).toContainText(/EVIDENCE BEFORE OUTCOME|Evidence precedes/i);
-  await page.screenshot({ path: `${OUT}/${testInfo.project.name}-real-source-08-proof.png`, fullPage: true });
+  await captureJourneyViewport(page, `${OUT}/${testInfo.project.name}-real-source-08-proof.png`);
 
   const sound = page.locator(".nature-sound");
   await expect(sound).toBeVisible();
