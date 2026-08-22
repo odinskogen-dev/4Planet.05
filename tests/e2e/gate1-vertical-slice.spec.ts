@@ -62,46 +62,89 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await shot("01-atlas-observation");
 
   // ── real user map interaction ──
-  // Desktop: pointer drag + wheel zoom. Mobile: GENUINE touch — dispatched
-  // touchstart/move/end for a one-finger pan and a two-finger pinch, so this is
-  // real touch/pinch proof, not page.mouse emulation (audit override B).
+  // Desktop: pointer drag + wheel zoom. Mobile: touchstart/move/end for a
+  // one-finger pan and two-finger pinch. The helper deliberately avoids the
+  // WebKit-illegal `new Touch()` constructor while preserving actual DOM touch
+  // semantics consumed by MapLibre: touches/targetTouches/changedTouches carry
+  // identifier, target and client/page/screen coordinates.
   const before = await mapState(page);
   const box = page.viewportSize()!;
   if (isMobile) {
     const cx = box.width * 0.5;
     const cy = box.height * 0.16; // above the bottom sheet, over the live map
     const canvas = page.locator("canvas.maplibregl-canvas").first();
-    // One-finger pan via real touch events.
     const touchDrag = (fromX: number, fromY: number, toX: number, toY: number) =>
       page.evaluate(({ fromX, fromY, toX, toY }) => {
         const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
         const r = el.getBoundingClientRect();
-        const mk = (x: number, y: number) => {
-          const t = new Touch({ identifier: 1, target: el, clientX: r.left + x, clientY: r.top + y });
-          return { t, x: r.left + x, y: r.top + y };
+        const touch = (id: number, x: number, y: number) => ({
+          identifier: id,
+          target: el,
+          clientX: r.left + x,
+          clientY: r.top + y,
+          pageX: r.left + x + window.scrollX,
+          pageY: r.top + y + window.scrollY,
+          screenX: r.left + x,
+          screenY: r.top + y,
+          radiusX: 1,
+          radiusY: 1,
+          rotationAngle: 0,
+          force: 0.5,
+        });
+        const fire = (type: string, touches: any[], changed = touches) => {
+          const event = new Event(type, { bubbles: true, cancelable: true });
+          Object.defineProperties(event, {
+            touches: { value: type === "touchend" ? [] : touches },
+            targetTouches: { value: type === "touchend" ? [] : touches },
+            changedTouches: { value: changed },
+          });
+          el.dispatchEvent(event);
         };
-        const fire = (type: string, x: number, y: number) => {
-          const { t } = mk(x, y);
-          el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : [t], targetTouches: type === "touchend" ? [] : [t], changedTouches: [t] }));
-        };
-        fire("touchstart", fromX, fromY);
+        fire("touchstart", [touch(1, fromX, fromY)]);
         const steps = 10;
-        for (let i = 1; i <= steps; i++) fire("touchmove", fromX + ((toX - fromX) * i) / steps, fromY + ((toY - fromY) * i) / steps);
-        fire("touchend", toX, toY);
+        for (let i = 1; i <= steps; i++) {
+          fire("touchmove", [touch(1, fromX + ((toX - fromX) * i) / steps, fromY + ((toY - fromY) * i) / steps)]);
+        }
+        fire("touchend", [], [touch(1, toX, toY)]);
       }, { fromX, fromY, toX, toY });
     await canvas.waitFor({ state: "visible", timeout: 10_000 });
     await touchDrag(cx, cy, cx - 120, cy + 70);
     await page.waitForTimeout(700);
-    // Two-finger pinch-zoom via real touch events.
     await page.evaluate(({ cx, cy }) => {
       const el = document.querySelector("canvas.maplibregl-canvas") as HTMLElement;
       const r = el.getBoundingClientRect();
-      const T = (id: number, x: number, y: number) => new Touch({ identifier: id, target: el, clientX: r.left + x, clientY: r.top + y });
-      const fire = (type: string, ts: Touch[]) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches: type === "touchend" ? [] : ts, targetTouches: type === "touchend" ? [] : ts, changedTouches: ts }));
+      const touch = (id: number, x: number, y: number) => ({
+        identifier: id,
+        target: el,
+        clientX: r.left + x,
+        clientY: r.top + y,
+        pageX: r.left + x + window.scrollX,
+        pageY: r.top + y + window.scrollY,
+        screenX: r.left + x,
+        screenY: r.top + y,
+        radiusX: 1,
+        radiusY: 1,
+        rotationAngle: 0,
+        force: 0.5,
+      });
+      const fire = (type: string, touches: any[], changed = touches) => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        Object.defineProperties(event, {
+          touches: { value: type === "touchend" ? [] : touches },
+          targetTouches: { value: type === "touchend" ? [] : touches },
+          changedTouches: { value: changed },
+        });
+        el.dispatchEvent(event);
+      };
       let a = 20, b = 20;
-      fire("touchstart", [T(1, cx - a, cy), T(2, cx + b, cy)]);
-      for (let i = 1; i <= 10; i++) { a = 20 + i * 6; b = 20 + i * 6; fire("touchmove", [T(1, cx - a, cy), T(2, cx + b, cy)]); }
-      fire("touchend", [T(1, cx - a, cy), T(2, cx + b, cy)]);
+      fire("touchstart", [touch(1, cx - a, cy), touch(2, cx + b, cy)]);
+      for (let i = 1; i <= 10; i++) {
+        a = 20 + i * 6;
+        b = 20 + i * 6;
+        fire("touchmove", [touch(1, cx - a, cy), touch(2, cx + b, cy)]);
+      }
+      const last = [touch(1, cx - a, cy), touch(2, cx + b, cy)];
+      fire("touchend", [], last);
     }, { cx, cy });
   } else {
     const px = box.width * 0.4, py = box.height * 0.5;
@@ -114,8 +157,6 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
     await page.mouse.move(px, py);
     for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, -500); await page.waitForTimeout(220); }
   }
-  // Let the wheel/inertial/pinch zoom fully settle so the captured camera is the
-  // final one (MapLibre keeps easing after the last input).
   await page.waitForFunction(() => {
     const m = (window as any).__4planet_map;
     return m && !m.isMoving() && !m.isZooming() && !m.isEasing();
@@ -123,13 +164,10 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await page.waitForTimeout(600);
   const after = await mapState(page);
   expect(after.zoom !== before.zoom || after.lng !== before.lng || after.lat !== before.lat).toBeTruthy();
-  // The URL now reflects the POST-INTERACTION camera (moveend + idle wrote it).
   const atlasAfter = atlasParams(page.url());
   expect(atlasAfter.record).toBe("orca-bundled");
   expect(atlasAfter.z).not.toBeNull();
   expect(atlasAfter.c).not.toBeNull();
-  // Truth of the camera is the settled live map; assert the URL matches it so we
-  // know reconstruction from the URL will be exact.
   const postZoom = after.zoom;
   expect(Math.abs(Number(atlasAfter.z) - postZoom)).toBeLessThanOrEqual(0.2);
   await shot("02-atlas-post-interaction");
@@ -166,7 +204,6 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await toJoin.click();
   await page.waitForURL(/\/join/, { timeout: 15_000 });
   expect(page.url()).toContain("returnTo=");
-  // Join shows the contextual return because we arrived from the journey.
   const joinReturn = page.locator("[data-testid='return-to-atlas']").first();
   await expect(joinReturn).toBeVisible();
   await shot("06-join");
@@ -177,22 +214,19 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   await mapReady(page);
   await page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false }).waitFor({ state: "visible", timeout: 20_000 });
 
-  // Reconstruction asserted against the POST-INTERACTION ATLAS state.
   const restored = atlasParams(page.url());
-  expect(restored.record).toBe("orca-bundled");                 // record restored
-  expect(restored.m).toBe(atlasAfter.m);                        // map mode
-  expect(restored.lens).toBe(atlasAfter.lens);                  // lens
-  expect(restored.t).toBe(atlasAfter.t);                        // theme
-  expect(restored.p).toBe(atlasAfter.p);                        // projection
-  expect(restored.l).toBe(atlasAfter.l);                        // layers
-  // Camera restored to the post-interaction zoom within tolerance (not the pre-
-  // interaction snapshot). Assert against the settled live map on return.
+  expect(restored.record).toBe("orca-bundled");
+  expect(restored.m).toBe(atlasAfter.m);
+  expect(restored.lens).toBe(atlasAfter.lens);
+  expect(restored.t).toBe(atlasAfter.t);
+  expect(restored.p).toBe(atlasAfter.p);
+  expect(restored.l).toBe(atlasAfter.l);
   const restoredLive = await mapState(page);
   expect(Math.abs(restoredLive.zoom - postZoom)).toBeLessThanOrEqual(0.25);
   expect(Math.abs(restoredLive.zoom - before.zoom)).toBeGreaterThan(0.1);
   const restoredZoom = Number(restored.z);
   expect(Math.abs(restoredZoom - postZoom)).toBeLessThanOrEqual(0.25);
-  await expect(page.locator(".stat.live")).toHaveCount(0);      // still no LIVE on bundled
+  await expect(page.locator(".stat.live")).toHaveCount(0);
   await shot("07-return-restored");
 });
 
@@ -204,29 +238,23 @@ test("browser back/forward and reload do not corrupt or fabricate ATLAS state", 
   await open.scrollIntoViewIfNeeded();
   await open.click();
   await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
-  // Back → ATLAS record restored, no fabricated LIVE.
   await page.goBack();
   await page.waitForURL(/\/atlas/, { timeout: 15_000 });
   await mapReady(page);
   await expect(page.getByText("BUNDLED SOURCE SNAPSHOT", { exact: false })).toBeVisible();
   await expect(page.locator(".stat.live")).toHaveCount(0);
-  // Forward → SPECIES again.
   await page.goForward();
   await page.waitForURL(/\/species\/orca/, { timeout: 15_000 });
   await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
-  // Reload → SPECIES still coherent, returnTo intact.
   await page.reload();
   await expect(page.locator("[data-testid='return-to-atlas']").first()).toBeVisible();
 });
 
 test("unsafe or external returnTo values are rejected; unknown keys dropped", async ({ page }) => {
-  // External absolute URL as returnTo → no return control is shown.
   await page.goto("/join?returnTo=" + Buffer.from("https://evil.example.com/atlas", "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), { waitUntil: "load" });
   await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
-  // Non-/atlas path as returnTo → rejected.
   await page.goto("/join?returnTo=" + Buffer.from("/evil", "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), { waitUntil: "load" });
   await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
-  // Direct Join (no returnTo) → no contextual return, ordinary Join is unaffected.
   await page.goto("/join", { waitUntil: "load" });
   await expect(page.locator("[data-testid='return-to-atlas']")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: /Everyone has a role/i })).toBeVisible();
