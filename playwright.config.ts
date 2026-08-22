@@ -5,7 +5,14 @@ import { defineConfig, devices } from "@playwright/test";
  * trace + video + screenshot are always ON for the vertical-slice run so the
  * delivery package carries machine-readable evidence. Four viewport projects
  * cover the required matrix: 1440x900, 1280x800, 390x844, 430x932.
+ *
+ * Browser resolution is fail-safe: CI installs the Playwright version pinned by
+ * package-lock, so Playwright owns its browser path unless PW_CHROMIUM is
+ * explicitly supplied by a controlled local runner. Never pin a historical
+ * /opt/pw-browsers revision in repository configuration.
  */
+const chromiumExecutable = process.env.PW_CHROMIUM?.trim() || undefined;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 150_000,
@@ -26,7 +33,7 @@ export default defineConfig({
     video: "on",
     screenshot: "on",
     launchOptions: {
-      executablePath: process.env.PW_CHROMIUM || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+      executablePath: chromiumExecutable,
       args: [
         "--use-gl=angle",
         "--use-angle=swiftshader",
@@ -42,11 +49,8 @@ export default defineConfig({
     { name: "mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
     { name: "mobile-430", use: { ...devices["Desktop Chrome"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
     // WebKit matrix (required by the convergence order): desktop + 390 + 430.
-    // These clear the pinned-Chromium executablePath so Playwright uses its own
-    // WebKit build. WebKit's binary could not be downloaded in the build sandbox
-    // (egress-blocked host), so these run at the exact-SHA CI/preview stage where
-    // `npx playwright install webkit` succeeds. Documented as an environmental
-    // blocker, not a code gap — the specs themselves are WebKit-ready.
+    // These clear any optional local Chromium executable override so Playwright
+    // resolves the installed WebKit build for the exact package version.
     { name: "webkit-desktop", use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, launchOptions: { executablePath: undefined, args: [] } } },
     { name: "webkit-390", use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
     { name: "webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true, launchOptions: { executablePath: undefined, args: [] } } },
