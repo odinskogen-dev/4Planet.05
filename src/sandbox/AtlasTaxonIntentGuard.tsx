@@ -86,9 +86,8 @@ function installContextBadge() {
   if (!hasOrcaIntent()) return;
   if (document.querySelector("[data-atlas-intent-context]")) return;
 
-  // Mount independently of World internals. The previous implementation waited
-  // for `.world`, but PublicWorld can replace that subtree while resolving the
-  // entity, which made the taxon boundary disappear on both desktop and mobile.
+  // Mount independently of World internals. PublicWorld may replace its map
+  // subtree while resolving the entity, but the taxon boundary must survive.
   const badge = document.createElement("aside");
   badge.className = "atlas-intent-context";
   badge.setAttribute("data-atlas-intent-context", ORCA_INTENT.context.id);
@@ -104,8 +103,13 @@ function stabiliseContextCamera() {
   if (!hasOrcaIntent()) return;
   const map = (window as typeof window & { __4planet_map?: any }).__4planet_map;
   const panel = document.querySelector<HTMLElement>(".ctx");
-  if (!map || !panel || !panel.textContent?.includes(ORCA_INTENT.label)) return;
+  if (!map || !panel) return;
 
+  // URL taxon intent is the authority. Do not key camera stabilisation to
+  // presentation copy such as "Orca" in the context panel: that panel can be
+  // re-rendered with scientific-name/observation copy while the canonical
+  // entity intent remains unchanged. Wait only for the observations section to
+  // finish resolving, then restore the bounded Bay of Biscay context once.
   const observationSection = Array.from(panel.querySelectorAll<HTMLElement>(".sec"))
     .find((section) => section.textContent?.includes("RECORDED OBSERVATIONS"));
   if (!observationSection || observationSection.textContent?.includes("···")) return;
