@@ -12,22 +12,23 @@ import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
+import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
+import { Magazine } from "@/pages/v5/Magazine";
 import { Stories, CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
-
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
+const JaguarGold = lazy(() => import("@/pages/integrated/JaguarGold"));
+const SapiensGold = lazy(() => import("@/pages/integrated/SapiensGold"));
+const BayOfBiscay = lazy(() => import("@/pages/integrated/BayOfBiscay"));
+const AmazonRainforestGold = lazy(() => import("@/pages/integrated/AmazonRainforestGold"));
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
-const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
@@ -51,7 +52,10 @@ export function AppRoutes() {
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
+      <Route path="/species/jaguar" element={<Suspense fallback={WorldFallback}><JaguarGold /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/ecosystems/bay-of-biscay" element={<Suspense fallback={WorldFallback}><BayOfBiscay /></Suspense>} />
+      <Route path="/ecosystems/amazon-rainforest" element={<Suspense fallback={WorldFallback}><AmazonRainforestGold /></Suspense>} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
@@ -68,6 +72,10 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
+      <Route path="/about/story" element={<AboutStory />} />
+      <Route path="/about/system" element={<AboutSystem />} />
+      <Route path="/about/founder" element={<Founder />} />
+      <Route path="/magazine" element={<Magazine />} />
       <Route path="/stories" element={<Stories />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
       <Route path="/privacy" element={<Privacy />} />
@@ -88,10 +96,9 @@ export function AppRoutes() {
       <Route path="/sponsors" element={toBrands} />
       <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
-      <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
+      <Route path="/s4piens" element={<Suspense fallback={WorldFallback}><SapiensGold /></Suspense>} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
-      <Route path="/magazine" element={toHome} />
-      <Route path="/system" element={toHome} />
+      <Route path="/system" element={<Navigate to="/about/system" replace />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

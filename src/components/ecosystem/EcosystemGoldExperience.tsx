@@ -1,0 +1,27 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { PublicShell } from "@/components/layout/PublicShell";
+import { EcosystemSystemGraph } from "@/components/ecosystem/EcosystemSystemGraph";
+import type { EcosystemProfile } from "@/ecosystems/types";
+import "@/styles/ecosystem-gold.css";
+
+export function EcosystemGoldExperience({profile}:{profile:EcosystemProfile}){
+ const [activeNode,setActiveNode]=useState(profile.nodes[0]?.id??"");
+ const [activeChapter,setActiveChapter]=useState(profile.chapters[0]?.id??"");
+ useEffect(()=>{
+  const sections=Array.from(document.querySelectorAll<HTMLElement>("[data-eco-chapter]"));
+  const observer=new IntersectionObserver((entries)=>{const visible=entries.filter((e)=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible?.target instanceof HTMLElement)setActiveChapter(visible.target.dataset.ecoChapter??profile.chapters[0]?.id??"");},{rootMargin:"-34% 0px -52% 0px",threshold:[0,.2,.55]});
+  sections.forEach((s)=>observer.observe(s)); return()=>observer.disconnect();
+ },[profile.chapters]);
+ const scrollTo=(id:string)=>document.getElementById(`eco-${id}`)?.scrollIntoView({behavior:"smooth",block:"start"});
+ return <PublicShell><main className="eco-gold" style={{"--eco-accent":profile.accent,"--eco-bg":profile.background} as React.CSSProperties}>
+  <nav className="eco-progress" aria-label={`${profile.name} story chapters`}>{profile.chapters.map((c)=><button key={c.id} type="button" onClick={()=>scrollTo(c.id)} className={activeChapter===c.id?"is-active":""} aria-label={`Open chapter ${c.number}: ${c.title}`}><span>{c.number}</span><i aria-hidden/></button>)}</nav>
+  <header className="eco-hero"><picture className="eco-hero__media">{profile.hero.srcMobile&&<source media="(max-width:760px)" srcSet={profile.hero.srcMobile}/>}<img src={profile.hero.src} alt={profile.hero.alt} style={{objectPosition:profile.hero.objectPosition}}/></picture><div className="eco-hero__shade" aria-hidden/><div className="eco-shell eco-hero__content"><div className="eco-mono eco-hero__eyebrow">{profile.eyebrow}</div><h1>{profile.name}</h1><p className="eco-hero__lead">{profile.lead}</p><p className="eco-hero__body">{profile.body}</p><p className="eco-mono eco-boundary">PUBLIC ECOSYSTEM INTELLIGENCE ≠ FIELD AUTHORITY OR REPRESENTATION</p><div className="eco-actions">{profile.primaryActions.map((a,i)=><Link key={a.href} to={a.href} className={i===0?"is-primary":""}>{a.label} →</Link>)}</div></div></header>
+  <section id="eco-meet" data-eco-chapter="meet" className="eco-section eco-section--graph"><div className="eco-shell"><div className="eco-section-head"><span className="eco-mono">01_ SYSTEM VIEW</span><h2>See the relationships before the categories.</h2><p>{profile.geographyNote}</p></div><EcosystemSystemGraph nodes={profile.nodes} centreLabel={profile.centreLabel} activeId={activeNode} accent={profile.accent} onSelect={(n)=>setActiveNode(n.id)}/></div></section>
+  {profile.chapters.slice(1).map((c,i)=><section key={c.id} id={`eco-${c.id}`} data-eco-chapter={c.id} className={`eco-section ${i%2===0?"eco-section--paper":"eco-section--ink"}`}><div className="eco-shell eco-story-grid"><div className="eco-story-index eco-mono">{c.number}</div><div><span className="eco-mono eco-story-kicker">{c.kicker}</span><h2>{c.title}</h2><p>{c.body}</p></div></div></section>)}
+  <section className="eco-section eco-section--life"><div className="eco-shell"><div className="eco-section-head"><span className="eco-mono">SPECIES_ · ENTRY POINTS</span><h2>Meet life. Then follow the connections.</h2></div><div className="eco-link-rail">{profile.species.map((item)=><Link key={item.href} to={item.href}><span className="eco-mono">{item.meta??"SPECIES"}</span><strong>{item.label}</strong><i>OPEN →</i></Link>)}</div></div></section>
+  <section className="eco-section eco-section--actors"><div className="eco-shell"><div className="eco-section-head"><span className="eco-mono">ACTORS_ · WHO SHAPES THE SYSTEM</span><h2>A living system includes people, institutions and choices.</h2><p>Presence here describes a role in the system. It does not imply partnership with 4PLANET.</p></div><div className="eco-link-rail eco-link-rail--compact">{profile.actors.map((item)=><Link key={`${item.href}-${item.label}`} to={item.href}><span className="eco-mono">{item.meta??"ACTOR"}</span><strong>{item.label}</strong><i>OPEN →</i></Link>)}</div></div></section>
+  <section className="eco-section eco-section--sources"><div className="eco-shell"><div className="eco-section-head"><span className="eco-mono">EVIDENCE_ · KNOWN / INTERPRETED / UNKNOWN</span><h2>No single source is the ecosystem.</h2><p>Each source reveals a bounded part of the system. What it establishes stays separate from limitation and interpretation.</p></div><div className="eco-source-grid">{profile.sources.map((s)=><a key={s.href} href={s.href} target="_blank" rel="noreferrer"><span className="eco-mono">{s.authority}</span><strong>{s.label}</strong><p>{s.establishes}</p><small>LIMITATION · {s.limitation}</small><i>OPEN SOURCE ↗</i></a>)}</div></div></section>
+  <footer className="eco-final"><div className="eco-shell"><span className="eco-mono">LIVING SYSTEMS_ → ATLAS_ → SPECIES_ → IMPACT_</span><h2>Understand the system. Then decide what comes next.</h2><div className="eco-actions">{profile.primaryActions.map((a,i)=><Link key={`final-${a.href}`} to={a.href} className={i===2?"is-primary":""}>{a.label} →</Link>)}</div></div></footer>
+ </main></PublicShell>;
+}
