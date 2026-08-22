@@ -1,12 +1,12 @@
+import type { ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { speciesBySlug } from "@/data/species";
-import { SpeciesProfilePage } from "@/pages/integrated/Species";
 import { UniversalSpeciesProfilePage } from "@/pages/integrated/UniversalSpeciesProfilePage";
 
-export function SpeciesRoute() {
+export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) {
   const { slug = "" } = useParams();
   const curated = speciesBySlug(slug);
-  if (curated) return <SpeciesProfilePage />;
+  if (curated) return <>{curatedElement}</>;
   return <UniversalSpeciesProfilePage />;
 }
 
