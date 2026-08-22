@@ -5,7 +5,7 @@ on:
     branches: [main]
   push:
     branches:
-      - build/four-product-integrated-prototype
+      - king/test
 
 permissions:
   contents: read
@@ -21,12 +21,18 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+
+      - name: GOLD authority contract
+        run: node scripts/gold-policy-check.mjs --mode=quality-contract
 
       - name: Install locked dependencies
         run: npm ci
