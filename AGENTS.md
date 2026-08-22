@@ -8,12 +8,34 @@ Before material work:
 1. Read this file.
 2. Inspect the assigned task/issue/PR and exact branch.
 3. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
-4. Inspect recent git history for the affected area.
-5. Search for existing components/contracts before creating new architecture.
-6. Run a baseline check appropriate to the task before changing code.
-7. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+4. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
+5. Inspect recent git history for the affected area.
+6. Search for existing components/contracts before creating new architecture.
+7. Run a baseline check appropriate to the task before changing code.
+8. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
+
+## Mandatory GOLD / WORLD CLASS pre-code contract
+
+For every material user-facing mutation, **before implementation**, update `docs/control/GOLD_CURRENT_BRIEF.md` in the same bounded change and answer:
+- USER ARRIVES BECAUSE;
+- ONE THING TO UNDERSTAND;
+- PRIMARY ACTION;
+- SECONDARY DEPTH;
+- P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH;
+- WHAT CAN BE REMOVED;
+- WHAT MUST BE REUSED;
+- TRUTH BOUNDARY;
+- MOBILE-FIRST RISK;
+- HUMAN SUCCESS;
+- donor decision when donor value is involved.
+
+The standing product law is **REDUCE BEFORE GENERATE**: `DELETE → PRIORITISE → CONSOLIDATE → HUMANISE → TEST → REFINE`. Do not solve a quality problem by adding cards, boxes, copy, motion, gradients, local styles or bespoke components unless the user/task need justifies them.
+
+A user-facing implementation is not complete merely because it builds. Before any GOLD or Founder-ready claim, apply the hierarchy/AI-Wash/mobile/accessibility/performance/truth gates, produce rendered evidence, and record open defects. `CANDIDATE` visual evidence is not Founder-approved. `APPROVED` visual baselines are controlled by `docs/control/GOLD_VISUAL_BASELINES.json` and must not silently drift.
+
+A pattern is not a reusable system primitive until its maturity is recorded in `docs/control/GOLD_PRIMITIVE_REGISTRY.md`. Prefer proven shared primitives. Do not promote a product-local pattern to shared status by repetition alone.
 
 ## Mandatory code-lineage control
 
@@ -42,6 +64,8 @@ A material coding task that cannot resolve lineage is blocked as `CODE LINEAGE U
 - Historical product branches remain donor/recovery evidence.
 - Unknown historical branches are candidates until explicitly dispositioned under issue #132.
 - Do not create a new de facto product continuation outside `king/test` without explicit isolation purpose and lineage registration.
+- A pull request or direct production change from a user-facing branch other than `king/test` is not an authorised LIVE promotion path.
+- LIVE promotion requires a populated `docs/control/LIVE_PROMOTION_MANIFEST.json`, exact prior LIVE rollback identity, evidence and explicit Founder release authority. The fail-closed placeholder is not authority.
 
 ## Capability verification
 
@@ -71,6 +95,7 @@ A commit, PR, CI pass or preview is not production. An agent report is not indep
 ## Verification
 
 For this repository the normal commands are:
+- `node scripts/gold-policy-check.mjs --mode=quality-contract`
 - `npm ci`
 - `npm run typecheck`
 - `npm run assets:verify`
@@ -78,6 +103,7 @@ For this repository the normal commands are:
 - `npm run build`
 - `npm run test:smoke`
 - `npm run test:e2e` for runtime/UI journeys when applicable
+- `node scripts/gold-visual-lock-check.mjs` after rendered product-proof evidence exists.
 
 Run the smallest sufficient set during iteration, then the full relevant gate before claiming verified completion. For UI work, verify the user-visible journey, not only unit/build output.
 
@@ -91,9 +117,13 @@ Every material agent return must include:
 - PR or issue when applicable
 - changed files / human-visible change
 - tests and runtime evidence
+- user job and P1–P4 hierarchy for user-facing work
+- removed / merged / reused inventory for user-facing work
+- Human Craft / AI-Wash findings and structural corrections
 - donor decisions made in this iteration
 - known limitations or unresolved conflicts
 - status using the vocabulary above
+- human-test status/trigger when relevant
 - next gate / next safe action
 
 The return must be usable by AXE / GPT Project Lead for BRAIN writeback without reconstructing the session from scratch.
@@ -104,4 +134,4 @@ Do not change Locked Canon, Founder decisions, binding commitments, production r
 
 ## Learning
 
-When a material failure occurs, preserve the failed attempt and record: expected result, actual result, evidence, likely cause, correction, verification and any procedural rule that should change. Do not silently erase failure history.
+When a material failure or strong reusable pattern occurs, preserve the evidence and record: **OBSERVATION → ROOT CAUSE → GENERALISABLE RULE → AFFECTED PRODUCTS / COMPONENTS → CORRECTION → RE-TEST → BRAIN WRITEBACK**. Do not silently erase failure history. Recurrence of an already learned material defect is a programme-control failure.
