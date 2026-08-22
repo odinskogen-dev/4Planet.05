@@ -14,6 +14,7 @@
     let api = null;
     let apiReady = false;
     let modelReady = false;
+    let failed = false;
     let active = false;
     let currentAnimation = null;
     let animationUid = null;
@@ -31,11 +32,16 @@
     function publishState(state) {
       root.dataset.jaguar3d = state;
       root.dataset.jaguar3dSource = 'ear-rodriguez-jaguar';
-      root.dataset.jaguar3dActive = String(Boolean(modelReady && active && identityScene() && viewerAllowed()));
+      root.dataset.jaguar3dActive = String(Boolean(modelReady && !failed && active && identityScene() && viewerAllowed()));
     }
 
     function failClosed(reason) {
+      failed = true;
       modelReady = false;
+      if (readyTimer) {
+        clearTimeout(readyTimer);
+        readyTimer = 0;
+      }
       if (shell) {
         shell.dataset.ready = 'false';
         shell.dataset.active = 'false';
@@ -152,16 +158,21 @@
     }
 
     function verifyModelReady() {
+      if (failed) return;
       if (!api?.getSceneGraph) {
         failClosed('scene-graph-check-unavailable');
         return;
       }
       api.getSceneGraph((error, graph) => {
+        if (failed) return;
         if (error || !graph) {
           failClosed('scene-graph-unavailable');
           return;
         }
-        clearTimeout(readyTimer);
+        if (readyTimer) {
+          clearTimeout(readyTimer);
+          readyTimer = 0;
+        }
         modelReady = true;
         shell.dataset.ready = 'true';
         delete shell.dataset.failure;
@@ -176,10 +187,11 @@
     }
 
     async function enhanceWithApi() {
-      if (enhancementStarted || !iframe) return;
+      if (failed || enhancementStarted || !iframe) return;
       enhancementStarted = true;
       try {
         await loadViewerApi();
+        if (failed) return;
         if (!window.Sketchfab) throw new Error('Sketchfab Viewer API unavailable');
         const client = new window.Sketchfab('1.12.1', iframe);
         client.init(MODEL_UID, {
@@ -198,9 +210,11 @@
           ui_fullscreen: 0,
           ui_annotations: 0,
           success(nextApi) {
+            if (failed) return;
             api = nextApi;
             api.start?.();
             api.addEventListener?.('viewerready', () => {
+              if (failed) return;
               apiReady = true;
               verifyModelReady();
             });
@@ -218,6 +232,10 @@
     function init() {
       if (!viewerAllowed()) return;
       ensureShell();
+      if (failed) {
+        publishState('photo-fallback');
+        return;
+      }
       if (!readyTimer) {
         readyTimer = window.setTimeout(() => {
           if (!modelReady) failClosed('viewer-ready-timeout');
@@ -231,10 +249,10 @@
       if (!viewerAllowed() || !identityScene()) return;
       ensureShell();
       active = true;
-      shell.dataset.active = String(modelReady);
+      shell.dataset.active = String(modelReady && !failed);
       shell.style.removeProperty('display');
-      publishState(modelReady ? 'ear-live-bridge' : 'ear-loading');
-      if (apiReady && modelReady) {
+      publishState(failed ? 'photo-fallback' : (modelReady ? 'ear-live-bridge' : 'ear-loading'));
+      if (!failed && apiReady && modelReady) {
         api?.start?.();
         api?.play?.();
       }
