@@ -22,8 +22,9 @@ export type MarketSaleProduct = {
 };
 
 /**
- * SALE 01 is intentionally provider-neutral until the exact physical poster SKU,
- * landed Norway cost and physical sample are approved.
+ * SALE 01 now has a supplier-verified Prodigi Budget Poster SKU and current
+ * Norway pricing evidence. Physical sample approval, VAT/handling treatment and
+ * live commercial credentials remain open, so fulfilment stays fail-closed.
  *
  * The Stripe URL below is the existing sandbox payment-route fixture. It must be
  * replaced by a physical-product Checkout/Payment Link before LIVE sale.
@@ -44,19 +45,20 @@ export const FIRST_SALE: MarketSaleProduct = {
     "https://buy.stripe.com/test_fZu6oGbr8gVZ7Fle2N5J600",
   checkoutMode: "sandbox",
   productKind: "physical_poster",
-  providerState: "pricing_pending",
+  providerState: "sample_pending",
   firstVariant: {
-    label: "FIRST POSTER / PHOTO RATIO",
-    aspectRatio: "3:2",
-    paper: "Affordable matte poster paper — final stock pending sample",
-    provider: "POD provider qualification in progress",
-    providerSku: null,
+    label: "40 × 60 CM TARGET / 410 × 610 MM ACTUAL",
+    aspectRatio: "3:2 target — slight crop or thin border required",
+    paper: "Prodigi Budget Poster",
+    provider: "Prodigi — EU facility serving Norway",
+    providerSku: "GLOBAL-BLP-16x24",
   },
 };
 
 export const SALE_01_BOUNDARIES = [
   "The current Stripe link is sandbox-only and is not a live physical order.",
-  "Production starts only after a physical POD variant and provider SKU are approved.",
+  "Supplier pricing is verified, but production starts only after physical sample approval and live fulfilment credentials.",
+  "Current supplier evidence: EUR 7.00 production + EUR 10.25 tracked Norway shipping before Norwegian VAT or carrier handling.",
   "Payment, production, dispatch, creator payable and Impact remain separate states.",
   "No ecological outcome is claimed from a product purchase.",
 ] as const;
