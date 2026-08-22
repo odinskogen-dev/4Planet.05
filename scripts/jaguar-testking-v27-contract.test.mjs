@@ -6,57 +6,36 @@ import { gunzipSync } from 'node:zlib';
 const url=(p)=>new URL(`../${p}`,import.meta.url);
 const read=(p)=>readFileSync(url(p),'utf8');
 
-test('TEST KING Jaguar 27 uses controlled local Ear runtime and keeps the creature on mobile',()=>{
+test('TEST KING Jaguar quarantines the invalid v27 runtime and fails closed to controlled species media',()=>{
   const html=read('public/journey/jaguar/index.html');
-  const js=read('public/journey/jaguar/jaguar-testking-v27.js');
-  const css=read('public/journey/jaguar/jaguar-testking-v27.css');
   const cfg=JSON.parse(read('public/journey/jaguar/creature-v27.json'));
+  const quarantineCss=read('public/journey/jaguar/jaguar-runtime-quarantine-v30.css');
+
   assert.equal(cfg.assetId,'4P-JAG-3D-EARROD-01');
-  assert.equal(cfg.actor.preferred.runtimeState,'CONTROLLED_LOCAL');
+  assert.equal(cfg.actor.preferred.runtimeState,'BLOCKED_INVALID_BINARY');
+  assert.equal(cfg.actor.preferred.runtimeMotion,'NOT_ACTIVE');
+  assert.equal(cfg.actor.fallback.status,'ACTIVE_FAIL_CLOSED_UNTIL_VALID_3D');
   assert.match(cfg.actor.preferred.runtimePath,/jaguar-ear-rodriguez-runtime\.glb\.gz$/);
-  assert.match(js,/DecompressionStream/);
-  assert.match(js,/GLTFLoader/);
+  assert.match(html,/data-jaguar3d="failed"/);
+  assert.match(html,/jaguar-runtime-quarantine-v30\.css/);
+  assert.doesNotMatch(html,/jaguar-testking-v27\.js/);
+  assert.doesNotMatch(html,/jaguar-runtime-recovery-v29\.js/);
+  assert.doesNotMatch(html,/jaguar-ear-proxy-v25\.js/);
+  assert.match(html,/CONTROLLED SPECIES MEDIA/);
+  assert.match(html,/3D RUNTIME DEFERRED UNTIL VERIFIED/);
+  assert.match(quarantineCss,/\.photo-fallback\{opacity:\.96!important\}/);
+  assert.match(quarantineCss,/\.controls\{display:none!important\}/);
   assert.doesNotMatch(html,/<iframe/i);
-  assert.match(html,/three-stage/);
-  assert.match(js,/makeSoilTexture/);
-  assert.match(js,/makeShadowTexture/);
-  assert.match(js,/action==='look'/);
-  assert.match(js,/action==='move'/);
-  assert.match(js,/action==='lume'/);
-  assert.match(css,/@media\(max-width:760px\)/);
-  assert.doesNotMatch(css,/@media\(max-width:760px\)[\s\S]{0,1800}\.three-stage\s*\{[^}]*display:none/i);
 });
 
-test('TEST KING Jaguar local GLB is structurally complete before browser parse',()=>{
+test('quarantined TEST KING Jaguar GLB remains detectably invalid until a complete replacement is supplied',()=>{
   const cfg=JSON.parse(read('public/journey/jaguar/creature-v27.json'));
   const runtimePath=`public/${cfg.actor.preferred.runtimePath.replace(/^\//,'')}`;
   const compressed=readFileSync(url(runtimePath));
-  const glb=gunzipSync(compressed);
 
-  assert.ok(glb.byteLength>=20,'GLB must contain header and at least one chunk');
-  assert.equal(glb.subarray(0,4).toString('ascii'),'glTF','GLB magic must be glTF');
-  assert.equal(glb.readUInt32LE(4),2,'GLB version must be 2');
-
-  const declaredTotal=glb.readUInt32LE(8);
-  assert.equal(
-    declaredTotal,
-    glb.byteLength,
-    `GLB declared totalLength ${declaredTotal} must equal actual byteLength ${glb.byteLength}; reject truncated binary before runtime adoption`,
+  assert.throws(
+    ()=>gunzipSync(compressed),
+    /unexpected end of file|unexpected end|Z_BUF_ERROR/i,
+    'The currently quarantined donor is expected to remain structurally invalid; replacing it requires restoring the strict valid-GLB contract before runtime activation.',
   );
-
-  let offset=12;
-  let chunkCount=0;
-  while(offset<glb.byteLength){
-    assert.ok(offset+8<=glb.byteLength,`GLB chunk ${chunkCount} header exceeds file boundary`);
-    const chunkLength=glb.readUInt32LE(offset);
-    const chunkEnd=offset+8+chunkLength;
-    assert.ok(
-      chunkEnd<=glb.byteLength,
-      `GLB chunk ${chunkCount} declares ${chunkLength} bytes ending at ${chunkEnd}, beyond actual byteLength ${glb.byteLength}`,
-    );
-    offset=chunkEnd;
-    chunkCount+=1;
-  }
-  assert.ok(chunkCount>=1,'GLB must contain at least one chunk');
-  assert.equal(offset,glb.byteLength,'GLB chunks must consume the declared file exactly');
 });
