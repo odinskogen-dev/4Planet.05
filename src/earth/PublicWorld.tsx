@@ -51,36 +51,61 @@ export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
 
-  // Return-navigation must reconstruct the camera the user actually left, not
-  // merely seed MapLibre with it before the vector style switches to globe and
-  // the mobile context sheet changes the canvas box. On narrow viewports that
-  // projection/layout sequence can otherwise settle at a materially different
-  // live zoom even though ?z= and ?c= remain correct. Reapply the explicit URL
-  // camera after style readiness and across two layout frames. This is bounded:
-  // it runs only when the route itself carries an explicit saved camera and it
-  // never follows later user movement.
+  // Explicit ATLAS return state is authoritative during initial reconstruction.
+  // MapLibre can still alter effective zoom after style.load when globe projection,
+  // source placement and the narrow mobile sheet resize the canvas. Two RAFs were
+  // not enough on Chromium 390px: the URL remained correct while the live camera
+  // later settled ~0.48 zoom away. Reconcile over a short bounded startup window
+  // and once on first idle, then release permanently. Any real user input releases
+  // immediately so this never becomes a camera lock.
   useEffect(() => {
     if (!supported) return;
     const target = restoredCamera(location.search);
     if (!target) return;
 
     let cancelled = false;
-    let firstFrame = 0;
-    let secondFrame = 0;
+    let released = false;
     let probeFrame = 0;
+    let firstFrame = 0;
+    const timers: number[] = [];
+    let mapRef: any = null;
+    let canvasRef: HTMLCanvasElement | null = null;
+
+    const release = () => {
+      released = true;
+    };
+
+    const reconcile = (map: any) => {
+      if (cancelled || released) return;
+      const center = map.getCenter?.();
+      const zoom = Number(map.getZoom?.());
+      const needsCenter = !center || Math.abs(center.lng - target.center[0]) > 0.00001 || Math.abs(center.lat - target.center[1]) > 0.00001;
+      const needsZoom = !Number.isFinite(zoom) || Math.abs(zoom - target.zoom) > 0.01;
+      map.resize();
+      if (needsCenter || needsZoom) map.jumpTo({ center: target.center, zoom: target.zoom });
+    };
+
+    const bindUserRelease = (map: any) => {
+      canvasRef = map.getCanvas?.() || null;
+      if (!canvasRef) return;
+      canvasRef.addEventListener("pointerdown", release, { passive: true });
+      canvasRef.addEventListener("touchstart", release, { passive: true });
+      canvasRef.addEventListener("wheel", release, { passive: true });
+    };
 
     const apply = (map: any) => {
-      if (cancelled) return;
-      firstFrame = requestAnimationFrame(() => {
-        if (cancelled) return;
-        map.resize();
-        map.jumpTo({ center: target.center, zoom: target.zoom });
-        secondFrame = requestAnimationFrame(() => {
-          if (cancelled) return;
-          map.resize();
-          map.jumpTo({ center: target.center, zoom: target.zoom });
-        });
-      });
+      if (cancelled || released) return;
+      mapRef = map;
+      bindUserRelease(map);
+
+      firstFrame = requestAnimationFrame(() => reconcile(map));
+      for (const delay of [120, 360, 760]) {
+        timers.push(window.setTimeout(() => reconcile(map), delay));
+      }
+
+      // First fully-settled render is the final startup reconciliation point.
+      // `once` keeps this bounded; later idles after user interaction are untouched.
+      map.once("idle", () => reconcile(map));
     };
 
     const attach = () => {
@@ -99,7 +124,13 @@ export default function PublicWorld() {
       cancelled = true;
       if (probeFrame) cancelAnimationFrame(probeFrame);
       if (firstFrame) cancelAnimationFrame(firstFrame);
-      if (secondFrame) cancelAnimationFrame(secondFrame);
+      for (const timer of timers) window.clearTimeout(timer);
+      if (canvasRef) {
+        canvasRef.removeEventListener("pointerdown", release);
+        canvasRef.removeEventListener("touchstart", release);
+        canvasRef.removeEventListener("wheel", release);
+      }
+      mapRef = null;
     };
   }, [supported, location.pathname, location.search]);
 
