@@ -6,8 +6,9 @@ import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
-import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
+import { SpeciesIndex } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
+import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import { Brands, Partners, Funders } from "@/pages/v5/Entry";
@@ -52,7 +53,7 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/lab" element={<SpeciesEngineLab />} />
-      <Route path="/species/:slug" element={<SpeciesProfilePage />} />
+      <Route path="/species/:slug" element={<SpeciesRoute />} />
       <Route path="/lens" element={<LensCapture />} />
       <Route path="/food/lens" element={<FoodCapture />} />
       <Route path="/s4piens/food/lens" element={<FoodCapture />} />
