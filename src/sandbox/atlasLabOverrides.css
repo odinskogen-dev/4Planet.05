@@ -15,6 +15,66 @@
   pointer-events: auto;
 }
 
+/* GrillMe regression: an exact known taxon intent must be visually explicit and
+ * take precedence over generic occurrence rows. The row uses the canonical
+ * result grammar; green denotes TAXON identity, not ecological condition. */
+.world .search-wrap .atlas-taxon-intent-result {
+  border-top: 1px solid rgba(58,232,111,.28);
+  border-bottom: 1px solid rgba(58,232,111,.14);
+  background: linear-gradient(90deg, rgba(58,232,111,.10), rgba(8,8,8,.92) 58%);
+  cursor: pointer;
+}
+.world .search-wrap .atlas-taxon-intent-result .rname {
+  color: #eaffef;
+}
+.world .search-wrap .atlas-taxon-intent-result .liwhy {
+  margin-top: 4px;
+  color: rgba(255,255,255,.5);
+  font-size: 8px;
+  line-height: 1.35;
+  letter-spacing: .04em;
+}
+.world .search-wrap .atlas-taxon-intent-result .liend {
+  color: #3ae86f;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+/* A spatial context chosen for a proof journey is never allowed to masquerade
+ * as species range, abundance, live tracking or local presence. This boundary
+ * stays on-screen while the taxon context is open. */
+.atlas-intent-context {
+  position: fixed;
+  z-index: 31;
+  left: 16px;
+  bottom: 39px;
+  width: min(340px, calc(100vw - 32px));
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border: 1px solid rgba(58,232,111,.22);
+  background: rgba(5,10,7,.88);
+  backdrop-filter: blur(14px);
+  color: #fff;
+  font-family: "Fragment Mono", ui-monospace, monospace;
+  pointer-events: none;
+}
+.atlas-intent-context span {
+  color: #3ae86f;
+  font-size: 8px;
+  letter-spacing: .13em;
+}
+.atlas-intent-context b {
+  font-size: 9px;
+  letter-spacing: .08em;
+  font-weight: 500;
+}
+.atlas-intent-context small {
+  color: rgba(255,255,255,.52);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
 /* TIME is a single shared instrument over the canonical map, not a second map
  * or a timeline hard-coded into one provider. It appears only when an admitted
  * temporal source is actually active. */
@@ -115,6 +175,12 @@ html:has(.world.light) .atlas-time-meta,
 html:has(.world.light) .atlas-time-axis p { color: rgba(8,8,8,.58); }
 html:has(.world.light) .atlas-time-options button { color: rgba(8,8,8,.65); border-color: rgba(8,8,8,.16); }
 html:has(.world.light) .atlas-time-options button.on { color: #2e2eff; border-color: #2e2eff; }
+html:has(.world.light) .atlas-intent-context {
+  background: rgba(255,255,255,.94);
+  border-color: rgba(16,74,31,.18);
+  color: #080808;
+}
+html:has(.world.light) .atlas-intent-context small { color: rgba(8,8,8,.55); }
 
 /* On narrow screens the expanded layer console used to start at the same Y
  * position as the lens rail, causing OCE4N/E4RTH mode chips to sit underneath
@@ -130,4 +196,10 @@ html:has(.world.light) .atlas-time-options button.on { color: #2e2eff; border-co
     width: calc(100vw - 20px);
   }
   .atlas-time-body { max-height: 42vh; overflow-y: auto; }
+  .atlas-intent-context {
+    left: 10px;
+    bottom: 68px;
+    width: calc(100vw - 20px);
+  }
+  .world .search-wrap .atlas-taxon-intent-result .liend { display: none; }
 }
