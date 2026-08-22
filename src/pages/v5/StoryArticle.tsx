@@ -20,29 +20,32 @@ export function StoryArticle() {
     <PublicShell>
       <Section pad="clamp(48px,6vw,88px)">
         <Reveal>
+          <Link to="/magazine" className="mono link" style={{ display: "inline-block", fontSize: 10.5, letterSpacing: ".14em", color: T.ink, marginBottom: 34 }}>
+            4PLANET MAGAZINE
+          </Link>
           <div className="mono" style={{ fontSize: 11.5, letterSpacing: ".14em", color: T.blue, marginBottom: 22 }}>
             {s.category.toUpperCase()} · {s.readMins} MIN READ
           </div>
-          <h1 style={{ ...display, color: T.ink, fontSize: "clamp(30px,4.6vw,60px)", lineHeight: 1.02, maxWidth: 900 }}>{s.title}</h1>
+          <h1 style={{ ...display, color: T.ink, fontSize: "clamp(38px,6.5vw,86px)", lineHeight: .98, maxWidth: 1100 }}>{s.title}</h1>
           <p style={{ fontSize: "clamp(17px,1.6vw,22px)", color: T.ink, opacity: .72, marginTop: 20, maxWidth: 680, lineHeight: 1.45 }}>{s.dek}</p>
         </Reveal>
       </Section>
 
-      <CinematicImage meta={img(s.image)} height="min(64vh, 620px)" caption={`M4GAZINE / ${s.category.toUpperCase()}`} accent={T.blue} />
+      <CinematicImage meta={img(s.image)} height="min(76vh, 820px)" caption={`4PLANET MAGAZINE / ${s.category.toUpperCase()}`} accent={T.blue} />
 
       <Section pad="clamp(48px,7vw,96px)">
         <Editorial blocks={s.blocks} />
         <div style={{ marginTop: "clamp(48px,6vw,80px)", borderTop: `1px solid ${T.line}`, paddingTop: 22, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <Link to="/stories" className="link" style={{ fontSize: 14, color: T.blue }}>← M4GAZINE</Link>
-          <Link to="/join" className="link" style={{ fontSize: 14, color: T.ink }}>Join 4Planet →</Link>
+          <Link to="/magazine" className="link" style={{ fontSize: 14, color: T.blue }}>← 4PLANET MAGAZINE</Link>
+          <Link to="/atlas" className="link" style={{ fontSize: 14, color: T.ink }}>Explore the living planet →</Link>
         </div>
       </Section>
 
       <Section pad="clamp(40px,6vw,80px)" bg={T.paper}>
-        <div className="mono" style={{ fontSize: 11.5, letterSpacing: ".14em", color: T.blue, marginBottom: 24 }}>MORE FROM M4GAZINE</div>
+        <div className="mono" style={{ fontSize: 11.5, letterSpacing: ".14em", color: T.blue, marginBottom: 24 }}>MORE FROM 4PLANET MAGAZINE</div>
         <div className="door-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "clamp(16px,2vw,28px)" }}>
           {more.map((m) => (
-            <Link key={m.slug} to={"/stories/" + m.slug} className="hov" style={{ display: "block", textDecoration: "none", border: `1px solid ${T.line}` }}>
+            <Link key={m.slug} to={"/magazine/" + m.slug} className="hov" style={{ display: "block", textDecoration: "none", border: `1px solid ${T.line}` }}>
               <div style={{ position: "relative", aspectRatio: "3/2", overflow: "hidden", background: "#000" }}>
                 <img src={img(m.image).src} alt={img(m.image).alt} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
