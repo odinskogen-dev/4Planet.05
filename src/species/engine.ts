@@ -1,25 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    4PLANET_ SPECIES ENGINE 01 — UNIVERSAL PROFILE MATERIALISER
 
-   Purpose
-   -------
-   Resolve a taxon against the current Catalogue of Life eXtended Release,
-   enrich it with Norway-specific source data when available, and return one
-   source-aware 4PLANET-shaped profile. This module does not make ecological
-   interpretations and it does not promote observations into signals.
-
-   Identity boundary
-   -----------------
-   4PLANET does not yet have a persisted BRAIN taxon registry. Therefore the
-   internal id produced here is explicitly PROVISIONAL_EXTERNAL_ANCHORED. It is
-   stable enough for the prototype but MUST later be replaced/resolved by a
-   persisted 4PLANET canonical id. External source ids are preserved separately.
+   Resolve a taxon against Catalogue of Life XR, enrich it with Norway-specific
+   source data when available, then materialise one source-aware 4PLANET profile.
+   External authorities own taxonomy/facts. The thin registry owns continuity,
+   crosswalks and 4PLANET identity only.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+import { registerOrResolveTaxon, type TaxonRegistryPersistenceScope } from "./registry";
 
 export const COL_XR_CHECKLIST_KEY = "7ddf754f-d193-4cc9-b351-99906754a03b";
 
 export type SpeciesEngineSourceId = "col-xr" | "gbif" | "artsdatabanken";
-export type IdentityState = "PROVISIONAL_EXTERNAL_ANCHORED" | "CANONICAL_4P";
+export type IdentityState = "PROVISIONAL_EXTERNAL_ANCHORED" | "CANONICAL_4P_TEST_REGISTRY" | "CANONICAL_4P";
 export type SourceState = "AVAILABLE" | "UNAVAILABLE" | "NOT_FOUND";
 
 export interface SourceStamp {
@@ -59,6 +52,11 @@ export interface UniversalOccurrenceSummary {
 export interface UniversalTaxonProfile {
   id: string;
   identityState: IdentityState;
+  registry?: {
+    persistenceScope: TaxonRegistryPersistenceScope;
+    createdAt: string;
+    updatedAt: string;
+  };
   canonicalName: string;
   scientificName: string;
   authorship?: string;
@@ -88,24 +86,17 @@ async function getJson(url: string, timeoutMs = 12000): Promise<EngineResult<any
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
-    const response = await fetch(url, {
-      signal: ctl.signal,
-      headers: { Accept: "application/json" },
-    });
+    const response = await fetch(url, { signal: ctl.signal, headers: { Accept: "application/json" } });
     if (!response.ok) return { ok: false, error: `HTTP ${response.status}` };
     return { ok: true, data: await response.json() };
   } catch (error: any) {
-    return {
-      ok: false,
-      error: error?.name === "AbortError" ? "TIMEOUT" : "NETWORK",
-    };
+    return { ok: false, error: error?.name === "AbortError" ? "TIMEOUT" : "NETWORK" };
   } finally {
     clearTimeout(timer);
   }
 }
 
 function provisional4pTaxonId(colKey: string): string {
-  // Explicitly provisional until BRAIN owns a persisted canonical registry.
   return `taxon:4p:col-${String(colKey).toLowerCase()}`;
 }
 
@@ -133,14 +124,8 @@ export interface ColResolution {
 }
 
 /** Resolve a scientific name against Catalogue of Life XR through GBIF v2. */
-export async function resolveColXr(
-  scientificName: string,
-  rank?: string,
-): Promise<EngineResult<ColResolution>> {
-  const q = new URLSearchParams({
-    scientificName: scientificName.trim(),
-    checklistKey: COL_XR_CHECKLIST_KEY,
-  });
+export async function resolveColXr(scientificName: string, rank?: string): Promise<EngineResult<ColResolution>> {
+  const q = new URLSearchParams({ scientificName: scientificName.trim(), checklistKey: COL_XR_CHECKLIST_KEY });
   if (rank) q.set("taxonRank", rank.toLowerCase());
 
   const sourceUrl = `https://api.gbif.org/v2/species/match?${q.toString()}`;
@@ -155,7 +140,6 @@ export async function resolveColXr(
   };
 
   if (!result.ok) return { ok: false, error: `COL_XR_${result.error}`, sources: [source] };
-
   const usage = result.data?.acceptedUsage ?? result.data?.usage;
   if (!usage?.key || !usage?.name) {
     source.state = "NOT_FOUND";
@@ -163,8 +147,6 @@ export async function resolveColXr(
   }
 
   const classification = normalizeClassification(result.data?.classification);
-  const kingdom = classification.find((n) => n.rank === "KINGDOM")?.name;
-
   return {
     ok: true,
     data: {
@@ -174,7 +156,7 @@ export async function resolveColXr(
       authorship: usage.authorship ? String(usage.authorship) : undefined,
       rank: String(usage.rank ?? rank ?? "UNRANKED").toUpperCase(),
       status: usage.status ? String(usage.status).toUpperCase() : undefined,
-      kingdom,
+      kingdom: classification.find((n) => n.rank === "KINGDOM")?.name,
       classification,
       source,
     },
@@ -183,10 +165,7 @@ export async function resolveColXr(
 
 /** Crosswalk an old numeric GBIF Backbone key into the current COL XR identity. */
 export async function legacyGbifToColXr(gbifKey: number): Promise<EngineResult<ColResolution>> {
-  const q = new URLSearchParams({
-    scientificNameID: `gbif:${gbifKey}`,
-    checklistKey: COL_XR_CHECKLIST_KEY,
-  });
+  const q = new URLSearchParams({ scientificNameID: `gbif:${gbifKey}`, checklistKey: COL_XR_CHECKLIST_KEY });
   const sourceUrl = `https://api.gbif.org/v2/species/match?${q.toString()}`;
   const checkedAt = now();
   const result = await getJson(sourceUrl);
@@ -251,15 +230,10 @@ export async function fetchNorwayTaxon(scientificName: string): Promise<EngineRe
       ? result.data.Results
       : Array.isArray(result.data?.results)
         ? result.data.results
-        : result.data
-          ? [result.data]
-          : [];
+        : result.data ? [result.data] : [];
 
   const wanted = scientificName.trim().toLowerCase();
-  const row =
-    rows.find((r: any) => String(r?.ValidScientificName ?? r?.ScientificName ?? "").toLowerCase() === wanted) ??
-    rows[0];
-
+  const row = rows.find((r: any) => String(r?.ValidScientificName ?? r?.ScientificName ?? "").toLowerCase() === wanted) ?? rows[0];
   if (!row) {
     source.state = "NOT_FOUND";
     return { ok: false, error: "ARTSDATABANKEN_NO_MATCH", sources: [source] };
@@ -275,10 +249,9 @@ export async function fetchNorwayTaxon(scientificName: string): Promise<EngineRe
       scientificName: String(row.ValidScientificName ?? row.ScientificName ?? row.scientificName ?? "") || undefined,
       commonName: String(row.PrefferedPopularname ?? row.PreferredPopularName ?? row.preferredPopularName ?? "") || undefined,
       taxonGroup: String(row.TaxonGroup ?? row.taxonGroup ?? "") || undefined,
-      existsInCountry:
-        typeof (row.ExistsInCountry ?? row.existsInCountry) === "boolean"
-          ? Boolean(row.ExistsInCountry ?? row.existsInCountry)
-          : undefined,
+      existsInCountry: typeof (row.ExistsInCountry ?? row.existsInCountry) === "boolean"
+        ? Boolean(row.ExistsInCountry ?? row.existsInCountry)
+        : undefined,
       source,
     },
   };
@@ -316,25 +289,14 @@ export async function fetchGbifOccurrencesColXr(
       eventDate: row.eventDate ? String(row.eventDate).slice(0, 10) : undefined,
       lat: row.decimalLatitude,
       lng: row.decimalLongitude,
-      coordinateUncertaintyM:
-        typeof row.coordinateUncertaintyInMeters === "number" ? row.coordinateUncertaintyInMeters : undefined,
+      coordinateUncertaintyM: typeof row.coordinateUncertaintyInMeters === "number" ? row.coordinateUncertaintyInMeters : undefined,
       sourceUrl: `https://www.gbif.org/occurrence/${row.key}`,
     }));
 
-  return {
-    ok: true,
-    data: {
-      total: Number(result.data?.count ?? sample.length),
-      country: options.country,
-      sample,
-    },
-  };
+  return { ok: true, data: { total: Number(result.data?.count ?? sample.length), country: options.country, sample } };
 }
 
-/**
- * Materialise one universal source-aware profile on demand.
- * Norway enrichment/occurrences are optional and fail closed independently.
- */
+/** Materialise one universal source-aware profile on demand. */
 export async function materializeUniversalTaxonProfile(
   scientificName: string,
   options: { rank?: string; norway?: boolean } = { norway: true },
@@ -366,18 +328,37 @@ export async function materializeUniversalTaxonProfile(
   }
 
   const norwayData = norway && norway.ok ? norway.data : undefined;
+  const externalIds: ExternalTaxonIds = {
+    colXr: col.data.key,
+    artsdatabankenTaxonId: norwayData?.taxonId,
+    artsdatabankenScientificNameId: norwayData?.scientificNameId,
+  };
+
+  const registry = registerOrResolveTaxon({
+    canonicalName: col.data.canonicalName,
+    scientificName: col.data.scientificName,
+    rank: col.data.rank,
+    status: col.data.status,
+    externalIds,
+  });
+
   const limitations = [
     "This is a source-materialised Universal Profile, not a curated 4PLANET Gold Profile.",
     "Occurrence points are reported records, not species range, abundance, trend or live location.",
-    "The 4PLANET taxon id is provisional until BRAIN owns a persisted canonical taxon registry.",
+    registry
+      ? "4PLANET identity is persisted in the TEST browser registry only; it is not yet shared BRAIN infrastructure."
+      : "No persisted TEST registry was available, so identity remains externally anchored for this materialisation.",
   ];
   if (!norwayData) limitations.push("No Norway-specific Artsdatabanken enrichment was resolved for this materialisation.");
 
   return {
     ok: true,
     data: {
-      id: provisional4pTaxonId(col.data.key),
-      identityState: "PROVISIONAL_EXTERNAL_ANCHORED",
+      id: registry?.id ?? provisional4pTaxonId(col.data.key),
+      identityState: registry ? "CANONICAL_4P_TEST_REGISTRY" : "PROVISIONAL_EXTERNAL_ANCHORED",
+      registry: registry
+        ? { persistenceScope: registry.persistenceScope, createdAt: registry.createdAt, updatedAt: registry.updatedAt }
+        : undefined,
       canonicalName: col.data.canonicalName,
       scientificName: col.data.scientificName,
       authorship: col.data.authorship,
@@ -387,16 +368,9 @@ export async function materializeUniversalTaxonProfile(
       commonName: norwayData?.commonName,
       commonNameLanguage: norwayData?.commonName ? "no" : undefined,
       norwegianContext: norwayData
-        ? {
-            existsInCountry: norwayData.existsInCountry,
-            taxonGroup: norwayData.taxonGroup,
-          }
+        ? { existsInCountry: norwayData.existsInCountry, taxonGroup: norwayData.taxonGroup }
         : undefined,
-      externalIds: {
-        colXr: col.data.key,
-        artsdatabankenTaxonId: norwayData?.taxonId,
-        artsdatabankenScientificNameId: norwayData?.scientificNameId,
-      },
+      externalIds,
       classification: col.data.classification,
       occurrences: occurrences.ok ? occurrences.data : undefined,
       sources,
