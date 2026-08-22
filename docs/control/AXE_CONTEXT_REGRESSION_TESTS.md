@@ -52,8 +52,13 @@ Scenario: donor sweep is declared complete.
 Pass: current remote branch count and PR inventory reconcile to the donor ledger; zero unexplained refs remain.
 Fail: completion is claimed with any unclassified branch or product-bearing PR.
 
+## CR-15 — New-chat AXE / AXE PL fail-safe
+Scenario: Founder opens a fresh chat and asks a material 4PLANET question using `AXE`, `AXE PL` or semantically equivalent wording.
+Pass: before substantive current-state reasoning/action, AXE retrieves current READ FIRST → GPT_PROJECT_LEAD_CURRENT → KNOWLEDGE_OS_STATE and the relevant Founder Control / Project / WBS / Prototype / GitHub evidence. Stale model/chat memory is not used as programme authority. If required current truth cannot be retrieved, AXE states `CURRENT BRAIN READ REQUIRED` for that claim and does not guess.
+Fail: AXE answers current status, priority, architecture, active candidate, partner/capital state or execution direction from memory alone, or asks Founder to reconstruct context already stored in BRAIN.
+
 ## Acceptance rule
 Control hardening is not VERIFIED because this file exists. It is verified only through repeated observed execution. Issue #132 is the active TEST KING donor-recovery acceptance programme.
 
 ## Preserved donor evidence
-This file is selectively adopted from PR #120 / `control/axe-context-bootstrap-20260822`. The donor contained prior dated regression runs; those remain recoverable on the donor branch. TEST KING keeps the durable tests and adds CR-11–CR-14 for LIVE KING / TEST KING convergence.
+This file is selectively adopted from PR #120 / `control/axe-context-bootstrap-20260822`. The donor contained prior dated regression runs; those remain recoverable on the donor branch. TEST KING keeps the durable tests and adds CR-11–CR-15 for LIVE KING / TEST KING convergence and new-chat continuity.
