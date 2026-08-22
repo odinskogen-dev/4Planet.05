@@ -49,21 +49,30 @@ async function mockSpeciesSources(page: Page) {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          count: 1,
+          count: 2,
           results: [{
             key: 4242,
             scientificName: "Picea abies",
             datasetName: "Norway field images",
             publisher: "Example biodiversity publisher",
-            media: [{
-              type: "StillImage",
-              format: "image/png",
-              identifier: "https://images.example/picea.png",
-              description: "Norway spruce",
-              creator: "Example photographer",
-              license: "CC BY 4.0",
-              rightsHolder: "Example photographer",
-            }],
+            media: [
+              {
+                type: "StillImage",
+                format: "image/png",
+                identifier: "https://images.example/picea.png",
+                description: "Norway spruce",
+                creator: "Example photographer",
+                license: "CC BY 4.0",
+                rightsHolder: "Example photographer",
+              },
+              {
+                type: "StillImage",
+                format: "image/png",
+                identifier: "https://images.example/uncleared.png",
+                description: "Uncleared image",
+                creator: "Unknown rights photographer",
+              },
+            ],
           }],
         }),
       });
@@ -85,7 +94,7 @@ async function mockSpeciesSources(page: Page) {
   });
 }
 
-test("new taxon gets a canonical universal page with source-aware media", async ({ page }) => {
+test("new taxon gets a canonical universal page with rights-gated source media", async ({ page }) => {
   await mockSpeciesSources(page);
   await page.goto("/species/picea-abies");
 
@@ -94,6 +103,8 @@ test("new taxon gets a canonical universal page with source-aware media", async 
   await expect(page.getByText("Primary image", { exact: true })).toBeVisible();
   await expect(page.getByText("CC BY 4.0", { exact: true })).toBeVisible();
   await expect(page.getByText("Example photographer", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/1 media item was withheld because the licence was missing or requires review/i)).toBeVisible();
+  await expect(page.getByText("Unknown rights photographer", { exact: true })).toHaveCount(0);
   await expect(page.getByText("17", { exact: true })).toBeVisible();
   await expect(page.getByText("UNIVERSAL · NOT GOLD", { exact: true })).toBeVisible();
 });
