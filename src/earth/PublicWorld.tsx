@@ -68,7 +68,6 @@ export default function PublicWorld() {
     let probeFrame = 0;
     let firstFrame = 0;
     const timers: number[] = [];
-    let mapRef: any = null;
     let canvasRef: HTMLCanvasElement | null = null;
 
     const release = () => {
@@ -95,7 +94,6 @@ export default function PublicWorld() {
 
     const apply = (map: any) => {
       if (cancelled || released) return;
-      mapRef = map;
       bindUserRelease(map);
 
       firstFrame = requestAnimationFrame(() => reconcile(map));
@@ -130,7 +128,6 @@ export default function PublicWorld() {
         canvasRef.removeEventListener("touchstart", release);
         canvasRef.removeEventListener("wheel", release);
       }
-      mapRef = null;
     };
   }, [supported, location.pathname, location.search]);
 
