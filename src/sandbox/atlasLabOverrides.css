@@ -42,7 +42,8 @@
 
 /* A spatial context chosen for a proof journey is never allowed to masquerade
  * as species range, abundance, live tracking or local presence. This boundary
- * stays on-screen while the taxon context is open. */
+ * stays on-screen while the taxon context is open and now owns one explicit
+ * continuation action into the canonical SPECIES page. */
 .atlas-intent-context {
   position: fixed;
   z-index: 31;
@@ -57,7 +58,7 @@
   backdrop-filter: blur(14px);
   color: #fff;
   font-family: "Fragment Mono", ui-monospace, monospace;
-  pointer-events: none;
+  pointer-events: auto;
 }
 .atlas-intent-context span {
   color: #3ae86f;
@@ -73,6 +74,23 @@
   color: rgba(255,255,255,.52);
   font-size: 8px;
   line-height: 1.45;
+}
+.atlas-intent-context a {
+  margin-top: 4px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(58,232,111,.14);
+  color: #3ae86f;
+  font-size: 8px;
+  line-height: 1.3;
+  letter-spacing: .10em;
+  text-decoration: none;
+}
+.atlas-intent-context a:hover,
+.atlas-intent-context a:focus-visible {
+  color: #eaffef;
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* TIME is a single shared instrument over the canonical map, not a second map
@@ -181,6 +199,7 @@ html:has(.world.light) .atlas-intent-context {
   color: #080808;
 }
 html:has(.world.light) .atlas-intent-context small { color: rgba(8,8,8,.55); }
+html:has(.world.light) .atlas-intent-context a { color: #14652a; }
 
 /* On narrow screens the expanded layer console used to start at the same Y
  * position as the lens rail, causing OCE4N/E4RTH mode chips to sit underneath
@@ -200,6 +219,11 @@ html:has(.world.light) .atlas-intent-context small { color: rgba(8,8,8,.55); }
     left: 10px;
     bottom: 68px;
     width: calc(100vw - 20px);
+  }
+  .atlas-intent-context a {
+    min-height: 30px;
+    display: flex;
+    align-items: center;
   }
   .world .search-wrap .atlas-taxon-intent-result .liend { display: none; }
 }
