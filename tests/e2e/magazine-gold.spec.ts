@@ -36,7 +36,7 @@ test.describe("4PLANET MAGAZINE Gold surface", () => {
 
     await page.screenshot({
       path: `artifacts/product-proof/magazine-home-${testInfo.project.name}.png`,
-      fullPage: true,
+      fullPage: false,
     });
   });
 
