@@ -59,6 +59,15 @@ function valueFromNode(rawNode, constants = {}) {
     return output;
   }
 
+  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+    const helperToKind = { L: "lead", P: "para", Q: "quote", S: "sub" };
+    const kind = helperToKind[node.expression.text];
+    if (kind && node.arguments.length === 1) {
+      const text = valueFromNode(node.arguments[0], constants);
+      if (typeof text === "string") return { k: kind, t: text };
+    }
+  }
+
   if (ts.isArrayLiteralExpression(node)) {
     return node.elements
       .map((element) => valueFromNode(element, constants))
