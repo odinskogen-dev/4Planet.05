@@ -14,6 +14,7 @@ import { MAGAZINE_ARTICLE_TEMPLATES } from "@/content/magazineEngine";
 import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-article.css";
+import "@/styles/magazine-article-gold.css";
 
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.03em" };
 const DEPTH_THRESHOLDS = [25, 50, 75, 90] as const;
