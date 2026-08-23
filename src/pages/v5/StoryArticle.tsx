@@ -50,7 +50,7 @@ export function StoryArticle() {
           </div>
           <h1 style={{ ...display, color: T.ink, fontSize: "clamp(38px,6.5vw,86px)", lineHeight: .98, maxWidth: 1100 }}>{s.title}</h1>
           <p style={{ fontSize: "clamp(17px,1.6vw,22px)", color: T.ink, opacity: .72, marginTop: 20, maxWidth: 680, lineHeight: 1.45 }}>{s.dek}</p>
-          <p className="mono" style={{ marginTop: 22, fontSize: 10.5, letterSpacing: ".08em", opacity: .55 }}>ORGANISATIONAL CONTENT — NOT M4GAZINE INDEPENDENT EDITORIAL</p>
+          <p className="mono" style={{ marginTop: 22, fontSize: 10.5, letterSpacing: ".08em", opacity: .55 }}>ORGANISATIONAL CONTENT — NOT 4PLANET MAGAZINE INDEPENDENT EDITORIAL</p>
         </Reveal>
       </Section>
 
@@ -59,7 +59,7 @@ export function StoryArticle() {
       <Section pad="clamp(48px,7vw,96px)">
         <Editorial blocks={s.blocks} />
         <div style={{ marginTop: "clamp(48px,6vw,80px)", borderTop: `1px solid ${T.line}`, paddingTop: 22, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <Link to="/magazine" className="link" style={{ fontSize: 14, color: T.blue }}>← M4GAZINE / STORIES</Link>
+          <Link to="/magazine" className="link" style={{ fontSize: 14, color: T.blue }}>← 4PLANET MAGAZINE</Link>
           <Link to="/atlas" className="link" style={{ fontSize: 14, color: T.ink }} onClick={() => trackEvent("magazine_deeper_exploration", { story_slug: s.slug, destination: "atlas", content_type: "4planet_explainer" })}>Explore related 4PLANET context →</Link>
         </div>
       </Section>
