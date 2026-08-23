@@ -15,6 +15,7 @@ import { About } from "@/pages/v5/About";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Magazine from "@/pages/v5/Magazine";
 import { MagazineAbout, MagazineSources, MagazineCorrections } from "@/pages/v5/MagazineInfo";
+import { MagazineStoryRecord } from "@/pages/v5/MagazineStoryRecord";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
@@ -75,6 +76,7 @@ export function AppRoutes() {
       <Route path="/magazine/about" element={<MagazineAbout />} />
       <Route path="/magazine/sources" element={<MagazineSources />} />
       <Route path="/magazine/corrections" element={<MagazineCorrections />} />
+      <Route path="/magazine/stories/:id" element={<MagazineStoryRecord />} />
       <Route path="/magazine/:slug" element={<StoryArticle />} />
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
