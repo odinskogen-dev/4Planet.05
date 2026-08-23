@@ -11,15 +11,18 @@ const decode64=(s,expectedBytes)=>{
   const source=String(s||'');
   let normalized=source.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
   // Generated payload transport has historically introduced non-base64
-  // separators. They carry no payload information. Strip only characters
-  // outside the base64 alphabet, then keep the byte-length contract strict.
-  // Missing/substituted base64 data still fails the expected-byte assertion.
+  // separators and misplaced padding. They carry no payload information.
+  // Strip separators and all transport padding, then restore only canonical
+  // trailing padding. The exact decoded byte-length contract remains strict,
+  // so missing/substituted payload data still fails closed.
   const invalid=normalized.match(/[^A-Za-z0-9+/=]/g)||[];
   if(invalid.length){
     normalized=normalized.replace(/[^A-Za-z0-9+/=]/g,'');
     d.repairSeparatorsRemoved=invalid.length;
   }
-  normalized=normalized.replace(/=+$/,'');
+  const padding=(normalized.match(/=/g)||[]).length;
+  if(padding)d.repairPaddingRemoved=padding;
+  normalized=normalized.replace(/=/g,'');
   normalized+='='.repeat((4-(normalized.length%4))%4);
   const raw=atob(normalized);
   if(raw.length!==expectedBytes)throw new Error(`[JAGUAR] surface payload length ${raw.length} != expected ${expectedBytes}`);
