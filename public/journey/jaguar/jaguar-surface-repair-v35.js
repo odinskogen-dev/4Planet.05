@@ -12,9 +12,8 @@ const decode64=(s,expectedBytes)=>{
   let normalized=source.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
   // Generated payload transport has historically introduced non-base64
   // separators and misplaced padding. They carry no payload information.
-  // Strip separators and all transport padding, then restore only canonical
-  // trailing padding. The exact decoded byte-length contract remains strict,
-  // so missing/substituted payload data still fails closed.
+  // Strip separators and transport padding only; never guess missing or extra
+  // payload sextets. Exact encoded and decoded lengths are both fail-closed.
   const invalid=normalized.match(/[^A-Za-z0-9+/=]/g)||[];
   if(invalid.length){
     normalized=normalized.replace(/[^A-Za-z0-9+/=]/g,'');
@@ -23,8 +22,22 @@ const decode64=(s,expectedBytes)=>{
   const padding=(normalized.match(/=/g)||[]).length;
   if(padding)d.repairPaddingRemoved=padding;
   normalized=normalized.replace(/=/g,'');
+
+  const expectedEncodedLength=Math.ceil(expectedBytes/3)*4;
+  d.repairEncodedLength=normalized.length;
+  d.repairExpectedEncodedLength=expectedEncodedLength;
+  d.repairEncodedDelta=normalized.length-expectedEncodedLength;
+  d.repairRemainder=normalized.length%4;
+
+  if(normalized.length!==expectedEncodedLength){
+    throw new Error(`[JAGUAR] surface payload transport length ${normalized.length} != expected base64 length ${expectedEncodedLength} (delta ${d.repairEncodedDelta}, remainder ${d.repairRemainder}, padding removed ${padding}, separators removed ${invalid.length})`);
+  }
+
   normalized+='='.repeat((4-(normalized.length%4))%4);
-  const raw=atob(normalized);
+  let raw;
+  try{raw=atob(normalized)}catch(err){
+    throw new Error(`[JAGUAR] surface payload base64 decode failed after strict transport validation: ${err&&err.message?err.message:String(err)}`);
+  }
   if(raw.length!==expectedBytes)throw new Error(`[JAGUAR] surface payload length ${raw.length} != expected ${expectedBytes}`);
   const out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;
 };
