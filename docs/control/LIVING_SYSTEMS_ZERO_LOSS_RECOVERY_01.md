@@ -1,153 +1,127 @@
 # LIVING SYSTEMS — ZERO-LOSS RECOVERY 01
 
-Founder directive: 23 Aug 2026. This is a bounded execution record under Issues #132, #140 and #141, not a competing control system.
+Founder directive: 23 Aug 2026. Bounded execution record under Issues #132, #140 and #141. This is not a competing control system.
 
 ## Authority
 - Recovery lane: `recovery/testking-living-systems`
-- Seed: `a4a9382e3245307c21160a55b8a50645b3627ba9`
+- Seed / exact TEST KING compared in this pass: `a4a9382e3245307c21160a55b8a50645b3627ba9`
 - Integration authority remains `king/test` / PR #131 only.
 - No historical branch/repository is deleted during recovery.
 - Every material donor delta must end as `ADOPT | ALREADY PRESENT | REJECT WITH REASON | DEFER WITH REASON`.
 
-## Donor confirmed materially richer
-`odinskogen-dev/4Planet_LivingSystems1.4.2` / `main` contained a real graph-native intelligence stack materially deeper than the current guided Living Systems surface: Dependency Graph Engine; generic Node Intelligence; Trust/Claim Intelligence; Solution Intelligence; Decision Intelligence Foundation; Learning Intelligence; Data Quality; Human Use Translation; deep Amazon and Pollination/Food cases.
-
-## First physical recovery into TEST KING — already present at seed
-ADOPTED selectively, without replacing the current public journey grammar:
-- `src/planet/decisionIntelligence.ts`: Amazon + Pollination solution pathways; six decision signals; six learning loops; donor source/review states preserved without upgrading them to current verification; layered `failureCascade()` over current graph plus explicitly labelled donor augmentation edges; reusable `decisionContextForAnchor()` seam for geo/system contexts.
-- `src/components/living/LivingSystemsIntelligencePanel.tsx`: progressive-disclosure UI, explicit donor/source/review boundaries, no automated-advice language.
-
 ## Historical repository universe — mandatory
-Known first-class Living Systems donors now include at minimum:
+Known first-class Living Systems donors include at minimum:
+- `odinskogen-dev/4planet-biological-intelligence`
 - `odinskogen-dev/4P_-LIVING-SYSTEMS-v1.3`
 - `odinskogen-dev/4PLANET-LIVING-SYSTEMS-1.3.1`
 - `odinskogen-dev/4P_LIVING-SYSTEM-v1.4`
 - `odinskogen-dev/4P_LIVING-SYSTEMS-v1.4.1`
 - `odinskogen-dev/4Planet_LivingSystems1.4.2`
-- `odinskogen-dev/4planet-biological-intelligence`
-plus Living Systems/Ecosystem/Tree-of-Life work embedded in broader historical 4PLANET repos and `4Planet.05` branches/PRs.
+plus Living Systems / Ecosystem / Tree-of-Life semantics embedded in broader historical 4PLANET repos and `4Planet.05` branches/PRs.
 
-Branch-only recovery is therefore insufficient.
+Branch-only recovery is insufficient.
 
-## Critical v1.4.1 archaeology — 23 Aug 2026
-Direct inspection of `4P_LIVING-SYSTEMS-v1.4.1` proves the donor is an intelligence architecture, not merely an old UI.
+## Historical evolution established so far
+- Biological Intelligence v0.2: early fixed relationship-chain proof; useful provenance/visual donor, but structurally much narrower than later graph-native Living Systems.
+- Living Systems v1.3: dependency graph + reverse intelligence + recursive failure cascades + Trust/Claims + Amazon ecosystem/human-system cascades + Solution/Decision foundations.
+- v1.3.1: primarily deployment/route-lock evolution over v1.3; no automatic semantic-winner privilege.
+- v1.4: adds/strengthens Learning Intelligence, Source Verification/Data Quality, Human Use Translation and explicit roadmap toward Place/Spatial Intelligence + Actor/Solution Network.
+- v1.4.1: preserves/hardens the graph-native intelligence architecture and adds/records the Biological Intelligence ontology framing.
+- v1.4.2: deployment/route-control update over v1.4.1; its handoff explicitly does not claim new intelligence architecture.
 
-### Canonical architecture preserved in donor handoff
-`CONTINUATION.md` states:
-- the asset is the connected intelligence graph, not the website;
-- public product = Living Systems Intelligence;
-- internal architecture = 4PLANET BRAIN;
-- Biological Intelligence = a sub-layer;
-- Dependency Engine = what depends on what;
-- Trust Layer = sources / claims / confidence / review / gaps;
-- Solution Intelligence = what can help;
-- Decision Intelligence = structured reasoning foundation, explicitly not automated advice;
-- Learning Intelligence = outcome/assumption/learning loop foundation;
+Newer version therefore does NOT automatically win.
+
+## Critical v1.4.1 architecture — MUST NOT be flattened into UI
+The donor records the asset as the connected intelligence graph rather than the website.
+
+Architectural layers:
+- Public product = Living Systems Intelligence.
+- Internal architecture = 4PLANET BRAIN.
+- Biological Intelligence = sub-layer, not a second product.
+- Dependency Engine = what depends on what.
+- Trust Layer = sources / claims / confidence / review / gaps.
+- Solution Intelligence = what can help.
+- Decision Intelligence = structured reasoning foundation, not automated advice.
+- Learning Intelligence = outcome / assumption / learning loops.
 - Human Use Translation = question → node → dependency pathway → threat → solution → decision signal → learning → practical interpretation.
 
-### Graph invariants found
-- Graph-native, node-native, relationship-first.
-- First-class stable-ID node systems rather than free-text page facts.
-- Core support chain: `Species → Function → Service → Recipient`.
-- Threat/response chain: `Driver → Threat → Solution`.
-- Contextual confidence/source/review metadata lives on links where appropriate.
-- Shared-node registry prevents duplicate semantic entities.
-- Resolver throws on missing node IDs, making build success part of graph-integrity proof.
+Graph invariants:
+- graph-native, node-native, relationship-first;
+- stable IDs and shared-node registry;
+- support chain `Species → Function → Service → Recipient`;
+- threat/response chain `Driver → Threat → Solution`;
+- contextual source/confidence/review metadata on links where appropriate;
+- forward + reverse traversal;
+- resolver integrity / missing-node failure as build evidence.
 
-### Material code/data surfaces found
-Routes include dedicated `/decisions`, `/dependencies`, `/ecosystems`, `/functions`, `/human-systems`, `/impact`, `/learning`, `/locations`, `/missions`, `/services`, `/solutions`, `/sources`, `/species`, `/threats`, `/trust` plus a deep Amazon Living System route.
+High-value donor surfaces include DependencyPathway, FailureCascade, RelationshipChain, NodeIntelligence, EvidencePanel, DataQuality, SolutionIntelligence, LearningIntelligence, HumanUse; claims/dataQuality/dependencies/relationships/learning/solutionIntel/sources/nodes; graph/intelligence/trust/learning/solutions/registry libraries; routes for decisions, dependencies, ecosystems, functions, human systems, impact, learning, locations, missions, services, solutions, sources, species, threats and trust.
 
-High-value components include:
-- `DependencyPathway.tsx`
-- `FailureCascade.tsx`
-- `RelationshipChain.tsx`
-- `NodeIntelligence.tsx`
-- `EvidencePanel.tsx`
-- `DataQuality.tsx`
-- `SolutionIntelligence.tsx`
-- `LearningIntelligence.tsx`
-- `HumanUse.tsx`
+## Exact TEST KING reconciliation — `a4a9382...`
+Important correction: TEST KING is materially further along than the older recovery note alone suggested.
 
-High-value data/libs include:
-- `data/dependencies.ts`
-- `data/relationships.ts`
-- `data/claims.ts`
-- `data/dataQuality.ts`
-- `data/learning.ts`
-- `data/solutionIntel.ts`
-- `data/sources.ts`
-- `data/nodes.ts`
-- `lib/graph.ts`
-- `lib/intelligence.ts`
-- `lib/trust.ts`
-- `lib/learning.ts`
-- `lib/solutions.ts`
-- `lib/registry.ts`
-- `types/index.ts`
+### ALREADY PRESENT / physically recovered as bounded adapters
+- **Generic Node Intelligence:** `src/planet/nodeIntelligence.ts` is a read-only resolver over the current shared Planet Model. It provides outbound and inbound relationship views, living-system/pressure/solution/mission context, claim counts, cascades and decision context without creating a second graph.
+- **Decision / Solution / Learning recovery:** `src/planet/decisionIntelligence.ts` preserves Amazon + Pollination solution pathways, six decision signals, learning loops, donor source/review state and failure-cascade/context seams.
+- **Trust / Claim / Data Quality recovery:** `src/planet/trustIntelligence.ts` contains recovered source refs, claim registry, confidence/review/data gaps, data-quality issues, trust summaries and integrity checks with explicit truth boundary that donor verification is NOT current verification.
+- **Progressive public UI:** `src/components/living/LivingSystemsIntelligencePanel.tsx` exposes the recovered intelligence through progressive disclosure inside the current Living Systems product.
+- **Place adaptation:** `src/planet/places.ts` is already global-by-architecture, with seeded ecological links and explicit geometry/truth limitations rather than Norway-hardcoded geography.
+- **Recovery contract:** `scripts/living-systems-recovery-contract.test.mjs` explicitly asserts physical survival of Decision/Solution/Learning, Trust/Claims/Data Quality, generic Node Intelligence and progressive disclosure.
 
-### Architecture evolution explicitly recorded in donor
-The handoff documents a preserved sequence:
-- dependency graph + reverse intelligence;
-- recursive failure cascades;
-- Trust + Claim layer;
-- ecosystem-level Amazon services and human-system cascades;
-- Solution + Decision Intelligence;
-- Learning + Outcome loop: `Decision → Expected Outcome → Assumption → Observed Outcome → Learning → Confidence Update`;
-- Source Verification + Data Quality;
-- Human Use Translation;
-- roadmap toward Place / Spatial Intelligence, Actor / Solution Network and operational Living Systems Intelligence.
+These must not be described as simply missing.
 
-This material cannot be marked `ALREADY PRESENT` merely because TEST KING has a current Living Systems journey.
+### PRESENT BUT NOT YET PROVEN SEMANTICALLY EQUIVALENT
+- reverse-edge traversal depth vs historical DependencyPathway;
+- recursive FailureCascade parity across the full historical graph;
+- complete Function → Service → Recipient first-class semantics;
+- generic Solution Intelligence coverage beyond Amazon/Pollination;
+- Learning Intelligence confidence-update semantics vs historical implementation;
+- Human Use question/guided-pathway translation;
+- Amazon deep-case full semantic parity;
+- Pollination/Food deep-case full semantic parity;
+- Actor/Location/geo joins and the intended shared path to PLACE / NOW / DECISIONS.
 
-## Current TEST KING equivalence status — provisional
-### ADOPTED / physically present
-- Recovered Solution Pathways, Decision Signals and learning-loop material in `src/planet/decisionIntelligence.ts` from 1.4.2.
-- Progressive Living Systems intelligence panel using the shared current model.
+### IMPORTANT SOURCE/TRUST BOUNDARY
+Current base `Relation` still carries an evidence citation string and explicitly has no resolved Evidence entity / contradiction handling / expert-review object in the base graph. Current `sources.ts` is an adaptation registry and explicitly NOT the canonical Source Contract. `trustIntelligence.ts` therefore represents a **successful bounded recovery adapter**, but canonical Source Contract / Evidence integration is not yet proven complete.
 
-### OPEN — equivalence proof required before any closure
-- generic reverse-edge Node Intelligence;
-- complete DependencyPathway semantics;
-- full recursive graph traversal / FailureCascade parity;
-- Function + Service + Recipient first-class semantic coverage;
-- Trust / Claim reverse views and relationship evidence semantics;
-- Data Quality register and source verification hierarchy;
-- generic Solution Intelligence coverage;
-- Learning Intelligence integrity and confidence-update semantics;
-- Human Use question/guided pathway translation;
-- Actor / Location / spatial semantics;
-- Amazon deep-case semantic parity;
-- Pollination/Food second deep-case parity;
-- path toward PLACE / NOW / DECISIONS without claiming automated scientific advice.
+Correct classification:
+- generic Node Intelligence = `ALREADY PRESENT` as recovered current-model adapter; depth parity still requires proof;
+- Trust/Claim/Data Quality = `ADOPTED` in recovered adapter; canonical Source Contract integration remains OPEN;
+- Place registry = `ALREADY PRESENT` as seeded adaptation; historical spatial/decision parity remains OPEN;
+- full Evidence entity / contradiction / expert-review semantics = NOT proven in current base graph.
 
-## MUST-NOT-LOSE semantic ledger — provisional
+## MUST-NOT-LOSE semantic ledger
 1. Relationships are the asset; species are entry points.
-2. Separate public Living Systems product from internal BRAIN and Biological Intelligence sub-layer.
-3. Explicit stable node IDs and shared-node registry.
+2. Public Living Systems stays distinct from internal BRAIN and Biological Intelligence sub-layer.
+3. Stable IDs + shared-node registry; no duplicate semantic graph.
 4. Forward + reverse dependency intelligence.
 5. Recursive failure cascades.
-6. Evidence/claims/source/review/data-gap semantics.
-7. Solution pathways connected to threats, services and human systems.
-8. Decision signals are structured reasoning, not automated recommendations.
-9. Learning loop carries expected vs observed outcome, assumptions and confidence updates.
-10. Ecosystem-level services and human-system dependencies.
-11. Human-use translation over the same graph, not a parallel content architecture.
-12. Amazon + Pollination/Food as complementary deep proof cases.
-13. Future Place/Spatial + Actor/Solution network must extend the graph rather than fork it.
+6. First-class ecological Function / Service / Recipient semantics.
+7. Evidence / claims / sources / review / data gaps remain explicit and relationship-aware.
+8. Solution pathways connect threats, services and human systems.
+9. Decision signals support structured reasoning, not automated recommendations.
+10. Learning carries expected outcome, assumption, observed outcome, learning and confidence update.
+11. Ecosystem-level services connect to human-system dependencies.
+12. Human-use translation traverses the same graph rather than creating a parallel content architecture.
+13. Amazon + Pollination/Food remain complementary deep proof cases.
+14. Future Place/Spatial + Actor/Solution + NOW/DECISIONS extend the shared graph rather than fork it.
+15. Old tests/contracts that encode semantics remain donor evidence even when their UI is superseded.
 
 ## Deliberately not claimed
-- Donor review state is not current Source Contract verification.
-- Donor observed-outcome/learning examples are not 4PLANET implementation results.
-- Current TEST KING does not yet have proven semantic parity with all historical Living Systems layers.
-- Actor, Capital, Temporal, Data Quality and full generic Node Intelligence still require selective transfer/equivalence proof.
-- Global geo decision intelligence is not yet complete.
+- Donor review state is current Source Contract verification.
+- Donor observed-outcome examples are 4PLANET implementation outcomes.
+- Current TEST KING has full semantic parity with every historical Living Systems generation.
+- Current source/trust adapter equals a final canonical Evidence/Source Contract.
+- Actor, capital, temporal or global geo-decision intelligence is complete.
+- A visually successful Living Systems page is proof of zero-loss.
 
-## Next recovery sequence — same receiving architecture
-P0 compare v1.3 → 1.3.1 → 1.4 → 1.4.1 → 1.4.2 + biological-intelligence at file/function/semantic level.
-P0 compare each MUST-NOT-LOSE primitive to exact current `king/test` implementation.
-P0 restore generic graph traversal / Node Intelligence / function-service-recipient semantics where current parity is absent.
-P0 recover Claim/Trust/Data Quality without creating a second source store.
-P1 Actor/solution/geo joins with ORCA + Bay of Biscay as first marine transfer.
-P1 S4PIENS FOOD consumes the same Pollination/Food dependency and decision layer.
-P1 Oslofjord proves Living Systems → PLACE → future DECISIONS path.
+## Remaining closure sequence
+P0 — compare historical v0.2 → v1.3 → 1.3.1 → 1.4 → 1.4.1 → 1.4.2 at file/function/semantic level, plus hidden Living Systems donors in broader repos.
+P0 — prove or restore DependencyPathway / FailureCascade depth and Function→Service→Recipient coverage.
+P0 — reconcile recovered Trust/Claims/Data Quality into the current Source Contract/Evidence architecture without creating a second source store.
+P0 — prove or restore Human Use Translation and Learning confidence-update semantics.
+P1 — Actor/Solution/geo joins; ORCA/Bay of Biscay as first marine transfer.
+P1 — S4PIENS FOOD consumes the same Pollination/Food dependency/decision layer.
+P1 — Oslofjord proves Living Systems → PLACE → future DECISIONS.
+P1 — exact-head browser/mobile/WebKit/truth regression proof, then bounded integration PR to `king/test`.
 
-Rule: no wholesale old-app merge; no parallel LSI product; current shared Planet Model is the receiver. Closure requires zero unclassified historical Living Systems donors and exact-head browser/truth regression evidence.
+Rule: no wholesale old-app merge; no parallel LSI product. Current shared Planet Model is the receiver. Closure requires zero unclassified historical Living Systems donors and exact-head evidence.
