@@ -30,48 +30,22 @@ function loadDataModule(relativePath) {
 
 const speciesModule = loadDataModule("src/data/species.ts");
 const livingSystemsModule = loadDataModule("src/data/livingSystems.ts");
-const speciesRelationshipsModule = loadDataModule("src/data/speciesRelationships.ts");
 
-const FEEDS = [
-  {
-    slug: "jaguar",
-    expectedId: "taxon:gbif:5219426",
-    livingSlug: "amazonia",
-    output: "public/xr/generated/jaguar-canonical.json",
-    requireSpeciesRelationships: true,
-  },
-  {
-    slug: "orca",
-    expectedId: "taxon:gbif:2440483",
-    livingSlug: "orca",
-    output: "public/xr/generated/orca-canonical.json",
-    requireSpeciesRelationships: false,
-  },
-];
+const species = speciesModule.SPECIES_PROFILES.find((profile) => profile.slug === "orca");
+const livingSystemAnchor = livingSystemsModule.LIVING_SYSTEM_ANCHORS.find((anchor) => anchor.slug === "orca");
 
-for (const definition of FEEDS) {
-  const species = speciesModule.SPECIES_PROFILES.find((profile) => profile.slug === definition.slug);
-  const livingSystemAnchor = livingSystemsModule.LIVING_SYSTEM_ANCHORS.find((anchor) => anchor.slug === definition.livingSlug);
-  const speciesRelationships = speciesRelationshipsModule.SPECIES_RELATIONSHIPS.filter(
-    (relationship) => relationship.fromEntityId === definition.expectedId,
-  );
+if (!species) throw new Error("Canonical Orca SPECIES profile missing");
+if (!livingSystemAnchor) throw new Error("Canonical Orca Living Systems anchor missing");
+if (species.id !== "taxon:gbif:2440483") throw new Error(`Unexpected Orca identity: ${species.id}`);
 
-  if (!species) throw new Error(`Canonical ${definition.slug} SPECIES profile missing`);
-  if (!livingSystemAnchor) throw new Error(`Canonical ${definition.livingSlug} Living Systems anchor missing`);
-  if (species.id !== definition.expectedId) throw new Error(`Unexpected ${definition.slug} identity: ${species.id}`);
-  if (definition.requireSpeciesRelationships && !speciesRelationships.length) {
-    throw new Error(`Canonical ${definition.slug} species relationships missing`);
-  }
+const payload = {
+  generatedFrom: ["src/data/species.ts", "src/data/livingSystems.ts"],
+  species,
+  livingSystemAnchor,
+  speciesRelationships: [],
+};
 
-  const payload = {
-    generatedFrom: ["src/data/species.ts", "src/data/livingSystems.ts", "src/data/speciesRelationships.ts"],
-    species,
-    livingSystemAnchor,
-    speciesRelationships,
-  };
-
-  const outputPath = resolve(root, definition.output);
-  mkdirSync(dirname(outputPath), { recursive: true });
-  writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-  console.log(`XR canonical feed: ${outputPath}`);
-}
+const outputPath = resolve(root, "public/xr/generated/orca-canonical.json");
+mkdirSync(dirname(outputPath), { recursive: true });
+writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+console.log(`XR canonical feed: ${outputPath}`);
