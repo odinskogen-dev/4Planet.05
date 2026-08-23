@@ -19,6 +19,7 @@ const privacy = read("src/pages/v5/Privacy.tsx");
 const headers = read("public/_headers");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-magazine-seo.mjs");
+const contentReader = read("scripts/magazine-content.mjs");
 const packageJson = read("package.json");
 
 test("4PLANET MAGAZINE Founding Edition remains truthfully pre-publication", () => {
@@ -110,11 +111,16 @@ test("search foundation generates sitemap, News sitemap, RSS and static route me
   assert.match(sitemap, /news-sitemap\.xml/);
   assert.match(sitemap, /rss\.xml/);
   assert.match(sitemap, /robots\.txt/);
+  assert.match(contentReader, /readFoundingEdition/);
   assert.match(prerender, /readStories/);
   assert.match(prerender, /readImages/);
+  assert.match(prerender, /readFoundingEdition/);
   assert.match(prerender, /application\/ld\+json/);
   assert.match(prerender, /Article/);
   assert.match(prerender, /canonical/);
+  assert.match(prerender, /noindex,follow,noarchive,max-image-preview:large/);
+  assert.match(prerender, /WebPage/);
   assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every public story route");
+  assert.ok(prerender.includes('const route = `/magazine/stories/${record.id}`'), "prerender must emit a static noindex HTML document for every pre-publication record");
   assert.match(packageJson, /prerender-magazine-seo\.mjs/);
 });
