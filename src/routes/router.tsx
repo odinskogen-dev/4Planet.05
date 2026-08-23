@@ -13,17 +13,23 @@ import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
-import Magazine from "@/pages/v5/Magazine";
-import { MagazineAbout, MagazineSources, MagazineCorrections } from "@/pages/v5/MagazineInfo";
-import { MagazineStoryRecord } from "@/pages/v5/MagazineStoryRecord";
 import Privacy from "@/pages/v5/Privacy";
-import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const Magazine = lazy(() => import("@/pages/v5/Magazine"));
+const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
+const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
+const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
+const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineCorrections })));
+const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
+);
+
+const MagazineFallback = (
+  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
 );
 
 const toImpact = <Navigate to="/impact" replace />;
@@ -72,14 +78,14 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
-      <Route path="/magazine" element={<Magazine />} />
-      <Route path="/magazine/about" element={<MagazineAbout />} />
-      <Route path="/magazine/sources" element={<MagazineSources />} />
-      <Route path="/magazine/corrections" element={<MagazineCorrections />} />
-      <Route path="/magazine/stories/:id" element={<MagazineStoryRecord />} />
-      <Route path="/magazine/:slug" element={<StoryArticle />} />
+      <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
+      <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
+      <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
+      <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
+      <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
+      <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />
-      <Route path="/stories/:slug" element={<StoryArticle />} />
+      <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
