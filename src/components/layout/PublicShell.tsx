@@ -162,8 +162,29 @@ function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const explicitlyOpenedPanel = useRef<PanelKey | null>(null);
+
+  const closeDesktopPanel = () => {
+    explicitlyOpenedPanel.current = null;
+    setPanel(null);
+  };
+
+  const previewDesktopPanel = (key: PanelKey) => {
+    if (explicitlyOpenedPanel.current !== key) explicitlyOpenedPanel.current = null;
+    setPanel(key);
+  };
+
+  const toggleDesktopPanel = (key: PanelKey) => {
+    if (explicitlyOpenedPanel.current === key && panel === key) {
+      closeDesktopPanel();
+      return;
+    }
+    explicitlyOpenedPanel.current = key;
+    setPanel(key);
+  };
 
   useEffect(() => {
+    explicitlyOpenedPanel.current = null;
     setPanel(null);
     setMobileOpen(false);
   }, [pathname]);
@@ -172,6 +193,7 @@ function Header() {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        explicitlyOpenedPanel.current = null;
         setPanel(null);
         setMobileOpen(false);
         menuButton.current?.focus();
@@ -234,16 +256,16 @@ function Header() {
         <div className="public-header__bar">
           <Link to="/" className="public-brand" style={{ color: fg }} aria-label="4PLANET home">4PLANET_</Link>
 
-          <nav className="public-header__desktop" aria-label="Primary navigation" onMouseLeave={() => setPanel(null)}>
+          <nav className="public-header__desktop" aria-label="Primary navigation" onMouseLeave={closeDesktopPanel}>
             {TOP.map((item) => (
               <button
                 key={item.key}
                 type="button"
                 className="public-header__nav-button"
                 aria-expanded={panel === item.key}
-                onMouseEnter={() => setPanel(item.key)}
-                onFocus={() => setPanel(item.key)}
-                onClick={() => setPanel((current) => current === item.key ? null : item.key)}
+                onMouseEnter={() => previewDesktopPanel(item.key)}
+                onFocus={() => previewDesktopPanel(item.key)}
+                onClick={() => toggleDesktopPanel(item.key)}
                 style={{ color: panel === item.key ? T.blue : fg }}
               >
                 {item.key}
@@ -258,7 +280,7 @@ function Header() {
             </button>
           </div>
         </div>
-        {panel && <DesktopPanel panel={panel} onClose={() => setPanel(null)} />}
+        {panel && <DesktopPanel panel={panel} onClose={closeDesktopPanel} />}
       </header>
       {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}
     </>
