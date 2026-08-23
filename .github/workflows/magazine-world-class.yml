@@ -1,0 +1,123 @@
+name: Magazine World-Class Gate
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - 'src/pages/v5/Magazine*'
+      - 'src/components/magazine/**'
+      - 'src/content/magazine*'
+      - 'src/content/stories.ts'
+      - 'src/styles/magazine*'
+      - 'scripts/magazine*'
+      - 'scripts/*sitemap*'
+      - 'tests/e2e/magazine-world-class.spec.ts'
+      - 'playwright.magazine.config.ts'
+      - 'package.json'
+      - '.github/workflows/magazine-world-class.yml'
+  push:
+    branches: [recovery/testking-magazine]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-world-class-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  magazine-gold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+      MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Record exact candidate
+        shell: bash
+        run: |
+          git rev-parse HEAD | tee magazine-exact-sha.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" | tee magazine-exact-branch.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Magazine quality + contracts
+        run: npm run test:magazine
+
+      - name: Production build + SEO prerender
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: High severity dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Start exact build preview
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 > magazine-preview.log 2>&1 &
+          echo $! > magazine-preview.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/magazine >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat magazine-preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Browser matrix — desktop tablet mobile WebKit reduced-motion
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npm run test:magazine:e2e
+
+      - name: Verify generated discovery surfaces
+        shell: bash
+        run: |
+          test -s public/sitemap.xml
+          test -s public/news-sitemap.xml
+          test -s public/rss.xml
+          test -f dist/magazine/index.html
+          test -f dist/magazine/archive/index.html
+          test -f dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
+          grep -q '4PLANET MAGAZINE' dist/magazine/index.html
+          grep -q 'PLANET SIGNAL' dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
+
+      - name: Upload exact-head Magazine evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: magazine-world-class-evidence
+          path: |
+            magazine-exact-sha.txt
+            magazine-exact-branch.txt
+            magazine-preview.log
+            artifacts
+            magazine-playwright-report
+            magazine-test-results
+            public/sitemap.xml
+            public/news-sitemap.xml
+            public/rss.xml
+          if-no-files-found: warn
+          retention-days: 30
