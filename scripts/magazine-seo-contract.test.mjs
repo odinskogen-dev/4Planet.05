@@ -63,9 +63,13 @@ test("strict article engine encodes franchises, editorial Gold and partner-feed 
   assert.match(engine, /IMAGE \/ MAP OF THE DAY/);
   assert.match(engine, /MAGAZINE_ARTICLE_GOLD_GRAMMAR/);
   assert.match(engine, /MAGAZINE_EDITORIAL_GOLD_DIMENSIONS/);
+  assert.match(engine, /MAGAZINE_EDITORIAL_JUDGEMENTS/);
+  assert.match(engine, /MAGAZINE_LAUNCH_STORY_QUEUE/);
   assert.match(engine, /FIELD_PARTNER_INTAKE_CONTRACT/);
-  assert.match(engine, /Never seed this list with invented partner dispatches/i);
+  assert.match(engine, /FIELD_PARTNER_DISPATCHES: FieldPartnerDispatch\[\] = \[\]/);
+  assert.match(engine, /Empty until real field material passes source \+ rights \+ editorial gates/i);
   assert.match(engine, /Optimise templates and distribution against downstream reader behaviour and editorial quality together/i);
+  assert.match(engine, /buildPartnerSharePath/);
   assert.match(stories, /franchise:/);
   assert.match(stories, /editorialType:/);
   assert.match(stories, /byline:/);
@@ -133,7 +137,7 @@ test("Magazine Gold content gate is fail-closed and mandatory before builds", ()
   assert.match(packageJson, /quality:magazine/);
 });
 
-test("analytics measures reading, relevant second object, share and return without pre-consent tracking", () => {
+test("analytics measures reading, relevant second object, share, partner attribution and return without pre-consent tracking", () => {
   assert.match(analytics, /consent !== "granted"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
@@ -145,6 +149,8 @@ test("analytics measures reading, relevant second object, share and return witho
   assert.match(magazineAnalytics, /magazine_relevant_second_object/);
   assert.match(magazineAnalytics, /magazine_share/);
   assert.match(magazineAnalytics, /visitor_state/);
+  assert.match(magazineAnalytics, /acquisition_source/);
+  assert.match(magazineAnalytics, /magazine_partner_loop/);
   assert.match(privacy, /Privacy-first site measurement/);
   assert.match(privacy, /Optional product analytics/);
   assert.match(headers, /static\.cloudflareinsights\.com/);
