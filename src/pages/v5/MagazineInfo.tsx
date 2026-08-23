@@ -15,7 +15,7 @@ const bodyStyle = { fontSize: "clamp(17px,1.8vw,22px)", lineHeight: 1.55, maxWid
 function MagazineSubnav() {
   return (
     <nav aria-label="Magazine information" style={{ display: "flex", gap: 18, flexWrap: "wrap", paddingTop: 30, marginTop: 42, borderTop: "1px solid rgba(0,0,0,.16)" }}>
-      <Link to="/magazine">MAGAZINE</Link>
+      <Link to="/magazine">4PLANET MAGAZINE</Link>
       <Link to="/magazine/about">ABOUT</Link>
       <Link to="/magazine/sources">SOURCES & METHOD</Link>
       <Link to="/magazine/corrections">CORRECTIONS</Link>
@@ -26,11 +26,11 @@ function MagazineSubnav() {
 export function MagazineAbout() {
   return (
     <PublicShell>
-      <Seo title="About M4GAZINE_ | 4PLANET" description="The editorial purpose, independence rules and current publication state of M4GAZINE_." path="/magazine/about" />
+      <Seo title="About 4PLANET MAGAZINE" description="The editorial purpose, independence rules and current publication state of 4PLANET MAGAZINE." path="/magazine/about" />
       <article style={pageStyle}>
-        <p style={kickerStyle}>M4GAZINE_ / ABOUT</p>
+        <p style={kickerStyle}>4PLANET MAGAZINE / ABOUT</p>
         <h1 style={titleStyle}>A publication about what holds.</h1>
-        <p style={bodyStyle}>M4GAZINE reports on the living planet as a set of relationships: species, places, pressures, people, culture, science and attempted solutions. It is designed as an editorial system, not a disguised marketing surface.</p>
+        <p style={bodyStyle}>4PLANET MAGAZINE reports on the living planet as a set of relationships: species, places, pressures, people, culture, science and attempted solutions. It is designed as an editorial system, not a disguised marketing surface.</p>
 
         <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
           <p style={kickerStyle}>FOUNDING EDITION</p>
@@ -59,9 +59,9 @@ export function MagazineAbout() {
 export function MagazineSources() {
   return (
     <PublicShell>
-      <Seo title="Sources & Method — M4GAZINE_ | 4PLANET" description="How M4GAZINE handles sources, claims, uncertainty, rights and editorial release." path="/magazine/sources" />
+      <Seo title="Sources & Method — 4PLANET MAGAZINE" description="How 4PLANET MAGAZINE handles sources, claims, uncertainty, rights and editorial release." path="/magazine/sources" />
       <article style={pageStyle}>
-        <p style={kickerStyle}>M4GAZINE_ / SOURCES & METHOD</p>
+        <p style={kickerStyle}>4PLANET MAGAZINE / SOURCES & METHOD</p>
         <h1 style={titleStyle}>Evidence before certainty.</h1>
         <p style={bodyStyle}>A story is not ready because the prose is finished. Material claims, images and interpretations pass through a source and rights chain before a public version is accepted.</p>
 
@@ -80,7 +80,7 @@ export function MagazineSources() {
         <section style={{ marginTop: "clamp(64px,9vw,110px)", background: "#090909", color: "#fff", padding: "clamp(28px,5vw,64px)" }}>
           <p style={{ ...kickerStyle, opacity: .68 }}>READING THE EVIDENCE</p>
           <h2 style={{ fontSize: "clamp(34px,5vw,64px)", letterSpacing: "-.045em", lineHeight: 1, margin: "18px 0 26px" }}>Observed ≠ modelled ≠ interpreted ≠ unknown.</h2>
-          <p style={{ ...bodyStyle, color: "rgba(255,255,255,.8)" }}>M4GAZINE should distinguish what a source directly reports from what a model estimates, what the publication interprets and what remains unresolved. 4PLANET products may help a reader explore context, but product output is not automatically editorial evidence.</p>
+          <p style={{ ...bodyStyle, color: "rgba(255,255,255,.8)" }}>4PLANET MAGAZINE should distinguish what a source directly reports from what a model estimates, what the publication interprets and what remains unresolved. 4PLANET products may help a reader explore context, but product output is not automatically editorial evidence.</p>
         </section>
         <MagazineSubnav />
       </article>
@@ -91,9 +91,9 @@ export function MagazineSources() {
 export function MagazineCorrections() {
   return (
     <PublicShell>
-      <Seo title="Corrections — M4GAZINE_ | 4PLANET" description="The M4GAZINE corrections and transparency desk." path="/magazine/corrections" />
+      <Seo title="Corrections — 4PLANET MAGAZINE" description="The 4PLANET MAGAZINE corrections and transparency desk." path="/magazine/corrections" />
       <article style={pageStyle}>
-        <p style={kickerStyle}>M4GAZINE_ / CORRECTIONS DESK</p>
+        <p style={kickerStyle}>4PLANET MAGAZINE / CORRECTIONS DESK</p>
         <h1 style={titleStyle}>What changed stays visible.</h1>
         <p style={bodyStyle}>Material factual corrections should be attached to the affected public story rather than silently disappearing into an edit. The correction record should state what changed, why it changed and when.</p>
 
