@@ -51,11 +51,11 @@ export function MagazineSearch() {
   }, [normalized]);
 
   useEffect(() => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(window.location.search);
     if (query.trim()) next.set("q", query.trim()); else next.delete("q");
     const timer = window.setTimeout(() => setParams(next, { replace: true }), 120);
     return () => window.clearTimeout(timer);
-  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, setParams]);
 
   return (
     <MagazineShell>
