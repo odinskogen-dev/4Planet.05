@@ -13,6 +13,9 @@ const words = (text = "") => String(text).trim().split(/\s+/).filter(Boolean);
 const addFailure = (scope, message) => failures.push(`${scope}: ${message}`);
 const addWarning = (scope, message) => warnings.push(`${scope}: ${message}`);
 
+const validFranchises = ["FROM_THE_FIELD", "THE_LIVING_WORLD", "PLANET_EXPLAINED", "WHAT_WORKS", "CHOICE", "VISUAL_SIGNAL"];
+const validEditorialTypes = ["ORGANISATIONAL_EXPLAINER", "INDEPENDENT_EDITORIAL", "PARTNER_SUBMITTED"];
+
 for (const story of stories) {
   const scope = `story:${story.slug || "<missing>"}`;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(story.slug || "")) addFailure(scope, "slug must be stable kebab-case");
@@ -29,6 +32,9 @@ for (const story of stories) {
 
   if (!["LIFE", "PLANET", "HUMAN", "SOLUTIONS", "PEOPLE", "CULTURE"].includes(story.lane)) addFailure(scope, "invalid editorial lane");
   if (!["FAST", "DEEP", "EVERGREEN", "VISUAL"].includes(story.mode)) addFailure(scope, "invalid story mode");
+  if (!validFranchises.includes(story.franchise)) addFailure(scope, "every story needs an explicit recurring franchise/template identity");
+  if (!validEditorialTypes.includes(story.editorialType)) addFailure(scope, "editorial ownership/type must be explicit");
+  if (typeof story.byline !== "string" || story.byline.length < 3) addFailure(scope, "visible authorship/byline required");
   if (!Number.isFinite(story.readMins) || story.readMins < 2 || story.readMins > 20) addFailure(scope, "readMins must be a realistic 2–20 minute estimate");
 
   if (!Array.isArray(story.tags) || story.tags.length < 4) addFailure(scope, "minimum four useful subject/entity tags required for recirculation");
