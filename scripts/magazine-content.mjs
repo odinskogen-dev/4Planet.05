@@ -6,15 +6,7 @@ const root = process.cwd();
 
 function unwrap(node) {
   let current = node;
-  while (
-    current &&
-    (ts.isAsExpression(current) ||
-      ts.isSatisfiesExpression?.(current) ||
-      ts.isParenthesizedExpression(current) ||
-      ts.isTypeAssertionExpression?.(current))
-  ) {
-    current = current.expression;
-  }
+  while (current && (ts.isAsExpression(current) || ts.isSatisfiesExpression?.(current) || ts.isParenthesizedExpression(current) || ts.isTypeAssertionExpression?.(current))) current = current.expression;
   return current;
 }
 
@@ -31,9 +23,7 @@ function constantsFromSource(sourceFile) {
     for (const declaration of statement.declarationList.declarations) {
       if (!ts.isIdentifier(declaration.name) || !declaration.initializer) continue;
       const value = valueFromNode(declaration.initializer, constants);
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-        constants[declaration.name.text] = value;
-      }
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") constants[declaration.name.text] = value;
     }
   }
   return constants;
@@ -48,7 +38,6 @@ function valueFromNode(rawNode, constants = {}) {
   if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
   if (node.kind === ts.SyntaxKind.NullKeyword) return null;
   if (ts.isIdentifier(node)) return constants[node.text];
-
   if (ts.isTemplateExpression(node)) {
     let output = node.head.text;
     for (const span of node.templateSpans) {
@@ -58,7 +47,6 @@ function valueFromNode(rawNode, constants = {}) {
     }
     return output;
   }
-
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
     const helperToKind = { L: "lead", P: "para", Q: "quote", S: "sub" };
     const kind = helperToKind[node.expression.text];
@@ -67,13 +55,7 @@ function valueFromNode(rawNode, constants = {}) {
       if (typeof text === "string") return { k: kind, t: text };
     }
   }
-
-  if (ts.isArrayLiteralExpression(node)) {
-    return node.elements
-      .map((element) => valueFromNode(element, constants))
-      .filter((value) => value !== undefined);
-  }
-
+  if (ts.isArrayLiteralExpression(node)) return node.elements.map((element) => valueFromNode(element, constants)).filter((value) => value !== undefined);
   if (ts.isObjectLiteralExpression(node)) {
     const object = {};
     for (const property of node.properties) {
@@ -85,7 +67,6 @@ function valueFromNode(rawNode, constants = {}) {
     }
     return object;
   }
-
   return undefined;
 }
 
@@ -98,20 +79,26 @@ function sourceFor(relativePath) {
 function variableInitializer(sourceFile, variableName) {
   for (const statement of sourceFile.statements) {
     if (!ts.isVariableStatement(statement)) continue;
-    for (const declaration of statement.declarationList.declarations) {
-      if (ts.isIdentifier(declaration.name) && declaration.name.text === variableName) return declaration.initializer;
-    }
+    for (const declaration of statement.declarationList.declarations) if (ts.isIdentifier(declaration.name) && declaration.name.text === variableName) return declaration.initializer;
   }
   return undefined;
 }
 
-export function readStories() {
-  const sourceFile = sourceFor("src/content/stories.ts");
+function readLiteralArray(relativePath, variableName) {
+  const sourceFile = sourceFor(relativePath);
   const constants = constantsFromSource(sourceFile);
-  const initializer = variableInitializer(sourceFile, "STORIES");
+  const initializer = variableInitializer(sourceFile, variableName);
   const value = valueFromNode(initializer, constants);
-  if (!Array.isArray(value)) throw new Error("Unable to read STORIES from src/content/stories.ts");
-  return value.filter((story) => story && typeof story.slug === "string");
+  if (!Array.isArray(value)) throw new Error(`Unable to read ${variableName} from ${relativePath}`);
+  return value;
+}
+
+export function readStories() {
+  return readLiteralArray("src/content/stories.ts", "STORIES").filter((story) => story && typeof story.slug === "string");
+}
+
+export function readSignals() {
+  return readLiteralArray("src/content/magazineSignals.ts", "MAGAZINE_SIGNALS").filter((signal) => signal && typeof signal.slug === "string");
 }
 
 export function readImages() {
@@ -128,9 +115,7 @@ export function readFoundingEdition() {
   const constants = constantsFromSource(sourceFile);
   const initializer = variableInitializer(sourceFile, "FOUNDING_EDITION");
   const value = valueFromNode(initializer, constants);
-  if (!value || Array.isArray(value) || typeof value !== "object" || !Array.isArray(value.items)) {
-    throw new Error("Unable to read FOUNDING_EDITION from src/content/magazineEditorial.ts");
-  }
+  if (!value || Array.isArray(value) || typeof value !== "object" || !Array.isArray(value.items)) throw new Error("Unable to read FOUNDING_EDITION from src/content/magazineEditorial.ts");
   return value;
 }
 
