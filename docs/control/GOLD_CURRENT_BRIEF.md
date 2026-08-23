@@ -46,7 +46,7 @@ One canonical story object must be able to render: slug, title, dek, story mode,
 ## SEARCH / DISCOVER CONTRACT
 Every indexable story must have a unique crawlable URL, title, description, canonical, high-resolution image metadata, structured data, internal links and sitemap entry. Generate RSS and News Sitemap foundations. Pre-publication story records stay `noindex` and never emit Article schema. Keep `4planetmagazine.com` development surface noindex until canonical-host decision + SEO gate + Founder release.
 
-## TRUST BOUNDARY
+## TRUTH BOUNDARY
 Editorial judgement remains separate from commercial, partnership and fundraising judgement. Coverage does not imply endorsement. Source records, models, interpretations, delivery and ecological outcomes remain distinct. Corrections remain visible. 4PLANET-owned explainers are visibly labelled as organisational content.
 
 ## DISTRIBUTION / LOYALTY CONTRACT
