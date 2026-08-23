@@ -35,16 +35,23 @@ async function verifySharedNavigation(page: import("@playwright/test").Page) {
     return;
   }
 
+  // Desktop navigation is a real button-controlled disclosure. Opening it by click
+  // is deterministic across headless engines and verifies the same accessible
+  // interaction path keyboard/pointer users receive. Hover-only proof was flaky
+  // because the parent nav's mouseleave handler can close the panel while
+  // Playwright synthesises pointer movement between the trigger and assertion.
   const trigger = page.getByRole("button", { name: "EXPLORE", exact: true });
   await expect(trigger).toBeVisible();
-  await trigger.hover();
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
 
   const region = page.getByRole("region", { name: "EXPLORE navigation" });
   await expect(region).toBeVisible();
   for (const name of ["ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
     await expect(region.getByRole("link", { name: new RegExp(`^${name}`) }).first()).toBeVisible();
   }
-  await page.getByRole("button", { name: "EXPLORE", exact: true }).click();
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await expect(region).toBeHidden();
 }
 
