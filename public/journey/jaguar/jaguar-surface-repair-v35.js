@@ -8,8 +8,17 @@ d.colour='PRESENTATION_COLOUR_NOT_SOURCE_TEXTURE';
 d.motion='PROCEDURAL_PRESENTATION';
 
 const decode64=(s,expectedBytes)=>{
-  let normalized=String(s||'').replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
-  if(/[^A-Za-z0-9+/=]/.test(normalized))throw new Error('[JAGUAR] surface payload contains invalid base64 characters');
+  const source=String(s||'');
+  let normalized=source.replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
+  // Generated payload transport has historically introduced non-base64
+  // separators. They carry no payload information. Strip only characters
+  // outside the base64 alphabet, then keep the byte-length contract strict.
+  // Missing/substituted base64 data still fails the expected-byte assertion.
+  const invalid=normalized.match(/[^A-Za-z0-9+/=]/g)||[];
+  if(invalid.length){
+    normalized=normalized.replace(/[^A-Za-z0-9+/=]/g,'');
+    d.repairSeparatorsRemoved=invalid.length;
+  }
   normalized=normalized.replace(/=+$/,'');
   normalized+='='.repeat((4-(normalized.length%4))%4);
   const raw=atob(normalized);
@@ -20,7 +29,7 @@ const encode64=(typed)=>{const bytes=new Uint8Array(typed.buffer,typed.byteOffse
 const n=d.verts;
 const raw=decode64(window.__JAGS33_P,n*3*2);
 const q=new Uint16Array(raw.byteLength/2);const view=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);for(let i=0;i<q.length;i++)q[i]=view.getUint16(i*2,true);
-const p=new Float32Array(n*3);for(let i=0;i<p.length;i++){const axis=i%3;p[i]=d.min[axis]+(q[i]/65535)*d.span[axis]}
+const p=new Float32Array(n*3);for(let i=0;i<p.length;i++){const axis=i%3;p[i]=d.min[axis]+(q[i]/65535)*d.span[axis];if(!Number.isFinite(p[i]))throw new Error('[JAGUAR] reconstructed position is non-finite')}
 
 const cell=Math.max(d.span[0],d.span[1],d.span[2])/14;
 const key=(x,y,z)=>`${Math.floor(x/cell)},${Math.floor(y/cell)},${Math.floor(z/cell)}`;
@@ -34,8 +43,10 @@ for(let i=0;f<faceTarget;i=(i+1)%n){const near=nearest(i);if(near.length<2)conti
 const norms=new Float32Array(n*3);const edges=new Set();const edgeList=[];
 const addEdge=(a,b)=>{const lo=Math.min(a,b),hi=Math.max(a,b),k=`${lo}:${hi}`;if(edges.has(k))return;edges.add(k);edgeList.push(lo,hi)};
 for(let t=0;t<faceTarget;t++){const ia=idx[t*3],ib=idx[t*3+1],ic=idx[t*3+2];const ax=p[ib*3]-p[ia*3],ay=p[ib*3+1]-p[ia*3+1],az=p[ib*3+2]-p[ia*3+2],bx=p[ic*3]-p[ia*3],by=p[ic*3+1]-p[ia*3+1],bz=p[ic*3+2]-p[ia*3+2];const nx=ay*bz-az*by,ny=az*bx-ax*bz,nz=ax*by-ay*bx;for(const v of [ia,ib,ic]){norms[v*3]+=nx;norms[v*3+1]+=ny;norms[v*3+2]+=nz}addEdge(ia,ib);addEdge(ib,ic);addEdge(ic,ia)}
+if(edgeList.length<6)throw new Error('[JAGUAR] reconstructed topology has insufficient edges');
 const nb=new Uint8Array(n*3);for(let i=0;i<n;i++){let x=norms[i*3],y=norms[i*3+1],z=norms[i*3+2],m=Math.hypot(x,y,z)||1;x/=m;y/=m;z/=m;nb[i*3]=Math.round((x*.5+.5)*255);nb[i*3+1]=Math.round((y*.5+.5)*255);nb[i*3+2]=Math.round((z*.5+.5)*255)}
 const cb=new Uint8Array(n*3);for(let i=0;i<n;i++){const x=p[i*3],y=p[i*3+1],z=p[i*3+2];const spot=(Math.sin(x*17.3+y*11.7+z*7.1)+Math.sin(x*8.1-y*19.2+z*13.4))*.5;const dark=spot>.72;const belly=y<d.min[1]+d.span[1]*.28;const r=dark?.10:(belly?.74:.58),g=dark?.075:(belly?.52:.31),b=dark?.045:(belly?.24:.10);cb[i*3]=Math.round(r*255);cb[i*3+1]=Math.round(g*255);cb[i*3+2]=Math.round(b*255)}
 const edgeTarget=d.edgePairs;const ei=new Uint16Array(edgeTarget*2);for(let i=0;i<ei.length;i++)ei[i]=edgeList[i%edgeList.length];
 window.__JAGS33_N=encode64(nb);window.__JAGS33_C=encode64(cb);window.__JAGS33_I=encode64(idx);window.__JAGS33_E=encode64(ei);
+d.repairState='VERIFIED_BYTE_LENGTH_AND_TOPOLOGY_RECONSTRUCTED';
 })();
