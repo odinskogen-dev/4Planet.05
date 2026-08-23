@@ -21,6 +21,14 @@ test('pilot corridor is never presented as an Orca migration track', () => {
   assert.doesNotMatch(js, /live migration/i);
 });
 
+test('Bay of Biscay has a direct TEST KING deep link without creating a second product route', () => {
+  assert.match(js, /#bay-of-biscay/);
+  assert.match(js, /openDirectBiscay/);
+  assert.match(js, /scrollIntoView/);
+  assert.match(js, /direct: true/);
+  assert.doesNotMatch(html, /\/bay-of-biscay\/index\.html/);
+});
+
 test('ecosystem card carries geography, habitat, species and source seams', () => {
   for (const marker of [
     'Bay of Biscay',
