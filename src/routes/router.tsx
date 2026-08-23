@@ -14,6 +14,7 @@ import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Magazine from "@/pages/v5/Magazine";
+import { MagazineAbout, MagazineSources, MagazineCorrections } from "@/pages/v5/MagazineInfo";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
 import { NotFound } from "@/pages/system";
@@ -71,6 +72,9 @@ export function AppRoutes() {
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
       <Route path="/magazine" element={<Magazine />} />
+      <Route path="/magazine/about" element={<MagazineAbout />} />
+      <Route path="/magazine/sources" element={<MagazineSources />} />
+      <Route path="/magazine/corrections" element={<MagazineCorrections />} />
       <Route path="/magazine/:slug" element={<StoryArticle />} />
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />
       <Route path="/stories/:slug" element={<StoryArticle />} />
