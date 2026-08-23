@@ -1,8 +1,10 @@
 import type { Block } from "@/content/narratives";
 import type { ImageKey } from "@/content/imageRegistry";
 import type { MagazineLane, MagazineStoryMode } from "@/content/magazineOperating";
+import type { MagazineFranchiseId } from "@/content/magazineEngine";
 
 export type StoryCategory = "Perspectives" | "Mission Stories" | "Solutions";
+export type StoryEditorialType = "ORGANISATIONAL_EXPLAINER" | "INDEPENDENT_EDITORIAL" | "PARTNER_SUBMITTED";
 
 export interface StoryPathway {
   label: string;
@@ -17,6 +19,9 @@ export interface Story {
   category: StoryCategory;
   lane: MagazineLane;
   mode: MagazineStoryMode;
+  franchise: MagazineFranchiseId;
+  editorialType: StoryEditorialType;
+  byline: string;
   image: ImageKey;
   readMins: number;
   tags: string[];
@@ -37,6 +42,9 @@ export const STORIES: Story[] = [
     category: "Perspectives",
     lane: "HUMAN",
     mode: "EVERGREEN",
+    franchise: "PLANET_EXPLAINED",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "footerPlanet",
     readMins: 4,
     tags: ["4planet", "participation", "trust", "living systems"],
@@ -58,6 +66,9 @@ export const STORIES: Story[] = [
     category: "Perspectives",
     lane: "PLANET",
     mode: "EVERGREEN",
+    franchise: "PLANET_EXPLAINED",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "e4rthDomainHero",
     readMins: 4,
     tags: ["ocean", "land", "human systems", "culture", "4planet"],
@@ -82,6 +93,9 @@ export const STORIES: Story[] = [
     category: "Mission Stories",
     lane: "LIFE",
     mode: "EVERGREEN",
+    franchise: "THE_LIVING_WORLD",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "wh4lesHero",
     readMins: 5,
     tags: ["whales", "ocean", "migration", "monitoring", "wh4les"],
@@ -103,6 +117,9 @@ export const STORIES: Story[] = [
     category: "Solutions",
     lane: "SOLUTIONS",
     mode: "EVERGREEN",
+    franchise: "WHAT_WORKS",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "clim4teHero",
     readMins: 5,
     tags: ["restoration", "trees", "climate", "evidence", "impact"],
@@ -124,6 +141,9 @@ export const STORIES: Story[] = [
     category: "Mission Stories",
     lane: "PLANET",
     mode: "EVERGREEN",
+    franchise: "THE_LIVING_WORLD",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "amazoniaHero",
     readMins: 4,
     tags: ["amazon", "rainforest", "climate", "biodiversity", "am4zonia"],
@@ -145,6 +165,9 @@ export const STORIES: Story[] = [
     category: "Solutions",
     lane: "SOLUTIONS",
     mode: "EVERGREEN",
+    franchise: "WHAT_WORKS",
+    editorialType: "ORGANISATIONAL_EXPLAINER",
+    byline: "4PLANET Editorial Desk",
     image: "footerPlanet",
     readMins: 4,
     tags: ["impact", "evidence", "trust", "delivery", "verification"],
@@ -167,8 +190,9 @@ export function relatedStories(story: Story, limit = 3): Story[] {
   const candidates = STORIES.filter((candidate) => candidate.slug !== story.slug).map((candidate) => {
     const sharedTags = candidate.tags.filter((tag) => story.tags.includes(tag)).length;
     const laneMatch = candidate.lane === story.lane ? 2 : 0;
+    const franchiseMatch = candidate.franchise === story.franchise ? 2 : 0;
     const categoryMatch = candidate.category === story.category ? 1 : 0;
-    return { candidate, score: sharedTags * 3 + laneMatch + categoryMatch };
+    return { candidate, score: sharedTags * 3 + laneMatch + franchiseMatch + categoryMatch };
   });
 
   return candidates
