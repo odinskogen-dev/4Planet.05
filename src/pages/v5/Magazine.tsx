@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Seo } from "@/components/Seo";
 import { trackEvent } from "@/analytics/Analytics";
+import { trackMagazineEntry } from "@/analytics/MagazineAnalytics";
 import { STORIES } from "@/content/stories";
 import { FIELD_NOTES } from "@/content/fieldNotes";
 import { FOUNDING_EDITION, MAGAZINE_EDITORIAL_PRINCIPLES } from "@/content/magazineEditorial";
+import { MAGAZINE_GOLD_BAR, MAGAZINE_LANES } from "@/content/magazineOperating";
 import { img } from "@/content/imageRegistry";
 import { DOMAIN_ACCENT } from "@/styles/tokens";
 import type { DomainKey } from "@/types/content";
@@ -14,17 +17,30 @@ const DOMAIN_ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 
 function EditorialNav() {
   return (
-    <nav className="mag-topic-nav" aria-label="Magazine editorial information">
-      <span className="mag-topic-label">4PLANET MAGAZINE</span>
-      <Link to="/magazine/about">ABOUT</Link>
-      <Link to="/magazine/sources">SOURCES & METHOD</Link>
-      <Link to="/magazine/corrections">CORRECTIONS</Link>
-    </nav>
+    <>
+      <nav className="mag-topic-nav" aria-label="Magazine sections">
+        <span className="mag-topic-label">EXPLORE</span>
+        {MAGAZINE_LANES.map((lane) => <Link key={lane.id} to={lane.primaryPath}>{lane.id}</Link>)}
+      </nav>
+      <nav className="mag-utility-nav" aria-label="Magazine editorial information">
+        <span>4PLANET MAGAZINE</span>
+        <Link to="/magazine/about">ABOUT</Link>
+        <Link to="/magazine/sources">SOURCES & METHOD</Link>
+        <Link to="/magazine/corrections">CORRECTIONS</Link>
+      </nav>
+    </>
   );
 }
 
 export default function Magazine() {
   const hero = img("m4gazineHero");
+  const lead = STORIES[2] ?? STORIES[0];
+  const leadMedia = img(lead.image);
+  const secondary = STORIES.filter((story) => story.slug !== lead.slug).slice(0, 4);
+
+  useEffect(() => {
+    trackMagazineEntry("home");
+  }, []);
 
   return (
     <PublicShell>
@@ -40,13 +56,13 @@ export default function Magazine() {
           <div className="mag-hero-shade" aria-hidden />
           <div className="mag-hero-topline">
             <span>4PLANET MAGAZINE / FOUNDING EDITION</span>
-            <span>PRE-PUBLICATION</span>
+            <span>LIVE DEVELOPMENT · PRE-PUBLICATION</span>
           </div>
           <div className="mag-hero-copy">
             <p className="mag-kicker">WORKING EDITION 01</p>
             <h1 id="magazine-title">{FOUNDING_EDITION.workingTitle}</h1>
             <p>{FOUNDING_EDITION.subtitle}</p>
-            <a className="mag-read-link" href="#founding-edition">ENTER THE EDITION <span aria-hidden>↓</span></a>
+            <a className="mag-read-link" href="#read-now">READ NOW <span aria-hidden>↓</span></a>
           </div>
         </section>
 
@@ -54,51 +70,99 @@ export default function Magazine() {
         <EditorialNav />
 
         <section className="mag-intro">
-          <div className="mag-section-index">01 / EDITORIAL PURPOSE</div>
+          <div className="mag-section-index">01 / A LIVING PLANET PUBLICATION</div>
           <div className="mag-intro-copy">
-            <h2>The living planet is a system of relationships.</h2>
-            <p>4PLANET MAGAZINE exists to report on those relationships — between species, places, pressures, people, culture, science and attempted solutions. Its test is whether a story is true enough, useful enough, independent enough and well made enough to deserve a reader’s attention.</p>
-            <p style={{ fontSize: 14, opacity: .7, marginTop: 18 }}>Editorial judgement is separate from 4PLANET commercial, partnership and fundraising judgement. A story does not require a call to action.</p>
+            <h2>The story is the front door.</h2>
+            <p>Nature, science, people in the field, human systems, solutions, innovation and culture — edited as one living world. You never need to understand the whole 4PLANET system before a story becomes useful.</p>
+            <p className="mag-intro-note">{MAGAZINE_GOLD_BAR.principle}</p>
           </div>
         </section>
 
-        <section id="founding-edition" aria-label="Founding Edition" style={{ padding: "clamp(56px,8vw,112px) clamp(20px,5vw,72px)", background: "#f4f3ef" }}>
-          <div style={{ maxWidth: 1320, margin: "0 auto" }}>
-            <div className="mag-section-index">02 / WHAT HOLDS — WORKING TABLE OF CONTENTS</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,280px),1fr))", gap: 1, background: "rgba(0,0,0,.15)", marginTop: 32 }}>
-              {FOUNDING_EDITION.items.map((item) => (
-                <article key={item.id} style={{ background: "#f4f3ef", padding: "clamp(24px,3vw,38px)", minHeight: 340, display: "flex", flexDirection: "column" }}>
-                  <p className="mag-kicker">{String(item.order).padStart(2, "0")} / {item.format}</p>
-                  <h3 style={{ fontSize: "clamp(24px,2.4vw,36px)", lineHeight: 1.03, letterSpacing: "-.035em", margin: "22px 0 16px" }}>{item.title}</h3>
-                  <p style={{ fontSize: 15, lineHeight: 1.58, maxWidth: 520 }}>{item.summary}</p>
-                  <div className="mono" style={{ marginTop: "auto", paddingTop: 28, fontSize: 10.5, lineHeight: 1.55, letterSpacing: ".06em", opacity: .62 }}>
-                    <div>{item.status.replace(/_/g, " ")}</div>
-                    <div>{item.sourceState}</div>
-                  </div>
+        <section id="read-now" className="mag-read-now" aria-labelledby="read-now-title">
+          <div className="mag-read-now-head">
+            <div>
+              <div className="mag-section-index">02 / READ NOW</div>
+              <h2 id="read-now-title">Start with one thing worth knowing.</h2>
+            </div>
+            <p>These pieces are 4PLANET-owned explainers and are visibly separated from future independent Magazine reporting.</p>
+          </div>
+
+          <article className="mag-lead-story">
+            <Link
+              className="mag-lead-media"
+              to={`/magazine/${lead.slug}`}
+              onClick={() => trackEvent("magazine_story_open", { story_slug: lead.slug, content_type: "4planet_explainer", placement: "magazine_lead" })}
+            >
+              <img src={leadMedia.src} alt={leadMedia.alt} />
+            </Link>
+            <div className="mag-lead-copy">
+              <p className="mag-kicker">{lead.lane} · {lead.readMins} MIN READ</p>
+              <h3><Link to={`/magazine/${lead.slug}`}>{lead.title}</Link></h3>
+              <p>{lead.dek}</p>
+              <Link className="mag-text-link" to={`/magazine/${lead.slug}`}>READ THE STORY <span aria-hidden>→</span></Link>
+            </div>
+          </article>
+
+          <div className="mag-secondary-grid">
+            {secondary.map((story) => {
+              const media = img(story.image);
+              return (
+                <article key={story.slug} className="mag-secondary-story">
                   <Link
-                    to={`/magazine/stories/${item.id}`}
-                    style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,.14)", color: "#080808", textDecoration: "none", font: "600 10.5px/1.2 'Fragment Mono', monospace", letterSpacing: ".1em" }}
+                    className="mag-secondary-media"
+                    to={`/magazine/${story.slug}`}
+                    onClick={() => trackEvent("magazine_story_open", { story_slug: story.slug, content_type: "4planet_explainer", placement: "magazine_secondary" })}
                   >
-                    VIEW STORY RECORD <span aria-hidden>→</span>
+                    <img src={media.src} alt={media.alt} loading="lazy" />
                   </Link>
+                  <div>
+                    <p className="mag-kicker">{story.lane} · {story.readMins} MIN</p>
+                    <h3><Link to={`/magazine/${story.slug}`}>{story.title}</Link></h3>
+                    <p>{story.dek}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section id="founding-edition" className="mag-edition" aria-label="Founding Edition">
+          <div className="mag-edition-inner">
+            <div className="mag-edition-head">
+              <div>
+                <div className="mag-section-index">03 / WHAT HOLDS</div>
+                <h2>Eight stories being built in public.</h2>
+              </div>
+              <p>A permanent record is not a published article. These editorial objects stay pre-publication until source, rights, responsibility and editorial gates close.</p>
+            </div>
+            <div className="mag-edition-grid">
+              {FOUNDING_EDITION.items.map((item) => (
+                <article key={item.id} className="mag-edition-card">
+                  <p className="mag-kicker">{String(item.order).padStart(2, "0")} / {item.format}</p>
+                  <h3>{item.title}</h3>
+                  <p>{item.summary}</p>
+                  <div className="mono mag-edition-state">
+                    <span>{item.status.replace(/_/g, " ")}</span>
+                    <span>{item.sourceState}</span>
+                  </div>
+                  <Link to={`/magazine/stories/${item.id}`}>OPEN STORY RECORD <span aria-hidden>→</span></Link>
                 </article>
               ))}
             </div>
-            <p style={{ marginTop: 22, maxWidth: 820, fontSize: 13, lineHeight: 1.55, opacity: .68 }}>These are editorial objects in a controlled pre-publication state. A listed story is not a published claim, commissioned contributor or completed article until its source, rights, responsibility and editorial gates are closed.</p>
           </div>
         </section>
 
-        <section style={{ padding: "clamp(64px,9vw,120px) clamp(20px,5vw,72px)", background: "#fff" }}>
-          <div style={{ maxWidth: 1320, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0,.7fr) minmax(0,1.3fr)", gap: "clamp(28px,7vw,110px)" }} className="mag-editorial-principles">
+        <section className="mag-independence">
+          <div className="mag-independence-inner">
             <div>
-              <div className="mag-section-index">03 / INDEPENDENCE</div>
-              <h2 style={{ fontSize: "clamp(34px,5vw,70px)", lineHeight: .98, letterSpacing: "-.045em", marginTop: 22 }}>The conclusion is not for sale.</h2>
+              <div className="mag-section-index">04 / INDEPENDENCE</div>
+              <h2>The conclusion is not for sale.</h2>
             </div>
-            <div style={{ display: "grid", gap: 0 }}>
+            <div className="mag-principle-list">
               {MAGAZINE_EDITORIAL_PRINCIPLES.map((principle, index) => (
-                <div key={principle} style={{ display: "grid", gridTemplateColumns: "42px 1fr", gap: 16, padding: "18px 0", borderTop: "1px solid rgba(0,0,0,.16)" }}>
-                  <span className="mono" style={{ fontSize: 10.5, opacity: .52 }}>{String(index + 1).padStart(2, "0")}</span>
-                  <p style={{ fontSize: "clamp(15px,1.4vw,18px)", lineHeight: 1.5 }}>{principle}</p>
+                <div key={principle} className="mag-principle-row">
+                  <span className="mono">{String(index + 1).padStart(2, "0")}</span>
+                  <p>{principle}</p>
                 </div>
               ))}
             </div>
@@ -107,7 +171,7 @@ export default function Magazine() {
 
         <section className="mag-dark-field">
           <div className="mag-dark-head">
-            <div className="mag-section-index mag-section-index--dark">04 / FIELD NOTES</div>
+            <div className="mag-section-index mag-section-index--dark">05 / FROM THE FIELD</div>
             <h2>Four ways into one living planet.</h2>
           </div>
           <div className="mag-field-grid">
@@ -123,32 +187,6 @@ export default function Magazine() {
                 </article>
               );
             })}
-          </div>
-        </section>
-
-        <section style={{ padding: "clamp(64px,9vw,120px) clamp(20px,5vw,72px)", background: "#fff" }} aria-labelledby="owned-content-title">
-          <div style={{ maxWidth: 1320, margin: "0 auto" }}>
-            <div className="mag-section-index">05 / 4PLANET EXPLAINERS</div>
-            <h2 id="owned-content-title" style={{ fontSize: "clamp(34px,5vw,68px)", lineHeight: 1, letterSpacing: "-.045em", maxWidth: 900, margin: "20px 0 16px" }}>Organisational stories, clearly separated from independent Magazine editorial.</h2>
-            <p style={{ maxWidth: 760, fontSize: 15, lineHeight: 1.6, opacity: .7, marginBottom: 38 }}>These pieces explain 4PLANET’s own system and work. They are not presented as independent editorial reporting.</p>
-            <div className="mag-story-grid" aria-label="4PLANET explainers">
-              {STORIES.map((story, index) => {
-                const media = img(story.image);
-                const featureClass = index === 0 ? " mag-card--wide" : "";
-                return (
-                  <article className={`mag-card${featureClass}`} key={story.slug}>
-                    <Link className="mag-card-media" to={`/magazine/${story.slug}`} aria-label={`Read ${story.title}`} onClick={() => trackEvent("magazine_story_open", { story_slug: story.slug, content_type: "4planet_explainer" })}>
-                      <img src={media.src} alt={media.alt} loading="lazy" />
-                    </Link>
-                    <div className="mag-card-copy">
-                      <p className="mag-kicker">4PLANET EXPLAINER · {story.readMins} MIN</p>
-                      <h3><Link to={`/magazine/${story.slug}`} onClick={() => trackEvent("magazine_story_open", { story_slug: story.slug, content_type: "4planet_explainer" })}>{story.title}</Link></h3>
-                      <p>{story.dek}</p>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
           </div>
         </section>
 
