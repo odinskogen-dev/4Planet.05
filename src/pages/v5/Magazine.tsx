@@ -8,6 +8,7 @@ import { STORIES } from "@/content/stories";
 import { FIELD_NOTES } from "@/content/fieldNotes";
 import { FOUNDING_EDITION, MAGAZINE_EDITORIAL_PRINCIPLES } from "@/content/magazineEditorial";
 import { MAGAZINE_GOLD_BAR, MAGAZINE_LANES } from "@/content/magazineOperating";
+import { FIELD_PARTNER_DISPATCHES } from "@/content/magazineEngine";
 import { img } from "@/content/imageRegistry";
 import { DOMAIN_ACCENT } from "@/styles/tokens";
 import type { DomainKey } from "@/types/content";
@@ -21,7 +22,7 @@ function EditorialNav() {
     <>
       <nav className="mag-topic-nav" aria-label="Magazine sections">
         <span className="mag-topic-label">EXPLORE</span>
-        {MAGAZINE_LANES.map((lane) => <Link key={lane.id} to={lane.primaryPath}>{lane.id}</Link>)}
+        {MAGAZINE_LANES.map((lane) => <a key={lane.id} href={`#lane-${lane.id.toLowerCase()}`}>{lane.id}</a>)}
       </nav>
       <nav className="mag-utility-nav" aria-label="Magazine editorial information">
         <span>4PLANET MAGAZINE</span>
@@ -33,11 +34,40 @@ function EditorialNav() {
   );
 }
 
+function MagazineMaze() {
+  return (
+    <section className="mag-maze" aria-labelledby="mag-maze-title">
+      <div className="mag-maze-head">
+        <div>
+          <div className="mag-section-index mag-section-index--dark">02 / SIX WAYS IN</div>
+          <h2 id="mag-maze-title">One planet. Enter where it matters to you.</h2>
+        </div>
+        <p>The publication stays broad underneath and narrow at the point of entry. Each door has one clear editorial promise; deeper 4PLANET context appears only when it is useful.</p>
+      </div>
+      <div className="mag-maze-grid">
+        {MAGAZINE_LANES.map((lane, index) => (
+          <article
+            id={`lane-${lane.id.toLowerCase()}`}
+            className={`mag-maze-tile mag-maze-tile--${lane.id.toLowerCase()}`}
+            key={lane.id}
+          >
+            <span className="mono">{String(index + 1).padStart(2, "0")}</span>
+            <h3>{lane.id}</h3>
+            <p>{lane.promise}</p>
+            <Link to={lane.primaryPath}>EXPLORE THE CONTEXT <span aria-hidden>→</span></Link>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function Magazine() {
   const hero = img("m4gazineHero");
   const lead = STORIES[2] ?? STORIES[0];
   const leadMedia = img(lead.image);
   const secondary = STORIES.filter((story) => story.slug !== lead.slug).slice(0, 4);
+  const publicDispatches = FIELD_PARTNER_DISPATCHES.filter((dispatch) => dispatch.status === "PUBLIC");
 
   useEffect(() => {
     trackMagazineEntry("home");
@@ -79,10 +109,12 @@ export default function Magazine() {
           </div>
         </section>
 
+        <MagazineMaze />
+
         <section id="read-now" className="mag-read-now" aria-labelledby="read-now-title">
           <div className="mag-read-now-head">
             <div>
-              <div className="mag-section-index">02 / READ NOW</div>
+              <div className="mag-section-index">03 / READ NOW</div>
               <h2 id="read-now-title">Start with one thing worth knowing.</h2>
             </div>
             <p>These pieces are 4PLANET-owned explainers and are visibly separated from future independent Magazine reporting.</p>
@@ -131,7 +163,7 @@ export default function Magazine() {
           <div className="mag-edition-inner">
             <div className="mag-edition-head">
               <div>
-                <div className="mag-section-index">03 / WHAT HOLDS</div>
+                <div className="mag-section-index">04 / WHAT HOLDS</div>
                 <h2>Eight stories being built in public.</h2>
               </div>
               <p>A permanent record is not a published article. These editorial objects stay pre-publication until source, rights, responsibility and editorial gates close.</p>
@@ -156,7 +188,7 @@ export default function Magazine() {
         <section className="mag-independence">
           <div className="mag-independence-inner">
             <div>
-              <div className="mag-section-index">04 / INDEPENDENCE</div>
+              <div className="mag-section-index">05 / INDEPENDENCE</div>
               <h2>The conclusion is not for sale.</h2>
             </div>
             <div className="mag-principle-list">
@@ -170,9 +202,28 @@ export default function Magazine() {
           </div>
         </section>
 
+        {publicDispatches.length > 0 ? (
+          <section className="mag-partner-feed" aria-labelledby="partner-feed-title">
+            <div className="mag-dark-head">
+              <div className="mag-section-index mag-section-index--dark">06 / FIELD PARTNER FEED</div>
+              <h2 id="partner-feed-title">Evidence from people doing the work.</h2>
+            </div>
+            <div className="mag-partner-feed-grid">
+              {publicDispatches.map((dispatch) => (
+                <article key={dispatch.id} className="mag-partner-dispatch">
+                  <p className="mag-kicker mag-kicker--dark">{dispatch.actorName} · {dispatch.editorialDisclosure.replace(/_/g, " ")}</p>
+                  <h3>{dispatch.title}</h3>
+                  <p>{dispatch.summary}</p>
+                  {dispatch.placeLabel ? <span className="mono">{dispatch.placeLabel}</span> : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="mag-dark-field">
           <div className="mag-dark-head">
-            <div className="mag-section-index mag-section-index--dark">05 / FROM THE FIELD</div>
+            <div className="mag-section-index mag-section-index--dark">06 / FROM THE FIELD</div>
             <h2>Four ways into one living planet.</h2>
           </div>
           <div className="mag-field-grid">
