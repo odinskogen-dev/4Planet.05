@@ -33,7 +33,8 @@ test('TEST KING Jaguar restores eight scenes and activates source-derived local 
   for(const label of ['01 / 08 · MEET LIFE','02 / 08 · LIVING WEB','03 / 08 · ECOSYSTEM + ATLAS','04 / 08 · PRESSURE','05 / 08 · UNDERSTANDING','06 / 08 · SOLUTIONS','07 / 08 · ACTORS + ACTION','08 / 08 · PROOF']) assert.ok(runtime.includes(label),`missing journey chapter ${label}`);
   assert.match(runtime,/getContext\('webgl'/);
   assert.match(runtime,/buildForest/);
-  assert.match(runtime,/data-jungle3d='ready'/);
+  assert.match(runtime,/root\.dataset\.jungle3d='ready'/);
+  assert.match(runtime,/root\.dataset\.jaguar3d='ready'/);
   assert.match(runtime,/gl\.drawArrays\(gl\.POINTS/);
   assert.match(runtime,/pointermove/);
   assert.match(runtime,/interaction='look'/);
