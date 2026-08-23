@@ -2,50 +2,64 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** MAGAZINE-GOLD-01 — PRE-PUBLICATION STORY RECORDS  
-**STATUS:** TEST / FOUNDER-DIRECTED 4PLANET MAGAZINE FOUNDATION  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #132  
-**FOUNDER DIRECTION:** 23 AUG 2026 — 4PLANET MAGAZINE is the public name; internal identity remains `CUL-M4GAZINE-01`; Founding Edition = `WHAT HOLDS`. Build the premium reader/publishing system without fabricating publication, contributors, rights clearance or responsible-editor status.  
-**DONOR DECISION:** `ALREADY PRESENT` for the existing `/magazine`, About, Sources & Method, Corrections, editorial principles, analytics and owned-content separation. `ADOPT` the authoritative Founding Edition pre-publication register already encoded in TEST KING. No historical Magazine branch is merged.
+**CHANGE ID:** MAGAZINE-MEGASPRINT-01 — GLOBAL PREMIUM PUBLISHING ENGINE  
+**STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #132 / `CUL-M4GAZINE-01`  
+**FOUNDER DIRECTION:** 23 AUG 2026 — execute the accepted global-media doctrine in one controlled sprint. 4PLANET MAGAZINE must feel like a complete, independent, premium intelligent publication inside ONE INTERFACE while sharing one BRAIN, source, entity, rights and analytics core. No content-farm behaviour, no fake publication, no fake contributor, no fake rights clearance and no SEO indexation of pre-publication story records.  
+**CASE-STUDY DOCTRINE:** National Geographic awe + BBC trust/how-we-know + VICE human access without fragile economics + Vogue taste/curation + TIME franchises/tentpoles + Guardian open reach/direct relationship + unique 4PLANET source-aware Living Planet Intelligence/action/proof graph.  
+**HUMAN CRAFT BAR:** the experience should be credible and desirable to a Snøhetta-level architect, Apple-level product designer, documentary photographer, artist/DJ, serious food/culture person, policymaker, NHH economist and MIT engineer without becoming a collage of references or imitating any named publication.  
+**DONOR DECISION:** `ADOPT SELECTIVELY` from current TEST KING only. Reuse `/magazine`, editorial independence/source/correction system, analytics, Story Engine, image registry and existing organisational explainers. No new parallel CMS, truth store, product branch or app.
 
 ## USER ARRIVES BECAUSE
-They want to understand a real story about the living planet and be able to see what is known, what remains unresolved and whether the piece is actually published.
+They found one compelling story, image, species, place, person, field organisation, innovation or question and want an intelligent, beautiful, trustworthy way to understand more.
 
 ## ONE THING TO UNDERSTAND
-A 4PLANET MAGAZINE story is an editorial object with visible evidence, rights and responsibility gates — not marketing copy and not automatically a published article.
+The story is the front door. The reader never needs to understand the 4PLANET organisation chart. Every page should deliver immediate value, make evidence legible and offer one highly relevant second object only when useful.
 
 ## PRIMARY ACTION
-Open a Founding Edition story record and understand its current editorial state.
+Read / watch / explore one excellent story.
 
 ## SECONDARY DEPTH
-Move into Sources & Method, Corrections and optional 4PLANET context without turning editorial conclusions into product or fundraising calls to action.
+Move naturally into one relevant next story, SPECIES, ATLAS, Ecosystem, Actor, Mission or evidence-bounded action/proof pathway. Share when the object is worth sharing. Return because the publication remains useful and surprising.
 
 ## P1 DOMINANT
-The story title, format and clear `PRE-PUBLICATION STORY RECORD` state.
+Documentary image / visual signal + story premise. The story always wins over chrome, cards, internal taxonomy and organisational explanation.
 
 ## P2 ORIENTATION
-Summary plus source, rights and responsibility state.
+4PLANET MAGAZINE identity, editorial mode/section, reading time, authorship/responsibility and current publication state.
 
 ## P3 ACTION / NEXT
-Return to WHAT HOLDS or inspect Sources & Method.
+Read; then one relevant second object or share. No generic CTA stack and no forced Impact pathway.
 
 ## P4 DEPTH
-Later public article renderer, source/claim/rights records, related editorial coverage and optional non-commercial deeper exploration after real release gates close.
+How We Know, sources, rights/credits, corrections, related entities, deeper 4PLANET context and optional action/proof only where the underlying route is real.
 
 ## WHAT CAN BE REMOVED
-Any implication that a listed Founding Edition concept is a completed article, commissioned contributor, rights-cleared publication or independently edited release. No fake byline, publication date, Article schema or indexing for pre-publication records.
+Generic dashboard chrome, repetitive card walls, decorative gradients/motion, environmental-campaign clichés, generic AI-magazine styling, duplicated product explanations, fake urgency, homepage-first assumptions, random “most popular” recirculation and anything that competes with story hierarchy.
 
 ## WHAT MUST BE REUSED
-Current `FOUNDING_EDITION` registry, `/magazine` system, PublicShell, Seo primitive, current editorial independence/source/correction rules, existing old-content separation and canonical TEST KING routes.
+One repository; `king/test`; PublicShell; 4PLANET Brand OS; existing image registry/rights metadata; Story/Editorial blocks; BRAIN source/claim/entity model; Seo primitive; analytics consent system; existing Magazine transparency routes; existing Story Engine. No second CMS/truth database.
 
-## TRUTH BOUNDARY
-The eight Founding Edition objects remain controlled pre-publication records. A permanent record URL is not publication. Pre-publication records must be `noindex`; they must not emit `Article` structured data. Responsible editor/editorial lead remains open for this Founding Edition package. LIVE KING and production remain unchanged.
+## ARTICLE ENGINE CONTRACT
+One canonical story object must be able to render: slug, title, dek, story mode, section, read time, byline/responsibility, publish/update dates when real, hero/alt/credit/rights, tags/entities, source/trust state, canonical metadata, OG/share object, Article/NewsArticle JSON-LD when eligible, related-object recommendations, pathway, corrections state, analytics and distribution derivatives. Build capacity for 1,000+ stories without setting a volume target.
+
+## SEARCH / DISCOVER CONTRACT
+Every indexable story must have a unique crawlable URL, title, description, canonical, high-resolution image metadata, structured data, internal links and sitemap entry. Generate RSS and News Sitemap foundations. Pre-publication story records stay `noindex` and never emit Article schema. Keep `4planetmagazine.com` development surface noindex until canonical-host decision + SEO gate + Founder release.
+
+## TRUST BOUNDARY
+Editorial judgement remains separate from commercial, partnership and fundraising judgement. Coverage does not imply endorsement. Source records, models, interpretations, delivery and ecological outcomes remain distinct. Corrections remain visible. 4PLANET-owned explainers are visibly labelled as organisational content.
+
+## DISTRIBUTION / LOYALTY CONTRACT
+Distributed discovery → owned relationship. One canonical source pack may render into search/social/video/newsletter/share variants without creating new facts. Measure entry source → engaged read → relevant second object → share/direct return/WATCH or briefing interest → downstream product/Actor/Mission/action. Pageviews alone are not success.
 
 ## MOBILE-FIRST RISK
-390/430 must keep the title, status, source state and rights state readable without horizontal overflow or metadata overwhelming the story.
+390/430 widths must preserve hero focal point, title hierarchy, reading measure, progress, source/trust state and recirculation without overflow or metadata overload. Motion has reduced-motion fallback. Core reading and sharing work with keyboard and assistive technology.
+
+## PERFORMANCE / ACCESSIBILITY
+Image loading, layout stability, reading contrast, keyboard focus, reduced motion and route weight are product quality. Decorative motion must never delay reading. Lazy-load below-fold imagery. Do not introduce an analytics, social or SEO dependency that blocks article rendering.
 
 ## HUMAN SUCCESS
-Within five seconds a reader can answer: what story is being prepared, whether it is published, what evidence/rights work remains, and where to inspect the Magazine method.
+A first-time reader arriving from Google/social/direct can understand the story immediately, recognise 4PLANET MAGAZINE, trust what is known and what is not, enjoy the page without learning the platform, choose one useful next object, share if worthwhile and have a credible reason to return.
 
 ## ACCEPTANCE
-Exact-head typecheck/build/contracts/lint/assets/security plus Magazine route contract and Chromium/WebKit 1440/390/430 rendered proof. No LIVE promotion is authorised by this brief.
+Exact-head typecheck/build/contracts/lint/assets/security + generated SEO artifact verification + Magazine routes + Chromium/WebKit desktop/mobile + reduced-motion/accessibility checks + no dead routes/overflow + correct noindex boundaries + immutable TEST preview. No LIVE KING or public-indexation promotion is authorised by this brief.
