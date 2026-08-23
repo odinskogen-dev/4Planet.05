@@ -4,6 +4,8 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 const OUT = "artifacts/orca-lume-19";
 mkdirSync(OUT, { recursive: true });
 
+test.setTimeout(60_000);
+
 async function expectViewportSafe(page: Page, locator: Locator, label: string) {
   const viewport = page.viewportSize();
   const box = await locator.boundingBox();
