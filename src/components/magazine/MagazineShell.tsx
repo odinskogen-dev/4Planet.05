@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import "@/styles/magazine-world.css";
 import "@/styles/magazine-world-polish.css";
+import "@/styles/magazine-reader-polish.css";
 
 type MagazineTheme = "light" | "dark";
 
