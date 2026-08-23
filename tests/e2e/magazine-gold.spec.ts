@@ -24,13 +24,11 @@ test.describe("4PLANET MAGAZINE Gold surface", () => {
     await expect(page.getByRole("heading", { name: /The story is the front door/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Start with one thing worth knowing/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /The conclusion is not for sale/i })).toBeAttached();
-    await expect(page.getByRole("navigation", { name: "Magazine sections" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "LIFE" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "PLANET" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "HUMAN" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "SOLUTIONS" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "PEOPLE" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "CULTURE" })).toBeVisible();
+    const sections = page.getByRole("navigation", { name: "Magazine sections" });
+    await expect(sections).toBeVisible();
+    for (const section of ["LIFE", "PLANET", "HUMAN", "SOLUTIONS", "PEOPLE", "CULTURE"]) {
+      await expect(sections.getByRole("link", { name: section, exact: true })).toBeVisible();
+    }
 
     expect(await page.locator("h1").count()).toBe(1);
     await expectNoHorizontalOverflow(page);
