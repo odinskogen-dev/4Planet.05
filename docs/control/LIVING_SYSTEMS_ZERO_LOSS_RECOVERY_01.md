@@ -107,12 +107,12 @@ Correct classification:
 15. Old tests/contracts that encode semantics remain donor evidence even when their UI is superseded.
 
 ## Deliberately not claimed
-- Donor review state is current Source Contract verification.
-- Donor observed-outcome examples are 4PLANET implementation outcomes.
-- Current TEST KING has full semantic parity with every historical Living Systems generation.
-- Current source/trust adapter equals a final canonical Evidence/Source Contract.
-- Actor, capital, temporal or global geo-decision intelligence is complete.
-- A visually successful Living Systems page is proof of zero-loss.
+- Donor review state is **not** current Source Contract verification.
+- Donor observed-outcome examples are **not** 4PLANET implementation outcomes.
+- Current TEST KING does **not** yet have proven full semantic parity with every historical Living Systems generation.
+- Current source/trust adapter does **not** equal a final canonical Evidence/Source Contract.
+- Actor, capital, temporal and global geo-decision intelligence are **not** complete.
+- A visually successful Living Systems page is **not** proof of zero-loss.
 
 ## Remaining closure sequence
 P0 — compare historical v0.2 → v1.3 → 1.3.1 → 1.4 → 1.4.1 → 1.4.2 at file/function/semantic level, plus hidden Living Systems donors in broader repos.
