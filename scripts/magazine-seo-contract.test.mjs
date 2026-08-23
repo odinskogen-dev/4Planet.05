@@ -7,10 +7,13 @@ const read = (path) => fs.readFileSync(path, "utf8");
 const magazine = read("src/pages/v5/Magazine.tsx");
 const editorial = read("src/content/magazineEditorial.ts");
 const operating = read("src/content/magazineOperating.ts");
+const engine = read("src/content/magazineEngine.ts");
 const stories = read("src/content/stories.ts");
 const router = read("src/routes/router.tsx");
 const story = read("src/pages/v5/StoryArticle.tsx");
 const storyRecord = read("src/pages/v5/MagazineStoryRecord.tsx");
+const mazeCss = read("src/styles/magazine-maze.css");
+const articleGoldCss = read("src/styles/magazine-article-gold.css");
 const analytics = read("src/analytics/Analytics.tsx");
 const magazineAnalytics = read("src/analytics/MagazineAnalytics.ts");
 const seo = read("src/components/Seo.tsx");
@@ -20,6 +23,7 @@ const headers = read("public/_headers");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-magazine-seo.mjs");
 const contentReader = read("scripts/magazine-content.mjs");
+const qualityGate = read("scripts/magazine-quality-gate.mjs");
 const packageJson = read("package.json");
 
 test("4PLANET MAGAZINE Founding Edition remains truthfully pre-publication", () => {
@@ -50,9 +54,38 @@ test("global media doctrine is encoded without copying a single publisher", () =
   assert.match(operating, /CULTURE/);
 });
 
+test("strict article engine encodes franchises, editorial Gold and partner-feed truth boundaries", () => {
+  assert.match(engine, /FROM THE FIELD/);
+  assert.match(engine, /THE LIVING WORLD/);
+  assert.match(engine, /PLANET EXPLAINED/);
+  assert.match(engine, /WHAT WORKS/);
+  assert.match(engine, /CHOICE/);
+  assert.match(engine, /IMAGE \/ MAP OF THE DAY/);
+  assert.match(engine, /MAGAZINE_ARTICLE_GOLD_GRAMMAR/);
+  assert.match(engine, /MAGAZINE_EDITORIAL_GOLD_DIMENSIONS/);
+  assert.match(engine, /FIELD_PARTNER_INTAKE_CONTRACT/);
+  assert.match(engine, /Never seed this list with invented partner dispatches/i);
+  assert.match(engine, /Optimise templates and distribution against downstream reader behaviour and editorial quality together/i);
+  assert.match(stories, /franchise:/);
+  assert.match(stories, /editorialType:/);
+  assert.match(stories, /byline:/);
+});
+
+test("Magazine homepage uses a functional dark-mode 4PLANET colour maze without card-wall navigation", () => {
+  assert.match(magazine, /SIX WAYS IN/);
+  assert.match(magazine, /One planet\. Enter where it matters to you\./);
+  assert.match(magazine, /mag-maze-tile/);
+  assert.match(mazeCss, /#3ae86f/);
+  assert.match(mazeCss, /#2e2eff/);
+  assert.match(mazeCss, /#ff4d22/);
+  assert.match(mazeCss, /#ff5acd/);
+  assert.match(mazeCss, /prefers-reduced-motion/);
+});
+
 test("editorial and organisational content are visibly separated", () => {
   assert.match(magazine, /4PLANET-owned explainers|4PLANET-owned explanatory/i);
   assert.match(story, /ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL/);
+  assert.match(story, /editorialType/);
 });
 
 test("required magazine transparency routes exist", () => {
@@ -78,13 +111,26 @@ test("public explainers are complete first-touch front doors", () => {
   assert.match(story, /"@type": "Article"/);
   assert.match(story, /HOW WE KNOW/);
   assert.match(story, /ONE USEFUL NEXT STEP/);
+  assert.match(story, /Do one useful thing more/);
   assert.match(story, /Related by subject, not popularity/);
   assert.match(story, /SHARE/);
   assert.match(stories, /relatedStories/);
+  assert.match(stories, /franchiseMatch/);
   assert.match(stories, /pathway:/);
+  assert.match(articleGoldCss, /mag-end-rail/);
   assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
   assert.match(seo, /og:site_name/);
   assert.match(seo, /link\[rel="canonical"\]/);
+});
+
+test("Magazine Gold content gate is fail-closed and mandatory before builds", () => {
+  assert.match(contentReader, /ts\.isCallExpression/);
+  assert.match(qualityGate, /MAGAZINE GOLD FAIL/);
+  assert.match(qualityGate, /every launch article needs one bounded relevant second object/i);
+  assert.match(qualityGate, /explicit recurring franchise\/template identity/i);
+  assert.match(qualityGate, /visible authorship\/byline required/i);
+  assert.match(packageJson, /magazine-quality-gate\.mjs/);
+  assert.match(packageJson, /quality:magazine/);
 });
 
 test("analytics measures reading, relevant second object, share and return without pre-consent tracking", () => {
