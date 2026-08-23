@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ops/4planetmagazine-live-20260823
+  pull_request:
+    branches:
+      - king/test
   workflow_dispatch:
 
 permissions:
