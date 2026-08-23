@@ -2,6 +2,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label } from "@/components/ui";
+import { LivingSystemsIntelligencePanel } from "@/components/living/LivingSystemsIntelligencePanel";
 import { returnHrefFromSearch } from "@/product/productContext";
 import { LIVING_SYSTEM_ANCHORS, findAnchor, EVIDENCE_COLOR, type LivingSystemAnchor, type RelationshipStep } from "@/data/livingSystems";
 import { NotFound } from "@/pages/system";
@@ -67,6 +68,12 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
         {a.steps.map((s, i) => <RelationshipStepBlock key={s.stage} step={s} i={i} accent={a.accent} />)}
       </div>
 
+      {/* Recovered LSI depth is progressive disclosure under the clean journey.
+          Only anchors with recovered intelligence (Amazonia + Pollination/Food)
+          render this panel; Orca/Oslofjord remain unchanged until their donor
+          intelligence is explicitly recovered and source-bounded. */}
+      <LivingSystemsIntelligencePanel anchorSlug={a.slug} accent={a.accent} />
+
       <div className="tw" style={{ marginTop: 36, border: `1px solid ${T.line}` }}>
         {a.handoffs.map((h, i) => (
           <Link key={h.label}
@@ -92,7 +99,6 @@ export function LivingSystems() {
   const location = useLocation();
   const returnHref = returnHrefFromSearch(location.search);
   const orca = findAnchor("orca")!;
-  const others = LIVING_SYSTEM_ANCHORS.filter((a) => a.slug !== "orca");
   const fwd = forwarder(location.search);
   return (
     <PublicShell>
