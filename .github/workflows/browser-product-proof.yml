@@ -85,6 +85,16 @@ jobs:
           --project=mobile-390
           --project=mobile-430
 
+      - name: Run 4PLANET MAGAZINE Gold proof on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/magazine-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=mobile-430
+
       - name: Run desktop product proof and desktop ATLAS interaction
         env:
           BASE_URL: http://127.0.0.1:4173
@@ -106,6 +116,7 @@ jobs:
           npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-desktop --grep "desktop proof|IMPACT direct routes"
           npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-390 --project=webkit-430 --grep "mobile proof|IMPACT direct routes"
           npm run test:e2e -- tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+          npm run test:e2e -- tests/e2e/magazine-gold.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: Founder-gated visual baseline control
         run: node scripts/gold-visual-lock-check.mjs
