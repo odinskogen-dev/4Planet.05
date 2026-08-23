@@ -46,7 +46,8 @@ test.describe("4PLANET MAGAZINE Gold surface", () => {
     await expect(page).toHaveTitle(/WH4LES: the intelligence that travels through whole oceans \| 4PLANET MAGAZINE/i);
     await expect(page.getByRole("heading", { level: 1, name: /WH4LES: the intelligence that travels through whole oceans/i })).toBeVisible();
     await expect(page.getByText("ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL")).toBeVisible();
-    await expect(page.getByRole("button", { name: /SHARE/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "SHARE ↗", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "SHARE THIS STORY ↗", exact: true })).toBeAttached();
     await expect(page.getByRole("heading", { name: /Trust belongs inside the story/i })).toBeAttached();
     await expect(page.getByRole("heading", { name: /Go deeper without starting over/i })).toBeAttached();
     await expect(page.getByRole("link", { name: /Enter WH4LES/i })).toBeAttached();
