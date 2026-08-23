@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    4PLANET_ — GENERIC NODE INTELLIGENCE
 
-   Recovery of the LSI 1.4.2 "any node → one intelligence shape" capability,
+   Recovery of the LSI "any node → one intelligence shape" capability,
    rebuilt as a read-only resolver over the CURRENT shared Planet Model.
    It creates no second graph and mutates no source/claim state.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -20,7 +20,13 @@ import {
   systemById,
   systemsContaining,
 } from "./livingSystems";
-import { decisionContextForAnchor, entityLabel, failureCascade } from "./decisionIntelligence";
+import { decisionContextForAnchor, entityLabel } from "./decisionIntelligence";
+import {
+  DEPENDENCY_EDGES,
+  dependencyCascade as failureCascade,
+  dependsUpon as dependencySupports,
+  directDependents as dependencyDependents,
+} from "./dependencyIntelligence";
 import { claimsForCurrentEntity } from "./trustIntelligence";
 
 export type IntelLink = {
@@ -81,7 +87,8 @@ const link = (id: string, relation?: string): IntelLink => ({
   href: hrefFor(id),
 });
 
-const relationLinks = (rels: typeof RELATIONS, side: "from" | "to") => uniq(rels.map((r) => link(side === "from" ? r.to : r.from, r.type)));
+const relationLinks = (rels: typeof RELATIONS, side: "from" | "to") =>
+  uniq(rels.map((r) => link(side === "from" ? r.to : r.from, r.type)));
 
 function titleFor(id: string): { kind: string; title: string; subtitle?: string } | null {
   const node = nodeById(id);
@@ -94,8 +101,8 @@ function titleFor(id: string): { kind: string; title: string; subtitle?: string 
   if (solution) return { kind: "SOLUTION", title: solution.name };
   const mission = missionById(id);
   if (mission) return { kind: "MISSION", title: mission.name };
-  // Recovered decision intelligence contains service / geo-context nodes that
-  // are deliberately not promoted into the current base registries yet.
+  // Recovered decision intelligence contains service / human-system / geo-context
+  // nodes that are deliberately not promoted into the current base registries yet.
   const recovered = entityLabel(id);
   if (recovered !== id) return { kind: kindFor(id), title: recovered, subtitle: "RECOVERED LSI CONTEXT" };
   return null;
@@ -107,6 +114,8 @@ export function nodeIntelligence(id: string): NodeIntel | null {
 
   const forward = RELATIONS.filter((r) => r.from === id);
   const reverse = RELATIONS.filter((r) => r.to === id);
+  const downstream = dependencyDependents(id).map((n) => link(n.id, "SUPPORTED / EXPOSED DOWNSTREAM"));
+  const upstream = dependencySupports(id).map((n) => link(n.id, "DEPENDS ON / SUPPORTED BY"));
   const systems = systemsContaining(id).map((s) => link(s.id, "CONTAINED IN"));
   const pressures = PRESSURES.filter((p) => p.affects.includes(id)).map((p) => link(p.id, "AFFECTS"));
   const solutions = SOLUTIONS.filter((s) => s.addresses.includes(id)).map((s) => link(s.id, "ADDRESSES"));
@@ -116,8 +125,10 @@ export function nodeIntelligence(id: string): NodeIntel | null {
   }).map((m) => link(m.id, "ACCELERATES"));
 
   const sections: IntelSection[] = [
-    { label: "OUTBOUND RELATIONSHIPS", items: relationLinks(forward, "from") },
-    { label: "DEPENDS ON / INBOUND", items: relationLinks(reverse, "to") },
+    { label: "DOWNSTREAM DEPENDENTS", items: uniq(downstream) },
+    { label: "DEPENDS ON / SUPPORTED BY", items: uniq(upstream) },
+    { label: "OUTBOUND CONTEXT RELATIONSHIPS", items: relationLinks(forward, "from") },
+    { label: "INBOUND CONTEXT RELATIONSHIPS", items: relationLinks(reverse, "to") },
     { label: "LIVING SYSTEMS", items: uniq(systems) },
     { label: "PRESSURES", items: uniq(pressures) },
     { label: "SOLUTIONS", items: uniq(solutions) },
@@ -137,7 +148,8 @@ export function nodeIntelligence(id: string): NodeIntel | null {
     claimCount: claimsForCurrentEntity(id).length,
     cascade: failureCascade(id),
     decisionContext,
-    truthBoundary: "Node Intelligence is a read-only traversal of the current shared Planet Model plus explicitly labelled recovered LSI decision context. Connections inherit their source/review boundaries; presence here is not an automated recommendation.",
+    truthBoundary:
+      "Node Intelligence is a read-only traversal of the current shared Planet Model plus explicitly labelled recovered LSI dependency/decision context. DEPENDS_ON is traversed in support direction and pressure AFFECTS edges may start consequence cascades. Connections inherit their source/review boundaries; presence here is not an automated recommendation.",
   };
 }
 
@@ -148,6 +160,12 @@ export function currentNodeIntelligenceInventory() {
   for (const p of PRESSURES) ids.add(p.id);
   for (const s of SOLUTIONS) ids.add(s.id);
   for (const m of MISSIONS) ids.add(m.id);
+  // Include bounded recovered dependency endpoints so ecosystem services and
+  // human-system nodes recovered from LSI are addressable by the same resolver.
+  for (const edge of DEPENDENCY_EDGES) {
+    ids.add(edge.from);
+    ids.add(edge.to);
+  }
   const nodes = Array.from(ids).map((id) => nodeIntelligence(id)).filter(Boolean);
   return {
     addressableNodes: nodes.length,

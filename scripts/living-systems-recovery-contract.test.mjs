@@ -4,12 +4,13 @@ import fs from "node:fs";
 
 const read = (p) => fs.readFileSync(p, "utf8");
 const intel = read("src/planet/decisionIntelligence.ts");
+const dependency = read("src/planet/dependencyIntelligence.ts");
 const trust = read("src/planet/trustIntelligence.ts");
 const nodeIntel = read("src/planet/nodeIntelligence.ts");
 const panel = read("src/components/living/LivingSystemsIntelligencePanel.tsx");
 const page = read("src/pages/v5/LivingSystems.tsx");
 
-test("LSI 1.4.2 deep-intelligence primitives are physically recovered", () => {
+test("LSI deep-intelligence primitives are physically recovered", () => {
   assert.match(intel, /SOLUTION_PATHWAYS/);
   assert.match(intel, /DECISION_SIGNALS/);
   assert.match(intel, /LEARNING_RECORDS/);
@@ -47,11 +48,24 @@ test("claim trust and data-quality intelligence are recovered without upgrading 
   }
 });
 
-test("generic node intelligence is restored on the current shared Planet Model", () => {
-  assert.match(nodeIntel, /nodeIntelligence/);
-  assert.match(nodeIntel, /currentNodeIntelligenceInventory/);
-  assert.match(nodeIntel, /OUTBOUND RELATIONSHIPS/);
-  assert.match(nodeIntel, /DEPENDS ON \/ INBOUND/);
+test("generic dependency traversal restores historical direction semantics without a second graph", () => {
+  assert.match(dependency, /relation\.type === "DEPENDS_ON"/);
+  assert.match(dependency, /from: relation\.to/);
+  assert.match(dependency, /to: relation\.from/);
+  assert.match(dependency, /relation\.type === "AFFECTS"/);
+  assert.match(dependency, /PRESSURE_AFFECTS/);
+  assert.match(dependency, /RECOVERED_SUPPORT_EDGES/);
+  assert.match(dependency, /dependencyCascade/);
+  assert.match(dependency, /directDependents/);
+  assert.match(dependency, /dependsUpon/);
+  assert.match(dependency, /creates no second graph/i);
+});
+
+test("generic Node Intelligence consumes the recovered dependency traversal", () => {
+  assert.match(nodeIntel, /dependencyCascade as failureCascade/);
+  assert.match(nodeIntel, /DOWNSTREAM DEPENDENTS/);
+  assert.match(nodeIntel, /DEPENDS ON \/ SUPPORTED BY/);
+  assert.match(nodeIntel, /DEPENDENCY_EDGES/);
   assert.match(nodeIntel, /read-only traversal of the current shared Planet Model/i);
 });
 
