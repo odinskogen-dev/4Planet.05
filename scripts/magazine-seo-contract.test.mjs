@@ -115,6 +115,6 @@ test("search foundation generates sitemap, News sitemap, RSS and static route me
   assert.match(prerender, /application\/ld\+json/);
   assert.match(prerender, /Article/);
   assert.match(prerender, /canonical/);
-  assert.match(prerender, /magazine\/${story\.slug}/);
+  assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every public story route");
   assert.match(packageJson, /prerender-magazine-seo\.mjs/);
 });
