@@ -1,13 +1,17 @@
 import fs from "node:fs";
-import { readFoundingEdition, readImages, readStories } from "./magazine-content.mjs";
+import { readFoundingEdition, readImages, readSignals, readStories } from "./magazine-content.mjs";
 
 const stories = readStories();
+const signals = readSignals();
 const images = readImages();
 const edition = readFoundingEdition();
 const homepage = fs.readFileSync("src/pages/v5/Magazine.tsx", "utf8");
 const article = fs.readFileSync("src/pages/v5/StoryArticle.tsx", "utf8");
 const shell = fs.readFileSync("src/components/magazine/MagazineShell.tsx", "utf8");
 const operating = fs.readFileSync("src/content/magazineOperating.ts", "utf8");
+const experiences = fs.readFileSync("src/content/magazineExperience.ts", "utf8");
+const reader = fs.readFileSync("src/content/magazineReader.ts", "utf8");
+const router = fs.readFileSync("src/routes/router.tsx", "utf8");
 const worldCss = fs.readFileSync("src/styles/magazine-world.css", "utf8");
 
 const failures = [];
@@ -26,7 +30,7 @@ const validTopics = ["NATURE", "OCEAN", "CLIMATE", "CITIES", "FOOD", "INNOVATION
 for (const story of stories) {
   const scope = `story:${story.slug || "<missing>"}`;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(story.slug || "")) addFailure(scope, "slug must be stable kebab-case");
-  if (slugSet.has(story.slug)) addFailure(scope, "duplicate slug");
+  if (slugSet.has(story.slug)) addFailure(scope, "duplicate slug across Magazine content");
   slugSet.add(story.slug);
 
   if (typeof story.title !== "string" || story.title.length < 16) addFailure(scope, "headline is too thin for a canonical article");
@@ -82,6 +86,24 @@ for (const story of stories) {
   }
 }
 
+for (const signal of signals) {
+  const scope = `signal:${signal.slug || "<missing>"}`;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(signal.slug || "")) addFailure(scope, "slug must be stable kebab-case");
+  if (slugSet.has(signal.slug)) addFailure(scope, "duplicate slug across Magazine content");
+  slugSet.add(signal.slug);
+  if (!signal.title || String(signal.title).length < 20) addFailure(scope, "Planet Signal needs a real editorial headline");
+  if (/^[A-Z0-9_]{3,}:\s/.test(signal.title || "")) addFailure(scope, "Planet Signal headline must not expose internal product codes");
+  if (!signal.dek || String(signal.dek).length < 70) addFailure(scope, "Planet Signal needs a useful dek");
+  if (!signal.signal || String(signal.signal).length < 100) addFailure(scope, "Planet Signal observation is too thin");
+  if (!signal.whyItMatters || String(signal.whyItMatters).length < 100) addFailure(scope, "Planet Signal needs a substantive why-it-matters explanation");
+  if (!signal.boundary || String(signal.boundary).length < 100) addFailure(scope, "Planet Signal must carry an explicit anti-overclaim boundary");
+  if (!signal.publisher || String(signal.publisher).length < 3) addFailure(scope, "Planet Signal source publisher required");
+  if (!/^https:\/\//.test(signal.sourceUrl || "")) addFailure(scope, "Planet Signal source must be an exact HTTPS URL");
+  if (!signal.publishedAt || !signal.asOf) addFailure(scope, "Planet Signal needs source/publication timing and 4PLANET as-of date");
+  if (!Array.isArray(signal.topics) || signal.topics.length < 3) addFailure(scope, "Planet Signal needs at least three useful topics");
+  for (const topic of signal.topics || []) if (!validTopics.includes(topic)) addFailure(scope, `unknown topic ${topic}`);
+}
+
 const orderSet = new Set();
 for (const item of edition.items || []) {
   const scope = `edition:${item.id || "<missing>"}`;
@@ -98,12 +120,18 @@ for (const item of edition.items || []) {
 }
 
 if (stories.length < 10) addFailure("magazine", "operating front page needs at least ten substantial story objects before Gold review");
+if (signals.length < 10) addFailure("magazine", "operating magazine needs at least ten source-bounded fast Planet Signals before World-Class review");
+if (stories.length + signals.length < 24) addFailure("magazine", "World-Class review needs at least 24 real editorial objects across deep stories and fast signals");
 if (stories.filter((story) => story.editorialType === "SOURCE_REPORTED_EDITORIAL").length < 5) addFailure("magazine", "front page needs at least five real source-reported editorial stories");
 if (!/MagazineShell/.test(homepage) || !/MagazineShell/.test(article)) addFailure("magazine-world", "homepage and article must use the dedicated Magazine shell");
 if (/PublicShell/.test(homepage) || /PublicShell/.test(article)) addFailure("magazine-world", "Magazine core must not inherit the main 4PLANET shell/footer");
 if (!/4planet-magazine-theme/.test(shell) || !/aria-pressed/.test(shell)) addFailure("magazine-world", "accessible persistent light/dark control required");
 if (!/mag-world-footer/.test(shell)) addFailure("magazine-world", "dedicated Magazine footer required");
+if (!/\/magazine\/search/.test(shell) || !/\/magazine\/saved/.test(shell) || !/\/magazine\/archive/.test(shell)) addFailure("magazine-world", "reader utility routes must be exposed from the Magazine shell");
 if (!/MAGAZINE_TOPICS/.test(operating) || (operating.match(/id: \"[A-Z]+\"/g) || []).length < 10) addFailure("magazine-world", "deep topic taxonomy required");
+if (!/ARTICLE/.test(experiences) || !/VISUAL_ESSAY/.test(experiences) || !/INTELLIGENCE_STORY/.test(experiences) || !/JOURNEY_FEATURE/.test(experiences)) addFailure("magazine-world", "all four premium story experience contracts are required");
+if (!/SAVED_KEY/.test(reader) || !/RECENT_KEY/.test(reader) || !/RESUME_KEY/.test(reader)) addFailure("magazine-world", "local save/recent/resume reader product contract required");
+for (const route of ["/magazine/search", "/magazine/saved", "/magazine/archive", "/magazine/signals/:slug"]) if (!router.includes(`path=\"${route}\"`)) addFailure("magazine-world", `missing reader/editorial route ${route}`);
 if (/Math\.random\(/.test(homepage) || /Math\.random\(/.test(worldCss)) addFailure("magazine-world", "living mosaic must be deterministic; random layout shift is not allowed");
 if (!/data-mag-theme/.test(worldCss) || !/prefers-reduced-motion/.test(worldCss)) addFailure("magazine-world", "theme variables + reduced-motion fallback required");
 if ((edition.items || []).length < 5) addWarning("magazine", "Founding Edition has fewer than five controlled story records");
@@ -114,4 +142,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`MAGAZINE GOLD CONTENT PASS: ${stories.length} substantial stories; ${stories.filter((story) => story.editorialType === "SOURCE_REPORTED_EDITORIAL").length} source-reported; ${(edition.items || []).length} controlled Founding Edition records; ${warnings.length} warnings.`);
+console.log(`MAGAZINE WORLD-CLASS CONTENT PASS: ${stories.length} substantial stories + ${signals.length} source-bounded signals = ${stories.length + signals.length} editorial objects; ${stories.filter((story) => story.editorialType === "SOURCE_REPORTED_EDITORIAL").length} source-reported long-form stories; ${(edition.items || []).length} controlled pre-publication records; ${warnings.length} warnings.`);
