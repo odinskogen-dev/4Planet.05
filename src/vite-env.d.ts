@@ -7,5 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_FOUNDING_MEMBER_MONTHLY_DISPLAY?: string;
   readonly VITE_FOUNDING_MEMBER_ANNUAL_DISPLAY?: string;
   readonly VITE_LIVING_SYSTEMS_URL?: string;
+  readonly VITE_GA_MEASUREMENT_ID?: string;
+  readonly VITE_ANALYTICS_DOMAINS?: string;
+  readonly VITE_PUBLIC_SITE_ORIGIN?: string;
 }
 interface ImportMeta { readonly env: ImportMetaEnv; }
