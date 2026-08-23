@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>4PLANET LUME PROJECT — PROTO 01</title>
+  <link rel="stylesheet" href="./lume-project-v01.css" />
+</head>
+<body>
+  <main id="lume-project" class="lume-project" data-mode="presenter" data-scene="0">
+    <section class="lume-stage" aria-live="polite" aria-label="4PLANET LUME projection stage">
+      <div class="lume-world" aria-hidden="true"></div>
+      <div class="lume-scan" aria-hidden="true"></div>
+      <div class="lume-grid" aria-hidden="true"></div>
+
+      <header class="lume-header">
+        <a class="lume-brand" href="/" aria-label="4PLANET home">4PLANET_</a>
+        <div class="lume-mode-label">LUME / PROJECT</div>
+        <div class="lume-stage-counter" id="stage-counter">01 / 06</div>
+      </header>
+
+      <div class="lume-scene" id="scene-root"></div>
+
+      <footer class="lume-truthbar">
+        <span id="truth-state">KNOWN / INTERPRETED / UNKNOWN STAY SEPARATE</span>
+        <span id="truth-boundary">NOT LIVE TRACKING · PROJECTION PROTOTYPE</span>
+      </footer>
+
+      <div class="lume-calibration" aria-hidden="true">
+        <div class="calibration-safe"></div>
+        <div class="calibration-cross calibration-cross--a"></div>
+        <div class="calibration-cross calibration-cross--b"></div>
+        <div class="calibration-cross calibration-cross--c"></div>
+        <div class="calibration-cross calibration-cross--d"></div>
+        <div class="calibration-copy">
+          <strong>PROJECTION CALIBRATION</strong>
+          <span>ALIGN FRAME · FOCUS · BRIGHTNESS · SAFE AREA</span>
+        </div>
+      </div>
+    </section>
+
+    <nav class="lume-controller" aria-label="LUME presenter controls">
+      <div class="controller-meta">
+        <span class="controller-kicker">PHYSICAL INTERFACE PROTO 01</span>
+        <strong id="controller-title">MEET LIFE</strong>
+      </div>
+      <div class="controller-actions">
+        <button type="button" data-action="prev" aria-label="Previous scene">←</button>
+        <button type="button" data-action="next" aria-label="Next scene">→</button>
+        <button type="button" data-action="mode" aria-label="Toggle wall and presenter mode">WALL</button>
+        <button type="button" data-action="calibrate" aria-label="Toggle projection calibration">CAL</button>
+        <button type="button" data-action="fullscreen" aria-label="Enter fullscreen">FULL</button>
+      </div>
+      <div class="controller-help">← / → scenes · P wall · C calibrate · F fullscreen</div>
+    </nav>
+  </main>
+  <script src="./lume-project-v01.js"></script>
+</body>
+</html>
