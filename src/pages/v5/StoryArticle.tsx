@@ -10,6 +10,7 @@ import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { Editorial } from "@/components/Editorial";
 import { storyBySlug, relatedStories } from "@/content/stories";
 import { MAGAZINE_STORY_MODES } from "@/content/magazineOperating";
+import { MAGAZINE_ARTICLE_TEMPLATES } from "@/content/magazineEngine";
 import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-article.css";
@@ -31,7 +32,7 @@ export function StoryArticle() {
     const engagedTimer = window.setTimeout(() => {
       trackEvent("magazine_engaged_read", {
         story_slug: s.slug,
-        content_type: "4planet_explainer",
+        content_type: s.editorialType.toLowerCase(),
         engaged_seconds: 30,
       });
     }, 30_000);
@@ -46,7 +47,7 @@ export function StoryArticle() {
           seen.add(threshold);
           trackEvent("magazine_read_depth", {
             story_slug: s.slug,
-            content_type: "4planet_explainer",
+            content_type: s.editorialType.toLowerCase(),
             depth_percent: threshold,
           });
         }
@@ -56,7 +57,7 @@ export function StoryArticle() {
         completed = true;
         trackEvent("magazine_read_complete", {
           story_slug: s.slug,
-          content_type: "4planet_explainer",
+          content_type: s.editorialType.toLowerCase(),
         });
       }
     };
@@ -72,8 +73,10 @@ export function StoryArticle() {
 
   if (!s) return <NotFound />;
   const more = relatedStories(s, 3);
+  const nextStory = more[0];
   const media = img(s.image);
   const mode = MAGAZINE_STORY_MODES[s.mode];
+  const template = MAGAZINE_ARTICLE_TEMPLATES.find((candidate) => candidate.id === s.franchise);
 
   const shareStory = async () => {
     const url = window.location.href;
@@ -112,7 +115,7 @@ export function StoryArticle() {
           description: s.dek,
           image: [imageUrl],
           mainEntityOfPage: canonicalUrl,
-          author: { "@type": "Organization", name: "4PLANET_" },
+          author: { "@type": "Organization", name: s.byline },
           publisher: { "@type": "Organization", name: "4PLANET_", url: new URL("/", canonicalUrl).toString() },
           isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: new URL("/magazine", canonicalUrl).toString() },
           articleSection: s.lane,
@@ -128,21 +131,28 @@ export function StoryArticle() {
           <Reveal>
             <div className="mag-article-identity">
               <Link to="/magazine" className="mono link">4PLANET MAGAZINE</Link>
-              <span className="mono">{mode.label} · {s.lane} · {s.readMins} MIN</span>
+              <span className="mono">{template?.label ?? s.franchise.replace(/_/g, " ")} · {mode.label} · {s.readMins} MIN</span>
             </div>
             <h1 style={display}>{s.title}</h1>
             <p className="mag-article-dek">{s.dek}</p>
+            <div className="mag-byline-row">
+              <div>
+                <span className="mono">BY</span>
+                <strong>{s.byline}</strong>
+              </div>
+              <span className="mono">{s.editorialType.replace(/_/g, " ")}</span>
+            </div>
             <div className="mag-article-meta-row">
-              <span className="mono">4PLANET EXPLAINER</span>
-              <span className="mono">ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL</span>
+              <span className="mono">{s.lane}</span>
+              <span className="mono">{s.editorialType === "ORGANISATIONAL_EXPLAINER" ? "ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL" : "EDITORIAL CONTENT"}</span>
               <button type="button" className="mag-share-button" onClick={shareStory}>SHARE ↗</button>
             </div>
           </Reveal>
         </header>
 
-        <CinematicImage meta={media} height="min(78vh, 860px)" caption={`${media.credit ? `${media.credit} · ` : ""}${media.alt}`} accent={T.blue} />
+        <CinematicImage meta={media} height="min(82vh, 920px)" caption={`${media.credit ? `${media.credit} · ` : ""}${media.alt}`} accent={T.blue} />
 
-        <Section pad="clamp(48px,7vw,104px)">
+        <Section pad="clamp(54px,8vw,118px)">
           <div className="mag-article-reading-column">
             <Editorial blocks={s.blocks} />
           </div>
@@ -155,7 +165,8 @@ export function StoryArticle() {
               <h2 id="how-we-know-title">Trust belongs inside the story.</h2>
             </div>
             <div className="mag-trust-copy">
-              <p>This page is 4PLANET-owned explanatory content. It is separated from independent Magazine editorial. Material public claims should remain traceable to source objects, and corrections stay visible rather than disappearing into silent edits.</p>
+              <p>{template?.trustRule ?? "Material public claims should remain traceable to source objects, and corrections stay visible rather than disappearing into silent edits."}</p>
+              <p className="mag-trust-context">This page is {s.editorialType === "ORGANISATIONAL_EXPLAINER" ? "4PLANET-owned explanatory content" : "Magazine editorial content"}. Its content type remains visible so product, partner and independent editorial claims do not borrow credibility from one another.</p>
               <div className="mag-trust-links">
                 <Link to="/magazine/sources">SOURCES & METHOD →</Link>
                 <Link to="/magazine/corrections">CORRECTIONS →</Link>
@@ -169,6 +180,7 @@ export function StoryArticle() {
             <div className="mag-second-object-inner">
               <p className="mono">ONE USEFUL NEXT STEP</p>
               <h2 id="second-object-title">Go deeper without starting over.</h2>
+              <p className="mag-second-object-note">{template?.secondObjectRule}</p>
               <Link
                 to={s.pathway.to}
                 onClick={() => trackMagazineSecondObject(s.slug, s.pathway!.to, s.pathway!.kind)}
@@ -178,6 +190,26 @@ export function StoryArticle() {
             </div>
           </section>
         ) : null}
+
+        <section className="mag-end-rail" aria-label="Article actions">
+          <div className="mag-end-rail-inner">
+            <div>
+              <span className="mono">FINISHED THIS STORY?</span>
+              <strong>Do one useful thing more.</strong>
+            </div>
+            <div className="mag-end-actions">
+              <button type="button" onClick={shareStory}>SHARE THIS STORY ↗</button>
+              {nextStory ? (
+                <Link
+                  to={`/magazine/${nextStory.slug}`}
+                  onClick={() => trackMagazineSecondObject(s.slug, `/magazine/${nextStory.slug}`, "related_story")}
+                >
+                  NEXT: {nextStory.title} →
+                </Link>
+              ) : <Link to="/magazine">BACK TO MAGAZINE →</Link>}
+            </div>
+          </div>
+        </section>
 
         <section className="mag-related" aria-labelledby="related-title">
           <div className="mag-related-head">
@@ -192,14 +224,14 @@ export function StoryArticle() {
                   key={m.slug}
                   to={`/magazine/${m.slug}`}
                   onClick={() => {
-                    trackEvent("magazine_story_open", { story_slug: m.slug, content_type: "4planet_explainer", source_story: s.slug });
+                    trackEvent("magazine_story_open", { story_slug: m.slug, content_type: m.editorialType.toLowerCase(), source_story: s.slug });
                     trackMagazineSecondObject(s.slug, `/magazine/${m.slug}`, "related_story");
                   }}
                   className="mag-related-card"
                 >
                   <div className="mag-related-media"><img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" /></div>
                   <div className="mag-related-copy">
-                    <span className="mono">{m.lane} · {m.readMins} MIN</span>
+                    <span className="mono">{m.franchise.replace(/_/g, " ")} · {m.readMins} MIN</span>
                     <strong>{m.title}</strong>
                     <p>{m.dek}</p>
                   </div>
