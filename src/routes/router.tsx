@@ -27,20 +27,16 @@ const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module)
 const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
 const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineCorrections })));
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
+const MagazineSearch = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSearch })));
+const MagazineSaved = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSaved })));
+const MagazineArchive = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineArchive })));
+const MagazineSignalPage = lazy(() => import("@/pages/v5/MagazineSignal").then((module) => ({ default: module.MagazineSignalPage })));
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
+const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
+const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -98,6 +94,10 @@ export function AppRoutes() {
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
       <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
+      <Route path="/magazine/search" element={<Suspense fallback={MagazineFallback}><MagazineSearch /></Suspense>} />
+      <Route path="/magazine/saved" element={<Suspense fallback={MagazineFallback}><MagazineSaved /></Suspense>} />
+      <Route path="/magazine/archive" element={<Suspense fallback={MagazineFallback}><MagazineArchive /></Suspense>} />
+      <Route path="/magazine/signals/:slug" element={<Suspense fallback={MagazineFallback}><MagazineSignalPage /></Suspense>} />
       <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
       <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />
