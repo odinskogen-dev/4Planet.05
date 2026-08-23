@@ -48,7 +48,8 @@ test("analytics is consent-first and advertising signals stay disabled", () => {
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
   assert.match(analytics, /VITE_ANALYTICS_DOMAINS/);
-  assert.match(privacy, /Optional usage analytics/);
+  assert.match(privacy, /Privacy-first site measurement/);
+  assert.match(privacy, /Optional product analytics/);
 });
 
 test("sitemap generator includes magazine index, transparency and public story routes", () => {
