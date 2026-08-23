@@ -67,7 +67,7 @@ export default function Magazine() {
             <div className="mag-section-index">02 / WHAT HOLDS — WORKING TABLE OF CONTENTS</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,280px),1fr))", gap: 1, background: "rgba(0,0,0,.15)", marginTop: 32 }}>
               {FOUNDING_EDITION.items.map((item) => (
-                <article key={item.id} style={{ background: "#f4f3ef", padding: "clamp(24px,3vw,38px)", minHeight: 320, display: "flex", flexDirection: "column" }}>
+                <article key={item.id} style={{ background: "#f4f3ef", padding: "clamp(24px,3vw,38px)", minHeight: 340, display: "flex", flexDirection: "column" }}>
                   <p className="mag-kicker">{String(item.order).padStart(2, "0")} / {item.format}</p>
                   <h3 style={{ fontSize: "clamp(24px,2.4vw,36px)", lineHeight: 1.03, letterSpacing: "-.035em", margin: "22px 0 16px" }}>{item.title}</h3>
                   <p style={{ fontSize: 15, lineHeight: 1.58, maxWidth: 520 }}>{item.summary}</p>
@@ -75,6 +75,12 @@ export default function Magazine() {
                     <div>{item.status.replace(/_/g, " ")}</div>
                     <div>{item.sourceState}</div>
                   </div>
+                  <Link
+                    to={`/magazine/stories/${item.id}`}
+                    style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,.14)", color: "#080808", textDecoration: "none", font: "600 10.5px/1.2 'Fragment Mono', monospace", letterSpacing: ".1em" }}
+                  >
+                    VIEW STORY RECORD <span aria-hidden>→</span>
+                  </Link>
                 </article>
               ))}
             </div>
