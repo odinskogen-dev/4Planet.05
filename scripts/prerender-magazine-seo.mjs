@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readStories, readImages, absoluteUrl } from "./magazine-content.mjs";
+import { readStories, readImages, readFoundingEdition, absoluteUrl } from "./magazine-content.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -11,6 +11,7 @@ const baseHtml = fs.readFileSync(indexPath, "utf8");
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const stories = readStories();
 const images = readImages();
+const foundingEdition = readFoundingEdition();
 
 function escapeHtml(value) {
   return String(value)
@@ -32,7 +33,13 @@ function stripManagedHead(html) {
 }
 
 function headMarkup(meta) {
-  const json = JSON.stringify(meta.jsonLd).replaceAll("<", "\\u003c");
+  const json = JSON.stringify(meta.jsonLd || {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: meta.title,
+    description: meta.description,
+    url: meta.canonical,
+  }).replaceAll("<", "\\u003c");
   return [
     `<title>${escapeHtml(meta.title)}</title>`,
     `<meta name="description" content="${escapeHtml(meta.description)}">`,
@@ -67,12 +74,13 @@ function writeRoute(route, meta) {
 
 const magazineImage = images.m4gazineHero?.src || "/og.png";
 const magazineAlt = images.m4gazineHero?.alt || "4PLANET MAGAZINE";
+const absoluteMagazineImage = absoluteUrl(origin, magazineImage);
 const magazineCanonical = absoluteUrl(origin, "/magazine");
 writeRoute("/magazine", {
   title: "4PLANET MAGAZINE — What Holds",
   description: "Stories about the living planet — species, places, people, systems, solutions, innovation and culture.",
   canonical: magazineCanonical,
-  image: absoluteUrl(origin, magazineImage),
+  image: absoluteMagazineImage,
   imageAlt: magazineAlt,
   type: "website",
   jsonLd: {
@@ -84,6 +92,41 @@ writeRoute("/magazine", {
     isPartOf: { "@type": "WebSite", name: "4PLANET_", url: absoluteUrl(origin, "/") },
   },
 });
+
+const informationPages = [
+  {
+    route: "/magazine/about",
+    title: "About 4PLANET MAGAZINE",
+    description: "The editorial purpose, independence rules and current publication state of 4PLANET MAGAZINE.",
+  },
+  {
+    route: "/magazine/sources",
+    title: "Sources & Method — 4PLANET MAGAZINE",
+    description: "How 4PLANET MAGAZINE handles sources, claims, uncertainty, rights and editorial release.",
+  },
+  {
+    route: "/magazine/corrections",
+    title: "Corrections — 4PLANET MAGAZINE",
+    description: "The 4PLANET MAGAZINE corrections and transparency desk.",
+  },
+];
+for (const page of informationPages) {
+  const canonical = absoluteUrl(origin, page.route);
+  writeRoute(page.route, {
+    ...page,
+    canonical,
+    image: absoluteMagazineImage,
+    imageAlt: magazineAlt,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: page.title,
+      description: page.description,
+      url: canonical,
+      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
+    },
+  });
+}
 
 for (const story of stories) {
   const imageMeta = images[story.image] || {};
@@ -120,4 +163,27 @@ for (const story of stories) {
   });
 }
 
-console.log(`Prerendered Magazine metadata for ${stories.length + 1} routes at ${origin}`);
+for (const record of foundingEdition.items) {
+  const route = `/magazine/stories/${record.id}`;
+  const canonical = absoluteUrl(origin, route);
+  writeRoute(route, {
+    title: `${record.title} — Pre-publication record | 4PLANET MAGAZINE`,
+    description: record.summary,
+    canonical,
+    image: absoluteMagazineImage,
+    imageAlt: magazineAlt,
+    robots: "noindex,follow,noarchive,max-image-preview:large",
+    type: "website",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: record.title,
+      description: record.summary,
+      url: canonical,
+      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — Founding Edition working records", url: magazineCanonical },
+      additionalType: "https://schema.org/DigitalDocument",
+    },
+  });
+}
+
+console.log(`Prerendered Magazine metadata for ${stories.length + informationPages.length + foundingEdition.items.length + 1} routes at ${origin}`);
