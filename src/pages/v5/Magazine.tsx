@@ -14,6 +14,7 @@ import { DOMAIN_ACCENT } from "@/styles/tokens";
 import type { DomainKey } from "@/types/content";
 import "@/styles/magazine.css";
 import "@/styles/magazine-home.css";
+import "@/styles/magazine-maze.css";
 
 const DOMAIN_ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 
@@ -205,7 +206,7 @@ export default function Magazine() {
         {publicDispatches.length > 0 ? (
           <section className="mag-partner-feed" aria-labelledby="partner-feed-title">
             <div className="mag-dark-head">
-              <div className="mag-section-index mag-section-index--dark">06 / FIELD PARTNER FEED</div>
+              <div className="mag-section-index mag-section-index--dark">FIELD PARTNER FEED</div>
               <h2 id="partner-feed-title">Evidence from people doing the work.</h2>
             </div>
             <div className="mag-partner-feed-grid">
