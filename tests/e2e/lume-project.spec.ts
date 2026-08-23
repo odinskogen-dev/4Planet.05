@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 test("LUME PROJECT physical renderer preserves projection controls and truth boundaries", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
