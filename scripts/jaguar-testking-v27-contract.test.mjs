@@ -17,7 +17,7 @@ test('TEST KING Jaguar 33 uses an actual Ear-derived triangle surface, physical 
   assert.match(runtime,/ear-rodriguez-v33-surface/);assert.match(runtime,/pointermove/);assert.match(runtime,/interaction='look'/);assert.match(runtime,/interaction='move'/);
   for(const label of ['01 / 08 · MEET LIFE','02 / 08 · LIVING WEB','03 / 08 · ECOSYSTEM + ATLAS','04 / 08 · PRESSURE','05 / 08 · UNDERSTANDING','06 / 08 · SOLUTIONS','07 / 08 · ACTORS + ACTION','08 / 08 · PROOF']) assert.ok(runtime.includes(label),`missing ${label}`);
   assert.match(css,/lume-grid--floor/);assert.match(css,/lume-grid--back/);assert.match(css,/lume-intel--species/);assert.match(css,/room--canopy/);assert.match(css,/ground-contact/);assert.match(css,/@media\(max-width:760px\)/);
-  assert.match(html,/PANTHERA ONCA/);assert.match(html,/EAR\.RODRIGUEZ · CC BY 4\.0 · PRESENTATION 3D · NOT LIVE ANIMAL DATA/);
+  assert.match(html,/PANTHERA ONCA/);assert.match(html,/EAR\.RODRIGUEZ · CC BY 4\.0 · DERIVED PRESENTATION 3D · NOT LIVE ANIMAL DATA/);
   assert.match(bridge,/91c61c329d2a4668816f81f08dfcd492/);assert.match(bridge,/viewerready/);assert.match(bridge,/getSceneGraph/);assert.match(bridge,/jaguar3dBridge='verified'/);assert.match(bridge,/CONTROLLED SPECIES MEDIA/);assert.match(bridge,/viewer-ready-timeout/);assert.match(bridge,/source-baked/);
   assert.doesNotMatch(html,/ORIGINAL ANIMATED MASTER SECURED/);
 });
