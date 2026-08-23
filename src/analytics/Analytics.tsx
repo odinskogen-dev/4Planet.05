@@ -44,9 +44,9 @@ function installGoogleTag(id: string, domains: string[]) {
   if (!id || document.getElementById("4planet-ga4")) return;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  };
+  window.gtag = function () {
+    window.dataLayer?.push(arguments);
+  } as Gtag;
 
   if (domains.length > 1) {
     window.gtag("set", "linker", {
@@ -131,7 +131,7 @@ export function Analytics() {
       }}
     >
       <div style={{ maxWidth: 500 }}>
-        Allow anonymous usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}
+        Allow optional usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}
         <a href="/privacy" style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
