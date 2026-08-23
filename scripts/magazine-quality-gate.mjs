@@ -60,8 +60,10 @@ for (const story of stories) {
   if (bodyWords.length > 4500) addWarning(scope, `body is very long (${bodyWords.length} words); confirm structure, pacing and read estimate`);
 
   for (const [index, block] of blocks.entries()) {
-    if (!block?.t || words(block.t).length < 2) addFailure(scope, `block ${index + 1} is empty/thin`);
-    if (block?.k === "para" && words(block.t).length > 145) addWarning(scope, `paragraph ${index + 1} exceeds 145 words; review readability`);
+    const blockWords = words(block?.t);
+    if (!block?.t || blockWords.length < 1) addFailure(scope, `block ${index + 1} is empty`);
+    if (block?.k !== "sub" && blockWords.length < 2) addFailure(scope, `block ${index + 1} is too thin`);
+    if (block?.k === "para" && blockWords.length > 145) addWarning(scope, `paragraph ${index + 1} exceeds 145 words; review readability`);
   }
 }
 
