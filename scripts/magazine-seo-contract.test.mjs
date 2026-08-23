@@ -13,7 +13,8 @@ const seo = read("src/components/Seo.tsx");
 const privacy = read("src/pages/v5/Privacy.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 
-test("M4GAZINE Founding Edition remains truthfully pre-publication", () => {
+test("4PLANET MAGAZINE Founding Edition remains truthfully pre-publication", () => {
+  assert.match(magazine, /4PLANET MAGAZINE/);
   assert.match(magazine, /WHAT HOLDS|FOUNDING_EDITION\.workingTitle/);
   assert.match(magazine, /PRE-PUBLICATION/);
   assert.match(editorial, /responsible editor \/ editorial lead must be designated/i);
@@ -25,8 +26,8 @@ test("M4GAZINE Founding Edition remains truthfully pre-publication", () => {
 });
 
 test("editorial and organisational content are visibly separated", () => {
-  assert.match(magazine, /Organisational stories, clearly separated from M4GAZINE editorial/);
-  assert.match(story, /ORGANISATIONAL CONTENT — NOT M4GAZINE INDEPENDENT EDITORIAL/);
+  assert.match(magazine, /Organisational stories, clearly separated from independent Magazine editorial/);
+  assert.match(story, /ORGANISATIONAL CONTENT — NOT 4PLANET MAGAZINE INDEPENDENT EDITORIAL/);
 });
 
 test("required magazine transparency routes exist", () => {
