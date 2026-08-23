@@ -1,6 +1,6 @@
 # GOLD EXPERIENCE — CROSS-PRODUCT TRANSFER MATRIX
 
-Date: 22 Aug 2026  
+Date: 23 Aug 2026  
 Authority: BRAIN GOLD / WORLD CLASS system + issue #132 donor recovery.  
 TEST KING: `king/test` / PR #131.  
 Rule: **no whole-branch winner; no newest-wins; only bounded evidence-backed transfer.**
@@ -17,9 +17,10 @@ Rule: **no whole-branch winner; no newest-wins; only bounded evidence-backed tra
 
 | Candidate | Exact evidence | Decision | Reason / next bounded proof |
 |---|---|---|---|
-| TEST KING current shell | `king/test` | BASELINE | Current Product Context-aware family navigation, canonical mission labels, shared footer, skip-to-content and current public-family integration remain the reference baseline. |
-| PR #92 / `9884c7333f25a488bd8a4d210032e668a5f6f562` | Founder-directed brand hierarchy correction; exact CI evidence recorded in PR | REVIEW / EXTRACT | Donor contains objectively useful hide-on-scroll/reveal-up and richer desktop hierarchy, but also represents a different navigation composition. No whole-file adoption. Current TEST KING already contains the skip-link and several corrected hierarchy outcomes. Rendered A/B required before adopting any ambiguous menu treatment. |
-| Product Switcher former icon/ring treatment | current reversible donor | REJECT AS DEFAULT / KEEP RECOVERY | Typographic TEST KING default reduces generic app-launcher noise. Ring remains reversible evidence only. |
+| `build/market-sale-01-poster` — Founder-selected LOST GOLD | `AtlasHero.tsx` `cf1d362...`; `PublicShell.tsx` `ee344f4...`; `Home.tsx` `add97cd...`; Founder screenshots + preview 23 Aug | **ADOPT — BOUNDED SLICES** | Recover hero, premium menu/navigation hierarchy, WHY section, four-lens orientation and cinematic full-bleed Domain entrances. Do not import the branch wholesale. Exact-head rendered regression required. |
+| TEST KING pre-recovery shell | historical `king/test` baseline | SUPERSEDED FOR THESE SLICES | Retain truth/content/routes/footer and downstream surfaces, but the old top-of-home/menu/domain-card treatment is no longer the visual baseline. |
+| PR #92 / `9884c7333f25a488bd8a4d210032e668a5f6f562` | Founder-directed brand hierarchy correction; exact CI evidence recorded in PR | REVIEW / EXTRACT | Still a donor for objective improvements not already present after LOST-GOLD-01. No whole-file adoption. |
+| Product Switcher former icon/ring treatment | reversible donor evidence | REJECT AS GLOBAL DEFAULT / KEEP RECOVERY | Founder-selected premium shell removes generic app-launcher feeling from the global front door. Product context may still exist inside bounded product-specific seams. |
 
 ### F0 hierarchy contract
 P1 = page/life/place/story, never navigation chrome.  
@@ -27,13 +28,28 @@ P2 = location/product/domain orientation.
 P3 = one obvious continuation.  
 P4 = sources/metadata/advanced depth.
 
-The header/menu exists to orient and get out of the way. Any header treatment that becomes the page's visual anchor fails F0.
+For the current Founder-selected front door: P1 = Earth + `Everything you love is connected.`; P2 = WHY 4PLANET + one-planet/four-lenses orientation; P3 = `WHY 4PLANET ↓` then `OPEN ATLAS →`; P4 = products, Domains, Missions and evidence depth.
+
+## LOST GOLD recovery rule
+
+A candidate is LOST GOLD when an older repo/ref contains a materially superior, previously approved or Founder-preferred frame/component/interaction that disappeared from the current line without an explicit evidence-backed rejection.
+
+Every active product family must therefore run historical archaeology, not just newest-vs-current comparison:
+1. old repos + branches + PRs + immutable previews;
+2. Founder-loved/reviewed screenshots and comments;
+3. component/frame/function comparison against TEST KING;
+4. disposition `ADOPT | ALREADY PRESENT | REJECT WITH REASON | DEFER WITH REASON`;
+5. bounded extraction only;
+6. rendered proof after transfer;
+7. write reusable learning back to GOLD primitive/control records.
+
+Discovery does not authorise wholesale merge or LIVE promotion.
 
 ## ATLAS
 
 ### Donor: PR #72 / `sandbox/atlas-data-lab-20260819` / `93a9030741911beb1cc12e2ebe511b61f1fe26db`
 
-Current comparison against TEST KING: branches are deeply diverged (donor hundreds of commits ahead from an old merge base and TEST KING materially ahead on the current line). The diff contains broad unrelated product/shell/media changes in addition to the ATLAS lab.
+Current comparison against TEST KING is deeply diverged and contains unrelated product/shell/media changes in addition to ATLAS work.
 
 **Whole-branch decision: DEFER WITH REASON — WHOLESALE MERGE FORBIDDEN.**
 
@@ -43,15 +59,11 @@ Candidate primitives for extraction only:
 - credible-source availability/probe behaviour;
 - bounded new source adapters where source truth and runtime quality are independently proven.
 
-Do not import donor shell, global styling, product context, mission/species copies or old build machinery simply to recover ATLAS value.
-
-Current TEST KING ATLAS keeps the shared map/context engine as baseline. ATLAS transfer succeeds only when ordinary-person exploration improves without increasing GIS-console burden.
+Current TEST KING ATLAS remains the receiver baseline until an older/newer donor proves an ordinary-person exploration improvement without increasing GIS-console burden.
 
 ## JAGUAR / SPECIES JOURNEY
 
 ### Donor: PR #79 / `agent/jaguar-journey-v11` / `0b89222be26f9b7a11fa30614f86891cc6fa054c`
-
-Current comparison: deeply diverged, carrying many XR/Journey/runtime/media files plus unrelated public-product history.
 
 **Whole-branch decision: REVIEW / EXTRACT — WHOLESALE MERGE FORBIDDEN.**
 
@@ -61,33 +73,29 @@ High-value donor seam:
 - truth/context handoff patterns;
 - reusable journey data/scene separation where verified.
 
-Current TEST KING learning already proved one hard boundary: the attempted local Jaguar v27 GLB was structurally truncated. It is quarantined and **DEFERRED WITH REASON**. No fallback image/proxy may be called 3D GOLD. Binary media requires decompressed GLB magic/header/chunk integrity and exact-head browser parse/render before adoption.
+The attempted local Jaguar v27 GLB was structurally truncated. It remains **DEFERRED WITH REASON**. No fallback image/proxy may be called 3D GOLD. Binary media requires decompressed GLB magic/header/chunk integrity and exact-head browser parse/render before adoption.
 
-Jaguar transfer target remains life-first: the animal is P1; relationship/path is P2/P3; technical XR/media evidence is P4.
+Jaguar target remains life-first: animal P1; relationship/path P2/P3; technical XR/media evidence P4.
 
 ## S4PIENS / FOOD
 
 ### Donor: PR #83 / `build/s4piens-universe-domain` / `a5c87f85a3a04bb1a0f6ed17816311092ff08c02`
 
-Current comparison: deeply diverged; unique S4PIENS material is mixed with broad shell/mission/species and infrastructure history.
-
 **Whole-branch decision: REVIEW / EXTRACT — WHOLESALE MERGE FORBIDDEN.**
 
-High-value donor content/model candidates:
+High-value candidates:
 - `HomoSapiensWorld` human-as-species framing;
 - FOOD-only first deep chain;
 - actor/innovation data and source-bound evidence seams;
 - human need → dependency → pressure → response sequence.
 
-Not adopted as a visual system as-is: donor styling includes broad new CSS, decorative gradients/orbits and generic hover-lift treatments that require HUMAN CRAFT / AI-WASH under the new standard. Content/interaction logic may transfer only after reduction.
+Do not adopt the donor visual system wholesale: decorative gradients/orbits and generic hover-lift treatments require HUMAN CRAFT / AI-WASH first.
 
-S4PIENS GOLD target: P1 human/need; P2 one FOOD chain step; P3 one meaningful continuation; P4 evidence/pressure/innovation depth. No four-chain equal-weight front door until FOOD proves the grammar.
+S4PIENS GOLD target: P1 human/need; P2 one FOOD chain step; P3 one meaningful continuation; P4 evidence/pressure/innovation depth.
 
 ## ORCA / WH4LES / BAY OF BISCAY
 
 ### Donor: PR #115 / `agent/orca-bay-biscay-gold-20` / `c3213be63c963a9d35f7e0b209bcb10a1004dc54`
-
-Current comparison: deeply diverged; Bay of Biscay files are mixed with a large XR/Journey/shared-history branch.
 
 **Whole-branch decision: REVIEW / EXTRACT — WHOLESALE MERGE FORBIDDEN.**
 
@@ -99,15 +107,15 @@ High-value bounded candidates:
 - reduced-motion ocean journey behaviour;
 - cross-ecosystem transfer rule to Amazonia.
 
-Do not import the entire XR/LUME stack to obtain the Bay card. First extract the ecosystem/route/data truth model; only then test motion/visual layers against the ONE INTERFACE GOLD grammar.
+Extract ecosystem/route/data truth before testing motion/visual layers against ONE INTERFACE GOLD grammar.
 
 ## IMPACT
 
-Current TEST KING already contains integrated public IMPACT and test-lab pathways.
+Current TEST KING contains integrated public IMPACT and test-lab pathways.
 
 **Baseline decision: ALREADY PRESENT.**
 
-Do not import a second action architecture unless a donor proves a specific material improvement. IMPACT transfer test is instead a receiver test for the shared GOLD grammar:
+Do not import a second action architecture unless a donor proves a specific material improvement. Receiver hierarchy:
 - P1 = concrete truthful action/contribution object;
 - P2 = what it does + maturity/status;
 - P3 = one possible next action;
@@ -116,16 +124,17 @@ Do not import a second action architecture unless a donor proves a specific mate
 
 ## Primitive transfer promotion
 
-A pattern learned in Jaguar, ATLAS, S4PIENS, Orca or IMPACT may enter `GOLD_PRIMITIVE_REGISTRY.md` as `PROVEN SHARED` only after it survives at least two materially different product contexts, unless an explicit Founder/system decision already establishes it.
+A pattern learned in Jaguar, ATLAS, S4PIENS, Orca, IMPACT or an older ONE INTERFACE may enter `GOLD_PRIMITIVE_REGISTRY.md` as `PROVEN SHARED` only after it survives at least two materially different product contexts, unless an explicit Founder/system decision already establishes it.
 
 ## Current transfer order
 
-1. F0 ONE INTERFACE hierarchy/shell — extract only objective improvements.
-2. ATLAS — progressive exploration/data depth without console overload.
-3. Jaguar/SPECIES — life-first relationship journey; binary media fail-closed.
-4. S4PIENS/FOOD — reduce donor to one human need/one chain before visual adoption.
-5. Orca/Bay — extract ecosystem/pilot/data truth first; then ocean motion/craft.
-6. IMPACT — verify one truthful action path against the same hierarchy.
-7. Cross-product rendered regression and Founder JUDGE only after exact-head gates.
+1. F0 ONE INTERFACE LOST-GOLD-01 — Founder-selected hero + shell + Domain entrances.
+2. Historical LOST GOLD sweep across ONE INTERFACE, ATLAS, SPECIES/Jaguar, S4PIENS/FOOD, Orca/WH4LES and IMPACT.
+3. ATLAS — progressive exploration/data depth without console overload.
+4. Jaguar/SPECIES — life-first relationship journey; binary media fail-closed.
+5. S4PIENS/FOOD — reduce donor to one human need/one chain before visual adoption.
+6. Orca/Bay — extract ecosystem/pilot/data truth first; then ocean motion/craft.
+7. IMPACT — verify one truthful action path against the same hierarchy.
+8. Cross-product rendered regression and Founder JUDGE only after exact-head gates.
 
-This matrix is a convergence control artifact. It does not imply that a listed donor slice has been adopted, deployed or accepted.
+This matrix is a convergence control artifact. It does not imply that any unverified donor slice has been deployed, accepted or promoted LIVE.

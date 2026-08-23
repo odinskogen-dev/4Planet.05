@@ -1,173 +1,266 @@
-import { type ReactNode, useState, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { T, DOMAIN_ACCENT, DOMAIN_BASE, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
+import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { Mark } from "@/components/ui";
-import { ProductSwitcher } from "@/product/ProductSwitcher";
-import { TechnicalGridField } from "@/components/TechnicalGridField";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
-const dslug = (k: string) => k.replace("_", "").toLowerCase();
+const strip = (s: string) => s.replace(/_$/, "");
+const dslug = (s: string) => s.replace("_", "").toLowerCase();
+const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase" };
+const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.035em" };
 
-type Cat = { key: string; to?: string; kind: "list" | "missions"; items?: [string, string][] };
-const stripU = (k: string) => k.replace(/_$/, "");
-const MENU: Cat[] = [
-  { key: "PRODUCTS_", to: "/", kind: "list", items: [["ATLAS", "/atlas"], ["SPECIES", "/species"], ["LIVING SYSTEMS", "/living-systems"], ["IMPACT", "/impact"]] },
-  { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
-  { key: "MISSIONS_", to: "/missions", kind: "missions" },
-  { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY_", "/missions/4play"], ["4FILM_", "/missions/4film"], ["4RT_", "/missions/4rt"], ["M4GAZINE_", "/missions/m4gazine"]] },
-  { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
+type PanelKey = "EXPLORE" | "DOMAINS" | "MISSIONS" | "CULTURE" | "ABOUT";
+
+const TOP: { key: PanelKey; to: string }[] = [
+  { key: "EXPLORE", to: "/" },
+  { key: "DOMAINS", to: "/domains" },
+  { key: "MISSIONS", to: "/missions" },
+  { key: "CULTURE", to: "/domains/4culture" },
+  { key: "ABOUT", to: "/about" },
 ];
 
-function useDomainContext() {
-  const { pathname } = useLocation();
-  const dm = pathname.match(/^\/domains\/([^/]+)$/);
-  if (dm) { const dk = ORDER.find((k) => dslug(k) === dm[1]); if (dk) return { dk, base: DOMAIN_BASE[dk], accent: DOMAIN_ACCENT[dk] }; }
-  const mm = pathname.match(/^\/missions\/([^/]+)$/);
-  if (mm) { for (const dk of ORDER) { if (content.getMissionsByDomain(dk).some((x) => x.slug === mm[1])) return { dk, base: DOMAIN_BASE[dk], accent: DOMAIN_ACCENT[dk] }; } }
-  return null;
-}
+const LENSES = [
+  ["ATLAS", "SEE THE PLANET", "/atlas"],
+  ["SPECIES", "MEET LIFE", "/species"],
+  ["LIVING SYSTEMS", "UNDERSTAND CONNECTIONS", "/living-systems"],
+  ["IMPACT", "FIND A WAY TO HELP", "/impact"],
+] as const;
 
-function MenuItems({ c, onMobile, onClose }: { c: Cat; onMobile: boolean; onClose: () => void }) {
-  const fs = onMobile ? "clamp(16px,4.6vw,20px)" : "clamp(17px,2vw,21px)";
-  if (c.kind === "list") return (
-    <div style={{ display: "grid", gap: 2 }}>
-      {c.key === "4_" && <div className="mono" style={{ fontSize: 10.5, letterSpacing: ".14em", color: T.faint, paddingBottom: 6 }}>WAYS TO PARTICIPATE</div>}
-      {c.items!.map(([label, to]) => {
-        const ext = to.startsWith("http");
-        return ext
-          ? <a key={label} href={to} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: fs, color: T.ink, padding: "11px 0" }}>{label} ↗</a>
-          : <Link key={label + to} to={to} onClick={onClose} className="link menu-link" style={{ fontSize: fs, color: T.ink, padding: "11px 0" }}>{label}</Link>;
-      })}
-    </div>
-  );
+const ABOUT = [
+  ["THE STORY", "Why 4PLANET exists.", "/about#story"],
+  ["THE SYSTEM", "How the public product family fits together.", "/about#system"],
+  ["THE FOUNDER", "Odin Oddekalv and the origin of the work.", "/about#founder"],
+  ["THE ROAD AHEAD", "What has to become true next.", "/about#road"],
+] as const;
+
+const CULTURE = [
+  ["M4GAZINE", "Editorial", "/magazine"],
+  ["4FILM", "Film", "/missions/4film"],
+  ["4RT", "Art", "/missions/4rt"],
+  ["4PLAY", "Play", "/missions/4play"],
+] as const;
+
+function PanelLink({ title, line, to, accent = T.blue, onSelect }: { title: string; line: string; to: string; accent?: string; onSelect: () => void }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: onMobile ? "1fr" : "1fr 1fr", gap: onMobile ? "16px 0" : "18px 32px" }}>
-      {ORDER.map((dk) => (
-        <div key={dk}>
-          <Link to={"/domains/" + dslug(dk)} onClick={onClose} className="mono" style={{ fontSize: 12.5, color: DOMAIN_ACCENT[dk], letterSpacing: ".08em" }}>{stripU(dk)}</Link>
-          <div style={{ display: "grid", gap: 2, marginTop: 8 }}>
-            {content.getMissionsByDomain(dk).map((m) => (
-              <Link key={m.slug} to={"/missions/" + m.slug} onClick={onClose} className="link menu-link" style={{ fontSize: onMobile ? "clamp(15px,4vw,18px)" : "clamp(15px,1.7vw,18px)", color: T.ink, padding: "7px 0", fontWeight: 500 }}>{stripU(m.name)}</Link>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    <Link to={to} onClick={onSelect} className="nav-panel-link">
+      <span aria-hidden className="nav-panel-link__bar" style={{ background: accent }} />
+      <span>
+        <strong style={{ ...display, display: "block", fontSize: "clamp(18px,1.6vw,24px)", color: T.ink }}>{title}</strong>
+        <span style={{ display: "block", marginTop: 6, fontSize: 12.5, lineHeight: 1.45, color: T.dim }}>{line}</span>
+      </span>
+      <span aria-hidden style={{ ...mono, color: accent }}>→</span>
+    </Link>
   );
 }
 
-function MenuPlane({ onClose }: { onClose: () => void }) {
-  const [active, setActive] = useState<string>(MENU[1].key);
-  const [openCat, setOpenCat] = useState<string | null>(MENU[1].key);
-  const cat = MENU.find((c) => c.key === active)!;
+function DomainColumn({ dk, onSelect, showMissions = true }: { dk: DomainKey; onSelect: () => void; showMissions?: boolean }) {
+  const accent = DOMAIN_ACCENT[dk];
+  const missions = content.getMissionsByDomain(dk);
   return (
-    <div className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(80px,9vw,104px) clamp(20px,5vw,72px) clamp(40px,8vw,72px)" }}>
-        <div className="menu-desktop" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(24px,5vw,72px)" }}>
-          <div role="menu" aria-label="Primary">
-            {MENU.map((c) => (
-              <Link key={c.key} to={c.to || "/"} role="menuitem" onClick={onClose} onMouseEnter={() => setActive(c.key)} onFocus={() => setActive(c.key)} className="menu-cat"
-                style={{ display: "block", width: "100%", textAlign: "left", textDecoration: "none", padding: "10px 0", color: active === c.key ? T.blue : T.ink, fontWeight: 500, fontSize: "clamp(28px,3.8vw,44px)", letterSpacing: "-.03em" }}>{stripU(c.key)}</Link>
-            ))}
-          </div>
-          <div style={{ paddingTop: 14 }}><MenuItems c={cat} onMobile={false} onClose={onClose} /></div>
+    <div className="nav-domain-col">
+      <Link to={`/domains/${dslug(dk)}`} onClick={onSelect} className="nav-domain-head" style={{ color: accent }}>
+        <span style={{ ...display, fontSize: "clamp(22px,2vw,31px)" }}>{strip(dk)}</span>
+        <span aria-hidden style={{ ...mono }}>→</span>
+      </Link>
+      {showMissions && (
+        <div style={{ display: "grid", marginTop: 14 }}>
+          {missions.map((m) => (
+            <Link key={m.slug} to={`/missions/${m.slug}`} onClick={onSelect} className="nav-mission-link">
+              <span aria-hidden style={{ width: 5, height: 5, background: accent, flex: "0 0 auto" }} />
+              {strip(m.name)}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void }) {
+  return (
+    <div className="nav-panel" role="region" aria-label={`${panel} navigation`} onMouseLeave={onClose}>
+      <div className="nav-panel__inner">
+        <div className="nav-panel__rail">
+          <div style={{ ...mono, color: T.blue }}>{panel}_</div>
+          <p style={{ marginTop: 14, maxWidth: 220, fontSize: 13.5, lineHeight: 1.5, color: T.dim }}>
+            {panel === "EXPLORE" && "Change lens without losing the planet."}
+            {panel === "DOMAINS" && "Four operational worlds. One living planet."}
+            {panel === "MISSIONS" && "Sixteen first-wave entry points for action."}
+            {panel === "CULTURE" && "Editorial, film, art and play as distribution for planetary understanding."}
+            {panel === "ABOUT" && "Story, architecture, founder and the work ahead."}
+          </p>
         </div>
 
-        <div className="menu-mobile">
-          {MENU.map((c) => {
-            const isOpen = openCat === c.key;
-            return (
-              <div key={c.key} style={{ borderTop: `1px solid ${T.line}` }}>
-                <button onClick={() => setOpenCat(isOpen ? null : c.key)} aria-expanded={isOpen} className="menu-cat"
-                  style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: "18px 0", color: isOpen ? T.blue : T.ink, fontWeight: 500, fontSize: "clamp(28px,8vw,40px)", letterSpacing: "-.03em" }}>
-                  <span>{stripU(c.key)}</span><span aria-hidden style={{ fontSize: 24, lineHeight: 1, color: isOpen ? T.blue : T.ink }}>{isOpen ? "–" : "+"}</span>
-                </button>
-                {isOpen && (
-                  <div style={{ paddingBottom: 20 }}>
-                    {c.to && <Link to={c.to} onClick={onClose} className="link mono" style={{ display: "inline-block", fontSize: 12, color: T.blue, letterSpacing: ".08em", paddingBottom: 12 }}>VIEW ALL →</Link>}
-                    <MenuItems c={c} onMobile onClose={onClose} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-            <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
-            <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
-            <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
+        {panel === "EXPLORE" && (
+          <div className="nav-panel-grid nav-panel-grid--2">
+            {LENSES.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
           </div>
+        )}
+        {panel === "DOMAINS" && (
+          <div className="nav-panel-grid nav-panel-grid--4">
+            {ORDER.map((dk) => <DomainColumn key={dk} dk={dk} onSelect={onClose} showMissions={false} />)}
+          </div>
+        )}
+        {panel === "MISSIONS" && (
+          <div className="nav-panel-grid nav-panel-grid--4">
+            {ORDER.map((dk) => <DomainColumn key={dk} dk={dk} onSelect={onClose} />)}
+          </div>
+        )}
+        {panel === "CULTURE" && (
+          <div className="nav-panel-grid nav-panel-grid--2">
+            {CULTURE.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} accent={DOMAIN_ACCENT["4CULTURE_"]} onSelect={onClose} />)}
+          </div>
+        )}
+        {panel === "ABOUT" && (
+          <div className="nav-panel-grid nav-panel-grid--2">
+            {ABOUT.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MobileMenu({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="mobile-nav" role="dialog" aria-modal="true" aria-label="4PLANET navigation">
+      <div className="mobile-nav__inner">
+        <div style={{ ...mono, color: T.blue }}>EXPLORE_</div>
+        <div className="mobile-nav__lenses">
+          {LENSES.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
         </div>
 
-        <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          <Link to="/living-systems" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Living Systems →</Link>
-          <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
-          <Link to="/" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>Open Earth →</Link>
+        <div style={{ ...mono, color: T.blue, marginTop: 44 }}>DOMAINS + MISSIONS_</div>
+        <div style={{ display: "grid", gap: 34, marginTop: 22 }}>
+          {ORDER.map((dk) => <DomainColumn key={dk} dk={dk} onSelect={onClose} />)}
+        </div>
+
+        <div style={{ ...mono, color: T.blue, marginTop: 44 }}>ABOUT_</div>
+        <div className="mobile-nav__about">
+          {ABOUT.map(([title, , to]) => <Link key={title} to={to} onClick={onClose}>{title}</Link>)}
         </div>
       </div>
     </div>
   );
 }
 
+function topIsDark(pathname: string) {
+  if (pathname === "/" || pathname === "/about") return true;
+  if (pathname === "/atlas" || pathname === "/impact" || pathname.startsWith("/impact/")) return true;
+  if (pathname.startsWith("/domains/") || pathname.startsWith("/missions/")) return true;
+  if (pathname === "/domains" || pathname.startsWith("/species/") || pathname.startsWith("/ecosystems/")) return true;
+  return false;
+}
+
 function Header() {
   const { pathname } = useLocation();
-  const ctx = useDomainContext();
-  const [open, setOpen] = useState(false);
-  const closeRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => { setOpen(false); }, [pathname]);
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    if (open) { window.addEventListener("keydown", onKey); closeRef.current?.focus(); }
-    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
-  }, [open]);
+  const [panel, setPanel] = useState<PanelKey | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [pastHero, setPastHero] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 24);
-      setPastHero(y > window.innerHeight * 0.82);
-    };
-    onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+    setPanel(null);
+    setMobileOpen(false);
   }, [pathname]);
 
-  const heroPage = !!ctx;
-  const missionSlug = pathname.startsWith("/missions/") ? pathname.split("/")[2] : "";
-  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/") || DARK_MISSIONS.has(missionSlug);
-  const overHero = (darkWorld || (heroPage && !pastHero)) && !open;
-  const accent = ctx ? ctx.accent : T.blue;
-  const fg = overHero ? "#fff" : T.ink;
-  const outline = scrolled && !open;
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPanel(null);
+        setMobileOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    let lastY = window.scrollY;
+    let down = 0;
+    let up = 0;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 18);
+      const dy = y - lastY;
+      lastY = y;
+      if (reduce || panel || mobileOpen || y < 96) {
+        setHidden(false);
+        down = 0;
+        up = 0;
+        return;
+      }
+      if (dy > 0) {
+        down += dy;
+        up = 0;
+        if (down > 74) setHidden(true);
+      } else if (dy < 0) {
+        up -= dy;
+        down = 0;
+        if (up > 14) setHidden(false);
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [panel, mobileOpen, pathname]);
+
+  useEffect(() => {
+    const seg = pathname.split("/").filter(Boolean);
+    const cap = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+    document.title = seg.length ? `${seg.map(cap).join(" · ")} — 4PLANET_` : "4PLANET_ — For a Living Planet";
+  }, [pathname]);
+
+  const menuMode = Boolean(panel || mobileOpen);
+  const dark = topIsDark(pathname) && !scrolled && !menuMode;
+  const detachedDark = topIsDark(pathname) && scrolled && !menuMode;
+  const fg = menuMode ? T.ink : dark || detachedDark ? "#fff" : T.ink;
+  const bg = menuMode ? "#fff" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
 
   return (
     <>
-      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transition: "none" }}>
-        <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
-          <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
-            {!open && <ProductSwitcher dark={overHero} />}
+      <a href="#main-content" className="skip-link">SKIP TO CONTENT</a>
+      <header className="public-header" style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
+        <div className="public-header__bar">
+          <Link to="/" className="public-brand" style={{ color: fg }} aria-label="4PLANET home">4PLANET_</Link>
+
+          <nav className="public-header__desktop" aria-label="Primary navigation" onMouseLeave={() => setPanel(null)}>
+            {TOP.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="public-header__nav-button"
+                aria-expanded={panel === item.key}
+                onMouseEnter={() => setPanel(item.key)}
+                onFocus={() => setPanel(item.key)}
+                onClick={() => setPanel((current) => current === item.key ? null : item.key)}
+                style={{ color: panel === item.key ? T.blue : fg }}
+              >
+                {item.key}
+              </button>
+            ))}
+          </nav>
+
+          <div className="public-header__actions">
+            <Link to="/join" className="public-header__join" style={{ color: fg }}>JOIN 4PLANET</Link>
+            <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
+              {mobileOpen ? "CLOSE" : "MENU"}
+            </button>
           </div>
-
-          <button aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} ref={closeRef}
-            onClick={() => setOpen((v) => !v)}
-            className="menu-trigger"
-            style={{ justifySelf: "center", display: "inline-flex", alignItems: "center", gap: 10, background: "transparent", border: "none", cursor: "pointer", color: open ? T.ink : fg, fontWeight: 500, fontSize: 13, letterSpacing: ".08em" }}>
-            {open ? "CLOSE" : "MENU"}
-          </button>
-
-          <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
-            background: "transparent", color: open ? T.ink : fg,
-            border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
-            transition: "border-color .25s ease, color .25s ease" }}>JOIN 4PLANET</Link>
         </div>
+        {panel && <DesktopPanel panel={panel} onClose={() => setPanel(null)} />}
       </header>
-      {open && (<><div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 48, background: "#fff" }} aria-hidden /><MenuPlane onClose={() => setOpen(false)} /></>)}
-      <style>{`.menu-mobile{display:none}@media(max-width:760px){.menu-desktop{display:none!important}.menu-mobile{display:block}}`}</style>
+      {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}
     </>
   );
 }
@@ -190,15 +283,14 @@ function Footer() {
   const { acc } = footerCtx(pathname);
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
-    ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
-    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/people"]]],
+    ["PARTICIPATE", [["4People", "/join"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
+    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <picture>
         <source media="(max-width: 640px)" srcSet={img("footerPlanet").srcMobile} />
-        <img src={img("footerPlanet").src} alt={img("footerPlanet").alt} loading="lazy" decoding="async"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%" }} />
+        <img src={img("footerPlanet").src} alt={img("footerPlanet").alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%" }} />
       </picture>
       <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.10) 34%, rgba(0,0,0,.52) 60%, rgba(0,0,0,.82) 82%, rgba(0,0,0,.90) 100%)" }} />
       <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 96, height: 4, background: acc, zIndex: 3 }} />
@@ -218,7 +310,7 @@ function Footer() {
           </div>
           {cols.map(([head, items]) => (
             <nav key={head} style={{ display: "grid", gap: 12 }}>
-              <span className="mono" style={{ fontSize: 10.5, letterSpacing: ".14em", color: acc, opacity: 1 }}>{head}</span>
+              <span className="mono" style={{ fontSize: 10.5, letterSpacing: ".14em", color: acc }}>{head}</span>
               {items.map(([t, to]) => <Link key={t + to} to={to} className="foot-link" style={{ fontSize: 14.5, color: "rgba(255,255,255,.82)", textDecoration: "none", width: "fit-content" }}>{t}</Link>)}
             </nav>
           ))}
@@ -235,16 +327,48 @@ function Footer() {
 
 export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || pathname === "/impact" || pathname.startsWith("/impact/");
-  const heroPage = !!useDomainContext() || darkWorld;
+  const bleedTop = topIsDark(pathname);
   return (
     <>
-      <a href="#main-content" className="skip-to-main">SKIP TO MAIN CONTENT</a>
       <Header />
-      {!heroPage && <div aria-hidden style={{ height: 64 }} />}
+      {!bleedTop && <div aria-hidden style={{ height: 64 }} />}
       <main id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
-      <style>{`.skip-to-main{position:fixed;top:72px;left:12px;z-index:1000;max-width:calc(100vw - 24px);padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(calc(-100% - 80px));transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+      <style>{`
+        .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#fff;color:#080808;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
+        .skip-link:focus{transform:translateY(0)}
+        .public-header{position:fixed;z-index:90;top:0;left:0;right:0;border:0;transition:transform .24s cubic-bezier(.4,0,.2,1),background-color .22s ease,color .22s ease;padding-top:env(safe-area-inset-top,0px)}
+        .public-header__bar{height:64px;padding:0 clamp(18px,4vw,56px);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px}
+        .public-brand{font-family:${T.display};font-size:18px;font-weight:650;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+        .public-header__desktop{display:flex;align-items:center;justify-content:center;height:100%;gap:clamp(12px,2.2vw,34px)}
+        .public-header__nav-button{appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:22px 2px;cursor:pointer;transition:color .16s ease}
+        .public-header__nav-button:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+        .public-header__actions{display:flex;align-items:center;gap:14px}
+        .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
+        .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
+        .public-header__menu{display:none;appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 0;cursor:pointer}
+        .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;background:#fff;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
+        .nav-panel__inner{max-width:1440px;margin:0 auto;padding:clamp(28px,3.5vw,48px) clamp(20px,4vw,56px) clamp(34px,4vw,54px);display:grid;grid-template-columns:minmax(160px,.24fr) minmax(0,1fr);gap:clamp(30px,5vw,80px)}
+        .nav-panel-grid{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line}}
+        .nav-panel-grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .nav-panel-grid--4{grid-template-columns:repeat(4,minmax(0,1fr));background:transparent;border:0;gap:clamp(20px,3vw,42px)}
+        .nav-panel-link{position:relative;display:grid;grid-template-columns:4px 1fr auto;gap:16px;align-items:start;background:#fff;padding:20px;text-decoration:none;color:${T.ink};min-height:112px}
+        .nav-panel-link__bar{width:4px;height:100%}
+        .nav-panel-link:hover strong{color:${T.blue}!important}.nav-panel-link:focus-visible{outline:3px solid ${T.blue};outline-offset:-3px}
+        .nav-domain-col{min-width:0}
+        .nav-domain-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;text-decoration:none;border-top:3px solid currentColor;padding-top:12px}
+        .nav-domain-head:focus-visible,.nav-mission-link:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+        .nav-mission-link{display:flex;align-items:center;gap:9px;padding:7px 0;color:${T.ink};font-size:13px;line-height:1.32;text-decoration:none}
+        .nav-mission-link:hover{text-decoration:underline;text-underline-offset:3px}
+        .mobile-nav{display:none;position:fixed;z-index:80;inset:0;background:#fff;color:${T.ink};overflow:auto;padding-top:calc(64px + env(safe-area-inset-top,0px))}
+        .mobile-nav__inner{padding:36px 20px 80px}
+        .mobile-nav__lenses{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line};margin-top:18px}
+        .mobile-nav__about{display:grid;margin-top:14px;border-top:1px solid ${T.line}}
+        .mobile-nav__about a{padding:14px 0;border-bottom:1px solid ${T.line};font-family:${T.display};font-size:22px;color:${T.ink};text-decoration:none}
+        @media(max-width:920px){.public-header__desktop,.public-header__join{display:none}.public-header__bar{grid-template-columns:1fr auto}.public-header__menu{display:block}.nav-panel{display:none}.mobile-nav{display:block}}
+        @media(max-width:560px){.nav-panel-link{grid-template-columns:3px 1fr auto;padding:17px 14px}}
+        @media(prefers-reduced-motion:reduce){.public-header{transition:none}.nav-panel-link *{transition:none!important}}
+      `}</style>
     </>
   );
 }
