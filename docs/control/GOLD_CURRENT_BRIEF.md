@@ -2,64 +2,51 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** MAGAZINE-MEGASPRINT-01 — GLOBAL PREMIUM PUBLISHING ENGINE  
+**CHANGE ID:** JAGUAR-GOLD-RECOVERY-01 — LOCAL DERIVED SURFACE CLOSURE  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #132 / `CUL-M4GAZINE-01`  
-**FOUNDER DIRECTION:** 23 AUG 2026 — execute the accepted global-media doctrine in one controlled sprint. 4PLANET MAGAZINE must feel like a complete, independent, premium intelligent publication inside ONE INTERFACE while sharing one BRAIN, source, entity, rights and analytics core. No content-farm behaviour, no fake publication, no fake contributor, no fake rights clearance and no SEO indexation of pre-publication story records.  
-**CASE-STUDY DOCTRINE:** National Geographic awe + BBC trust/how-we-know + VICE human access without fragile economics + Vogue taste/curation + TIME franchises/tentpoles + Guardian open reach/direct relationship + unique 4PLANET source-aware Living Planet Intelligence/action/proof graph.  
-**HUMAN CRAFT BAR:** the experience should be credible and desirable to a Snøhetta-level architect, Apple-level product designer, documentary photographer, artist/DJ, serious food/culture person, policymaker, NHH economist and MIT engineer without becoming a collage of references or imitating any named publication.  
-**DONOR DECISION:** `ADOPT SELECTIVELY` from current TEST KING only. Reuse `/magazine`, editorial independence/source/correction system, analytics, Story Engine, image registry and existing organisational explainers. No new parallel CMS, truth store, product branch or app.
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #132 / Jaguar Journey  
+**FOUNDER DIRECTION:** 23 AUG 2026 — Jaguar Gold is P0 until objectively reviewable. Deliver a recognisable rights-safe Jaguar surface, credible Jungle Room depth, Dark LUME Room, restrained creature interaction/motion and complete 01→08 journey. Reject invalid/truncated GLB and fake-live states. Exact-head Chromium/WebKit/mobile proof and immutable TEST preview are required before review-candidate status. LIVE KING/production remains untouched.  
+**CURRENT DEFECT:** exact head `9c3b762142f32d3b073d54181edcc7e802abc917` passed typecheck/build/contracts/lint/assets/security and the 28/28 shared vertical-slice matrix, but Jaguar browser proof failed because an optional external Sketchfab source-viewer bridge overwrote the already-local derived WebGL runtime state after ENTER. Desktop remained `loading-source/verifying`; mobile failed `viewer-init-error`, forcing controlled photo fallback. The external viewer is therefore not a valid availability dependency for the local derived presentation surface.  
+**DONOR DECISION:** `DEFER` the external source-viewer bridge from the active Gold runtime. Preserve it as source/reference code only. `REJECT` the historical truncated GLB as active runtime. `ADOPT` the locally controlled Ear.Rodriguez-derived surface under its existing CC BY 4.0 attribution and explicit reconstructed-topology/procedural-motion truth boundary.
 
 ## USER ARRIVES BECAUSE
-They found one compelling story, image, species, place, person, field organisation, innovation or question and want an intelligent, beautiful, trustworthy way to understand more.
+They want to meet a jaguar as a living animal first, then understand the living system around it.
 
 ## ONE THING TO UNDERSTAND
-The story is the front door. The reader never needs to understand the 4PLANET organisation chart. Every page should deliver immediate value, make evidence legible and offer one highly relevant second object only when useful.
+One life becomes a doorway into relationships, place, pressure, evidence, response, actors and proof.
 
 ## PRIMARY ACTION
-Read / watch / explore one excellent story.
+Enter the rainforest and encounter the Jaguar.
 
 ## SECONDARY DEPTH
-Move naturally into one relevant next story, SPECIES, ATLAS, Ecosystem, Actor, Mission or evidence-bounded action/proof pathway. Share when the object is worth sharing. Return because the publication remains useful and surprising.
+Move through the complete eight-scene journey; use LUME and evidence only when useful.
 
 ## P1 DOMINANT
-Documentary image / visual signal + story premise. The story always wins over chrome, cards, internal taxonomy and organisational explanation.
+A recognisable Jaguar with credible physical presence inside a deep rainforest room.
 
 ## P2 ORIENTATION
-4PLANET MAGAZINE identity, editorial mode/section, reading time, authorship/responsibility and current publication state.
+`Panthera onca`, Ear.Rodriguez / CC BY 4.0 provenance, derived-presentation boundary and current chapter.
 
 ## P3 ACTION / NEXT
-Read; then one relevant second object or share. No generic CTA stack and no forced Impact pathway.
+Restrained LOOK / MOVE / LUME interaction, then FOLLOW THE SYSTEM.
 
 ## P4 DEPTH
-How We Know, sources, rights/credits, corrections, related entities, deeper 4PLANET context and optional action/proof only where the underlying route is real.
+Evidence, source, representation limits, Atlas/system context and proof boundaries.
 
 ## WHAT CAN BE REMOVED
-Generic dashboard chrome, repetitive card walls, decorative gradients/motion, environmental-campaign clichés, generic AI-magazine styling, duplicated product explanations, fake urgency, homepage-first assumptions, random “most popular” recirculation and anything that competes with story hierarchy.
+External viewer dependency from the active encounter, loading states that replace a working local surface, fake source-model/live language, duplicate creature runtimes, decorative UI competing with the animal, invalid/truncated GLB paths.
 
 ## WHAT MUST BE REUSED
-One repository; `king/test`; PublicShell; 4PLANET Brand OS; existing image registry/rights metadata; Story/Editorial blocks; BRAIN source/claim/entity model; Seo primitive; analytics consent system; existing Magazine transparency routes; existing Story Engine. No second CMS/truth database.
-
-## ARTICLE ENGINE CONTRACT
-One canonical story object must be able to render: slug, title, dek, story mode, section, read time, byline/responsibility, publish/update dates when real, hero/alt/credit/rights, tags/entities, source/trust state, canonical metadata, OG/share object, Article/NewsArticle JSON-LD when eligible, related-object recommendations, pathway, corrections state, analytics and distribution derivatives. Build capacity for 1,000+ stories without setting a volume target.
-
-## SEARCH / DISCOVER CONTRACT
-Every indexable story must have a unique crawlable URL, title, description, canonical, high-resolution image metadata, structured data, internal links and sitemap entry. Generate RSS and News Sitemap foundations. Pre-publication story records stay `noindex` and never emit Article schema. Keep `4planetmagazine.com` development surface noindex until canonical-host decision + SEO gate + Founder release.
+Existing v33 local WebGL surface, v35 topology repair, Jungle Room, Dark LUME Room, eight-scene journey, controlled photo fallback, Ear.Rodriguez source attribution, existing rights/truth/evidence controls and TEST KING shell.
 
 ## TRUTH BOUNDARY
-Editorial judgement remains separate from commercial, partnership and fundraising judgement. Coverage does not imply endorsement. Source records, models, interpretations, delivery and ecological outcomes remain distinct. Corrections remain visible. 4PLANET-owned explainers are visibly labelled as organisational content.
-
-## DISTRIBUTION / LOYALTY CONTRACT
-Distributed discovery → owned relationship. One canonical source pack may render into search/social/video/newsletter/share variants without creating new facts. Measure entry source → engaged read → relevant second object → share/direct return/WATCH or briefing interest → downstream product/Actor/Mission/action. Pageviews alone are not success.
+The active creature is a **local presentation surface derived from the Ear.Rodriguez Jaguar under CC BY 4.0**. Its topology/colour are reconstructed for the prototype and its motion is procedural. It is **not** the original textured/rigged source model, not a live animal, not occurrence data and not ecological measurement. The invalid historical GLB remains quarantined. External source-viewer availability must not be represented as validation of the local runtime.
 
 ## MOBILE-FIRST RISK
-390/430 widths must preserve hero focal point, title hierarchy, reading measure, progress, source/trust state and recirculation without overflow or metadata overload. Motion has reduced-motion fallback. Core reading and sharing work with keyboard and assistive technology.
-
-## PERFORMANCE / ACCESSIBILITY
-Image loading, layout stability, reading contrast, keyboard focus, reduced motion and route weight are product quality. Decorative motion must never delay reading. Lazy-load below-fold imagery. Do not introduce an analytics, social or SEO dependency that blocks article rendering.
+390/430 and WebKit must retain a visible, recognisable creature, stable WebGL canvas, touch rotation, restrained motion, readable chapter controls and fallback safety without relying on third-party viewer initialisation.
 
 ## HUMAN SUCCESS
-A first-time reader arriving from Google/social/direct can understand the story immediately, recognise 4PLANET MAGAZINE, trust what is known and what is not, enjoy the page without learning the platform, choose one useful next object, share if worthwhile and have a credible reason to return.
+Within five seconds after ENTER, a first-time viewer sees a recognisable jaguar standing in a believable rainforest space, understands that it is rights-safe presentation media rather than live data, can make one restrained interaction and can complete 01→08 without runtime collapse.
 
 ## ACCEPTANCE
-Exact-head typecheck/build/contracts/lint/assets/security + generated SEO artifact verification + Magazine routes + Chromium/WebKit desktop/mobile + reduced-motion/accessibility checks + no dead routes/overflow + correct noindex boundaries + immutable TEST preview. No LIVE KING or public-indexation promotion is authorised by this brief.
+Exact-head typecheck/build/contracts/lint/assets/security/truth/rights; Jaguar Chromium desktop 1440 + mobile 390/430; WebKit desktop/mobile; visual evidence showing recognisable animal + Jungle Room + LUME; complete 01→08; no active iframe/external-viewer dependency; controlled fallback still works when local WebGL genuinely fails; immutable TEST preview. No LIVE KING/production promotion is authorised by this brief.
