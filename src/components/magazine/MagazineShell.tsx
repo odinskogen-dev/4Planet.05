@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import "@/styles/magazine-world.css";
+import "@/styles/magazine-world-polish.css";
 
 type MagazineTheme = "light" | "dark";
 
