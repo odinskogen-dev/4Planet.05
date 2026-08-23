@@ -20,10 +20,7 @@ export interface MagazineArticleTemplate {
   secondObjectRule: string;
 }
 
-/**
- * Strict reusable article grammars. These are editorial production contracts,
- * not page skins. A writer may break the rhythm only when the story earns it.
- */
+/** Strict reusable article grammars. These are editorial production contracts, not page skins. */
 export const MAGAZINE_ARTICLE_TEMPLATES: MagazineArticleTemplate[] = [
   {
     id: "FROM_THE_FIELD",
@@ -119,8 +116,72 @@ export const MAGAZINE_EDITORIAL_GOLD_DIMENSIONS = [
   "RIGHTS — imagery/quotes/assets have an attributable, releasable source state",
 ] as const;
 
-export type FieldDispatchStatus = "INTAKE" | "SOURCE_QA" | "EDITORIAL_REVIEW" | "PUBLIC" | "REJECTED";
+export type EditorialJudgeState = "OPEN" | "PASS" | "REWORK" | "REJECT";
+export interface MagazineEditorialJudgement {
+  storyId: string;
+  state: EditorialJudgeState;
+  judgedBy?: string;
+  notes?: string;
+  dimensions: Partial<Record<"originality" | "truth" | "taste" | "readability" | "awe" | "humanity" | "utility" | "recirculation" | "independence" | "rights", "PASS" | "REWORK">>;
+}
 
+/** Human taste is a release gate, not an AI score. Keep empty/open until a real editor judges the rendered object. */
+export const MAGAZINE_EDITORIAL_JUDGEMENTS: MagazineEditorialJudgement[] = [];
+
+export const MAGAZINE_LAUNCH_STORY_QUEUE = [
+  {
+    id: "bay-of-biscay-orca",
+    workingTitle: "The living highway through the Bay of Biscay",
+    franchise: "FROM_THE_FIELD" as const,
+    lane: "PEOPLE" as const,
+    templatePurpose: "Stress-test field reporting, Actor/Ecosystem/Species bridges and partner sharing without implying endorsement.",
+    requiredEvidence: ["ORCA reporting context", "Bay of Biscay geography/source pack", "survey-effort method", "image/video rights", "quote permissions where used"],
+    intendedSecondObject: "Bay of Biscay Ecosystem / ORCA Actor / WH4LES — choose one primary after story edit",
+    publicationState: "PRE_PUBLICATION" as const,
+  },
+  {
+    id: "jaguar-amazonia",
+    workingTitle: "One animal as a doorway into the Amazon",
+    franchise: "THE_LIVING_WORLD" as const,
+    lane: "LIFE" as const,
+    templatePurpose: "Stress-test documentary awe, Species→Ecosystem→ATLAS depth and visual pacing.",
+    requiredEvidence: ["accepted Jaguar species sources", "Amazon ecosystem sources", "rights-safe documentary imagery", "range/observation/model distinctions"],
+    intendedSecondObject: "Jaguar SPECIES",
+    publicationState: "PRE_PUBLICATION" as const,
+  },
+  {
+    id: "food-choice",
+    workingTitle: "What should we actually buy for dinner?",
+    franchise: "CHOICE" as const,
+    lane: "HUMAN" as const,
+    templatePurpose: "Stress-test high-frequency utility, scannability and health/wallet/planet separation.",
+    requiredEvidence: ["bounded grocery/store context", "product or category data", "health basis", "price basis", "ecological basis", "trade-off disclosure"],
+    intendedSecondObject: "S4PIENS FOOD / CHOICE",
+    publicationState: "PRE_PUBLICATION" as const,
+  },
+  {
+    id: "oslo-mussels",
+    workingTitle: "Can mussels clean the water beneath Oslo?",
+    franchise: "WHAT_WORKS" as const,
+    lane: "SOLUTIONS" as const,
+    templatePurpose: "Stress-test local solution reporting and delivery→output→outcome→attribution evidence separation.",
+    requiredEvidence: ["exact installed mussel-sock delivery evidence", "method/source for filtration claims", "Oslofjord context", "photo rights", "explicit attribution limits"],
+    intendedSecondObject: "Oslofjord / marine restoration context",
+    publicationState: "PRE_PUBLICATION" as const,
+  },
+  {
+    id: "plastic-money-proof",
+    workingTitle: "Where does your money actually go when you pay to remove plastic?",
+    franchise: "PLANET_EXPLAINED" as const,
+    lane: "SOLUTIONS" as const,
+    templatePurpose: "Stress-test finance→field delivery→proof transparency and actor/action handoff.",
+    requiredEvidence: ["specific partner/delivery model", "unit economics", "measurement method", "proof chain", "limits on ecological-outcome claims"],
+    intendedSecondObject: "CLE4N / PL4STIC Impact pathway when real",
+    publicationState: "PRE_PUBLICATION" as const,
+  },
+] as const;
+
+export type FieldDispatchStatus = "INTAKE" | "SOURCE_QA" | "EDITORIAL_REVIEW" | "PUBLIC" | "REJECTED";
 export interface FieldPartnerDispatch {
   id: string;
   actorId: string;
@@ -136,10 +197,7 @@ export interface FieldPartnerDispatch {
   editorialDisclosure: "PARTNER_SUBMITTED" | "4PLANET_REPORTED" | "JOINTLY_REPORTED";
 }
 
-/**
- * Empty until real field material passes source + rights + editorial gates.
- * Never seed this list with invented partner dispatches for layout convenience.
- */
+/** Empty until real field material passes source + rights + editorial gates. */
 export const FIELD_PARTNER_DISPATCHES: FieldPartnerDispatch[] = [];
 
 export const FIELD_PARTNER_INTAKE_CONTRACT = [
@@ -156,22 +214,17 @@ export const FIELD_PARTNER_INTAKE_CONTRACT = [
 ] as const;
 
 export const MAGAZINE_LEARNING_CONTRACT = {
-  primary: [
-    "ARTICLE ENTRY SOURCE",
-    "ENGAGED READ",
-    "READ DEPTH",
-    "RELEVANT SECOND OBJECT",
-    "RETURN VISIT",
-    "SHARE / REFERRAL",
-  ],
-  partnerLoop: [
-    "PARTNER SUBMISSION",
-    "PUBLICATION ACCEPTANCE RATE",
-    "PARTNER SHARE",
-    "PARTNER-REFERRED READERS",
-    "PARTNER-REFERRED SECOND OBJECT",
-    "QUALIFIED INBOUND / ACTION",
-  ],
-  learningRule:
-    "Optimise templates and distribution against downstream reader behaviour and editorial quality together. Never optimise for clicks by weakening truth, taste, independence or rights controls.",
+  primary: ["ARTICLE ENTRY SOURCE", "ENGAGED READ", "READ DEPTH", "RELEVANT SECOND OBJECT", "RETURN VISIT", "SHARE / REFERRAL"],
+  partnerLoop: ["PARTNER SUBMISSION", "PUBLICATION ACCEPTANCE RATE", "PARTNER SHARE", "PARTNER-REFERRED READERS", "PARTNER-REFERRED SECOND OBJECT", "QUALIFIED INBOUND / ACTION"],
+  learningRule: "Optimise templates and distribution against downstream reader behaviour and editorial quality together. Never optimise for clicks by weakening truth, taste, independence or rights controls.",
 } as const;
+
+export function buildPartnerSharePath(path: string, actorId: string, dispatchId?: string): string {
+  const params = new URLSearchParams({
+    utm_source: `actor_${actorId}`,
+    utm_medium: "partner_share",
+    utm_campaign: "4planet_magazine_field",
+  });
+  if (dispatchId) params.set("utm_content", dispatchId);
+  return `${path}${path.includes("?") ? "&" : "?"}${params.toString()}`;
+}
