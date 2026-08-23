@@ -35,11 +35,6 @@ async function verifySharedNavigation(page: import("@playwright/test").Page) {
     return;
   }
 
-  // Desktop navigation is a real button-controlled disclosure. Opening it by click
-  // is deterministic across headless engines and verifies the same accessible
-  // interaction path keyboard/pointer users receive. Hover-only proof was flaky
-  // because the parent nav's mouseleave handler can close the panel while
-  // Playwright synthesises pointer movement between the trigger and assertion.
   const trigger = page.getByRole("button", { name: "EXPLORE", exact: true });
   await expect(trigger).toBeVisible();
   await trigger.click();
@@ -56,11 +51,6 @@ async function verifySharedNavigation(page: import("@playwright/test").Page) {
 }
 
 async function waitForAtlasRenderable(page: import("@playwright/test").Page) {
-  // `Map#isStyleLoaded()` is stricter than the user-visible readiness contract:
-  // it can remain false while optional remote style resources are still settling,
-  // even though the MapLibre canvas and style layers are already rendered and
-  // interactive. Product proof therefore verifies the actual rendered map seam,
-  // not indefinite third-party network quiescence.
   await page.waitForFunction(() => {
     const map = (window as any).__4planet_map;
     const canvas = document.querySelector<HTMLCanvasElement>(".maplibregl-canvas");
@@ -140,11 +130,6 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   expect(mobileLayout!.columns).toBe(1);
   expect(mobileLayout!.pageWidth).toBeLessThanOrEqual(mobileLayout!.viewportWidth + 1);
 
-  // WebKit has a hard 32767px screenshot dimension limit. The Orca page can be
-  // taller than that on mobile, so fullPage capture is not a valid product gate.
-  // Capture the current proof viewport, then the verified footer itself. This
-  // keeps visual evidence while preventing browser-engine limits from being
-  // misclassified as a product failure.
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png` });
   const footer = page.locator(".foot-grid").first();
   await footer.scrollIntoViewIfNeeded();
@@ -159,6 +144,10 @@ test("IMPACT direct routes remain explicit local tests with no physical delivery
     await expect(page.getByText("TEST RECORD — NO PHYSICAL DELIVERY", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("NOT DELIVERED", { exact: false }).first()).toBeVisible();
     await settleVisuals(page);
-    await page.screenshot({ path: `${OUTPUT}/06-${unit}-test-journey.png`, fullPage: true });
+    // Functional assertions above are the product gate. Evidence capture must not
+    // fail because WebKit cannot rasterise a page taller than its 32767px texture
+    // limit. A viewport screenshot preserves the visible tested state without
+    // misclassifying an engine raster limit as a product regression.
+    await page.screenshot({ path: `${OUTPUT}/06-${unit}-test-journey.png` });
   }
 });
