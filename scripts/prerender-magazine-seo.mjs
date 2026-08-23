@@ -8,7 +8,8 @@ const indexPath = path.join(dist, "index.html");
 if (!fs.existsSync(indexPath)) throw new Error("dist/index.html is missing; run Vite build before Magazine SEO prerender");
 
 const baseHtml = fs.readFileSync(indexPath, "utf8");
-const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
+const publicOrigin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
+const magazineOrigin = (process.env.MAGAZINE_SITE_ORIGIN || process.env.VITE_MAGAZINE_SITE_ORIGIN || "https://4planetmagazine.com").replace(/\/$/, "");
 const stories = readStories();
 const signals = readSignals();
 const images = readImages();
@@ -65,8 +66,8 @@ function writeRoute(route, meta) {
 
 const magazineImage = images.m4gazineHero?.src || "/og.png";
 const magazineAlt = images.m4gazineHero?.alt || "4PLANET MAGAZINE";
-const absoluteMagazineImage = absoluteUrl(origin, magazineImage);
-const magazineCanonical = absoluteUrl(origin, "/magazine");
+const absoluteMagazineImage = absoluteUrl(magazineOrigin, magazineImage);
+const magazineCanonical = absoluteUrl(magazineOrigin, "/magazine");
 writeRoute("/magazine", {
   title: "4PLANET MAGAZINE — Nature, people, engineering and what works",
   description: "Stories and signals about the living planet — species, places, people, science, engineering, solutions and culture.",
@@ -74,7 +75,7 @@ writeRoute("/magazine", {
   image: absoluteMagazineImage,
   imageAlt: magazineAlt,
   type: "website",
-  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET MAGAZINE", description: "Stories and signals about the living planet.", url: magazineCanonical, isPartOf: { "@type": "WebSite", name: "4PLANET_", url: absoluteUrl(origin, "/") } },
+  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET MAGAZINE", description: "Stories and signals about the living planet.", url: magazineCanonical, isPartOf: { "@type": "WebSite", name: "4PLANET_", url: absoluteUrl(publicOrigin, "/") } },
 });
 
 const informationPages = [
@@ -84,14 +85,14 @@ const informationPages = [
   { route: "/magazine/archive", title: "Archive — 4PLANET MAGAZINE", description: "Browse full stories and source-backed Planet Signals from 4PLANET MAGAZINE." },
 ];
 for (const page of informationPages) {
-  const canonical = absoluteUrl(origin, page.route);
+  const canonical = absoluteUrl(magazineOrigin, page.route);
   writeRoute(page.route, { ...page, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, jsonLd: { "@context": "https://schema.org", "@type": page.route.endsWith("archive") ? "CollectionPage" : "WebPage", name: page.title, description: page.description, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
 for (const story of stories) {
   const imageMeta = images[story.image] || {};
-  const canonical = absoluteUrl(origin, `/magazine/${story.slug}`);
-  const image = absoluteUrl(origin, imageMeta.src || "/og.png");
+  const canonical = absoluteUrl(magazineOrigin, `/magazine/${story.slug}`);
+  const image = absoluteUrl(magazineOrigin, imageMeta.src || "/og.png");
   const imageAlt = imageMeta.alt || story.title;
   const type = story.mode === "FAST" && story.publishedAt ? "NewsArticle" : "Article";
   const jsonLd = {
@@ -107,7 +108,7 @@ for (const story of stories) {
 
 for (const signal of signals) {
   const route = `/magazine/signals/${signal.slug}`;
-  const canonical = absoluteUrl(origin, route);
+  const canonical = absoluteUrl(magazineOrigin, route);
   writeRoute(route, {
     title: `${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`, description: signal.dek, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "article", section: "Planet Signal", tags: signal.topics || [],
     jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
@@ -116,8 +117,8 @@ for (const signal of signals) {
 
 for (const record of foundingEdition.items) {
   const route = `/magazine/stories/${record.id}`;
-  const canonical = absoluteUrl(origin, route);
+  const canonical = absoluteUrl(magazineOrigin, route);
   writeRoute(route, { title: `${record.title} — Pre-publication record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — Founding Edition working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
 }
 
-console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${informationPages.length} info pages + ${foundingEdition.items.length} working records at ${origin}`);
+console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${informationPages.length} info pages + ${foundingEdition.items.length} working records at canonical ${magazineOrigin}`);
