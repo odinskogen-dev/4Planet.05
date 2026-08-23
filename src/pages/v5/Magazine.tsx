@@ -12,6 +12,7 @@ import { img } from "@/content/imageRegistry";
 import { DOMAIN_ACCENT } from "@/styles/tokens";
 import type { DomainKey } from "@/types/content";
 import "@/styles/magazine.css";
+import "@/styles/magazine-home.css";
 
 const DOMAIN_ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 
