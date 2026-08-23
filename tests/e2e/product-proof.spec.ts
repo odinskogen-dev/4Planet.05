@@ -16,17 +16,36 @@ async function settleVisuals(page: import("@playwright/test").Page) {
 }
 
 async function verifySharedNavigation(page: import("@playwright/test").Page) {
-  const trigger = page.getByRole("button", { name: /Switch product, current product/ }).first();
-  await expect(trigger).toBeVisible();
-  await trigger.click();
-  const dialog = page.getByRole("dialog", { name: "Switch product" });
-  await expect(dialog).toBeVisible();
-  for (const name of ["4PLANET", "ATLAS", "SPECIES", "IMPACT"]) {
-    await expect(dialog.getByRole("link", { name: new RegExp(name) })).toBeVisible();
+  const width = page.viewportSize()?.width ?? 1440;
+  await expect(page.getByRole("link", { name: "4PLANET home" })).toBeVisible();
+
+  if (width <= 920) {
+    const trigger = page.getByRole("button", { name: "Open menu" });
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+
+    const dialog = page.getByRole("dialog", { name: "4PLANET navigation" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("EXPLORE_", { exact: true })).toBeVisible();
+    for (const name of ["ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
+      await expect(dialog.getByRole("link", { name: new RegExp(`^${name}`) }).first()).toBeVisible();
+    }
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    return;
   }
-  await expect(dialog.getByText("PUBLIC PREVIEW", { exact: false })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden();
+
+  const trigger = page.getByRole("button", { name: "EXPLORE", exact: true });
+  await expect(trigger).toBeVisible();
+  await trigger.hover();
+
+  const region = page.getByRole("region", { name: "EXPLORE navigation" });
+  await expect(region).toBeVisible();
+  for (const name of ["ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
+    await expect(region.getByRole("link", { name: new RegExp(`^${name}`) }).first()).toBeVisible();
+  }
+  await page.getByRole("button", { name: "EXPLORE", exact: true }).click();
+  await expect(region).toBeHidden();
 }
 
 async function waitForAtlasRenderable(page: import("@playwright/test").Page) {
