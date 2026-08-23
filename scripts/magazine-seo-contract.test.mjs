@@ -11,6 +11,7 @@ const story = read("src/pages/v5/StoryArticle.tsx");
 const analytics = read("src/analytics/Analytics.tsx");
 const seo = read("src/components/Seo.tsx");
 const privacy = read("src/pages/v5/Privacy.tsx");
+const headers = read("public/_headers");
 const sitemap = read("scripts/generate-sitemap.mjs");
 
 test("4PLANET MAGAZINE Founding Edition remains truthfully pre-publication", () => {
@@ -43,13 +44,20 @@ test("permanent story pages carry SEO and Article structured data", () => {
   assert.match(seo, /application\/ld\+json/);
 });
 
-test("analytics is consent-first and advertising signals stay disabled", () => {
+test("analytics is consent-first, privacy-bounded and browser-permitted", () => {
   assert.match(analytics, /consent !== "granted"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
   assert.match(analytics, /VITE_ANALYTICS_DOMAINS/);
+  assert.match(story, /magazine_engaged_read/);
+  assert.match(story, /magazine_read_depth/);
+  assert.match(story, /magazine_read_complete/);
   assert.match(privacy, /Privacy-first site measurement/);
   assert.match(privacy, /Optional product analytics/);
+  assert.match(headers, /static\.cloudflareinsights\.com/);
+  assert.match(headers, /cloudflareinsights\.com/);
+  assert.match(headers, /www\.googletagmanager\.com/);
+  assert.match(headers, /www\.google-analytics\.com/);
 });
 
 test("sitemap generator includes magazine index, transparency and public story routes", () => {
