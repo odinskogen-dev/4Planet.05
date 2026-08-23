@@ -114,6 +114,17 @@ export function readImages() {
   return value;
 }
 
+export function readFoundingEdition() {
+  const sourceFile = sourceFor("src/content/magazineEditorial.ts");
+  const constants = constantsFromSource(sourceFile);
+  const initializer = variableInitializer(sourceFile, "FOUNDING_EDITION");
+  const value = valueFromNode(initializer, constants);
+  if (!value || Array.isArray(value) || typeof value !== "object" || !Array.isArray(value.items)) {
+    throw new Error("Unable to read FOUNDING_EDITION from src/content/magazineEditorial.ts");
+  }
+  return value;
+}
+
 export function absoluteUrl(origin, value) {
   return new URL(value || "/", `${origin.replace(/\/$/, "")}/`).toString();
 }
