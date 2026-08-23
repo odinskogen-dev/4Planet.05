@@ -31,6 +31,8 @@ const MagazineSearch = lazy(() => import("@/pages/v5/MagazineLibrary").then((mod
 const MagazineSaved = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSaved })));
 const MagazineArchive = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineArchive })));
 const MagazineSignalPage = lazy(() => import("@/pages/v5/MagazineSignal").then((module) => ({ default: module.MagazineSignalPage })));
+const MagazineTopicHub = lazy(() => import("@/pages/v5/MagazineHub").then((module) => ({ default: module.MagazineTopicHub })));
+const MagazineSeriesHub = lazy(() => import("@/pages/v5/MagazineHub").then((module) => ({ default: module.MagazineSeriesHub })));
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 
@@ -97,6 +99,8 @@ export function AppRoutes() {
       <Route path="/magazine/search" element={<Suspense fallback={MagazineFallback}><MagazineSearch /></Suspense>} />
       <Route path="/magazine/saved" element={<Suspense fallback={MagazineFallback}><MagazineSaved /></Suspense>} />
       <Route path="/magazine/archive" element={<Suspense fallback={MagazineFallback}><MagazineArchive /></Suspense>} />
+      <Route path="/magazine/topics/:topic" element={<Suspense fallback={MagazineFallback}><MagazineTopicHub /></Suspense>} />
+      <Route path="/magazine/series/:series" element={<Suspense fallback={MagazineFallback}><MagazineSeriesHub /></Suspense>} />
       <Route path="/magazine/signals/:slug" element={<Suspense fallback={MagazineFallback}><MagazineSignalPage /></Suspense>} />
       <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
       <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
