@@ -15,7 +15,11 @@ const staticRoutes = [
   "/species",
   "/impact",
   "/magazine",
+  "/magazine/about",
+  "/magazine/sources",
+  "/magazine/corrections",
   "/about",
+  "/privacy",
   "/join",
 ];
 
