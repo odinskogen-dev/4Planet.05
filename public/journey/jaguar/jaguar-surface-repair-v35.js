@@ -3,11 +3,24 @@
 const d=window.__JAGS33;
 if(!d||!window.__JAGS33_P||window.__JAGS33_I)return;
 
-const decode64=(s)=>{const raw=atob(s||'');const out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out};
+d.topology='LOCAL_RECONSTRUCTION_FROM_EAR_DERIVED_VERTICES';
+d.colour='PRESENTATION_COLOUR_NOT_SOURCE_TEXTURE';
+d.motion='PROCEDURAL_PRESENTATION';
+
+const decode64=(s,expectedBytes)=>{
+  let normalized=String(s||'').replace(/\s+/g,'').replace(/-/g,'+').replace(/_/g,'/');
+  if(/[^A-Za-z0-9+/=]/.test(normalized))throw new Error('[JAGUAR] surface payload contains invalid base64 characters');
+  normalized=normalized.replace(/=+$/,'');
+  normalized+='='.repeat((4-(normalized.length%4))%4);
+  const raw=atob(normalized);
+  if(raw.length!==expectedBytes)throw new Error(`[JAGUAR] surface payload length ${raw.length} != expected ${expectedBytes}`);
+  const out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;
+};
 const encode64=(typed)=>{const bytes=new Uint8Array(typed.buffer,typed.byteOffset,typed.byteLength);let out='';const step=0x8000;for(let i=0;i<bytes.length;i+=step)out+=String.fromCharCode(...bytes.subarray(i,Math.min(bytes.length,i+step)));return btoa(out)};
-const raw=decode64(window.__JAGS33_P);
+const n=d.verts;
+const raw=decode64(window.__JAGS33_P,n*3*2);
 const q=new Uint16Array(raw.byteLength/2);const view=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);for(let i=0;i<q.length;i++)q[i]=view.getUint16(i*2,true);
-const n=d.verts;const p=new Float32Array(n*3);for(let i=0;i<p.length;i++){const axis=i%3;p[i]=d.min[axis]+(q[i]/65535)*d.span[axis]}
+const p=new Float32Array(n*3);for(let i=0;i<p.length;i++){const axis=i%3;p[i]=d.min[axis]+(q[i]/65535)*d.span[axis]}
 
 const cell=Math.max(d.span[0],d.span[1],d.span[2])/14;
 const key=(x,y,z)=>`${Math.floor(x/cell)},${Math.floor(y/cell)},${Math.floor(z/cell)}`;
@@ -25,5 +38,4 @@ const nb=new Uint8Array(n*3);for(let i=0;i<n;i++){let x=norms[i*3],y=norms[i*3+1
 const cb=new Uint8Array(n*3);for(let i=0;i<n;i++){const x=p[i*3],y=p[i*3+1],z=p[i*3+2];const spot=(Math.sin(x*17.3+y*11.7+z*7.1)+Math.sin(x*8.1-y*19.2+z*13.4))*.5;const dark=spot>.72;const belly=y<d.min[1]+d.span[1]*.28;const r=dark?.10:(belly?.74:.58),g=dark?.075:(belly?.52:.31),b=dark?.045:(belly?.24:.10);cb[i*3]=Math.round(r*255);cb[i*3+1]=Math.round(g*255);cb[i*3+2]=Math.round(b*255)}
 const edgeTarget=d.edgePairs;const ei=new Uint16Array(edgeTarget*2);for(let i=0;i<ei.length;i++)ei[i]=edgeList[i%edgeList.length];
 window.__JAGS33_N=encode64(nb);window.__JAGS33_C=encode64(cb);window.__JAGS33_I=encode64(idx);window.__JAGS33_E=encode64(ei);
-d.topology='LOCAL_RECONSTRUCTION_FROM_EAR_DERIVED_VERTICES';d.colour='PRESENTATION_COLOUR_NOT_SOURCE_TEXTURE';d.motion='PROCEDURAL_PRESENTATION';
 })();
