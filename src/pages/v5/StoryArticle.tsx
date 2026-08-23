@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
@@ -11,10 +12,58 @@ import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.03em" };
+const DEPTH_THRESHOLDS = [25, 50, 75, 90] as const;
 
 export function StoryArticle() {
   const { slug } = useParams();
   const s = slug ? storyBySlug(slug) : undefined;
+
+  useEffect(() => {
+    if (!s) return;
+
+    const seen = new Set<number>();
+    let completed = false;
+    const engagedTimer = window.setTimeout(() => {
+      trackEvent("magazine_engaged_read", {
+        story_slug: s.slug,
+        content_type: "4planet_explainer",
+        engaged_seconds: 30,
+      });
+    }, 30_000);
+
+    const measureDepth = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const depth = scrollable <= 0 ? 100 : Math.min(100, Math.round((window.scrollY / scrollable) * 100));
+
+      DEPTH_THRESHOLDS.forEach((threshold) => {
+        if (depth >= threshold && !seen.has(threshold)) {
+          seen.add(threshold);
+          trackEvent("magazine_read_depth", {
+            story_slug: s.slug,
+            content_type: "4planet_explainer",
+            depth_percent: threshold,
+          });
+        }
+      });
+
+      if (depth >= 90 && !completed) {
+        completed = true;
+        trackEvent("magazine_read_complete", {
+          story_slug: s.slug,
+          content_type: "4planet_explainer",
+        });
+      }
+    };
+
+    window.addEventListener("scroll", measureDepth, { passive: true });
+    measureDepth();
+
+    return () => {
+      window.clearTimeout(engagedTimer);
+      window.removeEventListener("scroll", measureDepth);
+    };
+  }, [s]);
+
   if (!s) return <NotFound />;
   const more = STORIES.filter((x) => x.slug !== s.slug).slice(0, 3);
   const media = img(s.image);
