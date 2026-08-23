@@ -8,6 +8,7 @@ const magazine = read("src/pages/v5/Magazine.tsx");
 const editorial = read("src/content/magazineEditorial.ts");
 const router = read("src/routes/router.tsx");
 const story = read("src/pages/v5/StoryArticle.tsx");
+const storyRecord = read("src/pages/v5/MagazineStoryRecord.tsx");
 const analytics = read("src/analytics/Analytics.tsx");
 const seo = read("src/components/Seo.tsx");
 const privacy = read("src/pages/v5/Privacy.tsx");
@@ -37,7 +38,19 @@ test("required magazine transparency routes exist", () => {
   assert.match(router, /path="\/magazine\/corrections"/);
 });
 
-test("permanent story pages carry SEO and Article structured data", () => {
+test("Founding Edition records have permanent routes without pretending to be published articles", () => {
+  assert.match(router, /path="\/magazine\/stories\/:id"/);
+  assert.match(magazine, /\/magazine\/stories\/\$\{item\.id\}/);
+  assert.match(storyRecord, /PRE-PUBLICATION STORY RECORD/);
+  assert.match(storyRecord, /robots="noindex,follow"/);
+  assert.match(storyRecord, /A permanent record is not a published article/);
+  assert.match(storyRecord, /SOURCE STATE/);
+  assert.match(storyRecord, /RIGHTS STATE/);
+  assert.match(storyRecord, /RESPONSIBILITY STATE/);
+  assert.doesNotMatch(storyRecord, /"@type"\s*:\s*"Article"/);
+});
+
+test("permanent public explainer pages carry SEO and Article structured data", () => {
   assert.match(story, /<Seo/);
   assert.match(story, /"@type": "Article"/);
   assert.match(seo, /link\[rel="canonical"\]/);
