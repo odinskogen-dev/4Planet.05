@@ -1,15 +1,26 @@
 import type { Block } from "@/content/narratives";
 import type { ImageKey } from "@/content/imageRegistry";
+import type { MagazineLane, MagazineStoryMode } from "@/content/magazineOperating";
 
 export type StoryCategory = "Perspectives" | "Mission Stories" | "Solutions";
+
+export interface StoryPathway {
+  label: string;
+  to: string;
+  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine";
+}
 
 export interface Story {
   slug: string;
   title: string;
   dek: string;
   category: StoryCategory;
+  lane: MagazineLane;
+  mode: MagazineStoryMode;
   image: ImageKey;
   readMins: number;
+  tags: string[];
+  pathway?: StoryPathway;
   blocks: Block[];
 }
 
@@ -24,8 +35,12 @@ export const STORIES: Story[] = [
     title: "Why 4Planet exists",
     dek: "People care about the living world. What they rarely have is a clear, credible way to act.",
     category: "Perspectives",
+    lane: "HUMAN",
+    mode: "EVERGREEN",
     image: "footerPlanet",
     readMins: 4,
+    tags: ["4planet", "participation", "trust", "living systems"],
+    pathway: { label: "Explore Living Systems", to: "/living-systems", kind: "living_systems" },
     blocks: [
       L("Everything we depend on is alive. Clean air, fresh water, food, stable weather and the materials we build with all rest on living systems — and those systems are under pressure."),
       P("Most people already understand this. What they struggle to find is a way in: a route from concern to action that is specific, honest and easy to follow. Environmental information tends to arrive as either abstract crisis or vague reassurance, and neither turns into participation."),
@@ -41,8 +56,12 @@ export const STORIES: Story[] = [
     title: "The four Domains",
     dek: "One living planet, read through four connected worlds — ocean, land, human systems and culture.",
     category: "Perspectives",
+    lane: "PLANET",
+    mode: "EVERGREEN",
     image: "e4rthDomainHero",
     readMins: 4,
+    tags: ["ocean", "land", "human systems", "culture", "4planet"],
+    pathway: { label: "Explore the four Domains", to: "/domains", kind: "domain" },
     blocks: [
       L("A planet is too large to act on directly. 4Planet divides it into four Domains — each a distinct part of the living system, each with its own Missions."),
       S("OCE4N"),
@@ -61,8 +80,12 @@ export const STORIES: Story[] = [
     title: "WH4LES: the intelligence that travels through whole oceans",
     dek: "A whale is not a single animal in empty water. It is part of the ocean's living infrastructure.",
     category: "Mission Stories",
+    lane: "LIFE",
+    mode: "EVERGREEN",
     image: "wh4lesHero",
     readMins: 5,
+    tags: ["whales", "ocean", "migration", "monitoring", "wh4les"],
+    pathway: { label: "Enter WH4LES", to: "/missions/wh4les", kind: "mission" },
     blocks: [
       L("Follow one whale for a year and you begin to see the ocean the way it actually works — not a flat blue surface, but a set of connected systems held together by movement."),
       P("Whales carry nutrients between feeding and breeding grounds across some of the longest migrations on Earth. Their presence supports the plankton productivity that feeds much of the sea and helps produce the oxygen we breathe."),
@@ -78,8 +101,12 @@ export const STORIES: Story[] = [
     title: "What a credible tree pathway actually looks like",
     dek: "Planting the wrong thing in the wrong place can look like climate action while doing very little.",
     category: "Solutions",
+    lane: "SOLUTIONS",
+    mode: "EVERGREEN",
     image: "clim4teHero",
     readMins: 5,
+    tags: ["restoration", "trees", "climate", "evidence", "impact"],
+    pathway: { label: "Explore CLIM4TE", to: "/missions/clim4te", kind: "mission" },
     blocks: [
       L("Climate is the largest story we have and the hardest to feel. It arrives as targets and curves. What people struggle to see is where meaningful action can actually begin."),
       P("A forest is never just trees. It is climate, water, soil, fungi, birds and thousands of relationships growing together. Restoration that lasts is planting where planting is ecologically justified, protecting what is already intact, and improving the soils and wetlands that hold everything else together."),
@@ -95,8 +122,12 @@ export const STORIES: Story[] = [
     title: "AM4ZONIA: more than a forest",
     dek: "The Amazon is closer to planetary infrastructure than to scenery.",
     category: "Mission Stories",
+    lane: "PLANET",
+    mode: "EVERGREEN",
     image: "amazoniaHero",
     readMins: 4,
+    tags: ["amazon", "rainforest", "climate", "biodiversity", "am4zonia"],
+    pathway: { label: "Enter AM4ZONIA", to: "/missions/am4zonia", kind: "mission" },
     blocks: [
       L("The Amazon is not simply a forest. It is a living climate system, a biodiversity system and a foundation for people far beyond its borders."),
       P("It moves water through the sky, stores carbon and holds an extraordinary density of life. Canopy, rivers, rainfall, soil, pollinators, seed dispersers and the Indigenous and local communities who steward it are one interdependent system — and the system is what does the work."),
@@ -112,8 +143,12 @@ export const STORIES: Story[] = [
     title: "Making impact easy — without making it fake",
     dek: "The hard part is not generosity. It is trust. 4Planet is built around that problem.",
     category: "Solutions",
+    lane: "SOLUTIONS",
+    mode: "EVERGREEN",
     image: "footerPlanet",
     readMins: 4,
+    tags: ["impact", "evidence", "trust", "delivery", "verification"],
+    pathway: { label: "See Impact", to: "/impact", kind: "impact" },
     blocks: [
       L("Most people are willing to support real environmental work. What stops them is not generosity — it is not knowing what is real."),
       P("The internet is full of impact claims that cannot be checked: trees that may not exist, offsets that may not hold, totals that no one can verify. Every unverifiable claim makes the next credible one harder to believe."),
@@ -127,3 +162,17 @@ export const STORIES: Story[] = [
 ];
 
 export const storyBySlug = (slug: string): Story | undefined => STORIES.find((s) => s.slug === slug);
+
+export function relatedStories(story: Story, limit = 3): Story[] {
+  const candidates = STORIES.filter((candidate) => candidate.slug !== story.slug).map((candidate) => {
+    const sharedTags = candidate.tags.filter((tag) => story.tags.includes(tag)).length;
+    const laneMatch = candidate.lane === story.lane ? 2 : 0;
+    const categoryMatch = candidate.category === story.category ? 1 : 0;
+    return { candidate, score: sharedTags * 3 + laneMatch + categoryMatch };
+  });
+
+  return candidates
+    .sort((a, b) => b.score - a.score || a.candidate.title.localeCompare(b.candidate.title))
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
