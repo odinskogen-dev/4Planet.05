@@ -82,7 +82,8 @@ test("public explainers are complete first-touch front doors", () => {
   assert.match(story, /SHARE/);
   assert.match(stories, /relatedStories/);
   assert.match(stories, /pathway:/);
-  assert.match(magazineSeo, /og:site_name/);
+  assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
+  assert.match(seo, /og:site_name/);
   assert.match(seo, /link\[rel="canonical"\]/);
 });
 
