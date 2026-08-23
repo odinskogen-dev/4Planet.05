@@ -26,16 +26,20 @@ export function MagazineShell({ children }: { children: ReactNode }) {
         <div className="mag-world-parent-row">
           <Link className="mag-world-parent" to="/">4PLANET_</Link>
           <span>EDITORIAL / LIVING PLANET INTELLIGENCE</span>
-          <button
-            className="mag-theme-toggle"
-            type="button"
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}
-          >
-            <span aria-hidden>{theme === "light" ? "DARK" : "LIGHT"}</span>
-            <i aria-hidden />
-          </button>
+          <div className="mag-world-utility">
+            <Link to="/magazine/search" aria-label="Search 4PLANET Magazine">SEARCH</Link>
+            <Link to="/magazine/saved" aria-label="Saved and recent reading">SAVED</Link>
+            <button
+              className="mag-theme-toggle"
+              type="button"
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              aria-pressed={theme === "dark"}
+              onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}
+            >
+              <span aria-hidden>{theme === "light" ? "DARK" : "LIGHT"}</span>
+              <i aria-hidden />
+            </button>
+          </div>
         </div>
 
         <div className="mag-world-masthead-row">
@@ -48,12 +52,13 @@ export function MagazineShell({ children }: { children: ReactNode }) {
 
         <nav className="mag-world-primary-nav" aria-label="Magazine primary navigation">
           <Link to="/magazine">LATEST</Link>
-          <Link to="/magazine?topic=FIELD">FIELD</Link>
+          <Link to="/magazine?lane=LIFE">LIFE</Link>
+          <Link to="/magazine?lane=PLANET">PLANET</Link>
           <Link to="/magazine?topic=INNOVATION">INNOVATION</Link>
-          <Link to="/magazine?topic=NATURE">NATURE</Link>
-          <Link to="/magazine?topic=DESIGN">DESIGN</Link>
-          <Link to="/magazine?topic=CULTURE">CULTURE</Link>
-          <Link to="/magazine#topics">ALL TOPICS</Link>
+          <Link to="/magazine?lane=PEOPLE">PEOPLE</Link>
+          <Link to="/magazine?lane=CULTURE">CULTURE</Link>
+          <Link to="/magazine?lane=HUMAN">IDEAS</Link>
+          <Link to="/magazine#topics">TOPICS +</Link>
         </nav>
       </header>
 
@@ -69,9 +74,9 @@ export function MagazineShell({ children }: { children: ReactNode }) {
           <div>
             <p>READ</p>
             <Link to="/magazine">Latest</Link>
-            <Link to="/magazine?topic=INNOVATION">Innovation</Link>
-            <Link to="/magazine?topic=FIELD">Field</Link>
-            <Link to="/magazine?topic=PEOPLE">People</Link>
+            <Link to="/magazine/search">Search</Link>
+            <Link to="/magazine/saved">Saved / recent</Link>
+            <Link to="/magazine/archive">Archive</Link>
           </div>
           <div>
             <p>TOPICS</p>
