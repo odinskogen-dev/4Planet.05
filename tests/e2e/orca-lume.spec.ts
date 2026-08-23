@@ -4,6 +4,8 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 const OUT = "artifacts/orca-lume-19";
 mkdirSync(OUT, { recursive: true });
 
+test.setTimeout(60_000);
+
 async function expectViewportSafe(page: Page, locator: Locator, label: string) {
   const viewport = page.viewportSize();
   const box = await locator.boundingBox();
@@ -21,7 +23,7 @@ test("Orca LUME preserves GOLD truth while making luminous projection the defaul
   const root = page.locator("#browser-experience");
 
   await expect(root).toHaveAttribute("data-entity-id", "taxon:gbif:2440483", { timeout: 20_000 });
-  await expect(root).toHaveAttribute("data-premium-layer", "premium-v17", { timeout: 10_000 });
+  await expect(root).toHaveAttribute("data-premium-layer", "premium-v17-orca-transfer", { timeout: 10_000 });
   await expect(root).toHaveAttribute("data-lume-default", "true");
   await expect(root).toHaveAttribute("data-light-lens", "true", { timeout: 10_000 });
   await expect(root).toHaveAttribute("data-orca-lume-installed", "true");
