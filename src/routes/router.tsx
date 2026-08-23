@@ -27,6 +27,8 @@ const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module)
 const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
 const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineCorrections })));
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
+const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
+const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -34,6 +36,10 @@ const WorldFallback = (
 
 const MagazineFallback = (
   <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
+);
+
+const ActorFallback = (
+  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
 );
 
 const toImpact = <Navigate to="/impact" replace />;
@@ -81,6 +87,8 @@ export function AppRoutes() {
       <Route path="/people" element={<Navigate to="/join" replace />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
+      <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
+      <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
