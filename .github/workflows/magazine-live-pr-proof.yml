@@ -22,7 +22,7 @@ jobs:
             mag_headers="$RUNNER_TEMP/mag.txt"
             article_headers="$RUNNER_TEMP/article.txt"
             atlas_headers="$RUNNER_TEMP/atlas.txt"
-            mag_code=$(curl -sS -D "$mag_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine' || true)
+            mag_code=$(curl -sS -D "$mag_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' || true)
             article_code=$(curl -sS -D "$article_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/why-4planet-exists/' || true)
             atlas_code=$(curl -sS -D "$atlas_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas' || true)
             root_code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/' || true)
