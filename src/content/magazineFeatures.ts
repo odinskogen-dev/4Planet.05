@@ -10,3 +10,10 @@ export const MAGAZINE_FEATURES: Record<string, MagazineFeature> = {
 export function featureForStory(slug: string): MagazineFeature | undefined {
   return MAGAZINE_FEATURES[slug];
 }
+
+export function featureReadMins(slug: string, fallback = 5): number {
+  const feature = featureForStory(slug);
+  if (!feature) return fallback;
+  const words = feature.blocks.reduce((total, block) => total + block.t.trim().split(/\s+/).filter(Boolean).length, 0);
+  return Math.max(fallback, Math.ceil(words / 190));
+}
