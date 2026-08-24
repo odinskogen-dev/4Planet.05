@@ -12,11 +12,12 @@
     const loading = document.getElementById('loading');
     const fallback = document.getElementById('photo-fallback');
     const controls = document.getElementById('controls');
+    const enter = document.getElementById('enter');
     if (!root || !stage || root.dataset.jaguarEarFullBooted === 'true') return;
 
     root.dataset.jaguarEarFullBooted = 'true';
     root.dataset.jaguarEarFull = 'loading';
-    root.dataset.jaguarEarDelivery = 'direct-official-embed-v45';
+    root.dataset.jaguarEarDelivery = 'direct-official-embed-v46';
 
     let ready = false;
     let failed = false;
@@ -50,7 +51,12 @@
 
     const encounterActive = () => Number(root.dataset.scene || '0') === 0;
 
+    function ensureShellMounted() {
+      if (!shell.isConnected || shell.parentElement !== stage) stage.appendChild(shell);
+    }
+
     function publishReady() {
+      ensureShellMounted();
       ready = true;
       failed = false;
       if (timeout) clearTimeout(timeout);
@@ -84,6 +90,7 @@
     }
 
     function armLoad() {
+      ensureShellMounted();
       const generation = ++loadGeneration;
       root.dataset.jaguarEarFull = 'loading';
       shell.dataset.ready = 'false';
@@ -100,6 +107,7 @@
 
     function show() {
       if (!encounterActive() || document.hidden) return;
+      ensureShellMounted();
       shell.style.removeProperty('display');
       if (iframe.src === 'about:blank' || !iframe.getAttribute('src')) {
         ready = false;
@@ -125,6 +133,7 @@
 
     const observer = new MutationObserver(() => encounterActive() ? show() : hide());
     observer.observe(root, { attributes: true, attributeFilter: ['data-scene'] });
+    enter?.addEventListener('click', () => requestAnimationFrame(() => requestAnimationFrame(show)));
     document.addEventListener('visibilitychange', () => document.hidden ? hide() : show());
     window.addEventListener('pagehide', hide, { once: true });
 
