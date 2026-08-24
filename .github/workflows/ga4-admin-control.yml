@@ -12,7 +12,7 @@ on:
           - audit
           - apply
   push:
-    branches: [ops-ga4-setup]
+    branches: [king/test]
     paths:
       - .github/workflows/ga4-admin-control.yml
       - scripts/ga4-admin-control.py
