@@ -4,7 +4,7 @@ export type CoordinationDonor = {
   id: string;
   pullRequest: number;
   branch: string;
-  verifiedHead?: string;
+  verifiedHeadPrefix?: string;
   headState: "VERIFIED_THIS_RECOVERY" | "CONFLICT_REVERIFY";
   provenValue: string[];
   adopt: string[];
@@ -18,7 +18,7 @@ export const COORDINATION_DONORS: CoordinationDonor[] = [
     id: "P17_ACTOR_ATLAS_PRIVATE_BETA",
     pullRequest: 20,
     branch: "build/p17-actor-atlas-private-beta",
-    verifiedHead: "387e276d",
+    verifiedHeadPrefix: "387e276d",
     headState: "VERIFIED_THIS_RECOVERY",
     provenValue: ["shared Actor profiles", "Actor index", "Actor Mode prototype", "claim/correction controls"],
     adopt: ["identity/source/geography/claim semantics where still compatible", "correction/review patterns"],
@@ -30,7 +30,7 @@ export const COORDINATION_DONORS: CoordinationDonor[] = [
     id: "P17_ORGANISATIONS_SCALE_GATE",
     pullRequest: 21,
     branch: "build/p17-organisations-discovery-scale-gate-final",
-    verifiedHead: "ed04832e",
+    verifiedHeadPrefix: "ed04832e",
     headState: "VERIFIED_THIS_RECOVERY",
     provenValue: ["10 flagship Actor profiles", "50 source-mapped claims", "curated collections", "native ATLAS Actor Mode", "typed correction/review contract"],
     adopt: ["Actor identity/source/geography grammar", "ATLAS Actor overlay pattern", "stress-test archetypes"],
@@ -42,7 +42,7 @@ export const COORDINATION_DONORS: CoordinationDonor[] = [
     id: "P17_KNOWLEDGE_SOURCE_GRAPH",
     pullRequest: 28,
     branch: "build/p17-knowledge-institutions-source-graph",
-    verifiedHead: "c4f801bc",
+    verifiedHeadPrefix: "c4f801bc",
     headState: "VERIFIED_THIS_RECOVERY",
     provenValue: ["454 Source Graph nodes", "823 source-bearing relations", "15-source queue", "typed Source Graph", "bounded OBIS/WoRMS connector proofs"],
     adopt: ["typed Source Graph contract", "semantic hard stops", "connector provenance/failure contract", "OBIS/WoRMS bounded proofs"],
@@ -54,7 +54,7 @@ export const COORDINATION_DONORS: CoordinationDonor[] = [
     id: "TREE_OF_LIFE_ACTION_INTELLIGENCE",
     pullRequest: 80,
     branch: "build/tree-of-life-action-intelligence-sandbox",
-    verifiedHead: "434bcffc",
+    verifiedHeadPrefix: "434bcffc",
     headState: "VERIFIED_THIS_RECOVERY",
     provenValue: ["Planetary Action loop", "Actor/Capital separation", "public/private Capital boundary", "interactive Tree sandbox"],
     adopt: ["action-loop intent", "Actor/Capital/Impact separation", "shared-core renderer principle"],
@@ -77,7 +77,7 @@ export const COORDINATION_DONORS: CoordinationDonor[] = [
     id: "S4PIENS_ACTOR_INNOVATION_ENGINE",
     pullRequest: 83,
     branch: "build/s4piens-universe-domain",
-    verifiedHead: "a5c87f85",
+    verifiedHeadPrefix: "a5c87f85",
     headState: "VERIFIED_THIS_RECOVERY",
     provenValue: ["Actor distinct from Solution", "Innovation first-class", "Actor Gold pair", "S4PIENS response chain"],
     adopt: ["Actor/Solution/Innovation separation", "shared Actor identity intent", "cross-domain transfer requirements"],
@@ -92,6 +92,7 @@ export const DONOR_RECOVERY_RULES = [
   "Recover proven primitives, not stale whole branches.",
   "Revalidate public facts and relationship states before reuse.",
   "A conflicting remembered donor head fails closed to REVERIFY.",
+  "Head references recorded here are verified short prefixes, never claimed as complete exact SHAs.",
   "Current Actor Gold presentation is not replaced by older Actor UI without a separate product-quality gate.",
   "No donor may create a second Actor, Capital, Solution, Source or Project truth store.",
 ] as const;
