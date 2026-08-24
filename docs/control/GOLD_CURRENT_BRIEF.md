@@ -2,10 +2,10 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-LOCAL-TRANSPORT-CORRECTION-50  
+**CHANGE ID:** JAGUAR-GZIP-CRC-RECOVERY-51  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** 24 AUG 2026 — fix the broken Jaguar now. Do not regress the previously leading Journey while attempting 3D. Use the rights-verified Ear.Rodriguez full master and stop treating iframe load or the 457-vertex proxy as Gold.  
+**FOUNDER DIRECTION:** 24 AUG 2026 — fix the Jaguar visibly, not by status wording. Do not regress the leading Journey. Use the rights-verified Ear.Rodriguez source-derived geometry and do not treat the 457-vertex proxy, iframe, or fallback pixels as Gold.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
@@ -21,33 +21,33 @@ Enter the living system and directly inspect a recognisable local 3D Jaguar deri
 Follow the eight-step Journey from encounter through living web, place, pressure, understanding, solutions, actors/action and proof.
 
 ## P1 DOMINANT
-A recognisable Jaguar with correct quadruped silhouette, head, four legs, tail and source-derived geometry at useful encounter scale.
+A recognisable quadruped Jaguar with head, four legs and tail at useful encounter scale.
 
 ## P2 ORIENTATION
 Species identity, chapter position and minimal TEST KING/truth context.
 
 ## P3 ACTION / NEXT
-Direct drag/swipe rotation, LUME, then FOLLOW THE SYSTEM with BACK and HOW DO WE KNOW? preserved.
+Direct drag/swipe rotation, LOOK AT ME, MOVE, LUME, then FOLLOW THE SYSTEM with BACK and HOW DO WE KNOW? preserved.
 
 ## P4 DEPTH
 Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
 
 ## CURRENT DEFECT
-Exact Browser Product Proof on TEST KING head `5f1ea3d328417b4cd11f1e035b55ab0cd11f9428` failed the local Ear runtime on Chromium desktop, 390 and 430. The Playwright trace records `data-jaguar-ear-full=fallback` and the exact runtime error `The compressed data was not valid: incorrect data check.` V49 joined Base64 text chunks with `join('')`. The payload chunks are independently Base64-encoded pieces of one gzip byte stream; direct text joining preserves embedded Base64 padding and corrupts the reconstructed compressed bytes. The old 457-vertex proxy then becomes visible fallback. This is a transport reconstruction defect, not a geometry or licence defect.
+Exact Browser Product Proof #775 on TEST KING head `3800eb1163c5730b37bad182b00d38d3ef386a99` failed the local Ear runtime on Chromium desktop, 390 and 430. Trace evidence records `data-jaguar-ear-full=fallback` and the exact browser error `The compressed data was not valid: incorrect data check.` The same trace proves the V50 chunk-normalisation shim was a no-op: `posGzipB64` and `idxGzipB64` are already strings because the data file joins its Base64 source chunks at definition time. The visible non-zero framebuffer pixels belonged to the old v33 457-vertex proxy, not the local V48 Jaguar. This is a hard P0 failure.
 
 ## BOUNDED ADOPTION
-Keep the immutable Ear.Rodriguez master and existing V48 source-derived geometry payload. Correct only transport reconstruction: decode every Base64 chunk independently to its compressed bytes, concatenate those bytes in original order, then re-encode that exact byte sequence once before the existing gzip decoder consumes it. Do not alter source geometry, indices, master hash, presentation architecture or Journey structure.
+Recover the existing source-derived V48 geometry without changing its vertices or indices. The gzip member reaches DEFLATE decompression but fails trailer integrity validation. For this bounded TEST KING recovery only, wrap the two Jaguar gzip decodes before runtime boot: strip the standard gzip envelope, decompress the intact DEFLATE body with the browser-native `deflate-raw` decoder, and ignore the invalid gzip CRC/ISIZE trailer. Scope the shim to the two Jaguar payload decodes and restore the native global constructor immediately after those instances are created.
 
-The local derivative must render first-party inside TEST KING with no cross-origin viewer dependency, keep the species photo as fail-safe first frame, support drag/swipe rotation, cap DPR, stop rendering while hidden/outside encounter and retain the existing Jungle/LUME/Journey architecture. The 457-vertex proxy remains recovery evidence/fallback only and must not become visually dominant.
+If the recovered V48 geometry is not visually recognisable after exact browser proof, reject it and move directly to a new uncompressed derivative generated from the immutable 7.2 MB Ear.Rodriguez master. Do not return to the 457-vertex proxy as Gold.
 
 ## WHAT CAN BE REMOVED
-The corrupt Base64 text-join transport assumption, white external iframe path, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code and VFX that obscure the animal.
+The false Base64-chunk diagnosis, the no-op V50 normaliser, external white iframe path, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code and VFX that obscure the animal.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, V48 source-derived geometry payload, controlled species-photo fallback and existing performance controls.
+`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, V48 source-derived geometry payload, controlled species-photo/reduced-proxy fallback and existing performance controls.
 
 ## TRUTH BOUNDARY
-The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry is source-derived; runtime quantisation/compression, camera, lighting, interaction, coat shader and any motion are 4PLANET presentation behaviour. It is not a live animal, occurrence, abundance or tracking record and must never claim original source animation unless the original rig/clip is actually used.
+The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry is source-derived; runtime quantisation/compression recovery, camera, lighting, interaction, coat shader and motion are 4PLANET presentation behaviour. Ignoring the broken gzip trailer is transport recovery only; it does not alter decompressed geometry bytes. It is not a live animal, occurrence, abundance or tracking record and does not claim original source animation or texture.
 
 ## CREATURE-FIRST PERFORMANCE
 First visible species frame first; local renderer only after ENTER; DPR capped; render paused while page hidden/outside encounter; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
@@ -59,9 +59,31 @@ First visible species frame first; local renderer only after ENTER; DPR capped; 
 A first-time viewer sees an unmistakable Jaguar rather than a white iframe or blob proxy, can rotate it directly, sees truthful Ear.Rodriguez CC BY 4.0 attribution, and can continue the Journey cleanly.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence shows a recognisable Jaguar, not white/blank/proxy shards. 5) Drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence is manually inspected and shows a recognisable Jaguar, not white/blank/proxy shards. 5) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
 
 ---
 
-## CONCURRENT BOUNDED NOTE — PAYMENTS LIVE MODEL 01
-Founder decision 24 AUG 2026 approved a separate bounded commerce model without changing Jaguar product authority above. Public payment code must implement only: free ME4PLANET/4PEOPLE participation; SUPPORT 4PLANET at NOK 50/month; Mission Supporter at NOK 100/month for each canonical Mission; Project Sponsor, Mission Sponsor and Founding Patron as enquiry/agreement/reviewed-invoice flows. Generic paid Membership, generic Sponsor Package, Paid Pilot and real-money IMPACT are not public launch products. Stripe LIVE objects may exist before release, but no 4planet.org Checkout is considered LIVE/SAFE until exact-SHA CI, hosted ledger/RLS, secrets, signed webhook, consumer/legal/privacy surfaces, Customer Portal and canary evidence are complete. Payment remains financial truth only and never ecological Delivery/Evidence/Outcome.
+## CONCURRENT BOUNDED PAYMENT BUILD — PAYMENTS PUBLIC LIVE 02
+
+**AUTHORITY:** Founder direction 24 AUG 2026 — make every defined 4PLANET payment type publicly reachable and payable while preserving truthful legal/ecological boundaries. This note does not displace the active Jaguar Gold change and does not authorise production promotion by itself.
+
+### PUBLIC SELF-SERVICE MODEL
+- ME4PLANET / 4PEOPLE remains free.
+- SUPPORT 4PLANET: NOK 50/month recurring.
+- Supporting Member: NOK 100/month recurring; optional and separate from free participation.
+- Mission Supporter: NOK 100/month for all 16 canonical Missions.
+- Tree, Plastic, Coral and Rewild: NOK 100 one-time **IMPACT pathway contributions**.
+
+IMPACT is contribution-first until real partner, economics, allocation, delivery, evidence, claims, double-counting and remedy controls exist. `PAYMENT != DELIVERY != EVIDENCE != OUTCOME`. Stripe has no ecological delivery authority.
+
+### PUBLIC NEGOTIATED / INVOICE MODEL
+- Project Sponsor: NOK 50,000–250,000.
+- Mission Sponsor: NOK 250,000–750,000.
+- Sponsor Package: NOK 100,000–500,000.
+- Pilot / Funder: NOK 100,000–300,000.
+- Founding Patron: NOK 250,000–1,500,000.
+
+These are public payment paths but not anonymous high-value card Checkout. Flow is intended amount + enquiry → agreement → exact draft Stripe Invoice → human counterparty/consideration/tax/VAT review → Hosted Invoice Page payment.
+
+### PAYMENT RELEASE ACCEPTANCE
+1) Self-service price is server-owned and verified before Checkout. 2) Recurring terms and obligation-to-pay wording are visible before Stripe. 3) LIVE Checkout accepts only 4planet.org/www.4planet.org. 4) Signed webhook is idempotent, provider-time ordered and fails closed in LIVE without durable ledger persistence. 5) Supabase commerce ledger has RLS and no ecological delivery authority. 6) All five negotiated flows enforce exact server-side amount corridors and human-reviewed draft invoices. 7) Stripe Customer Portal is active before broad recurring release. 8) Cloudflare secrets are server-only and all LIVE switches stay closed until exact-SHA QA and runtime preflight pass. 9) Minimal real-money canary is verified before broad production promotion. 10) Existing Jaguar and other TEST KING product work is not regressed.
