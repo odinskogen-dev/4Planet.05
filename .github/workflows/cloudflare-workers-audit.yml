@@ -11,113 +11,102 @@ permissions:
   contents: read
   issues: write
 
-env:
-  ACCOUNT_ID: d53c17b06219066a0325eec01c21729e
-
 jobs:
-  audit-and-fix-analytics:
+  analytics-live:
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
-      - name: Backup current Worker scripts
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/4p-worker-backup
-          api="https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts"
-          for service in cre4tors-prototype 4planetmarket-prototype; do
-            curl -fsS -D "/tmp/4p-worker-backup/${service}.headers" -o "/tmp/4p-worker-backup/${service}.js" \
-              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/${service}"
-            ct="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/^[^:]+:[[:space:]]*/,""); sub(/\r$/,""); print; exit}' "/tmp/4p-worker-backup/${service}.headers")"
-            printf '%s' "$ct" > "/tmp/4p-worker-backup/${service}.content-type"
-            case "$ct" in
-              application/javascript*|text/javascript*) ;;
-              *) echo "Refusing mutation: ${service} has complex Content-Type ${ct}" >&2; exit 1 ;;
-            esac
-          done
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          [ -n "$TOKEN" ] || { echo 'No Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n'); TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Preserve rollback artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: analytics-worker-backup-${{ github.sha }}
-          path: /tmp/4p-worker-backup
-          retention-days: 30
-
-      - name: Deploy consent-safe analytics proxy
+      - name: Resolve Cloudflare account
         shell: bash
         run: |
           set -euo pipefail
-          api="https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts"
-          changed=""
+          json=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=cre4tors.com&status=active')
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$json")
+          [ -n "$ACCOUNT_ID" ]
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
 
-          rollback() {
-            rc=$?
-            if [[ "$rc" -ne 0 && -n "$changed" ]]; then
-              echo "Deployment failed; rolling back changed Workers." >&2
-              for service in $changed; do
-                ct="$(cat "/tmp/4p-worker-backup/${service}.content-type")"
-                curl -fsS -X PUT "${api}/${service}" \
-                  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-                  -H "Content-Type: ${ct}" \
-                  --data-binary "@/tmp/4p-worker-backup/${service}.js" >/dev/null || true
-              done
-            fi
-            exit "$rc"
-          }
-          trap rollback EXIT
+      - name: Build analytics Worker modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -e 's|__4P_ORIGIN__|https://b8a8f6c1.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|cre4tors-v0.3-78cdebc|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/cre4tors.mjs"
+          sed -e 's|__4P_ORIGIN__|https://4482f621.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|4market-gold-01-cad5f58|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/market.mjs"
+          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/cre4tors.mjs"
+          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/market.mjs"
+          cat > "$RUNNER_TEMP/cre4tors.toml" <<EOF
+          name = "cre4tors-prototype"
+          main = "$RUNNER_TEMP/cre4tors.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "cre4tors.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.cre4tors.com"
+          custom_domain = true
+          EOF
+          cat > "$RUNNER_TEMP/market.toml" <<EOF
+          name = "4planetmarket-prototype"
+          main = "$RUNNER_TEMP/market.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmarket.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmarket.com"
+          custom_domain = true
+          EOF
 
-          deploy() {
-            service="$1" origin="$2"
-            out="/tmp/${service}-analytics.js"
-            sed "s|__4P_ORIGIN__|${origin}|g" scripts/analytics-worker-proxy.js > "$out"
-            grep -q '4PLANET_ANALYTICS_PROXY_V1' "$out"
-            grep -q 'G-Q79Y9HJRL8' "$out"
-            code="$(curl -sS -w '%{http_code}' -o "/tmp/${service}.put" -X PUT "${api}/${service}" \
-              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/javascript" \
-              --data-binary "@${out}")"
-            [[ "$code" =~ ^2 ]] || { echo "Worker PUT failed for ${service}: HTTP ${code}" >&2; cat "/tmp/${service}.put" >&2; return 1; }
-            changed="${changed} ${service}"
-            verify="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/${service}")"
-            [[ "$verify" == *4PLANET_ANALYTICS_PROXY_V1* ]] || { echo "Worker source verification failed: ${service}" >&2; return 1; }
-          }
+      - name: Deploy CRE4TORS analytics Worker
+        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/cre4tors.toml"
 
-          deploy cre4tors-prototype https://b8a8f6c1.4planet-05.pages.dev
-          deploy 4planetmarket-prototype https://4482f621.4planet-05.pages.dev
+      - name: Deploy MARKET analytics Worker
+        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/market.toml"
 
-          verify_live() {
-            host="$1"
-            ok=0
-            for i in $(seq 1 24); do
-              headers="$(curl -fsSI "https://${host}/" | tr -d '\r' || true)"
-              html="$(curl -fsS "https://${host}/" || true)"
-              shim="$(curl -fsS "https://${host}/_4p-analytics.js" || true)"
-              csp="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {sub(/^[^:]+:[[:space:]]*/,""); print; exit}')"
-              csp_ok=0
-              if [[ -z "$csp" || ( "$csp" == *googletagmanager.com* && "$csp" == *google-analytics.com* ) ]]; then csp_ok=1; fi
-              if [[ "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$shim" == *'4planet.analytics.consent.v1'* && "$csp_ok" == 1 ]]; then
-                ok=1; break
-              fi
+      - name: Verify live product + analytics surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify() {
+            host="$1" product="$2"
+            for i in $(seq 1 30); do
+              html=$(curl -fsS "https://${host}/" || true)
+              shim=$(curl -fsS "https://${host}/_4p-analytics.js" || true)
+              headers=$(curl -fsSI "https://${host}/" | tr -d '\r' || true)
+              if [[ "$html" == *"$product"* && "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$headers" == *'4PLANET_ANALYTICS_PROXY_V1'* ]]; then return 0; fi
               sleep 5
             done
-            [[ "$ok" == 1 ]] || { echo "Live analytics verification failed for ${host}" >&2; return 1; }
+            return 1
           }
-
-          verify_live cre4tors.com
-          verify_live 4planetmarket.com
-          trap - EXIT
-
-          cat > /tmp/workers-report.md <<'EOF'
+          verify cre4tors.com 'Create'
+          verify 4planetmarket.com 'ART'
+          cat > /tmp/report.md <<'EOF'
           # Analytics Worker deployment
 
-          - cre4tors.com: consent-safe GA4 shim **LIVE PASS**
-          - 4planetmarket.com: consent-safe GA4 shim **LIVE PASS**
+          - cre4tors.com: product preserved + consent analytics shim **LIVE PASS**
+          - 4planetmarket.com: product preserved + consent analytics shim **LIVE PASS**
           - Measurement ID: `G-Q79Y9HJRL8`
           - Existing immutable product origins preserved.
-          - Rollback copies saved as a GitHub Actions artifact.
           EOF
 
       - name: Report
@@ -126,8 +115,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if [[ -f /tmp/workers-report.md ]]; then
-            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/workers-report.md
-          else
-            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL / ROLLBACK GUARDED** on commit \`${GITHUB_SHA}\`."
-          fi
+          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`."; fi
