@@ -7,9 +7,10 @@ import { trackMagazineEntry, trackMagazineSecondObject, trackMagazineShare } fro
 import { Editorial } from "@/components/Editorial";
 import { storyBySlug, relatedStories } from "@/content/stories";
 import { featureForStory } from "@/content/magazineFeatures";
+import { standfirstForStory } from "@/content/magazineStandfirsts";
 import { MAGAZINE_STORY_MODES, MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import { MAGAZINE_ARTICLE_TEMPLATES } from "@/content/magazineEngine";
-import { experienceContractForStory, experienceForStory } from "@/content/magazineExperience";
+import { experienceForStory } from "@/content/magazineExperience";
 import { isStorySaved, recordMagazineRecent, recordMagazineResume, toggleSavedStory } from "@/content/magazineReader";
 import { img, missionSecondary } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
@@ -17,6 +18,7 @@ import "@/styles/magazine-article.css";
 import "@/styles/magazine-article-gold.css";
 import "@/styles/magazine-article-modes.css";
 import "@/styles/magazine-article-round-06.css";
+import "@/styles/magazine-article-premium-reader.css";
 import "@/styles/magazine-world.css";
 
 const DEPTH_THRESHOLDS = [25, 50, 75, 90] as const;
@@ -98,7 +100,7 @@ export function StoryArticle() {
   const more = relatedStories(s, 3);
   const nextStory = more[0];
   const experience = experienceForStory(s);
-  const experienceContract = experienceContractForStory(s);
+  const standfirst = standfirstForStory(s.slug, s.dek);
   const articleWords = articleBlocks.reduce((total, block) => total + block.t.trim().split(/\s+/).filter(Boolean).length, 0);
   const readMins = Math.max(s.readMins, Math.ceil(articleWords / 190));
 
@@ -114,7 +116,7 @@ export function StoryArticle() {
 
   const shareStory = async () => {
     const url = window.location.href;
-    const data = { title: s.title, text: s.dek, url };
+    const data = { title: s.title, text: standfirst, url };
     if (navigator.share) {
       try {
         await navigator.share(data);
@@ -142,7 +144,7 @@ export function StoryArticle() {
     <MagazineShell>
       <MagazineSeo
         title={`${s.title} | 4PLANET MAGAZINE`}
-        description={s.dek}
+        description={standfirst}
         path={`/magazine/${s.slug}`}
         image={media.src}
         imageAlt={media.alt}
@@ -152,7 +154,7 @@ export function StoryArticle() {
           "@context": "https://schema.org",
           "@type": "Article",
           headline: s.title,
-          description: s.dek,
+          description: standfirst,
           image: [imageUrl],
           mainEntityOfPage: canonicalUrl,
           author: { "@type": "Organization", name: s.byline },
@@ -166,7 +168,7 @@ export function StoryArticle() {
 
       <div className="mag-reading-progress" aria-hidden><span ref={progressRef} /></div>
 
-      <article className={`mag-article-world mag-experience mag-experience--${experience.toLowerCase().replace(/_/g, "-")}`} data-longform={feature ? "true" : "false"}>
+      <article className={`mag-article-world mag-premium-reader mag-experience mag-experience--${experience.toLowerCase().replace(/_/g, "-")}`} data-longform={feature ? "true" : "false"}>
         <header className="mag-article-world-header">
           <div className="mag-article-world-kicker">
             <span>{template?.label ?? s.franchise.replace(/_/g, " ")}</span><span>·</span><span>{mode.label}</span><span>·</span><span>{readMins} MIN</span>{s.location ? <><span>·</span><span>{s.location}</span></> : null}
@@ -177,12 +179,15 @@ export function StoryArticle() {
         <section className="mag-article-world-hero">
           <figure>
             <img src={media.src} alt={media.alt} />
-            <figcaption><strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong><span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span></figcaption>
+            <figcaption>
+              <strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong>
+              <span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span>
+            </figcaption>
           </figure>
         </section>
 
         <section className="mag-article-world-intro" aria-label="Story introduction">
-          <p className="mag-article-world-dek">{s.dek}</p>
+          <p className="mag-article-world-dek">{standfirst}</p>
           <div className="mag-article-world-meta">
             <div><span>BY {s.byline}</span><span>{editorialLabel(s.editorialType)}</span>{s.asOf ? <span>AS OF {s.asOf}</span> : null}</div>
             <div className="mag-reader-actions">
@@ -218,24 +223,68 @@ export function StoryArticle() {
           </section>
         ) : null}
 
-        {s.topics?.length ? <nav className="mag-article-topics" aria-label="Story topics">{s.topics.map((topicId) => { const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId); return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>; })}</nav> : null}
+        {s.topics?.length ? (
+          <nav className="mag-article-topics" aria-label="Story topics">
+            {s.topics.map((topicId) => {
+              const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId);
+              return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>;
+            })}
+          </nav>
+        ) : null}
 
         <section className="mag-source-desk" aria-labelledby="source-desk-title">
           <div className="mag-source-desk-inner">
             <div><p className="mag-source-label">HOW WE KNOW</p><h2 id="source-desk-title">The evidence stays attached.</h2></div>
             <div className="mag-source-desk-copy">
               <p>{s.reportingNote ?? template?.trustRule ?? "Material claims should remain traceable to source objects, while uncertainty and corrections remain visible."}</p>
-              {sources.length ? <div className="mag-source-list">{sources.map((source, index) => <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}><div><span className="mag-source-number">{String(index + 1).padStart(2, "0")}</span><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b></a>)}</div> : <div className="mag-source-list"><Link className="mag-source-item" to="/magazine/sources"><div><strong>4PLANET Sources & Method</strong><span>Organisational explainer source workflow</span></div><b>OPEN →</b></Link></div>}
+              {sources.length ? (
+                <div className="mag-source-list">
+                  {sources.map((source, index) => (
+                    <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}>
+                      <div><span className="mag-source-number">{String(index + 1).padStart(2, "0")}</span><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="mag-source-list"><Link className="mag-source-item" to="/magazine/sources"><div><strong>4PLANET Sources & Method</strong><span>Organisational explainer source workflow</span></div><b>OPEN →</b></Link></div>
+              )}
               <div className="mag-trust-links"><Link to="/magazine/sources">SOURCES & METHOD →</Link><Link to="/magazine/corrections">CORRECTIONS →</Link></div>
             </div>
           </div>
         </section>
 
-        {s.pathway ? <section className="mag-second-object" aria-labelledby="second-object-title"><div className="mag-second-object-inner"><p className="mono">ONE USEFUL NEXT OBJECT</p><h2 id="second-object-title">Keep the context. Go deeper.</h2><p className="mag-second-object-note">{template?.secondObjectRule}</p><Link to={s.pathway.to} onClick={() => trackMagazineSecondObject(s.slug, s.pathway!.to, s.pathway!.kind)}>{s.pathway.label} <span aria-hidden>→</span></Link></div></section> : null}
+        {s.pathway ? (
+          <section className="mag-second-object" aria-labelledby="second-object-title">
+            <div className="mag-second-object-inner">
+              <p className="mono">ONE USEFUL NEXT OBJECT</p>
+              <h2 id="second-object-title">Keep the context. Go deeper.</h2>
+              <p className="mag-second-object-note">{template?.secondObjectRule}</p>
+              <Link to={s.pathway.to} onClick={() => trackMagazineSecondObject(s.slug, s.pathway!.to, s.pathway!.kind)}>{s.pathway.label} <span aria-hidden>→</span></Link>
+            </div>
+          </section>
+        ) : null}
 
         <section className="mag-related-editorial" aria-labelledby="related-editorial-title">
-          <header className="mag-related-editorial-head"><h2 id="related-editorial-title">Keep reading.</h2><div className="mag-end-tools"><button type="button" className="mag-share-button" onClick={toggleSave}>{saved ? "SAVED ✓" : "SAVE FOR LATER +"}</button><button type="button" className="mag-share-button" onClick={shareStory}>SHARE THIS STORY ↗</button></div></header>
-          <div className="mag-related-editorial-grid">{more.map((story) => { const relatedFeature = featureForStory(story.slug); const relatedMedia = img(relatedFeature?.hero ?? story.image); return <Link className="mag-related-editorial-card" key={story.slug} to={`/magazine/${story.slug}`} onClick={() => { trackEvent("magazine_story_open", { story_slug: story.slug, content_type: story.editorialType.toLowerCase(), source_story: s.slug }); trackMagazineSecondObject(s.slug, `/magazine/${story.slug}`, "related_story"); }}><img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" /><span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {story.readMins} MIN</span><strong>{story.title}</strong></Link>; })}</div>
+          <header className="mag-related-editorial-head">
+            <h2 id="related-editorial-title">Keep reading.</h2>
+            <div className="mag-end-tools"><button type="button" className="mag-share-button" onClick={toggleSave}>{saved ? "SAVED ✓" : "SAVE FOR LATER +"}</button><button type="button" className="mag-share-button" onClick={shareStory}>SHARE THIS STORY ↗</button></div>
+          </header>
+          <div className="mag-related-editorial-grid">
+            {more.map((story) => {
+              const relatedFeature = featureForStory(story.slug);
+              const relatedMedia = img(relatedFeature?.hero ?? story.image);
+              return (
+                <Link className="mag-related-editorial-card" key={story.slug} to={`/magazine/${story.slug}`} onClick={() => {
+                  trackEvent("magazine_story_open", { story_slug: story.slug, content_type: story.editorialType.toLowerCase(), source_story: s.slug });
+                  trackMagazineSecondObject(s.slug, `/magazine/${story.slug}`, "related_story");
+                }}>
+                  <img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" />
+                  <span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {story.readMins} MIN</span>
+                  <strong>{story.title}</strong>
+                </Link>
+              );
+            })}
+          </div>
           {nextStory ? <Link className="mag-next-story" to={`/magazine/${nextStory.slug}`}>NEXT STORY — {nextStory.title} →</Link> : null}
         </section>
       </article>
