@@ -31,6 +31,7 @@ jobs:
 
           projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
           jq -e '.success == true' <<<"${projects}" >/dev/null
+          deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")"
 
           targets='["4planet.org","4planetmagazine.com","s4piens.com","cre4tors.com","4planetmarket.com"]'
           mapfile -t matching < <(jq -r --argjson targets "$targets" '
@@ -55,6 +56,16 @@ jobs:
                 echo "| \`${name}\` | \`${branch}\` | ${domains} |"
               done
             fi
+
+            echo
+            echo "## Latest production deployments"
+            echo
+            echo "| Commit | Branch | Stage | Status | Created | URL |"
+            echo "|---|---|---|---|---|---|"
+            jq -r '.result[]? | [(.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.name // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"${deployments}" | while IFS=$'\t' read -r commit branch stage status created url; do
+              echo "| \`${commit:0:12}\` | \`${branch}\` | ${stage} | **${status}** | ${created} | ${url} |"
+            done
+
             echo
             echo "## Zone/DNS presence"
             echo
