@@ -129,12 +129,15 @@ test("Planet Signals remain source-bounded fast journalism with distinct visuals
   assert.match(signalPage, /FAST \/ SOURCE-BOUNDED/);
 });
 
-test("four premium story experiences are explicit and non-random", () => {
+test("premium story experiences stay explicit without blocking the article opening", () => {
   for (const mode of ["ARTICLE", "VISUAL_ESSAY", "INTELLIGENCE_STORY", "JOURNEY_FEATURE"]) assert.match(experience, new RegExp(mode));
   assert.match(article, /mag-experience--/);
-  assert.match(article, /mag-intelligence-strip/);
+  assert.match(article, /mag-premium-reader/);
+  assert.match(article, /mag-article-world-dek/);
+  assert.match(article, /mag-article-world-body/);
   assert.match(article, /mag-journey-gateway/);
   assert.match(article, /mag-visual-breath/);
+  assert.doesNotMatch(article, /mag-intelligence-strip/);
   assert.doesNotMatch(experience, /Math\.random/);
 });
 
