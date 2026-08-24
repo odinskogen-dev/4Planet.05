@@ -51,9 +51,22 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
+
+      - name: Prepare deterministic 100-eval runner
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/tests/cns_kernel_02_eval_100.sql').read_text()
+          state = "(select event_id from cns.events where idempotency_key='eval-state-1')"
+          context = "(select context_snapshot_id from cns.context_snapshots where project_id='EVAL-PROJECT' and intent='certification' order by compiled_at limit 1)"
+          src = src.replace(":'initial_context'::uuid", context)
+          src = src.replace(":'initial_state_event'", state)
+          Path('/tmp/cns_eval_100.sql').write_text(src)
+          PY
 
       - name: Run 50 canonical + 50 adversarial evals
-        run: psql -f supabase/tests/cns_kernel_02_eval_100.sql
+        run: psql -f /tmp/cns_eval_100.sql
 
       - name: Run 10k project / million-event scale seed and hot-path plans
         run: psql -f supabase/tests/cns_kernel_02_scale.sql
