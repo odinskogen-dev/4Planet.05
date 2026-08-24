@@ -1,0 +1,56 @@
+name: Cloudflare Workers Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-workers-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Audit worker routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          {
+            echo "# Cloudflare Worker routing"
+            echo
+            for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
+              z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
+              zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
+              echo "## ${domain}"
+              if [[ -z "${zid}" ]]; then
+                echo "Zone unavailable."
+                echo
+                continue
+              fi
+              routes="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || true)"
+              if jq -e '.success == true' <<<"${routes}" >/dev/null 2>&1; then
+                jq -r '.result[]? | "- pattern: `\(.pattern)` → script: `\(.script // "")`"' <<<"${routes}"
+              else
+                echo "- Worker routes API unavailable with current token."
+              fi
+              echo
+            done
+          } > /tmp/workers-report.md
+          cat /tmp/workers-report.md
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -f /tmp/workers-report.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/workers-report.md
+          fi
