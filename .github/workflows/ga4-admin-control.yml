@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   control:
@@ -53,6 +54,7 @@ jobs:
         run: python scripts/ga4-admin-control.py
 
       - name: Publish control summary
+        if: always()
         shell: bash
         run: |
           {
@@ -62,4 +64,13 @@ jobs:
             echo "Primary stream: ${{ steps.ga4.outputs.primary_stream }}"
             echo "Measurement ID: ${{ steps.ga4.outputs.measurement_id }}"
             echo "Mode: ${GA4_APPLY}"
+            echo "Outcome: ${{ steps.ga4.outcome }}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report result to GA4 tracking issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "GA4 Admin Control run: **${{ steps.ga4.outcome }}**\n\nProperty: \`551422989\`\nPrimary stream: \`${{ steps.ga4.outputs.primary_stream }}\`\nMeasurement ID: \`${{ steps.ga4.outputs.measurement_id }}\`\nCommit: \`${GITHUB_SHA}\`"
