@@ -16,6 +16,7 @@ const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-magazine-seo.mjs");
 const quality = read("scripts/magazine-quality-gate.mjs");
 const gold02 = read("src/styles/magazine-gold-02.css");
+const liveRound = read("src/styles/magazine-live-round-01.css");
 const stories = readStories();
 const signals = readSignals();
 
@@ -37,17 +38,30 @@ test("Magazine has a dedicated premium world and calm primary navigation", () =>
   assert.doesNotMatch(shell, /PublicShell/);
 });
 
-test("World-class home is curated, source-dense and shorter than the archive", () => {
+test("World-class home is curated, source-dense and long enough to feel editorial", () => {
   assert.ok(stories.length >= 10, "at least ten substantial stories are required");
   assert.ok(signals.length >= 10, "at least ten fast source-bounded signals are required");
   assert.ok(stories.length + signals.length >= 24, "launch density must reach at least 24 real editorial objects");
-  assert.match(home, /HOME_STORY_LIMIT = 8/);
-  assert.match(home, /HOME_SIGNAL_LIMIT = 6/);
+  assert.match(home, /HOME_STORY_LIMIT = 12/);
+  assert.match(home, /HOME_SIGNAL_LIMIT = 8/);
   assert.match(home, /PLANET SIGNAL/);
   assert.match(home, /RECURRING EDITORIAL/);
   assert.match(home, /mag-story-mosaic/);
+  assert.match(home, /mag-story-stream/);
+  assert.match(home, /mag-atlas-embed/);
   assert.doesNotMatch(home, /LIVE DEVELOPMENT/);
   assert.doesNotMatch(home, /EDITORIAL LAB/);
+  assert.doesNotMatch(home, /Math\.random/);
+});
+
+test("founder visual pass preserves deterministic layout and requested palette", () => {
+  assert.match(liveRound, /--mw-bg: #ffffff/);
+  assert.match(liveRound, /--mw-blue: #2e2eff/);
+  assert.match(liveRound, /background: #b8ff2c/);
+  assert.match(liveRound, /mag-engineering-band \{ background: #2e2eff/);
+  assert.match(liveRound, /mag-story-mosaic\[data-filtered="true"\]/);
+  assert.match(home, /mag-home-hero-visual/);
+  assert.match(home, /Blue Marble, active-fire detections and biodiversity density layers selected/);
   assert.doesNotMatch(home, /Math\.random/);
 });
 
