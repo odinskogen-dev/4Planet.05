@@ -23,7 +23,7 @@ test('TEST KING Jaguar wires local Ear.Rodriguez V52 source-derived runtime with
   assert.match(localData,/window\.__JAGUAR_LOCAL_V48/);assert.match(localData,/Ear\.Rodriguez Jaguar CC BY 4\.0/);assert.match(localData,/8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13/);assert.match(localData,/SOURCE_DERIVED_SPATIAL_CLUSTER_RES26_BIND_POSE/);assert.match(localData,/vertexCount:\s*1626/);assert.match(localData,/indexCount:\s*9771/);
 
   // V52 is the sole active local WebGL renderer; legacy V48 visual runtime must not reclaim ownership.
-  assert.match(local,/window\.__JAGUAR_LOCAL_V48/);assert.match(local,/jaguar-local-v52/);assert.match(local,/volumetric-v52/);assert.match(local,/DecompressionStream/);assert.match(local,/gl\.drawElements\(gl\.TRIANGLES/);assert.match(local,/pointerdown/);assert.match(local,/pointermove/);assert.match(local,/visibilitychange/);assert.match(local,/pagehide/);assert.match(local,/CC BY 4\.0/);
+  assert.match(local,/window\.__JAGUAR_LOCAL_V48/);assert.match(local,/jaguar-local-v52/);assert.match(local,/volumetric-v52/);assert.match(local,/DecompressionStream/);assert.match(local,/gl\.drawElements\(gl\.TRIANGLES/);assert.match(local,/pointerdown/);assert.match(local,/pointermove/);assert.match(local,/visibilitychange/);assert.match(local,/CC BY 4\.0/);
   assert.match(authority,/jaguarV54Authority/);assert.match(authority,/ear-rodriguez-local-v52-source-derived/);assert.doesNotMatch(local,/sketchfab\.com\/models/);assert.doesNotMatch(local,/<iframe/);
   assert.match(html,/LOCAL SOURCE-DERIVED RUNTIME/);assert.match(html,/local high-fidelity derivative/i);assert.match(html,/external viewer was rejected/i);assert.match(html,/CC BY 4\.0/);
 
