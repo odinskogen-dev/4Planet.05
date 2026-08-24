@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: /magazine-(world-class|article-sprint)\.spec\.ts/,
+  testMatch: /magazine-(world-class|article-sprint|public-launch)\.spec\.ts/,
   timeout: 120_000,
   expect: { timeout: 12_000 },
   fullyParallel: false,
@@ -22,7 +22,9 @@ export default defineConfig({
   },
   projects: [
     { name: "mag-desktop-1440", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
+    { name: "mag-desktop-1920", use: { ...devices["Desktop Chrome"], viewport: { width: 1920, height: 1080 } } },
     { name: "mag-tablet-1024", use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 768 } } },
+    { name: "mag-android-412", use: { ...devices["Pixel 5"], viewport: { width: 412, height: 915 }, hasTouch: true, isMobile: true } },
     { name: "mag-mobile-430", use: { ...devices["Desktop Chrome"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
     { name: "mag-mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
     { name: "mag-webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
