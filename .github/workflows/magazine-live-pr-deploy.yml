@@ -1,0 +1,87 @@
+name: 4PLANET Magazine live deploy
+
+on:
+  pull_request:
+    branches:
+      - recovery/testking-magazine
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && TOKEN="$candidate" && break; done
+          [ -n "$TOKEN" ] || exit 2
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy isolated Magazine worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
+          const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
+          const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === `www.${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedMagazine(incoming.pathname) && !atlasEmbed) return blocked();
+
+            const upstream = new URL(incoming.pathname, UPSTREAM);
+            upstream.search = incoming.search;
+            const response = await fetch(new Request(upstream.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
+          EOF
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planetmagazine-test-king"
+          main = "$RUNNER_TEMP/worker.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmagazine.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmagazine.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
