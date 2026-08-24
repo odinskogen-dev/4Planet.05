@@ -16,6 +16,9 @@ interface Env { FIRMS_MAP_KEY?: string }
 type Source = "VIIRS_SNPP_NRT" | "VIIRS_NOAA20_NRT" | "VIIRS_NOAA21_NRT";
 const SOURCES = new Set<Source>(["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT"]);
 
+const NOAA21_CURRENT_CAVEAT =
+  "NASA FIRMS currently cautions that Suomi NPP/NOAA-21 related near-real-time data received after 2026-03-09 17:45 UTC may not meet mission specifications while calibration/validation is being confirmed; use with additional caution and retain source date/instrument context.";
+
 const json = (body: unknown, status = 200, maxAge = 300) =>
   new Response(JSON.stringify(body), {
     status,
@@ -23,6 +26,7 @@ const json = (body: unknown, status = 200, maxAge = 300) =>
       "content-type": "application/json",
       "cache-control": status === 200 ? `public, max-age=${maxAge}` : "no-store",
       "access-control-allow-origin": "*",
+      "x-4planet-atlas-source": "nasa-firms",
     },
   });
 
@@ -82,17 +86,36 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   const area = bbox.join(",");
   const base = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(env.FIRMS_MAP_KEY)}/${source}/${area}/${dayRange}`;
   const upstream = date ? `${base}/${date}` : base;
+  const retrievedAt = new Date().toISOString();
+  const sourceCaveats = source === "VIIRS_NOAA21_NRT" ? [NOAA21_CURRENT_CAVEAT] : [];
 
   try {
     const response = await fetch(upstream, {
       headers: { accept: "text/csv", "user-agent": "4PLANET-ATLAS/1.0 (+https://4planet.org)" },
       cf: { cacheTtl: 300 } as RequestInit["cf"],
     });
-    if (!response.ok) return json({ ok: false, source, error: `UPSTREAM_${response.status}` }, 502);
+    if (!response.ok) return json({ ok: false, source, error: `UPSTREAM_${response.status}`, retrievedAt, sourceCaveats }, 502);
     const text = await response.text();
     const records = parseCsv(text);
+    const provenance = {
+      provider: "NASA FIRMS",
+      sourceAuthority: "NASA Earthdata / LANCE FIRMS",
+      attribution: "NASA FIRMS",
+      retrievedAt,
+      sourceProduct: source,
+      publicUseNote: "NASA Earth Science data are generally open for factual use; acknowledge NASA as source and preserve any product-specific restrictions or caveats.",
+    };
     if (!records.length) {
-      return json({ ok: true, source, query: { bbox, dayRange, date: date || null }, count: 0, records, semantics: "NO_DETECTIONS_RETURNED_FOR_QUERY" });
+      return json({
+        ok: true,
+        source,
+        query: { bbox, dayRange, date: date || null },
+        count: 0,
+        records,
+        semantics: "NO_DETECTIONS_RETURNED_FOR_QUERY",
+        provenance,
+        sourceCaveats,
+      });
     }
     return json({
       ok: true,
@@ -102,11 +125,19 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
       count: records.length,
       truncated: records.length >= 5000,
       records,
-      limitation: "Satellite fire/thermal-anomaly detections are not automatically wildfires, burned area, cause, impact or ground truth.",
+      provenance,
+      sourceCaveats,
+      limitation: "Satellite fire/thermal-anomaly detections are not automatically wildfires, burned area, cause, impact or ground truth. Near-real-time products should not be treated as long-term trend datasets without using the appropriate science-quality archive product.",
     });
   } catch (error) {
     const message = String((error as Error)?.message || error);
-    return json({ ok: false, source, error: message === "CONTRACT_MISMATCH" ? message : "UPSTREAM_FAILURE" }, 502);
+    return json({
+      ok: false,
+      source,
+      error: message === "CONTRACT_MISMATCH" ? message : "UPSTREAM_FAILURE",
+      retrievedAt,
+      sourceCaveats,
+    }, 502);
   }
 };
 
