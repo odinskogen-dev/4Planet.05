@@ -266,8 +266,10 @@ begin
 end;
 $$;
 
--- Existing parity model must not report green on an empty set.
-create or replace view cns.v_cutover_readiness with (security_invoker=true) as
+-- Existing parity model must not report green on an empty set. We deliberately rebuild
+-- the view because PostgreSQL cannot insert/reorder columns through CREATE OR REPLACE VIEW.
+drop view if exists cns.v_cutover_readiness;
+create view cns.v_cutover_readiness with (security_invoker=true) as
 select
   (exists(select 1 from cns.parity_results) and not exists(select 1 from cns.parity_results where result<>'MATCH')) as parity_green,
   (exists(select 1 from cns.legacy_import_queue) and not exists(select 1 from cns.legacy_import_queue where state in ('STAGED','AMBIGUOUS'))) as hydration_green,
@@ -296,7 +298,9 @@ left join cns.milestones m on m.project_id=p.project_id and (m.goal_id=g.goal_id
 where p.lifecycle not in ('ARCHIVED','SUPERSEDED')
 order by g.priority nulls last,m.target_at nulls last,p.project_id,m.milestone_id;
 
-create or replace view cns.v_branch_code_state with (security_invoker=true) as
+-- Same signature but additional columns: rebuild rather than rename an existing column position.
+drop view if exists cns.v_branch_code_state;
+create view cns.v_branch_code_state with (security_invoker=true) as
 select code_line_id,project_id,seam,role,repository,branch,pr_number,base_sha,exact_sha,observed_sha,
        (exact_sha is not distinct from observed_sha) as sha_matches,pr_state,merge_state,deployment_state,deployment_ref,
        github_verified_at,verified_at,stale_after
@@ -315,6 +319,8 @@ grant execute on function cns.compile_entity_context(text,text,text,integer,inte
 grant execute on function cns.finish_dual_read(uuid) to service_role;
 
 grant select on cns.v_roadmap to service_role;
+grant select on cns.v_cutover_readiness to service_role;
+grant select on cns.v_branch_code_state to service_role;
 
 update cns.system_meta
 set value='{"version":2,"migration":"20260824190000_cns_acceptance_hardening"}'::jsonb,updated_at=now()
