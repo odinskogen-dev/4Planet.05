@@ -26,6 +26,8 @@ const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) 
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
 const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
 const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineCorrections })));
+const MagazinePrivacy = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazinePrivacy })));
+const MagazineAtlas = lazy(() => import("@/pages/v5/MagazineAtlas").then((module) => ({ default: module.MagazineAtlas })));
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
 const MagazineSearch = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSearch })));
 const MagazineSaved = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSaved })));
@@ -96,6 +98,8 @@ export function AppRoutes() {
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
       <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
+      <Route path="/magazine/privacy" element={<Suspense fallback={MagazineFallback}><MagazinePrivacy /></Suspense>} />
+      <Route path="/magazine/atlas" element={<Suspense fallback={MagazineFallback}><MagazineAtlas /></Suspense>} />
       <Route path="/magazine/search" element={<Suspense fallback={MagazineFallback}><MagazineSearch /></Suspense>} />
       <Route path="/magazine/saved" element={<Suspense fallback={MagazineFallback}><MagazineSaved /></Suspense>} />
       <Route path="/magazine/archive" element={<Suspense fallback={MagazineFallback}><MagazineArchive /></Suspense>} />
