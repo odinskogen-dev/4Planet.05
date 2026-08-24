@@ -36,15 +36,17 @@ function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry,
   form.set(`${prefix}[truth_state]`, environment);
   form.set(`${prefix}[ecological_delivery_authority]`, "none");
   form.set(`${prefix}[tax_deductible_claim]`, "false");
-  form.set(`${prefix}[catalog_version]`, "payments-live-model-01");
+  form.set(`${prefix}[catalog_version]`, "payments-public-live-02");
   if (entry.action) form.set(`${prefix}[impact_action]`, entry.action);
   if (entry.mission) form.set(`${prefix}[mission]`, entry.mission);
   if (entry.missionSlug) form.set(`${prefix}[mission_slug]`, entry.missionSlug);
 }
 
 function checkoutDisclosure(entry: CatalogEntry, environment: PaymentEnvironment) {
-  if (environment === "TEST") return "TEST MODE — payment-path validation only. No real partner delivery, tax deduction or ecological outcome is created by this checkout.";
+  if (environment === "TEST") return "TEST MODE — payment-path validation only. No real partner delivery, tax deduction, membership entitlement or ecological outcome is created by this checkout.";
+  if (entry.family === "IMPACT") return "This is a contribution to the named 4PLANET IMPACT pathway, not a promise that a specific ecological unit has already been delivered. Partner allocation, delivery, evidence and ecological outcome are separate states.";
   if (entry.family === "SUPPORT") return "Recurring support for building and operating 4PLANET. It is not presented as a tax-deductible donation and is not tied to a specific ecological delivery or outcome. Cancel future renewals at any time.";
+  if (entry.family === "MEMBERSHIP") return "Optional recurring Supporting Membership. Basic ME4PLANET / 4PEOPLE participation remains free. This payment is not presented as tax-deductible and creates only the benefits explicitly described by 4PLANET. Cancel future renewals at any time.";
   if (entry.family === "MISSION_SUPPORT") return "Recurring support for the named 4PLANET Mission pathway. It is not presented as a tax-deductible donation and does not by itself establish a specific ecological delivery or outcome. Cancel future renewals at any time.";
   return "Payment is processed by Stripe under the 4PLANET terms shown before Checkout.";
 }
@@ -64,7 +66,7 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
   const productKey = readCatalogKey(body.productKey);
   if (!productKey) return json({ ok: false, error: "unsupported_product" }, 400);
   const entry = CATALOG[productKey];
-  if (entry.channel !== "checkout") return json({ ok: false, error: entry.channel === "invoice" ? "negotiated_offer_requires_enquiry" : "product_not_publicly_available" }, 400);
+  if (entry.channel !== "checkout") return json({ ok: false, error: "negotiated_offer_requires_invoice_flow" }, 400);
   if (runtime.environment === "LIVE" && !entry.liveEnabled) return json({ ok: false, error: "product_not_released_live" }, 403);
 
   const quantity = safeQuantity(body.quantity, entry);
