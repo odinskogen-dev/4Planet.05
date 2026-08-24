@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-LOCAL-HIGH-FIDELITY-DERIVATIVE-48  
+**CHANGE ID:** JAGUAR-LOCAL-TRANSPORT-CORRECTION-50  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **FOUNDER DIRECTION:** 24 AUG 2026 — fix the broken Jaguar now. Do not regress the previously leading Journey while attempting 3D. Use the rights-verified Ear.Rodriguez full master and stop treating iframe load or the 457-vertex proxy as Gold.  
@@ -21,7 +21,7 @@ Enter the living system and directly inspect a recognisable local 3D Jaguar deri
 Follow the eight-step Journey from encounter through living web, place, pressure, understanding, solutions, actors/action and proof.
 
 ## P1 DOMINANT
-A recognisable Jaguar with correct quadruped silhouette, head, four legs, tail and source-derived surface appearance at useful encounter scale.
+A recognisable Jaguar with correct quadruped silhouette, head, four legs, tail and source-derived geometry at useful encounter scale.
 
 ## P2 ORIENTATION
 Species identity, chapter position and minimal TEST KING/truth context.
@@ -33,21 +33,21 @@ Direct drag/swipe rotation, LUME, then FOLLOW THE SYSTEM with BACK and HOW DO WE
 Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
 
 ## CURRENT DEFECT
-Founder iPhone evidence and exact Browser Product Proof #715 agree: the external Ear.Rodriguez Sketchfab iframe paints a large white panel and exposes no visible non-trivial render canvas on desktop, 390 or 430. Current runtime marks the iframe ready on its load event and hides the local fallback before any real rendered Jaguar is proven. This is a false-ready external-delivery failure. It visibly regresses the Journey and must not remain the primary creature path.
+Exact Browser Product Proof on TEST KING head `5f1ea3d328417b4cd11f1e035b55ab0cd11f9428` failed the local Ear runtime on Chromium desktop, 390 and 430. The Playwright trace records `data-jaguar-ear-full=fallback` and the exact runtime error `The compressed data was not valid: incorrect data check.` V49 joined Base64 text chunks with `join('')`. The payload chunks are independently Base64-encoded pieces of one gzip byte stream; direct text joining preserves embedded Base64 padding and corrupts the reconstructed compressed bytes. The old 457-vertex proxy then becomes visible fallback. This is a transport reconstruction defect, not a geometry or licence defect.
 
 ## BOUNDED ADOPTION
-Reject the external iframe as Gold delivery. Recover directly from the immutable rights-verified `4P-JAG-3D-EARROD-01_ORIGINAL_1K.glb` master in Drive and ship a local high-fidelity runtime derivative using the main source body mesh, source UVs, source texture and controlled accessory geometry. Preserve the master unmodified. Quantisation/compression are runtime transport only and must not be described as original animation or a new source asset.
+Keep the immutable Ear.Rodriguez master and existing V48 source-derived geometry payload. Correct only transport reconstruction: decode every Base64 chunk independently to its compressed bytes, concatenate those bytes in original order, then re-encode that exact byte sequence once before the existing gzip decoder consumes it. Do not alter source geometry, indices, master hash, presentation architecture or Journey structure.
 
 The local derivative must render first-party inside TEST KING with no cross-origin viewer dependency, keep the species photo as fail-safe first frame, support drag/swipe rotation, cap DPR, stop rendering while hidden/outside encounter and retain the existing Jungle/LUME/Journey architecture. The 457-vertex proxy remains recovery evidence/fallback only and must not become visually dominant.
 
 ## WHAT CAN BE REMOVED
-The white external iframe, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code, loader copy that implies a broken external viewer is successful, and VFX that obscure the animal.
+The corrupt Base64 text-join transport assumption, white external iframe path, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code and VFX that obscure the animal.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, controlled species-photo fallback and existing performance controls.
+`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, V48 source-derived geometry payload, controlled species-photo fallback and existing performance controls.
 
 ## TRUTH BOUNDARY
-The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry/UV/texture are source-derived; runtime quantisation, camera, lighting, interaction and any motion are 4PLANET presentation behaviour. It is not a live animal, occurrence, abundance or tracking record and must never claim original source animation unless the original rig/clip is actually used.
+The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry is source-derived; runtime quantisation/compression, camera, lighting, interaction, coat shader and any motion are 4PLANET presentation behaviour. It is not a live animal, occurrence, abundance or tracking record and must never claim original source animation unless the original rig/clip is actually used.
 
 ## CREATURE-FIRST PERFORMANCE
 First visible species frame first; local renderer only after ENTER; DPR capped; render paused while page hidden/outside encounter; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
@@ -59,4 +59,4 @@ First visible species frame first; local renderer only after ENTER; DPR capped; 
 A first-time viewer sees an unmistakable Jaguar rather than a white iframe or blob proxy, can rotate it directly, sees truthful Ear.Rodriguez CC BY 4.0 attribution, and can continue the Journey cleanly.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove a visible local Jaguar canvas after ENTER. 4) Rendered evidence shows a recognisable Jaguar, not white/blank/proxy shards. 5) Drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence shows a recognisable Jaguar, not white/blank/proxy shards. 5) Drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
