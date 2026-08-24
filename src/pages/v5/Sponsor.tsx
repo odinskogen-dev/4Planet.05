@@ -28,7 +28,7 @@ export default function Sponsor() {
   const [params] = useSearchParams();
   const kind = readKind(params.get("type"));
   const cfg = CONFIG[kind];
-  const [amount, setAmount] = useState(() => cfg.initial);
+  const [amount, setAmount] = useState<number>(() => cfg.initial);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "fallback" | "error">("idle");
   const mailto = useMemo(() => `mailto:odin.skogen@gmail.com?subject=${encodeURIComponent(`4PLANET ${cfg.title} enquiry`)}&body=${encodeURIComponent(`Intended amount: ${nok(amount)}\n\n`)}`, [amount, cfg.title]);
 
