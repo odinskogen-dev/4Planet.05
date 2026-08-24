@@ -55,6 +55,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null" | grep -qx t
 
       - name: Verify event-backed GitHub state projection
         run: psql -f supabase/tests/cns_github_sync.sql
@@ -83,7 +85,6 @@ jobs:
             'A34': "('A34','ADVERSARIAL','Can a correcting code observation restore SHA equality?', $$pg_temp.correct_code_and_verify()$$),",
             'A38': "('A38','ADVERSARIAL','Does staging raw legacy entity preserve a fingerprint?', $$pg_temp.stage_legacy_and_verify()$$),",
           }
-          # Preserve the helper-backed A27 from the canonical runner; only deterministic replacements below are applied.
           replacements['A27'] = "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_and_verify()$$),"
           out = []
           for line in src.splitlines():
@@ -131,9 +132,9 @@ jobs:
           source_events=$(psql -Atqc "select count(*) from cns.events")
           source_projects=$(psql -Atqc "select count(*) from cns.projects")
           source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
-          pg_dump --schema=cns --format=custom --file=/tmp/cns-kernel-02.dump
+          docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
           createdb cns_restore
-          pg_restore --no-owner --dbname=cns_restore /tmp/cns-kernel-02.dump
+          cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
           restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
           restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
           restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
@@ -143,6 +144,7 @@ jobs:
           psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_wip_control" >/dev/null
 
       - name: Deno type-check CNS Gateway
         uses: denoland/setup-deno@v2
