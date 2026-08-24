@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-FULL-SOURCE-DIRECT-EMBED-45  
+**CHANGE ID:** JAGUAR-FULL-SOURCE-STAGE-PRESERVATION-46  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **FOUNDER DIRECTION:** 24 AUG 2026 — stop polishing the reduced 457-vertex proxy as the Gold creature. Use the rights-verified Ear.Rodriguez Jaguar full source where reliable; completion target is a recognisable real 3D Jaguar on desktop + mobile.  
@@ -33,15 +33,15 @@ Direct drag/orbit interaction in the source viewer, LUME, then FOLLOW THE SYSTEM
 Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
 
 ## CURRENT DEFECT
-Exact `50f851f587bee8b611fae76cf872864ad17f582f` passes typecheck, production build, static contracts, asset/dependency gates and the shared Chromium/WebKit journey matrix, but the Sketchfab JavaScript Viewer API calls `client.init()` and fails immediately with `viewer-init-error` on Chromium desktop/390/430. The source itself is not missing: the verified original 1K GLB remains in canonical Drive custody.
+Exact `59ef65e5da39a1f4c314f4030d6db80f59d7897d` passes GOLD, Public Preview, Human Craft, typecheck, production build, smoke/contracts, lint, assets, dependency gate and the shared Chromium/WebKit 28/28 journey matrix. Dedicated Jaguar acceptance fails 3/3 before ENTER because it incorrectly expects the local fallback canvas to exist before the encounter starts. Source inspection exposes a second real seam behind that stale assertion: `jaguar-gold-v33.js` creates the local fallback with `stage.replaceChildren(canvas)` after ENTER, which can detach the already-mounted full-source viewer shell. The direct Ear source can therefore report ready and still be removed from the visible stage when the local fallback initialises.
 
 ## BOUNDED ADOPTION
-Remove the failing JavaScript Viewer API from the critical path. Use the official Ear.Rodriguez Sketchfab embed URL directly in the iframe with preload/autostart/source animation, preserve CC BY 4.0 attribution, keep the existing local indexed proxy and species photo as fail-safe fallbacks, and fail closed after a bounded load timeout.
+Preserve the full-source viewer as the dominant stage child across ENTER. Keep the local indexed proxy as a subordinate fail-safe only. Reattach the verified full-source shell immediately after the local fallback initialises if the fallback runtime replaced stage children, without changing source URL, rights attribution or full-source truth boundary. Correct the dedicated browser test ordering so it verifies the pre-entry photo/first frame, clicks ENTER, then proves local fallback readiness and the full-source viewer takeover.
 
-This is an immediate full-source delivery correction, not a new asset or a claim that the external viewer is the final self-hosting architecture. If the direct source embed cannot pass browser/visual/performance acceptance, the next correction remains a self-hosted high-fidelity derivative of the immutable Drive master.
+This is a stage-lifecycle correction, not a weakening of acceptance. Browser proof must still require the verified Ear.Rodriguez full-source viewer, exact model UID/source identity, visible usable viewer, LUME, full 01→08 Journey and no overflow. A fallback-only result remains failure for Gold.
 
 ## WHAT CAN BE REMOVED
-The failing Sketchfab JavaScript Viewer API bootstrap, duplicate viewer control code, the 457-vertex proxy as dominant visible creature, loader copy that implies fallback is final, and VFX that obscure the animal.
+Stale pre-ENTER canvas assumptions, duplicate viewer control code, the 457-vertex proxy as dominant visible creature, loader copy that implies fallback is final, and VFX that obscure the animal.
 
 ## WHAT MUST BE REUSED
 `king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, Ear.Rodriguez source/licence evidence, controlled local proxy fallback, controlled species-photo fallback and existing performance controls.
@@ -59,4 +59,4 @@ First visible fallback frame before the full viewer; no infinite loader; hide/pa
 A first-time viewer sees an unmistakable Jaguar rather than the reduced blob proxy, can inspect it directly, sees truthful Ear.Rodriguez CC BY 4.0 attribution, and can continue the Journey cleanly.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 load the full source viewer or cleanly retain controlled fallback without dead-end. 4) Rendered evidence shows a recognisable Jaguar, not the reduced proxy. 5) Drag/orbit, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove the full source viewer after ENTER; fallback-only does not pass Gold. 4) Rendered evidence shows a recognisable Jaguar, not the reduced proxy. 5) Drag/orbit, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
