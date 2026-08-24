@@ -18,6 +18,7 @@ const quality = read("scripts/magazine-quality-gate.mjs");
 const gold02 = read("src/styles/magazine-gold-02.css");
 const liveRound = read("src/styles/magazine-live-round-01.css");
 const liveRound02 = read("src/styles/magazine-live-round-02.css");
+const liveRound04 = read("src/styles/magazine-live-round-04.css");
 const stories = readStories();
 const signals = readSignals();
 
@@ -36,7 +37,7 @@ test("Magazine has a dedicated premium world and calm primary navigation", () =>
   assert.match(shell, /SAVED/);
   assert.match(shell, /mag-world-footer/);
   assert.equal((shell.match(/mag-world-masthead-word/g) || []).length, 2);
-  assert.match(shell, /magazine-live-round-02\.css/);
+  assert.match(shell, /magazine-live-round-04\.css/);
   assert.doesNotMatch(shell, /PublicShell/);
 });
 
@@ -45,7 +46,7 @@ test("World-class home is curated, source-dense and long enough to feel editoria
   assert.ok(signals.length >= 10, "at least ten fast source-bounded signals are required");
   assert.ok(stories.length + signals.length >= 24, "launch density must reach at least 24 real editorial objects");
   assert.match(home, /HOME_STORY_LIMIT = 12/);
-  assert.match(home, /HOME_SIGNAL_LIMIT = 8/);
+  assert.match(home, /HOME_SIGNAL_LIMIT = 4/);
   assert.match(home, /PLANET SIGNAL/);
   assert.match(home, /RECURRING EDITORIAL/);
   assert.match(home, /mag-story-mosaic/);
@@ -65,11 +66,23 @@ test("founder visual passes preserve deterministic layout and official palette",
   assert.match(liveRound02, /--4p-amber: #FF7D50/);
   assert.match(liveRound02, /mag-signal-card\[data-accent="pink"\]:hover/);
   assert.match(liveRound02, /mag-story-drift-02 54s linear infinite/);
-  assert.match(liveRound02, /Meet 4PLANET ATLAS|ATLAS/);
+  assert.match(liveRound04, /Every desktop row resolves to 12 columns/);
+  assert.match(liveRound04, /mag-signal-card--lead/);
+  assert.match(liveRound04, /background: var\(--4p-white\) !important/);
   assert.match(home, /mag-home-hero-visual/);
   assert.match(home, /Meet 4PLANET ATLAS/);
   assert.match(home, /interactive planetary interface we built/);
   assert.doesNotMatch(home, /Math\.random/);
+});
+
+test("front-page image direction avoids duplicate editorial imagery", () => {
+  assert.match(home, /HOME_STORY_IMAGE_OVERRIDES/);
+  assert.match(home, /"sea-pen-instead-of-tank": "rewildMarineHero"/);
+  assert.match(home, /"the-four-domains": "heroEarth"/);
+  assert.match(home, /"s4piensDomainHero"/);
+  assert.match(home, /"homepageBonus"/);
+  assert.match(home, /"pl4sticHero"/);
+  assert.match(home, /"speciesHero"/);
 });
 
 test("mobile home restores 4PLANET strictness and avoids desktop mosaic assumptions", () => {
