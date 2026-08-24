@@ -3,6 +3,8 @@ import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { Seo } from "@/components/Seo";
 import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import { signalBySlug } from "@/content/magazineSignals";
+import { signalImageKey } from "@/content/magazineVisuals";
+import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-signal.css";
 
@@ -10,6 +12,7 @@ export function MagazineSignalPage() {
   const { slug } = useParams();
   const signal = signalBySlug(slug);
   if (!signal) return <NotFound />;
+  const media = img(signalImageKey(signal.slug));
 
   return (
     <MagazineShell>
@@ -17,6 +20,7 @@ export function MagazineSignalPage() {
         title={`${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`}
         description={signal.dek}
         path={`/magazine/signals/${signal.slug}`}
+        image={media.src}
       />
       <main className="mag-signal-page" data-accent={signal.accent}>
         <header className="mag-signal-hero">
@@ -24,6 +28,11 @@ export function MagazineSignalPage() {
           <h1>{signal.title}</h1>
           <p>{signal.dek}</p>
         </header>
+
+        <figure className="mag-signal-visual">
+          <img src={media.src} alt={media.alt} loading="eager" decoding="async" />
+          <figcaption><strong>VISUAL CONTEXT</strong><span>{media.alt}</span><p>This image is editorial context, not evidence for the source claim below.</p></figcaption>
+        </figure>
 
         <section className="mag-signal-core">
           <div className="mag-signal-number">01</div>
