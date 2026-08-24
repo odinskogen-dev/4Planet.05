@@ -52,6 +52,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
