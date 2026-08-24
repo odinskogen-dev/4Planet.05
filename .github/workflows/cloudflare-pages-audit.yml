@@ -1,0 +1,62 @@
+name: Cloudflare Pages Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-pages-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Audit Pages and domains
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "missing token"; exit 1; }
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone_json="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
+          [[ -n "${account_id}" ]] || { echo "no account id"; exit 1; }
+
+          projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
+          project="$(jq -c '.result[]? | select(.name=="4planet-05")' <<<"${projects}" | head -n1)"
+          [[ -n "${project}" ]] || { echo "4planet-05 not found"; jq '.errors' <<<"${projects}"; exit 1; }
+
+          production_branch="$(jq -r '.production_branch // empty' <<<"${project}")"
+          subdomain="$(jq -r '.subdomain // empty' <<<"${project}")"
+          domains="$(jq -r '[.domains[]?] | join(", ")' <<<"${project}")"
+          latest="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?per_page=20" "${auth[@]}")"
+          prod_deploy="$(jq -c '.result[]? | select(.environment=="production")' <<<"${latest}" | head -n1)"
+          prod_id="$(jq -r '.id // empty' <<<"${prod_deploy}")"
+          prod_branch="$(jq -r '.deployment_trigger.metadata.branch // empty' <<<"${prod_deploy}")"
+          prod_commit="$(jq -r '.deployment_trigger.metadata.commit_hash // empty' <<<"${prod_deploy}")"
+          prod_url="$(jq -r '.url // empty' <<<"${prod_deploy}")"
+
+          {
+            echo "production_branch=${production_branch}"
+            echo "subdomain=${subdomain}"
+            echo "domains=${domains}"
+            echo "prod_id=${prod_id}"
+            echo "prod_branch=${prod_branch}"
+            echo "prod_commit=${prod_commit}"
+            echo "prod_url=${prod_url}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report to analytics issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Pages audit: **${{ steps.audit.outcome }}**\n\nConfigured production branch: \`${{ steps.audit.outputs.production_branch }}\`\nLatest production deployment branch: \`${{ steps.audit.outputs.prod_branch }}\`\nLatest production commit: \`${{ steps.audit.outputs.prod_commit }}\`\nProduction URL: \`${{ steps.audit.outputs.prod_url }}\`\nPages subdomain: \`${{ steps.audit.outputs.subdomain }}\`\nProject domains: ${{ steps.audit.outputs.domains }}"
