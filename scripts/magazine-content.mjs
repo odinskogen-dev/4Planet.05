@@ -93,6 +93,15 @@ function readLiteralArray(relativePath, variableName) {
   return value;
 }
 
+function readLiteralObject(relativePath, variableName) {
+  const sourceFile = sourceFor(relativePath);
+  const constants = constantsFromSource(sourceFile);
+  const initializer = variableInitializer(sourceFile, variableName);
+  const value = valueFromNode(initializer, constants);
+  if (!value || Array.isArray(value) || typeof value !== "object") throw new Error(`Unable to read ${variableName} from ${relativePath}`);
+  return value;
+}
+
 export function readStories() {
   return readLiteralArray("src/content/stories.ts", "STORIES").filter((story) => story && typeof story.slug === "string");
 }
@@ -101,21 +110,28 @@ export function readSignals() {
   return readLiteralArray("src/content/magazineSignals.ts", "MAGAZINE_SIGNALS").filter((signal) => signal && typeof signal.slug === "string");
 }
 
+export function readTopics() {
+  return readLiteralArray("src/content/magazineOperating.ts", "MAGAZINE_TOPICS").filter((topic) => topic && typeof topic.id === "string");
+}
+
+export function readArticleTemplates() {
+  return readLiteralArray("src/content/magazineEngine.ts", "MAGAZINE_ARTICLE_TEMPLATES").filter((template) => template && typeof template.id === "string");
+}
+
+export function readFeatures() {
+  return {
+    ...readLiteralObject("src/content/magazineFeaturesReported.ts", "MAGAZINE_REPORTED_FEATURES"),
+    ...readLiteralObject("src/content/magazineFeaturesExplainers.ts", "MAGAZINE_EXPLAINER_FEATURES"),
+  };
+}
+
 export function readImages() {
-  const sourceFile = sourceFor("src/content/imageRegistry.ts");
-  const constants = constantsFromSource(sourceFile);
-  const initializer = variableInitializer(sourceFile, "IMAGES");
-  const value = valueFromNode(initializer, constants);
-  if (!value || Array.isArray(value) || typeof value !== "object") throw new Error("Unable to read IMAGES from src/content/imageRegistry.ts");
-  return value;
+  return readLiteralObject("src/content/imageRegistry.ts", "IMAGES");
 }
 
 export function readFoundingEdition() {
-  const sourceFile = sourceFor("src/content/magazineEditorial.ts");
-  const constants = constantsFromSource(sourceFile);
-  const initializer = variableInitializer(sourceFile, "FOUNDING_EDITION");
-  const value = valueFromNode(initializer, constants);
-  if (!value || Array.isArray(value) || typeof value !== "object" || !Array.isArray(value.items)) throw new Error("Unable to read FOUNDING_EDITION from src/content/magazineEditorial.ts");
+  const value = readLiteralObject("src/content/magazineEditorial.ts", "FOUNDING_EDITION");
+  if (!Array.isArray(value.items)) throw new Error("Unable to read FOUNDING_EDITION.items from src/content/magazineEditorial.ts");
   return value;
 }
 
