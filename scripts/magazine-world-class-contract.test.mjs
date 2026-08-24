@@ -100,7 +100,10 @@ test("SEO engine emits archive and signal routes without polluting News sitemap"
   assert.match(prerender, /readSignals/);
   assert.match(prerender, /citation: signal\.sourceUrl/);
   assert.match(prerender, /PLANET SIGNAL/);
-  assert.match(sitemap, /News sitemap remains deliberately strict/);
+  assert.match(sitemap, /const newsStories = stories\.filter/);
+  assert.match(sitemap, /if \(!story\.publishedAt\) return false/);
+  assert.match(sitemap, /48 \* 60 \* 60 \* 1000/);
+  assert.doesNotMatch(sitemap, /signals\.filter\([^\n]*publishedAt/);
 });
 
 test("quality engine enforces content density sources and reader product", () => {
