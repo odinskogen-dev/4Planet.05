@@ -2,7 +2,7 @@ name: Magazine World-Class Gate
 
 on:
   pull_request:
-    branches: [king/test]
+    branches: [king/test, recovery/testking-magazine]
     paths:
       - 'src/pages/v5/Magazine*'
       - 'src/components/magazine/**'
