@@ -1,6 +1,7 @@
 name: Cloudflare Web Analytics Bootstrap
 
 on:
+  workflow_dispatch:
   push:
     branches: [king/test]
     paths:
@@ -61,4 +62,4 @@ jobs:
             echo "Web Analytics created for ${domain}; auto-install requested."
           done
 
-          echo "4species.com is a redirect-only distribution alias; its HTTP requests remain visible in Cloudflare zone analytics, while page-level RUM is measured on the canonical destination."
+          echo "4species.com is currently a redirect-only distribution alias; its HTTP requests remain visible in Cloudflare zone analytics, while page-level RUM is measured on the canonical destination."
