@@ -1,0 +1,112 @@
+name: Verify 4planetmagazine.com Magazine-only live surface
+
+on:
+  push:
+    branches:
+      - ops/4planetmagazine-live-20260823
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify Magazine surface and Test King isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 36); do
+            mag_headers="$RUNNER_TEMP/mag-headers.txt"
+            article_headers="$RUNNER_TEMP/article-headers.txt"
+            atlas_headers="$RUNNER_TEMP/atlas-headers.txt"
+
+            mag_code=$(curl -sS -D "$mag_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine' || true)
+            mag_surface=$(tr -d '\r' < "$mag_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+
+            article_code=$(curl -sS -D "$article_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/why-4planet-exists/' || true)
+            article_surface=$(tr -d '\r' < "$article_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+
+            atlas_code=$(curl -sS -D "$atlas_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas' || true)
+            atlas_surface=$(tr -d '\r' < "$atlas_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+
+            root_code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/' || true)
+
+            echo "attempt=$attempt magazine=$mag_code/$mag_surface article=$article_code/$article_surface atlas=$atlas_code/$atlas_surface root=$root_code"
+
+            if [ "$mag_code" = "200" ] && [ "$mag_surface" = "magazine-only-live" ] \
+              && [ "$article_code" = "200" ] && [ "$article_surface" = "magazine-only-live" ] \
+              && [ "$atlas_code" = "404" ] && [ "$atlas_surface" = "magazine-only-live" ] \
+              && [ "$root_code" = "308" ]; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$ok" != "1" ]; then
+            echo "Live verification did not reach the required Magazine-only state."
+            exit 1
+          fi
+
+      - name: Record verified live status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS_BRANCH: ops/4planetmagazine-deploy-status
+          STATUS_PATH: docs/control/MAGAZINE_LIVE_STATUS.md
+          SOURCE_HEAD: 6fda6b00ed949562ee3b29eb72c98c6fa9cbc485
+          SOURCE_BRANCH: recovery/testking-magazine
+          LIVE_BRANCH: ops/4planetmagazine-live-20260823
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${STATUS_PATH}"
+          now=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          cat > "$RUNNER_TEMP/status.md" <<EOF
+          # 4PLANET Magazine live status
+
+          VERIFIED: YES
+          VERIFIED_AT_UTC: ${now}
+          LIVE_DOMAIN: https://4planetmagazine.com/magazine
+          ARTICLE_PROOF: https://4planetmagazine.com/magazine/why-4planet-exists/
+          SOURCE_BRANCH: ${SOURCE_BRANCH}
+          SOURCE_HEAD: ${SOURCE_HEAD}
+          DEPLOY_CONTROL_BRANCH: ${LIVE_BRANCH}
+          DEPLOY_TRIGGER_SHA: ${GITHUB_SHA}
+          SURFACE_HEADER: magazine-only-live
+          ROOT_BEHAVIOUR: / redirects 308 to /magazine
+          ISOLATION_PROOF: /atlas returns 404 on 4planetmagazine.com
+          INDEXING: Magazine HTML is indexable; non-Magazine document routes are noindex 404
+          EOF
+
+          encoded=$(base64 -w0 "$RUNNER_TEMP/status.md")
+          existing_sha=$(curl -fsS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$api?ref=$STATUS_BRANCH" 2>/dev/null | jq -r '.sha // empty' || true)
+
+          if [ -n "$existing_sha" ]; then
+            payload=$(jq -n \
+              --arg message 'status(magazine): record verified live recovery publish [skip ci]' \
+              --arg content "$encoded" \
+              --arg branch "$STATUS_BRANCH" \
+              --arg sha "$existing_sha" \
+              '{message:$message,content:$content,branch:$branch,sha:$sha}')
+          else
+            payload=$(jq -n \
+              --arg message 'status(magazine): record verified live recovery publish [skip ci]' \
+              --arg content "$encoded" \
+              --arg branch "$STATUS_BRANCH" \
+              '{message:$message,content:$content,branch:$branch}')
+          fi
+
+          curl -fsS -X PUT \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$api" \
+            -d "$payload" \
+            | jq -e '.content.path == "docs/control/MAGAZINE_LIVE_STATUS.md"' >/dev/null
