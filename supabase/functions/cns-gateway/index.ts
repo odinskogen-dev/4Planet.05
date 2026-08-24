@@ -1,19 +1,25 @@
 // 4PLANET CNS Gateway / MCP-compatible JSON-RPC transport
-// Server-side only. No credentials are committed; runtime requires SUPABASE_DB_URL
-// and CNS_GATEWAY_TOKEN secrets. The CNS schema is never exposed to public clients.
+// Server-side only. No credentials are committed. Runtime requires DB, gateway and GitHub secrets.
+// Current code claims fail closed unless active GitHub state is verified live first.
 
 import postgres from "npm:postgres@3.4.5";
 
 const DB_URL = Deno.env.get("SUPABASE_DB_URL");
 const GATEWAY_TOKEN = Deno.env.get("CNS_GATEWAY_TOKEN");
-if (!DB_URL || !GATEWAY_TOKEN) throw new Error("CNS_GATEWAY_FAIL_CLOSED: required runtime secrets missing");
+const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
+if (!DB_URL || !GATEWAY_TOKEN || !GITHUB_TOKEN) {
+  throw new Error("CNS_GATEWAY_FAIL_CLOSED: required runtime secrets missing");
+}
 
 const sql = postgres(DB_URL, { max: 5, prepare: false, idle_timeout: 20 });
 
+type DbRow = Record<string, unknown>;
+type GitHubJson = Record<string, unknown>;
+
 const tools = [
-  ["brain.get_project", "Read generated Project Home state"],
-  ["brain.get_current_state", "Read fresh operational project projection"],
-  ["brain.get_context", "Compile deterministic L0-L4 context snapshot"],
+  ["brain.get_project", "Read generated Project Home after live code verification"],
+  ["brain.get_current_state", "Read fresh operational project projection after live code verification"],
+  ["brain.get_context", "Compile deterministic L0-L4 context snapshot after live code verification"],
   ["brain.get_dependencies", "Read open project dependencies"],
   ["brain.get_memory", "Read active scoped memory"],
   ["brain.search_history", "Search immutable project event history"],
@@ -21,14 +27,14 @@ const tools = [
   ["work.acquire_lease", "Acquire collision-safe work scopes"],
   ["work.heartbeat", "Refresh an active lease"],
   ["work.release_lease", "Release an active lease"],
-  ["code.get_current_line", "Read active code line"],
-  ["code.verify_head", "Record live GitHub head and invalidate stale context on drift"],
+  ["code.get_current_line", "Live-verify GitHub and return active code line"],
+  ["code.sync_live", "Force live GitHub reconciliation for a project"],
   ["prototype.get_current", "Read active/fixed/production prototype identities"],
   ["event.commit", "Append immutable event"],
   ["health.check", "Run Doctor deterministic invariants"],
   ["health.get_incidents", "Read open health incidents"],
   ["librarian.propose", "Create deduplicated memory candidate"],
-  ["librarian.promote", "Promote an reviewed memory candidate"],
+  ["librarian.promote", "Promote a reviewed memory candidate"],
   ["evaluator.get_run", "Read independent evaluator run/assertions"]
 ].map(([name, description]) => ({
   name,
@@ -38,25 +44,147 @@ const tools = [
 
 function requireString(args: Record<string, unknown>, key: string): string {
   const value = args[key];
-  if (typeof value !== "string" || value.length === 0) throw new Error(`CNS_GATEWAY_INVALID_${key.toUpperCase()}`);
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`CNS_GATEWAY_INVALID_${key.toUpperCase()}`);
+  }
   return value;
+}
+
+async function githubJson(url: string): Promise<GitHubJson | GitHubJson[]> {
+  const response = await fetch(url, {
+    headers: {
+      authorization: `Bearer ${GITHUB_TOKEN}`,
+      accept: "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28",
+      "user-agent": "4planet-cns-gateway"
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`CNS_GITHUB_LIVE_REQUIRED:${response.status}`);
+  }
+  return await response.json();
+}
+
+function asObject(value: unknown): GitHubJson {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("CNS_GITHUB_INVALID_RESPONSE");
+  }
+  return value as GitHubJson;
+}
+
+function nestedString(obj: GitHubJson, first: string, second: string): string | null {
+  const child = obj[first];
+  if (!child || typeof child !== "object" || Array.isArray(child)) return null;
+  const value = (child as GitHubJson)[second];
+  return typeof value === "string" ? value : null;
+}
+
+async function readGitHubCodeState(line: DbRow) {
+  const repository = String(line.repository ?? "");
+  const branch = String(line.branch ?? "");
+  const codeLineId = String(line.code_line_id ?? "");
+  if (!repository || !branch || !codeLineId || !repository.includes("/")) {
+    throw new Error("CNS_GITHUB_CODE_LINE_INCOMPLETE");
+  }
+
+  const commitRaw = await githubJson(
+    `https://api.github.com/repos/${repository}/commits/${encodeURIComponent(branch)}`
+  );
+  const commit = asObject(commitRaw);
+  const observedSha = typeof commit.sha === "string" ? commit.sha : null;
+  if (!observedSha) throw new Error("CNS_GITHUB_SHA_REQUIRED");
+
+  let prState = "NO_PR";
+  let mergeState = "NO_PR";
+  let prRevision = "no-pr";
+  const prNumber = Number(line.pr_number ?? 0);
+
+  if (Number.isInteger(prNumber) && prNumber > 0) {
+    const pr = asObject(await githubJson(`https://api.github.com/repos/${repository}/pulls/${prNumber}`));
+    const prHeadSha = nestedString(pr, "head", "sha");
+    if (prHeadSha && prHeadSha !== observedSha) {
+      throw new Error("CNS_GITHUB_HEAD_MISMATCH");
+    }
+    prState = typeof pr.state === "string" ? pr.state.toUpperCase() : "UNKNOWN";
+    if (pr.merged === true) mergeState = "MERGED";
+    else if (pr.mergeable === true) mergeState = "MERGEABLE";
+    else if (pr.mergeable === false) mergeState = "CONFLICTING";
+    else mergeState = "UNKNOWN";
+    prRevision = typeof pr.updated_at === "string" ? pr.updated_at : "unknown";
+  }
+
+  let deploymentState = "UNVERIFIED";
+  let deploymentRef: string | null = null;
+  const deploymentsRaw = await githubJson(
+    `https://api.github.com/repos/${repository}/deployments?sha=${encodeURIComponent(observedSha)}&per_page=1`
+  );
+  if (!Array.isArray(deploymentsRaw)) throw new Error("CNS_GITHUB_DEPLOYMENTS_INVALID");
+  if (deploymentsRaw.length > 0) {
+    const deployment = asObject(deploymentsRaw[0]);
+    deploymentRef = deployment.id === undefined ? null : String(deployment.id);
+    const statusesUrl = typeof deployment.statuses_url === "string" ? deployment.statuses_url : null;
+    if (statusesUrl?.startsWith("https://api.github.com/")) {
+      const statusesRaw = await githubJson(`${statusesUrl}?per_page=1`);
+      if (!Array.isArray(statusesRaw)) throw new Error("CNS_GITHUB_DEPLOYMENT_STATUS_INVALID");
+      if (statusesRaw.length > 0) {
+        const status = asObject(statusesRaw[0]);
+        deploymentState = typeof status.state === "string" ? status.state.toUpperCase() : "UNKNOWN";
+      } else {
+        deploymentState = "NO_STATUS";
+      }
+    }
+  }
+
+  const sourceRevision = `github:${observedSha}:${prRevision}:${deploymentRef ?? "none"}:${deploymentState}`;
+  const idempotencyKey = `github-live:${codeLineId}:${sourceRevision}`;
+
+  await sql`select cns.observe_code_state(
+    ${codeLineId},
+    ${observedSha},
+    ${prState},
+    ${mergeState},
+    ${deploymentState},
+    ${deploymentRef},
+    ${sourceRevision},
+    ${idempotencyKey},
+    300
+  ) as event_id`;
+
+  return { codeLineId, observedSha, prState, mergeState, deploymentState, deploymentRef };
+}
+
+async function syncProjectCode(projectId: string) {
+  const lines = await sql`
+    select * from cns.code_lines
+    where project_id=${projectId}
+      and role in ('ACTIVE_DEVELOPMENT','PRODUCTION')
+    order by seam, role
+  `;
+  const states = [];
+  for (const line of lines) states.push(await readGitHubCodeState(line as DbRow));
+  return states;
 }
 
 async function callTool(name: string, a: Record<string, unknown>) {
   switch (name) {
     case "brain.get_project": {
       const id = requireString(a, "project_id");
+      await syncProjectCode(id);
       return await sql`select * from cns.v_project_home where project_id=${id}`;
     }
     case "brain.get_current_state": {
       const id = requireString(a, "project_id");
+      await syncProjectCode(id);
       const rows = await sql`select * from cns.project_current_state where project_id=${id}`;
       if (!rows[0]) throw new Error("CNS_CURRENT_STATE_REQUIRED");
-      if (new Date(rows[0].stale_after).getTime() <= Date.now()) throw new Error("CNS_CURRENT_STATE_STALE");
+      if (new Date(String(rows[0].stale_after)).getTime() <= Date.now()) {
+        throw new Error("CNS_CURRENT_STATE_STALE");
+      }
       return rows;
     }
     case "brain.get_context": {
       const id = requireString(a, "project_id");
+      await syncProjectCode(id);
       const intent = requireString(a, "intent");
       const depth = Number(a.depth ?? 2);
       const budget = Number(a.token_budget ?? 12000);
@@ -104,10 +232,24 @@ async function callTool(name: string, a: Record<string, unknown>) {
     case "code.get_current_line": {
       const id = requireString(a, "project_id");
       const seam = typeof a.seam === "string" ? a.seam : "default";
-      return await sql`select * from cns.code_lines where project_id=${id} and seam=${seam} and role in ('ACTIVE_DEVELOPMENT','PRODUCTION','FIXED_REVIEW') order by case role when 'ACTIVE_DEVELOPMENT' then 1 when 'PRODUCTION' then 2 else 3 end`;
+      await syncProjectCode(id);
+      const rows = await sql`
+        select * from cns.code_lines
+        where project_id=${id} and seam=${seam}
+          and role in ('ACTIVE_DEVELOPMENT','PRODUCTION','FIXED_REVIEW')
+        order by case role when 'ACTIVE_DEVELOPMENT' then 1 when 'PRODUCTION' then 2 else 3 end
+      `;
+      for (const row of rows) {
+        const role = String(row.role ?? "");
+        if ((role === "ACTIVE_DEVELOPMENT" || role === "PRODUCTION") &&
+            (!row.github_verified_at || !row.stale_after || new Date(String(row.stale_after)).getTime() <= Date.now())) {
+          throw new Error("CNS_GITHUB_CURRENT_STATE_STALE");
+        }
+      }
+      return rows;
     }
-    case "code.verify_head": {
-      return await sql`select cns.observe_code_head(${requireString(a,"code_line_id")},${requireString(a,"observed_sha")},${String(a.source_revision ?? "github-live")},${requireString(a,"idempotency_key")}) as event_id`;
+    case "code.sync_live": {
+      return await syncProjectCode(requireString(a, "project_id"));
     }
     case "prototype.get_current": {
       const id = requireString(a, "project_id");
@@ -149,7 +291,7 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && new URL(req.url).pathname.endsWith("/health")) {
     try {
       const r = await sql`select value from cns.system_meta where key='authority_mode'`;
-      return Response.json({ ok: true, authority: r[0]?.value ?? null });
+      return Response.json({ ok: true, authority: r[0]?.value ?? null, githubLiveRequired: true });
     } catch {
       return Response.json({ ok: false, code: "CNS_DATABASE_UNAVAILABLE" }, { status: 503 });
     }
@@ -159,17 +301,24 @@ Deno.serve(async (req) => {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${GATEWAY_TOKEN}`) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let rpc: any;
-  try { rpc = await req.json(); } catch { return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, { status: 400 }); }
+  let rpc: Record<string, unknown>;
+  try {
+    rpc = await req.json();
+  } catch {
+    return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, { status: 400 });
+  }
 
   try {
     if (rpc.method === "initialize") {
-      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.2.0-shadow" } } });
+      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.2.1-shadow" } } });
     }
     if (rpc.method === "tools/list") return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { tools } });
     if (rpc.method !== "tools/call") throw new Error("METHOD_NOT_SUPPORTED");
-    const name = String(rpc.params?.name ?? "");
-    const args = (rpc.params?.arguments ?? {}) as Record<string, unknown>;
+    const params = asObject(rpc.params ?? {});
+    const name = String(params.name ?? "");
+    const args = (params.arguments && typeof params.arguments === "object" && !Array.isArray(params.arguments))
+      ? params.arguments as Record<string, unknown>
+      : {};
     const result = await callTool(name, args);
     return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { content: [{ type: "text", text: JSON.stringify(result) }] } });
   } catch (error) {
