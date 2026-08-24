@@ -118,4 +118,8 @@ async function proxy(request) {
   return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
 }
 
-addEventListener("fetch", (event) => event.respondWith(proxy(event.request)));
+export default {
+  async fetch(request) {
+    return proxy(request);
+  },
+};
