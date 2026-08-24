@@ -6,14 +6,15 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 }
 
 test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
-  test("home is a dedicated editorial world with live depth", async ({ page }) => {
+  test("home is a dedicated edited publication with live depth", async ({ page }) => {
     await page.goto("/magazine");
     await expect(page.getByRole("link", { name: "4PLANET Magazine home" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The world is alive. So is the story." })).toBeVisible();
     await expect(page.getByText("PLANET SIGNAL / FAST, SOURCE-BOUNDED")).toBeVisible();
-    await expect(page.getByText("FOUR READING MODES / ONE MAGAZINE")).toBeVisible();
+    await expect(page.getByText("RECURRING EDITORIAL")).toBeVisible();
     await expect(page.getByRole("link", { name: "SEARCH" })).toBeVisible();
     await expect(page.getByRole("link", { name: "SAVED" })).toBeVisible();
+    await expect(page.locator(".mag-world-masthead-word")).toHaveCount(2);
     await expect(page.locator(".mag-world-footer")).toBeVisible();
     await expect(page.locator(".public-shell")).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
@@ -31,13 +32,17 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     await expect(page.locator(".mag-world")).toHaveAttribute("data-mag-theme", after || "dark");
   });
 
-  test("topic and lane routes behave as useful feeds", async ({ page }) => {
+  test("topic, lane and canonical hub routes behave as useful feeds", async ({ page }) => {
     await page.goto("/magazine?topic=INNOVATION");
     await expect(page.getByRole("heading", { name: "Innovation" })).toBeVisible();
     await expect(page.locator(".mag-story-tile").first()).toBeVisible();
     await page.goto("/magazine?lane=PEOPLE");
     await expect(page.getByRole("heading", { name: "PEOPLE" })).toBeVisible();
     await expect(page.locator(".mag-story-tile").first()).toBeVisible();
+    await page.goto("/magazine/topics/innovation");
+    await expect(page.getByRole("heading", { name: "Innovation" })).toBeVisible();
+    await page.goto("/magazine/series/from-the-field");
+    await expect(page.getByRole("heading", { name: "FROM THE FIELD" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
@@ -73,6 +78,7 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     for (const [route, cls] of proofs) {
       await page.goto(route);
       await expect(page.locator(`.${cls}`)).toBeVisible();
+      await expect(page.locator(".mag-story-facts")).toBeVisible();
       await expect(page.getByText("HOW WE KNOW")).toBeVisible();
       await expect(page.locator(".mag-world-footer")).toBeVisible();
       await expectNoHorizontalOverflow(page);
