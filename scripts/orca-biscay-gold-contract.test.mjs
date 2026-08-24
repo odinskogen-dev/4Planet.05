@@ -10,7 +10,8 @@ const wbs = readFileSync('docs/orca/ORCA_BAY_OF_BISCAY_GOLD_WBS.md', 'utf8');
 test('Bay of Biscay Gold stays inside existing Orca Journey', () => {
   assert.match(html, /orca-biscay-gold-20\.css/);
   assert.match(html, /orca-biscay-gold-20\.js/);
-  assert.match(html, /ORCA LUME ROOM 21 · BAY OF BISCAY GOLD 20/);
+  assert.match(html, /ORCA LUME ROOM 21 · BAY OF BISCAY JOURNEY/);
+  assert.doesNotMatch(html, /BAY OF BISCAY GOLD 20/);
   assert.doesNotMatch(js, /new maplibregl\.Map/);
 });
 
