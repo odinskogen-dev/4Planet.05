@@ -1,0 +1,56 @@
+name: LIVE CSP Probe
+
+on:
+  push:
+    branches: [release/one-interface-sprint2-6bbfebb]
+    paths:
+      - public/_headers
+      - .github/workflows/live-csp-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe live headers
+        id: probe
+        shell: bash
+        run: |
+          set -u
+          : > /tmp/csp-probe.md
+          echo '# LIVE CSP probe' >> /tmp/csp-probe.md
+          echo >> /tmp/csp-probe.md
+          for i in $(seq 1 24); do
+            headers="$(curl -sSI https://4planet.org/ | tr -d '\r')"
+            status="$(printf '%s\n' "$headers" | head -n1)"
+            csp="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {sub(/^[^:]+:[[:space:]]*/,""); print; exit}')"
+            if printf '%s' "$csp" | grep -q 'https://www.googletagmanager.com' \
+              && printf '%s' "$csp" | grep -q 'https://www.google-analytics.com'; then
+              echo "- HTTP: \`$status\`" >> /tmp/csp-probe.md
+              echo '- Google Tag Manager allowed: `PASS`' >> /tmp/csp-probe.md
+              echo '- Google Analytics collect allowed: `PASS`' >> /tmp/csp-probe.md
+              echo '- Result: **LIVE CSP PASS**' >> /tmp/csp-probe.md
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "- HTTP: \`$status\`" >> /tmp/csp-probe.md
+          echo '- Google Tag Manager allowed: `FAIL`' >> /tmp/csp-probe.md
+          echo '- Google Analytics collect allowed: `FAIL`' >> /tmp/csp-probe.md
+          echo '- Result: **LIVE CSP FAIL**' >> /tmp/csp-probe.md
+          echo >> /tmp/csp-probe.md
+          echo 'Observed CSP:' >> /tmp/csp-probe.md
+          echo '\`\`\`' >> /tmp/csp-probe.md
+          echo "$csp" >> /tmp/csp-probe.md
+          echo '\`\`\`' >> /tmp/csp-probe.md
+          exit 1
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/csp-probe.md
