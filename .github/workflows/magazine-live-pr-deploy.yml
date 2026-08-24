@@ -48,18 +48,27 @@ jobs:
           cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
           const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
           const APEX = "4planetmagazine.com";
-          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/manifest.webmanifest","/site.webmanifest"]);
-          const allowed = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
             const incoming = new URL(request.url);
             if (incoming.hostname === `www.${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
             if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
-            if (!allowed(incoming.pathname)) return blocked();
-            const upstream = new URL(incoming.pathname, UPSTREAM); upstream.search = incoming.search;
+
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedMagazine(incoming.pathname) && !atlasEmbed) return blocked();
+
+            const upstream = new URL(incoming.pathname, UPSTREAM);
+            upstream.search = incoming.search;
             const response = await fetch(new Request(upstream.toString(), request));
-            const headers = new Headers(response.headers); headers.delete("x-robots-tag"); headers.set("x-4planet-surface", "magazine-only-live");
-            if ((headers.get("content-type") || "").includes("text/html")) { headers.set("cache-control", "no-store"); headers.set("x-robots-tag", "index, follow, max-image-preview:large"); }
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
             return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
           }};
           EOF
