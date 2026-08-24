@@ -1,4 +1,4 @@
-name: Cloudflare LABS Domain Bootstrap
+name: Cloudflare LABS Domain Diagnose
 
 on:
   pull_request:
@@ -16,135 +16,42 @@ env:
   CF_PROJECT: 4planet-05
   CF_ZONE: 4planet.org
   LABS_DOMAIN: labs.4planet.org
-  LABS_BRANCH: labs/overview-v1
-  LABS_BRANCH_ALIAS: labs-overview-v1.4planet-05.pages.dev
-  LABS_EXPECTED_SHA: 35486b0304779476e550b7d10e9981dd51dc8ef7
 
 jobs:
-  bind-labs-domain:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify exact LABS source and Cloudflare branch preview
-        shell: bash
-        run: |
-          set -euo pipefail
-          pr="$(curl -fsS -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/54")"
-          current_sha="$(jq -r '.head.sha // empty' <<<"${pr}")"
-          current_branch="$(jq -r '.head.ref // empty' <<<"${pr}")"
-          [[ "${current_sha}" == "${LABS_EXPECTED_SHA}" && "${current_branch}" == "${LABS_BRANCH}" ]] || {
-            echo "LABS PR/head drifted: branch=${current_branch} sha=${current_sha}; refusing domain switch"; exit 1;
-          }
-          curl -fsS --retry 5 --retry-delay 2 "https://${LABS_BRANCH_ALIAS}/labs" -o /tmp/labs-branch.html
-          grep -Eiq 'LABS|4PLANET' /tmp/labs-branch.html || { echo "Branch alias returned unexpected content"; exit 1; }
-          echo "Exact LABS GitHub head and Cloudflare branch HTTPS verified."
-
-      - name: Activate Pages domain, then switch it to the LABS branch alias
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "CLOUDFLARE_API_TOKEN is not configured"; exit 1; }
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-
-          echo "STAGE zone lookup"
-          code="$(curl -sS -o /tmp/zone.json -w '%{http_code}' "${api}/zones?name=${CF_ZONE}&status=active" "${auth[@]}")"
-          [[ "${code}" == "200" ]] || { echo "zone lookup HTTP ${code}"; cat /tmp/zone.json; exit 1; }
-          zone_id="$(jq -r '.result[0].id // empty' /tmp/zone.json)"
-          account_id="$(jq -r '.result[0].account.id // empty' /tmp/zone.json)"
-          test -n "${zone_id}" && test -n "${account_id}" || { echo "Active ${CF_ZONE} zone/account not resolved"; exit 1; }
-
-          echo "STAGE Pages domain ensure"
-          code="$(curl -sS -o /tmp/domain.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
-          if [[ "${code}" == "404" ]]; then
-            code="$(curl -sS -o /tmp/domain-create.json -w '%{http_code}' -X POST "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "${LABS_DOMAIN}" '{name:$name}')")"
-            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/domain-create.json)" == "true" ]] || { echo "Pages domain create HTTP ${code}"; cat /tmp/domain-create.json; exit 1; }
-          elif [[ "${code}" != "200" ]]; then
-            echo "Pages domain lookup HTTP ${code}"; cat /tmp/domain.json; exit 1
-          fi
-
-          echo "STAGE wait for Pages domain activation BEFORE DNS branch switch"
-          status=""
-          for i in $(seq 1 45); do
-            code="$(curl -sS -o /tmp/domain-status.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
-            [[ "${code}" == "200" ]] || { echo "Domain status HTTP ${code}"; cat /tmp/domain-status.json; exit 1; }
-            status="$(jq -r '.result.status // empty' /tmp/domain-status.json)"
-            echo "domain status=${status:-unknown}"
-            [[ "${status}" == "active" ]] && break
-            [[ "${status}" == "error" || "${status}" == "blocked" ]] && { cat /tmp/domain-status.json; exit 1; }
-            sleep 4
-          done
-          [[ "${status}" == "active" ]] || { echo "Pages custom domain did not become active"; cat /tmp/domain-status.json; exit 1; }
-
-          echo "STAGE DNS branch-alias switch"
-          code="$(curl -sS -o /tmp/dns-list.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
-          [[ "${code}" == "200" ]] || { echo "DNS lookup HTTP ${code}"; cat /tmp/dns-list.json; exit 1; }
-          record_id="$(jq -r '.result[0].id // empty' /tmp/dns-list.json)"
-          current_target="$(jq -r '.result[0].content // empty' /tmp/dns-list.json)"
-          current_proxied="$(jq -r '.result[0].proxied // false' /tmp/dns-list.json)"
-          echo "current DNS target=${current_target:-none} proxied=${current_proxied}"
-          payload="$(jq -nc --arg name "${LABS_DOMAIN}" --arg content "${LABS_BRANCH_ALIAS}" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')"
-
-          if [[ "${current_target}" == "${LABS_BRANCH_ALIAS}" && "${current_proxied}" == "true" ]]; then
-            echo "DNS already points to LABS branch alias."
-          elif [[ -n "${record_id}" ]]; then
-            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X PUT "${api}/zones/${zone_id}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
-            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS update HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
-          else
-            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "${payload}")"
-            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS create HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
-          fi
-
-          echo "STAGE authoritative DNS readback"
-          sleep 2
-          code="$(curl -sS -o /tmp/dns-final.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
-          [[ "${code}" == "200" ]] || { echo "DNS readback HTTP ${code}"; cat /tmp/dns-final.json; exit 1; }
-          final_target="$(jq -r '.result[0].content // empty' /tmp/dns-final.json)"
-          final_proxied="$(jq -r '.result[0].proxied // false' /tmp/dns-final.json)"
-          [[ "${final_target}" == "${LABS_BRANCH_ALIAS}" && "${final_proxied}" == "true" ]] || { echo "DNS final mismatch target=${final_target} proxied=${final_proxied}"; exit 1; }
-
-          echo "STAGE HTTPS/readback"
-          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
-          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
-          grep -Eiq 'LABS' /tmp/labs-root.html || { echo "Custom-domain root does not render LABS"; exit 1; }
-          grep -Eiq 'LABS' /tmp/labs-path.html || { echo "Custom-domain /labs does not render LABS"; exit 1; }
-          curl -fsS -L --retry 5 --retry-delay 2 "https://4planet.org/" -o /tmp/main.html
-          test -s /tmp/main.html || { echo "4planet.org regression check failed"; exit 1; }
-          echo "LABS custom domain is live and verified."
-
-      - name: Report PASS to pull request
-        if: success()
+      - name: Read Cloudflare ownership state
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          body=$(cat <<'EOF'
-          LABS DOMAIN BOOTSTRAP — PASS
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "CLOUDFLARE_API_TOKEN missing"; exit 1; }
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone="$(curl -fsS "${api}/zones?name=${CF_ZONE}&status=active" "${auth[@]}")"
+          zone_id="$(jq -r '.result[0].id // empty' <<<"${zone}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone}")"
+          test -n "${zone_id}" && test -n "${account_id}"
 
-          Latest verified LABS source: https://labs-overview-v1.4planet-05.pages.dev/labs
-          Source branch: labs/overview-v1
-          Source SHA: 35486b0304779476e550b7d10e9981dd51dc8ef7
-          Live root: https://labs.4planet.org/
-          Live Project OS: https://labs.4planet.org/labs
+          dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
 
-          Pages domain activation = PASS.
-          DNS = proxied CNAME to labs-overview-v1.4planet-05.pages.dev.
-          HTTPS/LABS content checks = PASS.
-          4planet.org reachability regression check = PASS.
+          dns_summary="$(jq -c '[.result[]? | {id,type,name,content,proxied,proxiable,locked,meta,comment,tags,settings}]' <<<"${dns}")"
+          domain_summary="$(jq -c '{name:.result.name,status:.result.status,verification_data:.result.verification_data,validation_data:.result.validation_data,zone_tag:.result.zone_tag}' <<<"${domain}")"
+
+          body=$(cat <<EOF
+          LABS CLOUDFLARE DIAGNOSIS
+
+          Pages domain:
+          ${domain_summary}
+
+          DNS records for labs.4planet.org:
+          ${dns_summary}
           EOF
           )
           curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
             -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
-
-      - name: Report failure to pull request
-        if: failure()
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          body='LABS DOMAIN BOOTSTRAP — FAIL. Domain is not approved as live. The workflow logs identify the exact failed Cloudflare/readback stage; no application-code merge was performed.'
-          curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
-            -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
-            --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
+          echo "Diagnosis published to PR."
