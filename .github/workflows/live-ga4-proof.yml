@@ -1,0 +1,118 @@
+name: LIVE GA4 Proof
+
+on:
+  push:
+    branches: [release/one-interface-sprint2-6bbfebb]
+    paths:
+      - public/_headers
+      - src/analytics/**
+      - .github/workflows/live-ga4-proof.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for live CSP
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 30); do
+            headers="$(curl -fsSI https://4planet.org/ | tr -d '\r')"
+            csp="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {sub(/^[^:]+:[[:space:]]*/,""); print; exit}')"
+            if printf '%s' "$csp" | grep -q 'https://www.googletagmanager.com' \
+              && printf '%s' "$csp" | grep -q 'https://www.google-analytics.com'; then
+              printf '%s\n' "$csp" > /tmp/live-csp.txt
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo 'Live CSP did not expose the GA4 endpoints within the deployment window.' >&2
+            exit 1
+          fi
+
+      - name: Install browser proof dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Prove ALLOW sends GA4 page_view
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          import fs from 'node:fs';
+
+          const browser = await chromium.launch();
+          const page = await browser.newPage();
+          const consoleErrors = [];
+          page.on('console', (message) => {
+            if (message.type() === 'error') consoleErrors.push(message.text());
+          });
+
+          try {
+            const response = await page.goto('https://4planet.org/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+            if (!response || response.status() !== 200) throw new Error(`Unexpected live HTTP status: ${response?.status()}`);
+
+            const csp = response.headers()['content-security-policy'] || '';
+            if (!csp.includes('https://www.googletagmanager.com')) throw new Error('Live CSP still blocks googletagmanager.com');
+            if (!csp.includes('https://www.google-analytics.com')) throw new Error('Live CSP still blocks google-analytics.com');
+
+            await page.evaluate(() => localStorage.removeItem('4planet.analytics.consent.v1'));
+            await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+
+            const allow = page.getByRole('button', { name: 'ALLOW' });
+            await allow.waitFor({ state: 'visible', timeout: 10000 });
+
+            const gaRequestPromise = page.waitForRequest(
+              (request) => /https:\/\/(?:region1\.)?google-analytics\.com\/g\/collect/.test(request.url()),
+              { timeout: 20000 },
+            );
+
+            await allow.click();
+            const gaRequest = await gaRequestPromise;
+            const requestUrl = new URL(gaRequest.url());
+            const measurementId = requestUrl.searchParams.get('tid') || '';
+            if (measurementId !== 'G-Q79Y9HJRL8') throw new Error(`Unexpected GA4 Measurement ID: ${measurementId || 'missing'}`);
+
+            const blockingErrors = consoleErrors.filter((entry) =>
+              /content security policy|refused to load|googletagmanager|google-analytics/i.test(entry),
+            );
+            if (blockingErrors.length) throw new Error(`Browser reported analytics/CSP errors: ${blockingErrors.join(' | ')}`);
+
+            fs.writeFileSync('/tmp/ga4-proof.md', [
+              '# LIVE GA4 proof',
+              '',
+              '- 4planet.org HTTP: `200`',
+              '- CSP allows Google Tag + GA4 collection: `PASS`',
+              '- Consent button: `ALLOW` exercised in Chromium',
+              '- GA4 collection request observed: `PASS`',
+              `- Measurement ID observed: \`${measurementId}\``,
+              '- Result: **END-TO-END TRACKING PASS**',
+            ].join('\n'));
+          } finally {
+            await browser.close();
+          }
+          NODE
+
+      - name: Report proof
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [ -f /tmp/ga4-proof.md ]; then
+            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/ga4-proof.md
+          else
+            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# LIVE GA4 proof\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`. Inspect workflow \`LIVE GA4 Proof\`."
+          fi
