@@ -7,7 +7,11 @@ import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
 import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
+import CheckoutReview from "@/pages/integrated/CheckoutReview";
 import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
+import Support from "@/pages/v5/Support";
+import Sponsor from "@/pages/v5/Sponsor";
+import { Terms, PaymentRights, WithdrawalForm } from "@/pages/v5/Legal";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
@@ -32,24 +36,16 @@ const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
+const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
+const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
-const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
+function MtoSupport() { const { slug } = useParams(); return <Navigate to={`/support?mission=${encodeURIComponent(slug || "")}`} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
 
@@ -86,9 +82,13 @@ export function AppRoutes() {
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<ImpactStory />} />
       <Route path="/checkout/lab" element={<CommerceStripeLab />} />
+      <Route path="/checkout/review/:productKey" element={<CheckoutReview />} />
       <Route path="/checkout/return" element={<CheckoutReturn />} />
-      <Route path="/join" element={<People />} />
+      <Route path="/join" element={<Support />} />
+      <Route path="/support" element={<Support />} />
       <Route path="/people" element={<People />} />
+      <Route path="/sponsor" element={<Sponsor />} />
+      <Route path="/sponsors" element={<Sponsor />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
       <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
@@ -110,21 +110,23 @@ export function AppRoutes() {
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />
       <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/legal/terms" element={<Terms />} />
+      <Route path="/legal/payments" element={<PaymentRights />} />
+      <Route path="/legal/withdrawal" element={<WithdrawalForm />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
       <Route path="/os" element={toAbout} />
       <Route path="/os/*" element={toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
-      <Route path="/m/:slug/support" element={toImpact} />
-      <Route path="/m/:slug/campaign" element={toImpact} />
+      <Route path="/m/:slug/support" element={<MtoSupport />} />
+      <Route path="/m/:slug/campaign" element={<MtoSupport />} />
       <Route path="/marketplace" element={toImpact} />
       <Route path="/store" element={toImpact} />
       <Route path="/cart" element={toImpact} />
-      <Route path="/checkout" element={toImpact} />
-      <Route path="/members" element={toJoin} />
-      <Route path="/ambassadors" element={toJoin} />
-      <Route path="/portal/*" element={toImpact} />
-      <Route path="/sponsors" element={toBrands} />
+      <Route path="/checkout" element={<Navigate to="/join" replace />} />
+      <Route path="/members" element={<Navigate to="/join" replace />} />
+      <Route path="/ambassadors" element={<Navigate to="/people" replace />} />
+      <Route path="/portal/*" element={<Navigate to="/join" replace />} />
       <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
       <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
       <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
