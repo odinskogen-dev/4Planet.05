@@ -13,6 +13,7 @@ import "@/styles/magazine-mobile-round-03.css";
 import "@/styles/magazine-live-round-04.css";
 import "@/styles/magazine-live-round-05.css";
 import "@/styles/magazine-public-launch.css";
+import "@/styles/magazine-brand-typography.css";
 
 type MagazineTheme = "light" | "dark";
 const THEME_KEY = "4planet-magazine-theme-v2";
@@ -127,32 +128,19 @@ export function MagazineShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="mag-world-masthead-row">
-          <Link className="mag-world-masthead" to="/magazine" aria-label="4PLANET Magazine home">
-            <span className="mag-world-masthead-word">4PLANET</span><span className="mag-world-masthead-word">MAGAZINE</span>
-          </Link>
+          <Link className="mag-world-masthead" to="/magazine" aria-label="4PLANET Magazine home"><span className="mag-world-masthead-word">4PLANET</span><span className="mag-world-masthead-word">MAGAZINE</span></Link>
           <p>Nature · people · engineering · culture · what works</p>
         </div>
 
         <nav className="mag-world-primary-nav" aria-label="Magazine primary navigation">
-          <Link to="/magazine">LATEST</Link>
-          <Link to="/magazine?lane=LIFE">LIFE</Link>
-          <Link to="/magazine?lane=PLANET">PLANET</Link>
-          <Link to="/magazine?topic=INNOVATION">INNOVATION</Link>
-          <Link to="/magazine?lane=PEOPLE">PEOPLE</Link>
-          <Link to="/magazine?lane=CULTURE">CULTURE</Link>
-          <Link to="/magazine?lane=HUMAN">IDEAS</Link>
-          <Link to="/magazine#topics">TOPICS +</Link>
+          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
         </nav>
       </header>
 
       <div id="magazine-content">{children}</div>
 
       <footer className="mag-world-footer">
-        <div className="mag-world-footer-statement">
-          <span>4PLANET MAGAZINE</span>
-          <h2>Stories for people who want the future to work.</h2>
-          <p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p>
-        </div>
+        <div className="mag-world-footer-statement"><span>4PLANET MAGAZINE</span><h2>Stories for people who want the future to work.</h2><p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p></div>
         <div className="mag-world-footer-grid">
           <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
           <div><p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}</div>
