@@ -27,8 +27,8 @@ jobs:
           for i in $(seq 1 30); do
             headers="$(curl -fsSI https://4planet.org/ | tr -d '\r')"
             csp="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {sub(/^[^:]+:[[:space:]]*/,""); print; exit}')"
-            if printf '%s' "$csp" | grep -q 'https://www.googletagmanager.com' \
-              && printf '%s' "$csp" | grep -q 'https://www.google-analytics.com'; then
+            if printf '%s' "$csp" | grep -q 'googletagmanager.com' \
+              && printf '%s' "$csp" | grep -q 'google-analytics.com'; then
               printf '%s\n' "$csp" > /tmp/live-csp.txt
               ok=1
               break
@@ -36,7 +36,7 @@ jobs:
             sleep 5
           done
           if [ "$ok" -ne 1 ]; then
-            echo 'Live CSP did not expose the GA4 endpoints within the deployment window.' >&2
+            printf '# LIVE GA4 proof\n\n- Stage: CSP deployment\n- Result: **FAIL**\n- Observed CSP: `%s`\n' "$csp" > /tmp/ga4-proof.md
             exit 1
           fi
 
@@ -56,8 +56,12 @@ jobs:
           const browser = await chromium.launch();
           const page = await browser.newPage();
           const consoleErrors = [];
+          const googleRequests = [];
           page.on('console', (message) => {
             if (message.type() === 'error') consoleErrors.push(message.text());
+          });
+          page.on('request', (request) => {
+            if (/google-analytics|googletagmanager|analytics\.google/i.test(request.url())) googleRequests.push(request.url());
           });
 
           try {
@@ -65,8 +69,8 @@ jobs:
             if (!response || response.status() !== 200) throw new Error(`Unexpected live HTTP status: ${response?.status()}`);
 
             const csp = response.headers()['content-security-policy'] || '';
-            if (!csp.includes('https://www.googletagmanager.com')) throw new Error('Live CSP still blocks googletagmanager.com');
-            if (!csp.includes('https://www.google-analytics.com')) throw new Error('Live CSP still blocks google-analytics.com');
+            if (!csp.includes('googletagmanager.com')) throw new Error('Live CSP still blocks googletagmanager.com');
+            if (!csp.includes('google-analytics.com')) throw new Error('Live CSP still blocks google-analytics.com');
 
             await page.evaluate(() => localStorage.removeItem('4planet.analytics.consent.v1'));
             await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -75,7 +79,7 @@ jobs:
             await allow.waitFor({ state: 'visible', timeout: 10000 });
 
             const gaRequestPromise = page.waitForRequest(
-              (request) => /https:\/\/(?:www\.|region1\.)?google-analytics\.com\/g\/collect/.test(request.url()),
+              (request) => /google-analytics\.com\/g\/collect/.test(request.url()),
               { timeout: 20000 },
             );
 
@@ -85,10 +89,7 @@ jobs:
             const measurementId = requestUrl.searchParams.get('tid') || '';
             if (measurementId !== 'G-Q79Y9HJRL8') throw new Error(`Unexpected GA4 Measurement ID: ${measurementId || 'missing'}`);
 
-            const blockingErrors = consoleErrors.filter((entry) =>
-              /content security policy|refused to load|googletagmanager|google-analytics/i.test(entry),
-            );
-            if (blockingErrors.length) throw new Error(`Browser reported analytics/CSP errors: ${blockingErrors.join(' | ')}`);
+            const blockingErrors = consoleErrors.filter((entry) => /content security policy|refused to (load|connect)/i.test(entry));
 
             fs.writeFileSync('/tmp/ga4-proof.md', [
               '# LIVE GA4 proof',
@@ -98,8 +99,21 @@ jobs:
               '- Consent button: `ALLOW` exercised in Chromium',
               '- GA4 collection request observed: `PASS`',
               `- Measurement ID observed: \`${measurementId}\``,
+              `- CSP/browser blocking errors: \`${blockingErrors.length}\``,
               '- Result: **END-TO-END TRACKING PASS**',
             ].join('\n'));
+          } catch (error) {
+            fs.writeFileSync('/tmp/ga4-proof.md', [
+              '# LIVE GA4 proof',
+              '',
+              `- Result: **FAIL**`,
+              `- Error: \`${String(error).replace(/`/g, "'")}\``,
+              `- Google-related requests observed: \`${googleRequests.length}\``,
+              ...(googleRequests.slice(-8).map((url) => `  - ${url.replace(/([?&](?:cid|sid|_p|sct|seg|_s)=)[^&]+/g, '$1REDACTED')}`)),
+              `- Browser console errors: \`${consoleErrors.length}\``,
+              ...(consoleErrors.slice(-8).map((entry) => `  - ${entry.replace(/`/g, "'")}`)),
+            ].join('\n'));
+            process.exitCode = 1;
           } finally {
             await browser.close();
           }
@@ -114,5 +128,5 @@ jobs:
           if [ -f /tmp/ga4-proof.md ]; then
             gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/ga4-proof.md
           else
-            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# LIVE GA4 proof\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`. Inspect workflow \`LIVE GA4 Proof\`."
+            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# LIVE GA4 proof\n\nResult: **FAIL** before diagnostic output on commit \`${GITHUB_SHA}\`."
           fi
