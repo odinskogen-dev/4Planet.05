@@ -113,7 +113,7 @@ function StoryStream() {
         <div className="mag-story-stream-track">
           {[0, 1].map((copy) => (
             <div className="mag-story-stream-group" key={copy} aria-hidden={copy === 1 ? "true" : undefined}>
-              {stories.map((story, index) => {
+              {stories.map((story) => {
                 const media = img(story.image);
                 return (
                   <Link className="mag-story-stream-card" to={`/magazine/${story.slug}`} key={`${copy}-${story.slug}`} tabIndex={copy === 1 ? -1 : undefined}>
@@ -255,7 +255,7 @@ export default function Magazine() {
             <div className="mag-atlas-frame">
               <iframe
                 title="4PLANET ATLAS interactive globe"
-                src="https://king-test.4planet-05.pages.dev/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18"
+                src="/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18"
                 loading="lazy"
                 allow="fullscreen"
                 referrerPolicy="strict-origin-when-cross-origin"
