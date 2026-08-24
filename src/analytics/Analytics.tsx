@@ -37,6 +37,7 @@ function productArea(pathname: string): string {
   if (pathname.startsWith("/impact")) return "impact";
   if (pathname.startsWith("/missions")) return "missions";
   if (pathname.startsWith("/domains")) return "domains";
+  if (pathname.startsWith("/me")) return "me4planet";
   return "4planet";
 }
 
@@ -104,6 +105,17 @@ export function Analytics() {
     setConsent(next);
   };
 
+  const choiceStyle: React.CSSProperties = {
+    minWidth: 112,
+    border: "1px solid #fff",
+    background: "transparent",
+    color: "#fff",
+    padding: "9px 13px",
+    cursor: "pointer",
+    font: "inherit",
+    fontWeight: 600,
+  };
+
   return (
     <aside
       role="region"
@@ -124,31 +136,19 @@ export function Analytics() {
         flexWrap: "wrap",
         background: "#080808",
         color: "#fff",
-        border: "1px solid rgba(255,255,255,.2)",
+        border: "1px solid rgba(255,255,255,.35)",
         fontFamily: "DM Sans, sans-serif",
         fontSize: 13,
         lineHeight: 1.45,
       }}
     >
       <div style={{ maxWidth: 500 }}>
-        Allow optional usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}
+        Optional product analytics can help improve 4PLANET. No optional analytics loads before you choose. {" "}
         <a href="/privacy" style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a>
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          onClick={() => decide("denied")}
-          style={{ border: "1px solid rgba(255,255,255,.45)", background: "transparent", color: "#fff", padding: "8px 12px", cursor: "pointer" }}
-        >
-          DECLINE
-        </button>
-        <button
-          type="button"
-          onClick={() => decide("granted")}
-          style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "8px 12px", cursor: "pointer" }}
-        >
-          ALLOW
-        </button>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" onClick={() => decide("denied")} style={choiceStyle}>DECLINE</button>
+        <button type="button" onClick={() => decide("granted")} style={choiceStyle}>ALLOW</button>
       </div>
     </aside>
   );
