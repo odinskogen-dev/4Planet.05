@@ -24,6 +24,15 @@ const HUB_SIGNAL_IMAGES: ImageKey[] = [
   "amazoniaHero",
 ];
 
+const RELATED_POSITIONS = [
+  { x: "15%", y: "30%" },
+  { x: "36%", y: "17%" },
+  { x: "69%", y: "18%" },
+  { x: "86%", y: "39%" },
+  { x: "70%", y: "78%" },
+  { x: "28%", y: "78%" },
+] as const;
+
 function StoryRail({ stories }: { stories: typeof STORIES }) {
   return (
     <div className="mag-hub-story-grid">
@@ -146,11 +155,19 @@ export function MagazineTopicHub() {
         <nav className="mag-hub-related-biome" aria-label={`Topics connected to ${topic.label}`}>
           <p>CONNECTED THREADS / FOLLOW THE SYSTEM</p>
           <div className="mag-hub-related-core"><strong>{topic.label}</strong></div>
-          {relatedTopics.map((item) => (
-            <Link className="mag-hub-related-link" key={item.id} to={`/magazine/topics/${item.id.toLowerCase()}`}>
-              <strong>{item.label}</strong><small>{item.promise}</small>
-            </Link>
-          ))}
+          {relatedTopics.map((item, index) => {
+            const position = RELATED_POSITIONS[index];
+            return (
+              <Link
+                className="mag-hub-related-link"
+                style={{ "--rx": position.x, "--ry": position.y } as React.CSSProperties}
+                key={item.id}
+                to={`/magazine/topics/${item.id.toLowerCase()}`}
+              >
+                <strong>{item.label}</strong><small>{item.promise}</small>
+              </Link>
+            );
+          })}
         </nav>
       </main>
     </MagazineShell>
