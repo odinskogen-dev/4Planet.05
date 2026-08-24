@@ -29,7 +29,7 @@ export type StripeProductKey =
   | "mission_supporter_4play";
 
 export type StripeCheckoutMode = "payment" | "subscription";
-export type StripeProductKind = "IMPACT_UNIT" | "SUPPORT" | "FOUNDING_PATRON" | "MEMBERSHIP" | "MISSION_SUPPORTER" | "SPONSOR_PACKAGE" | "PROJECT_SPONSOR" | "MISSION_SPONSOR";
+export type StripeProductKind = "IMPACT_CONTRIBUTION" | "SUPPORT" | "FOUNDING_PATRON" | "MEMBERSHIP" | "MISSION_SUPPORTER" | "SPONSOR_PACKAGE" | "PROJECT_SPONSOR" | "MISSION_SPONSOR";
 export type StripeProductFamily = "IMPACT" | "SUPPORT" | "PATRON" | "MEMBERSHIP" | "MISSION_SUPPORT" | "SPONSOR";
 
 export interface StripeCheckoutInput {

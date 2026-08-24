@@ -60,3 +60,30 @@ A first-time viewer sees an unmistakable Jaguar rather than a white iframe or bl
 
 ## ACCEPTANCE
 1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence is manually inspected and shows a recognisable Jaguar, not white/blank/proxy shards. 5) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+
+---
+
+## CONCURRENT BOUNDED PAYMENT BUILD — PAYMENTS PUBLIC LIVE 02
+
+**AUTHORITY:** Founder direction 24 AUG 2026 — make every defined 4PLANET payment type publicly reachable and payable while preserving truthful legal/ecological boundaries. This note does not displace the active Jaguar Gold change and does not authorise production promotion by itself.
+
+### PUBLIC SELF-SERVICE MODEL
+- ME4PLANET / 4PEOPLE remains free.
+- SUPPORT 4PLANET: NOK 50/month recurring.
+- Supporting Member: NOK 100/month recurring; optional and separate from free participation.
+- Mission Supporter: NOK 100/month for all 16 canonical Missions.
+- Tree, Plastic, Coral and Rewild: NOK 100 one-time **IMPACT pathway contributions**.
+
+IMPACT is contribution-first until real partner, economics, allocation, delivery, evidence, claims, double-counting and remedy controls exist. `PAYMENT != DELIVERY != EVIDENCE != OUTCOME`. Stripe has no ecological delivery authority.
+
+### PUBLIC NEGOTIATED / INVOICE MODEL
+- Project Sponsor: NOK 50,000–250,000.
+- Mission Sponsor: NOK 250,000–750,000.
+- Sponsor Package: NOK 100,000–500,000.
+- Pilot / Funder: NOK 100,000–300,000.
+- Founding Patron: NOK 250,000–1,500,000.
+
+These are public payment paths but not anonymous high-value card Checkout. Flow is intended amount + enquiry → agreement → exact draft Stripe Invoice → human counterparty/consideration/tax/VAT review → Hosted Invoice Page payment.
+
+### PAYMENT RELEASE ACCEPTANCE
+1) Self-service price is server-owned and verified before Checkout. 2) Recurring terms and obligation-to-pay wording are visible before Stripe. 3) LIVE Checkout accepts only 4planet.org/www.4planet.org. 4) Signed webhook is idempotent, provider-time ordered and fails closed in LIVE without durable ledger persistence. 5) Supabase commerce ledger has RLS and no ecological delivery authority. 6) All five negotiated flows enforce exact server-side amount corridors and human-reviewed draft invoices. 7) Stripe Customer Portal is active before broad recurring release. 8) Cloudflare secrets are server-only and all LIVE switches stay closed until exact-SHA QA and runtime preflight pass. 9) Minimal real-money canary is verified before broad production promotion. 10) Existing Jaguar and other TEST KING product work is not regressed.

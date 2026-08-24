@@ -3,7 +3,7 @@ export type CheckoutMode = "payment" | "subscription";
 export type CommerceChannel = "checkout" | "invoice";
 
 export type ProductKind =
-  | "IMPACT_UNIT"
+  | "IMPACT_CONTRIBUTION"
   | "SUPPORT"
   | "FOUNDING_PATRON"
   | "MEMBERSHIP"
@@ -67,14 +67,17 @@ export interface CatalogEntry {
   family: ProductFamily;
   channel: CommerceChannel;
   mode: CheckoutMode;
-  testPriceId: string;
-  livePriceEnv: string;
+  testPriceId: string | null;
+  livePriceId: string | null;
+  liveEnabled: boolean;
   minQuantity: number;
   maxQuantityPerCheckout: number;
   returnPath: string;
   action?: string;
   mission?: string;
   missionSlug?: string;
+  negotiatedMinNok?: number;
+  negotiatedMaxNok?: number;
   taxDeductibleClaim: false;
 }
 
@@ -84,8 +87,7 @@ const checkout = (
   family: ProductFamily,
   mode: CheckoutMode,
   testPriceId: string,
-  livePriceEnv: string,
-  returnPath: string,
+  livePriceId: string,
   extras: Partial<Pick<CatalogEntry, "action" | "mission" | "missionSlug" | "maxQuantityPerCheckout">> = {},
 ): CatalogEntry => ({
   key,
@@ -94,45 +96,74 @@ const checkout = (
   channel: "checkout",
   mode,
   testPriceId,
-  livePriceEnv,
+  livePriceId,
+  liveEnabled: true,
   minQuantity: 1,
   maxQuantityPerCheckout: extras.maxQuantityPerCheckout ?? 1,
-  returnPath,
+  returnPath: "/checkout/return",
   action: extras.action,
   mission: extras.mission,
   missionSlug: extras.missionSlug,
   taxDeductibleClaim: false,
 });
 
-export const CATALOG: Record<ProductKey, CatalogEntry> = {
-  impact_tree: checkout("impact_tree", "IMPACT_UNIT", "IMPACT", "payment", "price_1U7w9lBIIif9wShMBdiJkElA", "STRIPE_LIVE_PRICE_IMPACT_TREE", "/checkout/return", { action: "plant-trees", mission: "CLIM4TE_", missionSlug: "clim4te", maxQuantityPerCheckout: 20 }),
-  impact_plastic: checkout("impact_plastic", "IMPACT_UNIT", "IMPACT", "payment", "price_1U7w9uBIIif9wShMkSYviyab", "STRIPE_LIVE_PRICE_IMPACT_PLASTIC", "/checkout/return", { action: "clean-plastic", mission: "CLE4N_", missionSlug: "cle4n", maxQuantityPerCheckout: 20 }),
-  impact_coral: checkout("impact_coral", "IMPACT_UNIT", "IMPACT", "payment", "price_1U7wA2BIIif9wShMG7qg2s65", "STRIPE_LIVE_PRICE_IMPACT_CORAL", "/checkout/return", { action: "restore-coral", mission: "COR4L_", missionSlug: "cor4l", maxQuantityPerCheckout: 20 }),
-  impact_rewild: checkout("impact_rewild", "IMPACT_UNIT", "IMPACT", "payment", "price_1U7wABBIIif9wShMA2EXSeqQ", "STRIPE_LIVE_PRICE_IMPACT_REWILD", "/checkout/return", { action: "rewild-nature", mission: "RE:WILD_ Land", missionSlug: "rewild-land", maxQuantityPerCheckout: 20 }),
-  support_4planet: checkout("support_4planet", "SUPPORT", "SUPPORT", "payment", "price_1U7yPWBIIif9wShMgT57NW4Y", "STRIPE_LIVE_PRICE_SUPPORT_4PLANET", "/checkout/return"),
-  founding_patron: checkout("founding_patron", "FOUNDING_PATRON", "PATRON", "payment", "price_1U7yPqBIIif9wShMVxTsEJH1", "STRIPE_LIVE_PRICE_FOUNDING_PATRON", "/checkout/return"),
-  membership_supporter: checkout("membership_supporter", "MEMBERSHIP", "MEMBERSHIP", "subscription", "price_1U7wGQBIIif9wShM2RckyATg", "STRIPE_LIVE_PRICE_MEMBERSHIP_SUPPORTER", "/checkout/return"),
-  sponsor_package: checkout("sponsor_package", "SPONSOR_PACKAGE", "SPONSOR", "payment", "price_1U7wGeBIIif9wShMi9z76s8m", "STRIPE_LIVE_PRICE_SPONSOR_PACKAGE", "/checkout/return"),
-  project_sponsor: checkout("project_sponsor", "PROJECT_SPONSOR", "SPONSOR", "payment", "price_1U7yQ1BIIif9wShMtSDnQB4G", "STRIPE_LIVE_PRICE_PROJECT_SPONSOR", "/checkout/return"),
-  mission_sponsor: checkout("mission_sponsor", "MISSION_SPONSOR", "SPONSOR", "payment", "price_1U7yQABIIif9wShMPsHNsZbm", "STRIPE_LIVE_PRICE_MISSION_SPONSOR", "/checkout/return"),
-  b2b_pilot_funder: { key: "b2b_pilot_funder", kind: "B2B_FUNDING_OBJECT", family: "B2B", channel: "invoice", mode: "payment", testPriceId: "price_1U7yQMBIIif9wShMucKia4tx", livePriceEnv: "STRIPE_LIVE_PRICE_B2B_PILOT_FUNDER", minQuantity: 1, maxQuantityPerCheckout: 1, returnPath: "/checkout/return", taxDeductibleClaim: false },
+const negotiated = (
+  key: ProductKey,
+  kind: ProductKind,
+  family: ProductFamily,
+  minNok: number,
+  maxNok: number,
+): CatalogEntry => ({
+  key,
+  kind,
+  family,
+  channel: "invoice",
+  mode: "payment",
+  testPriceId: null,
+  livePriceId: null,
+  liveEnabled: true,
+  minQuantity: 1,
+  maxQuantityPerCheckout: 1,
+  returnPath: "/checkout/return",
+  negotiatedMinNok: minNok,
+  negotiatedMaxNok: maxNok,
+  taxDeductibleClaim: false,
+});
 
-  mission_supporter_cle4n: checkout("mission_supporter_cle4n", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQXBIIif9wShMbs2whL1v", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_CLE4N", "/checkout/return", { mission: "CLE4N_", missionSlug: "cle4n" }),
-  mission_supporter_wh4les: checkout("mission_supporter_wh4les", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQiBIIif9wShM5UAxHWyR", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_WH4LES", "/checkout/return", { mission: "WH4LES_", missionSlug: "wh4les" }),
-  mission_supporter_cor4l: checkout("mission_supporter_cor4l", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQuBIIif9wShMwOMDwgl0", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_COR4L", "/checkout/return", { mission: "COR4L_", missionSlug: "cor4l" }),
-  mission_supporter_rewild_marine: checkout("mission_supporter_rewild_marine", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yR3BIIif9wShMXtZ5cn8l", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_REWILD_MARINE", "/checkout/return", { mission: "RE:WILD_ Marine", missionSlug: "rewild-marine" }),
-  mission_supporter_clim4te: checkout("mission_supporter_clim4te", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yREBIIif9wShMrpAMXTAC", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_CLIM4TE", "/checkout/return", { mission: "CLIM4TE_", missionSlug: "clim4te" }),
-  mission_supporter_am4zonia: checkout("mission_supporter_am4zonia", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRQBIIif9wShMJgNmPsSS", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_AM4ZONIA", "/checkout/return", { mission: "AM4ZONIA_", missionSlug: "am4zonia" }),
-  mission_supporter_species: checkout("mission_supporter_species", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRbBIIif9wShMn1K9fGvy", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_SPECIES", "/checkout/return", { mission: "SPECIES_", missionSlug: "species" }),
-  mission_supporter_rewild_land: checkout("mission_supporter_rewild_land", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRrBIIif9wShMJmXUD484", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_REWILD_LAND", "/checkout/return", { mission: "RE:WILD_ Land", missionSlug: "rewild-land" }),
-  mission_supporter_food: checkout("mission_supporter_food", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRzBIIif9wShMOcMVnTdF", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_FOOD", "/checkout/return", { mission: "FOOD_", missionSlug: "food" }),
-  mission_supporter_en4rgy: checkout("mission_supporter_en4rgy", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yS9BIIif9wShMsYCQyW8D", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_EN4RGY", "/checkout/return", { mission: "EN4RGY_", missionSlug: "en4rgy" }),
-  mission_supporter_circular_city: checkout("mission_supporter_circular_city", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySMBIIif9wShMMoKKCOQg", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_CIRCULAR_CITY", "/checkout/return", { mission: "CIRCULAR CITY_", missionSlug: "circular-city" }),
-  mission_supporter_f4shion: checkout("mission_supporter_f4shion", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySWBIIif9wShMUnNlxVe8", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_F4SHION", "/checkout/return", { mission: "F4SHION_", missionSlug: "f4shion" }),
-  mission_supporter_m4gazine: checkout("mission_supporter_m4gazine", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySjBIIif9wShMhXmImSGv", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_M4GAZINE", "/checkout/return", { mission: "M4GAZINE_", missionSlug: "m4gazine" }),
-  mission_supporter_4rt: checkout("mission_supporter_4rt", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySsBIIif9wShMVPgoxS8X", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_4RT", "/checkout/return", { mission: "4RT_", missionSlug: "4rt" }),
-  mission_supporter_4film: checkout("mission_supporter_4film", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yT4BIIif9wShM7TmY7E62", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_4FILM", "/checkout/return", { mission: "4FILM_", missionSlug: "4film" }),
-  mission_supporter_4play: checkout("mission_supporter_4play", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yTLBIIif9wShMUUvXPq27", "STRIPE_LIVE_PRICE_MISSION_SUPPORTER_4PLAY", "/checkout/return", { mission: "4PLAY_", missionSlug: "4play" }),
+export const CATALOG: Record<ProductKey, CatalogEntry> = {
+  // Public LIVE IMPACT contribution paths. These are pathway contributions, not fulfilled ecological units.
+  // Payment remains separate from partner allocation, delivery, evidence and outcome.
+  impact_tree: checkout("impact_tree", "IMPACT_CONTRIBUTION", "IMPACT", "payment", "price_1U7w9lBIIif9wShMBdiJkElA", "price_1U85DSPd4O2xtXFRP0mtFTRw", { action: "tree-pathway", mission: "CLIM4TE_", missionSlug: "clim4te", maxQuantityPerCheckout: 20 }),
+  impact_plastic: checkout("impact_plastic", "IMPACT_CONTRIBUTION", "IMPACT", "payment", "price_1U7w9uBIIif9wShMkSYviyab", "price_1U85DbPd4O2xtXFRgkhyKfXe", { action: "plastic-pathway", mission: "CLE4N_", missionSlug: "cle4n", maxQuantityPerCheckout: 20 }),
+  impact_coral: checkout("impact_coral", "IMPACT_CONTRIBUTION", "IMPACT", "payment", "price_1U7wA2BIIif9wShMG7qg2s65", "price_1U85DlPd4O2xtXFRgsxxhMcy", { action: "coral-pathway", mission: "COR4L_", missionSlug: "cor4l", maxQuantityPerCheckout: 20 }),
+  impact_rewild: checkout("impact_rewild", "IMPACT_CONTRIBUTION", "IMPACT", "payment", "price_1U7wABBIIif9wShMA2EXSeqQ", "price_1U85DvPd4O2xtXFRcqBEq2EH", { action: "rewild-pathway", mission: "RE:WILD_ Land", missionSlug: "rewild-land", maxQuantityPerCheckout: 20 }),
+
+  support_4planet: checkout("support_4planet", "SUPPORT", "SUPPORT", "subscription", "price_1U84dzBIIif9wShM0aP4dCJD", "price_1U84WtPd4O2xtXFRU60ePdoZ"),
+  membership_supporter: checkout("membership_supporter", "MEMBERSHIP", "MEMBERSHIP", "subscription", "price_1U7wGQBIIif9wShM2RckyATg", "price_1U85CxPd4O2xtXFR8VpbdqHk"),
+
+  mission_supporter_cle4n: checkout("mission_supporter_cle4n", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQXBIIif9wShMbs2whL1v", "price_1U84X1Pd4O2xtXFRU92oXY75", { mission: "CLE4N_", missionSlug: "cle4n" }),
+  mission_supporter_wh4les: checkout("mission_supporter_wh4les", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQiBIIif9wShM5UAxHWyR", "price_1U84X9Pd4O2xtXFRJB13EXTC", { mission: "WH4LES_", missionSlug: "wh4les" }),
+  mission_supporter_cor4l: checkout("mission_supporter_cor4l", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yQuBIIif9wShMwOMDwgl0", "price_1U84XHPd4O2xtXFRKHhsezW7", { mission: "COR4L_", missionSlug: "cor4l" }),
+  mission_supporter_rewild_marine: checkout("mission_supporter_rewild_marine", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yR3BIIif9wShMXtZ5cn8l", "price_1U84XOPd4O2xtXFRi5nptElC", { mission: "RE:WILD_ Marine", missionSlug: "rewild-marine" }),
+  mission_supporter_clim4te: checkout("mission_supporter_clim4te", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yREBIIif9wShMrpAMXTAC", "price_1U84XXPd4O2xtXFRTNXyT1GR", { mission: "CLIM4TE_", missionSlug: "clim4te" }),
+  mission_supporter_am4zonia: checkout("mission_supporter_am4zonia", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRQBIIif9wShMJgNmPsSS", "price_1U84XhPd4O2xtXFRgXgQsHMp", { mission: "AM4ZONIA_", missionSlug: "am4zonia" }),
+  mission_supporter_species: checkout("mission_supporter_species", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRbBIIif9wShMn1K9fGvy", "price_1U84XpPd4O2xtXFRRJqxLPQk", { mission: "SPECIES_", missionSlug: "species" }),
+  mission_supporter_rewild_land: checkout("mission_supporter_rewild_land", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRrBIIif9wShMJmXUD484", "price_1U84XxPd4O2xtXFRU4Sp5Ucz", { mission: "RE:WILD_ Land", missionSlug: "rewild-land" }),
+  mission_supporter_food: checkout("mission_supporter_food", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yRzBIIif9wShMOcMVnTdF", "price_1U84Y5Pd4O2xtXFRAgEC3H96", { mission: "FOOD_", missionSlug: "food" }),
+  mission_supporter_en4rgy: checkout("mission_supporter_en4rgy", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yS9BIIif9wShMsYCQyW8D", "price_1U84YEPd4O2xtXFRPZuyCJLy", { mission: "EN4RGY_", missionSlug: "en4rgy" }),
+  mission_supporter_circular_city: checkout("mission_supporter_circular_city", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySMBIIif9wShMMoKKCOQg", "price_1U84YMPd4O2xtXFReb5j9CSk", { mission: "CIRCULAR CITY_", missionSlug: "circular-city" }),
+  mission_supporter_f4shion: checkout("mission_supporter_f4shion", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySWBIIif9wShMUnNlxVe8", "price_1U84YUPd4O2xtXFRta3M36cH", { mission: "F4SHION_", missionSlug: "f4shion" }),
+  mission_supporter_m4gazine: checkout("mission_supporter_m4gazine", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySjBIIif9wShMhXmImSGv", "price_1U84YcPd4O2xtXFRcSbPY6E0", { mission: "M4GAZINE_", missionSlug: "m4gazine" }),
+  mission_supporter_4rt: checkout("mission_supporter_4rt", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7ySsBIIif9wShMVPgoxS8X", "price_1U84YjPd4O2xtXFRVADbljiW", { mission: "4RT_", missionSlug: "4rt" }),
+  mission_supporter_4film: checkout("mission_supporter_4film", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yT4BIIif9wShM7TmY7E62", "price_1U84YtPd4O2xtXFRvKXXfeFy", { mission: "4FILM_", missionSlug: "4film" }),
+  mission_supporter_4play: checkout("mission_supporter_4play", "MISSION_SUPPORTER", "MISSION_SUPPORT", "subscription", "price_1U7yTLBIIif9wShMUUvXPq27", "price_1U84Z1Pd4O2xtXFRehIgZzg8", { mission: "4PLAY_", missionSlug: "4play" }),
+
+  // High-value public routes are payable through a reviewed Stripe Invoice, never an anonymous high-value card checkout.
+  project_sponsor: negotiated("project_sponsor", "PROJECT_SPONSOR", "SPONSOR", 50_000, 250_000),
+  mission_sponsor: negotiated("mission_sponsor", "MISSION_SPONSOR", "SPONSOR", 250_000, 750_000),
+  founding_patron: negotiated("founding_patron", "FOUNDING_PATRON", "PATRON", 250_000, 1_500_000),
+  sponsor_package: negotiated("sponsor_package", "SPONSOR_PACKAGE", "SPONSOR", 100_000, 500_000),
+  b2b_pilot_funder: negotiated("b2b_pilot_funder", "B2B_FUNDING_OBJECT", "B2B", 100_000, 300_000),
 };
 
 export const LEGACY_PRODUCT_ALIASES: Record<string, ProductKey> = {
@@ -160,8 +191,9 @@ export function resolveEnvironment(env: StripeEnv) {
   return { environment, enabled: env.STRIPE_CHECKOUT_TEST_ENABLED === "true", secret: env.STRIPE_TEST_SECRET_KEY?.trim(), expectedSecretPrefix: "sk_test_", expectedSessionPrefix: "cs_test_", livemode: false } as const;
 }
 
-export function resolvePriceId(entry: CatalogEntry, env: StripeEnv, environment: PaymentEnvironment) {
+export function resolvePriceId(entry: CatalogEntry, environment: PaymentEnvironment) {
+  if (entry.channel !== "checkout") return null;
   if (environment === "TEST") return entry.testPriceId;
-  const livePrice = env[entry.livePriceEnv]?.trim();
-  return livePrice?.startsWith("price_") ? livePrice : null;
+  if (!entry.liveEnabled) return null;
+  return entry.livePriceId?.startsWith("price_") ? entry.livePriceId : null;
 }

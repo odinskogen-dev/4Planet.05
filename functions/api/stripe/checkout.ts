@@ -1,14 +1,15 @@
-import { CATALOG, readCatalogKey, resolveEnvironment, resolvePriceId, type CatalogEntry, type StripeEnv } from "./catalog";
+import { CATALOG, readCatalogKey, resolveEnvironment, resolvePriceId, type CatalogEntry, type PaymentEnvironment, type StripeEnv } from "./catalog";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
 });
 
-function allowedOrigin(origin: string) {
+function allowedOrigin(origin: string, environment: PaymentEnvironment) {
   try {
     const url = new URL(origin);
     if (url.protocol !== "https:" && url.hostname !== "localhost") return false;
+    if (environment === "LIVE") return url.hostname === "4planet.org" || url.hostname === "www.4planet.org";
     return url.hostname === "4planet.org" || url.hostname === "www.4planet.org" || url.hostname.endsWith(".4planet-05.pages.dev") || url.hostname === "localhost";
   } catch { return false; }
 }
@@ -28,78 +29,53 @@ function safeAttemptId(value: unknown) {
   return /^[A-Za-z0-9_-]{8,80}$/.test(trimmed) ? trimmed : crypto.randomUUID();
 }
 
-const MISSION_SLUGS = new Set([
-  "cle4n", "wh4les", "cor4l", "rewild-marine", "clim4te", "am4zonia", "species", "rewild-land",
-  "food", "en4rgy", "circular-city", "f4shion", "m4gazine", "4rt", "4film", "4play",
-]);
-
-function validateReference(entry: CatalogEntry, raw: unknown, env: StripeEnv, environment: "TEST" | "LIVE") {
-  const reference = typeof raw === "string" ? raw.trim() : "";
-  if (entry.kind === "MISSION_SPONSOR") {
-    if (!MISSION_SLUGS.has(reference)) return null;
-    return reference;
-  }
-  if (entry.kind === "PROJECT_SPONSOR") {
-    if (!reference) return environment === "TEST" ? "test-project" : null;
-    if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(reference)) return null;
-    if (environment === "TEST") return reference;
-    const allowed = new Set((env.STRIPE_LIVE_PROJECT_SPONSOR_KEYS ?? "").split(",").map((value) => value.trim()).filter(Boolean));
-    return allowed.has(reference) ? reference : null;
-  }
-  return reference || null;
-}
-
-function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry, environment: "TEST" | "LIVE", referenceKey: string | null) {
+function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry, environment: PaymentEnvironment) {
   form.set(`${prefix}[4planet_product_key]`, entry.key);
   form.set(`${prefix}[product_kind]`, entry.kind);
   form.set(`${prefix}[product_family]`, entry.family);
   form.set(`${prefix}[truth_state]`, environment);
   form.set(`${prefix}[ecological_delivery_authority]`, "none");
   form.set(`${prefix}[tax_deductible_claim]`, "false");
-  form.set(`${prefix}[catalog_version]`, "commerce-core-02");
+  form.set(`${prefix}[catalog_version]`, "payments-public-live-02");
   if (entry.action) form.set(`${prefix}[impact_action]`, entry.action);
   if (entry.mission) form.set(`${prefix}[mission]`, entry.mission);
   if (entry.missionSlug) form.set(`${prefix}[mission_slug]`, entry.missionSlug);
-  if (referenceKey) form.set(`${prefix}[reference_key]`, referenceKey);
 }
 
-function checkoutDisclosure(entry: CatalogEntry, environment: "TEST" | "LIVE") {
-  if (environment === "TEST") return "TEST MODE — payment-path validation only. No real partner delivery, sponsorship rights, tax deduction or ecological outcome is created by this checkout.";
-  if (entry.family === "IMPACT") return "Payment confirms a contribution only. Partner delivery, evidence and ecological outcomes are tracked separately and are never guaranteed by payment alone.";
-  if (entry.family === "SUPPORT" || entry.family === "PATRON" || entry.family === "MISSION_SUPPORT") return "Support is not presented as a tax-deductible donation. Any stated benefits or allocation are limited to the terms shown by 4PLANET.";
-  if (entry.family === "SPONSOR") return "Payment is for the specifically identified sponsorship package or allocation. Ecological delivery and outcomes, where relevant, remain separate evidence states.";
-  return "Payment is processed by Stripe under the 4PLANET terms applicable to this product.";
+function checkoutDisclosure(entry: CatalogEntry, environment: PaymentEnvironment) {
+  if (environment === "TEST") return "TEST MODE — payment-path validation only. No real partner delivery, tax deduction, membership entitlement or ecological outcome is created by this checkout.";
+  if (entry.family === "IMPACT") return "This is a contribution to the named 4PLANET IMPACT pathway, not a promise that a specific ecological unit has already been delivered. Partner allocation, delivery, evidence and ecological outcome are separate states.";
+  if (entry.family === "SUPPORT") return "Recurring support for building and operating 4PLANET. It is not presented as a tax-deductible donation and is not tied to a specific ecological delivery or outcome. Cancel future renewals at any time.";
+  if (entry.family === "MEMBERSHIP") return "Optional recurring Supporting Membership. Basic ME4PLANET / 4PEOPLE participation remains free. This payment is not presented as tax-deductible and creates only the benefits explicitly described by 4PLANET. Cancel future renewals at any time.";
+  if (entry.family === "MISSION_SUPPORT") return "Recurring support for the named 4PLANET Mission pathway. It is not presented as a tax-deductible donation and does not by itself establish a specific ecological delivery or outcome. Cancel future renewals at any time.";
+  return "Payment is processed by Stripe under the 4PLANET terms shown before Checkout.";
 }
 
 export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): Promise<Response> => {
   const { request, env } = ctx;
-  const origin = request.headers.get("origin") ?? new URL(request.url).origin;
-  if (!allowedOrigin(origin)) return json({ ok: false, error: "origin_not_allowed" }, 403);
-
   const runtime = resolveEnvironment(env);
+  const origin = request.headers.get("origin") ?? new URL(request.url).origin;
+  if (!allowedOrigin(origin, runtime.environment)) return json({ ok: false, error: "origin_not_allowed" }, 403);
+
   if (!runtime.enabled) return json({ ok: false, error: runtime.environment === "LIVE" ? "stripe_live_checkout_disabled" : "stripe_test_checkout_disabled" }, 503);
   if (!runtime.secret || !runtime.secret.startsWith(runtime.expectedSecretPrefix)) return json({ ok: false, error: runtime.environment === "LIVE" ? "stripe_live_secret_missing" : "stripe_test_secret_missing" }, 503);
 
-  let body: { productKey?: unknown; quantity?: unknown; customerEmail?: unknown; referenceKey?: unknown; attemptId?: unknown };
+  let body: { productKey?: unknown; quantity?: unknown; customerEmail?: unknown; attemptId?: unknown };
   try { body = await request.json(); } catch { return json({ ok: false, error: "invalid_json" }, 400); }
 
   const productKey = readCatalogKey(body.productKey);
   if (!productKey) return json({ ok: false, error: "unsupported_product" }, 400);
   const entry = CATALOG[productKey];
-  if (entry.channel !== "checkout") return json({ ok: false, error: "invoice_product_requires_invoice_flow" }, 400);
+  if (entry.channel !== "checkout") return json({ ok: false, error: "negotiated_offer_requires_invoice_flow" }, 400);
+  if (runtime.environment === "LIVE" && !entry.liveEnabled) return json({ ok: false, error: "product_not_released_live" }, 403);
 
   const quantity = safeQuantity(body.quantity, entry);
   if (quantity === null) return json({ ok: false, error: "invalid_quantity" }, 400);
   const customerEmail = typeof body.customerEmail === "string" ? body.customerEmail.trim() : undefined;
   if (!validEmail(customerEmail)) return json({ ok: false, error: "invalid_email" }, 400);
 
-  const referenceKey = validateReference(entry, body.referenceKey, env, runtime.environment);
-  if ((entry.kind === "MISSION_SPONSOR" || entry.kind === "PROJECT_SPONSOR") && !referenceKey) {
-    return json({ ok: false, error: "approved_reference_required" }, 400);
-  }
-
-  const priceId = resolvePriceId(entry, env, runtime.environment);
-  if (!priceId) return json({ ok: false, error: runtime.environment === "LIVE" ? "live_price_not_configured" : "test_price_not_configured" }, 503);
+  const priceId = resolvePriceId(entry, runtime.environment);
+  if (!priceId) return json({ ok: false, error: runtime.environment === "LIVE" ? "live_price_not_released" : "test_price_not_configured" }, 503);
 
   const form = new URLSearchParams();
   form.set("mode", entry.mode);
@@ -109,13 +85,13 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
   form.set("success_url", `${origin}${entry.returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
   form.set("cancel_url", `${origin}${entry.returnPath}?checkout=cancel&product=${encodeURIComponent(productKey)}`);
   form.set("client_reference_id", `4p_${productKey}`);
-  setMetadata(form, "metadata", entry, runtime.environment, referenceKey);
+  setMetadata(form, "metadata", entry, runtime.environment);
 
   if (entry.mode === "payment") {
     form.set("customer_creation", "always");
-    setMetadata(form, "payment_intent_data[metadata]", entry, runtime.environment, referenceKey);
+    setMetadata(form, "payment_intent_data[metadata]", entry, runtime.environment);
   } else {
-    setMetadata(form, "subscription_data[metadata]", entry, runtime.environment, referenceKey);
+    setMetadata(form, "subscription_data[metadata]", entry, runtime.environment);
   }
 
   form.set("custom_text[submit][message]", checkoutDisclosure(entry, runtime.environment));
@@ -147,7 +123,7 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
     productKind: entry.kind,
     productFamily: entry.family,
     quantity,
-    referenceKey,
+    referenceKey: null,
     truthState: runtime.environment,
     deliveryAuthority: "none",
   });
