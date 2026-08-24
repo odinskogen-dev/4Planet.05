@@ -1,0 +1,91 @@
+name: CNS Kernel 02 Certification
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260824*_cns_*.sql'
+      - 'supabase/tests/cns_*.sql'
+      - 'supabase/functions/cns-gateway/**'
+      - 'config/cns/**'
+      - '.github/workflows/cns-kernel-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bootstrap Supabase-compatible DB roles
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
+          SQL
+
+      - name: Apply CNS total shadow migrations
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
+
+      - name: Run 50 canonical + 50 adversarial evals
+        run: psql -f supabase/tests/cns_kernel_02_eval_100.sql
+
+      - name: Run 10k project / million-event scale seed and hot-path plans
+        run: psql -f supabase/tests/cns_kernel_02_scale.sql
+
+      - name: 100 concurrent context reads
+        run: |
+          rm -rf /tmp/cns-context && mkdir -p /tmp/cns-context
+          seq 1 100 | xargs -I{} -P 25 sh -c 'psql -Atqc "select cns.compile_project_context('"'"'SCALE-00001'"'"','"'"'concurrency'"'"',0,30000,900)" > /tmp/cns-context/{}.ok'
+          test "$(find /tmp/cns-context -name '*.ok' | wc -l)" -eq 100
+          test "$(grep -L '[0-9a-f-]\{36\}' /tmp/cns-context/*.ok | wc -l)" -eq 0
+
+      - name: 100 competing lease attempts produce exactly one winner
+        run: |
+          rm -rf /tmp/cns-leases && mkdir -p /tmp/cns-leases
+          set +e
+          seq 1 100 | xargs -I{} -P 25 sh -c 'psql -Atqc "select cns.acquire_lease('"'"'SCALE-00001'"'"','"'"'ST-1-1'"'"','"'"'scale-worker'"'"',array['"'"'shared:scale:scope'"'"'],'"'"'base'"'"',3600)" > /tmp/cns-leases/{}.ok 2>/tmp/cns-leases/{}.err'
+          set -e
+          winners=$(grep -l '[0-9a-f-]\{36\}' /tmp/cns-leases/*.ok | wc -l)
+          test "$winners" -eq 1
+
+      - name: Verify core security boundaries
+        run: |
+          psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
+          psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
+
+      - name: Deno type-check CNS Gateway
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check supabase/functions/cns-gateway/index.ts
+
+      - name: Report database footprint
+        run: |
+          psql -Atqc "select pg_size_pretty(pg_database_size(current_database())) as db_size"
+          psql -Atqc "select count(*) from cns.events"
