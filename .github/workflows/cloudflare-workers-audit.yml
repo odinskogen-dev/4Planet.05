@@ -23,26 +23,33 @@ jobs:
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone_json="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
+          [[ -n "${account_id}" ]] || { echo "No account id"; exit 1; }
+
+          domains_json="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || true)"
+
           {
-            echo "# Cloudflare Worker routing"
+            echo "# Cloudflare Worker custom domains"
             echo
-            for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
-              z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
-              zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
-              echo "## ${domain}"
-              if [[ -z "${zid}" ]]; then
-                echo "Zone unavailable."
+            if jq -e '.success == true' <<<"${domains_json}" >/dev/null 2>&1; then
+              for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
+                echo "## ${domain}"
+                row="$(jq -c --arg h "$domain" '.result[]? | select(.hostname==$h)' <<<"${domains_json}" | head -n1)"
+                if [[ -n "$row" ]]; then
+                  echo "- service: \`$(jq -r '.service // ""' <<<"$row")\`"
+                  echo "- environment: \`$(jq -r '.environment // ""' <<<"$row")\`"
+                  echo "- zone: \`$(jq -r '.zone_name // ""' <<<"$row")\`"
+                  echo "- domain id: \`$(jq -r '.id // ""' <<<"$row")\`"
+                else
+                  echo "- No Worker custom-domain record found."
+                fi
                 echo
-                continue
-              fi
-              routes="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || true)"
-              if jq -e '.success == true' <<<"${routes}" >/dev/null 2>&1; then
-                jq -r '.result[]? | "- pattern: `\(.pattern)` → script: `\(.script // "")`"' <<<"${routes}"
-              else
-                echo "- Worker routes API unavailable with current token."
-              fi
-              echo
-            done
+              done
+            else
+              echo "Workers Domains API unavailable with current token."
+              jq '{success,errors}' <<<"${domains_json}" 2>/dev/null || true
+            fi
           } > /tmp/workers-report.md
           cat /tmp/workers-report.md
 
