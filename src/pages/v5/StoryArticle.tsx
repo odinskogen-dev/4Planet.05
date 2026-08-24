@@ -2,8 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { MagazineSeo } from "@/components/MagazineSeo";
-import { trackEvent } from "@/analytics/Analytics";
-import { trackMagazineEntry, trackMagazineSecondObject, trackMagazineShare } from "@/analytics/MagazineAnalytics";
+import {
+  trackMagazineEntry,
+  trackMagazineEngagedRead,
+  trackMagazineReadDepth,
+  trackMagazineReadComplete,
+  trackMagazineSave,
+  trackMagazineShare,
+  trackMagazineRelatedStoryOpen,
+  trackMagazineSourceOpen,
+  trackMagazineSecondObject,
+} from "@/analytics/MagazineAnalytics";
 import { Editorial } from "@/components/Editorial";
 import { storyBySlug, relatedStories } from "@/content/stories";
 import { featureForStory } from "@/content/magazineFeatures";
@@ -50,9 +59,7 @@ export function StoryArticle() {
     trackMagazineEntry("article", s.slug);
     const seen = new Set<number>();
     let completed = false;
-    const engagedTimer = window.setTimeout(() => {
-      trackEvent("magazine_engaged_read", { story_slug: s.slug, content_type: s.editorialType.toLowerCase(), engaged_seconds: 30 });
-    }, 30_000);
+    const engagedTimer = window.setTimeout(() => trackMagazineEngagedRead(s.slug, 30), 30_000);
 
     const measureDepth = () => {
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -61,14 +68,14 @@ export function StoryArticle() {
       DEPTH_THRESHOLDS.forEach((threshold) => {
         if (depth >= threshold && !seen.has(threshold)) {
           seen.add(threshold);
-          trackEvent("magazine_read_depth", { story_slug: s.slug, content_type: s.editorialType.toLowerCase(), depth_percent: threshold });
+          trackMagazineReadDepth(s.slug, threshold);
           recordMagazineResume(s.slug, s.title, threshold);
         }
       });
       if (depth >= 90 && !completed) {
         completed = true;
         recordMagazineResume(s.slug, s.title, 100);
-        trackEvent("magazine_read_complete", { story_slug: s.slug, content_type: s.editorialType.toLowerCase() });
+        trackMagazineReadComplete(s.slug);
       }
     };
 
@@ -137,7 +144,7 @@ export function StoryArticle() {
   const toggleSave = () => {
     const next = toggleSavedStory(s.slug);
     setSaved(next);
-    trackEvent("magazine_save", { story_slug: s.slug, state: next ? "saved" : "removed" });
+    trackMagazineSave(s.slug, next ? "saved" : "removed");
   };
 
   return (
@@ -163,6 +170,9 @@ export function StoryArticle() {
           articleSection: s.category,
           keywords: s.tags.join(", "),
           about: s.tags.map((name) => ({ "@type": "Thing", name })),
+          datePublished: s.asOf,
+          dateModified: s.asOf,
+          citation: sources.map((source) => source.url),
         })}
       />
 
@@ -178,7 +188,7 @@ export function StoryArticle() {
 
         <section className="mag-article-world-hero">
           <figure>
-            <img src={media.src} alt={media.alt} />
+            <img src={media.src} alt={media.alt} loading="eager" decoding="async" fetchPriority="high" />
             <figcaption>
               <strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong>
               <span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span>
@@ -223,15 +233,6 @@ export function StoryArticle() {
           </section>
         ) : null}
 
-        {s.topics?.length ? (
-          <nav className="mag-article-topics" aria-label="Story topics">
-            {s.topics.map((topicId) => {
-              const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId);
-              return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>;
-            })}
-          </nav>
-        ) : null}
-
         <section className="mag-source-desk" aria-labelledby="source-desk-title">
           <div className="mag-source-desk-inner">
             <div><p className="mag-source-label">HOW WE KNOW</p><h2 id="source-desk-title">The evidence stays attached.</h2></div>
@@ -240,7 +241,14 @@ export function StoryArticle() {
               {sources.length ? (
                 <div className="mag-source-list">
                   {sources.map((source, index) => (
-                    <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}>
+                    <a
+                      className="mag-source-item"
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      key={source.url}
+                      onClick={() => trackMagazineSourceOpen(s.slug, source.url, source.label)}
+                    >
                       <div><span className="mag-source-number">{String(index + 1).padStart(2, "0")}</span><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b>
                     </a>
                   ))}
@@ -252,6 +260,15 @@ export function StoryArticle() {
             </div>
           </div>
         </section>
+
+        {s.topics?.length ? (
+          <nav className="mag-article-topics" aria-label="Story topics">
+            {s.topics.map((topicId) => {
+              const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId);
+              return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>;
+            })}
+          </nav>
+        ) : null}
 
         {s.pathway ? (
           <section className="mag-second-object" aria-labelledby="second-object-title">
@@ -275,17 +292,17 @@ export function StoryArticle() {
               const relatedMedia = img(relatedFeature?.hero ?? story.image);
               return (
                 <Link className="mag-related-editorial-card" key={story.slug} to={`/magazine/${story.slug}`} onClick={() => {
-                  trackEvent("magazine_story_open", { story_slug: story.slug, content_type: story.editorialType.toLowerCase(), source_story: s.slug });
+                  trackMagazineRelatedStoryOpen(s.slug, story.slug);
                   trackMagazineSecondObject(s.slug, `/magazine/${story.slug}`, "related_story");
                 }}>
-                  <img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" />
+                  <img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" decoding="async" />
                   <span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {story.readMins} MIN</span>
                   <strong>{story.title}</strong>
                 </Link>
               );
             })}
           </div>
-          {nextStory ? <Link className="mag-next-story" to={`/magazine/${nextStory.slug}`}>NEXT STORY — {nextStory.title} →</Link> : null}
+          {nextStory ? <Link className="mag-next-story" to={`/magazine/${nextStory.slug}`} onClick={() => trackMagazineRelatedStoryOpen(s.slug, nextStory.slug)}>NEXT STORY — {nextStory.title} →</Link> : null}
         </section>
       </article>
     </MagazineShell>
