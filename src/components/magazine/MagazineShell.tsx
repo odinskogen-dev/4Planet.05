@@ -4,6 +4,7 @@ import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import "@/styles/magazine-world.css";
 import "@/styles/magazine-world-polish.css";
 import "@/styles/magazine-reader-polish.css";
+import "@/styles/magazine-gold-02.css";
 
 type MagazineTheme = "light" | "dark";
 
@@ -26,7 +27,7 @@ export function MagazineShell({ children }: { children: ReactNode }) {
       <header className="mag-world-header">
         <div className="mag-world-parent-row">
           <Link className="mag-world-parent" to="/">4PLANET_</Link>
-          <span>EDITORIAL / LIVING PLANET INTELLIGENCE</span>
+          <span>FOR A LIVING PLANET / EDITORIAL</span>
           <div className="mag-world-utility">
             <Link to="/magazine/search" aria-label="Search 4PLANET Magazine">SEARCH</Link>
             <Link to="/magazine/saved" aria-label="Saved and recent reading">SAVED</Link>
@@ -45,8 +46,8 @@ export function MagazineShell({ children }: { children: ReactNode }) {
 
         <div className="mag-world-masthead-row">
           <Link className="mag-world-masthead" to="/magazine" aria-label="4PLANET Magazine home">
-            <span>4PLANET</span>
-            <strong>MAGAZINE</strong>
+            <span className="mag-world-masthead-word">4PLANET</span>
+            <span className="mag-world-masthead-word">MAGAZINE</span>
           </Link>
           <p>Nature · people · engineering · culture · what works</p>
         </div>
@@ -81,7 +82,7 @@ export function MagazineShell({ children }: { children: ReactNode }) {
           </div>
           <div>
             <p>TOPICS</p>
-            {MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine?topic=${topic.id}`}>{topic.label}</Link>)}
+            {MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}
           </div>
           <div>
             <p>EDITORIAL</p>
