@@ -59,11 +59,34 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           src = Path('supabase/tests/cns_kernel_02_eval_100.sql').read_text()
+          helpers = Path('supabase/tests/cns_kernel_02_eval_helpers.sql').read_text()
           state = "(select event_id from cns.events where idempotency_key='eval-state-1')"
           context = "(select context_snapshot_id from cns.context_snapshots where project_id='EVAL-PROJECT' and intent='certification' order by compiled_at limit 1)"
           src = src.replace(":'initial_context'::uuid", context)
           src = src.replace(":'initial_state_event'", state)
-          Path('/tmp/cns_eval_100.sql').write_text(src)
+          src = src.replace("create temp table eval_catalog(", helpers + "\ncreate temp table eval_catalog(", 1)
+          replacements = {
+            'A17': "('A17','ADVERSARIAL','Can lease release clear its scope?', $$pg_temp.release_and_verify_scope()$$),",
+            'A24': "('A24','ADVERSARIAL','Does a self task dependency surface in Doctor?', $$pg_temp.create_self_dependency_and_verify()$$),",
+            'A25': "('A25','ADVERSARIAL','Does Doctor create an incident for an invariant breach?', $$pg_temp.doctor_scan_and_verify_open()$$),",
+            'A26': "('A26','ADVERSARIAL','Does Doctor resolve healed incidents without rewriting truth?', $$pg_temp.heal_and_verify_resolved()$$),",
+            'A27': "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_and_verify()$$),",
+            'A28': "('A28','ADVERSARIAL','Does Librarian deduplicate same fingerprint?', $$(select cns.librarian_propose_memory('EVAL-MEM-DUP','EVAL-PROJECT','EPISODIC',2::smallint,'Learning','{\"x\":1}','TEST','eval-brain','rev-1')=(select fingerprint from cns.memory_items where memory_id='EVAL-MEM'))$$),",
+            'A34': "('A34','ADVERSARIAL','Can a correcting code observation restore SHA equality?', $$pg_temp.correct_code_and_verify()$$),",
+            'A38': "('A38','ADVERSARIAL','Does staging raw legacy entity preserve a fingerprint?', $$pg_temp.stage_legacy_and_verify()$$),",
+          }
+          out = []
+          for line in src.splitlines():
+            stripped = line.lstrip()
+            replaced = False
+            for key, value in replacements.items():
+              if stripped.startswith("('" + key + "'"):
+                out.append(value)
+                replaced = True
+                break
+            if not replaced:
+              out.append(line)
+          Path('/tmp/cns_eval_100.sql').write_text('\n'.join(out) + '\n')
           PY
 
       - name: Run 50 canonical + 50 adversarial evals
