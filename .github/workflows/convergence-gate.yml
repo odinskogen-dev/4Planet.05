@@ -101,10 +101,10 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: E2E — Chromium vertical slice + switcher (all viewports)
+      - name: E2E — Chromium vertical slice + switcher (desktop + 1280 + mobile)
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts
+        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=desktop-1440 --project=desktop-1280 --project=mobile-390 --project=mobile-430
 
       - name: E2E — Orca LUME Room 21 — Chromium desktop + mobile
         env:
@@ -116,10 +116,10 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/jaguar-testking-v27.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
 
-      - name: E2E — WebKit vertical slice (desktop + 390 + 430)
+      - name: E2E — WebKit vertical slice + switcher (desktop + 390 + 430)
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: E2E — Orca LUME Room 21 — WebKit desktop + mobile
         env:
