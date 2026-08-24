@@ -5,13 +5,16 @@ on:
     branches: [king/test, recovery/testking-magazine]
     paths:
       - 'src/pages/v5/Magazine*'
+      - 'src/pages/v5/StoryArticle.tsx'
       - 'src/components/magazine/**'
       - 'src/content/magazine*'
       - 'src/content/stories.ts'
+      - 'src/analytics/**'
+      - 'src/routes/router.tsx'
       - 'src/styles/magazine*'
       - 'scripts/magazine*'
       - 'scripts/*sitemap*'
-      - 'tests/e2e/magazine-world-class.spec.ts'
+      - 'tests/e2e/magazine-*.spec.ts'
       - 'playwright.magazine.config.ts'
       - 'package.json'
       - '.github/workflows/magazine-world-class.yml'
@@ -28,7 +31,7 @@ concurrency:
 jobs:
   magazine-gold:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
       MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
@@ -57,6 +60,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Public launch editorial + product gate
+        run: npm run quality:magazine:launch
+
       - name: Magazine quality + contracts
         run: npm run test:magazine
 
@@ -71,6 +77,27 @@ jobs:
 
       - name: High severity dependency audit
         run: npm audit --audit-level=high
+
+      - name: Verify generated discovery surfaces
+        shell: bash
+        run: |
+          test -s public/sitemap.xml
+          test -s public/magazine-sitemap.xml
+          test -s public/news-sitemap.xml
+          test -s public/rss.xml
+          test -s public/magazine-robots.txt
+          test -f dist/magazine/index.html
+          test -f dist/magazine/archive/index.html
+          test -f dist/magazine/privacy/index.html
+          test -f dist/magazine/atlas/index.html
+          test -f dist/magazine/topics/nature/index.html
+          test -f dist/magazine/series/from-the-field/index.html
+          test -f dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
+          grep -q '4PLANET MAGAZINE' dist/magazine/index.html
+          grep -q 'PLANET SIGNAL' dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
+          grep -q 'https://4planetmagazine.com/magazine/topics/nature' public/magazine-sitemap.xml
+          grep -q 'https://4planetmagazine.com/magazine/series/from-the-field' public/magazine-sitemap.xml
+          grep -q 'https://4planetmagazine.com/magazine/atlas' public/magazine-sitemap.xml
 
       - name: Start exact build preview
         shell: bash
@@ -87,22 +114,10 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Browser matrix — desktop tablet mobile WebKit reduced-motion
+      - name: Browser matrix — large desktop desktop tablet Android iPhone WebKit reduced-motion
         env:
           BASE_URL: http://127.0.0.1:4173
         run: npm run test:magazine:e2e
-
-      - name: Verify generated discovery surfaces
-        shell: bash
-        run: |
-          test -s public/sitemap.xml
-          test -s public/news-sitemap.xml
-          test -s public/rss.xml
-          test -f dist/magazine/index.html
-          test -f dist/magazine/archive/index.html
-          test -f dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
-          grep -q '4PLANET MAGAZINE' dist/magazine/index.html
-          grep -q 'PLANET SIGNAL' dist/magazine/signals/automated-edna-erna-water-monitoring/index.html
 
       - name: Upload exact-head Magazine evidence
         if: always()
@@ -117,6 +132,8 @@ jobs:
             magazine-playwright-report
             magazine-test-results
             public/sitemap.xml
+            public/magazine-sitemap.xml
+            public/magazine-robots.txt
             public/news-sitemap.xml
             public/rss.xml
           if-no-files-found: warn
