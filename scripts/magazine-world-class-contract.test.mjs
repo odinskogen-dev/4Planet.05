@@ -17,6 +17,7 @@ const prerender = read("scripts/prerender-magazine-seo.mjs");
 const quality = read("scripts/magazine-quality-gate.mjs");
 const gold02 = read("src/styles/magazine-gold-02.css");
 const liveRound = read("src/styles/magazine-live-round-01.css");
+const liveRound02 = read("src/styles/magazine-live-round-02.css");
 const stories = readStories();
 const signals = readSignals();
 
@@ -35,6 +36,7 @@ test("Magazine has a dedicated premium world and calm primary navigation", () =>
   assert.match(shell, /SAVED/);
   assert.match(shell, /mag-world-footer/);
   assert.equal((shell.match(/mag-world-masthead-word/g) || []).length, 2);
+  assert.match(shell, /magazine-live-round-02\.css/);
   assert.doesNotMatch(shell, /PublicShell/);
 });
 
@@ -54,14 +56,19 @@ test("World-class home is curated, source-dense and long enough to feel editoria
   assert.doesNotMatch(home, /Math\.random/);
 });
 
-test("founder visual pass preserves deterministic layout and requested palette", () => {
+test("founder visual passes preserve deterministic layout and official palette", () => {
   assert.match(liveRound, /--mw-bg: #ffffff/);
-  assert.match(liveRound, /--mw-blue: #2e2eff/);
-  assert.match(liveRound, /background: #b8ff2c/);
-  assert.match(liveRound, /mag-engineering-band \{ background: #2e2eff/);
-  assert.match(liveRound, /mag-story-mosaic\[data-filtered="true"\]/);
+  assert.match(liveRound02, /--4p-blue: #2E2EFF/);
+  assert.match(liveRound02, /--4p-green: #3AE86F/);
+  assert.match(liveRound02, /--4p-red: #FF4D22/);
+  assert.match(liveRound02, /--4p-pink: #FF5ACD/);
+  assert.match(liveRound02, /--4p-amber: #FF7D50/);
+  assert.match(liveRound02, /mag-signal-card\[data-accent="pink"\]:hover/);
+  assert.match(liveRound02, /mag-story-drift-02 54s linear infinite/);
+  assert.match(liveRound02, /Meet 4PLANET ATLAS|ATLAS/);
   assert.match(home, /mag-home-hero-visual/);
-  assert.match(home, /Blue Marble, active-fire detections and biodiversity density layers selected/);
+  assert.match(home, /Meet 4PLANET ATLAS/);
+  assert.match(home, /interactive planetary interface we built/);
   assert.doesNotMatch(home, /Math\.random/);
 });
 
@@ -81,6 +88,8 @@ test("Planet Signals remain source-bounded fast journalism", () => {
     assert.ok(signal.whyItMatters.length >= 100, `${signal.slug} needs useful interpretation`);
     assert.ok(signal.topics.length >= 3, `${signal.slug} needs useful topic graph`);
   }
+  assert.match(home, /const SIGNAL_IMAGES: ImageKey\[\]/);
+  assert.doesNotMatch(home, /SIGNAL_IMAGES[\s\S]{0,500}\bnull\b/);
   assert.match(signalPage, /DO NOT OVER-READ THIS/);
   assert.match(signalPage, /OPEN SOURCE/);
   assert.match(signalPage, /FAST \/ SOURCE-BOUNDED/);
