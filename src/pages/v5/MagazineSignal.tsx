@@ -49,18 +49,18 @@ export function MagazineSignalPage() {
         </section>
 
         <section className="mag-signal-source">
-          <div><p>PRIMARY / PEER-REVIEWED SOURCE</p><h2>{signal.publisher}</h2><span>{signal.publishedAt}</span></div>
-          <a href={signal.sourceUrl} target="_blank" rel="noreferrer">OPEN SOURCE ↗</a>
+          <div><p>PRIMARY / PUBLISHED SOURCE</p><h2>{signal.publisher}</h2><span>{signal.publishedAt}</span></div>
+          <a className="mag-source-item" href={signal.sourceUrl} target="_blank" rel="noreferrer">OPEN SOURCE ↗</a>
         </section>
 
         <nav className="mag-signal-topics" aria-label="Signal topics">
           {signal.topics.map((topicId) => {
             const topic = MAGAZINE_TOPICS.find((item) => item.id === topicId);
-            return <Link key={topicId} to={`/magazine?topic=${topicId}`}>{topic?.label ?? topicId}</Link>;
+            return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>;
           })}
         </nav>
 
-        <section className="mag-signal-next"><p>KEEP THE THREAD</p><h2>Fast does not mean context-free.</h2><div><Link to="/magazine/archive">OPEN ARCHIVE →</Link><Link to="/magazine?topic=INNOVATION">MORE INNOVATION →</Link><Link to="/magazine">MAGAZINE HOME →</Link></div></section>
+        <section className="mag-signal-next"><p>KEEP THE THREAD</p><h2>Fast does not mean context-free.</h2><div><Link to="/magazine/archive">OPEN ARCHIVE →</Link><Link to="/magazine/topics/innovation">MORE INNOVATION →</Link><Link to="/magazine">MAGAZINE HOME →</Link></div></section>
       </main>
     </MagazineShell>
   );
