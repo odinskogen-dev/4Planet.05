@@ -116,11 +116,28 @@ jobs:
           psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
           psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
 
+      - name: Backup and restore CNS schema into clean database
+        run: |
+          source_events=$(psql -Atqc "select count(*) from cns.events")
+          source_projects=$(psql -Atqc "select count(*) from cns.projects")
+          source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
+          pg_dump --schema=cns --format=custom --file=/tmp/cns-kernel-02.dump
+          createdb cns_restore
+          pg_restore --no-owner --dbname=cns_restore /tmp/cns-kernel-02.dump
+          restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
+          restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
+          restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
+          test "$source_events" = "$restored_events"
+          test "$source_projects" = "$restored_projects"
+          test "$source_states" = "$restored_states"
+          psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
+
       - name: Deno type-check CNS Gateway
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno check supabase/functions/cns-gateway/index.ts
+      - run: deno check --config supabase/functions/cns-gateway/deno.json supabase/functions/cns-gateway/index.ts
 
       - name: Report database footprint
         run: |
