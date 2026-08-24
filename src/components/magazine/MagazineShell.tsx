@@ -6,6 +6,7 @@ import "@/styles/magazine-world-polish.css";
 import "@/styles/magazine-reader-polish.css";
 import "@/styles/magazine-gold-02.css";
 import "@/styles/magazine-gold-02-fixes.css";
+import "@/styles/magazine-live-round-01.css";
 
 type MagazineTheme = "light" | "dark";
 
@@ -13,7 +14,7 @@ function initialTheme(): MagazineTheme {
   if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem("4planet-magazine-theme");
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
 }
 
 export function MagazineShell({ children }: { children: ReactNode }) {
@@ -94,10 +95,10 @@ export function MagazineShell({ children }: { children: ReactNode }) {
           </div>
           <div>
             <p>GO DEEPER</p>
-            <Link to="/atlas">Atlas</Link>
-            <Link to="/species">Species</Link>
-            <Link to="/living-systems">Living Systems</Link>
-            <Link to="/actors">Actors</Link>
+            <a href="https://king-test.4planet-05.pages.dev/atlas" target="_blank" rel="noreferrer">Atlas</a>
+            <a href="https://king-test.4planet-05.pages.dev/species" target="_blank" rel="noreferrer">Species</a>
+            <a href="https://king-test.4planet-05.pages.dev/living-systems" target="_blank" rel="noreferrer">Living Systems</a>
+            <a href="https://king-test.4planet-05.pages.dev/actors" target="_blank" rel="noreferrer">Actors</a>
           </div>
         </div>
         <div className="mag-world-footer-bottom">
