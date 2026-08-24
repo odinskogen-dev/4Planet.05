@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readArticleTemplates, readStories, readSignals, readImages, readFoundingEdition, readTopics, absoluteUrl } from "./magazine-content.mjs";
+import { readArticleTemplates, readStories, readSignals, readImages, readFoundingEdition, readTopics, readFeatures, readStandfirsts, absoluteUrl } from "./magazine-content.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -13,6 +13,8 @@ const magazineOrigin = (process.env.MAGAZINE_SITE_ORIGIN || process.env.VITE_MAG
 const stories = readStories();
 const signals = readSignals();
 const images = readImages();
+const features = readFeatures();
+const standfirsts = readStandfirsts();
 const foundingEdition = readFoundingEdition();
 const topics = readTopics();
 const templates = readArticleTemplates();
@@ -95,21 +97,26 @@ for (const page of informationPages) {
 }
 
 for (const story of stories) {
-  const imageMeta = images[story.image] || {};
+  const feature = features[story.slug];
+  const imageKey = feature?.hero || story.image;
+  const imageMeta = images[imageKey] || {};
+  const description = standfirsts[story.slug] || story.dek;
   const canonical = absoluteUrl(magazineOrigin, `/magazine/${story.slug}`);
   const image = absoluteUrl(magazineOrigin, imageMeta.src || "/og.png");
   const imageAlt = imageMeta.alt || story.title;
   const type = story.mode === "FAST" && story.publishedAt ? "NewsArticle" : "Article";
+  const citations = [...(story.sourceLinks ?? []), ...(feature?.addedSources ?? [])].map((source) => source.url);
   const jsonLd = {
-    "@context": "https://schema.org", "@type": type, headline: story.title, description: story.dek, image: [image], mainEntityOfPage: canonical,
+    "@context": "https://schema.org", "@type": type, headline: story.title, description, image: [image], mainEntityOfPage: canonical,
     author: { "@type": "Organization", name: story.byline || "4PLANET MAGAZINE" },
     publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical },
     isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
     articleSection: story.lane || story.category, keywords: Array.isArray(story.tags) ? story.tags.join(", ") : undefined,
-    datePublished: story.publishedAt || PUBLIC_LAUNCH_DATE,
-    dateModified: story.updatedAt || story.publishedAt || PUBLIC_LAUNCH_DATE,
+    datePublished: story.publishedAt || story.asOf || PUBLIC_LAUNCH_DATE,
+    dateModified: story.updatedAt || story.publishedAt || story.asOf || PUBLIC_LAUNCH_DATE,
+    citation: citations.length ? citations : undefined,
   };
-  writeRoute(`/magazine/${story.slug}`, { title: `${story.title} | 4PLANET MAGAZINE`, description: story.dek, canonical, image, imageAlt, type: "article", section: story.lane || story.category, tags: Array.isArray(story.tags) ? story.tags : [], jsonLd });
+  writeRoute(`/magazine/${story.slug}`, { title: `${story.title} | 4PLANET MAGAZINE`, description, canonical, image, imageAlt, type: "article", section: story.lane || story.category, tags: Array.isArray(story.tags) ? story.tags : [], jsonLd });
 }
 
 for (const signal of signals) {
