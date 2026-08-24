@@ -7,7 +7,7 @@ on:
       - .github/workflows/labs-domain-bootstrap.yml
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -134,3 +134,38 @@ jobs:
           echo "LABS PROJECT OS: https://${LABS_DOMAIN}/labs"
           echo "Source branch: ${LABS_BRANCH} @ ${LABS_EXPECTED_SHA}"
           echo "4planet.org remains reachable."
+
+      - name: Publish verification marker
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          result_path="ops/labs-domain-result.txt"
+          now="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          payload_text="status=${JOB_STATUS}
+verified_at=${now}
+labs_domain=https://${LABS_DOMAIN}/
+labs_path=https://${LABS_DOMAIN}/labs
+source=https://${LABS_BRANCH_ALIAS}/labs
+source_branch=${LABS_BRANCH}
+source_sha=${LABS_EXPECTED_SHA}
+workflow_commit=${GITHUB_SHA}
+"
+          encoded="$(printf '%s' "${payload_text}" | base64 -w0)"
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${result_path}"
+          current="$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' "${api}?ref=ops/labs-domain-20260824")"
+          current_sha="$(jq -r '.sha // empty' <<<"${current}")"
+          if [[ -n "${current_sha}" ]]; then
+            body="$(jq -nc --arg message "ops: record LABS domain verification ${JOB_STATUS}" --arg content "${encoded}" --arg branch "ops/labs-domain-20260824" --arg sha "${current_sha}" '{message:$message,content:$content,branch:$branch,sha:$sha}')"
+          else
+            body="$(jq -nc --arg message "ops: record LABS domain verification ${JOB_STATUS}" --arg content "${encoded}" --arg branch "ops/labs-domain-20260824" '{message:$message,content:$content,branch:$branch}')"
+          fi
+          curl -fsS -X PUT "${api}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'Content-Type: application/json' \
+            --data "${body}" >/tmp/result-write.json
+          echo "Published ${result_path}: ${JOB_STATUS}"
