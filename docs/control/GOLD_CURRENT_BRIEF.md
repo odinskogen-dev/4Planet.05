@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-FULL-SOURCE-STAGE-PRESERVATION-46  
+**CHANGE ID:** JAGUAR-FULL-SOURCE-OWNERSHIP-47  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **FOUNDER DIRECTION:** 24 AUG 2026 — stop polishing the reduced 457-vertex proxy as the Gold creature. Use the rights-verified Ear.Rodriguez Jaguar full source where reliable; completion target is a recognisable real 3D Jaguar on desktop + mobile.  
@@ -33,15 +33,15 @@ Direct drag/orbit interaction in the source viewer, LUME, then FOLLOW THE SYSTEM
 Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
 
 ## CURRENT DEFECT
-Exact `59ef65e5da39a1f4c314f4030d6db80f59d7897d` passes GOLD, Public Preview, Human Craft, typecheck, production build, smoke/contracts, lint, assets, dependency gate and the shared Chromium/WebKit 28/28 journey matrix. Dedicated Jaguar acceptance fails 3/3 before ENTER because it incorrectly expects the local fallback canvas to exist before the encounter starts. Source inspection exposes a second real seam behind that stale assertion: `jaguar-gold-v33.js` creates the local fallback with `stage.replaceChildren(canvas)` after ENTER, which can detach the already-mounted full-source viewer shell. The direct Ear source can therefore report ready and still be removed from the visible stage when the local fallback initialises.
+Exact `761618fdd42b33e785058813e3829048da4400d4` passes policy, typecheck, production build, all 78 smoke/contracts, lint, assets, dependency gate and the shared 28/28 Chromium/WebKit journey matrix. Dedicated Jaguar acceptance fails 3/3 on desktop/390/430 after ENTER. The full Ear shell reports `data-jaguar-ear-full=ready`, but the legacy local fallback initialiser then overwrites `data-jaguar3d-source` back to `ear-rodriguez-v33-surface`. The full-source shell can be visibly re-mounted while runtime authority metadata still claims the reduced fallback is primary. This is a lifecycle/ownership race, not a missing-source or geometry defect.
 
 ## BOUNDED ADOPTION
-Preserve the full-source viewer as the dominant stage child across ENTER. Keep the local indexed proxy as a subordinate fail-safe only. Reattach the verified full-source shell immediately after the local fallback initialises if the fallback runtime replaced stage children, without changing source URL, rights attribution or full-source truth boundary. Correct the dedicated browser test ordering so it verifies the pre-entry photo/first frame, clicks ENTER, then proves local fallback readiness and the full-source viewer takeover.
+When the verified full-source viewer is already ready and the encounter becomes active after ENTER, reassert full-source ownership atomically: `data-jaguar3d=ready`, `data-jaguar3d-source=ear-rodriguez-full-source-viewer`, active state and source-animation truth. Keep the local indexed runtime alive only as a subordinate fail-safe underneath the full source. Do not mutate the Ear source, licence, UID, fallback geometry or Journey architecture.
 
-This is a stage-lifecycle correction, not a weakening of acceptance. Browser proof must still require the verified Ear.Rodriguez full-source viewer, exact model UID/source identity, visible usable viewer, LUME, full 01→08 Journey and no overflow. A fallback-only result remains failure for Gold.
+This is not a test weakening. Dedicated browser proof must continue to require the exact full Ear source identity after ENTER, a mounted visible source shell, usable rendered source frame, LUME, full 01→08 Journey and no overflow. A fallback-only result remains failure for Gold.
 
 ## WHAT CAN BE REMOVED
-Stale pre-ENTER canvas assumptions, duplicate viewer control code, the 457-vertex proxy as dominant visible creature, loader copy that implies fallback is final, and VFX that obscure the animal.
+Stale source-state ownership from the fallback after full-source readiness, duplicate viewer control code, the 457-vertex proxy as dominant visible creature, loader copy that implies fallback is final, and VFX that obscure the animal.
 
 ## WHAT MUST BE REUSED
 `king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, Ear.Rodriguez source/licence evidence, controlled local proxy fallback, controlled species-photo fallback and existing performance controls.
