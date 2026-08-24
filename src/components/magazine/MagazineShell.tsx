@@ -9,10 +9,11 @@ import "@/styles/magazine-gold-02-fixes.css";
 import "@/styles/magazine-live-round-01.css";
 
 type MagazineTheme = "light" | "dark";
+const THEME_KEY = "4planet-magazine-theme-v2";
 
 function initialTheme(): MagazineTheme {
   if (typeof window === "undefined") return "light";
-  const stored = window.localStorage.getItem("4planet-magazine-theme");
+  const stored = window.localStorage.getItem(THEME_KEY);
   if (stored === "light" || stored === "dark") return stored;
   return "light";
 }
@@ -21,7 +22,7 @@ export function MagazineShell({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<MagazineTheme>(initialTheme);
 
   useEffect(() => {
-    window.localStorage.setItem("4planet-magazine-theme", theme);
+    window.localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   return (
