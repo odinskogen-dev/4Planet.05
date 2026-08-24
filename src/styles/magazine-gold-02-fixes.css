@@ -1,0 +1,3 @@
+.mag-source-number{display:inline-block;min-width:26px;margin-right:10px;font-size:8px;letter-spacing:.15em;color:var(--mw-soft)}
+.mag-source-item>div{display:grid;grid-template-columns:auto 1fr;align-items:baseline;column-gap:0}.mag-source-item>div>span:last-child{grid-column:2}
+@media(max-width:700px){.mag-world-utility>a{display:inline-flex!important;font-size:8px!important;letter-spacing:.1em!important}.mag-world-utility{gap:10px!important}.mag-theme-toggle{gap:6px!important}.mag-theme-toggle>span{font-size:8px}.mag-theme-toggle i{width:27px;height:15px}.mag-theme-toggle i::after{width:9px;height:9px}.mag-world[data-mag-theme="dark"] .mag-theme-toggle i::after{transform:translateX(12px)}}
