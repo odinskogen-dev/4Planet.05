@@ -24,8 +24,29 @@ jobs:
   bind-labs-domain:
     runs-on: ubuntu-latest
     steps:
-      - name: Bind verified LABS branch to labs.4planet.org
-        id: bind
+      - name: Verify exact LABS source and Cloudflare branch preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          pr="$(curl -fsS -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/54")"
+          current_sha="$(jq -r '.head.sha // empty' <<<"${pr}")"
+          current_branch="$(jq -r '.head.ref // empty' <<<"${pr}")"
+          [[ "${current_sha}" == "${LABS_EXPECTED_SHA}" && "${current_branch}" == "${LABS_BRANCH}" ]] || {
+            echo "LABS PR/head drifted: branch=${current_branch} sha=${current_sha}; refusing domain switch"; exit 1;
+          }
+
+          comments="$(curl -fsS -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/54/comments?per_page=100")"
+          bot_proof="$(jq -r --arg alias "https://${LABS_BRANCH_ALIAS}" --arg short "${LABS_EXPECTED_SHA:0:7}" '
+            .[]? | select(.user.login == "cloudflare-workers-and-pages[bot]") | .body
+            | select(contains($alias)) | select(contains($short))
+          ' <<<"${comments}" | tail -n1)"
+          test -n "${bot_proof}" || { echo "No Cloudflare Pages-bot proof found for exact LABS head + branch alias"; exit 1; }
+
+          curl -fsS --retry 5 --retry-delay 2 "https://${LABS_BRANCH_ALIAS}/labs" -o /tmp/labs-branch.html
+          grep -Eiq 'LABS|4PLANET' /tmp/labs-branch.html || { echo "Branch alias returned unexpected content"; exit 1; }
+          echo "Exact LABS source + Cloudflare branch alias verified."
+
+      - name: Bind custom domain through Cloudflare API
         shell: bash
         run: |
           set -euo pipefail
@@ -33,55 +54,60 @@ jobs:
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
 
-          zone_json="$(curl -fsS "${api}/zones?name=${CF_ZONE}&status=active" "${auth[@]}")"
-          zone_id="$(jq -r '.result[0].id // empty' <<<"${zone_json}")"
-          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
-          test -n "${zone_id}" && test -n "${account_id}" || { echo "Could not resolve active ${CF_ZONE} zone/account"; exit 1; }
+          echo "STAGE zone lookup"
+          code="$(curl -sS -o /tmp/zone.json -w '%{http_code}' "${api}/zones?name=${CF_ZONE}&status=active" "${auth[@]}")"
+          [[ "${code}" == "200" ]] || { echo "zone lookup HTTP ${code}"; cat /tmp/zone.json; exit 1; }
+          zone_id="$(jq -r '.result[0].id // empty' /tmp/zone.json)"
+          account_id="$(jq -r '.result[0].account.id // empty' /tmp/zone.json)"
+          test -n "${zone_id}" && test -n "${account_id}" || { echo "Active ${CF_ZONE} zone/account not resolved"; exit 1; }
 
-          deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/deployments?env=preview&per_page=100" "${auth[@]}")"
-          match="$(jq -c --arg branch "${LABS_BRANCH}" --arg sha "${LABS_EXPECTED_SHA}" '.result[]? | select((.deployment_trigger.metadata.branch // "") == $branch) | select((.deployment_trigger.metadata.commit_hash // "") == $sha)' <<<"${deployments}" | head -n1)"
-          test -n "${match}" || { echo "Exact LABS deployment not found; refusing domain switch"; exit 1; }
-          curl -fsS --retry 4 --retry-delay 2 "https://${LABS_BRANCH_ALIAS}/labs" -o /tmp/labs-branch.html
-          grep -Eiq 'LABS|4PLANET' /tmp/labs-branch.html || { echo "Branch alias returned unexpected content"; exit 1; }
-
-          code="$(curl -sS -o /tmp/domain-get.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
+          echo "STAGE Pages domain lookup"
+          code="$(curl -sS -o /tmp/domain.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
           if [[ "${code}" == "404" ]]; then
-            created="$(curl -fsS -X POST "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "${LABS_DOMAIN}" '{name:$name}')")"
-            [[ "$(jq -r '.success // false' <<<"${created}")" == "true" ]] || { jq '{success,errors}' <<<"${created}"; exit 1; }
+            echo "STAGE Pages domain create"
+            code="$(curl -sS -o /tmp/domain-create.json -w '%{http_code}' -X POST "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "${LABS_DOMAIN}" '{name:$name}')")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/domain-create.json)" == "true" ]] || { echo "Pages domain create HTTP ${code}"; cat /tmp/domain-create.json; exit 1; }
           elif [[ "${code}" != "200" ]]; then
-            echo "Unexpected Pages-domain lookup HTTP ${code}"; cat /tmp/domain-get.json; exit 1
+            echo "Pages domain lookup HTTP ${code}"; cat /tmp/domain.json; exit 1
           fi
 
-          records="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
-          record_id="$(jq -r '.result[0].id // empty' <<<"${records}")"
+          echo "STAGE DNS lookup"
+          code="$(curl -sS -o /tmp/dns-list.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          [[ "${code}" == "200" ]] || { echo "DNS lookup HTTP ${code}"; cat /tmp/dns-list.json; exit 1; }
+          record_id="$(jq -r '.result[0].id // empty' /tmp/dns-list.json)"
           payload="$(jq -nc --arg name "${LABS_DOMAIN}" --arg content "${LABS_BRANCH_ALIAS}" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')"
+
           if [[ -n "${record_id}" ]]; then
-            dns="$(curl -fsS -X PUT "${api}/zones/${zone_id}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
+            echo "STAGE DNS update"
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X PUT "${api}/zones/${zone_id}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
           else
-            dns="$(curl -fsS -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "${payload}")"
+            echo "STAGE DNS create"
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "${payload}")"
           fi
-          [[ "$(jq -r '.success // false' <<<"${dns}")" == "true" ]] || { jq '{success,errors}' <<<"${dns}"; exit 1; }
-          [[ "$(jq -r '.result.content // empty' <<<"${dns}")" == "${LABS_BRANCH_ALIAS}" ]] || { echo "DNS target mismatch"; exit 1; }
-          [[ "$(jq -r '.result.proxied // false' <<<"${dns}")" == "true" ]] || { echo "DNS must be proxied for branch custom-domain routing"; exit 1; }
+          [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS write HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
+          [[ "$(jq -r '.result.content // empty' /tmp/dns-write.json)" == "${LABS_BRANCH_ALIAS}" ]] || { echo "DNS target mismatch"; exit 1; }
+          [[ "$(jq -r '.result.proxied // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS must be proxied"; exit 1; }
 
+          echo "STAGE Pages domain activation"
           status=""
-          for i in $(seq 1 24); do
-            domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
-            status="$(jq -r '.result.status // empty' <<<"${domain}")"
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /tmp/domain-status.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
+            [[ "${code}" == "200" ]] || { echo "Domain status HTTP ${code}"; cat /tmp/domain-status.json; exit 1; }
+            status="$(jq -r '.result.status // empty' /tmp/domain-status.json)"
+            echo "domain status=${status:-unknown}"
             [[ "${status}" == "active" ]] && break
-            [[ "${status}" == "error" || "${status}" == "blocked" ]] && { jq '.result' <<<"${domain}"; exit 1; }
-            sleep 5
+            [[ "${status}" == "error" || "${status}" == "blocked" ]] && { cat /tmp/domain-status.json; exit 1; }
+            sleep 4
           done
-          [[ "${status}" == "active" ]] || { echo "Pages custom domain did not become active"; exit 1; }
+          [[ "${status}" == "active" ]] || { echo "Pages custom domain did not become active"; cat /tmp/domain-status.json; exit 1; }
 
-          curl -fsS -L --retry 8 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
-          curl -fsS -L --retry 8 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
+          echo "STAGE HTTPS/readback"
+          curl -fsS -L --retry 10 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
+          curl -fsS -L --retry 10 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
           grep -Eiq 'LABS' /tmp/labs-root.html || { echo "Custom-domain root does not render LABS"; exit 1; }
           grep -Eiq 'LABS' /tmp/labs-path.html || { echo "Custom-domain /labs does not render LABS"; exit 1; }
-          curl -fsS -L --retry 4 --retry-delay 2 "https://4planet.org/" -o /tmp/main.html
+          curl -fsS -L --retry 5 --retry-delay 2 "https://4planet.org/" -o /tmp/main.html
           test -s /tmp/main.html || { echo "4planet.org regression check failed"; exit 1; }
-
-          echo "result=PASS" >> "$GITHUB_OUTPUT"
           echo "LABS custom domain is live and verified."
 
       - name: Report PASS to pull request
@@ -94,22 +120,20 @@ jobs:
           body=$(cat <<'EOF'
           LABS DOMAIN BOOTSTRAP — PASS
 
-          Verified source: https://labs-overview-v1.4planet-05.pages.dev/labs
+          Latest verified LABS source: https://labs-overview-v1.4planet-05.pages.dev/labs
           Source branch: labs/overview-v1
           Source SHA: 35486b0304779476e550b7d10e9981dd51dc8ef7
           Live root: https://labs.4planet.org/
           Live Project OS: https://labs.4planet.org/labs
 
-          Cloudflare Pages custom-domain state = active.
-          DNS readback = proxied CNAME to labs-overview-v1.4planet-05.pages.dev.
-          HTTPS/root/LABS content checks = PASS.
+          Pages domain = active.
+          DNS = proxied CNAME to labs-overview-v1.4planet-05.pages.dev.
+          HTTPS/LABS content checks = PASS.
           4planet.org reachability regression check = PASS.
           EOF
           )
           curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
 
       - name: Report failure to pull request
@@ -119,9 +143,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          body='LABS DOMAIN BOOTSTRAP — FAIL. Domain is not approved as live. Inspect this workflow run; no production-code merge is required.'
+          body='LABS DOMAIN BOOTSTRAP — FAIL. Domain is not approved as live. The workflow logs identify the exact failed Cloudflare/readback stage; no application-code merge was performed.'
           curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
