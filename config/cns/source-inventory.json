@@ -1,10 +1,11 @@
 {
-  "inventory_version": 1,
+  "inventory_version": 2,
   "mode": "SHADOW_MIGRATION",
   "observed_at": "2026-08-24T02:47:00+02:00",
   "rules": {
     "legacy_authoritative_until_cutover": true,
     "live_code_requires_fresh_github_read": true,
+    "static_code_current_claims_forbidden": true,
     "conflict_policy": "FAIL_CLOSED_INCIDENT",
     "newest_wins_forbidden": true,
     "destructive_retirement_before_parity": false
@@ -74,11 +75,14 @@
       "kind": "GITHUB_REPOSITORY",
       "name": "odinskogen-dev/4Planet.05",
       "uri": "https://github.com/odinskogen-dev/4Planet.05",
-      "authority": "CODE_TRUTH",
-      "truth_domain": "CODE_BRANCH_PR_COMMIT",
-      "current_revision": "a0dfcb6465cea00ba4797d31ec5ce6f50f06dc18",
-      "current_ref": "king/test",
-      "verified_via": "GitHub PR #131 live read"
+      "authority": "CODE_TRUTH_DYNAMIC",
+      "truth_domain": "CODE_BRANCH_PR_COMMIT_DEPLOYMENT",
+      "migration_baseline_ref": "king/test",
+      "migration_baseline_revision": "a0dfcb6465cea00ba4797d31ec5ce6f50f06dc18",
+      "migration_baseline_observed_at": "2026-08-24T02:47:00+02:00",
+      "current_revision": null,
+      "current_ref": null,
+      "current_state_rule": "NEVER_READ_FROM_THIS_STATIC_FILE; VERIFY_LIVE_THROUGH_CNS_GATEWAY_GITHUB_OBSERVER"
     },
     {
       "source_id": "supabase-brain-target",
@@ -87,7 +91,7 @@
       "project_ref": "bycovaghcnskymrjnyvg",
       "authority": "TARGET_OPERATIONAL_TRUTH_AFTER_CUTOVER",
       "truth_domain": "CNS_OPERATIONAL_STATE",
-      "state": "INACTIVE",
+      "state": "INACTIVE_AT_LAST_CONTROL_PLANE_READ",
       "cutover_authority": false
     },
     {
@@ -97,7 +101,7 @@
       "project_ref": "dcxiougjoazkafyeeaxi",
       "authority": "SHADOW_TEST_ONLY",
       "truth_domain": "CNS_TEST_RUNTIME",
-      "state": "CONTROL_PLANE_ACTIVE_DATABASE_CONNECTION_TIMEOUT",
+      "state": "CONTROL_PLANE_ACTIVE_DATABASE_CONNECTION_TIMEOUT_AT_LAST_READ",
       "cutover_authority": false
     }
   ]
