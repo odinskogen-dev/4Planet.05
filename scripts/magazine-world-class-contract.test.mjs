@@ -15,6 +15,7 @@ const router = read("src/routes/router.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-magazine-seo.mjs");
 const quality = read("scripts/magazine-quality-gate.mjs");
+const gold02 = read("src/styles/magazine-gold-02.css");
 const stories = readStories();
 const signals = readSignals();
 
@@ -32,17 +33,31 @@ test("Magazine has a dedicated premium world and calm primary navigation", () =>
   assert.match(shell, /SEARCH/);
   assert.match(shell, /SAVED/);
   assert.match(shell, /mag-world-footer/);
+  assert.equal((shell.match(/mag-world-masthead-word/g) || []).length, 2);
   assert.doesNotMatch(shell, /PublicShell/);
 });
 
-test("World-class home has source density without a random card wall", () => {
+test("World-class home is curated, source-dense and shorter than the archive", () => {
   assert.ok(stories.length >= 10, "at least ten substantial stories are required");
   assert.ok(signals.length >= 10, "at least ten fast source-bounded signals are required");
   assert.ok(stories.length + signals.length >= 24, "launch density must reach at least 24 real editorial objects");
+  assert.match(home, /HOME_STORY_LIMIT = 8/);
+  assert.match(home, /HOME_SIGNAL_LIMIT = 6/);
   assert.match(home, /PLANET SIGNAL/);
-  assert.match(home, /FOUR READING MODES/);
+  assert.match(home, /RECURRING EDITORIAL/);
   assert.match(home, /mag-story-mosaic/);
+  assert.doesNotMatch(home, /LIVE DEVELOPMENT/);
+  assert.doesNotMatch(home, /EDITORIAL LAB/);
   assert.doesNotMatch(home, /Math\.random/);
+});
+
+test("mobile home restores 4PLANET strictness and avoids desktop mosaic assumptions", () => {
+  assert.match(gold02, /@media \(max-width: 700px\)/);
+  assert.match(gold02, /\.mag-story-mosaic \{ display: grid !important; grid-template-columns: 1fr !important/);
+  assert.match(gold02, /\.mag-world-masthead \.mag-world-masthead-word/);
+  assert.match(gold02, /font-size: clamp\(31px, 9\.1vw, 39px\)/);
+  assert.match(gold02, /scroll-snap-type: x mandatory/);
+  assert.match(gold02, /\.mag-topic-grid \{ grid-template-columns: 1fr 1fr !important/);
 });
 
 test("Planet Signals remain source-bounded fast journalism", () => {
@@ -75,7 +90,7 @@ test("reader product supports search save recent resume and text size without an
   assert.match(article, /TEXT A\+/);
   assert.match(article, /recordMagazineRecent/);
   assert.match(article, /recordMagazineResume/);
-  for (const route of ["/magazine/search", "/magazine/saved", "/magazine/archive", "/magazine/signals/:slug"]) assert.ok(router.includes(`path=\"${route}\"`), `missing route ${route}`);
+  for (const route of ["/magazine/search", "/magazine/saved", "/magazine/archive", "/magazine/topics/:topic", "/magazine/series/:series", "/magazine/signals/:slug"]) assert.ok(router.includes(`path=\"${route}\"`), `missing route ${route}`);
 });
 
 test("SEO engine emits archive and signal routes without polluting News sitemap", () => {
