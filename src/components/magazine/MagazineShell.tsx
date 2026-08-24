@@ -5,6 +5,7 @@ import "@/styles/magazine-world.css";
 import "@/styles/magazine-world-polish.css";
 import "@/styles/magazine-reader-polish.css";
 import "@/styles/magazine-gold-02.css";
+import "@/styles/magazine-gold-02-fixes.css";
 
 type MagazineTheme = "light" | "dark";
 
