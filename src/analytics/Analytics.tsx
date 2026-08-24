@@ -18,10 +18,12 @@ function measurementId(): string {
 }
 
 function configuredDomains(): string[] {
-  return (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
+  const explicit = (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
     .split(",")
     .map((domain) => domain.trim())
     .filter(Boolean);
+  if (explicit.length) return explicit;
+  return ["4planet.org", "4planetmagazine.com"];
 }
 
 function readConsent(): ConsentState {
@@ -49,10 +51,7 @@ function installGoogleTag(id: string, domains: string[]) {
   } as Gtag;
 
   if (domains.length > 1) {
-    window.gtag("set", "linker", {
-      domains,
-      decorate_forms: true,
-    });
+    window.gtag("set", "linker", { domains, decorate_forms: true });
   }
 
   window.gtag("js", new Date());
@@ -88,13 +87,26 @@ export function Analytics() {
     if (!id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
 
+    const pagePath = `${location.pathname}${location.search}`;
     window.gtag?.("event", "page_view", {
       page_title: document.title,
       page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
+      page_path: pagePath,
       content_group: productArea(location.pathname),
       site_host: window.location.hostname,
     });
+
+    if (location.pathname.startsWith("/magazine/topics/")) {
+      const topic = location.pathname.split("/").filter(Boolean).at(-1) || "unknown";
+      trackEvent("topic_open", { topic, source: "route" });
+    }
+    if (location.pathname === "/magazine/search") {
+      const query = new URLSearchParams(location.search).get("q")?.trim();
+      if (query) trackEvent("search", { search_term: query.slice(0, 120) });
+    }
+    if (location.pathname === "/magazine/atlas") {
+      trackEvent("atlas_open", { source: "magazine_route" });
+    }
   }, [consent, id, location.pathname, location.search]);
 
   if (!id || consent !== null) return null;
@@ -103,6 +115,7 @@ export function Analytics() {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);
     setConsent(next);
   };
+  const privacyHref = location.pathname.startsWith("/magazine") || window.location.hostname === "4planetmagazine.com" ? "/magazine/privacy" : "/privacy";
 
   return (
     <aside
@@ -132,23 +145,11 @@ export function Analytics() {
     >
       <div style={{ maxWidth: 500 }}>
         Allow optional usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}
-        <a href="/privacy" style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a>
+        <a href={privacyHref} style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          onClick={() => decide("denied")}
-          style={{ border: "1px solid rgba(255,255,255,.45)", background: "transparent", color: "#fff", padding: "8px 12px", cursor: "pointer" }}
-        >
-          DECLINE
-        </button>
-        <button
-          type="button"
-          onClick={() => decide("granted")}
-          style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "8px 12px", cursor: "pointer" }}
-        >
-          ALLOW
-        </button>
+        <button type="button" onClick={() => decide("denied")} style={{ border: "1px solid rgba(255,255,255,.45)", background: "transparent", color: "#fff", padding: "8px 12px", cursor: "pointer" }}>DECLINE</button>
+        <button type="button" onClick={() => decide("granted")} style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "8px 12px", cursor: "pointer" }}>ALLOW</button>
       </div>
     </aside>
   );
