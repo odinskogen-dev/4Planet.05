@@ -34,7 +34,17 @@ test('TEST KING Jaguar loads verified Ear full-source 3D, preserves fallback, ex
   const sourceFrame=page.frames().find(frame=>/sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/i.test(frame.url()));
   expect(sourceFrame,'verified Ear source iframe must navigate to the exact model').toBeTruthy();
   if(sourceFrame){
-    await expect(sourceFrame.locator('canvas').first()).toBeVisible({timeout:20000});
+    // Sketchfab also carries hidden utility canvases (for example #qrCode). Do not
+    // mistake those for the renderer. Require at least one genuinely visible,
+    // non-trivial canvas inside the exact source frame so QA still fails closed
+    // if the Jaguar viewer never produces a rendered surface.
+    await expect.poll(async()=>sourceFrame.locator('canvas').evaluateAll(nodes=>nodes.filter(node=>{
+      const element=node as HTMLCanvasElement;
+      const rect=element.getBoundingClientRect();
+      const style=getComputedStyle(element);
+      const opacity=Number.parseFloat(style.opacity||'1');
+      return element.id!=='qrCode' && style.display!=='none' && style.visibility!=='hidden' && opacity>0 && rect.width>250 && rect.height>250;
+    }).length),{timeout:20000,message:'verified Ear source frame must expose a visible non-trivial render canvas'}).toBeGreaterThan(0);
   }
   await expect(page.locator('.jaguar-ear-full-v43__credit')).toContainText(/EAR\.RODRIGUEZ · CC BY 4\.0/i);
   await expect(localCanvas).toHaveCSS('opacity','0');
