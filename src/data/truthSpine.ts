@@ -18,6 +18,8 @@ export interface SourceRecord {
   attribution: string;
   /** Optional machine-readable citation/identifier supplied by the provider. */
   citationId?: string;
+  /** Provider citation identifier retained verbatim where a source exposes one. */
+  citationIdentifier?: string;
   rightsStatus: "ACCEPTABLE" | "CONDITIONAL" | "EXPERIMENTAL" | "BLOCKED";
   visibility: Visibility;
   payload: Record<string, unknown>;
