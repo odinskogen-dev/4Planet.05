@@ -6,20 +6,24 @@ test('TEST KING Jaguar loads verified Ear full-source 3D, preserves fallback, ex
   const root=page.locator('#jaguar-experience');
   await expect(root).toBeVisible();
   await expect(root).toHaveAttribute('data-jaguar-ear-full',/loading|ready/,{timeout:5000});
-  await expect(root).toHaveAttribute('data-jaguar-ear-delivery','direct-official-embed-v45');
+  await expect(root).toHaveAttribute('data-jaguar-ear-delivery','direct-official-embed-v46');
 
-  // Controlled local indexed media remains the first visible/fail-safe frame while full source media boots.
-  const localCanvas=page.locator('#three-stage>canvas');
-  await expect(localCanvas).toBeVisible({timeout:15000});
-  await expect(root).toHaveAttribute('data-jaguar3d','ready',{timeout:15000});
-
+  // Entry is intentionally first-frame-first. The local WebGL fallback is created only after ENTER.
+  await expect(page.locator('#photo-fallback')).toBeAttached();
   await page.getByRole('button',{name:'ENTER THE LIVING SYSTEM'}).click();
   await expect(root).toHaveAttribute('data-entered','true');
+
+  // Controlled local indexed media remains a fail-safe under the full source viewer after the encounter starts.
+  const localCanvas=page.locator('#three-stage>canvas');
+  await expect(localCanvas).toBeAttached({timeout:15000});
+  await expect(root).toHaveAttribute('data-jaguar3d','ready',{timeout:20000});
 
   // Founder P0: primary encounter becomes the verified full Ear.Rodriguez source model, not the reduced proxy.
   await expect(root).toHaveAttribute('data-jaguar-ear-full','ready',{timeout:20000});
   await expect(root).toHaveAttribute('data-jaguar3d-source','ear-rodriguez-full-source-viewer');
   await expect(root).not.toHaveAttribute('data-jaguar-ear-full-failure',/.+/);
+  const shell=page.locator('#three-stage>.jaguar-ear-full-v43');
+  await expect(shell).toBeVisible();
   const viewer=page.locator('.jaguar-ear-full-v43__viewer');
   await expect(viewer).toBeVisible();
   const viewerBox=await viewer.boundingBox();
@@ -27,6 +31,11 @@ test('TEST KING Jaguar loads verified Ear full-source 3D, preserves fallback, ex
   expect(viewerBox?.height||0).toBeGreaterThan(250);
   const viewerSrc=await viewer.getAttribute('src');
   expect(viewerSrc||'').toMatch(/sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/i);
+  const sourceFrame=page.frames().find(frame=>/sketchfab\.com\/models\/91c61c329d2a4668816f81f08dfcd492\/embed/i.test(frame.url()));
+  expect(sourceFrame,'verified Ear source iframe must navigate to the exact model').toBeTruthy();
+  if(sourceFrame){
+    await expect(sourceFrame.locator('canvas').first()).toBeVisible({timeout:20000});
+  }
   await expect(page.locator('.jaguar-ear-full-v43__credit')).toContainText(/EAR\.RODRIGUEZ · CC BY 4\.0/i);
   await expect(localCanvas).toHaveCSS('opacity','0');
   await expect(page.locator('#controls span')).toContainText(/DRAG TO TURN · SOURCE ANIMATION/i);
