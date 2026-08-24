@@ -11,32 +11,41 @@ permissions:
 jobs:
   live-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
-      - name: Verify published recovery Magazine and isolation
+      - name: Verify published recovery Magazine, live round marker, Atlas embed and isolation
         shell: bash
         run: |
           set -euo pipefail
           pass=0
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 36); do
             mag_headers="$RUNNER_TEMP/mag.txt"
             article_headers="$RUNNER_TEMP/article.txt"
             atlas_headers="$RUNNER_TEMP/atlas.txt"
             atlas_embed_headers="$RUNNER_TEMP/atlas-embed.txt"
+            marker_body="$RUNNER_TEMP/marker.txt"
+
             mag_code=$(curl -sS -D "$mag_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' || true)
             article_code=$(curl -sS -D "$article_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/why-4planet-exists/' || true)
             atlas_code=$(curl -sS -D "$atlas_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas' || true)
             atlas_embed_code=$(curl -sS -D "$atlas_embed_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas?embed=mag&l=bluemarble,fires,biodiv' || true)
+            marker_code=$(curl -sS -o "$marker_body" -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/live-round-01.txt' || true)
             root_code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/' || true)
+
             mag_surface=$(tr -d '\r' < "$mag_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             article_surface=$(tr -d '\r' < "$article_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             atlas_surface=$(tr -d '\r' < "$atlas_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             atlas_embed_surface=$(tr -d '\r' < "$atlas_embed_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
-            echo "attempt=$attempt magazine=$mag_code/$mag_surface article=$article_code/$article_surface atlas=$atlas_code/$atlas_surface atlas_embed=$atlas_embed_code/$atlas_embed_surface root=$root_code"
+            marker_ok=0
+            grep -q '^4PLANET_MAGAZINE_LIVE_ROUND_01$' "$marker_body" 2>/dev/null && marker_ok=1 || true
+
+            echo "attempt=$attempt magazine=$mag_code/$mag_surface article=$article_code/$article_surface atlas=$atlas_code/$atlas_surface atlas_embed=$atlas_embed_code/$atlas_embed_surface marker=$marker_code/$marker_ok root=$root_code"
+
             if [ "$mag_code" = "200" ] && [ "$mag_surface" = "magazine-only-live" ] \
               && [ "$article_code" = "200" ] && [ "$article_surface" = "magazine-only-live" ] \
               && [ "$atlas_code" = "404" ] && [ "$atlas_surface" = "magazine-only-live" ] \
               && [ "$atlas_embed_code" = "200" ] && [ "$atlas_embed_surface" = "magazine-atlas-embed" ] \
+              && [ "$marker_code" = "200" ] && [ "$marker_ok" = "1" ] \
               && [ "$root_code" = "308" ]; then
               pass=1
               break
