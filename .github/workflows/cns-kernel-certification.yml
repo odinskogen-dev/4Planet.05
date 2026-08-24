@@ -53,6 +53,10 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
+
+      - name: Verify event-backed GitHub state projection
+        run: psql -f supabase/tests/cns_github_sync.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
