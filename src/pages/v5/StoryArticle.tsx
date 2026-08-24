@@ -29,12 +29,6 @@ function editorialLabel(type: string) {
   return "4PLANET MAGAZINE EDITORIAL";
 }
 
-function sourceState(count: number, editorialType: string) {
-  if (count > 0) return `${count} ATTACHED SOURCE${count === 1 ? "" : "S"}`;
-  if (editorialType === "ORGANISATIONAL_EXPLAINER") return "4PLANET EXPLAINER METHOD";
-  return "SOURCE METHOD INSIDE";
-}
-
 function initialReadingSize(): ReadingSize {
   if (typeof window === "undefined") return "standard";
   return window.localStorage.getItem("4planet.magazine.reading-size") === "large" ? "large" : "standard";
@@ -105,7 +99,6 @@ export function StoryArticle() {
   const nextStory = more[0];
   const experience = experienceForStory(s);
   const experienceContract = experienceContractForStory(s);
-  const sectionCount = articleBlocks.filter((block) => block.k === "sub").length + 1;
   const articleWords = articleBlocks.reduce((total, block) => total + block.t.trim().split(/\s+/).filter(Boolean).length, 0);
   const readMins = Math.max(s.readMins, Math.ceil(articleWords / 190));
 
@@ -113,7 +106,6 @@ export function StoryArticle() {
   for (const source of s.sourceLinks ?? []) sourceMap.set(source.url, source);
   for (const source of feature?.addedSources ?? []) sourceMap.set(source.url, source);
   const sources = Array.from(sourceMap.values());
-  const attachedSources = sources.length;
 
   const firstLaterSub = articleBlocks.findIndex((block, index) => index > 4 && block.k === "sub");
   const splitAt = firstLaterSub > 0 ? firstLaterSub : Math.ceil(articleBlocks.length / 2);
@@ -177,9 +169,19 @@ export function StoryArticle() {
       <article className={`mag-article-world mag-experience mag-experience--${experience.toLowerCase().replace(/_/g, "-")}`} data-longform={feature ? "true" : "false"}>
         <header className="mag-article-world-header">
           <div className="mag-article-world-kicker">
-            <span>{template?.label ?? s.franchise.replace(/_/g, " ")}</span><span>·</span><span>{experienceContract.label}</span><span>·</span><span>{mode.label}</span><span>·</span><span>{readMins} MIN</span>{s.location ? <><span>·</span><span>{s.location}</span></> : null}
+            <span>{template?.label ?? s.franchise.replace(/_/g, " ")}</span><span>·</span><span>{mode.label}</span><span>·</span><span>{readMins} MIN</span>{s.location ? <><span>·</span><span>{s.location}</span></> : null}
           </div>
           <h1>{s.title}</h1>
+        </header>
+
+        <section className="mag-article-world-hero">
+          <figure>
+            <img src={media.src} alt={media.alt} />
+            <figcaption><strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong><span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span></figcaption>
+          </figure>
+        </section>
+
+        <section className="mag-article-world-intro" aria-label="Story introduction">
           <p className="mag-article-world-dek">{s.dek}</p>
           <div className="mag-article-world-meta">
             <div><span>BY {s.byline}</span><span>{editorialLabel(s.editorialType)}</span>{s.asOf ? <span>AS OF {s.asOf}</span> : null}</div>
@@ -189,42 +191,7 @@ export function StoryArticle() {
               <button type="button" onClick={shareStory}>SHARE ↗</button>
             </div>
           </div>
-        </header>
-
-        {experience === "JOURNEY_FEATURE" ? (
-          <section className="mag-journey-gateway" aria-label="Journey feature introduction">
-            <div><span>JOURNEY FEATURE</span><strong>{s.location ?? "A living place"}</strong></div>
-            <div><span>{sectionCount} CHAPTERS</span><p>{experienceContract.promise}</p></div>
-            <div className="mag-journey-pulse" aria-hidden><i /><i /><i /></div>
-          </section>
-        ) : null}
-
-        <section className="mag-article-world-hero">
-          <figure>
-            <img src={media.src} alt={media.alt} />
-            <figcaption><strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong><span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span></figcaption>
-          </figure>
         </section>
-
-        {s.topics?.length ? <nav className="mag-article-topics" aria-label="Story topics">{s.topics.map((topicId) => { const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId); return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>; })}</nav> : null}
-
-        <section className="mag-story-facts" aria-label="Story context">
-          <div><span>FORM</span><strong>{feature ? "LONGFORM FEATURE" : experienceContract.label}</strong></div>
-          <div><span>EVIDENCE</span><strong>{sourceState(attachedSources, s.editorialType)}</strong></div>
-          <div><span>VISUAL</span><strong>{s.imageRole === "DOCUMENTARY" ? "DOCUMENTARY" : "CONTEXT / DISCLOSED"}</strong></div>
-          <div><span>NEXT OBJECT</span><strong>{s.pathway?.kind?.replace(/_/g, " ") ?? "RELATED READING"}</strong></div>
-        </section>
-
-        {experience === "INTELLIGENCE_STORY" ? (
-          <section className="mag-intelligence-strip" aria-label="Intelligence story inspection layer">
-            <div><span>QUESTION</span><strong>{s.dek}</strong></div>
-            <div><span>EVIDENCE BASE</span><strong>{attachedSources ? `${attachedSources} attached primary / published source${attachedSources > 1 ? "s" : ""}` : "4PLANET source workflow"}</strong></div>
-            <div><span>CONTEXT</span><strong>{[s.location, ...s.tags.slice(0, 3)].filter(Boolean).join(" · ")}</strong></div>
-            <div><span>LIMIT</span><strong>{s.reportingNote ?? "Interpretation remains bounded by the source and method described below."}</strong></div>
-          </section>
-        ) : null}
-
-        {experience === "VISUAL_ESSAY" ? <div className="mag-visual-breath" aria-hidden><span>IMAGE FIRST / CONTEXT ATTACHED</span></div> : null}
 
         <section className="mag-article-world-body">
           <div className="mag-article-world-reading">
@@ -250,6 +217,8 @@ export function StoryArticle() {
             </div>
           </section>
         ) : null}
+
+        {s.topics?.length ? <nav className="mag-article-topics" aria-label="Story topics">{s.topics.map((topicId) => { const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId); return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>; })}</nav> : null}
 
         <section className="mag-source-desk" aria-labelledby="source-desk-title">
           <div className="mag-source-desk-inner">
