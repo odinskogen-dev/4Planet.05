@@ -7,6 +7,7 @@ import "@/styles/magazine-reader-polish.css";
 import "@/styles/magazine-gold-02.css";
 import "@/styles/magazine-gold-02-fixes.css";
 import "@/styles/magazine-live-round-01.css";
+import "@/styles/magazine-live-round-02.css";
 
 type MagazineTheme = "light" | "dark";
 const THEME_KEY = "4planet-magazine-theme-v2";
