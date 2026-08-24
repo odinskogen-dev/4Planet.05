@@ -30,28 +30,49 @@ jobs:
           [[ -n "${account_id}" ]] || { echo "no account id"; exit 1; }
 
           projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
-          project="$(jq -c '.result[]? | select(.name=="4planet-05")' <<<"${projects}" | head -n1)"
-          [[ -n "${project}" ]] || { echo "4planet-05 not found"; jq '.errors' <<<"${projects}"; exit 1; }
+          jq -e '.success == true' <<<"${projects}" >/dev/null
 
-          production_branch="$(jq -r '.production_branch // empty' <<<"${project}")"
-          subdomain="$(jq -r '.subdomain // empty' <<<"${project}")"
-          domains="$(jq -r '[.domains[]?] | join(", ")' <<<"${project}")"
-          latest="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?per_page=20" "${auth[@]}")"
-          prod_deploy="$(jq -c '.result[]? | select(.environment=="production")' <<<"${latest}" | head -n1)"
-          prod_id="$(jq -r '.id // empty' <<<"${prod_deploy}")"
-          prod_branch="$(jq -r '.deployment_trigger.metadata.branch // empty' <<<"${prod_deploy}")"
-          prod_commit="$(jq -r '.deployment_trigger.metadata.commit_hash // empty' <<<"${prod_deploy}")"
-          prod_url="$(jq -r '.url // empty' <<<"${prod_deploy}")"
+          targets='["4planet.org","4planetmagazine.com","s4piens.com","cre4tors.com","4planetmarket.com"]'
+          mapfile -t matching < <(jq -r --argjson targets "$targets" '
+            .result[]?
+            | select(any(.domains[]?; . as $d | any($targets[]; . == $d)))
+            | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))]
+            | @tsv
+          ' <<<"${projects}")
 
           {
-            echo "production_branch=${production_branch}"
-            echo "subdomain=${subdomain}"
-            echo "domains=${domains}"
-            echo "prod_id=${prod_id}"
-            echo "prod_branch=${prod_branch}"
-            echo "prod_commit=${prod_commit}"
-            echo "prod_url=${prod_url}"
-          } >> "$GITHUB_OUTPUT"
+            echo "# Cloudflare Pages mapping"
+            echo
+            echo "Account: ${account_id}"
+            echo
+            if ((${#matching[@]} == 0)); then
+              echo "No matching Pages projects found for canonical domains."
+            else
+              echo "| Project | Production branch | Domains |"
+              echo "|---|---|---|"
+              for row in "${matching[@]}"; do
+                IFS=$'\t' read -r name branch domains <<<"${row}"
+                echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+              done
+            fi
+            echo
+            echo "## Zone/DNS presence"
+            echo
+            for domain in 4planet.org 4planetmagazine.com s4piens.com cre4tors.com 4planetmarket.com; do
+              z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
+              zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
+              status="$(jq -r '.result[0].status // "missing"' <<<"${z}")"
+              if [[ -z "$zid" ]]; then
+                echo "- ${domain}: zone missing/inaccessible"
+                continue
+              fi
+              dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")"
+              records="$(jq -r '[.result[]? | (.type + " " + (.content // ""))] | join("; ")' <<<"${dns}")"
+              echo "- ${domain}: zone ${status}; ${records:-no apex record}"
+            done
+          } > /tmp/cf-report.md
+
+          cat /tmp/cf-report.md
 
       - name: Report to analytics issue
         if: always()
@@ -59,4 +80,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Pages audit: **${{ steps.audit.outcome }}**\n\nConfigured production branch: \`${{ steps.audit.outputs.production_branch }}\`\nLatest production deployment branch: \`${{ steps.audit.outputs.prod_branch }}\`\nLatest production commit: \`${{ steps.audit.outputs.prod_commit }}\`\nProduction URL: \`${{ steps.audit.outputs.prod_url }}\`\nPages subdomain: \`${{ steps.audit.outputs.subdomain }}\`\nProject domains: ${{ steps.audit.outputs.domains }}"
+          if [[ -f /tmp/cf-report.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/cf-report.md
+          else
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Pages audit failed before report generation."
+          fi
