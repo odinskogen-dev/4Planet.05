@@ -1,0 +1,35 @@
+name: 4PLANET Magazine live snapshot
+
+on:
+  pull_request:
+    branches:
+      - recovery/testking-magazine
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Print current live route state
+        shell: bash
+        run: |
+          set -u
+          probe() {
+            local url="$1"
+            local headers="$RUNNER_TEMP/headers.txt"
+            local code
+            code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+            local surface robots location
+            surface=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+            robots=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-robots-tag" {print $2}' | tail -1)
+            location=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="location" {print $2}' | tail -1)
+            echo "URL=$url CODE=$code SURFACE=$surface ROBOTS=$robots LOCATION=$location"
+          }
+          probe 'https://4planetmagazine.com/'
+          probe 'https://4planetmagazine.com/magazine'
+          probe 'https://4planetmagazine.com/magazine/why-4planet-exists/'
+          probe 'https://4planetmagazine.com/atlas'
+          probe 'https://www.4planetmagazine.com/'
