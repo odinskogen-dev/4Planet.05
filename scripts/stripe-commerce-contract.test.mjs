@@ -1,11 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
-const checkout = readFileSync(new URL("../functions/api/stripe/checkout.ts", import.meta.url), "utf8");
-const status = readFileSync(new URL("../functions/api/stripe/checkout-status.ts", import.meta.url), "utf8");
-const webhook = readFileSync(new URL("../functions/api/stripe/webhook.ts", import.meta.url), "utf8");
-const client = readFileSync(new URL("../src/payments/stripe.ts", import.meta.url), "utf8");
+const files = {
+  checkout: new URL("../functions/api/stripe/checkout.ts", import.meta.url),
+  status: new URL("../functions/api/stripe/checkout-status.ts", import.meta.url),
+  webhook: new URL("../functions/api/stripe/webhook.ts", import.meta.url),
+  client: new URL("../src/payments/stripe.ts", import.meta.url),
+};
+
+const checkout = readFileSync(files.checkout, "utf8");
+const status = readFileSync(files.status, "utf8");
+const webhook = readFileSync(files.webhook, "utf8");
+const client = readFileSync(files.client, "utf8");
 
 const products = [
   "impact_tree_test",
@@ -15,6 +23,23 @@ const products = [
   "membership_supporter_test",
   "sponsor_package_test",
 ];
+
+test("Stripe TypeScript sources are syntactically valid", () => {
+  for (const [name, url] of Object.entries(files)) {
+    const source = readFileSync(url, "utf8");
+    const result = ts.transpileModule(source, {
+      reportDiagnostics: true,
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2020,
+        module: ts.ModuleKind.ESNext,
+        strict: true,
+      },
+      fileName: `${name}.ts`,
+    });
+    const errors = (result.diagnostics ?? []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error);
+    assert.equal(errors.length, 0, `${name}: ${errors.map((d) => ts.flattenDiagnosticMessageText(d.messageText, " ")).join(" | ")}`);
+  }
+});
 
 test("shared Stripe catalogue exposes exactly the intended TEST families", () => {
   for (const key of products) {
