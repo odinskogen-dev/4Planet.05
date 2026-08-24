@@ -1,19 +1,17 @@
 (()=>{
 'use strict';
 const d=window.__JAGS33;
-if(!d||!Array.isArray(d.min)||!Array.isArray(d.span))throw new Error('[JAGUAR V41] indexed surface metadata missing');
-if(d.topology!=='CONTROLLED_DONOR_INDEX_BUFFER')throw new Error('[JAGUAR V41] refuses non-indexed / synthetic topology');
-if(d.headPositiveX!==true)throw new Error('[JAGUAR V41] canonical Ear orientation metadata missing');
+if(!d||!Array.isArray(d.min)||!Array.isArray(d.span))throw new Error('[JAGUAR V42] indexed surface metadata missing');
+if(d.topology!=='CONTROLLED_DONOR_INDEX_BUFFER')throw new Error('[JAGUAR V42] refuses non-indexed / synthetic topology');
+if(d.headPositiveX!==true)throw new Error('[JAGUAR V42] canonical Ear orientation metadata missing');
 const sourceMin=d.min.slice();
 const sourceSpan=d.span.slice();
-if(sourceMin.length!==3||sourceSpan.length!==3||sourceSpan.some(v=>!Number.isFinite(v)||v<=0))throw new Error('[JAGUAR V41] invalid source bounds');
+if(sourceMin.length!==3||sourceSpan.length!==3||sourceSpan.some(v=>!Number.isFinite(v)||v<=0))throw new Error('[JAGUAR V42] invalid source bounds');
 const sourceMaxSpan=Math.max(...sourceSpan);
-if(!Number.isFinite(sourceMaxSpan)||sourceMaxSpan<=0)throw new Error('[JAGUAR V41] invalid source extent');
+if(!Number.isFinite(sourceMaxSpan)||sourceMaxSpan<=0)throw new Error('[JAGUAR V42] invalid source extent');
 
-// Camera-space fit only. Ear.Rodriguez QPOS16 payload and controlled donor indices stay
-// immutable. The donor metadata already defines headPositiveX: X is the body/head axis,
-// Y is vertical. Do NOT rotate X into Y: the previous 45deg XY presentation correction
-// turned the quadruped into the diagonal/upright silhouette seen in browser evidence.
+// Presentation-space fit only. Ear.Rodriguez QPOS16 payload and controlled donor indices
+// remain immutable. Source orientation is canonical: head +X, Y up.
 const targetLongestSpan=3.45;
 const fitScale=targetLongestSpan/sourceMaxSpan;
 const targetCentre=[0,1.58,0];
@@ -22,8 +20,8 @@ const calibratedMin=calibratedSpan.map((v,i)=>targetCentre[i]-v/2);
 d.min=calibratedMin;
 d.span=calibratedSpan;
 d.runtimeCalibration={
- version:'room-fit-v41',
- method:'DYNAMIC_BOUNDS_CANONICAL_QUADRUPED_DOUBLE_SIDED_VISIBILITY',
+ version:'room-fit-v42',
+ method:'DYNAMIC_BOUNDS_CANONICAL_QUADRUPED_DOUBLE_SIDED_VISIBILITY_SETTLE_AWARE',
  fitScale,
  targetLongestSpan,
  targetCentre,
@@ -36,11 +34,12 @@ d.runtimeCalibration={
  presentationPoseRadians:0,
  sourcePayloadPreservedIn:'window.JaguarEarProxyV25.payload',
  motionTruth:'PROCEDURAL_RUNTIME; NOT ORIGINAL ANIMATION',
- purpose:'FIT_RECOGNISABLE_INDEXED_EAR_JAGUAR_WITHOUT_MUTATING_SOURCE_TOPOLOGY_PAYLOAD_OR_CANONICAL_QUADRUPED_POSE'
+ materialTruth:'PRESENTATION COLOUR GRADE ONLY; NOT ORIGINAL EAR TEXTURE OR MATERIAL',
+ purpose:'FIT_AND_VERIFY_RECOGNISABLE_INDEXED_EAR_JAGUAR_WITHOUT_MUTATING_SOURCE_GEOMETRY_OR_CANONICAL_POSE'
 };
 window.__JAGUAR_RUNTIME_CALIBRATION_V38=d.runtimeCalibration;
 
-// Scope visibility hardening to the Jaguar encounter canvas. No geometry mutation.
+// Scope visibility hardening to the Jaguar encounter canvas. Geometry remains untouched.
 const nativeGetContext=HTMLCanvasElement.prototype.getContext;
 HTMLCanvasElement.prototype.getContext=function(type,attrs){
  let nextAttrs=attrs;
@@ -52,20 +51,26 @@ HTMLCanvasElement.prototype.getContext=function(type,attrs){
   ctx.enable=(cap)=>cap===ctx.CULL_FACE?undefined:nativeEnable(cap);
   ctx.disable(ctx.CULL_FACE);
   // Presentation colour only. This is not claimed as original Ear texture/material.
-  this.style.filter='sepia(.72) saturate(1.55) hue-rotate(338deg) brightness(1.08) contrast(1.08)';
+  this.style.filter='sepia(.58) saturate(1.38) hue-rotate(342deg) brightness(1.16) contrast(1.12)';
+  this.dataset.jaguarMaterial='presentation-grade-v42';
  }
  return ctx;
 };
 
-// Fail closed on actual creature pixels. preserveDrawingBuffer makes the delayed QA read
-// the same rendered Jaguar frame that the user sees rather than a discarded backbuffer.
+// Fail closed on actual creature pixels, but do not sample only the off-screen emerge frames.
+// The Jaguar emergence lasts ~2.2s, so visibility proof gets a bounded 3.2s settle window.
 const root=document.getElementById('jaguar-experience');
 const stage=document.getElementById('three-stage');
+let verifyStart=0;
+let verifyTimer=0;
 const verifyPixels=()=>{
+ if(!root||root.dataset.jaguar3d!=='ready')return;
  const canvas=stage?.querySelector('canvas');
  if(!canvas)return;
  const gl=nativeGetContext.call(canvas,'webgl',{preserveDrawingBuffer:true});
  if(!gl)return;
+ if(!verifyStart)verifyStart=performance.now();
+ root.dataset.jaguarVisual='pending';
  requestAnimationFrame(()=>requestAnimationFrame(()=>{
   try{
    const w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
@@ -79,17 +84,35 @@ const verifyPixels=()=>{
    }
    const ratio=opaque/(w*h),litRatio=lit/(w*h);
    const visible=ratio>0.002&&litRatio>0.001;
-   root.dataset.jaguarVisual=visible?'visible':'failed';
    root.dataset.jaguarPixelRatio=ratio.toFixed(5);
    root.dataset.jaguarLitRatio=litRatio.toFixed(5);
    root.dataset.jaguarPose='canonical-quadruped';
-   if(!visible)console.error('[JAGUAR V41] WebGL ready without visible creature pixels',{ratio,litRatio,w,h});
-  }catch(err){console.error('[JAGUAR V41] framebuffer verification failed',err);root.dataset.jaguarVisual='failed';}
+   root.dataset.jaguarMaterial='presentation-grade-v42';
+   if(visible){
+    root.dataset.jaguarVisual='visible';
+    if(verifyTimer)clearTimeout(verifyTimer);
+    return;
+   }
+   const elapsed=performance.now()-verifyStart;
+   if(elapsed<3200){
+    verifyTimer=setTimeout(verifyPixels,180);
+   }else{
+    root.dataset.jaguarVisual='failed';
+    console.error('[JAGUAR V42] WebGL ready without visible creature pixels after settle window',{ratio,litRatio,w,h,elapsed});
+   }
+  }catch(err){
+   console.error('[JAGUAR V42] framebuffer verification failed',err);
+   root.dataset.jaguarVisual='failed';
+  }
  }));
 };
 if(root){
  const observer=new MutationObserver(()=>{
-  if(root.dataset.jaguar3d==='ready'&&!root.dataset.jaguarVisual)verifyPixels();
+  if(root.dataset.jaguar3d==='ready'){
+   verifyStart=0;
+   if(verifyTimer)clearTimeout(verifyTimer);
+   verifyPixels();
+  }
  });
  observer.observe(root,{attributes:true,attributeFilter:['data-jaguar3d']});
  if(root.dataset.jaguar3d==='ready')verifyPixels();
