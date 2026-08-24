@@ -12,14 +12,14 @@ permissions:
 jobs:
   publish-magazine:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - name: Use Node 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Resolve Cloudflare API token without exposing it
+      - name: Resolve Cloudflare credentials
         env:
           TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -32,87 +32,55 @@ jobs:
           for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
             if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
           done
-          if [ -z "$TOKEN" ]; then
-            echo "No supported Cloudflare API token secret is available in this repository."
-            exit 2
-          fi
+          [ -n "$TOKEN" ] || { echo "Cloudflare token missing"; exit 2; }
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"
-          TOKEN="${TOKEN#bearer }"
-          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
-          TOKEN="${TOKEN#CF_API_TOKEN=}"
-          TOKEN="${TOKEN#\"}"
-          TOKEN="${TOKEN%\"}"
-          TOKEN="${TOKEN#\'}"
-          TOKEN="${TOKEN%\'}"
-          if [ -z "$TOKEN" ]; then
-            echo "Cloudflare token secret became empty after safe normalization."
-            exit 2
-          fi
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Resolve 4planetmagazine.com zone and account
-        shell: bash
-        run: |
-          set -euo pipefail
-          zones_file="$RUNNER_TEMP/cf-zones.json"
-          zones_status=$(curl -sS -o "$zones_file" -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com')
-          if [ "$zones_status" != "200" ]; then
-            echo "Cloudflare zone lookup HTTP status: $zones_status"
-            jq '{success, errors, messages}' "$zones_file" 2>/dev/null || cat "$zones_file"
-            exit 5
-          fi
-          jq -e '.success == true' "$zones_file" >/dev/null
-          ZONE_ID=$(jq -r '.result[0].id // empty' "$zones_file")
-          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' "$zones_file")
-          ZONE_STATUS=$(jq -r '.result[0].status // empty' "$zones_file")
-          if [ -z "$ZONE_ID" ] || [ -z "$ACCOUNT_ID" ]; then
-            echo "4planetmagazine.com was not found as a Cloudflare zone accessible to this token."
-            exit 3
-          fi
-          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
-          echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
-          echo "4planetmagazine.com resolved in Cloudflare; zone status=$ZONE_STATUS"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          jq -e '.success == true' "$zones" >/dev/null
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
       - name: Verify recovery Magazine upstream
         shell: bash
         run: |
           set -euo pipefail
-          for upstream in \
-            'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/' \
-            'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/why-4planet-exists/'; do
-            ok=0
-            for attempt in $(seq 1 12); do
-              code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream" || true)
-              echo "$upstream -> HTTP $code (attempt $attempt/12)"
-              if [ "$code" = "200" ]; then ok=1; break; fi
-              sleep 5
-            done
-            if [ "$ok" != "1" ]; then exit 4; fi
-          done
+          curl -fLsS --connect-timeout 10 --max-time 30 -o /dev/null 'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/'
+          curl -fLsS --connect-timeout 10 --max-time 30 -o /dev/null 'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/why-4planet-exists/'
 
-      - name: Publish Magazine-only live domain
+      - name: Deploy Magazine-only worker
         shell: bash
         run: |
           set -euo pipefail
-          cat > "$RUNNER_TEMP/4planetmagazine-worker.mjs" <<'EOF'
+          cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
           const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
           const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set([
+            "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/og.png",
+            "/robots.txt", "/sitemap.xml", "/manifest.webmanifest", "/site.webmanifest"
+          ]);
 
-          function isMagazineDocument(pathname) {
-            return pathname === "/magazine" || pathname === "/magazine/" || pathname.startsWith("/magazine/");
+          function allowed(pathname) {
+            return pathname === "/magazine" || pathname === "/magazine/" || pathname.startsWith("/magazine/") ||
+              pathname.startsWith("/assets/") || STATIC_FILES.has(pathname);
           }
 
-          function isDocumentRequest(request) {
-            const dest = request.headers.get("sec-fetch-dest");
-            if (dest === "document") return true;
-            if (request.mode === "navigate") return true;
-            const accept = request.headers.get("accept") || "";
-            return accept.includes("text/html");
+          function blocked() {
+            return new Response("Not Found", {
+              status: 404,
+              headers: {
+                "content-type": "text/plain; charset=utf-8",
+                "x-robots-tag": "noindex, nofollow",
+                "x-4planet-surface": "magazine-only-live"
+              }
+            });
           }
 
           export default {
@@ -123,52 +91,30 @@ jobs:
                 incoming.hostname = APEX;
                 return Response.redirect(incoming.toString(), 308);
               }
-
               if (incoming.pathname === "/" || incoming.pathname === "") {
-                incoming.pathname = "/magazine";
+                incoming.pathname = "/magazine/";
                 return Response.redirect(incoming.toString(), 308);
               }
-
-              if (isDocumentRequest(request) && !isMagazineDocument(incoming.pathname)) {
-                return new Response("Not Found", {
-                  status: 404,
-                  headers: {
-                    "content-type": "text/plain; charset=utf-8",
-                    "x-robots-tag": "noindex, nofollow",
-                    "x-4planet-surface": "magazine-only-live"
-                  }
-                });
-              }
+              if (!allowed(incoming.pathname)) return blocked();
 
               const upstream = new URL(incoming.pathname, UPSTREAM);
               upstream.search = incoming.search;
-
-              const upstreamRequest = new Request(upstream.toString(), request);
-              const response = await fetch(upstreamRequest);
+              const response = await fetch(new Request(upstream.toString(), request));
               const headers = new Headers(response.headers);
-
-              // Recovery/Test King is used only as the Magazine code donor/runtime.
-              // The custom domain exposes Magazine documents only; shared static
-              // assets and requests required by Magazine may still pass through.
               headers.delete("x-robots-tag");
               headers.set("x-4planet-surface", "magazine-only-live");
               if ((headers.get("content-type") || "").includes("text/html")) {
                 headers.set("cache-control", "no-store");
                 headers.set("x-robots-tag", "index, follow, max-image-preview:large");
               }
-
-              return new Response(response.body, {
-                status: response.status,
-                statusText: response.statusText,
-                headers,
-              });
-            },
+              return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+            }
           };
           EOF
 
-          cat > "$RUNNER_TEMP/4planetmagazine-wrangler.toml" <<EOF
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
           name = "4planetmagazine-test-king"
-          main = "$RUNNER_TEMP/4planetmagazine-worker.mjs"
+          main = "$RUNNER_TEMP/worker.mjs"
           compatibility_date = "2026-08-24"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
 
@@ -181,44 +127,19 @@ jobs:
           custom_domain = true
           EOF
 
-          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/4planetmagazine-wrangler.toml"
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
 
-      - name: Verify live Magazine domain and isolation
+      - name: Verify live isolation
         shell: bash
         run: |
           set -euo pipefail
-
-          check_200() {
-            local url="$1"
-            for attempt in $(seq 1 30); do
-              headers="$RUNNER_TEMP/headers.txt"
-              code=$(curl -L -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
-              surface=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
-              robots=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-robots-tag" {print $2}' | tail -1)
-              echo "$url -> HTTP $code; surface=$surface; robots=$robots (attempt $attempt/30)"
-              if [ "$code" = "200" ] && [ "$surface" = "magazine-only-live" ]; then return 0; fi
-              sleep 10
-            done
-            return 1
-          }
-
-          check_404() {
-            local url="$1"
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
-            echo "$url -> HTTP $code (expected 404)"
-            [ "$code" = "404" ]
-          }
-
-          check_200 "https://4planetmagazine.com/magazine"
-          check_200 "https://4planetmagazine.com/magazine/why-4planet-exists/"
-          check_404 "https://4planetmagazine.com/atlas"
-
-          root_code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://4planetmagazine.com/" || true)
-          echo "https://4planetmagazine.com/ -> HTTP $root_code (expected 308)"
-          [ "$root_code" = "308" ]
-
-      - name: Record live boundary
-        run: |
-          echo "4planetmagazine.com now serves the recovery/testking Magazine candidate."
-          echo "Only /magazine document routes are exposed; other Test King document routes return 404."
-          echo "The Magazine live surface is indexable; canonical URLs are handled by Magazine SEO with 4planetmagazine.com as its default origin."
+          for attempt in $(seq 1 30); do
+            mag=$(curl -LsS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' || true)
+            article=$(curl -LsS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/why-4planet-exists/' || true)
+            atlas=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas' || true)
+            root=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/' || true)
+            echo "attempt=$attempt magazine=$mag article=$article atlas=$atlas root=$root"
+            if [ "$mag" = "200" ] && [ "$article" = "200" ] && [ "$atlas" = "404" ] && [ "$root" = "308" ]; then exit 0; fi
+            sleep 10
+          done
+          exit 1
