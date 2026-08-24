@@ -11,93 +11,123 @@ permissions:
   contents: read
   issues: write
 
+env:
+  ACCOUNT_ID: d53c17b06219066a0325eec01c21729e
+
 jobs:
-  audit:
+  audit-and-fix-analytics:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Audit worker routing
+      - uses: actions/checkout@v4
+
+      - name: Backup current Worker scripts
         shell: bash
         run: |
           set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          zone_json="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
-          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
-          [[ -n "${account_id}" ]] || { echo "No account id"; exit 1; }
+          mkdir -p /tmp/4p-worker-backup
+          api="https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts"
+          for service in cre4tors-prototype 4planetmarket-prototype; do
+            curl -fsS -D "/tmp/4p-worker-backup/${service}.headers" -o "/tmp/4p-worker-backup/${service}.js" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/${service}"
+            ct="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/^[^:]+:[[:space:]]*/,""); sub(/\r$/,""); print; exit}' "/tmp/4p-worker-backup/${service}.headers")"
+            printf '%s' "$ct" > "/tmp/4p-worker-backup/${service}.content-type"
+            case "$ct" in
+              application/javascript*|text/javascript*) ;;
+              *) echo "Refusing mutation: ${service} has complex Content-Type ${ct}" >&2; exit 1 ;;
+            esac
+          done
 
-          domains_json="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || true)"
-          {
-            echo "# Cloudflare Worker origin audit"
-            echo
-            for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
-              row="$(jq -c --arg h "$domain" '.result[]? | select(.hostname==$h)' <<<"${domains_json}" | head -n1)"
-              echo "## ${domain}"
-              if [[ -z "$row" ]]; then
-                echo "- No Worker custom-domain record found."
-                echo
-                continue
-              fi
-              service="$(jq -r '.service // ""' <<<"$row")"
-              echo "- service: \`${service}\`"
-              script_file="/tmp/${service}.worker"
-              code="$(curl -sS -w '%{http_code}' -o "$script_file" "${api}/accounts/${account_id}/workers/scripts/${service}" "${auth[@]}")"
-              echo "- script fetch HTTP: \`${code}\`"
-              if [[ "$code" == "200" ]]; then
-                refs="$(grep -Eo 'https://[A-Za-z0-9._~:/?#\[\]@!$&()*+,;=%-]+' "$script_file" | sed 's/[),;]$//' | sort -u | head -n 20 || true)"
-                if [[ -n "$refs" ]]; then
-                  echo "- embedded URL refs:"
-                  while IFS= read -r ref; do echo "  - \`${ref}\`"; done <<<"$refs"
-                else
-                  echo "- embedded URL refs: none detected"
-                fi
-                pages_refs="$(strings "$script_file" | grep -Eo '[A-Za-z0-9._-]+\.pages\.dev' | sort -u | head -n 20 || true)"
-                if [[ -n "$pages_refs" ]]; then
-                  echo "- pages.dev refs:"
-                  while IFS= read -r ref; do echo "  - \`${ref}\`"; done <<<"$pages_refs"
-                fi
-              fi
-              echo
-            done
-          } > /tmp/workers-report.md
-          cat /tmp/workers-report.md
+      - name: Preserve rollback artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-worker-backup-${{ github.sha }}
+          path: /tmp/4p-worker-backup
+          retention-days: 30
 
-      - name: Map fixed Pages origins to source branches
+      - name: Deploy consent-safe analytics proxy
         shell: bash
         run: |
           set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          account_id="d53c17b06219066a0325eec01c21729e"
-          json="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?per_page=100")"
-          jq -e '.success == true' <<<"$json" >/dev/null
-          {
-            echo '# Analytics fixed-origin source map'
-            echo
-            for short in b8a8f6c1 4482f621; do
-              row="$(jq -c --arg u "https://${short}.4planet-05.pages.dev" '.result[] | select(.url==$u)' <<<"$json" | head -n1)"
-              echo "## ${short}.4planet-05.pages.dev"
-              if [[ -z "$row" ]]; then
-                echo '- not found in first 100 deployments'
-              else
-                echo "- branch: \`$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")\`"
-                echo "- commit: \`$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")\`"
-                echo "- environment: \`$(jq -r '.environment // ""' <<<"$row")\`"
-                echo "- created: \`$(jq -r '.created_on // ""' <<<"$row")\`"
+          api="https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts"
+          changed=""
+
+          rollback() {
+            rc=$?
+            if [[ "$rc" -ne 0 && -n "$changed" ]]; then
+              echo "Deployment failed; rolling back changed Workers." >&2
+              for service in $changed; do
+                ct="$(cat "/tmp/4p-worker-backup/${service}.content-type")"
+                curl -fsS -X PUT "${api}/${service}" \
+                  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+                  -H "Content-Type: ${ct}" \
+                  --data-binary "@/tmp/4p-worker-backup/${service}.js" >/dev/null || true
+              done
+            fi
+            exit "$rc"
+          }
+          trap rollback EXIT
+
+          deploy() {
+            service="$1" origin="$2"
+            out="/tmp/${service}-analytics.js"
+            sed "s|__4P_ORIGIN__|${origin}|g" scripts/analytics-worker-proxy.js > "$out"
+            grep -q '4PLANET_ANALYTICS_PROXY_V1' "$out"
+            grep -q 'G-Q79Y9HJRL8' "$out"
+            code="$(curl -sS -w '%{http_code}' -o "/tmp/${service}.put" -X PUT "${api}/${service}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/javascript" \
+              --data-binary "@${out}")"
+            [[ "$code" =~ ^2 ]] || { echo "Worker PUT failed for ${service}: HTTP ${code}" >&2; cat "/tmp/${service}.put" >&2; return 1; }
+            changed="${changed} ${service}"
+            verify="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/${service}")"
+            [[ "$verify" == *4PLANET_ANALYTICS_PROXY_V1* ]] || { echo "Worker source verification failed: ${service}" >&2; return 1; }
+          }
+
+          deploy cre4tors-prototype https://b8a8f6c1.4planet-05.pages.dev
+          deploy 4planetmarket-prototype https://4482f621.4planet-05.pages.dev
+
+          verify_live() {
+            host="$1"
+            ok=0
+            for i in $(seq 1 24); do
+              headers="$(curl -fsSI "https://${host}/" | tr -d '\r' || true)"
+              html="$(curl -fsS "https://${host}/" || true)"
+              shim="$(curl -fsS "https://${host}/_4p-analytics.js" || true)"
+              csp="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {sub(/^[^:]+:[[:space:]]*/,""); print; exit}')"
+              csp_ok=0
+              if [[ -z "$csp" || ( "$csp" == *googletagmanager.com* && "$csp" == *google-analytics.com* ) ]]; then csp_ok=1; fi
+              if [[ "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$shim" == *'4planet.analytics.consent.v1'* && "$csp_ok" == 1 ]]; then
+                ok=1; break
               fi
-              echo
+              sleep 5
             done
-          } > /tmp/origin-source-report.md
-          cat /tmp/origin-source-report.md
+            [[ "$ok" == 1 ]] || { echo "Live analytics verification failed for ${host}" >&2; return 1; }
+          }
+
+          verify_live cre4tors.com
+          verify_live 4planetmarket.com
+          trap - EXIT
+
+          cat > /tmp/workers-report.md <<'EOF'
+          # Analytics Worker deployment
+
+          - cre4tors.com: consent-safe GA4 shim **LIVE PASS**
+          - 4planetmarket.com: consent-safe GA4 shim **LIVE PASS**
+          - Measurement ID: `G-Q79Y9HJRL8`
+          - Existing immutable product origins preserved.
+          - Rollback copies saved as a GitHub Actions artifact.
+          EOF
 
       - name: Report
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           if [[ -f /tmp/workers-report.md ]]; then
-            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/workers-report.md
-          fi
-          if [[ -f /tmp/origin-source-report.md ]]; then
-            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/origin-source-report.md
+            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/workers-report.md
+          else
+            gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL / ROLLBACK GUARDED** on commit \`${GITHUB_SHA}\`."
           fi
