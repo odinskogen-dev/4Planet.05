@@ -56,8 +56,24 @@
   }
   async function gunzip(s) {
     if (typeof DecompressionStream !== 'function') throw new Error('gzip-decompression-unavailable');
-    const ds = new DecompressionStream('gzip');
-    return new Response(new Blob([bytesFromB64(s)]).stream().pipeThrough(ds)).arrayBuffer();
+    const stream = new Blob([bytesFromB64(s)]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (!value?.byteLength) continue;
+      chunks.push(value);
+      total += value.byteLength;
+    }
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return out.buffer;
   }
   function shader(type, source) {
     const sh = gl.createShader(type); gl.shaderSource(sh, source); gl.compileShader(sh);
