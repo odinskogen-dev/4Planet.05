@@ -10,7 +10,7 @@ import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
 import CheckoutReview from "@/pages/integrated/CheckoutReview";
 import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import Me4Planet from "@/pages/me/Me4Planet";
-import { Terms, PaymentRights } from "@/pages/v5/Legal";
+import { Terms, PaymentRights, WithdrawalForm } from "@/pages/v5/Legal";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
@@ -107,6 +107,7 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/payments" element={<PaymentRights />} />
+      <Route path="/legal/withdrawal" element={<WithdrawalForm />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
       <Route path="/os" element={toAbout} />
