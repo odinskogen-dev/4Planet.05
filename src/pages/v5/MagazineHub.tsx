@@ -5,24 +5,15 @@ import { MAGAZINE_ARTICLE_TEMPLATES } from "@/content/magazineEngine";
 import { MAGAZINE_TOPICS, type MagazineTopicId } from "@/content/magazineOperating";
 import { MAGAZINE_SIGNALS } from "@/content/magazineSignals";
 import { experienceForStory } from "@/content/magazineExperience";
+import { featureForStory, featureReadMins } from "@/content/magazineFeatures";
+import { signalImageKey } from "@/content/magazineVisuals";
 import { STORIES } from "@/content/stories";
-import { img, type ImageKey } from "@/content/imageRegistry";
+import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-hub.css";
 import "@/styles/magazine-hub-gold-01.css";
 
 const toSeriesSlug = (value: string) => value.toLowerCase().replace(/_/g, "-");
-
-const HUB_SIGNAL_IMAGES: ImageKey[] = [
-  "circularCityHero",
-  "oce4nDomainHero",
-  "cor4lHero",
-  "foodHero",
-  "clim4teHero",
-  "cultureAnchor",
-  "s4piensDomainHero",
-  "amazoniaHero",
-];
 
 const RELATED_POSITIONS = [
   { x: "15%", y: "30%" },
@@ -37,11 +28,13 @@ function StoryRail({ stories }: { stories: typeof STORIES }) {
   return (
     <div className="mag-hub-story-grid">
       {stories.map((story, index) => {
-        const media = img(story.image);
+        const feature = featureForStory(story.slug);
+        const media = img(feature?.hero ?? story.image);
+        const readMins = featureReadMins(story.slug, story.readMins);
         return (
           <Link key={story.slug} to={`/magazine/${story.slug}`} className={index === 0 ? "is-lead" : ""}>
             <div className="mag-hub-story-media"><img src={media.src} alt={media.alt} loading={index < 2 ? "eager" : "lazy"} /></div>
-            <span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {story.readMins} MIN</span>
+            <span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {readMins} MIN</span>
             <h2>{story.title}</h2>
             <p>{story.dek}</p>
           </Link>
@@ -54,8 +47,8 @@ function StoryRail({ stories }: { stories: typeof STORIES }) {
 function SignalRail({ signals }: { signals: typeof MAGAZINE_SIGNALS }) {
   return (
     <div className="mag-hub-signal-rail">
-      {signals.slice(0, 8).map((signal, index) => {
-        const media = img(HUB_SIGNAL_IMAGES[index % HUB_SIGNAL_IMAGES.length]);
+      {signals.slice(0, 8).map((signal) => {
+        const media = img(signalImageKey(signal.slug));
         return (
           <Link className="mag-hub-signal-card" data-accent={signal.accent} key={signal.slug} to={`/magazine/signals/${signal.slug}`}>
             <img src={media.src} alt={media.alt} loading="lazy" />
