@@ -11,6 +11,7 @@ const failures = [];
 const fail = (message) => failures.push(message);
 const words = (blocks = []) => blocks.reduce((total, block) => total + String(block?.t || "").trim().split(/\s+/).filter(Boolean).length, 0);
 const isHttps = (value) => typeof value === "string" && /^https:\/\//.test(value);
+const standfirstSource = fs.readFileSync("src/content/magazineStandfirsts.ts", "utf8");
 
 if (stories.length < 12) fail(`Launch needs at least 12 full stories; found ${stories.length}`);
 if (signals.length < 10) fail(`Launch needs at least 10 Planet Signals; found ${signals.length}`);
@@ -18,20 +19,32 @@ if (topics.length < 12) fail(`Launch needs a real discovery graph; found only ${
 if (templates.length < 4) fail(`Launch needs reusable editorial formats; found only ${templates.length}`);
 
 const heroOwners = new Map();
+let worldFacing = 0;
 for (const story of stories) {
+  if (story.editorialType === "SOURCE_REPORTED_EDITORIAL" || story.editorialType === "INDEPENDENT_EDITORIAL") worldFacing += 1;
   const feature = features[story.slug];
   if (!feature) {
-    fail(`${story.slug}: no longform feature layer`);
+    fail(`${story.slug}: no feature layer`);
     continue;
   }
+
   const wordCount = words(feature.blocks);
   const subheads = feature.blocks.filter((block) => block?.k === "sub").length;
   const leads = feature.blocks.filter((block) => block?.k === "lead").length;
   const quotes = feature.blocks.filter((block) => block?.k === "quote").length;
-  if (wordCount < 650) fail(`${story.slug}: longform is too thin (${wordCount} words)`);
-  if (subheads < 3) fail(`${story.slug}: needs at least three deliberate sections`);
+  const paragraphs = feature.blocks.filter((block) => block?.k === "para").length;
+  const combinedSources = [...(story.sourceLinks ?? []), ...(feature.addedSources ?? [])];
+  const minimumWords = story.mode === "DEEP" ? 500 : 360;
+  const minimumSections = story.mode === "DEEP" ? 3 : 2;
+
+  if (wordCount < minimumWords) fail(`${story.slug}: insufficient substance for ${story.mode} (${wordCount} words; minimum ${minimumWords})`);
+  if (feature.blocks.length < 8) fail(`${story.slug}: narrative does not have enough distinct beats`);
+  if (paragraphs < 5) fail(`${story.slug}: needs more reported/explanatory substance, not padding`);
+  if (subheads < minimumSections) fail(`${story.slug}: needs at least ${minimumSections} deliberate sections`);
   if (leads !== 1) fail(`${story.slug}: needs exactly one clear human-first lead`);
-  if (quotes < 1) fail(`${story.slug}: needs at least one pull-quote / framing beat`);
+  if (quotes < 1) fail(`${story.slug}: needs at least one framing/pull-quote beat`);
+  if (!standfirstSource.includes(`\"${story.slug}\"`)) fail(`${story.slug}: missing edited standfirst`);
+
   if (!feature.secondary && !feature.secondaryMission) fail(`${story.slug}: missing second visual beat`);
   if (!feature.secondaryKicker || !feature.secondaryCaption || !feature.secondaryNote) fail(`${story.slug}: second visual context is incomplete`);
   if (!feature.hero || !images[feature.hero]) fail(`${story.slug}: hero is missing from the controlled image registry (${feature.hero || "none"})`);
@@ -41,18 +54,29 @@ for (const story of stories) {
     if (existing) fail(`Duplicate edited hero: ${feature.hero} is used by both ${existing} and ${story.slug}`);
     else heroOwners.set(feature.hero, story.slug);
   }
+
   const heroMeta = images[feature.hero];
   if (heroMeta && (!heroMeta.src || !heroMeta.alt || !heroMeta.role)) fail(`${story.slug}: hero registry metadata is incomplete`);
   if (!Array.isArray(story.topics) || story.topics.length < 2) fail(`${story.slug}: topic graph is too weak`);
   if (!story.title || story.title.length < 12) fail(`${story.slug}: headline is too weak or missing`);
   if (!story.dek || story.dek.length < 80) fail(`${story.slug}: dek must promise useful context`);
+
   if (story.editorialType === "SOURCE_REPORTED_EDITORIAL") {
-    if (!Array.isArray(story.sourceLinks) || story.sourceLinks.length < 1) fail(`${story.slug}: source-reported editorial has no source`);
-    for (const source of story.sourceLinks || []) if (!isHttps(source.url)) fail(`${story.slug}: source is not an exact HTTPS URL`);
+    if (!Array.isArray(story.sourceLinks) || story.sourceLinks.length < 1) fail(`${story.slug}: source-reported editorial has no primary source`);
+    if (combinedSources.length < 2) fail(`${story.slug}: full source-reported feature needs at least two traceable evidence objects`);
+    if (story.mode === "DEEP" && combinedSources.length < 3) fail(`${story.slug}: DEEP source-reported feature needs primary reporting plus independent/method context`);
     if (!story.reportingNote || story.reportingNote.length < 80) fail(`${story.slug}: source-reported editorial needs an explicit reporting boundary`);
   }
-  for (const source of feature.addedSources || []) if (!isHttps(source.url)) fail(`${story.slug}: added feature source is not HTTPS`);
+  for (const source of combinedSources) if (!isHttps(source.url)) fail(`${story.slug}: source is not an exact HTTPS URL`);
+
+  const prose = feature.blocks.map((block) => String(block?.t || "")).join(" ");
+  const notBut = (prose.match(/\bnot\b[^.]{0,80}\bbut\b/gi) || []).length;
+  if (notBut > 4) fail(`${story.slug}: repetitive AI-shaped 'not X but Y' construction (${notBut})`);
+  const emDash = (prose.match(/—/g) || []).length;
+  if (emDash > 16) fail(`${story.slug}: overuses em dashes (${emDash}); edit for human rhythm`);
 }
+
+if (worldFacing < 7) fail(`Founding edition is too self-referential: only ${worldFacing}/${stories.length} full stories are world-facing journalism`);
 
 for (const signal of signals) {
   if (!isHttps(signal.sourceUrl)) fail(`${signal.slug}: Planet Signal source must be an exact HTTPS URL`);
@@ -90,15 +114,19 @@ for (const requiredRoute of ["/magazine/about", "/magazine/sources", "/magazine/
   if (!readerSource.includes(requiredRoute)) fail(`Missing public Magazine route: ${requiredRoute}`);
 }
 
+const typography = fs.readFileSync("src/styles/magazine-brand-typography.css", "utf8");
+for (const requiredFont of ["Instrument Sans", "DM Sans", "Fragment Mono"]) if (!typography.includes(requiredFont)) fail(`Brand typography missing ${requiredFont}`);
+if (!readerSource.includes("/magazine/atlas")) fail("Reader-safe ATLAS path is not wired");
+
 const publication = fs.readFileSync("src/content/magazinePublication.ts", "utf8");
 for (const step of ["IDEA", "RESEARCH", "SOURCES", "CLAIMS", "DRAFT", "EDIT", "FACT CHECK", "VISUALS", "SEO", "QA", "PUBLISH", "DISTRIBUTE", "LEARN"]) {
   if (!publication.includes(`\"${step}\"`)) fail(`Article Engine missing ${step}`);
 }
 for (const event of ["article_open", "engaged_read", "read_depth", "read_complete", "topic_open", "search", "save", "share", "related_story_open", "source_open", "atlas_open", "returning_reader"]) {
-  if (!publication.includes(`\"${event}\"`) || !readerSource.includes(event) && !fs.readFileSync("src/analytics/MagazineAnalytics.ts", "utf8").includes(event) && !fs.readFileSync("src/analytics/Analytics.tsx", "utf8").includes(event)) fail(`Analytics contract missing event ${event}`);
+  const analyticsSource = fs.readFileSync("src/analytics/MagazineAnalytics.ts", "utf8") + fs.readFileSync("src/analytics/Analytics.tsx", "utf8");
+  if (!publication.includes(`\"${event}\"`) || (!readerSource.includes(event) && !analyticsSource.includes(event))) fail(`Analytics contract missing event ${event}`);
 }
 
-// WCAG AA static contrast proofs for the public resting palette.
 function hexRgb(hex) { const value = hex.replace("#", ""); return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16) / 255); }
 function luminance(hex) { return hexRgb(hex).map((c) => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4).reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0); }
 function contrast(a, b) { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + .05) / (lo + .05); }
@@ -106,9 +134,9 @@ if (contrast("#000000", "#ffffff") < 4.5) fail("Black/white resting palette fail
 if (contrast("#ffffff", "#2E2EFF") < 4.5) fail("White/brand-blue pairing fails WCAG AA");
 
 if (failures.length) {
-  console.error("4PLANET MAGAZINE PUBLIC LAUNCH GATE — FAIL");
+  console.error("4PLANET MAGAZINE INTERNATIONAL READER GOLD GATE — FAIL");
   failures.forEach((failure) => console.error(` - ${failure}`));
   process.exit(1);
 }
 
-console.log(`4PLANET MAGAZINE PUBLIC LAUNCH GATE — PASS: ${stories.length} longform stories, ${signals.length} bounded Signals, ${topics.length} live topics, ${templates.length} reusable series, unique edited heroes, complete second visual beats, source boundaries, reader-value analytics and WCAG-AA resting palette.`);
+console.log(`4PLANET MAGAZINE INTERNATIONAL READER GOLD GATE — PASS: ${stories.length} full stories, ${signals.length} bounded Signals, ${topics.length} live topics; substance-density, multi-source evidence, edited standfirsts, unique heroes, article engine, reader analytics, brand typography and WCAG-AA resting palette verified.`);

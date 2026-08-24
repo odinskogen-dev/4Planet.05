@@ -119,10 +119,19 @@ export function readArticleTemplates() {
 }
 
 export function readFeatures() {
-  return {
+  const features = {
     ...readLiteralObject("src/content/magazineFeaturesReported.ts", "MAGAZINE_REPORTED_FEATURES"),
     ...readLiteralObject("src/content/magazineFeaturesExplainers.ts", "MAGAZINE_EXPLAINER_FEATURES"),
   };
+  const overlays = readLiteralObject("src/content/magazineEvidenceOverlays.ts", "MAGAZINE_EVIDENCE_OVERLAYS");
+  for (const [slug, sources] of Object.entries(overlays)) {
+    if (!features[slug] || !Array.isArray(sources)) continue;
+    features[slug] = {
+      ...features[slug],
+      addedSources: [...(features[slug].addedSources ?? []), ...sources],
+    };
+  }
+  return features;
 }
 
 export function readImages() {

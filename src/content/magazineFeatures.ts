@@ -1,11 +1,25 @@
 import type { MagazineFeature } from "@/content/magazineFeatureTypes";
 import { MAGAZINE_REPORTED_FEATURES } from "@/content/magazineFeaturesReported";
 import { MAGAZINE_EXPLAINER_FEATURES } from "@/content/magazineFeaturesExplainers";
+import { MAGAZINE_EVIDENCE_OVERLAYS } from "@/content/magazineEvidenceOverlays";
 
-export const MAGAZINE_FEATURES: Record<string, MagazineFeature> = {
+const BASE_FEATURES: Record<string, MagazineFeature> = {
   ...MAGAZINE_REPORTED_FEATURES,
   ...MAGAZINE_EXPLAINER_FEATURES,
 };
+
+export const MAGAZINE_FEATURES: Record<string, MagazineFeature> = Object.fromEntries(
+  Object.entries(BASE_FEATURES).map(([slug, feature]) => [
+    slug,
+    {
+      ...feature,
+      addedSources: [
+        ...(feature.addedSources ?? []),
+        ...(MAGAZINE_EVIDENCE_OVERLAYS[slug] ?? []),
+      ],
+    },
+  ]),
+);
 
 export function featureForStory(slug: string): MagazineFeature | undefined {
   return MAGAZINE_FEATURES[slug];
