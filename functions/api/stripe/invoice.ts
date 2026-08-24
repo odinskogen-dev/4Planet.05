@@ -13,28 +13,13 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 function runtime(env: InvoiceEnv) {
   const environment = env.STRIPE_PAYMENT_ENV === "LIVE" ? "LIVE" : "TEST";
-  if (environment === "LIVE") {
-    return {
-      environment,
-      enabled: env.STRIPE_INVOICE_LIVE_ENABLED === "true" && env.STRIPE_LIVE_RELEASE_APPROVED === "true",
-      secret: env.STRIPE_LIVE_SECRET_KEY?.trim(),
-      expectedSecretPrefix: "sk_live_",
-      livemode: true,
-    } as const;
-  }
-  return {
-    environment,
-    enabled: env.STRIPE_INVOICE_TEST_ENABLED === "true",
-    secret: env.STRIPE_TEST_SECRET_KEY?.trim(),
-    expectedSecretPrefix: "sk_test_",
-    livemode: false,
-  } as const;
+  if (environment === "LIVE") return { environment, enabled: env.STRIPE_INVOICE_LIVE_ENABLED === "true" && env.STRIPE_LIVE_RELEASE_APPROVED === "true", secret: env.STRIPE_LIVE_SECRET_KEY?.trim(), expectedSecretPrefix: "sk_live_", livemode: true } as const;
+  return { environment, enabled: env.STRIPE_INVOICE_TEST_ENABLED === "true", secret: env.STRIPE_TEST_SECRET_KEY?.trim(), expectedSecretPrefix: "sk_test_", livemode: false } as const;
 }
 
 function authorised(request: Request, env: InvoiceEnv) {
   const expected = env.STRIPE_INTERNAL_BILLING_TOKEN?.trim();
-  if (!expected || expected.length < 24) return false;
-  return request.headers.get("authorization") === `Bearer ${expected}`;
+  return Boolean(expected && expected.length >= 24 && request.headers.get("authorization") === `Bearer ${expected}`);
 }
 
 function validEmail(value: unknown): value is string {
@@ -48,15 +33,15 @@ function safeText(value: unknown, max: number) {
 async function stripePost(secret: string, path: string, form: URLSearchParams, idempotencyKey: string) {
   const response = await fetch(`https://api.stripe.com/v1/${path}`, {
     method: "POST",
-    headers: {
-      authorization: `Bearer ${secret}`,
-      "content-type": "application/x-www-form-urlencoded",
-      "Idempotency-Key": idempotencyKey.slice(0, 255),
-    },
+    headers: { authorization: `Bearer ${secret}`, "content-type": "application/x-www-form-urlencoded", "Idempotency-Key": idempotencyKey.slice(0, 255) },
     body: form,
   });
   const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
   return { response, payload };
+}
+
+async function deleteDraftInvoice(secret: string, invoiceId: string) {
+  return fetch(`https://api.stripe.com/v1/invoices/${encodeURIComponent(invoiceId)}`, { method: "DELETE", headers: { authorization: `Bearer ${secret}` } }).catch(() => null);
 }
 
 export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }): Promise<Response> => {
@@ -87,7 +72,6 @@ export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }):
 
   let customerId = safeText(body.stripeCustomerId, 80);
   if (customerId && !customerId.startsWith("cus_")) return json({ ok: false, error: "invalid_customer_id" }, 400);
-
   if (!customerId) {
     if (!validEmail(body.customerEmail)) return json({ ok: false, error: "customer_email_required" }, 400);
     const customerForm = new URLSearchParams();
@@ -102,24 +86,13 @@ export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }):
     customerId = candidate;
   }
 
-  const itemForm = new URLSearchParams();
-  itemForm.set("customer", customerId);
-  itemForm.set("price", priceId);
-  itemForm.set("quantity", "1");
-  itemForm.set("metadata[4planet_product_key]", entry.key);
-  itemForm.set("metadata[funding_object_key]", fundingObjectKey);
-  itemForm.set("metadata[reference_key]", referenceKey || "none");
-  itemForm.set("metadata[truth_state]", current.environment);
-  itemForm.set("metadata[ecological_delivery_authority]", "none");
-  const item = await stripePost(current.secret, "invoiceitems", itemForm, `4p_${current.environment}_invoiceitem_${attemptId}`);
-  if (!item.response.ok || typeof item.payload?.id !== "string") return json({ ok: false, error: "stripe_invoice_item_create_failed" }, 502);
-
+  // Create the exact draft first. This prevents a failed invoice-create step from leaving a pending item that can leak into a later invoice.
   const invoiceForm = new URLSearchParams();
   invoiceForm.set("customer", customerId);
   invoiceForm.set("collection_method", "send_invoice");
   invoiceForm.set("days_until_due", String(dueDays));
   invoiceForm.set("auto_advance", "false");
-  invoiceForm.set("pending_invoice_items_behavior", "include");
+  invoiceForm.set("pending_invoice_items_behavior", "exclude");
   invoiceForm.set("description", `4PLANET funding object: ${fundingObjectKey}`);
   invoiceForm.set("metadata[4planet_product_key]", entry.key);
   invoiceForm.set("metadata[product_kind]", entry.kind);
@@ -129,16 +102,33 @@ export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }):
   invoiceForm.set("metadata[truth_state]", current.environment);
   invoiceForm.set("metadata[ecological_delivery_authority]", "none");
   invoiceForm.set("metadata[contract_review_required]", "true");
-
   const invoice = await stripePost(current.secret, "invoices", invoiceForm, `4p_${current.environment}_invoice_${attemptId}`);
   const invoiceId = typeof invoice.payload?.id === "string" ? invoice.payload.id : "";
   const livemode = invoice.payload?.livemode === true;
   if (!invoice.response.ok || !invoiceId.startsWith("in_") || livemode !== current.livemode) return json({ ok: false, error: "stripe_invoice_create_failed" }, 502);
 
+  // Attach the line item to this exact draft; never to an unspecified future invoice.
+  const itemForm = new URLSearchParams();
+  itemForm.set("invoice", invoiceId);
+  itemForm.set("customer", customerId);
+  itemForm.set("pricing[price]", priceId);
+  itemForm.set("quantity", "1");
+  itemForm.set("metadata[4planet_product_key]", entry.key);
+  itemForm.set("metadata[funding_object_key]", fundingObjectKey);
+  itemForm.set("metadata[reference_key]", referenceKey || "none");
+  itemForm.set("metadata[truth_state]", current.environment);
+  itemForm.set("metadata[ecological_delivery_authority]", "none");
+  const item = await stripePost(current.secret, "invoiceitems", itemForm, `4p_${current.environment}_invoiceitem_${attemptId}`);
+  if (!item.response.ok || typeof item.payload?.id !== "string") {
+    await deleteDraftInvoice(current.secret, invoiceId);
+    return json({ ok: false, error: "stripe_invoice_item_create_failed", draftRolledBack: true }, 502);
+  }
+
   return json({
     ok: true,
     environment: current.environment,
     invoiceId,
+    invoiceItemId: item.payload.id,
     customerId,
     fundingObjectKey,
     referenceKey: referenceKey || null,
