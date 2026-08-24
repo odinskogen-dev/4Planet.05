@@ -114,6 +114,12 @@ export function MagazineSources() {
         </section>
 
         <section className="mag-info-section">
+          <p className="mag-info-kicker">AI / EDITORIAL RESPONSIBILITY</p>
+          <h2>Tools can assist. Editors remain responsible.</h2>
+          <p>4PLANET may use computational and AI tools in research assistance, transcription, synthesis, drafting support, data handling or production. They do not become a source simply by producing text, and they do not remove editorial responsibility. Material factual claims must remain traceable to evidence; invented quotations, fabricated reporting and synthetic documentary evidence are not acceptable. The published story is judged and owned by the editorial process, not by the tool that helped make it.</p>
+        </section>
+
+        <section className="mag-info-section">
           <p className="mag-info-kicker">RELEASE STANDARD</p>
           <div className="mag-info-rows">
             {MAGAZINE_RELEASE_STANDARD.map((rule, index) => (
