@@ -89,7 +89,8 @@ export function MagazineShell({ children }: { children: ReactNode }) {
           trackEvent("source_open", { story_slug: currentStory, source_host: sourceHost, source_label: (anchor.textContent || "").trim().slice(0, 120) });
         }
         if (anchor.classList.contains("mag-related-editorial-card") || anchor.classList.contains("mag-next-story")) {
-          const destination = href.split("/").filter(Boolean).at(-1) || "unknown";
+          const parts = href.split("/").filter(Boolean);
+          const destination = parts[parts.length - 1] || "unknown";
           trackEvent("related_story_open", { story_slug: currentStory, destination_story_slug: destination });
         }
         if (href === "/magazine/atlas" || anchor.classList.contains("mag-atlas-open")) trackEvent("atlas_open", { source: "magazine_link" });
