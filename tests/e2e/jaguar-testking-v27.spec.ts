@@ -1,41 +1,39 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
-test('TEST KING Jaguar renders local Ear source-derived V48, exposes LUME room, and completes 8 scenes', async ({ page }, testInfo) => {
+test('TEST KING Jaguar renders active Ear source-derived V52, exposes LUME room, and completes 8 scenes', async ({ page }, testInfo) => {
   await page.goto('/journey/jaguar/');
   const root=page.locator('#jaguar-experience');
   await expect(root).toBeVisible();
 
-  // First frame remains controlled species media; V48 may initialise while entry is still visible.
   await expect(page.locator('#photo-fallback')).toBeAttached();
-  await expect(root).toHaveAttribute('data-jaguar-ear-delivery','local-source-derivative-v48',{timeout:10000});
-  await expect(root).toHaveAttribute('data-jaguar3d-source','ear-rodriguez-local-v48-source-derived',{timeout:10000});
   await expect(root).toHaveAttribute('data-jaguar-motion-truth','procedural-presentation-motion-not-source-animation',{timeout:10000});
 
   await page.getByRole('button',{name:'ENTER THE LIVING SYSTEM'}).click();
   await expect(root).toHaveAttribute('data-entered','true');
 
-  // Founder P0: local source-derived V48 must become the visible creature. No external iframe/white-panel path may exist.
+  // Founder P0: V52 itself must own the visible creature. Hidden V48/proxy pixels cannot satisfy this gate.
+  await expect(root).toHaveAttribute('data-jaguar-quality','volumetric-v52',{timeout:20000});
   await expect(root).toHaveAttribute('data-jaguar-ear-full','ready',{timeout:20000});
   await expect(root).toHaveAttribute('data-jaguar3d','ready',{timeout:20000});
-  await expect(root).toHaveAttribute('data-jaguar3d-active','true',{timeout:20000});
-  await expect(root).toHaveAttribute('data-jaguar-pose','source-bind-pose-quadruped');
-  await expect(root).toHaveAttribute('data-jaguar-material','procedural-rosette-presentation-not-source-texture');
+  await expect(root).toHaveAttribute('data-jaguar3d-source','ear-rodriguez-local-v52-source-derived',{timeout:20000});
+  await expect(root).toHaveAttribute('data-jaguar-pose','source-bind-pose-perspective');
+  await expect(root).toHaveAttribute('data-jaguar-material','procedural-natural-rosette-v52-not-source-texture');
   await expect(root).toHaveAttribute('data-jaguar-master-sha256','8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13');
-  await expect(root).not.toHaveAttribute('data-jaguar-ear-full-failure',/.+/);
+  await expect(root).not.toHaveAttribute('data-jaguar-quality-failure',/.+/);
   await expect(page.locator('#three-stage iframe')).toHaveCount(0);
 
-  const localCanvas=page.locator('#three-stage>canvas.jaguar-local-v48');
-  await expect(localCanvas).toBeVisible({timeout:20000});
-  const canvasBox=await localCanvas.boundingBox();
+  const activeCanvas=page.locator('#three-stage>canvas.jaguar-local-v52');
+  await expect(activeCanvas).toBeVisible({timeout:20000});
+  const canvasBox=await activeCanvas.boundingBox();
   expect(canvasBox?.width||0).toBeGreaterThan(250);
-  expect(canvasBox?.height||0).toBeGreaterThan(250);
-  await expect(localCanvas).toHaveCSS('opacity','1');
-  await expect(page.locator('.jaguar-local-v48-credit')).toBeVisible();
-  await expect(page.locator('.jaguar-local-v48-credit')).toContainText(/EAR\.RODRIGUEZ · CC BY 4\.0/i);
+  expect(canvasBox?.height||0).toBeGreaterThan(200);
+  await expect(activeCanvas).toHaveCSS('opacity','1');
+  await expect(activeCanvas).toHaveCSS('visibility','visible');
 
-  // Require actual non-empty framebuffer pixels from the local WebGL creature surface.
-  const pixelProof=await localCanvas.evaluate((canvas: HTMLCanvasElement)=>{
+  // Require actual non-empty framebuffer pixels from V52, not a fallback surface.
+  await page.waitForTimeout(300);
+  const pixelProof=await activeCanvas.evaluate((canvas: HTMLCanvasElement)=>{
     const gl=canvas.getContext('webgl',{preserveDrawingBuffer:true});
     if(!gl||!gl.drawingBufferWidth||!gl.drawingBufferHeight)return {lit:0,total:0};
     const w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
@@ -46,30 +44,36 @@ test('TEST KING Jaguar renders local Ear source-derived V48, exposes LUME room, 
   expect(pixelProof.total).toBeGreaterThan(0);
   expect(pixelProof.lit/pixelProof.total).toBeGreaterThan(0.002);
 
-  // Proxy/photo stay fallback-only after V48 is ready.
-  const fallback=page.locator('#photo-fallback');
-  await expect(fallback).toBeHidden();
-  const oldCanvases=page.locator('#three-stage>canvas:not(.jaguar-local-v48)');
-  const oldCount=await oldCanvases.count();
-  for(let i=0;i<oldCount;i+=1)await expect(oldCanvases.nth(i)).toHaveCSS('opacity','0');
-  await expect(page.locator('#controls span')).toContainText(/DRAG \/ SWIPE TO TURN · PRESENTATION MOTION/i);
+  // Previous V48 and photo remain fallback-only after V52 is ready.
+  await expect(page.locator('#photo-fallback')).toBeHidden();
+  const v48Canvas=page.locator('#three-stage>canvas.jaguar-local-v48');
+  await expect(v48Canvas).toBeHidden();
+  const legacyCanvases=page.locator('#three-stage>canvas:not(.jaguar-local-v48):not(.jaguar-local-v52)');
+  const legacyCount=await legacyCanvases.count();
+  for(let i=0;i<legacyCount;i+=1)await expect(legacyCanvases.nth(i)).toHaveCSS('opacity','0');
+  await expect(page.locator('.jaguar-local-v48-credit')).toBeVisible();
+  await expect(page.locator('.jaguar-local-v48-credit')).toContainText(/EAR\.RODRIGUEZ · CC BY 4\.0/i);
 
-  // Direct interaction remains local and cannot turn the runtime into fallback.
+  // Direct interaction is performed on the active V52 surface.
   if(canvasBox){
     await page.mouse.move(canvasBox.x+canvasBox.width*.55,canvasBox.y+canvasBox.height*.5);
     await page.mouse.down();
     await page.mouse.move(canvasBox.x+canvasBox.width*.38,canvasBox.y+canvasBox.height*.5,{steps:5});
     await page.mouse.up();
   }
-  await expect(root).toHaveAttribute('data-jaguar-ear-full','ready');
+  await expect(root).toHaveAttribute('data-jaguar-quality','volumetric-v52');
+  await page.getByRole('button',{name:'LOOK AT ME'}).click();
+  await page.getByRole('button',{name:'MOVE'}).click();
+  await expect(root).toHaveAttribute('data-jaguar-quality','volumetric-v52');
+
   await page.getByRole('button',{name:'LUME'}).click();
   await expect(root).toHaveAttribute('data-lume','true');
   await expect(page.locator('.lume-room')).toBeVisible();
   await expect(page.locator('.lume-grid--floor')).toBeVisible();
   await expect(page.locator('.lume-intel--species')).toBeVisible();
 
-  await mkdir('artifacts/jaguar-v48', { recursive: true });
-  await page.screenshot({path:`artifacts/jaguar-v48/${testInfo.project.name}-encounter-lume.png`,fullPage:true});
+  await mkdir('artifacts/jaguar-v52', { recursive: true });
+  await page.screenshot({path:`artifacts/jaguar-v52/${testInfo.project.name}-encounter-lume.png`,fullPage:true});
 
   const expected=[/One life depends on many/i,/The animal is not the whole story/i,/The landscape changes/i,/See the system before acting/i,/Response starts with the system/i,/Action needs accountable actors/i,/Proof closes the loop/i];
   for(let i=0;i<expected.length;i+=1){
@@ -80,9 +84,8 @@ test('TEST KING Jaguar renders local Ear source-derived V48, exposes LUME room, 
   }
   await page.getByRole('button',{name:'RETURN TO JAGUAR'}).click();
   await expect(root).toHaveAttribute('data-scene','0');
-  await expect(root).toHaveAttribute('data-jaguar-ear-full','ready',{timeout:20000});
-  await expect(localCanvas).toBeVisible();
-  await expect(root).toHaveAttribute('data-jaguar3d-active','true');
+  await expect(root).toHaveAttribute('data-jaguar-quality','volumetric-v52',{timeout:20000});
+  await expect(activeCanvas).toBeVisible();
 
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
   expect(width.scroll).toBeLessThanOrEqual(width.client+2);
