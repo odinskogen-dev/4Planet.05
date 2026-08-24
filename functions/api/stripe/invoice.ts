@@ -47,8 +47,26 @@ function validAgreementKey(value: string) {
   return /^[A-Za-z0-9][A-Za-z0-9._:-]{3,79}$/.test(value);
 }
 
-const NEGOTIATED_KEYS = new Set<ProductKey>(["project_sponsor", "mission_sponsor", "founding_patron"]);
+const NEGOTIATED_KEYS = new Set<ProductKey>([
+  "project_sponsor",
+  "mission_sponsor",
+  "founding_patron",
+  "sponsor_package",
+  "b2b_pilot_funder",
+]);
 const MISSION_SLUGS = new Set(["cle4n", "wh4les", "cor4l", "rewild-marine", "clim4te", "am4zonia", "species", "rewild-land", "food", "en4rgy", "circular-city", "f4shion", "m4gazine", "4rt", "4film", "4play"]);
+
+function lineItemDescription(productKey: ProductKey, referenceKey: string) {
+  const ref = referenceKey ? ` · ${referenceKey}` : "";
+  switch (productKey) {
+    case "founding_patron": return `Founding Patron support${ref}`;
+    case "mission_sponsor": return `Mission sponsorship${ref}`;
+    case "project_sponsor": return `Project sponsorship${ref}`;
+    case "sponsor_package": return `4PLANET sponsorship package${ref}`;
+    case "b2b_pilot_funder": return `4PLANET pilot / funding engagement${ref}`;
+    default: return `4PLANET negotiated support${ref}`;
+  }
+}
 
 async function stripePost(secret: string, path: string, form: URLSearchParams, idempotencyKey: string) {
   const response = await fetch(`https://api.stripe.com/v1/${path}`, {
@@ -110,7 +128,7 @@ export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }):
     customerId = candidate;
   }
 
-  // Draft first. The line item is then attached to this exact draft so a partial failure cannot leak into a future invoice.
+  // Draft first. The line item is attached to this exact draft so a partial failure cannot leak into a future invoice.
   const invoiceForm = new URLSearchParams();
   invoiceForm.set("customer", customerId);
   invoiceForm.set("collection_method", "send_invoice");
@@ -137,7 +155,7 @@ export const onRequestPost = async (ctx: { request: Request; env: InvoiceEnv }):
   itemForm.set("invoice", invoiceId);
   itemForm.set("amount", String(amountNok * 100));
   itemForm.set("currency", "nok");
-  itemForm.set("description", `${productKey === "founding_patron" ? "Founding Patron support" : productKey === "mission_sponsor" ? "Mission sponsorship" : "Project sponsorship"}${referenceKey ? ` · ${referenceKey}` : ""}`);
+  itemForm.set("description", lineItemDescription(productKey, referenceKey));
   itemForm.set("metadata[4planet_product_key]", entry.key);
   itemForm.set("metadata[agreement_key]", agreementKey);
   itemForm.set("metadata[reference_key]", referenceKey || "none");
