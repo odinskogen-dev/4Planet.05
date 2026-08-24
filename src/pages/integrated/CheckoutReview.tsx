@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Seo } from "@/components/Seo";
 import { Section } from "@/components/ui";
@@ -37,6 +37,8 @@ function recurringLabel(offer: Offer) {
 
 export default function CheckoutReview() {
   const { productKey = "" } = useParams();
+  const [search] = useSearchParams();
+  const referenceKey = search.get("reference") ?? undefined;
   const [offer, setOffer] = useState<Offer | null>(null);
   const [error, setError] = useState("");
   const [accepted, setAccepted] = useState(false);
@@ -60,7 +62,7 @@ export default function CheckoutReview() {
     if (!offer || !accepted) return;
     setOpening(true);
     setError("");
-    try { await startStripeCheckout({ productKey: offer.productKey, quantity: 1 }); }
+    try { await startStripeCheckout({ productKey: offer.productKey, quantity: 1, referenceKey }); }
     catch { setError("Betalingsvinduet kunne ikke åpnes. Ingen betaling er gjennomført."); setOpening(false); }
   };
 
@@ -83,6 +85,7 @@ export default function CheckoutReview() {
             <div style={{ fontSize: 25, marginTop: 9, color: T.ink, fontWeight: 500 }}>{offer.name}</div>
             {offer.description && <p style={{ color: T.dim, lineHeight: 1.55 }}>{offer.description}</p>}
             {family && <p style={{ color: T.dim, lineHeight: 1.55 }}>{family.nature}</p>}
+            {referenceKey && <div style={{ ...mono, marginTop: 10, color: T.dim }}>REFERENCE · {referenceKey}</div>}
           </div>
 
           <div style={{ ...box, display: "grid", gridTemplateColumns: "1fr auto", gap: 20, alignItems: "end" }}>
