@@ -1,0 +1,248 @@
+/* 4PLANET MAGAZINE — live editorial pass 05, 2026-08-24
+   White/black/brand-blue base. Biomimetic topic field, subtle living motion, no accidental dark voids. */
+
+/* Absolute safeguard: empty cells in the editorial composition are paper, never black. */
+.mag-world[data-mag-theme="light"] .mag-feed-shell,
+.mag-world[data-mag-theme="light"] .mag-story-mosaic {
+  background: var(--4p-white) !important;
+}
+
+/* Living-system micro motion: small nodes, not decorative spectacle. */
+.mag-feed-kicker,
+.mag-topic-eyebrow,
+.mag-home-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.mag-feed-kicker::before,
+.mag-topic-eyebrow::before,
+.mag-home-hero-kicker::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0 currentColor;
+  animation: mag-bio-pulse 4.4s ease-out infinite;
+}
+.mag-signal-desk .mag-feed-kicker::before { animation-delay: .8s; }
+.mag-story-stream .mag-feed-kicker::before { animation-delay: 1.6s; }
+.mag-atlas-embed .mag-feed-kicker::before { animation-delay: 2.4s; }
+@keyframes mag-bio-pulse {
+  0%, 58%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 35%, transparent); opacity: 1; }
+  72% { box-shadow: 0 0 0 9px transparent; opacity: .72; }
+}
+
+/* TOPICS — transform the static table into a connected living field. */
+.mag-topic-index {
+  position: relative;
+  overflow: hidden;
+  background: var(--4p-white) !important;
+  color: var(--4p-black) !important;
+}
+.mag-topic-index-head {
+  position: relative;
+  z-index: 3;
+}
+.mag-topic-grid {
+  position: relative !important;
+  display: block !important;
+  height: clamp(620px, 62vw, 840px) !important;
+  margin-top: clamp(28px, 4vw, 54px) !important;
+  border: 0 !important;
+  overflow: visible !important;
+  background:
+    linear-gradient(18deg, transparent 49.88%, rgba(0,0,0,.13) 49.94%, rgba(0,0,0,.13) 50.06%, transparent 50.12%),
+    linear-gradient(154deg, transparent 49.88%, rgba(0,0,0,.11) 49.94%, rgba(0,0,0,.11) 50.06%, transparent 50.12%),
+    linear-gradient(82deg, transparent 49.9%, rgba(46,46,255,.10) 49.96%, rgba(46,46,255,.10) 50.04%, transparent 50.1%);
+}
+.mag-topic-grid::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--4p-blue);
+  box-shadow: 0 0 0 0 rgba(46,46,255,.28);
+  animation: mag-topic-core 5.2s ease-out infinite;
+  z-index: 1;
+}
+@keyframes mag-topic-core {
+  0%, 62%, 100% { box-shadow: 0 0 0 0 rgba(46,46,255,.22); }
+  78% { box-shadow: 0 0 0 20px rgba(46,46,255,0); }
+}
+
+.mag-topic-card {
+  position: absolute !important;
+  z-index: 2;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: clamp(126px, 13.2vw, 205px) !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1;
+  padding: clamp(14px, 1.7vw, 24px) !important;
+  border: 1px solid var(--4p-black) !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,.97) !important;
+  color: var(--4p-black) !important;
+  transform: translate(-50%, -50%);
+  transition: transform .32s cubic-bezier(.2,.8,.2,1), background-color .22s ease, color .22s ease, border-radius .32s ease !important;
+}
+.mag-topic-card > div { width: 100%; }
+.mag-topic-card strong {
+  display: block;
+  margin: 0 !important;
+  font-size: clamp(18px, 2.1vw, 31px) !important;
+  line-height: .94 !important;
+  letter-spacing: -.045em;
+}
+.mag-topic-card span {
+  display: block !important;
+  margin-top: 9px;
+  max-width: 150px;
+  font-size: 9px !important;
+  line-height: 1.32 !important;
+  color: #2a2a2a !important;
+}
+.mag-topic-card::before {
+  content: "" !important;
+  position: absolute !important;
+  right: 13% !important;
+  top: 13% !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--4p-blue) !important;
+  box-shadow: 0 0 0 0 rgba(46,46,255,.28);
+  animation: mag-topic-node 4.8s ease-out infinite;
+}
+.mag-topic-card:nth-child(3n + 2)::before { animation-delay: 1.2s; }
+.mag-topic-card:nth-child(3n)::before { animation-delay: 2.4s; }
+@keyframes mag-topic-node {
+  0%, 64%, 100% { box-shadow: 0 0 0 0 rgba(46,46,255,.24); }
+  80% { box-shadow: 0 0 0 11px rgba(46,46,255,0); }
+}
+.mag-topic-card:hover,
+.mag-topic-card:focus-visible {
+  transform: translate(-50%, -50%) scale(1.055) !important;
+  border-radius: 26% 74% 58% 42% / 47% 38% 62% 53% !important;
+  outline: none;
+}
+.mag-topic-card:hover span,
+.mag-topic-card:focus-visible span { color: inherit !important; opacity: .82; }
+
+/* Organic desktop positions: deliberately asymmetrical, but stable. */
+.mag-topic-card:nth-child(1)  { left: 8%;  top: 22%; width: clamp(142px,15vw,228px) !important; }
+.mag-topic-card:nth-child(2)  { left: 27%; top: 12%; }
+.mag-topic-card:nth-child(3)  { left: 49%; top: 22%; width: clamp(136px,14vw,218px) !important; }
+.mag-topic-card:nth-child(4)  { left: 72%; top: 13%; }
+.mag-topic-card:nth-child(5)  { left: 91%; top: 30%; width: clamp(120px,12vw,188px) !important; }
+.mag-topic-card:nth-child(6)  { left: 20%; top: 48%; width: clamp(124px,12.5vw,194px) !important; }
+.mag-topic-card:nth-child(7)  { left: 42%; top: 42%; width: clamp(145px,15vw,232px) !important; }
+.mag-topic-card:nth-child(8)  { left: 66%; top: 43%; }
+.mag-topic-card:nth-child(9)  { left: 85%; top: 57%; width: clamp(132px,13.2vw,204px) !important; }
+.mag-topic-card:nth-child(10) { left: 8%;  top: 75%; width: clamp(124px,12.4vw,192px) !important; }
+.mag-topic-card:nth-child(11) { left: 31%; top: 72%; }
+.mag-topic-card:nth-child(12) { left: 57%; top: 76%; width: clamp(136px,14vw,214px) !important; }
+.mag-topic-card:nth-child(13) { left: 80%; top: 82%; }
+
+/* Official 4PLANET palette appears on interaction only. */
+.mag-topic-card:nth-child(5n + 1):hover,
+.mag-topic-card:nth-child(5n + 1):focus-visible { background: var(--4p-blue) !important; color: var(--4p-white) !important; }
+.mag-topic-card:nth-child(5n + 2):hover,
+.mag-topic-card:nth-child(5n + 2):focus-visible { background: var(--4p-green) !important; color: var(--4p-black) !important; }
+.mag-topic-card:nth-child(5n + 3):hover,
+.mag-topic-card:nth-child(5n + 3):focus-visible { background: var(--4p-pink) !important; color: var(--4p-black) !important; }
+.mag-topic-card:nth-child(5n + 4):hover,
+.mag-topic-card:nth-child(5n + 4):focus-visible { background: var(--4p-amber) !important; color: var(--4p-black) !important; }
+.mag-topic-card:nth-child(5n):hover,
+.mag-topic-card:nth-child(5n):focus-visible { background: var(--4p-red) !important; color: var(--4p-white) !important; }
+
+/* Signal hierarchy from pass 04: keep it calm; add only a subtle live marker. */
+.mag-signal-card { position: relative; }
+.mag-signal-card::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--4p-blue);
+  opacity: .75;
+  animation: mag-signal-breathe 5.6s ease-in-out infinite;
+}
+.mag-signal-card:nth-child(2)::after { animation-delay: .9s; }
+.mag-signal-card:nth-child(3)::after { animation-delay: 1.8s; }
+.mag-signal-card:nth-child(4)::after { animation-delay: 2.7s; }
+@keyframes mag-signal-breathe { 0%,100%{transform:scale(.72);opacity:.5} 50%{transform:scale(1.35);opacity:1} }
+
+@media (max-width: 900px) and (min-width: 701px) {
+  .mag-topic-grid { height: 760px !important; }
+  .mag-topic-card { width: 150px !important; }
+  .mag-topic-card span { display: none !important; }
+}
+
+@media (max-width: 700px) {
+  /* Mobile topic field becomes a connected river rather than a miniature desktop network. */
+  .mag-topic-grid {
+    display: flex !important;
+    flex-direction: column;
+    height: auto !important;
+    gap: 14px !important;
+    padding: 24px 0 8px !important;
+    background: transparent !important;
+  }
+  .mag-topic-grid::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    bottom: 0;
+    width: 1px;
+    background: var(--4p-black);
+    opacity: .28;
+  }
+  .mag-topic-grid::after { left: 50%; top: 8px; }
+  .mag-topic-card,
+  .mag-topic-card:nth-child(n) {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: min(78%, 300px) !important;
+    min-height: 116px !important;
+    aspect-ratio: auto !important;
+    transform: none !important;
+    border-radius: 999px !important;
+    padding: 17px 24px !important;
+  }
+  .mag-topic-card:nth-child(odd) { align-self: flex-start; text-align: left; }
+  .mag-topic-card:nth-child(even) { align-self: flex-end; text-align: right; }
+  .mag-topic-card:hover,
+  .mag-topic-card:focus-visible { transform: scale(1.02) !important; border-radius: 34px !important; }
+  .mag-topic-card span { display: block !important; max-width: none; font-size: 9px !important; }
+  .mag-topic-card::before { right: 18px !important; top: 18px !important; }
+  .mag-topic-card:nth-child(even)::before { right: auto !important; left: 18px !important; }
+}
+
+@media (hover: none) and (max-width: 700px) {
+  .mag-topic-card:hover { background: var(--4p-white) !important; color: var(--4p-black) !important; }
+  .mag-topic-card:hover span { color: #2a2a2a !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mag-feed-kicker::before,
+  .mag-topic-eyebrow::before,
+  .mag-home-hero-kicker::before,
+  .mag-topic-grid::after,
+  .mag-topic-card::before,
+  .mag-signal-card::after { animation: none !important; }
+}
