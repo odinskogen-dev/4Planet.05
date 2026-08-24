@@ -4,6 +4,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { Analytics } from "@/analytics/Analytics";
+import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
@@ -24,6 +25,7 @@ export default function App() {
       <ScrollToTop />
       <ContextRetained />
       <Analytics />
+      <ProductRouteAnalytics />
       <AtlasProductSwitcher />
       <AppRoutes />
     </BrowserRouter>
