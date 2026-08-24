@@ -16,6 +16,7 @@ import "@/styles/magazine-public-launch.css";
 
 type MagazineTheme = "light" | "dark";
 const THEME_KEY = "4planet-magazine-theme-v2";
+const READ_THRESHOLDS = [25, 50, 75, 90] as const;
 
 function initialTheme(): MagazineTheme {
   if (typeof window === "undefined") return "light";
@@ -31,30 +32,82 @@ function storySlugFromPath(pathname: string): string {
   return parts[1];
 }
 
+function keepMagazineWorldIsolated() {
+  document.querySelectorAll<HTMLAnchorElement>(".mag-world a[href]").forEach((anchor) => {
+    const raw = anchor.getAttribute("href") || "";
+    if (anchor.classList.contains("mag-atlas-open")) {
+      anchor.setAttribute("href", "/magazine/atlas");
+      anchor.removeAttribute("target");
+      anchor.removeAttribute("rel");
+      return;
+    }
+    if (!raw.startsWith("/") || raw.startsWith("/magazine") || raw === "/rss.xml" || raw.startsWith("/assets/")) return;
+    anchor.setAttribute("href", `https://4planet.org${raw}`);
+    anchor.setAttribute("target", "_blank");
+    anchor.setAttribute("rel", "noreferrer");
+  });
+}
+
 export function MagazineShell({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<MagazineTheme>(initialTheme);
 
   useEffect(() => { window.localStorage.setItem(THEME_KEY, theme); }, [theme]);
 
   useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      const target = event.target instanceof Element ? event.target.closest("a") : null;
-      if (!(target instanceof HTMLAnchorElement)) return;
-      const href = target.getAttribute("href") || "";
-      const storySlug = storySlugFromPath(window.location.pathname);
-      if (target.classList.contains("mag-source-item")) {
-        let sourceHost = "unknown";
-        try { sourceHost = new URL(target.href).hostname; } catch { /* bounded fallback */ }
-        trackEvent("source_open", { story_slug: storySlug, source_host: sourceHost, source_label: (target.textContent || "").trim().slice(0, 120) });
-      }
-      if (target.classList.contains("mag-related-editorial-card") || target.classList.contains("mag-next-story")) {
-        const destination = href.split("/").filter(Boolean).at(-1) || "unknown";
-        trackEvent("related_story_open", { story_slug: storySlug, destination_story_slug: destination });
+    keepMagazineWorldIsolated();
+    const storySlug = storySlugFromPath(window.location.pathname);
+    const seen = new Set<number>();
+    let complete = false;
+    const engagedTimer = storySlug ? window.setTimeout(() => trackEvent("engaged_read", { story_slug: storySlug, engaged_seconds: 30 }), 30_000) : undefined;
+
+    const measure = () => {
+      if (!storySlug) return;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const depth = scrollable <= 0 ? 100 : Math.min(100, Math.round((window.scrollY / scrollable) * 100));
+      READ_THRESHOLDS.forEach((threshold) => {
+        if (depth >= threshold && !seen.has(threshold)) {
+          seen.add(threshold);
+          trackEvent("read_depth", { story_slug: storySlug, depth_percent: threshold });
+        }
+      });
+      if (depth >= 90 && !complete) {
+        complete = true;
+        trackEvent("read_complete", { story_slug: storySlug });
       }
     };
+
+    const onClick = (event: MouseEvent) => {
+      const element = event.target instanceof Element ? event.target : null;
+      const anchor = element?.closest("a");
+      const button = element?.closest("button");
+      const currentStory = storySlugFromPath(window.location.pathname);
+      if (anchor instanceof HTMLAnchorElement) {
+        const href = anchor.getAttribute("href") || "";
+        if (anchor.classList.contains("mag-source-item")) {
+          let sourceHost = "unknown";
+          try { sourceHost = new URL(anchor.href).hostname; } catch { /* bounded fallback */ }
+          trackEvent("source_open", { story_slug: currentStory, source_host: sourceHost, source_label: (anchor.textContent || "").trim().slice(0, 120) });
+        }
+        if (anchor.classList.contains("mag-related-editorial-card") || anchor.classList.contains("mag-next-story")) {
+          const destination = href.split("/").filter(Boolean).at(-1) || "unknown";
+          trackEvent("related_story_open", { story_slug: currentStory, destination_story_slug: destination });
+        }
+        if (href === "/magazine/atlas" || anchor.classList.contains("mag-atlas-open")) trackEvent("atlas_open", { source: "magazine_link" });
+      }
+      if (button instanceof HTMLButtonElement && currentStory && /SAVE|SAVED/.test(button.textContent || "")) {
+        trackEvent("save", { story_slug: currentStory, state: /SAVED/.test(button.textContent || "") ? "removed" : "saved" });
+      }
+    };
+
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, []);
+    window.addEventListener("scroll", measure, { passive: true });
+    measure();
+    return () => {
+      if (engagedTimer) window.clearTimeout(engagedTimer);
+      document.removeEventListener("click", onClick);
+      window.removeEventListener("scroll", measure);
+    };
+  }, [children]);
 
   return (
     <div className="mag-world" data-mag-theme={theme}>
@@ -100,18 +153,10 @@ export function MagazineShell({ children }: { children: ReactNode }) {
           <p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p>
         </div>
         <div className="mag-world-footer-grid">
-          <div>
-            <p>READ</p><Link to="/magazine">Latest</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link>
-          </div>
-          <div>
-            <p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}
-          </div>
-          <div>
-            <p>EDITORIAL</p><Link to="/magazine/about">About</Link><Link to="/magazine/sources">Sources & method</Link><Link to="/magazine/corrections">Corrections</Link><Link to="/magazine/privacy">Privacy</Link><a href="/rss.xml">RSS</a>
-          </div>
-          <div>
-            <p>DISCOVER</p><Link to="/magazine/atlas">4PLANET Atlas</Link><Link to="/magazine/series/from-the-field">From the Field</Link><Link to="/magazine/series/the-living-world">The Living World</Link><Link to="/magazine/series/what-works">What Works</Link>
-          </div>
+          <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
+          <div><p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}</div>
+          <div><p>EDITORIAL</p><Link to="/magazine/about">About</Link><Link to="/magazine/sources">Sources & method</Link><Link to="/magazine/corrections">Corrections</Link><Link to="/magazine/privacy">Privacy</Link><a href="/rss.xml">RSS</a></div>
+          <div><p>DISCOVER</p><Link to="/magazine/atlas">4PLANET Atlas</Link><Link to="/magazine/series/from-the-field">From the Field</Link><Link to="/magazine/series/the-living-world">The Living World</Link><Link to="/magazine/series/what-works">What Works</Link></div>
         </div>
         <div className="mag-world-footer-bottom"><span>4PLANET_ FOR A LIVING PLANET</span><span>Sources, uncertainty and corrections belong in the product.</span></div>
       </footer>
