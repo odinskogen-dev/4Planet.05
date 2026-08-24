@@ -126,6 +126,10 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         };
       }) : [];
 
+      // Keep provider geoprivacy semantics explicit. iNaturalist payloads can expose
+      // taxon_geoprivacy directly or via taxon conservation status depending on endpoint/version.
+      const taxonGeoprivacy = row?.taxon_geoprivacy ?? row?.taxon?.geoprivacy ?? row?.taxon?.conservation_status?.geoprivacy ?? null;
+
       return {
         id: row?.id ? String(row.id) : null,
         sourceUrl: row?.uri ?? (row?.id ? `https://www.inaturalist.org/observations/${row.id}` : null),
@@ -138,7 +142,7 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         createdAt: row?.created_at ?? null,
         qualityGrade: row?.quality_grade ?? null,
         geoprivacy: row?.geoprivacy ?? null,
-        taxonGeoprivacy: row?.taxon?.conservation_status?.geoprivacy ?? null,
+        taxonGeoprivacy,
         positionalAccuracyM: row?.positional_accuracy ?? null,
         publicCoordinates: publicCoords && Number.isFinite(publicCoords.latitude) && Number.isFinite(publicCoords.longitude) ? publicCoords : null,
         observer: row?.user ? { id: row.user.id ?? null, login: row.user.login ?? null } : null,
