@@ -17,7 +17,7 @@
 
     root.dataset.jaguarEarFullBooted = 'true';
     root.dataset.jaguarEarFull = 'loading';
-    root.dataset.jaguarEarDelivery = 'direct-official-embed-v46';
+    root.dataset.jaguarEarDelivery = 'direct-official-embed-v47';
 
     let ready = false;
     let failed = false;
@@ -55,17 +55,22 @@
       if (!shell.isConnected || shell.parentElement !== stage) stage.appendChild(shell);
     }
 
+    function assertFullSourceOwnership() {
+      root.dataset.jaguarEarFull = 'ready';
+      root.dataset.jaguar3d = 'ready';
+      root.dataset.jaguar3dSource = 'ear-rodriguez-full-source-viewer';
+      root.dataset.jaguar3dActive = String(encounterActive() && !document.hidden);
+      root.dataset.jaguarSourceAnimation = 'source-viewer-autoplay';
+      root.dataset.jaguarEarDelivery = 'direct-official-embed-v47';
+    }
+
     function publishReady() {
       ensureShellMounted();
       ready = true;
       failed = false;
       if (timeout) clearTimeout(timeout);
       shell.dataset.ready = 'true';
-      root.dataset.jaguarEarFull = 'ready';
-      root.dataset.jaguar3d = 'ready';
-      root.dataset.jaguar3dSource = 'ear-rodriguez-full-source-viewer';
-      root.dataset.jaguar3dActive = String(encounterActive() && !document.hidden);
-      root.dataset.jaguarSourceAnimation = 'source-viewer-autoplay';
+      assertFullSourceOwnership();
       delete root.dataset.jaguarEarFullFailure;
       loading?.setAttribute('aria-hidden', 'true');
       fallback?.setAttribute('aria-hidden', 'true');
@@ -117,7 +122,7 @@
       }
       if (ready) {
         shell.dataset.ready = 'true';
-        root.dataset.jaguar3dActive = 'true';
+        assertFullSourceOwnership();
       }
     }
 
