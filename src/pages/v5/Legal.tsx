@@ -26,6 +26,7 @@ function Frame({ title, label, children, path }: { title: string; label: string;
         <div style={{ marginTop: 48, display: "flex", gap: 18, flexWrap: "wrap" }}>
           <Link to="/privacy" className="link" style={{ color: T.blue }}>Personvern</Link>
           <Link to="/legal/payments" className="link" style={{ color: T.blue }}>Betaling og angrerett</Link>
+          <Link to="/legal/withdrawal" className="link" style={{ color: T.blue }}>Angreskjema</Link>
           <Link to="/me" className="link" style={{ color: T.blue }}>ME4PLANET</Link>
         </div>
       </Section>
@@ -93,7 +94,30 @@ export function PaymentRights() {
         <p>Bruk ME4PLANET når selvbetjeningen er aktiv, eller kontakt <a href={`mailto:${OPERATOR.email}`} className="link">{OPERATOR.email}</a>. Oppgi e-postadressen som ble brukt ved kjøpet og nok informasjon til at vi kan finne transaksjonen. Ikke send kortnummer eller sikkerhetskode.</p>
       </Block>
       <Block title="Standard angreskjema">
-        <p>Du kan også gi en entydig melding om at du ønsker å gå fra avtalen. Vi vil før offentlig forbrukerlansering gjøre standard angreskjema tilgjengelig sammen med avtaleinformasjonen på varig medium.</p>
+        <p>Du kan gi en entydig melding om at du ønsker å gå fra avtalen. Et enkelt standard angreskjema er tilgjengelig <Link to="/legal/withdrawal" className="link">her</Link>. Du kan sende samme opplysninger på e-post dersom du foretrekker det.</p>
+      </Block>
+    </Frame>
+  );
+}
+
+export function WithdrawalForm() {
+  return (
+    <Frame title="Angreskjema" label="LEGAL · WITHDRAWAL" path="/legal/withdrawal">
+      <Block title="Til">
+        <p>{OPERATOR.legalName}<br />{OPERATOR.address}<br /><a href={`mailto:${OPERATOR.email}`} className="link">{OPERATOR.email}</a></p>
+      </Block>
+      <Block title="Melding">
+        <p>Jeg gir med dette melding om at jeg ønsker å gå fra avtalen om følgende kjøp/tjeneste:</p>
+        <p>Produkt/tjeneste: ________________________________</p>
+        <p>Bestilt dato: _____________________________________</p>
+        <p>Betalt beløp: _____________________________________</p>
+        <p>E-post brukt ved kjøpet: ____________________________</p>
+        <p>Navn: _____________________________________________</p>
+        <p>Dato: _____________________________________________</p>
+        <p>Du trenger ikke oppgi kortnummer, CVC eller annen kortinformasjon. Vi kan be om nødvendig informasjon for å finne og verifisere transaksjonen.</p>
+      </Block>
+      <Block title="Slik sender du">
+        <p>Send en kopi av opplysningene over til <a href={`mailto:${OPERATOR.email}?subject=${encodeURIComponent("Angrerett — 4PLANET")}`} className="link">{OPERATOR.email}</a>, eller bruk ME4PLANET når selvbetjeningen er aktiv. En annen entydig erklæring om at du går fra avtalen kan også være tilstrekkelig etter gjeldende regler.</p>
       </Block>
     </Frame>
   );
