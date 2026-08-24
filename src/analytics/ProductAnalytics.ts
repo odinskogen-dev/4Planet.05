@@ -8,7 +8,8 @@ export type MeaningfulUseKind =
   | "journey_progress"
   | "source_open"
   | "watch_follow"
-  | "article_depth";
+  | "article_depth"
+  | "engaged_time";
 
 function safeToken(value: string | undefined, max = 160): string {
   if (!value) return "";
