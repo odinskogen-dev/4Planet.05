@@ -15,7 +15,8 @@ test('TEST KING Jaguar uses verified Ear.Rodriguez full-source viewer with contr
 
   // Full source viewer is the primary encounter creature; local indexed donor remains a fail-safe fallback.
   assert.match(html,/jaguar-ear-full-v43\.js/);assert.match(html,/EAR\.RODRIGUEZ FULL MODEL/);assert.match(html,/FULL SOURCE MODEL PRESENTATION/);assert.match(html,/CC BY 4\.0/);
-  assert.match(full,/91c61c329d2a4668816f81f08dfcd492/);assert.match(full,/static\.sketchfab\.com\/api\/sketchfab-viewer-1\.12\.1\.js/);assert.match(full,/jaguarEarFull = 'loading'/);assert.match(full,/publish\('ready'\)/);assert.match(full,/publish\('fallback'\)/);assert.match(full,/viewer-ready-timeout/);assert.match(full,/getSceneGraph/);assert.match(full,/getAnimations/);assert.match(full,/visibilitychange/);assert.match(full,/api\?\.pause/);assert.match(full,/CC BY 4\.0/);
+  assert.match(full,/91c61c329d2a4668816f81f08dfcd492/);assert.match(full,/sketchfab\.com\/models\/\$\{MODEL_UID\}\/embed/);assert.match(full,/direct-official-embed-v45/);assert.match(full,/jaguarEarFull = 'loading'/);assert.match(full,/jaguarEarFull = 'ready'/);assert.match(full,/jaguarEarFull = 'fallback'/);assert.match(full,/direct-embed-timeout/);assert.match(full,/animation_autoplay=1/);assert.match(full,/visibilitychange/);assert.match(full,/about:blank/);assert.match(full,/CC BY 4\.0/);
+  assert.doesNotMatch(full,/static\.sketchfab\.com\/api\/sketchfab-viewer/);assert.doesNotMatch(full,/client\.init\(/);assert.doesNotMatch(full,/getSceneGraph/);
   assert.match(full,/data-jaguar-ear-full|jaguarEarFull/);assert.match(full,/jaguar3dSource = 'ear-rodriguez-full-source-viewer'/);
 
   // Existing controlled local proxy remains intact and cannot become fabricated topology.
