@@ -1,0 +1,104 @@
+{
+  "inventory_version": 1,
+  "mode": "SHADOW_MIGRATION",
+  "observed_at": "2026-08-24T02:47:00+02:00",
+  "rules": {
+    "legacy_authoritative_until_cutover": true,
+    "live_code_requires_fresh_github_read": true,
+    "conflict_policy": "FAIL_CLOSED_INCIDENT",
+    "newest_wins_forbidden": true,
+    "destructive_retirement_before_parity": false
+  },
+  "sources": [
+    {
+      "source_id": "brain-read-first",
+      "kind": "GOOGLE_DOC",
+      "name": "00_ READ FIRST — 4PLANET KNOWLEDGE OS + LLM OPERATING INSTRUCTIONS",
+      "uri": "https://docs.google.com/document/d/13wCyLsLv0xFHYS1nbAXKqcQux3kz8b48U0pm0bGFhVo/edit",
+      "authority": "ENTRY_CONTROL",
+      "truth_domain": "BRAIN_RECOVERY_AND_OPERATING_RULES"
+    },
+    {
+      "source_id": "brain-project-lead-current",
+      "kind": "GOOGLE_DOC",
+      "name": "GPT_PROJECT_LEAD_CURRENT.md",
+      "uri": "https://docs.google.com/document/d/1cK7JK1wXpShtsX0k9FnIqum8lbA98lMppkNK5DJQUO0/edit",
+      "authority": "LEGACY_CURRENT",
+      "truth_domain": "PROGRAMME_CURRENT_STATE",
+      "migration_note": "Known chronology/current-state mixing; migrate current assertions only with parity evidence."
+    },
+    {
+      "source_id": "brain-knowledge-os-state",
+      "kind": "GOOGLE_DOC",
+      "name": "KNOWLEDGE_OS_STATE.md",
+      "uri": "https://docs.google.com/document/d/13KGE69cwTP8hm6zjt4xVUgW3ldzfhVxh336QgmBWJVQ/edit",
+      "authority": "LEGACY_CURRENT",
+      "truth_domain": "KNOWLEDGE_OS_STATE"
+    },
+    {
+      "source_id": "founder-control",
+      "kind": "GOOGLE_SHEET",
+      "name": "4PLANET_ FOUNDER CONTROL REGISTER v1.0",
+      "uri": "https://docs.google.com/spreadsheets/d/18TGuqbFGqcHMLatBz_WqJUYujQKmBhXAeSNN0cXQreU/edit",
+      "authority": "LEGACY_OPERATIONAL_CONTROL",
+      "truth_domain": "PROJECT_HEALTH_WBS_ENGINE_FOUNDER_CONTROL",
+      "migration_note": "Code pointers inside legacy rows must be live-verified against GitHub before CNS commit."
+    },
+    {
+      "source_id": "prototype-safe",
+      "kind": "GOOGLE_SHEET",
+      "name": "4PLANET_ PROTOTYPE SAFE — CANONICAL LINK & VERSION REGISTER",
+      "uri": "https://docs.google.com/spreadsheets/d/1Jss81PFgiGU7j5nRiV1GvmPQcmEhcOSZ9biw0cMgUfk/edit",
+      "authority": "PROTOTYPE_AUTHORITY",
+      "truth_domain": "PROTOTYPE_IDENTITY_AND_IMMUTABLE_ARTIFACTS",
+      "migration_note": "Fixed artifacts remain authoritative; moving continuation pointers require fresh GitHub reconciliation."
+    },
+    {
+      "source_id": "agent-ledger",
+      "kind": "GOOGLE_DOC",
+      "name": "AGENT_LEDGER.md",
+      "uri": "https://docs.google.com/document/d/1AqAn48mc_rvPeIDoLUiQp7a0ZmOqWHSe1xhryqULv2A/edit",
+      "authority": "LEGACY_EXECUTION_HISTORY",
+      "truth_domain": "AGENT_EXECUTION_EVENTS"
+    },
+    {
+      "source_id": "program-log",
+      "kind": "GOOGLE_DOC",
+      "name": "SYSTEM — PROGRAM LOG v1.0",
+      "uri": "https://docs.google.com/document/d/1vtK87_eHbN7cw5mvH9ZBjRhr-8-vsWlNTWPk2qPNIoo/edit",
+      "authority": "PROGRAMME_HISTORY",
+      "truth_domain": "EVENT_AND_CHANGE_HISTORY"
+    },
+    {
+      "source_id": "github-4planet05",
+      "kind": "GITHUB_REPOSITORY",
+      "name": "odinskogen-dev/4Planet.05",
+      "uri": "https://github.com/odinskogen-dev/4Planet.05",
+      "authority": "CODE_TRUTH",
+      "truth_domain": "CODE_BRANCH_PR_COMMIT",
+      "current_revision": "a0dfcb6465cea00ba4797d31ec5ce6f50f06dc18",
+      "current_ref": "king/test",
+      "verified_via": "GitHub PR #131 live read"
+    },
+    {
+      "source_id": "supabase-brain-target",
+      "kind": "SUPABASE_PROJECT",
+      "name": "4PLANET_ BRAIN",
+      "project_ref": "bycovaghcnskymrjnyvg",
+      "authority": "TARGET_OPERATIONAL_TRUTH_AFTER_CUTOVER",
+      "truth_domain": "CNS_OPERATIONAL_STATE",
+      "state": "INACTIVE",
+      "cutover_authority": false
+    },
+    {
+      "source_id": "supabase-staging",
+      "kind": "SUPABASE_PROJECT",
+      "name": "4planet-staging",
+      "project_ref": "dcxiougjoazkafyeeaxi",
+      "authority": "SHADOW_TEST_ONLY",
+      "truth_domain": "CNS_TEST_RUNTIME",
+      "state": "CONTROL_PLANE_ACTIVE_DATABASE_CONNECTION_TIMEOUT",
+      "cutover_authority": false
+    }
+  ]
+}
