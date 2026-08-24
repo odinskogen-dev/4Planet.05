@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 const coordination = fs.readFileSync("src/planet/coordinationGraph.ts", "utf8");
 const sourceGraph = fs.readFileSync("src/planet/sourceGraph.ts", "utf8");
+const sourceRegistry = fs.readFileSync("src/planet/sourceAdapterRegistry.ts", "utf8");
 
 test("Problem is upstream and actionable gaps are derived", () => {
   const problem = coordination.indexOf('"PROBLEM",\n  "PLACE / ECOSYSTEM / VALUE_CHAIN_NODE"');
@@ -56,4 +57,14 @@ test("recovered Source Graph retains semantic hard stops", () => {
     assert.ok(sourceGraph.includes(statement), `missing source hard stop: ${statement}`);
   }
   assert.match(sourceGraph, /validateSourceGraph/);
+});
+
+test("source federation is demand-gated and relationship-safe", () => {
+  for (const source of ["source:ror", "source:openalex", "source:crossref", "source:brreg", "source:gbif", "source:obis", "source:360giving", "source:iati", "source:ted", "source:grants-gov"]) {
+    assert.ok(sourceRegistry.includes(`id: "${source}"`), `source adapter registry missing ${source}`);
+  }
+  assert.match(sourceRegistry, /Federation before replication/);
+  assert.match(sourceRegistry, /never implies partnership or endorsement/);
+  assert.match(sourceRegistry, /Unavailable source is distinct from zero results/);
+  assert.match(sourceRegistry, /Build the next adapter only when an active Capital, Actor, Research or Gold case needs it/);
 });
