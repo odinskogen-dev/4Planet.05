@@ -13,39 +13,47 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Verify published recovery Magazine, live round 05, topic hubs, Atlas embed and isolation
+      - name: Verify published recovery Magazine, article sprint round 06, topics and isolation
         shell: bash
         run: |
           set -euo pipefail
           pass=0
           for attempt in $(seq 1 36); do
             mag_headers="$RUNNER_TEMP/mag.txt"
-            article_headers="$RUNNER_TEMP/article.txt"
+            lead_headers="$RUNNER_TEMP/lead.txt"
+            explainer_headers="$RUNNER_TEMP/explainer.txt"
+            signal_headers="$RUNNER_TEMP/signal.txt"
             topic_headers="$RUNNER_TEMP/topic.txt"
             atlas_headers="$RUNNER_TEMP/atlas.txt"
             atlas_embed_headers="$RUNNER_TEMP/atlas-embed.txt"
             marker_body="$RUNNER_TEMP/marker.txt"
 
             mag_code=$(curl -sS -D "$mag_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' || true)
-            article_code=$(curl -sS -D "$article_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/why-4planet-exists/' || true)
+            lead_code=$(curl -sS -D "$lead_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/ocean-watch-1-8-million-kilometres/' || true)
+            explainer_code=$(curl -sS -D "$explainer_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/' || true)
+            signal_code=$(curl -sS -D "$signal_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/signals/automated-edna-erna-water-monitoring/' || true)
             topic_code=$(curl -sS -D "$topic_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/topics/nature' || true)
             atlas_code=$(curl -sS -D "$atlas_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas' || true)
             atlas_embed_code=$(curl -sS -D "$atlas_embed_headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/atlas?embed=mag&l=bluemarble,fires,biodiv' || true)
-            marker_code=$(curl -sS -o "$marker_body" -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/live-round-05.txt' || true)
+            marker_code=$(curl -sS -o "$marker_body" -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/live-round-06.txt' || true)
             root_code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/' || true)
 
             mag_surface=$(tr -d '\r' < "$mag_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
-            article_surface=$(tr -d '\r' < "$article_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+            lead_surface=$(tr -d '\r' < "$lead_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+            explainer_surface=$(tr -d '\r' < "$explainer_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+            signal_surface=$(tr -d '\r' < "$signal_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             topic_surface=$(tr -d '\r' < "$topic_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             atlas_surface=$(tr -d '\r' < "$atlas_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             atlas_embed_surface=$(tr -d '\r' < "$atlas_embed_headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
             marker_ok=0
-            grep -q '^4PLANET_MAGAZINE_LIVE_ROUND_05$' "$marker_body" 2>/dev/null && marker_ok=1 || true
+            grep -q '^4PLANET_MAGAZINE_LIVE_ROUND_06$' "$marker_body" 2>/dev/null && marker_ok=1 || true
 
-            echo "attempt=$attempt magazine=$mag_code/$mag_surface article=$article_code/$article_surface topic=$topic_code/$topic_surface atlas=$atlas_code/$atlas_surface atlas_embed=$atlas_embed_code/$atlas_embed_surface marker=$marker_code/$marker_ok root=$root_code"
+            echo "attempt=$attempt magazine=$mag_code/$mag_surface lead=$lead_code/$lead_surface explainer=$explainer_code/$explainer_surface signal=$signal_code/$signal_surface topic=$topic_code/$topic_surface atlas=$atlas_code/$atlas_surface atlas_embed=$atlas_embed_code/$atlas_embed_surface marker=$marker_code/$marker_ok root=$root_code"
 
             if [ "$mag_code" = "200" ] && [ "$mag_surface" = "magazine-only-live" ] \
-              && [ "$article_code" = "200" ] && [ "$article_surface" = "magazine-only-live" ] \
+              && [ "$lead_code" = "200" ] && [ "$lead_surface" = "magazine-only-live" ] \
+              && [ "$explainer_code" = "200" ] && [ "$explainer_surface" = "magazine-only-live" ] \
+              && [ "$signal_code" = "200" ] && [ "$signal_surface" = "magazine-only-live" ] \
               && [ "$topic_code" = "200" ] && [ "$topic_surface" = "magazine-only-live" ] \
               && [ "$atlas_code" = "404" ] && [ "$atlas_surface" = "magazine-only-live" ] \
               && [ "$atlas_embed_code" = "200" ] && [ "$atlas_embed_surface" = "magazine-atlas-embed" ] \
