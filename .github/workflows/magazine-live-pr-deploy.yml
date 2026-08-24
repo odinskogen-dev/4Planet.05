@@ -28,117 +28,51 @@ jobs:
         run: |
           set -euo pipefail
           TOKEN=""
-          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
-            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
-          done
-          [ -n "$TOKEN" ] || { echo "Cloudflare token missing"; exit 2; }
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && TOKEN="$candidate" && break; done
+          [ -n "$TOKEN" ] || exit 2
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"
-          TOKEN="${TOKEN#bearer }"
-          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
-          TOKEN="${TOKEN#CF_API_TOKEN=}"
-          TOKEN="${TOKEN#\"}"
-          TOKEN="${TOKEN%\"}"
-          TOKEN="${TOKEN#\'}"
-          TOKEN="${TOKEN%\'}"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
-
-          zones_file="$RUNNER_TEMP/cf-zones.json"
-          curl -fsS \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones_file"
-          jq -e '.success == true' "$zones_file" >/dev/null
-          account_id=$(jq -r '.result[0].account.id // empty' "$zones_file")
-          [ -n "$account_id" ] || { echo "Cloudflare account not resolved"; exit 3; }
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || exit 3
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
-
-      - name: Verify recovery Magazine source
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fLsS --connect-timeout 10 --max-time 30 -o /dev/null \
-            'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/'
-          curl -fLsS --connect-timeout 10 --max-time 30 -o /dev/null \
-            'https://recovery-testking-magazine.4planet-05.pages.dev/magazine/why-4planet-exists/'
 
       - name: Deploy isolated Magazine worker
         shell: bash
         run: |
           set -euo pipefail
-          cat > "$RUNNER_TEMP/4planetmagazine-worker.mjs" <<'EOF'
+          cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
           const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
           const APEX = "4planetmagazine.com";
-
-          function isMagazineDocument(pathname) {
-            return pathname === "/magazine" || pathname === "/magazine/" || pathname.startsWith("/magazine/");
-          }
-
-          function isDocumentRequest(request) {
-            const dest = request.headers.get("sec-fetch-dest");
-            if (dest === "document") return true;
-            if (request.mode === "navigate") return true;
-            return (request.headers.get("accept") || "").includes("text/html");
-          }
-
-          export default {
-            async fetch(request) {
-              const incoming = new URL(request.url);
-
-              if (incoming.hostname === `www.${APEX}`) {
-                incoming.hostname = APEX;
-                return Response.redirect(incoming.toString(), 308);
-              }
-
-              if (incoming.pathname === "/" || incoming.pathname === "") {
-                incoming.pathname = "/magazine";
-                return Response.redirect(incoming.toString(), 308);
-              }
-
-              if (isDocumentRequest(request) && !isMagazineDocument(incoming.pathname)) {
-                return new Response("Not Found", {
-                  status: 404,
-                  headers: {
-                    "content-type": "text/plain; charset=utf-8",
-                    "x-robots-tag": "noindex, nofollow",
-                    "x-4planet-surface": "magazine-only-live"
-                  }
-                });
-              }
-
-              const upstream = new URL(incoming.pathname, UPSTREAM);
-              upstream.search = incoming.search;
-              const response = await fetch(new Request(upstream.toString(), request));
-              const headers = new Headers(response.headers);
-              headers.delete("x-robots-tag");
-              headers.set("x-4planet-surface", "magazine-only-live");
-              if ((headers.get("content-type") || "").includes("text/html")) {
-                headers.set("cache-control", "no-store");
-                headers.set("x-robots-tag", "index, follow, max-image-preview:large");
-              }
-              return new Response(response.body, {
-                status: response.status,
-                statusText: response.statusText,
-                headers,
-              });
-            },
-          };
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowed = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === `www.${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+            if (!allowed(incoming.pathname)) return blocked();
+            const upstream = new URL(incoming.pathname, UPSTREAM); upstream.search = incoming.search;
+            const response = await fetch(new Request(upstream.toString(), request));
+            const headers = new Headers(response.headers); headers.delete("x-robots-tag"); headers.set("x-4planet-surface", "magazine-only-live");
+            if ((headers.get("content-type") || "").includes("text/html")) { headers.set("cache-control", "no-store"); headers.set("x-robots-tag", "index, follow, max-image-preview:large"); }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
           EOF
-
           cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
           name = "4planetmagazine-test-king"
-          main = "$RUNNER_TEMP/4planetmagazine-worker.mjs"
+          main = "$RUNNER_TEMP/worker.mjs"
           compatibility_date = "2026-08-24"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
-
           [[routes]]
           pattern = "4planetmagazine.com"
           custom_domain = true
-
           [[routes]]
           pattern = "www.4planetmagazine.com"
           custom_domain = true
           EOF
-
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
