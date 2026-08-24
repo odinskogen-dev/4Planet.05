@@ -39,6 +39,8 @@ export interface ObservationRecord {
   locationGeneralised?: boolean;
   /** Provider statement explaining spatial masking/generalisation when available. */
   locationGeneralisationNote?: string | null;
+  /** Source-adapter generalisation note retained without sharpening location precision. */
+  generalisationNote?: string | null;
   occurrenceStatus?: "PRESENT" | "ABSENT" | "UNKNOWN";
   basisOfRecord: string;
   issues: string[];
@@ -174,6 +176,7 @@ export const ORCA_OBSERVATION: ObservationRecord = {
   coordinateUncertaintyM: 1000,
   locationGeneralised: true,
   locationGeneralisationNote: "GBIF source flags this coordinate as rounded.",
+  generalisationNote: "GBIF source flags this coordinate as rounded.",
   occurrenceStatus: "PRESENT",
   basisOfRecord: "HUMAN_OBSERVATION",
   issues: ["COORDINATE_ROUNDED", "CONTINENT_DERIVED_FROM_COORDINATES"],
