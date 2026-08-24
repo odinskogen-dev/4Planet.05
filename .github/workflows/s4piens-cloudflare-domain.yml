@@ -1,0 +1,168 @@
+name: S4PIENS Cloudflare Domain
+# Promotion trigger: 2026-08-22 biomimetic leading candidate
+
+on:
+  push:
+    branches:
+      - build/s4piens-universe-domain
+    paths:
+      - .github/workflows/s4piens-cloudflare-domain.yml
+  pull_request:
+    branches:
+      - sandbox/s4piens-narrative-journey-v04
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  S4PIENS_DOMAIN: s4piens.com
+  S4PIENS_WWW_DOMAIN: www.s4piens.com
+  PAGES_PROJECT: 4planet-05
+  S4PIENS_BRANCH: build/s4piens-universe-domain
+
+jobs:
+  attach-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Resolve Cloudflare account and zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zones="$(curl -fsS "${auth[@]}" "${api}/zones?name=${S4PIENS_DOMAIN}")"
+          echo "$zones" | jq -e '.success == true and (.result|length) == 1' >/dev/null
+          zone_id="$(echo "$zones" | jq -r '.result[0].id')"
+          account_id="$(echo "$zones" | jq -r '.result[0].account.id')"
+          echo "::add-mask::${zone_id}"
+          echo "::add-mask::${account_id}"
+          echo "CF_ZONE_ID=${zone_id}" >> "$GITHUB_ENV"
+          echo "CF_ACCOUNT_ID=${account_id}" >> "$GITHUB_ENV"
+          echo "PASS Cloudflare token + S4PIENS zone"
+
+      - name: Verify S4PIENS branch target
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          project="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}")"
+          echo "$project" | jq -e '.success == true and .result.name == "4planet-05"' >/dev/null
+          deployments="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=preview&per_page=25")"
+          count="$(echo "$deployments" | jq --arg branch "$S4PIENS_BRANCH" '[.result[] | select(.deployment_trigger.metadata.branch == $branch)] | length')"
+          test "$count" -ge 1
+          slug="$(printf '%s' "$S4PIENS_BRANCH" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | cut -c1-28)"
+          alias="${slug}.${PAGES_PROJECT}.pages.dev"
+          code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://${alias}/" || true)"
+          if [ "$code" != "200" ]; then
+            echo "S4PIENS branch alias is not ready: HTTP ${code}"
+            exit 1
+          fi
+          echo "S4PIENS_BRANCH_ALIAS=${alias}" >> "$GITHUB_ENV"
+          echo "PASS branch target https://${alias}/"
+
+      - name: Register Pages custom domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          existing="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains")"
+          echo "$existing" | jq -e '.success == true' >/dev/null
+          for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
+            if echo "$existing" | jq -e --arg d "$domain" '.result[]? | select(.name == $d)' >/dev/null; then
+              echo "Pages domain already registered: ${domain}"
+            else
+              payload="$(jq -nc --arg d "$domain" '{name:$d}')"
+              created="$(curl -fsS -X POST "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains" --data "$payload")"
+              echo "$created" | jq -e '.success == true' >/dev/null
+              echo "Registered Pages domain: ${domain}"
+            fi
+          done
+
+      - name: Wait for DNS permission
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          for attempt in $(seq 1 60); do
+            code="$(curl -sS -o /tmp/dns.json -w '%{http_code}' "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records?name=${S4PIENS_DOMAIN}" || true)"
+            if [ "$code" = "200" ] && jq -e '.success == true' /tmp/dns.json >/dev/null 2>&1; then
+              echo "PASS DNS permission is active"
+              exit 0
+            fi
+            echo "Waiting for Cloudflare DNS Write permission (${attempt}/60)..."
+            sleep 15
+          done
+          echo "DNS permission was not granted within the wait window"
+          exit 1
+
+      - name: Point DNS to S4PIENS branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          for domain in "$S4PIENS_DOMAIN" "$S4PIENS_WWW_DOMAIN"; do
+            records="$(curl -fsS "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records?name=${domain}")"
+            echo "$records" | jq -e '.success == true' >/dev/null
+            count="$(echo "$records" | jq '.result | length')"
+            payload="$(jq -nc --arg t "$S4PIENS_BRANCH_ALIAS" --arg n "$domain" '{type:"CNAME",name:$n,content:$t,ttl:1,proxied:true}')"
+            if [ "$count" -eq 0 ]; then
+              created="$(curl -fsS -X POST "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records" --data "$payload")"
+              echo "$created" | jq -e '.success == true' >/dev/null
+              echo "Created DNS for ${domain}"
+            elif [ "$count" -eq 1 ]; then
+              record_type="$(echo "$records" | jq -r '.result[0].type')"
+              record_content="$(echo "$records" | jq -r '.result[0].content')"
+              record_id="$(echo "$records" | jq -r '.result[0].id')"
+              if [ "$record_type" = "CNAME" ] && [ "$record_content" = "$S4PIENS_BRANCH_ALIAS" ]; then
+                echo "DNS already correct for ${domain}"
+              elif [ "$record_type" = "CNAME" ] && [[ "$record_content" == *.pages.dev ]]; then
+                updated="$(curl -fsS -X PUT "${auth[@]}" "${api}/zones/${CF_ZONE_ID}/dns_records/${record_id}" --data "$payload")"
+                echo "$updated" | jq -e '.success == true' >/dev/null
+                echo "Updated Pages DNS for ${domain}"
+              else
+                echo "Refusing to overwrite non-Pages DNS for ${domain}: ${record_type} ${record_content}"
+                exit 1
+              fi
+            else
+              echo "Refusing to modify multiple existing DNS records for ${domain}"
+              exit 1
+            fi
+          done
+
+      - name: Wait for domain activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          for attempt in $(seq 1 30); do
+            domains="$(curl -fsS "${auth[@]}" "${api}/accounts/${CF_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains")"
+            apex="$(echo "$domains" | jq -r --arg d "$S4PIENS_DOMAIN" '.result[] | select(.name==$d) | .status')"
+            www="$(echo "$domains" | jq -r --arg d "$S4PIENS_WWW_DOMAIN" '.result[] | select(.name==$d) | .status')"
+            echo "Domain state: apex=${apex:-missing}, www=${www:-missing}"
+            if [ "$apex" = "active" ] && [ "$www" = "active" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Domains are configured but activation is still pending"
+          exit 1
+
+      - name: Public smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in "https://${S4PIENS_DOMAIN}/" "https://${S4PIENS_DOMAIN}/food" "https://${S4PIENS_DOMAIN}/species/homo-sapiens" "https://${S4PIENS_WWW_DOMAIN}/"; do
+            code="$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url")"
+            echo "${url} -> HTTP ${code}"
+            [[ "$code" =~ ^(200|301|302|307|308)$ ]]
+          done

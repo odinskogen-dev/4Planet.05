@@ -1,0 +1,102 @@
+/*
+ * S4PIENS founder hotfix — 2026-08-19
+ * Scope: the immersive S4PIENS / Human Systems Atlas sandbox only.
+ * Fixes the verified empty sticky release viewport and makes the shared header
+ * use one S4PIENS orange interface accent with no white navigation details.
+ */
+
+body.sapiens-immersive-nav header,
+body.sapiens-immersive-nav header * {
+  --sapiens-nav-accent: #FF4D22;
+}
+
+/* Founder direction: one Domain colour in the complete header/navigation chrome. */
+body.sapiens-immersive-nav header a,
+body.sapiens-immersive-nav header button,
+body.sapiens-immersive-nav header [role="button"],
+body.sapiens-immersive-nav header .menu-trigger,
+body.sapiens-immersive-nav header a[aria-label="4Planet home"] > span > span:first-child,
+body.sapiens-immersive-nav header a[aria-label="4Planet home"] > span > span:first-child > span,
+body.sapiens-immersive-nav header a[href="/people"] {
+  color: var(--sapiens-nav-accent) !important;
+}
+
+body.sapiens-immersive-nav header a[href="/people"] {
+  border-color: rgba(255,77,34,.48) !important;
+  background: transparent !important;
+}
+
+body.sapiens-immersive-nav header a[href="/people"]:hover,
+body.sapiens-immersive-nav header a[href="/people"]:focus-visible {
+  border-color: var(--sapiens-nav-accent) !important;
+  background: rgba(255,77,34,.08) !important;
+}
+
+body.sapiens-immersive-nav header svg,
+body.sapiens-immersive-nav header svg path,
+body.sapiens-immersive-nav header svg line,
+body.sapiens-immersive-nav header svg circle,
+body.sapiens-immersive-nav header svg rect,
+body.sapiens-immersive-nav header svg polyline,
+body.sapiens-immersive-nav header svg polygon {
+  color: var(--sapiens-nav-accent) !important;
+  stroke: var(--sapiens-nav-accent) !important;
+}
+
+body.sapiens-immersive-nav header svg [fill]:not([fill="none"]) {
+  fill: var(--sapiens-nav-accent) !important;
+}
+
+/*
+ * ROOT CAUSE FIX.
+ * The stage contains six 100svh trigger chapters. The previous stylesheet gave
+ * the shell a seventh 100svh runway and then pulled the first editorial plane
+ * back by 100svh. That produced a real full-height interval where the sticky
+ * stage remained visible after all trigger content had finished — exactly the
+ * empty black viewport visible in the founder screenshot.
+ *
+ * Make shell length equal the six authored chapters and let the editorial flow
+ * begin normally. No synthetic extra viewport, no negative-overlap handoff.
+ */
+.sapiens-story .sapiens-story-shell {
+  min-height: 600svh !important;
+}
+
+.sapiens-story .sapiens-story-shell + .sapiens-editorial {
+  margin-top: 0 !important;
+}
+
+/* Defensive visibility: authored chapter content must always sit above the stage. */
+.sapiens-story .sapiens-story-card,
+.sapiens-story .sapiens-knowledge,
+.sapiens-story .sapiens-chrome,
+.sapiens-story .sapiens-progress {
+  visibility: visible !important;
+}
+
+/* S4PIENS micro-navigation: precision squares, not generic circular dots. */
+.sapiens-story .sapiens-progress button span:last-child {
+  border-radius: 0 !important;
+  border-color: rgba(255,77,34,.55) !important;
+  background: #020608 !important;
+}
+
+.sapiens-story .sapiens-progress button.is-active span:last-child {
+  background: #FF4D22 !important;
+  border-color: #FF4D22 !important;
+}
+
+/* Keep the quiet technical microcopy in the same Domain accent family. */
+.sapiens-story .sapiens-microcopy,
+.sapiens-story .sapiens-chrome,
+.sapiens-story .sapiens-progress button {
+  color: rgba(255,77,34,.66) !important;
+}
+
+@media (max-width: 760px) {
+  .sapiens-story .sapiens-story-shell {
+    min-height: 600svh !important;
+  }
+}
+
+/* Head includes this file globally; this marker exists only to force an exact-head Cloudflare rebuild after wiring the import. */

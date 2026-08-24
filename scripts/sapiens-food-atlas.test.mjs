@@ -5,6 +5,8 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const router = read("src/routes/router.tsx");
 const page = read("src/pages/integrated/SapiensAtlasSandbox.tsx");
+const systems = read("src/pages/integrated/SapiensSystemsProfiles.tsx");
+const actors = read("src/data/actorProfiles.ts");
 const styles = read("src/styles/sapiens-atlas-story.css");
 const goldStyles = read("src/styles/sapiens-atlas-gold.css");
 const chains = read("src/data/sapiensChains.ts");
@@ -12,9 +14,26 @@ const api = read("functions/api/sapiens-food.ts");
 const lifeApi = read("functions/api/sapiens-life.ts");
 const earthLayers = read("src/earth/layers.ts");
 
-test("S4PIENS sandbox is isolated from the canonical S4PIENS domain route", () => {
+test("S4PIENS domain has a host-aware Human front door while 4PLANET keeps canonical redirect", () => {
   assert.match(router, /path="\/sandbox\/s4piens"/);
-  assert.match(router, /path="\/s4piens" element={<Navigate to="\/domains\/s4piens" replace \/>}/);
+  assert.match(router, /const isSapiensUniverseHost/);
+  assert.match(router, /path="\/s4piens" element=\{sapiensHost \? <SapiensFrontDoor \/> : <Navigate to="\/domains\/s4piens" replace \/>\}/);
+  assert.match(router, /path="\/food" element=\{sapiensHost \? <SapiensFoodEntry \/> : <Navigate to="\/missions\/food" replace \/>\}/);
+  assert.match(systems, /SPECIES · HOMO SAPIENS/);
+  assert.match(systems, /FOOD_ OPEN · OTHER SYSTEMS LOCKED/);
+});
+
+test("S4PIENS response chain includes Innovations, Actors and Action without collapsing their roles", () => {
+  for (const token of ["UNDERSTANDING", "SOLUTIONS", "INNOVATIONS", "ACTORS", "ACTION"]) assert.match(systems, new RegExp(token));
+  assert.match(router, /path="\/actors"/);
+  assert.match(router, /path="\/actors\/:slug"/);
+  assert.match(router, /path="\/innovations\/:slug"/);
+  assert.match(actors, /P17-A036/);
+  assert.match(actors, /P17-A307/);
+  assert.match(actors, /GOLD 01 · SCIENCE \+ MONITORING/);
+  assert.match(actors, /GOLD 02 · RESTORATION \+ IMPLEMENTATION/);
+  assert.match(actors, /No sponsorship price, contract, funding commitment or outcome claim is locked/);
+  assert.match(actors, /do not equal acceptance, partnership, contract, price or verified outcome/i);
 });
 
 test("FOOD is the one Gold Standard chain and the registry has 20 working families", () => {
