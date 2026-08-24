@@ -7,10 +7,17 @@ const read = (path) => fs.readFileSync(path, "utf8");
 const shell = read("src/components/magazine/MagazineShell.tsx");
 const home = read("src/pages/v5/Magazine.tsx");
 const article = read("src/pages/v5/StoryArticle.tsx");
+const editorial = read("src/components/Editorial.tsx");
 const library = read("src/pages/v5/MagazineLibrary.tsx");
 const signalPage = read("src/pages/v5/MagazineSignal.tsx");
 const experience = read("src/content/magazineExperience.ts");
 const reader = read("src/content/magazineReader.ts");
+const featureReported = read("src/content/magazineFeaturesReported.ts");
+const featureExplainers = read("src/content/magazineFeaturesExplainers.ts");
+const featureIndex = read("src/content/magazineFeatures.ts");
+const featureLayer = `${featureReported}\n${featureExplainers}`;
+const magazineVisuals = read("src/content/magazineVisuals.ts");
+const articleRound06 = read("src/styles/magazine-article-round-06.css");
 const router = read("src/routes/router.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-magazine-seo.mjs");
@@ -75,14 +82,27 @@ test("founder visual passes preserve deterministic layout and official palette",
   assert.doesNotMatch(home, /Math\.random/);
 });
 
+test("every full story has a human-first longform feature layer", () => {
+  assert.equal(stories.length, 13, "article sprint expects all 13 launch stories");
+  for (const story of stories) assert.ok(featureLayer.includes(`\"${story.slug}\"`), `${story.slug} is missing its longform feature`);
+  assert.match(featureIndex, /featureForStory/);
+  assert.match(featureIndex, /featureReadMins/);
+  assert.match(article, /featureForStory/);
+  assert.match(article, /articleBlocks/);
+  assert.match(article, /mag-article-inline-visual/);
+  assert.match(article, /reveal=\{false\}/);
+  assert.match(editorial, /data-editorial-reveal/);
+  assert.match(editorial, /reveal = true/);
+  assert.match(articleRound06, /Core copy is fail-open/);
+  assert.match(articleRound06, /mag-article-inline-visual/);
+});
+
 test("front-page image direction avoids duplicate editorial imagery", () => {
   assert.match(home, /HOME_STORY_IMAGE_OVERRIDES/);
   assert.match(home, /"sea-pen-instead-of-tank": "rewildMarineHero"/);
   assert.match(home, /"the-four-domains": "heroEarth"/);
-  assert.match(home, /"s4piensDomainHero"/);
-  assert.match(home, /"homepageBonus"/);
-  assert.match(home, /"pl4sticHero"/);
-  assert.match(home, /"speciesHero"/);
+  assert.match(home, /featureForStory/);
+  for (const key of ["foodHero", "en3rgyHero", "f4shionHero", "artHero"]) assert.match(home, new RegExp(`\"${key}\"`));
 });
 
 test("mobile home restores 4PLANET strictness and avoids desktop mosaic assumptions", () => {
@@ -94,15 +114,16 @@ test("mobile home restores 4PLANET strictness and avoids desktop mosaic assumpti
   assert.match(gold02, /\.mag-topic-grid \{ grid-template-columns: 1fr 1fr !important/);
 });
 
-test("Planet Signals remain source-bounded fast journalism", () => {
+test("Planet Signals remain source-bounded fast journalism with distinct visuals", () => {
   for (const signal of signals) {
     assert.match(signal.sourceUrl, /^https:\/\//, `${signal.slug} needs exact HTTPS source`);
     assert.ok(signal.boundary.length >= 100, `${signal.slug} needs explicit anti-overclaim boundary`);
     assert.ok(signal.whyItMatters.length >= 100, `${signal.slug} needs useful interpretation`);
     assert.ok(signal.topics.length >= 3, `${signal.slug} needs useful topic graph`);
+    assert.ok(magazineVisuals.includes(`\"${signal.slug}\"`), `${signal.slug} needs a dedicated signal visual`);
   }
-  assert.match(home, /const SIGNAL_IMAGES: ImageKey\[\]/);
-  assert.doesNotMatch(home, /SIGNAL_IMAGES[\s\S]{0,500}\bnull\b/);
+  assert.match(signalPage, /signalImageKey/);
+  assert.match(signalPage, /VISUAL CONTEXT/);
   assert.match(signalPage, /DO NOT OVER-READ THIS/);
   assert.match(signalPage, /OPEN SOURCE/);
   assert.match(signalPage, /FAST \/ SOURCE-BOUNDED/);
@@ -122,6 +143,7 @@ test("reader product supports search save recent resume and text size without an
   assert.match(library, /MagazineSearch/);
   assert.match(library, /MagazineSaved/);
   assert.match(library, /MagazineArchive/);
+  assert.match(library, /featureForStory/);
   assert.match(article, /SAVE \+/);
   assert.match(article, /TEXT A\+/);
   assert.match(article, /recordMagazineRecent/);
