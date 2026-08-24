@@ -6,7 +6,7 @@ test('TEST KING Jaguar loads verified Ear full-source 3D, preserves fallback, ex
   const root=page.locator('#jaguar-experience');
   await expect(root).toBeVisible();
   await expect(root).toHaveAttribute('data-jaguar-ear-full',/loading|ready/,{timeout:5000});
-  await expect(root).toHaveAttribute('data-jaguar-ear-delivery','direct-official-embed-v46');
+  await expect(root).toHaveAttribute('data-jaguar-ear-delivery','direct-official-embed-v47');
 
   // Entry is intentionally first-frame-first. The local WebGL fallback is created only after ENTER.
   await expect(page.locator('#photo-fallback')).toBeAttached();
