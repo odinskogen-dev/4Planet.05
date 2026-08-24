@@ -6,6 +6,8 @@ import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
+import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
+import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
@@ -83,6 +85,8 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<ImpactStory />} />
+      <Route path="/checkout/lab" element={<CommerceStripeLab />} />
+      <Route path="/checkout/return" element={<CheckoutReturn />} />
       <Route path="/join" element={<Join />} />
       <Route path="/people" element={<Navigate to="/join" replace />} />
       <Route path="/brands" element={<Brands />} />
