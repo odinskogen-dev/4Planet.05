@@ -27,6 +27,12 @@ function editorialLabel(type: string) {
   return "4PLANET MAGAZINE EDITORIAL";
 }
 
+function sourceState(count: number, editorialType: string) {
+  if (count > 0) return `${count} ATTACHED SOURCE${count === 1 ? "" : "S"}`;
+  if (editorialType === "ORGANISATIONAL_EXPLAINER") return "4PLANET EXPLAINER METHOD";
+  return "SOURCE METHOD INSIDE";
+}
+
 function initialReadingSize(): ReadingSize {
   if (typeof window === "undefined") return "standard";
   return window.localStorage.getItem("4planet.magazine.reading-size") === "large" ? "large" : "standard";
@@ -89,6 +95,7 @@ export function StoryArticle() {
   const experience = experienceForStory(s);
   const experienceContract = experienceContractForStory(s);
   const sectionCount = s.blocks.filter((block) => block.k === "sub").length + 1;
+  const attachedSources = s.sourceLinks?.length ?? 0;
 
   const shareStory = async () => {
     const url = window.location.href;
@@ -176,18 +183,25 @@ export function StoryArticle() {
           </figure>
         </section>
 
-        {s.topics?.length ? <nav className="mag-article-topics" aria-label="Story topics">{s.topics.map((topicId) => { const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId); return <Link key={topicId} to={`/magazine?topic=${topicId}`}>{topic?.label ?? topicId}</Link>; })}</nav> : null}
+        {s.topics?.length ? <nav className="mag-article-topics" aria-label="Story topics">{s.topics.map((topicId) => { const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId); return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>; })}</nav> : null}
+
+        <section className="mag-story-facts" aria-label="Story context">
+          <div><span>FORM</span><strong>{experienceContract.label}</strong></div>
+          <div><span>EVIDENCE</span><strong>{sourceState(attachedSources, s.editorialType)}</strong></div>
+          <div><span>VISUAL</span><strong>{s.imageRole === "DOCUMENTARY" ? "DOCUMENTARY" : "CONTEXT / DISCLOSED"}</strong></div>
+          <div><span>NEXT OBJECT</span><strong>{s.pathway?.kind?.replace(/_/g, " ") ?? "RELATED READING"}</strong></div>
+        </section>
 
         {experience === "INTELLIGENCE_STORY" ? (
           <section className="mag-intelligence-strip" aria-label="Intelligence story inspection layer">
             <div><span>QUESTION</span><strong>{s.dek}</strong></div>
-            <div><span>EVIDENCE BASE</span><strong>{s.sourceLinks?.length ? `${s.sourceLinks.length} attached primary / published source${s.sourceLinks.length > 1 ? "s" : ""}` : "4PLANET source workflow"}</strong></div>
+            <div><span>EVIDENCE BASE</span><strong>{attachedSources ? `${attachedSources} attached primary / published source${attachedSources > 1 ? "s" : ""}` : "4PLANET source workflow"}</strong></div>
             <div><span>CONTEXT</span><strong>{[s.location, ...s.tags.slice(0, 3)].filter(Boolean).join(" · ")}</strong></div>
             <div><span>LIMIT</span><strong>{s.reportingNote ?? "Interpretation remains bounded by the source and method described below."}</strong></div>
           </section>
         ) : null}
 
-        {experience === "VISUAL_ESSAY" ? <div className="mag-visual-breath" aria-hidden><span>LIVING WORLD / VISUAL SEQUENCE</span></div> : null}
+        {experience === "VISUAL_ESSAY" ? <div className="mag-visual-breath" aria-hidden><span>IMAGE FIRST / CONTEXT ATTACHED</span></div> : null}
 
         <section className="mag-article-world-body">
           <div className="mag-article-world-reading">
@@ -200,7 +214,7 @@ export function StoryArticle() {
             <div><p className="mag-source-label">HOW WE KNOW</p><h2 id="source-desk-title">The evidence stays attached.</h2></div>
             <div className="mag-source-desk-copy">
               <p>{s.reportingNote ?? template?.trustRule ?? "Material claims should remain traceable to source objects, while uncertainty and corrections remain visible."}</p>
-              {s.sourceLinks?.length ? <div className="mag-source-list">{s.sourceLinks.map((source) => <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}><div><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b></a>)}</div> : <div className="mag-source-list"><Link className="mag-source-item" to="/magazine/sources"><div><strong>4PLANET Sources & Method</strong><span>Organisational explainer source workflow</span></div><b>OPEN →</b></Link></div>}
+              {s.sourceLinks?.length ? <div className="mag-source-list">{s.sourceLinks.map((source, index) => <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}><div><span className="mag-source-number">{String(index + 1).padStart(2, "0")}</span><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b></a>)}</div> : <div className="mag-source-list"><Link className="mag-source-item" to="/magazine/sources"><div><strong>4PLANET Sources & Method</strong><span>Organisational explainer source workflow</span></div><b>OPEN →</b></Link></div>}
               <div className="mag-trust-links"><Link to="/magazine/sources">SOURCES & METHOD →</Link><Link to="/magazine/corrections">CORRECTIONS →</Link></div>
             </div>
           </div>
