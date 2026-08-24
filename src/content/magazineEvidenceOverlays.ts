@@ -41,6 +41,12 @@ export const MAGAZINE_EVIDENCE_OVERLAYS: Record<string, MagazineFeatureSource[]>
       publisher: "Rewilding Portugal",
       url: "https://rewilding-portugal.com/greater-coa-valley/paul-de-toiroes/",
     },
+    {
+      label: "Aquatic plant survey — methods, water chemistry and rare species",
+      publisher: "Mossy Earth",
+      url: "https://www.mossy.earth/projects/rewilding-a-former-mine/aquatic-plant-survey-2024",
+      publishedAt: "2024-05",
+    },
   ],
   "ai-coral-photomosaics": [
     {
@@ -73,6 +79,11 @@ export const MAGAZINE_EVIDENCE_OVERLAYS: Record<string, MagazineFeatureSource[]>
       publisher: "Regione Puglia",
       url: "https://trasparenza.regione.puglia.it/provvedimenti/provvedimenti-della-giunta-regionale/201785",
       publishedAt: "2026-08-08",
+    },
+    {
+      label: "San Paolo Dolphin Refuge — project history, site and care model",
+      publisher: "Jonian Dolphin Conservation",
+      url: "https://www.joniandolphin.it/san-paolo-dolphin-refuge/",
     },
   ],
   "why-4planet-exists": [
