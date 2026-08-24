@@ -19,8 +19,8 @@ const requiredDiscoveryRoutes = [
 ];
 
 const journeyEntries = [
-  { route: "/journey/jaguar/", file: "public/journey/jaguar/index.html", returnNeedles: ["/species/jaguar", "/species"] },
-  { route: "/journey/orca/", file: "public/journey/orca/index.html", returnNeedles: ["/species/orca", "/species"] },
+  { route: "/journey/jaguar/", file: "public/journey/jaguar/index.html", returnNeedles: ["/species/jaguar", "/species", "/"] },
+  { route: "/journey/orca/", file: "public/journey/orca/index.html", returnNeedles: ["/species/orca", "/species", "/"] },
 ];
 
 const sitemapGenerator = read("scripts/generate-sitemap.mjs");
@@ -58,11 +58,18 @@ const analyticsContract = {
   returnVisitRuntime: routeAnalytics.includes("return_visit"),
 };
 
+const robotsContract = {
+  present: Boolean(robots),
+  allowsCrawl: /User-agent:\s*\*[\s\S]*Allow:\s*\//i.test(robots),
+  sitemapDeclared: /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i.test(robots),
+};
+
 const hardFailures = [
   ...routeCoverage.filter((row) => !row.declaredInSitemapGenerator).map((row) => `MISSING_SITEMAP_ROUTE:${row.route}`),
   ...journeys.filter((row) => !row.physicalEntryPresent).map((row) => `MISSING_ENTRY:${row.route}`),
   ...journeys.filter((row) => !row.returnPathPresent).map((row) => `DEAD_END:${row.route}`),
   ...Object.entries(analyticsContract).filter(([, ok]) => !ok).map(([key]) => `ANALYTICS_GAP:${key}`),
+  ...Object.entries(robotsContract).filter(([, ok]) => !ok).map(([key]) => `ROBOTS_GAP:${key}`),
 ];
 
 const improvementQueue = journeys.flatMap((row) => [
@@ -77,6 +84,7 @@ const report = {
   routeCoverage,
   journeys,
   analyticsContract,
+  robotsContract,
   hardFailures,
   improvementQueue,
   truthBoundary: "Discovery readiness and instrumentation presence do not prove indexing, traffic, users, completion, return or referral.",
