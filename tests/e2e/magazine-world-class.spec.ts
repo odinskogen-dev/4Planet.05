@@ -12,8 +12,8 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     await expect(page.getByRole("heading", { name: "The world is alive. So is the story." })).toBeVisible();
     await expect(page.getByText("PLANET SIGNAL / FAST, SOURCE-BOUNDED")).toBeVisible();
     await expect(page.getByText("RECURRING EDITORIAL")).toBeVisible();
-    await expect(page.getByRole("link", { name: "SEARCH" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "SAVED" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Search 4PLANET Magazine", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "SAVED", exact: true })).toBeVisible();
     await expect(page.locator(".mag-world-masthead-word")).toHaveCount(2);
     await expect(page.locator(".mag-world-footer")).toBeVisible();
     await expect(page.locator(".public-shell")).toHaveCount(0);
@@ -34,25 +34,25 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
 
   test("topic, lane and canonical hub routes behave as useful feeds", async ({ page }) => {
     await page.goto("/magazine?topic=INNOVATION");
-    await expect(page.getByRole("heading", { name: "Innovation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Innovation", exact: true })).toBeVisible();
     await expect(page.locator(".mag-story-tile").first()).toBeVisible();
     await page.goto("/magazine?lane=PEOPLE");
-    await expect(page.getByRole("heading", { name: "PEOPLE" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "PEOPLE", exact: true })).toBeVisible();
     await expect(page.locator(".mag-story-tile").first()).toBeVisible();
     await page.goto("/magazine/topics/innovation");
-    await expect(page.getByRole("heading", { name: "Innovation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Innovation", exact: true })).toBeVisible();
     await page.goto("/magazine/series/from-the-field");
-    await expect(page.getByRole("heading", { name: "FROM THE FIELD" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "FROM THE FIELD", exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
   test("search finds a real story and archive carries Planet Signals", async ({ page }) => {
     await page.goto("/magazine/search?q=orca");
-    await expect(page.getByRole("heading", { name: "Find the thread." })).toBeVisible();
-    await expect(page.getByText(/story.*matching/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Find the thread.", exact: true })).toBeVisible();
+    await expect(page.getByText(/stor(?:y|ies).*matching/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /ocean watch/i }).first()).toBeVisible();
     await page.goto("/magazine/archive");
-    await expect(page.getByRole("heading", { name: "Everything worth keeping." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Everything worth keeping.", exact: true })).toBeVisible();
     await expect(page.getByText(/bounded signals/i)).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
@@ -64,7 +64,7 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     await save.click();
     await expect(page.getByRole("button", { name: "SAVED ✓" }).first()).toBeVisible();
     await page.goto("/magazine/saved");
-    await expect(page.getByRole("heading", { name: "Keep what mattered." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Keep what mattered.", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: /air filter that became/i }).first()).toBeVisible();
   });
 
@@ -79,7 +79,7 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
       await page.goto(route);
       await expect(page.locator(`.${cls}`)).toBeVisible();
       await expect(page.locator(".mag-story-facts")).toBeVisible();
-      await expect(page.getByText("HOW WE KNOW")).toBeVisible();
+      await expect(page.getByText("HOW WE KNOW", { exact: true })).toBeVisible();
       await expect(page.locator(".mag-world-footer")).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
@@ -88,8 +88,8 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
   test("Planet Signal exposes source, why and anti-overclaim boundary", async ({ page }) => {
     await page.goto("/magazine/signals/automated-edna-erna-water-monitoring");
     await expect(page.getByText("PLANET SIGNAL").first()).toBeVisible();
-    await expect(page.getByText("WHY IT MATTERS")).toBeVisible();
-    await expect(page.getByText("DO NOT OVER-READ THIS")).toBeVisible();
+    await expect(page.getByText("WHY IT MATTERS", { exact: true })).toBeVisible();
+    await expect(page.getByText("DO NOT OVER-READ THIS", { exact: true })).toBeVisible();
     const source = page.getByRole("link", { name: /OPEN SOURCE/ });
     await expect(source).toHaveAttribute("href", /^https:\/\//);
     await expectNoHorizontalOverflow(page);
@@ -101,7 +101,7 @@ test.describe("4PLANET MAGAZINE — reduced motion", () => {
   test("journey mode keeps information when motion is reduced", async ({ page }) => {
     await page.goto("/magazine/five-am-bay-of-biscay");
     await expect(page.locator(".mag-journey-gateway")).toBeVisible();
-    await expect(page.getByText("HOW WE KNOW")).toBeVisible();
+    await expect(page.getByText("HOW WE KNOW", { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });
