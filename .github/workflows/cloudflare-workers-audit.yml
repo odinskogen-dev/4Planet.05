@@ -28,28 +28,38 @@ jobs:
           [[ -n "${account_id}" ]] || { echo "No account id"; exit 1; }
 
           domains_json="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || true)"
-
           {
-            echo "# Cloudflare Worker custom domains"
+            echo "# Cloudflare Worker origin audit"
             echo
-            if jq -e '.success == true' <<<"${domains_json}" >/dev/null 2>&1; then
-              for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
-                echo "## ${domain}"
-                row="$(jq -c --arg h "$domain" '.result[]? | select(.hostname==$h)' <<<"${domains_json}" | head -n1)"
-                if [[ -n "$row" ]]; then
-                  echo "- service: \`$(jq -r '.service // ""' <<<"$row")\`"
-                  echo "- environment: \`$(jq -r '.environment // ""' <<<"$row")\`"
-                  echo "- zone: \`$(jq -r '.zone_name // ""' <<<"$row")\`"
-                  echo "- domain id: \`$(jq -r '.id // ""' <<<"$row")\`"
-                else
-                  echo "- No Worker custom-domain record found."
-                fi
+            for domain in 4planetmagazine.com cre4tors.com 4planetmarket.com; do
+              row="$(jq -c --arg h "$domain" '.result[]? | select(.hostname==$h)' <<<"${domains_json}" | head -n1)"
+              echo "## ${domain}"
+              if [[ -z "$row" ]]; then
+                echo "- No Worker custom-domain record found."
                 echo
-              done
-            else
-              echo "Workers Domains API unavailable with current token."
-              jq '{success,errors}' <<<"${domains_json}" 2>/dev/null || true
-            fi
+                continue
+              fi
+              service="$(jq -r '.service // ""' <<<"$row")"
+              echo "- service: \`${service}\`"
+              script_file="/tmp/${service}.worker"
+              code="$(curl -sS -w '%{http_code}' -o "$script_file" "${api}/accounts/${account_id}/workers/scripts/${service}" "${auth[@]}")"
+              echo "- script fetch HTTP: \`${code}\`"
+              if [[ "$code" == "200" ]]; then
+                refs="$(grep -Eo 'https://[A-Za-z0-9._~:/?#\[\]@!$&()*+,;=%-]+' "$script_file" | sed 's/[),;]$//' | sort -u | head -n 20 || true)"
+                if [[ -n "$refs" ]]; then
+                  echo "- embedded URL refs:"
+                  while IFS= read -r ref; do echo "  - \`${ref}\`"; done <<<"$refs"
+                else
+                  echo "- embedded URL refs: none detected"
+                fi
+                pages_refs="$(strings "$script_file" | grep -Eo '[A-Za-z0-9._-]+\.pages\.dev' | sort -u | head -n 20 || true)"
+                if [[ -n "$pages_refs" ]]; then
+                  echo "- pages.dev refs:"
+                  while IFS= read -r ref; do echo "  - \`${ref}\`"; done <<<"$pages_refs"
+                fi
+              fi
+              echo
+            done
           } > /tmp/workers-report.md
           cat /tmp/workers-report.md
 
