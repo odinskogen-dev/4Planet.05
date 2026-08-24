@@ -17,16 +17,19 @@ import "@/styles/magazine-world.css";
 const MOSAIC_SIZES = ["lead", "portrait", "small", "wide", "compact", "small", "feature", "portrait", "small", "wide", "compact", "feature"] as const;
 const MOSAIC_COLORS = ["", "ink", "", "", "blue", "", "", "", "", "", "", ""] as const;
 const HOME_STORY_LIMIT = 12;
-const HOME_SIGNAL_LIMIT = 8;
+const HOME_SIGNAL_LIMIT = 4;
+
+/* Front-page art direction: no two editorial objects share the same image. */
+const HOME_STORY_IMAGE_OVERRIDES: Partial<Record<string, ImageKey>> = {
+  "sea-pen-instead-of-tank": "rewildMarineHero",
+  "the-four-domains": "heroEarth",
+};
+
 const SIGNAL_IMAGES: ImageKey[] = [
-  "circularCityHero",
-  "homepageBonus",
-  "oce4nDomainHero",
-  "cor4lHero",
-  "e4rthDomainHero",
-  "frontHero",
   "s4piensDomainHero",
-  "foodHero",
+  "homepageBonus",
+  "pl4sticHero",
+  "speciesHero",
 ];
 
 function storyStatus(story: Story) {
@@ -44,7 +47,8 @@ function safeImageFallback(event: React.SyntheticEvent<HTMLImageElement>) {
 }
 
 function StoryTile({ story, index }: { story: Story; index: number }) {
-  const media = img(story.image);
+  const imageKey = HOME_STORY_IMAGE_OVERRIDES[story.slug] ?? story.image;
+  const media = img(imageKey);
   const size = MOSAIC_SIZES[index % MOSAIC_SIZES.length];
   const colour = MOSAIC_COLORS[index % MOSAIC_COLORS.length];
   const experience = experienceForStory(story).replace(/_/g, " ");
@@ -81,7 +85,7 @@ function StoryTile({ story, index }: { story: Story; index: number }) {
 function SignalTile({ index }: { index: number }) {
   const signal = MAGAZINE_SIGNALS[index];
   const media = img(SIGNAL_IMAGES[index % SIGNAL_IMAGES.length]);
-  const layout = index % 4 === 0 ? "wide" : index % 3 === 0 ? "tall" : index % 2 === 0 ? "image" : "text";
+  const layout = index === 0 ? "lead" : "compact";
 
   return (
     <Link
@@ -113,7 +117,8 @@ function StoryStream() {
           {[0, 1].map((copy) => (
             <div className="mag-story-stream-group" key={copy} aria-hidden={copy === 1 ? "true" : undefined}>
               {stories.map((story) => {
-                const media = img(story.image);
+                const imageKey = HOME_STORY_IMAGE_OVERRIDES[story.slug] ?? story.image;
+                const media = img(imageKey);
                 return (
                   <Link className="mag-story-stream-card" to={`/magazine/${story.slug}`} key={`${copy}-${story.slug}`} tabIndex={copy === 1 ? -1 : undefined}>
                     <img src={media.src} alt={copy === 1 ? "" : media.alt} loading="lazy" decoding="async" onError={safeImageFallback} />
