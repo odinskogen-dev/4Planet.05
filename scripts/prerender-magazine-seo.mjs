@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readStories, readSignals, readImages, readFoundingEdition, absoluteUrl } from "./magazine-content.mjs";
+import { readArticleTemplates, readStories, readSignals, readImages, readFoundingEdition, readTopics, absoluteUrl } from "./magazine-content.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -14,6 +14,9 @@ const stories = readStories();
 const signals = readSignals();
 const images = readImages();
 const foundingEdition = readFoundingEdition();
+const topics = readTopics();
+const templates = readArticleTemplates();
+const PUBLIC_LAUNCH_DATE = "2026-08-24";
 
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -79,10 +82,12 @@ writeRoute("/magazine", {
 });
 
 const informationPages = [
-  { route: "/magazine/about", title: "About 4PLANET MAGAZINE", description: "The editorial purpose, independence rules and current publication state of 4PLANET MAGAZINE." },
-  { route: "/magazine/sources", title: "Sources & Method — 4PLANET MAGAZINE", description: "How 4PLANET MAGAZINE handles sources, claims, uncertainty, rights and editorial release." },
+  { route: "/magazine/about", title: "About 4PLANET MAGAZINE", description: "What 4PLANET MAGAZINE publishes, how editorial independence works and what readers should expect from every story." },
+  { route: "/magazine/sources", title: "Sources & Method — 4PLANET MAGAZINE", description: "How 4PLANET MAGAZINE handles reporting, sources, claims, uncertainty, image rights, fact checking and publication." },
   { route: "/magazine/corrections", title: "Corrections — 4PLANET MAGAZINE", description: "The 4PLANET MAGAZINE corrections and transparency desk." },
+  { route: "/magazine/privacy", title: "Privacy — 4PLANET MAGAZINE", description: "How optional analytics, saved reading and local reader state work on 4PLANET MAGAZINE." },
   { route: "/magazine/archive", title: "Archive — 4PLANET MAGAZINE", description: "Browse full stories and source-backed Planet Signals from 4PLANET MAGAZINE." },
+  { route: "/magazine/atlas", title: "4PLANET ATLAS — Explore the planet behind the stories", description: "An interactive 4PLANET view connecting place, active-fire detections and biodiversity context on one explorable Earth." },
 ];
 for (const page of informationPages) {
   const canonical = absoluteUrl(magazineOrigin, page.route);
@@ -101,7 +106,8 @@ for (const story of stories) {
     publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical },
     isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
     articleSection: story.lane || story.category, keywords: Array.isArray(story.tags) ? story.tags.join(", ") : undefined,
-    ...(story.publishedAt ? { datePublished: story.publishedAt } : {}), ...(story.updatedAt ? { dateModified: story.updatedAt } : {}),
+    datePublished: story.publishedAt || PUBLIC_LAUNCH_DATE,
+    dateModified: story.updatedAt || story.publishedAt || PUBLIC_LAUNCH_DATE,
   };
   writeRoute(`/magazine/${story.slug}`, { title: `${story.title} | 4PLANET MAGAZINE`, description: story.dek, canonical, image, imageAlt, type: "article", section: story.lane || story.category, tags: Array.isArray(story.tags) ? story.tags : [], jsonLd });
 }
@@ -111,14 +117,28 @@ for (const signal of signals) {
   const canonical = absoluteUrl(magazineOrigin, route);
   writeRoute(route, {
     title: `${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`, description: signal.dek, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "article", section: "Planet Signal", tags: signal.topics || [],
-    jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
+    jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, datePublished: signal.publishedAt, dateModified: signal.asOf || signal.publishedAt, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
   });
 }
 
+for (const topic of topics) {
+  const route = `/magazine/topics/${topic.id.toLowerCase()}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, { title: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
+}
+
+for (const template of templates) {
+  const slug = template.id.toLowerCase().replaceAll("_", "-");
+  const route = `/magazine/series/${slug}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, { title: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
+}
+
+// Internal founding-edition commission records remain noindex working records.
 for (const record of foundingEdition.items) {
   const route = `/magazine/stories/${record.id}`;
   const canonical = absoluteUrl(magazineOrigin, route);
-  writeRoute(route, { title: `${record.title} — Pre-publication record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — Founding Edition working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
+  writeRoute(route, { title: `${record.title} — Working record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — controlled working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
 }
 
-console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${informationPages.length} info pages + ${foundingEdition.items.length} working records at canonical ${magazineOrigin}`);
+console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${topics.length} topics + ${templates.length} series + ${informationPages.length} public utility pages + ${foundingEdition.items.length} noindex working records at canonical ${magazineOrigin}`);
