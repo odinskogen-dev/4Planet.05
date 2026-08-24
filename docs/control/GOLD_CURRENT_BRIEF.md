@@ -2,17 +2,17 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-V52-VISIBILITY-CORRECTION-53  
+**CHANGE ID:** JAGUAR-V52-RENDERER-AUTHORITY-54  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** 24 AUG 2026 — keep coding until the Jaguar is visibly good. Do not call hidden or fallback canvas success. Preserve the leading Journey and the rights-verified Ear.Rodriguez source geometry.  
+**FOUNDER DIRECTION:** 24 AUG 2026 — keep coding until the Jaguar is visibly good. Do not call hidden, fallback or stale-state canvas success. Preserve the leading Journey and the rights-verified Ear.Rodriguez source geometry.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
 They want to meet a Jaguar as a living animal first, then understand the living system around it.
 
 ## ONE THING TO UNDERSTAND
-The creature must immediately read as a real three-dimensional Jaguar, not a flat silhouette, proxy or hidden renderer.
+The creature must immediately read as a real three-dimensional Jaguar, not a flat silhouette, proxy, hidden renderer or stale fallback-owned runtime.
 
 ## PRIMARY ACTION
 Enter the living system and inspect the local source-derived Jaguar directly.
@@ -33,25 +33,25 @@ Drag/swipe, LOOK AT ME, MOVE, LUME, BACK, HOW DO WE KNOW? and FOLLOW THE SYSTEM.
 Evidence/licence context, LUME intelligence and later Journey system layers.
 
 ## CURRENT DEFECT
-Exact Browser Product Proof #787 on `b79b570e4156ae27f7a0ea05d12ad9bbc638bb54` proved the V52 activation is not visible. Chromium desktop, 390 and 430 all found the previous `.jaguar-local-v48` canvas hidden. Inspection of the exact runtime identifies a CSS ownership collision: V48 injects `#three-stage>canvas:not(.jaguar-local-v48){opacity:0!important;visibility:hidden!important;pointer-events:none!important}`, which also hides the new `.jaguar-local-v52` canvas. V52 then hides V48 when `data-jaguar-quality=volumetric-v52`, leaving no accepted visible creature surface. This is a deterministic visibility/renderer-authority defect, not missing source geometry.
+Exact Browser Product Proof #827 on `672fbbee8e4700204b573beae656ceab9c842435` proves V52 itself reaches `data-jaguar-quality=volumetric-v52` on Chromium desktop, 390 and 430, but the legacy V48 lifecycle keeps reasserting `data-jaguar3d-source=ear-rodriguez-local-v48-source-derived` after V52 activation. The same trace shows V52 booted/quality-ready while source ownership and pose remain V48 values. This is a deterministic renderer-authority race: V52 exists and is selected, but fallback lifecycle metadata can still overwrite the active renderer truth state.
 
 ## BOUNDED ADOPTION
-Keep V52 source-derived geometry, computed normals, perspective renderer, procedural natural-rosette shader and interaction. Add a narrowly scoped V53 visibility override that gives the V52 canvas explicit dominant visibility only while `data-jaguar-quality=volumetric-v52`, and leaves V48 as hidden fallback. Update the focused browser proof so Gold requires the V52 canvas itself, V52 source/truth attributes, a non-empty V52 framebuffer and hidden V48/photo fallback.
+Keep V52 source-derived geometry, computed normals, perspective renderer, procedural natural-rosette shader, V53 visibility ownership and interaction. Add a narrowly scoped V54 authority reconciler loaded after V52. While and only while `data-jaguar-quality=volumetric-v52`, it must atomically preserve V52 source/pose/material/active identity, keep V52 visible, keep V48/photo fallback hidden, and resist later V48 observer/ENTER reassertion. Do not mutate geometry, source bytes or Journey structure.
 
 ## WHAT CAN BE REMOVED
-Any acceptance that inspects the hidden V48 fallback as the dominant creature; generic canvas-hiding rules that accidentally suppress the active renderer; stale V48-only test wording.
+Fallback lifecycle authority over V52 source/pose/material state; any acceptance that reads V48 metadata while V52 is the active renderer; stale V48-only ownership semantics.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, Jungle/LUME architecture, immutable Ear.Rodriguez master/licence evidence, V48 source payload and V51 transport recovery, V52 source-derived renderer and controlled fallbacks.
+`king/test`, PR131, current eight-step Journey/navigation, Jungle/LUME architecture, immutable Ear.Rodriguez master/licence evidence, V48 source payload and V51 transport recovery, V52 source-derived renderer, V53 active-renderer visibility correction and controlled fallbacks.
 
 ## TRUTH BOUNDARY
-Geometry remains source-derived from the verified Ear.Rodriguez CC BY 4.0 master. V51 transport recovery, V52 normals/perspective/camera/lighting/coat and procedural motion are 4PLANET presentation behaviour. No original source texture or animation is claimed. This is not live animal, occurrence, abundance or tracking data.
+Geometry remains source-derived from the verified Ear.Rodriguez CC BY 4.0 master. V51 transport recovery, V52 normals/perspective/camera/lighting/coat and procedural motion are 4PLANET presentation behaviour. V54 changes runtime ownership/state only. No original source texture or animation is claimed. This is not live animal, occurrence, abundance or tracking data.
 
 ## CREATURE-FIRST PERFORMANCE
 DPR remains capped; render pauses outside the encounter and while hidden; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
 
 ## MOBILE-FIRST RISK
-390/430 must keep V52 visibly large enough to recognise and interact with. No hidden canvas, blank surface, overflow or fallback masquerading as Gold.
+390/430 must keep V52 visibly large enough to recognise and interact with. No hidden canvas, blank surface, overflow, stale V48 ownership or fallback masquerading as Gold.
 
 ## HUMAN SUCCESS
 A first-time viewer sees an unmistakable three-dimensional Jaguar, can rotate and trigger presentation motion, can switch to LUME and continue the Journey without losing the creature.
