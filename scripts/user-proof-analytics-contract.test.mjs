@@ -18,6 +18,14 @@ const requiredEvents = [
   "join_interest",
 ];
 
+const requiredAnalyticsHosts = [
+  "4planet.org",
+  "4planetmagazine.com",
+  "s4piens.com",
+  "cre4tors.com",
+  "4planetmarket.com",
+];
+
 const requiredRoutes = [
   "/",
   "/atlas",
@@ -47,9 +55,17 @@ test("shared analytics contract rejects free-text and precise-location fields by
 
 test("GA4 remains gated by explicit consent and a real measurement id", () => {
   assert.match(analytics, /VITE_GA_MEASUREMENT_ID/);
+  assert.match(analytics, /G-Q79Y9HJRL8/);
   assert.match(analytics, /readConsent\(\) !== \"granted\"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
+});
+
+test("analytics is fail-closed to the approved live-domain set", () => {
+  for (const host of requiredAnalyticsHosts) assert.ok(analytics.includes(`\"${host}\"`), `analytics host missing: ${host}`);
+  assert.match(analytics, /\.pages\.dev/);
+  assert.match(analytics, /localhost/);
+  assert.match(analytics, /isAnalyticsHostAllowed/);
 });
 
 test("canonical discovery routes remain generated and crawlable", () => {
