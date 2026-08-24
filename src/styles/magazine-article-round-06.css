@@ -146,6 +146,52 @@
   border-top: 1px solid #000;
 }
 
+/* Public article opening — editorial first, system metadata later. */
+.mag-article-world .mag-article-world-header {
+  padding-bottom: clamp(32px,4vw,56px);
+}
+
+.mag-article-world .mag-article-world-hero {
+  padding-top: 0;
+}
+
+.mag-article-world-intro {
+  width: min(980px, calc(100% - clamp(40px,8vw,128px)));
+  margin: clamp(48px,6vw,84px) auto 0;
+}
+
+.mag-article-world-intro .mag-article-world-dek {
+  max-width: 920px;
+  margin: 0;
+  font-family: var(--mw-serif, Georgia, serif);
+  font-size: clamp(24px,2.4vw,36px);
+  line-height: 1.22;
+  letter-spacing: -.025em;
+}
+
+.mag-article-world-intro .mag-article-world-meta {
+  margin-top: clamp(28px,4vw,42px);
+  padding-top: 16px;
+  border-top: 1px solid rgba(8,8,8,.2);
+  align-items: center;
+}
+
+.mag-article-world-intro + .mag-article-world-body {
+  padding-top: clamp(46px,6vw,78px) !important;
+}
+
+.mag-experience--intelligence-story .mag-article-world-body,
+.mag-experience--journey-feature .mag-article-world-body {
+  background: #fff !important;
+}
+
+.mag-article-topics {
+  width: min(980px, calc(100% - clamp(40px,8vw,128px)));
+  margin: 0 auto clamp(58px,7vw,96px);
+  padding-top: 22px;
+  border-top: 1px solid rgba(8,8,8,.16);
+}
+
 @keyframes mag-article-pulse-06 {
   0% { box-shadow: 0 0 0 0 rgba(46,46,255,.32); }
   55%,100% { box-shadow: 0 0 0 12px rgba(46,46,255,0); }
@@ -192,6 +238,30 @@
 
   .mag-article-inline-visual figcaption > strong {
     font-size: clamp(27px,8.5vw,38px);
+  }
+
+  .mag-article-world-intro {
+    width: calc(100% - 32px);
+    margin-top: 38px;
+  }
+
+  .mag-article-world-intro .mag-article-world-dek {
+    font-size: clamp(22px,6.8vw,30px);
+    line-height: 1.28;
+  }
+
+  .mag-article-world-intro .mag-article-world-meta {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .mag-article-world-intro + .mag-article-world-body {
+    padding-top: 44px !important;
+  }
+
+  .mag-article-topics {
+    width: calc(100% - 32px);
+    margin-bottom: 58px;
   }
 }
 
