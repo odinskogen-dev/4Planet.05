@@ -4,6 +4,7 @@ import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { Seo } from "@/components/Seo";
 import { STORIES, type Story } from "@/content/stories";
 import { MAGAZINE_SIGNALS } from "@/content/magazineSignals";
+import { featureForStory, featureReadMins } from "@/content/magazineFeatures";
 import { img } from "@/content/imageRegistry";
 import { isStorySaved, recentMagazineStories, resumeMagazineStories, savedStorySlugs, toggleSavedStory } from "@/content/magazineReader";
 import "@/styles/magazine-library.css";
@@ -17,13 +18,15 @@ function storyText(story: Story) {
 }
 
 function StoryRow({ story, onSave }: { story: Story; onSave?: () => void }) {
-  const media = img(story.image);
+  const feature = featureForStory(story.slug);
+  const media = img(feature?.hero ?? story.image);
+  const readMins = featureReadMins(story.slug, story.readMins);
   const saved = isStorySaved(story.slug);
   return (
     <article className="mag-library-row">
       <Link className="mag-library-row-image" to={`/magazine/${story.slug}`}><img src={media.src} alt={media.alt} loading="lazy" /></Link>
       <div className="mag-library-row-copy">
-        <div><span>{story.category}</span><span>{story.readMins} MIN</span></div>
+        <div><span>{story.category}</span><span>{readMins} MIN</span></div>
         <h2><Link to={`/magazine/${story.slug}`}>{story.title}</Link></h2>
         <p>{story.dek}</p>
         <div className="mag-library-row-actions">
