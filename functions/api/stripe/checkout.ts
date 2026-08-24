@@ -2,9 +2,12 @@ type ProductKey =
   | "impact_tree_test"
   | "impact_plastic_test"
   | "impact_coral_test"
-  | "impact_rewild_test";
+  | "impact_rewild_test"
+  | "membership_supporter_test"
+  | "sponsor_package_test";
 
 type ProductKind = "IMPACT_UNIT" | "SPONSOR_PACKAGE" | "MEMBERSHIP";
+type ProductFamily = "IMPACT" | "SPONSOR" | "MEMBERSHIP";
 type CheckoutMode = "payment" | "subscription";
 
 interface Env {
@@ -14,18 +17,21 @@ interface Env {
   STRIPE_PRICE_IMPACT_PLASTIC_TEST?: string;
   STRIPE_PRICE_IMPACT_CORAL_TEST?: string;
   STRIPE_PRICE_IMPACT_REWILD_TEST?: string;
+  STRIPE_PRICE_MEMBERSHIP_SUPPORTER_TEST?: string;
+  STRIPE_PRICE_SPONSOR_PACKAGE_TEST?: string;
 }
 
 interface CatalogEntry {
   key: ProductKey;
   kind: ProductKind;
-  family: "IMPACT";
-  action: "plant-trees" | "clean-ocean" | "restore-coral" | "rewild-nature";
-  mission: "CLIM4TE" | "PL4STIC/CLE4N" | "COR4L" | "RE:WILD";
+  family: ProductFamily;
+  action?: "plant-trees" | "clean-ocean" | "restore-coral" | "rewild-nature";
+  mission?: "CLIM4TE" | "PL4STIC/CLE4N" | "COR4L" | "RE:WILD";
   mode: CheckoutMode;
   priceEnv: keyof Env;
   minQuantity: number;
   maxQuantityPerCheckout: number;
+  returnPath: string;
 }
 
 const CATALOG: Record<ProductKey, CatalogEntry> = {
@@ -39,6 +45,7 @@ const CATALOG: Record<ProductKey, CatalogEntry> = {
     priceEnv: "STRIPE_PRICE_IMPACT_TREE_TEST",
     minQuantity: 1,
     maxQuantityPerCheckout: 20,
+    returnPath: "/impact/lab",
   },
   impact_plastic_test: {
     key: "impact_plastic_test",
@@ -50,6 +57,7 @@ const CATALOG: Record<ProductKey, CatalogEntry> = {
     priceEnv: "STRIPE_PRICE_IMPACT_PLASTIC_TEST",
     minQuantity: 1,
     maxQuantityPerCheckout: 20,
+    returnPath: "/impact/lab",
   },
   impact_coral_test: {
     key: "impact_coral_test",
@@ -61,6 +69,7 @@ const CATALOG: Record<ProductKey, CatalogEntry> = {
     priceEnv: "STRIPE_PRICE_IMPACT_CORAL_TEST",
     minQuantity: 1,
     maxQuantityPerCheckout: 20,
+    returnPath: "/impact/lab",
   },
   impact_rewild_test: {
     key: "impact_rewild_test",
@@ -72,6 +81,27 @@ const CATALOG: Record<ProductKey, CatalogEntry> = {
     priceEnv: "STRIPE_PRICE_IMPACT_REWILD_TEST",
     minQuantity: 1,
     maxQuantityPerCheckout: 20,
+    returnPath: "/impact/lab",
+  },
+  membership_supporter_test: {
+    key: "membership_supporter_test",
+    kind: "MEMBERSHIP",
+    family: "MEMBERSHIP",
+    mode: "subscription",
+    priceEnv: "STRIPE_PRICE_MEMBERSHIP_SUPPORTER_TEST",
+    minQuantity: 1,
+    maxQuantityPerCheckout: 1,
+    returnPath: "/join",
+  },
+  sponsor_package_test: {
+    key: "sponsor_package_test",
+    kind: "SPONSOR_PACKAGE",
+    family: "SPONSOR",
+    mode: "payment",
+    priceEnv: "STRIPE_PRICE_SPONSOR_PACKAGE_TEST",
+    minQuantity: 1,
+    maxQuantityPerCheckout: 1,
+    returnPath: "/brands",
   },
 };
 
@@ -114,6 +144,17 @@ function safeQuantity(value: unknown, entry: CatalogEntry) {
   return quantity;
 }
 
+function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry) {
+  form.set(`${prefix}[4planet_product_key]`, entry.key);
+  form.set(`${prefix}[product_kind]`, entry.kind);
+  form.set(`${prefix}[product_family]`, entry.family);
+  form.set(`${prefix}[truth_state]`, "TEST");
+  form.set(`${prefix}[ecological_delivery_authority]`, "none");
+  form.set(`${prefix}[catalog_version]`, "commerce-core-01");
+  if (entry.action) form.set(`${prefix}[impact_action]`, entry.action);
+  if (entry.mission) form.set(`${prefix}[mission]`, entry.mission);
+}
+
 export const onRequestPost = async (ctx: { request: Request; env: Env }): Promise<Response> => {
   const { request, env } = ctx;
   const origin = request.headers.get("origin") ?? new URL(request.url).origin;
@@ -154,28 +195,30 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   form.set("mode", entry.mode);
   form.set("line_items[0][price]", priceId);
   form.set("line_items[0][quantity]", String(quantity));
-  form.set("customer_creation", "always");
   form.set("billing_address_collection", "auto");
   form.set(
     "success_url",
-    `${origin}/impact/lab?checkout=success&session_id={CHECKOUT_SESSION_ID}&product=${encodeURIComponent(productKey)}`,
+    `${origin}${entry.returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}&product=${encodeURIComponent(productKey)}`,
   );
-  form.set("cancel_url", `${origin}/impact/lab?checkout=cancel&product=${encodeURIComponent(productKey)}`);
+  form.set(
+    "cancel_url",
+    `${origin}${entry.returnPath}?checkout=cancel&product=${encodeURIComponent(productKey)}`,
+  );
   form.set("client_reference_id", `4p_${productKey}`);
-  form.set("metadata[4planet_product_key]", productKey);
-  form.set("metadata[product_kind]", entry.kind);
-  form.set("metadata[product_family]", entry.family);
-  form.set("metadata[impact_action]", entry.action);
-  form.set("metadata[mission]", entry.mission);
-  form.set("metadata[truth_state]", "TEST");
-  form.set("metadata[ecological_delivery_authority]", "none");
-  form.set("metadata[catalog_version]", "impact-pilot-01");
-  form.set("payment_intent_data[metadata][4planet_product_key]", productKey);
-  form.set("payment_intent_data[metadata][truth_state]", "TEST");
-  form.set("payment_intent_data[metadata][ecological_delivery_authority]", "none");
+  setMetadata(form, "metadata", entry);
+
+  if (entry.mode === "payment") {
+    form.set("customer_creation", "always");
+    setMetadata(form, "payment_intent_data[metadata]", entry);
+  } else {
+    setMetadata(form, "subscription_data[metadata]", entry);
+  }
+
   form.set(
     "custom_text[submit][message]",
-    "TEST MODE — payment-path validation only. No partner request, physical delivery or ecological outcome is created by this checkout.",
+    entry.family === "IMPACT"
+      ? "TEST MODE — payment-path validation only. No partner request, physical delivery or ecological outcome is created by this checkout."
+      : "TEST MODE — payment-path validation only. This is not a public commercial offer.",
   );
   if (customerEmail) form.set("customer_email", customerEmail);
 
@@ -189,14 +232,15 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   });
 
   const stripePayload = (await stripeResponse.json().catch(() => null)) as
-    | { id?: string; url?: string; livemode?: boolean; error?: { type?: string } }
+    | { id?: string; url?: string; livemode?: boolean; mode?: string; error?: { type?: string } }
     | null;
 
   if (
     !stripeResponse.ok ||
     !stripePayload?.url ||
     !stripePayload.id?.startsWith("cs_test_") ||
-    stripePayload.livemode === true
+    stripePayload.livemode === true ||
+    (stripePayload.mode && stripePayload.mode !== entry.mode)
   ) {
     return json(
       {
@@ -210,10 +254,13 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
 
   return json({
     ok: true,
-    mode: "test",
+    environment: "TEST",
+    checkoutMode: entry.mode,
     sessionId: stripePayload.id,
     url: stripePayload.url,
     productKey,
+    productKind: entry.kind,
+    productFamily: entry.family,
     quantity,
     truthState: "TEST",
     deliveryAuthority: "none",
