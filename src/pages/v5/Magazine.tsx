@@ -18,14 +18,14 @@ const MOSAIC_SIZES = ["lead", "portrait", "small", "wide", "compact", "small", "
 const MOSAIC_COLORS = ["", "ink", "", "", "blue", "", "", "", "", "", "", ""] as const;
 const HOME_STORY_LIMIT = 12;
 const HOME_SIGNAL_LIMIT = 8;
-const SIGNAL_IMAGES: Array<ImageKey | null> = [
+const SIGNAL_IMAGES: ImageKey[] = [
   "circularCityHero",
-  null,
+  "homepageBonus",
   "oce4nDomainHero",
   "cor4lHero",
   "e4rthDomainHero",
-  null,
-  "homepageBonus",
+  "frontHero",
+  "s4piensDomainHero",
   "foodHero",
 ];
 
@@ -80,8 +80,7 @@ function StoryTile({ story, index }: { story: Story; index: number }) {
 
 function SignalTile({ index }: { index: number }) {
   const signal = MAGAZINE_SIGNALS[index];
-  const imageKey = SIGNAL_IMAGES[index % SIGNAL_IMAGES.length];
-  const media = imageKey ? img(imageKey) : null;
+  const media = img(SIGNAL_IMAGES[index % SIGNAL_IMAGES.length]);
   const layout = index % 4 === 0 ? "wide" : index % 3 === 0 ? "tall" : index % 2 === 0 ? "image" : "text";
 
   return (
@@ -90,7 +89,7 @@ function SignalTile({ index }: { index: number }) {
       data-accent={signal.accent}
       to={`/magazine/signals/${signal.slug}`}
     >
-      {media ? <img className="mag-signal-card-media" src={media.src} alt={media.alt} loading="lazy" decoding="async" onError={safeImageFallback} /> : null}
+      <img className="mag-signal-card-media" src={media.src} alt={media.alt} loading="lazy" decoding="async" onError={safeImageFallback} />
       <div className="mag-signal-card-copy">
         <span>{String(index + 1).padStart(2, "0")} / {signal.publisher}</span>
         <h3>{signal.title}</h3>
@@ -247,10 +246,10 @@ export default function Magazine() {
           <section className="mag-atlas-embed" aria-labelledby="atlas-live-title">
             <header className="mag-atlas-embed-head">
               <div>
-                <p className="mag-feed-kicker">4PLANET ATLAS / LIVE INTERFACE</p>
-                <h2 id="atlas-live-title">The story has a planet behind it.</h2>
+                <p className="mag-feed-kicker">BUILT BY 4PLANET / PLANETARY INTELLIGENCE</p>
+                <h2 id="atlas-live-title">Meet 4PLANET ATLAS.</h2>
               </div>
-              <p>Move from editorial context into the wider planetary view. This embed opens the interactive globe with Blue Marble, active-fire detections and biodiversity density layers selected.</p>
+              <p>ATLAS is the interactive planetary interface we built to connect place, living systems and change on one explorable Earth. This live view opens with Blue Marble, active-fire detections and biodiversity density selected.</p>
             </header>
             <div className="mag-atlas-frame">
               <iframe
@@ -264,7 +263,7 @@ export default function Magazine() {
                 <span>BLUE MARBLE</span><span>ACTIVE FIRES</span><span>BIODIVERSITY</span>
               </div>
             </div>
-            <a className="mag-atlas-open" href="https://king-test.4planet-05.pages.dev/atlas?l=bluemarble,fires,biodiv" target="_blank" rel="noreferrer">OPEN FULL ATLAS →</a>
+            <a className="mag-atlas-open" href="https://king-test.4planet-05.pages.dev/atlas?l=bluemarble,fires,biodiv" target="_blank" rel="noreferrer">ENTER FULL 4PLANET ATLAS →</a>
           </section>
         ) : null}
       </main>
