@@ -8,6 +8,7 @@ import { STORIES, type Story } from "@/content/stories";
 import { MAGAZINE_LANES, MAGAZINE_TOPICS, type MagazineLane, type MagazineTopicId } from "@/content/magazineOperating";
 import { MAGAZINE_SIGNALS } from "@/content/magazineSignals";
 import { experienceForStory } from "@/content/magazineExperience";
+import { featureForStory, featureReadMins } from "@/content/magazineFeatures";
 import { img, type ImageKey } from "@/content/imageRegistry";
 import "@/styles/magazine.css";
 import "@/styles/magazine-home.css";
@@ -19,17 +20,18 @@ const MOSAIC_COLORS = ["", "ink", "", "", "blue", "", "", "", "", "", "", ""] as
 const HOME_STORY_LIMIT = 12;
 const HOME_SIGNAL_LIMIT = 4;
 
-/* Front-page art direction: no two editorial objects share the same image. */
+/* Kept as explicit fallback art direction; the longform feature layer now leads. */
 const HOME_STORY_IMAGE_OVERRIDES: Partial<Record<string, ImageKey>> = {
   "sea-pen-instead-of-tank": "rewildMarineHero",
   "the-four-domains": "heroEarth",
 };
 
+/* Planet Signals use a separate visual bank from longform story heroes. */
 const SIGNAL_IMAGES: ImageKey[] = [
-  "s4piensDomainHero",
-  "homepageBonus",
-  "pl4sticHero",
-  "speciesHero",
+  "foodHero",
+  "en3rgyHero",
+  "f4shionHero",
+  "artHero",
 ];
 
 function storyStatus(story: Story) {
@@ -37,6 +39,10 @@ function storyStatus(story: Story) {
   if (story.editorialType === "ORGANISATIONAL_EXPLAINER") return "4PLANET EXPLAINER";
   if (story.editorialType === "PARTNER_SUBMITTED") return "PARTNER-SUBMITTED";
   return "EDITORIAL";
+}
+
+function storyImageKey(story: Story): ImageKey {
+  return featureForStory(story.slug)?.hero ?? HOME_STORY_IMAGE_OVERRIDES[story.slug] ?? story.image;
 }
 
 function safeImageFallback(event: React.SyntheticEvent<HTMLImageElement>) {
@@ -47,11 +53,11 @@ function safeImageFallback(event: React.SyntheticEvent<HTMLImageElement>) {
 }
 
 function StoryTile({ story, index }: { story: Story; index: number }) {
-  const imageKey = HOME_STORY_IMAGE_OVERRIDES[story.slug] ?? story.image;
-  const media = img(imageKey);
+  const media = img(storyImageKey(story));
   const size = MOSAIC_SIZES[index % MOSAIC_SIZES.length];
   const colour = MOSAIC_COLORS[index % MOSAIC_COLORS.length];
   const experience = experienceForStory(story).replace(/_/g, " ");
+  const readMins = featureReadMins(story.slug, story.readMins);
   const className = [
     "mag-story-tile",
     `mag-story-tile--${size}`,
@@ -73,7 +79,7 @@ function StoryTile({ story, index }: { story: Story; index: number }) {
       </Link>
       <div className="mag-story-copy">
         <div className="mag-story-kicker">
-          <span>{story.category}</span><span>·</span><span>{storyStatus(story)}</span><span>·</span><span>{experience}</span><span>·</span><span>{story.readMins} MIN</span>
+          <span>{story.category}</span><span>·</span><span>{storyStatus(story)}</span><span>·</span><span>{experience}</span><span>·</span><span>{readMins} MIN</span>
         </div>
         <h3><Link to={`/magazine/${story.slug}`}>{story.title}</Link></h3>
         <p>{story.dek}</p>
@@ -117,12 +123,12 @@ function StoryStream() {
           {[0, 1].map((copy) => (
             <div className="mag-story-stream-group" key={copy} aria-hidden={copy === 1 ? "true" : undefined}>
               {stories.map((story) => {
-                const imageKey = HOME_STORY_IMAGE_OVERRIDES[story.slug] ?? story.image;
-                const media = img(imageKey);
+                const media = img(storyImageKey(story));
+                const readMins = featureReadMins(story.slug, story.readMins);
                 return (
                   <Link className="mag-story-stream-card" to={`/magazine/${story.slug}`} key={`${copy}-${story.slug}`} tabIndex={copy === 1 ? -1 : undefined}>
                     <img src={media.src} alt={copy === 1 ? "" : media.alt} loading="lazy" decoding="async" onError={safeImageFallback} />
-                    <span>{story.category} · {story.readMins} MIN</span>
+                    <span>{story.category} · {readMins} MIN</span>
                     <strong>{story.title}</strong>
                   </Link>
                 );
@@ -151,7 +157,7 @@ export default function Magazine() {
   const currentPromise = selectedTopic?.promise ?? selectedLane?.promise;
   const visibleStories = currentLabel ? feed : feed.slice(0, HOME_STORY_LIMIT);
   const visibleSignals = MAGAZINE_SIGNALS.slice(0, HOME_SIGNAL_LIMIT);
-  const recurringVisual = img("homepageBonus");
+  const recurringVisual = img("cultureDomainHero");
 
   useEffect(() => { trackMagazineEntry("home"); }, []);
 
