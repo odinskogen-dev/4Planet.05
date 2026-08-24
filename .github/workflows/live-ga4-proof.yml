@@ -75,7 +75,7 @@ jobs:
             await allow.waitFor({ state: 'visible', timeout: 10000 });
 
             const gaRequestPromise = page.waitForRequest(
-              (request) => /https:\/\/(?:region1\.)?google-analytics\.com\/g\/collect/.test(request.url()),
+              (request) => /https:\/\/(?:www\.|region1\.)?google-analytics\.com\/g\/collect/.test(request.url()),
               { timeout: 20000 },
             );
 
