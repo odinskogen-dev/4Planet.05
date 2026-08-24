@@ -2,61 +2,59 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-GZIP-CRC-RECOVERY-51  
+**CHANGE ID:** JAGUAR-V52-VISIBILITY-CORRECTION-53  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** 24 AUG 2026 — fix the Jaguar visibly, not by status wording. Do not regress the leading Journey. Use the rights-verified Ear.Rodriguez source-derived geometry and do not treat the 457-vertex proxy, iframe, or fallback pixels as Gold.  
+**FOUNDER DIRECTION:** 24 AUG 2026 — keep coding until the Jaguar is visibly good. Do not call hidden or fallback canvas success. Preserve the leading Journey and the rights-verified Ear.Rodriguez source geometry.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
 They want to meet a Jaguar as a living animal first, then understand the living system around it.
 
 ## ONE THING TO UNDERSTAND
-The creature must read immediately as a recognisable Jaguar before deeper system intelligence appears.
+The creature must immediately read as a real three-dimensional Jaguar, not a flat silhouette, proxy or hidden renderer.
 
 ## PRIMARY ACTION
-Enter the living system and directly inspect a recognisable local 3D Jaguar derived from the verified Ear.Rodriguez master.
+Enter the living system and inspect the local source-derived Jaguar directly.
 
 ## SECONDARY DEPTH
 Follow the eight-step Journey from encounter through living web, place, pressure, understanding, solutions, actors/action and proof.
 
 ## P1 DOMINANT
-A recognisable quadruped Jaguar with head, four legs and tail at useful encounter scale.
+A visible recognisable Jaguar with source-derived geometry, perspective depth, computed surface normals and useful encounter scale.
 
 ## P2 ORIENTATION
 Species identity, chapter position and minimal TEST KING/truth context.
 
 ## P3 ACTION / NEXT
-Direct drag/swipe rotation, LOOK AT ME, MOVE, LUME, then FOLLOW THE SYSTEM with BACK and HOW DO WE KNOW? preserved.
+Drag/swipe, LOOK AT ME, MOVE, LUME, BACK, HOW DO WE KNOW? and FOLLOW THE SYSTEM.
 
 ## P4 DEPTH
-Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
+Evidence/licence context, LUME intelligence and later Journey system layers.
 
 ## CURRENT DEFECT
-Exact Browser Product Proof #775 on TEST KING head `3800eb1163c5730b37bad182b00d38d3ef386a99` failed the local Ear runtime on Chromium desktop, 390 and 430. Trace evidence records `data-jaguar-ear-full=fallback` and the exact browser error `The compressed data was not valid: incorrect data check.` The same trace proves the V50 chunk-normalisation shim was a no-op: `posGzipB64` and `idxGzipB64` are already strings because the data file joins its Base64 source chunks at definition time. The visible non-zero framebuffer pixels belonged to the old v33 457-vertex proxy, not the local V48 Jaguar. This is a hard P0 failure.
+Exact Browser Product Proof #787 on `b79b570e4156ae27f7a0ea05d12ad9bbc638bb54` proved the V52 activation is not visible. Chromium desktop, 390 and 430 all found the previous `.jaguar-local-v48` canvas hidden. Inspection of the exact runtime identifies a CSS ownership collision: V48 injects `#three-stage>canvas:not(.jaguar-local-v48){opacity:0!important;visibility:hidden!important;pointer-events:none!important}`, which also hides the new `.jaguar-local-v52` canvas. V52 then hides V48 when `data-jaguar-quality=volumetric-v52`, leaving no accepted visible creature surface. This is a deterministic visibility/renderer-authority defect, not missing source geometry.
 
 ## BOUNDED ADOPTION
-Recover the existing source-derived V48 geometry without changing its vertices or indices. The gzip member reaches DEFLATE decompression but fails trailer integrity validation. For this bounded TEST KING recovery only, wrap the two Jaguar gzip decodes before runtime boot: strip the standard gzip envelope, decompress the intact DEFLATE body with the browser-native `deflate-raw` decoder, and ignore the invalid gzip CRC/ISIZE trailer. Scope the shim to the two Jaguar payload decodes and restore the native global constructor immediately after those instances are created.
-
-If the recovered V48 geometry is not visually recognisable after exact browser proof, reject it and move directly to a new uncompressed derivative generated from the immutable 7.2 MB Ear.Rodriguez master. Do not return to the 457-vertex proxy as Gold.
+Keep V52 source-derived geometry, computed normals, perspective renderer, procedural natural-rosette shader and interaction. Add a narrowly scoped V53 visibility override that gives the V52 canvas explicit dominant visibility only while `data-jaguar-quality=volumetric-v52`, and leaves V48 as hidden fallback. Update the focused browser proof so Gold requires the V52 canvas itself, V52 source/truth attributes, a non-empty V52 framebuffer and hidden V48/photo fallback.
 
 ## WHAT CAN BE REMOVED
-The false Base64-chunk diagnosis, the no-op V50 normaliser, external white iframe path, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code and VFX that obscure the animal.
+Any acceptance that inspects the hidden V48 fallback as the dominant creature; generic canvas-hiding rules that accidentally suppress the active renderer; stale V48-only test wording.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, V48 source-derived geometry payload, controlled species-photo/reduced-proxy fallback and existing performance controls.
+`king/test`, PR131, current eight-step Journey/navigation, Jungle/LUME architecture, immutable Ear.Rodriguez master/licence evidence, V48 source payload and V51 transport recovery, V52 source-derived renderer and controlled fallbacks.
 
 ## TRUTH BOUNDARY
-The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry is source-derived; runtime quantisation/compression recovery, camera, lighting, interaction, coat shader and motion are 4PLANET presentation behaviour. Ignoring the broken gzip trailer is transport recovery only; it does not alter decompressed geometry bytes. It is not a live animal, occurrence, abundance or tracking record and does not claim original source animation or texture.
+Geometry remains source-derived from the verified Ear.Rodriguez CC BY 4.0 master. V51 transport recovery, V52 normals/perspective/camera/lighting/coat and procedural motion are 4PLANET presentation behaviour. No original source texture or animation is claimed. This is not live animal, occurrence, abundance or tracking data.
 
 ## CREATURE-FIRST PERFORMANCE
-First visible species frame first; local renderer only after ENTER; DPR capped; render paused while page hidden/outside encounter; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
+DPR remains capped; render pauses outside the encounter and while hidden; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
 
 ## MOBILE-FIRST RISK
-390/430 widths must keep the Jaguar recognisable and mostly visible, swipe interaction usable, chapter actions readable and free of horizontal overflow. Never replace a working species visual with a blank/white 3D surface.
+390/430 must keep V52 visibly large enough to recognise and interact with. No hidden canvas, blank surface, overflow or fallback masquerading as Gold.
 
 ## HUMAN SUCCESS
-A first-time viewer sees an unmistakable Jaguar rather than a white iframe or blob proxy, can rotate it directly, sees truthful Ear.Rodriguez CC BY 4.0 attribution, and can continue the Journey cleanly.
+A first-time viewer sees an unmistakable three-dimensional Jaguar, can rotate and trigger presentation motion, can switch to LUME and continue the Journey without losing the creature.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence is manually inspected and shows a recognisable Jaguar, not white/blank/proxy shards. 5) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + contracts relevant to the bounded change green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-quality=volumetric-v52`, V52 source/pose/material truth and a visible `.jaguar-local-v52` canvas. 4) V52 framebuffer contains real non-empty rendered pixels; V48 and photo fallback are hidden. 5) Rendered screenshots are manually inspected for recognisable Jaguar quality. 6) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 work. 7) No overflow/infinite loader. 8) Exact SHA deployment verified before ACCEPTED/SAFE. 9) LIVE KING unchanged.
