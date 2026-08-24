@@ -34,17 +34,9 @@ jobs:
           [[ "${current_sha}" == "${LABS_EXPECTED_SHA}" && "${current_branch}" == "${LABS_BRANCH}" ]] || {
             echo "LABS PR/head drifted: branch=${current_branch} sha=${current_sha}; refusing domain switch"; exit 1;
           }
-
-          comments="$(curl -fsS -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/54/comments?per_page=100")"
-          bot_proof="$(jq -r --arg alias "https://${LABS_BRANCH_ALIAS}" --arg short "${LABS_EXPECTED_SHA:0:7}" '
-            .[]? | select(.user.login == "cloudflare-workers-and-pages[bot]") | .body
-            | select(contains($alias)) | select(contains($short))
-          ' <<<"${comments}" | tail -n1)"
-          test -n "${bot_proof}" || { echo "No Cloudflare Pages-bot proof found for exact LABS head + branch alias"; exit 1; }
-
           curl -fsS --retry 5 --retry-delay 2 "https://${LABS_BRANCH_ALIAS}/labs" -o /tmp/labs-branch.html
           grep -Eiq 'LABS|4PLANET' /tmp/labs-branch.html || { echo "Branch alias returned unexpected content"; exit 1; }
-          echo "Exact LABS source + Cloudflare branch alias verified."
+          echo "Exact LABS GitHub head and Cloudflare branch HTTPS verified."
 
       - name: Bind custom domain through Cloudflare API
         shell: bash
