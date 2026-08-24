@@ -7,6 +7,7 @@ import { signalImageKey } from "@/content/magazineVisuals";
 import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-signal.css";
+import "@/styles/magazine-signal-round-06.css";
 
 export function MagazineSignalPage() {
   const { slug } = useParams();
