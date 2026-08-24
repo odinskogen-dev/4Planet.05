@@ -50,6 +50,18 @@ test("GA4 remains gated by explicit consent and a real measurement id", () => {
   assert.match(analytics, /readConsent\(\) !== \"granted\"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
+  assert.match(analytics, /analytics_storage: \"denied\"/);
+  assert.match(analytics, /ad_user_data: \"denied\"/);
+  assert.match(analytics, /ad_personalization: \"denied\"/);
+});
+
+test("analytics is fail-closed to approved production hosts", () => {
+  for (const domain of ["4planet.org", "s4piens.com", "4species.com", "cre4tors.com", "4planetmarket.com"]) {
+    assert.ok(analytics.includes(`\"${domain}\"`), `missing production analytics domain ${domain}`);
+  }
+  assert.match(analytics, /VITE_ANALYTICS_DOMAINS/);
+  assert.match(analytics, /\.pages\.dev/);
+  assert.match(analytics, /isAnalyticsHostAllowed/);
 });
 
 test("canonical discovery routes remain generated and crawlable", () => {
