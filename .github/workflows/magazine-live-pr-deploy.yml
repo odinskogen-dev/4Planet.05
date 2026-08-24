@@ -48,7 +48,7 @@ jobs:
           cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
           const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
           const APEX = "4planetmagazine.com";
-          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
           const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
@@ -59,7 +59,10 @@ jobs:
             const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
             if (!allowedMagazine(incoming.pathname) && !atlasEmbed) return blocked();
 
-            const upstream = new URL(incoming.pathname, UPSTREAM);
+            let upstreamPath = incoming.pathname;
+            if (incoming.pathname === "/robots.txt") upstreamPath = "/magazine-robots.txt";
+            if (incoming.pathname === "/sitemap.xml") upstreamPath = "/magazine-sitemap.xml";
+            const upstream = new URL(upstreamPath, UPSTREAM);
             upstream.search = incoming.search;
             const response = await fetch(new Request(upstream.toString(), request));
             const headers = new Headers(response.headers);
