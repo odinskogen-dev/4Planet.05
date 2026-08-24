@@ -13,6 +13,7 @@ const story = read("src/pages/v5/StoryArticle.tsx");
 const storyRecord = read("src/pages/v5/MagazineStoryRecord.tsx");
 const shell = read("src/components/magazine/MagazineShell.tsx");
 const worldCss = read("src/styles/magazine-world.css");
+const gold02Css = read("src/styles/magazine-gold-02.css");
 const analytics = read("src/analytics/Analytics.tsx");
 const magazineAnalytics = read("src/analytics/MagazineAnalytics.ts");
 const seo = read("src/components/Seo.tsx");
@@ -25,9 +26,10 @@ const contentReader = read("scripts/magazine-content.mjs");
 const qualityGate = read("scripts/magazine-quality-gate.mjs");
 const packageJson = read("package.json");
 
-test("Founding Edition records remain separate from the reader-facing feed", () => {
-  assert.match(magazine, /EDITORIAL LAB \/ NOT THE PUBLIC FEED/);
-  assert.match(magazine, /FOUNDING_EDITION\.items/);
+test("pre-publication records remain separate from the mature reader-facing front", () => {
+  assert.doesNotMatch(magazine, /FOUNDING_EDITION\.items/);
+  assert.doesNotMatch(magazine, /EDITORIAL LAB \/ NOT THE PUBLIC FEED/);
+  assert.doesNotMatch(magazine, /LIVE DEVELOPMENT/);
   assert.match(editorial, /responsible editor \/ editorial lead must be designated/i);
   assert.match(storyRecord, /PRE-PUBLICATION RECORD/);
   assert.match(storyRecord, /robots="noindex,follow"/);
@@ -35,7 +37,7 @@ test("Founding Edition records remain separate from the reader-facing feed", () 
   assert.doesNotMatch(storyRecord, /"@type"\s*:\s*"Article"/);
 });
 
-test("Magazine has its own editorial world, persistent theme and footer", () => {
+test("Magazine has its own editorial world, persistent theme, strict masthead and footer", () => {
   assert.match(magazine, /MagazineShell/);
   assert.match(story, /MagazineShell/);
   assert.doesNotMatch(magazine, /PublicShell/);
@@ -44,6 +46,8 @@ test("Magazine has its own editorial world, persistent theme and footer", () => 
   assert.match(shell, /aria-pressed/);
   assert.match(shell, /mag-world-footer/);
   assert.match(shell, /INNOVATION/);
+  assert.equal((shell.match(/mag-world-masthead-word/g) || []).length, 2, "4PLANET and MAGAZINE must share one masthead size contract");
+  assert.match(gold02Css, /\.mag-world-masthead \.mag-world-masthead-word/);
   assert.match(worldCss, /data-mag-theme="dark"/);
   assert.match(worldCss, /prefers-reduced-motion/);
 });
@@ -59,21 +63,23 @@ test("editorial taxonomy mixes living planet, culture, engineering and design", 
   assert.match(operating, /WIRED/);
 });
 
-test("homepage uses deterministic asymmetric editorial mosaic, not random card-wall motion", () => {
+test("homepage is curated and deterministic rather than an endless random wall", () => {
+  assert.match(magazine, /HOME_STORY_LIMIT/);
+  assert.match(magazine, /HOME_SIGNAL_LIMIT/);
   assert.match(magazine, /MOSAIC_SIZES/);
   assert.match(magazine, /MOSAIC_COLORS/);
   assert.match(magazine, /mag-story-mosaic/);
   assert.match(magazine, /mag-story-tile--/);
   assert.match(magazine, /useSearchParams/);
+  assert.match(magazine, /front page is edited, not exhaustive/i);
   assert.doesNotMatch(magazine, /Math\.random/);
   assert.match(worldCss, /grid-auto-flow: dense/);
-  assert.match(worldCss, /mag-story-tile--green/);
-  assert.match(worldCss, /mag-story-tile--pink/);
-  assert.match(worldCss, /mag-story-tile--yellow/);
+  assert.match(gold02Css, /@media \(max-width: 700px\)/);
+  assert.match(gold02Css, /grid-template-columns: 1fr !important/);
 });
 
 test("engineering and innovation are first-class editorial beats", () => {
-  assert.match(magazine, /ENGINEERING THE LIVING WORLD/);
+  assert.match(magazine, /ENGINEERING \/ THE LIVING WORLD/);
   assert.match(magazine, /Air filters that remember biodiversity/);
   assert.match(stories, /air-filter-biodiversity-time-machine/);
   assert.match(stories, /ai-coral-photomosaics/);
@@ -97,7 +103,7 @@ test("article template is long-form, source-visible and topic-aware", () => {
   assert.match(stories, /relatedStories/);
 });
 
-test("strict article engine still protects franchise and field boundaries", () => {
+test("strict article engine protects franchise and field boundaries", () => {
   assert.match(engine, /FROM THE FIELD/);
   assert.match(engine, /THE LIVING WORLD/);
   assert.match(engine, /PLANET EXPLAINED/);
@@ -109,11 +115,10 @@ test("strict article engine still protects franchise and field boundaries", () =
   assert.match(engine, /Empty until real field material passes source \+ rights \+ editorial gates/i);
 });
 
-test("required Magazine transparency routes remain inside the publication", () => {
-  assert.match(router, /path="\/magazine\/about"/);
-  assert.match(router, /path="\/magazine\/sources"/);
-  assert.match(router, /path="\/magazine\/corrections"/);
-  assert.match(router, /path="\/magazine\/stories\/:id"/);
+test("required Magazine transparency and reader routes remain inside the publication", () => {
+  for (const route of ["/magazine/about", "/magazine/sources", "/magazine/corrections", "/magazine/search", "/magazine/saved", "/magazine/archive", "/magazine/topics/:topic", "/magazine/series/:series", "/magazine/stories/:id"]) {
+    assert.ok(router.includes(`path=\"${route}\"`), `missing ${route}`);
+  }
 });
 
 test("Magazine Gold content gate is fail-closed and mandatory before builds", () => {
