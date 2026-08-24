@@ -10,8 +10,8 @@ if(sourceMin.length!==3||sourceSpan.length!==3||sourceSpan.some(v=>!Number.isFin
 const sourceMaxSpan=Math.max(...sourceSpan);
 if(!Number.isFinite(sourceMaxSpan)||sourceMaxSpan<=0)throw new Error('[JAGUAR V42] invalid source extent');
 
-// Presentation-space fit only. Ear.Rodriguez QPOS16 payload and controlled donor indices
-// remain immutable. Source orientation is canonical: head +X, Y up.
+// Legacy fallback calibration only. Ear.Rodriguez QPOS16 payload and controlled donor indices
+// remain immutable. V48+ owns the primary local full-source derivative when ready.
 const targetLongestSpan=3.45;
 const fitScale=targetLongestSpan/sourceMaxSpan;
 const targetCentre=[0,1.58,0];
@@ -39,33 +39,36 @@ d.runtimeCalibration={
 };
 window.__JAGUAR_RUNTIME_CALIBRATION_V38=d.runtimeCalibration;
 
-// Scope visibility hardening to the Jaguar encounter canvas. Geometry remains untouched.
+const root=document.getElementById('jaguar-experience');
+const stage=document.getElementById('three-stage');
+const fullSourceReady=()=>root?.dataset.jaguarEarFull==='ready';
+const isLegacyCanvas=(canvas)=>canvas?.parentElement?.id==='three-stage'&&!canvas.classList.contains('jaguar-local-v48');
+
+// Scope legacy visibility hardening strictly to the old fallback canvas. Never mutate
+// the V48+ primary canvas filter/material state or its source-bind-pose metadata.
 const nativeGetContext=HTMLCanvasElement.prototype.getContext;
 HTMLCanvasElement.prototype.getContext=function(type,attrs){
  let nextAttrs=attrs;
- if(type==='webgl'&&this.parentElement?.id==='three-stage')nextAttrs={...(attrs||{}),preserveDrawingBuffer:true};
+ if(type==='webgl'&&isLegacyCanvas(this))nextAttrs={...(attrs||{}),preserveDrawingBuffer:true};
  const ctx=nativeGetContext.call(this,type,nextAttrs);
- if(ctx&&type==='webgl'&&this.parentElement?.id==='three-stage'&&!ctx.__fourplanetJaguarVisibility){
+ if(ctx&&type==='webgl'&&isLegacyCanvas(this)&&!ctx.__fourplanetJaguarVisibility){
   ctx.__fourplanetJaguarVisibility=true;
   const nativeEnable=ctx.enable.bind(ctx);
   ctx.enable=(cap)=>cap===ctx.CULL_FACE?undefined:nativeEnable(cap);
   ctx.disable(ctx.CULL_FACE);
-  // Presentation colour only. This is not claimed as original Ear texture/material.
   this.style.filter='sepia(.58) saturate(1.38) hue-rotate(342deg) brightness(1.16) contrast(1.12)';
   this.dataset.jaguarMaterial='presentation-grade-v42';
  }
  return ctx;
 };
 
-// Fail closed on actual creature pixels, but do not sample only the off-screen emerge frames.
-// The Jaguar emergence lasts ~2.2s, so visibility proof gets a bounded 3.2s settle window.
-const root=document.getElementById('jaguar-experience');
-const stage=document.getElementById('three-stage');
+// Legacy fallback pixel proof only. When the local V48+ source derivative is ready,
+// its runtime owns pose/material/visibility truth and this verifier must stand down.
 let verifyStart=0;
 let verifyTimer=0;
 const verifyPixels=()=>{
- if(!root||root.dataset.jaguar3d!=='ready')return;
- const canvas=stage?.querySelector('canvas');
+ if(!root||root.dataset.jaguar3d!=='ready'||fullSourceReady())return;
+ const canvas=[...(stage?.querySelectorAll('canvas')||[])].find(isLegacyCanvas);
  if(!canvas)return;
  const gl=nativeGetContext.call(canvas,'webgl',{preserveDrawingBuffer:true});
  if(!gl)return;
@@ -73,6 +76,7 @@ const verifyPixels=()=>{
  root.dataset.jaguarVisual='pending';
  requestAnimationFrame(()=>requestAnimationFrame(()=>{
   try{
+   if(fullSourceReady())return;
    const w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
    if(!w||!h)return;
    const pixels=new Uint8Array(w*h*4);
@@ -108,13 +112,13 @@ const verifyPixels=()=>{
 };
 if(root){
  const observer=new MutationObserver(()=>{
-  if(root.dataset.jaguar3d==='ready'){
+  if(root.dataset.jaguar3d==='ready'&&!fullSourceReady()){
    verifyStart=0;
    if(verifyTimer)clearTimeout(verifyTimer);
    verifyPixels();
   }
  });
- observer.observe(root,{attributes:true,attributeFilter:['data-jaguar3d']});
- if(root.dataset.jaguar3d==='ready')verifyPixels();
+ observer.observe(root,{attributes:true,attributeFilter:['data-jaguar3d','data-jaguar-ear-full']});
+ if(root.dataset.jaguar3d==='ready'&&!fullSourceReady())verifyPixels();
 }
 })();
