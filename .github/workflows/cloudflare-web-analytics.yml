@@ -38,7 +38,7 @@ jobs:
           grep -Eiq 'LABS|4PLANET' /tmp/labs-branch.html || { echo "Branch alias returned unexpected content"; exit 1; }
           echo "Exact LABS GitHub head and Cloudflare branch HTTPS verified."
 
-      - name: Bind custom domain through Cloudflare API
+      - name: Activate Pages domain, then switch it to the LABS branch alias
         shell: bash
         run: |
           set -euo pipefail
@@ -53,36 +53,18 @@ jobs:
           account_id="$(jq -r '.result[0].account.id // empty' /tmp/zone.json)"
           test -n "${zone_id}" && test -n "${account_id}" || { echo "Active ${CF_ZONE} zone/account not resolved"; exit 1; }
 
-          echo "STAGE Pages domain lookup"
+          echo "STAGE Pages domain ensure"
           code="$(curl -sS -o /tmp/domain.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
           if [[ "${code}" == "404" ]]; then
-            echo "STAGE Pages domain create"
             code="$(curl -sS -o /tmp/domain-create.json -w '%{http_code}' -X POST "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "${LABS_DOMAIN}" '{name:$name}')")"
             [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/domain-create.json)" == "true" ]] || { echo "Pages domain create HTTP ${code}"; cat /tmp/domain-create.json; exit 1; }
           elif [[ "${code}" != "200" ]]; then
             echo "Pages domain lookup HTTP ${code}"; cat /tmp/domain.json; exit 1
           fi
 
-          echo "STAGE DNS lookup"
-          code="$(curl -sS -o /tmp/dns-list.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
-          [[ "${code}" == "200" ]] || { echo "DNS lookup HTTP ${code}"; cat /tmp/dns-list.json; exit 1; }
-          record_id="$(jq -r '.result[0].id // empty' /tmp/dns-list.json)"
-          payload="$(jq -nc --arg name "${LABS_DOMAIN}" --arg content "${LABS_BRANCH_ALIAS}" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')"
-
-          if [[ -n "${record_id}" ]]; then
-            echo "STAGE DNS update"
-            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X PUT "${api}/zones/${zone_id}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
-          else
-            echo "STAGE DNS create"
-            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "${payload}")"
-          fi
-          [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS write HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
-          [[ "$(jq -r '.result.content // empty' /tmp/dns-write.json)" == "${LABS_BRANCH_ALIAS}" ]] || { echo "DNS target mismatch"; exit 1; }
-          [[ "$(jq -r '.result.proxied // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS must be proxied"; exit 1; }
-
-          echo "STAGE Pages domain activation"
+          echo "STAGE wait for Pages domain activation BEFORE DNS branch switch"
           status=""
-          for i in $(seq 1 30); do
+          for i in $(seq 1 45); do
             code="$(curl -sS -o /tmp/domain-status.json -w '%{http_code}' "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
             [[ "${code}" == "200" ]] || { echo "Domain status HTTP ${code}"; cat /tmp/domain-status.json; exit 1; }
             status="$(jq -r '.result.status // empty' /tmp/domain-status.json)"
@@ -93,9 +75,36 @@ jobs:
           done
           [[ "${status}" == "active" ]] || { echo "Pages custom domain did not become active"; cat /tmp/domain-status.json; exit 1; }
 
+          echo "STAGE DNS branch-alias switch"
+          code="$(curl -sS -o /tmp/dns-list.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          [[ "${code}" == "200" ]] || { echo "DNS lookup HTTP ${code}"; cat /tmp/dns-list.json; exit 1; }
+          record_id="$(jq -r '.result[0].id // empty' /tmp/dns-list.json)"
+          current_target="$(jq -r '.result[0].content // empty' /tmp/dns-list.json)"
+          current_proxied="$(jq -r '.result[0].proxied // false' /tmp/dns-list.json)"
+          echo "current DNS target=${current_target:-none} proxied=${current_proxied}"
+          payload="$(jq -nc --arg name "${LABS_DOMAIN}" --arg content "${LABS_BRANCH_ALIAS}" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')"
+
+          if [[ "${current_target}" == "${LABS_BRANCH_ALIAS}" && "${current_proxied}" == "true" ]]; then
+            echo "DNS already points to LABS branch alias."
+          elif [[ -n "${record_id}" ]]; then
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X PUT "${api}/zones/${zone_id}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS update HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
+          else
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "${payload}")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS create HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
+          fi
+
+          echo "STAGE authoritative DNS readback"
+          sleep 2
+          code="$(curl -sS -o /tmp/dns-final.json -w '%{http_code}' "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          [[ "${code}" == "200" ]] || { echo "DNS readback HTTP ${code}"; cat /tmp/dns-final.json; exit 1; }
+          final_target="$(jq -r '.result[0].content // empty' /tmp/dns-final.json)"
+          final_proxied="$(jq -r '.result[0].proxied // false' /tmp/dns-final.json)"
+          [[ "${final_target}" == "${LABS_BRANCH_ALIAS}" && "${final_proxied}" == "true" ]] || { echo "DNS final mismatch target=${final_target} proxied=${final_proxied}"; exit 1; }
+
           echo "STAGE HTTPS/readback"
-          curl -fsS -L --retry 10 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
-          curl -fsS -L --retry 10 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
+          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
+          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
           grep -Eiq 'LABS' /tmp/labs-root.html || { echo "Custom-domain root does not render LABS"; exit 1; }
           grep -Eiq 'LABS' /tmp/labs-path.html || { echo "Custom-domain /labs does not render LABS"; exit 1; }
           curl -fsS -L --retry 5 --retry-delay 2 "https://4planet.org/" -o /tmp/main.html
@@ -118,7 +127,7 @@ jobs:
           Live root: https://labs.4planet.org/
           Live Project OS: https://labs.4planet.org/labs
 
-          Pages domain = active.
+          Pages domain activation = PASS.
           DNS = proxied CNAME to labs-overview-v1.4planet-05.pages.dev.
           HTTPS/LABS content checks = PASS.
           4planet.org reachability regression check = PASS.
