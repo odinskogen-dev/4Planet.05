@@ -34,14 +34,15 @@ test("Stripe TypeScript and TSX sources are syntactically valid", () => {
     if (name === "migration") continue;
     const text = readFileSync(url, "utf8");
     const isTsx = url.pathname.endsWith(".tsx");
+    const compilerOptions = {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.ESNext,
+      strict: true,
+      ...(isTsx ? { jsx: ts.JsxEmit.ReactJSX } : {}),
+    };
     const result = ts.transpileModule(text, {
       reportDiagnostics: true,
-      compilerOptions: {
-        target: ts.ScriptTarget.ES2020,
-        module: ts.ModuleKind.ESNext,
-        strict: true,
-        jsx: isTsx ? ts.JsxEmit.ReactJSX : undefined,
-      },
+      compilerOptions,
       fileName: isTsx ? `${name}.tsx` : `${name}.ts`,
     });
     const errors = (result.diagnostics ?? []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error);
