@@ -21,13 +21,12 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Read Cloudflare ownership state
+      - name: Identify current LABS hostname owner
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "CLOUDFLARE_API_TOKEN missing"; exit 1; }
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
           zone="$(curl -fsS "${api}/zones?name=${CF_ZONE}&status=active" "${auth[@]}")"
@@ -37,21 +36,20 @@ jobs:
 
           dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
           domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
+          workers_domains="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}")"
 
-          dns_summary="$(jq -c '[.result[]? | {id,type,name,content,proxied,proxiable,locked,meta,comment,tags,settings}]' <<<"${dns}")"
-          domain_summary="$(jq -c '{name:.result.name,status:.result.status,verification_data:.result.verification_data,validation_data:.result.validation_data,zone_tag:.result.zone_tag}' <<<"${domain}")"
+          dns_summary="$(jq -c '[.result[]? | {id,type,name,content,proxied,proxiable,meta}]' <<<"${dns}")"
+          domain_summary="$(jq -c '{name:.result.name,status:.result.status,verification_data:.result.verification_data,validation_data:.result.validation_data}' <<<"${domain}")"
+          worker_summary="$(jq -c --arg host "${LABS_DOMAIN}" '[.result[]? | select(.hostname==$host) | {id,hostname,service,environment,zone_id,zone_name}]' <<<"${workers_domains}")"
 
           body=$(cat <<EOF
-          LABS CLOUDFLARE DIAGNOSIS
+          LABS CLOUDFLARE OWNERSHIP DIAGNOSIS
 
-          Pages domain:
-          ${domain_summary}
-
-          DNS records for labs.4planet.org:
-          ${dns_summary}
+          Pages domain: ${domain_summary}
+          DNS: ${dns_summary}
+          Worker Custom Domain owner: ${worker_summary}
           EOF
           )
           curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
             -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
-          echo "Diagnosis published to PR."
