@@ -135,12 +135,12 @@ test("analytics measures reading, second object, sharing and return without pre-
   assert.match(analytics, /consent !== "granted"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
-  assert.match(story, /magazine_engaged_read/);
-  assert.match(story, /magazine_read_depth/);
-  assert.match(story, /magazine_read_complete/);
   assert.match(magazineAnalytics, /if \(!window\.gtag\) return/);
+  assert.match(magazineAnalytics, /trackEvent\("engaged_read"/);
+  assert.match(magazineAnalytics, /trackEvent\("read_depth"/);
+  assert.match(magazineAnalytics, /trackEvent\("read_complete"/);
+  assert.match(magazineAnalytics, /trackEvent\("share"/);
   assert.match(magazineAnalytics, /magazine_relevant_second_object/);
-  assert.match(magazineAnalytics, /magazine_share/);
   assert.match(magazineAnalytics, /visitor_state/);
   assert.match(privacy, /Privacy-first site measurement/);
   assert.match(headers, /cloudflareinsights\.com/);
