@@ -60,3 +60,8 @@ A first-time viewer sees an unmistakable Jaguar rather than a white iframe or bl
 
 ## ACCEPTANCE
 1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence shows a recognisable Jaguar, not white/blank/proxy shards. 5) Drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+
+---
+
+## CONCURRENT BOUNDED NOTE — PAYMENTS LIVE MODEL 01
+Founder decision 24 AUG 2026 approved a separate bounded commerce model without changing Jaguar product authority above. Public payment code must implement only: free ME4PLANET/4PEOPLE participation; SUPPORT 4PLANET at NOK 50/month; Mission Supporter at NOK 100/month for each canonical Mission; Project Sponsor, Mission Sponsor and Founding Patron as enquiry/agreement/reviewed-invoice flows. Generic paid Membership, generic Sponsor Package, Paid Pilot and real-money IMPACT are not public launch products. Stripe LIVE objects may exist before release, but no 4planet.org Checkout is considered LIVE/SAFE until exact-SHA CI, hosted ledger/RLS, secrets, signed webhook, consumer/legal/privacy surfaces, Customer Portal and canary evidence are complete. Payment remains financial truth only and never ecological Delivery/Evidence/Outcome.
