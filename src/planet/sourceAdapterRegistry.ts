@@ -1,0 +1,203 @@
+export const SOURCE_ADAPTER_DOMAINS = ["IDENTITY", "SCIENCE", "ECOLOGY", "CAPITAL", "CROSS_DOMAIN"] as const;
+export type SourceAdapterDomain = (typeof SOURCE_ADAPTER_DOMAINS)[number];
+
+export type SourceAdapterState = "RECOVERED_PROOF" | "CANDIDATE" | "HOLD_RIGHTS_REVIEW";
+export type SourceAccessMode = "OPEN_API" | "OPEN_BULK" | "OPEN_API_AND_BULK" | "REGISTERED_API" | "ON_DEMAND_PROOF";
+export type RightsBoundary = "SOURCE_LEVEL" | "DATASET_LEVEL" | "RECORD_LEVEL" | "MIXED_REVIEW_REQUIRED";
+
+export type SourceAdapterDefinition = {
+  id: string;
+  label: string;
+  domain: SourceAdapterDomain[];
+  state: SourceAdapterState;
+  access: SourceAccessMode;
+  rightsBoundary: RightsBoundary;
+  primaryObjects: string[];
+  currentUse: string[];
+  hardLimits: string[];
+  priority: "P0" | "P1" | "P2";
+};
+
+export const SOURCE_ADAPTER_REGISTRY: SourceAdapterDefinition[] = [
+  {
+    id: "source:ror",
+    label: "Research Organization Registry (ROR)",
+    domain: ["IDENTITY", "SCIENCE"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["INSTITUTION", "ACTOR", "EXTERNAL_IDENTIFIER"],
+    currentUse: ["Research institution identity resolution", "Crosswalk for OpenAlex/Crossref/CORDIS"],
+    hardLimits: ["ROR identity does not prove a 4PLANET relationship, capability or endorsement."],
+    priority: "P0",
+  },
+  {
+    id: "source:wikidata",
+    label: "Wikidata",
+    domain: ["IDENTITY", "CROSS_DOMAIN"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["ACTOR", "PLACE", "EXTERNAL_IDENTIFIER", "ALIAS"],
+    currentUse: ["Entity crosswalk", "Alias/name discovery", "Identifier reconciliation"],
+    hardLimits: ["Community-maintained statements require source-level review before becoming canonical claims."],
+    priority: "P1",
+  },
+  {
+    id: "source:gleif",
+    label: "GLEIF / LEI",
+    domain: ["IDENTITY", "CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["LEGAL_ENTITY", "EXTERNAL_IDENTIFIER", "OWNERSHIP_RELATION"],
+    currentUse: ["Legal-entity identity", "Corporate/funder deduplication where LEI exists"],
+    hardLimits: ["LEI coverage is not universal; absence of LEI is not absence of a legal entity."],
+    priority: "P1",
+  },
+  {
+    id: "source:brreg",
+    label: "Brønnøysundregistrene",
+    domain: ["IDENTITY", "CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["NORWEGIAN_LEGAL_ENTITY", "EXTERNAL_IDENTIFIER", "GROUP_RELATION"],
+    currentUse: ["Norwegian applicant/entity verification", "Organisation-number crosswalk"],
+    hardLimits: ["Registry status does not establish programme eligibility or relationship state."],
+    priority: "P0",
+  },
+  {
+    id: "source:openalex",
+    label: "OpenAlex",
+    domain: ["SCIENCE", "IDENTITY", "CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["WORK", "AUTHOR", "INSTITUTION", "TOPIC", "FUNDER", "AWARD"],
+    currentUse: ["Researcher/institution enrichment", "Evidence discovery", "Research funder/award context"],
+    hardLimits: ["Index metadata is discovery evidence, not automatic claim validation or scientific endorsement."],
+    priority: "P0",
+  },
+  {
+    id: "source:crossref",
+    label: "Crossref",
+    domain: ["SCIENCE", "IDENTITY", "CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "MIXED_REVIEW_REQUIRED",
+    primaryObjects: ["DOI", "WORK_METADATA", "AUTHOR_IDENTIFIER", "FUNDER_METADATA", "AWARD_METADATA"],
+    currentUse: ["DOI/metadata verification", "Funding metadata crosswalk", "ROR/ORCID identifier enrichment"],
+    hardLimits: ["Deposited metadata completeness varies; linked content/media rights are separate from metadata access."],
+    priority: "P0",
+  },
+  {
+    id: "source:cordis-eurio",
+    label: "CORDIS / EURIO",
+    domain: ["SCIENCE", "CAPITAL", "IDENTITY"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "MIXED_REVIEW_REQUIRED",
+    primaryObjects: ["EU_PROJECT", "ORGANISATION", "FUNDING_RELATION", "COLLABORATION", "OUTPUT"],
+    currentUse: ["EU project/funding history", "Consortium graph", "Institution/project enrichment"],
+    hardLimits: ["Historical participation does not imply current availability, eligibility or willingness to collaborate."],
+    priority: "P1",
+  },
+  {
+    id: "source:gbif",
+    label: "GBIF",
+    domain: ["ECOLOGY", "SCIENCE"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "DATASET_LEVEL",
+    primaryObjects: ["TAXON", "OCCURRENCE", "DATASET", "PUBLISHER"],
+    currentUse: ["Species identity/context", "Occurrence discovery", "Ecological source graph"],
+    hardLimits: ["Occurrence presence is not abundance or complete range; record/dataset licence and sensitive-location rules must be retained."],
+    priority: "P1",
+  },
+  {
+    id: "source:obis",
+    label: "Ocean Biodiversity Information System (OBIS)",
+    domain: ["ECOLOGY", "SCIENCE"],
+    state: "RECOVERED_PROOF",
+    access: "ON_DEMAND_PROOF",
+    rightsBoundary: "DATASET_LEVEL",
+    primaryObjects: ["MARINE_OCCURRENCE", "DATASET", "PUBLISHER"],
+    currentUse: ["Recovered bounded connector proof", "Marine Gold/source contract testing"],
+    hardLimits: ["Occurrence records are not abundance, complete range, confirmed absence or live tracking; source dataset rights must travel with reuse."],
+    priority: "P0",
+  },
+  {
+    id: "source:360giving",
+    label: "360Giving",
+    domain: ["CAPITAL", "IDENTITY"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "DATASET_LEVEL",
+    primaryObjects: ["GRANT", "FUNDER", "RECIPIENT", "PROGRAMME"],
+    currentUse: ["UK grantmaking history", "Who-funded-what discovery", "Funder/recipient identity enrichment"],
+    hardLimits: ["Past awards are evidence of history, not proof of current eligibility, mandate or willingness to fund 4PLANET."],
+    priority: "P0",
+  },
+  {
+    id: "source:iati",
+    label: "International Aid Transparency Initiative (IATI)",
+    domain: ["CAPITAL", "IDENTITY"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "DATASET_LEVEL",
+    primaryObjects: ["ACTIVITY", "ORGANISATION", "BUDGET", "TRANSACTION", "LOCATION"],
+    currentUse: ["Development/humanitarian funding history", "Actor/project/place relationships"],
+    hardLimits: ["Publisher coverage and field completeness vary; activity reporting is not an independent outcome evaluation."],
+    priority: "P1",
+  },
+  {
+    id: "source:ted",
+    label: "Tenders Electronic Daily (TED)",
+    domain: ["CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API_AND_BULK",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["PROCUREMENT_NOTICE", "BUYER", "CPV", "DEADLINE", "AWARD_NOTICE"],
+    currentUse: ["Capability-first EU/EEA procurement discovery", "Current public opportunity monitoring"],
+    hardLimits: ["A notice is not a capability match; delivery truth, legal eligibility, deadline and procurement documents must pass before pursuit."],
+    priority: "P0",
+  },
+  {
+    id: "source:grants-gov",
+    label: "Grants.gov",
+    domain: ["CAPITAL"],
+    state: "CANDIDATE",
+    access: "OPEN_API",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["US_FEDERAL_OPPORTUNITY", "AGENCY", "ELIGIBILITY", "DEADLINE"],
+    currentUse: ["US federal opportunity discovery", "Eligibility/deadline monitoring"],
+    hardLimits: ["Opportunity visibility is not applicant eligibility; official notice documents remain controlling."],
+    priority: "P2",
+  },
+  {
+    id: "source:worms",
+    label: "World Register of Marine Species (WoRMS)",
+    domain: ["ECOLOGY", "SCIENCE", "IDENTITY"],
+    state: "RECOVERED_PROOF",
+    access: "ON_DEMAND_PROOF",
+    rightsBoundary: "SOURCE_LEVEL",
+    primaryObjects: ["MARINE_TAXON", "APHIA_IDENTIFIER", "ACCEPTED_NAME"],
+    currentUse: ["Recovered bounded connector proof", "Marine taxon identity"],
+    hardLimits: ["Taxonomic match is not occurrence, distribution, abundance or conservation status; complete-database redistribution has separate terms."],
+    priority: "P0",
+  },
+];
+
+export const SOURCE_FEDERATION_RULES = [
+  "Federation before replication: external authorities remain authoritative for their source domains.",
+  "No adapter is promoted from CANDIDATE to production merely because an API is open.",
+  "Rights/licence, freshness, failure semantics and provenance are part of the connector contract.",
+  "Unavailable source is distinct from zero results.",
+  "Data-source use, attribution or profile existence never implies partnership or endorsement.",
+  "Build the next adapter only when an active Capital, Actor, Research or Gold case needs it and reuse is plausible.",
+] as const;
+
+export function sourceAdaptersByPriority(priority: SourceAdapterDefinition["priority"]): SourceAdapterDefinition[] {
+  return SOURCE_ADAPTER_REGISTRY.filter((adapter) => adapter.priority === priority);
+}
