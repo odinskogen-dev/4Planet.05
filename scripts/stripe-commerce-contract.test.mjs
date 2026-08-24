@@ -15,6 +15,7 @@ const urls = {
   review: new URL("../src/pages/integrated/CheckoutReview.tsx", import.meta.url),
   support: new URL("../src/pages/v5/Support.tsx", import.meta.url),
   sponsor: new URL("../src/pages/v5/Sponsor.tsx", import.meta.url),
+  legalData: new URL("../src/legal/legal.ts", import.meta.url),
   legal: new URL("../src/pages/v5/Legal.tsx", import.meta.url),
   privacy: new URL("../src/pages/v5/Privacy.tsx", import.meta.url),
   lab: new URL("../src/pages/integrated/CommerceStripeLab.tsx", import.meta.url),
@@ -34,36 +35,47 @@ for (const [name, url] of Object.entries(urls)) {
   });
 }
 
-test("approved public model has one monthly support and 16 monthly Mission Supporters", () => {
+test("all self-service public payment families have explicit LIVE Stripe prices", () => {
   assert.match(source.catalog, /support_4planet: checkout\("support_4planet", "SUPPORT", "SUPPORT", "subscription"/);
+  assert.match(source.catalog, /membership_supporter: checkout\("membership_supporter", "MEMBERSHIP", "MEMBERSHIP", "subscription"/);
   assert.match(source.catalog, /price_1U84WtPd4O2xtXFRU60ePdoZ/);
-  assert.match(source.catalog, /price_1U84dzBIIif9wShM0aP4dCJD/);
+  assert.match(source.catalog, /price_1U85CxPd4O2xtXFR8VpbdqHk/);
   for (const key of missionKeys) assert.match(source.catalog, new RegExp(`${key}: checkout`));
   for (const price of ["price_1U84X1Pd4O2xtXFRU92oXY75","price_1U84X9Pd4O2xtXFRJB13EXTC","price_1U84XHPd4O2xtXFRKHhsezW7","price_1U84XOPd4O2xtXFRi5nptElC","price_1U84XXPd4O2xtXFRTNXyT1GR","price_1U84XhPd4O2xtXFRgXgQsHMp","price_1U84XpPd4O2xtXFRRJqxLPQk","price_1U84XxPd4O2xtXFRU4Sp5Ucz","price_1U84Y5Pd4O2xtXFRAgEC3H96","price_1U84YEPd4O2xtXFRPZuyCJLy","price_1U84YMPd4O2xtXFReb5j9CSk","price_1U84YUPd4O2xtXFRta3M36cH","price_1U84YcPd4O2xtXFRcSbPY6E0","price_1U84YjPd4O2xtXFRVADbljiW","price_1U84YtPd4O2xtXFRvKXXfeFy","price_1U84Z1Pd4O2xtXFRehIgZzg8"]) assert.match(source.catalog, new RegExp(price));
   assert.match(source.support, /NOK 50 \/ MONTH/);
-  assert.match(source.support, /100 \/ MONTH/);
+  assert.match(source.support, /SUPPORTING MEMBER/);
 });
 
-test("free participation and duplicate paid offers cannot become live checkout", () => {
+test("free participation remains separate from optional paid Supporting Membership", () => {
   assert.match(source.support, /JOIN FREE/);
-  assert.match(source.catalog, /membership_supporter: disabled/);
-  assert.match(source.catalog, /sponsor_package: disabled/);
-  assert.match(source.catalog, /b2b_pilot_funder: disabled/);
+  assert.match(source.support, /Basic participation stays free/);
+  assert.match(source.legalData, /Basic ME4PLANET \/ 4PEOPLE participation remains free/);
   assert.match(source.router, /path="\/people" element={<People \/>}/);
 });
 
-test("IMPACT remains TEST-only and cannot resolve a LIVE price", () => {
-  assert.match(source.catalog, /impact_tree: checkout[^\n]+null, false/);
-  assert.match(source.catalog, /impact_plastic: checkout[^\n]+null, false/);
-  assert.match(source.catalog, /impact_coral: checkout[^\n]+null, false/);
-  assert.match(source.catalog, /impact_rewild: checkout[^\n]+null, false/);
-  assert.match(source.support, /Real ecological units are not for sale yet/);
+test("all four IMPACT paths are public contribution products without ecological delivery authority", () => {
+  assert.match(source.catalog, /IMPACT_CONTRIBUTION/);
+  assert.match(source.catalog, /impact_tree:[^\n]+price_1U85DSPd4O2xtXFRP0mtFTRw/);
+  assert.match(source.catalog, /impact_plastic:[^\n]+price_1U85DbPd4O2xtXFRgkhyKfXe/);
+  assert.match(source.catalog, /impact_coral:[^\n]+price_1U85DlPd4O2xtXFRgsxxhMcy/);
+  assert.match(source.catalog, /impact_rewild:[^\n]+price_1U85DvPd4O2xtXFRcqBEq2EH/);
+  assert.match(source.checkout, /contribution to the named 4PLANET IMPACT pathway/);
+  assert.match(source.checkout, /Partner allocation, delivery, evidence and ecological outcome are separate states/);
+  assert.match(source.support, /IMPACT CONTRIBUTIONS/);
+  assert.match(source.support, /NOK 100 \/ CONTRIBUTION/);
+  assert.match(source.legalData, /Until a partner-backed unit contract is active/);
+  assert.match(source.status, /DELIVERY_NOT_ESTABLISHED/);
 });
 
-test("high-value support is enquiry then reviewed invoice, never public card checkout", () => {
+test("all negotiated high-value families are public invoice paths and never anonymous high-value checkout", () => {
   assert.match(source.catalog, /project_sponsor: negotiated[^\n]+50_000, 250_000/);
   assert.match(source.catalog, /mission_sponsor: negotiated[^\n]+250_000, 750_000/);
   assert.match(source.catalog, /founding_patron: negotiated[^\n]+250_000, 1_500_000/);
+  assert.match(source.catalog, /sponsor_package: negotiated[^\n]+100_000, 500_000/);
+  assert.match(source.catalog, /b2b_pilot_funder: negotiated[^\n]+100_000, 300_000/);
+  for (const key of ["project_sponsor","mission_sponsor","founding_patron","sponsor_package","b2b_pilot_funder"]) assert.match(source.invoice, new RegExp(`"${key}"`));
+  assert.match(source.sponsor, /SPONSOR PACKAGE/);
+  assert.match(source.sponsor, /PILOT \/ FUNDER/);
   assert.match(source.sponsor, /This selector does not charge you/);
   assert.match(source.invoice, /approved_agreement_key_required/);
   assert.match(source.invoice, /amount_outside_approved_corridor/);
@@ -80,9 +92,10 @@ test("LIVE checkout is fail-closed, server-priced and production-origin-only", (
   assert.doesNotMatch(source.checkout, /unit_amount/);
   assert.match(source.checkout, /Idempotency-Key/);
   assert.match(source.checkout, /tax_deductible_claim/);
+  assert.match(source.checkout, /payments-public-live-02/);
 });
 
-test("consumer sees verified price, recurring cadence, seller and payment obligation before Stripe", () => {
+test("consumer sees verified price, cadence, seller and payment obligation before Stripe", () => {
   assert.match(source.offer, /prices\/\$\{encodeURIComponent\(priceId\)\}/);
   assert.match(source.review, /SELLER/);
   assert.match(source.review, /Recurring/);
@@ -101,6 +114,7 @@ test("webhook is signed, idempotent, out-of-order safe and LIVE fail-closed", ()
   assert.match(source.migration, /provider_event_created_at/);
   assert.match(source.migration, /on conflict \(stripe_object_id\) do update/);
   assert.match(source.migration, /excluded\.provider_event_created_at >= commerce_financial_records\.provider_event_created_at/);
+  assert.match(source.migration, /ecological_delivery_authority text not null default 'none'/);
 });
 
 test("privacy legal and truth boundaries are explicit", () => {
