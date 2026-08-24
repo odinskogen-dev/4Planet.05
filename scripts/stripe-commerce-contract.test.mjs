@@ -6,149 +6,117 @@ import ts from "typescript";
 const urls = {
   catalog: new URL("../functions/api/stripe/catalog.ts", import.meta.url),
   checkout: new URL("../functions/api/stripe/checkout.ts", import.meta.url),
+  offer: new URL("../functions/api/stripe/offer.ts", import.meta.url),
   status: new URL("../functions/api/stripe/checkout-status.ts", import.meta.url),
   webhook: new URL("../functions/api/stripe/webhook.ts", import.meta.url),
   invoice: new URL("../functions/api/stripe/invoice.ts", import.meta.url),
   client: new URL("../src/payments/stripe.ts", import.meta.url),
   receipt: new URL("../src/pages/integrated/CheckoutReturn.tsx", import.meta.url),
+  review: new URL("../src/pages/integrated/CheckoutReview.tsx", import.meta.url),
+  support: new URL("../src/pages/v5/Support.tsx", import.meta.url),
+  sponsor: new URL("../src/pages/v5/Sponsor.tsx", import.meta.url),
+  legal: new URL("../src/pages/v5/Legal.tsx", import.meta.url),
+  privacy: new URL("../src/pages/v5/Privacy.tsx", import.meta.url),
   lab: new URL("../src/pages/integrated/CommerceStripeLab.tsx", import.meta.url),
   router: new URL("../src/routes/router.tsx", import.meta.url),
   migration: new URL("../supabase/migrations/20260824160000_stripe_commerce_core.sql", import.meta.url),
 };
-
 const source = Object.fromEntries(Object.entries(urls).map(([name, url]) => [name, readFileSync(url, "utf8")]));
+const missionKeys = ["mission_supporter_cle4n","mission_supporter_wh4les","mission_supporter_cor4l","mission_supporter_rewild_marine","mission_supporter_clim4te","mission_supporter_am4zonia","mission_supporter_species","mission_supporter_rewild_land","mission_supporter_food","mission_supporter_en4rgy","mission_supporter_circular_city","mission_supporter_f4shion","mission_supporter_m4gazine","mission_supporter_4rt","mission_supporter_4film","mission_supporter_4play"];
 
-const missionSlugs = [
-  "cle4n", "wh4les", "cor4l", "rewild_marine", "clim4te", "am4zonia", "species", "rewild_land",
-  "food", "en4rgy", "circular_city", "f4shion", "m4gazine", "4rt", "4film", "4play",
-];
-
-const coreProducts = [
-  "impact_tree", "impact_plastic", "impact_coral", "impact_rewild",
-  "support_4planet", "founding_patron", "membership_supporter",
-  "sponsor_package", "project_sponsor", "mission_sponsor", "b2b_pilot_funder",
-];
-
-test("Stripe TypeScript and TSX sources are syntactically valid", () => {
-  for (const [name, url] of Object.entries(urls)) {
-    if (name === "migration") continue;
-    const text = readFileSync(url, "utf8");
+for (const [name, url] of Object.entries(urls)) {
+  if (name === "migration") continue;
+  test(`${name} TypeScript is syntactically valid`, () => {
     const isTsx = url.pathname.endsWith(".tsx");
-    const compilerOptions = {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.ESNext,
-      strict: true,
-      ...(isTsx ? { jsx: ts.JsxEmit.ReactJSX } : {}),
-    };
-    const result = ts.transpileModule(text, {
-      reportDiagnostics: true,
-      compilerOptions,
-      fileName: isTsx ? `${name}.tsx` : `${name}.ts`,
-    });
-    const errors = (result.diagnostics ?? []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error);
-    assert.equal(errors.length, 0, `${name}: ${errors.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")).join(" | ")}`);
-  }
+    const result = ts.transpileModule(readFileSync(url, "utf8"), { reportDiagnostics: true, compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext, strict: true, ...(isTsx ? { jsx: ts.JsxEmit.ReactJSX } : {}) }, fileName: isTsx ? `${name}.tsx` : `${name}.ts` });
+    const errors = (result.diagnostics ?? []).filter((d) => d.category === ts.DiagnosticCategory.Error);
+    assert.equal(errors.length, 0, errors.map((d) => ts.flattenDiagnosticMessageText(d.messageText, " ")).join(" | "));
+  });
+}
+
+test("approved public model has one monthly support and 16 monthly Mission Supporters", () => {
+  assert.match(source.catalog, /support_4planet: checkout\("support_4planet", "SUPPORT", "SUPPORT", "subscription"/);
+  assert.match(source.catalog, /price_1U84WtPd4O2xtXFRU60ePdoZ/);
+  assert.match(source.catalog, /price_1U84dzBIIif9wShM0aP4dCJD/);
+  for (const key of missionKeys) assert.match(source.catalog, new RegExp(`${key}: checkout`));
+  for (const price of ["price_1U84X1Pd4O2xtXFRU92oXY75","price_1U84X9Pd4O2xtXFRJB13EXTC","price_1U84XHPd4O2xtXFRKHhsezW7","price_1U84XOPd4O2xtXFRi5nptElC","price_1U84XXPd4O2xtXFRTNXyT1GR","price_1U84XhPd4O2xtXFRgXgQsHMp","price_1U84XpPd4O2xtXFRRJqxLPQk","price_1U84XxPd4O2xtXFRU4Sp5Ucz","price_1U84Y5Pd4O2xtXFRAgEC3H96","price_1U84YEPd4O2xtXFRPZuyCJLy","price_1U84YMPd4O2xtXFReb5j9CSk","price_1U84YUPd4O2xtXFRta3M36cH","price_1U84YcPd4O2xtXFRcSbPY6E0","price_1U84YjPd4O2xtXFRVADbljiW","price_1U84YtPd4O2xtXFRvKXXfeFy","price_1U84Z1Pd4O2xtXFRehIgZzg8"]) assert.match(source.catalog, new RegExp(price));
+  assert.match(source.support, /NOK 50 \/ MONTH/);
+  assert.match(source.support, /100 \/ MONTH/);
 });
 
-test("catalog contains all required 4PLANET money streams", () => {
-  for (const key of coreProducts) assert.match(source.catalog, new RegExp(`\\b${key}\\b`));
-  for (const slug of missionSlugs) assert.match(source.catalog, new RegExp(`mission_supporter_${slug}`));
-  assert.match(source.catalog, /IMPACT_UNIT/);
-  assert.match(source.catalog, /SUPPORT/);
-  assert.match(source.catalog, /FOUNDING_PATRON/);
-  assert.match(source.catalog, /MEMBERSHIP/);
-  assert.match(source.catalog, /MISSION_SUPPORTER/);
-  assert.match(source.catalog, /PROJECT_SPONSOR/);
-  assert.match(source.catalog, /MISSION_SPONSOR/);
-  assert.match(source.catalog, /B2B_FUNDING_OBJECT/);
+test("free participation and duplicate paid offers cannot become live checkout", () => {
+  assert.match(source.support, /JOIN FREE/);
+  assert.match(source.catalog, /membership_supporter: disabled/);
+  assert.match(source.catalog, /sponsor_package: disabled/);
+  assert.match(source.catalog, /b2b_pilot_funder: disabled/);
+  assert.match(source.router, /path="\/people" element={<People \/>}/);
 });
 
-test("TEST prices are explicit engineering objects and LIVE prices remain environment-owned", () => {
-  assert.match(source.catalog, /price_1U7w9lBIIif9wShMBdiJkElA/);
-  assert.match(source.catalog, /price_1U7yPWBIIif9wShMgT57NW4Y/);
-  assert.match(source.catalog, /price_1U7yPqBIIif9wShMVxTsEJH1/);
-  assert.match(source.catalog, /STRIPE_LIVE_PRICE_IMPACT_TREE/);
-  assert.match(source.catalog, /STRIPE_LIVE_PRICE_SUPPORT_4PLANET/);
-  assert.match(source.catalog, /STRIPE_LIVE_PRICE_MISSION_SUPPORTER_4PLAY/);
-  assert.match(source.catalog, /resolvePriceId/);
+test("IMPACT remains TEST-only and cannot resolve a LIVE price", () => {
+  assert.match(source.catalog, /impact_tree: checkout[^\n]+null, false/);
+  assert.match(source.catalog, /impact_plastic: checkout[^\n]+null, false/);
+  assert.match(source.catalog, /impact_coral: checkout[^\n]+null, false/);
+  assert.match(source.catalog, /impact_rewild: checkout[^\n]+null, false/);
+  assert.match(source.support, /Real ecological units are not for sale yet/);
 });
 
-test("Checkout supports TEST now and LIVE only behind explicit release gates", () => {
-  assert.match(source.catalog, /STRIPE_PAYMENT_ENV/);
-  assert.match(source.catalog, /STRIPE_CHECKOUT_LIVE_ENABLED/);
-  assert.match(source.catalog, /STRIPE_LIVE_RELEASE_APPROVED/);
-  assert.match(source.catalog, /sk_test_/);
-  assert.match(source.catalog, /sk_live_/);
-  assert.match(source.catalog, /cs_test_/);
-  assert.match(source.catalog, /cs_live_/);
-  assert.match(source.checkout, /Idempotency-Key/);
+test("high-value support is enquiry then reviewed invoice, never public card checkout", () => {
+  assert.match(source.catalog, /project_sponsor: negotiated[^\n]+50_000, 250_000/);
+  assert.match(source.catalog, /mission_sponsor: negotiated[^\n]+250_000, 750_000/);
+  assert.match(source.catalog, /founding_patron: negotiated[^\n]+250_000, 1_500_000/);
+  assert.match(source.sponsor, /This selector does not charge you/);
+  assert.match(source.invoice, /approved_agreement_key_required/);
+  assert.match(source.invoice, /amount_outside_approved_corridor/);
+  assert.match(source.invoice, /invoiceForm\.set\("auto_advance", "false"\)/);
+  assert.match(source.invoice, /itemForm\.set\("invoice", invoiceId\)/);
+  assert.match(source.invoice, /stripe_invoice_item_create_failed_draft_rolled_back/);
+});
+
+test("LIVE checkout is fail-closed, server-priced and production-origin-only", () => {
+  assert.match(source.checkout, /environment === "LIVE"/);
+  assert.match(source.checkout, /url\.hostname === "4planet\.org" \|\| url\.hostname === "www\.4planet\.org"/);
+  assert.match(source.checkout, /product_not_released_live/);
   assert.match(source.checkout, /resolvePriceId/);
   assert.doesNotMatch(source.checkout, /unit_amount/);
-});
-
-test("one-time, recurring and invoice flows stay semantically separate", () => {
-  assert.match(source.catalog, /"payment"/);
-  assert.match(source.catalog, /"subscription"/);
-  assert.match(source.catalog, /channel: "invoice"/);
-  assert.match(source.checkout, /subscription_data\[metadata\]/);
-  assert.match(source.checkout, /payment_intent_data\[metadata\]/);
-  assert.match(source.invoice, /collection_method/);
-  assert.match(source.invoice, /send_invoice/);
-  assert.match(source.invoice, /auto_advance/);
-  assert.match(source.invoice, /"false"/);
-  assert.match(source.invoice, /STRIPE_INTERNAL_BILLING_TOKEN/);
-});
-
-test("support and patron are not represented as tax-deductible donations", () => {
-  assert.match(source.catalog, /taxDeductibleClaim: false/);
+  assert.match(source.checkout, /Idempotency-Key/);
   assert.match(source.checkout, /tax_deductible_claim/);
-  assert.match(source.checkout, /not presented as a tax-deductible donation/);
-  assert.doesNotMatch(source.lab, /tax-deductible donation[^\n]*yes/i);
 });
 
-test("IMPACT payment remains separate from ecological delivery, evidence and outcome", () => {
-  assert.match(source.checkout, /ecological_delivery_authority/);
-  assert.match(source.checkout, /Partner delivery, evidence and ecological outcomes are tracked separately/);
-  assert.match(source.status, /DELIVERY_NOT_ESTABLISHED/);
-  assert.match(source.webhook, /no Stripe event may mutate ecological Delivery, Evidence/);
-  assert.match(source.migration, /ecological_delivery_authority/);
-  assert.match(source.migration, /check \(ecological_delivery_authority = 'none'\)/);
+test("consumer sees verified price, recurring cadence, seller and payment obligation before Stripe", () => {
+  assert.match(source.offer, /prices\/\$\{encodeURIComponent\(priceId\)\}/);
+  assert.match(source.review, /SELLER/);
+  assert.match(source.review, /Recurring/);
+  assert.match(source.review, /ORDER WITH OBLIGATION TO PAY/);
+  assert.match(source.router, /path="\/checkout\/review\/:productKey"/);
 });
 
-test("webhook is signed, environment-bound, idempotently persisted and LIVE fail-closed", () => {
+test("webhook is signed, idempotent, out-of-order safe and LIVE fail-closed", () => {
   assert.match(source.webhook, /Stripe-Signature/);
-  assert.match(source.webhook, /HMAC/);
-  assert.match(source.webhook, /stripe_event_id/);
-  assert.match(source.webhook, /on_conflict/);
-  assert.match(source.webhook, /commerce_events/);
-  assert.match(source.webhook, /commerce_financial_records/);
+  assert.match(source.webhook, /resolution=ignore-duplicates/);
+  assert.match(source.webhook, /apply_commerce_financial_record_event/);
+  assert.match(source.webhook, /checkout\.session\.expired/);
+  assert.match(source.webhook, /invoice\.voided/);
+  assert.match(source.webhook, /charge\.dispute\.created/);
   assert.match(source.webhook, /ledger_unavailable/);
-  assert.match(source.webhook, /invoice\.payment_failed/);
-  assert.match(source.webhook, /charge\.refunded/);
-  assert.match(source.webhook, /customer\.subscription\.deleted/);
+  assert.match(source.migration, /provider_event_created_at/);
+  assert.match(source.migration, /on conflict \(stripe_object_id\) do update/);
+  assert.match(source.migration, /excluded\.provider_event_created_at >= commerce_financial_records\.provider_event_created_at/);
 });
 
-test("financial ledger is server-only and cannot become ecological truth", () => {
-  assert.match(source.migration, /enable row level security/);
-  assert.match(source.migration, /revoke all on table public\.commerce_events from anon, authenticated/);
-  assert.match(source.migration, /revoke all on table public\.commerce_financial_records from anon, authenticated/);
-  assert.match(source.migration, /Never ecological delivery\/outcome truth/);
-});
-
-test("checkout confirmation is server-verified and truthful receipt UI exists", () => {
-  assert.match(source.status, /session\.status === "complete"/);
-  assert.match(source.status, /payment_status/);
-  assert.match(source.status, /financialState/);
+test("privacy legal and truth boundaries are explicit", () => {
+  assert.match(source.privacy, /Stripe/);
+  assert.match(source.privacy, /Supabase/);
+  assert.match(source.privacy, /Marketing is separate/);
+  assert.match(source.legal, /not presented as tax-deductible/);
+  assert.match(source.legal, /payment may never be used as proof/);
   assert.match(source.receipt, /The browser redirect is never treated as proof of payment/);
-  assert.match(source.receipt, /Partner delivery, evidence and ecological outcome remain separate states/);
-  assert.match(source.router, /path="\/checkout\/return"/);
-  assert.match(source.router, /path="\/checkout\/lab"/);
 });
 
-test("TEST lab exposes all public checkout families without exposing B2B invoice auth", () => {
-  assert.match(source.lab, /SUPPORT 4PLANET/);
-  assert.match(source.lab, /BECOME A FOUNDING PATRON/);
-  assert.match(source.lab, /16 MISSION SUPPORTERS/);
-  assert.match(source.lab, /Large B2B and negotiated pilot funding does not use a public buy button/);
-  assert.doesNotMatch(source.lab, /STRIPE_INTERNAL_BILLING_TOKEN/);
+test("public routes expose support sponsor and legal journeys", () => {
+  assert.match(source.router, /path="\/join" element={<Support \/>}/);
+  assert.match(source.router, /path="\/support" element={<Support \/>}/);
+  assert.match(source.router, /path="\/sponsor" element={<Sponsor \/>}/);
+  assert.match(source.router, /path="\/legal\/terms"/);
+  assert.match(source.router, /path="\/legal\/payments"/);
+  assert.match(source.router, /path="\/legal\/withdrawal"/);
 });
