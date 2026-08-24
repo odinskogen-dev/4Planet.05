@@ -63,6 +63,33 @@ jobs:
           } > /tmp/workers-report.md
           cat /tmp/workers-report.md
 
+      - name: Map fixed Pages origins to source branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          account_id="d53c17b06219066a0325eec01c21729e"
+          json="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?per_page=100")"
+          jq -e '.success == true' <<<"$json" >/dev/null
+          {
+            echo '# Analytics fixed-origin source map'
+            echo
+            for short in b8a8f6c1 4482f621; do
+              row="$(jq -c --arg u "https://${short}.4planet-05.pages.dev" '.result[] | select(.url==$u)' <<<"$json" | head -n1)"
+              echo "## ${short}.4planet-05.pages.dev"
+              if [[ -z "$row" ]]; then
+                echo '- not found in first 100 deployments'
+              else
+                echo "- branch: \`$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")\`"
+                echo "- commit: \`$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")\`"
+                echo "- environment: \`$(jq -r '.environment // ""' <<<"$row")\`"
+                echo "- created: \`$(jq -r '.created_on // ""' <<<"$row")\`"
+              fi
+              echo
+            done
+          } > /tmp/origin-source-report.md
+          cat /tmp/origin-source-report.md
+
       - name: Report
         if: always()
         env:
@@ -70,4 +97,7 @@ jobs:
         run: |
           if [[ -f /tmp/workers-report.md ]]; then
             gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/workers-report.md
+          fi
+          if [[ -f /tmp/origin-source-report.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/origin-source-report.md
           fi
