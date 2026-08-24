@@ -134,6 +134,10 @@ export function readFeatures() {
   return features;
 }
 
+export function readStandfirsts() {
+  return readLiteralObject("src/content/magazineStandfirsts.ts", "ARTICLE_STANDFIRSTS");
+}
+
 export function readImages() {
   return readLiteralObject("src/content/imageRegistry.ts", "IMAGES");
 }
