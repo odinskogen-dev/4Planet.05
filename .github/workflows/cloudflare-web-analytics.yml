@@ -1,4 +1,4 @@
-name: Cloudflare LABS Domain Diagnose
+name: Cloudflare LABS Domain Cutover
 
 on:
   pull_request:
@@ -16,15 +16,32 @@ env:
   CF_PROJECT: 4planet-05
   CF_ZONE: 4planet.org
   LABS_DOMAIN: labs.4planet.org
+  LABS_BRANCH: labs/overview-v1
+  LABS_BRANCH_ALIAS: labs-overview-v1.4planet-05.pages.dev
+  LABS_EXPECTED_SHA: 35486b0304779476e550b7d10e9981dd51dc8ef7
+  EXPECTED_LEGACY_WORKER: 4planet-labs-fixed-domain
 
 jobs:
-  diagnose:
+  cutover:
     runs-on: ubuntu-latest
     steps:
-      - name: Identify current LABS hostname owner
+      - name: Verify exact LABS source and branch HTTPS
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr="$(curl -fsS -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/54")"
+          current_sha="$(jq -r '.head.sha // empty' <<<"${pr}")"
+          current_branch="$(jq -r '.head.ref // empty' <<<"${pr}")"
+          [[ "${current_sha}" == "${LABS_EXPECTED_SHA}" && "${current_branch}" == "${LABS_BRANCH}" ]] || {
+            echo "LABS PR/head drifted: branch=${current_branch} sha=${current_sha}; refusing cutover"; exit 1;
+          }
+          curl -fsS --retry 5 --retry-delay 2 "https://${LABS_BRANCH_ALIAS}/labs" -o /tmp/labs-source.html
+          grep -Eiq 'LABS|4PLANET' /tmp/labs-source.html || { echo "Verified branch alias returned unexpected content"; exit 1; }
+          echo "Source gate PASS."
+
+      - name: Detach only the legacy Worker hostname binding
+        id: detach
+        shell: bash
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
@@ -33,23 +50,132 @@ jobs:
           zone_id="$(jq -r '.result[0].id // empty' <<<"${zone}")"
           account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone}")"
           test -n "${zone_id}" && test -n "${account_id}"
+          echo "account_id=${account_id}" >> "$GITHUB_OUTPUT"
+          echo "zone_id=${zone_id}" >> "$GITHUB_OUTPUT"
 
+          worker_domains="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}")"
+          match="$(jq -c --arg host "${LABS_DOMAIN}" '.result[]? | select(.hostname==$host)' <<<"${worker_domains}" | head -n1)"
+          if [[ -n "${match}" ]]; then
+            domain_id="$(jq -r '.id' <<<"${match}")"
+            service="$(jq -r '.service' <<<"${match}")"
+            [[ "${service}" == "${EXPECTED_LEGACY_WORKER}" ]] || { echo "Unexpected Worker owns ${LABS_DOMAIN}: ${service}; refusing destructive change"; exit 1; }
+            echo "Detaching hostname from legacy Worker service ${service}; Worker itself is preserved."
+            code="$(curl -sS -o /tmp/detach.json -w '%{http_code}' -X DELETE "${api}/accounts/${account_id}/workers/domains/${domain_id}" "${auth[@]}")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/detach.json)" == "true" ]] || { echo "Worker domain detach HTTP ${code}"; cat /tmp/detach.json; exit 1; }
+          else
+            echo "No Worker Custom Domain currently owns ${LABS_DOMAIN}; continuing idempotently."
+          fi
+
+          for i in $(seq 1 20); do
+            dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+            readonly="$(jq -r '[.result[]? | select((.meta.read_only // false)==true)] | length' <<<"${dns}")"
+            [[ "${readonly}" == "0" ]] && break
+            sleep 2
+          done
           dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
-          domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
-          workers_domains="$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}")"
+          readonly="$(jq -r '[.result[]? | select((.meta.read_only // false)==true)] | length' <<<"${dns}")"
+          [[ "${readonly}" == "0" ]] || { echo "Legacy read-only Worker DNS record still present after detach"; jq '.result' <<<"${dns}"; exit 1; }
+          echo "Legacy Worker hostname binding removed; Worker service preserved."
 
-          dns_summary="$(jq -c '[.result[]? | {id,type,name,content,proxied,proxiable,meta}]' <<<"${dns}")"
-          domain_summary="$(jq -c '{name:.result.name,status:.result.status,verification_data:.result.verification_data,validation_data:.result.validation_data}' <<<"${domain}")"
-          worker_summary="$(jq -c --arg host "${LABS_DOMAIN}" '[.result[]? | select(.hostname==$host) | {id,hostname,service,environment,zone_id,zone_name}]' <<<"${workers_domains}")"
+      - name: Create branch CNAME and activate Pages custom domain
+        shell: bash
+        env:
+          ACCOUNT_ID: ${{ steps.detach.outputs.account_id }}
+          ZONE_ID: ${{ steps.detach.outputs.zone_id }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          payload="$(jq -nc --arg name "${LABS_DOMAIN}" --arg content "${LABS_BRANCH_ALIAS}" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')"
 
-          body=$(cat <<EOF
-          LABS CLOUDFLARE OWNERSHIP DIAGNOSIS
+          dns="$(curl -fsS "${api}/zones/${ZONE_ID}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          record_id="$(jq -r '.result[0].id // empty' <<<"${dns}")"
+          current_target="$(jq -r '.result[0].content // empty' <<<"${dns}")"
+          current_proxied="$(jq -r '.result[0].proxied // false' <<<"${dns}")"
+          if [[ "${current_target}" == "${LABS_BRANCH_ALIAS}" && "${current_proxied}" == "true" ]]; then
+            echo "Branch CNAME already correct."
+          elif [[ -n "${record_id}" ]]; then
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X PUT "${api}/zones/${ZONE_ID}/dns_records/${record_id}" "${auth[@]}" --data "${payload}")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS update HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
+          else
+            code="$(curl -sS -o /tmp/dns-write.json -w '%{http_code}' -X POST "${api}/zones/${ZONE_ID}/dns_records" "${auth[@]}" --data "${payload}")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/dns-write.json)" == "true" ]] || { echo "DNS create HTTP ${code}"; cat /tmp/dns-write.json; exit 1; }
+          fi
 
-          Pages domain: ${domain_summary}
-          DNS: ${dns_summary}
-          Worker Custom Domain owner: ${worker_summary}
+          echo "Ensure Pages domain association exists."
+          code="$(curl -sS -o /tmp/pages-domain.json -w '%{http_code}' "${api}/accounts/${ACCOUNT_ID}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
+          if [[ "${code}" == "404" ]]; then
+            code="$(curl -sS -o /tmp/pages-create.json -w '%{http_code}' -X POST "${api}/accounts/${ACCOUNT_ID}/pages/projects/${CF_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "${LABS_DOMAIN}" '{name:$name}')")"
+            [[ "${code}" =~ ^2 ]] && [[ "$(jq -r '.success // false' /tmp/pages-create.json)" == "true" ]] || { echo "Pages domain create HTTP ${code}"; cat /tmp/pages-create.json; exit 1; }
+          elif [[ "${code}" != "200" ]]; then
+            echo "Pages domain lookup HTTP ${code}"; cat /tmp/pages-domain.json; exit 1
+          fi
+
+          status=""
+          for i in $(seq 1 45); do
+            pages="$(curl -fsS "${api}/accounts/${ACCOUNT_ID}/pages/projects/${CF_PROJECT}/domains/${LABS_DOMAIN}" "${auth[@]}")"
+            status="$(jq -r '.result.status // empty' <<<"${pages}")"
+            verify="$(jq -r '.result.verification_data.status // empty' <<<"${pages}")"
+            echo "Pages domain status=${status:-unknown} verification=${verify:-unknown}"
+            [[ "${status}" == "active" ]] && break
+            [[ "${status}" == "error" || "${status}" == "blocked" ]] && { jq '.result' <<<"${pages}"; exit 1; }
+            sleep 4
+          done
+          [[ "${status}" == "active" ]] || { echo "Pages domain failed to activate"; exit 1; }
+
+          final_dns="$(curl -fsS "${api}/zones/${ZONE_ID}/dns_records?name=${LABS_DOMAIN}&per_page=100" "${auth[@]}")"
+          target="$(jq -r '.result[0].content // empty' <<<"${final_dns}")"
+          proxied="$(jq -r '.result[0].proxied // false' <<<"${final_dns}")"
+          [[ "${target}" == "${LABS_BRANCH_ALIAS}" && "${proxied}" == "true" ]] || { echo "Final DNS mismatch target=${target} proxied=${proxied}"; jq '.result' <<<"${final_dns}"; exit 1; }
+          echo "Pages + DNS gate PASS."
+
+      - name: Verify live LABS and protect 4planet.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/" -o /tmp/labs-root.html
+          curl -fsS -L --retry 12 --retry-delay 3 "https://${LABS_DOMAIN}/labs" -o /tmp/labs-path.html
+          grep -Eiq 'LABS' /tmp/labs-root.html || { echo "labs.4planet.org root is not LABS"; exit 1; }
+          grep -Eiq 'LABS' /tmp/labs-path.html || { echo "labs.4planet.org/labs is not LABS"; exit 1; }
+          curl -fsS -L --retry 5 --retry-delay 2 "https://4planet.org/" -o /tmp/main.html
+          test -s /tmp/main.html || { echo "4planet.org regression check failed"; exit 1; }
+          echo "LIVE QA PASS."
+
+      - name: Report PASS
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          body=$(cat <<'EOF'
+          LABS DOMAIN CUTOVER — PASS
+
+          Latest verified LABS source: https://labs-overview-v1.4planet-05.pages.dev/labs
+          Source branch: labs/overview-v1
+          Source SHA: 35486b0304779476e550b7d10e9981dd51dc8ef7
+          Live: https://labs.4planet.org/
+          Project OS: https://labs.4planet.org/labs
+
+          Legacy Worker hostname binding `4planet-labs-fixed-domain` was detached; Worker code was preserved.
+          Pages custom domain = active.
+          DNS = proxied CNAME to labs-overview-v1.4planet-05.pages.dev.
+          Live LABS root + /labs = PASS.
+          4planet.org reachability regression = PASS.
           EOF
           )
+          curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
+            --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
+
+      - name: Report failure
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          body='LABS DOMAIN CUTOVER — FAIL. Do not call labs.4planet.org live. Existing Worker code was not deleted; inspect exact workflow stage before any further change.'
           curl -fsS -X POST "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments" \
             -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg body "${body}" '{body:$body}')" >/dev/null
