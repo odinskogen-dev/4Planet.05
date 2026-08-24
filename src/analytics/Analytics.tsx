@@ -50,18 +50,11 @@ function productArea(pathname: string): string {
 
 function installGoogleTag(id: string, domains: string[]) {
   if (!id || !analyticsAllowedHost() || document.getElementById("4planet-ga4")) return;
-
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { window.dataLayer?.push(arguments); } as Gtag;
-
   if (domains.length > 1) window.gtag("set", "linker", { domains, decorate_forms: true });
   window.gtag("js", new Date());
-  window.gtag("config", id, {
-    send_page_view: false,
-    allow_google_signals: false,
-    allow_ad_personalization_signals: false,
-  });
-
+  window.gtag("config", id, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false });
   const script = document.createElement("script");
   script.id = "4planet-ga4";
   script.async = true;
@@ -88,18 +81,12 @@ export function Analytics() {
   useEffect(() => {
     if (!allowedHost || !id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
-
     const pagePath = `${location.pathname}${location.search}`;
-    window.gtag?.("event", "page_view", {
-      page_title: document.title,
-      page_location: window.location.href,
-      page_path: pagePath,
-      content_group: productArea(location.pathname),
-      site_host: window.location.hostname,
-    });
+    window.gtag?.("event", "page_view", { page_title: document.title, page_location: window.location.href, page_path: pagePath, content_group: productArea(location.pathname), site_host: window.location.hostname });
 
     if (location.pathname.startsWith("/magazine/topics/")) {
-      const topic = location.pathname.split("/").filter(Boolean).at(-1) || "unknown";
+      const parts = location.pathname.split("/").filter(Boolean);
+      const topic = parts[parts.length - 1] || "unknown";
       trackEvent("topic_open", { topic, source: "route" });
     }
     if (location.pathname === "/magazine/search") {
