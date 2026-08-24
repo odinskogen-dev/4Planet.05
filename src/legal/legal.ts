@@ -18,11 +18,11 @@ export const CONSUMER_DISCLOSURES: Record<ConsumerFamily, {
   cancellation: string;
 }> = {
   IMPACT: {
-    title: "IMPACT contribution",
-    nature: "Payment would record a defined contribution. It would not by itself prove partner delivery, ecological evidence or ecological outcome. Real IMPACT payments are not released yet.",
+    title: "IMPACT pathway contribution",
+    nature: "A one-time contribution to the named 4PLANET IMPACT pathway. Payment does not by itself prove partner allocation, ecological delivery, evidence or outcome. Until a partner-backed unit contract is active, this is not sold as a delivered tree, kilogram, coral fragment, restored area or other ecological unit.",
     recurring: false,
-    withdrawal: "Any future consumer IMPACT offer must state the applicable withdrawal and refund conditions before payment.",
-    cancellation: "No public real-money IMPACT offer is active until partner, delivery, proof, economics, claims and remedy gates are closed.",
+    withdrawal: "Mandatory consumer withdrawal and refund rights apply where applicable. The terms shown before payment do not reduce rights granted by mandatory Norwegian consumer law.",
+    cancellation: "If a contribution is cancelled or refunded where required by law or the applicable terms, financial state is updated separately from any later ecological delivery state. Payment is never treated as ecological proof.",
   },
   SUPPORT: {
     title: "Support 4PLANET",
@@ -40,23 +40,23 @@ export const CONSUMER_DISCLOSURES: Record<ConsumerFamily, {
   },
   PATRON: {
     title: "Founding Patron",
-    nature: "Negotiated founding support for the shared 4PLANET build. No public card charge is created from the website. Terms, amount and any recognition are agreed before an invoice is sent. It is not presented as a tax-deductible donation.",
+    nature: "Negotiated founding support for the shared 4PLANET build. The public website records the intended amount and enquiry; terms, amount and any recognition are agreed before a Stripe invoice is sent. It is not presented as a tax-deductible donation.",
     recurring: false,
     withdrawal: "Any rights depend on the counterparty and written agreement, without reducing mandatory rights that apply.",
-    cancellation: "The public website records interest only. Payment follows a reviewed agreement and invoice.",
+    cancellation: "Payment follows a reviewed agreement and Stripe invoice rather than an anonymous high-value public card charge.",
   },
   MEMBERSHIP: {
-    title: "ME4PLANET / 4PEOPLE",
-    nature: "The public account and basic participation layer is free. There is no separate paid membership product in the approved launch model.",
-    recurring: false,
-    withdrawal: "No payment is required to create the free participation account.",
-    cancellation: "Account/privacy controls are handled separately from paid support subscriptions.",
+    title: "4PLANET Supporting Membership",
+    nature: "Optional recurring paid membership for people who want a stronger supporting relationship with 4PLANET. Basic ME4PLANET / 4PEOPLE participation remains free. Only benefits explicitly described by 4PLANET are included, and the payment is not presented as tax-deductible or as ecological delivery.",
+    recurring: true,
+    withdrawal: "Mandatory consumer withdrawal rights apply to the initial agreement where applicable. 4PLANET does not reduce rights granted by mandatory Norwegian consumer law.",
+    cancellation: "You can stop future renewals at any time through Stripe Customer Portal when available, or by contacting 4PLANET. Free participation remains separate from the paid subscription.",
   },
   SPONSOR: {
-    title: "Sponsorship",
-    nature: "Project and Mission sponsorship are negotiated business relationships. The public amount selector records intended scope only and never charges a card.",
+    title: "Sponsorship / negotiated support",
+    nature: "Project Sponsor, Mission Sponsor, Sponsor Package and negotiated business support use an enquiry and reviewed-invoice flow. The public amount selector records intended scope only and never charges a card. Consideration, visibility, deliverables and tax/VAT treatment are set in the specific agreement.",
     recurring: false,
-    withdrawal: "Business sponsorship terms, consideration, tax/VAT treatment, cancellation and remedies are stated in the specific written agreement.",
+    withdrawal: "Business sponsorship and negotiated support terms, consideration, tax/VAT treatment, cancellation and remedies are stated in the specific written agreement. Mandatory rights are not reduced where they apply.",
     cancellation: "No invoice is sent until scope, counterparty, amount, consideration and tax/VAT treatment have been reviewed.",
   },
 };
