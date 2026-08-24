@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { startStripeCheckout, type StripeProductKey } from "@/payments/stripe";
+import type { StripeProductKey } from "@/payments/stripe";
 
 interface LabProduct {
   key: StripeProductKey;
@@ -45,24 +45,14 @@ const MISSIONS: LabProduct[] = [
 ].map(([key, label]) => ({ key: key as StripeProductKey, label: `SUPPORT ${label}`, detail: "Mission Supporter · monthly subscription · TEST" }));
 
 function ProductRow({ item }: { item: LabProduct }) {
-  const [state, setState] = useState<"idle" | "opening" | "error">("idle");
-  const run = async () => {
-    setState("opening");
-    try {
-      await startStripeCheckout({ productKey: item.key, quantity: 1, referenceKey: item.referenceKey });
-    } catch {
-      setState("error");
-    }
-  };
+  const href = `/checkout/review/${encodeURIComponent(item.key)}${item.referenceKey ? `?reference=${encodeURIComponent(item.referenceKey)}` : ""}`;
   return (
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 18, alignItems: "center", padding: "17px 0", borderTop: "1px solid rgba(255,255,255,.13)" }}>
       <div>
         <div style={{ fontSize: 16, fontWeight: 600 }}>{item.label}</div>
         <div style={{ marginTop: 4, fontSize: 12, opacity: .55 }}>{item.detail}</div>
       </div>
-      <button type="button" onClick={run} disabled={state === "opening"} style={{ minWidth: 124, border: "1px solid rgba(255,255,255,.7)", background: state === "error" ? "rgba(255,255,255,.08)" : "transparent", color: "#fff", padding: "10px 13px", cursor: "pointer", font: "inherit", fontSize: 12 }}>
-        {state === "opening" ? "OPENING…" : state === "error" ? "UNAVAILABLE" : "TEST CHECKOUT"}
-      </button>
+      <Link to={href} style={{ minWidth: 124, border: "1px solid rgba(255,255,255,.7)", background: "transparent", color: "#fff", padding: "10px 13px", textDecoration: "none", fontSize: 12, textAlign: "center" }}>REVIEW TEST</Link>
     </div>
   );
 }
@@ -88,7 +78,7 @@ export default function CommerceStripeLab() {
             <span style={{ opacity: .6 }}>TEST KING · STRIPE LAB</span>
           </div>
           <h1 style={{ margin: "74px 0 18px", maxWidth: 760, fontSize: "clamp(46px, 8vw, 88px)", lineHeight: .92, letterSpacing: "-.06em", fontWeight: 500 }}>One payment engine. Different truths.</h1>
-          <p style={{ maxWidth: 700, fontSize: 18, lineHeight: 1.55, opacity: .72 }}>Engineering-only Stripe sandbox. All current catalogue prices are synthetic NOK 10 test values. No partner delivery, sponsorship rights, tax deduction, membership entitlement or ecological outcome is created outside the explicit financial TEST state.</p>
+          <p style={{ maxWidth: 700, fontSize: 18, lineHeight: 1.55, opacity: .72 }}>Engineering-only Stripe sandbox. All current catalogue prices are synthetic NOK 10 test values. Every checkout now passes through the consumer review layer before Stripe opens. No partner delivery, sponsorship rights, tax deduction, membership entitlement or ecological outcome is created outside the explicit financial TEST state.</p>
           <div style={{ marginTop: 26, display: "inline-block", border: "1px solid rgba(255,255,255,.25)", padding: "8px 10px", fontSize: 11, opacity: .7 }}>HOST · {host || "LOCAL"}</div>
         </header>
 

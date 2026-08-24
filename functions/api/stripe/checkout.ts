@@ -1,14 +1,18 @@
 import { CATALOG, readCatalogKey, resolveEnvironment, resolvePriceId, type CatalogEntry, type StripeEnv } from "./catalog";
+import { requestSession, sessionCookieHeaders, type SupabaseEnv } from "../_shared/supabase";
+
+type Env = StripeEnv & SupabaseEnv;
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
 });
 
-function allowedOrigin(origin: string) {
+function allowedOrigin(origin: string, environment: "TEST" | "LIVE") {
   try {
     const url = new URL(origin);
     if (url.protocol !== "https:" && url.hostname !== "localhost") return false;
+    if (environment === "LIVE") return url.hostname === "4planet.org" || url.hostname === "www.4planet.org";
     return url.hostname === "4planet.org" || url.hostname === "www.4planet.org" || url.hostname.endsWith(".4planet-05.pages.dev") || url.hostname === "localhost";
   } catch { return false; }
 }
@@ -49,18 +53,19 @@ function validateReference(entry: CatalogEntry, raw: unknown, env: StripeEnv, en
   return reference || null;
 }
 
-function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry, environment: "TEST" | "LIVE", referenceKey: string | null) {
+function setMetadata(form: URLSearchParams, prefix: string, entry: CatalogEntry, environment: "TEST" | "LIVE", referenceKey: string | null, userId: string | null) {
   form.set(`${prefix}[4planet_product_key]`, entry.key);
   form.set(`${prefix}[product_kind]`, entry.kind);
   form.set(`${prefix}[product_family]`, entry.family);
   form.set(`${prefix}[truth_state]`, environment);
   form.set(`${prefix}[ecological_delivery_authority]`, "none");
   form.set(`${prefix}[tax_deductible_claim]`, "false");
-  form.set(`${prefix}[catalog_version]`, "commerce-core-02");
+  form.set(`${prefix}[catalog_version]`, "commerce-core-03");
   if (entry.action) form.set(`${prefix}[impact_action]`, entry.action);
   if (entry.mission) form.set(`${prefix}[mission]`, entry.mission);
   if (entry.missionSlug) form.set(`${prefix}[mission_slug]`, entry.missionSlug);
   if (referenceKey) form.set(`${prefix}[reference_key]`, referenceKey);
+  if (userId) form.set(`${prefix}[4planet_user_id]`, userId);
 }
 
 function checkoutDisclosure(entry: CatalogEntry, environment: "TEST" | "LIVE") {
@@ -71,12 +76,11 @@ function checkoutDisclosure(entry: CatalogEntry, environment: "TEST" | "LIVE") {
   return "Payment is processed by Stripe under the 4PLANET terms applicable to this product.";
 }
 
-export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): Promise<Response> => {
+export const onRequestPost = async (ctx: { request: Request; env: Env }): Promise<Response> => {
   const { request, env } = ctx;
-  const origin = request.headers.get("origin") ?? new URL(request.url).origin;
-  if (!allowedOrigin(origin)) return json({ ok: false, error: "origin_not_allowed" }, 403);
-
   const runtime = resolveEnvironment(env);
+  const origin = request.headers.get("origin") ?? new URL(request.url).origin;
+  if (!allowedOrigin(origin, runtime.environment)) return json({ ok: false, error: "origin_not_allowed" }, 403);
   if (!runtime.enabled) return json({ ok: false, error: runtime.environment === "LIVE" ? "stripe_live_checkout_disabled" : "stripe_test_checkout_disabled" }, 503);
   if (!runtime.secret || !runtime.secret.startsWith(runtime.expectedSecretPrefix)) return json({ ok: false, error: runtime.environment === "LIVE" ? "stripe_live_secret_missing" : "stripe_test_secret_missing" }, 503);
 
@@ -90,13 +94,16 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
 
   const quantity = safeQuantity(body.quantity, entry);
   if (quantity === null) return json({ ok: false, error: "invalid_quantity" }, 400);
-  const customerEmail = typeof body.customerEmail === "string" ? body.customerEmail.trim() : undefined;
+
+  const accountSession = await requestSession(request, env).catch(() => null);
+  const verifiedUserId = accountSession?.user.id ?? null;
+  const verifiedUserEmail = accountSession?.user.email?.trim();
+  const suppliedEmail = typeof body.customerEmail === "string" ? body.customerEmail.trim() : undefined;
+  const customerEmail = verifiedUserEmail || suppliedEmail;
   if (!validEmail(customerEmail)) return json({ ok: false, error: "invalid_email" }, 400);
 
   const referenceKey = validateReference(entry, body.referenceKey, env, runtime.environment);
-  if ((entry.kind === "MISSION_SPONSOR" || entry.kind === "PROJECT_SPONSOR") && !referenceKey) {
-    return json({ ok: false, error: "approved_reference_required" }, 400);
-  }
+  if ((entry.kind === "MISSION_SPONSOR" || entry.kind === "PROJECT_SPONSOR") && !referenceKey) return json({ ok: false, error: "approved_reference_required" }, 400);
 
   const priceId = resolvePriceId(entry, env, runtime.environment);
   if (!priceId) return json({ ok: false, error: runtime.environment === "LIVE" ? "live_price_not_configured" : "test_price_not_configured" }, 503);
@@ -108,14 +115,14 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
   form.set("billing_address_collection", "auto");
   form.set("success_url", `${origin}${entry.returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
   form.set("cancel_url", `${origin}${entry.returnPath}?checkout=cancel&product=${encodeURIComponent(productKey)}`);
-  form.set("client_reference_id", `4p_${productKey}`);
-  setMetadata(form, "metadata", entry, runtime.environment, referenceKey);
+  form.set("client_reference_id", verifiedUserId ? `4p_user_${verifiedUserId}` : `4p_${productKey}`);
+  setMetadata(form, "metadata", entry, runtime.environment, referenceKey, verifiedUserId);
 
   if (entry.mode === "payment") {
     form.set("customer_creation", "always");
-    setMetadata(form, "payment_intent_data[metadata]", entry, runtime.environment, referenceKey);
+    setMetadata(form, "payment_intent_data[metadata]", entry, runtime.environment, referenceKey, verifiedUserId);
   } else {
-    setMetadata(form, "subscription_data[metadata]", entry, runtime.environment, referenceKey);
+    setMetadata(form, "subscription_data[metadata]", entry, runtime.environment, referenceKey, verifiedUserId);
   }
 
   form.set("custom_text[submit][message]", checkoutDisclosure(entry, runtime.environment));
@@ -137,7 +144,9 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
     return json({ ok: false, error: "stripe_checkout_create_failed", stripeType: stripePayload?.error?.type ?? null }, 502);
   }
 
-  return json({
+  const headers = new Headers({ "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+  if (accountSession?.refreshed) for (const value of sessionCookieHeaders(accountSession.refreshed)) headers.append("Set-Cookie", value);
+  return new Response(JSON.stringify({
     ok: true,
     environment: runtime.environment,
     checkoutMode: entry.mode,
@@ -148,10 +157,11 @@ export const onRequestPost = async (ctx: { request: Request; env: StripeEnv }): 
     productFamily: entry.family,
     quantity,
     referenceKey,
+    accountLinked: Boolean(verifiedUserId),
     truthState: runtime.environment,
     deliveryAuthority: "none",
-  });
+  }), { status: 200, headers });
 };
 
-export const onRequest = async (ctx: { request: Request; env: StripeEnv }): Promise<Response> =>
+export const onRequest = async (ctx: { request: Request; env: Env }): Promise<Response> =>
   ctx.request.method === "POST" ? onRequestPost(ctx) : json({ ok: false, error: "method_not_allowed" }, 405);
