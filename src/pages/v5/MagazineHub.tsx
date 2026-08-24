@@ -9,6 +9,8 @@ import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-hub.css";
 
+const toSeriesSlug = (value: string) => value.toLowerCase().replace(/_/g, "-");
+
 function StoryRail({ stories }: { stories: typeof STORIES }) {
   return (
     <div className="mag-hub-story-grid">
@@ -49,19 +51,19 @@ export function MagazineTopicHub() {
 
 export function MagazineSeriesHub() {
   const { series: raw } = useParams();
-  const series = MAGAZINE_ARTICLE_TEMPLATES.find((item) => item.id.toLowerCase().replaceAll("_", "-") === raw?.toLowerCase());
+  const series = MAGAZINE_ARTICLE_TEMPLATES.find((item) => toSeriesSlug(item.id) === raw?.toLowerCase());
   if (!series) return <NotFound />;
   const stories = STORIES.filter((story) => story.franchise === series.id);
-  const slug = series.id.toLowerCase().replaceAll("_", "-");
+  const slug = toSeriesSlug(series.id);
 
   return (
     <MagazineShell>
       <Seo title={`${series.label} — 4PLANET MAGAZINE`} description={series.readerJob} path={`/magazine/series/${slug}`} />
       <main className="mag-hub mag-hub--series">
-        <header className="mag-hub-hero"><p>SERIES / {series.id.replaceAll("_", " ")}</p><h1>{series.label}</h1><span>{series.readerJob}</span><div><strong>{stories.length}</strong><p>stories using this editorial grammar</p></div></header>
+        <header className="mag-hub-hero"><p>SERIES / {series.id.replace(/_/g, " ")}</p><h1>{series.label}</h1><span>{series.readerJob}</span><div><strong>{stories.length}</strong><p>stories using this editorial grammar</p></div></header>
         <section className="mag-hub-method"><p>THE PROMISE</p><h2>{series.visualRule}</h2><span>{series.trustRule}</span></section>
         {stories.length ? <StoryRail stories={stories} /> : <section className="mag-hub-empty"><h2>A format is not a quota.</h2><p>This series stays quiet until a story actually fits its editorial job.</p></section>}
-        <nav className="mag-hub-other" aria-label="Other Magazine series"><p>OTHER SERIES</p><div>{MAGAZINE_ARTICLE_TEMPLATES.filter((item) => item.id !== series.id).map((item) => { const itemSlug = item.id.toLowerCase().replaceAll("_", "-"); return <Link key={item.id} to={`/magazine/series/${itemSlug}`}>{item.label}</Link>; })}</div></nav>
+        <nav className="mag-hub-other" aria-label="Other Magazine series"><p>OTHER SERIES</p><div>{MAGAZINE_ARTICLE_TEMPLATES.filter((item) => item.id !== series.id).map((item) => { const itemSlug = toSeriesSlug(item.id); return <Link key={item.id} to={`/magazine/series/${itemSlug}`}>{item.label}</Link>; })}</div></nav>
       </main>
     </MagazineShell>
   );
