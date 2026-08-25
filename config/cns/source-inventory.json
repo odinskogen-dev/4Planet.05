@@ -1,7 +1,7 @@
 {
-  "inventory_version": 3,
+  "inventory_version": 4,
   "mode": "SHADOW_MIGRATION",
-  "observed_at": "2026-08-25T22:00:00+02:00",
+  "observed_at": "2026-08-26T00:30:00+02:00",
   "rules": {
     "legacy_authoritative_until_cutover": true,
     "live_code_requires_fresh_github_read": true,
@@ -11,7 +11,9 @@
     "destructive_retirement_before_parity": false,
     "hypotheses_are_not_facts": true,
     "unknown_is_first_class": true,
-    "remote_status_label_is_not_runtime_proof": true
+    "remote_status_label_is_not_runtime_proof": true,
+    "summary_to_summary_without_underlying_evidence_forbidden": true,
+    "control_system_must_be_independently_auditable": true
   },
   "sources": [
     {
@@ -21,6 +23,14 @@
       "uri": "https://docs.google.com/document/d/13wCyLsLv0xFHYS1nbAXKqcQux3kz8b48U0pm0bGFhVo/edit",
       "authority": "ENTRY_CONTROL",
       "truth_domain": "BRAIN_RECOVERY_AND_OPERATING_RULES"
+    },
+    {
+      "source_id": "brain-mandatory-rules",
+      "kind": "GOOGLE_DOC",
+      "name": "SYSTEM — MANDATORY OPERATING RULES & WRITEBACK PROTOCOL v1.0 — LOCKED FOUNDER DECISION",
+      "uri": "https://docs.google.com/document/d/16twztduCzjpCbHgncibjp9h5DSBs59tKElDS5tc3TTg/edit",
+      "authority": "LOCKED_FOUNDER_DECISION",
+      "truth_domain": "OPERATING_AND_WRITEBACK_RULES"
     },
     {
       "source_id": "brain-project-lead-current",
@@ -38,6 +48,59 @@
       "uri": "https://docs.google.com/document/d/13KGE69cwTP8hm6zjt4xVUgW3ldzfhVxh336QgmBWJVQ/edit",
       "authority": "LEGACY_CURRENT",
       "truth_domain": "KNOWLEDGE_OS_STATE"
+    },
+    {
+      "source_id": "brain-architecture-working-canon",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET BRAIN + ODIN BRAIN ARCHITECTURE v1.0 — WORKING CANON",
+      "uri": "https://docs.google.com/document/d/1BdHLSYttVJZ0t-4e16kjuBKSUw3DYDPibTFrSZPT5ds/edit",
+      "authority": "WORKING_CANON",
+      "truth_domain": "BRAIN_ARCHITECTURE_AND_PRIVACY_BOUNDARY",
+      "migration_note": "Preserve lossless raw/source/claim/evidence/context/decision/outcome lineage and separate ODIN private context from shared 4PLANET BRAIN."
+    },
+    {
+      "source_id": "brain-master-recovery-map",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET BRAIN MASTER INDEX & RECOVERY MAP v1.0",
+      "uri": "https://docs.google.com/document/d/1ng5rqR5FZBe3yMAERTxRrcVe2mI4kd-0wRY1aiwMeNE/edit",
+      "authority": "RECOVERY_AUTHORITY_VIEW",
+      "truth_domain": "AUTHORITY_ROUTING_AND_RECOVERY",
+      "migration_note": "2026-08-10 clean-room audit retained one explicit PARTIAL: universal corpus-wide source/derivative/binary-hash completeness."
+    },
+    {
+      "source_id": "brain-artifact-manifest",
+      "kind": "GOOGLE_DOC",
+      "name": "BRAIN CANONICAL ARTIFACT MANIFEST v1.0",
+      "uri": "https://docs.google.com/document/d/1g1rCioXhsUmVg6CeMMugChdWRdj5uPuXefNdyyjAlBs/edit",
+      "authority": "ARTIFACT_AUTHORITY_VIEW",
+      "truth_domain": "BRAIN_ARTIFACT_PROVENANCE_AND_SUCCESSION"
+    },
+    {
+      "source_id": "brain14-control-assurance",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET_ BRAIN-14 CONTROL-OF-CONTROL ASSURANCE CONTRACT v1.0 — 2026-08-20",
+      "uri": "https://docs.google.com/document/d/1k6T7-gkQSOrNSmPJh4MduL8gyCMHiIxMqsS0KJcnWmo/edit",
+      "authority": "ACTIVE_INTERNAL_ASSURANCE_SPEC",
+      "truth_domain": "CONTROL_OF_CONTROL_AND_FAULT_INJECTION",
+      "migration_note": "Operationalized through SUPERBRAIN Red Team; preserve F01-F09 fault catalogue and no-audit-theatre principle."
+    },
+    {
+      "source_id": "brain-evaluation-failure-spec",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET BRAIN EVALUATION, CONTRADICTION & FAILURE MEMORY SPEC v0.1",
+      "uri": "https://docs.google.com/document/d/1d4l04oWYWrW5iMHJeytj_ype4VBGASgjrb2WQ8R6Kb0/edit",
+      "authority": "WORKING_CANON_IMPLEMENTATION_SPEC",
+      "truth_domain": "EVAL_CONTRADICTION_STALENESS_FAILURE_AND_DRIFT",
+      "migration_note": "Detection is not resolution. Failure closure requires verification/readback plus recurrence prevention."
+    },
+    {
+      "source_id": "brain-universal-learning-contract",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET BRAIN UNIVERSAL LEARNING CONTRACTS v0.1",
+      "uri": "https://docs.google.com/document/d/1Za-U6C4urLeiPhlUf8hKT_QvhI7ecVlO7i9wO9PM0hE/edit",
+      "authority": "WORKING_CANON_IMPLEMENTATION_SPEC",
+      "truth_domain": "DECISION_OUTCOME_EVALUATION_LEARNING_AND_BOUNDED_MODEL_CHANGE",
+      "migration_note": "Map to existing CNS decisions/outcomes/evaluations/learnings/rule_changes/change_trials where possible; do not duplicate objects without a demonstrated gap."
     },
     {
       "source_id": "superbrain-giga-master-2026-08-25",
@@ -74,6 +137,23 @@
       "authority": "PROTOTYPE_AUTHORITY",
       "truth_domain": "PROTOTYPE_IDENTITY_AND_IMMUTABLE_ARTIFACTS",
       "migration_note": "Fixed artifacts remain authoritative; moving continuation pointers require fresh GitHub reconciliation."
+    },
+    {
+      "source_id": "atomic-programme-register",
+      "kind": "GOOGLE_SHEET",
+      "name": "4PLANET_ ATOMIC PROGRAMME REGISTER v1.1 — CONTROLLED QA PASS",
+      "uri": "https://docs.google.com/spreadsheets/d/1r75rDNlwZk7ABJDk8zq-r9lMIWT7SAeYOmn0mmhDrr0/edit",
+      "authority": "LEGACY_ATOMIC_EXECUTION_CONTROL",
+      "truth_domain": "PROJECT_TASK_CONFLICT_SOURCE_AND_CHANGE_STATE"
+    },
+    {
+      "source_id": "programme-context-packs",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET_ PROGRAMME CONTROL + CURRENT CONTEXT PACKS v1.1",
+      "uri": "https://docs.google.com/document/d/14D4zPCf2ohXSZAf-GtYYyFy37Pe4OpCer-8Vw4J4bbg/edit",
+      "authority": "LEGACY_CONTEXT_VIEW",
+      "truth_domain": "BOUNDED_CROSS_AGENT_CONTEXT",
+      "migration_note": "Context only; must not outrank current routers or underlying authority/evidence."
     },
     {
       "source_id": "agent-ledger",
@@ -122,7 +202,7 @@
       "project_ref": "dcxiougjoazkafyeeaxi",
       "authority": "SHADOW_TEST_ONLY",
       "truth_domain": "CNS_TEST_RUNTIME",
-      "state": "CONTROL_PLANE_ACTIVE_SQL_CONNECTION_TIMEOUT_CROSS_PROJECT_CONFIRMED_2026-08-25",
+      "state": "CONTROL_PLANE_ACTIVE_SQL_CONNECTION_TIMEOUT_CROSS_PROJECT_CONFIRMED_2026-08-26",
       "cutover_authority": false
     }
   ]
