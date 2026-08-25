@@ -1,0 +1,56 @@
+{
+  "intake_version": 1,
+  "mode": "SHADOW_INTAKE",
+  "observed_at": "2026-08-25T22:00:00+02:00",
+  "source_id": "superbrain-giga-master-2026-08-25",
+  "source_revision": "drive-current-2026-08-25",
+  "programme": {
+    "name": "4PLANET SUPERBRAIN + GIGA EXECUTION",
+    "priority": "P0",
+    "central_theory": "Bedre valg → bedre liv → bedre markeder → en bedre verden.",
+    "strategic_machine": "planet → companies → products → choices → money → incentives → actual change",
+    "rules": [
+      "One BRAIN/CNS reality spine; no parallel truth stores.",
+      "Missing evidence is UNKNOWN/INSUFFICIENT_EVIDENCE, never zero or proven harm.",
+      "Source fact, source claim, inference, estimate, interpretation and recommendation remain distinguishable.",
+      "Conflicts fail closed; newest-wins is forbidden.",
+      "No precision upgrade beyond source support.",
+      "Self-reported company/product claims remain self-reported until corroborated.",
+      "Sponsor/payment can never buy evidence, rank or recommendation.",
+      "Learning is bounded: propose → test → compare → keep/reject → preserve → rollback.",
+      "Sensitive Nature locations must be generalized or restricted.",
+      "Explicit Founder cutover is required before CNS becomes authoritative."
+    ],
+    "public_architecture": {
+      "4ME_": "personal decision interface",
+      "CHOICE_": "reusable decision engine",
+      "S4PIENS": "products, companies, value chains and human systems",
+      "ATLAS_NATURE": "planet, places and living systems",
+      "BRAIN": "evidence, provenance, claims, decisions, uncertainty and truth control",
+      "IMPACT": "action, delivery, outcome and proof"
+    },
+    "execution_order": [
+      "SUPERBRAIN certification/cutover proof",
+      "4ME personal FOOD choice proof",
+      "CHOICE reusable engine extraction",
+      "S4PIENS Company Engine evidence profiles",
+      "Investment Analysis Engine after Company core",
+      "Company Evidence OS",
+      "Founder thought leadership drafts",
+      "Capital and pilot activation"
+    ],
+    "founder_gates": [
+      "irreversible canon/brand",
+      "external commitments/public release",
+      "money/legal/regulated/privacy decisions",
+      "explicit CNS cutover"
+    ],
+    "no_go": [
+      "parallel BRAIN",
+      "universal one-number moral/ESG score",
+      "paid recommendation",
+      "native app before mobile-web proof",
+      "retire legacy truth before zero-loss cutover"
+    ]
+  }
+}
