@@ -1,0 +1,167 @@
+{
+  "intake_version": 1,
+  "mode": "SHADOW_INTAKE",
+  "observed_at": "2026-08-25T22:00:00+02:00",
+  "source_id": "founder-theses-register-2026-08-25",
+  "source_revision": "drive-current-2026-08-25",
+  "rules": {
+    "hypotheses_are_not_facts": true,
+    "publication_requires_evidence_review": true,
+    "counterevidence_required": true,
+    "founder_release_required": true
+  },
+  "hypotheses": [
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-01",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Better Choices → Better Lives → Better Markets → A Better World",
+      "statement": "Better information and better alternatives can improve individual outcomes; at sufficient scale, changed choices redirect demand and capital, changing market incentives and potentially producing better planetary outcomes.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["better information does not materially change decisions", "changed demand does not alter relevant firm incentives", "market changes do not improve the measured planetary outcome"],
+      "originality_note": "Long-running founder theory and central 4PLANET synthesis; causal links must be evidenced separately."
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-02",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Money Is a Language",
+      "statement": "Spending, procurement and investment are allocation signals that markets can respond to through revenue, margins, valuation and cost of capital.",
+      "hypothesis_type": "METAPHOR",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["allocation shifts are too small or constrained to affect incentives"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-03",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Self-Interest Can Be Planetary Infrastructure",
+      "statement": "Environmental action can scale when a better planetary choice is also better for the decision-maker: healthier, cheaper, easier, safer, more resilient or more profitable.",
+      "hypothesis_type": "DESIGN_PRINCIPLE",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["aligned personal benefits do not improve adoption or persistence"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-04",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "The Transparency Dividend",
+      "statement": "In evidence-based decision systems, verifiable transparency can become economically advantageous because it enables higher-confidence evaluation; opacity remains UNKNOWN rather than being treated as proven harm.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["decision systems do not reward verifiable evidence", "transparency has no material effect on buyer, procurement or capital decisions"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-05",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Truth by Design: I Don’t Know Is a Feature",
+      "statement": "Trustworthy intelligence should structurally preserve UNKNOWN, conflicts, limitations and uncertainty rather than fill gaps with confidence theatre.",
+      "hypothesis_type": "DESIGN_PRINCIPLE",
+      "status": "SUPPORTED",
+      "publication_state": "DRAFT",
+      "falsifiers": ["explicit uncertainty consistently reduces decision quality more than false precision alternatives"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-06",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Don’t Score the World",
+      "statement": "A universal moral or ESG number often hides incompatible values, scope and uncertainty; decision quality can improve when material dimensions and trade-offs remain visible.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["well-defined single scores outperform multidimensional explanations across the intended decision domains without material information loss"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-07",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Personal Decision Infrastructure",
+      "statement": "A useful environmental interface may be a personal decision assistant that treats planetary consequences as one normal dimension of everyday decision quality rather than as a separate climate application.",
+      "hypothesis_type": "FOUNDER_THESIS",
+      "status": "TESTING",
+      "publication_state": "PRIVATE",
+      "falsifiers": ["users do not value or use planetary information when integrated into everyday decisions"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-08",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Better Information Changes Selection Pressure",
+      "statement": "Information, standards and transparency can change which company and product traits receive demand and capital, changing what firms compete to optimise.",
+      "hypothesis_type": "METAPHOR",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["information improvements do not alter competitive selection in measured cases"],
+      "originality_note": "Biological selection is an analogy, not evidence of economic causality."
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-09",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Nature Is Part of the Economic System",
+      "statement": "Companies, products and economies depend on living systems, places, water, climate regulation, species functions and material flows; nature intelligence therefore belongs inside economic decisions rather than only in CSR reporting.",
+      "hypothesis_type": "THEORY",
+      "status": "SUPPORTED",
+      "publication_state": "DRAFT",
+      "falsifiers": ["material economic dependencies on natural systems are absent in the relevant decision domain"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-10",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "From Reporting to Proof",
+      "statement": "Sustainability reporting becomes more decision-useful when material claims are traceable to documents, systems, external evidence, assurance and where appropriate physical or remote verification.",
+      "hypothesis_type": "FOUNDER_THESIS",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["traceable claim-level provenance does not improve assurance or decision usefulness"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-11",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "The Honest Company Advantage",
+      "statement": "As buyers, AI systems, procurement and capital demand evidence, companies able to prove what they do may gain trust, distribution or capital advantages.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["verified honesty/transparency provides no measurable advantage in relevant markets"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-12",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Culture → Attention → Capital → Action → Impact",
+      "statement": "Culture can shape attention; attention can mobilise people and capital; resources enable action; action only becomes impact when outcomes are demonstrated.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "PRIVATE",
+      "falsifiers": ["the proposed links do not hold in measured activation cases"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-13",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "If You Live on This Planet, You Can Help It",
+      "statement": "Planetary action can be designed so people and institutions participate according to their capabilities rather than requiring activist or specialist identity.",
+      "hypothesis_type": "DESIGN_PRINCIPLE",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["lower-friction inclusive participation does not increase useful action"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-14",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "Separate Worlds. Shared Infrastructure. Controlled Depth.",
+      "statement": "Distinct audiences need clear interfaces while identity, evidence and engines should be shared where appropriate; complexity belongs underneath and depth should match user need.",
+      "hypothesis_type": "DESIGN_PRINCIPLE",
+      "status": "SUPPORTED",
+      "publication_state": "PRIVATE",
+      "falsifiers": ["shared infrastructure creates greater user/system harm than separated stacks in the intended architecture"]
+    },
+    {
+      "hypothesis_id": "ODDEKALV-THESIS-15",
+      "owner_identity": "ODIN ODDEKALV",
+      "title": "The Reality Layer",
+      "statement": "AI is more trustworthy when it interprets a governed reality layer containing sources, provenance, conflicts, methods, uncertainty, decisions and learning rather than acting as the source of truth itself.",
+      "hypothesis_type": "THEORY",
+      "status": "TESTING",
+      "publication_state": "DRAFT",
+      "falsifiers": ["a governed provenance layer does not materially improve factual reliability, recoverability or auditability"]
+    }
+  ]
+}
