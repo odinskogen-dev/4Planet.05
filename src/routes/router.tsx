@@ -13,8 +13,7 @@ import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
-import { FourSapienHome } from "@/pages/sapien/FourSapien";
-import FinanceProof from "@/pages/sapien/FinanceProof";
+import { FourSapienHome, FourFinanceHome } from "@/pages/sapien/FourSapien";
 import PickPrototype from "@/food/PickPrototype";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
@@ -64,7 +63,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/4sapien" element={<FourSapienHome />} />
       <Route path="/4sapien/food" element={<PickPrototype />} />
-      <Route path="/4sapien/finance" element={<FinanceProof />} />
+      <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/food/pick" element={<Navigate to="/4sapien/food" replace />} />
       <Route path="/s4piens/food/pick" element={<Navigate to="/4sapien/food" replace />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
