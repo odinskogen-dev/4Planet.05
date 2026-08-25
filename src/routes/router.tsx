@@ -14,6 +14,7 @@ import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
+import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
@@ -87,7 +88,7 @@ export function AppRoutes() {
       <Route path="/impact/:slug" element={<ImpactStory />} />
       <Route path="/checkout/lab" element={<CommerceStripeLab />} />
       <Route path="/checkout/return" element={<CheckoutReturn />} />
-      <Route path="/join" element={<People />} />
+      <Route path="/join" element={<Join />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
