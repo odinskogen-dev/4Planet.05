@@ -1,0 +1,132 @@
+{
+  "census_version": 1,
+  "as_of": "2026-08-26",
+  "scope": "WAVE_0_CORE_AUTHORITY_AND_BRAIN_TOPOLOGY",
+  "status": "PARTIAL_BY_DESIGN",
+  "reason_not_complete": "The 2026-08-10 recovery audit explicitly left universal corpus-wide source/derivative/binary-hash completeness as PARTIAL. Wave 0 establishes deterministic classification and authority routing before full recursive census.",
+  "hard_rules": [
+    "latest_modified_is_not_authority",
+    "file_name_current_final_locked_does_not_self_confer_authority",
+    "raw_is_preserved",
+    "summaries_are_derived_views",
+    "history_is_not_deleted_by_compaction",
+    "missing_role_or_successor_is_unknown_not_inferred",
+    "one_shared_knowledge_kernel_no_parallel_domain_truth_stores",
+    "private_personal_context_is_purpose_limited_and_separate",
+    "current_code_requires_live_github_verification"
+  ],
+  "role_vocabulary": [
+    "LOCKED_AUTHORITY",
+    "CURRENT_ROUTER",
+    "CURRENT_STATE",
+    "DOMAIN_AUTHORITY",
+    "PROTOTYPE_AUTHORITY",
+    "EVIDENCE_SOURCE",
+    "DERIVED_VIEW",
+    "CONTEXT_PACK",
+    "EXECUTION_HISTORY",
+    "DECISION_HISTORY",
+    "DONOR",
+    "BACKUP",
+    "PRIVATE_RESTRICTED",
+    "SUPERSEDED",
+    "UNKNOWN"
+  ],
+  "required_fields_per_corpus_object": [
+    "stable_id",
+    "title",
+    "uri",
+    "object_kind",
+    "role",
+    "truth_domain",
+    "authority_basis",
+    "revision_identity",
+    "content_hash_state",
+    "freshness_or_review_trigger",
+    "sensitivity",
+    "successor_or_supersedes",
+    "source_or_derivation",
+    "census_state"
+  ],
+  "core_objects": [
+    {
+      "stable_id": "16twztduCzjpCbHgncibjp9h5DSBs59tKElDS5tc3TTg",
+      "title": "SYSTEM — MANDATORY OPERATING RULES & WRITEBACK PROTOCOL v1.0 — LOCKED FOUNDER DECISION",
+      "role": "LOCKED_AUTHORITY",
+      "truth_domain": "OPERATING_AND_WRITEBACK_RULES",
+      "census_state": "ROUTED"
+    },
+    {
+      "stable_id": "1cK7JK1wXpShtsX0k9FnIqum8lbA98lMppkNK5DJQUO0",
+      "title": "GPT_PROJECT_LEAD_CURRENT.md",
+      "role": "CURRENT_ROUTER",
+      "truth_domain": "PROGRAMME_CURRENT_STATE",
+      "census_state": "ROUTED"
+    },
+    {
+      "stable_id": "13KGE69cwTP8hm6zjt4xVUgW3ldzfhVxh336QgmBWJVQ",
+      "title": "KNOWLEDGE_OS_STATE.md",
+      "role": "CURRENT_STATE",
+      "truth_domain": "KNOWLEDGE_OS_CURRENT_STATE",
+      "census_state": "ROUTED"
+    },
+    {
+      "stable_id": "1ng5rqR5FZBe3yMAERTxRrcVe2mI4kd-0wRY1aiwMeNE",
+      "title": "4PLANET BRAIN MASTER INDEX & RECOVERY MAP v1.0",
+      "role": "DERIVED_VIEW",
+      "truth_domain": "RECOVERY_AND_AUTHORITY_MAP",
+      "census_state": "ROUTED_WITH_KNOWN_PARTIAL_HASH_COVERAGE"
+    },
+    {
+      "stable_id": "1BdHLSYttVJZ0t-4e16kjuBKSUw3DYDPibTFrSZPT5ds",
+      "title": "4PLANET BRAIN + ODIN BRAIN ARCHITECTURE v1.0 — WORKING CANON",
+      "role": "DOMAIN_AUTHORITY",
+      "truth_domain": "BRAIN_ARCHITECTURE_WORKING_CANON",
+      "census_state": "ROUTED"
+    },
+    {
+      "stable_id": "1k6T7-gkQSOrNSmPJh4MduL8gyCMHiIxMqsS0KJcnWmo",
+      "title": "4PLANET_ BRAIN-14 CONTROL-OF-CONTROL ASSURANCE CONTRACT v1.0 — 2026-08-20",
+      "role": "DOMAIN_AUTHORITY",
+      "truth_domain": "CONTROL_OF_CONTROL_ASSURANCE",
+      "census_state": "ROUTED_AND_MAPPED_TO_EXECUTABLE_CONTROLS"
+    },
+    {
+      "stable_id": "1Jss81PFgiGU7j5nRiV1GvmPQcmEhcOSZ9biw0cMgUfk",
+      "title": "4PLANET_ PROTOTYPE SAFE — CANONICAL LINK & VERSION REGISTER",
+      "role": "PROTOTYPE_AUTHORITY",
+      "truth_domain": "PROTOTYPE_IDENTITY_AND_ACCEPTANCE",
+      "census_state": "ROUTED"
+    },
+    {
+      "stable_id": "19Z7cK9Ppnf7q-WO91za4Vw7ZKjEjjLIirBN5F5SLmMA",
+      "title": "4PLANET_ SUPERBRAIN + GIGA EXECUTION MULTISPRINT v1.0 — 2026-08-25",
+      "role": "DOMAIN_AUTHORITY",
+      "truth_domain": "SUPERBRAIN_AND_GIGA_EXECUTION",
+      "census_state": "ROUTED"
+    }
+  ],
+  "recursive_census_order": [
+    "00_PROJECT_LEAD_AND_LLM_ENTRY",
+    "02_BRAIN_SYSTEM/00_CONSTITUTION_AND_CANON",
+    "02_BRAIN_SYSTEM/01_SHARED_KNOWLEDGE_KERNEL",
+    "02_BRAIN_SYSTEM/03_PROGRAMME_AND_PRODUCT_BRAIN",
+    "02_BRAIN_SYSTEM/05_CONTEXT_PACKS_AND_DECISION_BRIEFS",
+    "02_BRAIN_SYSTEM/06_PRODUCT_SOURCE_AND_IP_CONTROL",
+    "PROTOTYPE_SAFE_AND_CODE_VAULT",
+    "ACTIVE_DOMAIN_AUTHORITIES",
+    "EXECUTION_HISTORY_AND_PROGRAM_LOG",
+    "BACKUPS_DONORS_AND_SUPERSEDED",
+    "PRIVATE_BOUNDARIES_SEPARATELY"
+  ],
+  "completion_definition": [
+    "Every in-scope object has a stable identity and role or explicit UNKNOWN",
+    "Every current authority has an explicit authority basis and review trigger",
+    "Every derivative has source/derivation lineage where available",
+    "Every known successor/supersession is explicit",
+    "Critical current/release objects have fresh revision identity and hash/checksum where technically available",
+    "Conflicting current candidates are preserved and surfaced rather than newest-wins",
+    "A clean-room fresh session resolves the same authority route deterministically",
+    "No private restricted corpus is exposed through general 4PLANET retrieval"
+  ]
+}
