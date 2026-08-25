@@ -12,6 +12,16 @@
     const originalNext = toggle.nextSibling;
     if (!originalParent) return;
 
+    // Preserve the canonical Orca default-mode contract before moving the
+    // existing toggle outside #browser-experience. OrcaLume19 normally defers
+    // this activation to the next animation frame; V25 previously relocated
+    // the control first, so that root-scoped lookup could no longer find it.
+    // Reuse the existing activation method/event handler rather than writing
+    // data-light-lens or aria state directly.
+    if (root.dataset.lumeDefault === 'true' && root.dataset.lightLens !== 'true') {
+      window.OrcaLume19?.activateDefaultLume?.(root);
+    }
+
     root.dataset.orcaLumeControlPortal = 'true';
 
     const style = document.createElement('style');
