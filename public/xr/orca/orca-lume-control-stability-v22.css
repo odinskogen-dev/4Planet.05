@@ -1,0 +1,24 @@
+/* ORCA LUME control stability v22
+   Keep the REAL WORLD ↔ LUME ROOM action geometry invariant across mode changes.
+   Presentation/control only; no Journey or ecological truth changes. */
+
+#browser-experience .light-lens-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 94px;
+  inline-size:94px;
+  min-inline-size:94px;
+  max-inline-size:94px;
+  white-space:nowrap;
+  contain:layout paint;
+}
+
+@media(max-width:760px){
+  #browser-experience .light-lens-toggle{
+    flex-basis:78px;
+    inline-size:78px;
+    min-inline-size:78px;
+    max-inline-size:78px;
+  }
+}
