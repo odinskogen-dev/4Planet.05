@@ -32,18 +32,19 @@ const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((m
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
+const BergenPlaceGold = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.BergenPlaceGold })));
+const NorwayCountryGold = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.NorwayCountryGold })));
+const ResearchIndex = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.ResearchIndex })));
+const ResearchDetail = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.ResearchDetail })));
+const GetInvolvedGold = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.GetInvolvedGold })));
+const FollowBergen = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.FollowBergen })));
+const BetterChoiceBergen = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.BetterChoiceBergen })));
+const CoordinationProof = lazy(() => import("@/pages/v5/LivingPlanetCell").then((module) => ({ default: module.CoordinationProof })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
+const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
+const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
+const LivingPlanetFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#f4f3ee" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -55,84 +56,77 @@ function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to=
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
 
 export function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/story" element={<Navigate to="/" replace />} />
-      <Route path="/domains" element={<DomainsIndex />} />
-      <Route path="/domains/:key" element={<DomainWorld />} />
-      <Route path="/missions" element={<MissionsIndex />} />
-      <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
-      <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
-      <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
-      <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
-      <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
-      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/missions/m4gazine" element={<Navigate to="/magazine" replace />} />
-      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
-      <Route path="/missions/:slug" element={<MissionDetail />} />
-      <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
-      <Route path="/species" element={<SpeciesIndex />} />
-      <Route path="/species/lab" element={<SpeciesEngineLab />} />
-      <Route path="/species/:slug" element={<SpeciesRoute curatedElement={<SpeciesProfilePage />} />} />
-      <Route path="/lens" element={<LensCapture />} />
-      <Route path="/food/lens" element={<FoodCapture />} />
-      <Route path="/s4piens/food/lens" element={<FoodCapture />} />
-      <Route path="/impact" element={<ImpactPublicHome />} />
-      <Route path="/impact/lab" element={<ImpactLabIndex />} />
-      <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
-      <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
-      <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
-      <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
-      <Route path="/impact/:slug" element={<ImpactStory />} />
-      <Route path="/checkout/lab" element={<CommerceStripeLab />} />
-      <Route path="/checkout/return" element={<CheckoutReturn />} />
-      <Route path="/join" element={<Join />} />
-      <Route path="/people" element={<People />} />
-      <Route path="/brands" element={<Brands />} />
-      <Route path="/partners" element={<Partners />} />
-      <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
-      <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
-      <Route path="/funders" element={<Funders />} />
-      <Route path="/living-systems" element={<LivingSystems />} />
-      <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
-      <Route path="/reports" element={<Reports />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/about/story" element={<AboutStory />} />
-      <Route path="/about/system" element={<AboutSystem />} />
-      <Route path="/about/founder" element={<Founder />} />
-      <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
-      <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
-      <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
-      <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
-      <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
-      <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
-      <Route path="/stories" element={<Navigate to="/magazine" replace />} />
-      <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/culture/film" element={<CultureFilm />} />
-      <Route path="/culture/play" element={<CulturePlay />} />
-      <Route path="/os" element={toAbout} />
-      <Route path="/os/*" element={toAbout} />
-      <Route path="/m/:slug" element={<MtoMission />} />
-      <Route path="/m/:slug/support" element={toImpact} />
-      <Route path="/m/:slug/campaign" element={toImpact} />
-      <Route path="/marketplace" element={toImpact} />
-      <Route path="/store" element={toImpact} />
-      <Route path="/cart" element={toImpact} />
-      <Route path="/checkout" element={toImpact} />
-      <Route path="/members" element={toJoin} />
-      <Route path="/ambassadors" element={toJoin} />
-      <Route path="/portal/*" element={toImpact} />
-      <Route path="/sponsors" element={toBrands} />
-      <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} />
-      <Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} />
-      <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
-      <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
-      <Route path="/system" element={toHome} />
-      <Route path="/404" element={<NotFound />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+  return <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="/story" element={<Navigate to="/" replace />} />
+    <Route path="/domains" element={<DomainsIndex />} />
+    <Route path="/domains/:key" element={<DomainWorld />} />
+    <Route path="/missions" element={<MissionsIndex />} />
+    <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
+    <Route path="/missions/amazonia" element={<Navigate to="/missions/am4zonia" replace />} />
+    <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
+    <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
+    <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
+    <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+    <Route path="/missions/m4gazine" element={<Navigate to="/magazine" replace />} />
+    <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
+    <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
+    <Route path="/missions/:slug" element={<MissionDetail />} />
+    <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+    <Route path="/places" element={<Navigate to="/places/bergen" replace />} />
+    <Route path="/places/bergen" element={<Suspense fallback={LivingPlanetFallback}><BergenPlaceGold /></Suspense>} />
+    <Route path="/places/norway" element={<Suspense fallback={LivingPlanetFallback}><NorwayCountryGold /></Suspense>} />
+    <Route path="/research" element={<Suspense fallback={LivingPlanetFallback}><ResearchIndex /></Suspense>} />
+    <Route path="/research/:id" element={<Suspense fallback={LivingPlanetFallback}><ResearchDetail /></Suspense>} />
+    <Route path="/get-involved" element={<Suspense fallback={LivingPlanetFallback}><GetInvolvedGold /></Suspense>} />
+    <Route path="/follow/bergen" element={<Suspense fallback={LivingPlanetFallback}><FollowBergen /></Suspense>} />
+    <Route path="/choices/bergen-mobility" element={<Suspense fallback={LivingPlanetFallback}><BetterChoiceBergen /></Suspense>} />
+    <Route path="/coordination-proof" element={<Suspense fallback={LivingPlanetFallback}><CoordinationProof /></Suspense>} />
+    <Route path="/species" element={<SpeciesIndex />} />
+    <Route path="/species/lab" element={<SpeciesEngineLab />} />
+    <Route path="/species/:slug" element={<SpeciesRoute curatedElement={<SpeciesProfilePage />} />} />
+    <Route path="/lens" element={<LensCapture />} />
+    <Route path="/food/lens" element={<FoodCapture />} />
+    <Route path="/s4piens/food/lens" element={<FoodCapture />} />
+    <Route path="/impact" element={<ImpactPublicHome />} />
+    <Route path="/impact/lab" element={<ImpactLabIndex />} />
+    <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
+    <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
+    <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
+    <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
+    <Route path="/impact/:slug" element={<ImpactStory />} />
+    <Route path="/checkout/lab" element={<CommerceStripeLab />} />
+    <Route path="/checkout/return" element={<CheckoutReturn />} />
+    <Route path="/join" element={<Join />} />
+    <Route path="/people" element={<People />} />
+    <Route path="/brands" element={<Brands />} />
+    <Route path="/partners" element={<Partners />} />
+    <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
+    <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
+    <Route path="/funders" element={<Funders />} />
+    <Route path="/living-systems" element={<LivingSystems />} />
+    <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
+    <Route path="/reports" element={<Reports />} />
+    <Route path="/about" element={<About />} />
+    <Route path="/about/story" element={<AboutStory />} />
+    <Route path="/about/system" element={<AboutSystem />} />
+    <Route path="/about/founder" element={<Founder />} />
+    <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
+    <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
+    <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
+    <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
+    <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
+    <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
+    <Route path="/stories" element={<Navigate to="/magazine" replace />} />
+    <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
+    <Route path="/privacy" element={<Privacy />} />
+    <Route path="/culture/film" element={<CultureFilm />} />
+    <Route path="/culture/play" element={<CulturePlay />} />
+    <Route path="/os" element={toAbout} /><Route path="/os/*" element={toAbout} />
+    <Route path="/m/:slug" element={<MtoMission />} /><Route path="/m/:slug/support" element={toImpact} /><Route path="/m/:slug/campaign" element={toImpact} />
+    <Route path="/marketplace" element={toImpact} /><Route path="/store" element={toImpact} /><Route path="/cart" element={toImpact} /><Route path="/checkout" element={toImpact} />
+    <Route path="/members" element={toJoin} /><Route path="/ambassadors" element={toJoin} /><Route path="/portal/*" element={toImpact} /><Route path="/sponsors" element={toBrands} />
+    <Route path="/oce4n" element={<Navigate to="/domains/oce4n" replace />} /><Route path="/e4rth" element={<Navigate to="/domains/e4rth" replace />} /><Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} /><Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
+    <Route path="/system" element={toHome} /><Route path="/404" element={<NotFound />} /><Route path="*" element={<NotFound />} />
+  </Routes>;
 }
