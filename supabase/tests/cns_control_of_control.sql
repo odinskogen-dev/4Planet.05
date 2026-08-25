@@ -55,8 +55,8 @@ select cns.librarian_promote_memory(
   cns.append_event('COC-B','MEMORY','COC-MEM-B','MEMORY_REVIEWED','{}','[]','SYSTEM','librarian','TEST','COC-SOURCE','rev-1','coc-memory-b-promote')
 );
 
-insert into cns.claims(claim_id,project_id,subject_type,subject_id,predicate,value,authority,confidence,state,claim_kind,knowledge_state,source_id,source_revision)
-values('COC-CLAIM-A','COC-A','PROJECT','COC-A','test.fact','{"value":1}'::jsonb,'TEST',0.9,'ACTIVE','SOURCE_FACT','KNOWN','COC-SOURCE','rev-1');
+insert into cns.claims(claim_id,project_id,subject_type,subject_id,predicate,value,authority,confidence,state,claim_kind,knowledge_state,source_id,source_revision,revision)
+values('COC-CLAIM-A-R1','COC-A','PROJECT','COC-A','test.fact','{"value":1}'::jsonb,'TEST',0.9,'ACTIVE','SOURCE_FACT','KNOWN','COC-SOURCE','rev-1',1);
 
 -- Deterministic, narrow context: same inputs => same fingerprint; depth 2 excludes claims; depth 3 includes them.
 do $$
@@ -70,7 +70,7 @@ begin
   select compiled_context into b3 from cns.context_snapshots where context_snapshot_id=s3;
   if f1<>f2 then raise exception 'CNS_CONTEXT_NONDETERMINISTIC'; end if;
   if jsonb_array_length(b2->'claims')<>0 then raise exception 'CNS_CONTEXT_DEPTH2_LEAKED_CLAIMS'; end if;
-  if not exists(select 1 from jsonb_array_elements(b3->'claims') x where x->>'claim_id'='COC-CLAIM-A') then raise exception 'CNS_CONTEXT_DEPTH3_MISSED_CLAIM'; end if;
+  if not exists(select 1 from jsonb_array_elements(b3->'claims') x where x->>'claim_id'='COC-CLAIM-A-R1') then raise exception 'CNS_CONTEXT_DEPTH3_MISSED_CLAIM'; end if;
   if b2::text like '%must-not-leak%' or b3::text like '%must-not-leak%' then raise exception 'CNS_CONTEXT_PROJECT_MEMORY_LEAK'; end if;
 end $$;
 
@@ -106,13 +106,39 @@ begin
   end if;
 end $$;
 
--- Heal explicitly: invalidate old context, align the current claim revision, then compile fresh context.
+-- Heal explicitly and preserve history: invalidate old context, supersede old claim, append a new revision.
 select cns.invalidate_context_for_project('COC-A','SOURCE_REVISION_CHANGED');
 select cns.invalidate_context_for_project('COC-B','SOURCE_REVISION_CHANGED');
-update cns.claims set source_revision='rev-2' where claim_id='COC-CLAIM-A';
-perform cns.compile_project_context('COC-A','fresh-after-source-change',2,30000,900);
+update cns.claims set state='SUPERSEDED' where claim_id='COC-CLAIM-A-R1';
+insert into cns.claims(claim_id,project_id,subject_type,subject_id,predicate,value,authority,confidence,state,claim_kind,knowledge_state,source_id,source_revision,revision,supersedes_claim_id)
+values('COC-CLAIM-A-R2','COC-A','PROJECT','COC-A','test.fact','{"value":1}'::jsonb,'TEST',0.9,'ACTIVE','SOURCE_FACT','KNOWN','COC-SOURCE','rev-2',2,'COC-CLAIM-A-R1');
 
--- The direct claim rewrite above is expected to be blocked by SUPERBRAIN immutable-truth guard in V4.
--- If V4 blocks it, the transaction would already have failed, so use a superseding claim instead in the certified path.
+-- Large memory is intentionally superseded through Librarian before normal fresh-context compilation.
+select cns.librarian_propose_memory('COC-MEM-LARGE-R2','COC-A','EPISODIC',1::smallint,'Large memory compacted','{"payload":"compacted"}'::jsonb,'TEST','COC-SOURCE','rev-2');
+select cns.librarian_promote_memory(
+  'COC-MEM-LARGE-R2',
+  cns.append_event('COC-A','MEMORY','COC-MEM-LARGE-R2','MEMORY_REVIEWED','{}','[]','SYSTEM','librarian','TEST','COC-SOURCE','rev-2','coc-memory-large-r2-promote')
+);
+select cns.librarian_supersede_memory(
+  'COC-MEM-LARGE','COC-MEM-LARGE-R2',
+  cns.append_event('COC-A','MEMORY','COC-MEM-LARGE','MEMORY_SUPERSEDED','{"by":"COC-MEM-LARGE-R2"}','[]','SYSTEM','librarian','TEST','COC-SOURCE','rev-2','coc-memory-large-supersede')
+);
+
+perform cns.compile_project_context('COC-A','fresh-after-source-change',2,12000,900);
+
+do $$
+declare a uuid; s text; green boolean;
+begin
+  a:=cns.audit_control_plane('healed-control-plane','test-sha-2');
+  select state into s from cns.control_cycles where control_cycle_id=a;
+  if s<>'PASS' then raise exception 'CNS_META_AUDITOR_DID_NOT_RETURN_TO_PASS'; end if;
+  select control_of_control_green into green from cns.v_superbrain_operating_readiness;
+  if green is not true then raise exception 'CNS_CONTROL_OF_CONTROL_READINESS_NOT_GREEN'; end if;
+end $$;
+
+-- The control layer never authorises cutover by itself.
+do $$ begin
+  if (select cutover_authorized from cns.v_superbrain_operating_readiness) then raise exception 'CNS_META_AUDIT_MUST_NOT_AUTHORIZE_CUTOVER'; end if;
+end $$;
 
 rollback;
