@@ -1,0 +1,31 @@
+{
+  "programme": "SUPERBRAIN_CERTIFICATION",
+  "date": "2026-08-25",
+  "authority": "SHADOW",
+  "legacy_authority_retained": true,
+  "cutover_authorized": false,
+  "gates": {
+    "reconcile_current_test_king": "PENDING",
+    "remote_sql_readback": "BLOCKED",
+    "remote_migrations_readback": "BLOCKED",
+    "active_portfolio_hydration": "PENDING",
+    "legacy_cns_parity": "PENDING",
+    "github_live_sync": "PENDING_REVERIFY",
+    "fresh_session_recovery": "PENDING_REVERIFY",
+    "dual_read": "PENDING",
+    "backup_restore_replay": "PENDING",
+    "security_rls_advisors": "BLOCKED_REMOTE",
+    "truth_object_hardening": "PENDING_EXTENSION",
+    "doctor_librarian_evaluator_traffic": "PENDING_REVERIFY",
+    "founder_cutover": "NOT_AUTHORIZED"
+  },
+  "remote_blocker": {
+    "project": "4planet-staging",
+    "project_ref": "dcxiougjoazkafyeeaxi",
+    "control_plane_status": "ACTIVE_HEALTHY",
+    "sql_status": "CONNECTION_TIMEOUT",
+    "migration_list_status": "CONNECTION_TIMEOUT",
+    "advisor_status": "HIBERNATED_WAKING",
+    "acceptance_rule": "Successful SQL and migration readback required; status labels are insufficient."
+  }
+}
