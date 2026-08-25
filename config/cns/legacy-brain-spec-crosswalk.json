@@ -1,0 +1,52 @@
+{
+  "crosswalk_version": 1,
+  "as_of": "2026-08-26",
+  "rule": "Reuse existing CNS objects when semantics match. Create a new first-class object only when the recovered contract expresses information that cannot be represented honestly without it.",
+  "sources": [
+    {
+      "drive_id": "1d4l04oWYWrW5iMHJeytj_ype4VBGASgjrb2WQ8R6Kb0",
+      "title": "4PLANET BRAIN EVALUATION, CONTRADICTION & FAILURE MEMORY SPEC v0.1"
+    },
+    {
+      "drive_id": "1Za-U6C4urLeiPhlUf8hKT_QvhI7ecVlO7i9wO9PM0hE",
+      "title": "4PLANET BRAIN UNIVERSAL LEARNING CONTRACTS v0.1"
+    }
+  ],
+  "mappings": [
+    {"legacy_concept":"CONTRADICTION","cns":"conflicts + conflict_claims + health_incidents","status":"MATERIALIZED","note":"Preserves inputs; detection does not resolve truth."},
+    {"legacy_concept":"STALENESS","cns":"source freshness + Doctor SOURCE_STALE/SOURCE_DEGRADED + context TTL/revision drift","status":"PARTIAL","gap":"Affected downstream scope/review owner/review_due are not yet first-class staleness records."},
+    {"legacy_concept":"FAILURE_RECORD","cns":"health_incidents + evaluation_runs + events","status":"PARTIAL","gap":"Root cause, why-not-caught-earlier, fix IDs, regression-test IDs and recurrence lifecycle are not yet one durable failure object."},
+    {"legacy_concept":"DECISION","cns":"decisions + evidence_refs + rationale/assumptions/alternatives/unknowns/consequences/review_trigger","status":"MATERIALIZED_PARTIAL","gap":"Exact question, reversible/consequence/urgency and evidence-at-decision snapshot could be strengthened."},
+    {"legacy_concept":"ASSUMPTION","cns":"decision.assumptions JSON + hypotheses","status":"PARTIAL","gap":"Material assumptions are not independently addressable/versioned objects."},
+    {"legacy_concept":"PREDICTION","cns":"hypotheses + outcomes/evaluations","status":"PARTIAL","gap":"Resolution date, calibrated probability and prediction→outcome linkage are not first-class."},
+    {"legacy_concept":"EXPERIMENT","cns":"change_trials + evaluation_runs + hypotheses","status":"MATERIALIZED_PARTIAL","gap":"Non-code experiments need a generic experiment contract rather than code-worktree semantics."},
+    {"legacy_concept":"OUTCOME","cns":"outcomes","status":"MATERIALIZED_PARTIAL","gap":"Baseline/expected/actual/unit/confounders/unexpected effects are not all typed columns."},
+    {"legacy_concept":"EVALUATION","cns":"evaluation_runs + evaluation_assertions","status":"MATERIALIZED_PARTIAL","gap":"Decision quality, execution quality, outcome quality and causal confidence are not separately typed yet."},
+    {"legacy_concept":"LEARNING_RECORD","cns":"learnings","status":"MATERIALIZED_PARTIAL","gap":"Applicability/non-applicability and affected claims/models/rules should be explicit relations."},
+    {"legacy_concept":"MODEL_UPDATE","cns":"rule_changes + change_trials + evaluation_runs","status":"MATERIALIZED_FOR_RULES","gap":"If predictive models become first-class later, add model-specific version lineage then; do not create it prematurely."},
+    {"legacy_concept":"DECISION_RULE","cns":"rule_changes + system_meta/procedural memory","status":"PARTIAL","gap":"Durable approved rule identity/version/review date is not yet a dedicated object."},
+    {"legacy_concept":"COUNTERFACTUAL","cns":"decision alternatives + interpretations","status":"DEFERRED","reason":"Useful for evaluation, but not required for current authority cutover."},
+    {"legacy_concept":"WHAT_CHANGED","cns":"immutable events + current projections + health/control cycles","status":"MATERIALIZED_PARTIAL","gap":"Need founder-facing material-delta projection that hides task/count noise."}
+  ],
+  "p0_before_cutover": [
+    "FAILURE_RECORD durable lifecycle with recurrence + regression-proof closure",
+    "STALENESS affected-scope propagation for material current/public claims",
+    "retrieval qualification-loss and blocking-unknown evals",
+    "private/public sentinel beyond Nature geometry",
+    "source-down/partial semantics test"
+  ],
+  "p1_after_cutover_or_when_used": [
+    "first-class assumptions",
+    "calibrated predictions",
+    "generic non-code experiments",
+    "typed decision/execution/outcome quality",
+    "explicit learning applicability relations",
+    "dedicated decision-rule identity"
+  ],
+  "defer": [
+    "automatic Canon modification",
+    "unsupervised causal discovery",
+    "automatic rule deployment",
+    "universal cross-domain score"
+  ]
+}
