@@ -23,6 +23,10 @@ const tools = [
   ["brain.get_dependencies", "Read open project dependencies"],
   ["brain.get_memory", "Read active scoped memory"],
   ["brain.search_history", "Search immutable project event history"],
+  ["brain.trace_truth", "Trace one claim through source, method, evidence and unresolved conflicts"],
+  ["brain.get_source", "Read source identity and immutable/versioned source-revision metadata"],
+  ["brain.get_hypotheses", "Read scoped hypotheses/theses without promoting them to facts"],
+  ["nature.get_observations", "Read public-safe Nature observations; private geometry is never returned"],
   ["work.get_next", "Read next eligible queued work"],
   ["work.acquire_lease", "Acquire collision-safe work scopes"],
   ["work.heartbeat", "Refresh an active lease"],
@@ -125,7 +129,7 @@ async function readGitHubCodeState(line: DbRow) {
     const statusesUrl = typeof deployment.statuses_url === "string" ? deployment.statuses_url : null;
     if (statusesUrl?.startsWith("https://api.github.com/")) {
       const statusesRaw = await githubJson(`${statusesUrl}?per_page=1`);
-      if (!Array.isArray(statusesRaw)) throw new Error("CNS_GITHUB_DEPLOYMENT_STATUS_INVALID");
+      if (!Array.isArray(statusesRaw)) throw new Error("CNS_GITHUB_DEPLOYMENTS_INVALID");
       if (statusesRaw.length > 0) {
         const status = asObject(statusesRaw[0]);
         deploymentState = typeof status.state === "string" ? status.state.toUpperCase() : "UNKNOWN";
@@ -209,6 +213,45 @@ async function callTool(name: string, a: Record<string, unknown>) {
         ? await sql`select * from cns.events where project_id=${id} and event_type=${eventType} order by event_id desc limit ${limit}`
         : await sql`select * from cns.events where project_id=${id} order by event_id desc limit ${limit}`;
     }
+    case "brain.trace_truth": {
+      const claimId = requireString(a, "claim_id");
+      const rows = await sql`select * from cns.v_claim_truth_trace where claim_id=${claimId}`;
+      if (!rows[0]) throw new Error("CNS_TRUTH_CLAIM_NOT_FOUND");
+      return rows[0];
+    }
+    case "brain.get_source": {
+      const sourceId = requireString(a, "source_id");
+      const sourceRows = await sql`select * from cns.source_registry where source_id=${sourceId}`;
+      if (!sourceRows[0]) throw new Error("CNS_SOURCE_NOT_FOUND");
+      const revisions = await sql`select * from cns.source_revisions where source_id=${sourceId} order by observed_at desc limit 200`;
+      return { source: sourceRows[0], revisions };
+    }
+    case "brain.get_hypotheses": {
+      const projectId = typeof a.project_id === "string" ? a.project_id : null;
+      const owner = typeof a.owner_identity === "string" ? a.owner_identity : null;
+      const limit = Math.min(Math.max(Number(a.limit ?? 100), 1), 200);
+      if (!projectId && !owner) throw new Error("CNS_HYPOTHESIS_SCOPE_REQUIRED");
+      if (projectId && owner) {
+        return await sql`select * from cns.hypotheses where project_id=${projectId} and owner_identity=${owner} and status<>'SUPERSEDED' order by updated_at desc,hypothesis_id limit ${limit}`;
+      }
+      if (projectId) {
+        return await sql`select * from cns.hypotheses where project_id=${projectId} and status<>'SUPERSEDED' order by updated_at desc,hypothesis_id limit ${limit}`;
+      }
+      return await sql`select * from cns.hypotheses where owner_identity=${owner} and status<>'SUPERSEDED' order by updated_at desc,hypothesis_id limit ${limit}`;
+    }
+    case "nature.get_observations": {
+      const entityId = typeof a.entity_id === "string" ? a.entity_id : null;
+      const projectId = typeof a.project_id === "string" ? a.project_id : null;
+      const limit = Math.min(Math.max(Number(a.limit ?? 100), 1), 500);
+      if (!entityId && !projectId) throw new Error("CNS_NATURE_OBSERVATION_SCOPE_REQUIRED");
+      if (entityId && projectId) {
+        return await sql`select observation_id,project_id,entity_id,observation_type,value,unit,observed_at,valid_time_start,valid_time_end,source_id,source_revision,methodology_id,evidence_id,uncertainty,quality,sampling_effort,public_geometry,public_precision_m,sensitivity_state,sensitivity_reason,state,last_event_id,created_at from cns.observations where entity_id=${entityId} and project_id=${projectId} and state in ('ACTIVE','DISPUTED') order by observed_at desc,observation_id limit ${limit}`;
+      }
+      if (entityId) {
+        return await sql`select observation_id,project_id,entity_id,observation_type,value,unit,observed_at,valid_time_start,valid_time_end,source_id,source_revision,methodology_id,evidence_id,uncertainty,quality,sampling_effort,public_geometry,public_precision_m,sensitivity_state,sensitivity_reason,state,last_event_id,created_at from cns.observations where entity_id=${entityId} and state in ('ACTIVE','DISPUTED') order by observed_at desc,observation_id limit ${limit}`;
+      }
+      return await sql`select observation_id,project_id,entity_id,observation_type,value,unit,observed_at,valid_time_start,valid_time_end,source_id,source_revision,methodology_id,evidence_id,uncertainty,quality,sampling_effort,public_geometry,public_precision_m,sensitivity_state,sensitivity_reason,state,last_event_id,created_at from cns.observations where project_id=${projectId} and state in ('ACTIVE','DISPUTED') order by observed_at desc,observation_id limit ${limit}`;
+    }
     case "work.get_next": {
       const limit = Math.min(Number(a.limit ?? 20), 100);
       return await sql`select * from cns.jobs where state='QUEUED' and available_at<=now() order by priority,available_at limit ${limit}`;
@@ -290,8 +333,9 @@ async function callTool(name: string, a: Record<string, unknown>) {
 Deno.serve(async (req) => {
   if (req.method === "GET" && new URL(req.url).pathname.endsWith("/health")) {
     try {
-      const r = await sql`select value from cns.system_meta where key='authority_mode'`;
-      return Response.json({ ok: true, authority: r[0]?.value ?? null, githubLiveRequired: true });
+      const authority = await sql`select value from cns.system_meta where key='authority_mode'`;
+      const truth = await sql`select value from cns.system_meta where key='truth_model'`;
+      return Response.json({ ok: true, authority: authority[0]?.value ?? null, truthModel: truth[0]?.value ?? null, githubLiveRequired: true });
     } catch {
       return Response.json({ ok: false, code: "CNS_DATABASE_UNAVAILABLE" }, { status: 503 });
     }
@@ -310,7 +354,7 @@ Deno.serve(async (req) => {
 
   try {
     if (rpc.method === "initialize") {
-      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.2.1-shadow" } } });
+      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.3.0-shadow" } } });
     }
     if (rpc.method === "tools/list") return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { tools } });
     if (rpc.method !== "tools/call") throw new Error("METHOD_NOT_SUPPORTED");
