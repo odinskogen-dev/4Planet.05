@@ -7,6 +7,7 @@ on:
       - 'supabase/tests/cns_*.sql'
       - 'supabase/functions/cns-gateway/**'
       - 'config/cns/**'
+      - 'scripts/cns/**'
       - '.github/workflows/cns-kernel-certification.yml'
   workflow_dispatch:
 
@@ -38,6 +39,9 @@ jobs:
       PGDATABASE: postgres
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate fail-closed Knowledge OS corpus census
+        run: python3 scripts/cns/validate_corpus_census.py
 
       - name: Bootstrap Supabase-compatible DB roles
         run: |
