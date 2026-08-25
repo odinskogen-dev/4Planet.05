@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-ECHO-HIT-PLANE-75  
+**CHANGE ID:** TEST-KING-VITE-REACT-DEPENDENCY-CORRECTION-76  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **ACCEPTED ROLLBACK BASE:** `b3541634fbc8dcd366b86691a0eb5cba6effc251` / immutable TEST KING review preserved in Prototype SAFE  
@@ -10,52 +10,52 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only.
 
 ## USER ARRIVES BECAUSE
-They enter ORCA LUME to inspect the Orca intelligence room and directly trigger the acoustic presentation without unrelated Journey surfaces blocking the control.
+They need the current ORCA/Jaguar TEST KING candidate to build and reach browser acceptance without unrelated package-manifest drift blocking the product proof.
 
 ## ONE THING TO UNDERSTAND
-The LUME intelligence panel is now correctly hosted on the stable Journey root, but its interactive echo control must also own the hit-testing plane above non-interactive cinematic/HUD copy surfaces.
+The current exact head imports `@vitejs/plugin-react` from `vite.config.ts`, and the lockfile already records the package, but `package.json` no longer declares it. `npm ci` therefore does not install the plugin and `vite build` fails before any ORCA/Jaguar browser QA can run.
 
 ## PRIMARY ACTION
-Activate SEND ECHO PULSE with an ordinary pointer/touch click on desktop and 390/430 mobile.
+Restore the missing declared devDependency so the existing Vite React configuration can build from a clean exact-head install.
 
 ## SECONDARY DEPTH
-Preserve the Journey HUD, REAL WORLD ↔ LUME transition, scene sync, Bay of Biscay and all source/truth boundaries.
+Preserve the accepted ORCA/Jaguar runtime, Bay of Biscay, LUME, participation work, lockfile integrity and all existing QA thresholds.
 
 ## P1 DOMINANT
-One visible, reachable, keyboard-operable echo control whose ordinary click is never intercepted by decorative/copy layers.
+`npm ci` followed by `npm run build` succeeds from the exact TEST KING head with the existing Vite React configuration.
 
 ## P2 ORIENTATION
-The existing LUME intelligence panel remains visually stable and readable without becoming a second navigation/control system.
+This is dependency-manifest repair only; no Founder-visible product behaviour is changed.
 
 ## P3 ACTION / NEXT
-After echo interaction, FOLLOW THE SYSTEM / BACK / HOW DO WE KNOW? continue to work normally through 01→08.
+Once build is green, continue the full exact-head ORCA/Jaguar Chromium + WebKit acceptance matrix without weakening tests.
 
 ## P4 DEPTH
-Existing Dark Marine room, acoustic interpretation, species/place/pressure intelligence and evidence boundaries remain unchanged.
+Existing rights, truth, security, performance, donor lineage and Prototype SAFE boundaries remain unchanged.
 
 ## CURRENT DEFECT
-Exact head `d6de4287c81368999dc580d63a85caaf2c3443ed` passes Browser Product Proof #971 and all 16 shared Chromium Gate 1/switcher tests, including the repaired 390/430 ATLAS return camera. Convergence #1991 fails only in the ORCA LUME focused Chromium matrix: ordinary click on `.orca-lume-echo-trigger` is intercepted on desktop by a non-interactive `.nature-premium` media/credit surface and on 390/430 by `.nature-journey-hud__copy` / stage copy. The echo button is present; this is stacking/hit-testing ownership, not missing runtime or stale QA.
+Exact head `874d681b9df1fb59e4c5bea131595d4585c51973` passes GOLD policy and typecheck but Convergence #2061 fails at production build with `ERR_MODULE_NOT_FOUND: Cannot find package '@vitejs/plugin-react' imported from vite.config.ts`. `vite.config.ts` still imports and calls the plugin. `package-lock.json` already contains `@vitejs/plugin-react` `^6.0.4` in root devDependencies, while `package.json` omits it. This is manifest drift, not an ORCA/Jaguar runtime defect.
 
 ## BOUNDED CORRECTION
-Keep the V72 stable root-host architecture. Add one ORCA-only last-loaded interaction-plane style: raise the canonical `.orca-lume-intel` above non-interactive cinematic/HUD copy while LUME is active; keep the panel itself non-capturing except for explicit interactive descendants; make `.orca-lume-echo-trigger` pointer-active and focus-visible. Do not disable Journey buttons/links, force clicks, change timeouts, create duplicate controls, or alter ORCA/Jaguar truth/runtime.
+Add `@vitejs/plugin-react: ^6.0.4` back to `package.json` devDependencies to match the existing lockfile and Vite config. Do not regenerate or broaden dependencies, alter runtime code, change QA timeouts, or touch LIVE.
 
 ## WHAT CAN BE REMOVED
-The assumption that moving the LUME panel to the Journey root alone guarantees pointer ownership over later stacking contexts.
+The inconsistent state where Vite config and lockfile require the React plugin but the package manifest does not declare it.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, accepted rollback, V72 root host, existing ORCA LUME panel/echo runtime, Journey HUD/navigation, Dark Marine room, Bay of Biscay, Jaguar V52 and existing QA thresholds.
+`king/test`, PR131, accepted rollback, current `vite.config.ts`, existing `package-lock.json`, ORCA Journey/LUME/Bay of Biscay, Jaguar V52/Jungle/LUME, current QA workflows and thresholds.
 
 ## TRUTH BOUNDARY
-Presentation hit-testing correction only. Echo remains procedural/interpretive, not field audio, live sonar, animal location or ecological measurement.
+Build/dependency correction only. No ecological, partner, live-data, rights or product-maturity claim changes.
 
 ## PERFORMANCE
-CSS-only stacking/pointer correction; no new animation, polling, observer or media request.
+No runtime payload or rendering change intended; restore only the build-time React plugin already represented in the lockfile.
 
 ## MOBILE-FIRST RISK
-390/430 currently fail because Journey HUD copy intercepts the echo target. The fix must preserve HUD navigation while making only explicit LUME controls interactive above it.
+None introduced by this bounded dependency repair. Existing 390/430 browser gates remain mandatory after build recovery.
 
 ## HUMAN SUCCESS
-A user sees the Orca LUME intelligence room, presses SEND ECHO PULSE normally on desktop or mobile, gets the intended interpretive response, and continues the Journey without overlap confusion.
+The exact TEST KING candidate installs cleanly, builds, and reaches the actual ORCA/Jaguar browser proof instead of stopping on missing build tooling.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME echo ordinary-click proof passes Chromium desktop/390/430. 3) Shared Chromium Gate 1 including 390/430 ATLAS return remains green. 4) Dedicated Jaguar V52 Chromium + WebKit desktop/390/430 remains green. 5) Shared WebKit + ORCA WebKit pass. 6) Security/truth/assets/tree gates remain green. 7) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
+1) Clean `npm ci` + typecheck + production build green. 2) Smoke/contracts/assets/security/truth/tree gates green. 3) ORCA LUME ordinary-click proof passes desktop/390/430. 4) Shared Chromium including ATLAS return remains green. 5) Jaguar V52 Chromium + WebKit desktop/390/430 remains green. 6) Shared WebKit + ORCA WebKit pass. 7) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
