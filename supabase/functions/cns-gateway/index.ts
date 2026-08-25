@@ -11,10 +11,40 @@ if (!DB_URL || !GATEWAY_TOKEN || !GITHUB_TOKEN) {
   throw new Error("CNS_GATEWAY_FAIL_CLOSED: required runtime secrets missing");
 }
 
-const sql = postgres(DB_URL, { max: 5, prepare: false, idle_timeout: 20 });
+const SQL_OPTIONS = { max: 5, prepare: false, idle_timeout: 20 } as const;
+let sql = postgres(DB_URL, SQL_OPTIONS);
 
 type DbRow = Record<string, unknown>;
 type GitHubJson = Record<string, unknown>;
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, code: string): Promise<T> {
+  let timer: number | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(code)), ms);
+      })
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+async function ensureDatabaseAlive(): Promise<void> {
+  try {
+    await withTimeout(sql`select 1 as ok`, 3000, "CNS_DATABASE_PREFLIGHT_TIMEOUT");
+    return;
+  } catch {
+    try { await sql.end({ timeout: 1 }); } catch { /* recycle even when stale close fails */ }
+    sql = postgres(DB_URL, SQL_OPTIONS);
+    try {
+      await withTimeout(sql`select 1 as ok`, 3000, "CNS_DATABASE_RECYCLE_TIMEOUT");
+    } catch {
+      throw new Error("CNS_DATABASE_UNAVAILABLE_AFTER_RECYCLE");
+    }
+  }
+}
 
 const tools = [
   ["brain.get_project", "Read generated Project Home after live code verification"],
@@ -129,7 +159,7 @@ async function readGitHubCodeState(line: DbRow) {
     const statusesUrl = typeof deployment.statuses_url === "string" ? deployment.statuses_url : null;
     if (statusesUrl?.startsWith("https://api.github.com/")) {
       const statusesRaw = await githubJson(`${statusesUrl}?per_page=1`);
-      if (!Array.isArray(statusesRaw)) throw new Error("CNS_GITHUB_DEPLOYMENTS_INVALID");
+      if (!Array.isArray(statusesRaw)) throw new Error("CNS_GITHUB_DEPLOYMENT_STATUS_INVALID");
       if (statusesRaw.length > 0) {
         const status = asObject(statusesRaw[0]);
         deploymentState = typeof status.state === "string" ? status.state.toUpperCase() : "UNKNOWN";
@@ -170,6 +200,7 @@ async function syncProjectCode(projectId: string) {
 }
 
 async function callTool(name: string, a: Record<string, unknown>) {
+  await ensureDatabaseAlive();
   switch (name) {
     case "brain.get_project": {
       const id = requireString(a, "project_id");
@@ -333,9 +364,10 @@ async function callTool(name: string, a: Record<string, unknown>) {
 Deno.serve(async (req) => {
   if (req.method === "GET" && new URL(req.url).pathname.endsWith("/health")) {
     try {
+      await ensureDatabaseAlive();
       const authority = await sql`select value from cns.system_meta where key='authority_mode'`;
       const truth = await sql`select value from cns.system_meta where key='truth_model'`;
-      return Response.json({ ok: true, authority: authority[0]?.value ?? null, truthModel: truth[0]?.value ?? null, githubLiveRequired: true });
+      return Response.json({ ok: true, authority: authority[0]?.value ?? null, truthModel: truth[0]?.value ?? null, githubLiveRequired: true, databaseLivenessPreflight: true });
     } catch {
       return Response.json({ ok: false, code: "CNS_DATABASE_UNAVAILABLE" }, { status: 503 });
     }
@@ -354,7 +386,7 @@ Deno.serve(async (req) => {
 
   try {
     if (rpc.method === "initialize") {
-      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.3.0-shadow" } } });
+      return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "4planet-cns", version: "0.3.1-shadow" } } });
     }
     if (rpc.method === "tools/list") return Response.json({ jsonrpc: "2.0", id: rpc.id, result: { tools } });
     if (rpc.method !== "tools/call") throw new Error("METHOD_NOT_SUPPORTED");
