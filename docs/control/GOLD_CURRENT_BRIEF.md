@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ATLAS-RETURN-CAMERA-RESIZE-SETTLE-74  
+**CHANGE ID:** ORCA-LUME-ECHO-HIT-PLANE-75  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **ACCEPTED ROLLBACK BASE:** `b3541634fbc8dcd366b86691a0eb5cba6effc251` / immutable TEST KING review preserved in Prototype SAFE  
@@ -10,52 +10,52 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only.
 
 ## USER ARRIVES BECAUSE
-They leave ATLAS for a connected Species/Living Systems journey and expect RETURN TO ATLAS to restore the exact world view they were using.
+They enter ORCA LUME to inspect the Orca intelligence room and directly trigger the acoustic presentation without unrelated Journey surfaces blocking the control.
 
 ## ONE THING TO UNDERSTAND
-The URL camera is already correct. The live MapLibre camera must remain identical after narrow-mobile layout/style settling; a later canvas resize may not silently overwrite the preserved view.
+The LUME intelligence panel is now correctly hosted on the stable Journey root, but its interactive echo control must also own the hit-testing plane above non-interactive cinematic/HUD copy surfaces.
 
 ## PRIMARY ACTION
-Return to ATLAS and continue from the same map centre, zoom, layers and record context.
+Activate SEND ECHO PULSE with an ordinary pointer/touch click on desktop and 390/430 mobile.
 
 ## SECONDARY DEPTH
-Preserve the existing ProductContext safety boundary, record panel reconstruction and user camera ownership after startup restoration.
+Preserve the Journey HUD, REAL WORLD ↔ LUME transition, scene sync, Bay of Biscay and all source/truth boundaries.
 
 ## P1 DOMINANT
-Exact live-camera restoration from explicit `z + c` return state on desktop and 390/430 mobile.
+One visible, reachable, keyboard-operable echo control whose ordinary click is never intercepted by decorative/copy layers.
 
 ## P2 ORIENTATION
-The returned record/layers remain visible without an asynchronous entity focus or mobile-sheet resize moving the world underneath the user.
+The existing LUME intelligence panel remains visually stable and readable without becoming a second navigation/control system.
 
 ## P3 ACTION / NEXT
-After restoration settles, real pointer/touch/wheel input immediately releases startup authority and the user owns the camera normally.
+After echo interaction, FOLLOW THE SYSTEM / BACK / HOW DO WE KNOW? continue to work normally through 01→08.
 
 ## P4 DEPTH
-Existing ATLAS projection, source, layer, record and ProductContext truth/safety contracts remain unchanged.
+Existing Dark Marine room, acoustic interpretation, species/place/pressure intelligence and evidence boundaries remain unchanged.
 
 ## CURRENT DEFECT
-Exact head `3a5cdec032677b452c311f8cb0c040d1c0440d21` passes the dedicated Jaguar V52 proof on Chromium + WebKit desktop/390/430 and 15/16 shared Chromium tests. The sole Browser Product Proof #967 failure is Gate 1 on Chromium 430: the returned URL/state retains the correct saved zoom, but the live MapLibre camera settles 1.33 zoom levels away after return. Desktop, 1280 and 390 pass. `PublicWorld` currently reconciles at RAF + 120/360/760ms + first `idle`; that bounded schedule can finish before a late 430px canvas/layout resize, leaving the URL correct but the live map wrong.
+Exact head `d6de4287c81368999dc580d63a85caaf2c3443ed` passes Browser Product Proof #971 and all 16 shared Chromium Gate 1/switcher tests, including the repaired 390/430 ATLAS return camera. Convergence #1991 fails only in the ORCA LUME focused Chromium matrix: ordinary click on `.orca-lume-echo-trigger` is intercepted on desktop by a non-interactive `.nature-premium` media/credit surface and on 390/430 by `.nature-journey-hud__copy` / stage copy. The echo button is present; this is stacking/hit-testing ownership, not missing runtime or stale QA.
 
 ## BOUNDED CORRECTION
-Keep ProductContext and its camera+record ownership rule unchanged. Extend only the startup live-camera restoration seam in `PublicWorld`: observe actual map-canvas size changes during a short bounded startup window and reconcile the explicit `z + c` camera after each resize. Stop observing automatically after the startup window, and stop immediately on real pointer/touch/wheel input. Do not poll, do not lock the camera after startup, do not widen QA tolerance, and do not change ORCA/Jaguar runtime.
+Keep the V72 stable root-host architecture. Add one ORCA-only last-loaded interaction-plane style: raise the canonical `.orca-lume-intel` above non-interactive cinematic/HUD copy while LUME is active; keep the panel itself non-capturing except for explicit interactive descendants; make `.orca-lume-echo-trigger` pointer-active and focus-visible. Do not disable Journey buttons/links, force clicks, change timeouts, create duplicate controls, or alter ORCA/Jaguar truth/runtime.
 
 ## WHAT CAN BE REMOVED
-The assumption that fixed startup timers plus first idle cover every narrow-mobile MapLibre resize sequence.
+The assumption that moving the LUME panel to the Journey root alone guarantees pointer ownership over later stacking contexts.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, accepted rollback, canonical ProductContext, current explicit-camera + record ownership rule, V69/V73 work, ORCA LUME single-instance correction, Jaguar V52, Bay of Biscay and existing test thresholds.
+`king/test`, PR131, accepted rollback, V72 root host, existing ORCA LUME panel/echo runtime, Journey HUD/navigation, Dark Marine room, Bay of Biscay, Jaguar V52 and existing QA thresholds.
 
 ## TRUTH BOUNDARY
-Navigation/camera-state integrity correction only. No ecological, species, occurrence, migration, partner, source or outcome claim changes.
+Presentation hit-testing correction only. Echo remains procedural/interpretive, not field audio, live sonar, animal location or ecological measurement.
 
 ## PERFORMANCE
-One short-lived `ResizeObserver` attached to the existing map canvas; no continuous polling. Disconnect after a bounded startup period or first real user camera input.
+CSS-only stacking/pointer correction; no new animation, polling, observer or media request.
 
 ## MOBILE-FIRST RISK
-430px is the reproduced failing width. The correction must also preserve 390px and desktop behaviour and must not create camera snapping after the user begins interacting.
+390/430 currently fail because Journey HUD copy intercepts the echo target. The fix must preserve HUD navigation while making only explicit LUME controls interactive above it.
 
 ## HUMAN SUCCESS
-A user returns from a connected journey and sees the same ATLAS world view they left, including on 430px mobile, then can pan/zoom normally without later restoration fighting them.
+A user sees the Orca LUME intelligence room, presses SEND ECHO PULSE normally on desktop or mobile, gets the intended interpretive response, and continues the Journey without overlap confusion.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Gate 1 return-camera matrix passes desktop/1280/390/430 at the existing <=0.25 live-zoom tolerance. 3) Dedicated Jaguar V52 Chromium + WebKit desktop/390/430 remains green. 4) ORCA LUME unique-panel/echo interaction remains green. 5) Shared WebKit + ORCA WebKit + Jaguar WebKit pass. 6) Security/truth/assets/tree gates remain green. 7) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME echo ordinary-click proof passes Chromium desktop/390/430. 3) Shared Chromium Gate 1 including 390/430 ATLAS return remains green. 4) Dedicated Jaguar V52 Chromium + WebKit desktop/390/430 remains green. 5) Shared WebKit + ORCA WebKit pass. 6) Security/truth/assets/tree gates remain green. 7) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
