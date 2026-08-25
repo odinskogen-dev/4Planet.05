@@ -2,59 +2,60 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-MOBILE-390-VIEWPORT-SAFE-70  
-**STATUS:** TEST / CORRECT + EXACT-HEAD QA  
+**CHANGE ID:** JAGUAR-PHASE2-JUNGLE-LUME-ROOM-71  
+**STATUS:** TEST / BUILD + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING; keep mobile interaction and intelligence surfaces inside the viewport without weakening LUME, creature fidelity or truth boundaries.  
+**ACCEPTED ROLLBACK BASE:** `b3541634fbc8dcd366b86691a0eb5cba6effc251` / immutable `https://45909da1.4planet-05.pages.dev/journey/jaguar/`  
+**FOUNDER DIRECTION:** preserve the technically accepted Jaguar 04 and continue until the encounter is visually convincing. Improve the room around the working V52 source-derived Jaguar before adding unnecessary 3D complexity.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They want to enter the Orca experience, interact with the acoustic/LUME room and follow the living-system Journey on mobile without clipped intelligence or horizontal overflow.
+They want to meet a Jaguar as a living presence in a rainforest, not see a model floating over a flat wallpaper.
 
 ## ONE THING TO UNDERSTAND
-The LUME intelligence panel must remain fully readable and viewport-safe at the narrow 390px target while retaining the same ocean-native room, evidence and interaction model.
+The Jaguar must feel physically placed inside a humid Amazon room with depth, ground contact and foreground occlusion before the Journey opens into system intelligence.
 
 ## PRIMARY ACTION
-ENTER, use the Orca/LUME interaction, FOLLOW THE SYSTEM and read the scene-specific intelligence without any part of the panel leaving the viewport.
+ENTER, encounter and manipulate the Jaguar, then FOLLOW THE SYSTEM.
 
 ## SECONDARY DEPTH
-Dark Marine LUME Room, ocean world, Bay of Biscay, source/evidence and acoustic interpretation remain unchanged behind the mobile-safe intelligence layout.
+Switch to a distinct Dark Jungle LUME intelligence room without losing the Jaguar, then continue the existing 01→08 Journey and evidence controls.
 
 ## P1 DOMINANT
-Viewport-safe LUME intelligence on 390px mobile.
+Jaguar + convincing physical Jungle Room: floor/contact, near/mid/far vegetation, canopy, fog/humidity, directional shafts and restrained parallax.
 
 ## P2 ORIENTATION
-Species, scene position, truth boundaries and reversible REAL WORLD ↔ LUME state remain unchanged.
+Species identity and 01/08 Journey position remain clear but subordinate to the animal.
 
 ## P3 ACTION / NEXT
-ENTER, acoustic pulse, FOLLOW THE SYSTEM, BACK, HOW DO WE KNOW? and LUME controls remain directly operable.
+LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW? and FOLLOW THE SYSTEM remain available and unchanged functionally.
 
 ## P4 DEPTH
-Room depth, acoustic presentation and source/evidence detail remain available after the bounded mobile layout correction.
+Dark Jungle LUME Room carries species/place/system/truth intelligence with black/green-teal spatial depth rather than a colour filter.
 
 ## CURRENT DEFECT
-Exact SHA `862f1d932e56cf191fe53e313ca93c0971655bac` has Browser Product Proof #941 PASS and GOLD/Public Preview/Human Craft/Analytics green. Convergence #1941 passes exact checkout, typecheck, production build, 91/91 contracts, lint, assets, dependency gate and Chromium shared navigation. The dedicated ORCA LUME Chromium test fails only at 390px: `.orca-lume-intel` reports bounding-box x = -29px while the acceptance floor is -2px. Desktop and 430px pass. This is a real narrow-mobile layout defect, not a test or truth failure.
+Exact accepted Jaguar 04 is technically green on Chromium/WebKit desktop + 390/430 and preserved in Prototype SAFE, but Founder evidence still shows an under-Gold encounter: the working V52 Jaguar reads as isolated from its environment, ground contact is weak, the room lacks convincing near/mid/far depth, and LUME does not yet feel like a distinct intelligence chamber. Technical acceptance is necessary but not sufficient for Founder visual Gold.
 
 ## BOUNDED ADOPTION
-Keep the existing ORCA LUME 19 intelligence component and Room 21. Add a narrow-mobile layout guard at <=400px that pins the intelligence panel to viewport-safe logical insets, uses border-box sizing and suppresses residual presentation transforms on the panel itself. Do not change the Journey engine, LUME semantics, room geometry, Bay of Biscay, Orca media or test tolerance.
+Keep V52 geometry/runtime, renderer authority, interactions, Journey engine, truth/source evidence and performance profile unchanged. Add one last-loaded Jaguar-only room layer using existing DOM primitives: floor/contact integration, three depth bands, canopy/side vegetation silhouettes, fog/humidity, restrained light shafts, foreground occlusion and a distinct Dark Jungle LUME room. Prefer CSS/2.5D depth over new heavy media or renderer complexity.
 
 ## WHAT CAN BE REMOVED
-Residual mobile transform/width behaviour that can push the intelligence panel outside the 390px viewport.
+Flat-wall feeling, excessive full-screen haze, weak contact shadow, equal-weight decorative layers, bright LUME filter behaviour and effects that obscure the animal.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, existing ORCA Journey, LUME Room 21, ORCA LUME 19 intelligence component, ocean-world v23, Bay of Biscay, existing controls, fixed LUME portal, shared Journey engine and all truth/source boundaries.
+`king/test`, PR131, accepted Jaguar 04 rollback, V52 source-derived Jaguar, V54/V55 renderer authority, existing Jungle/LUME DOM, 01→08 Journey, interactions, source/licence/truth copy and mobile/WebKit compatibility.
 
 ## TRUTH BOUNDARY
-This is presentation layout only. It adds no biological, acoustic, movement, abundance, population or migration claim. Acoustic graphics remain interpretive; `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This is presentation-space/environment work only. Jaguar geometry remains source-derived from the rights-verified Ear.Rodriguez master under CC BY 4.0. Coat shader and motion remain presentation layers, not original texture or animation. No live animal, tracking, abundance or ecological measurement claim is introduced.
 
 ## PERFORMANCE
-No new animation, polling, observer or media dependency. Keep the existing creature/interaction-first performance profile.
+Creature-first. Add no new media requests or JavaScript animation loops. Use compositor-light CSS; reduce atmosphere on mobile/reduced-motion before reducing Jaguar fidelity. Preserve ~30fps mobile and balanced desktop runtime targets.
 
 ## MOBILE-FIRST RISK
-The correction is scoped to <=400px because 430px already passes. It must not regress 430px, desktop, Chromium shared navigation, WebKit ORCA or Jaguar.
+390/430 must keep the Jaguar large and recognisable, controls tappable, foreground occlusion restrained and no horizontal overflow. Heavy fog/shafts/parallax must collapse before animal legibility.
 
 ## HUMAN SUCCESS
-A user at 390px can enter ORCA, advance the Journey and read the complete LUME intelligence panel without clipping or horizontal overflow.
+Within five seconds after ENTER, a first-time viewer reads one unmistakable hierarchy: Jaguar first, rainforest depth around it, clear next action. LUME must feel like a different spatial intelligence room rather than a green tint.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME interaction and viewport safety green on Chromium desktop + 390/430. 3) WebKit desktop + 390/430 remains green. 4) Chromium/WebKit Jaguar remains green. 5) Shared vertical slice remains green. 6) Exact-head security/assets/tree gates green. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Jaguar Chromium desktop + 390/430: ENTER, V52 visible, interaction, LUME, 01→08, back/evidence and no overflow. 3) Same on WebKit desktop + 390/430. 4) ORCA regression remains green. 5) Security/assets/tree gates green. 6) Rendered screenshots show meaningful room-depth improvement without obscuring creature. 7) Exact SHA deployment verified before new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
