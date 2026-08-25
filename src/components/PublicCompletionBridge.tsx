@@ -81,7 +81,7 @@ function RouteCTA({ pathname }: { pathname: string }) {
     );
   }
 
-  if (pathname === "/missions/wh4les") {
+  if (pathname === "/missions/wh4les" || pathname === "/species/orca") {
     return (
       <section className="completion-route-cta completion-route-cta--whales" aria-label="Continue into the Orca Journey">
         <div className="completion-route-cta__inner">
@@ -89,6 +89,19 @@ function RouteCTA({ pathname }: { pathname: string }) {
           <h2>Enter the living ocean through one life.</h2>
           <p>Follow the Orca through prey, place, pressure, evidence and possible response — including the Bay of Biscay survey context.</p>
           <a href="/journey/orca/" className="completion-cta-button">ENTER ORCA JOURNEY →</a>
+        </div>
+      </section>
+    );
+  }
+
+  if (pathname === "/missions/am4zonia" || pathname === "/species/jaguar") {
+    return (
+      <section className="completion-route-cta completion-route-cta--jaguar" aria-label="Continue into the Jaguar Journey">
+        <div className="completion-route-cta__inner">
+          <div className="completion-kicker">AM4ZONIA_ · IMMERSIVE JOURNEY</div>
+          <h2>Enter the rainforest through one life.</h2>
+          <p>Meet the Jaguar, then move through its living web, Amazonia context, pressures, evidence and possible response.</p>
+          <a href="/journey/jaguar/" className="completion-cta-button">ENTER JAGUAR JOURNEY →</a>
         </div>
       </section>
     );
