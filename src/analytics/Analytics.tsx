@@ -1,7 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
+
+const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
+const DEFAULT_ANALYTICS_DOMAINS = [
+  "4planet.org",
+  "4planetmagazine.com",
+  "s4piens.com",
+  "4species.com",
+  "cre4tors.com",
+  "4planetmarket.com",
+] as const;
 
 type ConsentState = "granted" | "denied" | null;
 type Gtag = (...args: unknown[]) => void;
@@ -14,14 +24,25 @@ declare global {
 }
 
 function measurementId(): string {
-  return import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
+  return import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || DEFAULT_GA_MEASUREMENT_ID;
+}
+
+function canonicalHost(host: string): string {
+  return host.trim().toLowerCase().replace(/^www\./, "");
 }
 
 function configuredDomains(): string[] {
-  return (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
+  const configured = (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
     .split(",")
-    .map((domain) => domain.trim())
+    .map(canonicalHost)
     .filter(Boolean);
+  return Array.from(new Set(configured.length ? configured : DEFAULT_ANALYTICS_DOMAINS));
+}
+
+export function isAnalyticsHostAllowed(hostname: string): boolean {
+  const host = canonicalHost(hostname);
+  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".pages.dev")) return false;
+  return configuredDomains().includes(host);
 }
 
 function readConsent(): ConsentState {
@@ -40,23 +61,50 @@ function productArea(pathname: string): string {
   return "4planet";
 }
 
-function installGoogleTag(id: string, domains: string[]) {
-  if (!id || document.getElementById("4planet-ga4")) return;
-
+function ensureGtag() {
   window.dataLayer = window.dataLayer || [];
+  if (window.gtag) return;
   window.gtag = function () {
     window.dataLayer?.push(arguments);
   } as Gtag;
+}
+
+function setConsentDefaultDenied() {
+  ensureGtag();
+  window.gtag?.("consent", "default", {
+    analytics_storage: "denied",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    wait_for_update: 500,
+  });
+}
+
+function updateConsent(next: Exclude<ConsentState, null>) {
+  ensureGtag();
+  window.gtag?.("consent", "update", {
+    analytics_storage: next,
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+}
+
+function installGoogleTag(id: string, domains: string[]) {
+  if (!id || document.getElementById("4planet-ga4")) return;
+
+  ensureGtag();
+  updateConsent("granted");
 
   if (domains.length > 1) {
-    window.gtag("set", "linker", {
+    window.gtag?.("set", "linker", {
       domains,
       decorate_forms: true,
     });
   }
 
-  window.gtag("js", new Date());
-  window.gtag("config", id, {
+  window.gtag?.("js", new Date());
+  window.gtag?.("config", id, {
     send_page_view: false,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
@@ -70,8 +118,11 @@ function installGoogleTag(id: string, domains: string[]) {
 }
 
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !window.gtag) return;
-  window.gtag("event", name, parameters);
+  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || !window.gtag) return;
+  window.gtag("event", name, {
+    ...parameters,
+    site_host: canonicalHost(window.location.hostname),
+  });
 }
 
 export function resetAnalyticsConsent() {
@@ -82,10 +133,17 @@ export function resetAnalyticsConsent() {
 export function Analytics() {
   const location = useLocation();
   const id = measurementId();
+  const allowedHost = useMemo(() => isAnalyticsHostAllowed(window.location.hostname), []);
   const [consent, setConsent] = useState<ConsentState>(() => readConsent());
 
   useEffect(() => {
-    if (!id || consent !== "granted") return;
+    if (!allowedHost || !id) return;
+    setConsentDefaultDenied();
+    if (consent === "denied") updateConsent("denied");
+  }, [allowedHost, consent, id]);
+
+  useEffect(() => {
+    if (!allowedHost || !id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
 
     window.gtag?.("event", "page_view", {
@@ -93,14 +151,15 @@ export function Analytics() {
       page_location: window.location.href,
       page_path: `${location.pathname}${location.search}`,
       content_group: productArea(location.pathname),
-      site_host: window.location.hostname,
+      site_host: canonicalHost(window.location.hostname),
     });
-  }, [consent, id, location.pathname, location.search]);
+  }, [allowedHost, consent, id, location.pathname, location.search]);
 
-  if (!id || consent !== null) return null;
+  if (!allowedHost || !id || consent !== null) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);
+    updateConsent(next);
     setConsent(next);
   };
 

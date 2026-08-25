@@ -6,16 +6,19 @@ import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
+import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
+import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
-import { Brands, Partners, Funders } from "@/pages/v5/Entry";
+import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
+import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
@@ -83,8 +86,10 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<ImpactStory />} />
+      <Route path="/checkout/lab" element={<CommerceStripeLab />} />
+      <Route path="/checkout/return" element={<CheckoutReturn />} />
       <Route path="/join" element={<Join />} />
-      <Route path="/people" element={<Navigate to="/join" replace />} />
+      <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
       <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
@@ -94,6 +99,9 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
+      <Route path="/about/story" element={<AboutStory />} />
+      <Route path="/about/system" element={<AboutSystem />} />
+      <Route path="/about/founder" element={<Founder />} />
       <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />

@@ -69,6 +69,16 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
+      # P0 Jaguar proof runs before unrelated shared product journeys. A flaky or
+      # independently red ATLAS seam must not suppress evidence for the protected
+      # Founder-directed Jaguar critical path.
+      - name: Run Jaguar P0 full-source proof on Chromium + WebKit desktop and mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
       # Do not run every viewport-specific test under every project. The prior
       # all-spec/all-project invocation repeated mobile assertions on desktop,
       # desktop pointer assertions on mobile and consumed the 30 minute job
@@ -134,6 +144,7 @@ jobs:
           name: product-proof-browser-evidence
           path: |
             artifacts/product-proof
+            artifacts/jaguar-full
             playwright-report
             test-results
             runtime-url.txt

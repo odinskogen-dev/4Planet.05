@@ -1,0 +1,98 @@
+name: Cloudflare Pages Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-pages-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Audit Pages and domains
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "missing token"; exit 1; }
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone_json="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
+          [[ -n "${account_id}" ]] || { echo "no account id"; exit 1; }
+
+          projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
+          jq -e '.success == true' <<<"${projects}" >/dev/null
+          deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")"
+
+          targets='["4planet.org","4planetmagazine.com","s4piens.com","cre4tors.com","4planetmarket.com"]'
+          mapfile -t matching < <(jq -r --argjson targets "$targets" '
+            .result[]?
+            | select(any(.domains[]?; . as $d | any($targets[]; . == $d)))
+            | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))]
+            | @tsv
+          ' <<<"${projects}")
+
+          {
+            echo "# Cloudflare Pages mapping"
+            echo
+            echo "Account: ${account_id}"
+            echo
+            if ((${#matching[@]} == 0)); then
+              echo "No matching Pages projects found for canonical domains."
+            else
+              echo "| Project | Production branch | Domains |"
+              echo "|---|---|---|"
+              for row in "${matching[@]}"; do
+                IFS=$'\t' read -r name branch domains <<<"${row}"
+                echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+              done
+            fi
+
+            echo
+            echo "## Latest production deployments"
+            echo
+            echo "| Commit | Branch | Stage | Status | Created | URL |"
+            echo "|---|---|---|---|---|---|"
+            jq -r '.result[]? | [(.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.name // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"${deployments}" | while IFS=$'\t' read -r commit branch stage status created url; do
+              echo "| \`${commit:0:12}\` | \`${branch}\` | ${stage} | **${status}** | ${created} | ${url} |"
+            done
+
+            echo
+            echo "## Zone/DNS presence"
+            echo
+            for domain in 4planet.org 4planetmagazine.com s4piens.com cre4tors.com 4planetmarket.com; do
+              z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
+              zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
+              status="$(jq -r '.result[0].status // "missing"' <<<"${z}")"
+              if [[ -z "$zid" ]]; then
+                echo "- ${domain}: zone missing/inaccessible"
+                continue
+              fi
+              dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")"
+              records="$(jq -r '[.result[]? | (.type + " " + (.content // ""))] | join("; ")' <<<"${dns}")"
+              echo "- ${domain}: zone ${status}; ${records:-no apex record}"
+            done
+          } > /tmp/cf-report.md
+
+          cat /tmp/cf-report.md
+
+      - name: Report to analytics issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ -f /tmp/cf-report.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/cf-report.md
+          else
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Pages audit failed before report generation."
+          fi

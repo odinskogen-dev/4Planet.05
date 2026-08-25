@@ -1,0 +1,118 @@
+name: Cloudflare Workers Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-workers-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  analytics-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          [ -n "$TOKEN" ] || { echo 'No Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n'); TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Resolve Cloudflare account
+        shell: bash
+        run: |
+          set -euo pipefail
+          json=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=cre4tors.com&status=active')
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$json")
+          [ -n "$ACCOUNT_ID" ]
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+
+      - name: Build analytics Worker modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -e 's|__4P_ORIGIN__|https://b8a8f6c1.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|cre4tors-v0.3-78cdebc|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/cre4tors.mjs"
+          sed -e 's|__4P_ORIGIN__|https://4482f621.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|4market-gold-01-cad5f58|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/market.mjs"
+          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/cre4tors.mjs"
+          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/market.mjs"
+          cat > "$RUNNER_TEMP/cre4tors.toml" <<EOF
+          name = "cre4tors-prototype"
+          main = "$RUNNER_TEMP/cre4tors.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "cre4tors.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.cre4tors.com"
+          custom_domain = true
+          EOF
+          cat > "$RUNNER_TEMP/market.toml" <<EOF
+          name = "4planetmarket-prototype"
+          main = "$RUNNER_TEMP/market.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmarket.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmarket.com"
+          custom_domain = true
+          EOF
+
+      - name: Deploy CRE4TORS analytics Worker
+        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/cre4tors.toml"
+
+      - name: Deploy MARKET analytics Worker
+        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/market.toml"
+
+      - name: Verify live product + analytics surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify() {
+            host="$1" product="$2"
+            for i in $(seq 1 30); do
+              html=$(curl -fsS "https://${host}/" || true)
+              shim=$(curl -fsS "https://${host}/_4p-analytics.js" || true)
+              headers=$(curl -fsSI "https://${host}/" | tr -d '\r' || true)
+              if [[ "$html" == *"$product"* && "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$headers" == *'4PLANET_ANALYTICS_PROXY_V1'* ]]; then return 0; fi
+              sleep 5
+            done
+            return 1
+          }
+          verify cre4tors.com 'Create'
+          verify 4planetmarket.com 'ART'
+          cat > /tmp/report.md <<'EOF'
+          # Analytics Worker deployment
+
+          - cre4tors.com: product preserved + consent analytics shim **LIVE PASS**
+          - 4planetmarket.com: product preserved + consent analytics shim **LIVE PASS**
+          - Measurement ID: `G-Q79Y9HJRL8`
+          - Existing immutable product origins preserved.
+          EOF
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`."; fi

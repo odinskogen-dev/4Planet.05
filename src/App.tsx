@@ -4,9 +4,12 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { Analytics } from "@/analytics/Analytics";
+import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
+import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
+import "@/styles/premium-completion.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
@@ -24,7 +27,9 @@ export default function App() {
       <ScrollToTop />
       <ContextRetained />
       <Analytics />
+      <ProductRouteAnalytics />
       <AtlasProductSwitcher />
+      <PublicCompletionBridge />
       <AppRoutes />
     </BrowserRouter>
   );
