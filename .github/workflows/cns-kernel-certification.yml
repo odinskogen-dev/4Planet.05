@@ -56,13 +56,16 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
-          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null" | grep -qx t
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null" | grep -qx t
 
       - name: Verify event-backed GitHub state projection
         run: psql -f supabase/tests/cns_github_sync.sql
 
       - name: Verify acceptance hardening and deterministic fresh-context behavior
         run: psql -f supabase/tests/cns_acceptance_hardening.sql
+
+      - name: Verify SUPERBRAIN truth, provenance, conflict and bounded-learning invariants
+        run: psql -f supabase/tests/cns_superbrain_truth.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
@@ -126,6 +129,7 @@ jobs:
         run: |
           psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
           psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
+          psql -Atqc "select not has_schema_privilege('anon','cns','CREATE') and not has_schema_privilege('authenticated','cns','CREATE')" | grep -qx t
 
       - name: Backup and restore CNS schema into clean database
         run: |
@@ -145,6 +149,9 @@ jobs:
           psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_wip_control" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_claim_truth_trace" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.control_roles" >/dev/null
+          psql -d cns_restore -Atqc "select to_regclass('cns.hypotheses') is not null" | grep -qx t
 
       - name: Deno type-check CNS Gateway
         uses: denoland/setup-deno@v2
