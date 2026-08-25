@@ -1,0 +1,68 @@
+export const RESEARCH_GOLD_SOURCES = [
+  {
+    id: "SRC-IMR-FLESLAND-PFAS-PAPER",
+    title: "Per- and polyfluoroalkyl substances (PFAS) in marine sediments from a Norwegian fjord near an airport: Historical records, distribution, and controlling factors",
+    publisher: "Journal of Chromatography B / Elsevier",
+    url: "https://www.sciencedirect.com/science/article/pii/S1570023225004222",
+    checkedAt: "2026-08-26",
+    rightsNote: "Open-access article; use metadata, short factual summaries and source links. Do not silently expand claims beyond the paper.",
+  },
+  {
+    id: "SRC-IMR-FLESLAND-PFAS-PUBMED",
+    title: "PFAS in marine sediments near a Norwegian airport — PubMed record",
+    publisher: "PubMed / U.S. National Library of Medicine",
+    url: "https://pubmed.ncbi.nlm.nih.gov/41330342/",
+    checkedAt: "2026-08-26",
+    rightsNote: "Bibliographic and abstract metadata source.",
+  },
+  {
+    id: "SRC-IMR-FEARLESS-FLESLAND",
+    title: "Nytt samarbeid med Avinor: Skal undersøke PFAS-nivåer ved Flesland",
+    publisher: "Havforskningsinstituttet",
+    url: "https://www.hi.no/hi/nyheter/2023/september/skal-undersoke-pfas-nivaer-ved-flesland",
+    checkedAt: "2026-08-26",
+    rightsNote: "Institutional project context. Collaboration context is not substituted for the paper's stated funding acknowledgement.",
+  },
+] as const;
+
+export const GLOBAL_RESEARCH_GOLD = {
+  id: "RES-BGO-FLESLAND-PFAS-01",
+  type: "PAPER" as const,
+  title: "PFAS in marine sediments near Bergen Airport Flesland",
+  citationTitle: "Per- and polyfluoroalkyl substances (PFAS) in marine sediments from a Norwegian fjord near an airport: Historical records, distribution, and controlling factors",
+  doi: "10.1016/j.jchromb.2025.124868",
+  status: "PUBLISHED" as const,
+  publishedAt: "2026-01-15",
+  humanFinding: "Researchers found a substantial load of PFAS precursors close to Bergen Airport Flesland and a continuous increase in PFAS levels in dated sediment cores since at least the 1980s. At the sampled marine sediment locations immediately off the airport, measured PFAS levels were nevertheless relatively low compared with nearby western-Norway marine areas; the authors point to local hydrodynamic and sediment conditions as likely important controls on where contamination accumulates.",
+  whyItMatters: "It shows why a simple 'source nearby = highest contamination nearby' story can be wrong. Understanding currents, sediment and contaminant transport matters for monitoring, remediation and public decisions around a real Bergen environmental pressure.",
+  confidence: "Published peer-reviewed study with explicit methods, samples and modelling context. Confidence applies to the reported samples and analyses — not to every organism, all water, human exposure or every fjord around Bergen.",
+  didNotProve: "The study does not prove that the marine area is free of PFAS, does not establish human health risk from the sampled sediments, and does not show where all contamination from the airport ultimately ends up. It also does not by itself establish which remediation or policy response is best.",
+  researchers: [
+    { name: "Stepan Boitsov", canonicalState: "UNRESOLVED" as const },
+    { name: "Jon Albretsen", canonicalState: "UNRESOLVED" as const },
+    { name: "Hilde Elise Heldal", canonicalState: "UNRESOLVED" as const },
+    { name: "Stig Valdersnes", canonicalState: "UNRESOLVED" as const },
+    { name: "Bjørn Einar Grøsvik", canonicalState: "UNRESOLVED" as const },
+    { name: "Bashir Abdulkader", canonicalState: "UNRESOLVED" as const },
+    { name: "Aasim Ali", canonicalState: "UNRESOLVED" as const },
+  ],
+  institutions: [{ name: "Institute of Marine Research Norway", actorId: "P17-A296", canonicalState: "RESOLVED" as const }],
+  funders: [{ name: "Research Council of Norway / Forskningsrådet", actorId: "P17-A1770", programme: "FEARLESS", projectNumber: "335543", canonicalState: "RESOLVED" as const }],
+  places: [{ id: "PLACE-BERGEN", label: "Bergen" }, { id: "PLACE-FLESLAND", label: "Bergen Airport Flesland / adjacent marine area" }],
+  ecosystems: ["Coastal marine sediments", "Western Norway fjord / coastal system"],
+  problems: ["PFAS contamination", "Persistent chemical pollution", "Contaminant transport and monitoring"],
+  potentialDecisionRelevance: "Monitoring and remediation choices around PFAS can use this evidence, but 4PLANET must link a specific public Decision object before claiming that the paper informed that decision.",
+  sourceIds: ["SRC-IMR-FLESLAND-PFAS-PAPER", "SRC-IMR-FLESLAND-PFAS-PUBMED", "SRC-IMR-FEARLESS-FLESLAND"],
+  truthBoundary: "Funding context is disclosed because it matters for provenance. Research Council funding is not treated as proof of quality, bias or independence, and the 2023 Avinor collaboration context is not silently re-labelled as the paper's funder.",
+};
+
+export const GLOBAL_RESEARCH_FEED_ITEM = {
+  id: "FEED-BGO-RES-PFAS-01",
+  kind: "RESEARCH" as const,
+  date: "2026-01-15",
+  title: "What sediments near Flesland reveal — and what they do not",
+  summary: "An IMR study found rising historical PFAS signals and substantial precursor loads, while measured PFAS concentrations in nearby marine sediments were lower than might be assumed from the contaminated land source alone.",
+  href: "/research/res-bgo-flesland-pfas-01",
+  sourceIds: GLOBAL_RESEARCH_GOLD.sourceIds,
+  confidence: "HIGH" as const,
+};
