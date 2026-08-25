@@ -7,6 +7,7 @@ const pci = read("src/planet/coordinationGraph.ts");
 const cell = read("src/content/livingPlanetCell.ts");
 const research = read("src/content/researchGold.ts");
 const projection = read("src/planet/livingPlanetProjection.ts");
+const federation = read("src/planet/sourceAdapterRegistry.ts");
 const actors = read("src/content/actorGold.ts");
 const page = read("src/pages/v5/LivingPlanetCell.tsx");
 const atlas = read("src/components/LivingPlanetAtlasBridge.tsx");
@@ -22,6 +23,13 @@ test("PCI-02 makes Research and Decision first-class without making Need the roo
   assert.match(pci, /Research funding is context, not evidence of bias or corruption/);
   assert.match(pci, /Decision correlation is not causality/);
   assert.match(pci, /UNKNOWN is not negative evidence/);
+});
+
+test("source federation is demand-gated rather than a replication programme", () => {
+  for (const source of ["source:ror", "source:openalex", "source:crossref", "source:brreg", "source:gbif", "source:obis", "source:360giving", "source:iati", "source:ted", "source:grants-gov"]) assert.ok(federation.includes(source), `missing source adapter ${source}`);
+  assert.match(federation, /Federation before replication/);
+  assert.match(federation, /No adapter is promoted from CANDIDATE to production merely because an API is open/);
+  assert.match(federation, /Unavailable source is distinct from zero results/);
 });
 
 test("Bergen DNA cell is source-backed and keeps consultation status exact", () => {
@@ -99,12 +107,14 @@ test("capital dogfood proves eligible and blocked matching with hard gates", () 
   assert.match(page, /Good thematic fit cannot override eligibility, delivery truth, rights, freshness or authority/);
 });
 
-test("one canonical update projects to eight surfaces and a correction replaces the stale revision", () => {
+test("one canonical update projects to eight surfaces and correction replaces stale surface copies", () => {
   for (const surface of ["BRAIN", "ACTOR", "ATLAS_PLACE", "RESEARCH", "MAGAZINE", "FEED", "GET_INVOLVED", "IMPACT"]) assert.ok(projection.includes(`"${surface}"`), `missing projection ${surface}`);
   assert.match(cell, /CANONICAL_UPDATE_KPA_OPEN/);
   assert.match(cell, /CANONICAL_CORRECTION_EXAMPLE/);
   assert.match(projection, /applyCanonicalCorrection/);
-  assert.match(projection, /correctionOf/);
+  assert.match(projection, /correction\.correctionOf/);
+  assert.match(projection, /existing\.filter/);
+  assert.match(projection, /correctedSurfaces\.has/);
 });
 
 test("ATLAS carries the same Bergen canonical intelligence without fabricating a spatial impact surface", () => {
