@@ -69,7 +69,23 @@
     panel.querySelector('.orca-lume-intel__secondary').textContent=config.secondary;
     panel.querySelector('.orca-lume-intel__modules').innerHTML=config.modules.map(([label,value,stateLabel])=>`<div class="orca-lume-module"><span>${label}</span><strong>${value}</strong><small>${stateLabel}</small></div>`).join('');
     root.querySelectorAll('[data-lume-rail]').forEach(node=>node.dataset.active=node.dataset.lumeRail===state?'true':'false');
-    root.dataset.orcaLumeScene=state;
+    if (root.dataset.orcaLumeScene !== state) root.dataset.orcaLumeScene=state;
+  }
+
+  function reconcileCanonicalScene(root) {
+    if (!root) return;
+    const canonicalState = root.dataset.sceneState;
+    const state = canonicalState && INTEL[canonicalState]
+      ? canonicalState
+      : (root.dataset.lightLensScene && INTEL[root.dataset.lightLensScene] ? root.dataset.lightLensScene : null);
+    if (!state) return;
+    const canonicalIndex = Number(root.dataset.journeyIndex ?? root.dataset.lightLensIndex ?? 0);
+    if (root.dataset.orcaLumeScene === state) {
+      const shown = root.querySelector('.orca-lume-intel__index')?.textContent || '';
+      const wanted = `${String(canonicalIndex+1).padStart(2,'0')} / 05`;
+      if (shown === wanted) return;
+    }
+    syncIntel(root,{state,index:canonicalIndex});
   }
 
   function emitEcho(root) {
@@ -123,11 +139,17 @@
     if(!root || root.dataset.orcaLumeInstalled==='true') return;
     root.dataset.orcaLumeInstalled='true';
     installPhotoBase(root);installIntel(root);syncIntel(root);installInteraction(root);
-    root.addEventListener('4planet:light-lens-change',()=>{installPhotoBase(root);installIntel(root);syncIntel(root);installInteraction(root)});
-    window.addEventListener('4planet:nature-journey-scene',event=>requestAnimationFrame(()=>{installPhotoBase(root);installIntel(root);syncIntel(root,event.detail||{});installInteraction(root)}));
+    root.addEventListener('4planet:light-lens-change',()=>{installPhotoBase(root);installIntel(root);reconcileCanonicalScene(root);installInteraction(root)});
+    window.addEventListener('4planet:nature-journey-scene',event=>{
+      installPhotoBase(root);installIntel(root);syncIntel(root,event.detail||{});reconcileCanonicalScene(root);installInteraction(root);
+    });
+    const sceneObserver = new MutationObserver(()=>reconcileCanonicalScene(root));
+    sceneObserver.observe(root,{attributes:true,attributeFilter:['data-scene-state','data-journey-index','data-light-lens-scene','data-light-lens-index']});
+    root.__orcaLumeSceneObserver = sceneObserver;
+    reconcileCanonicalScene(root);
     requestAnimationFrame(()=>activateDefaultLume(root));
   }
 
   window.addEventListener('DOMContentLoaded',()=>install(document.getElementById('browser-experience')),{once:true});
-  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,emitEcho,activateDefaultLume,media:NOAA_ORCA,intel:INTEL};
+  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,reconcileCanonicalScene,emitEcho,activateDefaultLume,media:NOAA_ORCA,intel:INTEL};
 })();
