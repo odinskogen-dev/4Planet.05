@@ -3,7 +3,7 @@ name: CNS Kernel 02 Certification
 on:
   pull_request:
     paths:
-      - 'supabase/migrations/20260824*_cns_*.sql'
+      - 'supabase/migrations/2026082*_cns_*.sql'
       - 'supabase/tests/cns_*.sql'
       - 'supabase/functions/cns-gateway/**'
       - 'config/cns/**'
@@ -56,7 +56,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
-          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null" | grep -qx t
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826001500_cns_control_of_control.sql
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null and to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null" | grep -qx t
 
       - name: Verify event-backed GitHub state projection
         run: psql -f supabase/tests/cns_github_sync.sql
@@ -66,6 +67,9 @@ jobs:
 
       - name: Verify SUPERBRAIN truth, provenance, conflict and bounded-learning invariants
         run: psql -f supabase/tests/cns_superbrain_truth.sql
+
+      - name: Verify control-of-control, memory integrity and context/source fault recovery
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_control_of_control.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
@@ -83,12 +87,11 @@ jobs:
             'A24': "('A24','ADVERSARIAL','Does a self task dependency surface in Doctor?', $$pg_temp.create_self_dependency_and_verify()$$),",
             'A25': "('A25','ADVERSARIAL','Does Doctor create an incident for an invariant breach?', $$pg_temp.doctor_scan_and_verify_open()$$),",
             'A26': "('A26','ADVERSARIAL','Does Doctor resolve healed incidents without rewriting truth?', $$pg_temp.heal_and_verify_resolved()$$),",
-            'A27': "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_memory('EVAL-MEM-DUP','EVAL-PROJECT','EPISODIC',2::smallint,'Learning','{\"x\":1}','TEST','eval-brain','rev-1')=(select fingerprint from cns.memory_items where memory_id='EVAL-MEM'))$$),",
+            'A27': "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_and_verify()$$),",
             'A28': "('A28','ADVERSARIAL','Does Librarian deduplicate same fingerprint?', $$(select cns.librarian_propose_memory('EVAL-MEM-DUP','EVAL-PROJECT','EPISODIC',2::smallint,'Learning','{\"x\":1}','TEST','eval-brain','rev-1')=(select fingerprint from cns.memory_items where memory_id='EVAL-MEM'))$$),",
             'A34': "('A34','ADVERSARIAL','Can a correcting code observation restore SHA equality?', $$pg_temp.correct_code_and_verify()$$),",
             'A38': "('A38','ADVERSARIAL','Does staging raw legacy entity preserve a fingerprint?', $$pg_temp.stage_legacy_and_verify()$$),",
           }
-          replacements['A27'] = "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_and_verify()$$),"
           out = []
           for line in src.splitlines():
             stripped = line.lstrip()
@@ -136,21 +139,26 @@ jobs:
           source_events=$(psql -Atqc "select count(*) from cns.events")
           source_projects=$(psql -Atqc "select count(*) from cns.projects")
           source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
+          source_control_cycles=$(psql -Atqc "select count(*) from cns.control_cycles")
           docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
           createdb cns_restore
           cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
           restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
           restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
           restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
+          restored_control_cycles=$(psql -d cns_restore -Atqc "select count(*) from cns.control_cycles")
           test "$source_events" = "$restored_events"
           test "$source_projects" = "$restored_projects"
           test "$source_states" = "$restored_states"
+          test "$source_control_cycles" = "$restored_control_cycles"
           psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_wip_control" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_claim_truth_trace" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.control_roles" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
           psql -d cns_restore -Atqc "select to_regclass('cns.hypotheses') is not null" | grep -qx t
 
       - name: Deno type-check CNS Gateway
