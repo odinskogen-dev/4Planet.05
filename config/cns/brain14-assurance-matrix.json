@@ -1,0 +1,88 @@
+{
+  "matrix_version": 1,
+  "as_of": "2026-08-26",
+  "authority_source": {
+    "title": "4PLANET_ BRAIN-14 CONTROL-OF-CONTROL ASSURANCE CONTRACT v1.0 — 2026-08-20",
+    "drive_id": "1k6T7-gkQSOrNSmPJh4MduL8gyCMHiIxMqsS0KJcnWmo",
+    "role": "PRIOR_ASSURANCE_REQUIREMENT_BASELINE"
+  },
+  "principle": "The current CNS/SUPERBRAIN operationalizes and extends BRAIN-14. It does not silently replace or forget its fault catalogue.",
+  "faults": [
+    {
+      "id": "F01",
+      "name": "STALE_POINTER",
+      "status": "COVERED",
+      "controls": ["CODE_SHA_DRIFT", "CODE_VERIFICATION_STALE", "CONTEXT_SOURCE_REVISION_DRIFT", "CONTEXT_STATE_MISMATCH"],
+      "tests": ["cns_github_sync.sql", "cns_acceptance_hardening.sql", "cns_control_of_control.sql"]
+    },
+    {
+      "id": "F02",
+      "name": "CONFLICT",
+      "status": "COVERED",
+      "controls": ["cns.conflicts", "cns.conflict_claims", "OPEN_TRUTH_CONFLICT_P0", "OPEN_CONFLICT_NOT_REFLECTED_IN_CLAIM_STATE"],
+      "tests": ["cns_superbrain_truth.sql"]
+    },
+    {
+      "id": "F03",
+      "name": "UNSUPPORTED_CLAIM",
+      "status": "COVERED",
+      "controls": ["SOURCE_CLAIM_WITHOUT_SOURCE", "DERIVED_CLAIM_WITHOUT_METHOD", "UNKNOWN_IS_FIRST_CLASS", "v_claim_truth_trace"],
+      "tests": ["cns_superbrain_truth.sql"]
+    },
+    {
+      "id": "F04",
+      "name": "SOURCE_DOWN_OR_PARTIAL",
+      "status": "PARTIAL",
+      "controls": ["SOURCE_DEGRADED", "SOURCE_STALE", "SOURCE_VERIFICATION_MISSING"],
+      "missing_proof": "Explicit synthetic source-outage/partial-response test must prove ERROR/PARTIAL is never interpreted as zero/no-records or fresh certainty."
+    },
+    {
+      "id": "F05",
+      "name": "SEAM_COLLISION",
+      "status": "COVERED",
+      "controls": ["cns.leases", "cns.lease_scopes", "cns_one_active_lease_per_scope"],
+      "tests": ["100 competing lease attempts produce exactly one winner"]
+    },
+    {
+      "id": "F06",
+      "name": "PUBLIC_PRIVATE_SENTINEL",
+      "status": "PARTIAL",
+      "controls": ["RESTRICTED observation public_geometry guard", "nature.get_observations public-safe projection"],
+      "missing_proof": "Add a general synthetic private-field sentinel test across non-Nature public projections, not only restricted species/location geometry."
+    },
+    {
+      "id": "F07",
+      "name": "RELEASE_EVIDENCE_GAP",
+      "status": "COVERED",
+      "controls": ["FOUNDER_ACCEPTED prototype requires exact_sha + immutable_url + evidence_refs", "PRODUCTION requires exact identity"],
+      "tests": ["cns_acceptance_hardening.sql", "base 100-eval suite"]
+    },
+    {
+      "id": "F08",
+      "name": "ROLLBACK_RECOVERY",
+      "status": "COVERED",
+      "controls": ["append-only events", "projection rebuild", "backup/restore", "change-trial discard/rollback lineage"],
+      "tests": ["CNS Kernel 02 Certification backup and restore", "SUPERBRAIN Red Team recovery drill"]
+    },
+    {
+      "id": "F09",
+      "name": "OUTREACH_RISK_MISCLASSIFICATION",
+      "status": "PRESERVE_SEPARATELY",
+      "controls": ["Founder/outreach authority policy outside core epistemic kernel"],
+      "note": "Do not merge outreach policy into scientific/knowledge truth. Preserve as operational Gatekeeper safety test under programme authority."
+    }
+  ],
+  "new_red_team_controls": [
+    "MEMORY_ACTIVE_INSERT_BYPASS",
+    "ACTIVE_MEMORY_POISONING_OR_REWRITE",
+    "PROJECT_CONTEXT_MEMORY_LEAK",
+    "CONTEXT_DEPTH_LEAK",
+    "CONTEXT_NONDETERMINISM",
+    "CONTEXT_BUDGET_SILENT_TRUNCATION",
+    "CONTEXT_SOURCE_REVISION_DRIFT",
+    "DOCTOR_BLIND_SPOT",
+    "CONTROL_CYCLE_ORDER_AMBIGUITY",
+    "CONTROL_LAYER_BACKUP_RESTORE"
+  ],
+  "next_faults_required_before_superbrain_runtime_claim": ["F04", "F06"]
+}
