@@ -147,10 +147,8 @@ jobs:
         run: |
           curl --silent --show-error --dump-header local-headers.txt --output /dev/null http://127.0.0.1:4173/
           grep -qi '^content-type:' local-headers.txt
-          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
-            echo 'Potential secret material found'
-            exit 1
-          fi
+          node scripts/security-secret-scan.mjs --self-test
+          node scripts/security-secret-scan.mjs
 
       - name: Clean tracked tree
         shell: bash
