@@ -2,7 +2,7 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-390-STABLE-OVERLAY-HOST-72  
+**CHANGE ID:** ATLAS-MOBILE-RETURN-CAMERA-AUTHORITY-69  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **ACCEPTED ROLLBACK BASE:** `b3541634fbc8dcd366b86691a0eb5cba6effc251` / immutable TEST KING review preserved in Prototype SAFE  
@@ -10,52 +10,52 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only.
 
 ## USER ARRIVES BECAUSE
-They want a stable ocean-native ORCA Journey where the LUME intelligence layer remains readable and fully inside the viewport while the cinematic Journey moves beneath it.
+They move from ATLAS through SPECIES, Living Systems, WH4LES and Join, then use the visible return control expecting to come back to the exact map camera they created before leaving.
 
 ## ONE THING TO UNDERSTAND
-The ORCA intelligence panel is interface chrome, not scene geometry. It must stay anchored to the stable Journey root rather than inherit cinematic transforms from the moving stage.
+An explicit ATLAS return camera in `z + c` is authoritative during reconstruction. MapLibre globe/style/layout initialisation may not silently change that camera before the user takes control again.
 
 ## PRIMARY ACTION
-ENTER ORCA LUME and continue through FOLLOW THE SYSTEM without any intelligence panel leaving the viewport.
+Complete the visible ATLAS → SPECIES → Living Systems → WH4LES → Join → ATLAS journey and return to the post-interaction camera on desktop and mobile.
 
 ## SECONDARY DEPTH
-Use REAL WORLD ↔ LUME, SEND ECHO PULSE, BACK, HOW DO WE KNOW? and the full 01→08 Journey while retaining Bay of Biscay and truth boundaries.
+Preserve the observation record, mode/layers/lens/time/projection state, browser back/forward/reload behaviour and safe return-token handling.
 
 ## P1 DOMINANT
-ORCA and the current scene remain the visual subject; the intelligence panel stays contained, readable and subordinate.
+The returned live map matches the camera the user actually left, not merely the camera encoded in the URL.
 
 ## P2 ORIENTATION
-LUME mode, current scene/intelligence state and Journey position remain stable through cinematic transitions.
+The bundled Orca observation and its truthful source state reopen without a second cinematic refocus.
 
 ## P3 ACTION / NEXT
-REAL WORLD ↔ LUME, SEND ECHO PULSE, BACK, HOW DO WE KNOW? and FOLLOW THE SYSTEM remain unchanged functionally.
+The user can immediately continue panning/zooming after reconstruction; the return-camera authority releases as soon as a genuine user camera gesture begins.
 
 ## P4 DEPTH
-Bay of Biscay, acoustic interpretation, population/place/pressure context and evidence remain available without creating a second Journey or truth source.
+All cross-product context, source/truth state and route safety remain unchanged.
 
 ## CURRENT DEFECT
-Exact head `6801284c5d002251e14339f057efb586ef4120f0` passes Browser Product Proof, GOLD, Public Preview, Human Craft, Analytics, typecheck, build, 91/91 contracts, lint, assets and dependency gates. Convergence #1953 isolates one regression on Chromium 390: `.orca-lume-intel` renders at x=-29 while the viewport is 390px wide. Trace evidence shows the panel is mounted inside `.light-lens-layer`, itself inside the cinematic `.nature-stage`; during scene travel the stage is translated, so the panel inherits scene movement despite its own `left:10px` mobile containment rule. Desktop and 430 pass.
+Exact head `58a387bff0167baa3c83e6ca04affccf118cc9df` passes Browser Product Proof #959, GOLD #772, Public Preview #1007, Human Craft #756, Analytics #345, typecheck, production build, 91/91 contracts, lint, assets and dependency gates. Convergence #1967 isolates the remaining failure in the shared Gate 1 return path: desktop 1440/1280 passes, but Chromium 390 returns with live map zoom 0.48 away from the saved post-interaction zoom and Chromium 430 returns 1.33 away. The URL `z + c` state itself remains correct. The current V68 seam reasserts the camera only at the first `idle`; later globe/style/layout initialisation can still move the live mobile camera before the test/user reads it.
 
 ## BOUNDED CORRECTION
-Keep ORCA LUME data, styling, Journey engine, cinematic stage, Bay of Biscay, audio/echo, control portal and truth semantics unchanged. Change the intelligence panel host from the moving `.light-lens-layer` to the stable `#browser-experience` root. Keep visual projection/photo/room geometry inside the scene layer. The rail may remain scene-bound. This separates persistent interface geometry from cinematic world geometry and removes the transform inheritance rather than compensating with a magic offset.
+Keep ProductContext encoding/decoding, record/entity semantics, map content, ORCA/Jaguar Journeys and all route contracts unchanged. Upgrade the existing ATLAS return-camera seam so explicit `z + c` remains reconstruction authority through MapLibre initialisation events (`style.load`, `load`, `resize`, `idle`) and only writes when live center/zoom has materially drifted. Release the lock permanently on the first genuine user-originated camera movement. Guard programmatic `jumpTo` writes against recursion. No polling and no tolerance relaxation.
 
 ## WHAT CAN BE REMOVED
-The accidental dependency between persistent intelligence UI and cinematic stage transforms; no content or source evidence is removed.
+The assumption that one first-idle write is sufficient to protect a mobile globe camera during reconstruction.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, accepted ORCA/Jaguar rollback, ORCA LUME 19 content/state logic, LUME Room 21, ocean world, static LUME control portal, Bay of Biscay, shared Journey engine, current CSS mobile containment and all truth/source boundaries.
+`king/test`, PR131, accepted ORCA/Jaguar rollback, current ProductContext contract, `public/atlas-return-camera-lock-v68.js` seam, MapLibre world, bundled Orca record flow, all Journey links and all current truth/source boundaries.
 
 ## TRUTH BOUNDARY
-Layout correction only. No ecological, population, migration, acoustic-field, partner or live-data claim changes. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains hard truth law.
+Navigation/camera reconstruction only. No ecological, species, occurrence, partner, migration, acoustic or live-data claim changes.
 
 ## PERFORMANCE
-No polling, no new animation loop, no new media request and no extra renderer. Moving one persistent DOM panel out of a transformed stage should reduce unnecessary compositing rather than increase it.
+Event-driven only. No interval/polling loop. Camera is written only when drift exceeds a small numerical epsilon and the reconstruction lock is still active. Once the user touches the camera, all authority writes stop.
 
 ## MOBILE-FIRST RISK
-390px must keep `.orca-lume-intel` within viewport bounds during scene 01→08, not merely on initial load. 430 and desktop must remain unchanged.
+390 and 430 must reconstruct the saved zoom and centre after globe/style/layout settling without creating a camera jump loop or preventing immediate user control. Desktop behaviour must remain unchanged.
 
 ## HUMAN SUCCESS
-The user never sees the ORCA intelligence panel clipped off-screen while the ocean scene transitions beneath it.
+A user leaves ATLAS after moving/zooming the map, follows the visible cross-product journey, returns, sees the same place and zoom, and can move the map normally from that exact state.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME Chromium desktop + 390/430 passes ordinary interactions and viewport-safe assertions. 3) Same on WebKit desktop + 390/430. 4) Jaguar V52/Jungle Phase 2 regression remains green. 5) Bay of Biscay, truth/security/assets/tree gates remain green. 6) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 7) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Gate 1 Chromium desktop 1440/1280 + 390/430 restores the live camera within existing tolerance without changing the test. 3) WebKit desktop + 390/430 passes the same shared journey. 4) ORCA LUME and Jaguar V52/Jungle regression remain green. 5) Security/truth/assets/tree gates remain green. 6) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 7) LIVE KING unchanged.
