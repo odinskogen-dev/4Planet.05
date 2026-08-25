@@ -6,6 +6,8 @@ on:
       - build/4me-personal-choice-proof
     paths:
       - .github/workflows/4sapien-cloudflare-check.yml
+      - src/pages/sapien/**
+      - src/routes/router.tsx
 
 permissions:
   contents: read
