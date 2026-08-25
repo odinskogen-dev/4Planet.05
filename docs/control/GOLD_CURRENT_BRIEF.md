@@ -2,59 +2,59 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-WEBKIT-STABILITY-60  
-**STATUS:** TEST / FIX APPLIED / EXACT-HEAD QA  
+**CHANGE ID:** ORCA-OCEAN-WORLD-PREMIUM-61  
+**STATUS:** TEST / BUILD + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** keep coding until the Jaguar/Orca convergence line is exact-head green. The desktop WebKit Orca LUME actionability defect has now received a bounded control-stability fix; prove the full exact-head stack without weakening any product or truth gate.  
+**FOUNDER DIRECTION:** continue the protected ORCA + JAGUAR Gold convergence order on TEST KING. With Jaguar full-source proof green and Orca control stability materially improved, the next bounded value pass is to make the shared ORCA Journey visibly ocean-native and scene-specific without adding rights risk or weakening existing truth/interaction gates.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They enter the Orca Journey, move through the living system and switch cleanly between the REAL WORLD and LUME intelligence-room states.
+They want to meet an Orca inside a living ocean and then follow prey, place, pressure, evidence, actors, action and proof through one coherent immersive Journey.
 
 ## ONE THING TO UNDERSTAND
-LUME is a reversible intelligence room state. Its mode control must remain visually stable and directly operable across Chromium and Safari/WebKit while the surrounding ocean world animates.
+The same species image may remain as controlled fallback media, but the surrounding world must change materially by chapter so the experience reads as ocean depth, habitat, acoustic pressure, response and proof rather than one repeated flat illustration.
 
 ## PRIMARY ACTION
-Enter the Orca Journey and switch REAL WORLD ↔ LUME ROOM at any supported journey scene.
+Enter the living ocean, move through the eight-step Journey and switch REAL WORLD ↔ LUME ROOM without losing orientation.
 
 ## SECONDARY DEPTH
-Continue through identity, dependency, place, pressure and response while retaining acoustic, source and truth context.
+Inspect acoustic, source, population/place and evidence context while Bay of Biscay remains a pilot-corridor case, never a migration claim.
 
 ## P1 DOMINANT
-A stable, clickable LUME mode control and a coherent dark-marine intelligence room.
+A distinctly ocean-native 2.5D world with surface light, depth gradient, current/particles and scene-specific spatial/acoustic cues around the Orca.
 
 ## P2 ORIENTATION
-The button always communicates the next state: REAL WORLD when LUME is active; LUME ROOM when real-world mode is active.
+Identity, prey, habitat, pressure, response, actors, action and proof must each have a visibly different environmental state while preserving the shared Journey grammar.
 
 ## P3 ACTION / NEXT
-Toggle room state, fire the echolocation interaction, move forward/back and continue the Journey without dead ends.
+BACK, HOW DO WE KNOW?, FOLLOW THE SYSTEM, LUME ROOM/REAL WORLD and echolocation interactions remain stable and readable on desktop and mobile.
 
 ## P4 DEPTH
-Acoustic interpretation, species identity, place, pressure and source/evidence layers remain available without implying live tracking or migration.
+Population-specific truth, source/evidence, acoustic interpretation and Bay of Biscay monitoring context stay one interaction away without first-view clutter.
 
 ## CURRENT DEFECT
-The prior exact-head defect was isolated to WebKit desktop Orca LUME: after switching LUME off, the second normal pointer click waited for the control to become stable until timeout, while Chromium and WebKit mobile passed. The bounded fix at `619ee5da78722fd4856a7f07767949f4ae9c9a8f` removes backdrop compositing and transition dependence from the toggle and locks its block/inline geometry. Cloudflare deploy and core verify checks passed. Full critical-journey and convergence proof is still running; do not call Gate 01 closed until those exact-head jobs pass. The push-policy failure on that commit was control bookkeeping only: the product-facing change did not update this brief in the same bounded change. This update closes that control gap; it does not change product behaviour.
+The current ORCA data model already contains eight transferred Journey stages, but most scenes still point to the same controlled Orca illustration. Existing ocean CSS changes colour/filter and some light, yet the world does not change enough by chapter. This creates a repeated-background feel and leaves the premium ocean-world rebuild incomplete even when navigation and LUME interaction are technically correct.
 
 ## BOUNDED ADOPTION
-Keep the shared Light Lens toggle geometry invariant across both labels and both modes. Fixed inline/block footprint, centred text, no flex shrink/reflow, no backdrop-filter dependency and no transition-dependent actionability. Preserve the same click handler, semantics and mode state. Do not use forced Playwright clicks, increase the timeout or weaken actionability assertions.
+Add one ORCA-only procedural ocean-world layer using existing DOM surfaces and CSS only: surface caustic banding for encounter/dependency, shelf/fjord depth planes for habitat, acoustic/noise scan lines for pressure, opening water/response glow for response/action, and restrained evidence/proof grid/sonar marks for later stages where supported by current scene-state attributes. No new external media, no new data requests and no biological claims. Keep existing LUME Room 21 and Bay of Biscay implementations intact.
 
 ## WHAT CAN BE REMOVED
-Text-driven toggle width/height changes, backdrop compositing on the control, avoidable topbar reflow and any test workaround that bypasses real pointer actionability.
+Flat repeated-background dominance, generic one-state blue wash, excessive uniformity between scenes, unnecessary full-screen glow and any jungle-derived visual residue that competes with the ocean world.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current ORCA LUME Room 21, shared Light Lens control, current ocean-native Journey, Bay of Biscay truth boundary, current Jaguar V52 full-source path and all already-green exact-head gates.
+`king/test`, PR131, current eight-step Orca scene manifest, shared Journey/navigation grammar, ORCA LUME Room 21, current stable LUME toggle, Bay of Biscay direct route/truth boundary, current Jaguar V52 full-source path and all existing source/evidence controls.
 
 ## TRUTH BOUNDARY
-This is a presentation/control stability change only. No biological, acoustic, population, route, migration, live-data, abundance, Ear.Rodriguez licence, geometry, material or animation claim changes. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This pass changes presentation only. Procedural depth, current, acoustic rings/scan lines and spatial planes are interpretive visual language, not measured ocean conditions, live sonar, animal location, abundance or migration. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-No new renderer, network request, animation or observer. Stable button geometry and removal of control backdrop compositing should reduce layout/compositing work during mode changes.
+CSS-only scene layers; no new network requests or render loops. Keep opacity/blur restrained, avoid large animated filters, disable non-essential animation under reduced motion and preserve creature-first priority.
 
 ## MOBILE-FIRST RISK
-390 and 430 were green before the desktop fix and must remain compact, tappable and overflow-safe. Desktop stability must be fixed without increasing mobile collision risk.
+390/430 must retain one dominant focal point, no overlay collision or horizontal overflow, and no extra atmosphere may obscure the Orca or block navigation/LUME controls.
 
 ## HUMAN SUCCESS
-A user can switch LUME off and back on with the same stable control on Safari/WebKit desktop and mobile, with no visible jump, missed click or interaction dead end.
+A first-time viewer can tell by sight that they moved from encounter → prey → habitat → pressure → response/action/proof while remaining in one coherent ocean world, and can still operate the full Journey and LUME state without friction.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Existing Orca LUME truth/accessibility contracts remain green. 3) Orca LUME interaction passes Chromium desktop + 390/430. 4) Orca LUME interaction passes WebKit desktop + 390/430 with normal pointer click actionability. 5) Jaguar dedicated V52 proof remains green on Chromium/WebKit desktop + 390/430. 6) Full Convergence and Browser Product Proof exact-head gates green. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Orca LUME Chromium/WebKit desktop + 390/430 remain green. 3) Jaguar V52 dedicated Chromium/WebKit desktop + 390/430 remains green. 4) Orca Journey entry/back/evidence/next/full journey/LUME remain functional. 5) No overflow or pointer regression. 6) Scene-world styling is ORCA-only and adds no external media/data dependency. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
