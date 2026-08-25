@@ -140,7 +140,6 @@ begin
   set state=v_result,decision_reason=p_reason,evidence=coalesce(p_evidence,'{}'::jsonb),finished_at=now(),updated_at=now()
   where change_trial_id=p_trial;
 
-  -- A completed trial releases its CNS lease scopes. Branch deletion is intentionally NOT automatic.
   perform cns.release_lease(v_trial.lease_id);
   return v_result;
 end;
@@ -172,9 +171,6 @@ group by p.project_id,p.name;
 
 -- ---------------------------------------------------------------------------
 -- SUPERBRAIN TRUTH / PROVENANCE MODEL
--- Source truth, observations, claims, methods, conflicts, decisions and learning
--- are separate first-class objects. UNKNOWN is represented explicitly, never
--- inferred from absence. This remains private CNS infrastructure.
 -- ---------------------------------------------------------------------------
 
 alter table cns.source_revisions add column if not exists persistent_id text;
@@ -230,6 +226,8 @@ create table if not exists cns.methodologies (
   unique(name,version)
 );
 
+alter table cns.evidence add column if not exists revision integer not null default 1 check (revision>0);
+alter table cns.evidence add column if not exists supersedes_evidence_id text references cns.evidence(evidence_id) on delete restrict;
 alter table cns.claims add column if not exists claim_kind text not null default 'SOURCE_CLAIM';
 alter table cns.claims add column if not exists knowledge_state text not null default 'KNOWN';
 alter table cns.claims add column if not exists source_id text references cns.source_registry(source_id) on delete restrict;
@@ -242,6 +240,8 @@ alter table cns.claims add column if not exists observed_at timestamptz;
 alter table cns.claims add column if not exists geography jsonb not null default '{}'::jsonb;
 alter table cns.claims add column if not exists unit text;
 alter table cns.claims add column if not exists scope jsonb not null default '{}'::jsonb;
+alter table cns.claims add column if not exists revision integer not null default 1 check (revision>0);
+alter table cns.claims add column if not exists supersedes_claim_id text references cns.claims(claim_id) on delete restrict;
 
 do $$
 begin
@@ -289,6 +289,8 @@ create table if not exists cns.observations (
   sensitivity_state text not null default 'PUBLIC' check (sensitivity_state in ('PUBLIC','GENERALIZED','RESTRICTED')),
   sensitivity_reason text,
   state text not null default 'ACTIVE' check (state in ('ACTIVE','DISPUTED','SUPERSEDED','ARCHIVED')),
+  revision integer not null default 1 check (revision>0),
+  supersedes_observation_id text references cns.observations(observation_id) on delete restrict,
   last_event_id bigint references cns.events(event_id) on delete restrict,
   created_at timestamptz not null default now(),
   check (valid_time_end is null or valid_time_start is null or valid_time_end>=valid_time_start),
@@ -310,6 +312,8 @@ create table if not exists cns.signals (
   knowledge_state text not null default 'KNOWN' check (knowledge_state in ('KNOWN','UNKNOWN','INSUFFICIENT_EVIDENCE','CONFLICTED')),
   generated_at timestamptz not null default now(),
   state text not null default 'ACTIVE' check (state in ('ACTIVE','DISPUTED','SUPERSEDED','ARCHIVED')),
+  revision integer not null default 1 check (revision>0),
+  supersedes_signal_id text references cns.signals(signal_id) on delete restrict,
   last_event_id bigint references cns.events(event_id) on delete restrict
 );
 
@@ -325,6 +329,8 @@ create table if not exists cns.interpretations (
   confidence numeric(5,4) check (confidence is null or (confidence>=0 and confidence<=1)),
   knowledge_state text not null default 'KNOWN' check (knowledge_state in ('KNOWN','UNKNOWN','INSUFFICIENT_EVIDENCE','CONFLICTED')),
   state text not null default 'ACTIVE' check (state in ('ACTIVE','DISPUTED','SUPERSEDED','REJECTED','ARCHIVED')),
+  revision integer not null default 1 check (revision>0),
+  supersedes_interpretation_id text references cns.interpretations(interpretation_id) on delete restrict,
   last_event_id bigint references cns.events(event_id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -374,6 +380,8 @@ create table if not exists cns.outcomes (
   confidence numeric(5,4) check (confidence is null or (confidence>=0 and confidence<=1)),
   knowledge_state text not null default 'KNOWN' check (knowledge_state in ('KNOWN','UNKNOWN','INSUFFICIENT_EVIDENCE','CONFLICTED')),
   state text not null default 'ACTIVE' check (state in ('ACTIVE','DISPUTED','SUPERSEDED','ARCHIVED')),
+  revision integer not null default 1 check (revision>0),
+  supersedes_outcome_id text references cns.outcomes(outcome_id) on delete restrict,
   last_event_id bigint references cns.events(event_id) on delete restrict,
   created_at timestamptz not null default now()
 );
@@ -387,6 +395,8 @@ create table if not exists cns.learnings (
   evidence_refs jsonb not null default '[]'::jsonb,
   confidence numeric(5,4) check (confidence is null or (confidence>=0 and confidence<=1)),
   state text not null default 'CANDIDATE' check (state in ('CANDIDATE','ACCEPTED','REJECTED','SUPERSEDED','ARCHIVED')),
+  revision integer not null default 1 check (revision>0),
+  supersedes_learning_id text references cns.learnings(learning_id) on delete restrict,
   last_event_id bigint references cns.events(event_id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -491,6 +501,7 @@ create table if not exists cns.hypotheses (
   source_id text references cns.source_registry(source_id) on delete restrict,
   source_revision text,
   revision integer not null default 1 check (revision>0),
+  supersedes_hypothesis_id text references cns.hypotheses(hypothesis_id) on delete restrict,
   publication_state text not null default 'PRIVATE' check (publication_state in ('PRIVATE','DRAFT','FOUNDER_REVIEW','APPROVED','PUBLISHED','RETRACTED')),
   published_uri text,
   last_event_id bigint references cns.events(event_id) on delete restrict,
@@ -499,6 +510,41 @@ create table if not exists cns.hypotheses (
   check (publication_state<>'PUBLISHED' or (published_uri is not null and jsonb_array_length(supporting_evidence_refs)>0))
 );
 
+-- Immutable truth core: corrections are new records linked through supersedes_*.
+create or replace function cns.guard_strict_immutable()
+returns trigger language plpgsql as $$
+begin
+  raise exception 'CNS_IMMUTABLE_TRUTH_RECORD: append a new revision/superseding record';
+end;
+$$;
+
+drop trigger if exists cns_source_revision_immutable on cns.source_revisions;
+create trigger cns_source_revision_immutable before update or delete on cns.source_revisions
+for each row execute function cns.guard_strict_immutable();
+
+create or replace function cns.guard_truth_core_update()
+returns trigger language plpgsql as $$
+declare old_core jsonb; new_core jsonb;
+begin
+  if tg_op='DELETE' then raise exception 'CNS_TRUTH_DELETE_FORBIDDEN: supersede/archive instead'; end if;
+  old_core:=to_jsonb(old)-array['state','status','last_event_id','updated_at','verified_at','resolved_at','resolution_decision_id','resolution_notes','publication_state','published_uri'];
+  new_core:=to_jsonb(new)-array['state','status','last_event_id','updated_at','verified_at','resolved_at','resolution_decision_id','resolution_notes','publication_state','published_uri'];
+  if old_core is distinct from new_core then
+    raise exception 'CNS_TRUTH_CORE_MUTATION_FORBIDDEN: append a superseding revision';
+  end if;
+  return new;
+end;
+$$;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['evidence','claims','methodologies','observations','signals','interpretations','decisions','outcomes','learnings','hypotheses','entity_aliases'] loop
+    execute format('drop trigger if exists cns_truth_core_guard on cns.%I',t);
+    execute format('create trigger cns_truth_core_guard before update or delete on cns.%I for each row execute function cns.guard_truth_core_update()',t);
+  end loop;
+end $$;
+
 create or replace view cns.v_entity_alias_collisions with (security_invoker=true) as
 select namespace,normalised_alias,array_agg(distinct entity_id order by entity_id) as entity_ids,count(distinct entity_id) as entity_count
 from cns.entity_aliases where state='ACTIVE'
@@ -506,9 +552,9 @@ group by namespace,normalised_alias having count(distinct entity_id)>1;
 
 create or replace view cns.v_claim_truth_trace with (security_invoker=true) as
 select c.claim_id,c.project_id,c.subject_type,c.subject_id,c.predicate,c.value,c.claim_kind,c.knowledge_state,c.authority,c.confidence,
-       c.source_id,c.source_revision,c.methodology_id,c.valid_time_start,c.valid_time_end,c.observed_at,c.geography,c.unit,c.scope,c.state,
+       c.source_id,c.source_revision,c.methodology_id,c.valid_time_start,c.valid_time_end,c.observed_at,c.geography,c.unit,c.scope,c.state,c.revision,c.supersedes_claim_id,
        case when m.methodology_id is null then null else jsonb_build_object('id',m.methodology_id,'name',m.name,'version',m.version,'assumptions',m.assumptions,'validity_domain',m.validity_domain,'limitations',m.limitations) end as methodology,
-       coalesce((select jsonb_agg(jsonb_build_object('relation',ce.relation,'evidence_id',e.evidence_id,'type',e.evidence_type,'source_id',e.source_id,'source_revision',e.source_revision,'uri',e.uri,'content_hash',e.content_hash,'observed_at',e.observed_at,'verified_at',e.verified_at,'state',e.state) order by e.evidence_id,ce.relation)
+       coalesce((select jsonb_agg(jsonb_build_object('relation',ce.relation,'evidence_id',e.evidence_id,'type',e.evidence_type,'source_id',e.source_id,'source_revision',e.source_revision,'uri',e.uri,'content_hash',e.content_hash,'observed_at',e.observed_at,'verified_at',e.verified_at,'state',e.state,'revision',e.revision,'supersedes_evidence_id',e.supersedes_evidence_id) order by e.evidence_id,ce.relation)
                  from cns.claim_evidence ce join cns.evidence e using(evidence_id) where ce.claim_id=c.claim_id),'[]'::jsonb) as evidence_links,
        coalesce((select jsonb_agg(jsonb_build_object('conflict_id',cf.conflict_id,'severity',cf.severity,'state',cf.state,'summary',cf.summary) order by cf.severity,cf.conflict_id)
                  from cns.conflict_claims cc join cns.conflicts cf using(conflict_id) where cc.claim_id=c.claim_id and cf.state='OPEN'),'[]'::jsonb) as open_conflicts
@@ -533,7 +579,16 @@ select 'CLAIM_SOURCE_REVISION_UNKNOWN','P1','CLAIM',claim_id,project_id,'Claim h
 from cns.claims where state in ('ACTIVE','DISPUTED') and source_id is not null and nullif(btrim(source_revision),'') is null
 union all
 select 'RESTRICTED_OBSERVATION_WITH_PUBLIC_GEOMETRY','P0','OBSERVATION',observation_id,project_id,'Restricted observation exposes public geometry'
-from cns.observations where sensitivity_state='RESTRICTED' and public_geometry is not null;
+from cns.observations where sensitivity_state='RESTRICTED' and public_geometry is not null
+union all
+select 'SOURCE_VERIFICATION_MISSING','P1','SOURCE',source_id,null,'Active source has freshness policy but has never been verified'
+from cns.source_registry where state='ACTIVE' and freshness_seconds is not null and last_verified_at is null
+union all
+select 'SOURCE_STALE','P1','SOURCE',source_id,null,'Active source verification is stale'
+from cns.source_registry where state='ACTIVE' and freshness_seconds is not null and last_verified_at is not null and last_verified_at + make_interval(secs=>freshness_seconds)<=now()
+union all
+select 'SOURCE_DEGRADED','P1','SOURCE',source_id,null,'Source is explicitly degraded; dependent outputs must not claim fresh certainty'
+from cns.source_registry where state='DEGRADED';
 
 create or replace function cns.doctor_scan()
 returns integer language plpgsql security definer set search_path=cns,public as $$
@@ -554,7 +609,7 @@ end;
 $$;
 
 insert into cns.system_meta(key,value) values
-('truth_model','{"version":3,"verified":false,"state":"PENDING_CERTIFICATION","principle":"UNKNOWN_IS_FIRST_CLASS"}'::jsonb)
+('truth_model','{"version":4,"verified":false,"state":"PENDING_CERTIFICATION","principle":"UNKNOWN_IS_FIRST_CLASS","mutation_policy":"APPEND_OR_SUPERSEDE"}'::jsonb)
 on conflict(key) do update set value=excluded.value,updated_at=now();
 
 drop view if exists cns.v_cutover_readiness;
@@ -574,7 +629,6 @@ select
   coalesce((select value->>'mode' from cns.system_meta where key='authority_mode'),'UNKNOWN') as authority_mode,
   coalesce((select (value->>'cutover_authorized')::boolean from cns.system_meta where key='authority_mode'),false) as cutover_authorized;
 
--- Defence in depth: CNS stays private even if project-wide API exposure changes.
 alter default privileges in schema cns revoke execute on functions from public;
 alter default privileges in schema cns revoke all on tables from public,anon,authenticated;
 alter default privileges in schema cns revoke all on sequences from public,anon,authenticated;
@@ -586,10 +640,13 @@ revoke all on function cns.submit_change_trial(uuid,text,uuid) from public,anon,
 revoke all on function cns.finish_change_trial(uuid,text,text,jsonb) from public,anon,authenticated;
 revoke all on function cns.block_change_trial(uuid,text,jsonb) from public,anon,authenticated;
 revoke all on function cns.guard_rule_change() from public,anon,authenticated;
+revoke all on function cns.guard_strict_immutable() from public,anon,authenticated;
+revoke all on function cns.guard_truth_core_update() from public,anon,authenticated;
 revoke all on function cns.doctor_scan() from public,anon,authenticated;
 
 grant select,insert,update on cns.change_trials to service_role;
-grant select,insert,update,delete on cns.entities,cns.entity_aliases,cns.methodologies,cns.observations,cns.signals,cns.interpretations,cns.conflicts,cns.conflict_claims,cns.outcomes,cns.learnings,cns.rule_changes,cns.provenance_edges,cns.agent_control_roles,cns.hypotheses to service_role;
+grant select,insert,update on cns.entities,cns.entity_aliases,cns.methodologies,cns.observations,cns.signals,cns.interpretations,cns.conflicts,cns.outcomes,cns.learnings,cns.rule_changes,cns.agent_control_roles,cns.hypotheses to service_role;
+grant select,insert on cns.conflict_claims,cns.provenance_edges to service_role;
 grant select on cns.control_roles,cns.v_wip_control,cns.v_entity_alias_collisions,cns.v_claim_truth_trace,cns.doctor_violations_v3,cns.v_cutover_readiness to service_role;
 grant usage,select on all sequences in schema cns to service_role;
 grant execute on function cns.begin_change_trial(text,text,uuid,text,text,text,text[],jsonb,uuid) to service_role;
@@ -599,8 +656,15 @@ grant execute on function cns.finish_change_trial(uuid,text,text,jsonb) to servi
 grant execute on function cns.block_change_trial(uuid,text,jsonb) to service_role;
 grant execute on function cns.doctor_scan() to service_role;
 
+-- Initial migration granted broad service_role DML; truth objects are narrowed here.
+revoke update,delete on cns.source_revisions from service_role;
+revoke delete on cns.evidence,cns.claims,cns.decisions from service_role;
+revoke update,delete on cns.claim_evidence from service_role;
+revoke delete on cns.entities,cns.entity_aliases,cns.methodologies,cns.observations,cns.signals,cns.interpretations,cns.conflicts,cns.outcomes,cns.learnings,cns.rule_changes,cns.hypotheses from service_role;
+revoke update,delete on cns.provenance_edges,cns.conflict_claims from service_role;
+
 update cns.system_meta
-set value='{"version":3,"migration":"20260824193000_cns_change_trials","truth_model":"SUPERBRAIN_V3"}'::jsonb,updated_at=now()
+set value='{"version":4,"migration":"20260824193000_cns_change_trials","truth_model":"SUPERBRAIN_V4_APPEND_SUPERSEDE"}'::jsonb,updated_at=now()
 where key='schema_version';
 
 commit;
