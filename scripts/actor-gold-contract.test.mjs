@@ -17,8 +17,8 @@ test("Actor Intelligence keeps one shared premium identity and truth grammar", (
 });
 
 test("five unlike canonical Actor Gold profiles stress-test the same schema", () => {
-  for (const id of ["P17-A036", "P17-A307", "P17-A296", "P17-A1798", "P17-A1787"]) assert.match(engine, new RegExp(id));
-  for (const slug of ["orca", "veritree", "institute-of-marine-research", "bergen-kommune", "handelens-miljofond"]) assert.match(engine, new RegExp(`slug: \\\"${slug}\\\"`));
+  for (const id of ["P17-A036", "P17-A307", "P17-A296", "P17-A1798", "P17-A1787"]) assert.ok(engine.includes(id), `missing canonical actor ${id}`);
+  for (const slug of ["orca", "veritree", "institute-of-marine-research", "bergen-kommune", "handelens-miljofond"]) assert.ok(engine.includes(`slug: "${slug}"`), `missing actor slug ${slug}`);
   assert.match(page, /One intelligence schema\. Unlike actors\./i);
   assert.match(page, /Monitoring, implementation, research, government and capital/i);
 });
