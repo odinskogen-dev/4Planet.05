@@ -1,0 +1,98 @@
+name: SUPERBRAIN Red Team
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/2026082*_cns_*.sql'
+      - 'supabase/tests/cns_*.sql'
+      - 'supabase/functions/cns-gateway/**'
+      - 'config/cns/**'
+      - '.github/workflows/cns-superbrain-red-team.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  red-team:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bootstrap private Supabase-compatible roles
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
+          SQL
+
+      - name: Build exact SUPERBRAIN schema from zero
+        run: |
+          set -euo pipefail
+          for f in \
+            supabase/migrations/20260824025500_cns_kernel_02_total.sql \
+            supabase/migrations/20260824030500_cns_kernel_02_hardening.sql \
+            supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql \
+            supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql \
+            supabase/migrations/20260824183500_cns_github_live_sync.sql \
+            supabase/migrations/20260824190000_cns_acceptance_hardening.sql \
+            supabase/migrations/20260824193000_cns_change_trials.sql \
+            supabase/migrations/20260826001500_cns_control_of_control.sql
+          do
+            psql -v ON_ERROR_STOP=1 -f "$f"
+          done
+          psql -Atqc "select to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null and to_regclass('cns.v_superbrain_operating_readiness') is not null" | grep -qx t
+
+      - name: Re-run base truth and fresh-context gates
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_acceptance_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_superbrain_truth.sql
+
+      - name: Attack memory, context, source drift and the control plane itself
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_control_of_control.sql
+
+      - name: Private-schema and bypass resistance
+        run: |
+          psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
+          psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
+          psql -Atqc "select has_function_privilege('service_role','cns.audit_control_plane(text,text)','EXECUTE')" | grep -qx t
+
+      - name: Recovery drill includes control-of-control
+        run: |
+          source_events=$(psql -Atqc "select count(*) from cns.events")
+          source_control_tables=$(psql -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions')")
+          docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/superbrain.dump
+          createdb superbrain_restore
+          cat /tmp/superbrain.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=superbrain_restore
+          restored_events=$(psql -d superbrain_restore -Atqc "select count(*) from cns.events")
+          restored_control_tables=$(psql -d superbrain_restore -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions')")
+          test "$source_events" = "$restored_events"
+          test "$source_control_tables" = "$restored_control_tables"
+          psql -d superbrain_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
+          psql -d superbrain_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
+
+      - name: Verify migration is replay-safe
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826001500_cns_control_of_control.sql
