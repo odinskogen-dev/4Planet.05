@@ -1,0 +1,79 @@
+name: 4SAPIEN Cloudflare Check
+
+on:
+  push:
+    branches:
+      - build/4me-personal-choice-proof
+    paths:
+      - .github/workflows/4sapien-cloudflare-check.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Check domain and Pages mapping
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+
+          base_zone="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$base_zone")"
+          [[ -n "$account_id" ]] || { echo "Could not resolve Cloudflare account id"; exit 1; }
+
+          sapien_zone="$(curl -fsS "${api}/zones?name=4sapien.com" "${auth[@]}")"
+          zone_status="$(jq -r '.result[0].status // "NOT_FOUND"' <<<"$sapien_zone")"
+          nameservers="$(jq -r '[.result[0].name_servers[]?] | join(", ")' <<<"$sapien_zone")"
+
+          domains="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/domains" "${auth[@]}")"
+          domain_rows="$(jq -r '[.result[]? | select(.name == "4sapien.com" or .name == "www.4sapien.com") | (.name + " [" + (.status // "unknown") + "]")] | join(", ")' <<<"$domains")"
+          [[ -n "$domain_rows" ]] || domain_rows="NOT_ATTACHED"
+
+          : > /tmp/deployments.jsonl
+          for page in 1 2 3 4 5; do
+            j="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=${page}&per_page=100" "${auth[@]}")"
+            jq -c '.result[]?' <<<"$j" >> /tmp/deployments.jsonl
+            count="$(jq '.result | length' <<<"$j")"
+            [[ "$count" -lt 100 ]] && break
+          done
+
+          branch_row="$(jq -sc '[.[] | select(.deployment_trigger.metadata.branch == "build/4me-personal-choice-proof")] | sort_by(.created_on) | reverse | first // empty' /tmp/deployments.jsonl)"
+          if [[ -n "$branch_row" ]]; then
+            preview_url="$(jq -r '.url // ""' <<<"$branch_row")"
+            preview_status="$(jq -r '.latest_stage.status // "unknown"' <<<"$branch_row")"
+            preview_commit="$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$branch_row")"
+          else
+            preview_url="NOT_FOUND"
+            preview_status="NOT_FOUND"
+            preview_commit=""
+          fi
+
+          {
+            echo "## 4SAPIEN Cloudflare check"
+            echo
+            echo "- 4sapien.com zone: **${zone_status}**"
+            echo "- Nameservers: ${nameservers:-NOT_FOUND}"
+            echo "- 4planet-05 Pages custom-domain mapping: **${domain_rows}**"
+            echo "- Latest branch preview status: **${preview_status}**"
+            echo "- Latest branch preview URL: ${preview_url}"
+            echo "- Preview commit: ${preview_commit:0:12}"
+          } > /tmp/report.md
+          cat /tmp/report.md
+
+      - name: Report to implementation gate
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -f /tmp/report.md ]]; then
+            gh issue comment 183 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/report.md
+          else
+            gh issue comment 183 --repo "${GITHUB_REPOSITORY}" --body "4SAPIEN Cloudflare check failed before report generation."
+          fi
