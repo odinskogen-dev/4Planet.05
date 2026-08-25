@@ -51,10 +51,6 @@ const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
-function RootHome() {
-  const host = typeof window === "undefined" ? "" : window.location.hostname.toLowerCase();
-  return host === "4sapien.com" || host === "www.4sapien.com" ? <FourSapienHome /> : <Home />;
-}
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
@@ -62,7 +58,7 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<RootHome />} />
+      <Route path="/" element={<Home />} />
       <Route path="/4sapien" element={<FourSapienHome />} />
       <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
