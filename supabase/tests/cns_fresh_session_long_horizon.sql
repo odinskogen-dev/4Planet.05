@@ -41,8 +41,8 @@ values
 insert into cns.hypotheses(hypothesis_id,project_id,owner_identity,title,statement,hypothesis_type,status,falsifiers,supporting_evidence_refs,counter_evidence_refs,publication_state)
 values('FS-HYP','FS-4P','FOUNDER','A hypothesis is not a fact','Better information may improve market selection pressure','FOUNDER_THESIS','DRAFT','["no measurable market response"]','[]','[]','PRIVATE');
 
--- Initial fresh context.
-select cns.compile_project_context('FS-4P','fresh-session-certification',3,30000,900) as initial_ctx \gset
+-- Initial context.
+select cns.compile_project_context('FS-4P','fresh-session-certification',3,30000,900);
 
 -- 1,000 irrelevant events in another project must not change FS-4P context or source set.
 insert into cns.events(project_id,entity_type,entity_id,event_type,payload,evidence_refs,actor_type,actor_id,authority,source_id,source_revision,idempotency_key,event_hash)
@@ -50,23 +50,37 @@ select 'FS-NOISE','NOISE','N-'||g,'NOISE_EVENT',jsonb_build_object('n',g),'[]'::
        encode(digest('noise-'||g::text,'sha256'),'hex')
 from generate_series(1,1000) g;
 
-select cns.compile_project_context('FS-4P','fresh-session-certification',3,30000,900) as after_noise_ctx \gset
+select cns.compile_project_context('FS-4P','fresh-session-certification',3,30000,900);
 
 do $$ declare f1 text; f2 text; src jsonb; begin
-  select fingerprint,source_revisions into f1,src from cns.context_snapshots where context_snapshot_id=:'initial_ctx'::uuid;
-  select fingerprint into f2 from cns.context_snapshots where context_snapshot_id=:'after_noise_ctx'::uuid;
+  select fingerprint,source_revisions into f1,src
+  from cns.context_snapshots
+  where project_id='FS-4P' and intent='fresh-session-certification'
+  order by compiled_at asc,context_snapshot_id asc limit 1;
+
+  select fingerprint into f2
+  from cns.context_snapshots
+  where project_id='FS-4P' and intent='fresh-session-certification'
+  order by compiled_at desc,context_snapshot_id desc limit 1;
+
+  if f1 is null or f2 is null then raise exception 'CNS_FRESH_SESSION_COMPARISON_CONTEXT_MISSING'; end if;
   if f1<>f2 then raise exception 'CNS_UNRELATED_LONG_HORIZON_NOISE_CHANGED_CONTEXT'; end if;
   if src ? 'FS-NOISE-SOURCE' then raise exception 'CNS_UNRELATED_SOURCE_ENTERED_NARROW_CONTEXT'; end if;
   if not (src ? 'FS-SOURCE') then raise exception 'CNS_RELEVANT_SOURCE_MISSING_FROM_CONTEXT'; end if;
 end $$;
 
--- Fresh-session recovery: rebuild the projection from immutable event history, then compile from scratch.
+-- Fresh-session recovery: rebuild projection from immutable event history, then compile from scratch.
 select cns.rebuild_project_state('FS-4P',3600);
 select cns.invalidate_context_for_project('FS-4P','FRESH_SESSION_RESTART');
-select cns.compile_project_context('FS-4P','fresh-session-recovered',3,30000,900) as recovered_ctx \gset
+select cns.compile_project_context('FS-4P','fresh-session-recovered',3,30000,900);
 
 do $$ declare b jsonb; begin
-  select compiled_context into b from cns.context_snapshots where context_snapshot_id=:'recovered_ctx'::uuid;
+  select compiled_context into b
+  from cns.context_snapshots
+  where project_id='FS-4P' and intent='fresh-session-recovered'
+  order by compiled_at desc,context_snapshot_id desc limit 1;
+
+  if b is null then raise exception 'CNS_FRESH_SESSION_RECOVERED_CONTEXT_MISSING'; end if;
   if b->'identity'->>'name'<>'4PLANET Fresh Session Proof' then raise exception 'CNS_FRESH_SESSION_IDENTITY_LOST'; end if;
   if b->'current_state'->>'why'<>'Build trustworthy planetary decision intelligence' then raise exception 'CNS_FRESH_SESSION_WHY_LOST'; end if;
   if b->'current_state'->>'next_action'<>'Prove semantic reconstruction' then raise exception 'CNS_FRESH_SESSION_NEXT_ACTION_LOST'; end if;
@@ -89,10 +103,14 @@ end $$;
 select cns.librarian_propose_memory('FS-MEM-R2','FS-4P','SEMANTIC',2::smallint,'Founder operating constraint','{"rule":"No parallel truth stores","qualification":"Legacy authority remains until explicit founder cutover after all gates pass"}'::jsonb,'FOUNDER_DECISION','FS-SOURCE','rev-1');
 select cns.librarian_promote_memory('FS-MEM-R2',cns.append_event('FS-4P','MEMORY','FS-MEM-R2','MEMORY_REVIEWED','{}','[]','SYSTEM','librarian','CURRENT_ROUTER','FS-SOURCE','rev-1','fs-mem-r2-promote'));
 select cns.librarian_supersede_memory('FS-MEM','FS-MEM-R2',cns.append_event('FS-4P','MEMORY','FS-MEM','MEMORY_SUPERSEDED','{"by":"FS-MEM-R2"}','[]','SYSTEM','librarian','CURRENT_ROUTER','FS-SOURCE','rev-1','fs-mem-r1-supersede'));
-select cns.compile_project_context('FS-4P','after-memory-supersession',3,30000,900) as after_mem_ctx \gset
+select cns.compile_project_context('FS-4P','after-memory-supersession',3,30000,900);
 
 do $$ declare b jsonb; begin
-  select compiled_context into b from cns.context_snapshots where context_snapshot_id=:'after_mem_ctx'::uuid;
+  select compiled_context into b
+  from cns.context_snapshots
+  where project_id='FS-4P' and intent='after-memory-supersession'
+  order by compiled_at desc,context_snapshot_id desc limit 1;
+  if b is null then raise exception 'CNS_MEMORY_SUPERSESSION_CONTEXT_MISSING'; end if;
   if exists(select 1 from jsonb_array_elements(b->'memories') m where m->>'memory_id'='FS-MEM') then raise exception 'CNS_SUPERSEDED_MEMORY_RETRIEVED'; end if;
   if not exists(select 1 from jsonb_array_elements(b->'memories') m where m->>'memory_id'='FS-MEM-R2') then raise exception 'CNS_REPLACEMENT_MEMORY_MISSING'; end if;
 end $$;
