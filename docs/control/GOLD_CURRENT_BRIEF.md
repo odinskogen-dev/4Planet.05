@@ -2,59 +2,59 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-WEBKIT-CANONICAL-SCENE-SEAM-67  
+**CHANGE ID:** ATLAS-RETURN-CAMERA-PROJECTION-LOCK-68  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** continue the protected ORCA + JAGUAR Gold convergence order on TEST KING and correct exact-head QA failures before further visual expansion.  
+**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING and correct exact-head shared acceptance failures before further visual expansion.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They want one coherent Orca living-ocean Journey whose next/back navigation preserves one trustworthy Journey state while LUME and visual layers react to it.
+They move from ATLAS through SPECIES, Living Systems, WH4LES and Join, then expect RETURN TO ATLAS to restore the exact world view they deliberately created.
 
 ## ONE THING TO UNDERSTAND
-The canonical Journey scene committed by NatureJourneyEngine must remain authoritative after synchronous scene listeners run. Presentation listeners may consume the event, but they must never leave the canonical scene contract blank or divergent.
+An explicit returned ATLAS camera (`z` + `c`) is authoritative after map projection/style initialisation. Responsive globe setup must not silently alter the restored camera on a narrow viewport.
 
 ## PRIMARY ACTION
-Enter ORCA, follow the system from 01 to 02 and onward, and retain the same scene identity across Journey, LUME, premium visuals and navigation on every supported browser.
+Interact with ATLAS, follow the visible Orca vertical slice, then return to the same ATLAS camera and observation context.
 
 ## SECONDARY DEPTH
-Inspect acoustic, source, population/place and evidence context while Bay of Biscay remains a pilot-corridor case, never a migration claim.
+The same return token continues to preserve mode, layers, theme, projection, lens and record while redundant entity refocus remains suppressed.
 
 ## P1 DOMINANT
-Reliable 01→08 scene transitions on Chromium and WebKit desktop/mobile, with canonical `data-scene-state` and LUME scene state in agreement.
+Exact user camera restoration on Chromium desktop + 390/430 and WebKit desktop + 390/430.
 
 ## P2 ORIENTATION
-Scene title, progress, LUME intelligence and source/evidence context must all describe the same current Journey node.
+The Orca bundled observation panel and its truthful BUNDLED · NOT LIVE state remain reconstructed without camera choreography.
 
 ## P3 ACTION / NEXT
-BACK, HOW DO WE KNOW?, FOLLOW THE SYSTEM, LUME ROOM/REAL WORLD and echolocation interactions remain stable and readable on desktop and mobile.
+Visible ATLAS → SPECIES → Living Systems → WH4LES → Join → Return to ATLAS controls remain unchanged.
 
 ## P4 DEPTH
-Population-specific truth, source/evidence, acoustic interpretation and Bay of Biscay monitoring context remain unchanged.
+ORCA/Jaguar Journey, Bay of Biscay, LUME, truth/evidence and source media are untouched by this shared acceptance correction.
 
 ## CURRENT DEFECT
-Exact SHA `edc4d9fa7ebd83f47bff8cb9110946af0204963b` has standalone Browser Product Proof #919 PASS plus GOLD #732, Public Preview #967, Human Craft #716 and Analytics #325 PASS. Convergence #1918 passed exact checkout, typecheck, production build, 91/91 smoke/contracts, lint, asset verification, dependency gate, Chromium shared/ORCA/Jaguar, WebKit shared and ORCA 390/430. Only WebKit desktop failed after the first successful ORCA entry: clicking FOLLOW THE SYSTEM from scene 01 completed, but `#browser-experience[data-scene-state]` was observed as an empty string instead of `dependency`. NatureJourneyEngine sets the canonical scene before synchronously dispatching `4planet:nature-journey-scene`; therefore a downstream synchronous presentation listener can currently mutate or clear the public scene contract before control returns to NatureBrowser.
+Exact SHA `32d4a51c5391e0e2017273ab4c11c40956617d70` has standalone Browser Product Proof #929 PASS and all static gates green. Convergence #1929 passes 15/16 shared Chromium vertical-slice cases, but mobile-390 returns with live map zoom drifting by 0.48 from the user-created pre-handoff camera while the returned URL still contains the correct saved zoom. Desktop, 1280 and mobile-430 pass. ProductContext already removes the redundant `entity` refocus when explicit camera + record are present. The residual variance is therefore in ATLAS map initialisation/projection, not token transport.
 
 ## BOUNDED ADOPTION
-Keep NatureJourneyEngine as the canonical scene writer and keep all current event consumers. Harden the shared NatureBrowser seam after `NatureJourneyEngine.applyScene()` returns: derive the expected state from the same current node, then restore only canonical scene/index/node fields if a synchronous listener changed them during event fan-out. This is post-dispatch contract enforcement from the same node authority, not a second Journey engine or independent state source. Do not poll, add timers, force clicks, increase QA timeouts, duplicate controls, or change routes/media/data.
+When the initial URL explicitly carries `z` + `c`, snapshot that camera before MapLibre creation and reassert it once after the base style/projection is ready. This is a one-time reconstruction lock from the same URL authority, not polling or a second camera state store. Do not alter ordinary user movement after boot. Do not weaken the 0.25 browser tolerance.
 
 ## WHAT CAN BE REMOVED
-The assumption that every presentation listener will always leave canonical Journey data attributes untouched after synchronous event dispatch.
+The assumption that MapLibre globe/style initialisation preserves an explicit narrow-viewport camera exactly without a post-projection reconstruction pass.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, NatureJourneyEngine, NatureBrowser internal active index/node, current Orca Journey manifest, Orca LUME Room 21, V25 viewport control, ocean-world v23, Bay of Biscay direct route/truth boundary, Jaguar V52 path and existing evidence/navigation controls.
+`king/test`, PR131, existing ProductContext canonicalisation, World URL state, MapLibre map, record reconstruction, all current ORCA/Jaguar routes and product browser gates.
 
 ## TRUTH BOUNDARY
-This is a Journey state-integrity correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This is a camera reconstruction correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-At most three equality-guarded dataset writes immediately after an existing scene transition. No polling, observer loop, recurring DOM write, new render loop or additional media work.
+One equality-bounded `jumpTo` during initial style/projection setup only when explicit `z` + `c` are present. No timer loop, recurring camera enforcement or post-user override.
 
 ## MOBILE-FIRST RISK
-WebKit 390/430 already pass on the prior exact SHA. The correction must preserve those passes while closing WebKit desktop and must not change viewport geometry or introduce overflow.
+The defect is specific to mobile-390. Preserve mobile-430 and all desktop passes. User gestures after initial reconstruction must remain authoritative.
 
 ## HUMAN SUCCESS
-FOLLOW THE SYSTEM always moves to the next chapter, and every visible/intelligence layer remains on that same chapter without blank, stale or contradictory state.
+RETURN TO ATLAS visibly returns to the same world view the user left, not an approximately similar view.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Orca LUME Chromium/WebKit desktop + 390/430 all green on one exact SHA, including 01→02 canonical scene state. 3) Jaguar V52 dedicated Chromium/WebKit desktop + 390/430 remains green. 4) Full Journey, BACK, evidence, next, echo and LUME remain functional. 5) No overflow/pointer regression. 6) Exact SHA deployment verified before ACCEPTED/SAFE. 7) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Shared vertical slice camera restoration green on Chromium desktop + 390/430 and WebKit desktop + 390/430. 3) ORCA and Jaguar dedicated browser proof remains green. 4) Exact-head security/assets/tree gates green. 5) Exact SHA deployment verified before ACCEPTED/SAFE. 6) LIVE KING unchanged.
