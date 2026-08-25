@@ -36,10 +36,10 @@ Population-specific truth, source/evidence, acoustic interpretation and Bay of B
 Exact SHA `97ab2aa8ab32cd640deccaa848922ed9c8d3bfb6` passed GOLD #726, Public Preview #961, Human Craft #710, Analytics #322 and standalone Browser Product Proof #913. Convergence #1912 passed exact checkout, typecheck, production build, 91/91 smoke/contracts, lint, asset verification, dependency gate and all shared Chromium navigation tests. It then failed ORCA LUME on Chromium desktop, 390 and 430 before interaction: `data-lume-default=true` but `data-light-lens=false`. Root cause is deterministic. `orca-lume-19.js` schedules default activation with `requestAnimationFrame()` and later looks up `.light-lens-toggle` under `#browser-experience`; V25 moves that same button out of the root into a body portal during `DOMContentLoaded`, so the deferred root-scoped lookup returns no button and default LUME never activates.
 
 ## BOUNDED ADOPTION
-Keep V25 static viewport geometry and the existing button element/event handler. Correct `orca-lume-19.js` so default activation can resolve the canonical LUME toggle after it has been portalled. Prefer the root-scoped button when present; otherwise resolve the V25 portal-owned `.light-lens-toggle` from the document and activate only when `data-lume-default=true` and `data-light-lens` is not already true. Do not add a second control, synthetic state writes, polling, force clicks, timeout changes, new engine, route, media or data source.
+Keep V25 static viewport geometry, the existing toggle element/event handler and the canonical `OrcaLume19.activateDefaultLume()` state transition. Immediately before V25 relocates the existing button outside `#browser-experience`, invoke that canonical activation only when `data-lume-default=true` and `data-light-lens` is not already true. The later deferred activation then becomes a harmless no-op. Do not write `data-light-lens` or aria state directly. Do not add a second control, polling, force clicks, timeout changes, new engine, route, media or data source.
 
 ## WHAT CAN BE REMOVED
-The assumption that the canonical LUME toggle must remain a descendant of `#browser-experience` after control-plane installation.
+The ordering assumption that deferred root-scoped default activation will always happen before portal relocation.
 
 ## WHAT MUST BE REUSED
 `king/test`, PR131, current Orca Journey manifest, existing `.light-lens-toggle` element and click handler, V25 static viewport portal, `orca-lume-19.js`, ORCA LUME Room 21, ocean-world v23, Bay of Biscay direct route/truth boundary, Jaguar V52 path and existing evidence/navigation controls.
@@ -48,7 +48,7 @@ The assumption that the canonical LUME toggle must remain a descendant of `#brow
 This is a control-initialisation correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-One deferred default-state check only. No polling, resize measurement, render loop or recurring DOM write.
+One synchronous canonical default-state activation before relocation plus the existing deferred no-op. No polling, resize measurement, render loop or recurring DOM write.
 
 ## MOBILE-FIRST RISK
 The exact defect occurs on both 390 and 430 as well as desktop. Default activation must recover without changing the already-bounded V25 mobile geometry or introducing overflow.
