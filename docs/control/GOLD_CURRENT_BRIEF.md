@@ -2,10 +2,10 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-WEBKIT-STABILITY-59  
-**STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
+**CHANGE ID:** ORCA-LUME-WEBKIT-STABILITY-60  
+**STATUS:** TEST / FIX APPLIED / EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** keep coding until the Jaguar/Orca convergence line is exact-head green. Current exact head proves Jaguar V52 and Orca LUME on Chromium desktop + 390/430 and WebKit 390/430; close the remaining WebKit-desktop Orca LUME interaction defect without weakening the product gate.  
+**FOUNDER DIRECTION:** keep coding until the Jaguar/Orca convergence line is exact-head green. The desktop WebKit Orca LUME actionability defect has now received a bounded control-stability fix; prove the full exact-head stack without weakening any product or truth gate.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
@@ -33,13 +33,13 @@ Toggle room state, fire the echolocation interaction, move forward/back and cont
 Acoustic interpretation, species identity, place, pressure and source/evidence layers remain available without implying live tracking or migration.
 
 ## CURRENT DEFECT
-Exact `f1a70cf2f8992aaa20e380ca3883410d3c6f0605` passes GOLD, Human Craft, Public Preview, Browser Product Proof and analytics. Convergence #1874 passes policy, typecheck, production build, 91/91 contracts, lint, assets, dependency gate, Chromium shared tests, Chromium Orca LUME desktop/390/430, Chromium Jaguar desktop/390/430 and WebKit shared desktop/390/430. The only failure is WebKit desktop Orca LUME: after successfully switching LUME off, the second `.light-lens-toggle` click waits for the button to become stable until the 90s test timeout. WebKit 390 and 430 pass the same interaction. The locator resolves with the correct `LUME ROOM` text and accessibility label, so this is a desktop layout/actionability stability defect rather than missing state or stale copy.
+The prior exact-head defect was isolated to WebKit desktop Orca LUME: after switching LUME off, the second normal pointer click waited for the control to become stable until timeout, while Chromium and WebKit mobile passed. The bounded fix at `619ee5da78722fd4856a7f07767949f4ae9c9a8f` removes backdrop compositing and transition dependence from the toggle and locks its block/inline geometry. Cloudflare deploy and core verify checks passed. Full critical-journey and convergence proof is still running; do not call Gate 01 closed until those exact-head jobs pass. The push-policy failure on that commit was control bookkeeping only: the product-facing change did not update this brief in the same bounded change. This update closes that control gap; it does not change product behaviour.
 
 ## BOUNDED ADOPTION
-Make the shared Light Lens toggle geometry invariant across the two labels. Give the control a fixed inline footprint sufficient for both `REAL WORLD` and `LUME ROOM`, centre its text and prevent flex shrink/reflow. Preserve the same click handler, semantics and mode state. Do not use forced Playwright clicks, increase the timeout or weaken actionability assertions.
+Keep the shared Light Lens toggle geometry invariant across both labels and both modes. Fixed inline/block footprint, centred text, no flex shrink/reflow, no backdrop-filter dependency and no transition-dependent actionability. Preserve the same click handler, semantics and mode state. Do not use forced Playwright clicks, increase the timeout or weaken actionability assertions.
 
 ## WHAT CAN BE REMOVED
-Text-driven toggle width changes, avoidable topbar reflow and any test workaround that bypasses real pointer actionability.
+Text-driven toggle width/height changes, backdrop compositing on the control, avoidable topbar reflow and any test workaround that bypasses real pointer actionability.
 
 ## WHAT MUST BE REUSED
 `king/test`, PR131, current ORCA LUME Room 21, shared Light Lens control, current ocean-native Journey, Bay of Biscay truth boundary, current Jaguar V52 full-source path and all already-green exact-head gates.
@@ -48,10 +48,10 @@ Text-driven toggle width changes, avoidable topbar reflow and any test workaroun
 This is a presentation/control stability change only. No biological, acoustic, population, route, migration, live-data, abundance, Ear.Rodriguez licence, geometry, material or animation claim changes. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-No new renderer, network request, animation or observer. Stable button geometry should reduce layout work during mode changes.
+No new renderer, network request, animation or observer. Stable button geometry and removal of control backdrop compositing should reduce layout/compositing work during mode changes.
 
 ## MOBILE-FIRST RISK
-390 and 430 are already green and must remain compact, tappable and overflow-safe. Desktop stability must be fixed without increasing mobile collision risk.
+390 and 430 were green before the desktop fix and must remain compact, tappable and overflow-safe. Desktop stability must be fixed without increasing mobile collision risk.
 
 ## HUMAN SUCCESS
 A user can switch LUME off and back on with the same stable control on Safari/WebKit desktop and mobile, with no visible jump, missed click or interaction dead end.
