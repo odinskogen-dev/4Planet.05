@@ -72,7 +72,8 @@ test("Orca LUME Room 21 is interactive, truth-bounded and viewport-safe", async 
 
   await toggle.click();
   await expect(root).toHaveAttribute("data-light-lens", "false");
-  await expect(toggle).toContainText(/LIGHT LENS/i);
+  await expect(toggle).toHaveAttribute("aria-label", "Enter Orca LUME intelligence room");
+  await expect(toggle).toContainText(/LUME ROOM/i);
   await toggle.click();
   await expect(root).toHaveAttribute("data-light-lens", "true");
   await expect(toggle).toContainText(/REAL WORLD/i);
