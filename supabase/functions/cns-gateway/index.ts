@@ -12,13 +12,13 @@ if (!DB_URL || !GATEWAY_TOKEN || !GITHUB_TOKEN) {
 }
 
 const SQL_OPTIONS = { max: 5, prepare: false, idle_timeout: 20 } as const;
-let sql = postgres(DB_URL, SQL_OPTIONS);
+let sql = postgres(DB_URL as string, SQL_OPTIONS);
 
 type DbRow = Record<string, unknown>;
 type GitHubJson = Record<string, unknown>;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, code: string): Promise<T> {
-  let timer: number | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
       promise,
@@ -37,7 +37,7 @@ async function ensureDatabaseAlive(): Promise<void> {
     return;
   } catch {
     try { await sql.end({ timeout: 1 }); } catch { /* recycle even when stale close fails */ }
-    sql = postgres(DB_URL, SQL_OPTIONS);
+    sql = postgres(DB_URL as string, SQL_OPTIONS);
     try {
       await withTimeout(sql`select 1 as ok`, 3000, "CNS_DATABASE_RECYCLE_TIMEOUT");
     } catch {
