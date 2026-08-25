@@ -57,19 +57,23 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826001500_cns_control_of_control.sql
-          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null and to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null" | grep -qx t
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826003000_cns_failure_memory.sql
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null and to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.v_source_impact') is not null" | grep -qx t
 
       - name: Verify event-backed GitHub state projection
-        run: psql -f supabase/tests/cns_github_sync.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_github_sync.sql
 
       - name: Verify acceptance hardening and deterministic fresh-context behavior
-        run: psql -f supabase/tests/cns_acceptance_hardening.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_acceptance_hardening.sql
 
       - name: Verify SUPERBRAIN truth, provenance, conflict and bounded-learning invariants
-        run: psql -f supabase/tests/cns_superbrain_truth.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_superbrain_truth.sql
 
       - name: Verify control-of-control, memory integrity and context/source fault recovery
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_control_of_control.sql
+
+      - name: Verify durable failure memory and source-outage propagation
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_failure_memory.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
@@ -107,10 +111,10 @@ jobs:
           PY
 
       - name: Run 50 canonical + 50 adversarial evals
-        run: psql -f /tmp/cns_eval_100.sql
+        run: psql -v ON_ERROR_STOP=1 -f /tmp/cns_eval_100.sql
 
       - name: Run 10k project / million-event scale seed and hot-path plans
-        run: psql -f supabase/tests/cns_kernel_02_scale.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_kernel_02_scale.sql
 
       - name: 100 concurrent context reads
         run: |
@@ -140,6 +144,7 @@ jobs:
           source_projects=$(psql -Atqc "select count(*) from cns.projects")
           source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
           source_control_cycles=$(psql -Atqc "select count(*) from cns.control_cycles")
+          source_failures=$(psql -Atqc "select count(*) from cns.failure_records")
           docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
           createdb cns_restore
           cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
@@ -147,10 +152,12 @@ jobs:
           restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
           restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
           restored_control_cycles=$(psql -d cns_restore -Atqc "select count(*) from cns.control_cycles")
+          restored_failures=$(psql -d cns_restore -Atqc "select count(*) from cns.failure_records")
           test "$source_events" = "$restored_events"
           test "$source_projects" = "$restored_projects"
           test "$source_states" = "$restored_states"
           test "$source_control_cycles" = "$restored_control_cycles"
+          test "$source_failures" = "$restored_failures"
           psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
@@ -159,7 +166,8 @@ jobs:
           psql -d cns_restore -Atqc "select count(*) from cns.control_roles" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
-          psql -d cns_restore -Atqc "select to_regclass('cns.hypotheses') is not null" | grep -qx t
+          psql -d cns_restore -Atqc "select count(*) from cns.v_source_impact" >/dev/null
+          psql -d cns_restore -Atqc "select to_regclass('cns.hypotheses') is not null and to_regclass('cns.failure_records') is not null" | grep -qx t
 
       - name: Deno type-check CNS Gateway
         uses: denoland/setup-deno@v2
