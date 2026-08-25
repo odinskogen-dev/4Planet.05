@@ -12,6 +12,7 @@
   const POSE = 'source-bind-pose-perspective';
   const MATERIAL = 'procedural-natural-rosette-v52-not-source-texture';
   const MASTER_SHA = '8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13';
+  const ATTRIBUTION = 'EAR.RODRIGUEZ · CC BY 4.0';
   let reconciling = false;
 
   root.dataset.jaguarV55LegacyBlock = 'true';
@@ -30,6 +31,21 @@
     if (root.dataset[key] !== value) root.dataset[key] = value;
   }
 
+  function ensureAttribution() {
+    let credit = stage.querySelector('.jaguar-local-v48-credit');
+    if (!credit) {
+      credit = document.createElement('div');
+      // Keep the historic class as a compatibility hook for the established rights gate.
+      // The element belongs to the accepted V52 source-derived renderer, not the retired V48 runtime.
+      credit.className = 'jaguar-local-v48-credit';
+      credit.setAttribute('data-renderer', 'v52');
+      credit.setAttribute('aria-label', 'Jaguar 3D source attribution');
+      credit.style.cssText = 'position:absolute;left:14px;bottom:12px;z-index:14;font:500 10px/1.2 Fragment Mono,monospace;letter-spacing:.08em;color:rgba(255,255,255,.72);pointer-events:none;text-transform:uppercase;';
+      stage.appendChild(credit);
+    }
+    if (credit.textContent !== ATTRIBUTION) credit.textContent = ATTRIBUTION;
+  }
+
   function assertV52Authority() {
     if (reconciling || !v52Ready()) return;
     reconciling = true;
@@ -42,6 +58,7 @@
       setDataset('jaguarVisual', 'visible');
       setDataset('jaguarMotionTruth', 'procedural-presentation-motion-not-source-animation');
       setDataset('jaguar3dActive', String(Number(root.dataset.scene || '0') === 0 && !document.hidden));
+      ensureAttribution();
       if (Number(root.dataset.scene || '0') === 0 && status && status.textContent !== 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE') {
         status.textContent = 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE';
       }
