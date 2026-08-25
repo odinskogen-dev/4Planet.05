@@ -2,59 +2,59 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ATLAS-RETURN-CAMERA-PROJECTION-LOCK-68  
+**CHANGE ID:** ORCA-WEBKIT-INTERACTION-PERFORMANCE-69  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING and correct exact-head shared acceptance failures before further visual expansion.  
+**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING; reduce atmosphere/VFX before interaction or creature fidelity when browser performance blocks the critical path.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They move from ATLAS through SPECIES, Living Systems, WH4LES and Join, then expect RETURN TO ATLAS to restore the exact world view they deliberately created.
+They want to enter the Orca experience, interact with the acoustic/LUME room, follow the living-system Journey and move through it immediately rather than waiting on decorative rendering.
 
 ## ONE THING TO UNDERSTAND
-An explicit returned ATLAS camera (`z` + `c`) is authoritative after map projection/style initialisation. Responsive globe setup must not silently alter the restored camera on a narrow viewport.
+The ORCA room must remain ocean-native and spatial, but presentation motion is subordinate to responsive controls. WebKit desktop must not spend tens of seconds waiting for static interaction targets to become frame-stable.
 
 ## PRIMARY ACTION
-Interact with ATLAS, follow the visible Orca vertical slice, then return to the same ATLAS camera and observation context.
+ENTER, use the Orca/LUME interaction, FOLLOW THE SYSTEM, toggle REAL WORLD ↔ LUME ROOM and continue through the Journey without interaction stalls.
 
 ## SECONDARY DEPTH
-The same return token continues to preserve mode, layers, theme, projection, lens and record while redundant entity refocus remains suppressed.
+Dark Marine LUME Room, ocean world, Bay of Biscay, source/evidence and acoustic interpretation remain available after the performance reduction.
 
 ## P1 DOMINANT
-Exact user camera restoration on Chromium desktop + 390/430 and WebKit desktop + 390/430.
+Responsive interaction on WebKit desktop while retaining Orca, room depth and LUME intelligence.
 
 ## P2 ORIENTATION
-The Orca bundled observation panel and its truthful BUNDLED · NOT LIVE state remain reconstructed without camera choreography.
+Species, scene position, truth boundaries and reversible REAL WORLD ↔ LUME state remain unchanged.
 
 ## P3 ACTION / NEXT
-Visible ATLAS → SPECIES → Living Systems → WH4LES → Join → Return to ATLAS controls remain unchanged.
+ENTER, acoustic pulse, FOLLOW THE SYSTEM, BACK, HOW DO WE KNOW? and LUME mode controls stay directly operable.
 
 ## P4 DEPTH
-ORCA/Jaguar Journey, Bay of Biscay, LUME, truth/evidence and source media are untouched by this shared acceptance correction.
+Decorative drift, scan, particles and expensive full-surface compositing are optional and may be reduced on the affected renderer profile.
 
 ## CURRENT DEFECT
-Exact SHA `32d4a51c5391e0e2017273ab4c11c40956617d70` has standalone Browser Product Proof #929 PASS and all static gates green. Convergence #1929 passes 15/16 shared Chromium vertical-slice cases, but mobile-390 returns with live map zoom drifting by 0.48 from the user-created pre-handoff camera while the returned URL still contains the correct saved zoom. Desktop, 1280 and mobile-430 pass. ProductContext already removes the redundant `entity` refocus when explicit camera + record are present. The residual variance is therefore in ATLAS map initialisation/projection, not token transport.
+Exact SHA `66dadd1594e4e6799a2ebf203297316238a52733` has Browser Product Proof #935 PASS and all static gates green. Convergence #1935 passes Chromium ORCA/Jaguar, Chromium shared, WebKit shared and ORCA 390/430. Only ORCA WebKit desktop fails. Trace evidence shows this is broader than the LUME toggle: the ENTER button waits about 33 seconds for Playwright's normal visible/enabled/stable condition, acoustic interaction clicks require repeated long stability waits and FOLLOW THE SYSTEM never becomes frame-stable before the 90 second test timeout. The fixed LUME portal itself is therefore not the root cause. The desktop WebKit scene is over-composited/continuously animated enough to starve ordinary interaction stability.
 
 ## BOUNDED ADOPTION
-When the initial URL explicitly carries `z` + `c`, snapshot that camera before MapLibre creation and reassert it once after the base style/projection is ready. This is a one-time reconstruction lock from the same URL authority, not polling or a second camera state store. Do not alter ordinary user movement after boot. Do not weaken the 0.25 browser tolerance.
+Add one ORCA-scoped WebKit performance profile. Detect WebKit/Safari without affecting Chromium. Preserve the same Journey, Orca media, LUME room geometry and controls, but stop nonessential infinite drift/scan/depth animations and remove expensive animated filter/backdrop transitions on the large presentation layers. Keep static depth, lighting hierarchy and intelligence overlays. This is renderer-specific graceful degradation, not a second product path.
 
 ## WHAT CAN BE REMOVED
-The assumption that MapLibre globe/style initialisation preserves an explicit narrow-viewport camera exactly without a post-projection reconstruction pass.
+Nonessential infinite photo/wireframe drift, scanning sweeps, decorative depth/particle loops, large-surface filter transitions and backdrop effects that materially delay user interaction on WebKit desktop.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, existing ProductContext canonicalisation, World URL state, MapLibre map, record reconstruction, all current ORCA/Jaguar routes and product browser gates.
+`king/test`, PR131, existing ORCA Journey, LUME Room 21, ocean-world v23, Bay of Biscay, existing controls, current fixed LUME portal, shared Journey engine and all truth/source boundaries.
 
 ## TRUTH BOUNDARY
-This is a camera reconstruction correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This change alters presentation performance only. It adds no biological, acoustic, movement, abundance, population or migration claim. Acoustic graphics remain interpretive; `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-One equality-bounded `jumpTo` during initial style/projection setup only when explicit `z` + `c` are present. No timer loop, recurring camera enforcement or post-user override.
+Creature/interaction first. On WebKit, static room depth and the Orca remain; decorative continuous motion is reduced before subject or interaction. No polling and no interaction test weakening.
 
 ## MOBILE-FIRST RISK
-The defect is specific to mobile-390. Preserve mobile-430 and all desktop passes. User gestures after initial reconstruction must remain authoritative.
+WebKit 390/430 already pass. The profile must preserve those passes and must not reduce the Orca itself. Chromium behaviour remains unchanged.
 
 ## HUMAN SUCCESS
-RETURN TO ATLAS visibly returns to the same world view the user left, not an approximately similar view.
+A user on Safari/WebKit can enter and operate ORCA immediately, while still seeing a convincing ocean-native LUME room rather than a frozen or stripped product.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Shared vertical slice camera restoration green on Chromium desktop + 390/430 and WebKit desktop + 390/430. 3) ORCA and Jaguar dedicated browser proof remains green. 4) Exact-head security/assets/tree gates green. 5) Exact SHA deployment verified before ACCEPTED/SAFE. 6) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME interaction green on WebKit desktop + 390/430 with ordinary clicks and existing timeout. 3) Chromium ORCA/Jaguar and WebKit Jaguar remain green. 4) Shared vertical slice remains green. 5) Exact-head security/assets/tree gates green. 6) Exact SHA deployment verified before ACCEPTED/SAFE. 7) LIVE KING unchanged.
