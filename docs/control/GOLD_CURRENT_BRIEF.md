@@ -2,59 +2,59 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-WEBKIT-INTERACTION-PERFORMANCE-69  
+**CHANGE ID:** ORCA-LUME-MOBILE-390-VIEWPORT-SAFE-70  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING; reduce atmosphere/VFX before interaction or creature fidelity when browser performance blocks the critical path.  
+**FOUNDER DIRECTION:** continue protected ORCA + JAGUAR Gold convergence on TEST KING; keep mobile interaction and intelligence surfaces inside the viewport without weakening LUME, creature fidelity or truth boundaries.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They want to enter the Orca experience, interact with the acoustic/LUME room, follow the living-system Journey and move through it immediately rather than waiting on decorative rendering.
+They want to enter the Orca experience, interact with the acoustic/LUME room and follow the living-system Journey on mobile without clipped intelligence or horizontal overflow.
 
 ## ONE THING TO UNDERSTAND
-The ORCA room must remain ocean-native and spatial, but presentation motion is subordinate to responsive controls. WebKit desktop must not spend tens of seconds waiting for static interaction targets to become frame-stable.
+The LUME intelligence panel must remain fully readable and viewport-safe at the narrow 390px target while retaining the same ocean-native room, evidence and interaction model.
 
 ## PRIMARY ACTION
-ENTER, use the Orca/LUME interaction, FOLLOW THE SYSTEM, toggle REAL WORLD ↔ LUME ROOM and continue through the Journey without interaction stalls.
+ENTER, use the Orca/LUME interaction, FOLLOW THE SYSTEM and read the scene-specific intelligence without any part of the panel leaving the viewport.
 
 ## SECONDARY DEPTH
-Dark Marine LUME Room, ocean world, Bay of Biscay, source/evidence and acoustic interpretation remain available after the performance reduction.
+Dark Marine LUME Room, ocean world, Bay of Biscay, source/evidence and acoustic interpretation remain unchanged behind the mobile-safe intelligence layout.
 
 ## P1 DOMINANT
-Responsive interaction on WebKit desktop while retaining Orca, room depth and LUME intelligence.
+Viewport-safe LUME intelligence on 390px mobile.
 
 ## P2 ORIENTATION
 Species, scene position, truth boundaries and reversible REAL WORLD ↔ LUME state remain unchanged.
 
 ## P3 ACTION / NEXT
-ENTER, acoustic pulse, FOLLOW THE SYSTEM, BACK, HOW DO WE KNOW? and LUME mode controls stay directly operable.
+ENTER, acoustic pulse, FOLLOW THE SYSTEM, BACK, HOW DO WE KNOW? and LUME controls remain directly operable.
 
 ## P4 DEPTH
-Decorative drift, scan, particles and expensive full-surface compositing are optional and may be reduced on the affected renderer profile.
+Room depth, acoustic presentation and source/evidence detail remain available after the bounded mobile layout correction.
 
 ## CURRENT DEFECT
-Exact SHA `66dadd1594e4e6799a2ebf203297316238a52733` has Browser Product Proof #935 PASS and all static gates green. Convergence #1935 passes Chromium ORCA/Jaguar, Chromium shared, WebKit shared and ORCA 390/430. Only ORCA WebKit desktop fails. Trace evidence shows this is broader than the LUME toggle: the ENTER button waits about 33 seconds for Playwright's normal visible/enabled/stable condition, acoustic interaction clicks require repeated long stability waits and FOLLOW THE SYSTEM never becomes frame-stable before the 90 second test timeout. The fixed LUME portal itself is therefore not the root cause. The desktop WebKit scene is over-composited/continuously animated enough to starve ordinary interaction stability.
+Exact SHA `862f1d932e56cf191fe53e313ca93c0971655bac` has Browser Product Proof #941 PASS and GOLD/Public Preview/Human Craft/Analytics green. Convergence #1941 passes exact checkout, typecheck, production build, 91/91 contracts, lint, assets, dependency gate and Chromium shared navigation. The dedicated ORCA LUME Chromium test fails only at 390px: `.orca-lume-intel` reports bounding-box x = -29px while the acceptance floor is -2px. Desktop and 430px pass. This is a real narrow-mobile layout defect, not a test or truth failure.
 
 ## BOUNDED ADOPTION
-Add one ORCA-scoped WebKit performance profile. Detect WebKit/Safari without affecting Chromium. Preserve the same Journey, Orca media, LUME room geometry and controls, but stop nonessential infinite drift/scan/depth animations and remove expensive animated filter/backdrop transitions on the large presentation layers. Keep static depth, lighting hierarchy and intelligence overlays. This is renderer-specific graceful degradation, not a second product path.
+Keep the existing ORCA LUME 19 intelligence component and Room 21. Add a narrow-mobile layout guard at <=400px that pins the intelligence panel to viewport-safe logical insets, uses border-box sizing and suppresses residual presentation transforms on the panel itself. Do not change the Journey engine, LUME semantics, room geometry, Bay of Biscay, Orca media or test tolerance.
 
 ## WHAT CAN BE REMOVED
-Nonessential infinite photo/wireframe drift, scanning sweeps, decorative depth/particle loops, large-surface filter transitions and backdrop effects that materially delay user interaction on WebKit desktop.
+Residual mobile transform/width behaviour that can push the intelligence panel outside the 390px viewport.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, existing ORCA Journey, LUME Room 21, ocean-world v23, Bay of Biscay, existing controls, current fixed LUME portal, shared Journey engine and all truth/source boundaries.
+`king/test`, PR131, existing ORCA Journey, LUME Room 21, ORCA LUME 19 intelligence component, ocean-world v23, Bay of Biscay, existing controls, fixed LUME portal, shared Journey engine and all truth/source boundaries.
 
 ## TRUTH BOUNDARY
-This change alters presentation performance only. It adds no biological, acoustic, movement, abundance, population or migration claim. Acoustic graphics remain interpretive; `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This is presentation layout only. It adds no biological, acoustic, movement, abundance, population or migration claim. Acoustic graphics remain interpretive; `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-Creature/interaction first. On WebKit, static room depth and the Orca remain; decorative continuous motion is reduced before subject or interaction. No polling and no interaction test weakening.
+No new animation, polling, observer or media dependency. Keep the existing creature/interaction-first performance profile.
 
 ## MOBILE-FIRST RISK
-WebKit 390/430 already pass. The profile must preserve those passes and must not reduce the Orca itself. Chromium behaviour remains unchanged.
+The correction is scoped to <=400px because 430px already passes. It must not regress 430px, desktop, Chromium shared navigation, WebKit ORCA or Jaguar.
 
 ## HUMAN SUCCESS
-A user on Safari/WebKit can enter and operate ORCA immediately, while still seeing a convincing ocean-native LUME room rather than a frozen or stripped product.
+A user at 390px can enter ORCA, advance the Journey and read the complete LUME intelligence panel without clipping or horizontal overflow.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME interaction green on WebKit desktop + 390/430 with ordinary clicks and existing timeout. 3) Chromium ORCA/Jaguar and WebKit Jaguar remain green. 4) Shared vertical slice remains green. 5) Exact-head security/assets/tree gates green. 6) Exact SHA deployment verified before ACCEPTED/SAFE. 7) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) ORCA LUME interaction and viewport safety green on Chromium desktop + 390/430. 3) WebKit desktop + 390/430 remains green. 4) Chromium/WebKit Jaguar remains green. 5) Shared vertical slice remains green. 6) Exact-head security/assets/tree gates green. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
