@@ -42,9 +42,35 @@
 
   const waveformMarkup = () => Array.from({length:28},(_,i)=>`<i style="--i:${i}" aria-hidden="true"></i>`).join('');
 
+  function reconcileIntelSingleton(root) {
+    if (!root) return null;
+    const panels = [...root.querySelectorAll('.orca-lume-intel')];
+    if (!panels.length) return null;
+
+    // V72 deliberately reparents persistent intelligence UI from the moving
+    // cinematic layer to the Journey root. Prefer that stable hosted instance;
+    // remove any stale layer-local duplicates created by older install logic.
+    const canonical = panels.find(panel => panel.parentElement === root) || panels[0];
+    for (const panel of panels) {
+      if (panel !== canonical) panel.remove();
+    }
+
+    const rails = [...root.querySelectorAll('.orca-lume-rail')];
+    for (let i = 1; i < rails.length; i += 1) rails[i].remove();
+
+    root.dataset.orcaLumeIntelInstances = '1';
+    return canonical;
+  }
+
   function installIntel(root) {
     const layer = root?.querySelector('.light-lens-layer');
-    if (!layer || layer.querySelector('.orca-lume-intel')) return;
+    if (!layer) return;
+
+    // Ownership is Journey-root scoped, not layer scoped. Once V72 has moved
+    // the panel out of .light-lens-layer, later scene/LUME events must reuse it
+    // rather than silently generating a second control surface.
+    if (reconcileIntelSingleton(root)) return;
+
     const intel = document.createElement('aside');
     intel.className = 'orca-lume-intel';
     intel.setAttribute('aria-label','Orca Light Lens intelligence overlay');
@@ -55,13 +81,14 @@
     rail.setAttribute('aria-hidden','true');
     rail.innerHTML = `<span data-lume-rail="identity">LIFE</span><span data-lume-rail="dependency">PREY</span><span data-lume-rail="habitat">MOVEMENT</span><span data-lume-rail="pressure">PRESSURE</span><span data-lume-rail="response">RESPONSE</span>`;
     layer.appendChild(rail);
+    reconcileIntelSingleton(root);
   }
 
   function syncIntel(root,detail={}) {
     const state = detail.state || root.dataset.lightLensScene || root.dataset.sceneState || 'identity';
     const index = Number(detail.index ?? root.dataset.lightLensIndex ?? root.dataset.journeyIndex ?? 0);
     const config = INTEL[state] || INTEL.identity;
-    const panel = root.querySelector('.orca-lume-intel');
+    const panel = reconcileIntelSingleton(root);
     if (!panel) return;
     panel.querySelector('.orca-lume-intel__kicker').textContent=config.kicker;
     panel.querySelector('.orca-lume-intel__index').textContent=`${String(index+1).padStart(2,'0')} / 05`;
@@ -74,6 +101,7 @@
 
   function reconcileCanonicalScene(root) {
     if (!root) return;
+    reconcileIntelSingleton(root);
     const canonicalState = root.dataset.sceneState;
     const state = canonicalState && INTEL[canonicalState]
       ? canonicalState
@@ -100,15 +128,15 @@
     pulse.innerHTML='<i style="--d:0"></i><i style="--d:1"></i><i style="--d:2"></i><i style="--d:3"></i>';
     layer.appendChild(pulse);
     root.dataset.echoActive='true';
-    root.querySelector('.orca-lume-acoustic__wave')?.setAttribute('data-pulse','true');
+    reconcileIntelSingleton(root)?.querySelector('.orca-lume-acoustic__wave')?.setAttribute('data-pulse','true');
     window.dispatchEvent(new CustomEvent('4planet:orca-lume-echo',{detail:{state:root.dataset.orcaLumeScene||'identity',interpretive:true}}));
-    window.setTimeout(()=>{pulse.remove();root.dataset.echoActive='false';root.querySelector('.orca-lume-acoustic__wave')?.removeAttribute('data-pulse');},reducedMotion()?80:1900);
+    window.setTimeout(()=>{pulse.remove();root.dataset.echoActive='false';reconcileIntelSingleton(root)?.querySelector('.orca-lume-acoustic__wave')?.removeAttribute('data-pulse');},reducedMotion()?80:1900);
   }
 
   function installInteraction(root) {
     if (root.dataset.orcaLumeInteraction==='true') return;
     root.dataset.orcaLumeInteraction='true';
-    root.querySelector('.orca-lume-echo-trigger')?.addEventListener('click',()=>emitEcho(root));
+    reconcileIntelSingleton(root)?.querySelector('.orca-lume-echo-trigger')?.addEventListener('click',()=>emitEcho(root));
     const stage=root.querySelector('.nature-stage');
     if (!stage || reducedMotion()) return;
     let raf=0;
@@ -151,5 +179,5 @@
   }
 
   window.addEventListener('DOMContentLoaded',()=>install(document.getElementById('browser-experience')),{once:true});
-  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,reconcileCanonicalScene,emitEcho,activateDefaultLume,media:NOAA_ORCA,intel:INTEL};
+  window.OrcaLume19={install,installPhotoBase,installIntel,syncIntel,reconcileCanonicalScene,reconcileIntelSingleton,emitEcho,activateDefaultLume,media:NOAA_ORCA,intel:INTEL};
 })();
