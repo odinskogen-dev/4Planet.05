@@ -2,29 +2,29 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ORCA-LUME-SCENE-SYNC-62  
+**CHANGE ID:** ORCA-LUME-WEBKIT-CONTROL-STABILITY-63  
 **STATUS:** TEST / CORRECT + EXACT-HEAD QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
 **FOUNDER DIRECTION:** continue the protected ORCA + JAGUAR Gold convergence order on TEST KING and correct exact-head QA failures before further visual expansion.  
 **SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They want to move through one coherent Orca living-ocean Journey and have LUME intelligence stay synchronized with the actual chapter they are viewing.
+They want to move through one coherent Orca living-ocean Journey and switch between REAL WORLD and LUME intelligence without the control becoming unstable or unclickable.
 
 ## ONE THING TO UNDERSTAND
-The canonical Journey scene must own LUME scene intelligence. A viewer must never advance to PREY / dependency while LUME still reports identity.
+The REAL WORLD ↔ LUME ROOM control is a persistent mode control. Its viewport geometry and hit target must not move as the room behind it changes state.
 
 ## PRIMARY ACTION
-Advance through the Journey with BACK / FOLLOW THE SYSTEM while REAL WORLD ↔ LUME ROOM remains synchronized and reversible.
+Toggle REAL WORLD ↔ LUME ROOM repeatedly while continuing through BACK / HOW DO WE KNOW? / FOLLOW THE SYSTEM.
 
 ## SECONDARY DEPTH
 Inspect acoustic, source, population/place and evidence context while Bay of Biscay remains a pilot-corridor case, never a migration claim.
 
 ## P1 DOMINANT
-Exact scene synchronization between the canonical Journey state and ORCA LUME intelligence on Chromium and WebKit desktop/mobile.
+A stable, reversible LUME control on Chromium and WebKit desktop/mobile with invariant hit-target geometry across both states.
 
 ## P2 ORIENTATION
-Identity, dependency, habitat, pressure and response intelligence must update from the same canonical scene state without delayed or stale labels.
+The control label/pressed state remains truthful while the ocean/LUME room changes underneath it.
 
 ## P3 ACTION / NEXT
 BACK, HOW DO WE KNOW?, FOLLOW THE SYSTEM, LUME ROOM/REAL WORLD and echolocation interactions remain stable and readable on desktop and mobile.
@@ -33,28 +33,28 @@ BACK, HOW DO WE KNOW?, FOLLOW THE SYSTEM, LUME ROOM/REAL WORLD and echolocation 
 Population-specific truth, source/evidence, acoustic interpretation and Bay of Biscay monitoring context remain unchanged.
 
 ## CURRENT DEFECT
-Exact SHA `c16faf89eee213787e43c6a8be2d47914760465e` passed Browser Product Proof and all static/Chromium gates, but Convergence #1890 failed only on ORCA LUME WebKit desktop. The canonical Journey advanced to `data-scene-state=dependency` and `data-journey-index=1`, while `data-orca-lume-scene` remained `identity`. WebKit 390/430 passed. The current ORCA LUME listener defers scene synchronization through `requestAnimationFrame`, creating a browser-specific stale-state race.
+Exact SHA `5d3370250a7816e919d28269179b23a04052aa11` passed Browser Product Proof #895, GOLD #708, Human Craft #692, Public Preview #943, Analytics #313, all static gates, all Chromium shared/ORCA/Jaguar gates, WebKit shared gates and WebKit 390/430 ORCA LUME. Convergence #1894 failed only on WebKit desktop during the second LUME toggle. The button resolved correctly as visible semantic state `REAL WORLD`, but Playwright spent the full 90-second action timeout waiting for it to become geometrically stable. The existing v22 rule fixes the button's own width/height but does not isolate it from ancestor/compositor movement during LUME state changes.
 
 ## BOUNDED ADOPTION
-Keep the existing ORCA LUME 19 architecture and shared Journey event. Add one idempotent reconciliation path that reads canonical `data-scene-state` / `data-journey-index` whenever those attributes change, immediately synchronizes LUME intelligence, and only writes when state is actually different. Preserve the existing event listener as a compatible signal, but do not depend on animation-frame timing for truth/state synchronization. No new engine, route, media or data source.
+Keep the existing LUME architecture, state synchronization and v22 fixed button dimensions. Add an Orca-only persistent control-plane stability layer that makes the top-right control surface layout-invariant across LUME state changes: no transform/animation/transition on the control plane, isolate its layout/paint, retain fixed toggle dimensions, and keep a stable stacking/hit-test surface above room compositing. Do not force clicks, increase QA timeouts or bypass browser actionability. No new engine, route, media or data source.
 
 ## WHAT CAN BE REMOVED
-Animation-frame-only scene authority, stale LUME labels after chapter navigation and any duplicate state ownership.
+Ancestor/control-plane transitions, transforms or compositing behaviour that causes the persistent mode control to move while LUME visual layers animate.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current Orca Journey manifest, `orca-lume-19.js`, shared Journey/navigation grammar, ORCA LUME Room 21, ocean-world v23, Bay of Biscay direct route/truth boundary, Jaguar V52 path and existing evidence controls.
+`king/test`, PR131, current Orca Journey manifest, `orca-lume-19.js`, ORCA LUME Room 21, v22 fixed toggle dimensions, ocean-world v23, Bay of Biscay direct route/truth boundary, Jaguar V52 path and existing evidence/navigation controls.
 
 ## TRUTH BOUNDARY
-This is a state-coherence correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
+This is a control-stability correction only. It adds no biological, acoustic, movement, abundance, population or migration claim. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
 ## PERFORMANCE
-No polling and no render loop. Mutation observation is scoped only to canonical scene/index attributes and synchronization is idempotent.
+No polling, no new render loop and no continuous JS measurement. Use CSS containment/control-plane isolation so room animation can continue without moving the persistent control.
 
 ## MOBILE-FIRST RISK
-390/430 are already green on the failing exact head and must remain green; correction must not introduce reflow, overlay collision or additional animation.
+390/430 are already green and must remain green. The correction must preserve tap target, no overflow and existing mobile hierarchy.
 
 ## HUMAN SUCCESS
-A user advances from MEET LIFE to PREY and the visible LUME intelligence changes to PREY/dependency in the same interaction on Safari/WebKit as well as Chromium, with no stale identity state.
+A user can enter LUME, return to REAL WORLD and repeat the transition on Safari/WebKit desktop exactly as on Chromium/mobile, without a stuck or shifting mode control.
 
 ## ACCEPTANCE
 1) Typecheck + production build + smoke/contracts green. 2) Orca LUME Chromium/WebKit desktop + 390/430 all green on one exact SHA. 3) Jaguar V52 dedicated Chromium/WebKit desktop + 390/430 remains green. 4) Full Journey, BACK, evidence, next and LUME remain functional. 5) No overflow/pointer regression. 6) Exact SHA deployment verified before ACCEPTED/SAFE. 7) LIVE KING unchanged.
