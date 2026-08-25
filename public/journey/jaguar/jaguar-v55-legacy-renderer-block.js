@@ -16,8 +16,12 @@
 
   root.dataset.jaguarV55LegacyBlock = 'true';
 
+  function v52Booted() {
+    return root.dataset.jaguarV52Booted === 'true';
+  }
+
   function v52Ready() {
-    return root.dataset.jaguarV52Booted === 'true' &&
+    return v52Booted() &&
       root.dataset.jaguarQuality === 'volumetric-v52' &&
       !!stage.querySelector('canvas.jaguar-local-v52');
   }
@@ -47,11 +51,13 @@
   }
 
   // V33 attaches a bubble-phase ENTER listener that calls stage.replaceChildren()
-  // and replaces the accepted V52 canvas with the legacy 457-vertex surface.
-  // Once V52 is ready, consume ENTER in capture phase, preserve the entered state,
-  // and leave the V52 renderer mounted. This blocks only the superseded renderer boot.
+  // and replaces the accepted V52 canvas with the superseded 457-vertex surface.
+  // Guard as soon as the V52 boot path exists, not only after async V52 init finishes.
+  // This removes the WebKit/mobile timing race where an early ENTER click could erase
+  // the V52 canvas before it became ready. If V52 later fails, the controlled photo
+  // fallback remains preferable to reviving the rejected legacy renderer.
   enter.addEventListener('click', (event) => {
-    if (!v52Ready()) return;
+    if (!v52Booted()) return;
     event.stopImmediatePropagation();
     setDataset('entered', 'true');
     assertV52Authority();
