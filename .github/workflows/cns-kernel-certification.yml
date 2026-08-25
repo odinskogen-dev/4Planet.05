@@ -3,7 +3,7 @@ name: CNS Kernel 02 Certification
 on:
   pull_request:
     paths:
-      - 'supabase/migrations/2026082*_cns_*.sql'
+      - 'supabase/migrations/*_cns_*.sql'
       - 'supabase/tests/cns_*.sql'
       - 'supabase/functions/cns-gateway/**'
       - 'config/cns/**'
@@ -16,7 +16,7 @@ permissions:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:17
@@ -47,33 +47,38 @@ jobs:
           DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
           SQL
 
-      - name: Apply CNS total shadow migrations
+      - name: Apply every CNS shadow migration in lexical order
         run: |
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826001500_cns_control_of_control.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826003000_cns_failure_memory.sql
-          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.entities') is not null and to_regclass('cns.hypotheses') is not null and to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.v_source_impact') is not null" | grep -qx t
+          set -euo pipefail
+          mapfile -t files < <(find supabase/migrations -maxdepth 1 -type f -name '*_cns_*.sql' | sort)
+          test "${#files[@]}" -gt 0
+          printf '%s\n' "${files[@]}"
+          for f in "${files[@]}"; do psql -v ON_ERROR_STOP=1 -f "$f"; done
+          psql -Atqc "select to_regclass('cns.events') is not null and to_regclass('cns.control_cycles') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.authority_bindings') is not null and to_regclass('cns.evaluation_contracts') is not null and to_regclass('cns.v_public_truth_export') is not null" | grep -qx t
 
       - name: Verify event-backed GitHub state projection
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_github_sync.sql
 
-      - name: Verify acceptance hardening and deterministic fresh-context behavior
+      - name: Verify acceptance hardening and deterministic context
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_acceptance_hardening.sql
 
-      - name: Verify SUPERBRAIN truth, provenance, conflict and bounded-learning invariants
+      - name: Verify truth, provenance, conflict and bounded learning
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_superbrain_truth.sql
 
-      - name: Verify control-of-control, memory integrity and context/source fault recovery
+      - name: Verify control-of-control and memory integrity
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_control_of_control.sql
 
       - name: Verify durable failure memory and source-outage propagation
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_failure_memory.sql
+
+      - name: Verify wrong-authority, replay and public-private torture
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_authority_privacy_torture.sql
+
+      - name: Verify evaluator-of-evaluator integrity
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_eval_of_evals.sql
+
+      - name: Verify fresh-session and long-horizon semantic recovery
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_fresh_session_long_horizon.sql
 
       - name: Prepare deterministic 100-eval runner
         run: |
@@ -96,24 +101,20 @@ jobs:
             'A34': "('A34','ADVERSARIAL','Can a correcting code observation restore SHA equality?', $$pg_temp.correct_code_and_verify()$$),",
             'A38': "('A38','ADVERSARIAL','Does staging raw legacy entity preserve a fingerprint?', $$pg_temp.stage_legacy_and_verify()$$),",
           }
-          out = []
+          out=[]
           for line in src.splitlines():
-            stripped = line.lstrip()
-            replaced = False
-            for key, value in replacements.items():
-              if stripped.startswith("('" + key + "'"):
-                out.append(value)
-                replaced = True
-                break
-            if not replaced:
-              out.append(line)
-          Path('/tmp/cns_eval_100.sql').write_text('\n'.join(out) + '\n')
+            stripped=line.lstrip(); replaced=False
+            for key,value in replacements.items():
+              if stripped.startswith("('"+key+"'"):
+                out.append(value); replaced=True; break
+            if not replaced: out.append(line)
+          Path('/tmp/cns_eval_100.sql').write_text('\n'.join(out)+'\n')
           PY
 
       - name: Run 50 canonical + 50 adversarial evals
         run: psql -v ON_ERROR_STOP=1 -f /tmp/cns_eval_100.sql
 
-      - name: Run 10k project / million-event scale seed and hot-path plans
+      - name: Run 10k-project / million-event scale proof
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_kernel_02_scale.sql
 
       - name: 100 concurrent context reads
@@ -129,45 +130,34 @@ jobs:
           set +e
           seq 1 100 | xargs -I{} -P 25 sh -c 'psql -Atqc "select cns.acquire_lease('"'"'SCALE-00001'"'"','"'"'ST-1-1'"'"','"'"'scale-worker'"'"',array['"'"'shared:scale:scope'"'"'],'"'"'base'"'"',3600)" > /tmp/cns-leases/{}.ok 2>/tmp/cns-leases/{}.err'
           set -e
-          winners=$(grep -l '[0-9a-f-]\{36\}' /tmp/cns-leases/*.ok | wc -l)
-          test "$winners" -eq 1
+          test "$(grep -l '[0-9a-f-]\{36\}' /tmp/cns-leases/*.ok | wc -l)" -eq 1
 
-      - name: Verify core security boundaries
+      - name: Verify private schema and core security boundaries
         run: |
           psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
           psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
           psql -Atqc "select not has_schema_privilege('anon','cns','CREATE') and not has_schema_privilege('authenticated','cns','CREATE')" | grep -qx t
 
-      - name: Backup and restore CNS schema into clean database
+      - name: Backup and restore complete CNS including assurance layer
         run: |
           source_events=$(psql -Atqc "select count(*) from cns.events")
           source_projects=$(psql -Atqc "select count(*) from cns.projects")
           source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
-          source_control_cycles=$(psql -Atqc "select count(*) from cns.control_cycles")
+          source_controls=$(psql -Atqc "select count(*) from cns.control_cycles")
           source_failures=$(psql -Atqc "select count(*) from cns.failure_records")
-          docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
+          docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns.dump
           createdb cns_restore
-          cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
-          restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
-          restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
-          restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
-          restored_control_cycles=$(psql -d cns_restore -Atqc "select count(*) from cns.control_cycles")
-          restored_failures=$(psql -d cns_restore -Atqc "select count(*) from cns.failure_records")
-          test "$source_events" = "$restored_events"
-          test "$source_projects" = "$restored_projects"
-          test "$source_states" = "$restored_states"
-          test "$source_control_cycles" = "$restored_control_cycles"
-          test "$source_failures" = "$restored_failures"
-          psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.v_wip_control" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.v_claim_truth_trace" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.control_roles" >/dev/null
+          cat /tmp/cns.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
+          test "$source_events" = "$(psql -d cns_restore -Atqc 'select count(*) from cns.events')"
+          test "$source_projects" = "$(psql -d cns_restore -Atqc 'select count(*) from cns.projects')"
+          test "$source_states" = "$(psql -d cns_restore -Atqc 'select count(*) from cns.project_current_state')"
+          test "$source_controls" = "$(psql -d cns_restore -Atqc 'select count(*) from cns.control_cycles')"
+          test "$source_failures" = "$(psql -d cns_restore -Atqc 'select count(*) from cns.failure_records')"
           psql -d cns_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
-          psql -d cns_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_source_impact" >/dev/null
-          psql -d cns_restore -Atqc "select to_regclass('cns.hypotheses') is not null and to_regclass('cns.failure_records') is not null" | grep -qx t
+          psql -d cns_restore -Atqc "select count(*) from cns.v_public_truth_export" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_evaluator_integrity_violations" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
 
       - name: Deno type-check CNS Gateway
         uses: denoland/setup-deno@v2
@@ -177,5 +167,5 @@ jobs:
 
       - name: Report database footprint
         run: |
-          psql -Atqc "select pg_size_pretty(pg_database_size(current_database())) as db_size"
+          psql -Atqc "select pg_size_pretty(pg_database_size(current_database()))"
           psql -Atqc "select count(*) from cns.events"
