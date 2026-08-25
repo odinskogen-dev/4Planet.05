@@ -90,8 +90,10 @@ jobs:
           docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/superbrain.dump
           createdb superbrain_restore
           cat /tmp/superbrain.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=superbrain_restore
-          test "$source_events" = "$(psql -d superbrain_restore -Atqc 'select count(*) from cns.events')"
-          test "$source_tables" = "$(psql -d superbrain_restore -Atqc \"select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions','failure_records','failure_recurrences','authority_bindings','evaluation_contracts')\")"
+          restored_events=$(psql -d superbrain_restore -Atqc "select count(*) from cns.events")
+          restored_tables=$(psql -d superbrain_restore -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions','failure_records','failure_recurrences','authority_bindings','evaluation_contracts')")
+          test "$source_events" = "$restored_events"
+          test "$source_tables" = "$restored_tables"
           psql -d superbrain_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
           psql -d superbrain_restore -Atqc "select count(*) from cns.v_public_truth_export" >/dev/null
           psql -d superbrain_restore -Atqc "select count(*) from cns.v_evaluator_integrity_violations" >/dev/null
