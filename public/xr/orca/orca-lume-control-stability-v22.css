@@ -1,17 +1,27 @@
 /* ORCA LUME control stability v22
    Keep the REAL WORLD ↔ LUME ROOM action geometry invariant across mode changes.
-   Presentation/control only; no Journey or ecological truth changes. */
+   Presentation/control only; no Journey or ecological truth changes.
+   Desktop WebKit must not wait for backdrop compositing or control transitions
+   before the reversible mode action becomes stable and clickable. */
 
 #browser-experience .light-lens-toggle{
   display:inline-flex;
   align-items:center;
   justify-content:center;
+  box-sizing:border-box;
   flex:0 0 94px;
   inline-size:94px;
   min-inline-size:94px;
   max-inline-size:94px;
+  block-size:32px;
+  min-block-size:32px;
+  max-block-size:32px;
+  padding:0;
   white-space:nowrap;
-  contain:layout paint;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  transition:none;
+  will-change:auto;
 }
 
 @media(max-width:760px){
@@ -20,5 +30,8 @@
     inline-size:78px;
     min-inline-size:78px;
     max-inline-size:78px;
+    block-size:28px;
+    min-block-size:28px;
+    max-block-size:28px;
   }
 }
