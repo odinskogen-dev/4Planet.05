@@ -1,0 +1,8 @@
+{
+  "date": "2026-08-25",
+  "cns_branch": "infra/cns-kernel-02-total",
+  "receiver": "infra/cns-kernel-02-total",
+  "donor": "king/test",
+  "reason": "Bring current TEST KING state into CNS shadow before exact-head re-certification. No CNS promotion to TEST KING is implied.",
+  "post_merge_requirement": "Re-run CNS certification and convergence checks on the exact merged head before any remote cutover claim."
+}
