@@ -124,7 +124,7 @@ select cns.librarian_supersede_memory(
   cns.append_event('COC-A','MEMORY','COC-MEM-LARGE','MEMORY_SUPERSEDED','{"by":"COC-MEM-LARGE-R2"}','[]','SYSTEM','librarian','TEST','COC-SOURCE','rev-2','coc-memory-large-supersede')
 );
 
-perform cns.compile_project_context('COC-A','fresh-after-source-change',2,12000,900);
+select cns.compile_project_context('COC-A','fresh-after-source-change',2,12000,900);
 
 do $$
 declare a uuid; s text; green boolean;
