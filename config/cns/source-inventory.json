@@ -1,14 +1,17 @@
 {
-  "inventory_version": 2,
+  "inventory_version": 3,
   "mode": "SHADOW_MIGRATION",
-  "observed_at": "2026-08-24T02:47:00+02:00",
+  "observed_at": "2026-08-25T22:00:00+02:00",
   "rules": {
     "legacy_authoritative_until_cutover": true,
     "live_code_requires_fresh_github_read": true,
     "static_code_current_claims_forbidden": true,
     "conflict_policy": "FAIL_CLOSED_INCIDENT",
     "newest_wins_forbidden": true,
-    "destructive_retirement_before_parity": false
+    "destructive_retirement_before_parity": false,
+    "hypotheses_are_not_facts": true,
+    "unknown_is_first_class": true,
+    "remote_status_label_is_not_runtime_proof": true
   },
   "sources": [
     {
@@ -35,6 +38,24 @@
       "uri": "https://docs.google.com/document/d/13KGE69cwTP8hm6zjt4xVUgW3ldzfhVxh336QgmBWJVQ/edit",
       "authority": "LEGACY_CURRENT",
       "truth_domain": "KNOWLEDGE_OS_STATE"
+    },
+    {
+      "source_id": "superbrain-giga-master-2026-08-25",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET_ SUPERBRAIN + GIGA EXECUTION MULTISPRINT v1.0 — 2026-08-25",
+      "uri": "https://docs.google.com/document/d/19Z7cK9Ppnf7q-WO91za4Vw7ZKjEjjLIirBN5F5SLmMA/edit",
+      "authority": "FOUNDER_PROGRAMME_DECISION",
+      "truth_domain": "SUPERBRAIN_GIGA_PROGRAMME",
+      "migration_note": "Founder-authorised programme direction. Individual hypotheses inside it are not factual evidence."
+    },
+    {
+      "source_id": "founder-theses-register-2026-08-25",
+      "kind": "GOOGLE_DOC",
+      "name": "ODDEKALV_ FOUNDER THESES + THOUGHT LEADERSHIP REGISTER v1.0 — 2026-08-25",
+      "uri": "https://docs.google.com/document/d/1F4b-8rYGS4XbgaiSeMq4w76aD4ZioqLsxV4sPvRxMPo/edit",
+      "authority": "FOUNDER_INTELLECTUAL_LINEAGE",
+      "truth_domain": "HYPOTHESES_THEORIES_DESIGN_PRINCIPLES",
+      "migration_note": "Store as cns.hypotheses; never promote to source fact solely because founder-authored."
     },
     {
       "source_id": "founder-control",
@@ -101,7 +122,7 @@
       "project_ref": "dcxiougjoazkafyeeaxi",
       "authority": "SHADOW_TEST_ONLY",
       "truth_domain": "CNS_TEST_RUNTIME",
-      "state": "CONTROL_PLANE_ACTIVE_DATABASE_CONNECTION_TIMEOUT_AT_LAST_READ",
+      "state": "CONTROL_PLANE_ACTIVE_SQL_CONNECTION_TIMEOUT_CROSS_PROJECT_CONFIRMED_2026-08-25",
       "cutover_authority": false
     }
   ]
