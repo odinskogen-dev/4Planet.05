@@ -3,7 +3,7 @@ name: SUPERBRAIN Red Team
 on:
   pull_request:
     paths:
-      - 'supabase/migrations/2026082*_cns_*.sql'
+      - 'supabase/migrations/*_cns_*.sql'
       - 'supabase/tests/cns_*.sql'
       - 'supabase/functions/cns-gateway/**'
       - 'config/cns/**'
@@ -18,7 +18,7 @@ permissions:
 jobs:
   red-team:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17
@@ -49,34 +49,33 @@ jobs:
           DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
           SQL
 
-      - name: Build exact SUPERBRAIN schema from zero
+      - name: Build exact SUPERBRAIN schema from every CNS migration
         run: |
           set -euo pipefail
-          for f in \
-            supabase/migrations/20260824025500_cns_kernel_02_total.sql \
-            supabase/migrations/20260824030500_cns_kernel_02_hardening.sql \
-            supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql \
-            supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql \
-            supabase/migrations/20260824183500_cns_github_live_sync.sql \
-            supabase/migrations/20260824190000_cns_acceptance_hardening.sql \
-            supabase/migrations/20260824193000_cns_change_trials.sql \
-            supabase/migrations/20260826001500_cns_control_of_control.sql \
-            supabase/migrations/20260826003000_cns_failure_memory.sql
-          do
-            psql -v ON_ERROR_STOP=1 -f "$f"
-          done
-          psql -Atqc "select to_regclass('cns.control_cycles') is not null and to_regclass('cns.v_meta_control_violations') is not null and to_regclass('cns.v_superbrain_operating_readiness') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.v_source_impact') is not null" | grep -qx t
+          mapfile -t files < <(find supabase/migrations -maxdepth 1 -type f -name '*_cns_*.sql' | sort)
+          test "${#files[@]}" -gt 0
+          for f in "${files[@]}"; do psql -v ON_ERROR_STOP=1 -f "$f"; done
+          psql -Atqc "select to_regclass('cns.control_cycles') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.authority_bindings') is not null and to_regclass('cns.evaluation_contracts') is not null" | grep -qx t
 
-      - name: Re-run base truth and fresh-context gates
+      - name: Re-run base truth and context gates
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_acceptance_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_superbrain_truth.sql
 
-      - name: Attack memory, context, source drift and the control plane itself
+      - name: Attack control-of-control and memory poisoning
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_control_of_control.sql
 
-      - name: Attack source outage semantics, failure closure and recurrence
+      - name: Attack source outage, failure closure and recurrence
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_failure_memory.sql
+
+      - name: Attack wrong authority, replay and privacy boundaries
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_authority_privacy_torture.sql
+
+      - name: Attack evaluator itself
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_eval_of_evals.sql
+
+      - name: Attack long-horizon and fresh-session retrieval
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_fresh_session_long_horizon.sql
 
       - name: Private-schema and bypass resistance
         run: |
@@ -84,25 +83,26 @@ jobs:
           psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
           psql -Atqc "select has_function_privilege('service_role','cns.audit_control_plane(text,text)','EXECUTE')" | grep -qx t
 
-      - name: Recovery drill includes control-of-control and failure memory
+      - name: Recovery drill includes assurance/control/failure/authority layers
         run: |
           source_events=$(psql -Atqc "select count(*) from cns.events")
-          source_control_tables=$(psql -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions')")
-          source_failure_tables=$(psql -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('failure_records','failure_recurrences')")
+          source_tables=$(psql -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions','failure_records','failure_recurrences','authority_bindings','evaluation_contracts')")
           docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/superbrain.dump
           createdb superbrain_restore
           cat /tmp/superbrain.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=superbrain_restore
-          restored_events=$(psql -d superbrain_restore -Atqc "select count(*) from cns.events")
-          restored_control_tables=$(psql -d superbrain_restore -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions')")
-          restored_failure_tables=$(psql -d superbrain_restore -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('failure_records','failure_recurrences')")
-          test "$source_events" = "$restored_events"
-          test "$source_control_tables" = "$restored_control_tables"
-          test "$source_failure_tables" = "$restored_failure_tables"
+          test "$source_events" = "$(psql -d superbrain_restore -Atqc 'select count(*) from cns.events')"
+          test "$source_tables" = "$(psql -d superbrain_restore -Atqc \"select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relname in ('control_cycles','control_assertions','failure_records','failure_recurrences','authority_bindings','evaluation_contracts')\")"
           psql -d superbrain_restore -Atqc "select count(*) from cns.v_meta_control_violations" >/dev/null
-          psql -d superbrain_restore -Atqc "select count(*) from cns.v_superbrain_operating_readiness" >/dev/null
-          psql -d superbrain_restore -Atqc "select count(*) from cns.v_source_impact" >/dev/null
+          psql -d superbrain_restore -Atqc "select count(*) from cns.v_public_truth_export" >/dev/null
+          psql -d superbrain_restore -Atqc "select count(*) from cns.v_evaluator_integrity_violations" >/dev/null
 
-      - name: Verify migrations are replay-safe
+      - name: Verify latest assurance migrations are replay-safe
         run: |
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826001500_cns_control_of_control.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826003000_cns_failure_memory.sql
+          for f in \
+            supabase/migrations/20260826001500_cns_control_of_control.sql \
+            supabase/migrations/20260826003000_cns_failure_memory.sql \
+            supabase/migrations/20260826004500_cns_authority_privacy.sql \
+            supabase/migrations/20260826005000_cns_authority_replay_guard.sql \
+            supabase/migrations/20260826005500_cns_narrow_context.sql \
+            supabase/migrations/20260826006000_cns_evaluator_integrity.sql
+          do psql -v ON_ERROR_STOP=1 -f "$f"; done
