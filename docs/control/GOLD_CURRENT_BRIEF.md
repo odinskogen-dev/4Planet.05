@@ -2,59 +2,61 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-V52-ACCESSIBLE-CONTROLS-57  
+**CHANGE ID:** TEST-KING-ATLAS-RETURN-CAMERA-58  
 **STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
 **BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** keep coding until the Jaguar is visibly good; no acceptance from stale metadata, hidden/fallback canvases or non-render evidence. Preserve the rights-verified Ear.Rodriguez source geometry and the leading Journey.  
-**SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar branches are donors only. LIVE KING/production remains untouched.
+**FOUNDER DIRECTION:** keep coding until the Jaguar/Orca convergence line is exact-head green. The dedicated Jaguar full-source browser proof is now passing; correct remaining shared TEST KING failures without weakening product truth or reverting accepted recovered surfaces.  
+**SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only. LIVE KING/production remains untouched.
 
 ## USER ARRIVES BECAUSE
-They want to meet a Jaguar as a living animal first, then understand the living system around it.
+They move from ATLAS into a species or Journey to understand more, then expect RETURN TO ATLAS to restore the exact world context they left.
 
 ## ONE THING TO UNDERSTAND
-The creature must immediately read as a real three-dimensional Jaguar and every encounter control must be visibly and accessibly operable on desktop and mobile.
+A preserved return state owns the camera. Reopening the subject may restore the context panel and data, but it must not silently refocus or overwrite the saved world view.
 
 ## PRIMARY ACTION
-Enter the living system and inspect the local source-derived Jaguar directly.
+Move/zoom ATLAS, enter a linked species/Journey, then return to the same camera and record context.
 
 ## SECONDARY DEPTH
-Follow the eight-step Journey from encounter through living web, place, pressure, understanding, solutions, actors/action and proof.
+Continue from the restored ATLAS state into the same species, occurrence, Living System and Journey relationships without losing orientation.
 
 ## P1 DOMINANT
-A visible recognisable Jaguar with source-derived geometry, perspective depth, computed surface normals and useful encounter scale.
+Exact restored ATLAS camera on desktop and mobile.
 
 ## P2 ORIENTATION
-Species identity, chapter position and minimal TEST KING/truth context.
+The same record/entity context is available after return without forcing a second camera move.
 
 ## P3 ACTION / NEXT
-Drag/swipe, LOOK AT ME, MOVE, LUME, BACK, HOW DO WE KNOW? and FOLLOW THE SYSTEM.
+Pan/zoom, open context, move into a deeper surface and RETURN TO ATLAS with preserved state.
 
 ## P4 DEPTH
-Evidence/licence context, LUME intelligence and later Journey system layers.
+Source/provenance, layers, lenses and relationship context remain available after reconstruction.
 
 ## CURRENT DEFECT
-Exact Browser Product Proof #855 on `024313e3f76175ca320dacc571c84f0db7f328d3` proves the V56 observer-starvation defect is closed: Chromium desktop, 390 and 430 all load, enter and reach `data-jaguar-quality=volumetric-v52`. The next exact blocker is narrower and product-real: all three viewports time out waiting for the accessible `LOOK AT ME` button. The encounter control container is still authored as `aria-hidden="true"`, so LOOK AT ME / MOVE / LUME are excluded from the accessibility tree even after V52 is ready. This violates the interaction/accessibility acceptance gate and prevents exact Journey proof from proceeding.
+Exact Convergence #1862 on `79666302579540ec0b3470421471307662a1e3ba` passes policy, typecheck, production build, 89/89 smoke/contracts, lint, assets and dependency gates, and 15/16 shared Chromium vertical-slice/switcher tests. The only failure is mobile-430 return-state reconstruction: restored live zoom differs from the saved post-interaction zoom by 1.33, above the 0.25 contract. Desktop, 1280 and mobile-390 pass. The same exact head's dedicated Jaguar P0 full-source Chromium/WebKit desktop/mobile step passes, so this blocker is ATLAS camera ownership, not Jaguar rendering.
+
+The restored URL carries explicit `z` + `c` camera state together with `record` and `entity`. Current ATLAS boot calls the generic `openEntity()` deep-link path before record reconstruction. For a taxon this asynchronously loads occurrences and calls `fitRows()`, allowing entity focus to overwrite the already-restored camera. The result is timing-dependent and becomes visible on the 430 viewport.
 
 ## BOUNDED ADOPTION
-Keep V52 source-derived geometry, computed normals, perspective renderer, procedural natural-rosette shader, V53 visibility ownership, V54 authority reconciliation and V56 idempotent legacy-renderer block. When V52 is ready and scene 0 is active, make the existing encounter controls accessible and operable: remove/flip stale `aria-hidden`, ensure LOOK/MOVE/LUME are not hidden/disabled, and keep the control state tied to actual encounter authority. Do not add duplicate controls, mutate geometry, change Journey structure or touch LIVE.
+Preserve the complete return token and record/entity context. On initial ATLAS reconstruction, when explicit restored camera coordinates (`z` and `c`) are present together with a record context, treat that camera as authoritative: restore/open the record/context panel without running the generic entity deep-link camera focus. Normal direct entity deep links without a restored return camera keep their existing focus behaviour. Do not loosen the E2E tolerance and do not remove entity/record truth from the URL.
 
 ## WHAT CAN BE REMOVED
-Stale `aria-hidden=true` encounter-control state; hidden/disabled remnants that make visible controls non-operable; duplicate or cosmetic controls.
+The initial generic entity refocus when it conflicts with an explicit restored record camera; duplicate boot-time camera ownership; any test-only workaround that merely increases tolerance.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, existing control buttons, Jungle/LUME architecture, immutable Ear.Rodriguez master/licence evidence, V48 source payload and V51 transport recovery, V52 source-derived renderer, V53 active-renderer visibility correction, V54 authority reconciler and V56 idempotent legacy-renderer interception.
+`king/test`, PR131, existing ProductContext/returnTo schema, existing ATLAS URL camera (`z`,`c`), record/entity state, one shared Context Layer, current Journey return controls, current Jaguar V52 full-source path and all already-green Orca/Jaguar contracts.
 
 ## TRUTH BOUNDARY
-Geometry remains source-derived from the verified Ear.Rodriguez CC BY 4.0 master. V51 transport recovery, V52 normals/perspective/camera/lighting/coat and procedural motion are 4PLANET presentation behaviour. V57 changes control accessibility/runtime coordination only. No original source texture or animation is claimed. This is not live animal, occurrence, abundance or tracking data.
+This change affects navigation/camera reconstruction only. No biological occurrence, species, route, migration, abundance, live-data, Ear.Rodriguez licence, geometry, material or animation claim changes. `PILOT CORRIDOR ≠ MIGRATION TRACK` remains locked. LIVE KING remains untouched.
 
-## CREATURE-FIRST PERFORMANCE
-No main-thread or MutationObserver feedback loop. DPR remains capped; render pauses outside the encounter and while hidden; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
+## PERFORMANCE
+Avoid a second async occurrence-driven camera animation on restored return. Reusing the saved camera is both more deterministic and cheaper on mobile. No new network source, renderer or observer is introduced.
 
 ## MOBILE-FIRST RISK
-390/430 must load promptly, keep V52 visibly large enough to recognise and interact with, expose tappable controls to the accessibility tree, and avoid hidden canvas, blank surface, overflow, stale V48 ownership or observer starvation.
+390 and 430 must reconstruct the same saved zoom/centre without viewport-specific race behaviour, retain tappable controls and context, and avoid layout/animation side effects.
 
 ## HUMAN SUCCESS
-A first-time viewer can load the page, enter promptly, see an unmistakable three-dimensional Jaguar, rotate it, trigger LOOK AT ME / MOVE, switch to LUME and continue the Journey without losing the creature.
+A user can zoom and move the world, enter the Orca/species/Journey path, RETURN TO ATLAS and land in the same world view they left, with the relevant record/context still available.
 
 ## ACCEPTANCE
-1) Typecheck + production build + contracts relevant to the bounded change green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 load without timeout and prove `data-jaguar-quality=volumetric-v52`, V52 source/pose/material truth and a visible `.jaguar-local-v52` canvas. 4) V52 framebuffer contains real non-empty rendered pixels; V48 and photo fallback are hidden. 5) Rendered screenshots are manually inspected for recognisable Jaguar quality. 6) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 work through accessible controls. 7) No overflow/infinite loader/main-thread observer loop. 8) Exact SHA deployment verified before ACCEPTED/SAFE. 9) LIVE KING unchanged.
+1) Typecheck + production build + smoke/contracts green. 2) Gate 1 vertical slice + product switcher pass Chromium desktop-1440, desktop-1280, mobile-390 and mobile-430 with camera delta <= 0.25. 3) Jaguar dedicated full-source Chromium/WebKit desktop + 390/430 proof remains green. 4) Remaining shared Browser Product Proof and Convergence matrices complete green. 5) Exact SHA deployment verified before ACCEPTED/SAFE. 6) No ProductContext key or evidence truth is silently dropped. 7) LIVE KING unchanged.
