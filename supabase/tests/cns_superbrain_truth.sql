@@ -9,6 +9,19 @@ values('SB-SOURCE','PRIMARY_DATASET','SUPERBRAIN test source','https://example.i
 insert into cns.source_revisions(source_id,revision,persistent_id,retrieval_uri,retrieved_at,content_hash,licence,rights,scope)
 values('SB-SOURCE','rev-1','urn:4planet:test:sb-source:rev-1','https://example.invalid/source/rev-1',now(),'abc123','TEST-LICENCE','TEST-RIGHTS','{"time":"2026","geography":"TEST"}'::jsonb);
 
+-- Source revisions are immutable snapshots: a correction must be a new revision.
+do $$ begin
+  begin
+    update cns.source_revisions set content_hash='rewritten' where source_id='SB-SOURCE' and revision='rev-1';
+    raise exception 'SUPERBRAIN_SOURCE_REVISION_MUTATION_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_SOURCE_REVISION_MUTATION_NOT_BLOCKED' then raise; end if;
+  end;
+end $$;
+
+insert into cns.source_registry(source_id,source_kind,name,uri,authority,truth_domain,current_revision,state,freshness_seconds,last_verified_at)
+values('SB-STALE','PRIMARY_DATASET','Stale source','https://example.invalid/stale','PRIMARY','TEST','rev-1','ACTIVE',60,now()-interval '1 hour');
+
 insert into cns.entities(entity_id,entity_type,canonical_name,source_id,source_revision)
 values
 ('SB-E1','COMPANY','Entity One','SB-SOURCE','rev-1'),
@@ -27,14 +40,43 @@ end $$;
 insert into cns.methodologies(methodology_id,name,version,description,assumptions,validity_domain,limitations,source_id,source_revision,content_hash)
 values('SB-METHOD','Bounded test method','1.0','Method used only for certification','["assumption"]','{"domain":"TEST"}','["not real-world evidence"]','SB-SOURCE','rev-1','methodhash');
 
+do $$ begin
+  begin
+    update cns.methodologies set description='silent rewrite' where methodology_id='SB-METHOD';
+    raise exception 'SUPERBRAIN_METHOD_MUTATION_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_METHOD_MUTATION_NOT_BLOCKED' then raise; end if;
+  end;
+end $$;
+
 insert into cns.evidence(evidence_id,project_id,evidence_type,source_id,source_revision,uri,content_hash,excerpt,verified_at,state)
 values('SB-EV1','SB-TEST','SOURCE_RECORD','SB-SOURCE','rev-1','https://example.invalid/evidence','evhash','test evidence',now(),'ACTIVE');
 
+do $$ begin
+  begin
+    delete from cns.evidence where evidence_id='SB-EV1';
+    raise exception 'SUPERBRAIN_EVIDENCE_DELETE_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_EVIDENCE_DELETE_NOT_BLOCKED' then raise; end if;
+  end;
+end $$;
+
 insert into cns.claims(claim_id,project_id,subject_type,subject_id,predicate,value,authority,confidence,state,claim_kind,knowledge_state,source_id,source_revision,claimant_entity_id,valid_time_start,valid_time_end,observed_at,geography,unit,scope)
-values('SB-C-SOURCE','SB-TEST','ENTITY','SB-E1','test.metric','42'::jsonb,'SOURCE',0.9000,'ACTIVE','SOURCE_FACT','KNOWN','SB-SOURCE','rev-1','SB-E1',now()-interval '1 day',now()+interval '1 day',now(),' {"place":"TEST"} ','kg','{"population":"test"}');
+values('SB-C-SOURCE','SB-TEST','ENTITY','SB-E1','test.metric','42'::jsonb,'SOURCE',0.9000,'ACTIVE','SOURCE_FACT','KNOWN','SB-SOURCE','rev-1','SB-E1',now()-interval '1 day',now()+interval '1 day',now(),'{"place":"TEST"}','kg','{"population":"test"}');
 
 insert into cns.claims(claim_id,project_id,subject_type,subject_id,predicate,value,authority,confidence,state,claim_kind,knowledge_state,methodology_id,source_id,source_revision)
 values('SB-C-INFER','SB-TEST','ENTITY','SB-E1','test.inference','{"result":"bounded"}'::jsonb,'4PLANET',0.6000,'ACTIVE','INFERENCE','KNOWN','SB-METHOD','SB-SOURCE','rev-1');
+
+do $$ begin
+  begin
+    update cns.claims set value='43'::jsonb where claim_id='SB-C-SOURCE';
+    raise exception 'SUPERBRAIN_CLAIM_CORE_MUTATION_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_CLAIM_CORE_MUTATION_NOT_BLOCKED' then raise; end if;
+  end;
+  update cns.claims set state='DISPUTED' where claim_id='SB-C-SOURCE';
+  if (select state from cns.claims where claim_id='SB-C-SOURCE') <> 'DISPUTED' then raise exception 'SUPERBRAIN_CLAIM_STATE_TRANSITION_BLOCKED'; end if;
+end $$;
 
 insert into cns.claim_evidence(claim_id,evidence_id,relation)
 values
@@ -77,6 +119,12 @@ do $$ begin
     raise exception 'SUPERBRAIN_RESTRICTED_LOCATION_LEAK_NOT_BLOCKED';
   exception when check_violation then null;
   end;
+  begin
+    update cns.observations set value='{"present":false}'::jsonb where observation_id='SB-OBS-PRIVATE';
+    raise exception 'SUPERBRAIN_OBSERVATION_MUTATION_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_OBSERVATION_MUTATION_NOT_BLOCKED' then raise; end if;
+  end;
 end $$;
 
 insert into cns.conflicts(conflict_id,project_id,subject_type,subject_id,predicate,severity,summary,state,evidence_refs)
@@ -118,6 +166,12 @@ values('SB-HYP','SB-TEST','ODIN ODDEKALV','Better choices test thesis','A hypoth
 
 do $$ begin
   begin
+    update cns.hypotheses set statement='silent rewrite' where hypothesis_id='SB-HYP';
+    raise exception 'SUPERBRAIN_HYPOTHESIS_MUTATION_NOT_BLOCKED';
+  exception when others then
+    if sqlerrm='SUPERBRAIN_HYPOTHESIS_MUTATION_NOT_BLOCKED' then raise; end if;
+  end;
+  begin
     insert into cns.hypotheses(hypothesis_id,project_id,owner_identity,title,statement,publication_state,published_uri)
     values('SB-HYP-BAD','SB-TEST','TEST','Unsupported publication','Must fail','PUBLISHED','https://example.invalid/bad');
     raise exception 'SUPERBRAIN_UNSUPPORTED_HYPOTHESIS_PUBLICATION_NOT_BLOCKED';
@@ -137,15 +191,15 @@ do $$ begin
   if not exists(select 1 from cns.health_incidents where rule_id='OPEN_TRUTH_CONFLICT_P0' and state='OPEN') then raise exception 'SUPERBRAIN_DOCTOR_CONFLICT_MISS'; end if;
   if not exists(select 1 from cns.health_incidents where rule_id='SOURCE_CLAIM_WITHOUT_SOURCE' and entity_id='SB-C-BAD-SOURCE' and state='OPEN') then raise exception 'SUPERBRAIN_DOCTOR_SOURCE_MISS'; end if;
   if not exists(select 1 from cns.health_incidents where rule_id='DERIVED_CLAIM_WITHOUT_METHOD' and entity_id='SB-C-BAD-DERIVED' and state='OPEN') then raise exception 'SUPERBRAIN_DOCTOR_METHOD_MISS'; end if;
+  if not exists(select 1 from cns.health_incidents where rule_id='SOURCE_STALE' and entity_id='SB-STALE' and state='OPEN') then raise exception 'SUPERBRAIN_DOCTOR_STALE_SOURCE_MISS'; end if;
 end $$;
 
-update cns.system_meta set value='{"version":3,"verified":true,"state":"CERTIFIED_TEST","principle":"UNKNOWN_IS_FIRST_CLASS"}'::jsonb where key='truth_model';
+update cns.system_meta set value='{"version":4,"verified":true,"state":"CERTIFIED_TEST","principle":"UNKNOWN_IS_FIRST_CLASS","mutation_policy":"APPEND_OR_SUPERSEDE"}'::jsonb where key='truth_model';
 do $$ begin
   if not (select truth_model_green from cns.v_cutover_readiness) then raise exception 'SUPERBRAIN_TRUTH_MODEL_GATE_NOT_GREEN_AFTER_TEST_CERT'; end if;
   if (select cutover_authorized from cns.v_cutover_readiness) then raise exception 'SUPERBRAIN_TEST_MUST_NOT_AUTHORIZE_CUTOVER'; end if;
 end $$;
 
--- Public/API-facing roles must not gain CNS access as a side effect of hardening.
 do $$ begin
   if has_schema_privilege('anon','cns','USAGE') or has_schema_privilege('authenticated','cns','USAGE') then
     raise exception 'SUPERBRAIN_PRIVATE_SCHEMA_EXPOSED';
