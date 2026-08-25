@@ -46,6 +46,21 @@
     if (credit.textContent !== ATTRIBUTION) credit.textContent = ATTRIBUTION;
   }
 
+  function syncEncounterControls() {
+    if (!controls) return;
+    const encounterActive = v52Ready() && Number(root.dataset.scene || '0') === 0 && root.dataset.entered === 'true';
+    const ariaState = encounterActive ? 'false' : 'true';
+    if (controls.getAttribute('aria-hidden') !== ariaState) controls.setAttribute('aria-hidden', ariaState);
+    if (!encounterActive) return;
+
+    controls.querySelectorAll('button[data-action="look"],button[data-action="move"],button[data-action="lume"]').forEach((button) => {
+      if (button.hidden) button.hidden = false;
+      if (button.disabled) button.disabled = false;
+      if (button.getAttribute('aria-hidden') === 'true') button.removeAttribute('aria-hidden');
+      if (button.tabIndex < 0) button.tabIndex = 0;
+    });
+  }
+
   function assertV52Authority() {
     if (reconciling || !v52Ready()) return;
     reconciling = true;
@@ -59,6 +74,7 @@
       setDataset('jaguarMotionTruth', 'procedural-presentation-motion-not-source-animation');
       setDataset('jaguar3dActive', String(Number(root.dataset.scene || '0') === 0 && !document.hidden));
       ensureAttribution();
+      syncEncounterControls();
       if (Number(root.dataset.scene || '0') === 0 && status && status.textContent !== 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE') {
         status.textContent = 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE';
       }
@@ -102,6 +118,7 @@
       'data-jaguar-master-sha256',
       'data-jaguar-visual',
       'data-jaguar3d-active',
+      'data-entered',
       'data-scene'
     ]
   });
