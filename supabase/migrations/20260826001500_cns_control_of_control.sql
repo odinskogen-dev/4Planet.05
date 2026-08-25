@@ -5,6 +5,8 @@ begin;
 
 -- ---------------------------------------------------------------------------
 -- CONTROL-CYCLE LEDGER: the control system must itself be observable and auditable.
+-- clock_timestamp() is intentional: multiple audits can occur inside one transaction,
+-- while now() is transaction-stable and cannot prove which audit actually ran last.
 -- ---------------------------------------------------------------------------
 create table if not exists cns.control_cycles (
   control_cycle_id uuid primary key default gen_random_uuid(),
@@ -15,7 +17,7 @@ create table if not exists cns.control_cycles (
   assertions_total integer not null default 0,
   failures integer not null default 0,
   evidence jsonb not null default '{}'::jsonb,
-  started_at timestamptz not null default now(),
+  started_at timestamptz not null default clock_timestamp(),
   finished_at timestamptz
 );
 
@@ -50,7 +52,7 @@ begin
   end if;
   v_state:=case when v_fail=0 then 'PASS' else 'FAIL' end;
   update cns.control_cycles
-  set assertions_total=v_total,failures=v_fail,state=v_state,finished_at=now()
+  set assertions_total=v_total,failures=v_fail,state=v_state,finished_at=clock_timestamp()
   where control_cycle_id=p_cycle and state='RUNNING';
   return v_state;
 end;
@@ -110,7 +112,7 @@ language plpgsql security definer set search_path=cns,public as $$
 begin
   perform set_config('cns.memory_writer','on',true);
   update cns.memory_items
-  set state='ACTIVE',last_event_id=p_event_id,updated_at=now()
+  set state='ACTIVE',last_event_id=p_event_id,updated_at=clock_timestamp()
   where memory_id=p_memory_id and state='CANDIDATE';
   perform set_config('cns.memory_writer','off',true);
   return found;
@@ -129,7 +131,7 @@ begin
   if v_new_state is distinct from 'ACTIVE' then raise exception 'CNS_SUPERSEDING_MEMORY_MUST_BE_ACTIVE'; end if;
   perform set_config('cns.memory_writer','on',true);
   update cns.memory_items
-  set state='SUPERSEDED',valid_until=coalesce(valid_until,now()),last_event_id=p_event_id,updated_at=now()
+  set state='SUPERSEDED',valid_until=coalesce(valid_until,clock_timestamp()),last_event_id=p_event_id,updated_at=clock_timestamp()
   where memory_id=p_old_memory_id and state='ACTIVE';
   perform set_config('cns.memory_writer','off',true);
   return found;
@@ -197,11 +199,11 @@ language plpgsql security definer set search_path=cns,public as $$
 declare v_cycle uuid; r record;
 begin
   perform cns.doctor_scan();
-  insert into cns.control_cycles(cycle_kind,label,exact_sha,state)
-  values('AUDITOR',p_label,p_exact_sha,'RUNNING') returning control_cycle_id into v_cycle;
+  insert into cns.control_cycles(cycle_kind,label,exact_sha,state,started_at)
+  values('AUDITOR',p_label,p_exact_sha,'RUNNING',clock_timestamp()) returning control_cycle_id into v_cycle;
 
   insert into cns.control_assertions(control_cycle_id,assertion_key,severity,passed,evidence)
-  values(v_cycle,'META_AUDITOR_EXECUTED','INFO',true,jsonb_build_object('checked_at',now()));
+  values(v_cycle,'META_AUDITOR_EXECUTED','INFO',true,jsonb_build_object('checked_at',clock_timestamp()));
 
   for r in select * from cns.v_meta_control_violations loop
     insert into cns.control_assertions(control_cycle_id,assertion_key,severity,passed,entity_type,entity_id,project_id,evidence)
@@ -215,11 +217,11 @@ $$;
 
 create or replace view cns.v_superbrain_operating_readiness with (security_invoker=true) as
 select r.*,
-       coalesce((select c.state='PASS' and c.finished_at>now()-interval '1 hour'
+       coalesce((select c.state='PASS' and c.finished_at>clock_timestamp()-interval '1 hour'
                  from cns.control_cycles c where c.cycle_kind='AUDITOR'
-                 order by c.started_at desc limit 1),false) as control_of_control_green,
+                 order by c.started_at desc,c.control_cycle_id desc limit 1),false) as control_of_control_green,
        coalesce((select c.finished_at from cns.control_cycles c where c.cycle_kind='AUDITOR'
-                 order by c.started_at desc limit 1),null) as last_meta_audit_at
+                 order by c.started_at desc,c.control_cycle_id desc limit 1),null) as last_meta_audit_at
 from cns.v_cutover_readiness r;
 
 -- ---------------------------------------------------------------------------
@@ -239,10 +241,10 @@ grant execute on function cns.librarian_supersede_memory(text,text,bigint) to se
 
 insert into cns.system_meta(key,value) values
 ('control_of_control','{"version":1,"verified":false,"state":"PENDING_CERTIFICATION","max_audit_age_seconds":3600}'::jsonb)
-on conflict(key) do update set value=excluded.value,updated_at=now();
+on conflict(key) do update set value=excluded.value,updated_at=clock_timestamp();
 
 update cns.system_meta
-set value='{"version":5,"migration":"20260826001500_cns_control_of_control","truth_model":"SUPERBRAIN_V4","control_of_control":"V1"}'::jsonb,updated_at=now()
+set value='{"version":5,"migration":"20260826001500_cns_control_of_control","truth_model":"SUPERBRAIN_V4","control_of_control":"V1"}'::jsonb,updated_at=clock_timestamp()
 where key='schema_version';
 
 commit;
