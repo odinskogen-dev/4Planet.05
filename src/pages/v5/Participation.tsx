@@ -15,6 +15,8 @@ import {
 } from "@/content/participation";
 import "@/styles/actor-participation.css";
 
+const humanise = (value: string) => value.replace(/_/g, " ");
+
 function SourceMark({ opportunity }: { opportunity: ParticipationOpportunity }) {
   const firstParty = opportunity.source.assertion === "ACTOR_OFFICIAL";
   return (
@@ -53,8 +55,8 @@ export function OpportunityCard({ opportunity, compact = false }: { opportunity:
   return (
     <article className={`participation-card${compact ? " participation-card-compact" : ""}`}>
       <div className="participation-card-top">
-        <div className="participation-types">{opportunity.types.map((type) => <span key={type}>{type.replaceAll("_", " ")}</span>)}</div>
-        <span className={`participation-availability participation-availability-${opportunity.availability.toLowerCase()}`}>{opportunity.availability.replaceAll("_", " ")}</span>
+        <div className="participation-types">{opportunity.types.map((type) => <span key={type}>{humanise(type)}</span>)}</div>
+        <span className={`participation-availability participation-availability-${opportunity.availability.toLowerCase()}`}>{humanise(opportunity.availability)}</span>
       </div>
       <p className="participation-actor">{opportunity.actorName}</p>
       <h3>{opportunity.title}</h3>
@@ -63,7 +65,7 @@ export function OpportunityCard({ opportunity, compact = false }: { opportunity:
         <div><span>WHERE</span><strong>{opportunity.place}</strong></div>
         <div><span>WHEN</span><strong>{opportunity.dates}</strong></div>
         <div><span>TIME</span><strong>{opportunity.duration}</strong></div>
-        <div><span>MODE</span><strong>{opportunity.mode.replaceAll("_", " ")}</strong></div>
+        <div><span>MODE</span><strong>{humanise(opportunity.mode)}</strong></div>
       </div>
       {!compact && (
         <>
@@ -230,7 +232,7 @@ export function FindYourWayToHelp() {
 
       <section className="participation-transfer-proof">
         <header><p>TEMPLATE TRANSFER PROOF</p><h2>One Actor system. Unlike actors.</h2><span>The shared schema must survive marine monitoring, restoration implementation and knowledge infrastructure without organisation-specific page architecture.</span></header>
-        <div className="participation-transfer-grid">{ACTOR_TEMPLATE_TRANSFER_CASES.map((actor) => <article key={actor.actorId}><span>{actor.archetype}</span><h3>{actor.actorName}</h3><p>{actor.note}</p><div><b>{actor.actorId}</b><b>{actor.getInvolvedState.replaceAll("_", " ")}</b></div><a href={actor.source} target="_blank" rel="noreferrer">SOURCE ↗</a></article>)}</div>
+        <div className="participation-transfer-grid">{ACTOR_TEMPLATE_TRANSFER_CASES.map((actor) => <article key={actor.actorId}><span>{actor.archetype}</span><h3>{actor.actorName}</h3><p>{actor.note}</p><div><b>{actor.actorId}</b><b>{humanise(actor.getInvolvedState)}</b></div><a href={actor.source} target="_blank" rel="noreferrer">SOURCE ↗</a></article>)}</div>
       </section>
 
       <section className="participation-trust">
