@@ -2,60 +2,54 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-ACTOR-SCALE-CONTRACT-CORRECTION-77  
-**STATUS:** TEST / CORRECT + EXACT-HEAD QA  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**ACCEPTED ROLLBACK BASE:** `b3541634fbc8dcd366b86691a0eb5cba6effc251` / immutable TEST KING review preserved in Prototype SAFE  
-**FOUNDER DIRECTION:** preserve the accepted ORCA/Jaguar baseline and correct every exact-head regression before continuing visual Gold work. LIVE KING/production remains untouched.  
-**SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar/Orca branches are donors only.
+**CHANGE ID:** TEST-KING-NIGHT-ORCHESTRA-EMBLA-FIRST-LOOP-01  
+**STATUS:** TEST / EXACT-HEAD QA  
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #211 hourly Symphony coordination mirror / Founder-directed NIGHT ORCHESTRA MAXIMUM PRODUCT PROGRESS 01  
+**PRE-MUTATION HEAD:** `71b620dd3af5f4537ffad7396383007987a71795`  
+**FOUNDER DIRECTION:** continue one authoritative TEST KING, preserve current ORCA/Jaguar/LUME Gold work, and create material product progress on separable seams without branch sprawl.  
+**SINGLE-SEAM RULE:** `king/test` remains the only moving integration line. No LIVE promotion is authorised.
 
 ## USER ARRIVES BECAUSE
-They need the current ORCA/Jaguar TEST KING candidate to pass shared acceptance gates without a stale unrelated Actor Gold copy assertion blocking browser proof.
+A person reaches 4SAPIEN with a real decision and needs Embla to do something truthful rather than stop at a decorative prompt box.
 
 ## ONE THING TO UNDERSTAND
-The Actor Engine still encodes torture-test-first scaling and the public Actor page now says “One exceptional system. Ten unlike actors. Then scale.” The smoke contract still requires an older literal sentence, “next nine profiles must stress-test the same template”, even though the current copy expresses the same controlled scaling doctrine.
+Embla is a personal decision interface over evidence-constrained Choice/BEE logic. It may route a question into a proof path that actually exists, but it may not manufacture an answer, evidence, score or confidence where the underlying adapter is absent.
 
 ## PRIMARY ACTION
-Update only the stale Actor Gold contract to assert the current explicit torture-test/scaling language while retaining the hard `ACTOR_TORTURE_TEST_ARCHETYPES` requirement.
+Type or choose a decision prompt, run Embla, and receive the strongest currently supported evidence path. FOOD routes into the existing PICK_ proof. Unsupported CAR/HOME paths remain intake-only. Finance may open the existing analysis proof without producing trading instructions.
 
 ## SECONDARY DEPTH
-Preserve Actor Engine semantics, participation seam, ORCA/Jaguar runtime, Bay of Biscay, LUME, build tooling and all browser QA thresholds.
+Preserve the existing BEE quorum doctrine: missing evidence remains UNKNOWN; derivative repetition does not manufacture corroboration; hard constraints fail closed; recommendation eligibility requires adequate evidence.
 
 ## P1 DOMINANT
-The Actor scale test continues to prove one shared system is stress-tested across ten unlike actors before scaling, without depending on superseded wording.
+One working human loop: prompt → domain intake → truth boundary → existing evidence product. The interface must visibly distinguish EVIDENCE PATH READY from INTAKE ONLY.
 
 ## P2 ORIENTATION
-This is a shared QA contract correction only; no Founder-visible product behaviour changes.
+This is the first bounded Embla seam, not a claim of a general AI conversation engine. Deterministic routing is deliberate until deeper retrieval/conversation evidence contracts exist.
 
 ## P3 ACTION / NEXT
-After smoke/contracts are green, continue exact-head ORCA/Jaguar Chromium + WebKit acceptance without weakening product gates.
+FOOD may continue to `/4sapien/food`; unsupported domains show why no recommendation is available. The user retains the decision.
 
 ## P4 DEPTH
-Existing rights, truth, security, performance, donor lineage and Prototype SAFE boundaries remain unchanged.
-
-## CURRENT DEFECT
-Exact head `f7f0a9f189a2f33db9944d714e137adeeb4c75a9` now passes clean install, typecheck and production build, proving the prior Vite dependency repair. Convergence #2066 then runs 97 smoke/contracts and passes 96. The only failure is `Actor scale strategy is torture-test-first not x100 generation`: `scripts/actor-gold-contract.test.mjs` requires `/next nine profiles must stress-test the same template/i`, while `ActorGold.tsx` now truthfully says `One exceptional system. Ten unlike actors. Then scale.` and still identifies ORCA as Gold 01. This is stale literal QA, not an ORCA/Jaguar or Actor Engine architecture failure.
-
-## BOUNDED CORRECTION
-Keep the existing `ACTOR_TORTURE_TEST_ARCHETYPES` and `ORCA is Gold 01` assertions. Replace only the superseded literal-copy assertion with the current explicit `One exceptional system. Ten unlike actors. Then scale.` contract. Do not change Actor runtime/content, ORCA/Jaguar runtime, QA timeouts, browser thresholds or LIVE.
+Existing ORCA LUME, Jaguar physical staging, Actor Gold, ATLAS, source/rights/security and Product Context semantics are unchanged by this bounded product seam.
 
 ## WHAT CAN BE REMOVED
-The stale assertion that one exact historical sentence is the only valid expression of the torture-test-first scaling doctrine.
+The former `CONVERSATION ENGINE WIRING NEXT — THIS SURFACE CURRENTLY MATERIALISES THE PRODUCT MODEL.` dead-end state.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, accepted rollback, Actor Engine archetype contract, current Actor Gold copy, ORCA Journey/LUME/Bay of Biscay, Jaguar V52/Jungle/LUME, current QA workflows and thresholds.
+`src/choice/bee.ts`, existing `/4sapien/food` PICK_ product, `/4sapien/finance`, existing FourSapien visual baseline, exact TEST KING gates and existing unknown/evidence rules.
 
 ## TRUTH BOUNDARY
-QA contract correction only. No ecological, partner, live-data, rights, funding or product-maturity claims change.
+Embla currently performs bounded decision intake/routing only. It does not claim live AI conversation, complete evidence retrieval, a universal score, personalised trading instruction or a recommendation where evidence quorum is absent.
 
 ## PERFORMANCE
-No runtime or bundle behaviour change intended.
+No network request is added to the 4SAPIEN front door. Prompt routing is local deterministic logic. Existing FOOD network behaviour is unchanged.
 
 ## MOBILE-FIRST RISK
-None introduced by this static contract correction. Existing 390/430 browser gates remain mandatory.
+The result panel is progressive content inside the existing responsive Embla surface; it must not introduce horizontal overflow or crowd the primary prompt/action on 390/430 widths.
 
 ## HUMAN SUCCESS
-The exact TEST KING candidate reaches the actual ORCA/Jaguar browser proof while the Actor scaling doctrine remains explicitly protected by automated QA.
+A first-time user can ask a grocery decision, run Embla, understand that the system has found a decision path rather than an answer, and enter the real FOOD evidence proof. A CAR/HOME question is explicitly withheld instead of guessed.
 
 ## ACCEPTANCE
-1) Clean install + typecheck + production build + all smoke/contracts green. 2) Assets/security/truth/tree gates green. 3) ORCA LUME ordinary-click proof passes desktop/390/430. 4) Shared Chromium including ATLAS return remains green. 5) Jaguar V52 Chromium + WebKit desktop/390/430 remains green. 6) Shared WebKit + ORCA WebKit pass. 7) Exact SHA deployment verified before any new ACCEPTED/SAFE version. 8) LIVE KING unchanged.
+1) Exact head clean install + typecheck + production build + contract/smoke green. 2) Embla contract proves FOOD route, unsupported-domain fail-closed behaviour and finance boundary. 3) Chromium + WebKit 4SAPIEN browser gates pass desktop/390/430 without overflow. 4) Existing ORCA/Jaguar/shared browser gates remain green. 5) Gold, security, truth and Public Preview gates remain green. 6) Exact TEST preview identity is verified. 7) LIVE KING remains unchanged.
