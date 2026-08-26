@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const shared = read("src/analytics/ProductAnalytics.ts");
 const analytics = read("src/analytics/Analytics.tsx");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
+const foodChoiceProof = read("src/food/PickAlternatives.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -58,16 +59,30 @@ test("4SAPIEN is measured as its own repeat-utility surface", () => {
   assert.match(routeAnalytics, /choice_food|choice_\$\{domain\}/);
 });
 
+test("FOOD closes the bounded utility proof without inventing a recommendation", () => {
+  assert.match(foodChoiceProof, /trackChoiceResult\(\"food\"/);
+  assert.match(foodChoiceProof, /\"recommendation\"/);
+  assert.match(foodChoiceProof, /\"withheld\"/);
+  assert.match(foodChoiceProof, /\"insufficient_evidence\"/);
+  assert.match(foodChoiceProof, /trackChoiceFeedback\(\"food\"/);
+  assert.match(foodChoiceProof, /\"helpful\"/);
+  assert.match(foodChoiceProof, /\"not_helpful\"/);
+  assert.match(foodChoiceProof, /No payment occurs/);
+  assert.match(foodChoiceProof, /not proven willingness to pay/);
+  assert.match(shared, /\"consumer_interest\"/);
+});
+
 test("AI-premium choice events stay categorical and privacy-safe", () => {
   assert.match(shared, /ChoiceDomain/);
   assert.match(shared, /ChoiceResult/);
   assert.match(shared, /ChoiceFeedback/);
   assert.match(shared, /PaymentSignal/);
-  assert.doesNotMatch(shared, /barcode\s*:|registration(?:Number|_number)?\s*:|address\s*:|health(?:Context|_context)?\s*:|prompt\s*:/i);
+  const choiceAnalytics = `${shared}\n${foodChoiceProof}`;
+  assert.doesNotMatch(choiceAnalytics, /barcode\s*:|registration(?:Number|_number)?\s*:|address\s*:|health(?:Context|_context)?\s*:|prompt\s*:/i);
 });
 
 test("shared analytics contract rejects free-text and precise-location fields by design", () => {
-  const combined = `${shared}\n${routeAnalytics}`;
+  const combined = `${shared}\n${routeAnalytics}\n${foodChoiceProof}`;
   assert.doesNotMatch(combined, /\b(email|name|query_text|free_text|latitude|longitude|coordinates)\s*:/i);
   assert.match(shared, /safeToken/);
   assert.match(shared, /Never pass names, email addresses,\s*\n \* free-text queries, exact coordinates/);
