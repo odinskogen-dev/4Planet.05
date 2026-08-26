@@ -20,6 +20,10 @@ const hasAny = (value: string, words: string[]) => words.some((word) => value.in
  * external evidence retrieval or a recommendation exists where it does not. Its
  * job is to convert a human decision prompt into the strongest currently proven
  * 4SAPIEN choice path and fail closed when that path is not yet evidence-ready.
+ *
+ * Specific choice domains are resolved before generic financial language so a
+ * question such as "Can I afford this home?" stays a HOME decision instead of
+ * being collapsed into FINANCE merely because it contains the word "afford".
  */
 export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
   const value = prompt.trim().toLowerCase();
@@ -36,21 +40,6 @@ export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
         "Embla has identified the decision path, not the answer. A recommendation is not eligible until the underlying product evidence is actually read and sufficient.",
       nextHref: "/4sapien/food",
       nextLabel: "OPEN LIVE FOOD PROOF",
-    };
-  }
-
-  if (hasAny(value, ["investment", "invest", "stock", "share", "money", "finance", "afford", "budget"])) {
-    return {
-      domain: "FINANCE",
-      status: "INTAKE_ONLY",
-      eyebrow: "EMBLA → 4FINANCE",
-      title: "Frame the financial decision before scoring it.",
-      detail:
-        "4FINANCE can currently show the intended money, cost and scenario structure. Connected personal accounts and evidence-complete investment comparison are not active in this proof.",
-      truthBoundary:
-        "No personalised trading instruction is produced. Missing financial context remains UNKNOWN and no BUY / SELL recommendation is generated.",
-      nextHref: "/4sapien/finance",
-      nextLabel: "OPEN 4FINANCE PROOF",
     };
   }
 
@@ -77,6 +66,21 @@ export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
         "The intended comparison covers purchase or rent cost, energy, running cost, materials, place, risk and long-term constraints.",
       truthBoundary:
         "The HOME evidence adapter is not yet active. Embla keeps the decision open rather than treating missing evidence as a negative score.",
+    };
+  }
+
+  if (hasAny(value, ["investment", "invest", "stock", "share", "money", "finance", "afford", "budget"])) {
+    return {
+      domain: "FINANCE",
+      status: "INTAKE_ONLY",
+      eyebrow: "EMBLA → 4FINANCE",
+      title: "Frame the financial decision before scoring it.",
+      detail:
+        "4FINANCE can currently show the intended money, cost and scenario structure. Connected personal accounts and evidence-complete investment comparison are not active in this proof.",
+      truthBoundary:
+        "No personalised trading instruction is produced. Missing financial context remains UNKNOWN and no BUY / SELL recommendation is generated.",
+      nextHref: "/4sapien/finance",
+      nextLabel: "OPEN 4FINANCE PROOF",
     };
   }
 
