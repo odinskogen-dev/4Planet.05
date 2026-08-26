@@ -1,5 +1,6 @@
 import { Agent } from "agents";
 import type { Outcome, Section, WorkPackage } from "./contracts";
+import { checkPackageAdapterScope } from "./sectionAdapters";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -38,6 +39,18 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       return this.finish(pkg, "REJECTED", "Package section does not match worker role.");
     }
 
+    const adapterScope = checkPackageAdapterScope(pkg);
+    if (!adapterScope.ok) {
+      const rejected = adapterScope.rejectedScopes.length
+        ? adapterScope.rejectedScopes.join(", ")
+        : "section policy forbids execution";
+      return this.finish(
+        pkg,
+        "REJECTED",
+        `Section adapter policy rejected write scope(s): ${rejected}. Mode=${adapterScope.mode}.`,
+      );
+    }
+
     const now = new Date().toISOString();
     this.sql`
       INSERT INTO work_history (work_package_id, payload, updated_at)
@@ -45,9 +58,14 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       ON CONFLICT(work_package_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at
     `;
 
-    // V01 deliberately stops at the execution-adapter boundary.
-    // Each section receives its own bounded tools/model/skills only after shadow validation.
-    return this.finish(pkg, "BLOCKED", "Section execution adapter not connected yet; orchestration boundary verified.");
+    // V01 now has a machine-enforced section adapter policy, but deliberately
+    // stops before connecting external execution tools. Tool/model bindings are
+    // added only after shadow evidence proves the policy is sufficient.
+    return this.finish(
+      pkg,
+      "BLOCKED",
+      `Adapter scope accepted in ${adapterScope.mode} mode; external section execution adapter remains disconnected.`,
+    );
   }
 
   private finish(pkg: WorkPackage, status: Outcome["status"], materialDelta: string): Outcome {
