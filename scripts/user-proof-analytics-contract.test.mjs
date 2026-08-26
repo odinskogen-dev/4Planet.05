@@ -16,6 +16,10 @@ const requiredEvents = [
   "deeper_exploration",
   "share_referral",
   "join_interest",
+  "choice_started",
+  "choice_result",
+  "choice_feedback",
+  "payment_signal",
 ];
 
 const requiredAnalyticsHosts = [
@@ -45,6 +49,21 @@ test("user proof funnel is broader than page views", () => {
   assert.match(routeAnalytics, /trackProductEntry/);
   assert.match(routeAnalytics, /return_visit/);
   assert.match(routeAnalytics, /20_000|20000/);
+});
+
+test("4SAPIEN is measured as its own repeat-utility surface", () => {
+  assert.match(shared, /\"4sapien\"/);
+  assert.match(routeAnalytics, /pathname\.startsWith\(\"\/4sapien\"\)/);
+  assert.match(routeAnalytics, /trackChoiceStarted/);
+  assert.match(routeAnalytics, /choice_food|choice_\$\{domain\}/);
+});
+
+test("AI-premium choice events stay categorical and privacy-safe", () => {
+  assert.match(shared, /ChoiceDomain/);
+  assert.match(shared, /ChoiceResult/);
+  assert.match(shared, /ChoiceFeedback/);
+  assert.match(shared, /PaymentSignal/);
+  assert.doesNotMatch(shared, /barcode\s*:|registration(?:Number|_number)?\s*:|address\s*:|health(?:Context|_context)?\s*:|prompt\s*:/i);
 });
 
 test("shared analytics contract rejects free-text and precise-location fields by design", () => {
