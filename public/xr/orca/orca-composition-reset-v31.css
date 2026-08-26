@@ -34,7 +34,24 @@
   #browser-experience .nature-subject__meta{display:none!important}
   #browser-experience .nature-premium-hotspot__label{display:none!important}
   #browser-experience[data-light-lens="true"] .light-lens-caption{display:none!important}
-  #browser-experience[data-light-lens="true"] .orca-lume-intel{position:absolute!important;left:12px!important;right:12px!important;bottom:14px!important;top:auto!important;width:auto!important;max-height:116px!important;box-sizing:border-box!important;overflow:hidden!important}
+
+  /* The LUME intelligence surface is secondary to Journey navigation on compact
+     screens. Keep it in the upper safe viewport so SEND ECHO PULSE can never
+     occupy the persistent BACK / EVIDENCE / NEXT hit region. */
+  #browser-experience[data-light-lens="true"] > .orca-lume-intel{
+    position:fixed!important;
+    left:max(12px,env(safe-area-inset-left))!important;
+    right:max(12px,env(safe-area-inset-right))!important;
+    top:max(78px,calc(env(safe-area-inset-top) + 70px))!important;
+    bottom:auto!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:116px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    transform:none!important;
+    translate:none!important;
+  }
   #browser-experience[data-light-lens="true"] .orca-lume-rail{display:none!important}
 }
 
