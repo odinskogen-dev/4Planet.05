@@ -49,8 +49,9 @@ test('real Orca photo base is rights-labelled and fails closed to wireframe', ()
   assert.match(motionCss, /unavailable-wireframe-fallback/);
 });
 
-test('LUME is the branch default while real-world mode remains reversible', () => {
-  assert.match(html, /data-lume-default="true"/);
+test('real-world ocean is the default and LUME remains a reversible intelligence-room state', () => {
+  assert.match(html, /data-lume-default="false"/);
+  assert.match(html, /ENTER THE LIVING OCEAN/);
   assert.match(lume, /activateDefaultLume/);
   assert.match(lume, /toggle\.click\(\)/);
   assert.match(lightLens, /toggle\.textContent = enabled \? 'REAL WORLD' : 'LIGHT LENS'/);
