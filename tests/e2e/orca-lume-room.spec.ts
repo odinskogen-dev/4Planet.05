@@ -15,7 +15,7 @@ async function expectViewportSafe(page: Page, locator: Locator, label: string) {
   expect(box!.x + box!.width, `${label}: right edge`).toBeLessThanOrEqual(viewport!.width + 2);
 }
 
-test("Orca LUME Room 21 is interactive, truth-bounded and viewport-safe", async ({ page }, testInfo) => {
+test("Orca LUME Room 21 is explicit, reversible, truth-bounded and viewport-safe", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
 
@@ -24,8 +24,8 @@ test("Orca LUME Room 21 is interactive, truth-bounded and viewport-safe", async 
 
   await expect(root).toHaveAttribute("data-entity-id", "taxon:gbif:2440483", { timeout: 20_000 });
   await expect(root).toHaveAttribute("data-premium-layer", "premium-v17-orca-transfer", { timeout: 12_000 });
-  await expect(root).toHaveAttribute("data-lume-default", "true");
-  await expect(root).toHaveAttribute("data-light-lens", "true", { timeout: 12_000 });
+  await expect(root).toHaveAttribute("data-lume-default", "false");
+  await expect(root).toHaveAttribute("data-light-lens", "false", { timeout: 12_000 });
   await expect(root).toHaveAttribute("data-orca-lume-installed", "true");
   await expect(root).toHaveAttribute("data-orca-lume-room21", "true");
 
@@ -33,22 +33,30 @@ test("Orca LUME Room 21 is interactive, truth-bounded and viewport-safe", async 
   await expect(page.locator(".orca-lume-room21__back")).toHaveCount(1);
   await expect(page.locator(".orca-lume-room21__floor")).toHaveCount(1);
   await expect(page.locator(".orca-lume-room21__side")).toHaveCount(2);
-  await expect(page.locator(".orca-lume-intel")).toBeVisible();
-  await expect(page.locator(".orca-lume-intel__primary")).toContainText(/Orcinus orca/i);
-  await expect(page.locator(".orca-lume-intel__secondary")).toContainText(/GBIF 2440483/i);
-  await expect(page.locator(".orca-lume-acoustic__meta")).toContainText(/NOT FIELD AUDIO/i);
   await expect(page.locator(".nature-entry__boundary")).toContainText(/NOT LIVE TRACKING/i);
   await expect(page.locator(".nature-footer")).toContainText(/PILOT CORRIDOR ≠ MIGRATION TRACK/i);
 
   const toggle = page.locator(".light-lens-toggle");
   await expect(toggle).toBeVisible();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await expect(toggle).toContainText(/REAL WORLD/i);
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(toggle).toHaveAttribute("aria-label", "Enter Orca LUME intelligence room");
+  await expect(toggle).toContainText(/LUME ROOM/i);
 
   await page.locator(".nature-entry__button").click();
   await expect(root).toHaveAttribute("data-entered", "true");
   await expect(root).toHaveAttribute("data-scene-state", "identity");
+
+  // LUME is an explicit intelligence-room state, not the default presentation.
+  await toggle.click();
+  await expect(root).toHaveAttribute("data-light-lens", "true", { timeout: 12_000 });
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).toContainText(/REAL WORLD/i);
   await expect(root).toHaveAttribute("data-orca-lume-scene", "identity");
+
+  await expect(page.locator(".orca-lume-intel")).toBeVisible();
+  await expect(page.locator(".orca-lume-intel__primary")).toContainText(/Orcinus orca/i);
+  await expect(page.locator(".orca-lume-intel__secondary")).toContainText(/GBIF 2440483/i);
+  await expect(page.locator(".orca-lume-acoustic__meta")).toContainText(/NOT FIELD AUDIO/i);
 
   const echo = page.locator(".orca-lume-echo-trigger");
   await expect(echo).toBeVisible();
@@ -70,13 +78,18 @@ test("Orca LUME Room 21 is interactive, truth-bounded and viewport-safe", async 
   }
   expect(await page.evaluate(() => window.scrollX)).toBe(0);
 
+  // Round-trip back to the real ocean and into LUME again without state loss.
   await toggle.click();
   await expect(root).toHaveAttribute("data-light-lens", "false");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
   await expect(toggle).toHaveAttribute("aria-label", "Enter Orca LUME intelligence room");
   await expect(toggle).toContainText(/LUME ROOM/i);
   await toggle.click();
   await expect(root).toHaveAttribute("data-light-lens", "true");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
   await expect(toggle).toContainText(/REAL WORLD/i);
+  await expect(root).toHaveAttribute("data-scene-state", "dependency");
+  await expect(root).toHaveAttribute("data-orca-lume-scene", "dependency");
 
   await page.screenshot({ path: `${OUT}/${testInfo.project.name}-orca-lume-room.png`, fullPage: true });
   expect(errors, `page errors: ${errors.join(" | ")}`).toEqual([]);
