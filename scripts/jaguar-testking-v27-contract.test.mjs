@@ -25,7 +25,10 @@ test('TEST KING Jaguar wires local Ear.Rodriguez V52 source-derived runtime with
   // V52 is the sole active local WebGL renderer; legacy V48 visual runtime must not reclaim ownership.
   assert.match(local,/window\.__JAGUAR_LOCAL_V48/);assert.match(local,/jaguar-local-v52/);assert.match(local,/volumetric-v52/);assert.match(local,/DecompressionStream/);assert.match(local,/gl\.drawElements\(gl\.TRIANGLES/);assert.match(local,/pointerdown/);assert.match(local,/pointermove/);assert.match(local,/visibilitychange/);assert.match(local,/CC BY 4\.0/);
   assert.match(authority,/jaguarV54Authority/);assert.match(authority,/ear-rodriguez-local-v52-source-derived/);assert.doesNotMatch(local,/sketchfab\.com\/models/);assert.doesNotMatch(local,/<iframe/);
-  assert.match(html,/LOCAL SOURCE-DERIVED RUNTIME/);assert.match(html,/local high-fidelity derivative/i);assert.match(html,/external viewer was rejected/i);assert.match(html,/CC BY 4\.0/);
+
+  // Public copy must preserve the source/truth contract without leaking stale QA/implementation language into first read.
+  assert.match(html,/SOURCE-DERIVED MODEL/);assert.match(html,/rights-verified Ear\.Rodriguez Jaguar master/i);assert.match(html,/coat shader and interaction motion are presentation layers/i);assert.match(html,/not source animation/i);assert.match(html,/CC BY 4\.0/);
+  assert.doesNotMatch(html,/under exact browser verification/i);assert.doesNotMatch(html,/LOCAL HIGH-FIDELITY 3D · IN QA/i);assert.doesNotMatch(html,/ASSEMBLING JAGUAR/i);
 
   // Existing controlled reduced donor remains fallback/recovery evidence only.
   assert.match(html,/jaguar-ear-proxy-v25\.js/);assert.match(html,/jaguar-surface-recovery-v37\.js/);assert.match(html,/jaguar-runtime-calibration-v38\.js/);assert.match(html,/jaguar-gold-v33\.js/);assert.match(html,/jaguar-gold-v33\.css/);
@@ -40,7 +43,7 @@ test('TEST KING Jaguar wires local Ear.Rodriguez V52 source-derived runtime with
 
   for(const label of ['01 / 08 · MEET LIFE','02 / 08 · LIVING WEB','03 / 08 · ECOSYSTEM + ATLAS','04 / 08 · PRESSURE','05 / 08 · UNDERSTANDING','06 / 08 · SOLUTIONS','07 / 08 · ACTORS + ACTION','08 / 08 · PROOF']) assert.ok(runtime.includes(label),`missing ${label}`);
   assert.match(css,/lume-grid--floor/);assert.match(css,/lume-grid--back/);assert.match(css,/lume-intel--species/);assert.match(css,/room--canopy/);assert.match(css,/ground-contact/);assert.match(css,/@media\(max-width:760px\)/);
-  assert.match(html,/PANTHERA ONCA/);assert.match(html,/controlled species media remains visible/i);assert.doesNotMatch(html,/official Sketchfab viewer/i);
+  assert.match(html,/PANTHERA ONCA/);assert.match(html,/PRESENTATION MODEL · NOT LIVE ANIMAL DATA/);assert.doesNotMatch(html,/official Sketchfab viewer/i);
   assert.doesNotMatch(html,/ORIGINAL ANIMATED MASTER SECURED/);
 });
 
