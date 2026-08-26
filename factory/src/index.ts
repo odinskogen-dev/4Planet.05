@@ -1,18 +1,40 @@
 import { Agent, callable, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
-import type { LearningCandidate, Outcome, ProjectProjection, WorkPackage } from "./contracts";
+import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
+import {
+  BrainControlWorker,
+  CapitalWorker,
+  CodeQaWorker,
+  LearningWorker,
+  ProductDesignWorker,
+  ResearchDataWorker,
+  UserDistributionWorker,
+} from "./workers";
+
+export { WorkPackageWorkflow } from "./workflow";
+export {
+  BrainControlWorker,
+  CapitalWorker,
+  CodeQaWorker,
+  LearningWorker,
+  ProductDesignWorker,
+  ResearchDataWorker,
+  UserDistributionWorker,
+} from "./workers";
 
 interface FactoryState {
   mode: "SHADOW" | "ACTIVE";
   hourlyScheduleId?: string;
   lastBatchAt?: string;
   lastBatchIds: string[];
+  lastWorkflowIds: string[];
 }
 
 export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> {
   initialState: FactoryState = {
     mode: "SHADOW",
     lastBatchIds: [],
+    lastWorkflowIds: [],
   };
 
   async onStart() {
@@ -107,50 +129,98 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
       .map((row) => JSON.parse(row.payload) as WorkPackage);
 
     const batch = selectHourlyBatch(projects, ready, 10);
-    const dispatched: string[] = [];
 
+    if (this.state.mode === "SHADOW") {
+      this.setState({
+        ...this.state,
+        lastBatchAt: batch.generatedAt,
+        lastBatchIds: batch.packages.map((pkg) => pkg.id),
+        lastWorkflowIds: [],
+      });
+      return { ...batch, mode: "SHADOW", workflowIds: [] };
+    }
+
+    const dispatchable: WorkPackage[] = [];
     for (const pkg of batch.packages) {
       if (!this.acquireWriteLocks(pkg)) continue;
       this.markStatus(pkg, "DISPATCHED");
-      dispatched.push(pkg.id);
-
-      // SHADOW proves selection, locks, persistence and learning without executing external side effects.
-      if (this.state.mode === "ACTIVE") {
-        await this.queue("executePackage", { workPackageId: pkg.id });
-      }
+      dispatchable.push(pkg);
     }
+
+    const workflowIds = await Promise.all(
+      dispatchable.map((pkg) =>
+        this.runWorkflow(
+          "WORK_PACKAGE_WORKFLOW",
+          { workPackageId: pkg.id },
+          {
+            id: `wp-${pkg.id}-${Date.now()}`,
+            metadata: { projectId: pkg.projectId, section: pkg.section, priority: pkg.priority },
+          },
+        ),
+      ),
+    );
 
     this.setState({
       ...this.state,
       lastBatchAt: batch.generatedAt,
-      lastBatchIds: dispatched,
+      lastBatchIds: dispatchable.map((pkg) => pkg.id),
+      lastWorkflowIds: workflowIds,
     });
 
-    return { ...batch, packages: batch.packages.filter((pkg) => dispatched.includes(pkg.id)) };
+    return { ...batch, packages: dispatchable, mode: "ACTIVE", workflowIds };
   }
 
-  async executePackage(input: { workPackageId: string }) {
-    const row = this.sql<{ payload: string }>`SELECT payload FROM work_packages WHERE id = ${input.workPackageId}`[0];
-    if (!row) return;
+  async dispatchToWorker(workPackageId: string): Promise<Outcome> {
+    const pkg = this.getWorkPackage(workPackageId);
+    if (!pkg) throw new Error(`Unknown work package: ${workPackageId}`);
 
-    const pkg = JSON.parse(row.payload) as WorkPackage;
     this.markStatus(pkg, "RUNNING");
+    const workerName = this.workerName(pkg.section, pkg.id);
 
-    // Adapter execution is deliberately fail-closed in V01.
-    // GitHub / research / data / capital / user-proof adapters must be explicitly connected and tested.
-    const outcome: Outcome = {
-      workPackageId: pkg.id,
-      status: "BLOCKED",
-      evidence: [],
-      materialDelta: "No external adapter connected in V01 shadow scaffold.",
-      expected: pkg.definitionOfDone.join("; "),
-      actual: "Durable orchestration reached adapter boundary safely.",
-      limitation: "Connect and test section adapter before ACTIVE execution.",
-      completedAt: new Date().toISOString(),
-    };
+    switch (pkg.section) {
+      case "PRODUCT_DESIGN":
+        return (await this.subAgent(ProductDesignWorker, workerName)).runPackage(pkg);
+      case "CODE_QA":
+        return (await this.subAgent(CodeQaWorker, workerName)).runPackage(pkg);
+      case "RESEARCH_DATA":
+        return (await this.subAgent(ResearchDataWorker, workerName)).runPackage(pkg);
+      case "USER_DISTRIBUTION":
+        return (await this.subAgent(UserDistributionWorker, workerName)).runPackage(pkg);
+      case "CAPITAL":
+        return (await this.subAgent(CapitalWorker, workerName)).runPackage(pkg);
+      case "LEARNING":
+        return (await this.subAgent(LearningWorker, workerName)).runPackage(pkg);
+      case "BRAIN_CONTROL":
+        return (await this.subAgent(BrainControlWorker, workerName)).runPackage(pkg);
+    }
+  }
+
+  async finalizeWorkflowOutcome(outcome: Outcome) {
     this.recordOutcome(outcome);
-    this.markStatus(pkg, "BLOCKED");
+    const pkg = this.getWorkPackage(outcome.workPackageId);
+    if (!pkg) return outcome.workPackageId;
+
+    const nextStatus: WorkPackage["status"] =
+      outcome.status === "ACCEPTED"
+        ? "ACCEPTED"
+        : outcome.status === "REJECTED"
+          ? "REJECTED"
+          : outcome.status === "CORRECT"
+            ? "READY"
+            : "BLOCKED";
+
+    this.markStatus(pkg, nextStatus);
     this.releaseLocksFor(pkg.id);
+
+    if (outcome.status === "ACCEPTED") {
+      const projectRow = this.sql<{ payload: string }>`SELECT payload FROM projects WHERE id = ${pkg.projectId}`[0];
+      if (projectRow) {
+        const project = JSON.parse(projectRow.payload) as ProjectProjection;
+        this.upsertProject({ ...project, lastMaterialProgressAt: outcome.completedAt });
+      }
+    }
+
+    return outcome.workPackageId;
   }
 
   @callable()
@@ -178,9 +248,21 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     return {
       state: this.state,
       projects: this.sql<{ id: string; payload: string }>`SELECT id, payload FROM projects`.map((r) => JSON.parse(r.payload)),
-      ready: this.sql<{ id: string; status: string }>`SELECT id, status FROM work_packages WHERE status IN ('READY','DISPATCHED','RUNNING','BLOCKED')`,
+      work: this.sql<{ id: string; status: string }>`SELECT id, status FROM work_packages WHERE status IN ('READY','DISPATCHED','RUNNING','BLOCKED')`,
       locks: this.sql<{ scope: string; work_package_id: string; expires_at: string }>`SELECT scope, work_package_id, expires_at FROM write_locks`,
+      workers: this.listSubAgents(),
     };
+  }
+
+  private getWorkPackage(id: string): WorkPackage | undefined {
+    const row = this.sql<{ payload: string }>`SELECT payload FROM work_packages WHERE id = ${id}`[0];
+    return row ? (JSON.parse(row.payload) as WorkPackage) : undefined;
+  }
+
+  private workerName(section: Section, workPackageId: string): string {
+    const hash = [...workPackageId].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
+    const slot = section === "PRODUCT_DESIGN" || section === "CODE_QA" ? (hash % 2) + 1 : 1;
+    return `${section.toLowerCase().replaceAll("_", "-")}-${slot}`;
   }
 
   private acquireWriteLocks(pkg: WorkPackage): boolean {
