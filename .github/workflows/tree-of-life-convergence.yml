@@ -40,7 +40,6 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          import re
 
           router = Path('src/routes/router.tsx')
           text = router.read_text()
@@ -81,7 +80,6 @@ jobs:
               if route_anchor not in text:
                   raise SystemExit('product route anchor missing')
               text = text.replace(route_anchor, route_anchor + '\n      ' + extra_routes)
-
           router.write_text(text)
 
           analytics = Path('src/analytics/Analytics.tsx')
@@ -120,6 +118,18 @@ jobs:
               raise SystemExit('analytics productArea block changed unexpectedly')
           a = a.replace('content_group: productArea(location.pathname),', 'content_group: productArea(location.pathname, window.location.hostname),')
           analytics.write_text(a)
+
+          contract = Path('scripts/prototype-contracts.test.mjs')
+          c = contract.read_text()
+          old_assert = '  assert.match(routes, /<Route path="\\/" element=\\{<Home \\/>\\}/);'
+          new_asserts = '''  assert.match(routes, /<Route path="\\/" element=\\{<RootHome \\/>\\}/);
+  assert.match(routes, /return <Home \\/>;/);
+  for (const host of ["s4piens.com", "4planetmagazine.com", "cre4tors.com", "4planetmarket.com"]) assert.match(routes, new RegExp(`host === "${host.replaceAll(".", "\\\\.")}"`));'''
+          if old_assert in c:
+              c = c.replace(old_assert, new_asserts)
+          elif new_asserts not in c:
+              raise SystemExit('prototype root contract changed unexpectedly')
+          contract.write_text(c)
           PY
 
       - name: Validate convergence
@@ -153,7 +163,8 @@ jobs:
             src/market/impactCommerce.ts \
             src/styles/impact-market-gold.css \
             src/routes/router.tsx \
-            src/analytics/Analytics.tsx
+            src/analytics/Analytics.tsx \
+            scripts/prototype-contracts.test.mjs
           git diff --cached --check
           git commit -m "feat: converge branded product surfaces into shared app"
           git push origin HEAD:king/test
