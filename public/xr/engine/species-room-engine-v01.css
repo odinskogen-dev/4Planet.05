@@ -1,0 +1,53 @@
+/* 4PLANET SPECIES ROOM ENGINE 01
+   Shared spatial contract for species encounters. Biome-specific adapters own identity/assets.
+   This layer standardises room roles, depth tokens, interaction safety and reduced-motion behaviour
+   without creating a second Journey engine or overriding species-specific visuals. */
+
+[data-species-room-engine="01"]{
+  --species-room-depth-far:1;
+  --species-room-depth-mid:2;
+  --species-room-depth-creature:8;
+  --species-room-depth-near:11;
+  --species-room-depth-ui:20;
+  --species-room-perspective:900px;
+}
+
+[data-species-room-engine="01"] [data-room-role="world"],
+[data-species-room-engine="01"] [data-room-role="far"],
+[data-species-room-engine="01"] [data-room-role="mid"],
+[data-species-room-engine="01"] [data-room-role="canopy"],
+[data-species-room-engine="01"] [data-room-role="atmosphere"],
+[data-species-room-engine="01"] [data-room-role="light"],
+[data-species-room-engine="01"] [data-room-role="floor"],
+[data-species-room-engine="01"] [data-room-role="contact"],
+[data-species-room-engine="01"] [data-room-role="near"],
+[data-species-room-engine="01"] [data-room-role="lume"]{
+  pointer-events:none;
+}
+
+[data-species-room-engine="01"] [data-room-role="stage"]{
+  isolation:isolate;
+}
+
+[data-species-room-engine="01"] [data-room-role="creature"]{
+  position:relative;
+  z-index:var(--species-room-depth-creature);
+}
+
+[data-species-room-engine="01"] [data-room-role="contact"]{
+  z-index:calc(var(--species-room-depth-creature) - 1);
+}
+
+[data-species-room-engine="01"] [data-room-role="near"]{
+  z-index:var(--species-room-depth-near);
+}
+
+[data-species-room-engine="01"] [data-room-role="lume"]{
+  transform-style:preserve-3d;
+}
+
+@media(prefers-reduced-motion:reduce){
+  [data-species-room-engine="01"] [data-room-role]{
+    scroll-behavior:auto!important;
+  }
+}
