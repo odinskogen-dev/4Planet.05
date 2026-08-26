@@ -60,6 +60,14 @@
       if (fallback && !fallback.hidden) fallback.hidden = true;
       const v48 = stage.querySelector('canvas.jaguar-local-v48');
       if (v48) v48.setAttribute('aria-hidden', 'true');
+
+      // Keep source/method detail one interaction away in HOW DO WE KNOW?.
+      // The first-read encounter should describe the animal, not the renderer.
+      const status = document.getElementById('runtime-status');
+      if (status && status.textContent !== 'JAGUAR · READY') status.textContent = 'JAGUAR · READY';
+      const state = document.getElementById('creature-state');
+      const encounterCopy = 'A source-derived 3D jaguar stands in the rainforest room. Turn it, observe it, then follow the living system around it.';
+      if (state && state.textContent !== encounterCopy) state.textContent = encounterCopy;
     } finally {
       reconciling = false;
     }
