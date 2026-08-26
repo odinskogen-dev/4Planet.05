@@ -12,12 +12,10 @@ permissions:
   issues: write
 
 jobs:
-  analytics-live:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-
       - name: Resolve Cloudflare token
         env:
           TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -35,79 +33,47 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Resolve Cloudflare account
+      - name: Inventory live routing
         shell: bash
         run: |
           set -euo pipefail
-          json=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=cre4tors.com&status=active')
-          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$json")
-          [ -n "$ACCOUNT_ID" ]
-          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo 'No Cloudflare account'; exit 1; }
 
-      - name: Build analytics Worker modules
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -e 's|__4P_ORIGIN__|https://b8a8f6c1.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|cre4tors-v0.3-78cdebc|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/cre4tors.mjs"
-          sed -e 's|__4P_ORIGIN__|https://4482f621.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|4market-gold-01-cad5f58|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/market.mjs"
-          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/cre4tors.mjs"
-          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/market.mjs"
-          cat > "$RUNNER_TEMP/cre4tors.toml" <<EOF
-          name = "cre4tors-prototype"
-          main = "$RUNNER_TEMP/cre4tors.mjs"
-          compatibility_date = "2026-08-24"
-          account_id = "$CLOUDFLARE_ACCOUNT_ID"
-          [[routes]]
-          pattern = "cre4tors.com"
-          custom_domain = true
-          [[routes]]
-          pattern = "www.cre4tors.com"
-          custom_domain = true
-          EOF
-          cat > "$RUNNER_TEMP/market.toml" <<EOF
-          name = "4planetmarket-prototype"
-          main = "$RUNNER_TEMP/market.mjs"
-          compatibility_date = "2026-08-24"
-          account_id = "$CLOUDFLARE_ACCOUNT_ID"
-          [[routes]]
-          pattern = "4planetmarket.com"
-          custom_domain = true
-          [[routes]]
-          pattern = "www.4planetmarket.com"
-          custom_domain = true
-          EOF
-
-      - name: Deploy CRE4TORS analytics Worker
-        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/cre4tors.toml"
-
-      - name: Deploy MARKET analytics Worker
-        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/market.toml"
-
-      - name: Verify live product + analytics surfaces
-        shell: bash
-        run: |
-          set -euo pipefail
-          verify() {
-            host="$1" product="$2"
-            for i in $(seq 1 30); do
-              html=$(curl -fsS "https://${host}/" || true)
-              shim=$(curl -fsS "https://${host}/_4p-analytics.js" || true)
-              headers=$(curl -fsSI "https://${host}/" | tr -d '\r' || true)
-              if [[ "$html" == *"$product"* && "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$headers" == *'4PLANET_ANALYTICS_PROXY_V1'* ]]; then return 0; fi
-              sleep 5
+          {
+            echo '# Cloudflare live routing — read-only inventory'
+            echo
+            echo '| Domain | Zone | Apex DNS | Worker routes |'
+            echo '|---|---|---|---|'
+            for domain in 4planet.org s4piens.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
+              zone=$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")
+              zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+              zstatus=$(jq -r '.result[0].status // "missing"' <<<"$zone")
+              if [ -z "$zid" ]; then
+                echo "| ${domain} | missing | | |"
+                continue
+              fi
+              dns=$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")
+              records=$(jq -r '[.result[]? | select(.type != "MX" and .type != "TXT") | (.type + " " + (.content // ""))] | join("; ")' <<<"$dns")
+              routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+              route_text=$(jq -r '[.result[]? | (.pattern + " → " + (.script // "<none>"))] | join("; ")' <<<"$routes")
+              echo "| ${domain} | ${zstatus} | ${records:-none} | ${route_text:-none} |"
             done
-            return 1
-          }
-          verify cre4tors.com 'Create'
-          verify 4planetmarket.com 'ART'
-          cat > /tmp/report.md <<'EOF'
-          # Analytics Worker deployment
 
-          - cre4tors.com: product preserved + consent analytics shim **LIVE PASS**
-          - 4planetmarket.com: product preserved + consent analytics shim **LIVE PASS**
-          - Measurement ID: `G-Q79Y9HJRL8`
-          - Existing immutable product origins preserved.
-          EOF
+            echo
+            echo '## Pages projects touching canonical domains'
+            projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+            echo
+            echo '| Project | Production branch | Domains |'
+            echo '|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+              echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+            done
+          } > /tmp/report.md
+          cat /tmp/report.md
 
       - name: Report
         if: always()
@@ -115,4 +81,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`."; fi
+          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "Cloudflare read-only routing audit failed on \`${GITHUB_SHA}\`."; fi
