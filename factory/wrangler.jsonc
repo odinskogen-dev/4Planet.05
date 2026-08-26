@@ -15,6 +15,13 @@
       }
     ]
   },
+  "workflows": [
+    {
+      "name": "4planet-work-package-workflow",
+      "binding": "WORK_PACKAGE_WORKFLOW",
+      "class_name": "WorkPackageWorkflow"
+    }
+  ],
   "migrations": [
     {
       "tag": "v1",
