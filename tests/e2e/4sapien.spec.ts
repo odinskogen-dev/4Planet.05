@@ -39,7 +39,7 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await expect(page.getByRole("heading", { name: /Understand money/i })).toBeVisible();
     await expect(page.getByText(/MONEY MAP/i)).toBeVisible();
     await expect(page.getByText(/CHOICE COST/i)).toBeVisible();
-    await expect(page.getByText(/INVESTMENT INTELLIGENCE/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "INVESTMENT INTELLIGENCE", exact: true })).toBeVisible();
     await expect(page.getByText(/not BUY \/ SELL instructions/i)).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
