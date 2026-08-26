@@ -1,5 +1,6 @@
 import { Agent, callable, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
+import { evaluateMaterialProgress } from "./evaluator";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -200,19 +201,20 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     const pkg = this.getWorkPackage(outcome.workPackageId);
     if (!pkg) return outcome.workPackageId;
 
+    const evaluation = evaluateMaterialProgress(pkg, outcome);
     const nextStatus: WorkPackage["status"] =
-      outcome.status === "ACCEPTED"
-        ? "ACCEPTED"
-        : outcome.status === "REJECTED"
-          ? "REJECTED"
-          : outcome.status === "CORRECT"
-            ? "READY"
-            : "BLOCKED";
+      outcome.status === "BLOCKED"
+        ? "BLOCKED"
+        : evaluation.decision === "ACCEPT"
+          ? "ACCEPTED"
+          : evaluation.decision === "REJECT"
+            ? "REJECTED"
+            : "READY";
 
     this.markStatus(pkg, nextStatus);
     this.releaseLocksFor(pkg.id);
 
-    if (outcome.status === "ACCEPTED") {
+    if (nextStatus === "ACCEPTED") {
       const projectRow = this.sql<{ payload: string }>`SELECT payload FROM projects WHERE id = ${pkg.projectId}`[0];
       if (projectRow) {
         const project = JSON.parse(projectRow.payload) as ProjectProjection;
