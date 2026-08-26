@@ -1,7 +1,7 @@
 /* 4PLANET SPECIES ROOM ENGINE 01
-   Shared spatial contract for species encounters. Biome-specific adapters own identity/assets.
+   Shared spatial contract for species encounters. Biome-specific adapters own identity/assets/layout.
    This layer standardises room roles, depth tokens, interaction safety and reduced-motion behaviour
-   without creating a second Journey engine or overriding species-specific visuals. */
+   without creating a second Journey engine or overriding species-specific positioning. */
 
 [data-species-room-engine="01"]{
   --species-room-depth-far:1;
@@ -29,8 +29,10 @@
   isolation:isolate;
 }
 
+/* Layout ownership stays with the biome adapter. In particular, creature stages may
+   already be absolute/inset surfaces; changing their positioning here collapses the
+   renderer's containing box. The shared engine supplies depth only. */
 [data-species-room-engine="01"] [data-room-role="creature"]{
-  position:relative;
   z-index:var(--species-room-depth-creature);
 }
 
