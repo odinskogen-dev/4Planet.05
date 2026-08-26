@@ -11,6 +11,7 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 test.describe("4SAPIEN Personal Choice Proof", () => {
   test("Embla front door is truthful and usable", async ({ page }) => {
     await page.goto("/4sapien");
+    await expect(page).toHaveURL(/\/4sapien$/);
 
     await expect(page.getByRole("heading", { name: /Better choices/i })).toBeVisible();
     await expect(page.getByLabel("Ask Embla")).toBeVisible();
@@ -23,6 +24,7 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
 
   test("FOOD proof exposes real lookup without a universal score", async ({ page }) => {
     await page.goto("/4sapien/food");
+    await expect(page).toHaveURL(/\/4sapien\/food$/);
 
     await expect(page.getByRole("heading", { name: /Pick better/i })).toBeVisible();
     await expect(page.getByLabel("BARCODE / GTIN")).toBeVisible();
@@ -35,6 +37,7 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
 
   test("4FINANCE remains analysis, not personalised trading advice", async ({ page }) => {
     await page.goto("/4sapien/finance");
+    await expect(page).toHaveURL(/\/4sapien\/finance$/);
 
     await expect(page.getByRole("heading", { name: /Understand money/i })).toBeVisible();
     await expect(page.getByText(/MONEY MAP/i)).toBeVisible();
