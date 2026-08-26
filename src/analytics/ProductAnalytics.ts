@@ -14,7 +14,7 @@ export type MeaningfulUseKind =
 export type ChoiceDomain = "food" | "car" | "home" | "finance" | "other";
 export type ChoiceResult = "recommendation" | "withheld" | "insufficient_evidence";
 export type ChoiceFeedback = "helpful" | "not_helpful";
-export type PaymentSignal = "pricing_open" | "pilot_interest" | "paid_conversion";
+export type PaymentSignal = "pricing_open" | "consumer_interest" | "pilot_interest" | "paid_conversion";
 
 function safeToken(value: string | undefined, max = 160): string {
   if (!value) return "";
