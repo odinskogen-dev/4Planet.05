@@ -64,6 +64,16 @@ jobs:
             done
 
             echo
+            echo '## Worker Custom Domains'
+            custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
+            echo
+            echo '| Hostname | Service | Zone | ID |'
+            echo '|---|---|---|---|'
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // ""), (.zone_name // ""), (.id // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service zone id; do
+              echo "| ${hostname} | \`${service}\` | ${zone} | \`${id}\` |"
+            done
+
+            echo
             echo '## Pages projects touching canonical domains'
             projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
             echo
