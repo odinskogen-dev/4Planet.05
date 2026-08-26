@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { trackEvent } from "@/analytics/Analytics";
-import { trackMeaningfulUse, trackProductEntry, type ProductArea } from "@/analytics/ProductAnalytics";
+import { trackChoiceStarted, trackMeaningfulUse, trackProductEntry, type ChoiceDomain, type ProductArea } from "@/analytics/ProductAnalytics";
 
 function classifyProduct(pathname: string): ProductArea {
+  if (pathname.startsWith("/4sapien") || pathname.startsWith("/food/pick")) return "4sapien";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
@@ -12,6 +13,12 @@ function classifyProduct(pathname: string): ProductArea {
   if (pathname.startsWith("/missions") || pathname.startsWith("/mission/")) return "missions";
   if (pathname.startsWith("/domains") || pathname.startsWith("/domain/")) return "domains";
   return "4planet";
+}
+
+function choiceDomain(pathname: string): ChoiceDomain | null {
+  if (pathname.startsWith("/4sapien/food") || pathname.startsWith("/food/pick")) return "food";
+  if (pathname.startsWith("/4sapien/finance")) return "finance";
+  return null;
 }
 
 function entryKind(): "direct" | "internal" | "shared_link" {
@@ -43,6 +50,15 @@ export function ProductRouteAnalytics() {
       window.sessionStorage.setItem(routeKey, "1");
     }
 
+    const domain = choiceDomain(pathname);
+    if (domain) {
+      const choiceStartKey = `4p:choice-start:${pathname}`;
+      if (!window.sessionStorage.getItem(choiceStartKey)) {
+        trackChoiceStarted(domain, pathname);
+        window.sessionStorage.setItem(choiceStartKey, "1");
+      }
+    }
+
     const sessionKey = `4p:session:${product}`;
     const historyKey = `4p:seen:${product}`;
     if (!window.sessionStorage.getItem(sessionKey)) {
@@ -70,7 +86,7 @@ export function ProductRouteAnalytics() {
       if (window.sessionStorage.getItem(engagedKey)) return;
       const currentVisibleMs = visibleSince === null ? 0 : performance.now() - visibleSince;
       if (accumulatedMs + currentVisibleMs < thresholdMs) return;
-      trackMeaningfulUse(product, "engaged_time", "route");
+      trackMeaningfulUse(product, "engaged_time", domain ? `choice_${domain}` : "route");
       window.sessionStorage.setItem(engagedKey, "1");
       clearTimer();
     };
