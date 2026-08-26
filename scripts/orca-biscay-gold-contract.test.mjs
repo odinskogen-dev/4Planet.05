@@ -47,7 +47,7 @@ test('standalone ecosystem card carries corridor, effort, cetacean context, pres
     'MONITORING LOGIC',
     'SOURCE SEAMS',
     'ACTION HANDOFF',
-    'Fund monitoring, not a promise'
+    'Fund monitoring. Report what was delivered'
   ]) assert.match(ecosystemHtml, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
 
   // Contract the semantics, not one frozen sentence order: the standalone
@@ -57,6 +57,7 @@ test('standalone ecosystem card carries corridor, effort, cetacean context, pres
   assert.match(ecosystemHtml, /hours/i);
   assert.match(ecosystemHtml, /distance/i);
   assert.match(ecosystemHtml, /Sightings provide biological observations; they are not a success metric by themselves/i);
+  assert.match(ecosystemHtml, /Delivery evidence must remain separate from ecological outcome claims/i);
 });
 
 test('existing Orca Bay donor still carries geography, habitat, species and source seams', () => {
