@@ -13,6 +13,7 @@ import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
+import { CompanyProof } from "@/pages/sapiens/CompanyProof";
 import PickPrototype from "../food/PickPrototype";
 import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
@@ -36,17 +37,9 @@ const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => (
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
+const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
+const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -63,6 +56,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
+      <Route path="/domains/s4piens/company-proof" element={<CompanyProof />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
       <Route path="/missions" element={<MissionsIndex />} />
       <Route path="/missions/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
