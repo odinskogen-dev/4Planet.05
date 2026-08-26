@@ -47,9 +47,22 @@ test('standalone ecosystem card carries corridor, effort, cetacean context, pres
     'MONITORING LOGIC',
     'SOURCE SEAMS',
     'ACTION HANDOFF',
-    'hours, distance and route geometry',
-    'Fund monitoring, not a promise'
+    'Fund monitoring. Report what was delivered.'
   ]) assert.match(ecosystemHtml, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+
+  // Contract the semantics, not one frozen sentence order: the standalone
+  // ecosystem must expose route geometry, hours and distance as the three
+  // survey-effort dimensions while keeping them separate from sightings.
+  assert.match(ecosystemHtml, /route geometry/i);
+  assert.match(ecosystemHtml, /hours/i);
+  assert.match(ecosystemHtml, /distance/i);
+  assert.match(ecosystemHtml, /Sightings provide biological observations; they are not a success metric by themselves/i);
+
+  // Funding is for monitorable delivery, not ecological promises. Keep the
+  // current human-facing sentence flexible while locking the truth boundary.
+  assert.match(ecosystemHtml, /Delivery evidence must remain separate from ecological outcome claims/i);
+  assert.doesNotMatch(ecosystemHtml, /guarantee(?:d|s)? ecological outcome/i);
+  assert.doesNotMatch(ecosystemHtml, /promise(?:d|s)? ecological outcome/i);
 });
 
 test('existing Orca Bay donor still carries geography, habitat, species and source seams', () => {
