@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { companyProofForProduct } from "@/content/companyProof";
 import { normalizeGtin, normaliseSourceEnvelope, type CanonicalFoodProduct } from "./core.js";
 import { buildDecisionAxes, buildProductTruthSummary, buildTruthPassport } from "./pick-core.js";
 import { rankPickAlternatives } from "./pick-compare.js";
@@ -58,6 +59,7 @@ export default function PickPrototype() {
   const truth = useMemo(() => buildProductTruthSummary(product), [product]);
   const passport = useMemo(() => buildTruthPassport(product, { wallet, planet }), [product, wallet, planet]);
   const alternatives = useMemo(() => product ? rankPickAlternatives(product, result?.alternatives ?? []) : [], [product, result?.alternatives]);
+  const company = useMemo(() => companyProofForProduct(product?.gtin, product?.brand), [product?.gtin, product?.brand]);
   const basketStats = useMemo(() => basketSummary(basket), [basket]);
   const inBasket = Boolean(product && basket.some((item) => item.gtin === product.gtin));
   const evidenceSources = passport.evidenceSources as EvidenceSourceView[];
@@ -111,6 +113,8 @@ export default function PickPrototype() {
 
       {state === "found" && product && <>
         <section className="pick-product pick-product--v2"><div className="pick-product__image">{product.imageUrl && !product.imageUrl.startsWith("fixture:") ? <img src={product.imageUrl} alt="" /> : <span>NO IMAGE</span>}</div><div className="pick-product__identity"><span className="pick-kicker">GTIN {product.gtin}</span><h2>{product.name || "Unnamed product"}</h2><p>{product.brand || "Brand unknown"} · {product.quantity || "Quantity unknown"}</p><button className="pick-basket-action" type="button" onClick={inBasket ? removeCurrent : addCurrent}>{inBasket ? "REMOVE FROM BASKET" : "ADD TO BASKET"}</button></div><div className="pick-truth-chip"><span>PRODUCT DATA</span><strong>{truth.confidence}</strong><small>{truth.completeness}% fields</small></div></section>
+
+        {company && <section className="pick-decision-snapshot" aria-label="Shared company intelligence"><div><span className="pick-kicker">SAME CORE · COMPANY INTELLIGENCE</span><h2>{company.name}</h2></div><div><p>{company.role}. Company evidence is a separate layer from product facts; missing company evidence never becomes a negative product score.</p><p><strong>{company.actorState.replaceAll("_", " ")}</strong> · {company.unknowns.length} explicit unknowns · {company.claims.length} bounded claims.</p><Link className="pick-header__link" to={`/domains/s4piens/company-proof#${company.slug}`}>OPEN S4PIENS COMPANY PROOF →</Link></div></section>}
 
         <section className="pick-decision-snapshot" aria-labelledby="pick-decision-title"><div><span className="pick-kicker">PICK THIS?</span><h2 id="pick-decision-title">Read the trade-offs.</h2></div><p>No combined score. The strongest available decision is the set of three independent signals below.</p></section>
         <section className="pick-axis-grid" aria-label="Decision axes">{axes.map((axis) => <AxisCard key={axis.id} axis={axis} />)}</section>
