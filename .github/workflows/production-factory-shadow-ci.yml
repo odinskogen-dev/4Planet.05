@@ -5,6 +5,12 @@ on:
     paths:
       - "factory/**"
       - ".github/workflows/production-factory-shadow-ci.yml"
+  push:
+    branches:
+      - "factory/symphony-runtime-v01"
+    paths:
+      - "factory/**"
+      - ".github/workflows/production-factory-shadow-ci.yml"
   workflow_dispatch:
 
 permissions:
