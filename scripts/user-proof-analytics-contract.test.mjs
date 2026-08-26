@@ -7,6 +7,10 @@ const shared = read("src/analytics/ProductAnalytics.ts");
 const analytics = read("src/analytics/Analytics.tsx");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
 const foodChoiceProof = read("src/food/PickAlternatives.tsx");
+const foodProductProof = read("src/food/PickPrototype.tsx");
+const companyProof = read("src/content/companyProof.ts");
+const companyProofPage = read("src/pages/sapiens/CompanyProof.tsx");
+const router = read("src/routes/router.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -70,6 +74,21 @@ test("FOOD closes the bounded utility proof without inventing a recommendation",
   assert.match(foodChoiceProof, /No payment occurs/);
   assert.match(foodChoiceProof, /not proven willingness to pay/);
   assert.match(shared, /\"consumer_interest\"/);
+});
+
+test("Company Proof reuses a product-to-company projection without minting fake Actor identity", () => {
+  for (const company of ["TINE SA", "Oatly Group AB", "Orkla ASA", "Mowi ASA", "Yara International ASA"]) assert.ok(companyProof.includes(company), `missing company proof: ${company}`);
+  assert.match(companyProof, /Company remains an Actor/);
+  assert.match(companyProof, /ACTOR_ID_UNRESOLVED/);
+  assert.match(companyProof, /7038010055652/);
+  assert.match(companyProof, /marketIncentiveState:\s*\"HYPOTHESIS_ONLY\"/);
+  assert.match(companyProof, /outcomeState:\s*\"UNKNOWN\"/);
+  assert.match(companyProof, /must never be represented as caused by 4SAPIEN demand signals/);
+  assert.match(foodProductProof, /companyProofForProduct/);
+  assert.match(foodProductProof, /OPEN S4PIENS COMPANY PROOF/);
+  assert.match(companyProofPage, /Company intelligence/);
+  assert.match(companyProofPage, /Payment, partnership, advertising or sponsorship cannot change evidence state, ranking or recommendation eligibility/);
+  assert.match(router, /\/domains\/s4piens\/company-proof/);
 });
 
 test("AI-premium choice events stay categorical and privacy-safe", () => {
