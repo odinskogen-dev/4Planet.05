@@ -1,6 +1,7 @@
 import { Agent, callable, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
 import { evaluateMaterialProgress } from "./evaluator";
+import { evaluateFactoryActivation, type FactoryActivationEvidence } from "./activationGate";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -29,6 +30,7 @@ interface FactoryState {
   lastBatchAt?: string;
   lastBatchIds: string[];
   lastWorkflowIds: string[];
+  activationEvidence?: FactoryActivationEvidence;
 }
 
 export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> {
@@ -87,7 +89,23 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   @callable()
+  setActivationEvidence(evidence: FactoryActivationEvidence) {
+    const gate = evaluateFactoryActivation(evidence);
+    this.setState({ ...this.state, activationEvidence: evidence });
+    return gate;
+  }
+
+  @callable()
   setMode(mode: "SHADOW" | "ACTIVE") {
+    if (mode === "ACTIVE") {
+      if (!this.state.activationEvidence) {
+        throw new Error("Factory ACTIVE blocked: activation evidence is missing");
+      }
+      const gate = evaluateFactoryActivation(this.state.activationEvidence);
+      if (!gate.ready) {
+        throw new Error(`Factory ACTIVE blocked: ${gate.missing.join(", ")}`);
+      }
+    }
     this.setState({ ...this.state, mode });
     return this.state;
   }
@@ -249,6 +267,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   getFactoryState() {
     return {
       state: this.state,
+      activationGate: this.state.activationEvidence ? evaluateFactoryActivation(this.state.activationEvidence) : null,
       projects: this.sql<{ id: string; payload: string }>`SELECT id, payload FROM projects`.map((r) => JSON.parse(r.payload)),
       work: this.sql<{ id: string; status: string }>`SELECT id, status FROM work_packages WHERE status IN ('READY','DISPATCHED','RUNNING','BLOCKED')`,
       locks: this.sql<{ scope: string; work_package_id: string; expires_at: string }>`SELECT scope, work_package_id, expires_at FROM write_locks`,
