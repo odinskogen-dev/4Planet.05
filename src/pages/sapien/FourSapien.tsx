@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { resolveEmblaIntake } from "../../choice/embla";
 
 type BeeStep = {
   label: string;
@@ -114,6 +116,7 @@ const mono: React.CSSProperties = {
 
 export function FourSapienHome() {
   const [prompt, setPrompt] = useState("");
+  const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
   const examples = useMemo(
     () => [
       "Which of these groceries is the better choice for me?",
@@ -123,6 +126,14 @@ export function FourSapienHome() {
     ],
     [],
   );
+  const embla = useMemo(
+    () => (submittedPrompt === null ? null : resolveEmblaIntake(submittedPrompt)),
+    [submittedPrompt],
+  );
+  const runEmbla = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmittedPrompt(prompt);
+  };
 
   return (
     <main style={page}>
@@ -142,7 +153,7 @@ export function FourSapienHome() {
       </section>
 
       <section style={{ ...shell, padding: "0 0 92px" }}>
-        <div style={{ border: "1px solid rgba(255,255,255,.18)", padding: "clamp(22px, 4vw, 42px)", background: "#0d0d0d" }}>
+        <form onSubmit={runEmbla} style={{ border: "1px solid rgba(255,255,255,.18)", padding: "clamp(22px, 4vw, 42px)", background: "#0d0d0d" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 22 }}>
             <Hex active />
             <span style={mono}>ASK EMBLA</span>
@@ -156,13 +167,31 @@ export function FourSapienHome() {
           />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, borderTop: "1px solid rgba(255,255,255,.13)", paddingTop: 18 }}>
             {examples.map((example) => (
-              <button key={example} onClick={() => setPrompt(example)} style={{ border: "1px solid rgba(255,255,255,.16)", background: "transparent", color: "rgba(255,255,255,.72)", padding: "10px 12px", font: "inherit", cursor: "pointer" }}>
+              <button key={example} type="button" onClick={() => { setPrompt(example); setSubmittedPrompt(null); }} style={{ border: "1px solid rgba(255,255,255,.16)", background: "transparent", color: "rgba(255,255,255,.72)", padding: "10px 12px", font: "inherit", cursor: "pointer" }}>
                 {example}
               </button>
             ))}
           </div>
-          <p style={{ ...mono, color: "rgba(255,255,255,.42)", margin: "18px 0 0" }}>CONVERSATION ENGINE WIRING NEXT — THIS SURFACE CURRENTLY MATERIALISES THE PRODUCT MODEL.</p>
-        </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap", marginTop: 22 }}>
+            <p style={{ ...mono, color: "rgba(255,255,255,.42)", margin: 0, maxWidth: 650 }}>FIRST BOUNDED EMBLA SEAM — ROUTES ONLY TO PROOF THAT EXISTS. NO EVIDENCE MEANS NO RECOMMENDATION.</p>
+            <button type="submit" style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "12px 18px", font: '600 12px/1 "Fragment Mono", ui-monospace, monospace', letterSpacing: ".08em", cursor: "pointer" }}>RUN EMBLA</button>
+          </div>
+
+          {embla ? (
+            <section aria-live="polite" style={{ marginTop: 28, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,.18)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ ...mono, color: "#2E2EFF" }}>{embla.eyebrow}</span>
+                <span style={{ ...mono, color: embla.status === "EVIDENCE_PATH_READY" ? "#3AE86F" : "rgba(255,255,255,.45)" }}>{embla.status.replaceAll("_", " ")}</span>
+              </div>
+              <h2 style={{ fontFamily: '"Instrument Sans", system-ui, sans-serif', fontSize: "clamp(30px, 4vw, 54px)", fontWeight: 500, letterSpacing: "-.04em", lineHeight: 1.02, margin: "18px 0" }}>{embla.title}</h2>
+              <p style={{ maxWidth: 760, color: "rgba(255,255,255,.7)", fontSize: 18, lineHeight: 1.55, margin: "0 0 16px" }}>{embla.detail}</p>
+              <p style={{ maxWidth: 760, color: "rgba(255,255,255,.48)", lineHeight: 1.5, margin: 0 }}>{embla.truthBoundary}</p>
+              {embla.nextHref && embla.nextLabel ? (
+                <Link to={embla.nextHref} style={{ display: "inline-block", marginTop: 24, color: "#fff", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,.55)", paddingBottom: 4 }}>{embla.nextLabel} →</Link>
+              ) : null}
+            </section>
+          ) : null}
+        </form>
       </section>
 
       <section style={{ borderTop: "1px solid rgba(255,255,255,.13)", borderBottom: "1px solid rgba(255,255,255,.13)" }}>
