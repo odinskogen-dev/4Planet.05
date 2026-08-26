@@ -13,6 +13,8 @@ import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
+import PickPrototype from "../food/PickPrototype";
+import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
@@ -80,6 +82,10 @@ export function AppRoutes() {
       <Route path="/lens" element={<LensCapture />} />
       <Route path="/food/lens" element={<FoodCapture />} />
       <Route path="/s4piens/food/lens" element={<FoodCapture />} />
+      <Route path="/4sapien" element={<FourSapienHome />} />
+      <Route path="/4sapien/food" element={<PickPrototype />} />
+      <Route path="/4sapien/finance" element={<FourFinanceHome />} />
+      <Route path="/food/pick" element={<PickPrototype />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
