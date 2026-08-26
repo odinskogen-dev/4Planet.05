@@ -16,7 +16,7 @@ A person reaches 4SAPIEN with a real decision and needs Embla to do something tr
 Embla is a personal decision interface over evidence-constrained Choice/BEE logic. It may route a question into a proof path that actually exists, but it may not manufacture an answer, evidence, score or confidence where the underlying adapter is absent.
 
 ## PRIMARY ACTION
-Type or choose a decision prompt, run Embla, and receive the strongest currently supported evidence path. FOOD routes into the existing PICK_ proof. Unsupported CAR/HOME paths remain intake-only. Finance may open the existing analysis proof without producing trading instructions.
+Type or choose a decision prompt, run Embla, and receive the strongest currently supported evidence path. FOOD routes into the existing PICK_ proof. Unsupported CAR/HOME paths remain intake-only. Finance may open the existing analysis proof without producing trading instructions. Specific decision domains resolve before generic financial language, so a phrase such as “Can I afford this home?” remains a HOME decision rather than being collapsed into FINANCE.
 
 ## SECONDARY DEPTH
 Preserve the existing BEE quorum doctrine: missing evidence remains UNKNOWN; derivative repetition does not manufacture corroboration; hard constraints fail closed; recommendation eligibility requires adequate evidence.
