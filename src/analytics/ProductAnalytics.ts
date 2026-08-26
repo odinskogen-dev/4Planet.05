@@ -1,6 +1,6 @@
 import { trackEvent } from "@/analytics/Analytics";
 
-export type ProductArea = "4planet" | "magazine" | "atlas" | "species" | "living_systems" | "impact" | "missions" | "domains";
+export type ProductArea = "4planet" | "4sapien" | "magazine" | "atlas" | "species" | "living_systems" | "impact" | "missions" | "domains";
 export type MeaningfulUseKind =
   | "search"
   | "record_open"
@@ -10,6 +10,11 @@ export type MeaningfulUseKind =
   | "watch_follow"
   | "article_depth"
   | "engaged_time";
+
+export type ChoiceDomain = "food" | "car" | "home" | "finance" | "other";
+export type ChoiceResult = "recommendation" | "withheld" | "insufficient_evidence";
+export type ChoiceFeedback = "helpful" | "not_helpful";
+export type PaymentSignal = "pricing_open" | "pilot_interest" | "paid_conversion";
 
 function safeToken(value: string | undefined, max = 160): string {
   if (!value) return "";
@@ -65,5 +70,47 @@ export function trackJoinInterest(product: ProductArea, surface: "join" | "follo
   trackEvent("join_interest", {
     product_area: product,
     interest_surface: surface,
+  });
+}
+
+/**
+ * AI-PREMIUM proof signals for CHOICE_/4SAPIEN.
+ *
+ * These events deliberately record only bounded categorical metadata. They do
+ * not record the user's prompt, barcode, registration number, address, price,
+ * health context or any other decision payload. Evidence, recommendation and
+ * outcome records remain separate product objects; analytics only measures
+ * whether the proof loop is being used.
+ */
+export function trackChoiceStarted(domain: ChoiceDomain, surface: string) {
+  trackEvent("choice_started", {
+    product_area: "4sapien",
+    choice_domain: domain,
+    choice_surface: safeToken(surface),
+  });
+}
+
+export function trackChoiceResult(domain: ChoiceDomain, result: ChoiceResult, evidenceState: "sufficient" | "partial" | "unknown") {
+  trackEvent("choice_result", {
+    product_area: "4sapien",
+    choice_domain: domain,
+    choice_result: result,
+    evidence_state: evidenceState,
+  });
+}
+
+export function trackChoiceFeedback(domain: ChoiceDomain, feedback: ChoiceFeedback) {
+  trackEvent("choice_feedback", {
+    product_area: "4sapien",
+    choice_domain: domain,
+    feedback,
+  });
+}
+
+export function trackPaymentSignal(domain: ChoiceDomain, signal: PaymentSignal) {
+  trackEvent("payment_signal", {
+    product_area: "4sapien",
+    choice_domain: domain,
+    payment_signal: signal,
   });
 }
