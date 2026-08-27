@@ -18,6 +18,8 @@ test("clean LUME room is immediate, interactive and viewport-safe", async ({ pag
   await expect(page.locator(".lume-room__volume-grid")).toBeVisible();
   await expect(page.locator(".lume-room__node")).toHaveCount(4);
   await expect(page.locator(".lume-room__detail")).toContainText(/One species\. Many different lives\./);
+  await expect(room).toHaveAttribute("data-audio-state", "off");
+  await expect(page.getByRole("button", { name: /HEAR ORCA ECHOLOCATION/ })).toBeVisible();
 
   await page.getByRole("button", { name: /03 FOOD WEB/ }).click();
   await expect(room).toHaveAttribute("data-active-node", "food");
