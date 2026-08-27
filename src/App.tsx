@@ -7,6 +7,7 @@ import { Analytics } from "@/analytics/Analytics";
 import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import "@/styles/global.css";
+import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
