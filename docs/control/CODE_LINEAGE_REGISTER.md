@@ -49,11 +49,12 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 ## Current control fact
 `king/test` was created from former #121 exact head `633981cc6f54d152ed34ae02001ca3fb0fbe11c8`; #121 was then closed/frozen at the same SHA. Subsequent TEST KING control commits selectively adopted missing PR #120 control value. Production/LIVE KING was not modified.
 
-## LUME ROOM 01 — clean-room slice
+## LUME ROOM — clean-room sequence
 
 | Identity | Role now | Branch / PR | Exact parent SHA | TEST KING obligation |
 |---|---|---|---|---|
-| LUME ROOM 01 | ACTIVE DEVELOPMENT | `king/test` / #131 | `8c6d34c6396d75e8dec1dad7bc6b52abab253017` | Build a neutral browser-first spatial renderer from black. Orca/Bay/Jaguar may donate content and truth only; no legacy renderer or XR stack may become authority. Preserve one-domain-colour grammar, explicit generated-visual/procedural-audio boundaries, mobile interaction, canonical Species/Journey exits and rollback to the parent SHA. Original pre-convergence checkpoint: `fcf39bc93b40ed12e430c3dd9b433c9cc7176d4f`. |
+| LUME ROOM 01 | FIXED REVIEW | `king/test` / #131 | `8c6d34c6396d75e8dec1dad7bc6b52abab253017` | First clean browser proof at `e6187d3d7e58572fb39dee87a02f821d33e7fb5d`. Preserve the neutral renderer, single-colour truth grammar, generated-visual disclosure, source-bounded nodes, canonical exits and exact rollback. Founder review found insufficient gallery depth, mobile animal cropping, compressed information geometry and unclear audio response; do not promote this visual state to GOLD. |
+| LUME ROOM 02 | ACTIVE DEVELOPMENT | `king/test` / #131 | `a21d8e752aded2c3f245c32bd64dfd275577687c` | Recompose the same clean-room renderer as a full-screen spatial gallery with distinct floor, ceiling, back and side planes; projected-light text and lines; full-body mobile containment; truthful 2.5D swimming motion; explicit audio lifecycle; and rights/source-labelled Orca hydrophone audio when locally secured. No legacy ORCA renderer, XR stack or parallel route. |
 
 Donor disposition for this slice: `agent/lume-project-proto-01`, `agent/orca-lume-19`, `recovery/testking-lume`, `agent/orca-bay-biscay-gold-20` and `recovery/testking-orca-biscay` remain **DONOR** evidence. Their canonical Orca/Bay data and truth boundaries are eligible for **ADOPT / ALREADY PRESENT** review; their LUME renderer/layout override stacks are **REJECT WITH REASON** because LUME ROOM 01 is deliberately clean-room and browser-first. XR, projector hardware and live tracking are **DEFER WITH REASON**.
 

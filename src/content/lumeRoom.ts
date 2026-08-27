@@ -29,12 +29,23 @@ export type LumeRoomManifest = {
     disclosure: string;
     checksum: string;
   };
-  soundDisclosure: string;
+  audio: {
+    src: string;
+    label: string;
+    kind: "FIELD RECORDING";
+    place: string;
+    credit: string;
+    sourceLabel: string;
+    sourceUrl: string;
+    usage: string;
+    checksum: string;
+  };
+  proceduralSoundDisclosure: string;
   nodes: readonly LumeRoomNode[];
 };
 
 export const LUME_ORCA_ROOM: LumeRoomManifest = {
-  id: "lume-room-01-orca",
+  id: "lume-room-02-orca",
   domain: "OCE4N_",
   accent: DOMAIN_ACCENT.OCE4N_,
   species: {
@@ -51,7 +62,18 @@ export const LUME_ORCA_ROOM: LumeRoomManifest = {
     disclosure: "AI-GENERATED SPECIES VISUALISATION · NOT EVIDENCE / NOT A PHOTOGRAPH",
     checksum: "sha256:43c4c2dd8bb358d529fcdc7351d866194c049c3737bed2c0efae2b26f3fcbaf9",
   },
-  soundDisclosure: "PROCEDURAL SONIFICATION · NOT FIELD AUDIO / NOT ORCA VOCALISATION",
+  audio: {
+    src: "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3",
+    label: "KILLER WHALE ECHOLOCATION CLICKS",
+    kind: "FIELD RECORDING",
+    place: "GLACIER BAY, ALASKA",
+    credit: "NPS / C. GABRIELE",
+    sourceLabel: "NATIONAL PARK SERVICE · GLACIER BAY",
+    sourceUrl: "https://www.nps.gov/media/video/view.htm?id=802469FB-2FB2-4319-914E-423F39DF03A8",
+    usage: "NPS-CREDITED PUBLIC-DOMAIN MEDIA",
+    checksum: "sha256:c79f813ebee83f653d493c4f57050db6276e1e8af1ae9c4d78a14672c628fd67",
+  },
+  proceduralSoundDisclosure: "PROCEDURAL ROOM RESPONSE · NOT AN ANIMAL RECORDING",
   nodes: [
     {
       id: "identity",

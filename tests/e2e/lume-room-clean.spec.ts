@@ -11,8 +11,11 @@ test("clean LUME room is immediate, interactive and viewport-safe", async ({ pag
 
   const room = page.locator(".lume-room");
   await expect(room).toBeVisible();
+  await expect(room).toHaveAttribute("data-room-version", "02");
+  await expect(room).toHaveAttribute("data-subject-motion", "2.5D");
   await expect(page.getByRole("heading", { name: "ORCA", exact: true })).toBeVisible();
   await expect(page.locator(".lume-room__subject-image")).toBeVisible();
+  await expect(page.locator(".lume-room__volume-grid")).toBeVisible();
   await expect(page.locator(".lume-room__node")).toHaveCount(4);
   await expect(page.locator(".lume-room__detail")).toContainText(/One species\. Many different lives\./);
 
@@ -20,9 +23,14 @@ test("clean LUME room is immediate, interactive and viewport-safe", async ({ pag
   await expect(room).toHaveAttribute("data-active-node", "food");
   await expect(page.locator(".lume-room__detail")).toContainText(/Diet depends on population/);
 
-  await page.getByRole("button", { name: /HEAR ROOM PULSE/ }).click();
+  await page.getByRole("button", { name: /HEAR ORCA ECHOLOCATION/ }).click();
+  await expect(room).toHaveAttribute("data-audio-state", "playing");
+  await expect(page.locator(".lume-room__sound")).toContainText(/GLACIER BAY, ALASKA/);
+  await expect(page.locator(".lume-room__sound")).toContainText(/NPS \/ C\. GABRIELE/);
+  await page.getByRole("button", { name: /MUTE ORCA AUDIO/ }).click();
+  await expect(room).toHaveAttribute("data-audio-state", "muted");
+  await page.getByRole("button", { name: /SEND ROOM ECHO/ }).click();
   await expect(room).toHaveAttribute("data-sound-active", "true");
-  await expect(page.locator(".lume-room__sound")).toContainText(/NOT FIELD AUDIO/);
 
   const viewport = page.viewportSize();
   const box = await room.boundingBox();
@@ -30,6 +38,13 @@ test("clean LUME room is immediate, interactive and viewport-safe", async ({ pag
   expect(box!.x).toBeGreaterThanOrEqual(-1);
   expect(box!.width).toBeLessThanOrEqual(viewport!.width + 1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  if (viewport!.width <= 760) {
+    const subject = await page.locator(".lume-room__subject").boundingBox();
+    expect(subject).not.toBeNull();
+    expect(subject!.x).toBeGreaterThanOrEqual(0);
+    expect(subject!.x + subject!.width).toBeLessThanOrEqual(viewport!.width + 1);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true);
+  }
 
   const resources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(resources.some((resource) => /\/xr\/orca\/|orca-lume-/i.test(resource))).toBe(false);
