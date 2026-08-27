@@ -8,7 +8,9 @@ export interface FactoryActivationEvidence {
   deterministicSimulationPassed: boolean;
   shadowComparisonPassed: boolean;
   noProductionDeploy: boolean;
+  testKingBaseCurrent: boolean;
   exactFactorySha?: string;
+  currentTestKingSha?: string;
   evidencedAt?: string;
 }
 
@@ -28,12 +30,17 @@ const REQUIRED: Array<[keyof FactoryActivationEvidence, string]> = [
   ["deterministicSimulationPassed", "DETERMINISTIC_SIMULATION_PASS"],
   ["shadowComparisonPassed", "SHADOW_COMPARISON_PASS"],
   ["noProductionDeploy", "NO_PRODUCTION_DEPLOY"],
+  ["testKingBaseCurrent", "CURRENT_TEST_KING_BASE"],
 ];
 
 /**
  * Fail-closed activation boundary. This does not grant authority or activate
  * anything; it only answers whether the explicit V01 preconditions are all
  * evidenced. Founder/BRAIN release authority remains external to the Factory.
+ *
+ * Factory activation also requires evidence that the shadow runtime has been
+ * reconciled against the CURRENT TEST KING integration line. A green shadow
+ * run on a stale product base is not activation evidence.
  */
 export function evaluateFactoryActivation(evidence: FactoryActivationEvidence): FactoryActivationGate {
   const missing = REQUIRED
@@ -41,6 +48,7 @@ export function evaluateFactoryActivation(evidence: FactoryActivationEvidence): 
     .map(([, label]) => label);
 
   if (!evidence.exactFactorySha?.trim()) missing.push("EXACT_FACTORY_SHA");
+  if (!evidence.currentTestKingSha?.trim()) missing.push("CURRENT_TEST_KING_SHA");
   if (!evidence.evidencedAt?.trim()) missing.push("EVIDENCE_TIMESTAMP");
 
   return Object.freeze({
