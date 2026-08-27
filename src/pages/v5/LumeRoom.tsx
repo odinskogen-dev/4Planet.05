@@ -206,7 +206,7 @@ export default function LumeRoom() {
         </aside>
 
         <div className="lume-room__sound" aria-label="Room audio controls">
-          <audio ref={fieldAudioRef} preload="none" src={ROOM.audio.src} onLoadStart={() => setAudioState("loading")} onPlaying={() => setAudioState("playing")} onPause={() => setAudioState((state) => state === "playing" ? "muted" : state)} onEnded={() => setAudioState("muted")} onError={() => setAudioState("error")} />
+          <audio ref={fieldAudioRef} preload="none" src={ROOM.audio.src} onPlaying={() => setAudioState("playing")} onPause={() => setAudioState((state) => state === "playing" ? "muted" : state)} onEnded={() => setAudioState("muted")} onError={() => setAudioState("error")} />
           <div className="lume-room__sound-actions">
             <button type="button" data-audio="field" onClick={toggleFieldAudio} aria-pressed={audioState === "playing"}>
               <span className="lume-room__sound-mark" aria-hidden><i /><i /><i /><i /><i /></span>
@@ -224,4 +224,3 @@ export default function LumeRoom() {
     </main>
   );
 }
-
