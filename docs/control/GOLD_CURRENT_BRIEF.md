@@ -2,71 +2,53 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-LUME-ROOM-CLEAN-SLICE-78
-**STATUS:** TEST / ACTIVE DEVELOPMENT / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact integration base `8c6d34c6396d75e8dec1dad7bc6b52abab253017`
-**ORIGINAL CLEAN-ROOM CHECKPOINT:** `fcf39bc93b40ed12e430c3dd9b433c9cc7176d4f`
-**ROLLBACK BASE:** `8c6d34c6396d75e8dec1dad7bc6b52abab253017`
-**FOUNDER DIRECTION:** Build the first LUME ROOM from a blank black room. Add depth, grid, projected information, nodes, procedural sound and one animal in that order. ORCA and Bay of Biscay may provide source-bounded content only after the room works; their legacy renderer, overlay stack and layout must not define the new room. Repair the shared megamenu and the current ORCA mobile interaction blocker in the same controlled multisprint. LIVE KING remains untouched.
-**SINGLE-SEAM RULE:** The change lands only on `king/test`. Existing LUME/ORCA/Jaguar branches are donors, never parallel authority.
+**CHANGE ID:** JAGUAR-JOURNEY-POINTER-AUTHORITY-66
+**STATUS:** TEST / ACTIVE CORRECTION / NOT ACCEPTED
+**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `ee28754b0bc941ef6bd5a5ad4108f873d7b46026`
+**ROLLBACK BASE:** Prototype SAFE remains on the last fully accepted immutable review; LIVE KING is untouched.
+**FOUNDER DIRECTION:** Continue Jaguar/ORCA/Bay convergence on one TEST KING line, prioritising visible working product over micro-fix churn. Jaguar must remain a recognisable source-derived 3D animal with a complete 01→08 journey.
 
 ## USER ARRIVES BECAUSE
-They want to meet one living species in a spatial, precise and educational room that feels immediate, premium and surprising in an ordinary browser.
+They want to meet a jaguar, then follow one coherent living-system journey without interface layers fighting each other.
 
 ## ONE THING TO UNDERSTAND
-An orca is a species with population-specific lives and relationships. A species identity or occurrence record is not a live animal track, population diagnosis or universal ecological claim.
+The creature encounter is interactive in scene 01; later chapters must hand pointer authority to the narrative navigation while preserving the jungle world behind it.
 
 ## PRIMARY ACTION
-Select one projected node around the animal to reveal a short, source-bounded layer on the wall.
+Use `FOLLOW THE SYSTEM` to move cleanly through 01→08 after the encounter.
 
 ## SECONDARY DEPTH
-Optional procedural sonification, direct source links, a return to the canonical Species profile, and a separate handoff to the existing Orca Journey.
+In scene 01 only: LOOK AT ME, MOVE, drag/swipe and LUME. HOW DO WE KNOW? remains available as evidence depth.
 
 ## P1 DOMINANT
-One full-body Orca suspended in a black spatial room.
+A recognisable source-derived Ear.Rodriguez Jaguar and an unobstructed canonical NEXT action.
 
 ## P2 ORIENTATION
-LUME ROOM 01, OCE4N domain identity, accepted taxon name and one concise human-first invitation.
+Scene-specific Jungle Room state that changes meaningfully from encounter → living web → place → pressure → understanding → solutions → actors/action → proof.
 
 ## P3 ACTION / NEXT
-Four spatial nodes, one selected at a time, plus one obvious exit to the Species profile.
+BACK / HOW DO WE KNOW? / FOLLOW THE SYSTEM remain physically clickable and keyboard-operable in every chapter.
 
 ## P4 DEPTH
-Source, state, limitation, taxon key, visual-asset disclosure and procedural-audio disclosure.
+Source/licence, presentation-motion boundary and evidence detail.
 
 ## WHAT CAN BE REMOVED
-Legacy ORCA LUME overlays, XR controls, faux tracking, stacked cards, permanent explanatory chrome, multiple simultaneous panels, decorative glow, extra colour and duplicated navigation implementations.
+Any non-encounter pointer hit-area from the Jaguar canvas or encounter controls once `data-scene != 0`.
 
 ## WHAT MUST BE REUSED
-Canonical OCE4N `#2E2EFF`, 4PLANET type tokens, canonical Orca taxon identity and source-bounded Species claims, existing Species/Journey routes, TEST KING shell, mobile/accessibility/reduced-motion gates and exact rollback identity.
-
-## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** canonical Orca identity, selected claims, source URLs, OCE4N domain colour and existing route continuity.
-- **ALREADY PRESENT:** shared Species profile, Orca Journey, Bay of Biscay route and truth spine.
-- **REJECT:** importing the legacy ORCA LUME renderer, its CSS override stack, XR dependency or layout geometry into LUME ROOM 01.
-- **DEFER:** XR/WebXR, projector hardware, multi-species ingestion tooling, motion tracking and live acoustic/telemetry feeds.
+Existing V52 source-derived Jaguar, v65 scene worlds, canonical Journey controller, existing chapter actions, Ear.Rodriguez attribution, CC BY 4.0 truth boundary, mobile creature-first performance rules.
 
 ## TRUTH BOUNDARY
-The central animal is an explicitly labelled AI-generated species visualisation, not evidence or a photograph. Sound is procedural sonification, not field audio or Orca vocalisation. Claims are labelled KNOWN or BOUNDARY and retain direct sources. No population, pod, current location, live tracking, health, abundance, migration or impact claim is inferred.
-
-## PERFORMANCE
-No WebGL or 3D dependency is added. The room uses one optimised local transparent image plus CSS perspective and DOM interaction. Motion follows reduced-motion preference; audio loads only on explicit user action.
+Source-derived geometry remains distinct from procedural presentation motion and coat shader. This correction changes hit-testing only; it must not alter scientific, source, licence, live-tracking or ecological claims.
 
 ## MOBILE-FIRST RISK
-Projected wall content and node targets can collide with the animal or each other at 390/430 px. The mobile composition must become a vertical, touch-first room with 44 px targets, no horizontal overflow and no hover-only function. The existing ORCA Journey echo control must not intercept its NEXT action.
+The full-screen Jaguar canvas can remain visually present behind later chapters but must not intercept chapter actions at 390/430 px. Interaction is creature-first only while scene 01 owns the encounter.
 
 ## HUMAN SUCCESS
-Within five seconds a person can say “this is an interactive Orca species room”, identify the animal, click a point, read one clear fact with its boundary, use sound only by choice and exit without getting trapped.
+A person can interact with the Jaguar in scene 01, press FOLLOW THE SYSTEM, and then advance through all remaining chapters with ordinary clicks/taps without the hidden encounter or canvas stealing input.
 
 ## PRE-MUTATION DEFECT
-The public shell megamenu closes during pointer travel because the trigger nav owns an immediate mouse-leave while the panel is a sibling. TAKE PART is injected by a separate portal and uses different geometry. Existing ORCA LUME mobile browser tests fail because the echo trigger intercepts ordinary NEXT clicks at 390/430 px.
-
-## POST-DEPLOY QA STATE — 27 AUGUST 2026
-- TEST KING commit `e6187d3d7e58572fb39dee87a02f821d33e7fb5d` deployed the clean room, canonical megamenu and bounded ORCA mobile interaction repair directly on parent `8c6d34c6396d75e8dec1dad7bc6b52abab253017`.
-- Public browser readback verified `/species/orca/lume`, node switching, explicit source boundaries, user-triggered procedural sound, Species exit, canonical TAKE PART panel, click lock and Escape close.
-- Follow-up commit `2a028f3a83cb8f3645f4b909a66cb4f656ba38ce` corrected the lineage parent and aligned the existing Species Engine browser proof with the already-implemented `CANONICAL_4P_TEST_REGISTRY` state while retaining the browser-local / not-shared-BRAIN boundary.
-- The Species + Lens proof gate subsequently passed Chromium and WebKit at 390 and 430 px. Static policy, clean install, TypeScript, assets, lint, production build and 108 smoke/contracts were already green on the converged product tree.
-- Full Browser Product Proof and ONE INTERFACE Convergence matrices remain required before VERIFIED status. Founder acceptance is not inferred. LIVE KING remains unchanged.
+Exact Browser Product Proof #1159 on parent `ee28754b0bc941ef6bd5a5ad4108f873d7b46026` failed desktop 1440 + mobile 390/430 at the second journey advance. Playwright proved the visible enabled `FOLLOW THE SYSTEM · 03 →` button was intercepted by `.controls` on desktop and `.jaguar-local-v52` on mobile. Build, GOLD, Public Preview, Human Craft and Analytics were green; this is a reproduced product hit-testing defect, not a test-tolerance problem.
 
 ## ACCEPTANCE
-1. `/species/orca/lume` starts as a clean black room with one OCE4N colour, spatial depth, grid, one animal, four keyboard/touch nodes and one active wall projection. 2. No legacy ORCA LUME or XR runtime is imported by the new route. 3. Generated visualisation and procedural audio are explicitly disclosed. 4. Desktop plus 390/430 screenshots pass five-second, squint, scan, next-action, dead-end and context tests. 5. Megamenu has one stable full-width geometry, TAKE PART is canonical, hover content remains hoverable/persistent, keyboard works and close delay permits pointer travel. 6. Existing ORCA Journey NEXT is ordinary-click safe on mobile. 7. Policy, typecheck, build, smoke/contracts and targeted Playwright pass. 8. Newer Embla, Species, ORCA, Jaguar, Bay of Biscay and ATLAS work from the integration base remains intact and its existing contracts stay active. 9. Exact SHA deploy is verified on TEST KING; BRAIN and Prototype SAFE are updated. 10. LIVE KING is unchanged. 11. Founder acceptance remains the only GOLD promotion trigger.
+1. Keep Jaguar scene-01 interactions working. 2. For scenes 02–08, the encounter canvas and controls cannot receive pointer events. 3. BACK / HOW DO WE KNOW? / FOLLOW THE SYSTEM ordinary-click through all 8 scenes on Chromium desktop + 390/430 and WebKit desktop + 390/430. 4. V52 Jaguar remains visible/source-derived and LUME still works in encounter. 5. Typecheck/build/contracts/assets/security/truth gates pass. 6. No test force-click or tolerance weakening. 7. Exact SHA is deployed and verified before any acceptance or Prototype SAFE advancement. 8. LIVE KING remains unchanged.
