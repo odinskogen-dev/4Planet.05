@@ -27,7 +27,9 @@ const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   deterministicSimulationPassed: true,
   shadowComparisonPassed: true,
   noProductionDeploy: true,
+  testKingBaseCurrent: true,
   exactFactorySha: "SIMULATED_FACTORY_SHA",
+  currentTestKingSha: "SIMULATED_CURRENT_TEST_KING_SHA",
   evidencedAt: "2026-08-27T00:00:00.000Z",
 });
 
@@ -52,6 +54,18 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
       evidence: { ...FULL_EVIDENCE, shadowComparisonPassed: false },
       expectedReady: false,
       expectedMissing: ["SHADOW_COMPARISON_PASS"],
+    },
+    {
+      name: "stale-test-king-base-fails-closed",
+      evidence: { ...FULL_EVIDENCE, testKingBaseCurrent: false },
+      expectedReady: false,
+      expectedMissing: ["CURRENT_TEST_KING_BASE"],
+    },
+    {
+      name: "missing-current-test-king-sha-fails-closed",
+      evidence: { ...FULL_EVIDENCE, currentTestKingSha: "" },
+      expectedReady: false,
+      expectedMissing: ["CURRENT_TEST_KING_SHA"],
     },
     {
       name: "missing-exact-sha-fails-closed",
