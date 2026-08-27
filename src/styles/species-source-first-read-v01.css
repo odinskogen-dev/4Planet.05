@@ -10,6 +10,18 @@
   opacity: .82;
 }
 
+/* Attribution must never become a second headline over the animal. The underlying
+   media record remains intact; this only reduces the presentation layer. */
+.sp-hero__media > div[style*="bottom: 34px"] {
+  max-width: min(280px, calc(100% - 28px)) !important;
+  padding: 4px 7px !important;
+  font-size: 7px !important;
+  line-height: 1.3 !important;
+  letter-spacing: .08em !important;
+  opacity: .68;
+  text-align: right;
+}
+
 @media (max-width: 900px) {
   .sp-hero {
     min-height: auto;
@@ -55,8 +67,10 @@
 }
 
 @media (max-width: 620px) {
-  /* Detailed operational/licensing limitations are evidence, not the hero story. */
-  .sp-hero__media > div[style*="max-width: 320px"] {
+  /* Detailed operational/licensing limitations and long attribution strings are
+     evidence, not the hero story. Keep the animal unobstructed on compact screens. */
+  .sp-hero__media > div[style*="max-width: 320px"],
+  .sp-hero__media > div[style*="bottom: 34px"] {
     display: none !important;
   }
 
