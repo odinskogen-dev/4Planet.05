@@ -19,6 +19,13 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await expect(page.getByText(/Missing evidence stays UNKNOWN/i)).toBeVisible();
     await expect(page.getByText(/I don.t know yet/i)).toBeVisible();
 
+    const foodChoice = page.getByRole("link", { name: /Make a food choice/i });
+    await expect(foodChoice).toHaveAttribute("href", "/4sapien/food");
+    await foodChoice.click();
+    await expect(page).toHaveURL(/\/4sapien\/food$/);
+    await expect(page.getByRole("button", { name: /READ PRODUCT/i })).toBeVisible();
+
+    await page.goto("/4sapien");
     await expectNoHorizontalOverflow(page);
   });
 
