@@ -2,6 +2,7 @@ import { Agent, callable, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
 import { evaluateMaterialProgress } from "./evaluator";
 import { evaluateFactoryActivation, type FactoryActivationEvidence } from "./activationGate";
+import { runActivationGateSimulation } from "./activationSimulation";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -93,6 +94,11 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     const gate = evaluateFactoryActivation(evidence);
     this.setState({ ...this.state, activationEvidence: evidence });
     return gate;
+  }
+
+  @callable()
+  simulateActivationGate() {
+    return runActivationGateSimulation();
   }
 
   @callable()
