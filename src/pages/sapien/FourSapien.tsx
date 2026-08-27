@@ -21,8 +21,8 @@ const capabilityCards = [
     kicker: "LIVE PROOF",
     title: "FOOD",
     body: "Scan a product. Understand what it is. Find a better-fit option and see why.",
-    href: "/food/lens",
-    cta: "Open food proof",
+    href: "/4sapien/food",
+    cta: "Make a food choice",
   },
   {
     kicker: "NEXT",
