@@ -121,6 +121,7 @@ export default function LumeRoom() {
               className="lume-room__node"
               data-node={node.id}
               data-active={active.id === node.id}
+              aria-label={`0${index + 1} ${node.label}`}
               aria-pressed={active.id === node.id}
               aria-controls="lume-room-detail"
               onClick={() => setActiveId(node.id)}
