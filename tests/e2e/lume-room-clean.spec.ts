@@ -38,6 +38,7 @@ test("clean LUME room is immediate, interactive and viewport-safe", async ({ pag
 });
 
 test("megamenu survives pointer travel and keeps one geometry", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 1440) <= 760, "Pointer-travel is a desktop navigation contract; compact navigation uses tap grammar.");
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const explore = page.getByRole("button", { name: "EXPLORE", exact: true });
   await explore.hover();
