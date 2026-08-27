@@ -62,10 +62,17 @@
 #jaguar-experience[data-scene="7"] .room--fog,#jaguar-experience[data-scene="7"] .room--shafts{opacity:.06}
 #jaguar-experience[data-scene="7"] .scene-intel{border-color:rgba(151,186,208,.28);background:linear-gradient(150deg,rgba(4,10,12,.95),rgba(2,7,6,.72))}
 
-/* Non-encounter chapters are story worlds, not a second creature encounter. */
+/* Non-encounter chapters are story worlds, not a second creature encounter.
+   The encounter can remain visually present as a background layer, but it must
+   yield hit-testing authority to canonical BACK / EVIDENCE / NEXT navigation. */
 #jaguar-experience:not([data-scene="0"]) .encounter{opacity:.34;filter:saturate(.62) brightness(.72);pointer-events:none}
+#jaguar-experience:not([data-scene="0"]) .encounter *,
+#jaguar-experience:not([data-scene="0"]) .jaguar-local-v48,
+#jaguar-experience:not([data-scene="0"]) .jaguar-local-v52,
+#jaguar-experience:not([data-scene="0"]) .controls{pointer-events:none!important}
 #jaguar-experience:not([data-scene="0"]) .scene-intel{position:relative;z-index:12}
-#jaguar-experience:not([data-scene="0"]) .chapter{position:relative;z-index:14}
+#jaguar-experience:not([data-scene="0"]) .chapter{position:relative;z-index:14;pointer-events:auto}
+#jaguar-experience:not([data-scene="0"]) .chapter__actions,#jaguar-experience:not([data-scene="0"]) .chapter__actions *{pointer-events:auto}
 
 /* LUME remains a room state; scene meaning survives the transition. */
 #jaguar-experience[data-lume="true"] .world{filter:brightness(.42) saturate(.52) hue-rotate(18deg)!important}
