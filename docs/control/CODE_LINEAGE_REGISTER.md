@@ -49,6 +49,14 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 ## Current control fact
 `king/test` was created from former #121 exact head `633981cc6f54d152ed34ae02001ca3fb0fbe11c8`; #121 was then closed/frozen at the same SHA. Subsequent TEST KING control commits selectively adopted missing PR #120 control value. Production/LIVE KING was not modified.
 
+## LUME ROOM 01 — clean-room slice
+
+| Identity | Role now | Branch / PR | Exact parent SHA | TEST KING obligation |
+|---|---|---|---|---|
+| LUME ROOM 01 | ACTIVE DEVELOPMENT | `king/test` / #131 | `473383e959fa2bc55e23caaec8480a215173f72d` | Build a neutral browser-first spatial renderer from black. Orca/Bay/Jaguar may donate content and truth only; no legacy renderer or XR stack may become authority. Preserve one-domain-colour grammar, explicit generated-visual/procedural-audio boundaries, mobile interaction, canonical Species/Journey exits and rollback to the parent SHA. |
+
+Donor disposition for this slice: `agent/lume-project-proto-01`, `agent/orca-lume-19`, `recovery/testking-lume`, `agent/orca-bay-biscay-gold-20` and `recovery/testking-orca-biscay` remain **DONOR** evidence. Their canonical Orca/Bay data and truth boundaries are eligible for **ADOPT / ALREADY PRESENT** review; their LUME renderer/layout override stacks are **REJECT WITH REASON** because LUME ROOM 01 is deliberately clean-room and browser-first. XR, projector hardware and live tracking are **DEFER WITH REASON**.
+
 ## Required product-family lineage under #132
 Every one of these receives a complete donor matrix before total closure:
 1. ONE INTERFACE / shared public shell
