@@ -6,6 +6,7 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **STATUS:** TEST / ACTIVE DEVELOPMENT / FOUNDER REVIEW REQUIRED
 **BASE AUTHORITY:** `king/test` / PR #131 / exact parent `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9`
 **ROLLBACK BASE:** `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9`
+**IMPLEMENTED CANDIDATE:** `26403b26be79ad5ce1511cf0d63b6fe8da6ccaff`
 **FOUNDER DIRECTION:** Keep the accepted Orca asset and clean LUME ROOM renderer. Replace the dark electric blue with a lighter projected-light expression. Make the gallery feel physically larger, keep the animal and information on separate spatial planes, bind nodes and intelligence to walls, reveal a map from the PLACE node and add bounded interactive movement only where the single 2.5D asset can support it truthfully. LIVE KING remains untouched.
 **SINGLE-SEAM RULE:** The change lands only on `king/test`; no parallel LUME route, branch, renderer, map engine or truth model.
 
