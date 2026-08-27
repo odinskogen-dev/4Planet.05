@@ -1,0 +1,74 @@
+name: Cloudflare Origin Map
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-origin-map.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Resolve origins
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$zone")"
+          [[ -n "$account_id" ]] || { echo "No account id"; exit 1; }
+
+          needles=(
+            "build-s4piens-universe-domai.4planet-05.pages.dev"
+            "recovery-testking-magazine.4planet-05.pages.dev"
+            "b8a8f6c1.4planet-05.pages.dev"
+            "4482f621.4planet-05.pages.dev"
+          )
+          : > /tmp/deployments.jsonl
+          for page in 1 2 3 4 5 6 7 8; do
+            j="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=${page}&per_page=100" "${auth[@]}")"
+            jq -c '.result[]?' <<<"$j" >> /tmp/deployments.jsonl
+            count="$(jq '.result | length' <<<"$j")"
+            [[ "$count" -lt 100 ]] && break
+          done
+
+          {
+            echo "# Live origin → source mapping"
+            echo
+            echo "| Origin | Branch | Commit | Environment | Status | Deployment URL |"
+            echo "|---|---|---|---|---|---|"
+            for needle in "${needles[@]}"; do
+              row="$(jq -sc --arg n "$needle" '[.[] | select((.url // "" | contains($n)) or any(.aliases[]?; contains($n)))] | first // empty' /tmp/deployments.jsonl)"
+              if [[ -z "$row" ]]; then
+                echo "| \`${needle}\` | not found | | | | |"
+                continue
+              fi
+              branch="$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")"
+              commit="$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")"
+              env="$(jq -r '.environment // ""' <<<"$row")"
+              status="$(jq -r '.latest_stage.status // ""' <<<"$row")"
+              url="$(jq -r '.url // ""' <<<"$row")"
+              echo "| \`${needle}\` | \`${branch}\` | \`${commit:0:12}\` | ${env} | ${status} | ${url} |"
+            done
+          } > /tmp/origin-map.md
+          cat /tmp/origin-map.md
+
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -f /tmp/origin-map.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/origin-map.md
+          else
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Origin map failed before report generation."
+          fi

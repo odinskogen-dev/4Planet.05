@@ -1,0 +1,153 @@
+name: Browser Product Proof
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - king/test
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-product-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-critical-journeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the exact evidence candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Assert exact candidate head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA"
+          echo "actual=$actual"
+          test "$actual" = "$EXPECTED_SHA"
+          printf '%s\n' "$actual" > runtime-sha.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: GOLD authority contract
+        run: node scripts/gold-policy-check.mjs --mode=quality-contract
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install exact Chromium + WebKit revisions and browser system packages
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Build the exact current source
+        run: npm run build
+
+      - name: Start exact-head local preview
+        shell: bash
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4planet-preview.log 2>&1 &
+          echo $! > /tmp/4planet-preview.pid
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              printf '%s\n' "http://127.0.0.1:4173" > runtime-url.txt
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/4planet-preview.log || true
+          exit 1
+
+      # P0 Jaguar proof runs before unrelated shared product journeys. A flaky or
+      # independently red ATLAS seam must not suppress evidence for the protected
+      # Founder-directed Jaguar critical path.
+      - name: Run Jaguar P0 full-source proof on Chromium + WebKit desktop and mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      # Do not run every viewport-specific test under every project. The prior
+      # all-spec/all-project invocation repeated mobile assertions on desktop,
+      # desktop pointer assertions on mobile and consumed the 30 minute job
+      # budget before the matrix could report a trustworthy product result.
+      - name: Run shared critical journeys on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/gate1-vertical-slice.spec.ts
+          tests/e2e/product-switcher.spec.ts
+          --project=desktop-1440
+          --project=desktop-1280
+          --project=mobile-390
+          --project=mobile-430
+
+      - name: Run 4PLANET MAGAZINE Gold proof on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/magazine-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=mobile-430
+
+      - name: Run desktop product proof and desktop ATLAS interaction
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=desktop-1440 --grep "desktop proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/map-interactivity.spec.ts --project=desktop-1440 --grep "desktop pan and zoom|zoom ceiling|globe hides|same species"
+
+      - name: Run mobile product proof and mobile ATLAS interaction
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=mobile-390 --project=mobile-430 --grep "mobile proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/map-interactivity.spec.ts --project=mobile-390 --project=mobile-430 --grep "mobile bottom sheet|zoom ceiling|same species"
+
+      - name: Run WebKit product/navigation seam proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-desktop --grep "desktop proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-390 --project=webkit-430 --grep "mobile proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+          npm run test:e2e -- tests/e2e/magazine-gold.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      - name: Founder-gated visual baseline control
+        run: node scripts/gold-visual-lock-check.mjs
+
+      - name: Confirm tracked product tree stayed clean
+        shell: bash
+        run: |
+          git diff --exit-code --
+          git diff --cached --exit-code --
+
+      - name: Upload current product screenshots and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-proof-browser-evidence
+          path: |
+            artifacts/product-proof
+            artifacts/jaguar-full
+            playwright-report
+            test-results
+            runtime-url.txt
+            runtime-sha.txt
+          if-no-files-found: warn
+          retention-days: 14
