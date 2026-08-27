@@ -124,55 +124,6 @@ main:has(.ls-anchors) .ls-anchors{
   color:#fff!important;
 }
 
-/* TAKE PART in the global navigation. */
-.completion-takepart-nav{position:relative;height:100%;display:flex;align-items:center}
-.completion-takepart-button{height:100%}
-.completion-takepart-menu{
-  position:fixed;
-  top:calc(64px + env(safe-area-inset-top,0px));
-  left:50%;
-  width:min(760px,calc(100vw - 40px));
-  transform:translate(-50%,-8px);
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  background:#fff;
-  border:1px solid var(--line);
-  box-shadow:0 22px 54px rgba(0,0,0,.12);
-  transition:opacity .16s ease,transform .16s ease,visibility .16s;
-}
-.completion-takepart-nav:hover .completion-takepart-menu,
-.completion-takepart-nav:focus-within .completion-takepart-menu{
-  opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);
-}
-.completion-takepart-list{display:grid}
-.completion-takepart-link{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  align-items:center;
-  gap:20px;
-  padding:20px 22px;
-  border-bottom:1px solid var(--line);
-  background:#fff;
-  color:#080808;
-  text-decoration:none;
-  transition:background .16s,color .16s;
-}
-.completion-takepart-link:last-child{border-bottom:0}
-.completion-takepart-link strong{
-  display:block;
-  font-family:'Instrument Sans','DM Sans',sans-serif;
-  font-size:clamp(21px,2vw,29px);
-  font-weight:500;
-  letter-spacing:-.035em;
-}
-.completion-takepart-link small{display:block;margin-top:5px;font-size:12.5px;color:#666;line-height:1.45}
-.completion-takepart-link b{font-size:22px;font-weight:400;color:#8a8a8a}
-.completion-takepart-link:hover,.completion-takepart-link:focus-visible{background:var(--blue);color:#fff;outline:0}
-.completion-takepart-link:hover small,.completion-takepart-link:hover b,
-.completion-takepart-link:focus-visible small,.completion-takepart-link:focus-visible b{color:#fff}
-.completion-takepart-mobile{display:none}
-
 /* Mission/domain continuation surfaces — show that the system keeps going. */
 .completion-route-cta{background:#050505;color:#fff;position:relative;overflow:hidden}
 .completion-route-cta::before{content:"";position:absolute;top:0;left:0;width:96px;height:4px;background:var(--blue)}
@@ -192,13 +143,6 @@ main:has(.ls-anchors) .ls-anchors{
 .completion-cta-button--outline{background:transparent;border-color:rgba(255,255,255,.45)}
 .completion-cta-button:hover,.completion-cta-button:focus-visible{background:#fff;border-color:#fff;color:var(--blue);outline:0}
 
-@media(max-width:920px){
-  .completion-takepart-nav{display:none}
-  .completion-takepart-mobile{display:block;margin-top:44px}
-  .completion-takepart-mobile .completion-takepart-list{margin-top:16px;border-top:1px solid var(--line)}
-  .completion-takepart-mobile .completion-takepart-link{padding:16px 0;border-left:0;border-right:0}
-}
-
 @media(max-width:680px){
   .part-box{grid-template-columns:minmax(0,1fr) auto!important;padding:26px 2px!important}
   .part-box span:first-child{font-size:clamp(30px,10vw,44px)!important;overflow-wrap:anywhere}
@@ -210,5 +154,5 @@ main:has(.ls-anchors) .ls-anchors{
 }
 
 @media(prefers-reduced-motion:reduce){
-  .part-box,.completion-takepart-menu,.completion-takepart-link,main:has(#species-results) .three > a,main:has(#species-results) .three > a img{transition:none!important}
+  .part-box,main:has(#species-results) .three > a,main:has(#species-results) .three > a img{transition:none!important}
 }

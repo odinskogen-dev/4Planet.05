@@ -24,3 +24,12 @@
   outline:1px solid var(--lume-white,#f7fdff);
   outline-offset:4px;
 }
+
+/* The mobile HUD and the projected echo control can occupy the same screen
+   strip. Once the explicit pulse has fired, its trigger must yield the pointer
+   plane immediately so the ordinary Journey NEXT action cannot be intercepted. */
+@media(max-width:760px){
+  .nature-browser[data-light-lens="true"][data-echo-active="true"] > .orca-lume-intel .orca-lume-echo-trigger{
+    pointer-events:none!important;
+  }
+}

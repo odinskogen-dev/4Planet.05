@@ -1,11 +1,16 @@
-/* ORCA focus sheet v32 — progressive disclosure over stacked overlays.
-   Intent: one dominant scene, one narrative card, evidence as an isolated sheet. */
+/* ORCA focus sheet v32.1 — progressive disclosure over stacked overlays.
+   Product rule: one dominant ocean scene + one narrative card. Evidence and labels
+   appear only on intent. This applies on desktop as well as compact viewports. */
 #browser-experience .nature-chapter{box-sizing:border-box}
+#browser-experience .nature-progress{display:none!important}
+#browser-experience .nature-node__label{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .16s ease!important}
+#browser-experience .nature-node:focus-visible .nature-node__label,
+#browser-experience .nature-node:hover .nature-node__label,
+#browser-experience .nature-node[data-active="true"]:focus-visible .nature-node__label{opacity:1!important;visibility:visible!important}
 #browser-experience[data-panel-open="true"] .nature-world,
 #browser-experience[data-panel-open="true"] .nature-stage,
-#browser-experience[data-panel-open="true"] .nature-journey-hud,
-#browser-experience[data-panel-open="true"] .nature-progress{filter:brightness(.38) saturate(.65);opacity:.34;transition:opacity .18s ease,filter .18s ease}
-#browser-experience[data-panel-open="true"] .nature-premium__hotspots{opacity:.12!important;pointer-events:none!important}
+#browser-experience[data-panel-open="true"] .nature-journey-hud{filter:brightness(.34) saturate(.58);opacity:.25;transition:opacity .18s ease,filter .18s ease}
+#browser-experience[data-panel-open="true"] .nature-premium__hotspots{opacity:.08!important;pointer-events:none!important}
 #browser-experience .nature-chapter.is-open{z-index:86!important;background:linear-gradient(180deg,rgba(2,11,18,.985),rgba(1,7,12,.995))!important;border:1px solid rgba(110,231,255,.26)!important;box-shadow:0 28px 90px rgba(0,0,0,.62)!important;backdrop-filter:none!important}
 #browser-experience .nature-chapter__close{width:42px!important;height:42px!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:50%!important;background:rgba(255,255,255,.03)!important}
 #browser-experience .nature-chapter h2{max-width:15ch!important;letter-spacing:-.035em!important}
@@ -14,12 +19,19 @@
 #browser-experience .nature-chapter__next{min-height:46px!important}
 
 @media(min-width:761px){
+  #browser-experience .nature-journey-hud{width:min(460px,36vw)!important;bottom:30px!important}
+  #browser-experience .nature-journey-hud__copy{padding:16px 18px!important;background:linear-gradient(135deg,rgba(2,11,18,.82),rgba(2,11,18,.42))!important}
+  #browser-experience .nature-journey-hud__title{font-size:clamp(31px,2.8vw,46px)!important;max-width:12ch!important}
+  #browser-experience .nature-journey-hud__cue{font-size:8px!important;opacity:.58!important;max-width:46ch!important}
+  #browser-experience .nature-journey-hud__actions{gap:7px!important}
+  #browser-experience .nature-journey-hud__actions button{min-height:40px!important;padding:0 12px!important;font-size:8px!important}
+  #browser-experience .nature-stage__instruction{display:none!important}
+  #browser-experience .nature-subject__meta{opacity:.58!important;max-width:280px!important}
   #browser-experience .nature-chapter.is-open{position:fixed!important;top:94px!important;right:28px!important;bottom:28px!important;left:auto!important;width:min(430px,36vw)!important;max-width:none!important;max-height:none!important;overflow:auto!important;padding:28px!important}
-  #browser-experience[data-panel-open="true"] .nature-journey-hud{opacity:.18!important}
+  #browser-experience[data-panel-open="true"] .nature-journey-hud{opacity:.12!important}
 }
 
 @media(max-width:760px){
-  #browser-experience .nature-progress{display:none!important}
   #browser-experience .nature-journey-hud{left:12px!important;right:12px!important;bottom:max(12px,env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;max-width:none!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
   #browser-experience .nature-journey-hud__copy{padding:14px 14px 12px!important;background:linear-gradient(180deg,rgba(2,11,18,.88),rgba(2,11,18,.72))!important;border:1px solid rgba(110,231,255,.18)!important;border-radius:0!important;backdrop-filter:none!important}
   #browser-experience .nature-journey-hud__stage{font-size:9px!important;letter-spacing:.15em!important}
@@ -36,4 +48,4 @@
   #browser-experience[data-panel-open="true"] .nature-topbar{opacity:.42!important}
 }
 
-@media(prefers-reduced-motion:reduce){#browser-experience[data-panel-open="true"] .nature-world,#browser-experience[data-panel-open="true"] .nature-stage,#browser-experience[data-panel-open="true"] .nature-journey-hud,#browser-experience[data-panel-open="true"] .nature-progress{transition:none!important}}
+@media(prefers-reduced-motion:reduce){#browser-experience .nature-node__label,#browser-experience[data-panel-open="true"] .nature-world,#browser-experience[data-panel-open="true"] .nature-stage,#browser-experience[data-panel-open="true"] .nature-journey-hud{transition:none!important}}

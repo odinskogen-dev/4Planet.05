@@ -2,54 +2,71 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-NIGHT-ORCHESTRA-EMBLA-FIRST-LOOP-01  
-**STATUS:** TEST / EXACT-HEAD QA  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #211 hourly Symphony coordination mirror / Founder-directed NIGHT ORCHESTRA MAXIMUM PRODUCT PROGRESS 01  
-**PRE-MUTATION HEAD:** `71b620dd3af5f4537ffad7396383007987a71795`  
-**FOUNDER DIRECTION:** continue one authoritative TEST KING, preserve current ORCA/Jaguar/LUME Gold work, and create material product progress on separable seams without branch sprawl.  
-**SINGLE-SEAM RULE:** `king/test` remains the only moving integration line. No LIVE promotion is authorised.
+**CHANGE ID:** TEST-KING-LUME-ROOM-CLEAN-SLICE-78
+**STATUS:** TEST / ACTIVE DEVELOPMENT / FOUNDER REVIEW REQUIRED
+**BASE AUTHORITY:** `king/test` / PR #131 / exact integration base `8c6d34c6396d75e8dec1dad7bc6b52abab253017`
+**ORIGINAL CLEAN-ROOM CHECKPOINT:** `fcf39bc93b40ed12e430c3dd9b433c9cc7176d4f`
+**ROLLBACK BASE:** `8c6d34c6396d75e8dec1dad7bc6b52abab253017`
+**FOUNDER DIRECTION:** Build the first LUME ROOM from a blank black room. Add depth, grid, projected information, nodes, procedural sound and one animal in that order. ORCA and Bay of Biscay may provide source-bounded content only after the room works; their legacy renderer, overlay stack and layout must not define the new room. Repair the shared megamenu and the current ORCA mobile interaction blocker in the same controlled multisprint. LIVE KING remains untouched.
+**SINGLE-SEAM RULE:** The change lands only on `king/test`. Existing LUME/ORCA/Jaguar branches are donors, never parallel authority.
 
 ## USER ARRIVES BECAUSE
-A person reaches 4SAPIEN with a real decision and needs Embla to do something truthful rather than stop at a decorative prompt box.
+They want to meet one living species in a spatial, precise and educational room that feels immediate, premium and surprising in an ordinary browser.
 
 ## ONE THING TO UNDERSTAND
-Embla is a personal decision interface over evidence-constrained Choice/BEE logic. It may route a question into a proof path that actually exists, but it may not manufacture an answer, evidence, score or confidence where the underlying adapter is absent.
+An orca is a species with population-specific lives and relationships. A species identity or occurrence record is not a live animal track, population diagnosis or universal ecological claim.
 
 ## PRIMARY ACTION
-Type or choose a decision prompt, run Embla, and receive the strongest currently supported evidence path. FOOD routes into the existing PICK_ proof. Unsupported CAR/HOME paths remain intake-only. Finance may open the existing analysis proof without producing trading instructions. Specific decision domains resolve before generic financial language, so a phrase such as “Can I afford this home?” remains a HOME decision rather than being collapsed into FINANCE.
+Select one projected node around the animal to reveal a short, source-bounded layer on the wall.
 
 ## SECONDARY DEPTH
-Preserve the existing BEE quorum doctrine: missing evidence remains UNKNOWN; derivative repetition does not manufacture corroboration; hard constraints fail closed; recommendation eligibility requires adequate evidence.
+Optional procedural sonification, direct source links, a return to the canonical Species profile, and a separate handoff to the existing Orca Journey.
 
 ## P1 DOMINANT
-One working human loop: prompt → domain intake → truth boundary → existing evidence product. The interface must visibly distinguish EVIDENCE PATH READY from INTAKE ONLY.
+One full-body Orca suspended in a black spatial room.
 
 ## P2 ORIENTATION
-This is the first bounded Embla seam, not a claim of a general AI conversation engine. Deterministic routing is deliberate until deeper retrieval/conversation evidence contracts exist.
+LUME ROOM 01, OCE4N domain identity, accepted taxon name and one concise human-first invitation.
 
 ## P3 ACTION / NEXT
-FOOD may continue to `/4sapien/food`; unsupported domains show why no recommendation is available. The user retains the decision.
+Four spatial nodes, one selected at a time, plus one obvious exit to the Species profile.
 
 ## P4 DEPTH
-Existing ORCA LUME, Jaguar physical staging, Actor Gold, ATLAS, source/rights/security and Product Context semantics are unchanged by this bounded product seam.
+Source, state, limitation, taxon key, visual-asset disclosure and procedural-audio disclosure.
 
 ## WHAT CAN BE REMOVED
-The former `CONVERSATION ENGINE WIRING NEXT — THIS SURFACE CURRENTLY MATERIALISES THE PRODUCT MODEL.` dead-end state.
+Legacy ORCA LUME overlays, XR controls, faux tracking, stacked cards, permanent explanatory chrome, multiple simultaneous panels, decorative glow, extra colour and duplicated navigation implementations.
 
 ## WHAT MUST BE REUSED
-`src/choice/bee.ts`, existing `/4sapien/food` PICK_ product, `/4sapien/finance`, existing FourSapien visual baseline, exact TEST KING gates and existing unknown/evidence rules.
+Canonical OCE4N `#2E2EFF`, 4PLANET type tokens, canonical Orca taxon identity and source-bounded Species claims, existing Species/Journey routes, TEST KING shell, mobile/accessibility/reduced-motion gates and exact rollback identity.
+
+## CLEAN-ROOM / DONOR DECISION
+- **ADOPT:** canonical Orca identity, selected claims, source URLs, OCE4N domain colour and existing route continuity.
+- **ALREADY PRESENT:** shared Species profile, Orca Journey, Bay of Biscay route and truth spine.
+- **REJECT:** importing the legacy ORCA LUME renderer, its CSS override stack, XR dependency or layout geometry into LUME ROOM 01.
+- **DEFER:** XR/WebXR, projector hardware, multi-species ingestion tooling, motion tracking and live acoustic/telemetry feeds.
 
 ## TRUTH BOUNDARY
-Embla currently performs bounded decision intake/routing only. It does not claim live AI conversation, complete evidence retrieval, a universal score, personalised trading instruction or a recommendation where evidence quorum is absent.
+The central animal is an explicitly labelled AI-generated species visualisation, not evidence or a photograph. Sound is procedural sonification, not field audio or Orca vocalisation. Claims are labelled KNOWN or BOUNDARY and retain direct sources. No population, pod, current location, live tracking, health, abundance, migration or impact claim is inferred.
 
 ## PERFORMANCE
-No network request is added to the 4SAPIEN front door. Prompt routing is local deterministic logic. Existing FOOD network behaviour is unchanged.
+No WebGL or 3D dependency is added. The room uses one optimised local transparent image plus CSS perspective and DOM interaction. Motion follows reduced-motion preference; audio loads only on explicit user action.
 
 ## MOBILE-FIRST RISK
-The result panel is progressive content inside the existing responsive Embla surface; it must not introduce horizontal overflow or crowd the primary prompt/action on 390/430 widths.
+Projected wall content and node targets can collide with the animal or each other at 390/430 px. The mobile composition must become a vertical, touch-first room with 44 px targets, no horizontal overflow and no hover-only function. The existing ORCA Journey echo control must not intercept its NEXT action.
 
 ## HUMAN SUCCESS
-A first-time user can ask a grocery decision, run Embla, understand that the system has found a decision path rather than an answer, and enter the real FOOD evidence proof. A CAR/HOME question is explicitly withheld instead of guessed.
+Within five seconds a person can say “this is an interactive Orca species room”, identify the animal, click a point, read one clear fact with its boundary, use sound only by choice and exit without getting trapped.
+
+## PRE-MUTATION DEFECT
+The public shell megamenu closes during pointer travel because the trigger nav owns an immediate mouse-leave while the panel is a sibling. TAKE PART is injected by a separate portal and uses different geometry. Existing ORCA LUME mobile browser tests fail because the echo trigger intercepts ordinary NEXT clicks at 390/430 px.
+
+## POST-DEPLOY QA STATE — 27 AUGUST 2026
+- TEST KING commit `e6187d3d7e58572fb39dee87a02f821d33e7fb5d` deployed the clean room, canonical megamenu and bounded ORCA mobile interaction repair directly on parent `8c6d34c6396d75e8dec1dad7bc6b52abab253017`.
+- Public browser readback verified `/species/orca/lume`, node switching, explicit source boundaries, user-triggered procedural sound, Species exit, canonical TAKE PART panel, click lock and Escape close.
+- Follow-up commit `2a028f3a83cb8f3645f4b909a66cb4f656ba38ce` corrected the lineage parent and aligned the existing Species Engine browser proof with the already-implemented `CANONICAL_4P_TEST_REGISTRY` state while retaining the browser-local / not-shared-BRAIN boundary.
+- The Species + Lens proof gate subsequently passed Chromium and WebKit at 390 and 430 px. Static policy, clean install, TypeScript, assets, lint, production build and 108 smoke/contracts were already green on the converged product tree.
+- Full Browser Product Proof and ONE INTERFACE Convergence matrices remain required before VERIFIED status. Founder acceptance is not inferred. LIVE KING remains unchanged.
 
 ## ACCEPTANCE
-1) Exact head clean install + typecheck + production build + contract/smoke green. 2) Embla contract proves FOOD route, unsupported-domain fail-closed behaviour and finance boundary. 3) Chromium + WebKit 4SAPIEN browser gates pass desktop/390/430 without overflow. 4) Existing ORCA/Jaguar/shared browser gates remain green. 5) Gold, security, truth and Public Preview gates remain green. 6) Exact TEST preview identity is verified. 7) LIVE KING remains unchanged.
+1. `/species/orca/lume` starts as a clean black room with one OCE4N colour, spatial depth, grid, one animal, four keyboard/touch nodes and one active wall projection. 2. No legacy ORCA LUME or XR runtime is imported by the new route. 3. Generated visualisation and procedural audio are explicitly disclosed. 4. Desktop plus 390/430 screenshots pass five-second, squint, scan, next-action, dead-end and context tests. 5. Megamenu has one stable full-width geometry, TAKE PART is canonical, hover content remains hoverable/persistent, keyboard works and close delay permits pointer travel. 6. Existing ORCA Journey NEXT is ordinary-click safe on mobile. 7. Policy, typecheck, build, smoke/contracts and targeted Playwright pass. 8. Newer Embla, Species, ORCA, Jaguar, Bay of Biscay and ATLAS work from the integration base remains intact and its existing contracts stay active. 9. Exact SHA deploy is verified on TEST KING; BRAIN and Prototype SAFE are updated. 10. LIVE KING is unchanged. 11. Founder acceptance remains the only GOLD promotion trigger.
