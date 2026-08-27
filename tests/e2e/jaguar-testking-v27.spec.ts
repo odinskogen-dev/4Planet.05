@@ -54,6 +54,13 @@ test('TEST KING Jaguar renders active Ear source-derived V52, exposes LUME room,
   await expect(page.locator('.jaguar-local-v48-credit')).toBeVisible();
   await expect(page.locator('.jaguar-local-v48-credit')).toContainText(/EAR\.RODRIGUEZ · CC BY 4\.0/i);
 
+  // Persist exact rendered evidence where Browser Product Proof actually uploads it.
+  // This is part of the visual Gold design loop: green DOM/runtime assertions alone
+  // are not sufficient evidence that the Founder-visible room materially improved.
+  const evidenceDir='artifacts/jaguar-full';
+  await mkdir(evidenceDir,{recursive:true});
+  await page.screenshot({path:`${evidenceDir}/${testInfo.project.name}-01-real-world.png`,fullPage:true});
+
   // Direct interaction is performed on the active V52 surface.
   if(canvasBox){
     await page.mouse.move(canvasBox.x+canvasBox.width*.55,canvasBox.y+canvasBox.height*.5);
@@ -71,9 +78,7 @@ test('TEST KING Jaguar renders active Ear source-derived V52, exposes LUME room,
   await expect(page.locator('.lume-room')).toBeVisible();
   await expect(page.locator('.lume-grid--floor')).toBeVisible();
   await expect(page.locator('.lume-intel--species')).toBeVisible();
-
-  await mkdir('artifacts/jaguar-v52', { recursive: true });
-  await page.screenshot({path:`artifacts/jaguar-v52/${testInfo.project.name}-encounter-lume.png`,fullPage:true});
+  await page.screenshot({path:`${evidenceDir}/${testInfo.project.name}-01-lume.png`,fullPage:true});
 
   const expected=[/One life depends on many/i,/The animal is not the whole story/i,/The landscape changes/i,/See the system before acting/i,/Response starts with the system/i,/Action needs accountable actors/i,/Proof closes the loop/i];
   for(let i=0;i<expected.length;i+=1){
@@ -81,6 +86,8 @@ test('TEST KING Jaguar renders active Ear source-derived V52, exposes LUME room,
     await expect(root).toHaveAttribute('data-scene',String(i+1));
     await expect(page.locator('#chapter-title')).toContainText(expected[i]);
     await expect(page.locator('.scene-intel')).toBeVisible();
+    if(i===2)await page.screenshot({path:`${evidenceDir}/${testInfo.project.name}-04-pressure.png`,fullPage:true});
+    if(i===6)await page.screenshot({path:`${evidenceDir}/${testInfo.project.name}-08-proof.png`,fullPage:true});
   }
   await page.getByRole('button',{name:'RETURN TO JAGUAR'}).click();
   await expect(root).toHaveAttribute('data-scene','0');

@@ -1,9 +1,10 @@
 import { DOMAIN_ACCENT } from "@/styles/tokens";
 
 export type LumeRoomNode = {
-  id: "identity" | "culture" | "food" | "boundary";
+  id: "identity" | "culture" | "place" | "boundary";
   label: string;
   status: "KNOWN" | "BOUNDARY";
+  projection?: "map";
   title: string;
   body: string;
   limit: string;
@@ -29,12 +30,23 @@ export type LumeRoomManifest = {
     disclosure: string;
     checksum: string;
   };
-  soundDisclosure: string;
+  audio: {
+    src: string;
+    label: string;
+    kind: "FIELD RECORDING";
+    place: string;
+    credit: string;
+    sourceLabel: string;
+    sourceUrl: string;
+    usage: string;
+    checksum: string;
+  };
+  proceduralSoundDisclosure: string;
   nodes: readonly LumeRoomNode[];
 };
 
 export const LUME_ORCA_ROOM: LumeRoomManifest = {
-  id: "lume-room-01-orca",
+  id: "lume-room-03-orca",
   domain: "OCE4N_",
   accent: DOMAIN_ACCENT.OCE4N_,
   species: {
@@ -51,7 +63,18 @@ export const LUME_ORCA_ROOM: LumeRoomManifest = {
     disclosure: "AI-GENERATED SPECIES VISUALISATION · NOT EVIDENCE / NOT A PHOTOGRAPH",
     checksum: "sha256:43c4c2dd8bb358d529fcdc7351d866194c049c3737bed2c0efae2b26f3fcbaf9",
   },
-  soundDisclosure: "PROCEDURAL SONIFICATION · NOT FIELD AUDIO / NOT ORCA VOCALISATION",
+  audio: {
+    src: "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3",
+    label: "KILLER WHALE ECHOLOCATION CLICKS",
+    kind: "FIELD RECORDING",
+    place: "GLACIER BAY, ALASKA",
+    credit: "NPS / C. GABRIELE",
+    sourceLabel: "NATIONAL PARK SERVICE · GLACIER BAY",
+    sourceUrl: "https://www.nps.gov/media/video/view.htm?id=802469FB-2FB2-4319-914E-423F39DF03A8",
+    usage: "NPS-CREDITED PUBLIC-DOMAIN MEDIA",
+    checksum: "sha256:c79f813ebee83f653d493c4f57050db6276e1e8af1ae9c4d78a14672c628fd67",
+  },
+  proceduralSoundDisclosure: "PROCEDURAL ROOM RESPONSE · NOT AN ANIMAL RECORDING",
   nodes: [
     {
       id: "identity",
@@ -74,13 +97,14 @@ export const LUME_ORCA_ROOM: LumeRoomManifest = {
       sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale",
     },
     {
-      id: "food",
-      label: "FOOD WEB",
+      id: "place",
+      label: "PLACE",
       status: "KNOWN",
-      title: "Diet depends on population.",
-      body: "Different populations can specialise in different prey and hunting strategies. Food connects the animal to habitat, fisheries and human decisions.",
-      limit: "A species record does not reveal prey availability or whether a particular whale is food-limited.",
-      sourceLabel: "NOAA FISHERIES · ECOLOGY",
+      projection: "map",
+      title: "One species across every ocean.",
+      body: "Killer whales occur in all oceans. That global species range contains distinct local populations, habitats, diets and cultures.",
+      limit: "This schematic map is species-level orientation, not a live track, migration route, population range or abundance surface.",
+      sourceLabel: "NOAA FISHERIES · RANGE",
       sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale",
     },
     {
