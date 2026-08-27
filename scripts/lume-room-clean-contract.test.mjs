@@ -11,15 +11,21 @@ const completion = readFileSync(new URL("../src/components/PublicCompletionBridg
 const image = new URL("../public/assets/species/orca/lume-orca-v1.png", import.meta.url);
 const fieldAudio = new URL("../public/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3", import.meta.url);
 
-test("LUME ROOM 02 keeps the clean browser-first route and rejects the legacy ORCA renderer", () => {
+test("LUME ROOM 03 keeps the clean browser-first route and rejects the legacy ORCA renderer", () => {
   assert.match(router, /path="\/species\/orca\/lume"/);
   assert.doesNotMatch(page, /\/xr\/|orca-lume-|webxr|a-frame|three/i);
   assert.doesNotMatch(css, /\/xr\/|orca-lume-/i);
   assert.ok(statSync(image).size > 100_000, "central transparent species asset should be present");
   assert.match(page, /LUME_ORCA_ROOM/);
   assert.match(manifest, /AI-GENERATED SPECIES VISUALISATION · NOT EVIDENCE \/ NOT A PHOTOGRAPH/);
-  assert.match(page, /data-room-version="02"/);
+  assert.match(page, /data-room-version="03"/);
   assert.match(page, /data-subject-motion="2\.5D"/);
+  assert.match(page, /WorldProjection/);
+  assert.match(page, /NOT A LIVE TRACK/);
+  assert.match(page, /setPointerCapture/);
+  assert.match(page, /ArrowLeft/);
+  assert.match(manifest, /id: "place"/);
+  assert.match(manifest, /projection: "map"/);
   assert.match(page, /LOADING ORCA AUDIO/);
   assert.match(page, /MUTE ORCA AUDIO/);
   assert.match(page, /RETRY ORCA AUDIO/);
@@ -32,7 +38,8 @@ test("LUME ROOM 02 keeps the clean browser-first route and rejects the legacy OR
   assert.match(manifest, /Population, pod, current location and migration remain unknown/i);
   assert.equal((page.match(/className="lume-room__node"/g) ?? []).length, 1, "node UI should be data-driven");
   assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(css, /max-width:calc\(100vw - 30px\)/);
+  assert.match(css, /--lume:#79eaff/);
+  assert.match(css, /max-width:calc\(100vw - 52px\)/);
   assert.doesNotMatch(css, /11[0-9]vw/);
 });
 

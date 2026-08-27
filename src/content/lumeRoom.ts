@@ -1,9 +1,10 @@
 import { DOMAIN_ACCENT } from "@/styles/tokens";
 
 export type LumeRoomNode = {
-  id: "identity" | "culture" | "food" | "boundary";
+  id: "identity" | "culture" | "place" | "boundary";
   label: string;
   status: "KNOWN" | "BOUNDARY";
+  projection?: "map";
   title: string;
   body: string;
   limit: string;
@@ -45,7 +46,7 @@ export type LumeRoomManifest = {
 };
 
 export const LUME_ORCA_ROOM: LumeRoomManifest = {
-  id: "lume-room-02-orca",
+  id: "lume-room-03-orca",
   domain: "OCE4N_",
   accent: DOMAIN_ACCENT.OCE4N_,
   species: {
@@ -96,13 +97,14 @@ export const LUME_ORCA_ROOM: LumeRoomManifest = {
       sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale",
     },
     {
-      id: "food",
-      label: "FOOD WEB",
+      id: "place",
+      label: "PLACE",
       status: "KNOWN",
-      title: "Diet depends on population.",
-      body: "Different populations can specialise in different prey and hunting strategies. Food connects the animal to habitat, fisheries and human decisions.",
-      limit: "A species record does not reveal prey availability or whether a particular whale is food-limited.",
-      sourceLabel: "NOAA FISHERIES · ECOLOGY",
+      projection: "map",
+      title: "One species across every ocean.",
+      body: "Killer whales occur in all oceans. That global species range contains distinct local populations, habitats, diets and cultures.",
+      limit: "This schematic map is species-level orientation, not a live track, migration route, population range or abundance surface.",
+      sourceLabel: "NOAA FISHERIES · RANGE",
       sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale",
     },
     {
