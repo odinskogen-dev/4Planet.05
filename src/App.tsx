@@ -6,6 +6,7 @@ import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { Analytics } from "@/analytics/Analytics";
 import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
+import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
@@ -29,6 +30,7 @@ export default function App() {
       <ContextRetained />
       <Analytics />
       <ProductRouteAnalytics />
+      <AtlasReturnCameraAuthority />
       <AtlasProductSwitcher />
       <PublicCompletionBridge />
       <AppRoutes />
