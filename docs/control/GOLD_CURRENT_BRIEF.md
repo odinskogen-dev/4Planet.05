@@ -58,8 +58,15 @@ Projected wall content and node targets can collide with the animal or each othe
 ## HUMAN SUCCESS
 Within five seconds a person can say “this is an interactive Orca species room”, identify the animal, click a point, read one clear fact with its boundary, use sound only by choice and exit without getting trapped.
 
-## CURRENT DEFECT
+## PRE-MUTATION DEFECT
 The public shell megamenu closes during pointer travel because the trigger nav owns an immediate mouse-leave while the panel is a sibling. TAKE PART is injected by a separate portal and uses different geometry. Existing ORCA LUME mobile browser tests fail because the echo trigger intercepts ordinary NEXT clicks at 390/430 px.
+
+## POST-DEPLOY QA STATE — 27 AUGUST 2026
+- TEST KING commit `e6187d3d7e58572fb39dee87a02f821d33e7fb5d` deployed the clean room, canonical megamenu and bounded ORCA mobile interaction repair directly on parent `8c6d34c6396d75e8dec1dad7bc6b52abab253017`.
+- Public browser readback verified `/species/orca/lume`, node switching, explicit source boundaries, user-triggered procedural sound, Species exit, canonical TAKE PART panel, click lock and Escape close.
+- Follow-up commit `2a028f3a83cb8f3645f4b909a66cb4f656ba38ce` corrected the lineage parent and aligned the existing Species Engine browser proof with the already-implemented `CANONICAL_4P_TEST_REGISTRY` state while retaining the browser-local / not-shared-BRAIN boundary.
+- The Species + Lens proof gate subsequently passed Chromium and WebKit at 390 and 430 px. Static policy, clean install, TypeScript, assets, lint, production build and 108 smoke/contracts were already green on the converged product tree.
+- Full Browser Product Proof and ONE INTERFACE Convergence matrices remain required before VERIFIED status. Founder acceptance is not inferred. LIVE KING remains unchanged.
 
 ## ACCEPTANCE
 1. `/species/orca/lume` starts as a clean black room with one OCE4N colour, spatial depth, grid, one animal, four keyboard/touch nodes and one active wall projection. 2. No legacy ORCA LUME or XR runtime is imported by the new route. 3. Generated visualisation and procedural audio are explicitly disclosed. 4. Desktop plus 390/430 screenshots pass five-second, squint, scan, next-action, dead-end and context tests. 5. Megamenu has one stable full-width geometry, TAKE PART is canonical, hover content remains hoverable/persistent, keyboard works and close delay permits pointer travel. 6. Existing ORCA Journey NEXT is ordinary-click safe on mobile. 7. Policy, typecheck, build, smoke/contracts and targeted Playwright pass. 8. Newer Embla, Species, ORCA, Jaguar, Bay of Biscay and ATLAS work from the integration base remains intact and its existing contracts stay active. 9. Exact SHA deploy is verified on TEST KING; BRAIN and Prototype SAFE are updated. 10. LIVE KING is unchanged. 11. Founder acceptance remains the only GOLD promotion trigger.
