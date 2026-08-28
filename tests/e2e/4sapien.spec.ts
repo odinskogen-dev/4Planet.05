@@ -13,13 +13,12 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await page.goto("/4sapien");
     await expect(page).toHaveURL(/\/4sapien$/);
 
-    await expect(page.getByRole("heading", { name: /Better choices/i })).toBeVisible();
-    await expect(page.getByLabel("Ask Embla")).toBeVisible();
-    await expect(page.getByText(/BEE \/ BIOMIMETIC DECISION INTELLIGENCE/i)).toBeVisible();
-    await expect(page.getByText(/Missing evidence stays UNKNOWN/i)).toBeVisible();
-    await expect(page.getByText(/I don.t know yet/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Embla." })).toBeVisible();
+    await expect(page.getByText(/Better choices for your life/i)).toBeVisible();
+    await expect(page.getByText(/NO EVIDENCE → NO RECOMMENDATION/i)).toBeVisible();
+    await expect(page.getByText(/does not claim live shelf availability/i)).toBeVisible();
 
-    const foodChoice = page.getByRole("link", { name: /Make a food choice/i });
+    const foodChoice = page.getByRole("link", { name: /FOOD \/ LIVE PROOF/i });
     await expect(foodChoice).toHaveAttribute("href", "/4sapien/food");
     await foodChoice.click();
     await expect(page).toHaveURL(/\/4sapien\/food$/);
