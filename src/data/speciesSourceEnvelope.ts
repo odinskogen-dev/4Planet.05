@@ -2,7 +2,7 @@ export type SourceEvidenceState = "KNOWN" | "INTERPRETED" | "UNKNOWN";
 
 export interface SpeciesSourceRecord {
   id: string;
-  sourceFamily: "GBIF" | "OBIS" | "NOAA" | "OTHER";
+  sourceFamily: "GBIF" | "OBIS" | "NOAA" | "USFWS" | "IUCN" | "OTHER";
   label: string;
   sourceUrl: string;
   checkedAt: string;
@@ -77,3 +77,66 @@ export const ORCA_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
     "ecological health from species presence alone",
   ],
 };
+
+export const JAGUAR_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219426",
+  scientificName: "Panthera onca",
+  records: [
+    {
+      id: "jaguar-gbif-taxonomy-2026-08-28",
+      sourceFamily: "GBIF",
+      label: "GBIF — Panthera onca",
+      sourceUrl: "https://www.gbif.org/species/5219426",
+      checkedAt: "2026-08-28",
+      purpose: "TAXONOMY",
+      provenance: "GBIF Backbone Taxonomy accepted species identity used by the canonical 4PLANET Jaguar object.",
+      rightsOrTerms: "GBIF source page; downstream occurrence records retain dataset-level licences and citations.",
+      evidenceState: "KNOWN",
+      uncertainty: "Accepted taxon identity does not establish local population, abundance, range, trend, corridor use or live location.",
+      updateSemantics: "Re-check taxonomic status when GBIF backbone identity or accepted-name status changes.",
+    },
+    {
+      id: "jaguar-usfws-descriptor-2026-08-28",
+      sourceFamily: "USFWS",
+      label: "U.S. Fish & Wildlife Service — Jaguar",
+      sourceUrl: "https://www.fws.gov/species/jaguar-panthera-onca",
+      checkedAt: "2026-08-28",
+      purpose: "DESCRIPTOR",
+      provenance: "Public USFWS species profile used for bounded species-level description, habitat and documented pressure context.",
+      rightsOrTerms: "US government/public information page; retain source attribution and do not imply USFWS endorsement.",
+      evidenceState: "KNOWN",
+      uncertainty: "Range-wide species description does not establish local presence, population condition, individual behaviour or site-specific pressure intensity.",
+      updateSemantics: "Re-check when the public USFWS species profile materially changes.",
+    },
+    {
+      id: "jaguar-iucn-catsg-descriptor-2026-08-28",
+      sourceFamily: "IUCN",
+      label: "IUCN SSC Cat Specialist Group — Jaguar",
+      sourceUrl: "https://www.catsg.org/living-species-jaguar",
+      checkedAt: "2026-08-28",
+      purpose: "DESCRIPTOR",
+      provenance: "Public specialist-group species page used as a corroborating descriptive source for Panthera onca.",
+      rightsOrTerms: "Public specialist-group page; use facts with attribution only. Do not republish protected prose, images or other media.",
+      evidenceState: "KNOWN",
+      uncertainty: "Species-level descriptive material is not a local abundance, corridor-use, ecosystem-health or live-location assessment.",
+      updateSemantics: "Re-check when the specialist-group species account materially changes.",
+    },
+  ],
+  forbiddenInferences: [
+    "population from generic species identity",
+    "range from observation points alone",
+    "abundance or trend from occurrence count",
+    "corridor use from map proximity",
+    "local ecological health from species presence alone",
+    "live location from historical occurrence data",
+    "individual behaviour from species description",
+  ],
+};
+
+const SPECIES_SOURCE_ENVELOPES: Record<string, SpeciesSourceEnvelope> = {
+  orca: ORCA_SOURCE_ENVELOPE,
+  jaguar: JAGUAR_SOURCE_ENVELOPE,
+};
+
+export const speciesSourceEnvelopeBySlug = (slug?: string) => slug ? SPECIES_SOURCE_ENVELOPES[slug] : undefined;
