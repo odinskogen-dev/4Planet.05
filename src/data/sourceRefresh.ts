@@ -89,6 +89,26 @@ export interface SourcePropagationResult<TObject> {
 
 const asArray = (value?: readonly string[]) => value ? [...value] : [];
 
+const RIGHTS_SENSITIVE_FIELD_TOKENS = Object.freeze([
+  "right",
+  "rights",
+  "rightsorterms",
+  "license",
+  "licence",
+  "licensing",
+  "termsofuse",
+  "terms",
+  "attribution",
+  "copyright",
+  "usagerights",
+  "mediarights",
+]);
+
+const hasRightsSensitiveChange = (fields?: readonly string[]) => asArray(fields).some((field) => {
+  const normalized = field.toLowerCase().replace(/[^a-z]/g, "");
+  return RIGHTS_SENSITIVE_FIELD_TOKENS.some((token) => normalized.includes(token));
+});
+
 const makeAuditId = (
   sourceId: string,
   snapshot: SourceRefreshSnapshot,
@@ -174,9 +194,9 @@ const resultWithAudit = <T extends RefreshableSourceRecord>(
  * Fail-closed refresh evaluation for canonical source records.
  *
  * Change detection is not truth verification. Provider changes can update public
- * source metadata only when the change is verified, metadata-only and non-synthetic.
- * Claim-relevant changes always remain review-gated here and require a separate
- * evidence/claim decision before factual content may change.
+ * source metadata only when the change is verified, metadata-only, rights-stable
+ * and non-synthetic. Claim-relevant changes and source rights/terms changes always
+ * remain review-gated here before any public or canonical propagation.
  */
 export function evaluateSourceRefresh<T extends RefreshableSourceRecord>(
   record: T,
@@ -330,6 +350,22 @@ export function evaluateSourceRefresh<T extends RefreshableSourceRecord>(
       "ACCEPT",
       "Recorded the fixture result in isolated test audit history.",
       "Did not update public or canonical production truth from synthetic data.",
+    );
+    return resultWithAudit(record, audit, false, false);
+  }
+
+  if (hasRightsSensitiveChange(snapshot.changedFields)) {
+    const audit = makeAudit(
+      record,
+      snapshot,
+      "CHANGED",
+      "VERIFIED",
+      "REVIEW_REQUIRED",
+      "Source rights, licence, terms, attribution or copyright metadata changed. Public reuse authority must be revalidated before propagation.",
+      context,
+      "PENDING",
+      "Preserved the verified rights-sensitive provider change in append-only audit history for rights review.",
+      "Did not update canonical source state, public metadata or factual claims while reuse authority may have changed.",
     );
     return resultWithAudit(record, audit, false, false);
   }
