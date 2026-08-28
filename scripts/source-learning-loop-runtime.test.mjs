@@ -85,6 +85,23 @@ test('verified metadata-only change can update source metadata and preserves pre
   assert.equal(accepted.record.refreshHistory.length, 2);
 });
 
+test('verified rights or licence metadata drift is review-gated and cannot propagate', () => {
+  for (const changedField of ['rightsOrTerms', 'license', 'licence', 'attribution', 'copyright', 'usageRights']) {
+    const result = evaluateSourceRefresh(baseRecord(), snapshot({
+      verification: 'VERIFIED',
+      changeScope: 'METADATA_ONLY',
+      changedFields: [changedField],
+    }), context);
+    assert.equal(result.audit.status, 'CHANGED');
+    assert.equal(result.audit.verification, 'VERIFIED');
+    assert.equal(result.audit.truthEffect, 'REVIEW_REQUIRED');
+    assert.equal(result.audit.decision, 'PENDING');
+    assert.equal(result.publicUpdateAllowed, false);
+    assert.equal(result.record.sourceFingerprint, 'fp-old');
+    assert.match(result.audit.note, /rights|licence|terms/i);
+  }
+});
+
 test('claim-relevant provider change remains review-gated even after provider verification', () => {
   const result = evaluateSourceRefresh(baseRecord(), snapshot({
     verification: 'VERIFIED',
