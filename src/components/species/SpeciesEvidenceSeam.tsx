@@ -123,7 +123,7 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
                       <div style={{ ...mono, color: refreshColor(refresh.status) }}>WHAT THIS MEANS</div>
                       <p style={{ marginTop: 6, maxWidth: 760, lineHeight: 1.55 }}>{publicRefreshMeaning(refresh)}</p>
                       <details style={{ marginTop: 10 }}>
-                        <summary style={{ ...mono, cursor: "pointer", color: T.dim }}>TECHNICAL SOURCE CHECK</summary>
+                        <summary style={{ ...mono, cursor: "pointer", color: T.dim }}>TECHNICAL SOURCE REFRESH CHECK</summary>
                         <div style={{ marginTop: 9, color: T.dim, lineHeight: 1.55 }}>
                           <div style={mono}>STATUS {refresh.status} · VERIFICATION {refresh.verification}</div>
                           <p style={{ marginTop: 6 }}>{refresh.note}</p>
