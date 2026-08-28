@@ -21,6 +21,16 @@ test("FOOD routes into the existing evidence proof without claiming an answer", 
   assert.match(result.truthBoundary, /not eligible until/i);
 });
 
+test("Embla 02 parses the first controlled shopping categories without pretending unsupported categories are ready", () => {
+  const items = embla.parseEmblaShoppingList("Kaffe\nmelk; smør, pasta");
+  assert.equal(items.length, 4);
+  assert.deepEqual(items.slice(0, 3).map((item) => item.category), ["COFFEE", "MILK", "BUTTER"]);
+  assert.ok(items.slice(0, 3).every((item) => item.status === "EVIDENCE_PATH_READY"));
+  assert.equal(items[3].supported, false);
+  assert.equal(items[3].status, "NOT_COVERED_YET");
+  assert.deepEqual(embla.summariseEmblaShoppingList(items), { total: 4, supported: 3, unsupported: 1 });
+});
+
 test("HOME and CAR fail closed while their evidence adapters are absent", () => {
   const home = embla.resolveEmblaIntake("Can I afford this home?");
   const car = embla.resolveEmblaIntake("What car makes sense over five years?");

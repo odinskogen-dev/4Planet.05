@@ -11,7 +11,58 @@ export type EmblaIntakeResult = {
   nextLabel?: string;
 };
 
+export type EmblaFoodCategory = "COFFEE" | "BUTTER" | "MILK";
+
+export type EmblaShoppingItem = {
+  raw: string;
+  label: string;
+  category?: EmblaFoodCategory;
+  supported: boolean;
+  status: "EVIDENCE_PATH_READY" | "NOT_COVERED_YET";
+};
+
 const hasAny = (value: string, words: string[]) => words.some((word) => value.includes(word));
+
+const FOOD_CATEGORY_TERMS: Array<{ category: EmblaFoodCategory; label: string; terms: string[] }> = [
+  { category: "COFFEE", label: "Coffee", terms: ["kaffe", "coffee", "espresso"] },
+  { category: "BUTTER", label: "Butter", terms: ["smør", "smor", "butter"] },
+  { category: "MILK", label: "Milk", terms: ["melk", "milk"] },
+];
+
+export function parseEmblaShoppingList(input: string): EmblaShoppingItem[] {
+  return input
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((raw) => {
+      const value = raw.toLowerCase();
+      const controlled = FOOD_CATEGORY_TERMS.find((item) => hasAny(value, item.terms));
+      if (!controlled) {
+        return {
+          raw,
+          label: raw,
+          supported: false,
+          status: "NOT_COVERED_YET" as const,
+        };
+      }
+      return {
+        raw,
+        label: controlled.label,
+        category: controlled.category,
+        supported: true,
+        status: "EVIDENCE_PATH_READY" as const,
+      };
+    });
+}
+
+export function summariseEmblaShoppingList(items: EmblaShoppingItem[]) {
+  const supported = items.filter((item) => item.supported).length;
+  return {
+    total: items.length,
+    supported,
+    unsupported: items.length - supported,
+  };
+}
 
 /**
  * First bounded Embla seam.
@@ -28,7 +79,7 @@ const hasAny = (value: string, words: string[]) => words.some((word) => value.in
 export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
   const value = prompt.trim().toLowerCase();
 
-  if (hasAny(value, ["food", "grocery", "groceries", "product", "barcode", "eat", "meal"])) {
+  if (hasAny(value, ["food", "grocery", "groceries", "product", "barcode", "eat", "meal", "shopping list", "handleliste", "kaffe", "coffee", "smør", "smor", "butter", "melk", "milk"])) {
     return {
       domain: "FOOD",
       status: "EVIDENCE_PATH_READY",
