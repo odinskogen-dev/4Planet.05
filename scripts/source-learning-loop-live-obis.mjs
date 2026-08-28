@@ -39,24 +39,28 @@ assert.equal(live.normalized?.scientificName, "Acropora palmata");
 assert.match(live.snapshot.fingerprint, /^OBIS:taxon-semantic-v1:/);
 
 const record = {
-  sourceId: "OBIS_WORMS_288227",
-  provider: live.provider,
-  canonicalLocator: live.canonicalLocator,
+  id: "OBIS_WORMS_288227",
+  checkedAt,
   sourceFingerprint: live.snapshot.fingerprint,
   sourceFingerprintMethod: live.snapshot.fingerprintMethod,
   sourceVersion: live.snapshot.sourceVersion,
   providerId: live.providerId,
-  canonicalObjectIds: ["SPECIES:ACROPORA_PALMATA"],
-  claimIds: ["SPECIES:ACROPORA_PALMATA:TAXONOMY"],
   refreshHistory: [],
 };
 
-const result = refreshModule.evaluateSourceRefresh(record, live.snapshot);
-assert.equal(result.status, "UNCHANGED");
-assert.equal(result.verification, "VERIFIED");
-assert.equal(result.truthEffect, "NONE");
+const result = refreshModule.evaluateSourceRefresh(record, live.snapshot, {
+  provider: live.provider,
+  providerId: live.providerId,
+  canonicalLocator: live.canonicalLocator,
+  canonicalObjectIds: ["SPECIES:ACROPORA_PALMATA"],
+  affectedClaimIds: ["SPECIES:ACROPORA_PALMATA:TAXONOMY"],
+});
+
+assert.equal(result.audit.status, "UNCHANGED");
+assert.equal(result.audit.verification, "VERIFIED");
+assert.equal(result.audit.truthEffect, "NONE");
 assert.equal(result.publicUpdateAllowed, false);
-assert.equal(result.auditEntry.synthetic, false);
+assert.equal(result.audit.syntheticFixture, false);
 
 console.log(JSON.stringify({
   proof: "OBIS provider #2 uses shared Living Learning Loop",
@@ -65,8 +69,8 @@ console.log(JSON.stringify({
   scientificName: live.normalized.scientificName,
   aphiaId: live.normalized.aphiaId,
   fingerprint: live.snapshot.fingerprint,
-  refreshStatus: result.status,
-  verification: result.verification,
-  truthEffect: result.truthEffect,
+  refreshStatus: result.audit.status,
+  verification: result.audit.verification,
+  truthEffect: result.audit.truthEffect,
   publicUpdateAllowed: result.publicUpdateAllowed,
 }, null, 2));
