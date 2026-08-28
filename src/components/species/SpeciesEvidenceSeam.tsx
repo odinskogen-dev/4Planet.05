@@ -16,6 +16,12 @@ const stateColor = (state: string) => {
   return "#8A6500";
 };
 
+const refreshColor = (state: string) => {
+  if (state === "UNCHANGED") return T.acid;
+  if (state === "CHANGED") return T.blue;
+  return "#8A6500";
+};
+
 export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnvelope }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
@@ -30,6 +36,7 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
     .filter(Boolean)
     .sort();
   const latestChecked = checkedDates.length ? checkedDates[checkedDates.length - 1] : "UNKNOWN";
+  const refreshRecords = envelope.records.filter((record) => record.lastRefresh);
 
   return createPortal(
     <section
@@ -66,11 +73,15 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
           <span style={{ ...mono, border: `1px solid ${T.lineStrong}`, padding: "7px 9px" }}>{envelope.records.length} SOURCE RECORDS</span>
           <span style={{ ...mono, border: `1px solid ${T.lineStrong}`, padding: "7px 9px" }}>CHECKED {latestChecked}</span>
           <span style={{ ...mono, border: `1px solid ${T.lineStrong}`, padding: "7px 9px" }}>BOUNDARIES ATTACHED</span>
+          {refreshRecords.length > 0 && (
+            <span style={{ ...mono, border: `1px solid ${T.lineStrong}`, padding: "7px 9px" }}>{refreshRecords.length} SOURCE REFRESH CHECK</span>
+          )}
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 30 }}>
           {envelope.records.map((record) => {
             const color = stateColor(record.evidenceState);
+            const refresh = record.lastRefresh;
             return (
               <details key={record.id} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${color}`, padding: "0 16px" }}>
                 <summary style={{ cursor: "pointer", listStyle: "none", padding: "16px 0", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
@@ -97,6 +108,21 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
                     <div style={{ ...mono, color: T.dim }}>UPDATE RULE</div>
                     <p style={{ marginTop: 6, lineHeight: 1.55 }}>{record.updateSemantics}</p>
                   </div>
+                  {refresh && (
+                    <div
+                      data-testid={`source-refresh-${record.id}`}
+                      style={{ borderTop: `1px solid ${T.line}`, paddingTop: 14 }}
+                    >
+                      <div style={{ ...mono, color: refreshColor(refresh.status) }}>
+                        SOURCE REFRESH · {refresh.status} · {refresh.verification}
+                      </div>
+                      <p style={{ marginTop: 6, lineHeight: 1.55 }}>{refresh.note}</p>
+                      <div style={{ ...mono, marginTop: 8, color: T.dim }}>
+                        CHECKED {refresh.checkedAt} · TRUTH EFFECT {refresh.truthEffect}
+                        {refresh.sourceVersion ? ` · VERSION ${refresh.sourceVersion}` : ""}
+                      </div>
+                    </div>
+                  )}
                   <a href={record.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, width: "fit-content", color: T.blue }}>
                     OPEN ORIGINAL SOURCE ↗
                   </a>
