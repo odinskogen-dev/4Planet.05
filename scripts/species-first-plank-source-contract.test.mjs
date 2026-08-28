@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const file = await readFile(new URL('../src/data/speciesSourceEnvelope.ts', import.meta.url), 'utf8');
+const refreshContract = await readFile(new URL('../src/data/sourceRefresh.ts', import.meta.url), 'utf8');
 const evidenceSeam = await readFile(new URL('../src/components/species/SpeciesEvidenceSeam.tsx', import.meta.url), 'utf8');
 const speciesRoute = await readFile(new URL('../src/pages/integrated/SpeciesRoute.tsx', import.meta.url), 'utf8');
 
@@ -85,4 +86,54 @@ test('SPEC-FP-01 PRESENT+CONNECT uses one shared public evidence seam for curate
   assert.ok(speciesRoute.includes('<SpeciesEvidenceSeam envelope={envelope} />'), 'route must present the same seam for any species with an envelope');
   assert.ok(!evidenceSeam.includes('slug === "orca"'));
   assert.ok(!evidenceSeam.includes('slug === "jaguar"'));
+});
+
+test('SPEC-FP-01 third transfer proves one source contract across structurally unlike elkhorn coral', () => {
+  for (const required of [
+    'ELKHORN_CORAL_SOURCE_ENVELOPE',
+    'taxon:gbif:5184657',
+    'Acropora palmata',
+    'https://www.gbif.org/species/5184657',
+    'https://obis.org/taxon/288227',
+    'https://www.fisheries.noaa.gov/species/elkhorn-coral',
+    'reef health from species presence alone',
+    'coral cover or abundance from occurrence count',
+    'bleaching or mortality state from historical occurrence data',
+  ]) assert.ok(file.includes(required), `missing elkhorn coral transfer contract: ${required}`);
+});
+
+test('SOURCE REFRESH contract has explicit change states and fails closed before verification', () => {
+  for (const required of [
+    '"UNCHANGED"',
+    '"CHANGED"',
+    '"CONFLICT"',
+    '"UNAVAILABLE"',
+    '"VERIFIED"',
+    '"REVIEW_REQUIRED"',
+    'snapshot.verification !== "VERIFIED"',
+    'Existing public evidence remains unchanged.',
+    'publicUpdateAllowed: false',
+    'publicUpdateAllowed: true',
+  ]) assert.ok(refreshContract.includes(required), `missing source refresh safety contract: ${required}`);
+});
+
+test('LIVE source refresh records an unchanged NOAA provider version without inventing a change', () => {
+  for (const required of [
+    'sourceFingerprint: "NOAA:last-updated:2026-07-14"',
+    'sourceFingerprintMethod: "SEMANTIC_VERSION"',
+    'sourceVersion: "NOAA:last-updated:2026-07-14"',
+    'status: "UNCHANGED"',
+    'verification: "VERIFIED"',
+    'truthEffect: "NONE"',
+    'no source-version change detected',
+  ]) assert.ok(file.includes(required), `missing live unchanged refresh proof: ${required}`);
+});
+
+test('SOURCE REFRESH state is visible through the same public evidence seam', () => {
+  for (const required of [
+    'record.lastRefresh',
+    'SOURCE REFRESH',
+    'TRUTH EFFECT',
+    'source-refresh-',
+  ]) assert.ok(evidenceSeam.includes(required), `missing refresh presentation: ${required}`);
 });
