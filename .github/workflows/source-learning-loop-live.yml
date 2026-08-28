@@ -8,6 +8,7 @@ on:
       - 'src/data/providers/**'
       - 'scripts/source-learning-loop-*.mjs'
       - 'scripts/source-provider-adapter-runtime.test.mjs'
+      - 'scripts/source-obis-provider-adapter-runtime.test.mjs'
       - '.github/workflows/source-learning-loop-live.yml'
   workflow_dispatch:
 
@@ -15,9 +16,9 @@ permissions:
   contents: read
 
 jobs:
-  live-gbif-source-proof:
+  live-source-transfer-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -30,5 +31,9 @@ jobs:
         run: npm ci
       - name: Run deterministic learning-loop red team
         run: npm run test:learning-loop
-      - name: Check live GBIF source through the real adapter
+      - name: Red team OBIS adapter
+        run: node scripts/source-obis-provider-adapter-runtime.test.mjs
+      - name: Check live GBIF sources through the real adapter
         run: node scripts/source-learning-loop-live-gbif.mjs
+      - name: Check live OBIS source through the same Learning Loop
+        run: node scripts/source-learning-loop-live-obis.mjs
