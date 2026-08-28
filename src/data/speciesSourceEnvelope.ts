@@ -1,3 +1,5 @@
+import type { SourceFingerprintMethod, SourceRefreshState } from "@/data/sourceRefresh";
+
 export type SourceEvidenceState = "KNOWN" | "INTERPRETED" | "UNKNOWN";
 
 export interface SpeciesSourceRecord {
@@ -12,6 +14,10 @@ export interface SpeciesSourceRecord {
   evidenceState: SourceEvidenceState;
   uncertainty: string;
   updateSemantics: string;
+  sourceFingerprint?: string;
+  sourceFingerprintMethod?: SourceFingerprintMethod;
+  sourceVersion?: string;
+  lastRefresh?: SourceRefreshState;
 }
 
 export interface SpeciesSourceEnvelope {
@@ -177,6 +183,20 @@ export const ELKHORN_CORAL_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
       evidenceState: "KNOWN",
       uncertainty: "Range-wide NOAA status and threat context must not be treated as a measurement of any unsurveyed reef, colony or current bleaching event.",
       updateSemantics: "Re-check when NOAA changes the species profile, protected status, threat assessment or recovery guidance.",
+      sourceFingerprint: "NOAA:last-updated:2026-07-14",
+      sourceFingerprintMethod: "SEMANTIC_VERSION",
+      sourceVersion: "NOAA:last-updated:2026-07-14",
+      lastRefresh: {
+        status: "UNCHANGED",
+        checkedAt: "2026-08-28",
+        fingerprint: "NOAA:last-updated:2026-07-14",
+        fingerprintMethod: "SEMANTIC_VERSION",
+        sourceVersion: "NOAA:last-updated:2026-07-14",
+        verification: "VERIFIED",
+        truthEffect: "NONE",
+        previousFingerprint: "NOAA:last-updated:2026-07-14",
+        note: "Live source refresh on 2026-08-28 found the NOAA page still marked last updated 2026-07-14; no source-version change detected.",
+      },
     },
   ],
   forbiddenInferences: [
