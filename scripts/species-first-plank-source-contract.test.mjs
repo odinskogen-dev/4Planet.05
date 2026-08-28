@@ -102,7 +102,7 @@ test('SPEC-FP-01 third transfer proves one source contract across structurally u
   ]) assert.ok(file.includes(required), `missing elkhorn coral transfer contract: ${required}`);
 });
 
-test('SOURCE REFRESH contract has explicit change states and fails closed before verification', () => {
+test('SOURCE REFRESH contract has explicit states, append-only audit, and fail-closed verification', () => {
   for (const required of [
     '"UNCHANGED"',
     '"CHANGED"',
@@ -110,10 +110,14 @@ test('SOURCE REFRESH contract has explicit change states and fails closed before
     '"UNAVAILABLE"',
     '"VERIFIED"',
     '"REVIEW_REQUIRED"',
+    '"REJECTED"',
     'snapshot.verification !== "VERIFIED"',
     'Existing public evidence remains unchanged.',
-    'publicUpdateAllowed: false',
-    'publicUpdateAllowed: true',
+    'refreshHistory',
+    'Object.freeze',
+    'context.syntheticFixture',
+    '"METADATA_ONLY"',
+    'Claim/content changes require their own evidence review before propagation.',
   ]) assert.ok(refreshContract.includes(required), `missing source refresh safety contract: ${required}`);
 });
 
@@ -129,10 +133,12 @@ test('LIVE source refresh records an unchanged NOAA provider version without inv
   ]) assert.ok(file.includes(required), `missing live unchanged refresh proof: ${required}`);
 });
 
-test('SOURCE REFRESH state is visible through the same public evidence seam', () => {
+test('SOURCE REFRESH state is visible through progressive public evidence disclosure', () => {
   for (const required of [
     'record.lastRefresh',
     'SOURCE REFRESH',
+    'WHAT THIS MEANS',
+    'TECHNICAL SOURCE REFRESH CHECK',
     'TRUTH EFFECT',
     'source-refresh-',
   ]) assert.ok(evidenceSeam.includes(required), `missing refresh presentation: ${required}`);
