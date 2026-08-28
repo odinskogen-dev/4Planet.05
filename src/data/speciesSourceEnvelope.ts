@@ -134,9 +134,66 @@ export const JAGUAR_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
   ],
 };
 
+export const ELKHORN_CORAL_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5184657",
+  scientificName: "Acropora palmata",
+  records: [
+    {
+      id: "elkhorn-coral-gbif-taxonomy-2026-08-28",
+      sourceFamily: "GBIF",
+      label: "GBIF — Acropora palmata",
+      sourceUrl: "https://www.gbif.org/species/5184657",
+      checkedAt: "2026-08-28",
+      purpose: "TAXONOMY",
+      provenance: "GBIF Backbone Taxonomy accepted species identity used by the canonical 4PLANET Species object.",
+      rightsOrTerms: "GBIF source page; downstream occurrence records retain dataset-level licences and citations.",
+      evidenceState: "KNOWN",
+      uncertainty: "Accepted taxon identity does not establish colony identity, genotype, abundance, cover, reef condition, trend or live condition.",
+      updateSemantics: "Re-check taxonomic status when GBIF backbone identity or accepted-name status changes.",
+    },
+    {
+      id: "elkhorn-coral-obis-marine-layer-2026-08-28",
+      sourceFamily: "OBIS",
+      label: "OBIS — Acropora palmata / WoRMS 288227",
+      sourceUrl: "https://obis.org/taxon/288227",
+      checkedAt: "2026-08-28",
+      purpose: "OCCURRENCE_LAYER",
+      provenance: "OBIS taxon page exposes marine occurrence datasets for Acropora palmata and their dataset-level provenance.",
+      rightsOrTerms: "OBIS aggregation; individual dataset licences and citations govern downstream reuse and must remain attached at record ingestion.",
+      evidenceState: "KNOWN",
+      uncertainty: "Occurrence records are not coral cover, colony abundance, genetic individuality, reef health, bleaching state, mortality or a complete range map.",
+      updateSemantics: "Refresh only through controlled occurrence ingestion that preserves dataset, event date, coordinates, licence and source record identifiers.",
+    },
+    {
+      id: "elkhorn-coral-noaa-descriptor-2026-08-28",
+      sourceFamily: "NOAA",
+      label: "NOAA Fisheries — Elkhorn Coral",
+      sourceUrl: "https://www.fisheries.noaa.gov/species/elkhorn-coral",
+      checkedAt: "2026-08-28",
+      purpose: "DESCRIPTOR",
+      provenance: "Public NOAA Fisheries species profile used for bounded species-level description, protected status, documented threats and management context; page last updated 2026-07-14 at source check.",
+      rightsOrTerms: "US government/public information page; retain source attribution, preserve item-level media credits/licences, and do not imply NOAA endorsement.",
+      evidenceState: "KNOWN",
+      uncertainty: "Range-wide NOAA status and threat context must not be treated as a measurement of any unsurveyed reef, colony or current bleaching event.",
+      updateSemantics: "Re-check when NOAA changes the species profile, protected status, threat assessment or recovery guidance.",
+    },
+  ],
+  forbiddenInferences: [
+    "reef health from species presence alone",
+    "coral cover or abundance from occurrence count",
+    "genetic individual count from colony count",
+    "bleaching or mortality state from historical occurrence data",
+    "local pressure intensity from range-wide threat description",
+    "complete range from observation points alone",
+    "restoration success from presence of restored or wild colonies without outcome evidence",
+  ],
+};
+
 const SPECIES_SOURCE_ENVELOPES: Record<string, SpeciesSourceEnvelope> = {
   orca: ORCA_SOURCE_ENVELOPE,
   jaguar: JAGUAR_SOURCE_ENVELOPE,
+  "acropora-palmata": ELKHORN_CORAL_SOURCE_ENVELOPE,
 };
 
 export const speciesSourceEnvelopeBySlug = (slug?: string) => slug ? SPECIES_SOURCE_ENVELOPES[slug] : undefined;
