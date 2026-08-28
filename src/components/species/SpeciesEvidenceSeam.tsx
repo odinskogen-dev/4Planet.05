@@ -25,11 +25,11 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
 
   if (!envelope || !target) return null;
 
-  const latestChecked = envelope.records
+  const checkedDates = envelope.records
     .map((record) => record.checkedAt)
     .filter(Boolean)
-    .sort()
-    .at(-1) ?? "UNKNOWN";
+    .sort();
+  const latestChecked = checkedDates.length ? checkedDates[checkedDates.length - 1] : "UNKNOWN";
 
   return createPortal(
     <section
