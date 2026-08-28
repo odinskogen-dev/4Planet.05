@@ -32,3 +32,35 @@ test('SPEC-FP-01 fails closed on unsupported Orca inference', () => {
     'ecological health from species presence alone',
   ]) assert.ok(file.includes(boundary), `missing boundary: ${boundary}`);
 });
+
+test('SPEC-FP-01 transfers the same source envelope to unlike terrestrial Jaguar', () => {
+  for (const required of [
+    'JAGUAR_SOURCE_ENVELOPE',
+    'taxon:gbif:5219426',
+    'Panthera onca',
+    'https://www.gbif.org/species/5219426',
+    'https://www.fws.gov/species/jaguar-panthera-onca',
+    'https://www.catsg.org/living-species-jaguar',
+    'sourceFamily: "USFWS"',
+    'sourceFamily: "IUCN"',
+    'speciesSourceEnvelopeBySlug',
+  ]) assert.ok(file.includes(required), `missing Jaguar transfer contract: ${required}`);
+});
+
+test('SPEC-FP-01 Jaguar transfer fails closed on map/occurrence overclaiming', () => {
+  for (const boundary of [
+    'population from generic species identity',
+    'range from observation points alone',
+    'abundance or trend from occurrence count',
+    'corridor use from map proximity',
+    'local ecological health from species presence alone',
+    'live location from historical occurrence data',
+    'individual behaviour from species description',
+  ]) assert.ok(file.includes(boundary), `missing Jaguar boundary: ${boundary}`);
+});
+
+test('SPEC-FP-01 keeps one shared schema rather than a Jaguar-specific truth model', () => {
+  assert.equal((file.match(/interface SpeciesSourceEnvelope/g) || []).length, 1);
+  assert.equal((file.match(/4PLANET_SPECIES_SOURCE_ENVELOPE_01/g) || []).length >= 3, true);
+  assert.ok(!file.includes('JaguarSourceEnvelopeSchema'));
+});
