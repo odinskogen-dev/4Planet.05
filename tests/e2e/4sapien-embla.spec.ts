@@ -13,10 +13,10 @@ test.describe("4SAPIEN Embla 02 first real choice loop", () => {
     await page.getByLabel("Budget · NOK").fill("150");
     await page.getByRole("button", { name: "Analyse my list" }).click();
 
-    await expect(page.getByText("evidence-ready")).toBeVisible();
-    await expect(page.getByText("not covered yet")).toBeVisible();
-    await expect(page.getByText("EVIDENCE PATH READY")).toHaveCount(3);
-    await expect(page.getByText("NOT COVERED YET")).toHaveCount(1);
+    await expect(page.getByText("evidence-ready", { exact: true })).toBeVisible();
+    await expect(page.getByText("not covered yet", { exact: true })).toBeVisible();
+    await expect(page.getByText("EVIDENCE PATH READY", { exact: true })).toHaveCount(3);
+    await expect(page.getByText("NOT COVERED YET", { exact: true })).toHaveCount(1);
     await expect(page.getByText(/does not claim live shelf availability/i)).toBeVisible();
     await expect(page.getByText(/category-wide ranking is withheld/i).first()).toBeVisible();
 
