@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const file = await readFile(new URL('../src/data/speciesSourceEnvelope.ts', import.meta.url), 'utf8');
+const evidenceSeam = await readFile(new URL('../src/components/species/SpeciesEvidenceSeam.tsx', import.meta.url), 'utf8');
+const speciesRoute = await readFile(new URL('../src/pages/integrated/SpeciesRoute.tsx', import.meta.url), 'utf8');
 
 test('SPEC-FP-01 preserves source/provenance/uncertainty/update semantics for Orca', () => {
   for (const required of [
@@ -63,4 +65,24 @@ test('SPEC-FP-01 keeps one shared schema rather than a Jaguar-specific truth mod
   assert.equal((file.match(/interface SpeciesSourceEnvelope/g) || []).length, 1);
   assert.equal((file.match(/4PLANET_SPECIES_SOURCE_ENVELOPE_01/g) || []).length >= 3, true);
   assert.ok(!file.includes('JaguarSourceEnvelopeSchema'));
+});
+
+test('SPEC-FP-01 PRESENT+CONNECT uses one shared public evidence seam for curated species', () => {
+  for (const required of [
+    'SpeciesSourceEnvelope',
+    'HOW DO WE KNOW?',
+    'The evidence travels with the species.',
+    'PROVENANCE',
+    'UNCERTAINTY / LIMIT',
+    'RIGHTS / TERMS',
+    'UPDATE RULE',
+    'OPEN ORIGINAL SOURCE',
+    'WHAT WE DO NOT CLAIM',
+    'species-source-evidence-seam',
+  ]) assert.ok(evidenceSeam.includes(required), `missing shared evidence presentation: ${required}`);
+
+  assert.ok(speciesRoute.includes('speciesSourceEnvelopeBySlug(slug)'), 'route must resolve the canonical envelope by species slug');
+  assert.ok(speciesRoute.includes('<SpeciesEvidenceSeam envelope={envelope} />'), 'route must present the same seam for any species with an envelope');
+  assert.ok(!evidenceSeam.includes('slug === "orca"'));
+  assert.ok(!evidenceSeam.includes('slug === "jaguar"'));
 });
