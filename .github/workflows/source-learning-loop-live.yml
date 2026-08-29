@@ -35,5 +35,7 @@ jobs:
         run: node scripts/source-obis-provider-adapter-runtime.test.mjs
       - name: Check live GBIF sources through the real adapter
         run: node scripts/source-learning-loop-live-gbif.mjs
-      - name: Check live OBIS source through the same Learning Loop
+      - name: Check live OBIS taxon source through the same Learning Loop
         run: node scripts/source-learning-loop-live-obis.mjs
+      - name: Check exactly two live OBIS occurrence records with rights and provenance
+        run: node scripts/source-learning-loop-live-obis-occurrence.mjs
