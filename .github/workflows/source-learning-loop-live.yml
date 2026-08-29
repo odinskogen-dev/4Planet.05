@@ -39,3 +39,5 @@ jobs:
         run: node scripts/source-learning-loop-live-obis.mjs
       - name: Check exactly two live OBIS occurrence records with rights and provenance
         run: node scripts/source-learning-loop-live-obis-occurrence.mjs
+      - name: Transfer the same fail-closed occurrence contract to terrestrial Jaguar via GBIF
+        run: node scripts/source-learning-loop-live-gbif-occurrence-transfer.mjs
