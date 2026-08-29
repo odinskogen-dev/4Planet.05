@@ -2,61 +2,61 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-EMBLA-02-FIRST-REAL-CHOICE-LOOP-01
-**STATUS:** TEST / ACTIVE DEVELOPMENT / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `f6b13852b48e2589587a065beacff011b94da478`
-**ROLLBACK BASE:** `f6b13852b48e2589587a065beacff011b94da478`
-**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + Embla 02 product change
-**FOUNDER DIRECTION:** Start EMBLA 02 now. Keep the full 4SAPIEN/Embla end-state intact: Embla is the personal interface, Choice Engine + BEE remain the shared decision/evidence engine, FOOD is the first wedge, personal money context must later influence choices, and no competing Embla app/database/ranking engine may be created. First visible job: a person gives Embla a shopping list, store and budget and gets immediate controlled coverage with explicit UNKNOWN rather than fabricated product recommendations. Visually move Embla from dark concept-page language to a premium human-first light surface: white/warm-white background, black text, 4PLANET blue actions/details and softly rounded controls.
-**SINGLE-SEAM RULE:** The change lands only on `king/test`; no parallel Embla route, FOOD engine, BEE engine, personal-context store or product-ranking system.
+**CHANGE ID:** TEST-KING-LUME-ROOM-03-PROJECTION-PLANE-QA-01
+**STATUS:** TEST / IMPLEMENTED CANDIDATE / FOUNDER REVIEW REQUIRED
+**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
+**ROLLBACK BASE:** `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
+**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + LUME projection-plane QA fix
+**FOUNDER DIRECTION:** Keep the Orca asset. Make the room feel like a large dark gallery rendered in lighter projected OCE4N light, with luminous grids on floor, walls and ceiling, readable intel walls, wall-mounted nodes, an optional map projection and bounded interactive Orca movement. Field audio must be real and must start only after a user gesture. The full Orca must remain inside mobile view.
+**SINGLE-SEAM RULE:** Improve only the existing `/species/orca/lume` renderer and its existing tests; no new route, renderer, map engine, 3D/XR stack, species database or parallel app.
 
 ## USER ARRIVES BECAUSE
-They need help making a real everyday choice quickly, beginning with a grocery shopping list.
+They want to enter one striking species intelligence gallery and understand Orca through projected light, space, sound and controlled depth.
 
 ## ONE THING TO UNDERSTAND
-Embla helps the person move from need → evidence-backed choice → action while preserving what is still unknown.
+This is one species across every ocean, expressed through many distinct populations, habitats, diets and cultures.
 
 ## PRIMARY ACTION
-Enter or paste a shopping list, choose shopping context and optional budget, then analyse the list.
+Select one of four projected wall nodes: Identity, Culture, Place or Evidence.
 
 ## SECONDARY DEPTH
-Switch to Ask Embla for broader decisions; open the existing FOOD evidence proof for product-level inspection; open 4FINANCE to understand the future personal-money layer.
+Guide the 2.5D Orca plane with drag, touch or arrow keys; open the schematic Place map; explicitly start the NPS Glacier Bay Orca field recording; trigger a separately labelled procedural room echo.
 
 ## P1 DOMINANT
-Embla itself: one bright, simple, premium personal decision surface with value before explanation.
+The complete Orca projection floating in a large black gallery room.
 
 ## P2 ORIENTATION
-Four fast entry actions — Shopping list, Find best, Scan, Ask Embla — plus light store/budget context.
+Luminous room geometry, species identity, wall-mounted nodes and one active projected intel wall.
 
 ## P3 ACTION / NEXT
-Analyse list → identify controlled FOOD categories → preserve unsupported categories → save the bounded list context locally → continue into existing FOOD proof where evidence exists.
+Choose a wall projection, hear the field recording by explicit action, or return to Species.
 
 ## P4 DEPTH
-Truth boundary, evidence status and later BEE/Choice explanations sit behind the primary job rather than blocking it.
+Source, evidence state and limitation remain available without competing with the animal.
 
 ## WHAT CAN BE REMOVED
-The previous giant dark concept hero as the dominant task, architecture explanation before user value, large BEE presentation before action, and any fake combined score or fake store availability.
+Dark electric-blue styling, compressed dashboard geometry, cards, pills, clipped animal framing, false 3D controls and hidden or unreachable wall information.
 
 ## WHAT MUST BE REUSED
-`src/choice/embla.ts`, the existing BEE quorum contract, existing FOOD/PICK product truth path, existing HEALTH/WALLET/PLANET separation, existing Open Food Facts product source, existing Open Prices observation source, current `/4sapien/food` route, current `/4sapien/finance` route and TEST KING convergence tests.
+The existing clean-room LUME renderer, `LUME_ORCA_ROOM` manifest, transparent Orca visualisation, canonical route, NPS Glacier Bay field audio, current truth boundaries, current Species exit and current responsive contract.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** founder-approved light Embla direction; rapid shopping-list job; store + budget as bounded personal context; rounded premium action grammar.
-- **REUSE:** current FOOD/PICK evidence stack and current BEE/Choice discipline.
-- **REJECT:** separate grocery app, separate ranking database, duplicate Choice/BEE logic, fake live inventory, paid ranking, universal moral score or unsupported HOME/CAR/finance recommendations.
-- **DEFER:** full retailer availability integrations, account connections, automated checkout, broad category ranking, voice/photo list ingestion and complete personal money model until the first controlled loop is accepted.
+- **ADOPT:** projected cyan-white light, larger gallery depth, wall-mounted intel, inline schematic world map and bounded 2.5D guidance.
+- **REUSE:** existing LUME ROOM 03 renderer, Orca asset, source manifest and audio lifecycle.
+- **REJECT:** legacy ORCA/Jaguar CSS imports, a second renderer, runtime map dependency, false live tracking, false migration, rigged-animal claims and autoplay.
+- **DEFER:** true fin/tail articulation, rigged GLB swimming, WebXR and hardware projection until a validated asset and later adapter exist.
 
 ## TRUTH BOUNDARY
-COFFEE, MILK and BUTTER are the first controlled shopping-list categories, not claims that every product in those categories can already be ranked. `EVIDENCE_PATH_READY` means the existing product truth path is available; it does not mean a specific product recommendation has reached BEE quorum. Store choice is user context only and must never be represented as current inventory without matching evidence. Budget is user input, not verified financial capacity. Saving the list records an explicit local user action, not a purchase outcome.
+The central Orca is an AI-generated natural-history visualisation, not a photograph or evidence. Its interaction moves a single 2.5D projection plane and must not be called a rigged 3D animal. The Place map is schematic species-level orientation, not a live track, migration route, population range or abundance surface. The NPS Glacier Bay recording is real field audio; the room echo is procedural and separately labelled.
 
 ## PERFORMANCE
-No new AI runtime, model request, map, WebGL or heavy library. Shopping-list classification is deterministic and local. The screen reuses existing routes for deeper product evidence.
+No new runtime dependency, WebGL renderer or remote map. The map remains inline SVG. ROOM 03 stays lazy-loaded; the existing local animal and audio assets are reused.
 
 ## MOBILE-FIRST RISK
-The page must deliver the first action without scroll-heavy concept framing, keep 44 px+ touch targets, make store/budget controls usable at 390/430 px, avoid horizontal overflow, and keep result cards readable one-handed in-store.
+At 390 and 430 px the full Orca must remain inside the viewport, nodes must remain at least 44 px, the detail wall must not intercept sound or exit controls, the map must reflow, and the experience must avoid horizontal overflow and page scroll.
 
 ## HUMAN SUCCESS
-Within five seconds a first-time user understands that Embla can help with choices. Within thirty seconds they can paste a list, set store/budget context and see exactly which items Embla can safely work on now versus what remains unsupported.
+Within five seconds a person understands that they are inside a large projected Orca intelligence room. Within thirty seconds they can select Place, see the bounded map, move the Orca, and deliberately hear real Orca field audio without confusing it with the procedural echo.
 
 ## ACCEPTANCE
-1. `/4sapien` opens on a light premium Embla 02 surface. 2. Shopping list is the default first job. 3. Coffee, milk and butter are parsed as the first controlled categories. 4. Unsupported categories remain visible and explicitly not covered yet. 5. No item is represented as a product recommendation merely because a category is supported. 6. Store context carries an explicit no-live-inventory boundary. 7. Budget is captured as optional user context without pretending personal affordability is known. 8. `Use this list` stores only the bounded list context locally and labels the receipt truthfully. 9. Ask Embla still fails closed for unsupported CAR/HOME and preserves the current finance boundary. 10. Contract tests, typecheck, build, lint/smoke and targeted desktop/mobile browser proof pass before any Founder acceptance claim. 11. LIVE KING remains untouched.
+1. `/species/orca/lume` identifies itself as LUME ROOM 03. 2. The room uses lighter projected cyan-white light. 3. Ceiling, floor, side and rear grid planes create visible gallery depth. 4. The full Orca is dominant and contained at desktop, 390 and 430 px. 5. Identity and active detail intel walls render in front of the room plane rather than being occluded by it. 6. Four wall nodes remain keyboard and touch accessible. 7. PLACE opens an inline schematic map with `NOT A LIVE TRACK`. 8. Drag/touch/arrows move only the bounded 2.5D plane and Enter/Home reset it. 9. NPS field audio remains off until explicit action and the procedural room echo remains separately labelled. 10. Reduced motion preserves all information. 11. Contract, typecheck, assets, lint, build, smoke and public-browser checks pass before Founder acceptance is requested. 12. LIVE KING remains untouched.
