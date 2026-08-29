@@ -53,6 +53,55 @@ function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i:
   );
 }
 
+/* ── Decision utility — reusable, source-preserving, and deliberately non-prescriptive. ──
+   This converts the relationship graph into a practical reading sequence without
+   inventing a recommendation. It only reflects the evidence states and boundaries
+   already present in the anchor. */
+function RelationshipDecisionUtility({ a }: { a: LivingSystemAnchor }) {
+  const dependency = a.steps.find((step) => step.stage === "DEPENDS ON");
+  const pressure = a.steps.find((step) => step.stage === "UNDER PRESSURE");
+  const response = a.steps.find((step) => step.stage === "RESPONSE");
+  const unresolved = a.steps.flatMap((step) => step.relationships).filter((r) => r.state !== "KNOWN");
+
+  return (
+    <section data-testid="ls-decision-utility" aria-label="Decision utility" style={{ marginTop: "clamp(12px,2vw,24px)", border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,30px)" }}>
+      <div style={{ ...mono, color: a.accent }}>USE THE SYSTEM · BEFORE ACTING</div>
+      <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(22px,2.4vw,32px)", lineHeight: 1.08, letterSpacing: "-.025em", marginTop: 10, maxWidth: 720 }}>
+        Do not jump from a species or place straight to a solution.
+      </h3>
+      <p style={{ marginTop: 12, color: T.dim, fontSize: 14.5, lineHeight: 1.6, maxWidth: 720 }}>
+        Read the chain in order: identify the exact system, check what it depends on, verify the pressure in that context, then test whether a response actually fits. Unknown or interpreted links stay visible and lower decision confidence rather than being treated as facts.
+      </p>
+      <div className="tw" style={{ marginTop: 22, borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
+        <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ ...mono, color: a.accent }}>01 · DEPENDENCY CHECK</div>
+          <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
+            {dependency ? `${dependency.relationships.length} bounded relationship${dependency.relationships.length === 1 ? "" : "s"} describe what this system depends on.` : "Dependency evidence is not yet mapped."}
+          </p>
+        </div>
+        <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ ...mono, color: a.accent }}>02 · PRESSURE CHECK</div>
+          <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
+            {pressure ? `${pressure.relationships.length} pressure relationship${pressure.relationships.length === 1 ? "" : "s"} are mapped; their evidence state and boundary remain attached.` : "Pressure evidence is not yet mapped."}
+          </p>
+        </div>
+        <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ ...mono, color: a.accent }}>03 · RESPONSE GATE</div>
+          <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
+            {response ? `${response.relationships.length} response path${response.relationships.length === 1 ? "" : "s"} are shown, but the product does not convert them into a universal recommendation.` : "No response path is established yet."}
+          </p>
+        </div>
+        <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ ...mono, color: unresolved.length ? "#8A6500" : T.acid }}>04 · CONFIDENCE</div>
+          <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
+            {unresolved.length ? `${unresolved.length} relationship${unresolved.length === 1 ? " is" : "s are"} INTERPRETED or UNKNOWN. Treat the chain as decision support, not certainty.` : "All mapped links in this bounded view are KNOWN; scope boundaries still apply."}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ── The reusable anchor journey (used inline for Orca + standalone per anchor) ── */
 function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; search: string; showReturn: boolean }) {
   const fwd = forwarder(search);
@@ -67,6 +116,8 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
       <div style={{ marginTop: 24 }}>
         {a.steps.map((s, i) => <RelationshipStepBlock key={s.stage} step={s} i={i} accent={a.accent} />)}
       </div>
+
+      <RelationshipDecisionUtility a={a} />
 
       {/* Recovered LSI depth is progressive disclosure under the clean journey.
           Only anchors with recovered intelligence (Amazonia + Pollination/Food)
