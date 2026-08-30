@@ -1,0 +1,150 @@
+/* 4PLANET Jaguar v24 — visible-first Ear.Rodriguez 3D bridge.
+   The actual Ear model is creature-priority on desktop only after the Viewer API
+   has confirmed the model scene graph. Until then, controlled species media remains visible. */
+
+.nature-ear-live-v23{
+  position:fixed;
+  inset:8vh 3vw 10vh 30vw;
+  z-index:29;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .5s ease,transform .85s cubic-bezier(.2,.75,.2,1);
+  transform:translate3d(2%,.6%,0) scale(.982);
+  contain:layout paint style;
+}
+.nature-ear-live-v23[data-active="true"][data-ready="true"]{
+  opacity:1;
+  visibility:visible;
+  pointer-events:none;
+  transform:none;
+}
+.nature-ear-live-v23__frame{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 54% 55%,rgba(2,12,5,.16),rgba(1,7,3,.58) 76%,rgba(1,5,2,.92));
+  -webkit-mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
+  mask-image:radial-gradient(ellipse 69% 66% at 53% 54%,#000 0 61%,rgba(0,0,0,.9) 70%,rgba(0,0,0,.35) 84%,transparent 100%);
+}
+.nature-ear-live-v23__viewer{
+  position:absolute;
+  inset:-7% -9%;
+  width:118%;
+  height:114%;
+  border:0;
+  background:#010703;
+  pointer-events:none;
+}
+.nature-ear-live-v23__ground{
+  position:absolute;
+  left:18%;right:9%;bottom:2%;height:24%;
+  z-index:-1;
+  background:radial-gradient(ellipse at 52% 52%,rgba(0,0,0,.7) 0 20%,rgba(0,0,0,.36) 42%,transparent 74%);
+  transform:perspective(600px) rotateX(70deg);
+  transform-origin:center;
+  opacity:.9;
+}
+.nature-ear-live-v23__veil{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  background:
+    linear-gradient(180deg,rgba(0,7,3,.1),transparent 24% 70%,rgba(0,6,3,.38)),
+    radial-gradient(ellipse 56% 50% at 53% 55%,transparent 0 64%,rgba(0,5,2,.22) 84%,rgba(0,5,2,.55) 100%);
+}
+.nature-ear-live-v23__status{
+  position:absolute;
+  z-index:4;
+  left:8%;
+  top:8%;
+  color:rgba(58,232,111,.82);
+  font:700 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.13em;
+  pointer-events:none;
+}
+.nature-ear-live-v23__controls{
+  position:absolute;
+  z-index:4;
+  right:4%;
+  bottom:8%;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  opacity:.74;
+  pointer-events:auto;
+  transition:opacity .25s ease;
+}
+.nature-ear-live-v23:hover .nature-ear-live-v23__controls{opacity:1;}
+.nature-ear-live-v23__controls button{
+  border:1px solid rgba(58,232,111,.42);
+  background:rgba(2,9,4,.8);
+  color:#d7ffe1;
+  padding:8px 10px;
+  cursor:pointer;
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.12em;
+}
+.nature-ear-live-v23__controls button:hover,
+.nature-ear-live-v23__controls button:focus-visible{border-color:#3ae86f;color:#3ae86f;}
+.nature-ear-live-v23__controls span{
+  color:rgba(255,255,255,.5);
+  font:600 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.1em;
+}
+.nature-ear-live-v23__credit{
+  position:absolute;
+  z-index:4;
+  left:8%;
+  bottom:7%;
+  color:rgba(255,255,255,.42);
+  text-decoration:none;
+  font:600 6px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.09em;
+  pointer-events:auto;
+}
+.nature-ear-live-v23__credit:hover{color:#3ae86f;}
+
+/* Only a verified-ready Ear viewer may retire the controlled photograph. */
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"] .nature-subject{
+  opacity:.03!important;
+  pointer-events:none!important;
+}
+
+/* The physical room closes around the verified-ready live creature. */
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+  z-index:31!important;
+  pointer-events:none!important;
+}
+.nature-browser[data-jaguar3d="ear-live-bridge"][data-jaguar3d-active="true"][data-cinematic-scene="identity"] .nature-depth-room__canopy{
+  z-index:30!important;
+  pointer-events:none!important;
+}
+.nature-browser[data-jaguar-attention="visitor"] .nature-depth-room__shafts{opacity:.62!important;}
+.nature-browser[data-jaguar-attention="motion"] .nature-ear-live-v23{transform:translate3d(-.5%,0,0) scale(1.012);}
+
+/* Never carry the live viewer into later chapters. */
+.nature-browser:not([data-cinematic-scene="identity"]) .nature-ear-live-v23{display:none!important;}
+
+/* LITE simplifies the room around a verified-ready Jaguar instead of deleting it. */
+.nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23{
+  display:block!important;
+  inset:10vh 2vw 12vh 28vw;
+}
+.nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23__veil{opacity:.72;}
+.nature-browser[data-runtime-budget="lite"] .nature-ear-live-v23__controls span{display:none;}
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__mid,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__shafts,
+.nature-browser[data-runtime-budget="lite"] .nature-depth-room__fog{display:none!important;}
+
+@media(max-width:760px){
+  .nature-ear-live-v23{display:none!important;}
+  .nature-browser[data-premium-layer][data-scene-state="dependency"] .nature-world-card[data-type="relationship"][data-visible="true"]{display:none!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-ear-live-v23{transition:none!important;}
+}

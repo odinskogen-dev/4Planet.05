@@ -1,0 +1,92 @@
+/* 4PLANET Jaguar Journey v20 — restore chapter landscape travel.
+   v19's layered jungle depth-room is an encounter treatment, not a global
+   replacement for the scene-specific cinematic media authored in jaguar.json.
+   Scene 01 keeps the depth-room. Scenes 02–05 expose the cinematic landscape
+   beneath it while retaining only restrained atmospheric overlays. */
+
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__foreground-right,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__fog,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__shafts,
+.nature-browser[data-creature-engine="v19"] .nature-depth-room__vignette{
+  transition:opacity .82s ease,filter 1.05s ease,transform 1.35s cubic-bezier(.2,.72,.2,1);
+}
+
+/* Encounter / pre-entry: preserve the new v19 jungle depth-room. */
+.nature-browser[data-creature-engine="v19"]:not([data-cinematic-scene]) .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="identity"] .nature-depth-room__far{opacity:1;}
+.nature-browser[data-creature-engine="v19"]:not([data-cinematic-scene]) .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="identity"] .nature-depth-room__mid{opacity:.42;}
+.nature-browser[data-creature-engine="v19"]:not([data-cinematic-scene]) .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="identity"] .nature-depth-room__canopy{opacity:.68;}
+.nature-browser[data-creature-engine="v19"]:not([data-cinematic-scene]) .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"]:not([data-cinematic-scene]) .nature-depth-room__foreground-right,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{opacity:.62;}
+
+/* Chapters 02–05: never let the static v19 photographs cover cinematic media. */
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__foreground-right,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__foreground-right,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__foreground-right,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__far,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__mid,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__canopy,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__foreground-left,
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__foreground-right{
+  opacity:0!important;
+}
+
+/* Keep the room feeling alive without obscuring the authored chapter image. */
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__fog{opacity:.18;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__shafts{opacity:.16;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__vignette{opacity:.28;}
+
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__fog{opacity:.14;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__shafts{opacity:.12;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__vignette{opacity:.18;}
+
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__fog{opacity:.04;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__shafts{opacity:0;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__vignette{
+  opacity:.44;
+  background:radial-gradient(ellipse 64% 70% at 58% 48%,transparent 0 32%,rgba(7,2,1,.16) 58%,rgba(3,1,1,.56) 100%),linear-gradient(90deg,rgba(8,2,1,.4),transparent 48%,rgba(6,2,1,.22));
+}
+
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__fog{opacity:.12;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__shafts{opacity:.2;}
+.nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__vignette{opacity:.22;}
+
+/* The shared cinematic engine owns the actual scene change and must remain visible. */
+.nature-browser[data-creature-engine="v19"][data-chapter-media-ready="true"] .nature-cinematic{
+  opacity:1!important;
+  visibility:visible!important;
+}
+.nature-browser[data-creature-engine="v19"][data-chapter-media-ready="true"] .nature-cinematic__scene.is-active{
+  opacity:1!important;
+}
+
+@media(max-width:760px){
+  .nature-browser[data-creature-engine="v19"][data-cinematic-scene="dependency"] .nature-depth-room__vignette,
+  .nature-browser[data-creature-engine="v19"][data-cinematic-scene="habitat"] .nature-depth-room__vignette,
+  .nature-browser[data-creature-engine="v19"][data-cinematic-scene="response"] .nature-depth-room__vignette{opacity:.12;}
+  .nature-browser[data-creature-engine="v19"][data-cinematic-scene="pressure"] .nature-depth-room__vignette{opacity:.3;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-creature-engine="v19"] .nature-depth-room__layer{transition:none!important;}
+}

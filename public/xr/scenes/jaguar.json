@@ -1,19 +1,19 @@
 {
-  "version": "v0.4",
+  "version": "v1.1",
   "id": "species-jaguar-amazonia-01",
   "title": "Enter the living system.",
-  "intro": "Follow one animal outward into habitat, relationships, pressure, evidence and response.",
+  "intro": "Meet one life, follow its relationships, understand pressure, then move through solutions, actors, action and proof.",
   "truthBoundary": "IMMERSIVE LEARNING REPRESENTATION · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT A PRECISE ECOLOGICAL SIMULATION",
   "returnHref": "/species/jaguar",
   "browser": {
-    "entryKicker": "AMAZONIA_ 01 · JAGUAR",
+    "entryKicker": "AMAZONIA_ 00 · ENTER CANOPY",
     "entryTitle": "Enter the rainforest.",
-    "entryIntro": "Meet one life. Then follow the living system around it — what it depends on, what is changing, how we know, and where solutions begin.",
+    "entryIntro": "Meet one life. Then move through the system around it — relationships, place, pressure, solutions, actors, action and proof.",
     "entryCta": "ENTER THE LIVING SYSTEM",
     "detailSrc": "/assets/missions/am4zonia/detail-01.jpg",
     "subjectMobileSrc": "/assets/species/jaguar/SP-005-mobile.jpg",
-    "particleCount": 34,
-    "ambientLabel": "PROCEDURAL ATMOSPHERE · NOT FIELD AUDIO"
+    "particleCount": 18,
+    "ambientLabel": "AMAZONIA SOUNDSCAPE · FIELD AMBIENCE WHERE AVAILABLE + DESIGNED CHAPTER LAYERS"
   },
   "entity": {
     "id": "taxon:gbif:5219426",
@@ -34,119 +34,483 @@
     "position": "0 1.9 -5",
     "width": "5.2",
     "height": "3.35",
-    "boundaryLabel": "SPECIES MEDIA · NOT AN OCCURRENCE RECORD"
+    "boundaryLabel": "SPECIES MEDIA · NOT AN OCCURRENCE RECORD",
+    "modelGate": {
+      "status": "PENDING_CONTROLLED_ANIMATED_GLB",
+      "target": "RIGGED · IDLE ANIMATION · WEB-OPTIMISED · LAZY-LOADED IN MEET SCENE",
+      "fallback": "CONTROLLED SPECIES MEDIA"
+    }
   },
-  "panel": {
-    "position": "0 3.8 -4.2"
-  },
+  "panel": { "position": "0 3.8 -4.2" },
   "nodes": [
     {
       "id": "jaguar-identity",
       "kind": "IDENTITY",
       "relationClass": null,
       "canonicalBinding": "species.identity",
-      "truthState": "KNOWN",
       "title": "MEET THE JAGUAR",
-      "label": "IDENTITY",
-      "body": "Jaguar / Panthera onca. Canonical species identity is carried by the SPECIES layer.",
-      "source": {
-        "label": "GBIF TAXON 5219426",
-        "url": "https://www.gbif.org/species/5219426"
-      },
-      "boundary": "Identity does not establish local presence, population size or a live animal position.",
+      "label": "MEET THE JAGUAR",
       "position": "-2.7 1.45 -3.8",
       "labelPosition": "-3.05 1.12 -3.8",
       "labelRotation": "0 17 0",
       "labelWidth": "2.5",
-      "browserPosition": { "x": 24, "y": 55 },
+      "browserPosition": { "x": 47, "y": 49 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "identity",
+        "stageLabel": "ENCOUNTER",
+        "sceneTitle": "Meet one life.",
+        "sceneCue": "LOOK FIRST · LISTEN · LET THE ANIMAL LEAD",
+        "travel": "dolly-in",
+        "markerPosition": { "x": 47, "y": 50 },
+        "nextMarkerPosition": { "x": 80, "y": 60 },
+        "interaction": {
+          "type": "identity",
+          "align": "right",
+          "tone": "life",
+          "primaryLabel": "FOCUS ON THE JAGUAR",
+          "activeLabel": "JAGUAR IN FOCUS",
+          "primaryAction": "focus"
+        },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg/1365px-Brazil-00584_-_Jungle_Path_%2848966265363%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 56%",
+          "enterScale": 1.15,
+          "activeScale": 1.035,
+          "originX": 50,
+          "originY": 58,
+          "credit": {
+            "label": "AMAZON ECOPARK JUNGLE PATH · DENNIS G. JARVIS",
+            "url": "https://commons.wikimedia.org/wiki/File:Brazil-00584_-_Jungle_Path_(48966265363).jpg",
+            "license": "CC BY-SA 2.0"
+          },
+          "fallbackCredit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL FALLBACK",
+            "url": "/ecosystems/amazon-rainforest"
+          }
+        },
+        "backgroundX": 50,
+        "backgroundY": 56,
+        "backgroundScale": 1.16,
+        "detailOpacity": 0.04,
+        "subjectX": 47,
+        "subjectY": 50,
+        "subjectScale": 1.08,
+        "subjectOpacity": 1,
+        "worldBrightness": 0.7,
+        "worldSaturation": 1.04,
+        "veilOpacity": 0.72
+      }
     },
     {
       "id": "jaguar-capybara-prey",
       "kind": "RELATIONSHIP",
       "canonicalBinding": "relationships.relationship:4p:jaguar-capybara-prey-southern-pantanal",
       "title": "FOLLOW A RELATIONSHIP",
-      "label": "PREY RELATIONSHIP",
+      "label": "LIVING WEB",
       "position": "2.65 1.35 -3.9",
       "labelPosition": "2.05 1.02 -3.9",
       "labelRotation": "0 -16 0",
       "labelWidth": "2.8",
-      "browserPosition": { "x": 73, "y": 57 },
+      "browserPosition": { "x": 78, "y": 59 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "dependency",
+        "stageLabel": "LIVING WEB",
+        "sceneTitle": "Follow the relationship.",
+        "sceneCue": "LEAVE THE PORTRAIT · TRACE PREY, WATER AND DEPENDENCY",
+        "travel": "river-pass",
+        "markerPosition": { "x": 76, "y": 59 },
+        "nextMarkerPosition": { "x": 31, "y": 34 },
+        "interaction": {
+          "type": "relationship",
+          "align": "right",
+          "tone": "life",
+          "primaryLabel": "TRACE RELATIONSHIP",
+          "activeLabel": "RELATIONSHIP REVEALED",
+          "primaryAction": "trace",
+          "media": {
+            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Capybara%28Hydrochoerus_hydrochaeris%29_swimming.JPG/960px-Capybara%28Hydrochoerus_hydrochaeris%29_swimming.JPG",
+            "alt": "Capybara swimming in the Pantanal, Brazil — species media, not the prey-study evidence itself",
+            "credit": {
+              "label": "CAPYBARA · PANTANAL · CHARLES J. SHARP · SPECIES MEDIA",
+              "url": "https://commons.wikimedia.org/wiki/File:Capybara(Hydrochoerus_hydrochaeris)_swimming.JPG",
+              "license": "CC BY-SA 4.0"
+            }
+          }
+        },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/e/e4/River_RP.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.14,
+          "activeScale": 1.025,
+          "originX": 58,
+          "originY": 52,
+          "credit": {
+            "label": "AMAZON RAINFOREST RIVER · JLWAD",
+            "url": "https://commons.wikimedia.org/wiki/File:River_RP.jpg",
+            "license": "CC BY-SA 4.0"
+          }
+        },
+        "backgroundX": 58,
+        "backgroundY": 50,
+        "backgroundScale": 1.16,
+        "detailOpacity": 0.08,
+        "subjectX": 28,
+        "subjectY": 55,
+        "subjectScale": 0.72,
+        "subjectOpacity": 0.12,
+        "worldBrightness": 0.82,
+        "worldSaturation": 1.08,
+        "veilOpacity": 0.5
+      }
     },
     {
       "id": "jaguar-connected-habitat",
       "kind": "LIVING_SYSTEM",
       "relationClass": "DEPENDENCY",
       "canonicalBinding": "species.publicClaims.2",
-      "truthState": "INTERPRETED",
       "title": "ENTER THE LIVING SYSTEM",
-      "label": "CONNECTED HABITAT",
-      "body": "Connected habitats can support movement, prey access and gene flow across jaguar populations.",
-      "source": {
-        "label": "4PLANET SPECIES SOURCE REVIEW · RANGE-WIDE CONTEXT",
-        "url": "/species/jaguar#evidence"
-      },
-      "boundary": "Connectivity needs and population effects are landscape-specific and require local evidence.",
+      "label": "ECOSYSTEM",
       "position": "-3.25 2.75 -6.2",
       "labelPosition": "-4.1 3.02 -6.2",
       "labelRotation": "0 23 0",
       "labelWidth": "3",
-      "browserPosition": { "x": 28, "y": 31 },
+      "browserPosition": { "x": 30, "y": 34 },
       "color": "#3AE86F",
-      "shape": "sphere"
+      "shape": "sphere",
+      "scene": {
+        "state": "habitat",
+        "stageLabel": "ECOSYSTEM + ATLAS",
+        "sceneTitle": "The animal is not the whole story.",
+        "sceneCue": "PULL BACK · SEE PLACE, WATER AND CONNECTIVITY",
+        "travel": "pull-back",
+        "markerPosition": { "x": 31, "y": 34 },
+        "nextMarkerPosition": { "x": 79, "y": 31 },
+        "interaction": {
+          "type": "system",
+          "align": "left",
+          "tone": "life",
+          "relationship": "MOVEMENT · PREY ACCESS · GENE FLOW",
+          "primaryLabel": "OPEN THE SYSTEM",
+          "activeLabel": "SYSTEM VIEW OPEN",
+          "primaryAction": "system"
+        },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Amazon_CIAT_%282%29.jpg/1280px-Amazon_CIAT_%282%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 50%",
+          "enterScale": 1.08,
+          "activeScale": 1.015,
+          "originX": 45,
+          "originY": 48,
+          "credit": {
+            "label": "AMAZON RAINFOREST NEAR MANAUS · NEIL PALMER / CIAT",
+            "url": "https://commons.wikimedia.org/wiki/File:Amazon_CIAT_(2).jpg",
+            "license": "CC BY-SA 2.0"
+          }
+        },
+        "backgroundX": 42,
+        "backgroundY": 42,
+        "backgroundScale": 1.05,
+        "detailOpacity": 0.04,
+        "subjectX": 25,
+        "subjectY": 62,
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.9,
+        "worldSaturation": 1.08,
+        "veilOpacity": 0.38
+      }
     },
     {
       "id": "jaguar-habitat-loss-fragmentation",
       "kind": "PRESSURE",
       "relationClass": "PRESSURE",
       "canonicalBinding": "species.publicClaims.1",
-      "truthState": "KNOWN",
-      "title": "PRESSURE → CAUSE",
-      "label": "HABITAT PRESSURE",
-      "body": "Habitat loss and fragmentation are documented range-wide pressure categories for jaguars. The immediate cause class in this current evidence path is human-driven habitat conversion and fragmentation.",
-      "source": {
-        "label": "PANTHERA — JAGUAR",
-        "url": "https://www.panthera.org/cat/jaguar"
-      },
-      "boundary": "Local intensity, mechanism and population effect require place-specific evidence.",
+      "title": "PRESSURE → UNDERSTANDING",
+      "label": "PRESSURE",
       "position": "3.25 2.8 -6.1",
       "labelPosition": "2.55 3.08 -6.1",
       "labelRotation": "0 -23 0",
       "labelWidth": "3",
-      "browserPosition": { "x": 75, "y": 30 },
+      "browserPosition": { "x": 79, "y": 31 },
       "color": "#FF4D22",
       "shape": "sphere",
-      "radius": "0.19"
+      "radius": "0.19",
+      "scene": {
+        "state": "pressure",
+        "stageLabel": "PRESSURE + UNDERSTANDING",
+        "sceneTitle": "Now the landscape changes.",
+        "sceneCue": "SEE THE PRESSURE · THEN CHECK WHAT THE EVIDENCE SUPPORTS",
+        "travel": "rupture",
+        "markerPosition": { "x": 78, "y": 31 },
+        "nextMarkerPosition": { "x": 51, "y": 74 },
+        "interaction": {
+          "type": "pressure",
+          "align": "right",
+          "tone": "pressure",
+          "relationship": "HABITAT LOSS · FRAGMENTATION",
+          "primaryLabel": "REVEAL THE BREAK",
+          "activeLabel": "PRESSURE REVEALED",
+          "primaryAction": "pressure"
+        },
+        "media": {
+          "backgroundSrc": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Amazon_Deforestation_%286348745148%29.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.09,
+          "activeScale": 1.015,
+          "originX": 67,
+          "originY": 48,
+          "credit": {
+            "label": "AMAZON DEFORESTATION · NASA GODDARD SPACE FLIGHT CENTER",
+            "url": "https://commons.wikimedia.org/wiki/File:Amazon_Deforestation_(6348745148).jpg",
+            "license": "CC BY 2.0"
+          }
+        },
+        "backgroundX": 68,
+        "backgroundY": 40,
+        "backgroundScale": 1.08,
+        "detailOpacity": 0.02,
+        "subjectX": 31,
+        "subjectY": 58,
+        "subjectScale": 0.58,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.62,
+        "worldSaturation": 0.78,
+        "veilOpacity": 0.7
+      }
     },
     {
       "id": "jaguar-solutions-transition",
       "kind": "RESPONSE",
       "relationClass": "RESPONSE",
       "canonicalBinding": "living.RESPONSE.0",
-      "truthState": "UNKNOWN",
       "title": "HOW DO WE SOLVE THIS?",
-      "label": "SOLUTIONS INTELLIGENCE",
-      "body": "Continue from pressure and cause into Solutions Intelligence. The XR lens should never stop at awareness.",
-      "source": {
-        "label": "4PLANET SOLUTIONS INTELLIGENCE",
-        "url": "/ecosystems/amazon-rainforest#pressures"
-      },
-      "boundary": "Possible responses are not 4PLANET delivery claims.",
+      "label": "SOLUTIONS",
       "href": "/ecosystems/amazon-rainforest#pressures",
       "position": "0 1.2 -8.6",
       "labelPosition": "0 1.2 -8.48",
       "labelWidth": "4.6",
       "align": "center",
       "labelColor": "#FFFFFF",
-      "browserPosition": { "x": 50, "y": 78 },
+      "browserPosition": { "x": 51, "y": 74 },
       "color": "#2E2EFF",
       "shape": "box",
       "width": "3.8",
       "height": "1",
-      "depth": "0.18"
+      "depth": "0.18",
+      "scene": {
+        "state": "response",
+        "stageLabel": "SOLUTIONS",
+        "sceneTitle": "Pressure is not the destination.",
+        "sceneCue": "COMPARE RESPONSE PATHWAYS · WHAT CAN ACTUALLY CHANGE THIS?",
+        "travel": "open",
+        "markerPosition": { "x": 51, "y": 74 },
+        "nextMarkerPosition": { "x": 72, "y": 47 },
+        "interaction": {
+          "type": "response",
+          "align": "left",
+          "tone": "response",
+          "relationship": "PRESSURE → RESPONSE",
+          "primaryLabel": "OPEN SOLUTIONS INTELLIGENCE",
+          "primaryAction": "next"
+        },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundMobileSrc": "/assets/missions/am4zonia/hero-mobile.jpg",
+          "backgroundPosition": "center 48%",
+          "enterScale": 1.08,
+          "activeScale": 1.015,
+          "originX": 52,
+          "originY": 50,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/ecosystems/amazon-rainforest"
+          }
+        },
+        "backgroundX": 50,
+        "backgroundY": 48,
+        "backgroundScale": 1.06,
+        "detailOpacity": 0.08,
+        "subjectX": 27,
+        "subjectY": 60,
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.84,
+        "worldSaturation": 1,
+        "veilOpacity": 0.45
+      }
+    },
+    {
+      "id": "jaguar-actors-transition",
+      "kind": "ACTOR",
+      "relationClass": "RESPONSE",
+      "canonicalBinding": "living.RESPONSE.0",
+      "title": "WHO CAN DO THE WORK?",
+      "label": "ACTORS",
+      "position": "3.2 1.5 -8.2",
+      "labelPosition": "2.5 1.2 -8.1",
+      "labelWidth": "3.2",
+      "browserPosition": { "x": 72, "y": 47 },
+      "color": "#3AE86F",
+      "shape": "box",
+      "scene": {
+        "state": "actors",
+        "stageLabel": "ACTORS",
+        "sceneTitle": "Solutions need accountable actors.",
+        "sceneCue": "MATCH THE RESPONSE TO WHO CAN DELIVER IT IN PLACE",
+        "travel": "actor-pass",
+        "markerPosition": { "x": 72, "y": 47 },
+        "nextMarkerPosition": { "x": 41, "y": 62 },
+        "interaction": {
+          "type": "response",
+          "align": "right",
+          "tone": "response",
+          "relationship": "SOLUTION → ACTOR",
+          "primaryLabel": "SEE ACTOR ROLES",
+          "primaryAction": "next"
+        },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/detail-01.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 50%",
+          "enterScale": 1.07,
+          "activeScale": 1.012,
+          "originX": 60,
+          "originY": 48,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/ecosystems/amazon-rainforest"
+          }
+        },
+        "backgroundX": 58,
+        "backgroundY": 48,
+        "backgroundScale": 1.05,
+        "detailOpacity": 0.1,
+        "subjectX": 26,
+        "subjectY": 60,
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.76,
+        "worldSaturation": 0.96,
+        "veilOpacity": 0.5
+      }
+    },
+    {
+      "id": "jaguar-action-transition",
+      "kind": "ACTION",
+      "relationClass": "RESPONSE",
+      "canonicalBinding": "living.RESPONSE.0",
+      "title": "FROM INTELLIGENCE TO ACTION",
+      "label": "ACTION + IMPACT",
+      "position": "-2.4 1.45 -8.4",
+      "labelPosition": "-3.0 1.18 -8.3",
+      "labelWidth": "3.4",
+      "browserPosition": { "x": 41, "y": 62 },
+      "color": "#3AE86F",
+      "shape": "box",
+      "scene": {
+        "state": "action",
+        "stageLabel": "ACTION + IMPACT UNITS",
+        "sceneTitle": "Action begins only when delivery is real.",
+        "sceneCue": "PROJECT · ACTOR · UNIT · EVIDENCE — OR FAIL CLOSED",
+        "travel": "forward",
+        "markerPosition": { "x": 41, "y": 62 },
+        "nextMarkerPosition": { "x": 76, "y": 66 },
+        "interaction": {
+          "type": "response",
+          "align": "left",
+          "tone": "response",
+          "relationship": "ACTOR → ACTION → IMPACT UNIT",
+          "primaryLabel": "INSPECT ACTION PATH",
+          "primaryAction": "next"
+        },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundMobileSrc": "/assets/missions/am4zonia/hero-mobile.jpg",
+          "backgroundPosition": "center 57%",
+          "enterScale": 1.06,
+          "activeScale": 1.01,
+          "originX": 45,
+          "originY": 60,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/missions/am4zonia"
+          }
+        },
+        "backgroundX": 44,
+        "backgroundY": 56,
+        "backgroundScale": 1.04,
+        "detailOpacity": 0.06,
+        "subjectX": 26,
+        "subjectY": 60,
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.8,
+        "worldSaturation": 1.02,
+        "veilOpacity": 0.4
+      }
+    },
+    {
+      "id": "jaguar-proof-transition",
+      "kind": "OUTCOME",
+      "relationClass": "RESPONSE",
+      "canonicalBinding": "living.RESPONSE.0",
+      "title": "PROOF CLOSES THE LOOP",
+      "label": "PROOF",
+      "href": "/missions/am4zonia",
+      "position": "2.8 1.25 -9.2",
+      "labelPosition": "2.2 1.05 -9.1",
+      "labelWidth": "3",
+      "browserPosition": { "x": 76, "y": 66 },
+      "color": "#FFFFFF",
+      "shape": "box",
+      "scene": {
+        "state": "proof",
+        "stageLabel": "PROOF + REPORTING",
+        "sceneTitle": "The journey does not end at a click.",
+        "sceneCue": "WHAT HAPPENED · WHERE · WHO DELIVERED · WHAT EVIDENCE EXISTS",
+        "travel": "settle",
+        "markerPosition": { "x": 76, "y": 66 },
+        "interaction": {
+          "type": "response",
+          "align": "right",
+          "tone": "response",
+          "relationship": "ACTION → EVIDENCE → OUTCOME",
+          "primaryLabel": "SEE PROOF CHAIN",
+          "primaryAction": "next"
+        },
+        "media": {
+          "backgroundSrc": "/assets/missions/am4zonia/detail-01.jpg",
+          "fallbackSrc": "/assets/missions/am4zonia/hero.jpg",
+          "backgroundPosition": "center 44%",
+          "enterScale": 1.05,
+          "activeScale": 1.008,
+          "originX": 56,
+          "originY": 44,
+          "credit": {
+            "label": "4PLANET AM4ZONIA MEDIA · CONTROLLED LOCAL ASSET",
+            "url": "/missions/am4zonia"
+          }
+        },
+        "backgroundX": 56,
+        "backgroundY": 44,
+        "backgroundScale": 1.03,
+        "detailOpacity": 0.04,
+        "subjectX": 26,
+        "subjectY": 60,
+        "subjectScale": 0.6,
+        "subjectOpacity": 0,
+        "worldBrightness": 0.9,
+        "worldSaturation": 1.04,
+        "veilOpacity": 0.32
+      }
     }
   ]
 }

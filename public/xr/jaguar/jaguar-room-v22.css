@@ -1,0 +1,198 @@
+/* 4PLANET Jaguar v22 — PHYSICAL JUNGLE ROOM
+   Encounter-only spatial composition. No new ecological claims and no new
+   media truth source. Uses controlled AM4ZONIA/Jaguar presentation assets.
+   The room is intentionally cheap: static masks + phase-bounded transforms,
+   with no perpetual full-screen parallax required for the effect. */
+
+.nature-browser[data-creature-engine="v19"]{
+  --room-focus-x:61%;
+  --room-focus-y:53%;
+  --room-floor-y:78%;
+}
+
+/* Encounter world becomes a deep clearing rather than stacked full-screen cards. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room{
+  perspective:1100px;
+  perspective-origin:var(--room-focus-x) var(--room-focus-y);
+}
+
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__far{
+  inset:-3%;
+  background-position:53% 49%;
+  filter:saturate(.86) contrast(1.11) brightness(.49)!important;
+  transform:scale(1.055)!important;
+}
+
+/* Mid habitat is now a bounded recess behind the creature, not a second
+   full-screen photograph. This creates a real visual chamber at lower cost. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__mid{
+  inset:8% 12% 14% 22%;
+  opacity:.32!important;
+  background-size:cover;
+  background-position:62% 52%;
+  filter:saturate(.74) contrast(1.12) brightness(.32)!important;
+  transform:translate3d(0,0,-90px) scale(1.035)!important;
+  -webkit-mask-image:radial-gradient(ellipse 62% 66% at 61% 52%,#000 0 48%,rgba(0,0,0,.76) 63%,rgba(0,0,0,.18) 84%,transparent 100%)!important;
+  mask-image:radial-gradient(ellipse 62% 66% at 61% 52%,#000 0 48%,rgba(0,0,0,.76) 63%,rgba(0,0,0,.18) 84%,transparent 100%)!important;
+}
+
+/* Overhead canopy closes the ceiling and leaves one readable opening above
+   the animal. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__canopy{
+  inset:-5% -2% 49%;
+  opacity:.72!important;
+  background-position:50% 8%;
+  filter:saturate(.7) contrast(1.22) brightness(.24)!important;
+  transform:scale(1.08)!important;
+  -webkit-mask-image:radial-gradient(ellipse 49% 100% at 61% 122%,transparent 0 31%,rgba(0,0,0,.28) 45%,#000 73%)!important;
+  mask-image:radial-gradient(ellipse 49% 100% at 61% 122%,transparent 0 31%,rgba(0,0,0,.28) 45%,#000 73%)!important;
+}
+
+/* Side vegetation becomes close lens occlusion. Soft masks avoid the old
+   polygon-card edge while keeping both layers static and compositor-cheap. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__foreground-left{
+  inset:-7% 55% -8% -8%;
+  opacity:.8!important;
+  background-size:auto 118%;
+  background-position:18% 54%;
+  filter:saturate(.58) contrast(1.34) brightness(.13)!important;
+  transform:translate3d(-1.5%,0,72px) scale(1.08)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0 39%,rgba(0,0,0,.9) 55%,rgba(0,0,0,.38) 73%,transparent 100%)!important;
+  mask-image:linear-gradient(90deg,#000 0 39%,rgba(0,0,0,.9) 55%,rgba(0,0,0,.38) 73%,transparent 100%)!important;
+}
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__foreground-right{
+  inset:-8% -9% -9% 69%;
+  opacity:.75!important;
+  background-size:auto 122%;
+  background-position:82% 50%;
+  filter:saturate(.56) contrast(1.35) brightness(.12)!important;
+  transform:translate3d(1.6%,0,82px) scale(1.09)!important;
+  -webkit-mask-image:linear-gradient(270deg,#000 0 43%,rgba(0,0,0,.9) 57%,rgba(0,0,0,.34) 76%,transparent 100%)!important;
+  mask-image:linear-gradient(270deg,#000 0 43%,rgba(0,0,0,.9) 57%,rgba(0,0,0,.34) 76%,transparent 100%)!important;
+}
+
+/* Ground contact: dark wet floor behind the subject, with one soft pool of
+   reflected canopy light. No filter or animated texture. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__vignette{
+  opacity:1!important;
+  background:
+    radial-gradient(ellipse 34% 12% at 62% var(--room-floor-y),rgba(108,173,122,.09),rgba(12,28,17,.08) 34%,transparent 72%),
+    linear-gradient(180deg,transparent 0 67%,rgba(2,8,4,.12) 72%,rgba(1,5,2,.74) 100%),
+    radial-gradient(ellipse 55% 68% at var(--room-focus-x) var(--room-focus-y),transparent 0 29%,rgba(0,4,2,.08) 48%,rgba(0,3,1,.64) 100%),
+    linear-gradient(90deg,rgba(0,4,2,.76),transparent 31% 79%,rgba(0,4,2,.62));
+}
+
+/* One directional canopy opening. This is the key visual cue that lets the
+   Jaguar read as standing inside a place rather than pasted over a backdrop. */
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__shafts{
+  inset:-12% 0 0!important;
+  opacity:.48!important;
+  background:
+    conic-gradient(from 170deg at 54% -12%,transparent 0 8deg,rgba(191,241,198,.065) 11deg,rgba(191,241,198,.022) 17deg,transparent 23deg 360deg),
+    radial-gradient(ellipse 27% 46% at 61% 48%,rgba(132,199,145,.075),transparent 72%);
+  transform:none!important;
+  filter:none!important;
+}
+
+.nature-browser[data-cinematic-scene="identity"] .nature-depth-room__fog{
+  opacity:.28!important;
+  background:
+    radial-gradient(ellipse 43% 24% at 61% 68%,rgba(142,177,148,.09),transparent 72%),
+    linear-gradient(180deg,transparent 52%,rgba(92,122,99,.045) 81%,transparent 100%);
+  animation:none!important;
+}
+
+/* Phase choreography changes the room itself. These are finite transitions,
+   not permanent ambient transforms. */
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="emerge"] .nature-depth-room__foreground-left,
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="emerge"] .nature-depth-room__foreground-right{
+  opacity:.9!important;
+}
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="observe"] .nature-depth-room__shafts,
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="reveal"] .nature-depth-room__shafts,
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="hold"] .nature-depth-room__shafts{
+  opacity:.62!important;
+}
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="reveal"] .nature-depth-room__far,
+.nature-browser[data-cinematic-scene="identity"][data-creature-phase="hold"] .nature-depth-room__far{
+  filter:saturate(.74) contrast(1.14) brightness(.43)!important;
+}
+
+/* Photo fallback: anchor the animal into the same clearing. The footprint is
+   lowered and widened so it reads as a creature plane, not a floating card. */
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d="preferred-pending"] .nature-subject{
+  left:61%!important;
+  top:52%!important;
+  width:min(55vw,820px)!important;
+  aspect-ratio:1.5/1!important;
+}
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d="preferred-pending"] .nature-subject:before{
+  content:"";
+  position:absolute;
+  left:21%;right:13%;bottom:-5%;height:22%;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 52% 42%,rgba(0,0,0,.58) 0 24%,rgba(0,0,0,.24) 48%,transparent 76%);
+  transform:perspective(500px) rotateX(69deg);
+  transform-origin:50% 50%;
+}
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d="preferred-pending"] .nature-subject__image{
+  border:0!important;
+  box-shadow:none!important;
+  object-position:52% 55%!important;
+}
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d="preferred-pending"] .nature-subject::after{
+  background:linear-gradient(180deg,transparent 52%,rgba(0,7,3,.26) 74%,rgba(0,6,3,.72) 100%)!important;
+}
+
+/* 3D path: same physical placement and grounding when Ear is controlled. */
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d-active="true"] .nature-3d-subject--v19{
+  inset:10vh 4vw 9vh 31vw!important;
+}
+.nature-browser[data-cinematic-scene="identity"][data-jaguar3d-active="true"] .nature-3d-subject--v19 .nature-3d-subject__depth{
+  inset:64% 15% 4%!important;
+  opacity:.88!important;
+}
+
+/* Balanced laptop path keeps only the layers that materially create depth. */
+.nature-browser[data-runtime-budget="balanced"][data-cinematic-scene="identity"] .nature-depth-room__mid{display:block!important;opacity:.2!important;}
+.nature-browser[data-runtime-budget="balanced"][data-cinematic-scene="identity"] .nature-depth-room__canopy{display:block!important;opacity:.56!important;}
+.nature-browser[data-runtime-budget="balanced"][data-cinematic-scene="identity"] .nature-depth-room__foreground-left,
+.nature-browser[data-runtime-budget="balanced"][data-cinematic-scene="identity"] .nature-depth-room__foreground-right{display:block!important;opacity:.66!important;filter:saturate(.5) contrast(1.3) brightness(.12)!important;}
+.nature-browser[data-runtime-budget="balanced"][data-cinematic-scene="identity"] .nature-depth-room__shafts{display:block!important;opacity:.34!important;}
+
+/* Chapters 02–05 remain landscape-first; the physical room must never leak. */
+.nature-browser[data-cinematic-scene="dependency"] .nature-depth-room__far,
+.nature-browser[data-cinematic-scene="dependency"] .nature-depth-room__mid,
+.nature-browser[data-cinematic-scene="dependency"] .nature-depth-room__canopy,
+.nature-browser[data-cinematic-scene="dependency"] .nature-depth-room__foreground-left,
+.nature-browser[data-cinematic-scene="dependency"] .nature-depth-room__foreground-right,
+.nature-browser[data-cinematic-scene="habitat"] .nature-depth-room__far,
+.nature-browser[data-cinematic-scene="habitat"] .nature-depth-room__mid,
+.nature-browser[data-cinematic-scene="habitat"] .nature-depth-room__canopy,
+.nature-browser[data-cinematic-scene="habitat"] .nature-depth-room__foreground-left,
+.nature-browser[data-cinematic-scene="habitat"] .nature-depth-room__foreground-right,
+.nature-browser[data-cinematic-scene="pressure"] .nature-depth-room__far,
+.nature-browser[data-cinematic-scene="pressure"] .nature-depth-room__mid,
+.nature-browser[data-cinematic-scene="pressure"] .nature-depth-room__canopy,
+.nature-browser[data-cinematic-scene="pressure"] .nature-depth-room__foreground-left,
+.nature-browser[data-cinematic-scene="pressure"] .nature-depth-room__foreground-right,
+.nature-browser[data-cinematic-scene="response"] .nature-depth-room__far,
+.nature-browser[data-cinematic-scene="response"] .nature-depth-room__mid,
+.nature-browser[data-cinematic-scene="response"] .nature-depth-room__canopy,
+.nature-browser[data-cinematic-scene="response"] .nature-depth-room__foreground-left,
+.nature-browser[data-cinematic-scene="response"] .nature-depth-room__foreground-right{display:none!important;}
+
+@media(max-width:760px){
+  .nature-browser[data-cinematic-scene="identity"]{--room-focus-x:57%;--room-focus-y:50%;--room-floor-y:80%;}
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__mid{display:none!important;}
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__canopy{inset:-3% -2% 56%;opacity:.48!important;}
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__foreground-left{inset:-5% 64% -8% -8%;opacity:.58!important;}
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__foreground-right{inset:-5% -10% -8% 78%;opacity:.56!important;}
+  .nature-browser[data-cinematic-scene="identity"][data-jaguar3d="preferred-pending"] .nature-subject{left:54%!important;top:47%!important;width:min(94vw,760px)!important;}
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__shafts{opacity:.22!important;}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-cinematic-scene="identity"] .nature-depth-room__layer,
+  .nature-browser[data-cinematic-scene="identity"] .nature-subject{transition:none!important;animation:none!important;}
+}

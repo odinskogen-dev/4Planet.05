@@ -27,11 +27,19 @@ jobs:
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Record exact candidate
+      - name: Verify and record exact candidate
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          git rev-parse HEAD > exact-sha.txt
-          printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
+          actual_sha="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA actual=$actual_sha"
+          test "$actual_sha" = "$EXPECTED_SHA"
+          printf '%s\n' "$actual_sha" > exact-sha.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > exact-branch.txt
+          printf 'EXACT_CANDIDATE_SHA=%s\n' "$actual_sha" >> "$GITHUB_ENV"
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -113,11 +121,15 @@ jobs:
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
           const required = [
-            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/xr/jaguar/',
+            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/journey/jaguar/', '/xr/jaguar/',
             '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
             '/missions/wh4les', '/join'
           ];
-          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
+          for (const route of ['/journey/jaguar/index.html', '/xr/jaguar/index.html']) {
+            const file = `dist${route}`;
+            if (!fs.existsSync(file)) throw new Error(`Static immersive route missing: ${file}`);
+          }
+          fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.EXACT_CANDIDATE_SHA }, null, 2));
           NODE
 
       - name: Security and secret-pattern control
@@ -129,6 +141,8 @@ jobs:
             echo 'Potential secret material found'
             exit 1
           fi
+          grep -q '^/journey/jaguar/\*' public/_headers
+          grep -q "img-src 'self' data: blob: https://upload.wikimedia.org" public/_headers
 
       - name: Source mutation control
         shell: bash

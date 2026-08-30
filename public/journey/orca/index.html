@@ -3,26 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#020b05" />
+  <meta name="theme-color" content="#03101f" />
   <meta name="color-scheme" content="dark" />
-  <title>Jaguar Journey — 4PLANET SPECIES_</title>
-  <link rel="preload" as="image" href="/assets/missions/am4zonia/hero-mobile.jpg" media="(max-width: 720px)" />
-  <link rel="preload" as="image" href="/assets/missions/am4zonia/hero.jpg" media="(min-width: 721px)" />
+  <title>Orca Journey — 4PLANET SPECIES_</title>
+  <link rel="preload" as="image" href="/assets/species/orca/illustration.jpg" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-xr.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-awe-v04.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-journey-v10.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-journey-v11.css" />
   <link rel="stylesheet" href="/xr/jaguar/jaguar-premium-v12.css" />
+  <link rel="stylesheet" href="/xr/jaguar/jaguar-gold-v13.css" />
+  <link rel="stylesheet" href="/xr/jaguar/jaguar-gold-v15.css" />
+  <link rel="stylesheet" href="/xr/engine/nature-journey-context-v16.css" />
+  <link rel="stylesheet" href="/xr/engine/nature-journey-premium-v17.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-cinematic-v17.css" />
+  <link rel="stylesheet" href="/xr/engine/nature-journey-gold-v18.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-gold-v18.css" />
   <script src="/xr/engine/nature-scene-adapter.js"></script>
   <script src="/xr/engine/nature-journey-engine.js"></script>
   <script src="/xr/engine/nature-browser.js"></script>
   <script src="/xr/engine/nature-cinematic-journey-v11.js"></script>
-  <script src="/xr/engine/nature-audio-v05.js"></script>
+  <script src="/xr/engine/nature-audio-v06.js"></script>
   <script src="/xr/engine/nature-viewport-guard-v12.js"></script>
-  <script src="/xr/jaguar/jaguar-xr.js"></script>
+  <script src="/xr/engine/nature-interaction-v13.js"></script>
+  <script src="/xr/engine/nature-journey-context-v16.js"></script>
+  <script src="/xr/engine/nature-journey-premium-v17.js"></script>
+  <script src="/journey/orca/orca-journey.js"></script>
 </head>
 <body>
-  <main id="browser-experience" class="nature-browser" aria-label="Jaguar immersive living-system journey">
+  <main id="browser-experience" class="nature-browser" data-premium-config="/journey/orca/premium-v17.json" data-audio-world="ocean" aria-label="Orca immersive living-system journey">
     <div class="nature-world" aria-hidden="true">
       <div class="nature-world__background"></div>
       <div class="nature-world__detail"></div>
@@ -33,34 +42,34 @@
     </div>
 
     <header class="nature-topbar">
-      <a href="/species/jaguar" class="brand">4PLANET SPECIES_</a>
+      <a href="/species/orca" class="brand">4PLANET SPECIES_</a>
       <div class="nature-topbar__right">
-        <button class="nature-sound" type="button" hidden>SOUND OFF</button>
-        <span class="nature-browser-status">LOADING LIVING SYSTEM</span>
+        <button class="nature-sound" type="button" hidden>TURN SOUND OFF</button>
+        <span class="nature-browser-status">LOADING JOURNEY</span>
       </div>
     </header>
 
     <section class="nature-entry" aria-labelledby="nature-entry-title">
       <div class="nature-entry__content">
-        <div class="nature-entry__kicker">AMAZONIA_ 00 · ENTER CANOPY</div>
-        <h1 id="nature-entry-title" class="nature-entry__title">Enter the rainforest.</h1>
-        <p class="nature-entry__intro">Meet one life. Then move through the living system around it.</p>
+        <div class="nature-entry__kicker">OCE4N_ 00 · ENTER WATER</div>
+        <h1 id="nature-entry-title" class="nature-entry__title">Enter the living ocean.</h1>
+        <p class="nature-entry__intro">Meet one life. Then move through prey, place, pressure, solutions, actors, action and proof.</p>
         <div class="nature-entry__actions">
-          <button class="nature-entry__button" type="button">ENTER THE LIVING SYSTEM</button>
-          <span>NO HEADSET REQUIRED · SOUND STARTS ON ENTRY</span>
+          <button class="nature-entry__button" type="button">ENTER THE LIVING OCEAN</button>
+          <span>SOUND ON BY DEFAULT AFTER ENTRY · FULLSCREEN BROWSER JOURNEY</span>
         </div>
-        <div class="nature-entry__boundary">IMMERSIVE LEARNING REPRESENTATION · SOURCE-AWARE · NOT LIVE TRACKING</div>
+        <div class="nature-entry__boundary">4PLANET ILLUSTRATIVE OCEAN · NOT A PHOTOGRAPH · NOT LIVE TRACKING · POPULATION-SPECIFIC CLAIMS STAY BOUNDED</div>
       </div>
       <div class="nature-entry__signal" aria-hidden="true"><span></span><b>ENTER</b></div>
     </section>
 
-    <section class="nature-stage" aria-label="Interactive living system">
-      <div class="nature-subject" aria-label="Jaguar species media">
+    <section class="nature-stage" aria-label="Interactive living ocean">
+      <div class="nature-subject" aria-label="Orca illustration">
         <div class="nature-subject__halo" aria-hidden="true"></div>
         <img class="nature-subject__image" alt="" />
         <div class="nature-subject__meta">
-          <strong class="nature-subject__name">JAGUAR · Panthera onca</strong>
-          <span class="nature-subject__boundary">SPECIES MEDIA · NOT AN OCCURRENCE RECORD</span>
+          <strong class="nature-subject__name">ORCA · Orcinus orca</strong>
+          <span class="nature-subject__boundary">4PLANET ILLUSTRATION · NOT A PHOTOGRAPH · NOT AN OCCURRENCE RECORD</span>
         </div>
       </div>
       <div class="nature-journey-route" aria-hidden="true"><span></span></div>
@@ -70,9 +79,9 @@
 
     <section class="nature-journey-hud" aria-live="polite" aria-label="Journey scene" data-visible="false">
       <div class="nature-journey-hud__copy">
-        <span class="nature-journey-hud__stage">01 / 05 · MEET LIFE</span>
-        <h2 class="nature-journey-hud__title">Meet the jaguar.</h2>
-        <span class="nature-journey-hud__cue">LOOK FIRST · THEN FOLLOW THE SYSTEM</span>
+        <span class="nature-journey-hud__stage">01 / 08 · ENCOUNTER</span>
+        <h2 class="nature-journey-hud__title">Meet the orca.</h2>
+        <span class="nature-journey-hud__cue">START WITH THE ANIMAL · KEEP POPULATION UNKNOWN UNTIL SOURCED</span>
       </div>
       <div class="nature-journey-hud__actions">
         <button class="nature-journey-hud__back" type="button" disabled>← BACK</button>
@@ -86,36 +95,22 @@
     <aside class="nature-chapter" tabindex="-1" aria-live="polite" aria-label="Selected truth node">
       <button id="nature-chapter-close" class="nature-chapter__close" type="button" aria-label="Close information panel">×</button>
       <div class="nature-chapter__topline">
-        <span id="nature-chapter-index">01 / 05</span>
+        <span id="nature-chapter-index">01 / 08</span>
         <span id="nature-chapter-kicker">IDENTITY · KNOWN</span>
       </div>
-      <h2 id="nature-chapter-title">MEET THE JAGUAR</h2>
+      <h2 id="nature-chapter-title">MEET THE ORCA</h2>
       <p id="nature-chapter-body">Truth stays attached to the experience.</p>
       <a id="nature-chapter-source" href="#" target="_blank" rel="noreferrer">SOURCE · 4PLANET SPECIES_</a>
-      <p id="nature-chapter-boundary" class="nature-chapter__boundary">BOUNDARY · REPRESENTATION IS NOT OBSERVATION.</p>
+      <p id="nature-chapter-boundary" class="nature-chapter__boundary">BOUNDARY · SPECIES IDENTITY DOES NOT IDENTIFY POPULATION, POD OR LIVE LOCATION.</p>
       <button id="nature-chapter-next" class="nature-chapter__next" type="button">FOLLOW THE SYSTEM · 02 →</button>
     </aside>
 
     <footer class="nature-footer">
-      <span>4PLANET_ JOURNEY ENGINE · JAGUAR GOLD PROTOTYPE v1.1</span>
-      <span>CHAPTERED AMAZONIA JOURNEY · SOURCE-AWARE · AUDIO STILL PROCEDURAL</span>
+      <span>4PLANET_ BROWSER JOURNEY ENGINE · ORCA GOLD v19 · SHARED 8-FRAME TRANSFER</span>
+      <span>4PLANET ILLUSTRATION · AUDIO = PROCEDURAL / NOT FIELD AUDIO · NO UNIVERSAL RESPONSE CLAIM</span>
     </footer>
   </main>
 
-  <section id="xr-layer" aria-label="Optional WebXR renderer">
-    <a-scene
-      id="nature-scene"
-      background="color: #020b05"
-      fog="type: exponential; color: #031208; density: 0.035"
-      renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true"
-      webxr="optionalFeatures: local-floor, bounded-floor, hand-tracking"
-      vr-mode-ui="enabled: true"
-      loading-screen="backgroundColor: #020b05; dotsColor: #3AE86F"
-    >
-      <a-assets timeout="15000"></a-assets>
-    </a-scene>
-  </section>
-
-  <noscript>This immersive prototype requires JavaScript.</noscript>
+  <noscript>This immersive journey requires JavaScript.</noscript>
 </body>
 </html>

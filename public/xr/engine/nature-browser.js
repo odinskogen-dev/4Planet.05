@@ -2,95 +2,16 @@
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   const byId = (root, id) => root.querySelector(`#${id}`);
 
-  const createNoiseBuffer = (ctx, seconds = 3) => {
-    const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
-    const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
-    for (let channel = 0; channel < 2; channel += 1) {
-      const data = buffer.getChannelData(channel);
-      let last = 0;
-      for (let i = 0; i < length; i += 1) {
-        const white = Math.random() * 2 - 1;
-        last = (last + 0.018 * white) / 1.018;
-        data[i] = last * 3.2;
-      }
-    }
-    return buffer;
-  };
-
-  const createAmbience = () => {
-    let ctx;
-    let master;
-    let running = false;
-
-    const ensure = async () => {
-      if (!ctx) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return false;
-        ctx = new AudioCtx({ latencyHint: 'playback' });
-        master = ctx.createGain();
-        master.gain.value = 0.075;
-        master.connect(ctx.destination);
-
-        const rain = ctx.createBufferSource();
-        rain.buffer = createNoiseBuffer(ctx, 4);
-        rain.loop = true;
-        const rainFilter = ctx.createBiquadFilter();
-        rainFilter.type = 'bandpass';
-        rainFilter.frequency.value = 2600;
-        rainFilter.Q.value = 0.35;
-        const rainGain = ctx.createGain();
-        rainGain.gain.value = 0.16;
-        rain.connect(rainFilter).connect(rainGain).connect(master);
-        rain.start();
-
-        const canopy = ctx.createBufferSource();
-        canopy.buffer = createNoiseBuffer(ctx, 5);
-        canopy.loop = true;
-        const canopyFilter = ctx.createBiquadFilter();
-        canopyFilter.type = 'lowpass';
-        canopyFilter.frequency.value = 520;
-        const canopyGain = ctx.createGain();
-        canopyGain.gain.value = 0.09;
-        canopy.connect(canopyFilter).connect(canopyGain).connect(master);
-        canopy.start();
-
-        const drift = ctx.createOscillator();
-        drift.frequency.value = 0.055;
-        const driftDepth = ctx.createGain();
-        driftDepth.gain.value = 0.022;
-        drift.connect(driftDepth).connect(master.gain);
-        drift.start();
-      }
-      if (ctx.state === 'suspended' || ctx.state === 'interrupted') await ctx.resume();
-      running = ctx.state === 'running';
-      return running;
-    };
-
-    const toggle = async () => {
-      if (!ctx || !running) return ensure();
-      if (ctx.state === 'running') {
-        await ctx.suspend();
-        running = false;
-      } else {
-        await ctx.resume();
-        running = true;
-      }
-      return running;
-    };
-
-    return { ensure, toggle, isRunning: () => Boolean(ctx && ctx.state === 'running') };
-  };
-
-  const createParticles = (root, count = 28) => {
+  const createParticles = (root, count = 12) => {
     const field = root.querySelector('.nature-particles');
-    if (!field || field.childElementCount) return;
+    if (!field || field.childElementCount || count <= 0) return;
     for (let i = 0; i < count; i += 1) {
       const particle = document.createElement('i');
       particle.className = 'nature-particle';
       particle.style.setProperty('--x', `${Math.round(Math.random() * 100)}%`);
       particle.style.setProperty('--y', `${Math.round(Math.random() * 100)}%`);
-      particle.style.setProperty('--s', `${(0.5 + Math.random() * 1.6).toFixed(2)}`);
-      particle.style.setProperty('--d', `${(7 + Math.random() * 13).toFixed(1)}s`);
+      particle.style.setProperty('--s', `${(0.5 + Math.random() * 1.4).toFixed(2)}`);
+      particle.style.setProperty('--d', `${(9 + Math.random() * 12).toFixed(1)}s`);
       particle.style.setProperty('--delay', `${(-Math.random() * 14).toFixed(1)}s`);
       field.appendChild(particle);
     }
@@ -116,23 +37,28 @@
 
   const render = ({ root, manifest }) => {
     if (!root) throw new Error('NatureBrowser root is required');
-    const ambience = createAmbience();
-    const state = { entered: false, activeIndex: 0, lookX: 0, lookY: 0 };
+    const state = { entered: false, activeIndex: 0, lookX: 0, lookY: 0, soundOn: false, lookFrame: 0, pendingLook: null };
     const browser = manifest.browser || {};
     const nodes = manifest.nodes || [];
     const isCompact = () => window.matchMedia('(max-width: 760px)').matches;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lowMemory = typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4;
+    const performanceTier = isCompact() || lowMemory || reducedMotion ? 'lite' : 'full';
 
     root.dataset.sceneId = manifest.id;
     root.dataset.entityId = manifest.entity.id;
     root.dataset.manifestVersion = manifest.version;
     root.dataset.truthFeed = manifest.canonical ? 'canonical-adapter' : 'layout-manifest';
     root.dataset.panelOpen = 'false';
+    root.dataset.sceneState = 'entry';
+    root.dataset.performanceTier = performanceTier;
 
     const background = root.querySelector('.nature-world__background');
     const detail = root.querySelector('.nature-world__detail');
     const subject = root.querySelector('.nature-subject__image');
     const subjectName = root.querySelector('.nature-subject__name');
     const subjectBoundary = root.querySelector('.nature-subject__boundary');
+    const entry = root.querySelector('.nature-entry');
     const entryKicker = root.querySelector('.nature-entry__kicker');
     const entryTitle = root.querySelector('.nature-entry__title');
     const entryIntro = root.querySelector('.nature-entry__intro');
@@ -143,6 +69,7 @@
     const chapter = root.querySelector('.nature-chapter');
     const soundButton = root.querySelector('.nature-sound');
     const instruction = root.querySelector('.nature-stage__instruction');
+    const hud = root.querySelector('.nature-journey-hud');
 
     hydrateHabitat({ root, background, detail, manifest, browser });
     if (subject) {
@@ -157,9 +84,15 @@
     if (entryIntro) entryIntro.textContent = browser.entryIntro || manifest.intro;
     if (entryButton) entryButton.textContent = browser.entryCta || 'ENTER THE LIVING SYSTEM';
     if (status) status.textContent = 'BROWSER IMMERSIVE · HEADSET OPTIONAL';
-    if (instruction) instruction.textContent = isCompact() ? 'DRAG TO LOOK · TAP A NODE · FOLLOW THE SYSTEM' : 'MOVE / LOOK · SELECT A NODE · FOLLOW THE SYSTEM';
+    if (instruction) instruction.textContent = isCompact() ? 'TAP THE NEXT SIGNAL · FOLLOW THE JOURNEY' : 'FOLLOW THE JOURNEY · SELECT THE NEXT SIGNAL';
 
-    createParticles(root, browser.particleCount || 28);
+    const particleBudget = performanceTier === 'lite' ? 0 : Math.min(browser.particleCount || 12, 18);
+    createParticles(root, particleBudget);
+
+    const setActiveMarkers = () => {
+      root.querySelectorAll('.nature-node').forEach((node, index) => node.dataset.active = String(index === state.activeIndex));
+      root.querySelectorAll('.nature-progress__step').forEach((node, index) => node.dataset.active = String(index === state.activeIndex));
+    };
 
     const renderProgress = () => {
       if (!progress) return;
@@ -171,7 +104,7 @@
         button.dataset.active = String(index === state.activeIndex);
         button.setAttribute('aria-label', `${index + 1}. ${node.label}`);
         button.innerHTML = `<span>${String(index + 1).padStart(2, '0')}</span><b>${node.label}</b>`;
-        button.addEventListener('click', () => openNode(index, true));
+        button.addEventListener('click', () => goTo(index, true));
         progress.appendChild(button);
       });
     };
@@ -192,18 +125,12 @@
         button.style.setProperty('--node-y', `${pos.y}%`);
         button.setAttribute('aria-label', `${node.title}: ${node.label}`);
         button.innerHTML = `<span class="nature-node__pulse"></span><span class="nature-node__index">${String(index + 1).padStart(2, '0')}</span><span class="nature-node__label">${node.label}</span>`;
-        button.addEventListener('click', () => openNode(index, true));
+        button.addEventListener('click', () => goTo(index, true));
         nodeLayer.appendChild(button);
       });
     };
 
-    const setActiveMarkers = () => {
-      root.querySelectorAll('.nature-node').forEach((node, index) => node.dataset.active = String(index === state.activeIndex));
-      root.querySelectorAll('.nature-progress__step').forEach((node, index) => node.dataset.active = String(index === state.activeIndex));
-    };
-
-    const openNode = (index, userInitiated = false) => {
-      state.activeIndex = clamp(index, 0, Math.max(0, nodes.length - 1));
+    const openEvidence = () => {
       const node = nodes[state.activeIndex];
       if (!node || !chapter) return;
       root.dataset.chapter = node.kind || 'TRUTH';
@@ -221,16 +148,27 @@
         source.href = node.source?.url || '#';
       }
       const next = byId(chapter, 'nature-chapter-next');
-      if (next) next.textContent = state.activeIndex === nodes.length - 1 ? 'CONTINUE TO SOLUTIONS →' : `FOLLOW THE SYSTEM · ${String(state.activeIndex + 2).padStart(2, '0')} →`;
-      setActiveMarkers();
-      root.style.setProperty('--chapter-shift', `${state.activeIndex * -0.7}vw`);
-      if (userInitiated && isCompact()) chapter.focus({ preventScroll: true });
+      if (next) next.textContent = state.activeIndex === nodes.length - 1 ? (node.scene?.finalCta || 'CONTINUE →') : `FOLLOW THE SYSTEM · ${String(state.activeIndex + 2).padStart(2, '0')} →`;
+      if (isCompact()) chapter.focus({ preventScroll: true });
     };
 
     const closeChapter = () => {
       chapter?.classList.remove('is-open');
       root.dataset.panelOpen = 'false';
-      root.style.setProperty('--chapter-shift', '0vw');
+    };
+
+    const applyScene = (userInitiated = false) => {
+      const node = nodes[state.activeIndex];
+      if (!node) return;
+      root.dataset.relationClass = node.relationClass || '';
+      window.NatureJourneyEngine?.applyScene({ root, node, index: state.activeIndex, total: nodes.length, userInitiated });
+      setActiveMarkers();
+    };
+
+    const goTo = (index, userInitiated = false) => {
+      state.activeIndex = clamp(index, 0, Math.max(0, nodes.length - 1));
+      closeChapter();
+      applyScene(userInitiated);
     };
 
     const nextNode = () => {
@@ -239,18 +177,30 @@
         if (node?.href) window.location.assign(node.href);
         return;
       }
-      openNode(state.activeIndex + 1, true);
+      goTo(state.activeIndex + 1, true);
     };
 
-    const setLook = (x, y) => {
+    const previousNode = () => goTo(Math.max(0, state.activeIndex - 1), true);
+
+    const commitLook = () => {
+      state.lookFrame = 0;
+      if (!state.pendingLook) return;
+      const { x, y } = state.pendingLook;
+      state.pendingLook = null;
       state.lookX = clamp(x, -1, 1);
       state.lookY = clamp(y, -1, 1);
       root.style.setProperty('--look-x', state.lookX.toFixed(3));
       root.style.setProperty('--look-y', state.lookY.toFixed(3));
     };
 
+    const setLook = (x, y) => {
+      if (performanceTier === 'lite') return;
+      state.pendingLook = { x, y };
+      if (!state.lookFrame) state.lookFrame = requestAnimationFrame(commitLook);
+    };
+
     const pointerLook = (event) => {
-      if (!state.entered) return;
+      if (!state.entered || performanceTier === 'lite') return;
       const rect = root.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
@@ -258,44 +208,66 @@
     };
 
     const touchLook = (event) => {
-      if (!state.entered || !event.touches?.[0]) return;
+      if (!state.entered || !event.touches?.[0] || performanceTier === 'lite') return;
       pointerLook(event.touches[0]);
+    };
+
+    const syncSoundLabel = () => {
+      if (!soundButton) return;
+      soundButton.dataset.playing = String(state.soundOn);
+      soundButton.textContent = state.soundOn ? 'TURN SOUND OFF' : 'TURN SOUND ON';
+      soundButton.setAttribute('aria-pressed', String(state.soundOn));
     };
 
     const enter = async () => {
       if (state.entered) return;
       state.entered = true;
+      state.soundOn = true;
       root.classList.add('is-entered');
       root.dataset.entered = 'true';
-      if (status) status.textContent = 'IMMERSIVE BROWSER MODE · SOURCE-AWARE';
-      const audioRunning = await ambience.ensure();
+      if (entry) {
+        entry.setAttribute('aria-hidden', 'true');
+        entry.style.setProperty('visibility', 'hidden', 'important');
+        entry.style.setProperty('opacity', '0', 'important');
+        entry.style.setProperty('pointer-events', 'none', 'important');
+      }
+      if (status) status.textContent = 'IMMERSIVE JOURNEY · SOURCE-AWARE';
       if (soundButton) {
         soundButton.hidden = false;
-        soundButton.dataset.playing = String(audioRunning);
-        soundButton.textContent = audioRunning ? 'SOUND ON' : 'SOUND OFF';
+        syncSoundLabel();
       }
-      if (!isCompact()) window.setTimeout(() => openNode(0, false), 4300);
+      goTo(0, false);
       window.dispatchEvent(new CustomEvent('4planet:nature-browser-enter', { detail: { manifest } }));
     };
 
     entryButton?.addEventListener('click', enter);
-    soundButton?.addEventListener('click', async () => {
-      const playing = await ambience.toggle();
-      soundButton.dataset.playing = String(playing);
-      soundButton.textContent = playing ? 'SOUND ON' : 'SOUND OFF';
+    soundButton?.addEventListener('click', () => {
+      state.soundOn = !state.soundOn;
+      syncSoundLabel();
     });
     byId(root, 'nature-chapter-close')?.addEventListener('click', closeChapter);
     byId(root, 'nature-chapter-next')?.addEventListener('click', nextNode);
-    root.addEventListener('pointermove', pointerLook, { passive: true });
-    root.addEventListener('touchmove', touchLook, { passive: true });
-    root.addEventListener('pointerleave', () => setLook(0, 0));
+    hud?.querySelector('.nature-journey-hud__next')?.addEventListener('click', nextNode);
+    hud?.querySelector('.nature-journey-hud__back')?.addEventListener('click', previousNode);
+    hud?.querySelector('.nature-journey-hud__evidence')?.addEventListener('click', openEvidence);
+    if (performanceTier === 'full') {
+      root.addEventListener('pointermove', pointerLook, { passive: true });
+      root.addEventListener('touchmove', touchLook, { passive: true });
+      root.addEventListener('pointerleave', () => setLook(0, 0));
+    }
+    window.addEventListener('keydown', (event) => {
+      if (!state.entered || root.dataset.panelOpen === 'true') return;
+      if (event.key === 'ArrowRight') nextNode();
+      if (event.key === 'ArrowLeft') previousNode();
+      if (event.key.toLowerCase() === 'e') openEvidence();
+    });
 
     renderProgress();
     renderNodes();
     setActiveMarkers();
 
     window.dispatchEvent(new CustomEvent('4planet:nature-browser-ready', { detail: { manifest } }));
-    return { enter, openNode, nextNode };
+    return { enter, goTo, openEvidence, nextNode, previousNode };
   };
 
   window.NatureBrowser = { render };
