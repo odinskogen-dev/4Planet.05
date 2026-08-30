@@ -45,22 +45,21 @@ async function exercisePremiumHotspot(page: Page, hotspotName: RegExp, expectedT
 }
 
 async function captureJourneyViewport(page: Page, path: string) {
-  // The cross-origin Sketchfab bridge is asserted independently above. Chromium
-  // can stall while rasterising that iframe even after every product assertion
-  // has passed, turning visual evidence capture into a false acceptance failure.
-  // Hide only the remote iframe for the evidence frame and temporarily restore
-  // the controlled local species media underneath; restore both immediately.
-  const bridge = page.locator('iframe[title="Interactive 3D Jaguar by Ear.Rodriguez"]');
+  // The cross-origin Sketchfab bridge is asserted independently before capture.
+  // Chromium can still block compositor screenshotting when a hidden iframe stays
+  // attached, so detach the entire remote presentation layer from layout for the
+  // evidence frame and temporarily expose the controlled local species media.
+  const liveLayer = page.locator(".nature-ear-live-v23");
   const photo = page.locator(".nature-subject");
-  const bridgeExists = (await bridge.count()) > 0;
+  const liveExists = (await liveLayer.count()) > 0;
   const photoExists = (await photo.count()) > 0;
-  let bridgeVisibility = "";
+  let liveDisplay = "";
   let photoOpacity = "";
   let photoVisibility = "";
 
-  if (bridgeExists) {
-    bridgeVisibility = await bridge.evaluate((el) => (el as HTMLElement).style.visibility);
-    await bridge.evaluate((el) => { (el as HTMLElement).style.visibility = "hidden"; });
+  if (liveExists) {
+    liveDisplay = await liveLayer.evaluate((el) => (el as HTMLElement).style.display);
+    await liveLayer.evaluate((el) => { (el as HTMLElement).style.display = "none"; });
   }
   if (photoExists) {
     [photoOpacity, photoVisibility] = await photo.evaluate((el) => {
@@ -75,10 +74,11 @@ async function captureJourneyViewport(page: Page, path: string) {
   }
 
   try {
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
     await page.screenshot({ path, fullPage: false, animations: "disabled", caret: "hide", timeout: 15_000 });
   } finally {
-    if (bridgeExists) {
-      await bridge.evaluate((el, visibility) => { (el as HTMLElement).style.visibility = visibility; }, bridgeVisibility);
+    if (liveExists) {
+      await liveLayer.evaluate((el, display) => { (el as HTMLElement).style.display = display; }, liveDisplay);
     }
     if (photoExists) {
       await photo.evaluate((el, styles) => {
