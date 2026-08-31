@@ -56,8 +56,8 @@
 .atlas-leading-time-body p { margin: 8px 0 0; font-size: 9px; line-height: 1.5; opacity: .58; }
 
 @media (max-width: 760px) {
-  /* Founder screenshot 2026-09-01: lens buttons were painted above the open
-     layer console. An expanded console is now the single interaction authority. */
+  /* Founder screenshot 2026-09-01: lens buttons and My Atlas were painted above
+     the open layer console. An expanded console is now the one interaction layer. */
   .atlas-panel:not(.rest) {
     z-index: 32;
     top: 108px !important;
@@ -69,7 +69,7 @@
     background: rgba(8,8,8,.97);
   }
   .world.light .atlas-panel:not(.rest) { background: rgba(255,255,255,.985); }
-  .atlas-panel:not(.rest) + * { pointer-events: none; }
+  .atlas-saved-views { z-index: 18 !important; }
   .atlas-leading-time { top: 108px; right: 10px; width: auto; z-index: 18; }
   .atlas-leading-time.open { left: 10px; width: calc(100vw - 20px); z-index: 31; }
   .atlas-leading-time-body { max-height: calc(100vh - 165px); }
