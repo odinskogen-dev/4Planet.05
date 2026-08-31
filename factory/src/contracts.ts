@@ -36,6 +36,10 @@ export interface ZeroLossEvidence {
   checkedAt: string;
 }
 
+/**
+ * Scheduling projection only. Source authority remains CURRENT Drive/BRAIN.
+ * Optional fields improve human/project context without creating a second truth store.
+ */
 export interface ProjectProjection {
   id: string;
   name: string;
@@ -45,6 +49,8 @@ export interface ProjectProjection {
   gold: string;
   gap: string;
   priority: PriorityClass;
+  user?: string;
+  authorityRefs?: string[];
   lastMaterialProgressAt?: string;
   blockedReason?: string;
   founderGate?: string;
@@ -113,4 +119,8 @@ export interface BatchSelection {
   packages: WorkPackage[];
   rejectedForConflict: string[];
   rationale: string[];
+  /** Projects whose 24/72h service level earned a protected scheduler slot. */
+  serviceLevelProtected?: string[];
+  /** Overdue projects that could not be selected due to capacity/conflict/no ready package. */
+  serviceLevelDeferred?: string[];
 }
