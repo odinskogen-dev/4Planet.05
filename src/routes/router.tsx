@@ -36,6 +36,7 @@ const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
+const PitchHub = lazy(() => import("@/pages/v5/PitchHub"));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -62,6 +63,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/present" element={<Suspense fallback={MagazineFallback}><PitchHub /></Suspense>} />
+      <Route path="/pitch" element={<Navigate to="/present" replace />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
