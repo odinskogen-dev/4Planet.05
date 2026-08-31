@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { ATLAS_TIME_AXES, atlasLeadingTileUrl } from "./atlasLeadingExtensions";
 
-type AtlasMap = { getSource: (id: string) => any };
-declare global { interface Window { __4planet_map?: AtlasMap } }
-
 const STORAGE_KEY = "4planet.atlas.time.v1";
+function atlasMap(): any {
+  return typeof window === "undefined" ? null : (window as any).__4planet_map;
+}
 function readStored() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
   catch { return {}; }
@@ -23,7 +23,7 @@ export default function AtlasTimeControls() {
 
   useEffect(() => {
     const readActive = () => {
-      const map = window.__4planet_map;
+      const map = atlasMap();
       if (!map) return;
       const next = ATLAS_TIME_AXES.filter((axis) => Boolean(map.getSource(axis.layerId))).map((axis) => axis.layerId);
       setActiveIds((current) => current.join("|") === next.join("|") ? current : next);
@@ -36,7 +36,7 @@ export default function AtlasTimeControls() {
   const activeAxes = useMemo(() => ATLAS_TIME_AXES.filter((axis) => activeIds.includes(axis.layerId)), [activeIds]);
 
   const apply = (layerId: string, value: string) => {
-    const source = window.__4planet_map?.getSource(layerId);
+    const source = atlasMap()?.getSource(layerId);
     if (!source?.setTiles) return;
     source.setTiles([atlasLeadingTileUrl(layerId, value)]);
     const next = { ...selected, [layerId]: value };
