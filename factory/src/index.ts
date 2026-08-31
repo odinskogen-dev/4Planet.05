@@ -3,6 +3,9 @@ import { selectHourlyBatch } from "./batcher";
 import { evaluateMaterialProgress } from "./evaluator";
 import { evaluateFactoryActivation, type FactoryActivationEvidence } from "./activationGate";
 import { runActivationGateSimulation } from "./activationSimulation";
+import { validateBrainProjection, type BrainProjectionSnapshot } from "./brainProjection";
+import { compileLearningCandidate } from "./learningCompiler";
+import { compileApprovedProjectIntake, type ApprovedProjectIntake } from "./projectIntake";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -32,6 +35,8 @@ interface FactoryState {
   lastBatchIds: string[];
   lastWorkflowIds: string[];
   activationEvidence?: FactoryActivationEvidence;
+  lastBrainProjectionAt?: string;
+  lastProjectIntakeAt?: string;
 }
 
 export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> {
@@ -82,6 +87,21 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         expires_at TEXT NOT NULL
       )
     `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS projection_receipts (
+        id TEXT PRIMARY KEY,
+        payload TEXT NOT NULL,
+        ingested_at TEXT NOT NULL
+      )
+    `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS project_intake_receipts (
+        id TEXT PRIMARY KEY,
+        project_id TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        compiled_at TEXT NOT NULL
+      )
+    `;
 
     if (!this.state.hourlyScheduleId) {
       const { id } = await this.schedule("0 * * * *", "runHour", {});
@@ -114,6 +134,64 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     }
     this.setState({ ...this.state, mode });
     return this.state;
+  }
+
+  /**
+   * One-way BRAIN → Factory projection ingestion. This writes only the local
+   * scheduling cache and receipt; it cannot mutate BRAIN or promote authority.
+   */
+  @callable()
+  ingestBrainSnapshot(snapshot: BrainProjectionSnapshot, packages: WorkPackage[] = []) {
+    const validated = validateBrainProjection(snapshot);
+    const now = Date.now();
+    const retrievedAtMs = Date.parse(validated.retrievedAt);
+    if (retrievedAtMs > now + 5 * 60 * 1000) throw new Error("BRAIN projection retrievedAt is implausibly in the future");
+    if (now - retrievedAtMs > 6 * 60 * 60 * 1000) throw new Error("BRAIN projection is stale for Factory ingestion");
+
+    const projectIds = new Set(validated.projects.map((project) => project.id));
+    const unresolved = packages.filter((pkg) => !projectIds.has(pkg.projectId)).map((pkg) => pkg.id);
+    if (unresolved.length > 0) throw new Error(`BRAIN projection cannot resolve work packages: ${unresolved.join(", ")}`);
+
+    for (const project of validated.projects) this.upsertProject(project);
+    for (const pkg of packages) this.upsertWorkPackage(pkg);
+
+    const ingestedAt = new Date(now).toISOString();
+    const receipt = {
+      authority: validated.authority,
+      readOnly: true as const,
+      sourceRefs: [...validated.sourceRefs],
+      snapshotRetrievedAt: validated.retrievedAt,
+      ingestedAt,
+      projectIds: validated.projects.map((project) => project.id),
+      workPackageIds: packages.map((pkg) => pkg.id),
+    };
+    const receiptId = `brain-${validated.retrievedAt}-${validated.projects.length}`;
+    this.sql`
+      INSERT INTO projection_receipts (id, payload, ingested_at)
+      VALUES (${receiptId}, ${JSON.stringify(receipt)}, ${ingestedAt})
+      ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, ingested_at = excluded.ingested_at
+    `;
+    this.setState({ ...this.state, lastBrainProjectionAt: ingestedAt });
+    return receipt;
+  }
+
+  /**
+   * Founder-approved idea → project → bounded work packages. Compilation is
+   * deterministic and subordinate to the supplied authorityRef.
+   */
+  @callable()
+  ingestApprovedProject(input: ApprovedProjectIntake) {
+    const compiled = compileApprovedProjectIntake(input);
+    this.upsertProject(compiled.project);
+    for (const pkg of compiled.packages) this.upsertWorkPackage(pkg);
+
+    const receiptId = `${compiled.project.id}:${compiled.receipt.compiledAt}`;
+    this.sql`
+      INSERT INTO project_intake_receipts (id, project_id, payload, compiled_at)
+      VALUES (${receiptId}, ${compiled.project.id}, ${JSON.stringify(compiled.receipt)}, ${compiled.receipt.compiledAt})
+    `;
+    this.setState({ ...this.state, lastProjectIntakeAt: compiled.receipt.compiledAt });
+    return compiled;
   }
 
   @callable()
@@ -238,6 +316,11 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     this.markStatus(pkg, nextStatus);
     this.releaseLocksFor(pkg.id);
 
+    // Material accepted work automatically reaches the non-authoritative
+    // learning-candidate store. Promotion to a BRAIN rule remains separately gated.
+    const learning = compileLearningCandidate(pkg, outcome, evaluation);
+    if (learning.accepted && learning.candidate) this.recordLearning(learning.candidate);
+
     if (nextStatus === "ACCEPTED") {
       const projectRow = this.sql<{ payload: string }>`SELECT payload FROM projects WHERE id = ${pkg.projectId}`[0];
       if (projectRow) {
@@ -276,7 +359,10 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
       activationGate: this.state.activationEvidence ? evaluateFactoryActivation(this.state.activationEvidence) : null,
       projects: this.sql<{ id: string; payload: string }>`SELECT id, payload FROM projects`.map((r) => JSON.parse(r.payload)),
       work: this.sql<{ id: string; status: string }>`SELECT id, status FROM work_packages WHERE status IN ('READY','DISPATCHED','RUNNING','BLOCKED')`,
+      outcomes: this.sql<{ work_package_id: string; completed_at: string }>`SELECT work_package_id, completed_at FROM outcomes ORDER BY completed_at DESC LIMIT 20`,
+      learning: this.sql<{ id: string; status: string; created_at: string }>`SELECT id, status, created_at FROM learning_candidates ORDER BY created_at DESC LIMIT 20`,
       locks: this.sql<{ scope: string; work_package_id: string; expires_at: string }>`SELECT scope, work_package_id, expires_at FROM write_locks`,
+      projectionReceipts: this.sql<{ id: string; ingested_at: string }>`SELECT id, ingested_at FROM projection_receipts ORDER BY ingested_at DESC LIMIT 5`,
       workers: this.listSubAgents(),
     };
   }
@@ -338,6 +424,6 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
 
 export default {
   async fetch(request: Request, env: Cloudflare.Env) {
-    return (await routeAgentRequest(request, env)) ?? new Response("4PLANET Production Factory V01", { status: 200 });
+    return (await routeAgentRequest(request, env)) ?? new Response("4PLANET Production Factory GOLD", { status: 200 });
   },
 };
