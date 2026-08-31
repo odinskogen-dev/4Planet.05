@@ -9,11 +9,16 @@ Goal: turn Founder-approved ideas into persistent, goal-driven, safe autonomous 
 - No LIVE, irreversible money/legal/IP actions or autonomous canon promotion.
 - Exact write scopes and locks for concurrent work.
 
-Exit: no path by which the factory can silently damage current canon, product or production.
+### ZERO LOSS LAW — permanent
+Before any material canonical product write or promotion, the Factory must inspect all materially relevant historical repos, branches, PRs, sandboxes and embedded donors. Every donor feature gets an evidence-backed disposition: `ADOPT`, `SUPERSEDED_BY`, `DEFER_WITH_REASON`, or `BLOCKED_TRUTH_RIGHTS`.
+
+Newest-wins is forbidden. Route-resolves is not recovery. A green build is not winner proof. Material orphan count must be **0** before promotion. A later-discovered regression automatically reopens the gate.
+
+Exit: no path by which the factory can silently damage current canon, product or production, and no material existing value can disappear merely because a newer branch exists.
 
 ## 01 — Universal Project Contract
 Every BUILD-approved project gets the same minimum structure:
-WHY / NORTH STAR / USER / GOLD / CURRENT / GAP / GOALS / WBS / DEPENDENCIES / PROOF / CAPITAL / DISTRIBUTION / LEARNING / FOUNDER GATES / PRIORITY CLASS.
+WHY / NORTH STAR / USER / GOLD / CURRENT / GAP / GOALS / WBS / DEPENDENCIES / PROOF / CAPITAL / DISTRIBUTION / LEARNING / FOUNDER GATES / PRIORITY CLASS / ZERO-LOSS DONOR UNIVERSE.
 
 AXE owns idea → project conversion. New projects do not become ACTIVE just because they are interesting.
 
@@ -44,11 +49,11 @@ Exit: at least 5 independent packages can be dispatched to isolated workers with
 
 ## 04 — Durable Execution
 Each selected package runs as its own Cloudflare Workflow:
-DISPATCH → EXECUTE → EVIDENCE → EVALUATE → CORRECT/ACCEPT/REJECT/BLOCK → WRITEBACK.
+DISPATCH → ZERO LOSS → EXECUTE → EVIDENCE → EVALUATE → CORRECT/ACCEPT/REJECT/BLOCK → WRITEBACK.
 
 Retries are idempotent. Human gates can pause without blocking unrelated work. Long jobs survive restarts/evictions.
 
-Exit: interrupted jobs recover without duplicate side effects.
+Exit: interrupted jobs recover without duplicate side effects and material product work cannot bypass Zero Loss.
 
 ## 05 — Bounded Tool Adapters
 Connect one safe adapter at a time:
@@ -61,7 +66,7 @@ Connect one safe adapter at a time:
 7. Capital prep/current authorised low-risk actions.
 8. BRAIN writeback with readback and authority checks.
 
-Each adapter has an explicit capability allowlist and denylist. No shared omnipotent credential.
+Each adapter has an explicit capability allowlist and denylist. No shared omnipotent credential. External outreach remains Founder-release only even after internal Factory ACTIVE mode is achieved.
 
 Exit: workers can execute real tasks while remaining fail-closed outside their authority.
 
@@ -91,7 +96,7 @@ Exit: prove at least three cases where one project learning measurably improves 
 
 ## 08 — Project Realisation Loop
 Founder flow:
-IDEA → AXE challenge/develop → explicit BUILD → Project Contract → autonomous decomposition → queue → multi-agent execution → evaluator → learning → next queue.
+IDEA → AXE challenge/develop → explicit BUILD → Project Contract → autonomous decomposition → ZERO LOSS donor check → queue → multi-agent execution → evaluator → learning → next queue.
 
 AXE only interrupts Founder for irreducible decision, access, judgement or real-world action.
 
@@ -102,26 +107,29 @@ Run factory beside current Symphony Conductor on current 4PLANET portfolio.
 Compare:
 - selected work;
 - material outcomes/hour;
+- evidence quality;
 - stalled ACTIVE projects;
 - regression rate;
 - rework;
 - Founder burden;
-- useful learning transfer.
+- useful learning transfer;
+- Zero Loss violations / material orphans.
 
 No LIVE actions.
 
-Exit: factory outperforms the current single-run loop without increased truth/safety failures.
+Exit: Factory meets or exceeds the current conductor on material outcome rate and evidence quality, does not increase Founder burden, and creates no extra truth/safety/Zero-Loss failures.
 
 ## 10 — Controlled Activation
-Enable ACTIVE by section, not all at once.
-Recommended order:
+ACTIVE is fail-closed and evidence-gated. Required evidence includes current TEST KING base, Shadow CI, convergence, read-only BRAIN projection, bounded adapters, material evaluator, learning compiler, Zero Loss enforcement, deterministic simulation, selection comparison, outcome-quality parity and Founder-release protection.
+
+Enable ACTIVE by section, not all at once:
 Research/Data → Code/QA on isolated TEST scopes → Product/Design → User/Distribution prep → Learning/BRAIN writeback → Capital bounded routes.
 
-Production/live/irreversible actions remain separately gated.
+Production/live/irreversible actions remain separately gated. External send/submit/share never inherits Factory ACTIVE authority.
 
 ## 11 — Continuous Factory Improvement
-Daily compiler: strongest learning, repeated failure, new reusable primitive, stale project, queue starvation, Founder burden.
+Daily compiler: strongest learning, repeated failure, new reusable primitive, stale project, queue starvation, Founder burden, newly discovered donor/regression.
 Weekly: portfolio/service-level audit and worker/evaluator performance.
 Monthly: adjust scoring weights only from outcome evidence.
 
-North Star: more verified value moved toward 4PLANET goals per unit Founder attention, without lowering truth, quality or safety.
+North Star: more verified value moved toward 4PLANET goals per unit Founder attention, without lowering truth, quality or safety and without losing prior work.
