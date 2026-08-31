@@ -6,6 +6,7 @@ import { runActivationGateSimulation } from "./activationSimulation";
 import { validateBrainProjection, type BrainProjectionSnapshot } from "./brainProjection";
 import { compileLearningCandidate } from "./learningCompiler";
 import { compileApprovedProjectIntake, type ApprovedProjectIntake } from "./projectIntake";
+import { decideInFlightRecovery } from "./recovery";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -221,6 +222,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   async runHour() {
+    this.recoverInterruptedWork();
     this.releaseExpiredLocks();
 
     const projects = new Map(
@@ -274,6 +276,9 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   async dispatchToWorker(workPackageId: string): Promise<Outcome> {
+    const recorded = this.getRecordedOutcome(workPackageId);
+    if (recorded) return recorded;
+
     const pkg = this.getWorkPackage(workPackageId);
     if (!pkg) throw new Error(`Unknown work package: ${workPackageId}`);
 
@@ -370,6 +375,36 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   private getWorkPackage(id: string): WorkPackage | undefined {
     const row = this.sql<{ payload: string }>`SELECT payload FROM work_packages WHERE id = ${id}`[0];
     return row ? (JSON.parse(row.payload) as WorkPackage) : undefined;
+  }
+
+  private getRecordedOutcome(workPackageId: string): Outcome | undefined {
+    const row = this.sql<{ payload: string }>`SELECT payload FROM outcomes WHERE work_package_id = ${workPackageId}`[0];
+    return row ? (JSON.parse(row.payload) as Outcome) : undefined;
+  }
+
+  private recoverInterruptedWork() {
+    const rows = this.sql<{ payload: string; updated_at: string }>`
+      SELECT payload, updated_at FROM work_packages WHERE status IN ('DISPATCHED', 'RUNNING')
+    `;
+    const now = Date.now();
+
+    for (const row of rows) {
+      const pkg = JSON.parse(row.payload) as WorkPackage;
+      const recorded = this.getRecordedOutcome(pkg.id);
+      const decision = decideInFlightRecovery(
+        { status: pkg.status, updatedAt: row.updated_at, hasRecordedOutcome: Boolean(recorded) },
+        now,
+      );
+
+      if (decision === "FINALIZE_RECORDED_OUTCOME" && recorded) {
+        void this.finalizeWorkflowOutcome(recorded);
+        continue;
+      }
+      if (decision === "RECOVER_TO_READY") {
+        this.releaseLocksFor(pkg.id);
+        this.markStatus(pkg, "READY");
+      }
+    }
   }
 
   private workerName(section: Section, workPackageId: string): string {
