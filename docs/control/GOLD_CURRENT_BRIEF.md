@@ -2,61 +2,61 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-LUME-ROOM-PROJECTED-INTEL-GALLERY-03
-**STATUS:** TEST / ACTIVE DEVELOPMENT / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9`
-**ROLLBACK BASE:** `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9`
-**IMPLEMENTED CANDIDATE:** `26403b26be79ad5ce1511cf0d63b6fe8da6ccaff`
-**FOUNDER DIRECTION:** Keep the accepted Orca asset and clean LUME ROOM renderer. Replace the dark electric blue with a lighter projected-light expression. Make the gallery feel physically larger, keep the animal and information on separate spatial planes, bind nodes and intelligence to walls, reveal a map from the PLACE node and add bounded interactive movement only where the single 2.5D asset can support it truthfully. LIVE KING remains untouched.
-**SINGLE-SEAM RULE:** The change lands only on `king/test`; no parallel LUME route, branch, renderer, map engine or truth model.
+**CHANGE ID:** TEST-KING-LUME-ROOM-03-PROJECTION-PLANE-QA-01
+**STATUS:** TEST / IMPLEMENTED CANDIDATE / FOUNDER REVIEW REQUIRED
+**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
+**ROLLBACK BASE:** `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
+**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + LUME projection-plane QA fix
+**FOUNDER DIRECTION:** Keep the Orca asset. Make the room feel like a large dark gallery rendered in lighter projected OCE4N light, with luminous grids on floor, walls and ceiling, readable intel walls, wall-mounted nodes, an optional map projection and bounded interactive Orca movement. Field audio must be real and must start only after a user gesture. The full Orca must remain inside mobile view.
+**SINGLE-SEAM RULE:** Improve only the existing `/species/orca/lume` renderer and its existing tests; no new route, renderer, map engine, 3D/XR stack, species database or parallel app.
 
 ## USER ARRIVES BECAUSE
-They want to stand inside a large projected species intelligence room and explore an Orca spatially.
+They want to enter one striking species intelligence gallery and understand Orca through projected light, space, sound and controlled depth.
 
 ## ONE THING TO UNDERSTAND
-The Orca is the living centre; identity, social life, place and evidence are projected onto separate room walls.
+This is one species across every ocean, expressed through many distinct populations, habitats, diets and cultures.
 
 ## PRIMARY ACTION
-Select one wall-mounted node. PLACE projects a world-orientation map; the other nodes project one source-bounded intelligence view.
+Select one of four projected wall nodes: Identity, Culture, Place or Evidence.
 
 ## SECONDARY DEPTH
-Drag, touch or use arrow keys to guide the 2.5D Orca within a small safe volume; trigger the credited field recording; inspect source and boundary.
+Guide the 2.5D Orca plane with drag, touch or arrow keys; open the schematic Place map; explicitly start the NPS Glacier Bay Orca field recording; trigger a separately labelled procedural room echo.
 
 ## P1 DOMINANT
-One complete Orca suspended in a deep, uncluttered central volume.
+The complete Orca projection floating in a large black gallery room.
 
 ## P2 ORIENTATION
-Large ceiling/floor/side/back planes, brighter cyan-white projected light, OCE4N identity and two physically separated intel walls.
+Luminous room geometry, species identity, wall-mounted nodes and one active projected intel wall.
 
 ## P3 ACTION / NEXT
-Four always-legible wall nodes, bounded subject guidance, explicit field-audio state and canonical exit.
+Choose a wall projection, hear the field recording by explicit action, or return to Species.
 
 ## P4 DEPTH
-Map legend, source, truth state, limitation, audio provenance, visual disclosure and 2.5D disclosure.
+Source, evidence state and limitation remain available without competing with the animal.
 
 ## WHAT CAN BE REMOVED
-The FOOD WEB node from this room, nodes floating across the animal, dark saturated blue as the sole emitted-light value, flat full-width information bar, decorative line density and any text competing with the subject.
+Dark electric-blue styling, compressed dashboard geometry, cards, pills, clipped animal framing, false 3D controls and hidden or unreachable wall information.
 
 ## WHAT MUST BE REUSED
-LUME ROOM 02 clean renderer, current transparent Orca visual, local NPS field recording, canonical Species exit, four-node data model, source/truth boundaries, one-viewport mobile contract, reduced-motion handling, 4PLANET type roles and existing OCE4N domain identity.
+The existing clean-room LUME renderer, `LUME_ORCA_ROOM` manifest, transparent Orca visualisation, canonical route, NPS Glacier Bay field audio, current truth boundaries, current Species exit and current responsive contract.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** spatial separation and wall-intelligence grammar visible in the Founder-provided Jaguar/Amazonia reference; use structure only, not its green colour, fake values, wireframe animal or visual asset.
-- **ALREADY PRESENT:** complete Orca, audio lifecycle, clean renderer, room grid, projected text, nodes, sources, mobile containment and 2.5D drift.
-- **REJECT:** importing Jaguar legacy code, its renderer, generated data, XR stack or map runtime.
-- **DEFER:** rigged fins/tail, free 3D rotation, anatomically simulated locomotion, WebXR, projector hardware and live tracking until a validated rigged 3D asset exists.
+- **ADOPT:** projected cyan-white light, larger gallery depth, wall-mounted intel, inline schematic world map and bounded 2.5D guidance.
+- **REUSE:** existing LUME ROOM 03 renderer, Orca asset, source manifest and audio lifecycle.
+- **REJECT:** legacy ORCA/Jaguar CSS imports, a second renderer, runtime map dependency, false live tracking, false migration, rigged-animal claims and autoplay.
+- **DEFER:** true fin/tail articulation, rigged GLB swimming, WebXR and hardware projection until a validated asset and later adapter exist.
 
 ## TRUTH BOUNDARY
-The Orca remains an explicitly labelled AI-generated 2.5D species visualisation, not evidence, photography or a rigged model. Interactive guidance moves the presentation plane only and must not imply animal behaviour. The PLACE map is a schematic species-level orientation for a globally distributed marine species; it is not a live track, migration route, population map, abundance surface or Bay of Biscay claim. Real audio retains its Glacier Bay context and must not be attributed to the pictured animal, Bay of Biscay or all Orcas.
+The central Orca is an AI-generated natural-history visualisation, not a photograph or evidence. Its interaction moves a single 2.5D projection plane and must not be called a rigged 3D animal. The Place map is schematic species-level orientation, not a live track, migration route, population range or abundance surface. The NPS Glacier Bay recording is real field audio; the room echo is procedural and separately labelled.
 
 ## PERFORMANCE
-No WebGL, Three.js, new map library or runtime data request. The map is a bounded inline SVG. Interaction writes only bounded CSS variables. Existing image and lazy local audio remain the material media costs.
+No new runtime dependency, WebGL renderer or remote map. The map remains inline SVG. ROOM 03 stays lazy-loaded; the existing local animal and audio assets are reused.
 
 ## MOBILE-FIRST RISK
-Side-wall semantics can collapse into another poster at 390/430 px. The mobile camera must keep one viewport, preserve the complete animal, keep the active intelligence projection below or beside rather than over the body, expose 44 px touch targets and prevent horizontal overflow. Drag must not break audio or node interaction.
+At 390 and 430 px the full Orca must remain inside the viewport, nodes must remain at least 44 px, the detail wall must not intercept sound or exit controls, the map must reflow, and the experience must avoid horizontal overflow and page scroll.
 
 ## HUMAN SUCCESS
-Within five seconds a person describes a large luminous Orca intelligence room. They can identify wall-mounted nodes, open PLACE and recognise a world map, move the Orca slightly without cropping or false 3D, play labelled field audio and exit without page scrolling.
+Within five seconds a person understands that they are inside a large projected Orca intelligence room. Within thirty seconds they can select Place, see the bounded map, move the Orca, and deliberately hear real Orca field audio without confusing it with the procedural echo.
 
 ## ACCEPTANCE
-1. The emitted-light colour reads materially lighter than LUME ROOM 02 while remaining one OCE4N-derived accent. 2. Back wall, two side walls, ceiling and floor read as a larger volume. 3. Identity and active intelligence occupy separate wall projections; neither covers the Orca. 4. Four nodes remain visible on walls and are operable by keyboard and touch. 5. PLACE renders a labelled schematic global-ocean map with explicit non-track boundary. 6. Pointer/touch drag and arrow keys move only the bounded 2.5D subject plane; reset is possible; reduced motion disables the effect. 7. Complete Orca remains within desktop, 390 and 430 safe bounds. 8. Audio still begins only after user action and retains exact provenance. 9. Policy, typecheck, assets, lint, build, smoke/contracts and targeted browser proof pass. 10. TEST KING exact-SHA deployment is read back; LIVE KING remains unchanged; Founder acceptance is not inferred.
+1. `/species/orca/lume` identifies itself as LUME ROOM 03. 2. The room uses lighter projected cyan-white light. 3. Ceiling, floor, side and rear grid planes create visible gallery depth. 4. The full Orca is dominant and contained at desktop, 390 and 430 px. 5. Identity and active detail intel walls render in front of the room plane rather than being occluded by it. 6. Four wall nodes remain keyboard and touch accessible. 7. PLACE opens an inline schematic map with `NOT A LIVE TRACK`. 8. Drag/touch/arrows move only the bounded 2.5D plane and Enter/Home reset it. 9. NPS field audio remains off until explicit action and the procedural room echo remains separately labelled. 10. Reduced motion preserves all information. 11. Contract, typecheck, assets, lint, build, smoke and public-browser checks pass before Founder acceptance is requested. 12. LIVE KING remains untouched.

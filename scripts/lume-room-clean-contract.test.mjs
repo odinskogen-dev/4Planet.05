@@ -39,6 +39,8 @@ test("LUME ROOM 03 keeps the clean browser-first route and rejects the legacy OR
   assert.equal((page.match(/className="lume-room__node"/g) ?? []).length, 1, "node UI should be data-driven");
   assert.match(css, /prefers-reduced-motion:reduce/);
   assert.match(css, /--lume:#79eaff/);
+  assert.match(css, /transform:translateZ\(66px\) rotateY\(8deg\)/, "left intel wall must render in front of the room plane");
+  assert.match(css, /transform:translateZ\(66px\) rotateY\(-8deg\)/, "right intel wall must render in front of the room plane");
   assert.match(css, /max-width:calc\(100vw - 52px\)/);
   assert.doesNotMatch(css, /11[0-9]vw/);
 });
