@@ -1,0 +1,75 @@
+name: Production Factory Shadow Deploy
+
+on:
+  push:
+    branches:
+      - "factory/symphony-runtime-v01"
+    paths:
+      - "factory/**"
+      - ".github/workflows/production-factory-shadow-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-factory-shadow-deploy
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      credentials_ready: ${{ steps.credentials.outputs.ready }}
+    steps:
+      - name: Check deployment credentials without exposing them
+        id: credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          if [[ -n "$CLOUDFLARE_API_TOKEN" && -n "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare shadow deployment credentials are configured."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare shadow deployment skipped: required repository secrets are not configured."
+          fi
+
+  deploy-shadow:
+    needs: preflight
+    if: needs.preflight.outputs.credentials_ready == 'true'
+    runs-on: ubuntu-latest
+    environment: production-factory-shadow
+    steps:
+      - uses: actions/checkout@v6
+      - name: Deploy dedicated Factory SHADOW Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: factory
+          packageManager: npm
+          command: deploy
+      - name: Record non-production deployment evidence
+        shell: bash
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          echo "### 4PLANET Production Factory SHADOW" >> "$GITHUB_STEP_SUMMARY"
+          echo "Dedicated Worker: 4planet-production-factory-v01-shadow" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment URL: ${DEPLOYMENT_URL:-UNKNOWN}" >> "$GITHUB_STEP_SUMMARY"
+          echo "This deployment is SHADOW only and does not modify 4PLANET LIVE." >> "$GITHUB_STEP_SUMMARY"
+
+  credentials-missing:
+    needs: preflight
+    if: needs.preflight.outputs.credentials_ready != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed without deployment
+        run: |
+          echo "Dedicated Factory SHADOW Worker was NOT deployed."
+          echo "Required repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID."
+          echo "Do not place credentials in source code or workflow files."
