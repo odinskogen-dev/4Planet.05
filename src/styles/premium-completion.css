@@ -80,6 +80,15 @@ main:has(#species-results) .three > a:focus-visible{
 main:has(#species-results) .three > a:hover img,
 main:has(#species-results) .three > a:focus-visible img{transform:scale(1.035)}
 
+/* Species evidence cards: content decides height. Fixed card heights created large dead zones on phones. */
+main:has(.sp-hero) .tw > article{
+  min-height:0!important;
+}
+main:has(.sp-hero) .tw > article > a{
+  margin-top:clamp(22px,4vw,36px)!important;
+  padding-top:0!important;
+}
+
 /* LIVING SYSTEMS — visual first entry, then the evidence-aware anchor grid. */
 main:has(.ls-anchors) > section:first-child{
   position:relative;
@@ -116,11 +125,11 @@ main:has(.ls-anchors) .ls-anchors{
   box-shadow:0 34px 90px -55px rgba(0,0,0,.75);
 }
 
-/* ABOUT donor pages open on dark imagery without losing the global header. */
-.completion-dark-about .public-header:not(:has(.nav-panel)) .public-brand,
-.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__nav-button,
-.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__join,
-.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__menu{
+/* Dark About routes only force a transparent/white navigation while actually at the dark hero. */
+.completion-dark-about-top .public-header:not(:has(.nav-panel)) .public-brand,
+.completion-dark-about-top .public-header:not(:has(.nav-panel)) .public-header__nav-button,
+.completion-dark-about-top .public-header:not(:has(.nav-panel)) .public-header__join,
+.completion-dark-about-top .public-header:not(:has(.nav-panel)) .public-header__menu{
   color:#fff!important;
 }
 
@@ -149,6 +158,9 @@ main:has(.ls-anchors) .ls-anchors{
   .part-box p{font-size:15px!important;max-width:92%!important}
   .part-box .pb-arr{font-size:28px}
   main:has(#species-results) .three{grid-template-columns:1fr!important}
+  main:has(.sp-hero) .tw{gap:14px!important}
+  main:has(.sp-hero) .tw > article{min-height:0!important;padding:20px!important}
+  main:has(.sp-hero) .tw > article > a{margin-top:22px!important}
   main:has(.ls-anchors) > section:first-child{padding-top:clamp(210px,76vw,360px)!important}
   main:has(.ls-anchors) > section:first-child::before{height:520px;background-position:54% 34%}
 }
