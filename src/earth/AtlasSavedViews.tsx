@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { addCurrentAtlasView, readAtlasSavedViews, removeAtlasView } from "@/planet/atlasViews";
 import AtlasTimeControls from "./AtlasTimeControls";
+import AtlasZoomStack from "./AtlasZoomStack";
 import { installAtlasLeadingExtensions } from "./atlasLeadingExtensions";
 import "./atlas-leading.css";
 
-// Install the selectively recovered donor layers before the lazy World runtime
-// reads the shared registry. This extends the one canonical ATLAS engine; it
-// does not create or mount a second map implementation.
+// Install selectively recovered donor layers before the lazy World runtime reads
+// the shared registry. One canonical ATLAS engine remains authoritative.
 installAtlasLeadingExtensions();
 
 const mono: React.CSSProperties = { fontFamily: "'Fragment Mono', ui-monospace, monospace", fontSize: 9.5, letterSpacing: ".1em" };
@@ -54,6 +54,7 @@ export function AtlasSavedViews() {
         )}
       </aside>
       <AtlasTimeControls />
+      <AtlasZoomStack />
     </>
   );
 }
