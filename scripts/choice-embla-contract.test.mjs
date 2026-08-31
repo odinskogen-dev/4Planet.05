@@ -12,13 +12,35 @@ const transpiled = ts.transpileModule(source, {
 }).outputText;
 const embla = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
 
-test("FOOD routes into the existing evidence proof without claiming an answer", () => {
+test("FOOD routes into the decision-first evidence proof without claiming a universal answer", () => {
   const result = embla.resolveEmblaIntake("Which of these groceries is the better choice for me?");
   assert.equal(result.domain, "FOOD");
   assert.equal(result.status, "EVIDENCE_PATH_READY");
-  assert.equal(result.nextHref, "/4sapien/food");
-  assert.match(result.truthBoundary, /identified the decision path, not the answer/i);
-  assert.match(result.truthBoundary, /not eligible until/i);
+  assert.equal(result.nextHref, "/4sapien/food/choose");
+  assert.match(result.title, /what matters most/i);
+  assert.match(result.truthBoundary, /not a universal answer/i);
+  assert.match(result.truthBoundary, /do not yet support category-wide ranking/i);
+});
+
+test("ten realistic FOOD decisions all enter the same bounded human-choice gate", () => {
+  const prompts = [
+    "Which milk is the better choice for me?",
+    "I want a coffee with less sugar if possible",
+    "Which butter should I buy if I care about salt?",
+    "Help me compare two grocery products",
+    "What should I eat for this meal?",
+    "Can you help with my shopping list?",
+    "I scanned a barcode and want a better alternative",
+    "Which food product is cheaper and still reasonable?",
+    "Which milk has the better planetary trade-off?",
+    "I need groceries but I do not want a fake sustainability score",
+  ];
+  for (const prompt of prompts) {
+    const result = embla.resolveEmblaIntake(prompt);
+    assert.equal(result.domain, "FOOD", prompt);
+    assert.equal(result.status, "EVIDENCE_PATH_READY", prompt);
+    assert.equal(result.nextHref, "/4sapien/food/choose", prompt);
+  }
 });
 
 test("Embla 02 parses the first controlled shopping categories without pretending unsupported categories are ready", () => {
