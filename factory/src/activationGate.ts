@@ -5,9 +5,12 @@ export interface FactoryActivationEvidence {
   sectionAdaptersBounded: boolean;
   evaluatorMaterialGateEnabled: boolean;
   learningCompilerEnabled: boolean;
+  zeroLossLawEnabled: boolean;
   deterministicSimulationPassed: boolean;
   shadowComparisonPassed: boolean;
+  outcomeQualityParityPassed: boolean;
   noProductionDeploy: boolean;
+  externalReleaseFounderGated: boolean;
   testKingBaseCurrent: boolean;
   exactFactorySha?: string;
   currentTestKingSha?: string;
@@ -27,20 +30,23 @@ const REQUIRED: Array<[keyof FactoryActivationEvidence, string]> = [
   ["sectionAdaptersBounded", "BOUNDED_SECTION_ADAPTERS"],
   ["evaluatorMaterialGateEnabled", "MATERIAL_PROGRESS_EVALUATOR"],
   ["learningCompilerEnabled", "LEARNING_COMPILER"],
+  ["zeroLossLawEnabled", "ZERO_LOSS_LAW"],
   ["deterministicSimulationPassed", "DETERMINISTIC_SIMULATION_PASS"],
   ["shadowComparisonPassed", "SHADOW_COMPARISON_PASS"],
+  ["outcomeQualityParityPassed", "OUTCOME_QUALITY_PARITY"],
   ["noProductionDeploy", "NO_PRODUCTION_DEPLOY"],
+  ["externalReleaseFounderGated", "FOUNDER_RELEASE_GATE"],
   ["testKingBaseCurrent", "CURRENT_TEST_KING_BASE"],
 ];
 
 /**
- * Fail-closed activation boundary. This does not grant authority or activate
- * anything; it only answers whether the explicit V01 preconditions are all
- * evidenced. Founder/BRAIN release authority remains external to the Factory.
+ * Fail-closed ACTIVE boundary.
  *
- * Factory activation also requires evidence that the shadow runtime has been
- * reconciled against the CURRENT TEST KING integration line. A green shadow
- * run on a stale product base is not activation evidence.
+ * Selection overlap alone is not enough. Factory must prove that its actual
+ * outcomes are at least as good as the reference conductor on materiality,
+ * evidence quality and founder burden. ZERO LOSS is mandatory for material
+ * product writes. External release remains Founder-gated even after internal
+ * ACTIVE execution is allowed.
  */
 export function evaluateFactoryActivation(evidence: FactoryActivationEvidence): FactoryActivationGate {
   const missing = REQUIRED
