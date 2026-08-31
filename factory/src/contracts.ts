@@ -9,6 +9,24 @@ export type Section =
   | "LEARNING"
   | "BRAIN_CONTROL";
 
+export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK";
+
+/**
+ * Bounded runtime instruction. This is deliberately small: the first safe
+ * Cloudflare execution layer is read-only evidence collection, not arbitrary
+ * shell/code/network authority.
+ */
+export interface ExecutionSpec {
+  kind: ExecutionKind;
+  targetUrl: string;
+  allowedHosts: string[];
+  viewport?: {
+    width: number;
+    height: number;
+    deviceScaleFactor?: number;
+  };
+}
+
 export type DonorDisposition = "ADOPT" | "SUPERSEDED_BY" | "DEFER_WITH_REASON" | "BLOCKED_TRUTH_RIGHTS";
 
 export interface DonorDispositionRecord {
@@ -70,6 +88,7 @@ export interface WorkPackage {
   definitionOfDone: string[];
   requiredEvidence: string[];
   zeroLoss?: ZeroLossEvidence;
+  execution?: ExecutionSpec;
   learningQuestion?: string;
   founderGate?: string;
   createdAt: string;
