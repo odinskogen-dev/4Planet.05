@@ -1,5 +1,6 @@
 import { Agent } from "agents";
 import type { Outcome, Section, WorkPackage } from "./contracts";
+import { executeReadOnlyPackage } from "./readOnlyExecution";
 import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 
@@ -64,26 +65,51 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       ON CONFLICT(work_package_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at
     `;
 
-    // Tool/model execution remains fail-closed until the bounded execution
-    // adapter is configured and shadow outcome-quality parity is evidenced.
+    // V01 real execution starts with reversible read-only evidence adapters.
+    // Arbitrary code/file writes still fail closed until their own adapter proof.
+    try {
+      const executed = await executeReadOnlyPackage(this.env, pkg);
+      if (executed) return this.persistOutcome(pkg, executed);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown bounded execution failure";
+      return this.finish(
+        pkg,
+        "BLOCKED",
+        `Bounded execution adapter failed safely: ${message}`,
+        [],
+        "No material result was accepted; package remains blocked until the adapter succeeds or the package is corrected.",
+      );
+    }
+
     return this.finish(
       pkg,
       "BLOCKED",
-      `ZERO LOSS and ${adapterScope.mode} scope passed; execution tool adapter is not yet configured.`,
+      `ZERO LOSS and ${adapterScope.mode} scope passed; no proven execution adapter is configured for this package.`,
+      [],
+      "The worker intentionally refuses to simulate or invent execution.",
     );
   }
 
-  private finish(pkg: WorkPackage, status: Outcome["status"], materialDelta: string): Outcome {
-    const outcome: Outcome = {
+  private finish(
+    pkg: WorkPackage,
+    status: Outcome["status"],
+    materialDelta: string,
+    evidence: string[] = [],
+    limitation?: string,
+  ): Outcome {
+    return this.persistOutcome(pkg, {
       workPackageId: pkg.id,
       status,
-      evidence: [],
+      evidence,
       materialDelta,
       expected: pkg.definitionOfDone.join("; "),
       actual: materialDelta,
+      limitation,
       completedAt: new Date().toISOString(),
-    };
+    });
+  }
 
+  private persistOutcome(pkg: WorkPackage, outcome: Outcome): Outcome {
     this.sql`
       UPDATE work_history
       SET outcome = ${JSON.stringify(outcome)}, updated_at = ${outcome.completedAt}
@@ -94,9 +120,9 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       ...this.state,
       role: this.section,
       completed: this.state.completed + 1,
-      accepted: this.state.accepted + (status === "ACCEPTED" ? 1 : 0),
-      rejected: this.state.rejected + (status === "REJECTED" ? 1 : 0),
-      blocked: this.state.blocked + (status === "BLOCKED" ? 1 : 0),
+      accepted: this.state.accepted + (outcome.status === "ACCEPTED" ? 1 : 0),
+      rejected: this.state.rejected + (outcome.status === "REJECTED" ? 1 : 0),
+      blocked: this.state.blocked + (outcome.status === "BLOCKED" ? 1 : 0),
       lastWorkPackageId: pkg.id,
     });
     return outcome;
