@@ -4,6 +4,7 @@ import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
 import { Reveal } from "@/components/Cinematic";
 import { img, type ImageKey } from "@/content/imageRegistry";
+import { IMPACT_UNITS } from "@/data/impactUnits";
 import type { DomainKey } from "@/types/content";
 import { AtlasHero } from "./AtlasHero";
 
@@ -59,6 +60,8 @@ const PARTICIPATE: [string, string, string][] = [
   ["4FUNDERS", "Help build long-term public infrastructure for environmental action.", "/funders"],
 ];
 
+const impactStatus = (status: string) => status.replace(/_/g, " ");
+
 function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
   const [no, name, tag, line, to, accent] = item;
   return (
@@ -71,6 +74,52 @@ function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
       <div style={{ ...mono, color: T.dim, marginTop: 12 }}>{tag}</div>
       <p style={{ margin: "12px 0 0", maxWidth: 300, color: T.dim, fontSize: 14.5, lineHeight: 1.55 }}>{line}</p>
     </Link>
+  );
+}
+
+function ImpactPreview() {
+  return (
+    <section className="home-impact" style={{ background: "#050805", color: "#fff" }}>
+      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,8vw,116px) clamp(20px,5vw,72px)" }}>
+        <Reveal>
+          <div className="home-impact__intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(28px,6vw,90px)", alignItems: "end" }}>
+            <div>
+              <div style={{ ...mono, color: T.acid }}>IMPACT_ · WHAT ACTION COULD LOOK LIKE</div>
+              <h2 style={{ ...display, margin: "14px 0 0", fontSize: "clamp(40px,6vw,82px)", lineHeight: .91, maxWidth: "11ch" }}>Understand it. Help it. Follow what happens.</h2>
+            </div>
+            <div>
+              <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.74)", fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.62 }}>4PLANET is building simple action pathways around real ecological work — with the partner, evidence and reporting model made visible before public support opens.</p>
+              <p style={{ ...mono, color: "rgba(255,255,255,.46)", marginTop: 18, lineHeight: 1.55 }}>CURRENT STATE · PROTOTYPE PATHWAYS · NOT YET OPEN FOR PUBLIC SUPPORT</p>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="home-impact__grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(38px,5vw,64px)", background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.16)" }}>
+          {IMPACT_UNITS.slice(0, 4).map((unit) => (
+            <Link key={unit.slug} to={`/impact/${unit.slug}`} className="home-impact__card" style={{ position: "relative", minHeight: "clamp(330px,38vw,520px)", overflow: "hidden", display: "flex", alignItems: "flex-end", color: "#fff", textDecoration: "none", background: "#090909" }}>
+              {!unit.imagePending && (
+                <picture>
+                  {unit.imageMobile && <source media="(max-width:680px)" srcSet={unit.imageMobile} />}
+                  <img src={unit.image} alt={unit.imageAlt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform .7s cubic-bezier(.2,.7,.2,1)" }} />
+                </picture>
+              )}
+              <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08) 8%,rgba(0,0,0,.18) 45%,rgba(0,0,0,.92) 100%)" }} />
+              <div style={{ position: "relative", width: "100%", padding: "clamp(24px,3.6vw,48px)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
+                  <span style={{ ...mono, color: unit.accent }}>{unit.index}_ {unit.missionName}</span>
+                  <span style={{ ...mono, color: "rgba(255,255,255,.55)" }}>EXPLORE →</span>
+                </div>
+                <h3 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(32px,4.5vw,62px)", lineHeight: .9, maxWidth: "11ch" }}>{unit.action}</h3>
+                <div style={{ ...mono, color: unit.accent, marginTop: 14 }}>{unit.unitLabel}</div>
+                <p style={{ margin: "14px 0 0", maxWidth: 520, color: "rgba(255,255,255,.76)", fontSize: "clamp(14px,1.25vw,17px)", lineHeight: 1.55 }}>{unit.standfirst}</p>
+                <div style={{ ...mono, color: "rgba(255,255,255,.48)", marginTop: 18, fontSize: 9.5 }}>{impactStatus(unit.delivery.status)}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <Link to="/impact" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>EXPLORE IMPACT →</Link>
+      </div>
+    </section>
   );
 }
 
@@ -125,6 +174,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ImpactPreview />
 
       <section id="worlds" style={{ background: "#050505", color: "#fff" }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(62px,8vw,104px) clamp(20px,5vw,72px) 0" }}>
@@ -182,10 +233,11 @@ export default function Home() {
 
       <style>{`
         .home-lens{transition:transform .2s ease,opacity .2s ease}.home-lens:hover{transform:translateX(5px)}
-        .home-world img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}.home-world:hover img,.home-world:focus-visible img{transform:scale(1.018)}
-        @media(max-width:900px){.home-premise,.home-lens-intro,.home-world-intro{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-        @media(max-width:680px){.home-lens-grid,.home-world-grid{grid-template-columns:1fr!important}.home-lens{border-bottom:1px solid ${T.line}}}
-        @media(prefers-reduced-motion:reduce){.home-lens,.home-world img{transition:none!important}.home-lens:hover{transform:none}.home-world:hover img,.home-world:focus-visible img{transform:none}}
+        .home-world img,.home-impact__card img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+        .home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:scale(1.018)!important}
+        @media(max-width:900px){.home-premise,.home-lens-intro,.home-world-intro,.home-impact__intro{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+        @media(max-width:680px){.home-lens-grid,.home-world-grid,.home-impact__grid{grid-template-columns:1fr!important}.home-lens{border-bottom:1px solid ${T.line}}.home-impact__card{min-height:420px!important}}
+        @media(prefers-reduced-motion:reduce){.home-lens,.home-world img,.home-impact__card img{transition:none!important}.home-lens:hover{transform:none}.home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:none!important}}
       `}</style>
     </PublicShell>
   );
