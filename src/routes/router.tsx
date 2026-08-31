@@ -6,39 +6,48 @@ import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
+import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
+import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
-import { Brands, Partners, Funders } from "@/pages/v5/Entry";
+import PickPrototype from "../food/PickPrototype";
+import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
+import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
+import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
 const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
 const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
 const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineCorrections })));
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
-const MagazineSearch = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSearch })));
-const MagazineSaved = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineSaved })));
-const MagazineArchive = lazy(() => import("@/pages/v5/MagazineLibrary").then((module) => ({ default: module.MagazineArchive })));
-const MagazineSignalPage = lazy(() => import("@/pages/v5/MagazineSignal").then((module) => ({ default: module.MagazineSignalPage })));
-const MagazineTopicHub = lazy(() => import("@/pages/v5/MagazineHub").then((module) => ({ default: module.MagazineTopicHub })));
-const MagazineSeriesHub = lazy(() => import("@/pages/v5/MagazineHub").then((module) => ({ default: module.MagazineSeriesHub })));
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
+const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 
-const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
-const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
-const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
+const WorldFallback = (
+  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
+);
+
+const MagazineFallback = (
+  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
+);
+
+const ActorFallback = (
+  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
+);
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -70,10 +79,15 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/lab" element={<SpeciesEngineLab />} />
+      <Route path="/species/orca/lume" element={<Suspense fallback={WorldFallback}><LumeRoom /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesRoute curatedElement={<SpeciesProfilePage />} />} />
       <Route path="/lens" element={<LensCapture />} />
       <Route path="/food/lens" element={<FoodCapture />} />
       <Route path="/s4piens/food/lens" element={<FoodCapture />} />
+      <Route path="/4sapien" element={<FourSapienHome />} />
+      <Route path="/4sapien/food" element={<PickPrototype />} />
+      <Route path="/4sapien/finance" element={<FourFinanceHome />} />
+      <Route path="/food/pick" element={<PickPrototype />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
@@ -81,27 +95,27 @@ export function AppRoutes() {
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
       <Route path="/impact/:slug" element={<ImpactStory />} />
+      <Route path="/checkout/lab" element={<CommerceStripeLab />} />
+      <Route path="/checkout/return" element={<CheckoutReturn />} />
       <Route path="/join" element={<Join />} />
-      <Route path="/people" element={<Navigate to="/join" replace />} />
+      <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
       <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
       <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
+      <Route path="/get-involved" element={<Suspense fallback={ActorFallback}><FindYourWayToHelp /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
+      <Route path="/about/story" element={<AboutStory />} />
+      <Route path="/about/system" element={<AboutSystem />} />
+      <Route path="/about/founder" element={<Founder />} />
       <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
       <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
-      <Route path="/magazine/search" element={<Suspense fallback={MagazineFallback}><MagazineSearch /></Suspense>} />
-      <Route path="/magazine/saved" element={<Suspense fallback={MagazineFallback}><MagazineSaved /></Suspense>} />
-      <Route path="/magazine/archive" element={<Suspense fallback={MagazineFallback}><MagazineArchive /></Suspense>} />
-      <Route path="/magazine/topics/:topic" element={<Suspense fallback={MagazineFallback}><MagazineTopicHub /></Suspense>} />
-      <Route path="/magazine/series/:series" element={<Suspense fallback={MagazineFallback}><MagazineSeriesHub /></Suspense>} />
-      <Route path="/magazine/signals/:slug" element={<Suspense fallback={MagazineFallback}><MagazineSignalPage /></Suspense>} />
       <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
       <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/stories" element={<Navigate to="/magazine" replace />} />

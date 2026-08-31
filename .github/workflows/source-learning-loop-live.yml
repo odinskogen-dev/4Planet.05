@@ -1,0 +1,45 @@
+name: Living Learning Loop — Live Source Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/data/sourceRefresh.ts'
+      - 'src/data/providers/**'
+      - 'scripts/source-learning-loop-*.mjs'
+      - 'scripts/source-provider-adapter-runtime.test.mjs'
+      - 'scripts/source-obis-provider-adapter-runtime.test.mjs'
+      - '.github/workflows/source-learning-loop-live.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-source-transfer-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run deterministic learning-loop red team
+        run: npm run test:learning-loop
+      - name: Red team OBIS adapter
+        run: node scripts/source-obis-provider-adapter-runtime.test.mjs
+      - name: Check live GBIF sources through the real adapter
+        run: node scripts/source-learning-loop-live-gbif.mjs
+      - name: Check live OBIS taxon source through the same Learning Loop
+        run: node scripts/source-learning-loop-live-obis.mjs
+      - name: Check exactly two live OBIS occurrence records with rights and provenance
+        run: node scripts/source-learning-loop-live-obis-occurrence.mjs
+      - name: Transfer the same fail-closed occurrence contract to terrestrial Jaguar via GBIF
+        run: node scripts/source-learning-loop-live-gbif-occurrence-transfer.mjs
+      - name: Transfer one NOAA Species Filter object through the same fail-closed source contract
+        run: node scripts/source-learning-loop-live-noaa-species-filter-transfer.mjs

@@ -17,11 +17,21 @@
   <link rel="stylesheet" href="/xr/engine/nature-journey-context-v16.css" />
   <link rel="stylesheet" href="/xr/engine/nature-journey-premium-v17.css" />
   <link rel="stylesheet" href="/xr/orca/orca-cinematic-v17.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-ocean-world-v23.css" />
   <link rel="stylesheet" href="/xr/engine/nature-light-lens-v18.css" />
   <link rel="stylesheet" href="/xr/engine/nature-light-lens-v18-scenes.css" />
   <link rel="stylesheet" href="/xr/orca/orca-lume-19.css" />
   <link rel="stylesheet" href="/xr/orca/orca-lume-19-motion.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-room-21.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-control-stability-v22.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-control-plane-v23.css" />
   <link rel="stylesheet" href="/xr/orca/orca-biscay-gold-20.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-mobile-safe-v27.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-interaction-plane-v28.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-lume-viewport-safe-v29.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-founder-reset-v30.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-composition-reset-v31.css" />
+  <link rel="stylesheet" href="/xr/orca/orca-focus-sheet-v32.css" />
   <script src="/xr/engine/nature-scene-adapter.js"></script>
   <script src="/xr/engine/nature-journey-engine.js"></script>
   <script src="/xr/engine/nature-browser.js"></script>
@@ -33,11 +43,17 @@
   <script src="/xr/engine/nature-journey-premium-v17.js"></script>
   <script src="/xr/engine/nature-light-lens-v18.js"></script>
   <script src="/xr/orca/orca-lume-19.js"></script>
+  <script src="/xr/orca/orca-lume-room-21.js"></script>
+  <script src="/xr/orca/orca-lume-intel-root-host-v72.js"></script>
   <script src="/xr/orca/orca-biscay-gold-20.js"></script>
   <script src="/journey/orca/orca-journey.js"></script>
+  <script src="/xr/orca/orca-lume-control-portal-v25.js"></script>
+  <script src="/xr/orca/orca-journey-state-seam-v67.js"></script>
+  <script src="/xr/orca/orca-webkit-interaction-performance-v26.js"></script>
+  <script src="/analytics/meaningful-use-v01.js"></script>
 </head>
 <body>
-  <main id="browser-experience" class="nature-browser" data-premium-config="/journey/orca/premium-v17.json" data-audio-world="ocean" data-lume-default="true" aria-label="Orca immersive living-system journey">
+  <main id="browser-experience" class="nature-browser" data-premium-config="/journey/orca/premium-v17.json" data-audio-world="ocean" data-lume-default="false" aria-label="Orca immersive living-system journey">
     <div class="nature-world" aria-hidden="true">
       <div class="nature-world__background"></div>
       <div class="nature-world__detail"></div>
@@ -50,73 +66,21 @@
     <header class="nature-topbar">
       <a href="/species/orca" class="brand">4PLANET SPECIES_</a>
       <div class="nature-topbar__right">
+        <a href="/ecosystem/bay-of-biscay/" style="font:700 10px ui-monospace,monospace;letter-spacing:.12em;text-decoration:none;color:#6ee7ff">BAY OF BISCAY</a>
         <button class="nature-sound" type="button" hidden>SOUND OFF</button>
         <span class="nature-browser-status">LOADING JOURNEY</span>
       </div>
     </header>
 
-    <section class="nature-entry" aria-labelledby="nature-entry-title">
-      <div class="nature-entry__content">
-        <div class="nature-entry__kicker">OCE4N_ 00 · ORCA LUME</div>
-        <h1 id="nature-entry-title" class="nature-entry__title">Enter the living ocean.</h1>
-        <p class="nature-entry__intro">Meet one life through light. Then follow prey, place, pressure, evidence and possible response.</p>
-        <div class="nature-entry__actions">
-          <button class="nature-entry__button" type="button">ENTER ORCA LUME</button>
-          <span>FULLSCREEN BROWSER JOURNEY · SOUND STARTS ON ENTRY</span>
-        </div>
-        <div class="nature-entry__boundary">LUME = INTERPRETIVE PRESENTATION · ECOLOGICAL TRUTH REMAINS IN THE SHARED JOURNEY · NOT LIVE TRACKING</div>
-      </div>
-      <div class="nature-entry__signal" aria-hidden="true"><span></span><b>ENTER</b></div>
-    </section>
+    <section class="nature-entry" aria-labelledby="nature-entry-title"><div class="nature-entry__content"><div class="nature-entry__kicker">OCE4N_ 00 · ORCA JOURNEY</div><h1 id="nature-entry-title" class="nature-entry__title">Enter the living ocean.</h1><p class="nature-entry__intro">Meet one life through light. Then follow prey, place, pressure, evidence and possible response.</p><div class="nature-entry__actions"><button class="nature-entry__button" type="button">ENTER THE LIVING OCEAN</button><a href="/ecosystem/bay-of-biscay/" style="display:inline-flex;padding:13px 15px;border:1px solid rgba(110,231,255,.35);text-decoration:none;color:#6ee7ff;font:700 10px ui-monospace,monospace;letter-spacing:.12em">BAY OF BISCAY ECOSYSTEM →</a><span>FULLSCREEN BROWSER JOURNEY · SOUND STARTS ON ENTRY</span></div><div class="nature-entry__boundary">LUME = INTERPRETIVE PRESENTATION · ECOLOGICAL TRUTH REMAINS IN THE SHARED JOURNEY · NOT LIVE TRACKING</div></div><div class="nature-entry__signal" aria-hidden="true"><span></span><b>ENTER</b></div></section>
 
-    <section class="nature-stage" aria-label="Interactive living ocean">
-      <div class="nature-subject" aria-label="Orca journey subject">
-        <div class="nature-subject__halo" aria-hidden="true"></div>
-        <img class="nature-subject__image" alt="" />
-        <div class="nature-subject__meta">
-          <strong class="nature-subject__name">ORCA · Orcinus orca</strong>
-          <span class="nature-subject__boundary">BASE JOURNEY ILLUSTRATION · LUME PHOTO BASE IS RIGHTS-CLEARED NOAA · NOT AN OCCURRENCE RECORD</span>
-        </div>
-      </div>
-      <div class="nature-journey-route" aria-hidden="true"><span></span></div>
-      <div class="nature-nodes" aria-label="Living-system truth nodes"></div>
-      <div class="nature-stage__instruction">FOLLOW THE JOURNEY · SELECT THE NEXT SIGNAL</div>
-    </section>
+    <section class="nature-stage" aria-label="Interactive living ocean"><div class="nature-subject" aria-label="Orca journey subject"><div class="nature-subject__halo" aria-hidden="true"></div><img class="nature-subject__image" alt="" /><div class="nature-subject__meta"><strong class="nature-subject__name">ORCA · Orcinus orca</strong><span class="nature-subject__boundary">BASE JOURNEY ILLUSTRATION · LUME PHOTO BASE IS RIGHTS-CLEARED NOAA · NOT AN OCCURRENCE RECORD</span></div></div><div class="nature-journey-route" aria-hidden="true"><span></span></div><div class="nature-nodes" aria-label="Living-system truth nodes"></div><div class="nature-stage__instruction">FOLLOW THE JOURNEY · SELECT THE NEXT SIGNAL</div></section>
 
-    <section class="nature-journey-hud" aria-live="polite" aria-label="Journey scene" data-visible="false">
-      <div class="nature-journey-hud__copy">
-        <span class="nature-journey-hud__stage">01 / 05 · MEET LIFE</span>
-        <h2 class="nature-journey-hud__title">Meet the orca.</h2>
-        <span class="nature-journey-hud__cue">START WITH THE ANIMAL · KEEP POPULATION UNKNOWN UNTIL SOURCED</span>
-      </div>
-      <div class="nature-journey-hud__actions">
-        <button class="nature-journey-hud__back" type="button" disabled>← BACK</button>
-        <button class="nature-journey-hud__evidence" type="button">HOW DO WE KNOW?</button>
-        <button class="nature-journey-hud__next" type="button">FOLLOW THE SYSTEM · 02 →</button>
-      </div>
-    </section>
-
+    <section class="nature-journey-hud" aria-live="polite" aria-label="Journey scene" data-visible="false"><div class="nature-journey-hud__copy"><span class="nature-journey-hud__stage">01 / 08 · MEET LIFE</span><h2 class="nature-journey-hud__title">Meet the orca.</h2><span class="nature-journey-hud__cue">START WITH THE ANIMAL · KEEP POPULATION UNKNOWN UNTIL SOURCED</span></div><div class="nature-journey-hud__actions"><button class="nature-journey-hud__back" type="button" disabled>← BACK</button><button class="nature-journey-hud__evidence" type="button">HOW DO WE KNOW?</button><button class="nature-journey-hud__next" type="button">FOLLOW THE SYSTEM · 02 →</button></div></section>
     <nav class="nature-progress" aria-label="Journey chapters"></nav>
-
-    <aside class="nature-chapter" tabindex="-1" aria-live="polite" aria-label="Selected truth node">
-      <button id="nature-chapter-close" class="nature-chapter__close" type="button" aria-label="Close information panel">×</button>
-      <div class="nature-chapter__topline">
-        <span id="nature-chapter-index">01 / 05</span>
-        <span id="nature-chapter-kicker">IDENTITY · KNOWN</span>
-      </div>
-      <h2 id="nature-chapter-title">MEET THE ORCA</h2>
-      <p id="nature-chapter-body">Truth stays attached to the experience.</p>
-      <a id="nature-chapter-source" href="#" target="_blank" rel="noreferrer">SOURCE · 4PLANET SPECIES_</a>
-      <p id="nature-chapter-boundary" class="nature-chapter__boundary">BOUNDARY · SPECIES IDENTITY DOES NOT IDENTIFY POPULATION, POD OR LIVE LOCATION.</p>
-      <button id="nature-chapter-next" class="nature-chapter__next" type="button">FOLLOW THE SYSTEM · 02 →</button>
-    </aside>
-
-    <footer class="nature-footer">
-      <span>4PLANET_ BROWSER JOURNEY ENGINE · ORCA LUME 19 · BAY OF BISCAY GOLD 20</span>
-      <span>LIGHT IS THE LENS · PILOT CORRIDOR ≠ MIGRATION TRACK · JOURNEY EVIDENCE REMAINS AUTHORITATIVE</span>
-    </footer>
+    <aside class="nature-chapter" tabindex="-1" aria-live="polite" aria-label="Selected truth node"><button id="nature-chapter-close" class="nature-chapter__close" type="button" aria-label="Close information panel">×</button><div class="nature-chapter__topline"><span id="nature-chapter-index">01 / 08</span><span id="nature-chapter-kicker">IDENTITY · KNOWN</span></div><h2 id="nature-chapter-title">MEET THE ORCA</h2><p id="nature-chapter-body">Truth stays attached to the experience.</p><a id="nature-chapter-source" href="#" target="_blank" rel="noreferrer">SOURCE · 4PLANET SPECIES_</a><p id="nature-chapter-boundary" class="nature-chapter__boundary">BOUNDARY · SPECIES IDENTITY DOES NOT IDENTIFY POPULATION, POD OR LIVE LOCATION.</p><button id="nature-chapter-next" class="nature-chapter__next" type="button">FOLLOW THE SYSTEM · 02 →</button></aside>
+    <footer class="nature-footer"><span>4PLANET_ BROWSER JOURNEY ENGINE · ORCA LUME ROOM 21 · BAY OF BISCAY ECOSYSTEM</span><span>LIGHT IS THE LENS · PILOT CORRIDOR ≠ MIGRATION TRACK · JOURNEY EVIDENCE REMAINS AUTHORITATIVE</span></footer>
   </main>
-
   <noscript>This immersive journey requires JavaScript.</noscript>
 </body>
 </html>

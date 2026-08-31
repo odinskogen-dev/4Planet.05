@@ -1,0 +1,158 @@
+/* Founder-directed public completion pass — bounded visual upgrades on TEST KING. */
+
+/* HOME · TAKE PART — recover the clearer LIVE row rhythm, but keep TEST KING routes. */
+.part-grid{
+  display:block!important;
+  border-left:0!important;
+  border-top:1px solid var(--line)!important;
+}
+.part-box{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:clamp(20px,4vw,56px)!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:clamp(28px,4.5vw,58px) clamp(4px,1vw,12px)!important;
+  border-right:0!important;
+  border-bottom:1px solid var(--line)!important;
+  transition:background-color .2s ease,color .2s ease,padding .2s ease!important;
+}
+.part-box > div{min-width:0}
+.part-box > div:first-child{display:contents!important}
+.part-box span:first-child{
+  font-size:clamp(30px,4.8vw,68px)!important;
+  letter-spacing:-.045em!important;
+  line-height:.94!important;
+}
+.part-box p{
+  grid-column:1/2;
+  max-width:780px!important;
+  margin-top:clamp(14px,2vw,22px)!important;
+  font-size:clamp(15px,1.45vw,19px)!important;
+  line-height:1.52!important;
+}
+.part-box .pb-arr{
+  grid-column:2;
+  grid-row:1/3;
+  align-self:center;
+  font-size:clamp(28px,3vw,46px);
+}
+.part-box:hover,.part-box:focus-visible{
+  background:var(--blue)!important;
+  color:#fff!important;
+  padding-left:clamp(18px,2.2vw,30px)!important;
+  padding-right:clamp(18px,2.2vw,30px)!important;
+  outline:none;
+}
+.part-box:hover span,.part-box:hover p,.part-box:hover .pb-arr,
+.part-box:focus-visible span,.part-box:focus-visible p,.part-box:focus-visible .pb-arr{
+  color:#fff!important;
+}
+
+/* Participation pages — full-bleed photography instead of washed opacity. */
+main:has(input[name="company_hp"]) > section:first-child > img{
+  opacity:1!important;
+  filter:saturate(1.03) contrast(1.02)!important;
+  transform:scale(1.001);
+}
+main:has(input[name="company_hp"]) > section:first-child > img + div[aria-hidden]{
+  background:linear-gradient(180deg,rgba(4,7,12,.08) 0%,rgba(4,7,12,.16) 38%,rgba(4,7,12,.74) 100%)!important;
+}
+
+/* SPECIES — preserve hero/search, strengthen the life gallery below. */
+main:has(#species-results) .three{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:clamp(16px,2.2vw,30px)!important;
+}
+main:has(#species-results) .three > a{
+  overflow:hidden;
+  border-color:rgba(10,10,10,.16)!important;
+  transition:transform .28s cubic-bezier(.2,.7,.2,1),box-shadow .28s ease,border-color .2s ease;
+}
+main:has(#species-results) .three > a img{transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+main:has(#species-results) .three > a:hover,
+main:has(#species-results) .three > a:focus-visible{
+  transform:translateY(-3px);
+  border-color:var(--blue)!important;
+  box-shadow:0 26px 60px -42px rgba(0,0,0,.55);
+}
+main:has(#species-results) .three > a:hover img,
+main:has(#species-results) .three > a:focus-visible img{transform:scale(1.035)}
+
+/* LIVING SYSTEMS — visual first entry, then the evidence-aware anchor grid. */
+main:has(.ls-anchors) > section:first-child{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:#050805!important;
+  color:#fff;
+  padding-top:clamp(230px,38vw,520px)!important;
+}
+main:has(.ls-anchors) > section:first-child::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  inset:0 0 auto;
+  height:clamp(480px,72vh,820px);
+  background:
+    linear-gradient(180deg,rgba(2,7,12,.08) 0%,rgba(2,7,12,.12) 42%,rgba(5,8,5,.94) 100%),
+    url("/assets/brand/earth-iss.jpg") center 36%/cover no-repeat;
+}
+main:has(.ls-anchors) > section:first-child::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:0;left:0;width:84px;height:4px;
+  background:var(--blue);
+}
+main:has(.ls-anchors) > section:first-child > div > .lbl,
+main:has(.ls-anchors) > section:first-child > div > h1{color:#fff!important}
+main:has(.ls-anchors) > section:first-child > div > h1 + p{color:rgba(255,255,255,.82)!important}
+main:has(.ls-anchors) .ls-anchors{
+  position:relative;
+  z-index:2;
+  background:#fff;
+  box-shadow:0 34px 90px -55px rgba(0,0,0,.75);
+}
+
+/* ABOUT donor pages open on dark imagery without losing the global header. */
+.completion-dark-about .public-header:not(:has(.nav-panel)) .public-brand,
+.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__nav-button,
+.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__join,
+.completion-dark-about .public-header:not(:has(.nav-panel)) .public-header__menu{
+  color:#fff!important;
+}
+
+/* Mission/domain continuation surfaces — show that the system keeps going. */
+.completion-route-cta{background:#050505;color:#fff;position:relative;overflow:hidden}
+.completion-route-cta::before{content:"";position:absolute;top:0;left:0;width:96px;height:4px;background:var(--blue)}
+.completion-route-cta--sapiens::after,
+.completion-route-cta--food::after,
+.completion-route-cta--whales::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
+  background:radial-gradient(circle at 78% 20%,rgba(46,46,255,.62),transparent 32%);
+}
+.completion-route-cta__inner{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:clamp(74px,10vw,150px) clamp(20px,5vw,72px)}
+.completion-kicker{font-family:'Fragment Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8ea4ff}
+.completion-route-cta h2{font-family:'Instrument Sans','DM Sans',sans-serif;font-weight:500;font-size:clamp(38px,6vw,82px);line-height:.94;letter-spacing:-.045em;max-width:13ch;margin-top:18px}
+.completion-route-cta p{max-width:690px;margin-top:22px;font-size:clamp(16px,1.5vw,20px);line-height:1.58;color:rgba(255,255,255,.76)}
+.completion-cta-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.completion-cta-button{display:inline-flex;margin-top:30px;padding:13px 17px;background:var(--blue);border:1px solid var(--blue);color:#fff;text-decoration:none;font-family:'Fragment Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.1em}
+.completion-cta-actions .completion-cta-button{margin-top:0}
+.completion-cta-button--outline{background:transparent;border-color:rgba(255,255,255,.45)}
+.completion-cta-button:hover,.completion-cta-button:focus-visible{background:#fff;border-color:#fff;color:var(--blue);outline:0}
+
+@media(max-width:680px){
+  .part-box{grid-template-columns:minmax(0,1fr) auto!important;padding:26px 2px!important}
+  .part-box span:first-child{font-size:clamp(30px,10vw,44px)!important;overflow-wrap:anywhere}
+  .part-box p{font-size:15px!important;max-width:92%!important}
+  .part-box .pb-arr{font-size:28px}
+  main:has(#species-results) .three{grid-template-columns:1fr!important}
+  main:has(.ls-anchors) > section:first-child{padding-top:clamp(210px,76vw,360px)!important}
+  main:has(.ls-anchors) > section:first-child::before{height:520px;background-position:54% 34%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .part-box,main:has(#species-results) .three > a,main:has(#species-results) .three > a img{transition:none!important}
+}

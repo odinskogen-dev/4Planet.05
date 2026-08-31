@@ -2,7 +2,6 @@ import { useEffect } from "react";
 
 const DEFAULT_TITLE = "4PLANET_ — For a Living Planet";
 const DEFAULT_DESCRIPTION = "4PLANET is a system for ecological action — built to make participation understandable, trustworthy, measurable and easy.";
-const DEFAULT_MAGAZINE_ORIGIN = "https://4planetmagazine.com";
 
 type JsonLdContext = {
   canonicalUrl: string;
@@ -29,11 +28,7 @@ interface SeoProps {
   jsonLd?: JsonLd | ((context: JsonLdContext) => JsonLd);
 }
 
-function publicOrigin(path: string): string {
-  if (path === "/magazine" || path.startsWith("/magazine/")) {
-    const magazineConfigured = import.meta.env.VITE_MAGAZINE_SITE_ORIGIN?.trim();
-    return (magazineConfigured || DEFAULT_MAGAZINE_ORIGIN).replace(/\/$/, "");
-  }
+function publicOrigin(): string {
   const configured = import.meta.env.VITE_PUBLIC_SITE_ORIGIN?.trim();
   const origin = configured || window.location.origin;
   return origin.replace(/\/$/, "");
@@ -68,7 +63,9 @@ function removeJsonLd() {
 }
 
 function clearArticleMetadata() {
-  ["article:published_time", "article:modified_time", "article:section", "article:author", "article:tag"].forEach((key) => removeMeta("property", key));
+  ["article:published_time", "article:modified_time", "article:section", "article:author", "article:tag"].forEach((key) => {
+    removeMeta("property", key);
+  });
 }
 
 function appendArticleTag(tag: string) {
@@ -113,7 +110,7 @@ export function Seo({
   jsonLd,
 }: SeoProps) {
   useEffect(() => {
-    const origin = publicOrigin(path);
+    const origin = publicOrigin();
     const canonicalUrl = new URL(path, `${origin}/`).toString();
     const imageUrl = new URL(image, `${origin}/`).toString();
 
@@ -149,7 +146,9 @@ export function Seo({
       const script = document.createElement("script");
       script.id = "4planet-page-jsonld";
       script.type = "application/ld+json";
-      script.textContent = JSON.stringify(typeof jsonLd === "function" ? jsonLd({ canonicalUrl, imageUrl }) : jsonLd);
+      script.textContent = JSON.stringify(
+        typeof jsonLd === "function" ? jsonLd({ canonicalUrl, imageUrl }) : jsonLd,
+      );
       document.head.appendChild(script);
     }
 

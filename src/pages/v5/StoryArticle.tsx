@@ -1,122 +1,87 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MagazineShell } from "@/components/magazine/MagazineShell";
+import { T } from "@/styles/tokens";
+import { PublicShell } from "@/components/layout/PublicShell";
 import { MagazineSeo } from "@/components/MagazineSeo";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMagazineEntry, trackMagazineSecondObject, trackMagazineShare } from "@/analytics/MagazineAnalytics";
+import { Section } from "@/components/ui";
+import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { Editorial } from "@/components/Editorial";
 import { storyBySlug, relatedStories } from "@/content/stories";
-import { featureForStory } from "@/content/magazineFeatures";
-import { standfirstForStory } from "@/content/magazineStandfirsts";
-import { MAGAZINE_STORY_MODES, MAGAZINE_TOPICS } from "@/content/magazineOperating";
+import { MAGAZINE_STORY_MODES } from "@/content/magazineOperating";
 import { MAGAZINE_ARTICLE_TEMPLATES } from "@/content/magazineEngine";
-import { experienceForStory } from "@/content/magazineExperience";
-import { isStorySaved, recordMagazineRecent, recordMagazineResume, toggleSavedStory } from "@/content/magazineReader";
-import { img, missionSecondary } from "@/content/imageRegistry";
+import { img } from "@/content/imageRegistry";
 import { NotFound } from "@/pages/system";
 import "@/styles/magazine-article.css";
 import "@/styles/magazine-article-gold.css";
-import "@/styles/magazine-article-modes.css";
-import "@/styles/magazine-article-round-06.css";
-import "@/styles/magazine-article-premium-reader.css";
-import "@/styles/magazine-world.css";
 
+const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.03em" };
 const DEPTH_THRESHOLDS = [25, 50, 75, 90] as const;
-type ReadingSize = "standard" | "large";
-
-function editorialLabel(type: string) {
-  if (type === "SOURCE_REPORTED_EDITORIAL") return "4PLANET EDITORIAL · REPORTED FROM PUBLISHED SOURCES";
-  if (type === "ORGANISATIONAL_EXPLAINER") return "4PLANET ORGANISATIONAL EXPLAINER";
-  if (type === "PARTNER_SUBMITTED") return "PARTNER-SUBMITTED · EDITORIALLY REVIEWED";
-  return "4PLANET MAGAZINE EDITORIAL";
-}
-
-function initialReadingSize(): ReadingSize {
-  if (typeof window === "undefined") return "standard";
-  return window.localStorage.getItem("4planet.magazine.reading-size") === "large" ? "large" : "standard";
-}
 
 export function StoryArticle() {
   const { slug } = useParams();
   const s = slug ? storyBySlug(slug) : undefined;
   const progressRef = useRef<HTMLSpanElement>(null);
-  const [saved, setSaved] = useState(false);
-  const [readingSize, setReadingSize] = useState<ReadingSize>(initialReadingSize);
 
   useEffect(() => {
     if (!s) return;
-    setSaved(isStorySaved(s.slug));
-    recordMagazineRecent(s.slug, s.title);
+
     trackMagazineEntry("article", s.slug);
     const seen = new Set<number>();
     let completed = false;
     const engagedTimer = window.setTimeout(() => {
-      trackEvent("magazine_engaged_read", { story_slug: s.slug, content_type: s.editorialType.toLowerCase(), engaged_seconds: 30 });
+      trackEvent("magazine_engaged_read", {
+        story_slug: s.slug,
+        content_type: s.editorialType.toLowerCase(),
+        engaged_seconds: 30,
+      });
     }, 30_000);
 
     const measureDepth = () => {
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
       const depth = scrollable <= 0 ? 100 : Math.min(100, Math.round((window.scrollY / scrollable) * 100));
       if (progressRef.current) progressRef.current.style.width = `${depth}%`;
+
       DEPTH_THRESHOLDS.forEach((threshold) => {
         if (depth >= threshold && !seen.has(threshold)) {
           seen.add(threshold);
-          trackEvent("magazine_read_depth", { story_slug: s.slug, content_type: s.editorialType.toLowerCase(), depth_percent: threshold });
-          recordMagazineResume(s.slug, s.title, threshold);
+          trackEvent("magazine_read_depth", {
+            story_slug: s.slug,
+            content_type: s.editorialType.toLowerCase(),
+            depth_percent: threshold,
+          });
         }
       });
+
       if (depth >= 90 && !completed) {
         completed = true;
-        recordMagazineResume(s.slug, s.title, 100);
-        trackEvent("magazine_read_complete", { story_slug: s.slug, content_type: s.editorialType.toLowerCase() });
+        trackEvent("magazine_read_complete", {
+          story_slug: s.slug,
+          content_type: s.editorialType.toLowerCase(),
+        });
       }
     };
 
     window.addEventListener("scroll", measureDepth, { passive: true });
     measureDepth();
+
     return () => {
       window.clearTimeout(engagedTimer);
       window.removeEventListener("scroll", measureDepth);
     };
   }, [s]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") window.localStorage.setItem("4planet.magazine.reading-size", readingSize);
-  }, [readingSize]);
-
   if (!s) return <NotFound />;
-
-  const feature = featureForStory(s.slug);
-  const articleBlocks = feature?.blocks ?? s.blocks;
-  const heroKey = feature?.hero ?? s.image;
-  const media = img(heroKey);
-  const secondaryMedia = feature?.secondaryMission
-    ? missionSecondary(feature.secondaryMission)
-    : feature?.secondary
-      ? img(feature.secondary)
-      : undefined;
-  const mode = MAGAZINE_STORY_MODES[s.mode];
-  const template = MAGAZINE_ARTICLE_TEMPLATES.find((candidate) => candidate.id === s.franchise);
   const more = relatedStories(s, 3);
   const nextStory = more[0];
-  const experience = experienceForStory(s);
-  const standfirst = standfirstForStory(s.slug, s.dek);
-  const articleWords = articleBlocks.reduce((total, block) => total + block.t.trim().split(/\s+/).filter(Boolean).length, 0);
-  const readMins = Math.max(s.readMins, Math.ceil(articleWords / 190));
-
-  const sourceMap = new Map<string, NonNullable<typeof s.sourceLinks>[number]>();
-  for (const source of s.sourceLinks ?? []) sourceMap.set(source.url, source);
-  for (const source of feature?.addedSources ?? []) sourceMap.set(source.url, source);
-  const sources = Array.from(sourceMap.values());
-
-  const firstLaterSub = articleBlocks.findIndex((block, index) => index > 4 && block.k === "sub");
-  const splitAt = firstLaterSub > 0 ? firstLaterSub : Math.ceil(articleBlocks.length / 2);
-  const articleBeforeVisual = secondaryMedia ? articleBlocks.slice(0, splitAt) : articleBlocks;
-  const articleAfterVisual = secondaryMedia ? articleBlocks.slice(splitAt) : [];
+  const media = img(s.image);
+  const mode = MAGAZINE_STORY_MODES[s.mode];
+  const template = MAGAZINE_ARTICLE_TEMPLATES.find((candidate) => candidate.id === s.franchise);
 
   const shareStory = async () => {
     const url = window.location.href;
-    const data = { title: s.title, text: standfirst, url };
+    const data = { title: s.title, text: s.dek, url };
     if (navigator.share) {
       try {
         await navigator.share(data);
@@ -130,21 +95,15 @@ export function StoryArticle() {
       await navigator.clipboard?.writeText(url);
       trackMagazineShare(s.slug, "copy");
     } catch {
-      // Reading never depends on clipboard support.
+      // Sharing is an enhancement; reading must never depend on clipboard access.
     }
   };
 
-  const toggleSave = () => {
-    const next = toggleSavedStory(s.slug);
-    setSaved(next);
-    trackEvent("magazine_save", { story_slug: s.slug, state: next ? "saved" : "removed" });
-  };
-
   return (
-    <MagazineShell>
+    <PublicShell>
       <MagazineSeo
         title={`${s.title} | 4PLANET MAGAZINE`}
-        description={standfirst}
+        description={s.dek}
         path={`/magazine/${s.slug}`}
         image={media.src}
         imageAlt={media.alt}
@@ -154,13 +113,13 @@ export function StoryArticle() {
           "@context": "https://schema.org",
           "@type": "Article",
           headline: s.title,
-          description: standfirst,
+          description: s.dek,
           image: [imageUrl],
           mainEntityOfPage: canonicalUrl,
           author: { "@type": "Organization", name: s.byline },
-          publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: new URL("/magazine", canonicalUrl).toString() },
+          publisher: { "@type": "Organization", name: "4PLANET_", url: new URL("/", canonicalUrl).toString() },
           isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: new URL("/magazine", canonicalUrl).toString() },
-          articleSection: s.category,
+          articleSection: s.lane,
           keywords: s.tags.join(", "),
           about: s.tags.map((name) => ({ "@type": "Thing", name })),
         })}
@@ -168,87 +127,51 @@ export function StoryArticle() {
 
       <div className="mag-reading-progress" aria-hidden><span ref={progressRef} /></div>
 
-      <article className={`mag-article-world mag-premium-reader mag-experience mag-experience--${experience.toLowerCase().replace(/_/g, "-")}`} data-longform={feature ? "true" : "false"}>
-        <header className="mag-article-world-header">
-          <div className="mag-article-world-kicker">
-            <span>{template?.label ?? s.franchise.replace(/_/g, " ")}</span><span>·</span><span>{mode.label}</span><span>·</span><span>{readMins} MIN</span>{s.location ? <><span>·</span><span>{s.location}</span></> : null}
-          </div>
-          <h1>{s.title}</h1>
+      <article className="mag-article">
+        <header className="mag-article-head">
+          <Reveal>
+            <div className="mag-article-identity">
+              <Link to="/magazine" className="mono link">4PLANET MAGAZINE</Link>
+              <span className="mono">{template?.label ?? s.franchise.replace(/_/g, " ")} · {mode.label} · {s.readMins} MIN</span>
+            </div>
+            <h1 style={display}>{s.title}</h1>
+            <p className="mag-article-dek">{s.dek}</p>
+            <div className="mag-byline-row">
+              <div>
+                <span className="mono">BY</span>
+                <strong>{s.byline}</strong>
+              </div>
+              <span className="mono">{s.editorialType.replace(/_/g, " ")}</span>
+            </div>
+            <div className="mag-article-meta-row">
+              <span className="mono">{s.lane}</span>
+              <span className="mono">{s.editorialType === "ORGANISATIONAL_EXPLAINER" ? "ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL" : "EDITORIAL CONTENT"}</span>
+              <button type="button" className="mag-share-button" onClick={shareStory}>SHARE ↗</button>
+            </div>
+          </Reveal>
         </header>
 
-        <section className="mag-article-world-hero">
-          <figure>
-            <img src={media.src} alt={media.alt} />
-            <figcaption>
-              <strong>{media.credit ? `${media.credit} · ` : ""}{media.alt}</strong>
-              <span>{s.imageContextNote ?? (s.imageRole === "DOCUMENTARY" ? "Documentary image." : "Context image; not evidence for the claims in this story.")}</span>
-            </figcaption>
-          </figure>
-        </section>
+        <CinematicImage meta={media} height="min(82vh, 920px)" caption={`${media.credit ? `${media.credit} · ` : ""}${media.alt}`} accent={T.blue} />
 
-        <section className="mag-article-world-intro" aria-label="Story introduction">
-          <p className="mag-article-world-dek">{standfirst}</p>
-          <div className="mag-article-world-meta">
-            <div><span>BY {s.byline}</span><span>{editorialLabel(s.editorialType)}</span>{s.asOf ? <span>AS OF {s.asOf}</span> : null}</div>
-            <div className="mag-reader-actions">
-              <button type="button" aria-pressed={saved} onClick={toggleSave}>{saved ? "SAVED ✓" : "SAVE +"}</button>
-              <button type="button" aria-pressed={readingSize === "large"} onClick={() => setReadingSize((value) => value === "standard" ? "large" : "standard")}>{readingSize === "large" ? "TEXT A" : "TEXT A+"}</button>
-              <button type="button" onClick={shareStory}>SHARE ↗</button>
-            </div>
+        <Section pad="clamp(54px,8vw,118px)">
+          <div className="mag-article-reading-column">
+            <Editorial blocks={s.blocks} />
           </div>
-        </section>
+        </Section>
 
-        <section className="mag-article-world-body">
-          <div className="mag-article-world-reading">
-            <Editorial blocks={articleBeforeVisual} readingSize={readingSize} reveal={false} />
-          </div>
-        </section>
-
-        {secondaryMedia ? (
-          <figure className="mag-article-inline-visual">
-            <div className="mag-article-inline-media"><img src={secondaryMedia.src} alt={secondaryMedia.alt} loading="lazy" decoding="async" /></div>
-            <figcaption>
-              <span>{feature?.secondaryKicker}</span>
-              <strong>{feature?.secondaryCaption}</strong>
-              <p>{feature?.secondaryNote}</p>
-            </figcaption>
-          </figure>
-        ) : null}
-
-        {articleAfterVisual.length ? (
-          <section className="mag-article-world-body mag-article-world-body--continuation">
-            <div className="mag-article-world-reading">
-              <Editorial blocks={articleAfterVisual} readingSize={readingSize} reveal={false} />
+        <section className="mag-how-we-know" aria-labelledby="how-we-know-title">
+          <div className="mag-how-we-know-inner">
+            <div>
+              <p className="mono mag-trust-kicker">HOW WE KNOW</p>
+              <h2 id="how-we-know-title">Trust belongs inside the story.</h2>
             </div>
-          </section>
-        ) : null}
-
-        {s.topics?.length ? (
-          <nav className="mag-article-topics" aria-label="Story topics">
-            {s.topics.map((topicId) => {
-              const topic = MAGAZINE_TOPICS.find((candidate) => candidate.id === topicId);
-              return <Link key={topicId} to={`/magazine/topics/${topicId.toLowerCase()}`}>{topic?.label ?? topicId}</Link>;
-            })}
-          </nav>
-        ) : null}
-
-        <section className="mag-source-desk" aria-labelledby="source-desk-title">
-          <div className="mag-source-desk-inner">
-            <div><p className="mag-source-label">HOW WE KNOW</p><h2 id="source-desk-title">The evidence stays attached.</h2></div>
-            <div className="mag-source-desk-copy">
-              <p>{s.reportingNote ?? template?.trustRule ?? "Material claims should remain traceable to source objects, while uncertainty and corrections remain visible."}</p>
-              {sources.length ? (
-                <div className="mag-source-list">
-                  {sources.map((source, index) => (
-                    <a className="mag-source-item" href={source.url} target="_blank" rel="noreferrer" key={source.url}>
-                      <div><span className="mag-source-number">{String(index + 1).padStart(2, "0")}</span><strong>{source.label}</strong><span>{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span></div><b>OPEN SOURCE ↗</b>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <div className="mag-source-list"><Link className="mag-source-item" to="/magazine/sources"><div><strong>4PLANET Sources & Method</strong><span>Organisational explainer source workflow</span></div><b>OPEN →</b></Link></div>
-              )}
-              <div className="mag-trust-links"><Link to="/magazine/sources">SOURCES & METHOD →</Link><Link to="/magazine/corrections">CORRECTIONS →</Link></div>
+            <div className="mag-trust-copy">
+              <p>{template?.trustRule ?? "Material public claims should remain traceable to source objects, and corrections stay visible rather than disappearing into silent edits."}</p>
+              <p className="mag-trust-context">This page is {s.editorialType === "ORGANISATIONAL_EXPLAINER" ? "4PLANET-owned explanatory content" : "Magazine editorial content"}. Its content type remains visible so product, partner and independent editorial claims do not borrow credibility from one another.</p>
+              <div className="mag-trust-links">
+                <Link to="/magazine/sources">SOURCES & METHOD →</Link>
+                <Link to="/magazine/corrections">CORRECTIONS →</Link>
+              </div>
             </div>
           </div>
         </section>
@@ -256,38 +179,69 @@ export function StoryArticle() {
         {s.pathway ? (
           <section className="mag-second-object" aria-labelledby="second-object-title">
             <div className="mag-second-object-inner">
-              <p className="mono">ONE USEFUL NEXT OBJECT</p>
-              <h2 id="second-object-title">Keep the context. Go deeper.</h2>
+              <p className="mono">ONE USEFUL NEXT STEP</p>
+              <h2 id="second-object-title">Go deeper without starting over.</h2>
               <p className="mag-second-object-note">{template?.secondObjectRule}</p>
-              <Link to={s.pathway.to} onClick={() => trackMagazineSecondObject(s.slug, s.pathway!.to, s.pathway!.kind)}>{s.pathway.label} <span aria-hidden>→</span></Link>
+              <Link
+                to={s.pathway.to}
+                onClick={() => trackMagazineSecondObject(s.slug, s.pathway!.to, s.pathway!.kind)}
+              >
+                {s.pathway.label} <span aria-hidden>→</span>
+              </Link>
             </div>
           </section>
         ) : null}
 
-        <section className="mag-related-editorial" aria-labelledby="related-editorial-title">
-          <header className="mag-related-editorial-head">
-            <h2 id="related-editorial-title">Keep reading.</h2>
-            <div className="mag-end-tools"><button type="button" className="mag-share-button" onClick={toggleSave}>{saved ? "SAVED ✓" : "SAVE FOR LATER +"}</button><button type="button" className="mag-share-button" onClick={shareStory}>SHARE THIS STORY ↗</button></div>
-          </header>
-          <div className="mag-related-editorial-grid">
-            {more.map((story) => {
-              const relatedFeature = featureForStory(story.slug);
-              const relatedMedia = img(relatedFeature?.hero ?? story.image);
+        <section className="mag-end-rail" aria-label="Article actions">
+          <div className="mag-end-rail-inner">
+            <div>
+              <span className="mono">FINISHED THIS STORY?</span>
+              <strong>Do one useful thing more.</strong>
+            </div>
+            <div className="mag-end-actions">
+              <button type="button" onClick={shareStory}>SHARE THIS STORY ↗</button>
+              {nextStory ? (
+                <Link
+                  to={`/magazine/${nextStory.slug}`}
+                  onClick={() => trackMagazineSecondObject(s.slug, `/magazine/${nextStory.slug}`, "related_story")}
+                >
+                  NEXT: {nextStory.title} →
+                </Link>
+              ) : <Link to="/magazine">BACK TO MAGAZINE →</Link>}
+            </div>
+          </div>
+        </section>
+
+        <section className="mag-related" aria-labelledby="related-title">
+          <div className="mag-related-head">
+            <p className="mono">KEEP READING</p>
+            <h2 id="related-title">Related by subject, not popularity.</h2>
+          </div>
+          <div className="mag-related-grid">
+            {more.map((m) => {
+              const relatedMedia = img(m.image);
               return (
-                <Link className="mag-related-editorial-card" key={story.slug} to={`/magazine/${story.slug}`} onClick={() => {
-                  trackEvent("magazine_story_open", { story_slug: story.slug, content_type: story.editorialType.toLowerCase(), source_story: s.slug });
-                  trackMagazineSecondObject(s.slug, `/magazine/${story.slug}`, "related_story");
-                }}>
-                  <img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" />
-                  <span>{story.category} · {experienceForStory(story).replace(/_/g, " ")} · {story.readMins} MIN</span>
-                  <strong>{story.title}</strong>
+                <Link
+                  key={m.slug}
+                  to={`/magazine/${m.slug}`}
+                  onClick={() => {
+                    trackEvent("magazine_story_open", { story_slug: m.slug, content_type: m.editorialType.toLowerCase(), source_story: s.slug });
+                    trackMagazineSecondObject(s.slug, `/magazine/${m.slug}`, "related_story");
+                  }}
+                  className="mag-related-card"
+                >
+                  <div className="mag-related-media"><img src={relatedMedia.src} alt={relatedMedia.alt} loading="lazy" /></div>
+                  <div className="mag-related-copy">
+                    <span className="mono">{m.franchise.replace(/_/g, " ")} · {m.readMins} MIN</span>
+                    <strong>{m.title}</strong>
+                    <p>{m.dek}</p>
+                  </div>
                 </Link>
               );
             })}
           </div>
-          {nextStory ? <Link className="mag-next-story" to={`/magazine/${nextStory.slug}`}>NEXT STORY — {nextStory.title} →</Link> : null}
         </section>
       </article>
-    </MagazineShell>
+    </PublicShell>
   );
 }

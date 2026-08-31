@@ -7,12 +7,19 @@ export interface SourceRecord {
   recordType: "SOURCE_RECORD";
   id: string;
   sourceId: string;
+  /** Human-readable authority when sourceId alone is not sufficient, e.g. Artsdatabanken / Artskart. */
+  sourceAuthority?: string;
   sourceRecordId: string;
   sourceUrl: string;
   datasetId?: string;
+  datasetName?: string;
   retrievedAt: string;
   licence: string;
   attribution: string;
+  /** Optional machine-readable citation/identifier supplied by the provider. */
+  citationId?: string;
+  /** Provider citation identifier retained verbatim where a source exposes one. */
+  citationIdentifier?: string;
   rightsStatus: "ACCEPTABLE" | "CONDITIONAL" | "EXPERIMENTAL" | "BLOCKED";
   visibility: Visibility;
   payload: Record<string, unknown>;
@@ -26,6 +33,15 @@ export interface ObservationRecord {
   occurredAt: string | null;
   latitude: number;
   longitude: number;
+  /** Provider-supplied coordinate uncertainty; never interpreted as a precision upgrade. */
+  coordinateUncertaintyM?: number | null;
+  /** True when the source reports masking, obscuring, rounding or other spatial generalisation. */
+  locationGeneralised?: boolean;
+  /** Provider statement explaining spatial masking/generalisation when available. */
+  locationGeneralisationNote?: string | null;
+  /** Source-adapter generalisation note retained without sharpening location precision. */
+  generalisationNote?: string | null;
+  occurrenceStatus?: "PRESENT" | "ABSENT" | "UNKNOWN";
   basisOfRecord: string;
   issues: string[];
   visibility: Visibility;
@@ -119,6 +135,7 @@ export const ORCA_SOURCE_RECORD: SourceRecord = {
   recordType: "SOURCE_RECORD",
   id: "source-record:gbif:5939349319",
   sourceId: "gbif",
+  sourceAuthority: "GBIF",
   sourceRecordId: "5939349319",
   sourceUrl: "https://www.gbif.org/occurrence/5939349319",
   datasetId: "b124e1e0-4755-430f-9eab-894f25a9b59c",
@@ -156,6 +173,11 @@ export const ORCA_OBSERVATION: ObservationRecord = {
   occurredAt: "2026-01-03",
   latitude: 63.44559,
   longitude: 9.304561,
+  coordinateUncertaintyM: 1000,
+  locationGeneralised: true,
+  locationGeneralisationNote: "GBIF source flags this coordinate as rounded.",
+  generalisationNote: "GBIF source flags this coordinate as rounded.",
+  occurrenceStatus: "PRESENT",
   basisOfRecord: "HUMAN_OBSERVATION",
   issues: ["COORDINATE_ROUNDED", "CONTINENT_DERIVED_FROM_COORDINATES"],
   visibility: "PUBLIC",

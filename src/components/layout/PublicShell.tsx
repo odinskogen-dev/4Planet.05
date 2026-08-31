@@ -12,7 +12,7 @@ const dslug = (s: string) => s.replace("_", "").toLowerCase();
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase" };
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.035em" };
 
-type PanelKey = "EXPLORE" | "DOMAINS" | "MISSIONS" | "CULTURE" | "ABOUT";
+type PanelKey = "EXPLORE" | "DOMAINS" | "MISSIONS" | "CULTURE" | "ABOUT" | "TAKE PART";
 
 const TOP: { key: PanelKey; to: string }[] = [
   { key: "EXPLORE", to: "/" },
@@ -20,6 +20,7 @@ const TOP: { key: PanelKey; to: string }[] = [
   { key: "MISSIONS", to: "/missions" },
   { key: "CULTURE", to: "/domains/4culture" },
   { key: "ABOUT", to: "/about" },
+  { key: "TAKE PART", to: "/join" },
 ];
 
 const LENSES = [
@@ -41,6 +42,13 @@ const CULTURE = [
   ["4FILM", "Film", "/missions/4film"],
   ["4RT", "Art", "/missions/4rt"],
   ["4PLAY", "Play", "/missions/4play"],
+] as const;
+
+const TAKE_PART = [
+  ["4PEOPLE", "For people who want a clearer way to understand and help.", "/people"],
+  ["4BRANDS", "For brands ready to build credible environmental action.", "/brands"],
+  ["4PARTNERS", "For organisations doing real work in the field, science and solutions.", "/partners"],
+  ["4FUNDERS", "For funders helping build durable public infrastructure for action.", "/funders"],
 ] as const;
 
 function PanelLink({ title, line, to, accent = T.blue, onSelect }: { title: string; line: string; to: string; accent?: string; onSelect: () => void }) {
@@ -81,7 +89,7 @@ function DomainColumn({ dk, onSelect, showMissions = true }: { dk: DomainKey; on
 
 function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void }) {
   return (
-    <div className="nav-panel" role="region" aria-label={`${panel} navigation`} onMouseLeave={onClose}>
+    <div className="nav-panel" role="region" aria-label={`${panel} navigation`}>
       <div className="nav-panel__inner">
         <div className="nav-panel__rail">
           <div style={{ ...mono, color: T.blue }}>{panel}_</div>
@@ -91,6 +99,7 @@ function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void
             {panel === "MISSIONS" && "Sixteen first-wave entry points for action."}
             {panel === "CULTURE" && "Editorial, film, art and play as distribution for planetary understanding."}
             {panel === "ABOUT" && "Story, architecture, founder and the work ahead."}
+            {panel === "TAKE PART" && "Four clear ways to understand, contribute and build with 4PLANET."}
           </p>
         </div>
 
@@ -119,6 +128,11 @@ function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void
             {ABOUT.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
           </div>
         )}
+        {panel === "TAKE PART" && (
+          <div className="nav-panel-grid nav-panel-grid--2">
+            {TAKE_PART.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -142,6 +156,11 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
         <div className="mobile-nav__about">
           {ABOUT.map(([title, , to]) => <Link key={title} to={to} onClick={onClose}>{title}</Link>)}
         </div>
+
+        <div style={{ ...mono, color: T.blue, marginTop: 44 }}>TAKE PART_</div>
+        <div className="mobile-nav__lenses">
+          {TAKE_PART.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
+        </div>
       </div>
     </div>
   );
@@ -161,20 +180,52 @@ function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const explicitlyOpenedPanel = useRef<PanelKey | null>(null);
+  const openTimer = useRef<number | null>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const cancelOpen = () => {
+    if (openTimer.current !== null) window.clearTimeout(openTimer.current);
+    openTimer.current = null;
+  };
+
+  const cancelClose = () => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+  };
 
   const closeDesktopPanel = () => {
+    cancelOpen();
+    cancelClose();
     explicitlyOpenedPanel.current = null;
     setPanel(null);
   };
 
   const previewDesktopPanel = (key: PanelKey) => {
+    cancelOpen();
+    cancelClose();
+    if (explicitlyOpenedPanel.current !== key) explicitlyOpenedPanel.current = null;
+    openTimer.current = window.setTimeout(() => setPanel(key), panel ? 60 : 140);
+  };
+
+  const focusDesktopPanel = (key: PanelKey) => {
+    cancelOpen();
+    cancelClose();
     if (explicitlyOpenedPanel.current !== key) explicitlyOpenedPanel.current = null;
     setPanel(key);
   };
 
+  const scheduleDesktopClose = () => {
+    cancelOpen();
+    cancelClose();
+    closeTimer.current = window.setTimeout(closeDesktopPanel, explicitlyOpenedPanel.current ? 820 : 460);
+  };
+
   const toggleDesktopPanel = (key: PanelKey) => {
+    cancelOpen();
+    cancelClose();
     if (explicitlyOpenedPanel.current === key && panel === key) {
       closeDesktopPanel();
       return;
@@ -188,6 +239,21 @@ function Header() {
     setPanel(null);
     setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => () => {
+    cancelOpen();
+    cancelClose();
+  }, []);
+
+  useEffect(() => {
+    if (!panel) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && headerRef.current?.contains(event.target)) return;
+      closeDesktopPanel();
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [panel]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -252,11 +318,11 @@ function Header() {
   return (
     <>
       <a href="#main-content" className="skip-link">SKIP TO CONTENT</a>
-      <header className="public-header" style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
+      <header ref={headerRef} className="public-header" onMouseEnter={cancelClose} onMouseLeave={scheduleDesktopClose} style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
         <div className="public-header__bar">
           <Link to="/" className="public-brand" style={{ color: fg }} aria-label="4PLANET home">4PLANET_</Link>
 
-          <nav className="public-header__desktop" aria-label="Primary navigation" onMouseLeave={closeDesktopPanel}>
+          <nav className="public-header__desktop" aria-label="Primary navigation">
             {TOP.map((item) => (
               <button
                 key={item.key}
@@ -264,7 +330,7 @@ function Header() {
                 className="public-header__nav-button"
                 aria-expanded={panel === item.key}
                 onMouseEnter={() => previewDesktopPanel(item.key)}
-                onFocus={() => previewDesktopPanel(item.key)}
+                onFocus={() => focusDesktopPanel(item.key)}
                 onClick={() => toggleDesktopPanel(item.key)}
                 style={{ color: panel === item.key ? T.blue : fg }}
               >
@@ -369,12 +435,13 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__menu{display:none;appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 0;cursor:pointer}
-        .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;background:#fff;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
-        .nav-panel__inner{max-width:1440px;margin:0 auto;padding:clamp(28px,3.5vw,48px) clamp(20px,4vw,56px) clamp(34px,4vw,54px);display:grid;grid-template-columns:minmax(160px,.24fr) minmax(0,1fr);gap:clamp(30px,5vw,80px)}
+        .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;height:clamp(318px,29vw,382px);overflow:hidden;background:#fff;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
+        .nav-panel__inner{height:100%;max-width:1440px;margin:0 auto;padding:clamp(30px,3.4vw,48px) clamp(20px,4vw,56px);display:grid;grid-template-columns:minmax(190px,.24fr) minmax(0,1fr);gap:clamp(44px,6vw,96px);align-items:stretch}
+        .nav-panel__rail{padding-top:2px}
         .nav-panel-grid{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line}}
         .nav-panel-grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
         .nav-panel-grid--4{grid-template-columns:repeat(4,minmax(0,1fr));background:transparent;border:0;gap:clamp(20px,3vw,42px)}
-        .nav-panel-link{position:relative;display:grid;grid-template-columns:4px 1fr auto;gap:16px;align-items:start;background:#fff;padding:20px;text-decoration:none;color:${T.ink};min-height:112px}
+        .nav-panel-link{position:relative;display:grid;grid-template-columns:4px 1fr auto;gap:16px;align-items:start;background:#fff;padding:clamp(18px,1.7vw,24px);text-decoration:none;color:${T.ink};min-height:0}
         .nav-panel-link__bar{width:4px;height:100%}
         .nav-panel-link:hover strong{color:${T.blue}!important}.nav-panel-link:focus-visible{outline:3px solid ${T.blue};outline-offset:-3px}
         .nav-domain-col{min-width:0}
