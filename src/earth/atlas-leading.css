@@ -1,6 +1,6 @@
 .atlas-leading-time {
   position: absolute;
-  top: 112px;
+  top: 162px;
   right: 14px;
   z-index: 18;
   width: min(360px, calc(100vw - 28px));
@@ -70,7 +70,7 @@
   }
   .world.light .atlas-panel:not(.rest) { background: rgba(255,255,255,.985); }
   .atlas-saved-views { z-index: 18 !important; }
-  .atlas-leading-time { top: 108px; right: 10px; width: auto; z-index: 18; }
+  .atlas-leading-time { top: 162px; right: 10px; width: auto; z-index: 18; }
   .atlas-leading-time.open { left: 10px; width: calc(100vw - 20px); z-index: 31; }
-  .atlas-leading-time-body { max-height: calc(100vh - 165px); }
+  .atlas-leading-time-body { max-height: calc(100vh - 210px); }
 }
