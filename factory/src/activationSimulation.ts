@@ -28,6 +28,12 @@ const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   deterministicSimulationPassed: true,
   shadowComparisonPassed: true,
   outcomeQualityParityPassed: true,
+  dedicatedRuntimeShadowDeployed: true,
+  subAgentWorkflowRoundTripPassed: true,
+  githubCodeAdapterProven: true,
+  visualQaAdapterProven: true,
+  researchDataAdapterProven: true,
+  governedBrainWritebackProven: true,
   noProductionDeploy: true,
   externalReleaseFounderGated: true,
   testKingBaseCurrent: true,
@@ -48,6 +54,12 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
     { name: "missing-exact-sha-fails-closed", evidence: { ...FULL_EVIDENCE, exactFactorySha: "" }, expectedReady: false, expectedMissing: ["EXACT_FACTORY_SHA"] },
     { name: "production-deploy-present-fails-closed", evidence: { ...FULL_EVIDENCE, noProductionDeploy: false }, expectedReady: false, expectedMissing: ["NO_PRODUCTION_DEPLOY"] },
     { name: "missing-read-only-brain-boundary-fails-closed", evidence: { ...FULL_EVIDENCE, brainProjectionReadOnly: false }, expectedReady: false, expectedMissing: ["READ_ONLY_BRAIN_PROJECTION"] },
+    { name: "pages-preview-is-not-runtime", evidence: { ...FULL_EVIDENCE, dedicatedRuntimeShadowDeployed: false }, expectedReady: false, expectedMissing: ["DEDICATED_RUNTIME_SHADOW_DEPLOY"] },
+    { name: "missing-github-execution-fails-closed", evidence: { ...FULL_EVIDENCE, githubCodeAdapterProven: false }, expectedReady: false, expectedMissing: ["GITHUB_CODE_ADAPTER_PROOF"] },
+    { name: "missing-visual-qa-fails-closed", evidence: { ...FULL_EVIDENCE, visualQaAdapterProven: false }, expectedReady: false, expectedMissing: ["VISUAL_QA_ADAPTER_PROOF"] },
+    { name: "missing-research-adapter-fails-closed", evidence: { ...FULL_EVIDENCE, researchDataAdapterProven: false }, expectedReady: false, expectedMissing: ["RESEARCH_DATA_ADAPTER_PROOF"] },
+    { name: "missing-governed-writeback-fails-closed", evidence: { ...FULL_EVIDENCE, governedBrainWritebackProven: false }, expectedReady: false, expectedMissing: ["GOVERNED_BRAIN_WRITEBACK_PROOF"] },
+    { name: "missing-durable-roundtrip-fails-closed", evidence: { ...FULL_EVIDENCE, subAgentWorkflowRoundTripPassed: false }, expectedReady: false, expectedMissing: ["SUBAGENT_WORKFLOW_ROUNDTRIP"] },
   ];
 
   const results = cases.map((testCase) => {
