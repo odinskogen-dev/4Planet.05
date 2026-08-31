@@ -1,0 +1,76 @@
+.atlas-leading-time {
+  position: absolute;
+  top: 112px;
+  right: 14px;
+  z-index: 18;
+  width: min(360px, calc(100vw - 28px));
+  font-family: "Fragment Mono", ui-monospace, monospace;
+  color: #fff;
+}
+.world.light .atlas-leading-time { color: #080808; }
+.atlas-leading-time-toggle {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(8,8,8,.88);
+  color: inherit;
+  font: inherit;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  cursor: pointer;
+}
+.world.light .atlas-leading-time-toggle { background: rgba(255,255,255,.95); border-color: rgba(8,8,8,.18); }
+.atlas-leading-time-body {
+  margin-top: 6px;
+  padding: 12px;
+  max-height: min(62vh, 520px);
+  overflow: auto;
+  background: rgba(8,8,8,.96);
+  border: 1px solid rgba(255,255,255,.16);
+  backdrop-filter: blur(14px);
+}
+.world.light .atlas-leading-time-body { background: rgba(255,255,255,.98); border-color: rgba(8,8,8,.16); }
+.atlas-leading-time-body section + section { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.12); }
+.world.light .atlas-leading-time-body section + section { border-color: rgba(8,8,8,.12); }
+.atlas-leading-time-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 8.5px; letter-spacing: .12em; opacity: .72; }
+.atlas-leading-time-meta strong { font-weight: 400; opacity: 1; }
+.atlas-leading-time-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.atlas-leading-time-options button {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+.world.light .atlas-leading-time-options button { border-color: rgba(8,8,8,.2); }
+.atlas-leading-time-options button.on { border-color: #2e2eff; color: #2e2eff; }
+.atlas-leading-time-body p { margin: 8px 0 0; font-size: 9px; line-height: 1.5; opacity: .58; }
+
+@media (max-width: 760px) {
+  /* Founder screenshot 2026-09-01: lens buttons were painted above the open
+     layer console. An expanded console is now the single interaction authority. */
+  .atlas-panel:not(.rest) {
+    z-index: 32;
+    top: 108px !important;
+    left: 10px;
+    width: calc(100vw - 20px);
+    max-width: none;
+    max-height: calc(100vh - 152px);
+    padding: 14px;
+    background: rgba(8,8,8,.97);
+  }
+  .world.light .atlas-panel:not(.rest) { background: rgba(255,255,255,.985); }
+  .atlas-panel:not(.rest) + * { pointer-events: none; }
+  .atlas-leading-time { top: 108px; right: 10px; width: auto; z-index: 18; }
+  .atlas-leading-time.open { left: 10px; width: calc(100vw - 20px); z-index: 31; }
+  .atlas-leading-time-body { max-height: calc(100vh - 165px); }
+}
