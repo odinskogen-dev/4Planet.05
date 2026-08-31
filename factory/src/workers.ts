@@ -1,6 +1,7 @@
 import { Agent } from "agents";
 import type { Outcome, Section, WorkPackage } from "./contracts";
 import { checkPackageAdapterScope } from "./sectionAdapters";
+import { evaluateZeroLoss } from "./zeroLoss";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -39,6 +40,11 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       return this.finish(pkg, "REJECTED", "Package section does not match worker role.");
     }
 
+    const zeroLoss = evaluateZeroLoss(pkg);
+    if (!zeroLoss.ready) {
+      return this.finish(pkg, "BLOCKED", `ZERO LOSS blocked execution: ${zeroLoss.missing.join(", ")}.`);
+    }
+
     const adapterScope = checkPackageAdapterScope(pkg);
     if (!adapterScope.ok) {
       const rejected = adapterScope.rejectedScopes.length
@@ -58,13 +64,12 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       ON CONFLICT(work_package_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at
     `;
 
-    // V01 now has a machine-enforced section adapter policy, but deliberately
-    // stops before connecting external execution tools. Tool/model bindings are
-    // added only after shadow evidence proves the policy is sufficient.
+    // Tool/model execution remains fail-closed until the bounded execution
+    // adapter is configured and shadow outcome-quality parity is evidenced.
     return this.finish(
       pkg,
       "BLOCKED",
-      `Adapter scope accepted in ${adapterScope.mode} mode; external section execution adapter remains disconnected.`,
+      `ZERO LOSS and ${adapterScope.mode} scope passed; execution tool adapter is not yet configured.`,
     );
   }
 
@@ -98,30 +103,10 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
   }
 }
 
-export class ProductDesignWorker extends SectionWorker {
-  readonly section = "PRODUCT_DESIGN" as const;
-}
-
-export class CodeQaWorker extends SectionWorker {
-  readonly section = "CODE_QA" as const;
-}
-
-export class ResearchDataWorker extends SectionWorker {
-  readonly section = "RESEARCH_DATA" as const;
-}
-
-export class UserDistributionWorker extends SectionWorker {
-  readonly section = "USER_DISTRIBUTION" as const;
-}
-
-export class CapitalWorker extends SectionWorker {
-  readonly section = "CAPITAL" as const;
-}
-
-export class LearningWorker extends SectionWorker {
-  readonly section = "LEARNING" as const;
-}
-
-export class BrainControlWorker extends SectionWorker {
-  readonly section = "BRAIN_CONTROL" as const;
-}
+export class ProductDesignWorker extends SectionWorker { readonly section = "PRODUCT_DESIGN" as const; }
+export class CodeQaWorker extends SectionWorker { readonly section = "CODE_QA" as const; }
+export class ResearchDataWorker extends SectionWorker { readonly section = "RESEARCH_DATA" as const; }
+export class UserDistributionWorker extends SectionWorker { readonly section = "USER_DISTRIBUTION" as const; }
+export class CapitalWorker extends SectionWorker { readonly section = "CAPITAL" as const; }
+export class LearningWorker extends SectionWorker { readonly section = "LEARNING" as const; }
+export class BrainControlWorker extends SectionWorker { readonly section = "BRAIN_CONTROL" as const; }
