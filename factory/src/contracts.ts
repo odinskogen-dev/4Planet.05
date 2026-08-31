@@ -9,6 +9,33 @@ export type Section =
   | "LEARNING"
   | "BRAIN_CONTROL";
 
+export type DonorDisposition = "ADOPT" | "SUPERSEDED_BY" | "DEFER_WITH_REASON" | "BLOCKED_TRUTH_RIGHTS";
+
+export interface DonorDispositionRecord {
+  donorRef: string;
+  feature: string;
+  disposition: DonorDisposition;
+  winnerRef?: string;
+  reason?: string;
+  evidence: string[];
+}
+
+/**
+ * ZERO LOSS LAW
+ * Newest-wins is forbidden. Before a material canonical product write can run,
+ * every relevant historical repo/branch/PR/sandbox/embedded donor must be
+ * dispositioned at feature level. Material orphan count must be zero; a donor
+ * may remain unadopted only with an explicit evidence-backed disposition.
+ */
+export interface ZeroLossEvidence {
+  required: boolean;
+  donorUniverseRefs: string[];
+  dispositions: DonorDispositionRecord[];
+  orphanCount: number;
+  winnerParityEvidence: string[];
+  checkedAt: string;
+}
+
 export interface ProjectProjection {
   id: string;
   name: string;
@@ -36,6 +63,7 @@ export interface WorkPackage {
   writeScopes: string[];
   definitionOfDone: string[];
   requiredEvidence: string[];
+  zeroLoss?: ZeroLossEvidence;
   learningQuestion?: string;
   founderGate?: string;
   createdAt: string;
