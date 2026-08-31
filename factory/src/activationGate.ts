@@ -9,6 +9,12 @@ export interface FactoryActivationEvidence {
   deterministicSimulationPassed: boolean;
   shadowComparisonPassed: boolean;
   outcomeQualityParityPassed: boolean;
+  dedicatedRuntimeShadowDeployed: boolean;
+  subAgentWorkflowRoundTripPassed: boolean;
+  githubCodeAdapterProven: boolean;
+  visualQaAdapterProven: boolean;
+  researchDataAdapterProven: boolean;
+  governedBrainWritebackProven: boolean;
   noProductionDeploy: boolean;
   externalReleaseFounderGated: boolean;
   testKingBaseCurrent: boolean;
@@ -34,19 +40,23 @@ const REQUIRED: Array<[keyof FactoryActivationEvidence, string]> = [
   ["deterministicSimulationPassed", "DETERMINISTIC_SIMULATION_PASS"],
   ["shadowComparisonPassed", "SHADOW_COMPARISON_PASS"],
   ["outcomeQualityParityPassed", "OUTCOME_QUALITY_PARITY"],
+  ["dedicatedRuntimeShadowDeployed", "DEDICATED_RUNTIME_SHADOW_DEPLOY"],
+  ["subAgentWorkflowRoundTripPassed", "SUBAGENT_WORKFLOW_ROUNDTRIP"],
+  ["githubCodeAdapterProven", "GITHUB_CODE_ADAPTER_PROOF"],
+  ["visualQaAdapterProven", "VISUAL_QA_ADAPTER_PROOF"],
+  ["researchDataAdapterProven", "RESEARCH_DATA_ADAPTER_PROOF"],
+  ["governedBrainWritebackProven", "GOVERNED_BRAIN_WRITEBACK_PROOF"],
   ["noProductionDeploy", "NO_PRODUCTION_DEPLOY"],
   ["externalReleaseFounderGated", "FOUNDER_RELEASE_GATE"],
   ["testKingBaseCurrent", "CURRENT_TEST_KING_BASE"],
 ];
 
 /**
- * Fail-closed ACTIVE boundary.
+ * Fail-closed GLOBAL ACTIVE boundary.
  *
- * Selection overlap alone is not enough. Factory must prove that its actual
- * outcomes are at least as good as the reference conductor on materiality,
- * evidence quality and founder burden. ZERO LOSS is mandatory for material
- * product writes. External release remains Founder-gated even after internal
- * ACTIVE execution is allowed.
+ * Selection overlap alone is not enough. Factory must prove real execution
+ * paths, durable round-trips, outcome quality, governed learning/writeback and
+ * current TEST authority. A Pages preview is not a dedicated Agents runtime.
  */
 export function evaluateFactoryActivation(evidence: FactoryActivationEvidence): FactoryActivationGate {
   const missing = REQUIRED
