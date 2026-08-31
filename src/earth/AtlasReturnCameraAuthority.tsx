@@ -74,21 +74,29 @@ export function AtlasReturnCameraAuthority() {
 
     const attach = () => {
       if (disposed) return;
-      map = window.__4planet_map;
-      if (!map) {
+      const candidate = window.__4planet_map;
+      const candidateCanvas = candidate?.getCanvas?.();
+
+      // Cross-product navigation can leave window.__4planet_map pointing at the
+      // previously unmounted ATLAS instance until the new World publishes its
+      // map. Never bind return-camera authority to a detached/stale canvas;
+      // wait one frame for the current ATLAS map instead.
+      if (!candidate || (candidateCanvas && !candidateCanvas.isConnected)) {
         mountFrame = requestAnimationFrame(attach);
         return;
       }
 
+      map = candidate;
+      canvas = candidateCanvas;
       ["load", "style.load", "resize", "idle"].forEach((event) => map!.on(event, restore));
       window.addEventListener("resize", restore, { passive: true });
-      canvas = map.getCanvas?.();
       canvas?.addEventListener("pointerdown", release, { passive: true });
       canvas?.addEventListener("touchstart", release, { passive: true });
       canvas?.addEventListener("wheel", release, { passive: true });
 
-      // Apply after the World map has been exposed, then let the event hooks own
-      // any subsequent responsive/style settling until the user takes control.
+      // Apply after the current World map has been exposed, then let the event
+      // hooks own any subsequent responsive/style settling until the user takes
+      // control.
       restore();
       requestAnimationFrame(restore);
     };
