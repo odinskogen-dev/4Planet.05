@@ -1,0 +1,147 @@
+name: LIVE KING Release Proof
+
+on:
+  push:
+    branches:
+      - release/live-king-20260901
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-king-release-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out exact release candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Assert exact release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          printf '%s\n' "${GITHUB_SHA}" > runtime-sha.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Policy and source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/gold-policy-check.mjs --mode=quality-contract
+          npm run test:smoke
+          npm run typecheck
+          npm run assets:verify
+          npm run lint
+
+      - name: Build exact release candidate
+        run: npm run build
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Start exact-head local preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4planet-preview.log 2>&1 &
+          echo $! > /tmp/4planet-preview.pid
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              printf '%s\n' "http://127.0.0.1:4173" > runtime-url.txt
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/4planet-preview.log || true
+          exit 1
+
+      - name: Jaguar P0 Chromium + WebKit desktop/mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          npm run test:e2e -- tests/e2e/jaguar-testking-v27.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      - name: Shared critical journeys Chromium
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/gate1-vertical-slice.spec.ts
+          tests/e2e/product-switcher.spec.ts
+          --project=desktop-1440
+          --project=desktop-1280
+          --project=mobile-390
+          --project=mobile-430
+
+      - name: Magazine Chromium
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/magazine-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=mobile-430
+
+      - name: Product + ATLAS Chromium
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=desktop-1440 --grep "desktop proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/map-interactivity.spec.ts --project=desktop-1440 --grep "desktop pan and zoom|zoom ceiling|globe hides|same species"
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=mobile-390 --project=mobile-430 --grep "mobile proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/map-interactivity.spec.ts --project=mobile-390 --project=mobile-430 --grep "mobile bottom sheet|zoom ceiling|same species"
+
+      - name: Product/navigation WebKit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-desktop --grep "desktop proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/product-proof.spec.ts --project=webkit-390 --project=webkit-430 --grep "mobile proof|IMPACT direct routes"
+          npm run test:e2e -- tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+          npm run test:e2e -- tests/e2e/magazine-gold.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      - name: Founder-gated visual baseline contract
+        run: node scripts/gold-visual-lock-check.mjs
+
+      - name: Repository cleanliness
+        shell: bash
+        run: |
+          git diff --exit-code --
+          git diff --cached --exit-code --
+
+      - name: Upload proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-king-release-proof
+          path: |
+            artifacts/product-proof
+            artifacts/jaguar-full
+            playwright-report
+            test-results
+            runtime-url.txt
+            runtime-sha.txt
+          if-no-files-found: warn
+          retention-days: 14
