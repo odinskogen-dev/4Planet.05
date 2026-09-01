@@ -20,7 +20,7 @@ export * from "./index";
 
 const FACTORY_AGENT_NAME = "shadow-primary";
 const ORCHESTRA_PACKAGE_SET = new Set<string>(ORCHESTRA_PACKAGE_IDS);
-const WORLD_CLASS_RUNTIME_CONTRACT = "WORLD_CLASS_BUILD_03_ORCHESTRA_V03" as const;
+const WORLD_CLASS_RUNTIME_CONTRACT = "WORLD_CLASS_BUILD_03_ORCHESTRA_V04" as const;
 
 interface FactoryStateView {
   state: { mode: string; lastBatchAt?: string; lastBatchIds?: string[]; lastWorkflowIds?: string[] };
@@ -113,7 +113,7 @@ async function orchestraStatus(env: Cloudflare.Env) {
 async function ensureOrchestra(env: Cloudflare.Env) {
   const agent = await factoryAgent(env);
   const health = (await agent.getRuntimeHealth()) as RuntimeHealthView;
-  if (health.mode !== "SHADOW") throw new Error("Real orchestra V03 is intentionally restricted to SHADOW");
+  if (health.mode !== "SHADOW") throw new Error("Real orchestra V04 is intentionally restricted to SHADOW");
   if (!health.noLiveAuthority) throw new Error("Real orchestra blocked: runtime unexpectedly has LIVE authority");
 
   const state = (await agent.getFactoryState()) as FactoryStateView;
@@ -145,6 +145,10 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   };
 }
 
+function isTransientCapacityOutcome(outcome: Outcome) {
+  return outcome.status === "BLOCKED" && outcome.evidence.some((item) => /^HTTP 429$/i.test(item.trim()));
+}
+
 async function processQueueMessage(message: Message<FactoryQueueMessage>, env: Cloudflare.Env) {
   const body = message.body;
   if (body.kind !== "WORK_PACKAGE" || body.orchestraId !== SHADOW_ORCHESTRA_ID) {
@@ -170,6 +174,12 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
     }
 
     const specialistOutcome = await agent.dispatchToWorker(pkg.id);
+    // Browser capacity throttling is a transient Factory condition, not product
+    // evidence. Do not persist it as CORRECT/BLOCKED; return it to Queue retry/DLQ.
+    if (isTransientCapacityOutcome(specialistOutcome)) {
+      throw new Error(`TRANSIENT_BROWSER_CAPACITY_429 package=${pkg.id}`);
+    }
+
     const quality = independentQualityDecision(pkg, specialistOutcome);
     const release = releaseAuthorityFor(pkg, specialistOutcome);
     const gatedOutcome: Outcome = {
@@ -245,6 +255,7 @@ async function controlRoom(env: Cloudflare.Env) {
       workerTracing: "CLOUDFLARE_NATIVE_ENABLED",
       workPackageTraceIds: true,
       queueDelivery: "AT_LEAST_ONCE_WITH_IDEMPOTENT_PACKAGE_IDS",
+      browserCapacity429: "TRANSIENT_RETRY_NOT_PRODUCT_FAILURE",
       dlq: "4planet-production-factory-v01-shadow-dlq",
     },
     release: {
@@ -259,6 +270,7 @@ async function controlRoom(env: Cloudflare.Env) {
       persistentSpecialists: true,
       hourlyScheduler: health.hourlyScheduleConfigured,
       queueTransport: true,
+      sequentialQueueDrain: true,
       automaticRetries: true,
       deadLetterQueue: true,
       selfLearningCandidates: true,
@@ -316,6 +328,11 @@ export default {
   },
 
   async queue(batch: MessageBatch<FactoryQueueMessage>, env: Cloudflare.Env, _ctx: ExecutionContext) {
-    await Promise.all(batch.messages.map((message) => processQueueMessage(message, env)));
+    // Cloudflare max_concurrency bounds consumer instances, not messages within a
+    // delivered batch. Process sequentially so one Browser session is active at
+    // a time on the bounded V01 transport.
+    for (const message of batch.messages) {
+      await processQueueMessage(message, env);
+    }
   },
 };
