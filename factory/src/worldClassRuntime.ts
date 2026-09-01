@@ -20,7 +20,7 @@ export * from "./index";
 
 const FACTORY_AGENT_NAME = "shadow-primary";
 const ORCHESTRA_PACKAGE_SET = new Set<string>(ORCHESTRA_PACKAGE_IDS);
-const WORLD_CLASS_RUNTIME_CONTRACT = "WORLD_CLASS_BUILD_03_ORCHESTRA_V02" as const;
+const WORLD_CLASS_RUNTIME_CONTRACT = "WORLD_CLASS_BUILD_03_ORCHESTRA_V03" as const;
 
 interface FactoryStateView {
   state: { mode: string; lastBatchAt?: string; lastBatchIds?: string[]; lastWorkflowIds?: string[] };
@@ -113,7 +113,7 @@ async function orchestraStatus(env: Cloudflare.Env) {
 async function ensureOrchestra(env: Cloudflare.Env) {
   const agent = await factoryAgent(env);
   const health = (await agent.getRuntimeHealth()) as RuntimeHealthView;
-  if (health.mode !== "SHADOW") throw new Error("Real orchestra V02 is intentionally restricted to SHADOW");
+  if (health.mode !== "SHADOW") throw new Error("Real orchestra V03 is intentionally restricted to SHADOW");
   if (!health.noLiveAuthority) throw new Error("Real orchestra blocked: runtime unexpectedly has LIVE authority");
 
   const state = (await agent.getFactoryState()) as FactoryStateView;
@@ -125,8 +125,6 @@ async function ensureOrchestra(env: Cloudflare.Env) {
 
   for (const project of projects) await agent.upsertProject(project);
 
-  // Never enqueue a package twice merely because acceptance polling repeats.
-  // Recorded outcomes and active package rows are both treated as idempotency guards.
   const pending = packages.filter((pkg) => !recorded.has(pkg.id) && !active.has(pkg.id));
   for (const pkg of pending) await agent.upsertWorkPackage(pkg);
 
@@ -199,8 +197,6 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
     await agent.finalizeWorkflowOutcome(gatedOutcome);
     message.ack();
   } catch {
-    // Cloudflare Queue is at-least-once. Fixed package IDs + recorded outcomes
-    // make retries idempotent; after max_retries Wrangler sends the message to DLQ.
     message.retry();
   }
 }
@@ -298,9 +294,6 @@ export default {
       return Response.json(await orchestraStatus(env));
     }
 
-    // The base canary is the only ignition rail for the fixed, read-only real
-    // Orchestra 02. Polling is idempotent. The deploy gate is only ready after
-    // all eight V02 packages have persisted outcomes on the V02 runtime contract.
     if (request.method === "GET" && url.pathname === "/__factory/canary") {
       const baseResponse = await baseFactoryWorker.fetch(request, env);
       const baseCanary = (await baseResponse.json()) as BaseCanaryView;
