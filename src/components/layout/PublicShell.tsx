@@ -369,6 +369,14 @@ function footerCtx(pathname: string): { acc: string; label: string } {
 function Footer() {
   const { pathname } = useLocation();
   const { acc } = footerCtx(pathname);
+  const isMagazine =
+    pathname === "/magazine" ||
+    pathname.startsWith("/magazine/") ||
+    pathname === "/stories" ||
+    pathname.startsWith("/stories/");
+  const contactEmail = isMagazine
+    ? "editor@4planetmagazine.com"
+    : "hello@4planet.org";
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
     ["PARTICIPATE", [["4People", "/join"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
@@ -406,6 +414,8 @@ function Footer() {
 
         <div style={{ borderTop: `1px solid rgba(255,255,255,.16)`, marginTop: "clamp(40px,5vw,64px)", paddingTop: 22, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontSize: 11.5, color: "rgba(255,255,255,.7)" }}>4PLANET_ — FOR A LIVING PLANET.</span>
+          <a href={`mailto:${contactEmail}`} className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>{contactEmail.toUpperCase()}</a>
+
           <Link to="/privacy" className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>PRIVACY</Link>
         </div>
       </div>
