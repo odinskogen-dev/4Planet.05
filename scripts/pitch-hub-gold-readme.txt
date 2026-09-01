@@ -1,1 +1,0 @@
-PITCH HUB GOLD 02 is a bounded current-TEST recovery candidate. It is private/noindex, not production, and requires exact-head CI plus rendered Human Quality review before TEST KING integration.
