@@ -4,6 +4,7 @@
   right: 14px;
   z-index: 18;
   width: min(360px, calc(100vw - 28px));
+  box-sizing: border-box;
   font-family: "Fragment Mono", ui-monospace, monospace;
   color: #fff;
 }
@@ -56,21 +57,55 @@
 .atlas-leading-time-body p { margin: 8px 0 0; font-size: 9px; line-height: 1.5; opacity: .58; }
 
 @media (max-width: 760px) {
-  /* Founder screenshot 2026-09-01: lens buttons and My Atlas were painted above
-     the open layer console. An expanded console is now the one interaction layer. */
+  /* One interaction plane at a time. The expanded layer console owns the mobile
+     work area; secondary controls remain behind it and cannot intercept taps. */
   .atlas-panel:not(.rest) {
-    z-index: 32;
+    z-index: 50;
     top: 108px !important;
     left: 10px;
     width: calc(100vw - 20px);
     max-width: none;
     max-height: calc(100vh - 152px);
+    box-sizing: border-box;
     padding: 14px;
     background: rgba(8,8,8,.97);
   }
   .world.light .atlas-panel:not(.rest) { background: rgba(255,255,255,.985); }
-  .atlas-saved-views { z-index: 18 !important; }
-  .atlas-leading-time { top: 162px; right: 10px; width: auto; z-index: 18; }
-  .atlas-leading-time.open { left: 10px; width: calc(100vw - 20px); z-index: 31; }
-  .atlas-leading-time-body { max-height: calc(100vh - 210px); }
+
+  /* The previous recovery used width:100vw-20 plus padding with content-box.
+     At 390px this could exceed the viewport. Keep every floating Atlas surface
+     border-box so padding can never produce horizontal overflow. */
+  .atlas-panel,
+  .atlas-saved-views,
+  .atlas-leading-time,
+  .atlas-leading-time-body { box-sizing: border-box; }
+
+  /* Resting controls occupy deliberate non-overlapping corners below Search. */
+  .atlas-panel.rest { top: 116px !important; left: 10px; z-index: 24; max-width: 52vw; }
+  .atlas-saved-views { top: 116px !important; right: 10px !important; z-index: 23 !important; max-width: 44vw; }
+  .atlas-leading-time { top: 166px; right: 10px; width: auto; z-index: 22; }
+
+  /* TIME expands into the same bounded work area as Layers, but one level below
+     Layers so an accidentally simultaneous open state cannot create a tap trap. */
+  .atlas-leading-time.open {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    z-index: 49;
+  }
+  .atlas-leading-time-body { max-height: calc(100vh - 220px); }
+
+  /* When Layers is expanded, it is the sole secondary work surface. Search stays
+     reachable above it; lens/time/saved controls stop competing for the map. */
+  .world:has(.atlas-panel:not(.rest)) .lens-rail,
+  .world:has(.atlas-panel:not(.rest)) .atlas-saved-views,
+  .world:has(.atlas-panel:not(.rest)) .atlas-leading-time {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Search is the primary action on mobile; give its results usable vertical room
+     without letting the dropdown consume the whole globe. */
+  .results { max-height: min(52vh, 430px); overscroll-behavior: contain; }
 }
