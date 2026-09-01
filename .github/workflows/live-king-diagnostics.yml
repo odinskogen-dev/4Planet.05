@@ -1,0 +1,45 @@
+name: LIVE KING Diagnostics
+
+on:
+  push:
+    branches:
+      - release/live-king-20260901
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: GOLD policy
+        continue-on-error: true
+        run: node scripts/gold-policy-check.mjs --mode=quality-contract
+      - name: Smoke contracts
+        continue-on-error: true
+        run: npm run test:smoke
+      - name: Typecheck
+        continue-on-error: true
+        run: npm run typecheck
+      - name: Asset verification
+        continue-on-error: true
+        run: npm run assets:verify
+      - name: Lint
+        continue-on-error: true
+        run: npm run lint
+      - name: Build
+        continue-on-error: true
+        run: npm run build
