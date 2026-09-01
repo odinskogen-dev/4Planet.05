@@ -76,6 +76,7 @@ async function orchestraStatus(env: Cloudflare.Env) {
 
   return {
     orchestraId: SHADOW_ORCHESTRA_ID,
+    runtimeContract: "WORLD_CLASS_BUILD_03_ORCHESTRA_V01",
     mode: state.state.mode,
     packageCount: packages.length,
     complete: completedIds.size,
@@ -93,6 +94,15 @@ async function orchestraStatus(env: Cloudflare.Env) {
       productionLine: pkg.productionLine?.lineId ?? null,
       stage: pkg.productionLine?.stage ?? null,
       status: completedIds.has(pkg.id) ? "OUTCOME_RECORDED" : active.get(pkg.id) ?? "NOT_STARTED",
+    })),
+    outcomeDetails: outcomes.map((outcome) => ({
+      workPackageId: outcome.workPackageId,
+      status: outcome.status,
+      evidence: outcome.evidence,
+      actual: outcome.actual,
+      limitation: outcome.limitation ?? null,
+      materialDelta: outcome.materialDelta,
+      completedAt: outcome.completedAt,
     })),
     traceability: "trace:<orchestra>:<project>:<work-package> is persisted in accepted outcome evidence",
     humanGold: "NOT_PROVEN_BY_ORCHESTRA — browser/source evidence can never self-promote Human Gold",
@@ -114,8 +124,6 @@ async function ensureOrchestra(env: Cloudflare.Env) {
 
   for (const project of projects) await agent.upsertProject(project);
 
-  // Never enqueue a package twice merely because acceptance polling repeats.
-  // Recorded outcomes and active package rows are both treated as idempotency guards.
   const pending = packages.filter((pkg) => !recorded.has(pkg.id) && !active.has(pkg.id));
   for (const pkg of pending) await agent.upsertWorkPackage(pkg);
 
@@ -173,6 +181,7 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
             : "CORRECT",
       evidence: [
         ...quality.evidence,
+        `QUALITY-REASONS ${quality.reasons.join(" | ") || "none"}`,
         `TRACE ${body.traceId}`,
         `QUEUE-DELIVERY at-least-once idempotency-key=${pkg.id}`,
         `RELEASE-AUTHORITY ${release}`,
@@ -187,8 +196,6 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
     await agent.finalizeWorkflowOutcome(gatedOutcome);
     message.ack();
   } catch {
-    // Cloudflare Queue is at-least-once. Fixed package IDs + recorded outcomes
-    // make retries idempotent; after max_retries Wrangler sends the message to DLQ.
     message.retry();
   }
 }
@@ -208,6 +215,7 @@ async function controlRoom(env: Cloudflare.Env) {
 
   return {
     factory: "4PLANET Production Factory 01",
+    runtimeContract: "WORLD_CLASS_BUILD_03_ORCHESTRA_V01",
     factoryHealth: guardian,
     mode: health.mode,
     now: {
@@ -285,11 +293,6 @@ export default {
       return Response.json(await orchestraStatus(env));
     }
 
-    // The existing SHADOW canary is also the only ignition rail for the fixed,
-    // read-only first orchestra. Repeated polling is safe and cannot enqueue the
-    // same package twice. The deploy gate is ready only after all eight real
-    // packages have produced persisted outcomes; product-quality failures remain
-    // visible separately and never masquerade as runtime failure.
     if (request.method === "GET" && url.pathname === "/__factory/canary") {
       const baseResponse = await baseFactoryWorker.fetch(request, env);
       const baseCanary = (await baseResponse.json()) as BaseCanaryView;
@@ -299,6 +302,7 @@ export default {
         ...baseCanary,
         ready: baseCanary.ready && orchestra.processed,
         worldClass: {
+          runtimeContract: "WORLD_CLASS_BUILD_03_ORCHESTRA_V01",
           runtimeCanaryReady: baseCanary.ready,
           orchestraProcessed: orchestra.processed,
           orchestraQualityReady: orchestra.qualityReady,
