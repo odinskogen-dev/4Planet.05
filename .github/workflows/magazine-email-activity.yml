@@ -1,0 +1,31 @@
+name: Magazine Email Activity
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+    paths:
+      - .github/workflows/magazine-email-activity.yml
+
+permissions:
+  contents: read
+
+jobs:
+  activity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Query Cloudflare email activity
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$CF_TOKEN"
+          api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$@"; }
+          ZONES=$(api "https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com&status=active")
+          ZONE_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print(r[0].get("id","") if r else "")')
+          [ -n "$ZONE_ID" ] || { echo "ZONE_NOT_VISIBLE"; exit 3; }
+          PAYLOAD=$(python3 -c 'import json,sys; q="""query EmailRoutingActivity($zoneTag: string, $filter: EmailRoutingAdaptiveFilter_InputObject) { viewer { zones(filter: { zoneTag: $zoneTag }) { emailRoutingAdaptive(filter: $filter limit: 30 orderBy: [datetime_DESC]) { datetime messageId from to subject status action spf dkim dmarc arc errorDetail isNDR isSpam spamScore } } } }"""; print(json.dumps({"query":q,"variables":{"zoneTag":sys.argv[1],"filter":{"datetime_geq":"2026-09-01T19:20:00Z","datetime_leq":"2026-09-01T19:50:00Z"}}}))' "$ZONE_ID")
+          RESP=$(curl -sS -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" -X POST "https://api.cloudflare.com/client/v4/graphql" --data "$PAYLOAD")
+          printf '%s' "$RESP" | python3 -c 'import json,sys; d=json.load(sys.stdin); errs=d.get("errors") or []; print("GRAPHQL_ERRORS="+" | ".join(str(e.get("message",e)) for e in errs)); zones=(((d.get("data") or {}).get("viewer") or {}).get("zones") or []); rows=(zones[0].get("emailRoutingAdaptive") or []) if zones else []; wanted=[r for r in rows if str(r.get("subject","")).startswith("4PLANET Magazine")]; print("MATCH_COUNT="+str(len(wanted))); [print("EVENT",r.get("datetime"),"subject="+str(r.get("subject")),"from="+str(r.get("from")),"to="+str(r.get("to")),"status="+str(r.get("status")),"action="+str(r.get("action")),"error="+str(r.get("errorDetail")),"spf="+str(r.get("spf")),"dkim="+str(r.get("dkim")),"dmarc="+str(r.get("dmarc"))) for r in wanted]'
