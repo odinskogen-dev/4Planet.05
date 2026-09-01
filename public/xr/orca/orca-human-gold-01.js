@@ -42,10 +42,26 @@
     }
   };
 
+  const applyPlaceHandoff = () => {
+    const root = document.getElementById('browser-experience');
+    const bay = root?.querySelector('.nature-topbar__right > a[href="/ecosystem/bay-of-biscay/"]');
+    if (!root || !(bay instanceof HTMLElement)) return;
+
+    const compact = window.matchMedia('(max-width: 760px)').matches;
+    if (compact && root.dataset.entered === 'true') {
+      bay.style.setProperty('display', 'inline-flex', 'important');
+      bay.style.setProperty('align-items', 'center');
+    } else {
+      bay.style.removeProperty('display');
+      bay.style.removeProperty('align-items');
+    }
+  };
+
   const applyComposition = () => {
     applyHumanFirstEntry();
     applyRecoveredSubject();
     applyOrcaFirstScene();
+    applyPlaceHandoff();
   };
 
   const boot = () => {
@@ -55,18 +71,33 @@
 
     const observer = new MutationObserver(() => {
       applyComposition();
-      if (document.body.dataset.browserReady === 'true' || document.body.dataset.browserReady === 'failed') {
+      if (document.body.dataset.browserReady === 'failed') {
         applyComposition();
         observer.disconnect();
       }
     });
-    observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-browser-ready', 'src'] });
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['data-browser-ready', 'data-entered', 'src'],
+    });
 
+    const journeyObserver = new MutationObserver(applyOrcaFirstScene);
     const hud = root.querySelector('.nature-journey-hud');
     if (hud) {
-      const journeyObserver = new MutationObserver(applyOrcaFirstScene);
-      journeyObserver.observe(hud, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-visible'] });
+      journeyObserver.observe(hud, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ['data-visible'],
+      });
     }
+
+    const compactQuery = window.matchMedia('(max-width: 760px)');
+    compactQuery.addEventListener?.('change', applyPlaceHandoff);
 
     root.dataset.humanGoldCandidate = '01';
     root.dataset.humanQualityAuthority = 'founder-first';
