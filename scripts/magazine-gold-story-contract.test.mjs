@@ -4,6 +4,8 @@ import fs from "node:fs";
 
 const stories = fs.readFileSync("src/content/stories.ts", "utf8");
 const magazine = fs.readFileSync("src/pages/v5/Magazine.tsx", "utf8");
+const article = fs.readFileSync("src/pages/v5/StoryArticle.tsx", "utf8");
+const sourceComponent = fs.readFileSync("src/components/StorySources.tsx", "utf8");
 
 test("Magazine Gold Story 01 is source-specific and product-connected", () => {
   assert.match(stories, /gold: true/);
@@ -23,6 +25,15 @@ test("Gold Story preserves story-specific primary source objects and limitations
   assert.match(stories, /does not turn encounter records into population estimates/i);
   assert.match(stories, /not proof of a population decline or identified cause/i);
   assert.match(stories, /One survey account is a snapshot, not a trend or abundance estimate/i);
+});
+
+test("story-specific evidence is actually rendered rather than only stored in the model", () => {
+  assert.match(article, /import \{ StorySources \} from "@\/components\/StorySources"/);
+  assert.match(article, /<StorySources sources=\{s\.sources \?\? \[\]\} \/>/);
+  assert.match(article, /s\.gold \? <span className="mag-gold-mark">GOLD STORY 01<\/span>/);
+  assert.match(sourceComponent, /Every source below says exactly what it supports/);
+  assert.match(sourceComponent, /Limit: \{source\.limitation\}/);
+  assert.match(sourceComponent, /Checked \{source\.checkedAt\}/);
 });
 
 test("Magazine home keeps the Gold Story in the lead slot without opening a parallel publication", () => {
