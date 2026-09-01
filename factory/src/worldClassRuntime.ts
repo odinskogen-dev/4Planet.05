@@ -39,6 +39,11 @@ interface RuntimeHealthView {
   noLiveAuthority: boolean;
 }
 
+interface BaseCanaryView {
+  ready: boolean;
+  [key: string]: unknown;
+}
+
 function packageById(id: string, nowIso = new Date().toISOString()): WorkPackage | undefined {
   return createShadowOrchestraPackages(nowIso).find((pkg) => pkg.id === id);
 }
@@ -67,18 +72,20 @@ async function orchestraStatus(env: Cloudflare.Env) {
   const rejected = outcomes.filter((outcome) => outcome.status === "REJECTED").length;
   const blocked = outcomes.filter((outcome) => outcome.status === "BLOCKED").length;
   const completedIds = new Set(outcomes.map((outcome) => outcome.workPackageId));
+  const processed = completedIds.size === packages.length;
 
   return {
     orchestraId: SHADOW_ORCHESTRA_ID,
     mode: state.state.mode,
     packageCount: packages.length,
     complete: completedIds.size,
+    processed,
     accepted,
     correct,
     rejected,
     blocked,
     firstPassYield: outcomes.length > 0 ? accepted / outcomes.length : null,
-    ready: completedIds.size === packages.length && accepted === packages.length,
+    qualityReady: processed && accepted === packages.length,
     packages: packages.map((pkg) => ({
       id: pkg.id,
       projectId: pkg.projectId,
@@ -92,7 +99,7 @@ async function orchestraStatus(env: Cloudflare.Env) {
   };
 }
 
-async function startOrchestra(env: Cloudflare.Env) {
+async function ensureOrchestra(env: Cloudflare.Env) {
   const agent = await factoryAgent(env);
   const health = (await agent.getRuntimeHealth()) as RuntimeHealthView;
   if (health.mode !== "SHADOW") throw new Error("Real orchestra V01 is intentionally restricted to SHADOW");
@@ -100,13 +107,16 @@ async function startOrchestra(env: Cloudflare.Env) {
 
   const state = (await agent.getFactoryState()) as FactoryStateView;
   const recorded = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
+  const active = new Set(state.work.map((work) => work.id));
   const nowIso = new Date().toISOString();
   const projects = createShadowOrchestraProjects(nowIso);
   const packages = createShadowOrchestraPackages(nowIso);
 
   for (const project of projects) await agent.upsertProject(project);
 
-  const pending = packages.filter((pkg) => !recorded.has(pkg.id));
+  // Never enqueue a package twice merely because acceptance polling repeats.
+  // Recorded outcomes and active package rows are both treated as idempotency guards.
+  const pending = packages.filter((pkg) => !recorded.has(pkg.id) && !active.has(pkg.id));
   for (const pkg of pending) await agent.upsertWorkPackage(pkg);
 
   if (pending.length > 0) {
@@ -117,7 +127,8 @@ async function startOrchestra(env: Cloudflare.Env) {
 
   return {
     acceptedIntoQueue: pending.length,
-    alreadyCompleted: packages.length - pending.length,
+    alreadyActive: packages.filter((pkg) => active.has(pkg.id) && !recorded.has(pkg.id)).length,
+    alreadyCompleted: packages.filter((pkg) => recorded.has(pkg.id)).length,
     packageCount: packages.length,
     orchestraId: SHADOW_ORCHESTRA_ID,
     mode: "SHADOW",
@@ -273,8 +284,27 @@ export default {
     if (request.method === "GET" && url.pathname === "/__factory/orchestra") {
       return Response.json(await orchestraStatus(env));
     }
-    if (request.method === "POST" && url.pathname === "/__factory/orchestra/start") {
-      return Response.json(await startOrchestra(env));
+
+    // The existing SHADOW canary is also the only ignition rail for the fixed,
+    // read-only first orchestra. Repeated polling is safe and cannot enqueue the
+    // same package twice. The deploy gate is ready only after all eight real
+    // packages have produced persisted outcomes; product-quality failures remain
+    // visible separately and never masquerade as runtime failure.
+    if (request.method === "GET" && url.pathname === "/__factory/canary") {
+      const baseResponse = await baseFactoryWorker.fetch(request, env);
+      const baseCanary = (await baseResponse.json()) as BaseCanaryView;
+      if (baseCanary.ready) await ensureOrchestra(env);
+      const orchestra = await orchestraStatus(env);
+      return Response.json({
+        ...baseCanary,
+        ready: baseCanary.ready && orchestra.processed,
+        worldClass: {
+          runtimeCanaryReady: baseCanary.ready,
+          orchestraProcessed: orchestra.processed,
+          orchestraQualityReady: orchestra.qualityReady,
+          orchestra,
+        },
+      });
     }
 
     return baseFactoryWorker.fetch(request, env);
