@@ -31,6 +31,11 @@ function pkg(id: string, projectId: string, priority: WorkPackage["priority"], s
     deliverables: ["Material deliverable"],
     dependencies: [],
     writeScopes: [`scope/${id}`],
+    preservation: {
+      mustNotLose: ["accepted current behaviour"],
+      regressionRisks: ["bounded mutation may regress accepted behaviour"],
+      rollbackRef: "0123456789abcdef0123456789abcdef01234567",
+    },
     definitionOfDone: ["Material result exists"],
     requiredEvidence: ["runtime PASS"],
     learningQuestion: "What made the result materially better?",
@@ -73,6 +78,7 @@ test("hourly batch protects P0 while rescuing overdue P1/P2 projects", () => {
   assert.ok(ids.includes("actors-a"), "P2 beyond 72h should receive a protected slot");
   assert.deepEqual(new Set(batch.serviceLevelProtected), new Set(["S4PIENS", "ACTORS"]));
   assert.ok(batch.packages.length <= 5);
+  assert.equal(batch.rejectedForControl?.length, 0);
 });
 
 test("conflicting writes remain serialized even for overdue projects", () => {
@@ -90,4 +96,15 @@ test("conflicting writes remain serialized even for overdue projects", () => {
   assert.equal(batch.serviceLevelProtected?.length, 1);
   assert.equal(batch.serviceLevelDeferred?.length, 1);
   assert.equal(batch.rejectedForConflict.length, 1);
+});
+
+test("unprotected mutation is rejected before scoring or dispatch", () => {
+  const projects = new Map<string, ProjectProjection>([["A", project("A", "P0", 1)]]);
+  const unsafe = pkg("unsafe", "A", "P0", "CODE_QA");
+  delete unsafe.preservation;
+
+  const batch = selectHourlyBatch(projects, [unsafe], 5, NOW);
+  assert.equal(batch.packages.length, 0);
+  assert.equal(batch.rejectedForControl?.length, 1);
+  assert.match(batch.rejectedForControl?.[0] ?? "", /PRESERVE|MUST-NOT-LOSE|Mutation/);
 });
