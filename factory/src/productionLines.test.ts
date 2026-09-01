@@ -71,7 +71,7 @@ test("Production line fails closed on incomplete source input", () => {
   const intake = speciesIntake();
   intake.availableInputs = speciesInputs.filter((field) => field !== "media_rights" && field !== "uncertainty");
   const result = compileProductionLinePackages(project, "P0", "2026-09-01T09:00:00Z", intake);
-  assert.deepEqual(result.missingInputs.sort(), ["media_rights", "uncertainty"]);
+  assert.deepEqual([...result.missingInputs].sort(), ["media_rights", "uncertainty"]);
   assert.equal(result.packages[0]?.status, "BLOCKED");
 });
 
