@@ -2,61 +2,61 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-LUME-ROOM-03-PROJECTION-PLANE-QA-01
-**STATUS:** TEST / IMPLEMENTED CANDIDATE / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**ROLLBACK BASE:** `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + LUME projection-plane QA fix
-**FOUNDER DIRECTION:** Keep the Orca asset. Make the room feel like a large dark gallery rendered in lighter projected OCE4N light, with luminous grids on floor, walls and ceiling, readable intel walls, wall-mounted nodes, an optional map projection and bounded interactive Orca movement. Field audio must be real and must start only after a user gesture. The full Orca must remain inside mobile view.
-**SINGLE-SEAM RULE:** Improve only the existing `/species/orca/lume` renderer and its existing tests; no new route, renderer, map engine, 3D/XR stack, species database or parallel app.
+**CHANGE ID:** TEST-KING-ATLAS-RETURN-CAMERA-STALE-MAP-01
+**STATUS:** TEST / IMPLEMENTED + BROWSER-ACCEPTED / FOUNDER RELEASE NOT IMPLIED
+**BASE AUTHORITY:** `king/test` / exact parent `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
+**ROLLBACK BASE:** `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
+**IMPLEMENTED CANDIDATE:** `5d40e8c93476c6addfa349363957384e4de3d254` — `fix(atlas): ignore stale map during return camera restore`
+**PRODUCT PROOF:** Browser Product Proof #1273 PASS; ONE INTERFACE Convergence Gate #2395 PASS on the implemented candidate.
+**CONTROL DEFECT BEING CLOSED:** GOLD policy run 33422638609 correctly failed because the user-facing ATLAS mutation did not update this brief in the same bounded change. This brief repairs that control evidence only; it does not alter product behaviour or imply LIVE release.
 
 ## USER ARRIVES BECAUSE
-They want to enter one striking species intelligence gallery and understand Orca through projected light, space, sound and controlled depth.
+They move between 4PLANET product surfaces and return to ATLAS expecting the globe/map camera to restore reliably rather than bind to an already-unmounted previous map instance.
 
 ## ONE THING TO UNDERSTAND
-This is one species across every ocean, expressed through many distinct populations, habitats, diets and cultures.
+ATLAS return-camera authority must attach only to the currently mounted map/canvas. A stale global map reference from a previous ATLAS instance is not valid authority.
 
 ## PRIMARY ACTION
-Select one of four projected wall nodes: Identity, Culture, Place or Evidence.
+Navigate into another product surface and return to ATLAS; the current ATLAS map should mount and restore its bounded return camera normally.
 
 ## SECONDARY DEPTH
-Guide the 2.5D Orca plane with drag, touch or arrow keys; open the schematic Place map; explicitly start the NPS Glacier Bay Orca field recording; trigger a separately labelled procedural room echo.
+The fix hardens cross-product map lifecycle authority only. It does not broaden ATLAS scope, add new data, change ecological claims or redefine navigation.
 
 ## P1 DOMINANT
-The complete Orca projection floating in a large black gallery room.
+The current ATLAS map remains the visible, interactive spatial surface.
 
 ## P2 ORIENTATION
-Luminous room geometry, species identity, wall-mounted nodes and one active projected intel wall.
+Cross-product navigation may temporarily leave `window.__4planet_map` pointing at the previous unmounted map until the new World publishes the current instance.
 
 ## P3 ACTION / NEXT
-Choose a wall projection, hear the field recording by explicit action, or return to Species.
+Return-camera authority waits for the current connected canvas, attaches event listeners there, restores the camera, and releases authority when the user intentionally interacts.
 
 ## P4 DEPTH
-Source, evidence state and limitation remain available without competing with the animal.
+This is lifecycle/authority hardening. It does not change ecological claims, source semantics, map data, routes, visual hierarchy or LIVE state.
 
 ## WHAT CAN BE REMOVED
-Dark electric-blue styling, compressed dashboard geometry, cards, pills, clipped animal framing, false 3D controls and hidden or unreachable wall information.
+No product capability needs removal. Detached previous canvases and stale global map references must simply be rejected as current authority; no second authority or fallback renderer is introduced.
 
 ## WHAT MUST BE REUSED
-The existing clean-room LUME renderer, `LUME_ORCA_ROOM` manifest, transparent Orca visualisation, canonical route, NPS Glacier Bay field audio, current truth boundaries, current Species exit and current responsive contract.
+The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publication path, existing World/ATLAS renderer, existing camera restore/release behaviour and existing ONE INTERFACE route structure.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** projected cyan-white light, larger gallery depth, wall-mounted intel, inline schematic world map and bounded 2.5D guidance.
-- **REUSE:** existing LUME ROOM 03 renderer, Orca asset, source manifest and audio lifecycle.
-- **REJECT:** legacy ORCA/Jaguar CSS imports, a second renderer, runtime map dependency, false live tracking, false migration, rigged-animal claims and autoplay.
-- **DEFER:** true fin/tail articulation, rigged GLB swimming, WebXR and hardware projection until a validated asset and later adapter exist.
+- **ADOPT:** the accepted `5d40e8c` connected-canvas guard and one-frame retry while a stale/detached map reference exists.
+- **REUSE:** existing map authority, restore events, responsive settling and user-interaction release semantics.
+- **REJECT:** binding listeners to a detached canvas, adding a second map authority, changing renderer/runtime dependencies, creating a new route or introducing parallel ATLAS state.
+- **DEFER:** broader ATLAS lifecycle refactors unless a separately reproduced defect proves they are necessary.
 
 ## TRUTH BOUNDARY
-The central Orca is an AI-generated natural-history visualisation, not a photograph or evidence. Its interaction moves a single 2.5D projection plane and must not be called a rigged 3D animal. The Place map is schematic species-level orientation, not a live track, migration route, population range or abundance surface. The NPS Glacier Bay recording is real field audio; the room echo is procedural and separately labelled.
+A global map reference is only accepted when its canvas is connected to the current document. A detached previous canvas is treated as stale and ignored until the current ATLAS map is available. This behavioural guard is not evidence of broader map correctness, ecological truth, production deployment or LIVE release.
 
 ## PERFORMANCE
-No new runtime dependency, WebGL renderer or remote map. The map remains inline SVG. ROOM 03 stays lazy-loaded; the existing local animal and audio assets are reused.
+No new dependency or renderer. The guard adds only a bounded `getCanvas()` connectivity check and `requestAnimationFrame` retry while the current map has not yet been published.
 
 ## MOBILE-FIRST RISK
-At 390 and 430 px the full Orca must remain inside the viewport, nodes must remain at least 44 px, the detail wall must not intercept sound or exit controls, the map must reflow, and the experience must avoid horizontal overflow and page scroll.
+The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas and must not create a mobile-specific map authority.
 
 ## HUMAN SUCCESS
-Within five seconds a person understands that they are inside a large projected Orca intelligence room. Within thirty seconds they can select Place, see the bounded map, move the Orca, and deliberately hear real Orca field audio without confusing it with the procedural echo.
+A user can leave ATLAS, use another 4PLANET surface and return without the return-camera controller attaching to the previously unmounted ATLAS canvas or preventing the current map from restoring correctly.
 
 ## ACCEPTANCE
-1. `/species/orca/lume` identifies itself as LUME ROOM 03. 2. The room uses lighter projected cyan-white light. 3. Ceiling, floor, side and rear grid planes create visible gallery depth. 4. The full Orca is dominant and contained at desktop, 390 and 430 px. 5. Identity and active detail intel walls render in front of the room plane rather than being occluded by it. 6. Four wall nodes remain keyboard and touch accessible. 7. PLACE opens an inline schematic map with `NOT A LIVE TRACK`. 8. Drag/touch/arrows move only the bounded 2.5D plane and Enter/Home reset it. 9. NPS field audio remains off until explicit action and the procedural room echo remains separately labelled. 10. Reduced motion preserves all information. 11. Contract, typecheck, assets, lint, build, smoke and public-browser checks pass before Founder acceptance is requested. 12. LIVE KING remains untouched.
+1. `king/test` lineage remains single-authority and LIVE remains untouched. 2. Return-camera authority does not bind to a candidate map whose canvas is detached. 3. It retries until the current map is published rather than creating parallel state. 4. Current canvas is captured once accepted and receives the existing pointer/touch/wheel release listeners. 5. Existing restore events remain intact. 6. Browser Product Proof remains PASS. 7. ONE INTERFACE Convergence remains PASS. 8. GOLD policy accepts the bounded mutation + current brief pair. 9. No new dependency, route, map renderer or ecological claim is introduced. 10. Founder JUDGE/RELEASE and LIVE remain separate gates.
