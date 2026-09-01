@@ -30,47 +30,25 @@ jobs:
           [ -n "$ZONE_ID" ] || { echo "ZONE_NOT_VISIBLE"; exit 3; }
           echo "ZONE_VISIBLE"
 
-          # Enable Cloudflare Email Routing / install required routing DNS.
+          # Idempotent activation: Cloudflare keeps existing routing DNS if already enabled.
           ENABLE=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/dns")
           printf '%s' "$ENABLE" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROUTING_ENABLE_SUCCESS="+str(d.get("success"))); print("ROUTING_ENABLE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
 
-          ensure_record() {
-            local type="$1" name="$2" content="$3" priority="${4:-}"
-            local enc_name
-            enc_name=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=""))' "$name")
-            local existing
-            existing=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=$type&name=$enc_name&per_page=100")
-            local match_id
-            match_id=$(printf '%s' "$existing" | python3 -c 'import json,sys; d=json.load(sys.stdin); target=sys.argv[1]; pri=sys.argv[2]; out="";\nfor r in d.get("result",[]):\n c=str(r.get("content", "")); p=str(r.get("priority", ""));\n if c==target and (not pri or p==pri): out=r.get("id",""); break\nprint(out)' "$content" "$priority")
-            if [ -n "$match_id" ]; then
-              echo "RECORD_PRESENT $type $name"
-              return
-            fi
-            local body
-            if [ -n "$priority" ]; then
-              body=$(python3 -c 'import json,sys; print(json.dumps({"type":sys.argv[1],"name":sys.argv[2],"content":sys.argv[3],"priority":int(sys.argv[4]),"ttl":1}))' "$type" "$name" "$content" "$priority")
-            else
-              body=$(python3 -c 'import json,sys; print(json.dumps({"type":sys.argv[1],"name":sys.argv[2],"content":sys.argv[3],"ttl":1}))' "$type" "$name" "$content")
-            fi
-            local created
-            created=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" --data "$body")
-            printf '%s' "$created" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("RECORD_CREATE_SUCCESS="+str(d.get("success"))); print("RECORD_CREATE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
+          create_record() {
+            local body="$1" label="$2"
+            local resp
+            resp=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" --data "$body")
+            printf '%s' "$resp" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(sys.argv[1]+"_SUCCESS="+str(d.get("success"))); print(sys.argv[1]+"_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))' "$label"
           }
 
-          ensure_record TXT resend._domainkey 'p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnh+r+YYLA4etv26HKCQGR36m6f9hmskNuWPDLvIYVP7nICuDIx5CWmI2fxKSB8glJjd4MgQKQEqh4e+ye+ScL54LSylM3e0CzqUFAg5jn6vz3ez/YoKaxyjLtoOWZsVgo1P1P47nrFem0Z+DSreR2Ak8DhEN+iJC0q2xb2LRjRQIDAQAB'
-          ensure_record MX send 'feedback-smtp.eu-west-1.amazonses.com' 10
-          ensure_record TXT send 'v=spf1 include:amazonses.com ~all'
-          ensure_record TXT _dmarc 'v=DMARC1; p=none; rua=mailto:dmarc@4planetmagazine.com; adkim=r; aspf=r; pct=100'
+          create_record '{"type":"TXT","name":"resend._domainkey","content":"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnh+r+YYLA4etv26HKCQGR36m6f9hmskNuWPDLvIYVP7nICuDIx5CWmI2fxKSB8glJjd4MgQKQEqh4e+ye+ScL54LSylM3e0CzqUFAg5jn6vz3ez/YoKaxyjLtoOWZsVgo1P1P47nrFem0Z+DSreR2Ak8DhEN+iJC0q2xb2LRjRQIDAQAB","ttl":1}' DKIM
+          create_record '{"type":"MX","name":"send","content":"feedback-smtp.eu-west-1.amazonses.com","priority":10,"ttl":1}' SPF_MX
+          create_record '{"type":"TXT","name":"send","content":"v=spf1 include:amazonses.com ~all","ttl":1}' SPF_TXT
+          create_record '{"type":"TXT","name":"_dmarc","content":"v=DMARC1; p=none; adkim=r; aspf=r; pct=100","ttl":1}' DMARC
 
-          RULES=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules")
-          RULE_ID=$(printf '%s' "$RULES" | python3 -c 'import json,sys; d=json.load(sys.stdin); target="editor@4planetmagazine.com"; out="";\nfor r in d.get("result",[]):\n vals=[m.get("value") for m in r.get("matchers",[]) if m.get("field")=="to"];\n if target in vals: out=r.get("id",""); break\nprint(out)')
-          if [ -n "$RULE_ID" ]; then
-            echo "ROUTE_PRESENT"
-          else
-            BODY='{"name":"4PLANET Magazine editor","enabled":true,"matchers":[{"type":"literal","field":"to","value":"editor@4planetmagazine.com"}],"actions":[{"type":"forward","value":["odin.skogen@gmail.com"]}],"priority":0}'
-            CREATED=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules" --data "$BODY")
-            printf '%s' "$CREATED" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROUTE_CREATE_SUCCESS="+str(d.get("success"))); print("ROUTE_CREATE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
-          fi
+          RULE_BODY='{"name":"4PLANET Magazine editor","enabled":true,"matchers":[{"type":"literal","field":"to","value":"editor@4planetmagazine.com"}],"actions":[{"type":"forward","value":["odin.skogen@gmail.com"]}],"priority":0}'
+          RULE=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules" --data "$RULE_BODY")
+          printf '%s' "$RULE" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROUTE_CREATE_SUCCESS="+str(d.get("success"))); print("ROUTE_CREATE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
 
           STATUS=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing")
           printf '%s' "$STATUS" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("FINAL_STATUS="+str(r.get("status"))); print("FINAL_ENABLED="+str(r.get("enabled")))'
