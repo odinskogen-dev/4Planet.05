@@ -1,5 +1,6 @@
 import { Agent, callable, getAgentByName, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
+import { releasableBlockedPackageIds } from "./dependencyRelease";
 import { evaluateMaterialProgress } from "./evaluator";
 import { evaluateFactoryActivation, type FactoryActivationEvidence } from "./activationGate";
 import { runActivationGateSimulation } from "./activationSimulation";
@@ -221,6 +222,9 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
       GROUP BY status
       ORDER BY status
     `;
+    const lineProjects = this.sql<{ payload: string }>`SELECT payload FROM projects`
+      .map((row) => JSON.parse(row.payload) as ProjectProjection)
+      .filter((project) => Boolean(project.productionLine));
     return {
       service: "4PLANET Production Factory GOLD",
       mode: this.state.mode,
@@ -228,6 +232,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
       lastBatchAt: this.state.lastBatchAt ?? null,
       lastBrainProjectionAt: this.state.lastBrainProjectionAt ?? null,
       queue,
+      productionLineProjects: lineProjects.map((project) => project.productionLine),
       workerCount: this.listSubAgents().length,
       noLiveAuthority: true,
     };
@@ -273,8 +278,9 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   /**
-   * Founder-approved idea → project → bounded work packages. Compilation is
-   * deterministic and subordinate to the supplied authorityRef.
+   * Founder-approved idea → project → bounded work packages. If a current Project
+   * belongs to an approved production line, the same entry point compiles the
+   * reusable Reference → Transfer → QA → Learning sequence. No parallel queue.
    */
   @callable()
   ingestApprovedProject(input: ApprovedProjectIntake) {
@@ -417,8 +423,6 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     this.markStatus(pkg, nextStatus);
     this.releaseLocksFor(pkg.id);
 
-    // Material accepted work automatically reaches the non-authoritative
-    // learning-candidate store. Promotion to a BRAIN rule remains separately gated.
     const learning = compileLearningCandidate(pkg, outcome, evaluation);
     if (learning.accepted && learning.candidate) this.recordLearning(learning.candidate);
 
@@ -428,6 +432,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         const project = JSON.parse(projectRow.payload) as ProjectProjection;
         this.upsertProject({ ...project, lastMaterialProgressAt: outcome.completedAt });
       }
+      this.releaseSatisfiedDependencies(pkg.projectId);
     }
 
     return outcome.workPackageId;
@@ -500,6 +505,29 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         this.releaseLocksFor(pkg.id);
         this.markStatus(pkg, "READY");
       }
+    }
+  }
+
+  /**
+   * Production-line progression law: an accepted stage unlocks only blocked
+   * packages whose every declared dependency is ACCEPTED. A project-level
+   * Founder/blocker gate still wins, so dependency completion can never bypass it.
+   */
+  private releaseSatisfiedDependencies(projectId: string) {
+    const projectRow = this.sql<{ payload: string }>`SELECT payload FROM projects WHERE id = ${projectId}`[0];
+    if (!projectRow) return;
+    const project = JSON.parse(projectRow.payload) as ProjectProjection;
+    if (project.blockedReason || project.founderGate) return;
+
+    const rows = this.sql<{ id: string; status: WorkPackage["status"]; payload: string }>`
+      SELECT id, status, payload FROM work_packages WHERE project_id = ${projectId}
+    `;
+    const statuses = new Map(rows.map((row) => [row.id, row.status] as const));
+    const packages = rows.map((row) => JSON.parse(row.payload) as WorkPackage);
+    const releasable = new Set(releasableBlockedPackageIds(packages, statuses));
+
+    for (const pkg of packages) {
+      if (releasable.has(pkg.id)) this.markStatus(pkg, "READY");
     }
   }
 
