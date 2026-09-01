@@ -1,4 +1,5 @@
 import type { BatchSelection, ProjectProjection, Section, WorkPackage } from "./contracts";
+import { assertMutationPreservation, assertWorkPackageControl } from "./compoundControl";
 import { scoreWorkPackage } from "./scoring";
 
 const HOUR = 60 * 60 * 1000;
@@ -40,8 +41,24 @@ export function selectHourlyBatch(
   // principal active mutations per execution line. Callers may request less,
   // but cannot silently widen the line above five.
   const effectiveMaxPackages = Math.max(1, Math.min(maxPackages, HARD_WIP_CEILING));
+  const rejectedForControl: string[] = [];
 
-  const scored = packages
+  // Compound Control preflight. An orphan or a write without preservation/Zero
+  // Loss evidence is not merely deprioritised; it is removed from this batch and
+  // returned explicitly as a control rejection for correction/writeback.
+  const controlled = packages.filter((pkg) => {
+    try {
+      assertWorkPackageControl(pkg);
+      assertMutationPreservation(pkg);
+      return true;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "unknown control failure";
+      rejectedForControl.push(`${pkg.id || "UNKNOWN"}: ${reason}`);
+      return false;
+    }
+  });
+
+  const scored = controlled
     .map((pkg) => {
       const project = projects.get(pkg.projectId);
       return project ? { pkg, project, score: scoreWorkPackage(pkg, project, now) } : null;
@@ -70,14 +87,9 @@ export function selectHourlyBatch(
     return true;
   };
 
-  // P0 remains first-class every productive hour. Reserve the strongest
-  // conflict-free P0 package before normal scoring when one exists.
   const strongestP0 = scored.find((entry) => entry.pkg.priority === "P0");
   if (strongestP0) trySelect(strongestP0);
 
-  // Hard anti-stagnation: overdue P1/P2 projects receive one protected attempt,
-  // ordered by service-level breach severity and then package value. This is
-  // stronger than merely adding an aging score and prevents quiet starvation.
   const overdueProjectIds = [...projects.values()]
     .filter((project) => !project.blockedReason && serviceLevelOverdue(project, now))
     .sort((a, b) => serviceUrgency(b, now) - serviceUrgency(a, now))
@@ -94,8 +106,6 @@ export function selectHourlyBatch(
     else serviceLevelDeferred.push(projectId);
   }
 
-  // Fill remaining capacity by portfolio value while preserving write isolation
-  // and useful section diversity once a substantive core batch exists.
   for (const entry of scored) {
     if (selected.length >= effectiveMaxPackages) break;
     if (selectedIds.has(entry.pkg.id)) continue;
@@ -115,9 +125,11 @@ export function selectHourlyBatch(
     generatedAt: new Date(now).toISOString(),
     packages: selected,
     rejectedForConflict,
+    rejectedForControl,
     serviceLevelProtected,
     serviceLevelDeferred: [...new Set(serviceLevelDeferred)],
     rationale: [
+      "NO ORPHANS + PRESERVE BEFORE MUTATE hard preflight before scoring",
       "FD-2026-09-02 hard WIP ceiling: maximum five principal packages per execution line",
       "Strongest conflict-free P0 work protected first",
       "Overdue P1/P2 projects receive a hard service-level selection attempt",
