@@ -20,26 +20,30 @@ export function compileLearningCandidate(
   const scope = `${pkg.projectId}/${pkg.section}`;
 
   /**
-   * COMPOUND LEARNING: non-accepted outcomes are never allowed to disappear as
-   * mere execution history. They create a scoped, non-authoritative Learning
-   * Candidate even when root cause is still UNKNOWN. Promotion still requires
-   * evidence and the governed multi-instance rule; this only guarantees capture.
+   * COMPOUND LEARNING — FD-2026-09-02.
+   * Any non-accepted OR evaluator-corrective outcome is persisted as an OPEN,
+   * scoped, non-authoritative failure-learning candidate. Root cause, changed
+   * rule and regression control may remain UNKNOWN/PENDING, but the failure may
+   * not disappear. Missing evidence remains missing; it is never fabricated.
    */
-  if (outcome.status !== "ACCEPTED") {
+  if (outcome.status !== "ACCEPTED" || evaluation.decision !== "ACCEPT" || !evaluation.material) {
     const question = pkg.learningQuestion?.trim() || defaultFailureQuestion;
+    const failureKind = outcome.status !== "ACCEPTED" ? outcome.status : "CORRECTION_REQUIRED";
     const candidate: LearningCandidate = {
       id: `lf-${normalize(pkg.id)}-${normalize(outcome.completedAt)}`,
       workPackageId: pkg.id,
-      observation: actual || `${outcome.status}: no actual-result detail supplied`,
+      observation: actual || `${failureKind}: no actual-result detail supplied`,
       expectedVsActual: `EXPECTED: ${expected || "UNKNOWN"}\nACTUAL: ${actual || "UNKNOWN"}`,
-      evidence: outcome.evidence.length > 0 ? [...outcome.evidence] : [`CONTROL GAP: ${outcome.status} outcome supplied no evidence`],
+      evidence: [...outcome.evidence],
       causeHypothesis: outcome.limitation?.trim() || "Root cause remains UNKNOWN and must be resolved before this failure is considered closed.",
-      lesson: `Failure-learning question “${question}”. Current bounded observation: ${outcome.materialDelta || outcome.status}.`,
+      lesson: `FAILURE CHAIN OPEN. Learning question “${question}”. Current bounded observation: ${outcome.materialDelta || failureKind}.`,
       scope,
       confidence: "LOW",
-      ruleProposal: "FAILURE→TEST gate: resolve root cause, persist the reusable changed rule/contract, add a regression test or machine control where possible, verify it, then write back.",
-      regressionEval: `Do not treat ${pkg.id} as learned-from until the changed rule/control is exercised against this failure class.`,
-      nextTest: `Reproduce or falsify the failure cause, then run the new regression/control before closure for ${scope}.`,
+      ruleProposal: "PENDING — resolve/evidence root cause, then persist the reusable changed rule/contract/work order; no autonomous gate weakening or Canon promotion.",
+      regressionEval: outcome.evidence.length > 0
+        ? `PENDING — convert this repeatable failure class into a regression test or machine control where technically possible; otherwise record an explicit non-automatable reason before closure.`
+        : `PENDING — inspectable failure evidence is missing; capture evidence before retry/closure, then add the regression/control or explicit non-automatable reason.`,
+      nextTest: `Reproduce or falsify the failure cause, apply the bounded correction, and rerun the same acceptance contract before closure for ${scope}.`,
       status: "CANDIDATE",
       createdAt: outcome.completedAt,
     };
@@ -47,15 +51,12 @@ export function compileLearningCandidate(
       accepted: true,
       candidate,
       reasons: [
-        "non-accepted outcome preserved as failure-learning candidate",
+        "non-accepted/corrective outcome preserved as failure-learning candidate",
         "root cause may remain UNKNOWN but may not disappear",
+        "changed rule/regression control remain PENDING until evidenced",
         "promotion remains governed and non-authoritative",
       ],
     };
-  }
-
-  if (evaluation.decision !== "ACCEPT" || !evaluation.material) {
-    return { accepted: false, reasons: ["material acceptance required"] };
   }
 
   const question = pkg.learningQuestion?.trim();
