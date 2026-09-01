@@ -48,7 +48,7 @@
         "max_batch_timeout": 3,
         "max_retries": 3,
         "dead_letter_queue": "4planet-production-factory-v01-shadow-dlq",
-        "max_concurrency": 2
+        "max_concurrency": 1
       }
     ]
   },
