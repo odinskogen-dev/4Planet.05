@@ -31,7 +31,7 @@ test("stale in-flight work recovers to READY but fresh work remains untouched", 
   );
 });
 
-test("accepted, blocked and future-dated records are not silently recycled", () => {
+test("accepted, blocked, future-dated and corrupt records are not silently recycled", () => {
   assert.equal(
     decideInFlightRecovery(
       { status: "ACCEPTED", updatedAt: "2026-08-31T20:00:00.000Z", hasRecordedOutcome: false },
@@ -49,6 +49,13 @@ test("accepted, blocked and future-dated records are not silently recycled", () 
   assert.equal(
     decideInFlightRecovery(
       { status: "RUNNING", updatedAt: "2026-09-01T00:10:00.000Z", hasRecordedOutcome: false },
+      NOW,
+    ),
+    "LEAVE",
+  );
+  assert.equal(
+    decideInFlightRecovery(
+      { status: "DISPATCHED", updatedAt: "not-a-timestamp", hasRecordedOutcome: false },
       NOW,
     ),
     "LEAVE",
