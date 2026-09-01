@@ -27,5 +27,10 @@
     }
   };
 
-  window.addEventListener('DOMContentLoaded', boot, { once: true });
+  const startBoot = () => void boot();
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', startBoot, { once: true });
+  } else {
+    startBoot();
+  }
 })();
