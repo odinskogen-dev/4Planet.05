@@ -14,8 +14,8 @@ export interface ValidatedBrainProjection {
   authority: "CURRENT_DRIVE_BRAIN";
   readOnly: true;
   retrievedAt: string;
-  sourceRefs: string[];
-  projects: ProjectProjection[];
+  readonly sourceRefs: readonly string[];
+  readonly projects: readonly ProjectProjection[];
 }
 
 function requiredText(value: unknown, field: string): string {
@@ -69,7 +69,7 @@ export function validateBrainProjection(snapshot: BrainProjectionSnapshot): Vali
     authority: "CURRENT_DRIVE_BRAIN",
     readOnly: true,
     retrievedAt,
-    sourceRefs: Object.freeze(sourceRefs) as unknown as string[],
-    projects: Object.freeze(projects) as unknown as ProjectProjection[],
+    sourceRefs: Object.freeze(sourceRefs),
+    projects: Object.freeze(projects),
   });
 }
