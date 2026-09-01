@@ -32,9 +32,20 @@
     if (boundary) boundary.textContent = subjectDisclosure;
   };
 
+  const applyOrcaFirstScene = () => {
+    const root = document.getElementById('browser-experience');
+    const stage = root?.querySelector('.nature-journey-hud__stage');
+    const title = root?.querySelector('.nature-journey-hud__title');
+    if (!stage || !title) return;
+    if (stage.textContent?.trim().startsWith('01 /') && /meet one life/i.test(title.textContent || '')) {
+      title.textContent = copy.title;
+    }
+  };
+
   const applyComposition = () => {
     applyHumanFirstEntry();
     applyRecoveredSubject();
+    applyOrcaFirstScene();
   };
 
   const boot = () => {
@@ -50,6 +61,12 @@
       }
     });
     observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-browser-ready', 'src'] });
+
+    const hud = root.querySelector('.nature-journey-hud');
+    if (hud) {
+      const journeyObserver = new MutationObserver(applyOrcaFirstScene);
+      journeyObserver.observe(hud, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-visible'] });
+    }
 
     root.dataset.humanGoldCandidate = '01';
     root.dataset.humanQualityAuthority = 'founder-first';
