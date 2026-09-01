@@ -19,6 +19,9 @@ ATLAS return-camera authority must attach only to the currently mounted map/canv
 ## PRIMARY ACTION
 Navigate into another product surface and return to ATLAS; the current ATLAS map should mount and restore its bounded return camera normally.
 
+## SECONDARY DEPTH
+The fix hardens cross-product map lifecycle authority only. It does not broaden ATLAS scope, add new data, change ecological claims or redefine navigation.
+
 ## P1 DOMINANT
 The current ATLAS map remains the visible, interactive spatial surface.
 
@@ -31,6 +34,9 @@ Return-camera authority waits for the current connected canvas, attaches event l
 ## P4 DEPTH
 This is lifecycle/authority hardening. It does not change ecological claims, source semantics, map data, routes, visual hierarchy or LIVE state.
 
+## WHAT CAN BE REMOVED
+No product capability needs removal. Detached previous canvases and stale global map references must simply be rejected as current authority; no second authority or fallback renderer is introduced.
+
 ## WHAT MUST BE REUSED
 The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publication path, existing World/ATLAS renderer, existing camera restore/release behaviour and existing ONE INTERFACE route structure.
 
@@ -40,14 +46,14 @@ The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publi
 - **REJECT:** binding listeners to a detached canvas, adding a second map authority, changing renderer/runtime dependencies, creating a new route or introducing parallel ATLAS state.
 - **DEFER:** broader ATLAS lifecycle refactors unless a separately reproduced defect proves they are necessary.
 
-## TRUTH / AUTHORITY BOUNDARY
+## TRUTH BOUNDARY
 A global map reference is only accepted when its canvas is connected to the current document. A detached previous canvas is treated as stale and ignored until the current ATLAS map is available. This behavioural guard is not evidence of broader map correctness, ecological truth, production deployment or LIVE release.
 
 ## PERFORMANCE
 No new dependency or renderer. The guard adds only a bounded `getCanvas()` connectivity check and `requestAnimationFrame` retry while the current map has not yet been published.
 
-## MOBILE / CROSS-PRODUCT RISK
-The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas.
+## MOBILE-FIRST RISK
+The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas and must not create a mobile-specific map authority.
 
 ## HUMAN SUCCESS
 A user can leave ATLAS, use another 4PLANET surface and return without the return-camera controller attaching to the previously unmounted ATLAS canvas or preventing the current map from restoring correctly.
