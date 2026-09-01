@@ -9,6 +9,25 @@ export type Section =
   | "LEARNING"
   | "BRAIN_CONTROL";
 
+export type ProductionLineId =
+  | "SPECIES_JOURNEY"
+  | "ECOSYSTEM_PLACE"
+  | "STORY"
+  | "ACTOR"
+  | "SOLUTION"
+  | "CHOICE"
+  | "CAPITAL";
+
+export type ProductionLineRole = "REFERENCE" | "TRANSFER_01" | "TRANSFER_02" | "BATCH";
+
+export interface ProductionLineContext {
+  lineId: ProductionLineId;
+  instanceId: string;
+  templateVersion: string;
+  stage: string;
+  role: ProductionLineRole;
+}
+
 export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK";
 
 /**
@@ -69,6 +88,7 @@ export interface ProjectProjection {
   priority: PriorityClass;
   user?: string;
   authorityRefs?: string[];
+  productionLine?: Omit<ProductionLineContext, "stage">;
   lastMaterialProgressAt?: string;
   blockedReason?: string;
   founderGate?: string;
@@ -87,6 +107,7 @@ export interface WorkPackage {
   writeScopes: string[];
   definitionOfDone: string[];
   requiredEvidence: string[];
+  productionLine?: ProductionLineContext;
   zeroLoss?: ZeroLossEvidence;
   execution?: ExecutionSpec;
   learningQuestion?: string;
