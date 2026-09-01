@@ -114,3 +114,12 @@ test("Factory AI model spend is fail-closed until a gateway budget/provider is i
   assert.equal(AI_COST_CONTROL.modelSpendAllowed, false);
   assert.equal(AI_COST_CONTROL.spendLimitRequiredBeforeModelTraffic, true);
 });
+
+test("Factory zero-cash policy cannot auto-upgrade or use paid features", () => {
+  assert.equal(AI_COST_CONTROL.policy, "ZERO_CASH_FREE_TIER_FAIL_CLOSED");
+  assert.equal(AI_COST_CONTROL.paidFeaturesAllowed, false);
+  assert.equal(AI_COST_CONTROL.autoUpgradeAllowed, false);
+  assert.equal(AI_COST_CONTROL.onCapacityLimit, "WAIT_OR_BLOCK_NEVER_SPEND");
+  assert.ok(AI_COST_CONTROL.internalDailyGuardrails.browserMinutes < 10);
+  assert.ok(AI_COST_CONTROL.internalDailyGuardrails.queueOperations < 10_000);
+});
