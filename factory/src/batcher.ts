@@ -2,6 +2,7 @@ import type { BatchSelection, ProjectProjection, Section, WorkPackage } from "./
 import { scoreWorkPackage } from "./scoring";
 
 const HOUR = 60 * 60 * 1000;
+const HARD_WIP_CEILING = 5;
 
 function overlaps(a: string[], b: string[]): boolean {
   return a.some((scopeA) => b.some((scopeB) => scopeA === scopeB || scopeA.startsWith(`${scopeB}/`) || scopeB.startsWith(`${scopeA}/`)));
@@ -32,9 +33,14 @@ function serviceUrgency(project: ProjectProjection, now: number): number {
 export function selectHourlyBatch(
   projects: Map<string, ProjectProjection>,
   packages: WorkPackage[],
-  maxPackages = 10,
+  maxPackages = HARD_WIP_CEILING,
   now = Date.now(),
 ): BatchSelection {
+  // Founder Decision FD-2026-09-02 sets a default hard ceiling of five
+  // principal active mutations per execution line. Callers may request less,
+  // but cannot silently widen the line above five.
+  const effectiveMaxPackages = Math.max(1, Math.min(maxPackages, HARD_WIP_CEILING));
+
   const scored = packages
     .map((pkg) => {
       const project = projects.get(pkg.projectId);
@@ -52,7 +58,7 @@ export function selectHourlyBatch(
   const serviceLevelDeferred: string[] = [];
 
   const trySelect = (entry: { pkg: WorkPackage; project: ProjectProjection; score: number }): boolean => {
-    if (selected.length >= maxPackages || selectedIds.has(entry.pkg.id)) return false;
+    if (selected.length >= effectiveMaxPackages || selectedIds.has(entry.pkg.id)) return false;
     if (overlaps(entry.pkg.writeScopes, usedScopes)) {
       if (!rejectedForConflict.includes(entry.pkg.id)) rejectedForConflict.push(entry.pkg.id);
       return false;
@@ -78,7 +84,7 @@ export function selectHourlyBatch(
     .map((project) => project.id);
 
   for (const projectId of overdueProjectIds) {
-    if (selected.length >= maxPackages) {
+    if (selected.length >= effectiveMaxPackages) {
       serviceLevelDeferred.push(projectId);
       continue;
     }
@@ -91,7 +97,7 @@ export function selectHourlyBatch(
   // Fill remaining capacity by portfolio value while preserving write isolation
   // and useful section diversity once a substantive core batch exists.
   for (const entry of scored) {
-    if (selected.length >= maxPackages) break;
+    if (selected.length >= effectiveMaxPackages) break;
     if (selectedIds.has(entry.pkg.id)) continue;
     if (overlaps(entry.pkg.writeScopes, usedScopes)) {
       if (!rejectedForConflict.includes(entry.pkg.id)) rejectedForConflict.push(entry.pkg.id);
@@ -101,7 +107,7 @@ export function selectHourlyBatch(
     const unseenSectionExists = scored.some(
       (candidate) => !selectedIds.has(candidate.pkg.id) && !sections.has(candidate.pkg.section) && !overlaps(candidate.pkg.writeScopes, usedScopes),
     );
-    if (selected.length >= 5 && sections.has(entry.pkg.section) && unseenSectionExists) continue;
+    if (selected.length >= 3 && sections.has(entry.pkg.section) && unseenSectionExists) continue;
     trySelect(entry);
   }
 
@@ -112,6 +118,7 @@ export function selectHourlyBatch(
     serviceLevelProtected,
     serviceLevelDeferred: [...new Set(serviceLevelDeferred)],
     rationale: [
+      "FD-2026-09-02 hard WIP ceiling: maximum five principal packages per execution line",
       "Strongest conflict-free P0 work protected first",
       "Overdue P1/P2 projects receive a hard service-level selection attempt",
       "No overlapping write scopes",
