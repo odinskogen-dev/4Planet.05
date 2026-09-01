@@ -1,6 +1,9 @@
 import type { ProductionLineId, ProjectProjection, Section, WorkPackage } from "./contracts";
 
-export const SHADOW_ORCHESTRA_ID = "4planet-first-real-orchestra-v02";
+const ORCHESTRA_VERSION = "03" as const;
+const versioned = (stem: string) => `${stem}-v${ORCHESTRA_VERSION}`;
+
+export const SHADOW_ORCHESTRA_ID = `4planet-first-real-orchestra-v${ORCHESTRA_VERSION}` as const;
 export const FACTORY_PREVIEW_HOST = "factory-symphony-runtime-v01.4planet-05.pages.dev";
 export const ORCA_RECOVERY_HOST = "recovery-orca-human-gold-01.4planet-05.pages.dev";
 
@@ -19,9 +22,9 @@ interface BrowserProbe {
 
 const browserProbes: BrowserProbe[] = [
   {
-    id: "orch-orca-mobile-v02",
-    title: "Orca recovery candidate mobile runtime evidence — Orchestra 02",
-    projectId: "orch-species-v02",
+    id: versioned("orch-orca-mobile"),
+    title: "Orca recovery candidate mobile runtime evidence — Orchestra 03",
+    projectId: versioned("orch-species"),
     section: "CODE_QA",
     lineId: "SPECIES_JOURNEY",
     instanceId: "orca",
@@ -31,9 +34,9 @@ const browserProbes: BrowserProbe[] = [
     height: 844,
   },
   {
-    id: "orch-orca-desktop-v02",
-    title: "Orca recovery candidate desktop runtime evidence — Orchestra 02",
-    projectId: "orch-species-v02",
+    id: versioned("orch-orca-desktop"),
+    title: "Orca recovery candidate desktop runtime evidence — Orchestra 03",
+    projectId: versioned("orch-species"),
     section: "PRODUCT_DESIGN",
     lineId: "SPECIES_JOURNEY",
     instanceId: "orca",
@@ -43,9 +46,9 @@ const browserProbes: BrowserProbe[] = [
     height: 1000,
   },
   {
-    id: "orch-jaguar-mobile-v02",
-    title: "Jaguar reference candidate mobile runtime evidence — Orchestra 02",
-    projectId: "orch-species-v02",
+    id: versioned("orch-jaguar-mobile"),
+    title: "Jaguar reference candidate mobile runtime evidence — Orchestra 03",
+    projectId: versioned("orch-species"),
     section: "CODE_QA",
     lineId: "SPECIES_JOURNEY",
     instanceId: "jaguar",
@@ -55,9 +58,9 @@ const browserProbes: BrowserProbe[] = [
     height: 844,
   },
   {
-    id: "orch-acropora-mobile-v02",
-    title: "Acropora transfer candidate mobile runtime evidence — Orchestra 02",
-    projectId: "orch-species-v02",
+    id: versioned("orch-acropora-mobile"),
+    title: "Acropora transfer candidate mobile runtime evidence — Orchestra 03",
+    projectId: versioned("orch-species"),
     section: "PRODUCT_DESIGN",
     lineId: "SPECIES_JOURNEY",
     instanceId: "acropora-palmata",
@@ -67,9 +70,9 @@ const browserProbes: BrowserProbe[] = [
     height: 844,
   },
   {
-    id: "orch-bay-mobile-v02",
-    title: "Bay of Biscay ecosystem mobile runtime evidence — Orchestra 02",
-    projectId: "orch-ecosystem-v02",
+    id: versioned("orch-bay-mobile"),
+    title: "Bay of Biscay ecosystem mobile runtime evidence — Orchestra 03",
+    projectId: versioned("orch-ecosystem"),
     section: "CODE_QA",
     lineId: "ECOSYSTEM_PLACE",
     instanceId: "bay-of-biscay",
@@ -79,9 +82,9 @@ const browserProbes: BrowserProbe[] = [
     height: 844,
   },
   {
-    id: "orch-bay-desktop-v02",
-    title: "Bay of Biscay ecosystem desktop runtime evidence — Orchestra 02",
-    projectId: "orch-ecosystem-v02",
+    id: versioned("orch-bay-desktop"),
+    title: "Bay of Biscay ecosystem desktop runtime evidence — Orchestra 03",
+    projectId: versioned("orch-ecosystem"),
     section: "PRODUCT_DESIGN",
     lineId: "ECOSYSTEM_PLACE",
     instanceId: "bay-of-biscay",
@@ -91,9 +94,9 @@ const browserProbes: BrowserProbe[] = [
     height: 1000,
   },
   {
-    id: "orch-one-interface-mobile-v02",
-    title: "ONE INTERFACE mobile entry runtime evidence — Orchestra 02",
-    projectId: "orch-product-v02",
+    id: versioned("orch-one-interface-mobile"),
+    title: "ONE INTERFACE mobile entry runtime evidence — Orchestra 03",
+    projectId: versioned("orch-product"),
     section: "USER_DISTRIBUTION",
     instanceId: "one-interface",
     url: `https://${FACTORY_PREVIEW_HOST}/`,
@@ -105,8 +108,8 @@ const browserProbes: BrowserProbe[] = [
 
 export const ORCHESTRA_PACKAGE_IDS = [
   ...browserProbes.map((probe) => probe.id),
-  "orch-story-source-v02",
-] as const;
+  versioned("orch-story-source"),
+];
 
 function project(
   id: string,
@@ -119,12 +122,12 @@ function project(
     name,
     northStar: "Prove real 4PLANET work can flow through a bounded, observable, quality-gated 24/7 Factory without granting LIVE authority.",
     goal: "Collect independent runtime evidence on current 4PLANET product and story work through the real Factory transport layer.",
-    current: "Orchestra 01 exposed real Browser concurrency and source-size adapter defects; those defects are corrected without rewriting historical outcomes.",
-    gold: "A conflict-free multi-project Orchestra 02 completes with persisted evidence, independent quality decisions and no unsafe side effects.",
-    gap: "Prove corrected bounded Browser concurrency and authoritative source handling on the same real 4PLANET surfaces.",
+    current: "Orchestra 01 exposed Browser concurrency and source-size defects. Orchestra 02 proved the source fix and isolated Browser capacity to one practical active session on the current runtime.",
+    gold: "Orchestra 03 completes the same real multi-project proof with serialized Browser work, persisted evidence and independent quality decisions.",
+    gap: "Prove the current free-tier runtime can reliably drain a real multi-surface Browser/source queue without 429 capacity loss.",
     priority: "INCUBATING",
     user: "4PLANET Factory internal QA; Founder remains Human Gold judge.",
-    authorityRefs: ["BRAIN current state", "GitHub PR #212", "Founder Human Gold direction 2026-09-01", "Orchestra 01 runtime evidence"],
+    authorityRefs: ["BRAIN current state", "GitHub PR #212", "Founder Human Gold direction 2026-09-01", "Orchestra 01 runtime evidence", "Orchestra 02 runtime evidence"],
     productionLine,
     lastMaterialProgressAt: nowIso,
   };
@@ -132,33 +135,33 @@ function project(
 
 export function createShadowOrchestraProjects(nowIso = new Date().toISOString()): ProjectProjection[] {
   return [
-    project("orch-species-v02", "Species/Journey runtime evidence orchestra 02", nowIso, {
+    project(versioned("orch-species"), "Species/Journey runtime evidence orchestra 03", nowIso, {
       lineId: "SPECIES_JOURNEY",
-      instanceId: "orchestra-batch-02",
-      templateVersion: "02",
+      instanceId: "orchestra-batch-03",
+      templateVersion: "03",
       role: "BATCH",
     }),
-    project("orch-ecosystem-v02", "Ecosystem/Place runtime evidence orchestra 02", nowIso, {
+    project(versioned("orch-ecosystem"), "Ecosystem/Place runtime evidence orchestra 03", nowIso, {
       lineId: "ECOSYSTEM_PLACE",
-      instanceId: "orchestra-batch-02",
-      templateVersion: "02",
+      instanceId: "orchestra-batch-03",
+      templateVersion: "03",
       role: "BATCH",
     }),
-    project("orch-story-v02", "Story source-truth evidence orchestra 02", nowIso, {
+    project(versioned("orch-story"), "Story source-truth evidence orchestra 03", nowIso, {
       lineId: "STORY",
-      instanceId: "humpback-source-proof-02",
-      templateVersion: "02",
+      instanceId: "humpback-source-proof-03",
+      templateVersion: "03",
       role: "BATCH",
     }),
-    project("orch-product-v02", "ONE INTERFACE entry evidence orchestra 02", nowIso),
+    project(versioned("orch-product"), "ONE INTERFACE entry evidence orchestra 03", nowIso),
   ];
 }
 
 const base = (projectId: string, nowIso: string): Omit<WorkPackage, "id" | "title" | "section" | "execution" | "learningQuestion" | "productionLine"> => ({
   projectId,
   priority: "INCUBATING",
-  goalLink: "FACTORY WORLD CLASS BUILD 03 — real 4PLANET Orchestra 02",
-  gapClosed: "Corrected independent real-world evidence on current 4PLANET work",
+  goalLink: "FACTORY WORLD CLASS BUILD 03 — real 4PLANET Orchestra 03",
+  gapClosed: "Reliable independent real-world evidence on current 4PLANET work",
   deliverables: ["Persisted bounded evidence", "Independent quality decision", "Traceable outcome", "Learning candidate when material"],
   dependencies: [],
   writeScopes: [],
@@ -199,7 +202,7 @@ export function createShadowOrchestraPackages(nowIso = new Date().toISOString())
       ? {
           lineId: probe.lineId,
           instanceId: probe.instanceId,
-          templateVersion: "02",
+          templateVersion: "03",
           stage: "OBSERVE",
           role: "BATCH",
         }
@@ -210,18 +213,18 @@ export function createShadowOrchestraPackages(nowIso = new Date().toISOString())
       allowedHosts: probe.allowedHosts,
       viewport: { width: probe.width, height: probe.height, deviceScaleFactor: 1 },
     },
-    learningQuestion: `Can Factory collect reliable ${probe.width}x${probe.height} evidence for ${probe.instanceId} after correcting bounded Browser concurrency, without confusing technical render proof with Human Gold?`,
+    learningQuestion: `Can Factory collect reliable ${probe.width}x${probe.height} evidence for ${probe.instanceId} with serialized Browser capacity, without confusing technical render proof with Human Gold?`,
   }));
 
   const storySource: WorkPackage = {
-    ...base("orch-story-v02", nowIso),
-    id: "orch-story-source-v02",
-    title: "Living Ocean humpback NOAA source reachability and bounded provenance fingerprint — Orchestra 02",
+    ...base(versioned("orch-story"), nowIso),
+    id: versioned("orch-story-source"),
+    title: "Living Ocean humpback NOAA source reachability and bounded provenance fingerprint — Orchestra 03",
     section: "RESEARCH_DATA",
     productionLine: {
       lineId: "STORY",
       instanceId: "humpback-cooperative-feeding",
-      templateVersion: "02",
+      templateVersion: "03",
       stage: "SOURCE",
       role: "BATCH",
     },
@@ -230,7 +233,7 @@ export function createShadowOrchestraPackages(nowIso = new Date().toISOString())
       targetUrl: "https://www.fisheries.noaa.gov/species/humpback-whale",
       allowedHosts: ["fisheries.noaa.gov"],
     },
-    learningQuestion: "Can Story Factory verify a normal-sized authoritative NOAA species page within a bounded source envelope without turning reachability into an unsupported scientific claim?",
+    learningQuestion: "Can Story Factory continuously verify the authoritative NOAA species source within the corrected bounded source envelope without turning reachability into an unsupported scientific claim?",
   };
 
   return [...browserPackages, storySource];
