@@ -60,16 +60,20 @@ test("accepted material outcome becomes scoped non-authoritative learning", () =
   assert.match(compiled.candidate?.nextTest ?? "", /second comparable case/i);
 });
 
-test("non-material accepted work cannot create learning authority", () => {
+test("non-material accepted claim is persisted as an open correction-learning record", () => {
   const weak: Outcome = {
     ...outcome,
     materialDelta: "Plan queued for later.",
     evidence: [],
   };
   const evaluation = evaluateMaterialProgress(pkg, weak);
+  assert.notEqual(evaluation.decision, "ACCEPT");
   const compiled = compileLearningCandidate(pkg, weak, evaluation);
-  assert.equal(compiled.accepted, false);
-  assert.equal(compiled.candidate, undefined);
+  assert.equal(compiled.accepted, true);
+  assert.equal(compiled.candidate?.status, "CANDIDATE");
+  assert.match(compiled.candidate?.lesson ?? "", /FAILURE CHAIN OPEN/);
+  assert.deepEqual(compiled.candidate?.evidence, []);
+  assert.match(compiled.candidate?.regressionEval ?? "", /evidence is missing/i);
 });
 
 test("failed or correction outcomes cannot disappear without a failure-learning record", () => {
@@ -85,6 +89,7 @@ test("failed or correction outcomes cannot disappear without a failure-learning 
   const compiled = compileLearningCandidate(pkg, failed, evaluation);
   assert.equal(compiled.accepted, true);
   assert.equal(compiled.candidate?.status, "CANDIDATE");
-  assert.match(compiled.candidate?.ruleProposal ?? "", /FAILURE→TEST/);
-  assert.match(compiled.candidate?.evidence[0] ?? "", /CONTROL GAP/);
+  assert.match(compiled.candidate?.ruleProposal ?? "", /PENDING/);
+  assert.deepEqual(compiled.candidate?.evidence, []);
+  assert.match(compiled.candidate?.nextTest ?? "", /Reproduce or falsify/i);
 });
