@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "4planet-production-factory-v01-shadow",
-  "main": "src/worldClassRuntime.ts",
+  "main": "src/activeRuntime.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
@@ -14,6 +14,9 @@
       "enabled": true,
       "head_sampling_rate": 1
     }
+  },
+  "ai": {
+    "binding": "AI"
   },
   "browser": {
     "binding": "BROWSER",
