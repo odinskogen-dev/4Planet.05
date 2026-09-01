@@ -24,9 +24,19 @@ const sectionEvidenceHints: Record<Section, RegExp[]> = {
   RESEARCH_DATA: [/source|provenance|dataset|primary|doi|url|claim|unknown/i],
   USER_DISTRIBUTION: [/entry|advance|completion|meaningful|event|user|reply|conversion/i],
   CAPITAL: [/submission|reply|award|contract|cash|deadline|eligibility|routing/i],
-  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test/i],
+  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test|production-minutes|founder-minutes|reuse-rate/i],
   BRAIN_CONTROL: [/authority|readback|source ref|exact|conflict|lock|decision/i],
 };
+
+const COMPOUNDING_EVIDENCE: Array<[RegExp, string]> = [
+  [/production-minutes\s*[:=]\s*\d+/i, "Measured production-minutes"],
+  [/founder-minutes\s*[:=]\s*\d+/i, "Measured founder-minutes"],
+  [/reuse-rate\s*[:=]\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\d{1,3}%)/i, "Measured reuse-rate"],
+  [/evidence-completeness\s*[:=]\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\d{1,3}%)/i, "Measured evidence-completeness"],
+  [/product-quality\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured product-quality"],
+  [/mobile-quality\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured mobile-quality"],
+  [/user-comprehension\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured user-comprehension"],
+];
 
 function hasConcreteEvidence(evidence: string[]): boolean {
   return evidence.some((item) => concreteEvidencePatterns.some((pattern) => pattern.test(item)));
@@ -47,6 +57,16 @@ function deltaLooksMaterial(delta: string): boolean {
   return /working|fixed|visible|deployed|passed|received|verified|measured|implemented|reduced|increased|removed|restored|unblocked|accepted/i.test(text);
 }
 
+function productionLineLearningEvidence(pkg: WorkPackage, outcome: Outcome): string[] {
+  if (pkg.productionLine?.stage !== "LEARN") return [];
+  const haystack = `${outcome.materialDelta}\n${outcome.evidence.join("\n")}`;
+  const missing = COMPOUNDING_EVIDENCE.filter(([pattern]) => !pattern.test(haystack)).map(([, label]) => label);
+  if (pkg.productionLine.role !== "REFERENCE" && !/compounding\s*[:=]\s*(?:PASS|FAIL)/i.test(haystack)) {
+    missing.push("Explicit compounding PASS/FAIL verdict");
+  }
+  return missing;
+}
+
 export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): MaterialProgressEvaluation {
   const reasons: string[] = [];
   const missingEvidence: string[] = [];
@@ -57,6 +77,20 @@ export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): Ma
   }
   if (outcome.status === "REJECTED") {
     return { decision: "REJECT", material: false, score: 0, reasons: ["Worker rejected its own outcome"], missingEvidence: [] };
+  }
+
+  const compoundingMissing = productionLineLearningEvidence(pkg, outcome);
+  if (compoundingMissing.length > 0) {
+    return {
+      decision: "CORRECT",
+      material: false,
+      score: 0,
+      reasons: ["Production-line learning cannot close without measured compounding evidence"],
+      missingEvidence: compoundingMissing,
+    };
+  }
+  if (pkg.productionLine?.stage === "LEARN") {
+    reasons.push("Production-line compounding evidence is explicitly measured");
   }
 
   if (deltaLooksMaterial(outcome.materialDelta)) {
@@ -107,7 +141,7 @@ export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): Ma
   }
 
   return {
-    decision: outcome.status === "ACCEPTED" ? "CORRECT" : "CORRECT",
+    decision: "CORRECT",
     material: false,
     score,
     reasons,
