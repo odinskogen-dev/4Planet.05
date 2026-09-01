@@ -1,4 +1,5 @@
 import type { PriorityClass, ProjectProjection } from "./contracts";
+import { assertRequiredAuthorityRefs } from "./compoundControl";
 
 const PRIORITIES = new Set<PriorityClass>(["P0", "P1", "P2", "BLOCKED", "INCUBATING", "PARKED"]);
 
@@ -44,6 +45,10 @@ function validateProject(project: ProjectProjection): ProjectProjection {
  * Converts an externally retrieved CURRENT Drive/BRAIN snapshot into the Factory's
  * local scheduling projection. This boundary is intentionally one-way: it accepts
  * read-only authority evidence and exposes no source write method.
+ *
+ * Multi-Giga 04 is a hard rehydration dependency: the Factory refuses a current-
+ * state projection that has forgotten the active Founder Decision controlling
+ * Compound Control, Factory, SUPERBRAIN, EMBLA/4SAPIEN and S4PIENS priorities.
  */
 export function validateBrainProjection(snapshot: BrainProjectionSnapshot): ValidatedBrainProjection {
   if (snapshot.authority !== "CURRENT_DRIVE_BRAIN") throw new Error("Factory accepts only CURRENT Drive/BRAIN authority projections");
@@ -56,6 +61,7 @@ export function validateBrainProjection(snapshot: BrainProjectionSnapshot): Vali
     throw new Error("BRAIN projection requires at least one authority sourceRef");
   }
   const sourceRefs = [...new Set(snapshot.sourceRefs.map((ref) => requiredText(ref, "sourceRef")))];
+  assertRequiredAuthorityRefs(sourceRefs);
 
   if (!Array.isArray(snapshot.projects)) throw new Error("BRAIN projection projects must be an array");
   const projects = snapshot.projects.map(validateProject);
