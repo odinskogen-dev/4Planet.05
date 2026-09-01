@@ -1,4 +1,5 @@
 import type { Outcome, Section, WorkPackage } from "./contracts";
+import { evaluateHumanGoldEvidence } from "./humanGold";
 
 export type MaterialProgressDecision = "ACCEPT" | "CORRECT" | "REJECT";
 
@@ -19,12 +20,12 @@ const concreteEvidencePatterns: RegExp[] = [
 ];
 
 const sectionEvidenceHints: Record<Section, RegExp[]> = {
-  PRODUCT_DESIGN: [/before|after|runtime|screenshot|desktop|mobile|interaction|visible/i],
-  CODE_QA: [/sha|pass|fail|typecheck|build|browser|webkit|chromium|test|trace/i],
+  PRODUCT_DESIGN: [/before|after|runtime|screenshot|desktop|mobile|interaction|visible|human-gold/i],
+  CODE_QA: [/sha|pass|fail|typecheck|build|browser|webkit|chromium|test|trace|human-gold/i],
   RESEARCH_DATA: [/source|provenance|dataset|primary|doi|url|claim|unknown/i],
   USER_DISTRIBUTION: [/entry|advance|completion|meaningful|event|user|reply|conversion/i],
   CAPITAL: [/submission|reply|award|contract|cash|deadline|eligibility|routing/i],
-  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test|production-minutes|founder-minutes|reuse-rate/i],
+  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test|production-minutes|founder-minutes|reuse-rate|human-gold-status/i],
   BRAIN_CONTROL: [/authority|readback|source ref|exact|conflict|lock|decision/i],
 };
 
@@ -36,6 +37,7 @@ const COMPOUNDING_EVIDENCE: Array<[RegExp, string]> = [
   [/product-quality\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured product-quality"],
   [/mobile-quality\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured mobile-quality"],
   [/user-comprehension\s*[:=]\s*(?:10(?:\.0+)?|[0-9](?:\.\d+)?)/i, "Measured user-comprehension"],
+  [/human-gold-status\s*[:=]\s*(?:FOUNDER_GOLD|EXTERNAL_HUMAN_GOLD)/i, "Founder Gold or External Human Gold quality status"],
 ];
 
 function hasConcreteEvidence(evidence: string[]): boolean {
@@ -67,6 +69,32 @@ function productionLineLearningEvidence(pkg: WorkPackage, outcome: Outcome): str
   return missing;
 }
 
+function productionLineHumanGoldEvidence(pkg: WorkPackage, outcome: Outcome): {
+  passed: boolean;
+  reasons: string[];
+  missingEvidence: string[];
+} {
+  if (pkg.productionLine?.stage !== "QA") return { passed: true, reasons: [], missingEvidence: [] };
+  const evaluation = evaluateHumanGoldEvidence(outcome.evidence);
+  if (!evaluation.candidatePassed) {
+    const missingEvidence = [
+      ...evaluation.missingDimensions.map((dimension) => `Human Gold ${dimension} independent PASS evidence`),
+      ...evaluation.failedDimensions.map((dimension) => `Human Gold ${dimension} currently FAILS and requires rebuild`),
+      ...evaluation.invalidEvidence,
+    ];
+    return {
+      passed: false,
+      reasons: ["Technical QA cannot override a Human Gold quality failure"],
+      missingEvidence,
+    };
+  }
+  return {
+    passed: true,
+    reasons: [`Human Gold quality gate reached ${evaluation.status}; Founder Gold is never self-promoted`],
+    missingEvidence: [],
+  };
+}
+
 export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): MaterialProgressEvaluation {
   const reasons: string[] = [];
   const missingEvidence: string[] = [];
@@ -79,18 +107,30 @@ export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): Ma
     return { decision: "REJECT", material: false, score: 0, reasons: ["Worker rejected its own outcome"], missingEvidence: [] };
   }
 
+  const humanGold = productionLineHumanGoldEvidence(pkg, outcome);
+  if (!humanGold.passed) {
+    return {
+      decision: "CORRECT",
+      material: false,
+      score: 0,
+      reasons: humanGold.reasons,
+      missingEvidence: humanGold.missingEvidence,
+    };
+  }
+  reasons.push(...humanGold.reasons);
+
   const compoundingMissing = productionLineLearningEvidence(pkg, outcome);
   if (compoundingMissing.length > 0) {
     return {
       decision: "CORRECT",
       material: false,
       score: 0,
-      reasons: ["Production-line learning cannot close without measured compounding evidence"],
+      reasons: ["Production-line learning cannot close without measured quality compounding evidence"],
       missingEvidence: compoundingMissing,
     };
   }
   if (pkg.productionLine?.stage === "LEARN") {
-    reasons.push("Production-line compounding evidence is explicitly measured");
+    reasons.push("Production-line compounding evidence is explicitly measured after Founder Gold quality");
   }
 
   if (deltaLooksMaterial(outcome.materialDelta)) {
