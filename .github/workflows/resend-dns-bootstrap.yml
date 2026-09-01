@@ -1,0 +1,94 @@
+name: Resend DNS Bootstrap
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+    paths:
+      - .github/workflows/resend-dns-bootstrap.yml
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN_A: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_TOKEN_B: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF_TOKEN_C: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - name: Configure Resend DNS records
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOKEN=""
+          SOURCE=""
+          if [ -n "${CF_TOKEN_A:-}" ]; then TOKEN="$CF_TOKEN_A"; SOURCE="CLOUDFLARE_API_TOKEN"; fi
+          if [ -z "$TOKEN" ] && [ -n "${CF_TOKEN_B:-}" ]; then TOKEN="$CF_TOKEN_B"; SOURCE="CLOUDFLARE_TOKEN"; fi
+          if [ -z "$TOKEN" ] && [ -n "${CF_TOKEN_C:-}" ]; then TOKEN="$CF_TOKEN_C"; SOURCE="CF_API_TOKEN"; fi
+
+          if [ -z "$TOKEN" ]; then
+            echo "No supported Cloudflare token secret found."
+            exit 2
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "Using configured Cloudflare credential: $SOURCE"
+
+          api() {
+            curl -fsS \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              "$@"
+          }
+
+          ZONES=$(api "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active")
+          ZONE_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result",[]); print(r[0]["id"] if r else "")')
+          if [ -z "$ZONE_ID" ]; then
+            echo "4planet.org was not accessible with the configured Cloudflare token."
+            exit 3
+          fi
+          echo "Cloudflare zone located."
+
+          ensure_record() {
+            TYPE="$1"
+            NAME="$2"
+            CONTENT="$3"
+            PRIORITY="${4:-}"
+            FQDN="$NAME.4planet.org"
+
+            QUERY=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=$TYPE&name=$FQDN")
+            COUNT=$(printf '%s' "$QUERY" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("result",[])))')
+
+            if [ "$COUNT" -gt 0 ]; then
+              MATCH=$(printf '%s' "$QUERY" | EXPECTED="$CONTENT" python3 -c 'import json,os,sys; r=json.load(sys.stdin).get("result",[]); print("yes" if any(x.get("content")==os.environ["EXPECTED"] for x in r) else "no")')
+              if [ "$MATCH" = "yes" ]; then
+                echo "$TYPE $FQDN already correct."
+                return 0
+              fi
+              echo "Conflict: $TYPE $FQDN exists with different content; refusing to overwrite."
+              exit 4
+            fi
+
+            if [ "$TYPE" = "MX" ]; then
+              BODY=$(TYPE="$TYPE" FQDN="$FQDN" CONTENT="$CONTENT" PRIORITY="$PRIORITY" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["FQDN"],"content":os.environ["CONTENT"],"priority":int(os.environ["PRIORITY"]),"ttl":1}))')
+            else
+              BODY=$(TYPE="$TYPE" FQDN="$FQDN" CONTENT="$CONTENT" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["FQDN"],"content":os.environ["CONTENT"],"ttl":1}))')
+            fi
+
+            RESULT=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" --data "$BODY")
+            OK=$(printf '%s' "$RESULT" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")')
+            if [ "$OK" != "yes" ]; then
+              echo "Failed to create $TYPE $FQDN."
+              exit 5
+            fi
+            echo "Created $TYPE $FQDN."
+          }
+
+          ensure_record TXT resend._domainkey 'p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCrf02w/k5wXA9x8vLCSYBRYdqzcuhdRAIp0eXjMcuhKn4ZwnZL9WNZUedsHQeKp4it7cips20vLdCLOsTeZuI0ZPMARCdTPthl5DDnFgWdsGJMTNUeCLOXmEtqXJyQK1k2qor7Q8/hCBllYJs0SN/HaA6CAeshEJGz/sgzNb+yFQIDAQAB'
+          ensure_record MX send 'feedback-smtp.eu-west-1.amazonses.com' 10
+          ensure_record TXT send 'v=spf1 include:amazonses.com ~all'
+
+          echo "RESEND_DNS_BOOTSTRAP_OK"
