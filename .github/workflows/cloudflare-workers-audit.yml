@@ -8,15 +8,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 jobs:
-  analytics-live:
+  audit:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: king/test
+          fetch-depth: 0
 
       - name: Resolve Cloudflare token
         env:
@@ -35,84 +38,204 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Resolve Cloudflare account
+      - name: Inventory live routing
         shell: bash
         run: |
           set -euo pipefail
-          json=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=cre4tors.com&status=active')
-          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$json")
-          [ -n "$ACCOUNT_ID" ]
-          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo 'No Cloudflare account'; exit 1; }
 
-      - name: Build analytics Worker modules
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -e 's|__4P_ORIGIN__|https://b8a8f6c1.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|cre4tors-v0.3-78cdebc|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/cre4tors.mjs"
-          sed -e 's|__4P_ORIGIN__|https://4482f621.4planet-05.pages.dev|g' -e 's|__4P_MARKER__|4market-gold-01-cad5f58|g' scripts/analytics-worker-proxy.js > "$RUNNER_TEMP/market.mjs"
-          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/cre4tors.mjs"
-          grep -q 'G-Q79Y9HJRL8' "$RUNNER_TEMP/market.mjs"
-          cat > "$RUNNER_TEMP/cre4tors.toml" <<EOF
-          name = "cre4tors-prototype"
-          main = "$RUNNER_TEMP/cre4tors.mjs"
-          compatibility_date = "2026-08-24"
-          account_id = "$CLOUDFLARE_ACCOUNT_ID"
-          [[routes]]
-          pattern = "cre4tors.com"
-          custom_domain = true
-          [[routes]]
-          pattern = "www.cre4tors.com"
-          custom_domain = true
-          EOF
-          cat > "$RUNNER_TEMP/market.toml" <<EOF
-          name = "4planetmarket-prototype"
-          main = "$RUNNER_TEMP/market.mjs"
-          compatibility_date = "2026-08-24"
-          account_id = "$CLOUDFLARE_ACCOUNT_ID"
-          [[routes]]
-          pattern = "4planetmarket.com"
-          custom_domain = true
-          [[routes]]
-          pattern = "www.4planetmarket.com"
-          custom_domain = true
-          EOF
-
-      - name: Deploy CRE4TORS analytics Worker
-        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/cre4tors.toml"
-
-      - name: Deploy MARKET analytics Worker
-        run: npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/market.toml"
-
-      - name: Verify live product + analytics surfaces
-        shell: bash
-        run: |
-          set -euo pipefail
-          verify() {
-            host="$1" product="$2"
-            for i in $(seq 1 30); do
-              html=$(curl -fsS "https://${host}/" || true)
-              shim=$(curl -fsS "https://${host}/_4p-analytics.js" || true)
-              headers=$(curl -fsSI "https://${host}/" | tr -d '\r' || true)
-              if [[ "$html" == *"$product"* && "$html" == *'/_4p-analytics.js'* && "$shim" == *'G-Q79Y9HJRL8'* && "$headers" == *'4PLANET_ANALYTICS_PROXY_V1'* ]]; then return 0; fi
-              sleep 5
+          {
+            echo '# Cloudflare live routing — pre-convergence inventory'
+            echo
+            echo '| Domain | Zone | Apex DNS | Worker routes |'
+            echo '|---|---|---|---|'
+            for domain in 4planet.org s4piens.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
+              zone=$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")
+              zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+              zstatus=$(jq -r '.result[0].status // "missing"' <<<"$zone")
+              if [ -z "$zid" ]; then
+                echo "| ${domain} | missing | | |"
+                continue
+              fi
+              dns=$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")
+              records=$(jq -r '[.result[]? | select(.type != "MX" and .type != "TXT") | (.type + " " + (.content // ""))] | join("; ")' <<<"$dns")
+              routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+              route_text=$(jq -r '[.result[]? | (.pattern + " → " + (.script // "<none>"))] | join("; ")' <<<"$routes")
+              echo "| ${domain} | ${zstatus} | ${records:-none} | ${route_text:-none} |"
             done
-            return 1
-          }
-          verify cre4tors.com 'Create'
-          verify 4planetmarket.com 'ART'
-          cat > /tmp/report.md <<'EOF'
-          # Analytics Worker deployment
 
-          - cre4tors.com: product preserved + consent analytics shim **LIVE PASS**
-          - 4planetmarket.com: product preserved + consent analytics shim **LIVE PASS**
-          - Measurement ID: `G-Q79Y9HJRL8`
-          - Existing immutable product origins preserved.
-          EOF
+            echo
+            echo '## Worker Custom Domains'
+            custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
+            echo
+            echo '| Hostname | Service | Zone | ID |'
+            echo '|---|---|---|---|'
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // ""), (.zone_name // ""), (.id // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service zone id; do
+              echo "| ${hostname} | \`${service}\` | ${zone} | \`${id}\` |"
+            done
 
-      - name: Report
+            echo
+            echo '## Pages projects touching canonical domains'
+            projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+            echo
+            echo '| Project | Production branch | Domains |'
+            echo '|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+              echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+            done
+          } > /tmp/report.md
+          cat /tmp/report.md
+
+      - name: Report inventory
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "# Analytics Worker deployment\n\nResult: **FAIL** on commit \`${GITHUB_SHA}\`."; fi
+          if [ -f /tmp/report.md ]; then gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body-file /tmp/report.md; else gh issue comment 173 --repo "$GITHUB_REPOSITORY" --body "Cloudflare pre-convergence inventory failed on \`${GITHUB_SHA}\`."; fi
+
+      - name: Import controlled donor surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin cre4tors
+          git checkout origin/cre4tors -- \
+            src/pages/v5/Cre4torsHome.tsx \
+            src/components/labs/Cre4torsProjectOS.tsx \
+            src/styles/cre4tors-home.css \
+            src/styles/cre4tors-project-os.css \
+            src/pages/v5/ImpactMarketGold.tsx \
+            src/market/impactCommerce.ts \
+            src/styles/impact-market-gold.css
+
+      - name: Wire branded roots and shared analytics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          router = Path('src/routes/router.tsx')
+          text = router.read_text()
+          anchor = 'import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";'
+          additions = 'import Cre4torsHome from "@/pages/v5/Cre4torsHome";\nimport ImpactMarketGold from "@/pages/v5/ImpactMarketGold";'
+          if additions not in text:
+              if anchor not in text: raise SystemExit('router import anchor missing')
+              text = text.replace(anchor, anchor + '\n' + additions)
+
+          root_component = '''function RootHome() {
+            const host = typeof window !== "undefined"
+              ? window.location.hostname.toLowerCase().replace(/^www\\./, "")
+              : "";
+            if (host === "s4piens.com") return <FourSapienHome />;
+            if (host === "4planetmagazine.com") return <Suspense fallback={MagazineFallback}><Magazine /></Suspense>;
+            if (host === "cre4tors.com") return <Cre4torsHome />;
+            if (host === "4planetmarket.com") return <ImpactMarketGold />;
+            return <Home />;
+          }
+          '''
+          if 'function RootHome()' not in text:
+              anchor2 = 'const ActorFallback = (\n  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />\n);\n'
+              if anchor2 not in text: raise SystemExit('RootHome anchor missing')
+              text = text.replace(anchor2, anchor2 + '\n' + root_component)
+
+          if '<Route path="/" element={<Home />} />' in text:
+              text = text.replace('<Route path="/" element={<Home />} />', '<Route path="/" element={<RootHome />} />', 1)
+          elif '<Route path="/" element={<RootHome />} />' not in text:
+              raise SystemExit('root route missing')
+
+          route_anchor = '<Route path="/4sapien/finance" element={<FourFinanceHome />} />'
+          extra_routes = '<Route path="/cre4tors" element={<Cre4torsHome />} />\n      <Route path="/market" element={<ImpactMarketGold />} />'
+          if extra_routes not in text:
+              if route_anchor not in text: raise SystemExit('product route anchor missing')
+              text = text.replace(route_anchor, route_anchor + '\n      ' + extra_routes)
+          router.write_text(text)
+
+          analytics = Path('src/analytics/Analytics.tsx')
+          a = analytics.read_text()
+          old = '''function productArea(pathname: string): string {
+            if (pathname.startsWith("/magazine")) return "magazine";
+            if (pathname.startsWith("/atlas")) return "atlas";
+            if (pathname.startsWith("/species")) return "species";
+            if (pathname.startsWith("/living-systems")) return "living_systems";
+            if (pathname.startsWith("/impact")) return "impact";
+            if (pathname.startsWith("/missions")) return "missions";
+            if (pathname.startsWith("/domains")) return "domains";
+            return "4planet";
+          }'''
+          new = '''function productArea(pathname: string, hostname: string): string {
+            const host = canonicalHost(hostname);
+            if (host === "s4piens.com") return "s4piens";
+            if (host === "4planetmagazine.com") return "magazine";
+            if (host === "cre4tors.com") return "cre4tors";
+            if (host === "4planetmarket.com") return "market";
+            if (pathname.startsWith("/magazine")) return "magazine";
+            if (pathname.startsWith("/atlas")) return "atlas";
+            if (pathname.startsWith("/species")) return "species";
+            if (pathname.startsWith("/living-systems")) return "living_systems";
+            if (pathname.startsWith("/impact")) return "impact";
+            if (pathname.startsWith("/4sapien") || pathname.startsWith("/s4piens")) return "s4piens";
+            if (pathname.startsWith("/cre4tors")) return "cre4tors";
+            if (pathname.startsWith("/market")) return "market";
+            if (pathname.startsWith("/missions")) return "missions";
+            if (pathname.startsWith("/domains")) return "domains";
+            return "4planet";
+          }'''
+          if old in a:
+              a = a.replace(old, new)
+          elif new not in a:
+              raise SystemExit('analytics productArea changed unexpectedly')
+          a = a.replace('content_group: productArea(location.pathname),', 'content_group: productArea(location.pathname, window.location.hostname),')
+          analytics.write_text(a)
+
+          contract = Path('scripts/prototype-contracts.test.mjs')
+          c = contract.read_text()
+          old_assert = '  assert.match(routes, /<Route path="\\/" element=\\{<Home \\/>\\}/);'
+          new_asserts = '''  assert.match(routes, /<Route path="\\/" element=\\{<RootHome \\/>\\}/);
+  assert.match(routes, /return <Home \\/>;/);
+  for (const host of ["s4piens.com", "4planetmagazine.com", "cre4tors.com", "4planetmarket.com"]) assert.ok(routes.includes(`host === "${host}"`), `branded root missing: ${host}`);'''
+          if old_assert in c:
+              c = c.replace(old_assert, new_asserts)
+          elif new_asserts not in c:
+              raise SystemExit('root contract changed unexpectedly')
+          contract.write_text(c)
+          PY
+
+      - name: Validate unified app
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run test:contracts
+          npm run build
+          grep -q 'host === "s4piens.com"' src/routes/router.tsx
+          grep -q 'host === "4planetmagazine.com"' src/routes/router.tsx
+          grep -q 'host === "cre4tors.com"' src/routes/router.tsx
+          grep -q 'host === "4planetmarket.com"' src/routes/router.tsx
+
+      - name: Commit convergence if TEST KING is unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin king/test
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/king/test)" || { echo 'TEST KING moved during convergence; refusing overwrite.'; exit 3; }
+          git config user.name '4PLANET Convergence'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            src/pages/v5/Cre4torsHome.tsx \
+            src/components/labs/Cre4torsProjectOS.tsx \
+            src/styles/cre4tors-home.css \
+            src/styles/cre4tors-project-os.css \
+            src/pages/v5/ImpactMarketGold.tsx \
+            src/market/impactCommerce.ts \
+            src/styles/impact-market-gold.css \
+            src/routes/router.tsx \
+            src/analytics/Analytics.tsx \
+            scripts/prototype-contracts.test.mjs
+          git diff --cached --check
+          git commit -m 'feat: converge branded product surfaces into shared app'
+          git push origin HEAD:king/test

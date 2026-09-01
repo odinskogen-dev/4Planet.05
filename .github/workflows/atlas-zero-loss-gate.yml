@@ -1,0 +1,127 @@
+name: ATLAS Zero Loss Gate
+
+on:
+  pull_request:
+    paths:
+      - "src/earth/**"
+      - "src/planet/**"
+      - "functions/api/atlas-*.ts"
+      - "tests/e2e/atlas-*.spec.ts"
+      - "tests/e2e/map-interactivity.spec.ts"
+      - "docs/atlas/**"
+      - ".github/workflows/atlas-zero-loss-gate.yml"
+  push:
+    branches:
+      - king/test
+    paths:
+      - "src/earth/**"
+      - "src/planet/**"
+      - "functions/api/atlas-*.ts"
+      - "tests/e2e/atlas-*.spec.ts"
+      - "tests/e2e/map-interactivity.spec.ts"
+      - "docs/atlas/**"
+      - ".github/workflows/atlas-zero-loss-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-zero-loss-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  atlas-zero-loss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Assert exact head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git rev-parse HEAD > atlas-exact-sha.txt
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > atlas-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/atlas > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat atlas-preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Chromium — recovered layers, street handoff, mobile hierarchy
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+
+      - name: WebKit — recovered layers, street handoff, mobile hierarchy
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+
+      - name: Record Zero Loss release facts
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const plan = fs.readFileSync('docs/atlas/ATLAS_ZERO_LOSS_MASTER_PLAN_2026-09-01.md','utf8');
+          const required = [
+            'ZERO LOSS',
+            'orphan_count',
+            'Pixelated local ATLAS is a release blocker',
+            'Global Fishing Watch',
+            'Artsdatabanken/Artskart',
+            'GLOBAL → REGIONAL → LOCAL → STREET'
+          ];
+          for (const needle of required) {
+            if (!plan.includes(needle)) throw new Error(`Missing Zero Loss control: ${needle}`);
+          }
+          fs.writeFileSync('atlas-zero-loss-evidence.json', JSON.stringify({
+            exactSha: process.env.GITHUB_SHA,
+            requiredControls: required,
+            status: 'CONTROL_PRESENT_BROWSER_PROOF_REQUIRED'
+          }, null, 2));
+          NODE
+
+      - name: Upload exact-head ATLAS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-zero-loss-evidence
+          path: |
+            atlas-exact-sha.txt
+            atlas-preview.log
+            atlas-zero-loss-evidence.json
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30

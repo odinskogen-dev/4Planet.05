@@ -2,61 +2,61 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** JAGUAR-GZIP-CRC-RECOVERY-51  
-**STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
-**BASE AUTHORITY:** `king/test` / PR #131 / issue #133 / ORCA + JAGUAR GOLD CONTINUOUS CONVERGENCE ORDER  
-**FOUNDER DIRECTION:** 24 AUG 2026 — fix the Jaguar visibly, not by status wording. Do not regress the leading Journey. Use the rights-verified Ear.Rodriguez source-derived geometry and do not treat the 457-vertex proxy, iframe, or fallback pixels as Gold.  
-**SINGLE-SEAM RULE:** `king/test` is the only moving integration line. Historical Jaguar branches are donors only. LIVE KING/production remains untouched.
+**CHANGE ID:** TEST-KING-ATLAS-RETURN-CAMERA-STALE-MAP-01
+**STATUS:** TEST / IMPLEMENTED + BROWSER-ACCEPTED / FOUNDER RELEASE NOT IMPLIED
+**BASE AUTHORITY:** `king/test` / exact parent `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
+**ROLLBACK BASE:** `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
+**IMPLEMENTED CANDIDATE:** `5d40e8c93476c6addfa349363957384e4de3d254` — `fix(atlas): ignore stale map during return camera restore`
+**PRODUCT PROOF:** Browser Product Proof #1273 PASS; ONE INTERFACE Convergence Gate #2395 PASS on the implemented candidate.
+**CONTROL DEFECT BEING CLOSED:** GOLD policy run 33422638609 correctly failed because the user-facing ATLAS mutation did not update this brief in the same bounded change. This brief repairs that control evidence only; it does not alter product behaviour or imply LIVE release.
 
 ## USER ARRIVES BECAUSE
-They want to meet a Jaguar as a living animal first, then understand the living system around it.
+They move between 4PLANET product surfaces and return to ATLAS expecting the globe/map camera to restore reliably rather than bind to an already-unmounted previous map instance.
 
 ## ONE THING TO UNDERSTAND
-The creature must read immediately as a recognisable Jaguar before deeper system intelligence appears.
+ATLAS return-camera authority must attach only to the currently mounted map/canvas. A stale global map reference from a previous ATLAS instance is not valid authority.
 
 ## PRIMARY ACTION
-Enter the living system and directly inspect a recognisable local 3D Jaguar derived from the verified Ear.Rodriguez master.
+Navigate into another product surface and return to ATLAS; the current ATLAS map should mount and restore its bounded return camera normally.
 
 ## SECONDARY DEPTH
-Follow the eight-step Journey from encounter through living web, place, pressure, understanding, solutions, actors/action and proof.
+The fix hardens cross-product map lifecycle authority only. It does not broaden ATLAS scope, add new data, change ecological claims or redefine navigation.
 
 ## P1 DOMINANT
-A recognisable quadruped Jaguar with head, four legs and tail at useful encounter scale.
+The current ATLAS map remains the visible, interactive spatial surface.
 
 ## P2 ORIENTATION
-Species identity, chapter position and minimal TEST KING/truth context.
+Cross-product navigation may temporarily leave `window.__4planet_map` pointing at the previous unmounted map until the new World publishes the current instance.
 
 ## P3 ACTION / NEXT
-Direct drag/swipe rotation, LOOK AT ME, MOVE, LUME, then FOLLOW THE SYSTEM with BACK and HOW DO WE KNOW? preserved.
+Return-camera authority waits for the current connected canvas, attaches event listeners there, restores the camera, and releases authority when the user intentionally interacts.
 
 ## P4 DEPTH
-Evidence/truth boundaries, source/licence context, LUME intelligence layers and later chapter system models.
-
-## CURRENT DEFECT
-Exact Browser Product Proof #775 on TEST KING head `3800eb1163c5730b37bad182b00d38d3ef386a99` failed the local Ear runtime on Chromium desktop, 390 and 430. Trace evidence records `data-jaguar-ear-full=fallback` and the exact browser error `The compressed data was not valid: incorrect data check.` The same trace proves the V50 chunk-normalisation shim was a no-op: `posGzipB64` and `idxGzipB64` are already strings because the data file joins its Base64 source chunks at definition time. The visible non-zero framebuffer pixels belonged to the old v33 457-vertex proxy, not the local V48 Jaguar. This is a hard P0 failure.
-
-## BOUNDED ADOPTION
-Recover the existing source-derived V48 geometry without changing its vertices or indices. The gzip member reaches DEFLATE decompression but fails trailer integrity validation. For this bounded TEST KING recovery only, wrap the two Jaguar gzip decodes before runtime boot: strip the standard gzip envelope, decompress the intact DEFLATE body with the browser-native `deflate-raw` decoder, and ignore the invalid gzip CRC/ISIZE trailer. Scope the shim to the two Jaguar payload decodes and restore the native global constructor immediately after those instances are created.
-
-If the recovered V48 geometry is not visually recognisable after exact browser proof, reject it and move directly to a new uncompressed derivative generated from the immutable 7.2 MB Ear.Rodriguez master. Do not return to the 457-vertex proxy as Gold.
+This is lifecycle/authority hardening. It does not change ecological claims, source semantics, map data, routes, visual hierarchy or LIVE state.
 
 ## WHAT CAN BE REMOVED
-The false Base64-chunk diagnosis, the no-op V50 normaliser, external white iframe path, iframe-load-as-ready logic, the 457-vertex proxy as dominant creature, duplicate viewer control code and VFX that obscure the animal.
+No product capability needs removal. Detached previous canvases and stale global map references must simply be rejected as current authority; no second authority or fallback renderer is introduced.
 
 ## WHAT MUST BE REUSED
-`king/test`, PR131, current eight-step Journey/navigation, Jungle Room/LUME Room architecture, immutable Ear.Rodriguez master/licence evidence, V48 source-derived geometry payload, controlled species-photo/reduced-proxy fallback and existing performance controls.
+The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publication path, existing World/ATLAS renderer, existing camera restore/release behaviour and existing ONE INTERFACE route structure.
+
+## CLEAN-ROOM / DONOR DECISION
+- **ADOPT:** the accepted `5d40e8c` connected-canvas guard and one-frame retry while a stale/detached map reference exists.
+- **REUSE:** existing map authority, restore events, responsive settling and user-interaction release semantics.
+- **REJECT:** binding listeners to a detached canvas, adding a second map authority, changing renderer/runtime dependencies, creating a new route or introducing parallel ATLAS state.
+- **DEFER:** broader ATLAS lifecycle refactors unless a separately reproduced defect proves they are necessary.
 
 ## TRUTH BOUNDARY
-The local runtime is a presentation derivative of the verified Ear.Rodriguez CC BY 4.0 master. Geometry is source-derived; runtime quantisation/compression recovery, camera, lighting, interaction, coat shader and motion are 4PLANET presentation behaviour. Ignoring the broken gzip trailer is transport recovery only; it does not alter decompressed geometry bytes. It is not a live animal, occurrence, abundance or tracking record and does not claim original source animation or texture.
+A global map reference is only accepted when its canvas is connected to the current document. A detached previous canvas is treated as stale and ignored until the current ATLAS map is available. This behavioural guard is not evidence of broader map correctness, ecological truth, production deployment or LIVE release.
 
-## CREATURE-FIRST PERFORMANCE
-First visible species frame first; local renderer only after ENTER; DPR capped; render paused while page hidden/outside encounter; mobile target ~30fps and desktop balanced 45–60fps where practical. Reduce atmosphere before creature fidelity.
+## PERFORMANCE
+No new dependency or renderer. The guard adds only a bounded `getCanvas()` connectivity check and `requestAnimationFrame` retry while the current map has not yet been published.
 
 ## MOBILE-FIRST RISK
-390/430 widths must keep the Jaguar recognisable and mostly visible, swipe interaction usable, chapter actions readable and free of horizontal overflow. Never replace a working species visual with a blank/white 3D surface.
+The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas and must not create a mobile-specific map authority.
 
 ## HUMAN SUCCESS
-A first-time viewer sees an unmistakable Jaguar rather than a white iframe or blob proxy, can rotate it directly, sees truthful Ear.Rodriguez CC BY 4.0 attribution, and can continue the Journey cleanly.
+A user can leave ATLAS, use another 4PLANET surface and return without the return-camera controller attaching to the previously unmounted ATLAS canvas or preventing the current map from restoring correctly.
 
 ## ACCEPTANCE
-1) Typecheck + production build + smoke/contracts green. 2) Source/licence truth retained. 3) Chromium desktop + 390 + 430 and WebKit desktop + 390 + 430 prove `data-jaguar-ear-full=ready` and a visible local Jaguar canvas after ENTER. 4) Rendered evidence is manually inspected and shows a recognisable Jaguar, not white/blank/proxy shards. 5) LOOK AT ME, MOVE, drag/swipe, LUME, BACK, HOW DO WE KNOW?, next and 01→08 Journey work. 6) No overflow/infinite loader. 7) Exact SHA deployment verified before ACCEPTED/SAFE. 8) LIVE KING unchanged.
+1. `king/test` lineage remains single-authority and LIVE remains untouched. 2. Return-camera authority does not bind to a candidate map whose canvas is detached. 3. It retries until the current map is published rather than creating parallel state. 4. Current canvas is captured once accepted and receives the existing pointer/touch/wheel release listeners. 5. Existing restore events remain intact. 6. Browser Product Proof remains PASS. 7. ONE INTERFACE Convergence remains PASS. 8. GOLD policy accepts the bounded mutation + current brief pair. 9. No new dependency, route, map renderer or ecological claim is introduced. 10. Founder JUDGE/RELEASE and LIVE remain separate gates.

@@ -107,7 +107,7 @@ export const SPECIES_MEDIA: Record<string, MediaRecord> = {
     attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",
     cropAllowed: true, modificationAllowed: true, publicWebAllowed: true, commercialAllowed: true,
     supportedUse: "Public web, hero + detail, crop/resize permitted.",
-    limitations: "Rights cleared by founder; keep record with the image bank manifest.",
+    limitations: "Illustrative species media. Source and rights details are available in the evidence record.",
     rightsStatus: "LICENCE_VERIFIED", assetBlocker: "",
   },
   "humpback-whale": fromManifest("SP-001"),
@@ -121,7 +121,6 @@ export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   "western-honey-bee": fromManifest("SP-008"),
   "giant-otter": fromManifest("SP-007"),
 };
-
 
 /** Self-owned illustrations (not photographs) attached to the five cetaceans. */
 const ILLUSTRATIONS: Record<string, NonNullable<MediaRecord["illustration"]>> = {

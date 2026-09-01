@@ -33,7 +33,7 @@ jobs:
           jq -e '.success == true' <<<"${projects}" >/dev/null
           deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")"
 
-          targets='["4planet.org","4planetmagazine.com","s4piens.com","cre4tors.com","4planetmarket.com"]'
+          targets='["4planet.org","4planetmagazine.com","s4piens.com","4species.com","cre4tors.com","4planetmarket.com"]'
           mapfile -t matching < <(jq -r --argjson targets "$targets" '
             .result[]?
             | select(any(.domains[]?; . as $d | any($targets[]; . == $d)))
@@ -69,7 +69,7 @@ jobs:
             echo
             echo "## Zone/DNS presence"
             echo
-            for domain in 4planet.org 4planetmagazine.com s4piens.com cre4tors.com 4planetmarket.com; do
+            for domain in 4planet.org 4planetmagazine.com s4piens.com 4species.com cre4tors.com 4planetmarket.com; do
               z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
               zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
               status="$(jq -r '.result[0].status // "missing"' <<<"${z}")"

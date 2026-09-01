@@ -2,13 +2,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const TAKE_PART = [
-  ["4PEOPLE", "For people who want a clearer way to understand and help.", "/people"],
-  ["4BRANDS", "For brands ready to build credible environmental action.", "/brands"],
-  ["4PARTNERS", "For organisations doing real work in the field, science and solutions.", "/partners"],
-  ["4FUNDERS", "For funders helping build durable public infrastructure for action.", "/funders"],
-] as const;
-
 const ABOUT_REMAP = new Map([
   ["/about#story", "/about/story"],
   ["/about#system", "/about/system"],
@@ -16,40 +9,8 @@ const ABOUT_REMAP = new Map([
 ]);
 
 type Hosts = {
-  desktop: HTMLElement | null;
-  mobile: HTMLElement | null;
   main: HTMLElement | null;
 };
-
-function TakePartLinks({ mobile = false }: { mobile?: boolean }) {
-  return (
-    <div className={mobile ? "completion-takepart-mobile" : "completion-takepart-menu"}>
-      {mobile && <div className="completion-kicker">TAKE PART_</div>}
-      <div className="completion-takepart-list">
-        {TAKE_PART.map(([title, line, to]) => (
-          <Link key={title} to={to} className="completion-takepart-link">
-            <span>
-              <strong>{title}</strong>
-              <small>{line}</small>
-            </span>
-            <b aria-hidden>→</b>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DesktopTakePart() {
-  return (
-    <div className="completion-takepart-nav">
-      <button type="button" className="public-header__nav-button completion-takepart-button" aria-haspopup="true">
-        TAKE PART
-      </button>
-      <TakePartLinks />
-    </div>
-  );
-}
 
 function RouteCTA({ pathname }: { pathname: string }) {
   if (pathname === "/domains/s4piens") {
@@ -81,14 +42,30 @@ function RouteCTA({ pathname }: { pathname: string }) {
     );
   }
 
-  if (pathname === "/missions/wh4les") {
+  if (pathname === "/missions/wh4les" || pathname === "/species/orca") {
     return (
       <section className="completion-route-cta completion-route-cta--whales" aria-label="Continue into the Orca Journey">
         <div className="completion-route-cta__inner">
           <div className="completion-kicker">WH4LES_ · IMMERSIVE JOURNEY</div>
           <h2>Enter the living ocean through one life.</h2>
-          <p>Follow the Orca through prey, place, pressure, evidence and possible response — including the Bay of Biscay survey context.</p>
-          <a href="/journey/orca/" className="completion-cta-button">ENTER ORCA JOURNEY →</a>
+          <p>Meet the species first in a clean spatial intelligence room, or follow the wider journey through prey, place, pressure, evidence and possible response.</p>
+          <div className="completion-cta-actions">
+            <Link to="/species/orca/lume" className="completion-cta-button">ENTER LUME ROOM →</Link>
+            <a href="/journey/orca/" className="completion-cta-button completion-cta-button--outline">FOLLOW ORCA JOURNEY →</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (pathname === "/missions/am4zonia" || pathname === "/species/jaguar") {
+    return (
+      <section className="completion-route-cta completion-route-cta--jaguar" aria-label="Continue into the Jaguar Journey">
+        <div className="completion-route-cta__inner">
+          <div className="completion-kicker">AM4ZONIA_ · IMMERSIVE JOURNEY</div>
+          <h2>Enter the rainforest through one life.</h2>
+          <p>Meet the Jaguar, then move through its living web, Amazonia context, pressures, evidence and possible response.</p>
+          <a href="/journey/jaguar/" className="completion-cta-button">ENTER JAGUAR JOURNEY →</a>
         </div>
       </section>
     );
@@ -100,7 +77,7 @@ function RouteCTA({ pathname }: { pathname: string }) {
 export function PublicCompletionBridge() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const [hosts, setHosts] = useState<Hosts>({ desktop: null, mobile: null, main: null });
+  const [hosts, setHosts] = useState<Hosts>({ main: null });
 
   useEffect(() => {
     const darkAbout = pathname === "/about/story" || pathname === "/about/founder";
@@ -118,11 +95,9 @@ export function PublicCompletionBridge() {
       }
 
       const next: Hosts = {
-        desktop: document.querySelector<HTMLElement>(".public-header__desktop"),
-        mobile: document.querySelector<HTMLElement>(".mobile-nav__inner"),
         main: document.querySelector<HTMLElement>("main#main-content"),
       };
-      setHosts((current) => current.desktop === next.desktop && current.mobile === next.mobile && current.main === next.main ? current : next);
+      setHosts((current) => current.main === next.main ? current : next);
     };
 
     sync();
@@ -148,8 +123,6 @@ export function PublicCompletionBridge() {
 
   return (
     <>
-      {hosts.desktop && createPortal(<DesktopTakePart />, hosts.desktop)}
-      {hosts.mobile && createPortal(<TakePartLinks mobile />, hosts.mobile)}
       {hosts.main && createPortal(<RouteCTA pathname={pathname} />, hosts.main)}
     </>
   );

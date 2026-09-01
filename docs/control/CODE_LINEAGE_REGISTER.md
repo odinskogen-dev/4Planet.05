@@ -49,6 +49,16 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 ## Current control fact
 `king/test` was created from former #121 exact head `633981cc6f54d152ed34ae02001ca3fb0fbe11c8`; #121 was then closed/frozen at the same SHA. Subsequent TEST KING control commits selectively adopted missing PR #120 control value. Production/LIVE KING was not modified.
 
+## LUME ROOM — clean-room sequence
+
+| Identity | Role now | Branch / PR | Exact parent SHA | TEST KING obligation |
+|---|---|---|---|---|
+| LUME ROOM 01 | FIXED REVIEW | `king/test` / #131 | `8c6d34c6396d75e8dec1dad7bc6b52abab253017` | First clean browser proof at `e6187d3d7e58572fb39dee87a02f821d33e7fb5d`. Preserve the neutral renderer, single-colour truth grammar, generated-visual disclosure, source-bounded nodes, canonical exits and exact rollback. Founder review found insufficient gallery depth, mobile animal cropping, compressed information geometry and unclear audio response; do not promote this visual state to GOLD. |
+| LUME ROOM 02 | FIXED REVIEW | `king/test` / #131 | `a21d8e752aded2c3f245c32bd64dfd275577687c` | Spatial-gallery proof at TEST KING head `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9`. Preserve the complete Orca asset, rights-labelled field audio, one-viewport mobile containment, clean renderer and 2.5D motion. Founder review found the OCE4N projection too dark/electric-blue, the perceived room still too compressed, nodes insufficiently wall-bound and no spatial map response. Do not promote this visual state to GOLD. |
+| LUME ROOM 03 | ACTIVE DEVELOPMENT | `king/test` / #131 | `5cc3ddf5b821e6e170b6bfca74fa789d1f5063c9` | Refine the same clean renderer into a larger projected intelligence gallery: lighter derived OCE4N light, visually separated intel walls, wall-mounted nodes, a source-bounded PLACE map projection and bounded pointer/touch/keyboard 2.5D subject guidance. Preserve audio, mobile containment, truth labels, reduced motion and the canonical route. No new renderer, map engine, XR stack or parallel branch. |
+
+Donor disposition for this slice: `agent/lume-project-proto-01`, `agent/orca-lume-19`, `recovery/testking-lume`, `agent/orca-bay-biscay-gold-20` and `recovery/testking-orca-biscay` remain **DONOR** evidence. Their canonical Orca/Bay data and truth boundaries are eligible for **ADOPT / ALREADY PRESENT** review; their LUME renderer/layout override stacks are **REJECT WITH REASON** because LUME ROOM 01 is deliberately clean-room and browser-first. XR, projector hardware and live tracking are **DEFER WITH REASON**.
+
 ## Required product-family lineage under #132
 Every one of these receives a complete donor matrix before total closure:
 1. ONE INTERFACE / shared public shell

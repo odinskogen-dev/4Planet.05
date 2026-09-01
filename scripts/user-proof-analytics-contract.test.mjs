@@ -22,6 +22,7 @@ const requiredAnalyticsHosts = [
   "4planet.org",
   "4planetmagazine.com",
   "s4piens.com",
+  "4species.com",
   "cre4tors.com",
   "4planetmarket.com",
 ];

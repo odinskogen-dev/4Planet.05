@@ -67,7 +67,8 @@ test("SPECIES Engine materialises one source-aware Norway profile", async ({ pag
   await expect(profile).toContainText("TESTCOL1");
   await expect(profile).toContainText("Recorded in Norway");
   await expect(profile).toContainText("1,234");
-  await expect(profile).toContainText("PROVISIONAL_EXTERNAL_ANCHORED");
+  await expect(profile).toContainText("CANONICAL_4P_TEST_REGISTRY");
+  await expect(profile).toContainText(/persisted in the TEST browser registry only/i);
   await expect(profile).toContainText(/not range, abundance/i);
 });
 
@@ -78,6 +79,8 @@ test("SPECIES Engine fails closed when taxonomy source cannot resolve", async ({
 
   await page.goto("/species/lab");
   await page.getByRole("button", { name: /Humle · Bombus/i }).click();
-  await expect(page.getByRole("status")).toContainText("SOURCE RESOLUTION FAILED");
+  await expect(page.getByRole("status").filter({ hasText: "SOURCE RESOLUTION FAILED" })).toContainText(
+    "SOURCE RESOLUTION FAILED",
+  );
   await expect(page.getByTestId("species-engine-profile")).toHaveCount(0);
 });

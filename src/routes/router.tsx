@@ -13,7 +13,10 @@ import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
+import PickPrototype from "../food/PickPrototype";
+import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
+import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
@@ -23,6 +26,7 @@ import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
 const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
@@ -31,6 +35,7 @@ const MagazineCorrections = lazy(() => import("@/pages/v5/MagazineInfo").then((m
 const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").then((module) => ({ default: module.MagazineStoryRecord })));
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
+const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 
 const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
@@ -74,10 +79,15 @@ export function AppRoutes() {
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/lab" element={<SpeciesEngineLab />} />
+      <Route path="/species/orca/lume" element={<Suspense fallback={WorldFallback}><LumeRoom /></Suspense>} />
       <Route path="/species/:slug" element={<SpeciesRoute curatedElement={<SpeciesProfilePage />} />} />
       <Route path="/lens" element={<LensCapture />} />
       <Route path="/food/lens" element={<FoodCapture />} />
       <Route path="/s4piens/food/lens" element={<FoodCapture />} />
+      <Route path="/4sapien" element={<FourSapienHome />} />
+      <Route path="/4sapien/food" element={<PickPrototype />} />
+      <Route path="/4sapien/finance" element={<FourFinanceHome />} />
+      <Route path="/food/pick" element={<PickPrototype />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
@@ -87,12 +97,13 @@ export function AppRoutes() {
       <Route path="/impact/:slug" element={<ImpactStory />} />
       <Route path="/checkout/lab" element={<CommerceStripeLab />} />
       <Route path="/checkout/return" element={<CheckoutReturn />} />
-      <Route path="/join" element={<People />} />
+      <Route path="/join" element={<Join />} />
       <Route path="/people" element={<People />} />
       <Route path="/brands" element={<Brands />} />
       <Route path="/partners" element={<Partners />} />
       <Route path="/actors" element={<Suspense fallback={ActorFallback}><ActorsIndex /></Suspense>} />
       <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
+      <Route path="/get-involved" element={<Suspense fallback={ActorFallback}><FindYourWayToHelp /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
