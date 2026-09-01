@@ -1,0 +1,116 @@
+name: Cloudflare 4PLANET Email Routing Setup
+
+on:
+  push:
+    branches:
+      - ops/cloudflare-domain-inventory-20260820
+    paths:
+      - .github/workflows/cloudflare-email-routing-setup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      DOMAIN: 4planet.org
+      DESTINATION: odin.skogen@gmail.com
+    steps:
+      - name: Ensure 4PLANET email routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          aliases=(hello partners press support finance privacy legal security)
+
+          zones="$(curl -fsS "${auth[@]}" "${api}/zones?name=${DOMAIN}&status=active&per_page=50")"
+          echo "$zones" | jq -e '.success == true' >/dev/null
+          zone_count="$(echo "$zones" | jq '[.result[] | select((.name | ascii_downcase) == (env.DOMAIN | ascii_downcase))] | length')"
+          test "$zone_count" -eq 1
+
+          zone_id="$(echo "$zones" | jq -r '.result[] | select((.name | ascii_downcase) == (env.DOMAIN | ascii_downcase)) | .id')"
+          account_id="$(echo "$zones" | jq -r '.result[] | select((.name | ascii_downcase) == (env.DOMAIN | ascii_downcase)) | .account.id')"
+          test -n "$zone_id"
+          test -n "$account_id"
+          echo "::add-mask::$zone_id"
+          echo "::add-mask::$account_id"
+
+          destinations="$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/email/routing/addresses?per_page=50")"
+          echo "$destinations" | jq -e '.success == true' >/dev/null
+          verified_destination="$(echo "$destinations" | jq -r --arg email "$DESTINATION" '.result[] | select((.email | ascii_downcase) == ($email | ascii_downcase) and .verified != null) | .email' | head -n1)"
+          if [ -z "$verified_destination" ]; then
+            echo "Verified destination is missing: $DESTINATION"
+            exit 1
+          fi
+
+          rules="$(curl -fsS "${auth[@]}" "${api}/zones/${zone_id}/email/routing/rules?per_page=50")"
+          echo "$rules" | jq -e '.success == true' >/dev/null
+
+          for local_part in "${aliases[@]}"; do
+            address="${local_part}@${DOMAIN}"
+            existing_count="$(echo "$rules" | jq --arg address "$address" '[.result[] | select(any(.matchers[]?; .type == "literal" and .field == "to" and ((.value | ascii_downcase) == ($address | ascii_downcase))))] | length')"
+
+            if [ "$existing_count" -gt 1 ]; then
+              echo "Conflict: multiple rules already match $address"
+              exit 1
+            fi
+
+            if [ "$existing_count" -eq 1 ]; then
+              existing_ok="$(echo "$rules" | jq -r --arg address "$address" --arg destination "$verified_destination" '
+                [.result[] |
+                  select(any(.matchers[]?; .type == "literal" and .field == "to" and ((.value | ascii_downcase) == ($address | ascii_downcase)))) |
+                  select(.enabled == true) |
+                  select(any(.actions[]?; .type == "forward" and (.value | length) == 1 and ((.value[0] | ascii_downcase) == ($destination | ascii_downcase))))
+                ] | length == 1
+              ')"
+              if [ "$existing_ok" != "true" ]; then
+                echo "Conflict: existing rule for $address does not match the approved destination"
+                exit 1
+              fi
+              echo "READY $address"
+              continue
+            fi
+
+            payload="$(jq -nc --arg address "$address" --arg destination "$verified_destination" '{
+              name: ("4PLANET " + $address),
+              enabled: true,
+              matchers: [{type: "literal", field: "to", value: $address}],
+              actions: [{type: "forward", value: [$destination]}]
+            }')"
+
+            response="$(curl -sS -X POST "${auth[@]}" "${api}/zones/${zone_id}/email/routing/rules" --data "$payload")"
+            if ! echo "$response" | jq -e '.success == true' >/dev/null; then
+              echo "Cloudflare rejected creation of $address"
+              echo "$response" | jq -r '.errors[]? | (.code | tostring) + ": " + .message'
+              exit 1
+            fi
+            echo "CREATED $address"
+
+            rules="$(curl -fsS "${auth[@]}" "${api}/zones/${zone_id}/email/routing/rules?per_page=50")"
+            echo "$rules" | jq -e '.success == true' >/dev/null
+          done
+
+          final_rules="$(curl -fsS "${auth[@]}" "${api}/zones/${zone_id}/email/routing/rules?per_page=50")"
+          echo "$final_rules" | jq -e '.success == true' >/dev/null
+
+          for local_part in "${aliases[@]}"; do
+            address="${local_part}@${DOMAIN}"
+            valid_count="$(echo "$final_rules" | jq --arg address "$address" --arg destination "$verified_destination" '
+              [.result[] |
+                select(any(.matchers[]?; .type == "literal" and .field == "to" and ((.value | ascii_downcase) == ($address | ascii_downcase)))) |
+                select(.enabled == true) |
+                select(any(.actions[]?; .type == "forward" and (.value | length) == 1 and ((.value[0] | ascii_downcase) == ($destination | ascii_downcase))))
+              ] | length
+            ')"
+            test "$valid_count" -eq 1
+            echo "VERIFIED $address"
+          done
+
+          echo "4PLANET EMAIL ROUTING READY"
