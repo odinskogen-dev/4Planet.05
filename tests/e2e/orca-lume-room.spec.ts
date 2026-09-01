@@ -54,17 +54,27 @@ test("Orca Human Gold journey is protagonist-first, truth-bounded and free of th
   const bay = page.getByRole("link", { name: "BAY OF BISCAY ECOSYSTEM" });
   await expect(bay).toHaveAttribute("href", "/ecosystem/bay-of-biscay/");
 
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 760) {
+    // Mobile first-read stays focused on the animal. The place handoff appears
+    // immediately after entry, once the user has chosen to follow the system.
+    await expect(bay).toBeHidden();
+  } else {
+    await expect(bay).toBeVisible();
+  }
+
   const entry = page.locator(".nature-entry__button");
   await entry.click();
   await expect(root).toHaveAttribute("data-entered", "true", { timeout: 12_000 });
   await expect(page.locator(".nature-journey-hud__title")).toContainText(/orca/i);
   await expect(page.locator(".nature-journey-hud__evidence")).toBeVisible();
   await expect(page.locator(".nature-journey-hud__next")).toBeVisible();
+  await expect(bay).toBeVisible();
 
-  const viewport = page.viewportSize();
   if (viewport && viewport.width <= 760) {
     await expectViewportSafe(page, page.locator(".nature-journey-hud"), "mobile Human Gold journey HUD");
     await expectViewportSafe(page, subject, "mobile Orca protagonist");
+    await expectViewportSafe(page, bay, "mobile Bay of Biscay handoff");
   }
   expect(await page.evaluate(() => window.scrollX)).toBe(0);
 
