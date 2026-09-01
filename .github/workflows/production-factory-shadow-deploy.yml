@@ -75,52 +75,46 @@ jobs:
           HEALTH_URL="${BASE_URL}/__factory/health"
           CANARY_URL="${BASE_URL}/__factory/canary"
 
-          (
-            cd factory
-            npx --no-install wrangler tail 4planet-production-factory-v01-shadow --format json --status error > ../factory-shadow-tail.log 2>&1
-          ) &
-          TAIL_PID=$!
-          cleanup_tail() {
-            kill "$TAIL_PID" 2>/dev/null || true
-            wait "$TAIL_PID" 2>/dev/null || true
+          capture_runtime_error() {
+            local probe_url="$1"
+            echo "Capturing bounded Cloudflare runtime error evidence for ${probe_url}"
+            (
+              sleep 3
+              curl --silent --show-error --connect-timeout 5 --max-time 12 "${probe_url}" >/dev/null 2>&1 || true
+            ) &
+            (
+              cd factory
+              timeout 18s npx --no-install wrangler tail 4planet-production-factory-v01-shadow --format json --status error || true
+            )
           }
-          trap cleanup_tail EXIT
-          sleep 4
 
           echo "Probing ${HEALTH_URL}"
-          HEALTH_JSON="$(curl --silent --show-error --retry 3 --retry-delay 2 "${HEALTH_URL}")"
+          HEALTH_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 --retry 2 --retry-delay 1 "${HEALTH_URL}" || true)"
           echo "Health response: ${HEALTH_JSON}"
           if ! echo "${HEALTH_JSON}" | grep -q '"mode":"SHADOW"' || ! echo "${HEALTH_JSON}" | grep -q '"noLiveAuthority":true'; then
-            sleep 3
-            cleanup_tail
-            echo "Cloudflare runtime error evidence:"
-            cat factory-shadow-tail.log || true
+            capture_runtime_error "${HEALTH_URL}"
             exit 1
           fi
 
           READY="false"
           CANARY_JSON=""
-          for attempt in $(seq 1 36); do
-            CANARY_JSON="$(curl --silent --show-error --retry 2 --retry-delay 1 "${CANARY_URL}")"
+          for attempt in $(seq 1 18); do
+            CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 "${CANARY_URL}" || true)"
             if echo "${CANARY_JSON}" | grep -q '"ready":true'; then
               READY="true"
               break
             fi
-            echo "Canary not complete yet (attempt ${attempt}/36): ${CANARY_JSON}"
+            echo "Canary not complete yet (attempt ${attempt}/18): ${CANARY_JSON}"
             sleep 5
           done
 
           if [[ "${READY}" != "true" ]]; then
-            cleanup_tail
             echo "Deployed SHADOW canary did not prove the full round-trip."
             echo "${CANARY_JSON}"
-            echo "Cloudflare runtime error evidence:"
-            cat factory-shadow-tail.log || true
+            capture_runtime_error "${CANARY_URL}"
             exit 1
           fi
 
-          cleanup_tail
-          trap - EXIT
           echo "deployment_url=${BASE_URL}" >> "$GITHUB_OUTPUT"
           echo "health_url=${HEALTH_URL}" >> "$GITHUB_OUTPUT"
           echo "canary_url=${CANARY_URL}" >> "$GITHUB_OUTPUT"
