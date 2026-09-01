@@ -20,7 +20,6 @@ const SAFE_PUBLIC_GETS = new Set([
   "/__factory/canary",
   "/__factory/guardian",
   "/__factory/orchestra",
-  "/__factory/control-room",
 ]);
 
 interface ActiveEnv extends Cloudflare.Env {
@@ -36,11 +35,9 @@ interface FactoryStateView {
   outcomes: Array<{ work_package_id: string; completed_at: string }>;
   learning: Array<{ id: string; status: string; created_at: string }>;
   locks: Array<{ scope: string; work_package_id: string; expires_at: string }>;
-  projects?: Array<{ id?: string; name?: string }>;
 }
 
 const sha40 = /^[0-9a-f]{40}$/i;
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function authorised(request: Request, env: ActiveEnv): boolean {
   const expected = env.FACTORY_CONTROL_TOKEN?.trim();
@@ -59,7 +56,8 @@ function authFailure() {
 async function githubCurrentTestSha(env: ActiveEnv): Promise<string> {
   const token = env.FACTORY_GITHUB_TOKEN?.trim();
   if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
-  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${TEST_BRANCH.split("/").map(encodeURIComponent).join("/")}`, {
+  const ref = TEST_BRANCH.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${ref}`, {
     headers: {
       accept: "application/vnd.github+json",
       authorization: `Bearer ${token}`,
@@ -74,8 +72,14 @@ async function githubCurrentTestSha(env: ActiveEnv): Promise<string> {
   return sha;
 }
 
-async function agent(env: ActiveEnv) {
-  return getAgentByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+/**
+ * The Agents package exposes a deeply recursive generated RPC type for this
+ * large class. The runtime boundary intentionally erases only that transport
+ * type; all payloads are validated again by Factory domain contracts.
+ */
+async function factoryAgent(env: ActiveEnv): Promise<any> {
+  const getByName: any = getAgentByName;
+  return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
 }
 
 async function seedRealProof(env: ActiveEnv) {
@@ -86,11 +90,9 @@ async function seedRealProof(env: ActiveEnv) {
   const currentTestSha = await githubCurrentTestSha(env);
   if (currentTestSha !== baseSha) throw new Error(`TEST_KING_MOVED:${baseSha}->${currentTestSha}`);
 
-  const factory = await agent(env);
+  const factory: any = await factoryAgent(env);
   const state = await factory.getFactoryState() as FactoryStateView;
-  if (state.state.mode !== "SHADOW") {
-    return { alreadyActive: true, buildSha, currentTestSha, workflowIds: [] as string[] };
-  }
+  if (state.state.mode !== "SHADOW") return { alreadyActive: true, buildSha, currentTestSha, workflowIds: [] as string[] };
 
   const cases = createRealProjectProofCases(currentTestSha);
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
@@ -100,9 +102,9 @@ async function seedRealProof(env: ActiveEnv) {
     await factory.upsertWorkPackage(proof.pkg);
     if (recorded.has(proof.pkg.id)) continue;
     const workflowId = `factory-active-proof-${proof.pkg.id}-${buildSha.slice(0, 10)}`;
-    const existing = (factory as any).getWorkflow?.(workflowId);
+    const existing = factory.getWorkflow?.(workflowId);
     if (!existing) {
-      await (factory as any).runWorkflow(
+      await factory.runWorkflow(
         "WORK_PACKAGE_WORKFLOW",
         { workPackageId: proof.pkg.id },
         {
@@ -114,18 +116,17 @@ async function seedRealProof(env: ActiveEnv) {
     }
     workflowIds.push(workflowId);
   }
-
   return { alreadyActive: false, buildSha, currentTestSha, workflowIds, proofIds: cases.map((proof) => proof.pkg.id) };
 }
 
 async function proofOutcomes(env: ActiveEnv): Promise<{ complete: boolean; outcomes: Outcome[]; state: FactoryStateView }> {
-  const factory = await agent(env);
+  const factory: any = await factoryAgent(env);
   const state = await factory.getFactoryState() as FactoryStateView;
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
   const outcomes: Outcome[] = [];
   for (const id of PROOF_IDS) {
     if (!recorded.has(id)) continue;
-    outcomes.push(await factory.dispatchToWorker(id));
+    outcomes.push(await factory.dispatchToWorker(id) as Outcome);
   }
   return { complete: outcomes.length === PROOF_IDS.length, outcomes, state };
 }
@@ -136,8 +137,7 @@ function proofMetrics(outcomes: Outcome[]) {
   const blocked = outcomes.filter((outcome) => outcome.status === "BLOCKED").length;
   const rejected = outcomes.filter((outcome) => outcome.status === "REJECTED").length;
   const corrections = outcomes.reduce((sum, outcome) => sum + outcome.evidence.filter((item) => item.startsWith("CORRECTION LOOP")).length, 0);
-  const first = outcomes.map((outcome) => Date.parse(outcome.completedAt)).filter(Number.isFinite).sort((a, b) => a - b)[0];
-  const last = outcomes.map((outcome) => Date.parse(outcome.completedAt)).filter(Number.isFinite).sort((a, b) => b - a)[0];
+  const times = outcomes.map((outcome) => Date.parse(outcome.completedAt)).filter(Number.isFinite).sort((a, b) => a - b);
   return {
     proofVersion: REAL_FACTORY_PROOF_VERSION,
     realFamilies: PROOF_IDS.length,
@@ -147,7 +147,7 @@ function proofMetrics(outcomes: Outcome[]) {
     rejected,
     correctionLoops: corrections,
     founderMinutesDuringAutonomousExecution: 0,
-    approximateOutcomeSpanMinutes: Number.isFinite(first) && Number.isFinite(last) ? Math.round((last - first) / 6000) / 10 : null,
+    approximateOutcomeSpanMinutes: times.length > 1 ? Math.round((times[times.length - 1] - times[0]) / 6000) / 10 : 0,
     noPaidCapacityActivated: true,
   };
 }
@@ -169,19 +169,18 @@ async function certifyAndActivate(
   const draftPrProof = allAccepted && proof.outcomes.every((outcome) => outcome.evidence.some((item) => item.startsWith("draft PR ")));
   const checks = allAccepted && proof.outcomes.every((outcome) => outcome.evidence.some((item) => item.startsWith("CHECK ")));
 
-  const factory = await agent(env);
-  const shadowCanary = await factory.getShadowCanaryStatus() as { ready?: boolean; outcomes?: unknown[]; learning?: unknown[] };
+  const factory: any = await factoryAgent(env);
+  const shadowCanary = await factory.getShadowCanaryStatus() as { ready?: boolean };
   const simulation = await factory.simulateActivationGate() as { passed?: boolean };
   const governedContract = proveGovernedLearningContract();
 
-  const combinedEvidence = proof.outcomes.flatMap((outcome) => outcome.evidence.slice(0, 16));
   const governedProposal = evaluateGovernedLearning({
     id: `factory-real-proof-learning-${buildSha.slice(0, 12)}`,
     workPackageId: PROOF_IDS.join("+"),
     projectId: "4planet-factory-real-proof",
     target: "FACTORY_TEST_GATE",
     observation: "One bounded 4PLANET quality contract was exercised across SPECIES Profile, Ecosystem/Place and Actor Profile real TEST candidates.",
-    evidence: combinedEvidence,
+    evidence: proof.outcomes.flatMap((outcome) => outcome.evidence.slice(0, 16)),
     proposedChange: "Retain exact TEST-base checks, bounded write scopes, draft-PR-only release, automatic CI/mobile QA and truth-preserving Brand contract as mandatory Factory production gates.",
     distinctInstanceCount: proof.outcomes.length,
     safetyCorrection: false,
@@ -268,25 +267,21 @@ async function certifyAndActivate(
 }
 
 async function enrichedControlRoom(request: Request, env: ActiveEnv, ctx: ExecutionContext) {
-  const baseResponse = await worldClassRuntime.fetch(request, env, ctx);
-  const base = await baseResponse.json() as Record<string, any>;
+  const baseRequest = new Request(new URL("/__factory/orchestra", request.url), { method: "GET" });
+  const baseResponse = await worldClassRuntime.fetch(baseRequest, env, ctx);
+  const orchestra = await baseResponse.json() as Record<string, unknown>;
   const proof = await proofOutcomes(env);
   return Response.json({
-    ...base,
-    mode: proof.state.state.mode,
+    factory: "4PLANET Production Factory 01",
     factoryStatus: proof.state.state.mode === "ACTIVE" ? "ACTIVE" : "SHADOW",
-    release: {
-      ...(base.release ?? {}),
-      current: proof.state.state.mode === "ACTIVE" ? "AUTONOMOUS_TEST_PRODUCTION" : "SHADOW_ONLY",
-      globalActive: proof.state.state.mode === "ACTIVE",
-      liveRelease: false,
-      founderReleaseRequired: true,
-    },
-    realProductionProof: {
-      complete: proof.complete,
-      metrics: proofMetrics(proof.outcomes),
-      outcomes: proof.outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual })),
-    },
+    mode: proof.state.state.mode,
+    currentWork: proof.state.work,
+    produced: proof.outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual })),
+    learningCandidates: proof.state.learning.length,
+    failures: proof.outcomes.filter((outcome) => outcome.status !== "ACCEPTED").map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual })),
+    factoryValue: proofMetrics(proof.outcomes),
+    realProductionProof: { complete: proof.complete, orchestra },
+    boundaries: { live: false, humanGoldFounderOnly: true, canonPromotion: false, outreach: false, automaticSpend: false },
   });
 }
 
@@ -295,17 +290,13 @@ export default {
     const env = envInput as ActiveEnv;
     const url = new URL(request.url);
 
-    if (request.method === "GET" && url.pathname === "/__factory/control-room") {
-      return enrichedControlRoom(request, env, ctx);
-    }
-    if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) {
-      return worldClassRuntime.fetch(request, env, ctx);
-    }
+    if (request.method === "GET" && url.pathname === "/__factory/control-room") return enrichedControlRoom(request, env, ctx);
+    if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) return worldClassRuntime.fetch(request, env, ctx);
 
     if (request.method === "POST" && url.pathname === "/__factory/intake") {
       if (!authorised(request, env)) return authFailure();
       const body = await request.json();
-      const factory = await agent(env);
+      const factory: any = await factoryAgent(env);
       const compiled = await factory.ingestApprovedProject(body as any);
       return Response.json({ ok: true, compiled }, { status: 202 });
     }
@@ -315,8 +306,7 @@ export default {
       try {
         return Response.json({ ok: true, ...(await seedRealProof(env)) }, { status: 202 });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "UNKNOWN_ACTIVATION_PROOF_START_FAILURE";
-        return Response.json({ ok: false, error: message }, { status: 409 });
+        return Response.json({ ok: false, error: error instanceof Error ? error.message : "UNKNOWN_ACTIVATION_PROOF_START_FAILURE" }, { status: 409 });
       }
     }
 
@@ -336,14 +326,11 @@ export default {
         }
         return Response.json({ ok: true, ...(await certifyAndActivate(env, body)) });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "UNKNOWN_ACTIVATION_PROOF_STATUS_FAILURE";
-        return Response.json({ ok: false, active: false, error: message }, { status: 409 });
+        return Response.json({ ok: false, active: false, error: error instanceof Error ? error.message : "UNKNOWN_ACTIVATION_PROOF_STATUS_FAILURE" }, { status: 409 });
       }
     }
 
-    // ACTIVE runtime does not expose generic Agent RPC externally. All mutations
-    // pass the authenticated bounded control endpoints above. Cloudflare internal
-    // Agent/Workflow/Queue bindings remain available to the runtime itself.
+    // No generic external Agent RPC in the ACTIVE-capable runtime.
     return new Response("4PLANET Production Factory 01", { status: url.pathname === "/" ? 200 : 404 });
   },
 
