@@ -115,11 +115,14 @@ test("Factory AI model spend is fail-closed until a gateway budget/provider is i
   assert.equal(AI_COST_CONTROL.spendLimitRequiredBeforeModelTraffic, true);
 });
 
-test("Factory zero-cash policy cannot auto-upgrade or use paid features", () => {
-  assert.equal(AI_COST_CONTROL.policy, "ZERO_CASH_FREE_TIER_FAIL_CLOSED");
+test("every intentional Factory cash cost remains Founder-gated and fail-closed by default", () => {
+  assert.equal(AI_COST_CONTROL.policy, "FOUNDER_APPROVAL_REQUIRED_FOR_EVERY_CASH_COST");
+  assert.equal(AI_COST_CONTROL.authorisedRecurringBaseUsd, 0);
+  assert.equal(AI_COST_CONTROL.authorisedUsageOverageUsd, 0);
+  assert.equal(AI_COST_CONTROL.explicitFounderApprovalRequired, true);
+  assert.equal(AI_COST_CONTROL.subscriptionApprovalDoesNotAuthoriseOverage, true);
   assert.equal(AI_COST_CONTROL.paidFeaturesAllowed, false);
   assert.equal(AI_COST_CONTROL.autoUpgradeAllowed, false);
-  assert.equal(AI_COST_CONTROL.onCapacityLimit, "WAIT_OR_BLOCK_NEVER_SPEND");
-  assert.ok(AI_COST_CONTROL.internalDailyGuardrails.browserMinutes < 10);
-  assert.ok(AI_COST_CONTROL.internalDailyGuardrails.queueOperations < 10_000);
+  assert.equal(AI_COST_CONTROL.automaticCapacityPurchaseAllowed, false);
+  assert.equal(AI_COST_CONTROL.onCapacityLimit, "WAIT_OR_BLOCK_NEVER_SPEND_WITHOUT_NEW_APPROVAL");
 });
