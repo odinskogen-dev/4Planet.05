@@ -44,8 +44,8 @@
     "consumers": [
       {
         "queue": "4planet-production-factory-v01-shadow",
-        "max_batch_size": 10,
-        "max_batch_timeout": 5,
+        "max_batch_size": 1,
+        "max_batch_timeout": 3,
         "max_retries": 3,
         "dead_letter_queue": "4planet-production-factory-v01-shadow-dlq",
         "max_concurrency": 2
