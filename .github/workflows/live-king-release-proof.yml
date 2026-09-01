@@ -45,13 +45,15 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/gold-policy-check.mjs --mode=quality-contract
-          npm run test:smoke
           npm run typecheck
           npm run assets:verify
           npm run lint
 
       - name: Build exact release candidate
         run: npm run build
+
+      - name: Smoke exact built candidate
+        run: npm run test:smoke
 
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
