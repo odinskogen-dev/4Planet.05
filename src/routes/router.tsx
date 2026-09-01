@@ -27,6 +27,7 @@ import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
+const EcosystemGold = lazy(() => import("@/pages/integrated/EcosystemGold"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
 const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
@@ -37,17 +38,9 @@ const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => (
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
+const WorldFallback = <div style={{ position: "fixed", inset: 0, background: "#080808" }} />;
+const MagazineFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
+const ActorFallback = <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />;
 
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -77,6 +70,7 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+      <Route path="/ecosystem/:slug" element={<Suspense fallback={WorldFallback}><EcosystemGold /></Suspense>} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/lab" element={<SpeciesEngineLab />} />
       <Route path="/species/orca/lume" element={<Suspense fallback={WorldFallback}><LumeRoom /></Suspense>} />
