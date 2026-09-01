@@ -2,6 +2,7 @@ import { type ReactNode, useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT, DOMAIN_BASE, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
 import { Mark } from "@/components/ui";
+import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { TechnicalGridField } from "@/components/TechnicalGridField";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
@@ -18,7 +19,7 @@ const MENU: Cat[] = [
   { key: "4_", to: "/people", kind: "list", items: [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]] },
   { key: "DOMAINS_", to: "/domains", kind: "list", items: ORDER.map((k, i) => [`0${i + 1}_ ${stripU(k)}`, "/domains/" + dslug(k)] as [string, string]) },
   { key: "MISSIONS_", to: "/missions", kind: "missions" },
-  { key: "IMPACT_", to: "/impact", kind: "list", items: [["PLANT TREES", "/impact/tree-unit"], ["CLEAN OCEAN PLASTIC", "/impact/ocean-waste"], ["PROTECT AMAZON RAINFOREST", "/impact/amazon-square"], ["REWILD DEGRADED LAND", "/impact/habitat-recovery"], ["PROOF & REPORTS", "/reports"]] },
+  { key: "IMPACT_", to: "/impact", kind: "list", items: [["IMPACT HOME", "/impact"], ["IMPACT LAB", "/impact/lab"], ["TREE TEST JOURNEY", "/impact/lab/tree"], ["PLASTIC TEST JOURNEY", "/impact/lab/plastic"], ["PROOF & REPORTS", "/reports"]] },
   { key: "4CULTURE_", to: "/domains/4culture", kind: "list", items: [["4PLAY", "/culture/play"], ["4FILM", "/culture/film"], ["4TELIER", "/culture/telier"], ["M4GAZINE", "/stories"]] },
   { key: "4PLANET_", to: "/about", kind: "list", items: [["The Story", "/about#story"], ["The System", "/about#system"], ["The Founder", "/about#founder"], ["The Road Ahead", "/about#road"]] },
 ];
@@ -68,7 +69,6 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
   return (
     <div className="menu-plane" style={{ position: "fixed", inset: 0, zIndex: 49, background: "#fff", overflowY: "auto" }}>
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(80px,9vw,104px) clamp(20px,5vw,72px) clamp(40px,8vw,72px)" }}>
-        {/* DESKTOP — two-column plane */}
         <div className="menu-desktop" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(24px,5vw,72px)" }}>
           <div role="menu" aria-label="Primary">
             {MENU.map((c) => (
@@ -79,7 +79,6 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
           <div style={{ paddingTop: 14 }}><MenuItems c={cat} onMobile={false} onClose={onClose} /></div>
         </div>
 
-        {/* MOBILE — real accordion */}
         <div className="menu-mobile">
           {MENU.map((c) => {
             const isOpen = openCat === c.key;
@@ -105,7 +104,6 @@ function MenuPlane({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* DESKTOP external links */}
         <div className="menu-desktop" style={{ display: "flex", gap: 22, flexWrap: "wrap", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
           <a href={LS_URL} target="_blank" rel="noopener noreferrer" className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Living Systems ↗</a>
           <Link to="/atlas" onClick={onClose} className="link" style={{ fontSize: 13, color: T.blue, fontWeight: 500 }}>4Planet Atlas →</Link>
@@ -134,7 +132,6 @@ function Header() {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 24);
-      // once we have scrolled past most of a full-viewport hero, header sits over the white editorial plane
       setPastHero(y > window.innerHeight * 0.82);
     };
     onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
@@ -145,20 +142,20 @@ function Header() {
   const heroPage = !!ctx;
   const missionSlug = pathname.startsWith("/missions/") ? pathname.split("/")[2] : "";
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/") || DARK_MISSIONS.has(missionSlug);
-  // white header text while over a dark hero, OR anywhere inside a fully-dark world (domains + dark missions)
   const overHero = (darkWorld || (heroPage && !pastHero)) && !open;
   const accent = ctx ? ctx.accent : T.blue;
   const fg = overHero ? "#fff" : T.ink;
-  const outline = scrolled && !open;                 // JOIN gains a thin outline only after scroll (§03)
+  const outline = scrolled && !open;
 
   return (
     <>
-      {/* header is transparent AT ALL TIMES — no slab, no frosted panel, no divider (§03) */}
       <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "transparent", transition: "none" }}>
         <div style={{ width: "100%", height: 64, padding: "0 clamp(18px,3vw,44px)", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
-          <Link to="/story" aria-label="4Planet home" style={{ justifySelf: "start" }}><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
+          <div style={{ justifySelf: "start", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Link to="/" aria-label="4Planet home"><Mark size={16} color={open ? T.ink : fg} accent={accent} /></Link>
+            {!open && <ProductSwitcher dark={overHero} />}
+          </div>
 
-          {/* v25: MENU centred */}
           <button aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} ref={closeRef}
             onClick={() => setOpen((v) => !v)}
             className="menu-trigger"
@@ -166,7 +163,6 @@ function Header() {
             {open ? "CLOSE" : "MENU"}
           </button>
 
-          {/* v25: button reads "JOIN 4_" so 4PLANET isn't doubled in the bar */}
           <Link to="/people" style={{ justifySelf: "end", display: "inline-flex", alignItems: "center", height: 38, padding: "0 15px", fontSize: 13, fontWeight: 500, letterSpacing: ".08em",
             background: "transparent", color: open ? T.ink : fg,
             border: `1px solid ${outline ? (overHero ? "rgba(255,255,255,.72)" : T.ink) : "transparent"}`,
@@ -195,6 +191,14 @@ function footerCtx(pathname: string): { acc: string; label: string } {
 function Footer() {
   const { pathname } = useLocation();
   const { acc } = footerCtx(pathname);
+  const isMagazine =
+    pathname === "/magazine" ||
+    pathname.startsWith("/magazine/") ||
+    pathname === "/stories" ||
+    pathname.startsWith("/stories/");
+  const contactEmail = isMagazine
+    ? "editor@4planetmagazine.com"
+    : "hello@4planet.org";
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/stories"]]],
     ["PARTICIPATE", [["4People", "/people"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
@@ -202,7 +206,6 @@ function Footer() {
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      {/* the planet, every time — full-bleed photo IS the footer */}
       <picture>
         <source media="(max-width: 640px)" srcSet={img("footerPlanet").srcMobile} />
         <img src={img("footerPlanet").src} alt={img("footerPlanet").alt} loading="lazy" decoding="async"
@@ -234,6 +237,8 @@ function Footer() {
 
         <div style={{ borderTop: `1px solid rgba(255,255,255,.16)`, marginTop: "clamp(40px,5vw,64px)", paddingTop: 22, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontSize: 11.5, color: "rgba(255,255,255,.7)" }}>4PLANET_ — FOR A LIVING PLANET.</span>
+          <a href={`mailto:${contactEmail}`} className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>{contactEmail.toUpperCase()}</a>
+
           <Link to="/privacy" className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>PRIVACY</Link>
         </div>
       </div>
@@ -244,6 +249,15 @@ function Footer() {
 export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const darkWorld = pathname === "/domains" || pathname.startsWith("/domains/");
-  const heroPage = !!useDomainContext() || darkWorld;   // dark worlds run under the transparent header
-  return (<><Header />{!heroPage && <div aria-hidden style={{ height: 64 }} />}{children}<Footer /></>);
+  const heroPage = !!useDomainContext() || darkWorld;
+  return (
+    <>
+      <a href="#main-content" className="skip-to-main">SKIP TO MAIN CONTENT</a>
+      <Header />
+      {!heroPage && <div aria-hidden style={{ height: 64 }} />}
+      <main id="main-content" tabIndex={-1}>{children}</main>
+      <Footer />
+      <style>{`.skip-to-main{position:fixed;top:8px;left:8px;z-index:1000;padding:10px 14px;background:#fff;color:#0a0a0a;border:2px solid #2e2eff;font-family:${T.mono};font-size:12px;letter-spacing:.08em;text-decoration:none;transform:translateY(-160%);transition:transform .15s ease}.skip-to-main:focus{transform:translateY(0)}`}</style>
+    </>
+  );
 }

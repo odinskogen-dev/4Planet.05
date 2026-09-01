@@ -1,0 +1,3 @@
+4PLANET product-quality implementation candidate
+Release marker: pq02-claude-02-audit-preview-2026-07-26
+Status: deployed audit preview, not Beta or production
