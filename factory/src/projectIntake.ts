@@ -1,4 +1,5 @@
 import type { PriorityClass, ProjectProjection, Section, WorkPackage, ZeroLossEvidence } from "./contracts";
+import { compileProductionLinePackages, type ProductionLineIntake } from "./productionLines";
 
 export interface ApprovedWorkstreamIntake {
   section: Section;
@@ -38,7 +39,8 @@ export interface ApprovedProjectIntake {
   priority: Exclude<PriorityClass, "INCUBATING" | "PARKED">;
   blockedReason?: string;
   founderGate?: string;
-  workstreams: ApprovedWorkstreamIntake[];
+  workstreams?: ApprovedWorkstreamIntake[];
+  productionLine?: ProductionLineIntake;
 }
 
 export interface ProjectIntakeCompilation {
@@ -49,6 +51,13 @@ export interface ProjectIntakeCompilation {
     authorityRef: string;
     compiledAt: string;
     workPackageIds: string[];
+    productionLine?: {
+      lineId: ProductionLineIntake["lineId"];
+      instanceId: string;
+      templateVersion: string;
+      missingInputs: string[];
+      appliedRuleIds: string[];
+    };
   };
 }
 
@@ -67,35 +76,14 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
 }
 
-/**
- * Deterministically converts an explicitly BUILD-approved Founder idea into the
- * Factory's scheduling projection plus bounded work packages. This is a compiler,
- * not a new authority: the receipt points back to the Founder/BRAIN authorityRef.
- */
-export function compileApprovedProjectIntake(input: ApprovedProjectIntake): ProjectIntakeCompilation {
-  if (input.approval !== "BUILD_APPROVED") throw new Error("Project intake requires explicit BUILD_APPROVED authority");
-  const approvedAt = text(input.approvedAt, "approvedAt");
-  if (!Number.isFinite(Date.parse(approvedAt))) throw new Error("Project intake approvedAt must be an ISO-compatible timestamp");
-  const authorityRef = text(input.authorityRef, "authorityRef");
-  const projectId = text(input.projectId, "projectId");
-  if (!Array.isArray(input.workstreams) || input.workstreams.length === 0) throw new Error("Project intake requires at least one workstream");
-
-  const project: ProjectProjection = {
-    id: projectId,
-    name: text(input.name, "name"),
-    northStar: text(input.northStar, "northStar"),
-    user: text(input.user, "user"),
-    goal: text(input.goal, "goal"),
-    current: text(input.current, "current"),
-    gold: text(input.gold, "gold"),
-    gap: text(input.gap, "gap"),
-    priority: input.priority,
-    authorityRefs: [authorityRef],
-    blockedReason: input.blockedReason?.trim() || undefined,
-    founderGate: input.founderGate?.trim() || undefined,
-  };
-
-  const packages = input.workstreams.map((stream, index): WorkPackage => {
+function compileManualWorkstreams(
+  project: ProjectProjection,
+  projectId: string,
+  approvedAt: string,
+  priority: ApprovedProjectIntake["priority"],
+  workstreams: ApprovedWorkstreamIntake[],
+): WorkPackage[] {
+  return workstreams.map((stream, index): WorkPackage => {
     const dependencies = [...(stream.dependencies ?? [])].filter(Boolean);
     const title = text(stream.title, `workstreams.${index}.title`);
     if (stream.writeScopes.some((scope) => !scope.trim())) throw new Error(`Project intake contains empty write scope at workstream ${index}`);
@@ -107,7 +95,7 @@ export function compileApprovedProjectIntake(input: ApprovedProjectIntake): Proj
       projectId,
       title,
       section: stream.section,
-      priority: input.priority,
+      priority,
       goalLink: project.goal,
       gapClosed: text(stream.gapClosed, `workstreams.${index}.gapClosed`),
       deliverables: [...stream.deliverables],
@@ -132,17 +120,76 @@ export function compileApprovedProjectIntake(input: ApprovedProjectIntake): Proj
       status: project.blockedReason || dependencies.length > 0 ? "BLOCKED" : "READY",
     };
   });
+}
 
+/**
+ * Deterministically converts an explicitly BUILD-approved Founder idea into the
+ * Factory's scheduling projection plus bounded work packages. A project may use
+ * hand-authored bounded workstreams OR an approved reusable production-line
+ * compiler. Both remain subordinate to the supplied Founder/BRAIN authorityRef.
+ */
+export function compileApprovedProjectIntake(input: ApprovedProjectIntake): ProjectIntakeCompilation {
+  if (input.approval !== "BUILD_APPROVED") throw new Error("Project intake requires explicit BUILD_APPROVED authority");
+  const approvedAt = text(input.approvedAt, "approvedAt");
+  if (!Number.isFinite(Date.parse(approvedAt))) throw new Error("Project intake approvedAt must be an ISO-compatible timestamp");
+  const authorityRef = text(input.authorityRef, "authorityRef");
+  const projectId = text(input.projectId, "projectId");
+  const hasManualWorkstreams = Array.isArray(input.workstreams) && input.workstreams.length > 0;
+  const hasProductionLine = Boolean(input.productionLine);
+  if (hasManualWorkstreams === hasProductionLine) {
+    throw new Error("Project intake requires exactly one execution method: workstreams OR productionLine");
+  }
+
+  const project: ProjectProjection = {
+    id: projectId,
+    name: text(input.name, "name"),
+    northStar: text(input.northStar, "northStar"),
+    user: text(input.user, "user"),
+    goal: text(input.goal, "goal"),
+    current: text(input.current, "current"),
+    gold: text(input.gold, "gold"),
+    gap: text(input.gap, "gap"),
+    priority: input.priority,
+    authorityRefs: [authorityRef],
+    blockedReason: input.blockedReason?.trim() || undefined,
+    founderGate: input.founderGate?.trim() || undefined,
+  };
+
+  let packages: WorkPackage[];
+  let productionLineReceipt: ProjectIntakeCompilation["receipt"]["productionLine"];
+
+  if (input.productionLine) {
+    const lineCompilation = compileProductionLinePackages(project, input.priority, approvedAt, input.productionLine);
+    project.productionLine = {
+      lineId: input.productionLine.lineId,
+      instanceId: input.productionLine.instanceId,
+      templateVersion: lineCompilation.template.version,
+      role: input.productionLine.role,
+    };
+    packages = [...lineCompilation.packages];
+    productionLineReceipt = {
+      lineId: input.productionLine.lineId,
+      instanceId: input.productionLine.instanceId,
+      templateVersion: lineCompilation.template.version,
+      missingInputs: [...lineCompilation.missingInputs],
+      appliedRuleIds: [...lineCompilation.appliedRuleIds],
+    };
+  } else {
+    packages = compileManualWorkstreams(project, projectId, approvedAt, input.priority, input.workstreams ?? []);
+  }
+
+  if (project.blockedReason) packages = packages.map((pkg) => ({ ...pkg, status: "BLOCKED" }));
   if (new Set(packages.map((pkg) => pkg.id)).size !== packages.length) throw new Error("Project intake generated duplicate work package IDs");
 
-  return Object.freeze({
-    project: Object.freeze(project),
-    packages: Object.freeze(packages) as unknown as WorkPackage[],
-    receipt: Object.freeze({
-      type: "FOUNDER_APPROVED_PROJECT_INTAKE" as const,
+  return {
+    project,
+    packages,
+    receipt: {
+      type: "FOUNDER_APPROVED_PROJECT_INTAKE",
       authorityRef,
       compiledAt: new Date().toISOString(),
       workPackageIds: packages.map((pkg) => pkg.id),
-    }),
-  });
+      productionLine: productionLineReceipt,
+    },
+  };
 }
