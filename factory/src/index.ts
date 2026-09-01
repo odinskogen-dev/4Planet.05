@@ -1,4 +1,4 @@
-import { Agent, callable, routeAgentRequest } from "agents";
+import { Agent, callable, getAgentByName, routeAgentRequest } from "agents";
 import { selectHourlyBatch } from "./batcher";
 import { evaluateMaterialProgress } from "./evaluator";
 import { evaluateFactoryActivation, type FactoryActivationEvidence } from "./activationGate";
@@ -7,6 +7,14 @@ import { validateBrainProjection, type BrainProjectionSnapshot } from "./brainPr
 import { compileLearningCandidate } from "./learningCompiler";
 import { compileApprovedProjectIntake, type ApprovedProjectIntake } from "./projectIntake";
 import { decideInFlightRecovery } from "./recovery";
+import {
+  createShadowCanaryPackages,
+  createShadowCanaryProject,
+  SHADOW_BROWSER_PACKAGE_ID,
+  SHADOW_BROWSER_WORKFLOW_ID,
+  SHADOW_SOURCE_PACKAGE_ID,
+  SHADOW_SOURCE_WORKFLOW_ID,
+} from "./shadowCanary";
 import type { LearningCandidate, Outcome, ProjectProjection, Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
@@ -39,6 +47,9 @@ interface FactoryState {
   lastBrainProjectionAt?: string;
   lastProjectIntakeAt?: string;
 }
+
+const CANARY_WORKFLOWS = [SHADOW_SOURCE_WORKFLOW_ID, SHADOW_BROWSER_WORKFLOW_ID] as const;
+const CANARY_PACKAGES = [SHADOW_SOURCE_PACKAGE_ID, SHADOW_BROWSER_PACKAGE_ID] as const;
 
 export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> {
   initialState: FactoryState = {
@@ -135,6 +146,91 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     }
     this.setState({ ...this.state, mode });
     return this.state;
+  }
+
+  /**
+   * Deployed SHADOW canary. It deliberately runs only two fixed read-only packages:
+   * source verification and browser QA. It proves Agent → Workflow → sub-agent →
+   * real tool → persisted outcome → evaluator/learning without granting ACTIVE.
+   */
+  async ensureShadowCanary() {
+    if (this.state.mode !== "SHADOW") throw new Error("SHADOW canary is allowed only while Factory mode is SHADOW");
+
+    const nowIso = new Date().toISOString();
+    this.upsertProject(createShadowCanaryProject(nowIso));
+    const packages = createShadowCanaryPackages(nowIso);
+    for (const pkg of packages) {
+      if (!this.getWorkPackage(pkg.id) && !this.getRecordedOutcome(pkg.id)) this.upsertWorkPackage(pkg);
+    }
+
+    for (let index = 0; index < packages.length; index += 1) {
+      const pkg = packages[index];
+      const workflowId = CANARY_WORKFLOWS[index];
+      if (this.getRecordedOutcome(pkg.id) || this.getWorkflow(workflowId)) continue;
+      await this.runWorkflow(
+        "WORK_PACKAGE_WORKFLOW",
+        { workPackageId: pkg.id },
+        {
+          id: workflowId,
+          metadata: { canary: true, projectId: pkg.projectId, section: pkg.section },
+        },
+      );
+    }
+
+    return this.getShadowCanaryStatus();
+  }
+
+  async getShadowCanaryStatus() {
+    const workflows = [];
+    for (const instanceId of CANARY_WORKFLOWS) {
+      const tracked = this.getWorkflow(instanceId);
+      if (tracked && (tracked.status === "queued" || tracked.status === "running")) {
+        try {
+          await this.getWorkflowStatus("WORK_PACKAGE_WORKFLOW", instanceId);
+        } catch {
+          // Tracking is still returned below. A status-refresh failure must not fabricate success.
+        }
+      }
+      workflows.push(this.getWorkflow(instanceId) ?? null);
+    }
+
+    const outcomes = CANARY_PACKAGES.map((workPackageId) => this.getRecordedOutcome(workPackageId) ?? null);
+    const learning = this.sql<{ id: string; work_package_id: string; status: string; created_at: string }>`
+      SELECT id, work_package_id, status, created_at
+      FROM learning_candidates
+      WHERE work_package_id IN (${SHADOW_SOURCE_PACKAGE_ID}, ${SHADOW_BROWSER_PACKAGE_ID})
+      ORDER BY created_at ASC
+    `;
+    const accepted = outcomes.filter((outcome) => outcome?.status === "ACCEPTED").length;
+    const complete = workflows.filter((workflow) => workflow?.status === "complete").length;
+
+    return {
+      mode: this.state.mode,
+      canary: "SHADOW_READ_ONLY_V01",
+      ready: accepted === 2 && complete === 2 && learning.length >= 1,
+      workflows,
+      outcomes,
+      learning,
+    };
+  }
+
+  getRuntimeHealth() {
+    const queue = this.sql<{ status: string; count: number }>`
+      SELECT status, COUNT(*) AS count
+      FROM work_packages
+      GROUP BY status
+      ORDER BY status
+    `;
+    return {
+      service: "4PLANET Production Factory GOLD",
+      mode: this.state.mode,
+      hourlyScheduleConfigured: Boolean(this.state.hourlyScheduleId),
+      lastBatchAt: this.state.lastBatchAt ?? null,
+      lastBrainProjectionAt: this.state.lastBrainProjectionAt ?? null,
+      queue,
+      workerCount: this.listSubAgents().length,
+      noLiveAuthority: true,
+    };
   }
 
   /**
@@ -459,6 +555,19 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
 
 export default {
   async fetch(request: Request, env: Cloudflare.Env) {
+    const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === "/__factory/health") {
+      const agent = await getAgentByName(env.PRODUCTION_FACTORY, "shadow-primary");
+      return Response.json(await agent.getRuntimeHealth());
+    }
+
+    if (request.method === "GET" && url.pathname === "/__factory/canary") {
+      const agent = await getAgentByName(env.PRODUCTION_FACTORY, "shadow-primary");
+      await agent.ensureShadowCanary();
+      return Response.json(await agent.getShadowCanaryStatus());
+    }
+
     return (await routeAgentRequest(request, env)) ?? new Response("4PLANET Production Factory GOLD", { status: 200 });
   },
 };
