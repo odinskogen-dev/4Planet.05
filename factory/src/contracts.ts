@@ -74,6 +74,18 @@ export interface ZeroLossEvidence {
 }
 
 /**
+ * PRESERVE BEFORE MUTATE
+ * A bounded mutation declares what accepted value must survive, the principal
+ * regression risks, and an exact rollback reference before the write begins.
+ */
+export interface PreservationEvidence {
+  mustNotLose: string[];
+  regressionRisks: string[];
+  rollbackRef: string;
+  checkedAt?: string;
+}
+
+/**
  * Scheduling projection only. Source authority remains CURRENT Drive/BRAIN.
  * Optional fields improve human/project context without creating a second truth store.
  */
@@ -109,6 +121,7 @@ export interface WorkPackage {
   requiredEvidence: string[];
   productionLine?: ProductionLineContext;
   zeroLoss?: ZeroLossEvidence;
+  preservation?: PreservationEvidence;
   execution?: ExecutionSpec;
   learningQuestion?: string;
   founderGate?: string;
