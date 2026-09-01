@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { decideInFlightRecovery } from "./recovery";
+import { decideInFlightRecovery, workflowExecutionConfirmedInactive } from "./recovery";
 
 const NOW = Date.parse("2026-09-01T00:00:00.000Z");
 
@@ -11,7 +11,7 @@ test("recorded outcome is finalized instead of re-executed", () => {
         status: "RUNNING",
         updatedAt: "2026-08-31T23:59:00.000Z",
         hasRecordedOutcome: true,
-        workflowExecutionConfirmedInactive: false,
+        workflowStatus: "running",
       },
       NOW,
     ),
@@ -19,38 +19,54 @@ test("recorded outcome is finalized instead of re-executed", () => {
   );
 });
 
-test("stale in-flight work recovers only with explicit inactive-workflow proof", () => {
-  assert.equal(
-    decideInFlightRecovery(
-      {
-        status: "DISPATCHED",
-        updatedAt: "2026-08-31T23:20:00.000Z",
-        hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
-      },
-      NOW,
-    ),
-    "RECOVER_TO_READY",
-  );
-  assert.equal(
-    decideInFlightRecovery(
-      {
-        status: "DISPATCHED",
-        updatedAt: "2026-08-31T23:20:00.000Z",
-        hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: false,
-      },
-      NOW,
-    ),
-    "LEAVE",
-  );
+test("only terminal workflow states count as explicit inactive-workflow proof", () => {
+  for (const status of ["queued", "running", "paused", "waiting"] as const) {
+    assert.equal(workflowExecutionConfirmedInactive(status), false);
+  }
+  for (const status of ["complete", "errored", "terminated"] as const) {
+    assert.equal(workflowExecutionConfirmedInactive(status), true);
+  }
+  assert.equal(workflowExecutionConfirmedInactive(undefined), false);
+});
+
+test("stale in-flight work recovers only when the tracked workflow is terminal", () => {
+  for (const workflowStatus of ["complete", "errored", "terminated"] as const) {
+    assert.equal(
+      decideInFlightRecovery(
+        {
+          status: "DISPATCHED",
+          updatedAt: "2026-08-31T23:20:00.000Z",
+          hasRecordedOutcome: false,
+          workflowStatus,
+        },
+        NOW,
+      ),
+      "RECOVER_TO_READY",
+    );
+  }
+
+  for (const workflowStatus of [undefined, "queued", "running", "paused", "waiting"] as const) {
+    assert.equal(
+      decideInFlightRecovery(
+        {
+          status: "DISPATCHED",
+          updatedAt: "2026-08-31T23:20:00.000Z",
+          hasRecordedOutcome: false,
+          workflowStatus,
+        },
+        NOW,
+      ),
+      "LEAVE",
+    );
+  }
+
   assert.equal(
     decideInFlightRecovery(
       {
         status: "RUNNING",
         updatedAt: "2026-08-31T23:50:00.000Z",
         hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
+        workflowStatus: "terminated",
       },
       NOW,
     ),
@@ -65,7 +81,7 @@ test("accepted, blocked, future-dated and corrupt records are not silently recyc
         status: "ACCEPTED",
         updatedAt: "2026-08-31T20:00:00.000Z",
         hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
+        workflowStatus: "terminated",
       },
       NOW,
     ),
@@ -77,7 +93,7 @@ test("accepted, blocked, future-dated and corrupt records are not silently recyc
         status: "BLOCKED",
         updatedAt: "2026-08-31T20:00:00.000Z",
         hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
+        workflowStatus: "terminated",
       },
       NOW,
     ),
@@ -89,7 +105,7 @@ test("accepted, blocked, future-dated and corrupt records are not silently recyc
         status: "RUNNING",
         updatedAt: "2026-09-01T00:10:00.000Z",
         hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
+        workflowStatus: "terminated",
       },
       NOW,
     ),
@@ -101,7 +117,7 @@ test("accepted, blocked, future-dated and corrupt records are not silently recyc
         status: "DISPATCHED",
         updatedAt: "not-a-timestamp",
         hasRecordedOutcome: false,
-        workflowExecutionConfirmedInactive: true,
+        workflowStatus: "terminated",
       },
       NOW,
     ),
