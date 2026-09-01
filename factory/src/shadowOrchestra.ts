@@ -200,7 +200,9 @@ export function createShadowOrchestraPackages(nowIso = new Date().toISOString())
           lineId: probe.lineId,
           instanceId: probe.instanceId,
           templateVersion: "01",
-          stage: "QA",
+          // OBSERVE deliberately does not equal the Human Gold QA stage. A
+          // successful screenshot proves render evidence only, never Gold.
+          stage: "OBSERVE",
           role: "BATCH",
         }
       : undefined,
