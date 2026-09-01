@@ -1,0 +1,104 @@
+name: Contact Email Alignment
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+    paths:
+      - .github/workflows/contact-email-alignment.yml
+
+permissions:
+  contents: write
+
+jobs:
+  align:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure privacy mailbox route
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "${CF_TOKEN:-}" ] || { echo "TOKEN_MISSING"; exit 2; }
+          echo "::add-mask::$CF_TOKEN"
+          api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$@"; }
+          ZONES=$(api "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active")
+          ZONE_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print(r[0].get("id","") if r else "")')
+          [ -n "$ZONE_ID" ] || { echo "ZONE_NOT_VISIBLE"; exit 3; }
+          RULES=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules")
+          HAS=$(printf '%s' "$RULES" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("yes" if any(any(m.get("field")=="to" and m.get("value")=="privacy@4planet.org" for m in r.get("matchers",[])) for r in d.get("result",[])) else "no")')
+          if [ "$HAS" = "yes" ]; then
+            echo "PRIVACY_ROUTE_PRESENT"
+          else
+            BODY='{"name":"4PLANET Privacy","enabled":true,"matchers":[{"type":"literal","field":"to","value":"privacy@4planet.org"}],"actions":[{"type":"forward","value":["odin.skogen@gmail.com"]}],"priority":0}'
+            RESP=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules" --data "$BODY")
+            printf '%s' "$RESP" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("PRIVACY_ROUTE_CREATE="+str(d.get("success"))); print("ERRORS="+" | ".join(str(e.get("code",""))+":"+str(e.get("message","")) for e in (d.get("errors") or []))); sys.exit(0 if d.get("success") else 1)'
+          fi
+
+      - name: Patch active, test and live kings
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "4PLANET Ops"
+          git config user.email "actions@users.noreply.github.com"
+          for BRANCH in build/four-product-integrated-prototype king/test release/live-king-20260901; do
+            echo "=== $BRANCH ==="
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          shell = Path("src/components/layout/PublicShell.tsx")
+          s = shell.read_text()
+          marker = "  const { acc } = footerCtx(pathname);\n"
+          insert = '''  const isMagazine =\n    pathname === "/magazine" ||\n    pathname.startsWith("/magazine/") ||\n    pathname === "/stories" ||\n    pathname.startsWith("/stories/");\n  const contactEmail = isMagazine\n    ? "editor@4planetmagazine.com"\n    : "hello@4planet.org";\n'''
+          if "const contactEmail = isMagazine" not in s:
+              if marker not in s:
+                  raise SystemExit("Footer marker missing")
+              s = s.replace(marker, marker + insert, 1)
+
+          if 'href={`mailto:${contactEmail}`}' not in s:
+              pattern = r'(?P<i>\s*)<Link to="/privacy" className="transition-colors hover:text-black/70">PRIVACY</Link>'
+              match = re.search(pattern, s)
+              if not match:
+                  raise SystemExit("Privacy footer link marker missing")
+              i = match.group('i')
+              anchor = (
+                  i + '<a\n' +
+                  i + '  href={`mailto:${contactEmail}`}\n' +
+                  i + '  className="transition-colors hover:text-black/70"\n' +
+                  i + '>\n' +
+                  i + '  {contactEmail.toUpperCase()}\n' +
+                  i + '</a>\n' +
+                  i + '<Link to="/privacy" className="transition-colors hover:text-black/70">PRIVACY</Link>'
+              )
+              s = re.sub(pattern, lambda m: anchor, s, count=1)
+          shell.write_text(s)
+
+          privacy = Path("src/pages/v5/Privacy.tsx")
+          p = privacy.read_text()
+          old = 'const CONTACT = "odin.skogen@gmail.com";'
+          new = 'const CONTACT = "privacy@4planet.org";'
+          if old in p:
+              p = p.replace(old, new, 1)
+          elif new not in p:
+              raise SystemExit("Privacy contact marker missing")
+          privacy.write_text(p)
+          PY
+            git add src/components/layout/PublicShell.tsx src/pages/v5/Privacy.tsx
+            if git diff --cached --quiet; then
+              echo "NO_CHANGES $BRANCH"
+            else
+              git commit -m "fix: align public contact emails"
+              git push origin "HEAD:$BRANCH"
+            fi
+            echo "PUBLIC_EMAIL_AUDIT $BRANCH"
+            grep -RInE 'odin\.skogen@gmail\.com|odin@4planet\.org|hello@4planet\.org|editor@4planetmagazine\.com|privacy@4planet\.org' src --exclude-dir=node_modules || true
+          done
