@@ -174,6 +174,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         {
           id: workflowId,
           metadata: { canary: true, projectId: pkg.projectId, section: pkg.section },
+          agentBinding: "PRODUCTION_FACTORY",
         },
       );
     }
@@ -362,6 +363,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
           {
             id: `wp-${pkg.id}-${Date.now()}`,
             metadata: { projectId: pkg.projectId, section: pkg.section, priority: pkg.priority },
+            agentBinding: "PRODUCTION_FACTORY",
           },
         ),
       ),
