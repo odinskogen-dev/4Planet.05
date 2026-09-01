@@ -56,10 +56,11 @@ test("production-line learning cannot close from qualitative language alone", ()
   assert.equal(result.decision, "CORRECT");
   assert.equal(result.material, false);
   assert.ok(result.missingEvidence.includes("Measured production-minutes"));
+  assert.ok(result.missingEvidence.includes("Founder Gold or External Human Gold quality status"));
   assert.ok(result.missingEvidence.includes("Explicit compounding PASS/FAIL verdict"));
 });
 
-test("production-line learning can close only with explicit measured compounding evidence", () => {
+test("production-line learning can close only with explicit measured quality compounding evidence after Founder Gold", () => {
   const result = evaluateMaterialProgress(learnPackage, outcome([
     "PASS source/runtime proof https://example.test/proof",
     "production-minutes=55",
@@ -69,6 +70,7 @@ test("production-line learning can close only with explicit measured compounding
     "product-quality=8.4",
     "mobile-quality=8.2",
     "user-comprehension=8.1",
+    "human-gold-status=FOUNDER_GOLD",
     "compounding=PASS",
     "expected vs actual cause lesson confidence regression next test",
     "Reference vs transfer metrics evidence refs next comparable test",
