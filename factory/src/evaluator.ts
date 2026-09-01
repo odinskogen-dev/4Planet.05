@@ -25,7 +25,7 @@ const sectionEvidenceHints: Record<Section, RegExp[]> = {
   RESEARCH_DATA: [/source|provenance|dataset|primary|doi|url|claim|unknown/i],
   USER_DISTRIBUTION: [/entry|advance|completion|meaningful|event|user|reply|conversion/i],
   CAPITAL: [/submission|reply|award|contract|cash|deadline|eligibility|routing/i],
-  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test|production-minutes|founder-minutes|reuse-rate|human-gold-status/i],
+  LEARNING: [/expected|actual|cause|lesson|confidence|regression|next test|production-minutes|founder-minutes|reuse-rate|human-gold-status|quality-delta/i],
   BRAIN_CONTROL: [/authority|readback|source ref|exact|conflict|lock|decision/i],
 };
 
@@ -59,12 +59,27 @@ function deltaLooksMaterial(delta: string): boolean {
   return /working|fixed|visible|deployed|passed|received|verified|measured|implemented|reduced|increased|removed|restored|unblocked|accepted/i.test(text);
 }
 
+function measuredQualityDelta(haystack: string): number | null {
+  const match = /quality-delta\s*[:=]\s*\+?(-?\d+(?:\.\d+)?)/i.exec(haystack);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
 function productionLineLearningEvidence(pkg: WorkPackage, outcome: Outcome): string[] {
   if (pkg.productionLine?.stage !== "LEARN") return [];
   const haystack = `${outcome.materialDelta}\n${outcome.evidence.join("\n")}`;
   const missing = COMPOUNDING_EVIDENCE.filter(([pattern]) => !pattern.test(haystack)).map(([, label]) => label);
-  if (pkg.productionLine.role !== "REFERENCE" && !/compounding\s*[:=]\s*(?:PASS|FAIL)/i.test(haystack)) {
-    missing.push("Explicit compounding PASS/FAIL verdict");
+  if (pkg.productionLine.role !== "REFERENCE") {
+    if (!/compounding\s*[:=]\s*(?:PASS|FAIL)/i.test(haystack)) {
+      missing.push("Explicit compounding PASS/FAIL verdict");
+    }
+    const qualityDelta = measuredQualityDelta(haystack);
+    if (qualityDelta === null) {
+      missing.push("Measured quality-delta versus accepted reference/previous instance");
+    } else if (qualityDelta <= 0) {
+      missing.push("Rising quality: quality-delta must be > 0 for GIGA compounding; equal quality is efficiency only");
+    }
   }
   return missing;
 }
@@ -130,7 +145,7 @@ export function evaluateMaterialProgress(pkg: WorkPackage, outcome: Outcome): Ma
     };
   }
   if (pkg.productionLine?.stage === "LEARN") {
-    reasons.push("Production-line compounding evidence is explicitly measured after Founder Gold quality");
+    reasons.push("Production-line compounding is measured after Founder Gold; transfers require rising quality, not merely equal quality");
   }
 
   if (deltaLooksMaterial(outcome.materialDelta)) {
