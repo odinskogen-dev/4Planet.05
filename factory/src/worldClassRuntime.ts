@@ -251,7 +251,7 @@ async function controlRoom(env: Cloudflare.Env) {
 }
 
 export default {
-  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {
+  async fetch(request: Request, env: Cloudflare.Env, _ctx: ExecutionContext) {
     const url = new URL(request.url);
 
     if (request.method === "GET" && url.pathname === "/__factory/control-room") {
@@ -277,7 +277,7 @@ export default {
       return Response.json(await startOrchestra(env));
     }
 
-    return baseFactoryWorker.fetch(request, env, ctx);
+    return baseFactoryWorker.fetch(request, env);
   },
 
   async queue(batch: MessageBatch<FactoryQueueMessage>, env: Cloudflare.Env, _ctx: ExecutionContext) {
