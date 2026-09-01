@@ -217,6 +217,7 @@ jobs:
           )
           gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
           echo "FACTORY_GITHUB_TOKEN missing: real autonomous write proof intentionally not started."
+          exit 1
 
       - name: Start three-family real autonomous production proof
         if: steps.runtime_secrets.outputs.github_write_installed == 'true'
