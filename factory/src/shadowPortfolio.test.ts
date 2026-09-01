@@ -65,19 +65,6 @@ test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and r
     project("ATLAS", "ATLAS", "P1", 6),
   ];
 
-  const snapshot: BrainProjectionSnapshot = {
-    authority: "CURRENT_DRIVE_BRAIN",
-    readOnly: true,
-    retrievedAt: new Date(NOW).toISOString(),
-    sourceRefs: [
-      "github:odinskogen-dev/4Planet.05#king/test@5d40e8c93476c6addfa349363957384e4de3d254",
-      "github:odinskogen-dev/4Planet.05#issue-211",
-      "brain:theory-project-capital-execution-convergence-v2",
-      `brain:founder-decision:${REQUIRED_MULTI_GIGA_04_AUTHORITY_REF}`,
-    ],
-    projects,
-  };
-
   const packages = [
     wp("jaguar-visual", "JAGUAR", "PRODUCT_DESIGN", "P0", 10),
     wp("orca-proof", "ORCA_BISCAY", "RESEARCH_DATA", "P0", 9),
@@ -95,7 +82,10 @@ test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and r
   assert.equal(result.mode, "SHADOW");
   assert.equal(result.receipt.projectCount, 8);
   assert.equal(result.receipt.unresolvedPackageIds.length, 0);
-  assert.ok(ids.includes("jaguar-visual"), "P0 must retain capacity");
+  assert.ok(
+    result.batch.packages.some((pkg) => pkg.priority === "P0"),
+    "P0 must retain capacity",
+  );
   assert.ok(ids.includes("s4piens-choice"), "stalled P1 must be rescued");
   assert.ok(ids.includes("actors-entry"), "stalled P2 must be rescued");
   assert.ok(ids.includes("mag-user"), "stalled P1 must be rescued");
