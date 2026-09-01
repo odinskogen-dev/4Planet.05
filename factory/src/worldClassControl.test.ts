@@ -66,16 +66,29 @@ test("read-only evidence can never authorize LIVE release", () => {
   assert.equal(releaseAuthorityFor(basePackage, baseOutcome), "SHADOW_EVIDENCE_ONLY");
 });
 
-test("Guardian stops a line when the WIP envelope is breached", () => {
+test("Guardian stops a line when founder-locked five-item WIP is breached", () => {
   const guardian = evaluateGuardian({
     mode: "SHADOW",
     hourlyScheduleConfigured: true,
     noLiveAuthority: true,
-    queueCounts: [{ status: "RUNNING", count: 11 }],
+    queueCounts: [{ status: "RUNNING", count: 6 }],
     workerCount: 9,
   });
   assert.equal(guardian.severity, "RED");
   assert.equal(guardian.lineStop, true);
+  assert.ok(guardian.reasons.some((reason) => reason.includes("5-package")));
+});
+
+test("Guardian allows exactly five in-flight packages", () => {
+  const guardian = evaluateGuardian({
+    mode: "SHADOW",
+    hourlyScheduleConfigured: true,
+    noLiveAuthority: true,
+    queueCounts: [{ status: "RUNNING", count: 5 }],
+    workerCount: 9,
+  });
+  assert.equal(guardian.severity, "GREEN");
+  assert.equal(guardian.lineStop, false);
 });
 
 test("Guardian remains green when the safe runtime has no deterministic abnormality", () => {
