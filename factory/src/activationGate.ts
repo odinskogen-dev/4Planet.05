@@ -51,21 +51,45 @@ const REQUIRED: Array<[keyof FactoryActivationEvidence, string]> = [
   ["testKingBaseCurrent", "CURRENT_TEST_KING_BASE"],
 ];
 
+const SHA_40 = /^[0-9a-f]{40}$/i;
+const MAX_EVIDENCE_AGE_MS = 2 * 60 * 60 * 1000;
+const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
+
 /**
  * Fail-closed GLOBAL ACTIVE boundary.
  *
  * Selection overlap alone is not enough. Factory must prove real execution
  * paths, durable round-trips, outcome quality, governed learning/writeback and
  * current TEST authority. A Pages preview is not a dedicated Agents runtime.
+ * Evidence is short-lived and commit-addressed so a stale boolean bundle cannot
+ * silently activate after TEST KING or Factory has moved.
  */
-export function evaluateFactoryActivation(evidence: FactoryActivationEvidence): FactoryActivationGate {
+export function evaluateFactoryActivation(
+  evidence: FactoryActivationEvidence,
+  nowMs = Date.now(),
+): FactoryActivationGate {
   const missing = REQUIRED
     .filter(([key]) => evidence[key] !== true)
     .map(([, label]) => label);
 
-  if (!evidence.exactFactorySha?.trim()) missing.push("EXACT_FACTORY_SHA");
-  if (!evidence.currentTestKingSha?.trim()) missing.push("CURRENT_TEST_KING_SHA");
-  if (!evidence.evidencedAt?.trim()) missing.push("EVIDENCE_TIMESTAMP");
+  const factorySha = evidence.exactFactorySha?.trim() ?? "";
+  const testKingSha = evidence.currentTestKingSha?.trim() ?? "";
+  const evidencedAt = evidence.evidencedAt?.trim() ?? "";
+
+  if (!factorySha) missing.push("EXACT_FACTORY_SHA");
+  else if (!SHA_40.test(factorySha)) missing.push("INVALID_FACTORY_SHA");
+
+  if (!testKingSha) missing.push("CURRENT_TEST_KING_SHA");
+  else if (!SHA_40.test(testKingSha)) missing.push("INVALID_TEST_KING_SHA");
+
+  if (!evidencedAt) {
+    missing.push("EVIDENCE_TIMESTAMP");
+  } else {
+    const evidenceMs = Date.parse(evidencedAt);
+    if (!Number.isFinite(evidenceMs)) missing.push("INVALID_EVIDENCE_TIMESTAMP");
+    else if (evidenceMs > nowMs + MAX_FUTURE_SKEW_MS) missing.push("FUTURE_ACTIVATION_EVIDENCE");
+    else if (nowMs - evidenceMs > MAX_EVIDENCE_AGE_MS) missing.push("STALE_ACTIVATION_EVIDENCE");
+  }
 
   return Object.freeze({
     ready: missing.length === 0,
