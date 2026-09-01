@@ -1,0 +1,68 @@
+name: AXE Cloudflare Email Sending Audit 2026-09-01
+
+on:
+  push:
+    branches:
+      - ops/cloudflare-domain-inventory-20260820
+    paths:
+      - .github/workflows/axe-cloudflare-email-sending-audit-20260901.yml
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ops/cloudflare-domain-inventory-20260820
+      - name: Audit Cloudflare Email Sending without sending mail
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .axe
+          API="https://api.cloudflare.com/client/v4"
+          AUTH="Authorization: Bearer ${CF_TOKEN}"
+
+          token_json="$(curl -sS -H "${AUTH}" "${API}/user/tokens/verify")"
+          token_ok="$(jq -r '.success == true and .result.status == "active"' <<<"${token_json}")"
+
+          zone_json="$(curl -sS -H "${AUTH}" "${API}/zones?name=4planet.org&status=active")"
+          zone_ok="$(jq -r '.success == true and (.result | length) == 1' <<<"${zone_json}")"
+
+          permission="unknown"
+          onboarded="false"
+          enabled="false"
+          entitlement="unknown"
+          if [[ "${zone_ok}" == "true" ]]; then
+            zone_id="$(jq -r '.result[0].id' <<<"${zone_json}")"
+            response_file="$(mktemp)"
+            http_code="$(curl -sS -o "${response_file}" -w '%{http_code}' -H "${AUTH}" "${API}/zones/${zone_id}/email/sending/subdomains")"
+            response_json="$(<"${response_file}")"
+            if [[ "${http_code}" == "200" ]] && [[ "$(jq -r '.success' <<<"${response_json}")" == "true" ]]; then
+              permission="available"
+              onboarded="$(jq -r '[.result[] | select(.name == "4planet.org")] | length > 0' <<<"${response_json}")"
+              enabled="$(jq -r '[.result[] | select(.name == "4planet.org" and .enabled == true)] | length > 0' <<<"${response_json}")"
+              entitlement="available"
+            elif [[ "${http_code}" == "403" ]]; then
+              permission="missing"
+            else
+              permission="unavailable"
+              entitlement="$(jq -r 'if (.errors // [] | length) > 0 then "unavailable" else "unknown" end' <<<"${response_json}")"
+            fi
+          fi
+
+          jq -n             --arg checked_at "$(date -u +%FT%TZ)"             --argjson token_active "${token_ok}"             --argjson zone_found "${zone_ok}"             --arg permission "${permission}"             --argjson domain_onboarded "${onboarded}"             --argjson sending_enabled "${enabled}"             --arg entitlement "${entitlement}"             '{checked_at:$checked_at,token_active:$token_active,zone_found:$zone_found,email_sending_permission:$permission,domain_onboarded:$domain_onboarded,sending_enabled:$sending_enabled,entitlement:$entitlement}'             > .axe/cloudflare-email-sending-audit-20260901.json
+
+      - name: Store sanitised audit result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .axe/cloudflare-email-sending-audit-20260901.json
+          git commit -m "chore: record Cloudflare email sending audit" || exit 0
+          git push
