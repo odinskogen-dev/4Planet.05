@@ -6,7 +6,7 @@ export interface InFlightRecoveryInput {
   status: WorkPackage["status"];
   updatedAt: string;
   hasRecordedOutcome: boolean;
-  workflowExecutionConfirmedInactive: boolean;
+  workflowExecutionConfirmedInactive?: boolean;
 }
 
 export type InFlightRecoveryDecision = "LEAVE" | "FINALIZE_RECORDED_OUTCOME" | "RECOVER_TO_READY";
@@ -20,6 +20,8 @@ export type InFlightRecoveryDecision = "LEAVE" | "FINALIZE_RECORDED_OUTCOME" | "
  * is explicitly confirmed inactive. Lease expiry alone is never sufficient:
  * a slow/retrying workflow must not be duplicated by the hourly recovery pass.
  * Corrupt or implausibly future-dated lease timestamps fail closed.
+ * Omitted inactivity evidence is intentionally treated as false so existing
+ * callers remain safe until durable workflow-state proof is wired in.
  */
 export function decideInFlightRecovery(
   input: InFlightRecoveryInput,
@@ -33,5 +35,5 @@ export function decideInFlightRecovery(
   if (!Number.isFinite(updatedAtMs)) return "LEAVE";
   if (updatedAtMs > now + 5 * 60 * 1000) return "LEAVE";
   if (now - updatedAtMs < leaseMs) return "LEAVE";
-  return input.workflowExecutionConfirmedInactive ? "RECOVER_TO_READY" : "LEAVE";
+  return input.workflowExecutionConfirmedInactive === true ? "RECOVER_TO_READY" : "LEAVE";
 }
