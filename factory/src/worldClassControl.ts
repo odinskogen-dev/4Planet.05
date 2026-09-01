@@ -153,10 +153,31 @@ export function evaluateKaizenRule(candidate: KaizenRuleEvidence) {
   };
 }
 
+/**
+ * Founder cost law: Factory V01 must prefer zero-cash operation. These are
+ * deliberately conservative internal guardrails below the current Cloudflare
+ * Free allowances. They are operational ceilings, not claims about permanent
+ * Cloudflare pricing. If a ceiling or provider limit is reached, work waits or
+ * fails closed; the Factory may never auto-upgrade, enable a paid feature, or
+ * create paid model traffic.
+ */
 export const AI_COST_CONTROL = {
+  policy: "ZERO_CASH_FREE_TIER_FAIL_CLOSED" as const,
+  requiredCloudflarePlanForZeroCash: "WORKERS_FREE" as const,
   gatewayMode: "ARMED_NO_PROVIDER" as const,
   modelSpendAllowed: false,
+  paidFeaturesAllowed: false,
+  autoUpgradeAllowed: false,
   spendLimitRequiredBeforeModelTraffic: true,
+  onCapacityLimit: "WAIT_OR_BLOCK_NEVER_SPEND" as const,
+  internalDailyGuardrails: {
+    workerRequests: 80_000,
+    queueOperations: 7_500,
+    browserMinutes: 8,
+    workflowSteps: 2_400,
+    logEvents: 150_000,
+  },
+  revalidateExternalLimitsBeforeChangingGuardrails: true,
   accounting: "NO_AI_MODEL_CALLS_FROM_FACTORY_V01",
-  note: "Cloudflare/browser/runtime usage exists separately; no AI model dollar cost is invented until gateway/provider telemetry is bound.",
+  note: "Factory V01 must not incur intentional incremental cash spend. External Cloudflare plan/pricing remains account-owned and must be revalidated before any paid capability is enabled.",
 };
