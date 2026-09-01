@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
+import { normalizeGtin } from "../src/food/core.js";
 
 const source = await readFile(new URL("../src/choice/embla.ts", import.meta.url), "utf8");
+const foodUiSource = await readFile(new URL("../src/food/FoodIntelligence.tsx", import.meta.url), "utf8");
+const choiceUiSource = await readFile(new URL("../src/pages/sapien/EmblaFoodChoice.tsx", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -79,4 +82,32 @@ test("unrecognised decisions remain intake-only rather than fabricated", () => {
   assert.equal(result.status, "INTAKE_ONLY");
   assert.match(result.truthBoundary, /No evidence quorum/i);
   assert.match(result.truthBoundary, /UNKNOWN remains UNKNOWN/i);
+});
+
+test("FOOD STORE GOLD real-Norway pack accepts the three verified-format GTINs without embedding cross-check data as runtime truth", () => {
+  const gtins = [
+    "07038010001918", // TINE Lettmelk 0.5% 1L — cross-check record only
+    "07038010066832", // TINE Lettmelk med kakao 330 ml — cross-check record only
+    "07622300414399", // Freia Melkesjokolade med Kvikk Lunsj 200g — cross-check record only
+  ];
+  for (const gtin of gtins) {
+    assert.deepEqual(normalizeGtin(gtin), { ok: true, normalized: gtin, error: null });
+  }
+  assert.doesNotMatch(foodUiSource, /matinfo\.no/i, "Matinfo must remain cross-check evidence, not a silently substituted runtime source");
+});
+
+test("FOOD STORE GOLD keeps malformed, unknown and unavailable-source states explicit", () => {
+  assert.equal(normalizeGtin("07038010001917").error, "invalid_check_digit");
+  assert.match(foodUiSource, /Barcode not found/);
+  assert.match(foodUiSource, /No product facts have been inferred/);
+  assert.match(foodUiSource, /Source unavailable/);
+  assert.match(foodUiSource, /The previous result has not been silently reused/);
+  assert.match(foodUiSource, /Record cannot be trusted/);
+});
+
+test("FOOD STORE GOLD refuses a fake whole-shelf answer for wallet, planet and best-overall jobs", () => {
+  assert.match(choiceUiSource, /cannot honestly rank the whole shelf/i);
+  assert.match(choiceUiSource, /There is no honest universal score/i);
+  assert.match(choiceUiSource, /Planet evidence is shown where available, but category-wide ranking is not yet strong enough/i);
+  assert.match(choiceUiSource, /Price observations can inform one product; alternative price ranking is not complete yet/i);
 });
