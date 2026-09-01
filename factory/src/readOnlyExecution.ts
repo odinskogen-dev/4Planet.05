@@ -2,6 +2,7 @@ import type { Outcome, WorkPackage } from "./contracts";
 
 const MAX_SOURCE_BYTES = 256_000;
 const MAX_BROWSER_BYTES = 8_000_000;
+const MAX_SOURCE_REDIRECTS = 5;
 const PRIVATE_HOST_PATTERNS = [
   /^localhost$/i,
   /^127\./,
@@ -35,6 +36,20 @@ export function validateExecutionTarget(targetUrl: string, allowedHosts: string[
   });
   if (!allowed) throw new Error(`Execution target host is not allowlisted: ${host}`);
   return { url, host };
+}
+
+/**
+ * Redirects are new execution targets, not a transport detail. Every hop must
+ * pass the same HTTPS/private-network/host allowlist gate as the original URL.
+ */
+export function validateRedirectTarget(currentUrl: string, location: string, allowedHosts: string[]): ExecutionTarget {
+  let resolved: URL;
+  try {
+    resolved = new URL(location, currentUrl);
+  } catch {
+    throw new Error("Source redirect target must be a valid URL");
+  }
+  return validateExecutionTarget(resolved.toString(), allowedHosts);
 }
 
 async function readBounded(response: Response, maxBytes: number): Promise<Uint8Array> {
@@ -129,27 +144,44 @@ async function browserQa(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome
   });
 }
 
+async function fetchAllowlistedSource(target: ExecutionTarget, allowedHosts: string[]): Promise<{ response: Response; finalUrl: string; redirectCount: number }> {
+  let current = target;
+  for (let redirectCount = 0; redirectCount <= MAX_SOURCE_REDIRECTS; redirectCount += 1) {
+    const response = await fetch(current.url, {
+      method: "GET",
+      redirect: "manual",
+      headers: {
+        accept: "text/html,application/json,text/plain;q=0.9,*/*;q=0.1",
+        "user-agent": "4PLANET-Production-Factory/1.0 source-verification",
+      },
+    });
+
+    if (response.status < 300 || response.status >= 400) {
+      return { response, finalUrl: current.url.toString(), redirectCount };
+    }
+
+    if (redirectCount === MAX_SOURCE_REDIRECTS) throw new Error(`Source redirect limit exceeded (${MAX_SOURCE_REDIRECTS})`);
+    const location = response.headers.get("location");
+    if (!location) throw new Error(`Source returned HTTP ${response.status} redirect without Location header`);
+    current = validateRedirectTarget(current.url.toString(), location, allowedHosts);
+  }
+  throw new Error("Unreachable source redirect state");
+}
+
 async function sourceCheck(pkg: WorkPackage): Promise<Outcome> {
   const execution = pkg.execution;
   if (!execution || execution.kind !== "HTTP_SOURCE_CHECK") throw new Error("HTTP_SOURCE_CHECK execution spec required");
   const target = validateExecutionTarget(execution.targetUrl, execution.allowedHosts);
-  const response = await fetch(target.url, {
-    method: "GET",
-    redirect: "follow",
-    headers: {
-      accept: "text/html,application/json,text/plain;q=0.9,*/*;q=0.1",
-      "user-agent": "4PLANET-Production-Factory/1.0 source-verification",
-    },
-  });
+  const { response, finalUrl, redirectCount } = await fetchAllowlistedSource(target, execution.allowedHosts);
   const bytes = await readBounded(response, MAX_SOURCE_BYTES);
   const hash = await sha256(bytes);
   const contentType = response.headers.get("content-type") ?? "UNKNOWN";
-  const finalUrl = response.url || target.url.toString();
 
   const evidence = [
     `source ${response.ok ? "PASS" : "FAIL"} ${target.url.toString()}`,
     `HTTP ${response.status}`,
     `final-url ${finalUrl}`,
+    `validated-redirects ${redirectCount}`,
     `content-type ${contentType}`,
     `bounded-bytes ${bytes.byteLength}`,
     `content-sha256 ${hash}`,
@@ -168,7 +200,7 @@ async function sourceCheck(pkg: WorkPackage): Promise<Outcome> {
   return baseOutcome(pkg, {
     status: "ACCEPTED",
     evidence,
-    materialDelta: `Verified the allowlisted source endpoint is reachable and captured a bounded content fingerprint with provenance metadata.`,
+    materialDelta: `Verified the allowlisted source endpoint is reachable and captured a bounded content fingerprint with provenance metadata across ${redirectCount} validated redirect hop(s).`,
     actual: `Fetched ${bytes.byteLength} bounded bytes from ${finalUrl} with content type ${contentType}.`,
     limitation: "Reachability and content fingerprint do not prove semantic correctness, licence suitability or scientific claim validity; those remain separate review gates.",
   });
