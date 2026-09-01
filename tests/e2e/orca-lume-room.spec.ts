@@ -26,7 +26,11 @@ test("Orca Human Gold journey is protagonist-first, truth-bounded and free of th
   await page.goto("/journey/orca/", { waitUntil: "domcontentloaded" });
   const root = page.locator("#browser-experience");
 
-  await expect(page.locator("body")).toHaveAttribute("data-browser-ready", "true", { timeout: 20_000 });
+  // NatureBrowser publishes readiness through concrete root runtime state plus
+  // `4planet:nature-browser-ready`; it does not own a body[data-browser-ready]
+  // attribute. Guard the actual runtime contract rather than a stale test-only flag.
+  await expect(root).toHaveAttribute("data-entity-id", "taxon:gbif:2440483", { timeout: 20_000 });
+  await expect(root).toHaveAttribute("data-scene-state", "entry");
   await expect(root).toHaveAttribute("data-human-gold-candidate", "01");
   await expect(root).toHaveAttribute("data-human-quality-authority", "founder-first");
   await expect(root).toHaveAttribute("data-subject-source", "lume-orca-v1");
