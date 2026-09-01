@@ -34,6 +34,11 @@ function wp(id: string, projectId: string, section: Section, priority: WorkPacka
     deliverables: ["Reviewable material delta"],
     dependencies: [],
     writeScopes: [`shadow/${projectId.toLowerCase()}/${id}`],
+    preservation: {
+      mustNotLose: ["accepted current shadow behaviour"],
+      regressionRisks: ["scheduler/control regression"],
+      rollbackRef: "0123456789abcdef0123456789abcdef01234567",
+    },
     definitionOfDone: ["Material reviewable outcome exists"],
     requiredEvidence: ["exact artifact or runtime evidence"],
     learningQuestion: `What transferable lesson did ${projectId} produce?`,
@@ -51,9 +56,11 @@ function wp(id: string, projectId: string, section: Section, priority: WorkPacka
   };
 }
 
-test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and rescues stalled work", () => {
+test("current-portfolio-shaped shadow trial runs a conflict-free bounded orchestra and rescues stalled work", () => {
   // This is deliberately a NON-AUTHORITATIVE derived shadow fixture. It mirrors
-  // the current portfolio shape for scheduler proof; it is not project truth.
+  // the portfolio shape for scheduler proof; it is not project truth. The source
+  // projection must nevertheless carry the current Founder Decision so the
+  // anti-forgetting gate is exercised even in SHADOW.
   const projects = [
     project("JAGUAR", "Jaguar / Species Room", "P0", 36),
     project("ORCA_BISCAY", "Orca / Bay of Biscay", "P0", 72),
@@ -64,6 +71,17 @@ test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and r
     project("CAPITAL", "Capital Foundry", "P1", 2),
     project("ATLAS", "ATLAS", "P1", 6),
   ];
+
+  const snapshot: BrainProjectionSnapshot = {
+    authority: "CURRENT_DRIVE_BRAIN",
+    readOnly: true,
+    retrievedAt: new Date(NOW).toISOString(),
+    sourceRefs: [
+      "github:odinskogen-dev/4Planet.05#king/test@0123456789abcdef0123456789abcdef01234567",
+      `brain:founder-decision:${REQUIRED_MULTI_GIGA_04_AUTHORITY_REF}`,
+    ],
+    projects,
+  };
 
   const packages = [
     wp("jaguar-visual", "JAGUAR", "PRODUCT_DESIGN", "P0", 10),
@@ -76,20 +94,20 @@ test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and r
     wp("atlas-control", "ATLAS", "BRAIN_CONTROL", "P1", 6),
   ];
 
+  // Asking for eight is intentional: FD-2026-09-02 must clamp the execution
+  // line to five, proving callers cannot silently widen WIP.
   const result = runShadowTrial(snapshot, packages, { maxPackages: 8, now: NOW });
   const ids = result.batch.packages.map((pkg) => pkg.id);
 
   assert.equal(result.mode, "SHADOW");
   assert.equal(result.receipt.projectCount, 8);
   assert.equal(result.receipt.unresolvedPackageIds.length, 0);
-  assert.ok(
-    result.batch.packages.some((pkg) => pkg.priority === "P0"),
-    "P0 must retain capacity",
-  );
+  assert.equal(result.batch.rejectedForControl?.length, 0);
+  assert.ok(result.batch.packages.some((pkg) => pkg.priority === "P0"), "P0 must retain capacity");
   assert.ok(ids.includes("s4piens-choice"), "stalled P1 must be rescued");
   assert.ok(ids.includes("actors-entry"), "stalled P2 must be rescued");
   assert.ok(ids.includes("mag-user"), "stalled P1 must be rescued");
-  assert.ok(ids.length >= 5 && ids.length <= 8, "orchestra should produce a substantive batch");
+  assert.equal(ids.length, 5, "Founder-locked WIP ceiling must clamp the shadow orchestra to five packages");
 
   const scopes = result.batch.packages.flatMap((pkg) => pkg.writeScopes);
   assert.equal(new Set(scopes).size, scopes.length, "shadow orchestra must remain conflict-free");
