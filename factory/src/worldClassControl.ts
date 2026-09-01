@@ -154,30 +154,26 @@ export function evaluateKaizenRule(candidate: KaizenRuleEvidence) {
 }
 
 /**
- * Founder cost law: Factory V01 must prefer zero-cash operation. These are
- * deliberately conservative internal guardrails below the current Cloudflare
- * Free allowances. They are operational ceilings, not claims about permanent
- * Cloudflare pricing. If a ceiling or provider limit is reached, work waits or
- * fails closed; the Factory may never auto-upgrade, enable a paid feature, or
- * create paid model traffic.
+ * Founder cost law: every intentional cash cost requires explicit, action-specific
+ * Founder approval before use. The default is zero authorised spend. A future
+ * approved base subscription does not authorise any usage overage, paid model,
+ * add-on, upgrade, or extra capacity. Capacity without approved budget waits or
+ * fails closed.
  */
 export const AI_COST_CONTROL = {
-  policy: "ZERO_CASH_FREE_TIER_FAIL_CLOSED" as const,
-  requiredCloudflarePlanForZeroCash: "WORKERS_FREE" as const,
+  policy: "FOUNDER_APPROVAL_REQUIRED_FOR_EVERY_CASH_COST" as const,
+  authorisedRecurringBaseUsd: 0,
+  authorisedUsageOverageUsd: 0,
+  explicitFounderApprovalRequired: true,
+  subscriptionApprovalDoesNotAuthoriseOverage: true,
   gatewayMode: "ARMED_NO_PROVIDER" as const,
   modelSpendAllowed: false,
   paidFeaturesAllowed: false,
   autoUpgradeAllowed: false,
+  automaticCapacityPurchaseAllowed: false,
   spendLimitRequiredBeforeModelTraffic: true,
-  onCapacityLimit: "WAIT_OR_BLOCK_NEVER_SPEND" as const,
-  internalDailyGuardrails: {
-    workerRequests: 80_000,
-    queueOperations: 7_500,
-    browserMinutes: 8,
-    workflowSteps: 2_400,
-    logEvents: 150_000,
-  },
-  revalidateExternalLimitsBeforeChangingGuardrails: true,
-  accounting: "NO_AI_MODEL_CALLS_FROM_FACTORY_V01",
-  note: "Factory V01 must not incur intentional incremental cash spend. External Cloudflare plan/pricing remains account-owned and must be revalidated before any paid capability is enabled.",
+  onCapacityLimit: "WAIT_OR_BLOCK_NEVER_SPEND_WITHOUT_NEW_APPROVAL" as const,
+  revalidateExternalLimitsAndPricingBeforeAnyPaidChange: true,
+  accounting: "NO_INTENTIONAL_CASH_SPEND_UNTIL_ACTION_SPECIFIC_FOUNDER_APPROVAL",
+  note: "The Factory may recommend a paid plan or bounded overage, but it may not activate or consume an intentional cash-cost capability until that exact cost has Founder approval.",
 };
