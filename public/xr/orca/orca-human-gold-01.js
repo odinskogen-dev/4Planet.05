@@ -5,6 +5,8 @@
     intro: 'Meet one life first. Then follow the living system around it — food, place, pressure, evidence and response.',
     cta: 'MEET THE ORCA',
   };
+  const subjectAsset = '/assets/species/orca/lume-orca-v1.png';
+  const subjectDisclosure = 'AI-GENERATED SPECIES VISUALISATION · NOT EVIDENCE / NOT A PHOTOGRAPH';
 
   const applyHumanFirstEntry = () => {
     const root = document.getElementById('browser-experience');
@@ -19,19 +21,39 @@
     if (cta) cta.textContent = copy.cta;
   };
 
-  const boot = () => {
+  const applyRecoveredSubject = () => {
+    const root = document.getElementById('browser-experience');
+    const image = root?.querySelector('.nature-subject__image');
+    const boundary = root?.querySelector('.nature-subject__boundary');
+    if (image && !image.src.endsWith(subjectAsset)) {
+      image.src = subjectAsset;
+      image.alt = 'Generated natural-history visualisation of a full-body Orca, Orcinus orca';
+    }
+    if (boundary) boundary.textContent = subjectDisclosure;
+  };
+
+  const applyComposition = () => {
     applyHumanFirstEntry();
+    applyRecoveredSubject();
+  };
+
+  const boot = () => {
+    applyComposition();
     const root = document.getElementById('browser-experience');
     if (!root) return;
 
     const observer = new MutationObserver(() => {
-      applyHumanFirstEntry();
-      if (document.body.dataset.browserReady === 'true' || document.body.dataset.browserReady === 'failed') observer.disconnect();
+      applyComposition();
+      if (document.body.dataset.browserReady === 'true' || document.body.dataset.browserReady === 'failed') {
+        applyComposition();
+        observer.disconnect();
+      }
     });
-    observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-browser-ready'] });
+    observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-browser-ready', 'src'] });
 
     root.dataset.humanGoldCandidate = '01';
     root.dataset.humanQualityAuthority = 'founder-first';
+    root.dataset.subjectSource = 'lume-orca-v1';
   };
 
   window.addEventListener('DOMContentLoaded', boot, { once: true });
