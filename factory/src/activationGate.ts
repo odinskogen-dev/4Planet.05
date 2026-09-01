@@ -19,6 +19,7 @@ export interface FactoryActivationEvidence {
   externalReleaseFounderGated: boolean;
   testKingBaseCurrent: boolean;
   exactFactorySha?: string;
+  factoryTestKingBaseSha?: string;
   currentTestKingSha?: string;
   evidencedAt?: string;
 }
@@ -63,6 +64,10 @@ const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
  * current TEST authority. A Pages preview is not a dedicated Agents runtime.
  * Evidence is short-lived and commit-addressed so a stale boolean bundle cannot
  * silently activate after TEST KING or Factory has moved.
+ *
+ * The Factory branch must also attest the exact TEST KING base it was built on,
+ * and that SHA must equal the independently observed current TEST KING SHA.
+ * A bare `testKingBaseCurrent: true` flag is never sufficient on its own.
  */
 export function evaluateFactoryActivation(
   evidence: FactoryActivationEvidence,
@@ -73,14 +78,26 @@ export function evaluateFactoryActivation(
     .map(([, label]) => label);
 
   const factorySha = evidence.exactFactorySha?.trim() ?? "";
+  const factoryTestKingBaseSha = evidence.factoryTestKingBaseSha?.trim() ?? "";
   const testKingSha = evidence.currentTestKingSha?.trim() ?? "";
   const evidencedAt = evidence.evidencedAt?.trim() ?? "";
 
   if (!factorySha) missing.push("EXACT_FACTORY_SHA");
   else if (!SHA_40.test(factorySha)) missing.push("INVALID_FACTORY_SHA");
 
+  if (!factoryTestKingBaseSha) missing.push("FACTORY_TEST_KING_BASE_SHA");
+  else if (!SHA_40.test(factoryTestKingBaseSha)) missing.push("INVALID_FACTORY_TEST_KING_BASE_SHA");
+
   if (!testKingSha) missing.push("CURRENT_TEST_KING_SHA");
   else if (!SHA_40.test(testKingSha)) missing.push("INVALID_TEST_KING_SHA");
+
+  if (
+    SHA_40.test(factoryTestKingBaseSha) &&
+    SHA_40.test(testKingSha) &&
+    factoryTestKingBaseSha.toLowerCase() !== testKingSha.toLowerCase()
+  ) {
+    missing.push("TEST_KING_BASE_SHA_MISMATCH");
+  }
 
   if (!evidencedAt) {
     missing.push("EVIDENCE_TIMESTAMP");
