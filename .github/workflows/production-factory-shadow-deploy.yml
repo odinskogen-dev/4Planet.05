@@ -98,7 +98,7 @@ jobs:
 
           READY="false"
           CANARY_JSON=""
-          for attempt in $(seq 1 48); do
+          for attempt in $(seq 1 96); do
             CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 "${CANARY_URL}" || true)"
             if echo "${CANARY_JSON}" | grep -q '"ready":true' \
               && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V04"' \
@@ -107,7 +107,7 @@ jobs:
               READY="true"
               break
             fi
-            echo "Orchestra 04 runtime not complete/current yet (attempt ${attempt}/48): ${CANARY_JSON}"
+            echo "Orchestra 04 runtime not complete/current yet (attempt ${attempt}/96): ${CANARY_JSON}"
             sleep 5
           done
 
