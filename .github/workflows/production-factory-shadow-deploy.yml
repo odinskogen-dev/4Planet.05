@@ -57,7 +57,7 @@ jobs:
           wranglerVersion: "4.127.1"
           command: deploy
 
-      - name: Prove deployed World Class runtime and real Orchestra 03 processing
+      - name: Prove deployed World Class runtime and real Orchestra 04 processing
         id: canary
         shell: bash
         env:
@@ -98,21 +98,21 @@ jobs:
 
           READY="false"
           CANARY_JSON=""
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 48); do
             CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 "${CANARY_URL}" || true)"
             if echo "${CANARY_JSON}" | grep -q '"ready":true' \
-              && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V03"' \
-              && echo "${CANARY_JSON}" | grep -q '"orchestraId":"4planet-first-real-orchestra-v03"' \
+              && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V04"' \
+              && echo "${CANARY_JSON}" | grep -q '"orchestraId":"4planet-first-real-orchestra-v04"' \
               && echo "${CANARY_JSON}" | grep -q '"orchestraProcessed":true'; then
               READY="true"
               break
             fi
-            echo "Orchestra 03 runtime not complete/current yet (attempt ${attempt}/36): ${CANARY_JSON}"
+            echo "Orchestra 04 runtime not complete/current yet (attempt ${attempt}/48): ${CANARY_JSON}"
             sleep 5
           done
 
           if [[ "${READY}" != "true" ]]; then
-            echo "Deployed SHADOW canary did not prove the exact Orchestra 03 World Class runtime contract."
+            echo "Deployed SHADOW canary did not prove the exact Orchestra 04 World Class runtime contract."
             echo "${CANARY_JSON}"
             capture_runtime_error "${CANARY_URL}"
             exit 1
@@ -137,14 +137,15 @@ jobs:
           HEALTH_URL: ${{ steps.canary.outputs.health_url }}
           CANARY_URL: ${{ steps.canary.outputs.canary_url }}
         run: |
-          echo "### 4PLANET Production Factory SHADOW — World Class Build 03 / Orchestra 03" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 4PLANET Production Factory SHADOW — World Class Build 03 / Orchestra 04" >> "$GITHUB_STEP_SUMMARY"
           echo "Dedicated Worker: 4planet-production-factory-v01-shadow" >> "$GITHUB_STEP_SUMMARY"
           echo "Exact SHA: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo "Deployment URL: ${DEPLOYMENT_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "Health: ${HEALTH_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "Canary: ${CANARY_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Exact V03 runtime contract + fixed 8-package real SHADOW orchestra processing: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exact V04 runtime contract + fixed 8-package real SHADOW orchestra processing: PASS" >> "$GITHUB_STEP_SUMMARY"
           echo "Independent quality outcomes remain evidence, not an automatic Human Gold claim." >> "$GITHUB_STEP_SUMMARY"
+          echo "Transient Browser capacity is retried rather than classified as product failure." >> "$GITHUB_STEP_SUMMARY"
           echo "This deployment is SHADOW only and does not modify 4PLANET LIVE." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish verified SHADOW proof to Factory PR
@@ -156,14 +157,16 @@ jobs:
         with:
           script: |
             const body = [
-              '## WORLD CLASS SHADOW RUNTIME + ORCHESTRA 03 — PASS',
+              '## WORLD CLASS SHADOW RUNTIME + ORCHESTRA 04 — PASS',
               '',
               `Exact Factory SHA: \`${context.sha}\``,
               `Deployment: ${process.env.DEPLOYMENT_URL}`,
               `Health: ${process.env.HEALTH_URL}`,
               `Canary: ${process.env.CANARY_URL}`,
               '',
-              'Deployment acceptance requires the exact `WORLD_CLASS_BUILD_03_ORCHESTRA_V03` runtime contract, the exact `4planet-first-real-orchestra-v03` orchestra identity, and all eight fixed real 4PLANET SHADOW work packages to have persisted outcomes.',
+              'Deployment acceptance requires the exact `WORLD_CLASS_BUILD_03_ORCHESTRA_V04` runtime contract, the exact `4planet-first-real-orchestra-v04` orchestra identity, and all eight fixed real 4PLANET SHADOW work packages to have persisted outcomes.',
+              '',
+              'Queue work is drained sequentially inside each delivered batch and transient Browser HTTP 429 capacity is retried rather than persisted as product-quality failure.',
               '',
               'Independent quality decisions remain separate from runtime processing proof; Human Gold can never be inferred from technical render/source evidence.',
               '',
