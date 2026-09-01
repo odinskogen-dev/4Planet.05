@@ -1,4 +1,4 @@
-name: Production Factory Shadow Deploy
+name: Production Factory Autonomous Activation
 
 on:
   push:
@@ -11,42 +11,80 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  checks: read
   issues: write
   pull-requests: write
 
 concurrency:
-  group: production-factory-shadow-deploy
+  group: production-factory-autonomous-activation
   cancel-in-progress: true
 
 jobs:
   preflight:
     runs-on: ubuntu-latest
     outputs:
-      credentials_ready: ${{ steps.credentials.outputs.ready }}
+      cloudflare_ready: ${{ steps.credentials.outputs.cloudflare_ready }}
+      github_write_ready: ${{ steps.credentials.outputs.github_write_ready }}
+      test_king_sha: ${{ steps.lineage.outputs.test_king_sha }}
     steps:
-      - name: Check deployment credentials without exposing them
-        id: credentials
-        env:
-          CLOUDFLARE_FACTORY_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
-          CLOUDFLARE_FACTORY_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prove exact current TEST KING ancestry
+        id: lineage
         shell: bash
         run: |
-          if [[ -n "$CLOUDFLARE_FACTORY_API_TOKEN" && -n "$CLOUDFLARE_FACTORY_ACCOUNT_ID" ]]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "Cloudflare Factory shadow deployment credentials are configured."
+          set -euo pipefail
+          git fetch origin king/test --no-tags
+          TEST_KING_SHA="$(git rev-parse origin/king/test)"
+          if ! git merge-base --is-ancestor "$TEST_KING_SHA" "$GITHUB_SHA"; then
+            echo "Factory activation blocked: current TEST KING is not an ancestor of exact Factory head."
+            echo "Factory: $GITHUB_SHA"
+            echo "TEST KING: $TEST_KING_SHA"
+            exit 1
+          fi
+          echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
+          echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
+
+      - name: Check dedicated credentials without exposing values
+        id: credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          FACTORY_GITHUB_TOKEN: ${{ secrets.FACTORY_GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -n "${CF_TOKEN:-}" && -n "${CF_ACCOUNT:-}" ]]; then
+            echo "cloudflare_ready=true" >> "$GITHUB_OUTPUT"
           else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Cloudflare Factory shadow deployment blocked: required dedicated repository secrets are not configured."
+            echo "cloudflare_ready=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ -n "${FACTORY_GITHUB_TOKEN:-}" ]]; then
+            echo "github_write_ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "github_write_ready=false" >> "$GITHUB_OUTPUT"
           fi
 
-  deploy-shadow:
+  deploy-and-certify:
     needs: preflight
-    if: needs.preflight.outputs.credentials_ready == 'true'
+    if: needs.preflight.outputs.cloudflare_ready == 'true'
     runs-on: ubuntu-latest
     environment: production-factory-shadow
     steps:
-      - uses: actions/checkout@v6
-      - name: Deploy dedicated Factory SHADOW Worker
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: factory/package.json
+
+      - name: Install Factory dependencies
+        working-directory: factory
+        run: npm install --ignore-scripts
+
+      - name: Deploy exact Factory code to dedicated non-production Worker
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
@@ -54,156 +92,226 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
           workingDirectory: factory
           packageManager: npm
-          wranglerVersion: "4.127.1"
+          wranglerVersion: "4.128.0"
           command: deploy
 
-      - name: Prove deployed World Class runtime and real Orchestra 04 processing
-        id: canary
-        shell: bash
+      - name: Install bounded runtime secrets and exact lineage evidence
+        id: runtime_secrets
+        working-directory: factory
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          FACTORY_GITHUB_TOKEN: ${{ secrets.FACTORY_GITHUB_TOKEN }}
+          TEST_KING_SHA: ${{ needs.preflight.outputs.test_king_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(openssl rand -hex 32)"
+          echo "::add-mask::$CONTROL_TOKEN"
+          echo "control_token=$CONTROL_TOKEN" >> "$GITHUB_OUTPUT"
+
+          printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
+          printf '%s' "$GITHUB_SHA" | npx wrangler secret put FACTORY_BUILD_SHA
+          printf '%s' "$TEST_KING_SHA" | npx wrangler secret put FACTORY_TEST_KING_BASE_SHA
+
+          if [[ -n "${FACTORY_GITHUB_TOKEN:-}" ]]; then
+            printf '%s' "$FACTORY_GITHUB_TOKEN" | npx wrangler secret put FACTORY_GITHUB_TOKEN
+            echo "github_write_installed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "github_write_installed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve deployed Worker URL
+        id: runtime
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        shell: bash
         run: |
           set -euo pipefail
           if [[ -z "${DEPLOYMENT_URL:-}" ]]; then
             echo "Wrangler did not return a deployment URL."
             exit 1
           fi
-
           BASE_URL="${DEPLOYMENT_URL%/}"
-          HEALTH_URL="${BASE_URL}/__factory/health"
-          CANARY_URL="${BASE_URL}/__factory/canary"
+          echo "base_url=$BASE_URL" >> "$GITHUB_OUTPUT"
+          echo "health_url=$BASE_URL/__factory/health" >> "$GITHUB_OUTPUT"
+          echo "canary_url=$BASE_URL/__factory/canary" >> "$GITHUB_OUTPUT"
+          echo "control_room_url=$BASE_URL/__factory/control-room" >> "$GITHUB_OUTPUT"
 
-          capture_runtime_error() {
-            local probe_url="$1"
-            echo "Capturing bounded Cloudflare runtime error evidence for ${probe_url}"
-            (
-              sleep 3
-              curl --silent --show-error --connect-timeout 5 --max-time 12 "${probe_url}" >/dev/null 2>&1 || true
-            ) &
-            (
-              cd factory
-              timeout 18s npx --no-install wrangler tail 4planet-production-factory-v01-shadow --format json --status error || true
-            )
-          }
-
-          echo "Probing ${HEALTH_URL}"
-          HEALTH_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 --retry 2 --retry-delay 1 "${HEALTH_URL}" || true)"
-          echo "Health response: ${HEALTH_JSON}"
-          if ! echo "${HEALTH_JSON}" | grep -q '"mode":"SHADOW"' || ! echo "${HEALTH_JSON}" | grep -q '"noLiveAuthority":true'; then
-            capture_runtime_error "${HEALTH_URL}"
-            exit 1
-          fi
-
-          READY="false"
+      - name: Prove deployed SHADOW runtime and real source/browser orchestra
+        id: canary
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEALTH_URL="$BASE_URL/__factory/health"
+          CANARY_URL="$BASE_URL/__factory/canary"
+          READY=false
           CANARY_JSON=""
           for attempt in $(seq 1 96); do
-            CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 "${CANARY_URL}" || true)"
-            if echo "${CANARY_JSON}" | grep -q '"ready":true' \
-              && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V04"' \
-              && echo "${CANARY_JSON}" | grep -q '"orchestraId":"4planet-first-real-orchestra-v04"' \
-              && echo "${CANARY_JSON}" | grep -q '"orchestraProcessed":true'; then
-              READY="true"
+            HEALTH_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 20 "$HEALTH_URL" || true)"
+            CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 30 "$CANARY_URL" || true)"
+            if echo "$HEALTH_JSON" | grep -q '"noLiveAuthority":true' \
+              && echo "$CANARY_JSON" | grep -q '"ready":true' \
+              && echo "$CANARY_JSON" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V04"' \
+              && echo "$CANARY_JSON" | grep -q '"orchestraProcessed":true'; then
+              READY=true
               break
             fi
-            echo "Orchestra 04 runtime not complete/current yet (attempt ${attempt}/96): ${CANARY_JSON}"
+            echo "Runtime canary not ready yet ($attempt/96)."
             sleep 5
           done
-
-          if [[ "${READY}" != "true" ]]; then
-            echo "Deployed SHADOW canary did not prove the exact Orchestra 04 World Class runtime contract."
-            echo "${CANARY_JSON}"
-            capture_runtime_error "${CANARY_URL}"
+          if [[ "$READY" != "true" ]]; then
+            echo "$CANARY_JSON"
             exit 1
           fi
+          echo "$CANARY_JSON" > factory-shadow-canary.json
+          echo "shadow_runtime_proven=true" >> "$GITHUB_OUTPUT"
 
-          echo "deployment_url=${BASE_URL}" >> "$GITHUB_OUTPUT"
-          echo "health_url=${HEALTH_URL}" >> "$GITHUB_OUTPUT"
-          echo "canary_url=${CANARY_URL}" >> "$GITHUB_OUTPUT"
-          echo "${CANARY_JSON}" > factory-shadow-canary.json
+      - name: Wait for exact-head Factory CI and ONE INTERFACE convergence
+        id: exact_head_gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          PASS=false
+          for attempt in $(seq 1 90); do
+            RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100")"
+            FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
+            CONVERGENCE="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="ONE INTERFACE Convergence Gate")][0].conclusion // "pending"')"
+            echo "Exact-head gates: Factory=$FACTORY Convergence=$CONVERGENCE"
+            if [[ "$FACTORY" == "success" && "$CONVERGENCE" == "success" ]]; then
+              PASS=true
+              break
+            fi
+            if [[ "$FACTORY" =~ ^(failure|timed_out|action_required)$ || "$CONVERGENCE" =~ ^(failure|timed_out|action_required)$ ]]; then
+              echo "A required exact-head gate failed."
+              exit 1
+            fi
+            sleep 10
+          done
+          if [[ "$PASS" != "true" ]]; then
+            echo "Required exact-head gates did not both reach success in the bounded window."
+            exit 1
+          fi
+          echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
+          echo "convergence_passed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Upload SHADOW canary evidence
+      - name: Stop safely if permanent GitHub TEST-write credential is absent
+        if: steps.runtime_secrets.outputs.github_write_installed != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          BODY=$(cat <<'EOF'
+          ## FACTORY FINAL ACTIVATION — ONE FOUNDER CREDENTIAL REMAINS
+
+          Exact code/runtime/CI/Cloudflare SHADOW gates are ready, but `FACTORY_GITHUB_TOKEN` is not configured as a GitHub repository secret. The Worker therefore cannot create durable bounded TEST candidate branches/commits/PRs after this Actions job ends.
+
+          No temporary `GITHUB_TOKEN` was copied into the Worker because it would expire and create false 24/7 readiness.
+
+          Factory remains SHADOW / fail-closed. LIVE, Canon, outreach, Human Gold and spend authority remain unavailable.
+          EOF
+          )
+          gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
+          echo "FACTORY_GITHUB_TOKEN missing: real autonomous write proof intentionally not started."
+
+      - name: Start three-family real autonomous production proof
+        if: steps.runtime_secrets.outputs.github_write_installed == 'true'
+        id: proof_start
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl --silent --show-error --fail-with-body -X POST \
+            -H "x-factory-control: $CONTROL_TOKEN" \
+            -H "content-type: application/json" \
+            "$BASE_URL/__factory/activation-proof/start")"
+          echo "$RESPONSE"
+          echo "$RESPONSE" | jq -e '.ok == true' >/dev/null
+
+      - name: Poll real production, certify fresh evidence and activate
+        if: steps.runtime_secrets.outputs.github_write_installed == 'true'
+        id: activate
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTIVE=false
+          RESPONSE=""
+          for attempt in $(seq 1 100); do
+            RESPONSE="$(curl --silent --show-error --fail-with-body -X POST \
+              -H "x-factory-control: $CONTROL_TOKEN" \
+              -H "content-type: application/json" \
+              --data '{"shadowCiPassed":true,"convergencePassed":true,"shadowRuntimeProven":true}' \
+              "$BASE_URL/__factory/activation-proof/status" || true)"
+            echo "Activation proof poll $attempt/100: $(echo "$RESPONSE" | jq -c '{ok,active,proofComplete,gate,error}' 2>/dev/null || echo "$RESPONSE")"
+            if echo "$RESPONSE" | jq -e '.active == true and .gate.ready == true and .proofComplete == true' >/dev/null 2>&1; then
+              ACTIVE=true
+              break
+            fi
+            if echo "$RESPONSE" | jq -e '.proofComplete == true and (.gate.ready == false)' >/dev/null 2>&1; then
+              echo "$RESPONSE" > factory-active-certification.json
+              echo "Proof completed but activation gate remained closed."
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "$RESPONSE" > factory-active-certification.json
+          if [[ "$ACTIVE" != "true" ]]; then
+            echo "Factory did not reach ACTIVE inside the bounded proof window."
+            exit 1
+          fi
+          echo "active=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload immutable Factory certification evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-factory-shadow-canary-${{ github.sha }}
-          path: factory-shadow-canary.json
+          name: production-factory-certification-${{ github.sha }}
+          path: |
+            factory-shadow-canary.json
+            factory-active-certification.json
+          if-no-files-found: ignore
           retention-days: 30
 
-      - name: Record non-production deployment evidence
+      - name: Record ACTIVE proof on Factory PR
+        if: steps.activate.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
         shell: bash
-        env:
-          DEPLOYMENT_URL: ${{ steps.canary.outputs.deployment_url }}
-          HEALTH_URL: ${{ steps.canary.outputs.health_url }}
-          CANARY_URL: ${{ steps.canary.outputs.canary_url }}
         run: |
-          echo "### 4PLANET Production Factory SHADOW — World Class Build 03 / Orchestra 04" >> "$GITHUB_STEP_SUMMARY"
-          echo "Dedicated Worker: 4planet-production-factory-v01-shadow" >> "$GITHUB_STEP_SUMMARY"
-          echo "Exact SHA: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo "Deployment URL: ${DEPLOYMENT_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Health: ${HEALTH_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Canary: ${CANARY_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Exact V04 runtime contract + fixed 8-package real SHADOW orchestra processing: PASS" >> "$GITHUB_STEP_SUMMARY"
-          echo "Independent quality outcomes remain evidence, not an automatic Human Gold claim." >> "$GITHUB_STEP_SUMMARY"
-          echo "Transient Browser capacity is retried rather than classified as product failure." >> "$GITHUB_STEP_SUMMARY"
-          echo "This deployment is SHADOW only and does not modify 4PLANET LIVE." >> "$GITHUB_STEP_SUMMARY"
+          SUMMARY="$(jq -c '{active,gate,exactFactorySha,exactTestKingSha,metrics,governedLearning,boundaries,proofOutcomes:[.proofOutcomes[]|{id,status,actual}]}' factory-active-certification.json)"
+          BODY=$(cat <<EOF
+          ## 4P FACTORY 01 — AUTONOMOUS TEST PRODUCTION ACTIVE
 
-      - name: Publish verified SHADOW proof to Factory PR
-        uses: actions/github-script@v7
-        env:
-          DEPLOYMENT_URL: ${{ steps.canary.outputs.deployment_url }}
-          HEALTH_URL: ${{ steps.canary.outputs.health_url }}
-          CANARY_URL: ${{ steps.canary.outputs.canary_url }}
-        with:
-          script: |
-            const body = [
-              '## WORLD CLASS SHADOW RUNTIME + ORCHESTRA 04 — PASS',
-              '',
-              `Exact Factory SHA: \`${context.sha}\``,
-              `Deployment: ${process.env.DEPLOYMENT_URL}`,
-              `Health: ${process.env.HEALTH_URL}`,
-              `Canary: ${process.env.CANARY_URL}`,
-              '',
-              'Deployment acceptance requires the exact `WORLD_CLASS_BUILD_03_ORCHESTRA_V04` runtime contract, the exact `4planet-first-real-orchestra-v04` orchestra identity, and all eight fixed real 4PLANET SHADOW work packages to have persisted outcomes.',
-              '',
-              'Queue work is drained sequentially inside each delivered batch and transient Browser HTTP 429 capacity is retried rather than persisted as product-quality failure.',
-              '',
-              'Independent quality decisions remain separate from runtime processing proof; Human Gold can never be inferred from technical render/source evidence.',
-              '',
-              '**Boundary:** SHADOW only. No LIVE release, external send, payment, signature, Canon promotion or arbitrary code write authority was granted.'
-            ].join('\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: 212,
-              body,
-            });
+          Exact Factory SHA: \`$GITHUB_SHA\`
+          Exact TEST KING base: \`${{ needs.preflight.outputs.test_king_sha }}\`
+          Runtime: $BASE_URL
+          Control Room: $BASE_URL/__factory/control-room
 
-  credentials-missing:
+          Real proof: SPECIES Profile + Bay of Biscay Ecosystem + Actor Profile produced through bounded AI → GitHub candidate → draft PR → CI → 390 Browser QA → persisted outcome → governed learning.
+
+          Certification: \`$SUMMARY\`
+
+          **Still Founder-gated:** LIVE, Human Gold, Canon promotion, outreach/send, payments/spend/signature.
+          EOF
+          )
+          gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
+
+  cloudflare-credentials-missing:
     needs: preflight
-    if: needs.preflight.outputs.credentials_ready != 'true'
+    if: needs.preflight.outputs.cloudflare_ready != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Record fail-closed deployment blocker
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = [
-              '## DEPLOYED SHADOW RUNTIME — BLOCKED',
-              '',
-              `Exact Factory SHA: \`${context.sha}\``,
-              '',
-              'Dedicated GitHub repository secrets required by the Factory deploy rail are not both configured: `CLOUDFLARE_FACTORY_API_TOKEN` and `CLOUDFLARE_FACTORY_ACCOUNT_ID`.',
-              '',
-              'No credential value was exposed and no deployment was attempted. Factory remains SHADOW/fail-closed.'
-            ].join('\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: 212,
-              body,
-            });
-      - name: Fail closed without deployment
+      - name: Fail closed
         run: |
-          echo "Dedicated Factory SHADOW Worker was NOT deployed."
+          echo "Dedicated Cloudflare Factory credentials are not configured. No deployment attempted."
           exit 1
