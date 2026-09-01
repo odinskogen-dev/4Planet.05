@@ -17,6 +17,11 @@ export interface ActivationSimulationResult {
   }>;
 }
 
+const SIM_NOW_ISO = "2026-09-01T07:00:00.000Z";
+const SIM_NOW_MS = Date.parse(SIM_NOW_ISO);
+const VALID_FACTORY_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const VALID_TEST_KING_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+
 const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   shadowCiPassed: true,
   convergencePassed: true,
@@ -37,9 +42,9 @@ const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   noProductionDeploy: true,
   externalReleaseFounderGated: true,
   testKingBaseCurrent: true,
-  exactFactorySha: "SIMULATED_FACTORY_SHA",
-  currentTestKingSha: "SIMULATED_CURRENT_TEST_KING_SHA",
-  evidencedAt: "2026-09-01T00:00:00.000Z",
+  exactFactorySha: VALID_FACTORY_SHA,
+  currentTestKingSha: VALID_TEST_KING_SHA,
+  evidencedAt: SIM_NOW_ISO,
 });
 
 export function runActivationGateSimulation(): ActivationSimulationResult {
@@ -51,7 +56,12 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
     { name: "missing-shadow-comparison-fails-closed", evidence: { ...FULL_EVIDENCE, shadowComparisonPassed: false }, expectedReady: false, expectedMissing: ["SHADOW_COMPARISON_PASS"] },
     { name: "stale-test-king-base-fails-closed", evidence: { ...FULL_EVIDENCE, testKingBaseCurrent: false }, expectedReady: false, expectedMissing: ["CURRENT_TEST_KING_BASE"] },
     { name: "missing-current-test-king-sha-fails-closed", evidence: { ...FULL_EVIDENCE, currentTestKingSha: "" }, expectedReady: false, expectedMissing: ["CURRENT_TEST_KING_SHA"] },
+    { name: "invalid-current-test-king-sha-fails-closed", evidence: { ...FULL_EVIDENCE, currentTestKingSha: "not-a-sha" }, expectedReady: false, expectedMissing: ["INVALID_TEST_KING_SHA"] },
     { name: "missing-exact-sha-fails-closed", evidence: { ...FULL_EVIDENCE, exactFactorySha: "" }, expectedReady: false, expectedMissing: ["EXACT_FACTORY_SHA"] },
+    { name: "invalid-exact-sha-fails-closed", evidence: { ...FULL_EVIDENCE, exactFactorySha: "SIMULATED" }, expectedReady: false, expectedMissing: ["INVALID_FACTORY_SHA"] },
+    { name: "stale-evidence-fails-closed", evidence: { ...FULL_EVIDENCE, evidencedAt: "2026-09-01T04:00:00.000Z" }, expectedReady: false, expectedMissing: ["STALE_ACTIVATION_EVIDENCE"] },
+    { name: "future-evidence-fails-closed", evidence: { ...FULL_EVIDENCE, evidencedAt: "2026-09-01T07:06:00.000Z" }, expectedReady: false, expectedMissing: ["FUTURE_ACTIVATION_EVIDENCE"] },
+    { name: "invalid-timestamp-fails-closed", evidence: { ...FULL_EVIDENCE, evidencedAt: "not-a-date" }, expectedReady: false, expectedMissing: ["INVALID_EVIDENCE_TIMESTAMP"] },
     { name: "production-deploy-present-fails-closed", evidence: { ...FULL_EVIDENCE, noProductionDeploy: false }, expectedReady: false, expectedMissing: ["NO_PRODUCTION_DEPLOY"] },
     { name: "missing-read-only-brain-boundary-fails-closed", evidence: { ...FULL_EVIDENCE, brainProjectionReadOnly: false }, expectedReady: false, expectedMissing: ["READ_ONLY_BRAIN_PROJECTION"] },
     { name: "pages-preview-is-not-runtime", evidence: { ...FULL_EVIDENCE, dedicatedRuntimeShadowDeployed: false }, expectedReady: false, expectedMissing: ["DEDICATED_RUNTIME_SHADOW_DEPLOY"] },
@@ -63,7 +73,7 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
   ];
 
   const results = cases.map((testCase) => {
-    const gate = evaluateFactoryActivation(testCase.evidence);
+    const gate = evaluateFactoryActivation(testCase.evidence, SIM_NOW_MS);
     const expectedMissing = [...(testCase.expectedMissing ?? [])].sort();
     const actualMissing = [...gate.missing].sort();
     const passed = gate.ready === testCase.expectedReady && JSON.stringify(actualMissing) === JSON.stringify(expectedMissing);
