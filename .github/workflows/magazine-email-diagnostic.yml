@@ -1,0 +1,37 @@
+name: Magazine Email Diagnostic
+
+on:
+  push:
+    branches:
+      - build/four-product-integrated-prototype
+    paths:
+      - .github/workflows/magazine-email-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect routing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$CF_TOKEN"
+          api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$@"; }
+          ZONES=$(api "https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com&status=active")
+          ZONE_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print(r[0].get("id","") if r else "")')
+          ACCOUNT_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print((r[0].get("account") or {}).get("id","") if r else "")')
+          echo "ZONE_VISIBLE=$([ -n "$ZONE_ID" ] && echo true || echo false)"
+          STATUS=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing")
+          printf '%s' "$STATUS" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("STATUS="+str(r.get("status"))); print("ENABLED="+str(r.get("enabled")))'
+          RULES=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules")
+          printf '%s' "$RULES" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("RULES_SUCCESS="+str(d.get("success"))); [print("RULE", r.get("id"), r.get("name"), "enabled="+str(r.get("enabled")), "matchers="+str(r.get("matchers")), "actions="+str(r.get("actions"))) for r in d.get("result",[]) if any(m.get("value")=="editor@4planetmagazine.com" for m in r.get("matchers",[]))]'
+          if [ -n "$ACCOUNT_ID" ]; then
+            ADDRS=$(api "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/email/routing/addresses")
+            printf '%s' "$ADDRS" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ADDRS_SUCCESS="+str(d.get("success"))); [print("DEST", x.get("email"), "verified="+str(x.get("verified"))) for x in d.get("result",[]) if x.get("email")=="odin.skogen@gmail.com"]'
+          fi
