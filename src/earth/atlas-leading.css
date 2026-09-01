@@ -96,13 +96,18 @@
   }
   .atlas-leading-time-body { max-height: calc(100vh - 220px); }
 
-  /* When Layers is expanded, it is the sole secondary work surface. Search stays
-     reachable above it; lens/time/saved controls stop competing for the map. */
-  .world:has(.atlas-panel:not(.rest)) .lens-rail,
-  .world:has(.atlas-panel:not(.rest)) .atlas-saved-views,
-  .world:has(.atlas-panel:not(.rest)) .atlas-leading-time {
-    opacity: 0;
-    pointer-events: none;
+  /* PublicWorld renders My Atlas/TIME as siblings of .world, so a .world:has(...)
+     selector cannot reach them. Body is the smallest shared ancestor. When Layers
+     expands it becomes the sole secondary work surface; Search remains reachable,
+     while lens/saved/time controls are both visually suspended and non-interactive.
+     !important is required for My Atlas because its safety-default pointerEvents
+     is inline. The state restores automatically when Layers collapses. */
+  body:has(.atlas-panel:not(.rest)) .lens-rail,
+  body:has(.atlas-panel:not(.rest)) .atlas-saved-views,
+  body:has(.atlas-panel:not(.rest)) .atlas-leading-time {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   /* Search is the primary action on mobile; give its results usable vertical room
