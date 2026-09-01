@@ -21,6 +21,7 @@ const SIM_NOW_ISO = "2026-09-01T07:00:00.000Z";
 const SIM_NOW_MS = Date.parse(SIM_NOW_ISO);
 const VALID_FACTORY_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const VALID_TEST_KING_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+const OTHER_VALID_TEST_KING_SHA = "cccccccccccccccccccccccccccccccccccccccc";
 
 const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   shadowCiPassed: true,
@@ -43,6 +44,7 @@ const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
   externalReleaseFounderGated: true,
   testKingBaseCurrent: true,
   exactFactorySha: VALID_FACTORY_SHA,
+  factoryTestKingBaseSha: VALID_TEST_KING_SHA,
   currentTestKingSha: VALID_TEST_KING_SHA,
   evidencedAt: SIM_NOW_ISO,
 });
@@ -54,7 +56,10 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
     { name: "missing-outcome-parity-fails-closed", evidence: { ...FULL_EVIDENCE, outcomeQualityParityPassed: false }, expectedReady: false, expectedMissing: ["OUTCOME_QUALITY_PARITY"] },
     { name: "missing-founder-release-gate-fails-closed", evidence: { ...FULL_EVIDENCE, externalReleaseFounderGated: false }, expectedReady: false, expectedMissing: ["FOUNDER_RELEASE_GATE"] },
     { name: "missing-shadow-comparison-fails-closed", evidence: { ...FULL_EVIDENCE, shadowComparisonPassed: false }, expectedReady: false, expectedMissing: ["SHADOW_COMPARISON_PASS"] },
-    { name: "stale-test-king-base-fails-closed", evidence: { ...FULL_EVIDENCE, testKingBaseCurrent: false }, expectedReady: false, expectedMissing: ["CURRENT_TEST_KING_BASE"] },
+    { name: "stale-test-king-base-flag-fails-closed", evidence: { ...FULL_EVIDENCE, testKingBaseCurrent: false }, expectedReady: false, expectedMissing: ["CURRENT_TEST_KING_BASE"] },
+    { name: "missing-factory-test-king-base-sha-fails-closed", evidence: { ...FULL_EVIDENCE, factoryTestKingBaseSha: "" }, expectedReady: false, expectedMissing: ["FACTORY_TEST_KING_BASE_SHA"] },
+    { name: "invalid-factory-test-king-base-sha-fails-closed", evidence: { ...FULL_EVIDENCE, factoryTestKingBaseSha: "not-a-sha" }, expectedReady: false, expectedMissing: ["INVALID_FACTORY_TEST_KING_BASE_SHA"] },
+    { name: "factory-test-king-base-mismatch-fails-closed", evidence: { ...FULL_EVIDENCE, factoryTestKingBaseSha: OTHER_VALID_TEST_KING_SHA }, expectedReady: false, expectedMissing: ["TEST_KING_BASE_SHA_MISMATCH"] },
     { name: "missing-current-test-king-sha-fails-closed", evidence: { ...FULL_EVIDENCE, currentTestKingSha: "" }, expectedReady: false, expectedMissing: ["CURRENT_TEST_KING_SHA"] },
     { name: "invalid-current-test-king-sha-fails-closed", evidence: { ...FULL_EVIDENCE, currentTestKingSha: "not-a-sha" }, expectedReady: false, expectedMissing: ["INVALID_TEST_KING_SHA"] },
     { name: "missing-exact-sha-fails-closed", evidence: { ...FULL_EVIDENCE, exactFactorySha: "" }, expectedReady: false, expectedMissing: ["EXACT_FACTORY_SHA"] },
