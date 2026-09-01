@@ -11,72 +11,27 @@ permissions:
   contents: read
 
 jobs:
-  configure:
+  inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     env:
       CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Configure oddekalv.org mail
+      - name: Inspect oddekalv.org routing DNS
         shell: bash
         run: |
           set -euo pipefail
-          [ -n "${CF_TOKEN:-}" ] || { echo "Missing CLOUDFLARE_API_TOKEN"; exit 2; }
+          [ -n "${CF_TOKEN:-}" ] || exit 2
           echo "::add-mask::$CF_TOKEN"
           api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$@"; }
-
           ZONES=$(api "https://api.cloudflare.com/client/v4/zones?name=oddekalv.org&status=active")
           ZONE_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print(r[0].get("id","") if r else "")')
-          ACCOUNT_ID=$(printf '%s' "$ZONES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print(r[0].get("account",{}).get("id","") if r else "")')
-          [ -n "$ZONE_ID" ] || { echo "ODDEKALV_ZONE_UNAVAILABLE"; exit 3; }
-          echo "ODDEKALV_ZONE_OK"
-
-          ensure_record() {
-            TYPE="$1"; NAME="$2"; CONTENT="$3"; PRIORITY="${4:-}"
-            FQDN="$NAME.oddekalv.org"
-            QUERY=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=$TYPE&name=$FQDN")
-            MATCH=$(printf '%s' "$QUERY" | EXPECTED="$CONTENT" python3 -c 'import json,os,sys; r=json.load(sys.stdin).get("result",[]); print("yes" if any(x.get("content")==os.environ["EXPECTED"] for x in r) else "no")')
-            COUNT=$(printf '%s' "$QUERY" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("result",[])))')
-            if [ "$MATCH" = "yes" ]; then echo "DNS_OK $TYPE $FQDN"; return 0; fi
-            if [ "$COUNT" -gt 0 ]; then echo "DNS_CONFLICT $TYPE $FQDN"; return 10; fi
-            if [ "$TYPE" = "MX" ]; then BODY=$(TYPE="$TYPE" FQDN="$FQDN" CONTENT="$CONTENT" PRIORITY="$PRIORITY" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["FQDN"],"content":os.environ["CONTENT"],"priority":int(os.environ["PRIORITY"]),"ttl":1}))'); else BODY=$(TYPE="$TYPE" FQDN="$FQDN" CONTENT="$CONTENT" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["FQDN"],"content":os.environ["CONTENT"],"ttl":1}))'); fi
-            RESULT=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" --data "$BODY")
-            OK=$(printf '%s' "$RESULT" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")')
-            [ "$OK" = "yes" ] || { echo "DNS_CREATE_FAILED $TYPE $FQDN"; return 11; }
-            echo "DNS_CREATED $TYPE $FQDN"
-          }
-
-          ensure_record TXT resend._domainkey 'p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDRveSM/vBkeRwfVkZXNbkw6FuHYqHdLv/Z3fsRcqcL2lF/gMSYbDFOYkoIulQjfzpslj0hObtIj+kM94TcvbqJ1qQNrao0KJnKpPDR7PDmSjVtznbvcXn9FnKv/oKBIVYesm1xoCxXmn4/0Y4nl3GKu7JK53gj+2HE11dyOk3b5QIDAQAB'
-          ensure_record MX send 'feedback-smtp.eu-west-1.amazonses.com' 10
-          ensure_record TXT send 'v=spf1 include:amazonses.com ~all'
-
-          DMARC_Q=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=TXT&name=_dmarc.oddekalv.org")
-          DMARC_COUNT=$(printf '%s' "$DMARC_Q" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("result",[])))')
-          if [ "$DMARC_COUNT" -eq 0 ]; then ensure_record TXT _dmarc 'v=DMARC1; p=none; adkim=r; aspf=r; pct=100'; else echo "DMARC_EXISTING_PRESERVED"; fi
-
-          ROOT_MX=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=MX&name=oddekalv.org")
-          ROOT_MX_COUNT=$(printf '%s' "$ROOT_MX" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("result",[])))')
-          ROOT_CF_MX=$(printf '%s' "$ROOT_MX" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); print("yes" if r and all("mx.cloudflare.net" in x.get("content","") for x in r) else "no")')
+          [ -n "$ZONE_ID" ] || exit 3
+          MX=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=MX&name=oddekalv.org")
+          TXT=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=TXT&name=oddekalv.org")
+          ROUTING_DNS=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/dns")
           SETTINGS=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing")
-          ENABLED=$(printf '%s' "$SETTINGS" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("yes" if d.get("success") and d.get("result",{}).get("enabled") is True else "no")')
-          if [ "$ENABLED" = "yes" ]; then echo "EMAIL_ROUTING_ALREADY_ENABLED"; elif [ "$ROOT_MX_COUNT" -eq 0 ] || [ "$ROOT_CF_MX" = "yes" ]; then ENABLE=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/dns" --data '{"name":"oddekalv.org"}'); ENABLE_OK=$(printf '%s' "$ENABLE" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")'); echo "EMAIL_ROUTING_ENABLE_$ENABLE_OK"; else echo "EMAIL_ROUTING_EXISTING_MX_PRESERVED"; fi
-
-          [ -n "$ACCOUNT_ID" ] || { echo "NO_ACCOUNT_ID"; exit 0; }
-          ADDRS=$(api "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/email/routing/addresses")
-          ADDR_OK=$(printf '%s' "$ADDRS" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")')
-          [ "$ADDR_OK" = "yes" ] || { echo "DESTINATION_API_UNAVAILABLE"; exit 0; }
-          DEST_STATE=$(printf '%s' "$ADDRS" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); m=[x for x in r if x.get("email","").lower()=="odin.skogen@gmail.com"]; print("verified" if m and m[0].get("verified") else ("unverified" if m else "missing"))')
-          if [ "$DEST_STATE" = "missing" ]; then NEWDEST=$(api -X POST "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/email/routing/addresses" --data '{"email":"odin.skogen@gmail.com"}'); NEWDEST_OK=$(printf '%s' "$NEWDEST" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")'); echo "DESTINATION_CREATE_$NEWDEST_OK"; exit 0; fi
-          [ "$DEST_STATE" = "verified" ] || { echo "DESTINATION_NEEDS_VERIFICATION"; exit 0; }
-          echo "DESTINATION_VERIFIED"
-
-          RULES=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules")
-          RULES_OK=$(printf '%s' "$RULES" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")')
-          [ "$RULES_OK" = "yes" ] || { echo "ROUTING_RULES_API_UNAVAILABLE"; exit 0; }
-          RULE_STATE=$(printf '%s' "$RULES" | python3 -c 'import json,sys; r=json.load(sys.stdin).get("result",[]); t="odin@oddekalv.org"; f=[x for x in r if any(m.get("type")=="literal" and m.get("field")=="to" and m.get("value","").lower()==t for m in x.get("matchers",[]))]; ok=any(any(a.get("type")=="forward" and "odin.skogen@gmail.com" in [v.lower() for v in a.get("value",[])] for a in x.get("actions",[])) for x in f); print("missing" if not f else ("correct" if ok else "conflict"))')
-          if [ "$RULE_STATE" = "correct" ]; then echo "ODIN_ROUTE_OK"; exit 0; fi
-          if [ "$RULE_STATE" = "conflict" ]; then echo "ODIN_ROUTE_CONFLICT_PRESERVED"; exit 0; fi
-          BODY='{"name":"odin oddekalv to gmail","enabled":true,"matchers":[{"type":"literal","field":"to","value":"odin@oddekalv.org"}],"actions":[{"type":"forward","value":["odin.skogen@gmail.com"]}],"priority":0,"source":"api"}'
-          CREATED=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/rules" --data "$BODY")
-          CREATE_OK=$(printf '%s' "$CREATED" | python3 -c 'import json,sys; print("yes" if json.load(sys.stdin).get("success") else "no")')
-          echo "ODIN_ROUTE_CREATE_$CREATE_OK"
+          printf '%s' "$MX" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROOT_MX=" + ",".join(f"{x.get(chr(99)+chr(111)+chr(110)+chr(116)+chr(101)+chr(110)+chr(116))}:{x.get(chr(112)+chr(114)+chr(105)+chr(111)+chr(114)+chr(105)+chr(116)+chr(121))}" for x in d.get("result",[])))'
+          printf '%s' "$TXT" | python3 -c 'import json,sys; d=json.load(sys.stdin); vals=[x.get("content","") for x in d.get("result",[]) if x.get("content","").startswith("v=spf1")]; print("ROOT_SPF="+" | ".join(vals))'
+          printf '%s' "$SETTINGS" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROUTING_SETTINGS_SUCCESS="+str(d.get("success"))); print("ROUTING_STATUS="+str(d.get("result",{}).get("status"))); print("ROUTING_ENABLED="+str(d.get("result",{}).get("enabled"))); print("ROUTING_ERRORS="+" | ".join(x.get("message","") for x in d.get("errors",[])))'
+          printf '%s' "$ROUTING_DNS" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("ROUTING_DNS_SUCCESS="+str(d.get("success"))); print("ROUTING_DNS_ERRORS="+" | ".join(x.get("message","") for x in d.get("errors",[]))); print("ROUTING_DNS_RESULT="+json.dumps(d.get("result")))'
