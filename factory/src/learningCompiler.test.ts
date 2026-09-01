@@ -15,6 +15,11 @@ const pkg: WorkPackage = {
   deliverables: ["One dominant mobile narrative layer"],
   dependencies: [],
   writeScopes: ["public/journey/orca/"],
+  preservation: {
+    mustNotLose: ["truth access", "accepted story flow"],
+    regressionRisks: ["mobile story regression", "source access regression"],
+    rollbackRef: "0123456789abcdef0123456789abcdef01234567",
+  },
   definitionOfDone: ["390px mobile has one dominant narrative authority"],
   requiredEvidence: ["before after mobile runtime screenshot"],
   learningQuestion: "Does intent-triggered evidence beat persistent evidence chrome on mobile?",
@@ -55,7 +60,7 @@ test("accepted material outcome becomes scoped non-authoritative learning", () =
   assert.match(compiled.candidate?.nextTest ?? "", /second comparable case/i);
 });
 
-test("non-material work cannot create learning authority", () => {
+test("non-material accepted work cannot create learning authority", () => {
   const weak: Outcome = {
     ...outcome,
     materialDelta: "Plan queued for later.",
@@ -65,4 +70,21 @@ test("non-material work cannot create learning authority", () => {
   const compiled = compileLearningCandidate(pkg, weak, evaluation);
   assert.equal(compiled.accepted, false);
   assert.equal(compiled.candidate, undefined);
+});
+
+test("failed or correction outcomes cannot disappear without a failure-learning record", () => {
+  const failed: Outcome = {
+    ...outcome,
+    status: "CORRECT",
+    evidence: [],
+    materialDelta: "Mobile change regressed accepted story flow.",
+    actual: "The accepted story flow became harder to use.",
+    limitation: "Root cause not yet proven.",
+  };
+  const evaluation = evaluateMaterialProgress(pkg, failed);
+  const compiled = compileLearningCandidate(pkg, failed, evaluation);
+  assert.equal(compiled.accepted, true);
+  assert.equal(compiled.candidate?.status, "CANDIDATE");
+  assert.match(compiled.candidate?.ruleProposal ?? "", /FAILURE→TEST/);
+  assert.match(compiled.candidate?.evidence[0] ?? "", /CONTROL GAP/);
 });
