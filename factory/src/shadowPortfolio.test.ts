@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { runShadowTrial } from "./shadowTrial";
 import type { BrainProjectionSnapshot } from "./brainProjection";
+import { REQUIRED_MULTI_GIGA_04_AUTHORITY_REF } from "./compoundControl";
 import type { ProjectProjection, Section, WorkPackage } from "./contracts";
 
 const NOW = Date.parse("2026-09-01T00:00:00Z");
@@ -72,6 +73,7 @@ test("current-portfolio-shaped shadow trial runs a conflict-free orchestra and r
       "github:odinskogen-dev/4Planet.05#king/test@5d40e8c93476c6addfa349363957384e4de3d254",
       "github:odinskogen-dev/4Planet.05#issue-211",
       "brain:theory-project-capital-execution-convergence-v2",
+      `brain:founder-decision:${REQUIRED_MULTI_GIGA_04_AUTHORITY_REF}`,
     ],
     projects,
   };
