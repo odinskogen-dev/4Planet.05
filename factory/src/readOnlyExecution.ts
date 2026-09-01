@@ -1,6 +1,10 @@
 import type { Outcome, WorkPackage } from "./contracts";
 
-const MAX_SOURCE_BYTES = 256_000;
+// Source pages are frequently substantially larger than the small machine-readable
+// endpoints used by the first canary. Keep the read bounded, but large enough to
+// fingerprint real authoritative pages such as NOAA species records without
+// misclassifying normal page size as a source failure.
+const MAX_SOURCE_BYTES = 1_048_576;
 const MAX_BROWSER_BYTES = 8_000_000;
 const MAX_SOURCE_REDIRECTS = 5;
 const PRIVATE_HOST_PATTERNS = [
