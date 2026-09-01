@@ -14,6 +14,7 @@ import { About } from "@/pages/v5/About";
 import { Stories, CultureFilm, CultureTelier, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { StoryArticle } from "@/pages/v5/StoryArticle";
+import { CheckoutSuccess, CheckoutCancelled } from "@/pages/payments/CheckoutResult";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -67,6 +68,8 @@ export function AppRoutes() {
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/telier" element={<CultureTelier />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+      <Route path="/checkout/success" element={<CheckoutSuccess />} />
+      <Route path="/checkout/cancel" element={<CheckoutCancelled />} />
       <Route path="/os" element={toAbout} />
       <Route path="/os/*" element={toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
