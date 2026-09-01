@@ -1,11 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "4planet-production-factory-v01-shadow",
-  "main": "src/index.ts",
+  "main": "src/worldClassRuntime.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
   },
   "browser": {
     "binding": "BROWSER",
@@ -26,6 +34,24 @@
       "class_name": "WorkPackageWorkflow"
     }
   ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "FACTORY_QUEUE",
+        "queue": "4planet-production-factory-v01-shadow"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "4planet-production-factory-v01-shadow",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "4planet-production-factory-v01-shadow-dlq",
+        "max_concurrency": 2
+      }
+    ]
+  },
   "migrations": [
     {
       "tag": "v1",
