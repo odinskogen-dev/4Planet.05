@@ -16,6 +16,12 @@ export interface InFlightRecoveryInput {
   updatedAt: string;
   hasRecordedOutcome: boolean;
   workflowStatus?: TrackedWorkflowStatus;
+  /**
+   * Compatibility-only field for the existing caller. It is deliberately NOT
+   * trusted as recovery evidence; only an observed tracked workflowStatus can
+   * authorize requeue.
+   */
+  workflowExecutionConfirmedInactive?: boolean;
 }
 
 export type InFlightRecoveryDecision = "LEAVE" | "FINALIZE_RECORDED_OUTCOME" | "RECOVER_TO_READY";
