@@ -25,6 +25,8 @@ export interface GuardianSnapshot {
   lineStop: boolean;
 }
 
+const HARD_WIP_CEILING = 5;
+
 const hasEvidence = (outcome: Outcome, pattern: RegExp) =>
   outcome.evidence.some((item) => pattern.test(item));
 
@@ -106,10 +108,10 @@ export function evaluateGuardian(input: GuardianSnapshotInput): GuardianSnapshot
     return { severity: "RED", andon: true, lineStop: true, reasons: [`Unknown factory mode: ${input.mode}`] };
   }
   if (blocked > 0) reasons.push(`${blocked} package(s) blocked and require correction or disposition`);
-  if (running + dispatched > 10) reasons.push("In-flight WIP exceeds the bounded 10-package orchestra limit");
+  if (running + dispatched > HARD_WIP_CEILING) reasons.push(`In-flight WIP exceeds the founder-locked ${HARD_WIP_CEILING}-package line limit`);
   if (input.workerCount > 12) reasons.push("Worker count exceeds the bounded V01 staffing envelope");
 
-  if (running + dispatched > 10) {
+  if (running + dispatched > HARD_WIP_CEILING) {
     return { severity: "RED", andon: true, lineStop: true, reasons };
   }
   if (reasons.length > 0) {
