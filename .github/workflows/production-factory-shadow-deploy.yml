@@ -54,6 +54,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
           workingDirectory: factory
           packageManager: npm
+          wranglerVersion: "4.127.1"
           command: deploy
 
       - name: Prove deployed Worker, Agent, Workflow, sub-agents, tools and learning
