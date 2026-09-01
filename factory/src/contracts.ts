@@ -171,6 +171,8 @@ export interface BatchSelection {
   generatedAt: string;
   packages: WorkPackage[];
   rejectedForConflict: string[];
+  /** Work that failed NO ORPHANS / PRESERVE BEFORE MUTATE or another hard Factory preflight. */
+  rejectedForControl?: string[];
   rationale: string[];
   /** Projects whose 24/72h service level earned a protected scheduler slot. */
   serviceLevelProtected?: string[];
