@@ -30,7 +30,7 @@ jobs:
           echo "ZONE_VISIBLE"
           BEFORE=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing")
           printf '%s' "$BEFORE" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("BEFORE_SUCCESS="+str(d.get("success"))); print("BEFORE_STATUS="+str(r.get("status"))); print("BEFORE_ENABLED="+str(r.get("enabled")))'
-          ENABLE=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/dns" --data '{"name":"oddekalv.org"}')
-          printf '%s' "$ENABLE" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("ENABLE_SUCCESS="+str(d.get("success"))); print("ENABLE_STATUS="+str(r.get("status"))); print("ENABLE_ENABLED="+str(r.get("enabled"))); print("ENABLE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or []))); print("ENABLE_MESSAGES="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("messages") or [])))'
+          ENABLE=$(api -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/dns")
+          printf '%s' "$ENABLE" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("ENABLE_SUCCESS="+str(d.get("success"))); print("ENABLE_STATUS="+str(r.get("status"))); print("ENABLE_ENABLED="+str(r.get("enabled"))); print("ENABLE_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
           AFTER=$(api "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing")
           printf '%s' "$AFTER" | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d.get("result") or {}; print("AFTER_SUCCESS="+str(d.get("success"))); print("AFTER_STATUS="+str(r.get("status"))); print("AFTER_ENABLED="+str(r.get("enabled"))); print("AFTER_ERRORS="+" | ".join(str(x.get("code",""))+":"+x.get("message","") for x in (d.get("errors") or [])))'
