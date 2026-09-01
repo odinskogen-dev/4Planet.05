@@ -57,7 +57,7 @@ jobs:
           wranglerVersion: "4.127.1"
           command: deploy
 
-      - name: Prove deployed World Class runtime and real orchestra processing
+      - name: Prove deployed World Class runtime and real Orchestra 02 processing
         id: canary
         shell: bash
         env:
@@ -98,20 +98,21 @@ jobs:
 
           READY="false"
           CANARY_JSON=""
-          for attempt in $(seq 1 18); do
+          for attempt in $(seq 1 24); do
             CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 15 "${CANARY_URL}" || true)"
             if echo "${CANARY_JSON}" | grep -q '"ready":true' \
-              && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V01"' \
+              && echo "${CANARY_JSON}" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V02"' \
+              && echo "${CANARY_JSON}" | grep -q '"orchestraId":"4planet-first-real-orchestra-v02"' \
               && echo "${CANARY_JSON}" | grep -q '"orchestraProcessed":true'; then
               READY="true"
               break
             fi
-            echo "World Class canary not complete/current yet (attempt ${attempt}/18): ${CANARY_JSON}"
+            echo "Orchestra 02 runtime not complete/current yet (attempt ${attempt}/24): ${CANARY_JSON}"
             sleep 5
           done
 
           if [[ "${READY}" != "true" ]]; then
-            echo "Deployed SHADOW canary did not prove the World Class runtime contract and real orchestra processing."
+            echo "Deployed SHADOW canary did not prove the exact Orchestra 02 World Class runtime contract."
             echo "${CANARY_JSON}"
             capture_runtime_error "${CANARY_URL}"
             exit 1
@@ -136,13 +137,13 @@ jobs:
           HEALTH_URL: ${{ steps.canary.outputs.health_url }}
           CANARY_URL: ${{ steps.canary.outputs.canary_url }}
         run: |
-          echo "### 4PLANET Production Factory SHADOW — World Class Build 03" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 4PLANET Production Factory SHADOW — World Class Build 03 / Orchestra 02" >> "$GITHUB_STEP_SUMMARY"
           echo "Dedicated Worker: 4planet-production-factory-v01-shadow" >> "$GITHUB_STEP_SUMMARY"
           echo "Exact SHA: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo "Deployment URL: ${DEPLOYMENT_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "Health: ${HEALTH_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "Canary: ${CANARY_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "World Class runtime contract + fixed 8-package real SHADOW orchestra processing: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exact V02 runtime contract + fixed 8-package real SHADOW orchestra processing: PASS" >> "$GITHUB_STEP_SUMMARY"
           echo "Independent quality outcomes remain evidence, not an automatic Human Gold claim." >> "$GITHUB_STEP_SUMMARY"
           echo "This deployment is SHADOW only and does not modify 4PLANET LIVE." >> "$GITHUB_STEP_SUMMARY"
 
@@ -155,14 +156,14 @@ jobs:
         with:
           script: |
             const body = [
-              '## WORLD CLASS SHADOW RUNTIME + REAL ORCHESTRA — PASS',
+              '## WORLD CLASS SHADOW RUNTIME + ORCHESTRA 02 — PASS',
               '',
               `Exact Factory SHA: \`${context.sha}\``,
               `Deployment: ${process.env.DEPLOYMENT_URL}`,
               `Health: ${process.env.HEALTH_URL}`,
               `Canary: ${process.env.CANARY_URL}`,
               '',
-              'Deployment acceptance now requires the explicit `WORLD_CLASS_BUILD_03_ORCHESTRA_V01` runtime contract and all eight fixed real 4PLANET SHADOW work packages to have persisted outcomes.',
+              'Deployment acceptance requires the exact `WORLD_CLASS_BUILD_03_ORCHESTRA_V02` runtime contract, the exact `4planet-first-real-orchestra-v02` orchestra identity, and all eight fixed real 4PLANET SHADOW work packages to have persisted outcomes.',
               '',
               'Independent quality decisions remain separate from runtime processing proof; Human Gold can never be inferred from technical render/source evidence.',
               '',
