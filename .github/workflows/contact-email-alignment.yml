@@ -65,21 +65,15 @@ jobs:
               s = s.replace(marker, marker + insert, 1)
 
           if 'href={`mailto:${contactEmail}`}' not in s:
-              pattern = r'(?P<i>\s*)<Link to="/privacy" className="transition-colors hover:text-black/70">PRIVACY</Link>'
+              pattern = r'(?P<i>\s*)<Link to="/privacy"(?P<attrs>[^>]*)>PRIVACY</Link>'
               match = re.search(pattern, s)
               if not match:
                   raise SystemExit("Privacy footer link marker missing")
               i = match.group('i')
-              anchor = (
-                  i + '<a\n' +
-                  i + '  href={`mailto:${contactEmail}`}\n' +
-                  i + '  className="transition-colors hover:text-black/70"\n' +
-                  i + '>\n' +
-                  i + '  {contactEmail.toUpperCase()}\n' +
-                  i + '</a>\n' +
-                  i + '<Link to="/privacy" className="transition-colors hover:text-black/70">PRIVACY</Link>'
-              )
-              s = re.sub(pattern, lambda m: anchor, s, count=1)
+              attrs = match.group('attrs')
+              original = match.group(0).lstrip()
+              anchor = i + '<a href={`mailto:${contactEmail}`}' + attrs + '>{contactEmail.toUpperCase()}</a>\n' + i + original
+              s = s[:match.start()] + anchor + s[match.end():]
           shell.write_text(s)
 
           privacy = Path("src/pages/v5/Privacy.tsx")
