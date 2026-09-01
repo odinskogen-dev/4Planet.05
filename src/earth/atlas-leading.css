@@ -1,0 +1,116 @@
+.atlas-leading-time {
+  position: absolute;
+  top: 162px;
+  right: 14px;
+  z-index: 18;
+  width: min(360px, calc(100vw - 28px));
+  box-sizing: border-box;
+  font-family: "Fragment Mono", ui-monospace, monospace;
+  color: #fff;
+}
+.world.light .atlas-leading-time { color: #080808; }
+.atlas-leading-time-toggle {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(8,8,8,.88);
+  color: inherit;
+  font: inherit;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  cursor: pointer;
+}
+.world.light .atlas-leading-time-toggle { background: rgba(255,255,255,.95); border-color: rgba(8,8,8,.18); }
+.atlas-leading-time-body {
+  margin-top: 6px;
+  padding: 12px;
+  max-height: min(62vh, 520px);
+  overflow: auto;
+  background: rgba(8,8,8,.96);
+  border: 1px solid rgba(255,255,255,.16);
+  backdrop-filter: blur(14px);
+}
+.world.light .atlas-leading-time-body { background: rgba(255,255,255,.98); border-color: rgba(8,8,8,.16); }
+.atlas-leading-time-body section + section { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.12); }
+.world.light .atlas-leading-time-body section + section { border-color: rgba(8,8,8,.12); }
+.atlas-leading-time-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 8.5px; letter-spacing: .12em; opacity: .72; }
+.atlas-leading-time-meta strong { font-weight: 400; opacity: 1; }
+.atlas-leading-time-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.atlas-leading-time-options button {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+.world.light .atlas-leading-time-options button { border-color: rgba(8,8,8,.2); }
+.atlas-leading-time-options button.on { border-color: #2e2eff; color: #2e2eff; }
+.atlas-leading-time-body p { margin: 8px 0 0; font-size: 9px; line-height: 1.5; opacity: .58; }
+
+@media (max-width: 760px) {
+  /* One interaction plane at a time. The expanded layer console owns the mobile
+     work area; secondary controls remain behind it and cannot intercept taps. */
+  .atlas-panel:not(.rest) {
+    z-index: 50;
+    top: 108px !important;
+    left: 10px;
+    width: calc(100vw - 20px);
+    max-width: none;
+    max-height: calc(100vh - 152px);
+    box-sizing: border-box;
+    padding: 14px;
+    background: rgba(8,8,8,.97);
+  }
+  .world.light .atlas-panel:not(.rest) { background: rgba(255,255,255,.985); }
+
+  /* The previous recovery used width:100vw-20 plus padding with content-box.
+     At 390px this could exceed the viewport. Keep every floating Atlas surface
+     border-box so padding can never produce horizontal overflow. */
+  .atlas-panel,
+  .atlas-saved-views,
+  .atlas-leading-time,
+  .atlas-leading-time-body { box-sizing: border-box; }
+
+  /* Resting controls occupy deliberate non-overlapping corners below Search. */
+  .atlas-panel.rest { top: 116px !important; left: 10px; z-index: 24; max-width: 52vw; }
+  .atlas-saved-views { top: 116px !important; right: 10px !important; z-index: 23 !important; max-width: 44vw; }
+  .atlas-leading-time { top: 166px; right: 10px; width: auto; z-index: 22; }
+
+  /* TIME expands into the same bounded work area as Layers, but one level below
+     Layers so an accidentally simultaneous open state cannot create a tap trap. */
+  .atlas-leading-time.open {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    z-index: 49;
+  }
+  .atlas-leading-time-body { max-height: calc(100vh - 220px); }
+
+  /* PublicWorld renders My Atlas/TIME as siblings of .world, so a .world:has(...)
+     selector cannot reach them. Body is the smallest shared ancestor. When Layers
+     expands it becomes the sole secondary work surface; Search remains reachable,
+     while lens/saved/time controls are both visually suspended and non-interactive.
+     !important is required for My Atlas because its safety-default pointerEvents
+     is inline. The state restores automatically when Layers collapses. */
+  body:has(.atlas-panel:not(.rest)) .lens-rail,
+  body:has(.atlas-panel:not(.rest)) .atlas-saved-views,
+  body:has(.atlas-panel:not(.rest)) .atlas-leading-time {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Search is the primary action on mobile; give its results usable vertical room
+     without letting the dropdown consume the whole globe. */
+  .results { max-height: min(52vh, 430px); overscroll-behavior: contain; }
+}
