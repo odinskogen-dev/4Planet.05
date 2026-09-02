@@ -68,8 +68,22 @@ jobs:
           test "$largest_js" -lt 1400000
           test "$total_js" -lt 2300000
 
-      - name: Smoke exact built candidate
-        run: npm run test:smoke
+      - name: PUBLIC CORE smoke exact built candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            scripts/smoke-v40.mjs \
+            scripts/product-context.test.mjs \
+            scripts/jaguar-testking-v27-contract.test.mjs \
+            scripts/magazine-seo-contract.test.mjs \
+            scripts/participation-contract.test.mjs \
+            scripts/atlas-source-bridge-contract.test.mjs \
+            scripts/user-proof-analytics-contract.test.mjs \
+            scripts/public-completion-contract.test.mjs \
+            scripts/species-first-plank-source-contract.test.mjs \
+            scripts/source-learning-loop-runtime.test.mjs \
+            scripts/source-provider-adapter-runtime.test.mjs
 
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
