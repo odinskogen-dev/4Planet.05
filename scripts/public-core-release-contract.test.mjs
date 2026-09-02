@@ -67,7 +67,9 @@ test("premium shared header remains transparent when closed and retains hide/rev
   assert.match(publicShell, /const bg = menuMode \? "#fff" : "transparent";/);
   assert.match(publicShell, /backdropFilter: "none"/);
   assert.match(publicShell, /WebkitBackdropFilter: "none"/);
-  assert.doesNotMatch(publicShell, /rgba\(5,5,7,\.9\)|rgba\(255,255,255,\.9\)|blur\(14px\)/);
+  assert.doesNotMatch(publicShell, /const bg = menuMode \? "#fff" : scrolled \?/);
+  assert.doesNotMatch(publicShell, /backdropFilter: scrolled/);
+  assert.doesNotMatch(publicShell, /WebkitBackdropFilter: scrolled/);
   assert.match(publicShell, /if \(down > 74\) setHidden\(true\)/);
   assert.match(publicShell, /if \(up > 14\) setHidden\(false\)/);
   assert.match(publicShell, />JOIN 4PLANET<\/Link>/);
