@@ -27,13 +27,13 @@ export function AtlasSavedViews() {
         </button>
         {open && (
           <div style={{ clear: "both", background: "rgba(8,8,8,.94)", color: "#fff", border: "1px solid rgba(255,255,255,.2)", padding: 12, maxHeight: "min(60vh,520px)", overflowY: "auto", backdropFilter: "blur(14px)" }}>
-            <div style={{ ...mono, color: "rgba(255,255,255,.58)", lineHeight: 1.55 }}>LOCAL DEVICE · SAVED MAP VIEWS</div>
+            <div style={{ ...mono, color: "rgba(255,255,255,.58)", lineHeight: 1.55 }}>SAVED ON THIS DEVICE</div>
             <button type="button" onClick={save}
               style={{ width: "100%", marginTop: 10, minHeight: 44, border: "1px solid #3AE86F", background: "transparent", color: "#3AE86F", ...mono, cursor: "pointer" }}>
-              SAVE THIS VIEW +
+              SAVE CURRENT VIEW +
             </button>
             {state.views.length === 0 ? (
-              <p style={{ margin: "14px 2px 4px", fontSize: 12.5, lineHeight: 1.55, color: "rgba(255,255,255,.62)" }}>Save a layer/camera context and reopen it later. Species and places remain in the shared Follow / Watch system rather than being duplicated here.</p>
+              <p style={{ margin: "14px 2px 4px", fontSize: 12.5, lineHeight: 1.55, color: "rgba(255,255,255,.62)" }}>Save this map view and reopen it later on this device. Species and places you follow remain in Watch instead of being duplicated here.</p>
             ) : (
               <div style={{ marginTop: 10 }}>
                 {state.views.map((view) => (
@@ -49,7 +49,7 @@ export function AtlasSavedViews() {
                 ))}
               </div>
             )}
-            <p style={{ margin: "12px 2px 0", ...mono, color: "rgba(255,255,255,.42)", lineHeight: 1.55 }}>RECOVERED FROM ATLAS V37CX · VERSIONED LOCAL STORAGE · MALFORMED STATE FAILS CLOSED</p>
+            <p style={{ margin: "12px 2px 0", ...mono, color: "rgba(255,255,255,.42)", lineHeight: 1.55 }}>Saved views stay in this browser. Nothing is uploaded or shared unless you choose to share a link.</p>
           </div>
         )}
       </aside>
