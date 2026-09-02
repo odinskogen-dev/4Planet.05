@@ -42,11 +42,17 @@ jobs:
       FACTORY_GITHUB_TOKEN: ${{ secrets.FACTORY_GITHUB_TOKEN }}
       CLOUDFLARE_FACTORY_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
       CLOUDFLARE_FACTORY_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      FACTORY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Verify bounded runtime credentials and GitHub TEST-write capability
         shell: bash
         run: |
           set -euo pipefail
+
+          if [[ ! "${FACTORY_HEAD_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo '::error::Could not resolve an exact Factory branch-head SHA.'
+            exit 1
+          fi
 
           api="https://api.github.com/repos/${GITHUB_REPOSITORY}"
           test_sha="$(curl --fail --silent --show-error \
@@ -104,7 +110,7 @@ jobs:
 
           cat > /tmp/factory-runtime-readiness.json <<JSON
           {
-            "factory_sha": "${GITHUB_SHA}",
+            "factory_sha": "${FACTORY_HEAD_SHA}",
             "test_king_sha": "${test_sha}",
             "github_test_write_probe": "${github_probe}",
             "probe_cleanup": "${cleanup}",
@@ -115,7 +121,7 @@ jobs:
 
           {
             echo '### Factory runtime capability evidence'
-            echo "- Factory SHA: \`${GITHUB_SHA}\`"
+            echo "- Factory SHA: \`${FACTORY_HEAD_SHA}\`"
             echo "- Current TEST KING SHA: \`${test_sha}\`"
             echo "- GitHub TEST-write probe: **${github_probe}**"
             echo "- Probe cleanup: **${cleanup}**"
@@ -127,7 +133,7 @@ jobs:
       - name: Upload non-secret readiness evidence
         uses: actions/upload-artifact@v4
         with:
-          name: factory-runtime-readiness-${{ github.sha }}
+          name: factory-runtime-readiness-${{ github.event.pull_request.head.sha || github.sha }}
           path: /tmp/factory-runtime-readiness.json
           if-no-files-found: error
           retention-days: 14
