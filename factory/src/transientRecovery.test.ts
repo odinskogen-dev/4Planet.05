@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Outcome, WorkPackage } from "./contracts";
-import { retryableTransientCapacityPackage } from "./transientRecovery";
+import { decideStaleShadowQueueRecovery, retryableTransientCapacityPackage } from "./transientRecovery";
 
 const pkg = {
   id: "orch-test",
@@ -40,6 +40,7 @@ const outcome = (evidence: string[], status: Outcome["status"] = "BLOCKED"): Out
   limitation: "transient",
   materialDelta: "none",
   completedAt: "2026-09-02T00:01:00.000Z",
+  expected: "bounded browser evidence",
 });
 
 test("HTTP 429 returns a stranded RUNNING package to READY for queue retry", () => {
@@ -55,4 +56,48 @@ test("non-429 blocked outcomes are not rewritten as retryable capacity", () => {
 
 test("429 evidence cannot override a non-BLOCKED specialist outcome", () => {
   assert.equal(retryableTransientCapacityPackage(pkg, outcome(["HTTP 429"], "CORRECT")), undefined);
+});
+
+test("stale SHADOW queue RUNNING state with no outcome becomes retryable", () => {
+  const now = Date.parse("2026-09-02T01:00:00.000Z");
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "RUNNING", updatedAt: "2026-09-02T00:00:00.000Z", hasRecordedOutcome: false }, now),
+    "RECOVER_TO_READY",
+  );
+});
+
+test("recent SHADOW queue RUNNING state stays fail-closed", () => {
+  const now = Date.parse("2026-09-02T01:00:00.000Z");
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "RUNNING", updatedAt: "2026-09-02T00:45:00.000Z", hasRecordedOutcome: false }, now),
+    "LEAVE",
+  );
+});
+
+test("recorded outcome prevents stale queue re-execution", () => {
+  const now = Date.parse("2026-09-02T01:00:00.000Z");
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "RUNNING", updatedAt: "2026-09-02T00:00:00.000Z", hasRecordedOutcome: true }, now),
+    "LEAVE",
+  );
+});
+
+test("only RUNNING queue state is recoverable", () => {
+  const now = Date.parse("2026-09-02T01:00:00.000Z");
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "READY", updatedAt: "2026-09-02T00:00:00.000Z", hasRecordedOutcome: false }, now),
+    "LEAVE",
+  );
+});
+
+test("invalid or implausibly future timestamps fail closed", () => {
+  const now = Date.parse("2026-09-02T01:00:00.000Z");
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "RUNNING", updatedAt: "not-a-date", hasRecordedOutcome: false }, now),
+    "LEAVE",
+  );
+  assert.equal(
+    decideStaleShadowQueueRecovery({ status: "RUNNING", updatedAt: "2026-09-02T01:06:00.000Z", hasRecordedOutcome: false }, now),
+    "LEAVE",
+  );
 });
