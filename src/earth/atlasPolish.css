@@ -1,0 +1,156 @@
+/* ATLAS PRODUCT POLISH SIDECAR 01 — human-first presentation overrides.
+   ATLAS-only. No global shell ownership. */
+
+.atlas-identity {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 42;
+  pointer-events: none;
+  font-family: "Instrument Sans", "DM Sans", sans-serif;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: #fff;
+  text-shadow: 0 1px 16px rgba(0,0,0,.5);
+}
+
+.atlas-identity strong {
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.world.light ~ .atlas-identity,
+.world.light + .atlas-identity {
+  color: #080808;
+  text-shadow: 0 1px 12px rgba(255,255,255,.65);
+}
+
+/* Public ATLAS should not headline internal object ids. The canonical id still
+   exists in state/deeplinks and source truth; it simply stops competing with
+   the human title. */
+.ctx-id { display: none !important; }
+
+/* Context is supporting information, not a second full-screen product. */
+@media (min-width: 761px) {
+  .ctx {
+    width: min(350px, calc(100vw - 28px)) !important;
+    top: 72px !important;
+    bottom: auto !important;
+    max-height: calc(100vh - 112px) !important;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .ctx-head { padding: 13px 14px 10px !important; }
+  .ctx-body { padding: 0 14px 14px !important; }
+  .ctx-title { font-size: 22px !important; }
+  .sec { margin-top: 14px !important; }
+}
+
+/* Quiet secondary metadata. Keep truth/source access, but stop letting it read
+   like the product headline. */
+.ctx-kind,
+.ctx-sub,
+.sec-h,
+.src-line,
+.foot { letter-spacing: .08em !important; }
+.ctx-kind { opacity: .72; }
+.ctx-sub { opacity: .66 !important; }
+.note-box { font-size: 10px !important; line-height: 1.5 !important; }
+
+/* Mobile: opening a control is intentional. Give it the full safe width rather
+   than forcing controls into the old 62vw console and clipping/wrapping badly. */
+@media (max-width: 760px) {
+  .atlas-identity {
+    top: 13px;
+    left: 10px;
+    font-size: 14px;
+  }
+
+  .search-wrap {
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+  }
+
+  .search-line {
+    gap: 7px !important;
+    padding: 0 9px !important;
+  }
+
+  .site-btn {
+    min-height: 38px;
+    padding: 5px 7px !important;
+    font-size: 9px !important;
+    letter-spacing: .09em !important;
+  }
+
+  .lens-rail {
+    width: 100%;
+    gap: 5px !important;
+  }
+
+  .lens {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px !important;
+    padding: 8px 7px !important;
+    letter-spacing: .1em !important;
+  }
+
+  .atlas-panel:not(.rest) {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100vh - 188px) !important;
+    padding: 12px !important;
+  }
+
+  .atlas-panel:not(.rest) .mbtn,
+  .atlas-panel:not(.rest) .chip,
+  .atlas-panel:not(.rest) .atlas-row,
+  .atlas-panel:not(.rest) .sect,
+  .ctx-close,
+  .tier-btn,
+  .follow-btn {
+    min-height: 44px !important;
+    touch-action: manipulation;
+  }
+
+  .atlas-panel:not(.rest) .chip {
+    padding: 8px 10px !important;
+  }
+
+  .atlas-row { padding: 9px 9px !important; }
+  .ibtn { width: 30px !important; height: 30px !important; }
+
+  .ctx {
+    max-height: 58vh !important;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .ctx-title { font-size: 20px !important; }
+  .ctx-head { padding-left: 14px !important; padding-right: 14px !important; }
+  .ctx-body { padding-left: 14px !important; padding-right: 14px !important; }
+
+  .tier-controls {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch !important;
+  }
+
+  .tier-btn { width: 100%; }
+
+  .recenter-btn {
+    bottom: calc(58vh + 34px) !important;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 430px) {
+  .search-glyph { display: none; }
+  .search-line input { font-size: 11.5px !important; }
+  .site-btn { max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
