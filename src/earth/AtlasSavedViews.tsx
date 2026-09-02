@@ -22,14 +22,14 @@ export function AtlasSavedViews() {
     <>
       <aside className="atlas-saved-views" style={{ position: "fixed", right: 12, top: 112, zIndex: 38, width: open ? "min(330px,calc(100vw - 24px))" : "auto", pointerEvents: "auto" }} aria-label="My Atlas saved views">
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
-          style={{ ...mono, float: "right", minHeight: 42, border: "1px solid rgba(255,255,255,.34)", background: "rgba(8,8,8,.88)", color: "#fff", padding: "0 12px", cursor: "pointer", backdropFilter: "blur(10px)" }}>
+          style={{ ...mono, float: "right", minHeight: 44, border: "1px solid rgba(255,255,255,.34)", background: "rgba(8,8,8,.88)", color: "#fff", padding: "0 12px", cursor: "pointer", touchAction: "manipulation", backdropFilter: "blur(10px)" }}>
           MY ATLAS{state.views.length ? ` · ${state.views.length}` : ""}{open ? " −" : " +"}
         </button>
         {open && (
           <div style={{ clear: "both", background: "rgba(8,8,8,.94)", color: "#fff", border: "1px solid rgba(255,255,255,.2)", padding: 12, maxHeight: "min(60vh,520px)", overflowY: "auto", backdropFilter: "blur(14px)" }}>
             <div style={{ ...mono, color: "rgba(255,255,255,.58)", lineHeight: 1.55 }}>SAVED ON THIS DEVICE</div>
             <button type="button" onClick={save}
-              style={{ width: "100%", marginTop: 10, minHeight: 44, border: "1px solid #3AE86F", background: "transparent", color: "#3AE86F", ...mono, cursor: "pointer" }}>
+              style={{ width: "100%", marginTop: 10, minHeight: 44, border: "1px solid #3AE86F", background: "transparent", color: "#3AE86F", ...mono, cursor: "pointer", touchAction: "manipulation" }}>
               SAVE CURRENT VIEW +
             </button>
             {state.views.length === 0 ? (
@@ -39,12 +39,12 @@ export function AtlasSavedViews() {
                 {state.views.map((view) => (
                   <div key={view.id} style={{ borderTop: "1px solid rgba(255,255,255,.18)", padding: "10px 0", display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center" }}>
                     <button type="button" onClick={() => window.location.assign(view.href)} title={view.href}
-                      style={{ border: 0, background: "transparent", color: "#fff", textAlign: "left", cursor: "pointer", padding: 0 }}>
+                      style={{ border: 0, background: "transparent", color: "#fff", textAlign: "left", cursor: "pointer", padding: 0, minHeight: 44, touchAction: "manipulation" }}>
                       <span style={{ display: "block", fontSize: 12.5, fontWeight: 600 }}>{view.label}</span>
                       <span style={{ ...mono, display: "block", marginTop: 4, color: "rgba(255,255,255,.48)" }}>{view.savedAt ? new Date(view.savedAt).toLocaleString() : "SAVED"}</span>
                     </button>
                     <button type="button" aria-label={`Delete ${view.label}`} onClick={() => remove(view.id)}
-                      style={{ border: 0, background: "transparent", color: "rgba(255,255,255,.58)", cursor: "pointer", ...mono, minWidth: 34, minHeight: 34 }}>×</button>
+                      style={{ border: 0, background: "transparent", color: "rgba(255,255,255,.58)", cursor: "pointer", ...mono, minWidth: 44, minHeight: 44, touchAction: "manipulation" }}>×</button>
                   </div>
                 ))}
               </div>
