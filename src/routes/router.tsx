@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
+import LabsOverview from "@/pages/labs/LabsOverview";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
@@ -37,22 +38,12 @@ const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => (
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 
-const WorldFallback = (
-  <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
-);
-
-const MagazineFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />
-);
-
-const ActorFallback = (
-  <div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />
-);
-
+const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
+const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
+const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
-const toAbout = <Navigate to="/about" replace />;
 const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
@@ -62,6 +53,9 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/os" element={<LabsOverview />} />
+      <Route path="/os/labs" element={<LabsOverview />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
       <Route path="/domains/:key" element={<DomainWorld />} />
@@ -123,8 +117,7 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
-      <Route path="/os" element={toAbout} />
-      <Route path="/os/*" element={toAbout} />
+      <Route path="/os/*" element={<LabsOverview />} />
       <Route path="/m/:slug" element={<MtoMission />} />
       <Route path="/m/:slug/support" element={toImpact} />
       <Route path="/m/:slug/campaign" element={toImpact} />
