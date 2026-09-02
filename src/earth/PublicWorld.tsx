@@ -205,7 +205,7 @@ export default function PublicWorld() {
           </Link>
         </nav>
         <p style={{ marginTop: 32, fontFamily: "monospace", fontSize: 11, color: "rgba(255,255,255,.48)", lineHeight: 1.6 }}>
-          MAP STATUS: UNAVAILABLE ON THIS DEVICE · NO DATA OR IMPACT STATE HAS BEEN INFERRED.
+          MAP STATUS: UNAVAILABLE ON THIS DEVICE · NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED.
         </p>
       </section>
     </main>
