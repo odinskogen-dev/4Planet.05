@@ -4,6 +4,7 @@ import { executeReadOnlyPackage } from "./readOnlyExecution";
 import { executeAutonomousPackage, type AutonomousWorkPackage } from "./autonomousExecution";
 import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
+import { effectiveResourceBudget } from "./hardeningControl";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -78,7 +79,26 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
 
     const autonomous = (pkg as AutonomousWorkPackage).autonomous;
     if (autonomous) {
-      const requestedAttempts = Math.max(1, Math.min(autonomous.maxCorrectionAttempts ?? MAX_AI_ATTEMPTS_PER_PACKAGE, MAX_AI_ATTEMPTS_PER_PACKAGE));
+      const budget = effectiveResourceBudget(pkg.resourceBudget);
+      const requestedAttempts = Math.max(
+        1,
+        Math.min(
+          autonomous.maxCorrectionAttempts ?? budget.maxCorrectionAttempts,
+          MAX_AI_ATTEMPTS_PER_PACKAGE,
+          budget.maxAttempts,
+          budget.maxCorrectionAttempts,
+          budget.maxModelCalls,
+        ),
+      );
+      if (budget.maxModelCalls < 1 || budget.maxAttempts < 1) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          "RESOURCE_BUDGET_FAIL_CLOSED: autonomous execution has no authorised attempt/model-call capacity.",
+          ["No model call attempted"],
+          "Increase the bounded Work Package budget only through governed planning; this does not authorise cash spend.",
+        );
+      }
       if (!this.reserveAiBudget(requestedAttempts)) {
         return this.finish(
           pkg,
@@ -90,7 +110,10 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       }
 
       try {
-        const executed = await executeAutonomousPackage(this.env, pkg);
+        const boundedPkg = autonomous.maxCorrectionAttempts === requestedAttempts
+          ? pkg
+          : ({ ...pkg, autonomous: { ...autonomous, maxCorrectionAttempts: requestedAttempts } } as AutonomousWorkPackage);
+        const executed = await executeAutonomousPackage(this.env, boundedPkg);
         if (executed) return this.persistOutcome(pkg, executed);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown autonomous execution failure";
@@ -98,7 +121,7 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
           pkg,
           "BLOCKED",
           `Autonomous TEST adapter failed safely: ${message}`,
-          ["No LIVE authority", "No automatic spend"],
+          ["No LIVE authority", "No automatic spend", `RESOURCE-BUDGET attempts<=${requestedAttempts}`],
           "Candidate execution remains fail-closed.",
         );
       }
