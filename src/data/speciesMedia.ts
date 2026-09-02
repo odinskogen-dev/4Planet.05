@@ -2,14 +2,16 @@ import { MEDIA_MANIFEST } from "@/content/mediaManifest";
 /**
  * WS-E — SPECIES media registry.
  *
- * Rights are never inferred or fabricated, and "founder-supplied" is PROVENANCE
- * ONLY — it never implies 4PLANET/Skog ownership, copyright, commercial rights or
- * a licence. Three states, all licence-based:
- *  - "LICENCE_VERIFIED": an image with an explicit, recorded licence (open licence,
- *    public domain, or a written grant) + attribution where the licence requires
- *    it. How the file reached us (founder, agent, bank) does not change this — only
- *    the licence record does.
- *  - "CLEARED": alias of LICENCE_VERIFIED for older records (public-domain / open).
+ * Founder decision 2026-09-02:
+ * - ORCA hero/photo is an Unsplash-sourced photograph and is explicitly approved
+ *   for PUBLIC CORE use. Do not replace it with generated/illustrated media.
+ * - PUBLIC CORE uses photographs or a designed no-image state. Illustration
+ *   fallbacks are not part of the 4PLANET public product grammar.
+ *
+ * Rights are never inferred from merely being present in the repository. Three
+ * states remain licence-based:
+ *  - "LICENCE_VERIFIED": explicit recorded licence/source basis.
+ *  - "CLEARED": alias of LICENCE_VERIFIED for older records.
  *  - "PENDING": no verified licence yet → render the designed no-image state.
  */
 export type RightsStatus = "LICENCE_VERIFIED" | "CLEARED" | "PENDING";
@@ -31,26 +33,11 @@ export interface MediaRecord {
   supportedUse: string;
   limitations: string;
   rightsStatus: RightsStatus;
-  /**
-   * Blocker 8: exact, actionable per-profile asset blocker while rightsStatus is
-   * PENDING. States a concrete candidate source + the specific licence/record
-   * step needed before the image can be shown. Not a generic "pending".
-   */
   assetBlocker?: string;
-  /**
-   * A self-owned illustration (NOT a photograph). Always cleared because 4PLANET
-   * created it. Used for a life-first visual while the real photo stays PENDING.
-   * Must be labelled clearly as an illustration wherever shown.
-   */
-  illustration?: {
-    localPath: string; kind: string; owner: string; creator: string;
-    licence: string; attribution: string; checkedDate: string; checksum: string;
-  };
 }
 
 /** A precise candidate asset + the exact rights step still required per profile. */
 const BLOCKERS: Record<string, string> = {
-  orca: "Candidate: NOAA Fisheries killer-whale media (U.S. Gov public domain). BLOCKER: confirm the specific file's public-domain status + capture creator/date into a full rights record, or use a founder-supplied image with a recorded licence.",
   "humpback-whale": "Candidate: NOAA Fisheries humpback media (public domain). BLOCKER: verify the exact file URL + record creator/licence/checked-date before bundling.",
   "sperm-whale": "Candidate: NOAA Fisheries sperm-whale media (public domain). BLOCKER: confirm the specific asset is Gov-work public domain and capture attribution.",
   "harbour-porpoise": "Candidate: GBIF media with a CC-BY/CC0 licence field on a Norwegian occurrence. BLOCKER: select one record whose media carries an explicit licence + attribution.",
@@ -67,17 +54,12 @@ function pending(slug: string, sourcePage: string): MediaRecord {
     localPath: "", sourcePage, photographer: "", owner: "", licence: "", licenceUrl: "",
     attribution: "", checkedDate: "2026-09-02", cropAllowed: false, modificationAllowed: false,
     publicWebAllowed: false, commercialAllowed: false, supportedUse: "",
-    limitations: "No verified image licence yet — render the no-image/owned-illustration state.", rightsStatus: "PENDING",
+    limitations: "No verified image licence yet — render the designed no-image state.", rightsStatus: "PENDING",
     assetBlocker: BLOCKERS[slug],
   };
 }
 
-/**
- * Build a licence-verified MediaRecord straight from the authoritative media
- * manifest (Asset ID → provider/creator/licence/attribution/limitation). This is
- * how SPECIES/Living-Systems bank photos are wired: the licence record is the
- * single source of truth, and the context limitation is always carried through.
- */
+/** Build a licence-verified MediaRecord from the authoritative media manifest. */
 function fromManifest(assetId: string): MediaRecord {
   const a = MEDIA_MANIFEST[assetId];
   if (!a || !a.localPath) return pending(assetId, a?.sourcePage ?? "");
@@ -93,15 +75,25 @@ function fromManifest(assetId: string): MediaRecord {
   };
 }
 
-/**
- * Keyed by species slug. LICENCE_VERIFIED entries require an exact recorded licence,
- * regardless of who supplied the file. Unknown provenance/permission remains PENDING.
- */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
-  // The former founder-supplied Orca photograph had provenance but no exact licence
-  // or permission record. PUBLIC CORE therefore fails it closed; the owned 4PLANET
-  // illustration below supplies the visual until a real photo clears independently.
-  orca: pending("orca", ""),
+  orca: {
+    localPath: "/assets/species/orca/hero.jpg",
+    sourcePage: "https://unsplash.com/",
+    photographer: "Not recorded in current asset metadata",
+    owner: "Unsplash contributor — exact contributor metadata to be backfilled when recovered",
+    licence: "Unsplash License — source confirmed by Founder 2026-09-02",
+    licenceUrl: "https://unsplash.com/license",
+    attribution: "Source: Unsplash",
+    checkedDate: "2026-09-02",
+    cropAllowed: true,
+    modificationAllowed: true,
+    publicWebAllowed: true,
+    commercialAllowed: true,
+    supportedUse: "4PLANET public web product imagery, including hero/detail crop and resize.",
+    limitations: "Unsplash-sourced photograph. Exact photographer/photo URL is not present in current metadata and must not be invented. Founder-approved public use; do not replace with an illustration.",
+    rightsStatus: "LICENCE_VERIFIED",
+    assetBlocker: "",
+  },
   "humpback-whale": fromManifest("SP-001"),
   "sperm-whale": fromManifest("SP-002"),
   "harbour-porpoise": fromManifest("SP-003"),
@@ -113,16 +105,6 @@ export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   "western-honey-bee": fromManifest("SP-008"),
   "giant-otter": fromManifest("SP-007"),
 };
-
-/** Self-owned illustrations (not photographs) attached to the five cetaceans. */
-const ILLUSTRATIONS: Record<string, NonNullable<MediaRecord["illustration"]>> = {
-  "orca": { localPath: "/assets/species/orca/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:851a02585309c49d2b1d0e218ca3150b97484afb423813e463d5b7b3a905de5b" },
-  "humpback-whale": { localPath: "/assets/species/humpback-whale/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:73ae654f1c4430712d01f365b50e0bb642d2ee1b3231ecc009f341dad6bc89c1" },
-  "sperm-whale": { localPath: "/assets/species/sperm-whale/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:ab1db11d25db77dcde8a28a1da9f480c51f237d8fcc5b2a9a0770752d2aee7c7" },
-  "harbour-porpoise": { localPath: "/assets/species/harbour-porpoise/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:153fc33c2e4c0b5d021d914fb257b63300125d1fcf9e97e739d20d13f7aa3a28" },
-  "bottlenose-dolphin": { localPath: "/assets/species/bottlenose-dolphin/illustration.jpg", kind: "INTERNAL PROTOTYPE ART (procedural, 4PLANET-created illustration — NOT a photograph)", owner: "4PLANET / Skog Communications AS", creator: "4PLANET (generated in-house)", licence: "Owned work — all rights held by 4PLANET", attribution: "4PLANET illustration", checkedDate: "2026-08-07", checksum: "sha256:d1c7246db0f5558cb335ce66cbf52f6d5d1b84689776656e225571c2303aae6b" },
-};
-Object.entries(ILLUSTRATIONS).forEach(([slug, ill]) => { if (SPECIES_MEDIA[slug]) SPECIES_MEDIA[slug].illustration = ill; });
 
 export const speciesMedia = (slug: string): MediaRecord | undefined => SPECIES_MEDIA[slug];
 export const hasShowableImage = (slug: string): boolean => {
