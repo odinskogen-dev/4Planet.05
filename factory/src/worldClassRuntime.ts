@@ -15,6 +15,7 @@ import {
   SHADOW_ORCHESTRA_ID,
   type FactoryQueueMessage,
 } from "./shadowOrchestra";
+import { retryableTransientCapacityPackage } from "./transientRecovery";
 
 export * from "./index";
 
@@ -145,10 +146,6 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   };
 }
 
-function isTransientCapacityOutcome(outcome: Outcome) {
-  return outcome.status === "BLOCKED" && outcome.evidence.some((item) => /^HTTP 429$/i.test(item.trim()));
-}
-
 async function processQueueMessage(message: Message<FactoryQueueMessage>, env: Cloudflare.Env) {
   const body = message.body;
   if (body.kind !== "WORK_PACKAGE" || body.orchestraId !== SHADOW_ORCHESTRA_ID) {
@@ -175,8 +172,12 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
 
     const specialistOutcome = await agent.dispatchToWorker(pkg.id);
     // Browser capacity throttling is a transient Factory condition, not product
-    // evidence. Do not persist it as CORRECT/BLOCKED; return it to Queue retry/DLQ.
-    if (isTransientCapacityOutcome(specialistOutcome)) {
+    // evidence. Restore the package to READY before Queue retry so a failed
+    // delivery cannot strand it in RUNNING and make ensureOrchestra treat it as
+    // permanently active. No outcome is persisted and no quality claim is made.
+    const retryablePackage = retryableTransientCapacityPackage(pkg, specialistOutcome);
+    if (retryablePackage) {
+      await agent.upsertWorkPackage(retryablePackage);
       throw new Error(`TRANSIENT_BROWSER_CAPACITY_429 package=${pkg.id}`);
     }
 
