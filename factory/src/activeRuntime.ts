@@ -10,11 +10,11 @@ export * from "./worldClassRuntime";
 const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
 const TEST_BRANCH = "king/test";
-const PROOF_RETRY_VERSION = "02" as const;
+const PROOF_RETRY_VERSION = "03" as const;
 const PROOF_IDS = [
-  "factory-real-species-evidence-affordance-02",
-  "factory-real-bay-accessibility-02",
-  "factory-real-actor-relationship-a11y-02",
+  "factory-real-species-evidence-affordance-03",
+  "factory-real-bay-accessibility-03",
+  "factory-real-actor-relationship-a11y-03",
 ] as const;
 const SAFE_PUBLIC_GETS = new Set([
   "/__factory/health",
