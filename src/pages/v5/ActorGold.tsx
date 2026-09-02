@@ -16,7 +16,7 @@ function RelationshipMark({ actor }: { actor: ActorGoldProfile }) {
     : actor.relationshipState === "VERIFIED_PARTNER"
       ? "VERIFIED PARTNER"
       : "PUBLIC RECORD";
-  return <span className="actor-gold-state">{label}</span>;
+  return <span className="actor-gold-state" aria-label={`Relationship status: ${label}`}>{label}</span>;
 }
 
 function OrcaSignatureVisual({ actor }: { actor: ActorGoldProfile }) {
