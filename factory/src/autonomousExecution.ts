@@ -8,6 +8,7 @@ const TEST_BRANCH = "king/test";
 const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
 const MAX_EXISTING_FILE_BYTES = 120_000;
 const MAX_AI_ATTEMPTS = 2;
+const MAX_CANDIDATE_EDITS = 8;
 const CHECK_POLL_ATTEMPTS = 18;
 const PREVIEW_POLL_ATTEMPTS = 12;
 
@@ -26,8 +27,18 @@ export interface GitHubTestWriteSpec {
 
 export type AutonomousWorkPackage = WorkPackage & { autonomous?: GitHubTestWriteSpec };
 
+interface BrowserQuickActionResponse {
+  ok: boolean;
+  status: number;
+}
+
+interface BrowserBinding {
+  quickAction(action: "snapshot", input: Record<string, unknown>): Promise<BrowserQuickActionResponse>;
+}
+
 type FactoryRuntimeEnv = Cloudflare.Env & {
   AI?: { run(model: string, input: unknown): Promise<unknown> };
+  BROWSER?: BrowserBinding;
   FACTORY_GITHUB_TOKEN?: string;
   FACTORY_AI_MODEL?: string;
 };
@@ -37,6 +48,12 @@ type GitHubRef = { object?: { sha?: string } };
 type GitHubPull = { number: number; html_url: string; draft?: boolean; head?: { sha?: string; ref?: string } };
 type GitHubCheckRun = { name: string; status: string; conclusion: string | null; html_url?: string };
 type GitHubChecks = { total_count: number; check_runs: GitHubCheckRun[] };
+type JsonRecord = Record<string, unknown>;
+
+type CandidateEdit = { search: string; replace: string };
+type CandidatePayload =
+  | { mode: "edits"; edits: CandidateEdit[]; summary: string; selfChecks: string[] }
+  | { mode: "replace_file"; content: string; summary: string; selfChecks: string[] };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
@@ -146,27 +163,79 @@ async function readFile(token: string, path: string, ref: string): Promise<{ sha
   return { sha: value.sha, content };
 }
 
+function record(value: unknown): JsonRecord | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as JsonRecord : undefined;
+}
+
+function nestedRecord(parent: JsonRecord | undefined, key: string): JsonRecord | undefined {
+  return parent ? record(parent[key]) : undefined;
+}
+
 function aiText(raw: unknown): string {
-  const value = raw as any;
-  const candidate =
-    value?.choices?.[0]?.message?.content ??
-    value?.response ??
-    value?.result?.response ??
-    value?.result ??
-    value?.text;
+  const value = record(raw);
+  const choices = value?.choices;
+  let candidate: unknown;
+  if (Array.isArray(choices)) {
+    candidate = nestedRecord(record(choices[0]), "message")?.content;
+  }
+  candidate ??= value?.response;
+  const result = nestedRecord(value, "result");
+  candidate ??= result?.response;
+  candidate ??= value?.result;
+  candidate ??= value?.text;
   if (typeof candidate !== "string" || !candidate.trim()) throw new Error("Workers AI returned no usable text response");
   return candidate.trim();
 }
 
-function parseCandidate(rawText: string): { content: string; summary: string; selfChecks: string[] } {
+function parseSelfChecks(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").slice(0, 12) : [];
+}
+
+function parseCandidate(rawText: string): CandidatePayload {
   const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
-  const parsed = JSON.parse(cleaned) as { content?: unknown; summary?: unknown; selfChecks?: unknown };
-  if (typeof parsed.content !== "string") throw new Error("AI candidate JSON is missing string content");
-  return {
-    content: parsed.content,
-    summary: typeof parsed.summary === "string" ? parsed.summary : "Generated bounded TEST candidate.",
-    selfChecks: Array.isArray(parsed.selfChecks) ? parsed.selfChecks.filter((item): item is string => typeof item === "string").slice(0, 12) : [],
-  };
+  const parsed = record(JSON.parse(cleaned));
+  if (!parsed) throw new Error("AI candidate JSON must be an object");
+  const summary = typeof parsed.summary === "string" ? parsed.summary : "Generated bounded TEST candidate.";
+  const selfChecks = parseSelfChecks(parsed.selfChecks);
+
+  if (parsed.mode === "edits") {
+    if (!Array.isArray(parsed.edits) || parsed.edits.length === 0 || parsed.edits.length > MAX_CANDIDATE_EDITS) {
+      throw new Error(`AI candidate must contain 1-${MAX_CANDIDATE_EDITS} bounded edits`);
+    }
+    const edits = parsed.edits.map((rawEdit, index): CandidateEdit => {
+      const edit = record(rawEdit);
+      if (!edit || typeof edit.search !== "string" || typeof edit.replace !== "string" || !edit.search) {
+        throw new Error(`AI candidate edit ${index + 1} is invalid`);
+      }
+      return { search: edit.search, replace: edit.replace };
+    });
+    return { mode: "edits", edits, summary, selfChecks };
+  }
+
+  if (parsed.mode === "replace_file" && typeof parsed.content === "string") {
+    return { mode: "replace_file", content: parsed.content, summary, selfChecks };
+  }
+
+  throw new Error("AI candidate must use mode=edits for existing files or mode=replace_file for new files");
+}
+
+function applyCandidate(candidate: CandidatePayload, existingContent: string): string {
+  if (candidate.mode === "replace_file") {
+    if (existingContent) throw new Error("Full-file replacement is forbidden for an existing target; use bounded exact edits");
+    return candidate.content;
+  }
+  if (!existingContent) throw new Error("Bounded edit mode cannot create an empty/new target file");
+
+  let content = existingContent;
+  for (const [index, edit] of candidate.edits.entries()) {
+    const first = content.indexOf(edit.search);
+    if (first < 0) throw new Error(`AI edit ${index + 1} search text was not found in current candidate`);
+    if (content.indexOf(edit.search, first + edit.search.length) >= 0) {
+      throw new Error(`AI edit ${index + 1} search text is not unique; refusing ambiguous mutation`);
+    }
+    content = `${content.slice(0, first)}${edit.replace}${content.slice(first + edit.search.length)}`;
+  }
+  return content;
 }
 
 async function generateCandidate(
@@ -178,6 +247,10 @@ async function generateCandidate(
 ): Promise<{ content: string; summary: string; selfChecks: string[]; model: string }> {
   if (!env.AI) throw new Error("Workers AI binding is not configured");
   const model = env.FACTORY_AI_MODEL || DEFAULT_MODEL;
+  const existing = Boolean(existingContent);
+  const outputContract = existing
+    ? `Return strict JSON only: {"mode":"edits","edits":[{"search":"EXACT UNIQUE CURRENT TEXT","replace":"REPLACEMENT TEXT"}],"summary":"short change summary","selfChecks":["check"]}. Use at most ${MAX_CANDIDATE_EDITS} surgical edits. Never return the complete file.`
+    : "Return strict JSON only: {\"mode\":\"replace_file\",\"content\":\"COMPLETE NEW FILE CONTENT\",\"summary\":\"short change summary\",\"selfChecks\":[\"check\"]}.";
   const prompt = [
     qualitySystemPrompt(),
     "\nTASK AUTHORITY / WORK PACKAGE:",
@@ -195,8 +268,8 @@ async function generateCandidate(
     "\nCURRENT FILE CONTENT (empty means create a new file):",
     existingContent || "<EMPTY>",
     "\nOUTPUT CONTRACT:",
-    "Return strict JSON only, with exactly: {\"content\":\"COMPLETE FILE CONTENT\",\"summary\":\"short change summary\",\"selfChecks\":[\"check\"]}.",
-    "The content field must contain the complete replacement file, not a diff. Preserve unrelated working behaviour. Make the smallest material change that closes the stated gap.",
+    outputContract,
+    "For edit mode, every search string must be copied exactly from CURRENT FILE CONTENT and must identify exactly one location. Make the smallest material change that closes the stated gap. Preserve unrelated working behaviour.",
     "Never add LIVE release, external send, payment, Canon promotion or unsupported ecological/scientific claims.",
   ].join("\n");
 
@@ -205,13 +278,16 @@ async function generateCandidate(
       { role: "system", content: "You are a bounded senior product engineer inside 4PLANET Production Factory. Follow the machine-readable quality contract exactly." },
       { role: "user", content: prompt },
     ],
-    temperature: 0.15,
-    max_completion_tokens: 4200,
+    temperature: 0.1,
+    reasoning_effort: "low",
+    response_format: { type: "json_object" },
+    max_completion_tokens: 2400,
   });
   const candidate = parseCandidate(aiText(raw));
-  const validation = validateGeneratedCandidate(candidate.content);
+  const content = applyCandidate(candidate, existingContent);
+  const validation = validateGeneratedCandidate(content);
   if (!validation.ok) throw new Error(`Generated candidate failed 4PLANET safety/truth preflight: ${validation.reasons.join(", ")}`);
-  return { ...candidate, model };
+  return { content, summary: candidate.summary, selfChecks: candidate.selfChecks, model };
 }
 
 async function writeFile(token: string, branch: string, path: string, content: string, currentSha: string | undefined, message: string): Promise<string> {
@@ -279,7 +355,7 @@ function previewUrl(branch: string, domain = "4planet-05.pages.dev") {
 }
 
 async function waitForBrowserQa(env: FactoryRuntimeEnv, url: string): Promise<{ ok: boolean; evidence: string[] }> {
-  const browser = (env as any).BROWSER;
+  const browser = env.BROWSER;
   if (!browser?.quickAction) return { ok: false, evidence: ["Cloudflare Browser binding unavailable"] };
   let last = "no response";
   for (let attempt = 1; attempt <= PREVIEW_POLL_ATTEMPTS; attempt += 1) {
@@ -306,7 +382,6 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
   const pkg = pkgInput as AutonomousWorkPackage;
   const spec = pkg.autonomous;
   if (!spec) return undefined;
-  if (spec.kind !== "GITHUB_TEST_WRITE") return blocked(pkg, `Unknown autonomous execution kind: ${(spec as any).kind}`);
   if (spec.repository !== REPOSITORY || spec.baseBranch !== TEST_BRANCH) {
     return blocked(pkg, "Autonomous code execution is restricted to 4Planet.05 → king/test candidates.");
   }
