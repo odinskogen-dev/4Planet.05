@@ -15,6 +15,12 @@ import {
   SHADOW_ORCHESTRA_ID,
   type FactoryQueueMessage,
 } from "./shadowOrchestra";
+import {
+  ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID,
+  createLegacyOrchestraV04RecoveryMarker,
+  planLegacyOrchestraV04QueueRecovery,
+  recoveredQueuePackage,
+} from "./shadowStateMigration";
 import { retryableTransientCapacityPackage } from "./transientRecovery";
 
 export * from "./index";
@@ -25,6 +31,7 @@ const WORLD_CLASS_RUNTIME_CONTRACT = "WORLD_CLASS_BUILD_03_ORCHESTRA_V04" as con
 
 interface FactoryStateView {
   state: { mode: string; lastBatchAt?: string; lastBatchIds?: string[]; lastWorkflowIds?: string[] };
+  projects: Array<{ id: string }>;
   work: Array<{ id: string; status: string }>;
   outcomes: Array<{ work_package_id: string; completed_at: string }>;
   learning: Array<{ id: string; status: string; created_at: string }>;
@@ -117,15 +124,45 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   if (health.mode !== "SHADOW") throw new Error("Real orchestra V04 is intentionally restricted to SHADOW");
   if (!health.noLiveAuthority) throw new Error("Real orchestra blocked: runtime unexpectedly has LIVE authority");
 
-  const state = (await agent.getFactoryState()) as FactoryStateView;
-  const recorded = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
-  const active = new Set(state.work.map((work) => work.id));
   const nowIso = new Date().toISOString();
   const projects = createShadowOrchestraProjects(nowIso);
   const packages = createShadowOrchestraPackages(nowIso);
-
   for (const project of projects) await agent.upsertProject(project);
 
+  // One-time recovery for the exact durable V04 rows stranded before the
+  // HTTP-429 READY-before-retry correction existed. Durable Object state
+  // survives deploys, so those legacy RUNNING rows cannot self-heal through
+  // the corrected message path. This migration is SHADOW-only, exact-ID
+  // bounded, outcome-aware and receipt-gated; it cannot expand to unrelated
+  // Factory work or promote any quality/release state.
+  const beforeMigration = (await agent.getFactoryState()) as FactoryStateView;
+  const beforeRecorded = new Set(beforeMigration.outcomes.map((outcome) => outcome.work_package_id));
+  const markerPresent = beforeMigration.projects.some((project) => project.id === ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID);
+  const recoveryIds = planLegacyOrchestraV04QueueRecovery({
+    mode: health.mode,
+    markerPresent,
+    work: beforeMigration.work,
+    recordedOutcomeIds: beforeRecorded,
+  });
+
+  const recoveryPackages = recoveryIds
+    .map((id) => packageById(id, nowIso))
+    .filter((pkg): pkg is WorkPackage => Boolean(pkg));
+  for (const pkg of recoveryPackages) await agent.upsertWorkPackage(recoveredQueuePackage(pkg));
+
+  if (recoveryPackages.length > 0) {
+    await env.FACTORY_QUEUE.sendBatch(
+      recoveryPackages.map((pkg) => ({ body: queueMessageFor(pkg, nowIso) })),
+    );
+    // Receipt comes only after successful queue submission. If submission
+    // fails, no marker is written and a later canary may safely retry the same
+    // exact migration under idempotent package IDs.
+    await agent.upsertProject(createLegacyOrchestraV04RecoveryMarker(nowIso, recoveryPackages.map((pkg) => pkg.id)));
+  }
+
+  const state = (await agent.getFactoryState()) as FactoryStateView;
+  const recorded = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
+  const active = new Set(state.work.map((work) => work.id));
   const pending = packages.filter((pkg) => !recorded.has(pkg.id) && !active.has(pkg.id));
   for (const pkg of pending) await agent.upsertWorkPackage(pkg);
 
@@ -136,6 +173,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   }
 
   return {
+    legacyRecovered: recoveryPackages.length,
     acceptedIntoQueue: pending.length,
     alreadyActive: packages.filter((pkg) => active.has(pkg.id) && !recorded.has(pkg.id)).length,
     alreadyCompleted: packages.filter((pkg) => recorded.has(pkg.id)).length,
