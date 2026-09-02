@@ -173,6 +173,7 @@ jobs:
         with:
           name: live-king-release-proof
           path: |
+            artifacts/public-core
             artifacts/product-proof
             artifacts/jaguar-full
             playwright-report
