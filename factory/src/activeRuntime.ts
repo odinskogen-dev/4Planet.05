@@ -4,18 +4,17 @@ import { createRealProjectProofCases, REAL_FACTORY_PROOF_VERSION } from "./realP
 import { evaluateGovernedLearning, proveGovernedLearningContract } from "./governedLearning";
 import type { FactoryActivationEvidence } from "./activationGate";
 import type { LearningCandidate, Outcome } from "./contracts";
+import {
+  activationProofBuildKey,
+  activationProofId,
+  activationProofIds,
+} from "./activationProofIdentity";
 
 export * from "./worldClassRuntime";
 
 const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
 const TEST_BRANCH = "king/test";
-const PROOF_RETRY_VERSION = "03" as const;
-const PROOF_IDS = [
-  "factory-real-species-evidence-affordance-03",
-  "factory-real-bay-accessibility-03",
-  "factory-real-actor-relationship-a11y-03",
-] as const;
 const SAFE_PUBLIC_GETS = new Set([
   "/__factory/health",
   "/__factory/canary",
@@ -39,6 +38,12 @@ interface FactoryStateView {
 }
 
 const sha40 = /^[0-9a-f]{40}$/i;
+
+function exactBuildSha(env: ActiveEnv): string {
+  const buildSha = env.FACTORY_BUILD_SHA?.trim() ?? "";
+  if (!sha40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+  return buildSha.toLowerCase();
+}
 
 function authorised(request: Request, env: ActiveEnv): boolean {
   const expected = env.FACTORY_CONTROL_TOKEN?.trim();
@@ -70,7 +75,7 @@ async function githubCurrentTestSha(env: ActiveEnv): Promise<string> {
   const body = await response.json() as { object?: { sha?: string } };
   const sha = body.object?.sha ?? "";
   if (!sha40.test(sha)) throw new Error("CURRENT_TEST_KING_SHA_INVALID");
-  return sha;
+  return sha.toLowerCase();
 }
 
 /**
@@ -83,36 +88,66 @@ async function factoryAgent(env: ActiveEnv): Promise<any> {
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
 }
 
-function versionedProofCases(currentTestSha: string) {
-  return createRealProjectProofCases(currentTestSha).map((proof) => ({
-    ...proof,
-    pkg: {
-      ...proof.pkg,
-      id: proof.pkg.id.replace(/-01$/, `-${PROOF_RETRY_VERSION}`),
-    },
-  }));
+/**
+ * ACTIVE is certification of an exact Factory build, not a permanent mutable
+ * boolean. A later code deployment must not inherit ACTIVE from an older build.
+ */
+async function enforceExactBuildCertification(env: ActiveEnv): Promise<FactoryStateView> {
+  const buildSha = exactBuildSha(env);
+  const factory: any = await factoryAgent(env);
+  let state = await factory.getFactoryState() as FactoryStateView;
+  if (
+    state.state.mode === "ACTIVE"
+    && state.state.activationEvidence?.exactFactorySha?.toLowerCase() !== buildSha
+  ) {
+    await factory.setMode("SHADOW");
+    state = await factory.getFactoryState() as FactoryStateView;
+  }
+  return state;
+}
+
+function versionedProofCases(currentTestSha: string, buildSha: string) {
+  const buildKey = activationProofBuildKey(buildSha);
+  return createRealProjectProofCases(currentTestSha).map((proof) => {
+    const id = activationProofId(proof.pkg.id, buildSha);
+    return {
+      ...proof,
+      pkg: {
+        ...proof.pkg,
+        id,
+        run: {
+          runId: `activation-${buildKey}-${proof.family.toLowerCase()}`,
+          attemptId: "01",
+          idempotencyKey: `activation:${buildSha}:${currentTestSha}:${proof.family}`,
+          inputStateHash: `factory=${buildSha};test=${currentTestSha}`,
+          expectedBaseSha: currentTestSha,
+          workerId: `activation-${proof.family.toLowerCase()}`,
+          createdAt: new Date().toISOString(),
+        },
+      },
+    };
+  });
 }
 
 async function seedRealProof(env: ActiveEnv) {
-  const buildSha = env.FACTORY_BUILD_SHA?.trim() ?? "";
-  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim() ?? "";
-  if (!sha40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+  const buildSha = exactBuildSha(env);
+  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
   if (!sha40.test(baseSha)) throw new Error("FACTORY_TEST_KING_BASE_SHA_MISSING_OR_INVALID");
   const currentTestSha = await githubCurrentTestSha(env);
   if (currentTestSha !== baseSha) throw new Error(`TEST_KING_MOVED:${baseSha}->${currentTestSha}`);
 
   const factory: any = await factoryAgent(env);
-  const state = await factory.getFactoryState() as FactoryStateView;
+  const state = await enforceExactBuildCertification(env);
   if (state.state.mode !== "SHADOW") return { alreadyActive: true, buildSha, currentTestSha, workflowIds: [] as string[] };
 
-  const cases = versionedProofCases(currentTestSha);
+  const cases = versionedProofCases(currentTestSha, buildSha);
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
   const workflowIds: string[] = [];
   for (const proof of cases) {
     await factory.upsertProject(proof.project);
     await factory.upsertWorkPackage(proof.pkg);
     if (recorded.has(proof.pkg.id)) continue;
-    const workflowId = `factory-active-proof-${proof.pkg.id}-${buildSha.slice(0, 10)}`;
+    const workflowId = `factory-active-proof-${proof.pkg.id}`;
     const existing = await factory.getWorkflow?.(workflowId);
     if (!existing) {
       await factory.runWorkflow(
@@ -120,7 +155,13 @@ async function seedRealProof(env: ActiveEnv) {
         { workPackageId: proof.pkg.id },
         {
           id: workflowId,
-          metadata: { activationProof: true, family: proof.family, projectId: proof.project.id },
+          metadata: {
+            activationProof: true,
+            exactFactorySha: buildSha,
+            exactTestKingSha: currentTestSha,
+            family: proof.family,
+            projectId: proof.project.id,
+          },
           agentBinding: "PRODUCTION_FACTORY",
         },
       );
@@ -130,19 +171,21 @@ async function seedRealProof(env: ActiveEnv) {
   return { alreadyActive: false, buildSha, currentTestSha, workflowIds, proofIds: cases.map((proof) => proof.pkg.id) };
 }
 
-async function proofOutcomes(env: ActiveEnv): Promise<{ complete: boolean; outcomes: Outcome[]; state: FactoryStateView }> {
+async function proofOutcomes(env: ActiveEnv): Promise<{ complete: boolean; outcomes: Outcome[]; state: FactoryStateView; ids: string[]; buildSha: string }> {
+  const buildSha = exactBuildSha(env);
   const factory: any = await factoryAgent(env);
-  const state = await factory.getFactoryState() as FactoryStateView;
+  const state = await enforceExactBuildCertification(env);
+  const ids = activationProofIds(buildSha);
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
   const outcomes: Outcome[] = [];
-  for (const id of PROOF_IDS) {
+  for (const id of ids) {
     if (!recorded.has(id)) continue;
     outcomes.push(await factory.dispatchToWorker(id) as Outcome);
   }
-  return { complete: outcomes.length === PROOF_IDS.length, outcomes, state };
+  return { complete: outcomes.length === ids.length, outcomes, state, ids, buildSha };
 }
 
-function proofMetrics(outcomes: Outcome[]) {
+function proofMetrics(outcomes: Outcome[], buildSha: string) {
   const accepted = outcomes.filter((outcome) => outcome.status === "ACCEPTED").length;
   const correct = outcomes.filter((outcome) => outcome.status === "CORRECT").length;
   const blocked = outcomes.filter((outcome) => outcome.status === "BLOCKED").length;
@@ -150,8 +193,8 @@ function proofMetrics(outcomes: Outcome[]) {
   const corrections = outcomes.reduce((sum, outcome) => sum + outcome.evidence.filter((item) => item.startsWith("CORRECTION LOOP")).length, 0);
   const times = outcomes.map((outcome) => Date.parse(outcome.completedAt)).filter(Number.isFinite).sort((a, b) => a - b);
   return {
-    proofVersion: `${REAL_FACTORY_PROOF_VERSION}_RETRY_${PROOF_RETRY_VERSION}`,
-    realFamilies: PROOF_IDS.length,
+    proofVersion: `${REAL_FACTORY_PROOF_VERSION}_BUILD_${activationProofBuildKey(buildSha)}`,
+    realFamilies: activationProofIds(buildSha).length,
     accepted,
     correct,
     blocked,
@@ -160,6 +203,7 @@ function proofMetrics(outcomes: Outcome[]) {
     founderMinutesDuringAutonomousExecution: 0,
     approximateOutcomeSpanMinutes: times.length > 1 ? Math.round((times[times.length - 1] - times[0]) / 6000) / 10 : 0,
     noPaidCapacityActivated: true,
+    exactBuildBoundProof: true,
   };
 }
 
@@ -167,9 +211,9 @@ async function certifyAndActivate(
   env: ActiveEnv,
   supplied: { shadowCiPassed?: boolean; convergencePassed?: boolean; shadowRuntimeProven?: boolean },
 ) {
-  const buildSha = env.FACTORY_BUILD_SHA?.trim() ?? "";
-  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim() ?? "";
-  if (!sha40.test(buildSha) || !sha40.test(baseSha)) throw new Error("DEPLOYMENT_SHA_EVIDENCE_INVALID");
+  const buildSha = exactBuildSha(env);
+  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+  if (!sha40.test(baseSha)) throw new Error("DEPLOYMENT_SHA_EVIDENCE_INVALID");
   const currentTestSha = await githubCurrentTestSha(env);
   if (currentTestSha !== baseSha) throw new Error(`TEST_KING_MOVED:${baseSha}->${currentTestSha}`);
 
@@ -187,12 +231,12 @@ async function certifyAndActivate(
 
   const governedProposal = evaluateGovernedLearning({
     id: `factory-real-proof-learning-${buildSha.slice(0, 12)}`,
-    workPackageId: PROOF_IDS.join("+"),
+    workPackageId: proof.ids.join("+"),
     projectId: "4planet-factory-real-proof",
     target: "FACTORY_TEST_GATE",
-    observation: "One bounded 4PLANET quality contract was exercised across SPECIES Profile, Ecosystem/Place and Actor Profile real TEST candidates.",
+    observation: "One bounded 4PLANET quality contract was exercised across SPECIES Profile, Ecosystem/Place and Actor Profile real TEST candidates on one exact Factory build.",
     evidence: proof.outcomes.flatMap((outcome) => outcome.evidence.slice(0, 16)),
-    proposedChange: "Retain exact TEST-base checks, bounded write scopes, draft-PR-only release, automatic CI/mobile QA and truth-preserving Brand contract as mandatory Factory production gates.",
+    proposedChange: "Retain exact Factory-build + TEST-base checks, bounded write scopes, draft-PR-only release, automatic CI/mobile QA and truth-preserving Brand contract as mandatory Factory production gates.",
     distinctInstanceCount: proof.outcomes.length,
     safetyCorrection: false,
     weakensTruthOrSafety: false,
@@ -204,16 +248,16 @@ async function certifyAndActivate(
   if (productionLearningAccepted) {
     const learningCandidate: LearningCandidate = {
       id: governedProposal.proposal.id,
-      workPackageId: "factory-real-proof-portfolio",
+      workPackageId: `factory-real-proof-portfolio-${activationProofBuildKey(buildSha)}`,
       observation: governedProposal.proposal.observation,
-      expectedVsActual: `Expected cross-family bounded production proof; observed ${proof.outcomes.length} real outcomes with allAccepted=${allAccepted}.`,
+      expectedVsActual: `Expected exact-build cross-family bounded production proof; observed ${proof.outcomes.length} real outcomes with allAccepted=${allAccepted}.`,
       evidence: governedProposal.proposal.evidence,
-      causeHypothesis: "Shared 4PLANET production gates can transfer when product-specific briefs and exact write scopes preserve variation.",
+      causeHypothesis: "Shared 4PLANET production gates can transfer when product-specific briefs, exact build identity and exact write scopes preserve variation.",
       lesson: governedProposal.proposal.proposedChange,
       scope: "4P Production Factory TEST production",
       confidence: proof.outcomes.length >= 3 && allAccepted ? "HIGH" : "MEDIUM",
       ruleProposal: governedProposal.proposal.proposedChange,
-      regressionEval: "Never weaken truth/safety/Human Gold gates; repeat on future materially different Gold Plank transfers.",
+      regressionEval: "Never reuse an activation outcome across Factory builds; never weaken truth/safety/Human Gold gates.",
       nextTest: "Run accepted Gold Plank Reference → Transfer production and compare time, corrections, Founder burden, human quality and reuse.",
       status: "CANDIDATE",
       createdAt: new Date().toISOString(),
@@ -260,8 +304,9 @@ async function certifyAndActivate(
     exactFactorySha: buildSha,
     exactTestKingSha: currentTestSha,
     proofComplete: proof.complete,
+    proofIds: proof.ids,
     proofOutcomes: proof.outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual, evidence: outcome.evidence })),
-    metrics: proofMetrics(proof.outcomes),
+    metrics: proofMetrics(proof.outcomes, buildSha),
     governedLearning: {
       contract: governedContract,
       proposalAccepted: productionLearningAccepted,
@@ -279,19 +324,22 @@ async function certifyAndActivate(
 }
 
 async function enrichedControlRoom(request: Request, env: ActiveEnv, ctx: ExecutionContext) {
+  const buildSha = exactBuildSha(env);
   const baseRequest = new Request(new URL("/__factory/orchestra", request.url), { method: "GET" });
   const baseResponse = await worldClassRuntime.fetch(baseRequest, env, ctx);
   const orchestra = await baseResponse.json() as Record<string, unknown>;
   const proof = await proofOutcomes(env);
   return Response.json({
     factory: "4PLANET Production Factory 01",
-    factoryStatus: proof.state.state.mode === "ACTIVE" ? "ACTIVE" : "SHADOW",
+    factoryStatus: proof.state.state.mode === "ACTIVE" ? "ACTIVE_INTERNAL_TEST_PRODUCTION" : "SHADOW",
     mode: proof.state.state.mode,
+    exactFactorySha: buildSha,
+    activationProofIds: proof.ids,
     currentWork: proof.state.work,
     produced: proof.outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual })),
     learningCandidates: proof.state.learning.length,
     failures: proof.outcomes.filter((outcome) => outcome.status !== "ACCEPTED").map((outcome) => ({ id: outcome.workPackageId, status: outcome.status, actual: outcome.actual })),
-    factoryValue: proofMetrics(proof.outcomes),
+    factoryValue: proofMetrics(proof.outcomes, buildSha),
     realProductionProof: { complete: proof.complete, orchestra },
     boundaries: { live: false, humanGoldFounderOnly: true, canonPromotion: false, outreach: false, automaticSpend: false },
   });
@@ -303,10 +351,14 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "GET" && url.pathname === "/__factory/control-room") return enrichedControlRoom(request, env, ctx);
-    if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) return worldClassRuntime.fetch(request, env, ctx);
+    if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) {
+      await enforceExactBuildCertification(env);
+      return worldClassRuntime.fetch(request, env, ctx);
+    }
 
     if (request.method === "POST" && url.pathname === "/__factory/intake") {
       if (!authorised(request, env)) return authFailure();
+      await enforceExactBuildCertification(env);
       const body = await request.json();
       const factory: any = await factoryAgent(env);
       const compiled = await factory.ingestApprovedProject(body as any);
@@ -332,7 +384,8 @@ export default {
             ok: true,
             active: proof.state.state.mode === "ACTIVE",
             proofComplete: false,
-            current: proof.state.work.filter((item) => PROOF_IDS.includes(item.id as any)),
+            proofIds: proof.ids,
+            current: proof.state.work.filter((item) => proof.ids.includes(item.id)),
             recorded: proof.outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status })),
           });
         }
