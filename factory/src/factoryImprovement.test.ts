@@ -44,9 +44,22 @@ test("compiler fails closed on unverified root cause, weak evidence or missing r
   assert.throws(() => compileFactoryImprovement(failure({ regressionTests: [] })), /regressionTests/);
 });
 
-test("Factory improvement cannot write public product or arbitrary workflow scopes", () => {
+test("Factory improvement cannot write public product or expand workflow authority", () => {
   assert.throws(() => compileFactoryImprovement(failure({ writeScopes: ["src/pages/species/"] })), /writeScope/);
   assert.throws(() => compileFactoryImprovement(failure({ writeScopes: [".github/workflows/deploy-live.yml"] })), /writeScope/);
+  assert.throws(
+    () => compileFactoryImprovement(failure({ writeScopes: [".github/workflows/production-factory-new-authority.yml"] })),
+    /writeScope/,
+  );
+
+  assert.equal(
+    compileFactoryImprovement(failure({ writeScopes: [".github/workflows/production-factory-shadow-ci.yml"] })).status,
+    "READY",
+  );
+  assert.equal(
+    compileFactoryImprovement(failure({ writeScopes: [".github/workflows/production-factory-shadow-deploy.yml"] })).status,
+    "READY",
+  );
 });
 
 test("exact state identity is mandatory", () => {
