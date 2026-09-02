@@ -136,7 +136,7 @@ test("expanded mobile layer console owns the interaction plane instead of overla
   expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
 });
 
-test("TIME state survives a shareable ATLAS URL and restores provider selection", async ({ page }, testInfo) => {
+test("TIME state survives sharing, camera movement and deep-link restore", async ({ page }, testInfo) => {
   test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded time/deeplink proof");
   await page.goto(`${ATLAS}?l=emodnet-fishing-vessel-density`);
   await page.waitForFunction(() => (window as any).__4planet_map?.getSource?.("emodnet-fishing-vessel-density"));
@@ -144,6 +144,15 @@ test("TIME state survives a shareable ATLAS URL and restores provider selection"
   await page.getByRole("button", { name: /TIME/ }).click();
   await page.getByRole("button", { name: "2021", exact: true }).click();
   await expect(page).toHaveURL(/atlasTime=emodnet-fishing-vessel-density%3A2021-01-01T00%3A00%3A00Z/);
+
+  await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    map.jumpTo({ center: [-5, 46], zoom: 5.2 });
+  });
+  await page.waitForFunction(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("atlasTime")?.includes("emodnet-fishing-vessel-density:2021-01-01T00:00:00Z");
+  });
 
   const shared = page.url();
   await page.goto(shared);
