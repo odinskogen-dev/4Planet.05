@@ -98,6 +98,16 @@ jobs:
           npm run test:e2e -- tests/e2e/public-core-release.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
           npm run test:e2e -- tests/e2e/public-core-release.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
+      - name: GOLD Human Craft hierarchy Chromium desktop/mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/gold-human-craft.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=mobile-430
+
       - name: Jaguar P0 Chromium + WebKit desktop/mobile
         env:
           BASE_URL: http://127.0.0.1:4173
