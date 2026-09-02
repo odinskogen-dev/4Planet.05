@@ -118,3 +118,28 @@ test("expanded mobile layer console owns the interaction plane instead of overla
   expect(panelBox.x).toBeGreaterThanOrEqual(0);
   expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
 });
+
+test("TIME state survives a shareable ATLAS URL and restores provider selection", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded time/deeplink proof");
+  await page.goto(`${ATLAS}?l=emodnet-fishing-vessel-density`);
+  await page.waitForFunction(() => (window as any).__4planet_map?.getSource?.("emodnet-fishing-vessel-density"));
+
+  await page.getByRole("button", { name: /TIME/ }).click();
+  await page.getByRole("button", { name: "2021", exact: true }).click();
+  await expect(page).toHaveURL(/atlasTime=emodnet-fishing-vessel-density%3A2021-01-01T00%3A00%3A00Z/);
+
+  const shared = page.url();
+  await page.goto(shared);
+  await page.waitForFunction(() => (window as any).__4planet_map?.getSource?.("emodnet-fishing-vessel-density"));
+  await page.getByRole("button", { name: /TIME/ }).click();
+  await expect(page.getByRole("button", { name: "2021", exact: true })).toHaveClass(/on/);
+});
+
+test("My Atlas explains local storage in human language", async ({ page }) => {
+  await page.goto(ATLAS);
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  await page.getByRole("button", { name: /MY ATLAS/ }).click();
+  await expect(page.getByText("SAVED ON THIS DEVICE", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "SAVE CURRENT VIEW +", exact: true })).toBeVisible();
+  await expect(page.getByText(/Nothing is uploaded or shared unless you choose to share a link/i)).toBeVisible();
+});
