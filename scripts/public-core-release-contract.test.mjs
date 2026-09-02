@@ -121,19 +121,25 @@ test("public discovery includes the public Mission family but excludes held flag
 test("public media registry fails closed when exact object rights are unresolved", () => {
   assert.match(imageRegistry, /being present in the 4PLANET library is provenance only, not rights clearance/i);
   assert.match(imageRegistry, /const RELEASE_CLEARED_KEYS = new Set<ImageKey>/);
-  assert.match(imageRegistry, /generatedReleaseBackdrop/);
-  assert.match(imageRegistry, /isReleaseClearedKey\(k\) \? meta : generatedReleaseBackdrop/);
-  assert.match(imageRegistry, /4PLANET-generated vector release artwork — no external media dependency/);
   assert.doesNotMatch(imageRegistry, /RELEASE_CLEARED_KEYS[\s\S]{0,120}cor4lHero/);
 });
 
-test("Orca photograph is not falsely licence-verified; owned illustration remains available", () => {
-  assert.match(speciesMedia, /orca: pending\("orca", ""\)/);
-  assert.match(speciesMedia, /founder-supplied[\s\S]{0,80}PROVENANCE/i);
-  assert.match(speciesMedia, /never implies 4PLANET\/Skog ownership/i);
-  assert.match(speciesMedia, /4PLANET-created illustration — NOT a photograph/);
+test("Founder-locked Orca uses the Unsplash photograph and Species has no active illustration fallback", () => {
+  const orcaStart = speciesMedia.indexOf("orca: {");
+  const humpbackStart = speciesMedia.indexOf('"humpback-whale"', orcaStart);
+  assert.ok(orcaStart >= 0 && humpbackStart > orcaStart, "Orca media record must exist before humpback record");
+  const orca = speciesMedia.slice(orcaStart, humpbackStart);
+  assert.match(orca, /localPath:\s*"\/assets\/species\/orca\/hero\.jpg"/);
+  assert.match(orca, /sourcePage:\s*"https:\/\/unsplash\.com\/"/);
+  assert.match(orca, /licence:\s*"Unsplash License/);
+  assert.match(orca, /publicWebAllowed:\s*true/);
+  assert.match(orca, /commercialAllowed:\s*true/);
+  assert.match(orca, /rightsStatus:\s*"LICENCE_VERIFIED"/);
+  assert.match(orca, /do not replace with an illustration/i);
+  assert.doesNotMatch(speciesMedia, /const ILLUSTRATIONS/);
+  assert.doesNotMatch(speciesMedia, /\.illustration\s*=/);
+  assert.match(speciesMedia, /PUBLIC CORE must never populate this/);
   assert.match(speciesMedia, /m\.publicWebAllowed && m\.commercialAllowed/);
-  assert.doesNotMatch(speciesMedia, /orca:\s*\{[\s\S]{0,800}rightsStatus:\s*"LICENCE_VERIFIED"/);
 });
 
 test("ATLAS commercial-rights blockers remain machine-enforced", () => {
