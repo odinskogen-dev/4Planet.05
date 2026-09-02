@@ -1,6 +1,10 @@
 name: Production Factory Autonomous Activation
 
 on:
+  pull_request:
+    paths:
+      - "factory/**"
+      - ".github/workflows/production-factory-shadow-deploy.yml"
   push:
     branches:
       - "factory/symphony-runtime-v01"
@@ -16,12 +20,19 @@ permissions:
   issues: write
   pull-requests: write
 
+env:
+  FACTORY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 concurrency:
   group: production-factory-autonomous-activation
   cancel-in-progress: true
 
 jobs:
   preflight:
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/factory/symphony-runtime-v01') ||
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     outputs:
       cloudflare_ready: ${{ steps.credentials.outputs.cloudflare_ready }}
@@ -30,6 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ env.FACTORY_HEAD_SHA }}
           fetch-depth: 0
 
       - name: Prove exact current TEST KING ancestry
@@ -37,15 +49,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ ! "${FACTORY_HEAD_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Factory activation blocked: exact Factory branch-head SHA is invalid."
+            exit 1
+          fi
           git fetch origin king/test --no-tags
           TEST_KING_SHA="$(git rev-parse origin/king/test)"
-          if ! git merge-base --is-ancestor "$TEST_KING_SHA" "$GITHUB_SHA"; then
+          if ! git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
             echo "Factory activation blocked: current TEST KING is not an ancestor of exact Factory head."
-            echo "Factory: $GITHUB_SHA"
+            echo "Factory: $FACTORY_HEAD_SHA"
             echo "TEST KING: $TEST_KING_SHA"
             exit 1
           fi
           echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
+          echo "Exact Factory head: $FACTORY_HEAD_SHA"
           echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
 
       - name: Check dedicated credentials without exposing values
@@ -69,11 +86,13 @@ jobs:
 
   deploy-and-certify:
     needs: preflight
-    if: needs.preflight.outputs.cloudflare_ready == 'true'
+    if: needs.preflight.result == 'success' && needs.preflight.outputs.cloudflare_ready == 'true'
     runs-on: ubuntu-latest
     environment: production-factory-shadow
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FACTORY_HEAD_SHA }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -111,7 +130,7 @@ jobs:
           echo "control_token=$CONTROL_TOKEN" >> "$GITHUB_OUTPUT"
 
           printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
-          printf '%s' "$GITHUB_SHA" | npx wrangler secret put FACTORY_BUILD_SHA
+          printf '%s' "$FACTORY_HEAD_SHA" | npx wrangler secret put FACTORY_BUILD_SHA
           printf '%s' "$TEST_KING_SHA" | npx wrangler secret put FACTORY_TEST_KING_BASE_SHA
 
           if [[ -n "${FACTORY_GITHUB_TOKEN:-}" ]]; then
@@ -183,7 +202,7 @@ jobs:
           set -euo pipefail
           PASS=false
           for attempt in $(seq 1 90); do
-            RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100")"
+            RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
             FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
             CONVERGENCE="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="ONE INTERFACE Convergence Gate")][0].conclusion // "pending"')"
             echo "Exact-head gates: Factory=$FACTORY Convergence=$CONVERGENCE"
@@ -280,7 +299,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-factory-certification-${{ github.sha }}
+          name: production-factory-certification-${{ env.FACTORY_HEAD_SHA }}
           path: |
             factory-shadow-health.json
             factory-shadow-canary.json
@@ -299,7 +318,7 @@ jobs:
           BODY=$(cat <<EOF
           ## 4P FACTORY 01 — AUTONOMOUS TEST PRODUCTION ACTIVE
 
-          Exact Factory SHA: \`$GITHUB_SHA\`
+          Exact Factory SHA: \`$FACTORY_HEAD_SHA\`
           Exact TEST KING base: \`${{ needs.preflight.outputs.test_king_sha }}\`
           Runtime: $BASE_URL
           Control Room: $BASE_URL/__factory/control-room
@@ -315,7 +334,7 @@ jobs:
 
   cloudflare-credentials-missing:
     needs: preflight
-    if: needs.preflight.outputs.cloudflare_ready != 'true'
+    if: needs.preflight.result == 'success' && needs.preflight.outputs.cloudflare_ready != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Fail closed
