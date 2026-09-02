@@ -182,7 +182,7 @@ export default function PublicWorld() {
     <main id="main-content" style={fallbackStyle}>
       <section style={{ width: "min(820px, 100%)" }} aria-labelledby="atlas-fallback-title">
         <p style={{ fontFamily: "monospace", fontSize: 12, letterSpacing: ".13em", color: "#3AE86F" }}>
-          ATLAS_ · INTERACTIVE MAP UNAVAILABLE
+          ATLAS_ · INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE
         </p>
         <h1 id="atlas-fallback-title" style={{ margin: "24px 0 0", fontSize: "clamp(40px, 8vw, 92px)", lineHeight: .94, letterSpacing: "-.055em", fontWeight: 500 }}>
           This browser can’t run the interactive map.
