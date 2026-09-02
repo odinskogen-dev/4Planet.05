@@ -147,7 +147,7 @@ export function createRealProjectProofCases(currentTestSha: string, nowIso = new
     targetPath: speciesPath,
     brief: "Make the existing Species evidence source rows obviously expandable to a normal person. Preserve all current provenance, refresh, uncertainty, rights, update and forbidden-inference content. The native details marker is suppressed with listStyle:none, so add a small explicit disclosure cue within each summary. Keep the visual language premium and quiet. Do not redesign the whole component and do not call the Species profile Gold.",
     sourceRefs: [speciesPath, "#145"],
-    maxCorrectionAttempts: 2,
+    maxCorrectionAttempts: 1,
   };
 
   const bayPath = "public/ecosystem/bay-of-biscay/index.html";
@@ -185,7 +185,7 @@ export function createRealProjectProofCases(currentTestSha: string, nowIso = new
     targetPath: bayPath,
     brief: "Add a real keyboard skip-to-content affordance to this existing self-contained Bay of Biscay HTML page. Give main a stable id, add a skip link at the start of body, and CSS that keeps it visually hidden/off-canvas until keyboard focus then presents it clearly in the existing premium dark/cyan visual system. Preserve ALL current text and especially PILOT CORRIDOR ≠ MIGRATION TRACK, schematic/not-to-scale wording, effort/observation separation and UNKNOWN cost/day states. Make no other redesign.",
     sourceRefs: [bayPath, "#117", "#147"],
-    maxCorrectionAttempts: 2,
+    maxCorrectionAttempts: 1,
   };
 
   const actorPath = "src/pages/v5/ActorGold.tsx";
@@ -223,7 +223,7 @@ export function createRealProjectProofCases(currentTestSha: string, nowIso = new
     targetPath: actorPath,
     brief: "Make one surgical accessibility/truth improvement only: keep RelationshipMark's existing state-to-label mapping exactly, but give the visible badge an explicit accessible semantic label (for example aria-label=`Relationship status: ${label}`). Do not alter actor data, publication state, copy, visual hierarchy, routes, relationship evidence or any partnership/endorsement claims.",
     sourceRefs: [actorPath, "#221", "#152"],
-    maxCorrectionAttempts: 2,
+    maxCorrectionAttempts: 1,
   };
 
   return [
