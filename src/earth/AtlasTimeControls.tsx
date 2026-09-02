@@ -103,6 +103,25 @@ export default function AtlasTimeControls() {
     }
   }, [activeAxes, selected]);
 
+  // World owns the main camera/layer URL and rewrites it after move/idle. Keep
+  // the bounded TIME fragment attached after those writes so a shared discovery
+  // cannot silently drift to another provider slice after the user pans/zooms.
+  // We bind only while a recovered time-aware layer is active; no second URL
+  // authority or map state machine is introduced.
+  useEffect(() => {
+    if (!activeAxes.length) return;
+    const map = atlasMap();
+    if (!map?.on || !map?.off) return;
+    const sync = () => writeUrlTime(selected);
+    map.on("moveend", sync);
+    map.on("idle", sync);
+    sync();
+    return () => {
+      map.off("moveend", sync);
+      map.off("idle", sync);
+    };
+  }, [activeAxes.length, selected]);
+
   const apply = (layerId: string, value: string) => {
     const axis = ATLAS_TIME_AXES.find((item) => item.layerId === layerId);
     if (!axis || !isAllowed(axis, value)) return;
