@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
+import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import "./atlasPolish.css";
 
 const World = lazy(() => import("./World"));
@@ -169,6 +170,7 @@ export default function PublicWorld() {
   if (supported) {
     return (
       <>
+        <AtlasPlaceNameBridge />
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
