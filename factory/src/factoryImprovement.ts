@@ -47,6 +47,10 @@ export type FactoryImprovementCompilation =
   | { status: "PARK"; reasons: string[] };
 
 const SHA40 = /^[0-9a-f]{40}$/i;
+const FACTORY_WORKFLOW_WRITE_ALLOWLIST = new Set([
+  ".github/workflows/production-factory-shadow-ci.yml",
+  ".github/workflows/production-factory-shadow-deploy.yml",
+]);
 
 function required(value: string, field: string): string {
   const trimmed = value.trim();
@@ -63,7 +67,7 @@ function safeId(value: string): string {
 function scopeAllowed(scope: string): boolean {
   const clean = scope.replace(/^\.\//, "").replace(/^\//, "");
   if (clean === "factory" || clean.startsWith("factory/")) return true;
-  return clean.startsWith(".github/workflows/production-factory-");
+  return FACTORY_WORKFLOW_WRITE_ALLOWLIST.has(clean);
 }
 
 function priorityFor(severity: FactoryFailureSeverity): WorkPackage["priority"] {
