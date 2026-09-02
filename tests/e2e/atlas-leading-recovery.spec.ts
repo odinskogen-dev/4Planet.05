@@ -12,6 +12,13 @@ function overlaps(a: { x: number; y: number; width: number; height: number }, b:
   );
 }
 
+test("4PLANET ATLAS identity is visible on the canonical product", async ({ page }) => {
+  await page.goto(ATLAS);
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  await expect(page.getByLabel("4PLANET ATLAS")).toBeVisible();
+  await expect(page.getByLabel("4PLANET ATLAS")).toContainText("4PLANET ATLAS");
+});
+
 test("recovered high-value ATLAS donor layers are present in the canonical console", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
@@ -21,6 +28,45 @@ test("recovered high-value ATLAS donor layers are present in the canonical conso
   await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
   await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
   await expect(page.getByText("FISHING · VESSEL DENSITY", { exact: true })).toBeVisible();
+});
+
+test("dark ATLAS uses the existing provider dark street style without losing overlays", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded basemap proof");
+  await page.goto(`${ATLAS}?l=bluemarble`);
+  await page.waitForFunction(() => {
+    const map = (window as any).__4planet_map;
+    const styleName = String(map?.getStyle?.()?.name || "").toLowerCase();
+    return map?.isStyleLoaded?.() && styleName.includes("dark");
+  }, undefined, { timeout: 15_000 });
+
+  const state = await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    return {
+      name: String(map.getStyle?.()?.name || ""),
+      blueMarble: Boolean(map.getLayer?.("bluemarble")),
+    };
+  });
+  expect(state.name.toLowerCase()).toContain("dark");
+  expect(state.blueMarble).toBe(true);
+});
+
+test("clicked-location naming never sends the recovered BigDataCloud arbitrary-coordinate request", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390"].includes(testInfo.project.name), "bounded runtime-rights proof");
+  let leaked = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("api.bigdatacloud.net/data/reverse-geocode-client")) leaked += 1;
+  });
+
+  await page.goto(ATLAS);
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    map.jumpTo({ center: [10.7522, 59.9139], zoom: 14 });
+  });
+  await page.waitForTimeout(500);
+  await page.locator(".maplibregl-canvas").click({ position: { x: 240, y: 220 } });
+  await page.waitForTimeout(500);
+  expect(leaked).toBe(0);
 });
 
 test("high-intent species search resolves canonical Orca and Humpback results", async ({ page }, testInfo) => {
