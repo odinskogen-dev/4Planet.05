@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [redirects, headers, sitemapSource, matrix, manifestRaw] = await Promise.all([
+const [redirects, headers, sitemapSource, matrix, manifestRaw, publicShell] = await Promise.all([
   readFile(new URL("../public/_redirects", import.meta.url), "utf8"),
   readFile(new URL("../public/_headers", import.meta.url), "utf8"),
   readFile(new URL("./generate-sitemap.mjs", import.meta.url), "utf8"),
   readFile(new URL("../docs/control/PUBLIC_CORE_01_LIVE_MATRIX.md", import.meta.url), "utf8"),
   readFile(new URL("../docs/control/LIVE_PROMOTION_MANIFEST.json", import.meta.url), "utf8"),
+  readFile(new URL("../src/components/layout/PublicShell.tsx", import.meta.url), "utf8"),
 ]);
 const manifest = JSON.parse(manifestRaw);
 
@@ -60,6 +61,16 @@ test("public discovery includes the public Mission family but excludes held flag
   assert.ok(!sitemapSource.includes('"/journey/orca/"'), "held ORCA journey must not be in sitemap");
   assert.ok(!sitemapSource.includes('"/actors"'), "held Actor Gold must not be in sitemap");
   assert.ok(sitemapSource.includes('"/journey/jaguar/"'), "current Jaguar proof remains a release candidate pending exact-head browser/Human QA");
+});
+
+test("premium shared header remains transparent when closed and retains hide/reveal behaviour", () => {
+  assert.match(publicShell, /const bg = menuMode \? "#fff" : "transparent";/);
+  assert.match(publicShell, /backdropFilter: "none"/);
+  assert.match(publicShell, /WebkitBackdropFilter: "none"/);
+  assert.doesNotMatch(publicShell, /rgba\(5,5,7,\.9\)|rgba\(255,255,255,\.9\)|blur\(14px\)/);
+  assert.match(publicShell, /if \(down > 74\) setHidden\(true\)/);
+  assert.match(publicShell, /if \(up > 14\) setHidden\(false\)/);
+  assert.match(publicShell, />JOIN 4PLANET<\/Link>/);
 });
 
 test("release control is explicit and remains Founder fail-closed", () => {
