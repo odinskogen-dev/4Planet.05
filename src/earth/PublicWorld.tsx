@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
+import { AtlasHumanSurfacePolish } from "./AtlasHumanSurfacePolish";
 import "./atlasPolish.css";
 
 const World = lazy(() => import("./World"));
@@ -173,6 +174,7 @@ export default function PublicWorld() {
       <>
         <AtlasPlaceNameBridge />
         <AtlasBasemapSync />
+        <AtlasHumanSurfacePolish />
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
