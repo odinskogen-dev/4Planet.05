@@ -40,6 +40,23 @@ test("high-intent species search resolves canonical Orca and Humpback results", 
   await expect(humpback).toContainText(/Humpback Whale|Megaptera novaeangliae/i);
 });
 
+test("priority place language resolves Norway, Oslofjord, Bay of Biscay and Amazonia", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390"].includes(testInfo.project.name), "bounded place-search proof");
+  await page.goto(ATLAS);
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+
+  const input = page.getByRole("textbox", { name: /search the living planet/i });
+  for (const [query, expected] of [
+    ["Norway", "Norway"],
+    ["Oslofjord", "Oslofjord"],
+    ["Bay of Biscay", "Bay of Biscay"],
+    ["Amazonia", "Amazon Basin"],
+  ] as const) {
+    await input.fill(query);
+    await expect(page.locator(".results .ritem").filter({ hasText: expected }).first()).toBeVisible({ timeout: 5_000 });
+  }
+});
+
 test("adaptive zoom stops stretching Blue Marble and hands local detail to vectors", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
