@@ -22,10 +22,10 @@ function captureAtlasOverlays(map: any) {
   if (!style?.layers || !style?.sources) return { sources: {}, belowLabels: [], aboveLabels: [] };
 
   const atlasLayers = style.layers.filter(isAtlasLayer);
-  const sourceIds = new Set(
+  const sourceIds = new Set<string>(
     atlasLayers
       .map((layer: any) => (typeof layer.source === "string" ? layer.source : ""))
-      .filter(Boolean),
+      .filter((sourceId: string): sourceId is string => Boolean(sourceId)),
   );
 
   const sources: Record<string, any> = {};
