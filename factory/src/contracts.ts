@@ -46,6 +46,69 @@ export interface ExecutionSpec {
   };
 }
 
+export interface ResourceBudget {
+  maxAttempts?: number;
+  maxCorrectionAttempts?: number;
+  maxModelCalls?: number;
+  maxTokens?: number;
+  maxModelCostUsd?: number;
+  maxExternalRequests?: number;
+  maxGithubCalls?: number;
+  maxBrowserCalls?: number;
+  maxSandboxMinutes?: number;
+  maxWallClockMinutes?: number;
+  maxQueueRetries?: number;
+}
+
+/**
+ * A logical Work Package can have multiple executions over time as TEST KING,
+ * dependencies or context change. The run contract prevents retries against the
+ * same state from being confused with a new execution against changed truth.
+ */
+export interface RunContract {
+  runId: string;
+  attemptId: string;
+  idempotencyKey: string;
+  inputStateHash: string;
+  expectedBaseSha?: string;
+  workerId?: string;
+  leaseGeneration?: number;
+  createdAt: string;
+}
+
+export interface EvidenceEnvelope {
+  runId: string;
+  workPackageId: string;
+  inputStateHash: string;
+  exactTestSha?: string;
+  outputHash?: string;
+  commitSha?: string;
+  testArtifactHashes: string[];
+  browserEvidenceRefs: string[];
+  ciEvidenceRefs: string[];
+  workerId?: string;
+  evaluatorId?: string;
+  model?: {
+    provider: string;
+    exactModelId: string;
+    programVersion?: string;
+    toolContractVersion?: string;
+  };
+  resourceUse?: {
+    modelCalls?: number;
+    tokens?: number;
+    modelCostUsd?: number;
+    externalRequests?: number;
+    githubCalls?: number;
+    browserCalls?: number;
+    sandboxMinutes?: number;
+    wallClockMinutes?: number;
+  };
+  previousEvidenceHash?: string;
+  generatedBy: "FACTORY_CONTROL_PLANE" | "DETERMINISTIC_CI" | "SANDBOX";
+  generatedAt: string;
+}
+
 export type DonorDisposition = "ADOPT" | "SUPERSEDED_BY" | "DEFER_WITH_REASON" | "BLOCKED_TRUTH_RIGHTS";
 
 export interface DonorDispositionRecord {
@@ -123,6 +186,8 @@ export interface WorkPackage {
   zeroLoss?: ZeroLossEvidence;
   preservation?: PreservationEvidence;
   execution?: ExecutionSpec;
+  resourceBudget?: ResourceBudget;
+  run?: RunContract;
   learningQuestion?: string;
   founderGate?: string;
   createdAt: string;
@@ -136,13 +201,14 @@ export interface WorkPackage {
   risk: number;
   founderBurden: number;
   concurrencyCost: number;
-  status: "READY" | "DISPATCHED" | "RUNNING" | "BLOCKED" | "ACCEPTED" | "REJECTED";
+  status: "READY" | "DISPATCHED" | "RUNNING" | "BLOCKED" | "PARKED" | "ACCEPTED" | "REJECTED";
 }
 
 export interface Outcome {
   workPackageId: string;
   status: "ACCEPTED" | "CORRECT" | "REJECTED" | "BLOCKED";
   evidence: string[];
+  evidenceEnvelope?: EvidenceEnvelope;
   materialDelta: string;
   expected: string;
   actual: string;
