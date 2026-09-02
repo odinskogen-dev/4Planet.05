@@ -102,7 +102,7 @@ async function seedRealProof(env: ActiveEnv) {
     await factory.upsertWorkPackage(proof.pkg);
     if (recorded.has(proof.pkg.id)) continue;
     const workflowId = `factory-active-proof-${proof.pkg.id}-${buildSha.slice(0, 10)}`;
-    const existing = factory.getWorkflow?.(workflowId);
+    const existing = await factory.getWorkflow?.(workflowId);
     if (!existing) {
       await factory.runWorkflow(
         "WORK_PACKAGE_WORKFLOW",
