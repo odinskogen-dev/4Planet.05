@@ -2,7 +2,7 @@ import type { DomainKey } from "@/types/content";
 
 // ── Central image asset registry ──────────────────────────────────────────────
 // Single source of truth for documentary imagery. No paths scattered in components.
-// Only supplied 4Planet library images + verified public-domain government frames are referenced.
+// IMPORTANT: being present in the 4PLANET library is provenance only, not rights clearance.
 export interface ImageMeta {
   src: string;
   srcMobile?: string;
@@ -49,7 +49,7 @@ export const IMAGES = {
   wh4lesHero: { src: `${A}/missions/wh4les/hero-real.jpg`, srcMobile: `${A}/missions/wh4les/hero-real-mobile.jpg`, alt: "A wild orca surfacing off a green Norwegian coast", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
-  rewildMarineHero: { src: "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/11/kelp-point.jpeg", alt: "A real giant kelp forest in sunlit coastal water at Cojo Anchorage, California", credit: "Robert Schwemmer / NOAA", licenseNote: "NOAA-created still image — public domain unless otherwise noted; checked 2026-09-01", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 48%", role: "missionHero" },
+  rewildMarineHero: { src: "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/11/kelp-point.jpeg", alt: "A real giant kelp forest in sunlit coastal water at Cojo Anchorage, California", credit: "Robert Schwemmer / NOAA", licenseNote: "NOAA-created still image — public domain unless otherwise noted; exact source URL recorded; checked 2026-09-01", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 48%", role: "missionHero" },
   clim4teHero: { src: `${A}/missions/clim4te/hero.jpg`, alt: "A green forest under drifting mist", mission: "clim4te", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   amazoniaHero: { src: `${A}/missions/am4zonia/hero.jpg`, alt: "A rainforest waterfall in dense canopy", mission: "am4zonia", domain: "E4RTH_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   speciesHero: { src: `${A}/missions/species/hero.jpg`, alt: "A wild animal watching from low light", mission: "species", domain: "E4RTH_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
@@ -59,20 +59,60 @@ export const IMAGES = {
   circularCityHero: { src: `${A}/missions/circular-city/hero.jpg`, alt: "A building facade planted with living greenery", mission: "circular-city", domain: "S4PIENS_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   f4shionHero: { src: `${A}/missions/f4shion/hero.jpg`, alt: "Editorial fashion portrait in flowing silver fabric", mission: "f4shion", domain: "S4PIENS_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
   m4gazineHero: { src: `${A}/missions/m4gazine/hero.jpg`, alt: "An open editorial spread — print in detail", mission: "m4gazine", domain: "4CULTURE_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
-  artHero: { src: `${A}/missions/4rt/hero.jpg`, alt: "Three framed ecological art prints on a gallery wall", mission: "4rt", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
+  artHero: { src: `${A}/missions/4rt/hero.jpg`, alt: "4PLANET-created procedural ecological art — internal prototype artwork", credit: "4PLANET", licenseNote: "4PLANET-generated procedural work — owned internal artwork; rights record checked 2026-08-07", mission: "4rt", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 50%", role: "missionHero" },
   playHero: { src: `${A}/missions/4play/hero.jpg`, alt: "A figure in warm light — culture as a way in", mission: "4play", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 30%", role: "missionHero" },
   filmHero: { src: `${A}/missions/4film/hero.jpg`, alt: "A cabin window framing a still lake and mountains", mission: "4film", domain: "4CULTURE_", aspectRatio: "3/4", objectPosition: "50% 55%", role: "missionHero" },
 } as const;
 
 export type ImageKey = keyof typeof IMAGES;
-export const img = (k: ImageKey): ImageMeta => IMAGES[k] as ImageMeta;
+
+const RELEASE_CLEARED_KEYS = new Set<ImageKey>(["rewildMarineHero", "artHero"]);
+const RELEASE_BACKDROP = {
+  GENERIC: ["#05081b", "#21336f", "#07141d"],
+  OCE4N_: ["#031a26", "#07577b", "#04101a"],
+  E4RTH_: ["#07170d", "#2d653c", "#0a110b"],
+  S4PIENS_: ["#171008", "#76572d", "#0d0a07"],
+  "4CULTURE_": ["#160a1e", "#654072", "#09060c"],
+} as const;
+
+function generatedReleaseBackdrop(domain?: DomainKey): ImageMeta {
+  const key = domain ?? "GENERIC";
+  const [a, b, c] = RELEASE_BACKDROP[key];
+  const label = domain ? domain.replace("_", "") : "LIVING PLANET";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g" cx="68%" cy="32%" r="78%"><stop offset="0" stop-color="${b}"/><stop offset=".48" stop-color="${a}"/><stop offset="1" stop-color="${c}"/></radialGradient><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="1600" height="1000" fill="url(#g)"/><circle cx="1180" cy="270" r="360" fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="2"/><circle cx="1180" cy="270" r="250" fill="none" stroke="#fff" stroke-opacity=".06" stroke-width="1"/><path d="M-80 790 C300 610 510 890 850 705 S1370 520 1710 690 L1710 1080 L-80 1080 Z" fill="#000" fill-opacity=".22"/><path d="M0 140 L1600 870" stroke="url(#v)" stroke-width="1"/></svg>`;
+  return {
+    src: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    alt: `Abstract 4PLANET ${label} release artwork — no external media`,
+    credit: "4PLANET",
+    licenseNote: "4PLANET-generated vector release artwork — no external media dependency",
+    aspectRatio: "16/9",
+    objectPosition: "50% 50%",
+    domain,
+    role: domain ? "domainHero" : "brand",
+  };
+}
+
+function isReleaseClearedKey(key: ImageKey): boolean {
+  return RELEASE_CLEARED_KEYS.has(key);
+}
+
+/**
+ * PUBLIC CORE release rule: an image in the library is NOT publicly renderable merely
+ * because it exists locally or has provider-level shorthand. Until the exact object has
+ * a sufficient rights record, return owned 4PLANET vector artwork instead.
+ */
+export const img = (k: ImageKey): ImageMeta => {
+  const meta = IMAGES[k] as ImageMeta;
+  return isReleaseClearedKey(k) ? meta : generatedReleaseBackdrop(meta.domain);
+};
 
 const byMission: Record<string, ImageMeta> = {};
 const byDomain: Partial<Record<DomainKey, ImageMeta>> = {};
-for (const v of Object.values(IMAGES)) {
-  const m = v as ImageMeta;
-  if (m.role === "missionHero" && m.mission) byMission[m.mission] = m;
-  if (m.role === "domainHero" && m.domain) byDomain[m.domain] = m;
+for (const [rawKey, rawValue] of Object.entries(IMAGES)) {
+  const key = rawKey as ImageKey;
+  const m = rawValue as ImageMeta;
+  if (m.role === "missionHero" && m.mission) byMission[m.mission] = isReleaseClearedKey(key) ? m : generatedReleaseBackdrop(m.domain);
+  if (m.role === "domainHero" && m.domain) byDomain[m.domain] = isReleaseClearedKey(key) ? m : generatedReleaseBackdrop(m.domain);
 }
 export const missionHero = (slug: string): ImageMeta | undefined => byMission[slug];
 export const domainHero = (key: DomainKey): ImageMeta | undefined => byDomain[key];
@@ -84,7 +124,10 @@ export const IMPACT_IMAGE: Record<string, ImageMeta> = {
   "amazon-square": { src: `${A}/missions/am4zonia/hero.jpg`, alt: "A waterfall in dense tropical rainforest", aspectRatio: "3/2", objectPosition: "50% 50%", role: "editorial" },
   "habitat-recovery": { src: `${A}/missions/rewild/hero.jpg`, alt: "A grey wolf in low light, symbol of rewilding", aspectRatio: "3/2", objectPosition: "50% 32%", role: "editorial" },
 };
-export const impactImage = (slug: string): ImageMeta | undefined => IMPACT_IMAGE[slug];
+export const impactImage = (slug: string): ImageMeta | undefined => {
+  const meta = IMPACT_IMAGE[slug];
+  return meta ? generatedReleaseBackdrop() : undefined;
+};
 
 const A2 = "/assets/missions";
 export const MISSION_SECONDARY: Record<string, ImageMeta> = {
@@ -104,7 +147,12 @@ export const MISSION_SECONDARY: Record<string, ImageMeta> = {
   "4film": { src: `${A2}/4film/bank-hero.jpg`, srcMobile: `${A2}/4film/bank-hero-mobile.jpg`, alt: "A film camera rig on a working set", aspectRatio: "3/2", role: "editorial" },
   "f4shion": { src: `${A2}/f4shion/bank-hero.jpg`, srcMobile: `${A2}/f4shion/bank-hero-mobile.jpg`, alt: "Knitted textile in warm natural light", aspectRatio: "3/2", role: "editorial" },
 };
-export const missionSecondary = (slug: string): ImageMeta | undefined => MISSION_SECONDARY[slug];
+export const missionSecondary = (slug: string): ImageMeta | undefined => {
+  const meta = MISSION_SECONDARY[slug];
+  if (!meta) return undefined;
+  const mission = Object.values(IMAGES).find((item) => (item as ImageMeta).mission === slug) as ImageMeta | undefined;
+  return generatedReleaseBackdrop(mission?.domain);
+};
 
 export const MISSION_MEDIA_RIGHTS: Record<string, {
   file: string; kind: string; owner: string; creator: string; licence: string;
