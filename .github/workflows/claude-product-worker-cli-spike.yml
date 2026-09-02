@@ -48,9 +48,11 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run independent Claude Product Worker review
+        id: claude_review
+        continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           export PATH="$HOME/.local/bin:$PATH"
           PROMPT=$(cat <<'EOF'
           You are running the first real 4PLANET Claude Product Worker integration spike.
@@ -68,11 +70,18 @@ jobs:
           claude -p "$PROMPT" \
             --model claude-opus-5 \
             --max-turns 12 \
-            --allowedTools "Read,Grep,Glob,Bash(git status:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(find:*),Bash(cat:*)" \
-            > /tmp/claude-product-worker-test-01.md
-          test -s /tmp/claude-product-worker-test-01.md
+            --permission-mode plan \
+            --tools "Read,Grep,Glob,Bash" \
+            --no-session-persistence \
+            > /tmp/claude-product-worker-test-01.md \
+            2> /tmp/claude-product-worker-test-01.stderr
+          RC=$?
+          echo "exit_code=$RC" >> "$GITHUB_OUTPUT"
+          echo "CLAUDE_EXIT_CODE=$RC"
+          exit 0
 
       - name: Prove no tracked repository mutation
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
@@ -85,9 +94,29 @@ jobs:
           echo "READ_ONLY_REPOSITORY_GATE=PASS"
 
       - name: Upload Claude review evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: claude-product-worker-cli-test-01
-          path: /tmp/claude-product-worker-test-01.md
+          path: |
+            /tmp/claude-product-worker-test-01.md
+            /tmp/claude-product-worker-test-01.stderr
           if-no-files-found: error
           retention-days: 14
+
+      - name: Require real Claude completion
+        if: always()
+        shell: bash
+        env:
+          CLAUDE_EXIT_CODE: ${{ steps.claude_review.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          if [[ "${CLAUDE_EXIT_CODE:-missing}" != "0" ]]; then
+            echo "::error::CLAUDE_PRODUCT_WORKER_CALL_FAILED exit=${CLAUDE_EXIT_CODE:-missing}"
+            if [[ -s /tmp/claude-product-worker-test-01.stderr ]]; then
+              cat /tmp/claude-product-worker-test-01.stderr
+            fi
+            exit 1
+          fi
+          test -s /tmp/claude-product-worker-test-01.md
+          echo "CLAUDE_PRODUCT_WORKER_REAL_CALL=PASS"
