@@ -199,8 +199,9 @@ async function certifyAndActivate(
     promotesCanon: false,
     status: "PROPOSED",
   });
+  const productionLearningAccepted = allAccepted && governedProposal.accepted;
 
-  if (governedProposal.accepted) {
+  if (productionLearningAccepted) {
     const learningCandidate: LearningCandidate = {
       id: governedProposal.proposal.id,
       workPackageId: "factory-real-proof-portfolio",
@@ -236,7 +237,7 @@ async function certifyAndActivate(
     githubCodeAdapterProven: codeWrite && draftPrProof,
     visualQaAdapterProven: visualQa,
     researchDataAdapterProven: shadowCanary.ready === true,
-    governedBrainWritebackProven: governedContract.passed && governedProposal.accepted,
+    governedBrainWritebackProven: governedContract.passed && productionLearningAccepted,
     noProductionDeploy: true,
     externalReleaseFounderGated: true,
     testKingBaseCurrent: currentTestSha === baseSha,
@@ -263,9 +264,9 @@ async function certifyAndActivate(
     metrics: proofMetrics(proof.outcomes),
     governedLearning: {
       contract: governedContract,
-      proposalAccepted: governedProposal.accepted,
+      proposalAccepted: productionLearningAccepted,
       destination: governedProposal.destination,
-      reasons: governedProposal.reasons,
+      reasons: productionLearningAccepted ? governedProposal.reasons : [...governedProposal.reasons, "PRODUCTION_OUTCOMES_NOT_ACCEPTED"],
     },
     boundaries: {
       live: "FOUNDER_GATED",
