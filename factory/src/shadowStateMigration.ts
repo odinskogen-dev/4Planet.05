@@ -2,6 +2,7 @@ import type { ProjectProjection, WorkPackage } from "./contracts";
 
 export const ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID = "factory-shadow-orchestra-v04-prefixed-queue-recovery-01";
 export const ORCHESTRA_V04_READY_DRAIN_MARKER_ID = "factory-shadow-orchestra-v04-ready-drain-recovery-01";
+export const ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID = "factory-shadow-orchestra-v04-final-bay-drain-recovery-01";
 
 /**
  * Exact durable-state fingerprint observed after the first 429 recovery fix was
@@ -52,6 +53,26 @@ export function planPostRecoveryReadyDrain(input: {
   );
 }
 
+/**
+ * Exact deployed evidence from Autonomous Activation #33597103285 proved the
+ * second bounded drain recovered every legacy survivor except Bay mobile: 7/8
+ * outcomes were persisted, no Orchestra package was stranded RUNNING, and only
+ * orch-bay-mobile-v04 remained READY. This is therefore a final one-time state
+ * migration for that exact survivor, not a generic retry loop.
+ */
+export function planFinalBayReadyDrain(input: {
+  mode: string;
+  markerPresent: boolean;
+  work: Array<{ id: string; status: string }>;
+  recordedOutcomeIds: Set<string>;
+}): string[] {
+  if (input.mode !== "SHADOW" || input.markerPresent) return [];
+  const id = "orch-bay-mobile-v04";
+  if (input.recordedOutcomeIds.has(id)) return [];
+  const state = new Map(input.work.map((item) => [item.id, item.status] as const));
+  return state.get(id) === "READY" ? [id] : [];
+}
+
 export function createLegacyOrchestraV04RecoveryMarker(nowIso: string, recoveredIds: string[]): ProjectProjection {
   return {
     id: ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID,
@@ -89,6 +110,27 @@ export function createPostRecoveryReadyDrainMarker(nowIso: string, recoveredIds:
       "FACT-G02",
       "FACT-G07",
       "Production Factory Autonomous Activation #33593226194",
+    ],
+    lastMaterialProgressAt: nowIso,
+  };
+}
+
+export function createFinalBayReadyDrainMarker(nowIso: string, recoveredIds: string[]): ProjectProjection {
+  return {
+    id: ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID,
+    name: "Orchestra 04 final Bay READY drain receipt",
+    northStar: "Preserve one Factory and close the exact residual V04 durable-state gap without widening retry authority.",
+    goal: "Record one final enqueue of the sole unresolved READY Bay mobile package proven by deployed immutable evidence.",
+    current: `Final bounded SHADOW Bay drain executed for: ${recoveredIds.join(", ") || "none"}.`,
+    gold: "Bay mobile receives one final bounded delivery opportunity under corrected 429 handling; no generic replay loop is introduced.",
+    gap: "Closed only when deployed evidence proves 8/8 persisted processing with no stranded RUNNING or duplicate persisted outcomes.",
+    priority: "P0",
+    user: "4PLANET Production Factory control",
+    authorityRefs: [
+      "FD-2026-09-02",
+      "FACT-G02",
+      "FACT-G07",
+      "Production Factory Autonomous Activation #33597103285",
     ],
     lastMaterialProgressAt: nowIso,
   };
