@@ -14,9 +14,31 @@ const mono: React.CSSProperties = { fontFamily: "'Fragment Mono', ui-monospace, 
 export function AtlasSavedViews() {
   const [state, setState] = useState(readAtlasSavedViews);
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const save = () => setState((current) => addCurrentAtlasView(current));
   const remove = (id: string) => setState((current) => removeAtlasView(current, id));
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "4PLANET ATLAS", url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch (error: any) {
+      // Cancelling a native share sheet is a normal user action. If native share
+      // fails for another reason, make one bounded clipboard fallback attempt.
+      if (error?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1800);
+      } catch { /* sharing is optional; never block ATLAS */ }
+    }
+  };
 
   return (
     <>
@@ -28,8 +50,12 @@ export function AtlasSavedViews() {
         {open && (
           <div style={{ clear: "both", background: "rgba(8,8,8,.94)", color: "#fff", border: "1px solid rgba(255,255,255,.2)", padding: 12, maxHeight: "min(60vh,520px)", overflowY: "auto", backdropFilter: "blur(14px)" }}>
             <div style={{ ...mono, color: "rgba(255,255,255,.58)", lineHeight: 1.55 }}>SAVED ON THIS DEVICE</div>
+            <button type="button" onClick={share}
+              style={{ width: "100%", marginTop: 10, minHeight: 44, border: "1px solid #2E2EFF", background: "transparent", color: "#8f8fff", ...mono, cursor: "pointer", touchAction: "manipulation" }}>
+              {copied ? "LINK COPIED" : "SHARE THIS VIEW"}
+            </button>
             <button type="button" onClick={save}
-              style={{ width: "100%", marginTop: 10, minHeight: 44, border: "1px solid #3AE86F", background: "transparent", color: "#3AE86F", ...mono, cursor: "pointer", touchAction: "manipulation" }}>
+              style={{ width: "100%", marginTop: 8, minHeight: 44, border: "1px solid #3AE86F", background: "transparent", color: "#3AE86F", ...mono, cursor: "pointer", touchAction: "manipulation" }}>
               SAVE CURRENT VIEW +
             </button>
             {state.views.length === 0 ? (
