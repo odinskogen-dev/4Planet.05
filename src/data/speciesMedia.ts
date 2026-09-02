@@ -65,9 +65,9 @@ const BLOCKERS: Record<string, string> = {
 function pending(slug: string, sourcePage: string): MediaRecord {
   return {
     localPath: "", sourcePage, photographer: "", owner: "", licence: "", licenceUrl: "",
-    attribution: "", checkedDate: "2026-08-06", cropAllowed: false, modificationAllowed: false,
+    attribution: "", checkedDate: "2026-09-02", cropAllowed: false, modificationAllowed: false,
     publicWebAllowed: false, commercialAllowed: false, supportedUse: "",
-    limitations: "No verified image licence yet — render the no-image state.", rightsStatus: "PENDING",
+    limitations: "No verified image licence yet — render the no-image/owned-illustration state.", rightsStatus: "PENDING",
     assetBlocker: BLOCKERS[slug],
   };
 }
@@ -94,22 +94,14 @@ function fromManifest(assetId: string): MediaRecord {
 }
 
 /**
- * Keyed by species slug. All entries are PENDING with an EXACT per-profile asset
- * blocker (Blocker 8): the honest no-image state is correct, a fabricated licence
- * is not. LICENCE_VERIFIED entries require a recorded licence, regardless of who supplied the file.
+ * Keyed by species slug. LICENCE_VERIFIED entries require an exact recorded licence,
+ * regardless of who supplied the file. Unknown provenance/permission remains PENDING.
  */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
-  orca: {
-    localPath: "/assets/species/orca/hero.jpg",
-    sourcePage: "https://www.gbif.org/species/2440483",
-    photographer: "Founder-supplied (provenance only)", owner: "Not asserted — founder-supplied does not transfer ownership",
-    licence: "Founder-supplied for 4PLANET use; not an ownership or commercial-rights claim", licenceUrl: "",
-    attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",
-    cropAllowed: true, modificationAllowed: true, publicWebAllowed: true, commercialAllowed: true,
-    supportedUse: "Public web, hero + detail, crop/resize permitted.",
-    limitations: "Illustrative species media. Source and rights details are available in the evidence record.",
-    rightsStatus: "LICENCE_VERIFIED", assetBlocker: "",
-  },
+  // The former founder-supplied Orca photograph had provenance but no exact licence
+  // or permission record. PUBLIC CORE therefore fails it closed; the owned 4PLANET
+  // illustration below supplies the visual until a real photo clears independently.
+  orca: pending("orca", ""),
   "humpback-whale": fromManifest("SP-001"),
   "sperm-whale": fromManifest("SP-002"),
   "harbour-porpoise": fromManifest("SP-003"),
@@ -135,5 +127,5 @@ Object.entries(ILLUSTRATIONS).forEach(([slug, ill]) => { if (SPECIES_MEDIA[slug]
 export const speciesMedia = (slug: string): MediaRecord | undefined => SPECIES_MEDIA[slug];
 export const hasShowableImage = (slug: string): boolean => {
   const m = SPECIES_MEDIA[slug];
-  return !!m && (m.rightsStatus === "CLEARED" || m.rightsStatus === "LICENCE_VERIFIED") && !!m.localPath;
+  return !!m && (m.rightsStatus === "CLEARED" || m.rightsStatus === "LICENCE_VERIFIED") && m.publicWebAllowed && m.commercialAllowed && !!m.localPath;
 };
