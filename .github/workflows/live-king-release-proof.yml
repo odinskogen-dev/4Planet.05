@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - release/live-king-20260901
+      - release/public-core-01-candidate
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   release-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
       - name: Check out exact release candidate
         uses: actions/checkout@v4
@@ -40,14 +41,18 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Policy and source contracts
+      - name: Policy, source and scoped-release contracts
         shell: bash
         run: |
           set -euo pipefail
           node scripts/gold-policy-check.mjs --mode=quality-contract
+          if [ -f scripts/public-core-release-contract.test.mjs ]; then
+            node --test scripts/public-core-release-contract.test.mjs
+          fi
           npm run typecheck
           npm run assets:verify
           npm run lint
+          npm audit --audit-level=high
 
       - name: Build exact release candidate
         run: npm run build
