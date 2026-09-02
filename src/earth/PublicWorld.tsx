@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
+import "./atlasPolish.css";
 
 const World = lazy(() => import("./World"));
 
@@ -171,6 +172,7 @@ export default function PublicWorld() {
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
+        <div className="atlas-identity" aria-label="4PLANET ATLAS">4PLANET <strong>ATLAS</strong></div>
         <AtlasSavedViews />
       </>
     );
@@ -182,7 +184,7 @@ export default function PublicWorld() {
     <main id="main-content" style={fallbackStyle}>
       <section style={{ width: "min(820px, 100%)" }} aria-labelledby="atlas-fallback-title">
         <p style={{ fontFamily: "monospace", fontSize: 12, letterSpacing: ".13em", color: "#3AE86F" }}>
-          ATLAS_ · INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE
+          4PLANET ATLAS · INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE
         </p>
         <h1 id="atlas-fallback-title" style={{ margin: "24px 0 0", fontSize: "clamp(40px, 8vw, 92px)", lineHeight: .94, letterSpacing: "-.055em", fontWeight: 500 }}>
           This browser can’t run the interactive map.
