@@ -91,8 +91,18 @@ test("ATLAS remains reachable while its active product sprint owns its internal 
   const response = await page.goto("/atlas", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBeLessThan(400);
   await expect(page).toHaveTitle(/4PLANET/i);
-  const text = (await page.locator("body").innerText()).replace(/\s+/g, " ").trim();
-  expect(text.length, "ATLAS rendered an effectively empty surface").toBeGreaterThan(24);
+
+  // ATLAS is intentionally canvas-first. It may expose very little body text while
+  // WebGL is available, so text length is not a meaningful release contract here.
+  // The active ATLAS sprint owns its internal product QA; PUBLIC CORE only proves
+  // that the route reaches either the interactive render surface or its explicit
+  // capability fallback without breaking the surrounding page.
+  await expect.poll(async () => {
+    const canvases = await page.locator("canvas").count();
+    const fallback = await page.locator("#main-content").count();
+    return canvases + fallback;
+  }, "ATLAS produced neither an interactive canvas nor its explicit capability fallback").toBeGreaterThan(0);
+
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow, "ATLAS has page-level horizontal overflow").toBeLessThanOrEqual(1);
 });
