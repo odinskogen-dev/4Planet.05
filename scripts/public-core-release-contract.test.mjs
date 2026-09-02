@@ -118,10 +118,19 @@ test("public discovery includes the public Mission family but excludes held flag
   assert.ok(sitemapSource.includes('"/journey/jaguar/"'), "current Jaguar proof remains a release candidate pending exact-head browser/Human QA");
 });
 
-test("public media registry fails closed when exact object rights are unresolved", () => {
+test("public media fails closed with zero illustration substitution", () => {
   assert.match(imageRegistry, /being present in the 4PLANET library is provenance only, not rights clearance/i);
-  assert.match(imageRegistry, /const RELEASE_CLEARED_KEYS = new Set<ImageKey>/);
-  assert.doesNotMatch(imageRegistry, /RELEASE_CLEARED_KEYS[\s\S]{0,120}cor4lHero/);
+  assert.match(imageRegistry, /Founder rule 2026-09-02: zero illustration\/procedural-art fallbacks/i);
+  assert.match(imageRegistry, /function noPhotoReleaseSurface/);
+  assert.match(imageRegistry, /PUBLIC CORE intentional no-photo treatment/i);
+  assert.match(imageRegistry, /TRANSPARENT_PIXEL/);
+  assert.doesNotMatch(imageRegistry, /function generatedReleaseBackdrop/);
+  assert.doesNotMatch(imageRegistry, /4PLANET-generated vector release artwork/i);
+  assert.doesNotMatch(imageRegistry, /RELEASE_CLEARED_KEYS[\s\S]{0,260}"artHero"/);
+  assert.doesNotMatch(imageRegistry, /RELEASE_CLEARED_KEYS[\s\S]{0,260}"cor4lHero"/);
+  for (const exactPublicDomainPhoto of ["heroEarth", "brandAstronaut", "footerPlanet", "earthrise", "rewildMarineHero"]) {
+    assert.match(imageRegistry, new RegExp(`RELEASE_CLEARED_KEYS[\\s\\S]{0,500}\\"${exactPublicDomainPhoto}\\"`));
+  }
 });
 
 test("Founder-locked Orca uses the Unsplash photograph and Species has no active illustration fallback", () => {
