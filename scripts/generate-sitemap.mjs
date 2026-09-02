@@ -7,6 +7,26 @@ const publicDir = path.join(root, "public");
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const stories = readStories();
 
+// PUBLIC CORE 01: only routes deliberately cleared for public discovery belong here.
+// Held/private/internal product work remains in the repository but is excluded from search discovery.
+const missionRoutes = [
+  "/missions/cle4n",
+  "/missions/wh4les",
+  "/missions/cor4l",
+  "/missions/rewild-marine",
+  "/missions/clim4te",
+  "/missions/am4zonia",
+  "/missions/species",
+  "/missions/rewild-land",
+  "/missions/food",
+  "/missions/en4rgy",
+  "/missions/circular-city",
+  "/missions/f4shion",
+  "/missions/4film",
+  "/missions/4rt",
+  "/missions/4play",
+];
+
 const staticRoutes = [
   "/",
   "/domains",
@@ -15,22 +35,24 @@ const staticRoutes = [
   "/domains/s4piens",
   "/domains/4culture",
   "/missions",
+  ...missionRoutes,
   "/living-systems",
   "/atlas",
   "/species",
   "/impact",
-  "/actors",
   "/brands",
   "/partners",
   "/funders",
   "/reports",
   "/journey/jaguar/",
-  "/journey/orca/",
   "/magazine",
   "/magazine/about",
   "/magazine/sources",
   "/magazine/corrections",
   "/about",
+  "/about/story",
+  "/about/system",
+  "/about/founder",
   "/privacy",
   "/join",
 ];
@@ -71,4 +93,4 @@ fs.writeFileSync(path.join(publicDir, "rss.xml"), rss, "utf8");
 const robots = `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\nSitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
 
-console.log(`Generated sitemap.xml with ${routes.length} URLs, news-sitemap.xml with ${newsStories.length} fresh stories, rss.xml with ${stories.length} story items for ${origin}`);
+console.log(`Generated PUBLIC CORE sitemap.xml with ${routes.length} URLs, news-sitemap.xml with ${newsStories.length} fresh stories, rss.xml with ${stories.length} story items for ${origin}`);
