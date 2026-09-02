@@ -59,6 +59,12 @@
 .ctx-sub { opacity: .66 !important; }
 .note-box { font-size: 10px !important; line-height: 1.5 !important; }
 
+/* The source strip is evidence-on-demand, not a permanent engineering HUD. */
+.status-strip > .s:first-child { display: none !important; }
+.status-strip .strip-toggle b { display: none; }
+.status-strip .strip-toggle { opacity: .78; }
+.status-strip:not(.open) { gap: 8px !important; }
+
 /* Mobile: opening a control is intentional. Give it the full safe width rather
    than forcing controls into the old 62vw console and clipping/wrapping badly. */
 @media (max-width: 760px) {
@@ -147,6 +153,13 @@
     bottom: calc(58vh + 34px) !important;
     min-height: 44px;
   }
+
+  .status-strip {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .status-strip .spacer { min-width: 8px; }
 }
 
 @media (max-width: 430px) {
