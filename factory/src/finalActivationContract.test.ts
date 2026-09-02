@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   FACTORY_FORBIDDEN_AUTONOMOUS_CAPABILITIES,
   FOUR_PLANET_BRAND_RULES,
@@ -51,6 +52,14 @@ test("governed learning requires repeat evidence and never weakens gates or Cano
   assert.equal(evaluateGovernedLearning({ ...base, distinctInstanceCount: 1 }).accepted, false);
   assert.equal(evaluateGovernedLearning({ ...base, weakensTruthOrSafety: true }).accepted, false);
   assert.equal(evaluateGovernedLearning({ ...base, promotesCanon: true }).accepted, false);
+});
+
+test("activation cannot count blocked production as governed learning or BRAIN writeback proof", async () => {
+  const source = await readFile(new URL("./activeRuntime.ts", import.meta.url), "utf8");
+  assert.match(source, /const productionLearningAccepted = allAccepted && governedProposal\.accepted;/);
+  assert.match(source, /if \(productionLearningAccepted\)/);
+  assert.match(source, /governedBrainWritebackProven: governedContract\.passed && productionLearningAccepted/);
+  assert.match(source, /proposalAccepted: productionLearningAccepted/);
 });
 
 test("real activation proof uses three materially different current 4PLANET families", () => {
