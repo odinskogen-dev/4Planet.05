@@ -10,10 +10,11 @@ export * from "./worldClassRuntime";
 const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
 const TEST_BRANCH = "king/test";
+const PROOF_RETRY_VERSION = "02" as const;
 const PROOF_IDS = [
-  "factory-real-species-evidence-affordance-01",
-  "factory-real-bay-accessibility-01",
-  "factory-real-actor-relationship-a11y-01",
+  "factory-real-species-evidence-affordance-02",
+  "factory-real-bay-accessibility-02",
+  "factory-real-actor-relationship-a11y-02",
 ] as const;
 const SAFE_PUBLIC_GETS = new Set([
   "/__factory/health",
@@ -82,6 +83,16 @@ async function factoryAgent(env: ActiveEnv): Promise<any> {
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
 }
 
+function versionedProofCases(currentTestSha: string) {
+  return createRealProjectProofCases(currentTestSha).map((proof) => ({
+    ...proof,
+    pkg: {
+      ...proof.pkg,
+      id: proof.pkg.id.replace(/-01$/, `-${PROOF_RETRY_VERSION}`),
+    },
+  }));
+}
+
 async function seedRealProof(env: ActiveEnv) {
   const buildSha = env.FACTORY_BUILD_SHA?.trim() ?? "";
   const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim() ?? "";
@@ -94,7 +105,7 @@ async function seedRealProof(env: ActiveEnv) {
   const state = await factory.getFactoryState() as FactoryStateView;
   if (state.state.mode !== "SHADOW") return { alreadyActive: true, buildSha, currentTestSha, workflowIds: [] as string[] };
 
-  const cases = createRealProjectProofCases(currentTestSha);
+  const cases = versionedProofCases(currentTestSha);
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
   const workflowIds: string[] = [];
   for (const proof of cases) {
@@ -139,7 +150,7 @@ function proofMetrics(outcomes: Outcome[]) {
   const corrections = outcomes.reduce((sum, outcome) => sum + outcome.evidence.filter((item) => item.startsWith("CORRECTION LOOP")).length, 0);
   const times = outcomes.map((outcome) => Date.parse(outcome.completedAt)).filter(Number.isFinite).sort((a, b) => a - b);
   return {
-    proofVersion: REAL_FACTORY_PROOF_VERSION,
+    proofVersion: `${REAL_FACTORY_PROOF_VERSION}_RETRY_${PROOF_RETRY_VERSION}`,
     realFamilies: PROOF_IDS.length,
     accepted,
     correct,
