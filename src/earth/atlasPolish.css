@@ -42,6 +42,11 @@
     overflow: hidden;
   }
 
+  .ctx[data-atlas-surface="COORDINATE"] {
+    width: min(320px, calc(100vw - 28px)) !important;
+    max-height: min(560px, calc(100vh - 130px)) !important;
+  }
+
   .ctx-head { padding: 13px 14px 10px !important; }
   .ctx-body { padding: 0 14px 14px !important; }
   .ctx-title { font-size: 22px !important; }
@@ -58,6 +63,84 @@
 .ctx-kind { opacity: .72; }
 .ctx-sub { opacity: .66 !important; }
 .note-box { font-size: 10px !important; line-height: 1.5 !important; }
+
+/* A clicked location is a human place question first. Internal type/status labels
+   add no first-touch value; the evidence still remains in the sections below. */
+.ctx[data-atlas-surface="COORDINATE"] .ctx-kind,
+.ctx[data-atlas-surface="COORDINATE"] .sec-h .stat {
+  display: none !important;
+}
+.ctx[data-atlas-surface="COORDINATE"] .ctx-title {
+  font-size: 24px !important;
+  line-height: 1.06 !important;
+}
+.ctx[data-atlas-surface="COORDINATE"] .ctx-sub {
+  margin-top: 5px !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  opacity: .72 !important;
+}
+.ctx[data-atlas-surface="COORDINATE"] .sec-h {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+}
+
+/* NOW/WATCH are discovery feeds, not source-monitor dashboards. Keep the records,
+   times, summaries and source boundaries; demote operational counts/status codes. */
+.ctx[data-atlas-surface="NOW"] .ctx-kind,
+.ctx[data-atlas-surface="WATCH"] .ctx-kind,
+.ctx[data-atlas-surface="NOW"] .ctx-sub,
+.ctx[data-atlas-surface="WATCH"] .ctx-sub,
+.ctx[data-atlas-surface="NOW"] .sec-h .stat,
+.ctx[data-atlas-surface="WATCH"] .sec-h .stat {
+  display: none !important;
+}
+.ctx[data-atlas-surface="NOW"] .ctx-title,
+.ctx[data-atlas-surface="WATCH"] .ctx-title {
+  font-size: 26px !important;
+  line-height: 1 !important;
+}
+.ctx[data-atlas-surface="NOW"] .sec-h,
+.ctx[data-atlas-surface="WATCH"] .sec-h {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.ctx[data-atlas-surface="NOW"] .li,
+.ctx[data-atlas-surface="WATCH"] .li {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+.ctx[data-atlas-surface="NOW"] .liname,
+.ctx[data-atlas-surface="WATCH"] .liname {
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 12.5px !important;
+  line-height: 1.35 !important;
+}
+.ctx[data-atlas-surface="NOW"] .lisub,
+.ctx[data-atlas-surface="WATCH"] .lisub {
+  opacity: .48 !important;
+  letter-spacing: .05em !important;
+}
+.ctx[data-atlas-surface="NOW"] .liwhy,
+.ctx[data-atlas-surface="WATCH"] .liwhy {
+  margin-top: 4px !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-size: 10.5px !important;
+  line-height: 1.45 !important;
+  opacity: .72 !important;
+}
+.ctx[data-atlas-surface="NOW"] .src-line,
+.ctx[data-atlas-surface="WATCH"] .src-line {
+  opacity: .42 !important;
+}
 
 /* The source strip is evidence-on-demand, not a permanent engineering HUD. */
 .status-strip > .s:first-child { display: none !important; }
@@ -137,7 +220,10 @@
     border-radius: 16px 16px 0 0;
   }
 
+  .ctx[data-atlas-surface="COORDINATE"] { max-height: 50vh !important; }
+
   .ctx-title { font-size: 20px !important; }
+  .ctx[data-atlas-surface="COORDINATE"] .ctx-title { font-size: 22px !important; }
   .ctx-head { padding-left: 14px !important; padding-right: 14px !important; }
   .ctx-body { padding-left: 14px !important; padding-right: 14px !important; }
 
@@ -152,6 +238,10 @@
   .recenter-btn {
     bottom: calc(58vh + 34px) !important;
     min-height: 44px;
+  }
+
+  body:has(.ctx[data-atlas-surface="COORDINATE"]) .recenter-btn {
+    bottom: calc(50vh + 34px) !important;
   }
 
   .status-strip {
