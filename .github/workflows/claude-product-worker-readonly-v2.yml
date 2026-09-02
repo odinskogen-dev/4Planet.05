@@ -1,12 +1,14 @@
 name: Claude Product Worker — Read Only Spike v2
 
 on:
-  push:
+  pull_request:
     branches:
-      - factory/claude-product-worker-01
+      - king/test
+    types: [opened, synchronize, reopened]
     paths:
+      - "CLAUDE.md"
+      - "docs/claude/**"
       - ".github/workflows/claude-product-worker-readonly-v2.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,11 +16,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: claude-product-worker-readonly-v2
+  group: claude-product-worker-readonly-v2-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   review-only:
+    if: github.event.pull_request.head.ref == 'factory/claude-product-worker-01'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
