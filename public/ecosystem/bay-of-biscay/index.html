@@ -7,7 +7,7 @@
   <title>Bay of Biscay — 4PLANET ECOSYSTEM_</title>
   <style>
     :root{--bg:#020b12;--ink:#f3f8f8;--muted:#93a8b0;--cyan:#74e6ff;--green:#39ef7a;--line:rgba(131,210,230,.18);--panel:rgba(4,19,28,.82)}
-    *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100svh}a{color:inherit}
+    *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100svh}a{color:inherit}.skip-link{position:absolute;top:-100%;left:0;padding:12px 20px;background:var(--bg);color:var(--cyan);text-decoration:none;font:700 12px ui-monospace,monospace;letter-spacing:.1em;z-index:9999;transition:top .2s ease-in-out}.skip-link:focus{top:0;outline:2px solid var(--cyan);outline-offset:-2px}
     .shell{min-height:100svh;background:radial-gradient(circle at 52% 8%,rgba(35,132,171,.18),transparent 34%),linear-gradient(180deg,#061723 0,#020b12 68%)}
     header{height:68px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(2,11,18,.86);backdrop-filter:blur(14px);z-index:20}.brand{font-weight:800;letter-spacing:.09em;text-decoration:none}.test{color:var(--green);font:700 10px ui-monospace,monospace;letter-spacing:.18em}
     main{max-width:1240px;margin:0 auto;padding:38px 22px 70px}.eyebrow{color:var(--cyan);font:700 10px ui-monospace,monospace;letter-spacing:.18em}.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.55fr);gap:34px;align-items:end}.hero h1{margin:12px 0 16px;font-size:clamp(54px,8vw,112px);line-height:.88;letter-spacing:-.055em}.lead{margin:0;max-width:760px;font-size:clamp(18px,2vw,25px);line-height:1.36;color:#c7d3d7}.hero-side{border-left:1px solid var(--line);padding-left:20px}.hero-side b{display:block;color:var(--green);font:700 10px ui-monospace,monospace;letter-spacing:.15em}.hero-side strong{display:block;margin-top:12px;font-size:24px;line-height:1.06}.hero-side p{margin:10px 0 0;color:#a8bac0;line-height:1.45}.truth{display:inline-flex;margin-top:18px;padding:9px 11px;border:1px solid rgba(57,239,122,.42);color:var(--green);font:700 10px ui-monospace,monospace;letter-spacing:.13em}
@@ -25,9 +25,11 @@
   <script src="/analytics/meaningful-use-v01.js"></script>
 </head>
 <body>
+  <a href="#main" class="skip-link">SKIP TO CONTENT</a>
+  <div class="shell">
 <div class="shell">
 <header><a class="brand" href="/">4PLANET ECOSYSTEM_</a><span class="test">TEST KING</span></header>
-<main>
+<main id="main">
   <section class="hero">
     <div><div class="eyebrow">OCE4N_ · PLACE-FIRST MONITORING</div><h1>Bay of Biscay.</h1><p class="lead">One corridor. One measurable survey effort. A living ocean around it.</p><div class="truth">PILOT CORRIDOR ≠ MIGRATION TRACK</div></div>
     <aside class="hero-side"><b>THE JOB</b><strong>Monitor a place without pretending the route is an animal path.</strong><p>Keep corridor geometry, effort, sightings and ecological context separate so later reporting stays credible.</p></aside>
