@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 const publicCoreRoutes = [
@@ -19,20 +20,83 @@ const publicCoreRoutes = [
   "/privacy",
 ];
 
+const fullLiveMatrixRoutes = [
+  "/domains/oce4n",
+  "/domains/e4rth",
+  "/domains/s4piens",
+  "/domains/4culture",
+  "/missions/cle4n",
+  "/missions/wh4les",
+  "/missions/cor4l",
+  "/missions/rewild-marine",
+  "/missions/clim4te",
+  "/missions/am4zonia",
+  "/missions/species",
+  "/missions/rewild-land",
+  "/missions/food",
+  "/missions/en4rgy",
+  "/missions/circular-city",
+  "/missions/f4shion",
+  "/missions/4film",
+  "/missions/4rt",
+  "/missions/4play",
+  "/reports",
+  "/about/story",
+  "/about/system",
+];
+
+const reviewRoutes = [
+  ["home", "/"],
+  ["atlas", "/atlas"],
+  ["species", "/species"],
+  ["living-systems", "/living-systems"],
+  ["impact", "/impact"],
+  ["magazine", "/magazine"],
+  ["about", "/about"],
+  ["oce4n", "/domains/oce4n"],
+  ["amazonia", "/missions/am4zonia"],
+] as const;
+
+async function expectUsablePublicSurface(page: import("@playwright/test").Page, route: string) {
+  const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+  expect(response?.status(), `${route} returned an HTTP error`).toBeLessThan(400);
+  await expect(page.locator("#main-content"), `${route} missing the shared main landmark`).toBeVisible();
+  await expect(page.locator(".public-brand"), `${route} missing the shared 4PLANET identity`).toBeVisible();
+  await expect(page.locator("footer"), `${route} missing the shared return/orientation layer`).toHaveCount(1);
+  await expect(page).toHaveTitle(/4PLANET/i);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow, `${route} has page-level horizontal overflow`).toBeLessThanOrEqual(1);
+
+  const visibleText = (await page.locator("#main-content").innerText()).replace(/\s+/g, " ").trim();
+  expect(visibleText.length, `${route} rendered an effectively empty public surface`).toBeGreaterThan(24);
+}
+
 test("PUBLIC CORE critical routes render as one usable product family with no obvious dead end or horizontal overflow", async ({ page }) => {
-  for (const route of publicCoreRoutes) {
-    const response = await page.goto(route, { waitUntil: "domcontentloaded" });
-    expect(response?.status(), `${route} returned an HTTP error`).toBeLessThan(400);
-    await expect(page.locator("#main-content"), `${route} missing the shared main landmark`).toBeVisible();
-    await expect(page.locator(".public-brand"), `${route} missing the shared 4PLANET identity`).toBeVisible();
-    await expect(page.locator("footer"), `${route} missing the shared return/orientation layer`).toHaveCount(1);
-    await expect(page).toHaveTitle(/4PLANET/i);
+  for (const route of publicCoreRoutes) await expectUsablePublicSurface(page, route);
+});
 
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, `${route} has page-level horizontal overflow`).toBeLessThanOrEqual(1);
+test("PUBLIC CORE full LIVE matrix renders on representative desktop/mobile", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390"].includes(testInfo.project.name), "Full matrix is exhaustive on one desktop + one phone; critical routes remain cross-browser.");
+  for (const route of fullLiveMatrixRoutes) await expectUsablePublicSurface(page, route);
+});
 
-    const visibleText = (await page.locator("#main-content").innerText()).replace(/\s+/g, " ").trim();
-    expect(visibleText.length, `${route} rendered an effectively empty public surface`).toBeGreaterThan(24);
+test("PUBLIC CORE held SPA routes fail closed into safe public destinations", async ({ page }) => {
+  const cases = [
+    ["/species/lab", "/species"],
+    ["/species/orca/lume", "/species/orca"],
+    ["/lens", "/atlas"],
+    ["/4sapien/food", "/domains/s4piens"],
+    ["/food/pick", "/missions/food"],
+    ["/actors/orca", "/partners"],
+    ["/get-involved", "/join"],
+    ["/impact/lab/tree-unit", "/impact"],
+    ["/checkout/lab", "/impact"],
+  ] as const;
+
+  for (const [held, safe] of cases) {
+    await page.goto(held, { waitUntil: "domcontentloaded" });
+    await expect.poll(() => new URL(page.url()).pathname, `${held} did not fail closed`).toBe(safe);
   }
 });
 
@@ -75,4 +139,16 @@ test("PUBLIC CORE homepage stays within a bounded local navigation-time budget",
     return navigation ? navigation.loadEventEnd - navigation.startTime : Number.POSITIVE_INFINITY;
   });
   expect(timing, `homepage local load timing exceeded release sanity budget: ${timing}ms`).toBeLessThan(5_000);
+});
+
+test("PUBLIC CORE records rendered Founder-JUDGE evidence on desktop and phones", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390", "mobile-430"].includes(testInfo.project.name), "Founder visual pack uses Chromium desktop + target phone widths.");
+  const out = `artifacts/public-core/${testInfo.project.name}`;
+  mkdirSync(out, { recursive: true });
+
+  for (const [name, route] of reviewRoutes) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#main-content")).toBeVisible();
+    await page.screenshot({ path: `${out}/${name}.png`, fullPage: true });
+  }
 });
