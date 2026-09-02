@@ -12,6 +12,45 @@
   Permissions-Policy: camera=(), microphone=(), payment=(), usb=()
   Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.sketchfab.com https://static.cloudflareinsights.com https://www.googletagmanager.com 'sha256-6H4LDN6dEHkKdcpjS/BEgfKIXIAZwktPXM1LjUK/0/U='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://cdn.jsdelivr.net https://sketchfab.com https://api.sketchfab.com https://static.sketchfab.com https://cloudflareinsights.com https://www.google-analytics.com https://region1.google-analytics.com; worker-src 'self' blob:; child-src 'self' blob: https://sketchfab.com https://*.sketchfab.com; frame-src 'self' https://sketchfab.com https://*.sketchfab.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
+/journey/orca/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/species/orca/lume
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/species/lab
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/4sapien/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/food/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/s4piens/food/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/actors/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/get-involved
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/impact/lab/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/impact/test/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/impact/record/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/checkout/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/lens
+  X-Robots-Tag: noindex, nofollow, noarchive
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
