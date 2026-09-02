@@ -66,25 +66,24 @@ export const IMAGES = {
 
 export type ImageKey = keyof typeof IMAGES;
 
-const RELEASE_CLEARED_KEYS = new Set<ImageKey>(["rewildMarineHero", "artHero"]);
-const RELEASE_BACKDROP = {
-  GENERIC: ["#05081b", "#21336f", "#07141d"],
-  OCE4N_: ["#031a26", "#07577b", "#04101a"],
-  E4RTH_: ["#07170d", "#2d653c", "#0a110b"],
-  S4PIENS_: ["#171008", "#76572d", "#0d0a07"],
-  "4CULTURE_": ["#160a1e", "#654072", "#09060c"],
-} as const;
+// Only exact objects with a defensible release record are allowed to render as photography.
+// Founder rule 2026-09-02: zero illustration/procedural-art fallbacks in PUBLIC CORE.
+const RELEASE_CLEARED_KEYS = new Set<ImageKey>([
+  "heroEarth",
+  "brandAstronaut",
+  "footerPlanet",
+  "earthrise",
+  "rewildMarineHero",
+]);
 
-function generatedReleaseBackdrop(domain?: DomainKey): ImageMeta {
-  const key = domain ?? "GENERIC";
-  const [a, b, c] = RELEASE_BACKDROP[key];
-  const label = domain ? domain.replace("_", "") : "LIVING PLANET";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g" cx="68%" cy="32%" r="78%"><stop offset="0" stop-color="${b}"/><stop offset=".48" stop-color="${a}"/><stop offset="1" stop-color="${c}"/></radialGradient><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="1600" height="1000" fill="url(#g)"/><circle cx="1180" cy="270" r="360" fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="2"/><circle cx="1180" cy="270" r="250" fill="none" stroke="#fff" stroke-opacity=".06" stroke-width="1"/><path d="M-80 790 C300 610 510 890 850 705 S1370 520 1710 690 L1710 1080 L-80 1080 Z" fill="#000" fill-opacity=".22"/><path d="M0 140 L1600 870" stroke="url(#v)" stroke-width="1"/></svg>`;
+const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
+function noPhotoReleaseSurface(domain?: DomainKey): ImageMeta {
   return {
-    src: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    alt: `Abstract 4PLANET ${label} release artwork — no external media`,
-    credit: "4PLANET",
-    licenseNote: "4PLANET-generated vector release artwork — no external media dependency",
+    src: TRANSPARENT_PIXEL,
+    srcMobile: TRANSPARENT_PIXEL,
+    alt: "",
+    licenseNote: "PUBLIC CORE intentional no-photo treatment — exact object-level rights unresolved; no illustration substituted",
     aspectRatio: "16/9",
     objectPosition: "50% 50%",
     domain,
@@ -97,13 +96,14 @@ function isReleaseClearedKey(key: ImageKey): boolean {
 }
 
 /**
- * PUBLIC CORE release rule: an image in the library is NOT publicly renderable merely
- * because it exists locally or has provider-level shorthand. Until the exact object has
- * a sufficient rights record, return owned 4PLANET vector artwork instead.
+ * PUBLIC CORE release rule: a local file is never public merely because it exists.
+ * Exact rights evidence allows the real photograph. Otherwise the component receives
+ * a visually transparent no-photo surface so its own premium background treatment
+ * remains visible. We never synthesize or substitute an illustration.
  */
 export const img = (k: ImageKey): ImageMeta => {
   const meta = IMAGES[k] as ImageMeta;
-  return isReleaseClearedKey(k) ? meta : generatedReleaseBackdrop(meta.domain);
+  return isReleaseClearedKey(k) ? meta : noPhotoReleaseSurface(meta.domain);
 };
 
 const byMission: Record<string, ImageMeta> = {};
@@ -111,8 +111,8 @@ const byDomain: Partial<Record<DomainKey, ImageMeta>> = {};
 for (const [rawKey, rawValue] of Object.entries(IMAGES)) {
   const key = rawKey as ImageKey;
   const m = rawValue as ImageMeta;
-  if (m.role === "missionHero" && m.mission) byMission[m.mission] = isReleaseClearedKey(key) ? m : generatedReleaseBackdrop(m.domain);
-  if (m.role === "domainHero" && m.domain) byDomain[m.domain] = isReleaseClearedKey(key) ? m : generatedReleaseBackdrop(m.domain);
+  if (m.role === "missionHero" && m.mission) byMission[m.mission] = isReleaseClearedKey(key) ? m : noPhotoReleaseSurface(m.domain);
+  if (m.role === "domainHero" && m.domain) byDomain[m.domain] = isReleaseClearedKey(key) ? m : noPhotoReleaseSurface(m.domain);
 }
 export const missionHero = (slug: string): ImageMeta | undefined => byMission[slug];
 export const domainHero = (key: DomainKey): ImageMeta | undefined => byDomain[key];
@@ -126,7 +126,7 @@ export const IMPACT_IMAGE: Record<string, ImageMeta> = {
 };
 export const impactImage = (slug: string): ImageMeta | undefined => {
   const meta = IMPACT_IMAGE[slug];
-  return meta ? generatedReleaseBackdrop() : undefined;
+  return meta ? noPhotoReleaseSurface() : undefined;
 };
 
 const A2 = "/assets/missions";
@@ -151,7 +151,7 @@ export const missionSecondary = (slug: string): ImageMeta | undefined => {
   const meta = MISSION_SECONDARY[slug];
   if (!meta) return undefined;
   const mission = Object.values(IMAGES).find((item) => (item as ImageMeta).mission === slug) as ImageMeta | undefined;
-  return generatedReleaseBackdrop(mission?.domain);
+  return noPhotoReleaseSurface(mission?.domain);
 };
 
 export const MISSION_MEDIA_RIGHTS: Record<string, {
@@ -178,7 +178,7 @@ export const MISSION_MEDIA_RIGHTS: Record<string, {
     attribution: "4PLANET",
     checkedDate: "2026-08-07",
     commercialAllowed: true,
-    limitations: "INTERNAL PROTOTYPE ART, not a final Gate 1 asset and not a real artwork for sale. Represents the Prints-for-Planet direction only. Self-asserted ownership.",
+    limitations: "INTERNAL PROTOTYPE ART, not a final Gate 1 asset and not a real artwork for sale. Founder rule: do not render this as a PUBLIC CORE illustration fallback.",
   },
 };
 export const missionMediaRights = (slug: string) => MISSION_MEDIA_RIGHTS[slug];
