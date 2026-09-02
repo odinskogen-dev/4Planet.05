@@ -1,0 +1,100 @@
+name: Claude Product Worker — Read Only Spike
+
+on:
+  push:
+    branches:
+      - factory/claude-product-worker-01
+    paths:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - "docs/claude/**"
+      - ".github/workflows/claude-product-worker-readonly.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: claude-product-worker-readonly
+  cancel-in-progress: true
+
+jobs:
+  review-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANTHROPIC_API_KEY_PRESENT: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Fail closed unless dedicated Anthropic credential exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${ANTHROPIC_API_KEY_PRESENT}" != "true" ]]; then
+            echo "::error::CLAUDE_PRODUCT_WORKER_BLOCKED: repository secret ANTHROPIC_API_KEY is not configured."
+            echo "No Claude call attempted. No code changed."
+            exit 1
+          fi
+
+      - name: Checkout isolated Claude worker branch
+        uses: actions/checkout@v4
+        with:
+          ref: factory/claude-product-worker-01
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record clean baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain=v1
+          git rev-parse HEAD
+          git rev-parse origin/king/test || true
+
+      - name: Run Claude Product Worker test 01
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are running the 4PLANET Claude Product Worker integration spike.
+
+            Read the repository's CLAUDE.md first. Then execute the REVIEW_ONLY work order at:
+            docs/claude/work-orders/CLAUDE-PRODUCT-WORKER-TEST-01.md
+
+            Exercise independent product judgement. The work order's goal and authority boundaries are binding; its implied solution is not.
+
+            Do not edit any tracked repository file. Your only permitted write is the final report:
+            /tmp/claude-product-worker-test-01.md
+
+            Use repository evidence and git history. If you cannot prove current active PR overlap from the available environment, mark it UNKNOWN rather than guessing.
+
+            Finish by writing the compact report required by the work order to /tmp/claude-product-worker-test-01.md.
+          claude_args: >-
+            --model claude-opus-5
+            --max-turns 12
+            --allowedTools "Read,Grep,Glob,Write,Bash(git status:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(find:*),Bash(cat:*)"
+
+      - name: Prove no tracked repository mutation
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --exit-code -- .; then
+            echo "::error::CLAUDE_PRODUCT_WORKER_READONLY_VIOLATION: tracked repository content changed."
+            exit 1
+          fi
+          if [[ -n "$(git status --porcelain=v1 --untracked-files=no)" ]]; then
+            echo "::error::CLAUDE_PRODUCT_WORKER_READONLY_VIOLATION: tracked working tree is not clean."
+            git status --porcelain=v1
+            exit 1
+          fi
+          echo "READ_ONLY_REPOSITORY_GATE=PASS"
+
+      - name: Upload Claude review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-product-worker-test-01
+          path: /tmp/claude-product-worker-test-01.md
+          if-no-files-found: warn
+          retention-days: 14
