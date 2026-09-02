@@ -57,6 +57,17 @@ jobs:
       - name: Build exact release candidate
         run: npm run build
 
+      - name: Static performance budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          largest_js="$(find dist/assets -maxdepth 1 -type f -name '*.js' -printf '%s\n' | sort -nr | head -1)"
+          total_js="$(find dist/assets -maxdepth 1 -type f -name '*.js' -printf '%s\n' | awk '{s+=$1} END {print s+0}')"
+          echo "largest_js_bytes=$largest_js" | tee bundle-budget.txt
+          echo "total_js_bytes=$total_js" | tee -a bundle-budget.txt
+          test "$largest_js" -lt 1400000
+          test "$total_js" -lt 2300000
+
       - name: Smoke exact built candidate
         run: npm run test:smoke
 
@@ -78,6 +89,14 @@ jobs:
           done
           cat /tmp/4planet-preview.log || true
           exit 1
+
+      - name: PUBLIC CORE accessibility + dead-end + performance sanity Chromium/WebKit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          npm run test:e2e -- tests/e2e/public-core-release.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          npm run test:e2e -- tests/e2e/public-core-release.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: Jaguar P0 Chromium + WebKit desktop/mobile
         env:
@@ -150,5 +169,6 @@ jobs:
             test-results
             runtime-url.txt
             runtime-sha.txt
+            bundle-budget.txt
           if-no-files-found: warn
           retention-days: 14
