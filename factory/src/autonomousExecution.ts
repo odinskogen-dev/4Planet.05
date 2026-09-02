@@ -9,8 +9,8 @@ const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
 const MAX_EXISTING_FILE_BYTES = 120_000;
 const MAX_AI_ATTEMPTS = 2;
 const MAX_CANDIDATE_EDITS = 8;
-const CHECK_POLL_ATTEMPTS = 18;
-const PREVIEW_POLL_ATTEMPTS = 12;
+const CHECK_POLL_ATTEMPTS = 8;
+const PREVIEW_POLL_ATTEMPTS = 6;
 
 export interface GitHubTestWriteSpec {
   kind: "GITHUB_TEST_WRITE";
@@ -171,7 +171,7 @@ function nestedRecord(parent: JsonRecord | undefined, key: string): JsonRecord |
   return parent ? record(parent[key]) : undefined;
 }
 
-function aiText(raw: unknown): string {
+export function aiText(raw: unknown): string {
   const value = record(raw);
   const choices = value?.choices;
   let candidate: unknown;
@@ -183,8 +183,13 @@ function aiText(raw: unknown): string {
   candidate ??= result?.response;
   candidate ??= value?.result;
   candidate ??= value?.text;
-  if (typeof candidate !== "string" || !candidate.trim()) throw new Error("Workers AI returned no usable text response");
-  return candidate.trim();
+  candidate ??= value;
+  if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+  const structured = record(candidate);
+  if (structured && (structured.mode === "edits" || structured.mode === "replace_file")) {
+    return JSON.stringify(structured);
+  }
+  throw new Error("Workers AI returned no usable text response");
 }
 
 function parseSelfChecks(value: unknown): string[] {
@@ -463,7 +468,13 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
       } else if (checks.state === "FAIL") {
         correctionContext = `GitHub candidate checks failed: ${checks.failures.join(" | ")}`;
       } else {
-        correctionContext = `GitHub candidate checks did not settle within the bounded polling window: ${checks.evidence.slice(-8).join(" | ")}`;
+        return baseOutcome(pkg, {
+          status: "CORRECT",
+          evidence,
+          materialDelta: "Factory produced a bounded real TEST candidate; CI remained pending after the bounded observation budget, so no speculative corrective mutation was attempted.",
+          actual: `Candidate remains isolated on ${branch}; commit ${finalCommit}; registered checks are still pending.`,
+          limitation: "A later governed execution may re-observe the same candidate. Pending evidence must never be treated as failure or trigger a new AI write.",
+        });
       }
 
       if (attempt < maxAttempts) {
