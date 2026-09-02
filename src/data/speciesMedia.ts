@@ -34,6 +34,11 @@ export interface MediaRecord {
   limitations: string;
   rightsStatus: RightsStatus;
   assetBlocker?: string;
+  /** Deprecated compatibility seam only. PUBLIC CORE must never populate this. */
+  illustration?: {
+    localPath: string; kind: string; owner: string; creator: string;
+    licence: string; attribution: string; checkedDate: string; checksum: string;
+  };
 }
 
 /** A precise candidate asset + the exact rights step still required per profile. */
