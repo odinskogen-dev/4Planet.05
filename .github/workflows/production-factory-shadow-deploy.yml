@@ -1,10 +1,6 @@
 name: Production Factory Autonomous Activation
 
 on:
-  pull_request:
-    paths:
-      - "factory/**"
-      - ".github/workflows/production-factory-shadow-deploy.yml"
   push:
     branches:
       - "factory/symphony-runtime-v01"
@@ -21,7 +17,7 @@ permissions:
   pull-requests: write
 
 env:
-  FACTORY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FACTORY_HEAD_SHA: ${{ github.sha }}
 
 concurrency:
   group: production-factory-autonomous-activation
@@ -29,20 +25,33 @@ concurrency:
 
 jobs:
   preflight:
-    if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/factory/symphony-runtime-v01') ||
-      (github.event_name == 'workflow_dispatch') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     outputs:
       cloudflare_ready: ${{ steps.credentials.outputs.cloudflare_ready }}
       github_write_ready: ${{ steps.credentials.outputs.github_write_ready }}
       test_king_sha: ${{ steps.lineage.outputs.test_king_sha }}
+      activation_requested: ${{ steps.activation_intent.outputs.activation_requested }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.FACTORY_HEAD_SHA }}
           fetch-depth: 0
+
+      - name: Resolve explicit activation intent
+        id: activation_intent
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "${COMMIT_MESSAGE:-}" == *"[factory-activate]"* ]]; then
+            echo "activation_requested=true" >> "$GITHUB_OUTPUT"
+            echo "Full fresh three-family activation proof REQUESTED."
+          else
+            echo "activation_requested=false" >> "$GITHUB_OUTPUT"
+            echo "Hardening/SHADOW deployment only. Mutation proof intentionally not started on every commit."
+          fi
 
       - name: Prove exact current TEST KING ancestry
         id: lineage
@@ -201,9 +210,6 @@ jobs:
         run: |
           set -euo pipefail
           PASS=false
-          # ONE INTERFACE browser E2E has empirically exceeded 15 minutes on a
-          # healthy exact-head run. Keep this bounded, but long enough to await
-          # the real gate rather than manufacturing a timeout race.
           for attempt in $(seq 1 210); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
             FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
@@ -230,8 +236,14 @@ jobs:
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
           echo "convergence_passed=true" >> "$GITHUB_OUTPUT"
 
+      - name: Record hardening-only SHADOW deployment
+        if: needs.preflight.outputs.activation_requested != 'true'
+        shell: bash
+        run: |
+          echo "Exact head deployed and SHADOW canary proven. Full mutation activation proof deferred until an explicit [factory-activate] head or workflow_dispatch."
+
       - name: Stop safely if permanent GitHub TEST-write credential is absent
-        if: steps.runtime_secrets.outputs.github_write_installed != 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -251,7 +263,7 @@ jobs:
           exit 1
 
       - name: Start three-family real autonomous production proof
-        if: steps.runtime_secrets.outputs.github_write_installed == 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
         id: proof_start
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
@@ -267,7 +279,7 @@ jobs:
           echo "$RESPONSE" | jq -e '.ok == true' >/dev/null
 
       - name: Poll real production, certify fresh evidence and activate
-        if: steps.runtime_secrets.outputs.github_write_installed == 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
         id: activate
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
