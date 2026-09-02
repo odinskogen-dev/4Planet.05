@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID,
   ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID,
   ORCHESTRA_V04_PREFIX_STALE_IDS,
   ORCHESTRA_V04_READY_DRAIN_MARKER_ID,
+  createFinalBayReadyDrainMarker,
   createLegacyOrchestraV04RecoveryMarker,
   createPostRecoveryReadyDrainMarker,
+  planFinalBayReadyDrain,
   planLegacyOrchestraV04QueueRecovery,
   planPostRecoveryReadyDrain,
 } from "./shadowStateMigration";
@@ -76,6 +79,18 @@ test("post-recovery drain is fail-closed outside SHADOW and after its receipt", 
   assert.deepEqual(planPostRecoveryReadyDrain({ mode: "SHADOW", markerPresent: true, work, recordedOutcomeIds: new Set() }), []);
 });
 
+test("final Bay drain is exact, SHADOW-only, outcome-aware and one-time", () => {
+  const work = [
+    { id: "orch-bay-mobile-v04", status: "READY" },
+    { id: "unrelated-ready", status: "READY" },
+  ];
+  assert.deepEqual(planFinalBayReadyDrain({ mode: "SHADOW", markerPresent: false, work, recordedOutcomeIds: new Set() }), ["orch-bay-mobile-v04"]);
+  assert.deepEqual(planFinalBayReadyDrain({ mode: "ACTIVE", markerPresent: false, work, recordedOutcomeIds: new Set() }), []);
+  assert.deepEqual(planFinalBayReadyDrain({ mode: "SHADOW", markerPresent: true, work, recordedOutcomeIds: new Set() }), []);
+  assert.deepEqual(planFinalBayReadyDrain({ mode: "SHADOW", markerPresent: false, work, recordedOutcomeIds: new Set(["orch-bay-mobile-v04"]) }), []);
+  assert.deepEqual(planFinalBayReadyDrain({ mode: "SHADOW", markerPresent: false, work: [{ id: "orch-bay-mobile-v04", status: "RUNNING" }], recordedOutcomeIds: new Set() }), []);
+});
+
 test("receipts are explicit, P0 and tied to the existing WBS/evidence", () => {
   const legacy = createLegacyOrchestraV04RecoveryMarker("2026-09-02T04:00:00.000Z", [ORCHESTRA_V04_PREFIX_STALE_IDS[0]]);
   assert.equal(legacy.id, ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID);
@@ -88,4 +103,10 @@ test("receipts are explicit, P0 and tied to the existing WBS/evidence", () => {
   assert.equal(readyDrain.priority, "P0");
   assert.ok(readyDrain.authorityRefs?.includes("FACT-G02"));
   assert.ok(readyDrain.authorityRefs?.some((ref) => ref.includes("33593226194")));
+
+  const finalBay = createFinalBayReadyDrainMarker("2026-09-02T06:20:00.000Z", ["orch-bay-mobile-v04"]);
+  assert.equal(finalBay.id, ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID);
+  assert.equal(finalBay.priority, "P0");
+  assert.ok(finalBay.authorityRefs?.includes("FACT-G07"));
+  assert.ok(finalBay.authorityRefs?.some((ref) => ref.includes("33597103285")));
 });
