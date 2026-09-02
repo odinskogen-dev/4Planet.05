@@ -313,12 +313,12 @@ function Header() {
   const dark = topIsDark(pathname) && !scrolled && !menuMode;
   const detachedDark = topIsDark(pathname) && scrolled && !menuMode;
   const fg = menuMode ? T.ink : dark || detachedDark ? "#fff" : T.ink;
-  const bg = menuMode ? "#fff" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
+  const bg = menuMode ? "#fff" : "transparent";
 
   return (
     <>
       <a href="#main-content" className="skip-link">SKIP TO CONTENT</a>
-      <header ref={headerRef} className="public-header" onMouseEnter={cancelClose} onMouseLeave={scheduleDesktopClose} style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none", WebkitBackdropFilter: scrolled && !menuMode ? "blur(14px) saturate(1.1)" : "none" }}>
+      <header ref={headerRef} className="public-header" onMouseEnter={cancelClose} onMouseLeave={scheduleDesktopClose} style={{ transform: hidden ? "translateY(-110%)" : "translateY(0)", color: fg, background: bg, backdropFilter: "none", WebkitBackdropFilter: "none" }}>
         <div className="public-header__bar">
           <Link to="/" className="public-brand" style={{ color: fg }} aria-label="4PLANET home">4PLANET_</Link>
 
