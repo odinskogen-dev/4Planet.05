@@ -148,10 +148,13 @@ jobs:
           HEALTH_URL="$BASE_URL/__factory/health"
           CANARY_URL="$BASE_URL/__factory/canary"
           READY=false
+          HEALTH_JSON=""
           CANARY_JSON=""
           for attempt in $(seq 1 96); do
             HEALTH_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 20 "$HEALTH_URL" || true)"
             CANARY_JSON="$(curl --silent --show-error --connect-timeout 5 --max-time 30 "$CANARY_URL" || true)"
+            printf '%s\n' "$HEALTH_JSON" > factory-shadow-health.json
+            printf '%s\n' "$CANARY_JSON" > factory-shadow-canary.json
             if echo "$HEALTH_JSON" | grep -q '"noLiveAuthority":true' \
               && echo "$CANARY_JSON" | grep -q '"ready":true' \
               && echo "$CANARY_JSON" | grep -q '"runtimeContract":"WORLD_CLASS_BUILD_03_ORCHESTRA_V04"' \
@@ -163,10 +166,12 @@ jobs:
             sleep 5
           done
           if [[ "$READY" != "true" ]]; then
+            echo "Final SHADOW health snapshot:"
+            echo "$HEALTH_JSON"
+            echo "Final SHADOW canary snapshot:"
             echo "$CANARY_JSON"
             exit 1
           fi
-          echo "$CANARY_JSON" > factory-shadow-canary.json
           echo "shadow_runtime_proven=true" >> "$GITHUB_OUTPUT"
 
       - name: Wait for exact-head Factory CI and ONE INTERFACE convergence
@@ -277,6 +282,7 @@ jobs:
         with:
           name: production-factory-certification-${{ github.sha }}
           path: |
+            factory-shadow-health.json
             factory-shadow-canary.json
             factory-active-certification.json
           if-no-files-found: ignore
