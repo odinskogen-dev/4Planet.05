@@ -129,7 +129,8 @@ test("public media registry fails closed when exact object rights are unresolved
 
 test("Orca photograph is not falsely licence-verified; owned illustration remains available", () => {
   assert.match(speciesMedia, /orca: pending\("orca", ""\)/);
-  assert.match(speciesMedia, /founder-supplied does not transfer ownership/i);
+  assert.match(speciesMedia, /founder-supplied[\s\S]{0,80}PROVENANCE/i);
+  assert.match(speciesMedia, /never implies 4PLANET\/Skog ownership/i);
   assert.match(speciesMedia, /4PLANET-created illustration — NOT a photograph/);
   assert.match(speciesMedia, /m\.publicWebAllowed && m\.commercialAllowed/);
   assert.doesNotMatch(speciesMedia, /orca:\s*\{[\s\S]{0,800}rightsStatus:\s*"LICENCE_VERIFIED"/);
