@@ -201,7 +201,10 @@ jobs:
         run: |
           set -euo pipefail
           PASS=false
-          for attempt in $(seq 1 90); do
+          # ONE INTERFACE browser E2E has empirically exceeded 15 minutes on a
+          # healthy exact-head run. Keep this bounded, but long enough to await
+          # the real gate rather than manufacturing a timeout race.
+          for attempt in $(seq 1 210); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
             FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
             CONVERGENCE="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="ONE INTERFACE Convergence Gate")][0].conclusion // "pending"')"
@@ -210,14 +213,18 @@ jobs:
               PASS=true
               break
             fi
-            if [[ "$FACTORY" =~ ^(failure|timed_out|action_required)$ || "$CONVERGENCE" =~ ^(failure|timed_out|action_required)$ ]]; then
-              echo "A required exact-head gate failed."
+            if [[ "$FACTORY" != "pending" && "$FACTORY" != "success" ]]; then
+              echo "Required exact-head Factory CI concluded non-success: $FACTORY"
+              exit 1
+            fi
+            if [[ "$CONVERGENCE" != "pending" && "$CONVERGENCE" != "success" ]]; then
+              echo "Required exact-head ONE INTERFACE convergence concluded non-success: $CONVERGENCE"
               exit 1
             fi
             sleep 10
           done
           if [[ "$PASS" != "true" ]]; then
-            echo "Required exact-head gates did not both reach success in the bounded window."
+            echo "Required exact-head gates did not both reach success in the bounded 35-minute window."
             exit 1
           fi
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
