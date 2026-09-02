@@ -8,6 +8,10 @@ const analytics = read("src/analytics/Analytics.tsx");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
+const redirects = read("public/_redirects");
+const headers = read("public/_headers");
+const publicCoreMatrixPath = "docs/control/PUBLIC_CORE_01_LIVE_MATRIX.md";
+const publicCoreScoped = existsSync(new URL(`../${publicCoreMatrixPath}`, import.meta.url));
 
 const requiredEvents = [
   "product_entry",
@@ -37,8 +41,9 @@ const requiredRoutes = [
   "/magazine",
   "/join",
   "/journey/jaguar/",
-  "/journey/orca/",
 ];
+
+const legacyFlagshipRoutes = ["/journey/orca/"];
 
 test("user proof funnel is broader than page views", () => {
   for (const eventName of requiredEvents) assert.ok(shared.includes(`\"${eventName}\"`), `missing ${eventName}`);
@@ -69,14 +74,23 @@ test("analytics is fail-closed to the approved live-domain set", () => {
   assert.match(analytics, /isAnalyticsHostAllowed/);
 });
 
-test("canonical discovery routes remain generated and crawlable", () => {
+test("canonical PUBLIC CORE discovery remains generated, crawlable and excludes held flagship routes", () => {
   for (const route of requiredRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
+
+  if (publicCoreScoped) {
+    for (const route of legacyFlagshipRoutes) assert.ok(!sitemap.includes(JSON.stringify(route)), `held route must not be discoverable: ${route}`);
+    assert.match(redirects, /^\/journey\/orca(?:\/\*)?\s+\/species\/orca\s+302$/m, "held ORCA journey must fail closed at the release edge");
+    assert.match(headers, /\/journey\/orca\/\*\n\s+X-Robots-Tag: noindex, nofollow, noarchive/, "held ORCA journey must be noindex/nofollow");
+  } else {
+    for (const route of legacyFlagshipRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
+  }
+
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);
 });
 
-test("flagship journey entries physically exist and retain a return path", () => {
+test("flagship journey entries physically exist and retain a return path even when a release holds one from public discovery", () => {
   const entries = [
     ["public/journey/jaguar/index.html", ["/species/jaguar", "/species", "/"]],
     ["public/journey/orca/index.html", ["/species/orca", "/species", "/"]],
