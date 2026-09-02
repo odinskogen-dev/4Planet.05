@@ -57,8 +57,14 @@ function packageById(id: string, nowIso = new Date().toISOString()): WorkPackage
   return createShadowOrchestraPackages(nowIso).find((pkg) => pkg.id === id);
 }
 
-async function factoryAgent(env: Cloudflare.Env) {
-  return getAgentByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+/**
+ * The Agents package exposes a deeply recursive generated RPC type for this
+ * large class. Erase only the transport type here; every payload and authority
+ * boundary remains validated by Factory domain contracts.
+ */
+async function factoryAgent(env: Cloudflare.Env): Promise<any> {
+  const getByName: any = getAgentByName;
+  return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
 }
 
 async function orchestraStatus(env: Cloudflare.Env) {
@@ -71,8 +77,6 @@ async function orchestraStatus(env: Cloudflare.Env) {
   const outcomes: Outcome[] = [];
   for (const pkg of packages) {
     if (!outcomeIds.has(pkg.id)) continue;
-    // dispatchToWorker is idempotent: when an outcome is already recorded it
-    // returns that persisted outcome without re-running the specialist.
     outcomes.push(await agent.dispatchToWorker(pkg.id));
   }
 
@@ -129,12 +133,6 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   const packages = createShadowOrchestraPackages(nowIso);
   for (const project of projects) await agent.upsertProject(project);
 
-  // One-time recovery for the exact durable V04 rows stranded before the
-  // HTTP-429 READY-before-retry correction existed. Durable Object state
-  // survives deploys, so those legacy RUNNING rows cannot self-heal through
-  // the corrected message path. This migration is SHADOW-only, exact-ID
-  // bounded, outcome-aware and receipt-gated; it cannot expand to unrelated
-  // Factory work or promote any quality/release state.
   const beforeMigration = (await agent.getFactoryState()) as FactoryStateView;
   const beforeRecorded = new Set(beforeMigration.outcomes.map((outcome) => outcome.work_package_id));
   const markerPresent = beforeMigration.projects.some((project) => project.id === ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID);
@@ -154,9 +152,6 @@ async function ensureOrchestra(env: Cloudflare.Env) {
     await env.FACTORY_QUEUE.sendBatch(
       recoveryPackages.map((pkg) => ({ body: queueMessageFor(pkg, nowIso) })),
     );
-    // Receipt comes only after successful queue submission. If submission
-    // fails, no marker is written and a later canary may safely retry the same
-    // exact migration under idempotent package IDs.
     await agent.upsertProject(createLegacyOrchestraV04RecoveryMarker(nowIso, recoveryPackages.map((pkg) => pkg.id)));
   }
 
@@ -209,10 +204,6 @@ async function processQueueMessage(message: Message<FactoryQueueMessage>, env: C
     }
 
     const specialistOutcome = await agent.dispatchToWorker(pkg.id);
-    // Browser capacity throttling is a transient Factory condition, not product
-    // evidence. Restore the package to READY before Queue retry so a failed
-    // delivery cannot strand it in RUNNING and make ensureOrchestra treat it as
-    // permanently active. No outcome is persisted and no quality claim is made.
     const retryablePackage = retryableTransientCapacityPackage(pkg, specialistOutcome);
     if (retryablePackage) {
       await agent.upsertWorkPackage(retryablePackage);
@@ -367,9 +358,6 @@ export default {
   },
 
   async queue(batch: MessageBatch<FactoryQueueMessage>, env: Cloudflare.Env, _ctx: ExecutionContext) {
-    // Cloudflare max_concurrency bounds consumer instances, not messages within a
-    // delivered batch. Process sequentially so one Browser session is active at
-    // a time on the bounded V01 transport.
     for (const message of batch.messages) {
       await processQueueMessage(message, env);
     }
