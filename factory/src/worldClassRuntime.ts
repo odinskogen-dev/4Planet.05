@@ -16,10 +16,13 @@ import {
   type FactoryQueueMessage,
 } from "./shadowOrchestra";
 import {
+  ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID,
   ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID,
   ORCHESTRA_V04_READY_DRAIN_MARKER_ID,
+  createFinalBayReadyDrainMarker,
   createLegacyOrchestraV04RecoveryMarker,
   createPostRecoveryReadyDrainMarker,
+  planFinalBayReadyDrain,
   planLegacyOrchestraV04QueueRecovery,
   planPostRecoveryReadyDrain,
   recoveredQueuePackage,
@@ -178,6 +181,26 @@ async function ensureOrchestra(env: Cloudflare.Env) {
     await agent.upsertProject(createPostRecoveryReadyDrainMarker(nowIso, readyDrainPackages.map((pkg) => pkg.id)));
   }
 
+  const afterReadyDrain = (await agent.getFactoryState()) as FactoryStateView;
+  const afterReadyRecorded = new Set(afterReadyDrain.outcomes.map((outcome) => outcome.work_package_id));
+  const finalBayMarkerPresent = afterReadyDrain.projects.some((project) => project.id === ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID);
+  const finalBayIds = planFinalBayReadyDrain({
+    mode: health.mode,
+    markerPresent: finalBayMarkerPresent,
+    work: afterReadyDrain.work,
+    recordedOutcomeIds: afterReadyRecorded,
+  });
+  const finalBayPackages = finalBayIds
+    .map((id) => packageById(id, nowIso))
+    .filter((pkg): pkg is WorkPackage => Boolean(pkg));
+
+  if (finalBayPackages.length > 0) {
+    await env.FACTORY_QUEUE.sendBatch(
+      finalBayPackages.map((pkg) => ({ body: queueMessageFor(pkg, nowIso) })),
+    );
+    await agent.upsertProject(createFinalBayReadyDrainMarker(nowIso, finalBayPackages.map((pkg) => pkg.id)));
+  }
+
   const state = (await agent.getFactoryState()) as FactoryStateView;
   const recorded = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
   const active = new Set(state.work.map((work) => work.id));
@@ -193,6 +216,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   return {
     legacyRecovered: recoveryPackages.length,
     readyDrainRecovered: readyDrainPackages.length,
+    finalBayRecovered: finalBayPackages.length,
     acceptedIntoQueue: pending.length,
     alreadyActive: packages.filter((pkg) => active.has(pkg.id) && !recorded.has(pkg.id)).length,
     alreadyCompleted: packages.filter((pkg) => recorded.has(pkg.id)).length,
