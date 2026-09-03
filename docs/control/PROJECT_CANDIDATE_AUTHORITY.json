@@ -15,13 +15,17 @@
   "products": {
     "ATLAS": {
       "heir": "king/test",
-      "sandbox": {
-        "branch": "work/atlas-product-polish-01",
+      "sandbox": null,
+      "lineage_state": "CONVERGED_TO_TEST_KING",
+      "last_convergence": {
         "pr": 246,
-        "head_sha_at_registration": "0f0e0b93c1fb1de4f83f2c089854d2631f57da71",
-        "required_ancestor_sha_at_registration": "ac2538f78bbfdb0e922f7f8f64cf808013fe1e34",
-        "classification": "SANDBOX",
-        "purpose": "bounded ATLAS product-polish convergence into TEST KING"
+        "sandbox_branch": "work/atlas-product-polish-01",
+        "sandbox_head": "08d7d643d8df2670f48deff7273ededacc966539",
+        "test_king_base": "d686a5850ae9debe044522a67cee04b6faadc056",
+        "merge_sha": "6a5cf5edafd1b958ee121f4d8be290c2be5f2fa8",
+        "required_gates": ["ATLAS_ZERO_LOSS", "ONE_INTERFACE"],
+        "gate_state": "PASS",
+        "live_authority": false
       },
       "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
     },
