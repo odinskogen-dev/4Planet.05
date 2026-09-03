@@ -7,7 +7,7 @@ import { runActivationGateSimulation } from "./activationSimulation";
 import { validateBrainProjection, type BrainProjectionSnapshot } from "./brainProjection";
 import { compileLearningCandidate } from "./learningCompiler";
 import { compileApprovedProjectIntake, type ApprovedProjectIntake } from "./projectIntake";
-import { decideInFlightRecovery } from "./recovery";
+import { decideInFlightRecovery, type TrackedWorkflowStatus } from "./recovery";
 import {
   createShadowCanaryPackages,
   createShadowCanaryProject,
@@ -51,6 +51,15 @@ interface FactoryState {
 
 const CANARY_WORKFLOWS = [SHADOW_SOURCE_WORKFLOW_ID, SHADOW_BROWSER_WORKFLOW_ID] as const;
 const CANARY_PACKAGES = [SHADOW_SOURCE_PACKAGE_ID, SHADOW_BROWSER_PACKAGE_ID] as const;
+const TRACKED_WORKFLOW_STATUSES = new Set<TrackedWorkflowStatus>([
+  "queued",
+  "running",
+  "paused",
+  "waiting",
+  "complete",
+  "errored",
+  "terminated",
+]);
 
 export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> {
   initialState: FactoryState = {
@@ -113,6 +122,13 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         project_id TEXT NOT NULL,
         payload TEXT NOT NULL,
         compiled_at TEXT NOT NULL
+      )
+    `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS workflow_bindings (
+        work_package_id TEXT PRIMARY KEY,
+        workflow_id TEXT NOT NULL,
+        bound_at TEXT NOT NULL
       )
     `;
 
@@ -325,7 +341,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   async runHour() {
-    this.recoverInterruptedWork();
+    await this.recoverInterruptedWork();
     this.releaseExpiredLocks();
 
     const projects = new Map(
@@ -356,17 +372,20 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     }
 
     const workflowIds = await Promise.all(
-      dispatchable.map((pkg) =>
-        this.runWorkflow(
+      dispatchable.map(async (pkg) => {
+        const workflowId = `wp-${pkg.id}-${Date.now()}`;
+        const startedId = await this.runWorkflow(
           "WORK_PACKAGE_WORKFLOW",
           { workPackageId: pkg.id },
           {
-            id: `wp-${pkg.id}-${Date.now()}`,
+            id: workflowId,
             metadata: { projectId: pkg.projectId, section: pkg.section, priority: pkg.priority },
             agentBinding: "PRODUCTION_FACTORY",
           },
-        ),
-      ),
+        );
+        this.bindWorkflow(pkg.id, workflowId);
+        return startedId;
+      }),
     );
 
     this.setState({
@@ -501,7 +520,23 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     return row ? (JSON.parse(row.payload) as Outcome) : undefined;
   }
 
-  private recoverInterruptedWork() {
+  private trackedWorkflowStatus(workflowId: string | undefined): TrackedWorkflowStatus | undefined {
+    if (!workflowId) return undefined;
+    const tracked = this.getWorkflow(workflowId);
+    const status = tracked?.status;
+    return TRACKED_WORKFLOW_STATUSES.has(status as TrackedWorkflowStatus) ? status as TrackedWorkflowStatus : undefined;
+  }
+
+  private bindWorkflow(workPackageId: string, workflowId: string) {
+    const boundAt = new Date().toISOString();
+    this.sql`
+      INSERT INTO workflow_bindings (work_package_id, workflow_id, bound_at)
+      VALUES (${workPackageId}, ${workflowId}, ${boundAt})
+      ON CONFLICT(work_package_id) DO UPDATE SET workflow_id = excluded.workflow_id, bound_at = excluded.bound_at
+    `;
+  }
+
+  private async recoverInterruptedWork() {
     const rows = this.sql<{ payload: string; updated_at: string }>`
       SELECT payload, updated_at FROM work_packages WHERE status IN ('DISPATCHED', 'RUNNING')
     `;
@@ -510,13 +545,34 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     for (const row of rows) {
       const pkg = JSON.parse(row.payload) as WorkPackage;
       const recorded = this.getRecordedOutcome(pkg.id);
+      const binding = this.sql<{ workflow_id: string }>`
+        SELECT workflow_id FROM workflow_bindings WHERE work_package_id = ${pkg.id}
+      `[0];
+
+      if (binding?.workflow_id) {
+        const tracked = this.getWorkflow(binding.workflow_id);
+        if (tracked && (tracked.status === "queued" || tracked.status === "running" || tracked.status === "paused" || tracked.status === "waiting")) {
+          try {
+            await this.getWorkflowStatus("WORK_PACKAGE_WORKFLOW", binding.workflow_id);
+          } catch {
+            // Missing/failed authoritative refresh never authorizes recovery; tracked state below fails closed unless terminal.
+          }
+        }
+      }
+
+      const workflowStatus = this.trackedWorkflowStatus(binding?.workflow_id);
       const decision = decideInFlightRecovery(
-        { status: pkg.status, updatedAt: row.updated_at, hasRecordedOutcome: Boolean(recorded) },
+        {
+          status: pkg.status,
+          updatedAt: row.updated_at,
+          hasRecordedOutcome: Boolean(recorded),
+          workflowStatus,
+        },
         now,
       );
 
       if (decision === "FINALIZE_RECORDED_OUTCOME" && recorded) {
-        void this.finalizeWorkflowOutcome(recorded);
+        await this.finalizeWorkflowOutcome(recorded);
         continue;
       }
       if (decision === "RECOVER_TO_READY") {
