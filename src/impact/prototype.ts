@@ -44,7 +44,7 @@ export const TEST_UNITS: Record<TestUnitSlug, ImpactUnitDefinition> = {
     id: "impact-unit:4p:test:plastic",
     slug: "plastic",
     name: "Plastic Unit",
-    missionId: "mission:4p:pl4stic",
+    missionId: "mission:4p:cle4n",
     unitQuantity: 1,
     unitLabel: "test kilogram request",
     description: "Exercises the contribution and proof-state contract. No plastic is collected, prevented or recycled.",
