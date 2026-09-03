@@ -172,9 +172,11 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       if (!response.ok) return true;
       const body = await response.json() as { object?: { sha?: string } };
       const candidateSha = body.object?.sha;
-      if (shouldReserveAiForCandidate(candidateSha, autonomous.expectedBaseSha, "UNKNOWN")) {
-        if (!candidateSha || candidateSha.toLowerCase() === autonomous.expectedBaseSha.toLowerCase()) return true;
-      }
+
+      // Asking the pure policy with PENDING is a safe material-candidate test:
+      // false is possible only for two valid, different SHAs. Everything else
+      // (missing/malformed/base identity) reserves immediately, before checks.
+      if (shouldReserveAiForCandidate(candidateSha, autonomous.expectedBaseSha, "PENDING")) return true;
       if (!candidateSha) return true;
 
       const checksResponse = await fetch(`https://api.github.com/repos/${REPOSITORY}/commits/${candidateSha}/check-runs?per_page=100`, { headers });
