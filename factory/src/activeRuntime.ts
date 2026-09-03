@@ -141,7 +141,8 @@ async function seedRealProof(env: ActiveEnv) {
   if (state.state.mode !== "SHADOW") return { alreadyActive: true, buildSha, currentTestSha, workflowIds: [] as string[] };
 
   const cases = versionedProofCases(currentTestSha, buildSha);
-  const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
+  const recordedOutcomes = await factory.getOutcomesByIds(cases.map((proof) => proof.pkg.id)) as Outcome[];
+  const recorded = new Set(recordedOutcomes.map((outcome) => outcome.workPackageId));
   const workflowIds: string[] = [];
   for (const proof of cases) {
     await factory.upsertProject(proof.project);
@@ -176,12 +177,9 @@ async function proofOutcomes(env: ActiveEnv): Promise<{ complete: boolean; outco
   const factory: any = await factoryAgent(env);
   const state = await enforceExactBuildCertification(env);
   const ids = activationProofIds(buildSha);
-  const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
-  const outcomes: Outcome[] = [];
-  for (const id of ids) {
-    if (!recorded.has(id)) continue;
-    outcomes.push(await factory.dispatchToWorker(id) as Outcome);
-  }
+  const exactOutcomes = await factory.getOutcomesByIds(ids) as Outcome[];
+  const byId = new Map(exactOutcomes.map((outcome) => [outcome.workPackageId, outcome] as const));
+  const outcomes = ids.map((id) => byId.get(id)).filter((outcome): outcome is Outcome => Boolean(outcome));
   return { complete: outcomes.length === ids.length, outcomes, state, ids, buildSha };
 }
 
