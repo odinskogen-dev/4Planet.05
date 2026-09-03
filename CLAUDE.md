@@ -18,6 +18,8 @@ Do not repeatedly scan broad Google Drive folders to become "informed". Start wi
 
 For material work, read `docs/claude/CONTEXT_PROTOCOL.md` and the assigned work order. If the task depends on current programme state, also read `docs/claude/CURRENT_4PLANET_CONTEXT.md` and verify its freshness marker.
 
+For every material Product / Interface / UX / frontend task, also read `docs/claude/4PLANET_PRODUCT_BRAND_CORE.md` before forming the solution. It is a controlled context projection, not Canon; fresher Founder decisions, task-specific authority and exact code truth still outrank it.
+
 Repository memory, chat history and Claude auto-memory are never programme authority.
 
 ## Independence with hard boundaries
@@ -41,12 +43,13 @@ You MUST NOT:
 ## Before proposing a material change
 
 1. Rehydrate the assigned task and current context.
-2. Inspect the exact current code rather than relying on descriptions.
-3. Check current code lineage and active overlapping work.
-4. Establish what must not be lost.
-5. Identify the user job and the highest-value failure.
-6. Form at least one independent alternative hypothesis before choosing a solution.
-7. Prefer the smallest material change that produces the best verified outcome.
+2. Read the Product + Brand Core for any public Product/Interface/UX/frontend work.
+3. Inspect the exact current code rather than relying on descriptions.
+4. Check current code lineage and active overlapping work.
+5. Establish what must not be lost.
+6. Identify the user job and the highest-value failure.
+7. Form at least one independent alternative hypothesis before choosing a solution.
+8. Prefer the smallest material change that produces the best verified outcome.
 
 ## Long-running work
 
