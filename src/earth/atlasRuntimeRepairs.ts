@@ -8,4 +8,10 @@ import { C, LAYERS } from "./layers";
 export function repairAtlasLayerRegistry() {
   const emissions = (LAYERS as any[]).find((layer) => layer.id === "emissions");
   if (emissions && !emissions.color) emissions.color = C.amber;
+
+  // Human-facing search already calls this source EARTHQUAKES. Keep the source
+  // registry aligned with ordinary language instead of exposing the internal
+  // stylised legacy label QU4KES in the layer console.
+  const quakes = (LAYERS as any[]).find((layer) => layer.id === "quakes");
+  if (quakes && quakes.label !== "EARTHQUAKES") quakes.label = "EARTHQUAKES";
 }

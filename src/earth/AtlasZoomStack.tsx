@@ -56,6 +56,7 @@ export default function AtlasZoomStack() {
     let attachTimer: number | undefined;
     let scheduled = 0;
     let autoLocalProjection = false;
+    const startupTimers: number[] = [];
 
     const apply = () => {
       scheduled = 0;
@@ -76,15 +77,19 @@ export default function AtlasZoomStack() {
       } catch { /* retry on next map event */ }
 
       const styleLayers = map.getStyle()?.layers || [];
+      const root = document.documentElement;
 
-      // Blue Marble is global/regional context only. Above this point the sharp
-      // vector map underneath owns roads, buildings, settlements and labels.
+      // Blue Marble is global/regional context only. Dynamic overlays may mount
+      // after the base style has already emitted its first styledata event, so do
+      // not infer success from the serialised style object. Reassert the zoom
+      // range whenever the layer exists. The operation is idempotent and closes
+      // the deep-link startup race that previously let imagery stretch to street.
       try {
-        const blueMarble = styleLayers.find((layer) => layer?.id === "bluemarble");
-        if (map.getLayer("bluemarble") && (!Number.isFinite(blueMarble?.maxzoom) || blueMarble.maxzoom > ATLAS_ZOOM_POLICY.blueMarbleMaxZoom + 0.001)) {
+        if (map.getLayer("bluemarble")) {
           map.setLayerZoomRange?.("bluemarble", 0, ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
+          root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
         }
-      } catch { /* layer may not be mounted yet */ }
+      } catch { /* layer may be mounting; bounded startup retries cover it */ }
 
       const showLabels = zoom >= ATLAS_ZOOM_POLICY.labelsStart || projection === "mercator";
       const targetVisibility = showLabels ? "visible" : "none";
@@ -101,7 +106,6 @@ export default function AtlasZoomStack() {
         } catch { /* style transition; next event retries */ }
       }
 
-      const root = document.documentElement;
       root.dataset.atlasZoomBand = band;
       root.dataset.atlasProjectionMode = projection;
       root.dataset.atlasPlaceLabels = showLabels ? "visible" : "hidden";
@@ -122,11 +126,15 @@ export default function AtlasZoomStack() {
         attachTimer = window.setTimeout(attach, 100);
         return;
       }
-      map.on("zoom", schedule);
-      map.on("zoomend", schedule);
-      map.on("moveend", schedule);
-      map.on("styledata", schedule);
+      for (const event of ["zoom", "zoomend", "moveend", "styledata", "sourcedata", "idle"]) map.on(event, schedule);
       schedule();
+
+      // Bounded startup reconciliation. This is only to catch overlays added by
+      // World after the initial vector style is ready; it never becomes a live
+      // polling loop and releases completely after the startup window.
+      for (const delay of [160, 420, 900, 1600, 2600]) {
+        startupTimers.push(window.setTimeout(schedule, delay));
+      }
     };
 
     attach();
@@ -134,11 +142,9 @@ export default function AtlasZoomStack() {
       disposed = true;
       if (attachTimer) window.clearTimeout(attachTimer);
       if (scheduled) window.cancelAnimationFrame(scheduled);
+      for (const timer of startupTimers) window.clearTimeout(timer);
       if (map) {
-        map.off("zoom", schedule);
-        map.off("zoomend", schedule);
-        map.off("moveend", schedule);
-        map.off("styledata", schedule);
+        for (const event of ["zoom", "zoomend", "moveend", "styledata", "sourcedata", "idle"]) map.off(event, schedule);
       }
       const root = document.documentElement;
       delete root.dataset.atlasZoomBand;
@@ -147,6 +153,7 @@ export default function AtlasZoomStack() {
       delete root.dataset.atlasVectorSymbolLayers;
       delete root.dataset.atlasVisibleSymbolLayers;
       delete root.dataset.atlasStreetQuality;
+      delete root.dataset.atlasBlueMarbleMaxZoom;
     };
   }, []);
 

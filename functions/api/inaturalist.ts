@@ -5,6 +5,10 @@
  * Public occurrence records remain observations, never range/abundance/live tracking.
  * Public coordinates are passed through exactly as supplied; obscured/private
  * locations are never reconstructed or sharpened.
+ *
+ * Taxon resolution accepts either an explicit iNaturalist taxonId or an exact
+ * scientific-name query (`q`). Query resolution is fail-closed: fuzzy provider
+ * matches are never silently promoted to taxon identity.
  */
 
 const BASE = "https://api.inaturalist.org/v1";
@@ -14,8 +18,9 @@ const json = (body: unknown, status = 200, maxAge = 300) =>
     status,
     headers: {
       "content-type": "application/json",
-      "cache-control": `public, max-age=${maxAge}`,
+      "cache-control": status === 200 ? `public, max-age=${maxAge}` : "no-store",
       "access-control-allow-origin": "*",
+      "x-4planet-atlas-source": "inaturalist",
     },
   });
 
@@ -32,6 +37,10 @@ const finiteCoord = (value: string | null, min: number, max: number) => {
 
 const safeDate = (value: string | null) => value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
 const safeQuality = (value: string | null) => value && ["research", "needs_id", "casual"].includes(value) ? value : null;
+const safeQuery = (value: string | null) => {
+  const q = String(value || "").trim().replace(/\s+/g, " ");
+  return q.length >= 3 && q.length <= 160 ? q : "";
+};
 
 function normaliseLicence(value: unknown) {
   const raw = String(value ?? "").trim().toLowerCase();
@@ -54,10 +63,39 @@ function commercialWebStatus(licence: string) {
   return "REVIEW_REQUIRED";
 }
 
+async function resolveExactTaxon(query: string) {
+  const url = `${BASE}/taxa?q=${encodeURIComponent(query)}&per_page=20&order_by=observations_count`;
+  const response = await fetch(url, {
+    headers: {
+      accept: "application/json",
+      "user-agent": "4PLANET-ATLAS/1.0 (+https://4planet.org)",
+    },
+    cf: { cacheTtl: 86400 } as RequestInit["cf"],
+  });
+  if (!response.ok) return { ok: false as const, error: `TAXON_UPSTREAM_${response.status}` };
+  const data = await response.json() as any;
+  if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH" };
+
+  const want = query.toLocaleLowerCase("en");
+  const exact = data.results.find((row: any) => String(row?.name || "").trim().toLocaleLowerCase("en") === want);
+  if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED" };
+
+  return {
+    ok: true as const,
+    taxon: {
+      id: Number(exact.id),
+      name: String(exact.name || query),
+      preferredCommonName: exact.preferred_common_name ?? null,
+      rank: exact.rank ?? null,
+    },
+  };
+}
+
 export const onRequestGet = async ({ request }: { request: Request }) => {
   const incoming = new URL(request.url);
-  const taxonId = clampInt(incoming.searchParams.get("taxonId"), 0, 1, Number.MAX_SAFE_INTEGER);
-  if (!taxonId) return json({ ok: false, error: "TAXON_ID_REQUIRED" }, 400, 60);
+  let taxonId = clampInt(incoming.searchParams.get("taxonId"), 0, 1, Number.MAX_SAFE_INTEGER);
+  const query = safeQuery(incoming.searchParams.get("q"));
+  if (!taxonId && !query) return json({ ok: false, error: "TAXON_ID_OR_EXACT_QUERY_REQUIRED" }, 400, 60);
 
   const perPage = clampInt(incoming.searchParams.get("perPage"), 40, 1, 100);
   const page = clampInt(incoming.searchParams.get("page"), 1, 1, 100);
@@ -75,6 +113,27 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
   }
   if (bboxProvided && (!(swlat! < nelat!) || !(swlng! < nelng!))) {
     return json({ ok: false, error: "INVALID_BBOX" }, 400, 60);
+  }
+
+  let resolvedTaxon: { id: number; name: string; preferredCommonName: string | null; rank: string | null } | null = null;
+  if (!taxonId && query) {
+    try {
+      const resolved = await resolveExactTaxon(query);
+      if (!resolved.ok) {
+        const status = resolved.error === "TAXON_NOT_EXACTLY_RESOLVED" ? 404 : 502;
+        return json({
+          ok: false,
+          source: "inaturalist",
+          error: resolved.error,
+          query,
+          semantics: "NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED",
+        }, status, 60);
+      }
+      resolvedTaxon = resolved.taxon;
+      taxonId = resolved.taxon.id;
+    } catch {
+      return json({ ok: false, source: "inaturalist", error: "TAXON_RESOLUTION_FAILURE", query }, 502, 60);
+    }
   }
 
   const qs = new URLSearchParams({
@@ -100,7 +159,7 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
     const response = await fetch(upstream, {
       headers: {
         accept: "application/json",
-        "user-agent": "4PLANET-SPECIES/1.0 (+https://4planet.org)",
+        "user-agent": "4PLANET-ATLAS/1.0 (+https://4planet.org)",
       },
       cf: { cacheTtl: 300 } as RequestInit["cf"],
     });
@@ -126,8 +185,6 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         };
       }) : [];
 
-      // Keep provider geoprivacy semantics explicit. iNaturalist payloads can expose
-      // taxon_geoprivacy directly or via taxon conservation status depending on endpoint/version.
       const taxonGeoprivacy = row?.taxon_geoprivacy ?? row?.taxon?.geoprivacy ?? row?.taxon?.conservation_status?.geoprivacy ?? null;
 
       return {
@@ -156,13 +213,16 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       source: "inaturalist",
       api: "https://api.inaturalist.org/v1",
       retrievedAt: new Date().toISOString(),
-      query: { taxonId, page, perPage, quality, d1, d2, bbox: bboxProvided ? { swlat, swlng, nelat, nelng } : null },
+      resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+      query: { input: query || null, taxonId, page, perPage, quality, d1, d2, bbox: bboxProvided ? { swlat, swlng, nelat, nelng } : null },
       totalResults: Number(data?.total_results ?? records.length),
       records,
+      semantics: records.length ? "PUBLIC_OCCURRENCE_RECORDS_RETURNED" : "NO_OBSERVATIONS_RETURNED_FOR_QUERY",
       limitations: [
         "Occurrences are reported observations, not range, abundance, population trend or live tracking.",
         "Only public coordinates supplied by iNaturalist are returned; obscured/private locations are never reconstructed.",
         "Observation licence and photo licence are distinct; media reuse requires the photo-specific licence check.",
+        "Scientific-name query resolution requires an exact iNaturalist taxon-name match; fuzzy matches are not promoted to identity.",
       ],
     }, 200, 300);
   } catch (error) {
