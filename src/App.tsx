@@ -3,6 +3,7 @@ import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
+import { ActorAtlasOverlay } from "@/earth/ActorAtlasOverlay";
 import "@/styles/global.css";
 import "@/styles/responsive-footer.css";
 
@@ -22,6 +23,7 @@ export default function App() {
       <ScrollToTop />
       <ContextRetained />
       <AtlasProductSwitcher />
+      <ActorAtlasOverlay />
       <AppRoutes />
     </BrowserRouter>
   );
