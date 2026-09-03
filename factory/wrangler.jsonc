@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "4planet-production-factory-v01-shadow",
-  "main": "src/activeRuntime.ts",
+  "main": "src/runtimeEntrypoint.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
