@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "control_state": "INTERNAL_TEST_ONLY",
+  "authority_model": {
+    "live": "FOUNDER_GATED",
+    "test_heir": {
+      "branch": "king/test",
+      "role": "SOLE_HEIR"
+    },
+    "max_registered_sandboxes_per_product": 1,
+    "newest_wins": false,
+    "stable_alias_is_identity_proof": false,
+    "sandbox_requires_test_heir_as_exact_ancestor": true
+  },
+  "products": {
+    "ATLAS": {
+      "heir": "king/test",
+      "sandbox": null,
+      "lineage_state": "CONVERGED_TO_TEST_KING",
+      "last_convergence": {
+        "pr": 246,
+        "sandbox_branch": "work/atlas-product-polish-01",
+        "sandbox_head": "08d7d643d8df2670f48deff7273ededacc966539",
+        "test_king_base": "d686a5850ae9debe044522a67cee04b6faadc056",
+        "merge_sha": "6a5cf5edafd1b958ee121f4d8be290c2be5f2fa8",
+        "required_gates": ["ATLAS_ZERO_LOSS", "ONE_INTERFACE"],
+        "gate_state": "PASS",
+        "live_authority": false
+      },
+      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+    },
+    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "MAGAZINE": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"}
+  },
+  "promotion_contract": {
+    "founder_review_requires": [
+      "exact_branch",
+      "exact_sha",
+      "immutable_deploy_marker_or_preview",
+      "required_ci_green",
+      "candidate_authority_gate_green"
+    ],
+    "donor_delta_dispositions": [
+      "ADOPT",
+      "ALREADY_PRESENT",
+      "REJECT_WITH_REASON",
+      "DEFER_WITH_REASON"
+    ],
+    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
+  },
+  "safety": {
+    "no_live_or_main_promotion_by_this_register": true,
+    "no_canon_authority_change": true,
+    "superbrain_remains_shadow_until_explicit_founder_cutover": true,
+    "factory_remains_separate_existing_lineage": true
+  }
+}

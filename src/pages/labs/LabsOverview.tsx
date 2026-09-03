@@ -63,17 +63,26 @@ export default function LabsOverview() {
       </section>
 
       <section className="labs-section">
-        <div className="labs-section-head"><div><span className="labs-kicker">02</span><h2>GIGA scorecard</h2></div><small>Value Loops are one outcome metric — not the whole operating system</small></div>
+        <div className="labs-section-head"><div><span className="labs-kicker">02</span><h2>Real proof surfaces</h2></div><small>Inspectable internal tests — evidence before claims</small></div>
+        <div className="labs-path">
+          <button onClick={() => window.location.assign("/labs/food-user-test")}>
+            <span>01</span><strong>FOOD HUMAN PROOF</strong><small>Private anonymous product validation · accuracy · comprehension · trust · usefulness</small>
+          </button>
+        </div>
+      </section>
+
+      <section className="labs-section">
+        <div className="labs-section-head"><div><span className="labs-kicker">03</span><h2>GIGA scorecard</h2></div><small>Value Loops are one outcome metric — not the whole operating system</small></div>
         <div className="labs-scorecard">{scorecard.map(([name, desc]) => <div key={name}><strong>{name}</strong><p>{desc}</p><span>BASELINE REQUIRED</span></div>)}</div>
       </section>
 
       <section className="labs-section">
-        <div className="labs-section-head"><div><span className="labs-kicker">03</span><h2>Project universe</h2></div><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search projects, goals, roles…" /></div>
+        <div className="labs-section-head"><div><span className="labs-kicker">04</span><h2>Project universe</h2></div><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search projects, goals, roles…" /></div>
         <div className="labs-grid">{filtered.map((p) => <ProjectCard key={p.id} project={p} onOpen={setSelected} />)}</div>
       </section>
 
       <section className="labs-section labs-autonomy">
-        <div className="labs-section-head"><div><span className="labs-kicker">04</span><h2>Autonomous organisation</h2></div><small>One prioritiser · one production engine · specialists · independent judge</small></div>
+        <div className="labs-section-head"><div><span className="labs-kicker">05</span><h2>Autonomous organisation</h2></div><small>One prioritiser · one production engine · specialists · independent judge</small></div>
         <div className="labs-role-grid">
           <div><b>GIGA CONDUCTOR</b><p>Rehydrates truth, measures plan vs evidence, ranks the portfolio and feeds bounded work to Factory.</p></div>
           <div><b>FACTORY PRODUCTION</b><p>Plans, researches, designs, writes, codes, tests, diagnoses, corrects, red-teams and learns every hour.</p></div>

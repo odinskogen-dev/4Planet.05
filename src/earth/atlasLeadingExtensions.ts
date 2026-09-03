@@ -155,7 +155,7 @@ export function installAtlasLeadingExtensions() {
         domain: descriptor.domain,
         label: descriptor.label,
         color: descriptor.color,
-        src: `${descriptor.authority} · donor contract checked 2026-08-19`,
+        src: descriptor.authority,
         opacity: descriptor.opacity,
         maxzoom: descriptor.maxzoom,
         wms: true,

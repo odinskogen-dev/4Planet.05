@@ -1,6 +1,10 @@
 import { lazy, Suspense, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
+import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
+import { AtlasBasemapSync } from "./AtlasBasemapSync";
+import { AtlasHumanSurfacePolish } from "./AtlasHumanSurfacePolish";
+import "./atlasPolish.css";
 
 const World = lazy(() => import("./World"));
 
@@ -168,9 +172,13 @@ export default function PublicWorld() {
   if (supported) {
     return (
       <>
+        <AtlasPlaceNameBridge />
+        <AtlasBasemapSync />
+        <AtlasHumanSurfacePolish />
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
+        <div className="atlas-identity" aria-label="4PLANET ATLAS">4PLANET <strong>ATLAS</strong></div>
         <AtlasSavedViews />
       </>
     );
@@ -182,16 +190,16 @@ export default function PublicWorld() {
     <main id="main-content" style={fallbackStyle}>
       <section style={{ width: "min(820px, 100%)" }} aria-labelledby="atlas-fallback-title">
         <p style={{ fontFamily: "monospace", fontSize: 12, letterSpacing: ".13em", color: "#3AE86F" }}>
-          ATLAS_ · PUBLIC PREVIEW · CAPABILITY LIMIT
+          4PLANET ATLAS · INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE
         </p>
         <h1 id="atlas-fallback-title" style={{ margin: "24px 0 0", fontSize: "clamp(40px, 8vw, 92px)", lineHeight: .94, letterSpacing: "-.055em", fontWeight: 500 }}>
-          The living planet needs a capable canvas.
+          This browser can’t run the interactive map.
         </h1>
-        <p style={{ margin: "28px 0 0", maxWidth: 650, color: "rgba(255,255,255,.78)", fontSize: "clamp(17px, 2vw, 22px)", lineHeight: 1.5 }}>
-          This device or browser cannot provide the WebGL graphics support required by the interactive Earth. 4PLANET does not replace the missing map with fabricated activity or an inaccurate simulation.
+        <p role="status" style={{ margin: "28px 0 0", maxWidth: 650, color: "rgba(255,255,255,.78)", fontSize: "clamp(17px, 2vw, 22px)", lineHeight: 1.5 }}>
+          ATLAS needs browser graphics support that is not available here. Rather than show an inaccurate substitute, the map stays unavailable on this device.
         </p>
         <p style={{ margin: "16px 0 0", maxWidth: 650, color: "rgba(255,255,255,.62)", fontSize: 15, lineHeight: 1.6 }}>
-          The rest of the Public Preview remains available. Explore the Orca profile, the connected Living Systems layer, or return to the main 4PLANET experience. Context from the current journey is retained where supported.
+          The rest of 4PLANET still works. Continue into Orca or Living Systems, or reopen ATLAS in a modern browser or device with WebGL support. Any journey context in this link is kept where supported.
         </p>
         <nav aria-label="Continue without interactive Atlas" style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 34 }}>
           <Link to={`/species/orca${context}`} style={{ color: "#080808", background: "#fff", padding: "13px 18px", textDecoration: "none", fontWeight: 600 }}>
@@ -205,7 +213,7 @@ export default function PublicWorld() {
           </Link>
         </nav>
         <p style={{ marginTop: 32, fontFamily: "monospace", fontSize: 11, color: "rgba(255,255,255,.48)", lineHeight: 1.6 }}>
-          STATUS: INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE · NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED.
+          MAP STATUS: UNAVAILABLE ON THIS DEVICE · NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED.
         </p>
       </section>
     </main>

@@ -28,6 +28,7 @@ import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
+const FoodUserTest = lazy(() => import("../food/FoodUserTest"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
 const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
@@ -40,6 +41,7 @@ const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((mo
 
 const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
+const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -54,6 +56,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />
       <Route path="/os/labs" element={<LabsOverview />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
