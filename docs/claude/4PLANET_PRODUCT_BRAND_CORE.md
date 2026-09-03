@@ -438,3 +438,34 @@ Before returning a candidate ask:
 **Is this materially more useful, more beautiful, more understandable and more truthful — without losing accepted value or creating a parallel system?**
 
 If not, it is not premium 4PLANET work.
+
+---
+
+## 16. CURRENT PREMIUM BRAND CONTROL
+
+The durable direction above is supplemented by current Founder-approved premium controls that future product work must remember unless a fresher Founder decision supersedes them:
+
+- the public product family should feel like one recognisable 4PLANET universe, not four unrelated apps;
+- the Product Switcher should be quiet, precise and recognisably 4PLANET rather than a loud four-square app launcher;
+- the principal header CTA is `JOIN 4PLANET` where that shared-header control is present;
+- the global header is visually transparent when closed, hides cleanly on downward scroll and returns on upward scroll where the current shell supports that behaviour;
+- default product context uses one intentional brand-blue accent against pure white or pure black;
+- a Domain or Mission uses its one active Domain colour as the interface accent; brand blue and multiple Domain colours must not compete decoratively;
+- life, place and clear human meaning should dominate over system labels, cards, technical implementation language and dashboard geometry;
+- documentary photography and evidence-relevant imagery should outrank procedural/AI illustration when a truthful rights-safe real image exists and the Founder has directed documentary treatment;
+- mobile quality is equal in importance to desktop quality;
+- premium international quality includes interaction, accessibility, performance, copy, imagery, hierarchy and truth presentation — not visual polish alone.
+
+A prior dense/boxed `Premium Narrative` implementation was explicitly rejected as a material visual regression. Narrative research may remain useful donor material, but dense boxed UI is not an accepted premium baseline merely because the copy or concept was good.
+
+These controls are product/brand constraints, not a command to preserve every existing local UI choice. Claude should still challenge weak implementation and find better ways to express them.
+
+---
+
+## 17. BRAND LEARNING GOVERNANCE
+
+This file is the single durable Claude-facing Product + Brand guide. Do not create a second competing brand guide.
+
+For substantial Product / UX / Interface work, return only genuinely reusable `BRAND LEARNING CANDIDATES` when evidence supports them. Each candidate should state whether it CONFIRMS, REFINES or CHALLENGES this guide, what recurring product evidence produced the learning, and where the principle should or should not apply.
+
+Claude does not self-authorise those learnings as Canon. AXE audits them; Founder authority applies where required. Accepted durable learnings are folded back into this same guide so the Claude Product Lead becomes progressively better informed across sprints without relying on chat memory.
