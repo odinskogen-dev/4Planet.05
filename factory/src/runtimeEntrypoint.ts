@@ -49,10 +49,10 @@ function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso
     goal: "Record bounded exact-build re-enqueue evidence for unresolved allowlisted Orchestra rows that are durably READY but no longer represented by a live Queue delivery.",
     current: `Exact-build SHADOW READY recovery queued: ${recoveredIds.join(", ") || "none"}.`,
     gold: "The deployed canary can re-enqueue unresolved READY Orchestra state after transient delivery/tool failure while the READY-to-DISPATCHED transition prevents duplicate concurrent recovery.",
-    gap: "Runtime proof remains required; this receipt is observability evidence, not a one-shot lock and not activation evidence.",
+    gap: "Runtime proof remains required; this receipt is observability evidence, not activation evidence.",
     priority: "P0",
     user: "4PLANET Production Factory control",
-    authorityRefs: ["FD-2026-09-02", "FACT-G02", "FACT-G07", "Production Factory Autonomous Activation #198"],
+    authorityRefs: ["FD-2026-09-02", "FACT-G02", "FACT-G07", "Production Factory Autonomous Activation #202"],
     lastMaterialProgressAt: nowIso,
   };
 }
@@ -67,15 +67,14 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRe
   const agent = await factoryAgent(env);
   const state = await agent.getFactoryState() as FactoryStateView;
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
+  const markerPresent = markerId ? state.projects.some((project) => project.id === markerId) : false;
   const recoveryIds = planBuildBoundShadowReadyDrain({
     mode: state.state.mode,
     factoryBuildSha: buildSha,
-    // The build receipt is evidence only. A package may legitimately return to
-    // READY after a transient Queue/Browser failure later in the same build.
-    // Duplicate safety is enforced transactionally below by moving READY to
-    // DISPATCHED before enqueue; therefore stale receipt presence must not make
-    // a retryable package permanently unreachable.
-    markerPresent: false,
+    // One exact-build recovery enqueue is enough. Once queued, Cloudflare Queue
+    // owns bounded retry/backoff. The canary must not race that retry authority
+    // by creating fresh duplicate deliveries every few seconds.
+    markerPresent,
     orchestraPackageIds: ORCHESTRA_PACKAGE_IDS,
     work: state.work,
     recordedOutcomeIds: recorded,
@@ -128,10 +127,6 @@ export default {
       const response = await activeRuntime.fetch(request, env, ctx);
       if (!response.ok) return response;
       const body = await response.json() as Record<string, unknown>;
-      // A Queue/Browser delivery can legitimately fall back to READY while the
-      // canary request itself is running. Re-observe once after the underlying
-      // canary has materialised its status so the same request closes that
-      // transient gap instead of waiting for another external poll.
       const after = await recoverBuildBoundReadyOrchestra(env);
       return Response.json({
         ...body,
