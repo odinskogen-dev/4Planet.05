@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Cinematic";
 import { img, type ImageKey } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
 import { AtlasHero } from "./AtlasHero";
+import { WorldFirstAct } from "@/components/home/WorldFirstAct";
 
 const mono: React.CSSProperties = {
   fontFamily: T.mono,
@@ -95,6 +96,7 @@ export default function Home() {
   return (
     <PublicShell>
       <AtlasHero />
+      <div id="meet-life"><WorldFirstAct /></div>
 
       <section id="why-4planet" style={{ background: T.blue, color: "#fff" }}>
         <div className="home-premise" style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(74px,10vw,152px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(300px,.85fr)", gap: "clamp(36px,8vw,120px)", alignItems: "end" }}>

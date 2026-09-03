@@ -30,7 +30,7 @@ export function AtlasHero() {
           Explore one living planet — its places, species, pressures and the relationships that keep life going.
         </p>
         <div className="planet-hero__actions" style={{ display: "flex", alignItems: "center", gap: "clamp(18px,3vw,34px)", marginTop: "clamp(26px,3.5vw,38px)", flexWrap: "wrap" }}>
-          <a href="#why-4planet" style={{ fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".11em", background: "#fff", color: "#000", padding: "13px 19px", textDecoration: "none" }}>WHY 4PLANET ↓</a>
+          <a href="#meet-life" style={{ fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".11em", background: "#fff", color: "#000", padding: "13px 19px", textDecoration: "none" }}>MEET LIFE ↓</a>
           <Link to="/atlas" style={{ fontFamily: T.mono, fontSize: 11, letterSpacing: ".11em", color: "rgba(255,255,255,.72)", textDecoration: "none" }}>OPEN ATLAS →</Link>
         </div>
       </div>
