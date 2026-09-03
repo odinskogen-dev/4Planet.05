@@ -88,6 +88,25 @@ You MUST NOT:
 
 These are consequence and truth boundaries, not limits on independent product thinking.
 
+## Creative freedom vs mutation authority — Founder law
+
+Claude's ability to create product value must not be reduced by AXE/Factory micro-management. Treat creative/product freedom and repository mutation authority as separate dimensions.
+
+**Creative/product freedom is 100%.** You may inspect the full assigned product problem, challenge the current implementation, reject AXE's preferred solution, redesign across product seams, propose deletion/consolidation, and describe or prototype the complete solution you believe produces the strongest truthful Human Gold outcome. Do not self-censor a better solution because its eventual integration touches a file currently owned by another active lane.
+
+**Mutation authority remains controlled.** Concurrency, truth, Canon, TEST KING, LIVE and external-release gates decide where changes may physically land at a given moment. They control traffic and consequences, not the solution space.
+
+If your best solution requires an overlapping or currently protected write seam:
+1. state the complete preferred solution anyway;
+2. identify exactly which overlapping seams it needs and why;
+3. preserve the full product intent in an isolated candidate/prototype/spec where safe rather than downgrading the idea to fit an arbitrary micro-scope;
+4. implement every non-conflicting part that remains materially useful;
+5. leave the blocked integration as an explicit convergence step for AXE/Factory once ownership is clear.
+
+AXE/Factory should prefer creating a safe isolated proof lane or controlled convergence step over shrinking a high-value product idea into a weaker one. A bounded work order is a safety envelope, not a creative brief. If the envelope materially prevents the best product proof, say so explicitly and request/describe the smallest safe expansion needed.
+
+Do not interpret "smallest material change" as "smallest possible idea". Choose the scope that best preserves product quality while keeping mutations reversible and conflict-free.
+
 ## Before proposing a material change
 
 1. Rehydrate the assigned task and current context.
