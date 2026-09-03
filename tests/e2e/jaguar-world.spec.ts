@@ -91,5 +91,18 @@ test("Jaguar Species World stays life-first while Atlas, evidence, relationships
   await page.waitForURL(/\/ecosystems\/amazon-rainforest/, { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: /AMAZON RAINFOREST/i, level: 1 })).toBeVisible();
   await expect(page.getByText(/A region, not one uniform ecosystem/i)).toBeVisible();
+
+  const amazonPressure = page.getByRole("heading", { name: /What is changing — and why/i });
+  await amazonPressure.scrollIntoViewIfNeeded();
+  await expect(amazonPressure).toBeVisible();
+  await expect(page.getByText(/04_ CHANGE \+ PRESSURES · ECOSYSTEM_/i)).toBeVisible();
+  await expect(page.getByText("HUMAN SYSTEM", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("MIXED CAUSE", { exact: true })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: /NASA · DEFORESTATION PATTERNS/i })).toHaveAttribute("href", /making-sense-of-amazon-deforestation-patterns/);
+  await expect(page.getByRole("link", { name: /NASA · 2024 DEFORESTATION-FRONTIER FIRES/i })).toHaveAttribute("href", /fires-rage-along-brazils-deforestation-frontier/);
+  await expect(page.getByRole("link", { name: /NASA · AMAZON DRYING STUDY/i })).toHaveAttribute("href", /human-activities-are-drying-out-the-amazon/);
+  await expect(page.getByText(/not an exhaustive diagnosis of the Amazon/i)).toBeVisible();
+  await page.locator("#amazon-pressure-title").locator("xpath=ancestor::section").screenshot({ path: `${OUT}/${testInfo.project.name}-amazon-pressure-cause.png` });
+
   await expect(page.getByText(/PUBLIC ECOSYSTEM INTELLIGENCE ≠ FIELD AUTHORITY OR REPRESENTATION/i)).toBeVisible();
 });
