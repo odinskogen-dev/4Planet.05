@@ -73,18 +73,20 @@ async function factoryAgent(env: Cloudflare.Env): Promise<any> {
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
 }
 
+async function exactOrchestraOutcomes(agent: any): Promise<Outcome[]> {
+  return await agent.getOutcomesByIds([...ORCHESTRA_PACKAGE_IDS]) as Outcome[];
+}
+
+async function exactOrchestraOutcomeIds(agent: any): Promise<Set<string>> {
+  return new Set((await exactOrchestraOutcomes(agent)).map((outcome) => outcome.workPackageId));
+}
+
 async function orchestraStatus(env: Cloudflare.Env) {
   const agent = await factoryAgent(env);
   const state = (await agent.getFactoryState()) as FactoryStateView;
-  const outcomeIds = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
   const active = new Map(state.work.map((work) => [work.id, work.status] as const));
   const packages = createShadowOrchestraPackages();
-
-  const outcomes: Outcome[] = [];
-  for (const pkg of packages) {
-    if (!outcomeIds.has(pkg.id)) continue;
-    outcomes.push(await agent.dispatchToWorker(pkg.id));
-  }
+  const outcomes = await exactOrchestraOutcomes(agent);
 
   const accepted = outcomes.filter((outcome) => outcome.status === "ACCEPTED").length;
   const correct = outcomes.filter((outcome) => outcome.status === "CORRECT").length;
@@ -140,7 +142,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   for (const project of projects) await agent.upsertProject(project);
 
   const beforeMigration = (await agent.getFactoryState()) as FactoryStateView;
-  const beforeRecorded = new Set(beforeMigration.outcomes.map((outcome) => outcome.work_package_id));
+  const beforeRecorded = await exactOrchestraOutcomeIds(agent);
   const markerPresent = beforeMigration.projects.some((project) => project.id === ORCHESTRA_V04_PREFIX_RECOVERY_MARKER_ID);
   const recoveryIds = planLegacyOrchestraV04QueueRecovery({
     mode: health.mode,
@@ -162,7 +164,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   }
 
   const afterLegacyRecovery = (await agent.getFactoryState()) as FactoryStateView;
-  const afterLegacyRecorded = new Set(afterLegacyRecovery.outcomes.map((outcome) => outcome.work_package_id));
+  const afterLegacyRecorded = await exactOrchestraOutcomeIds(agent);
   const readyDrainMarkerPresent = afterLegacyRecovery.projects.some((project) => project.id === ORCHESTRA_V04_READY_DRAIN_MARKER_ID);
   const readyDrainIds = planPostRecoveryReadyDrain({
     mode: health.mode,
@@ -182,7 +184,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   }
 
   const afterReadyDrain = (await agent.getFactoryState()) as FactoryStateView;
-  const afterReadyRecorded = new Set(afterReadyDrain.outcomes.map((outcome) => outcome.work_package_id));
+  const afterReadyRecorded = await exactOrchestraOutcomeIds(agent);
   const finalBayMarkerPresent = afterReadyDrain.projects.some((project) => project.id === ORCHESTRA_V04_FINAL_BAY_DRAIN_MARKER_ID);
   const finalBayIds = planFinalBayReadyDrain({
     mode: health.mode,
@@ -202,7 +204,7 @@ async function ensureOrchestra(env: Cloudflare.Env) {
   }
 
   const state = (await agent.getFactoryState()) as FactoryStateView;
-  const recorded = new Set(state.outcomes.map((outcome) => outcome.work_package_id));
+  const recorded = await exactOrchestraOutcomeIds(agent);
   const active = new Set(state.work.map((work) => work.id));
   const pending = packages.filter((pkg) => !recorded.has(pkg.id) && !active.has(pkg.id));
   for (const pkg of pending) await agent.upsertWorkPackage(pkg);
