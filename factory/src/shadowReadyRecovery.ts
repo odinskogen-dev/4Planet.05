@@ -11,12 +11,16 @@ export function buildReadyDrainMarkerId(factoryBuildSha: string): string | undef
 /**
  * A deploy-time SHADOW canary may inherit durable Orchestra rows that were
  * returned to READY after a prior transient Queue/Browser failure. Historical
- * one-time migration receipts cannot safely prove those rows are queued now.
+ * recovery receipts are observability evidence only: they must never make a
+ * currently unresolved READY Work Package disappear from scheduling.
  *
  * Recovery is therefore bound to the exact Factory build and may select only
  * allowlisted Orchestra package IDs that are currently READY and have no
- * persisted outcome. The caller must persist the build-bound receipt only
- * after the bounded queue send succeeds.
+ * persisted outcome. The caller moves selected rows to DISPATCHED before the
+ * queue send, which prevents concurrent canary reads from creating duplicate
+ * deliveries. If a later bounded Queue retry cycle exhausts and returns the row
+ * to READY, a subsequent canary is allowed to re-enqueue it rather than strand
+ * valuable work forever.
  */
 export function planBuildBoundShadowReadyDrain(input: {
   mode: string;
@@ -26,7 +30,7 @@ export function planBuildBoundShadowReadyDrain(input: {
   work: Array<{ id: string; status: string }>;
   recordedOutcomeIds: Set<string>;
 }): string[] {
-  if (input.mode !== "SHADOW" || input.markerPresent) return [];
+  if (input.mode !== "SHADOW") return [];
   if (!buildReadyDrainMarkerId(input.factoryBuildSha)) return [];
 
   const allowed = new Set(input.orchestraPackageIds);
