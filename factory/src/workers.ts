@@ -2,6 +2,7 @@ import { Agent } from "agents";
 import type { Outcome, Section, WorkPackage } from "./contracts";
 import { executeReadOnlyPackage } from "./readOnlyExecution";
 import { executeAutonomousPackage, type AutonomousWorkPackage } from "./autonomousExecution";
+import { executeClaudeProductReview, isClaudeProductWorkPackage } from "./claudeProductWorker";
 import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
@@ -94,6 +95,22 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       VALUES (${pkg.id}, ${JSON.stringify(pkg)}, ${now})
       ON CONFLICT(work_package_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at
     `;
+
+    if (isClaudeProductWorkPackage(pkg)) {
+      try {
+        const executed = await executeClaudeProductReview(this.env, pkg);
+        return this.persistOutcome(pkg, executed);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown Claude Product Worker failure";
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          `Claude Product Worker failed safely: ${message}`,
+          ["No duplicate dispatch authority", "No LIVE authority", "No Claude OAuth token exposed to Factory runtime"],
+          "Claude specialist execution remains fail-closed.",
+        );
+      }
+    }
 
     const autonomous = (pkg as AutonomousWorkPackage).autonomous;
     if (autonomous) {
