@@ -475,6 +475,22 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     };
   }
 
+  /**
+   * Exact bounded outcome lookup for certification/recovery logic. Observability
+   * views intentionally keep only recent rows; proof correctness must never use
+   * that bounded window as if it were complete history.
+   */
+  @callable()
+  getOutcomesByIds(workPackageIds: string[]): Outcome[] {
+    const ids = [...new Set(workPackageIds.filter((id) => typeof id === "string" && id.length > 0))].slice(0, 64);
+    const outcomes: Outcome[] = [];
+    for (const id of ids) {
+      const outcome = this.getRecordedOutcome(id);
+      if (outcome) outcomes.push(outcome);
+    }
+    return outcomes;
+  }
+
   private getWorkPackage(id: string): WorkPackage | undefined {
     const row = this.sql<{ payload: string }>`SELECT payload FROM work_packages WHERE id = ${id}`[0];
     return row ? (JSON.parse(row.payload) as WorkPackage) : undefined;
