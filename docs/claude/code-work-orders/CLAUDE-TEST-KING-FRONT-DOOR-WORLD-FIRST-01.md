@@ -4,7 +4,7 @@ id: CLAUDE-TEST-KING-FRONT-DOOR-WORLD-FIRST-01
 base_sha: ac2538f78bbfdb0e922f7f8f64cf808013fe1e34
 test_profile: PRODUCT_UI
 model: claude-opus-5
-dispatch_attempt: 1
+dispatch_attempt: 2
 write_scope: src/components/home/WorldFirstAct.tsx
 write_scope: src/components/home/world-first-act.css
 
@@ -12,6 +12,7 @@ status: BOUNDED_FACTORY_CANDIDATE_ONLY
 parent_product_authority: king/test @ ac2538f78bbfdb0e922f7f8f64cf808013fe1e34
 source_review: CLAUDE-TEST-KING-PRODUCT-LEAD-SPRINT-01
 owner: AXE / 4PLANET Production Factory
+retry_reason: same governed task; Factory context injection repaired after attempt 1 safely produced no mutation
 
 ## Mission — continuation of your Product Lead sprint
 
