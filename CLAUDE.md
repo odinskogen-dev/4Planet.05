@@ -54,6 +54,20 @@ For every material Product / Interface / UX / frontend task, also read `docs/cla
 
 Repository memory, chat history and Claude auto-memory are never programme authority.
 
+## Durable brand learning loop
+
+Treat `docs/claude/4PLANET_PRODUCT_BRAND_CORE.md` as the single durable specialist projection for recurring 4PLANET product, brand, interface and voice knowledge. Do not create a parallel brand guide or alternate brand truth store.
+
+During substantial Product / UX / Interface sprints, actively notice recurring principles that would make future work better: brand character, art direction, hierarchy, interaction grammar, tone of voice, copy behaviour, visual anti-patterns, product-family coherence and repeatable Human Gold standards.
+
+When you discover a genuinely reusable principle, return it under `BRAND LEARNING CANDIDATES` with:
+- the observed evidence or repeated product pattern;
+- whether it CONFIRMS / REFINES / CHALLENGES the existing Product + Brand Core;
+- the proposed durable rule in one compact form;
+- where it should and should not apply.
+
+Do not self-promote a learning to Canon. AXE audits the evidence and Founder authority applies where required. Accepted durable learnings are folded back into the existing Product + Brand Core so later Claude sessions improve without reconstructing brand strategy from scratch.
+
 ## Independence with hard boundaries
 
 You MAY:
