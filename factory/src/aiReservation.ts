@@ -1,15 +1,23 @@
 const SHA40 = /^[0-9a-f]{40}$/i;
 
+export type CandidateCheckState = "PENDING" | "TERMINAL" | "UNKNOWN";
+
 /**
- * Reserve model-call capacity only when a candidate still needs its first
- * material mutation. Re-observing an already-mutated candidate is GitHub/QA
- * work and must not consume the zero-cash Workers AI reservation budget.
- * Unknown or malformed state fails closed by requiring a reservation.
+ * Resource accounting follows the actual possibility of a model mutation.
+ * - no candidate / exact-base candidate: first mutation may run => reserve
+ * - material candidate with PENDING checks: execution can only re-observe => no reserve
+ * - terminal or unknown material candidate: CI/browser failure may require correction => reserve
+ * Unknown or malformed identity always fails closed to reservation.
  */
-export function shouldReserveAiForCandidate(candidateHeadSha: string | undefined, expectedBaseSha: string): boolean {
+export function shouldReserveAiForCandidate(
+  candidateHeadSha: string | undefined,
+  expectedBaseSha: string,
+  checkState: CandidateCheckState = "UNKNOWN",
+): boolean {
   if (!SHA40.test(expectedBaseSha)) return true;
   if (!candidateHeadSha || !SHA40.test(candidateHeadSha)) return true;
-  return candidateHeadSha.toLowerCase() === expectedBaseSha.toLowerCase();
+  if (candidateHeadSha.toLowerCase() === expectedBaseSha.toLowerCase()) return true;
+  return checkState !== "PENDING";
 }
 
 export function factoryCandidateBranch(workPackageId: string, explicitBranch?: string): string {
