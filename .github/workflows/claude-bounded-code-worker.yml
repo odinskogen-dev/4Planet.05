@@ -69,7 +69,6 @@ jobs:
           echo "id=$ID" >> "$GITHUB_OUTPUT"
           echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "candidate=$CANDIDATE" >> "$GITHUB_OUTPUT"
-          echo "order_path=$ORDER_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Create isolated candidate from pinned base
         shell: bash
@@ -113,20 +112,19 @@ jobs:
 
           You MAY edit or create only paths explicitly listed as `write_scope:` in the work order. You MUST NOT touch any other file, dependency manifest, lockfile, workflow, secret, deployment, Canon, LIVE surface, or external system. Do not commit or push; the control plane does that after validation.
 
-          Implement the smallest high-quality change that closes the work order. Run relevant local tests as useful. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority.
+          Implement the smallest high-quality change that closes the work order. You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority.
           EOF
           )
           claude -p "$PROMPT" \
             --model claude-opus-5 \
             --max-turns 30 \
             --permission-mode acceptEdits \
-            --tools "Read,Grep,Glob,Bash,Edit,Write" \
+            --tools "Read,Grep,Glob,Edit,Write" \
             --no-session-persistence \
             > /tmp/claude-code-report.md
           test -s /tmp/claude-code-report.md
 
       - name: Enforce exact write scopes and protected-path firewall
-        id: scope
         shell: bash
         run: |
           set -euo pipefail
@@ -191,6 +189,7 @@ jobs:
             echo "model: claude-opus-5"
             echo "completed_at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             echo "validation: FACTORY_TYPECHECK_AND_TEST_PASS"
+            echo "head_sha: RESOLVE_FROM_CANDIDATE_BRANCH_REF"
             echo
             echo "## Changed files"
             sed 's/^/- /' /tmp/claude-changed-files.txt
@@ -201,10 +200,6 @@ jobs:
 
           git add --all
           git commit -m "candidate(factory): Claude bounded code $ID"
-          HEAD_SHA="$(git rev-parse HEAD)"
-          printf '\nhead_sha: %s\n' "$HEAD_SHA" >> "$RESULT"
-          git add "$RESULT"
-          git commit --amend --no-edit
           FINAL_SHA="$(git rev-parse HEAD)"
           git push --force-with-lease origin "HEAD:refs/heads/$CANDIDATE"
           echo "CLAUDE_CODE_CANDIDATE=$CANDIDATE"
