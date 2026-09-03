@@ -1,5 +1,7 @@
-4PLANET Factory activation retest trigger after FACTORY_GITHUB_TOKEN installation.
+4PLANET Factory activation retest trigger.
 No runtime behaviour.
-Fresh exact-head activation cohort requested after 2026-09-03 UTC daily capacity reset.
-Cohort parent Factory SHA: 02b06e0e7b066b0813e6d8235f40cdf8cfaf3e07
-Requested: 2026-09-03T04:11Z
+Fresh exact-head activation cohort requested only after exact-head Shadow CI + ONE INTERFACE PASS and empty Factory execution lane.
+Cohort parent Factory SHA: b4ed3a7f1f26859bc88621643203036844740de8
+Current TEST KING SHA: ac2538f78bbfdb0e922f7f8f64cf808013fe1e34
+Requested: 2026-09-03T14:10Z
+Reason: exact-by-ID outcome-history correctness + workflow-status-bound recovery are repaired and regression-proven; activation certification must now re-prove persisted three-family full loop on this exact lineage.
