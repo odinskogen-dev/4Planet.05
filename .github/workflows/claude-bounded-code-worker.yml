@@ -52,7 +52,9 @@ jobs:
           BASE_SHA="$(sed -n 's/^base_sha:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
           TEST_PROFILE="$(sed -n 's/^test_profile:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
           MODEL="$(sed -n 's/^model:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
+          ATTEMPT="$(sed -n 's/^dispatch_attempt:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
           MODEL="${MODEL:-claude-opus-5}"
+          ATTEMPT="${ATTEMPT:-1}"
           if [[ -z "$ID" || ! "$ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
             echo "::error::Invalid work-order id"
             exit 1
@@ -69,6 +71,10 @@ jobs:
             echo "::error::Unapproved Claude model: $MODEL"
             exit 1
           fi
+          if [[ ! "$ATTEMPT" =~ ^[0-9]+$ || "$ATTEMPT" -lt 1 ]]; then
+            echo "::error::Invalid dispatch_attempt"
+            exit 1
+          fi
           CANDIDATE="factory/claude-code/${ID}"
           cp "$ORDER_PATH" /tmp/claude-code-work-order.md
           cp CLAUDE.md /tmp/claude-code-context.md
@@ -77,8 +83,10 @@ jobs:
           echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "test_profile=$TEST_PROFILE" >> "$GITHUB_OUTPUT"
           echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "dispatch_attempt=$ATTEMPT" >> "$GITHUB_OUTPUT"
           echo "candidate=$CANDIDATE" >> "$GITHUB_OUTPUT"
           echo "CLAUDE_CODE_MODEL=$MODEL"
+          echo "CLAUDE_CODE_DISPATCH_ATTEMPT=$ATTEMPT"
 
       - name: Create isolated candidate from pinned base
         shell: bash
@@ -113,6 +121,8 @@ jobs:
         shell: bash
         env:
           MODEL: ${{ steps.order.outputs.model }}
+          ID: ${{ steps.order.outputs.id }}
+          DISPATCH_ATTEMPT: ${{ steps.order.outputs.dispatch_attempt }}
         run: |
           set -euo pipefail
           export PATH="$HOME/.local/bin:$PATH"
@@ -129,16 +139,90 @@ jobs:
           You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority. Spend turns on finishing the bounded implementation and a compact handoff, not exhaustive archaeology.
           EOF
           )
+
+          set +e
           claude -p "$PROMPT" \
             --model "$MODEL" \
             --max-turns 60 \
             --permission-mode acceptEdits \
             --tools "Read,Grep,Glob,Edit,Write" \
             --no-session-persistence \
-            > /tmp/claude-code-report.md
+            > /tmp/claude-code-report.md 2>&1
+          EXIT_CODE=$?
+          set -e
+
+          echo "capacity_paused=false" >> "$GITHUB_OUTPUT"
+          echo "fatal_failure=false" >> "$GITHUB_OUTPUT"
+          echo "retry_after=" >> "$GITHUB_OUTPUT"
+
+          if [[ "$EXIT_CODE" -ne 0 ]]; then
+            STATUS="FAILED"
+            RETRY_AFTER=""
+            if grep -Eiq "session limit|usage limit|rate limit|capacity.*limit" /tmp/claude-code-report.md; then
+              STATUS="CAPACITY_PAUSED"
+              RETRY_AFTER="$(date -u -d '+60 minutes' +'%Y-%m-%dT%H:%M:%SZ')"
+              echo "capacity_paused=true" >> "$GITHUB_OUTPUT"
+              echo "retry_after=$RETRY_AFTER" >> "$GITHUB_OUTPUT"
+              echo "CLAUDE_CODE_PROVIDER_CAPACITY=PAUSED"
+              echo "CLAUDE_CODE_PROVIDER_RETRY_AFTER=$RETRY_AFTER"
+            else
+              echo "fatal_failure=true" >> "$GITHUB_OUTPUT"
+              echo "::error::Claude bounded-code execution failed outside recognised provider-capacity conditions."
+            fi
+
+            # Partial model edits are never retained after a non-successful model call.
+            git reset --hard HEAD
+            git fetch origin factory/claude-product-worker-01 --no-tags
+            git checkout -B claude-status origin/factory/claude-product-worker-01
+            git config user.name "4PLANET Factory Claude Code Worker"
+            git config user.email "actions@users.noreply.github.com"
+            mkdir -p docs/claude/code-status
+            STATUS_PATH="docs/claude/code-status/${ID}.md"
+            {
+              echo "# CLAUDE BOUNDED CODE STATUS"
+              echo
+              echo "work_order_id: $ID"
+              echo "status: $STATUS"
+              echo "dispatch_attempt: $DISPATCH_ATTEMPT"
+              echo "model: $MODEL"
+              echo "updated_at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+              if [[ -n "$RETRY_AFTER" ]]; then
+                echo "retry_after: $RETRY_AFTER"
+                echo "provider_state: SUBSCRIPTION_CAPACITY_UNAVAILABLE"
+              fi
+              echo "authority: BOUNDED_CODE_CANDIDATE_ONLY"
+              echo
+              if [[ "$STATUS" == "CAPACITY_PAUSED" ]]; then
+                echo "Claude subscription/session capacity was unavailable. No candidate mutation was retained. Retry the exact same governed work order after retry_after. Exact provider text remains in the immutable run artifact."
+              else
+                echo "Claude execution failed before a validated candidate existed. No partial mutation was retained. Exact execution detail remains in the immutable run artifact."
+              fi
+            } > "$STATUS_PATH"
+            git add "$STATUS_PATH"
+            git commit -m "status(factory): Claude bounded code $ID [$STATUS]"
+
+            PUSHED=false
+            for PUSH_ATTEMPT in 1 2 3; do
+              if git push origin HEAD:factory/claude-product-worker-01; then
+                PUSHED=true
+                break
+              fi
+              git fetch origin factory/claude-product-worker-01 --no-tags
+              git rebase origin/factory/claude-product-worker-01
+            done
+            if [[ "$PUSHED" != "true" ]]; then
+              echo "::error::Unable to persist Claude code status after bounded retries."
+              exit 1
+            fi
+            echo "CLAUDE_CODE_STATUS_PERSISTED=$STATUS"
+            exit 0
+          fi
+
           test -s /tmp/claude-code-report.md
+          echo "CLAUDE_CODE_REAL_CALL=PASS"
 
       - name: Enforce exact write scopes and protected-path firewall
+        if: steps.claude.outputs.capacity_paused != 'true' && steps.claude.outputs.fatal_failure != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -175,6 +259,7 @@ jobs:
           echo "CLAUDE_CODE_SCOPE_GATE=PASS"
 
       - name: Run approved validation profile
+        if: steps.claude.outputs.capacity_paused != 'true' && steps.claude.outputs.fatal_failure != 'true'
         shell: bash
         env:
           TEST_PROFILE: ${{ steps.order.outputs.test_profile }}
@@ -198,6 +283,7 @@ jobs:
           fi
 
       - name: Persist candidate and evidence manifest
+        if: steps.claude.outputs.capacity_paused != 'true' && steps.claude.outputs.fatal_failure != 'true'
         shell: bash
         env:
           ID: ${{ steps.order.outputs.id }}
@@ -205,6 +291,7 @@ jobs:
           CANDIDATE: ${{ steps.order.outputs.candidate }}
           TEST_PROFILE: ${{ steps.order.outputs.test_profile }}
           MODEL: ${{ steps.order.outputs.model }}
+          DISPATCH_ATTEMPT: ${{ steps.order.outputs.dispatch_attempt }}
         run: |
           set -euo pipefail
           mkdir -p docs/claude/candidate-results
@@ -214,6 +301,8 @@ jobs:
             echo "# CLAUDE BOUNDED CODE RESULT"
             echo
             echo "work_order_id: $ID"
+            echo "status: COMPLETED"
+            echo "dispatch_attempt: $DISPATCH_ATTEMPT"
             echo "authority: BOUNDED_CODE_CANDIDATE_ONLY"
             echo "base_sha: $BASE_SHA"
             echo "candidate_branch: $CANDIDATE"
@@ -242,7 +331,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: claude-bounded-code-${{ steps.order.outputs.id }}-${{ github.sha }}
+          name: claude-bounded-code-${{ steps.order.outputs.id }}-${{ steps.order.outputs.dispatch_attempt }}-${{ github.sha }}
           path: |
             /tmp/claude-code-work-order.md
             /tmp/claude-code-report.md
@@ -250,3 +339,10 @@ jobs:
             /tmp/claude-validation.txt
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Fail terminal Claude execution after status persistence
+        if: steps.claude.outputs.fatal_failure == 'true'
+        shell: bash
+        run: |
+          echo "::error::CLAUDE_BOUNDED_CODE_TERMINAL_EXECUTION_FAILURE"
+          exit 1
