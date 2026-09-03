@@ -9,9 +9,18 @@ type WorkPackageWorkflowParams = {
 
 const MAX_PENDING_CI_REOBSERVATIONS = 12;
 const PENDING_CI_SLEEP = "2 minutes";
+const MAX_CLAUDE_CAPACITY_REOBSERVATIONS = 48;
+const CLAUDE_CAPACITY_SLEEP = "1 hour";
+
+export function isClaudeCapacityPausedOutcome(outcome: Outcome): boolean {
+  return outcome.status === "CORRECT"
+    && (outcome.limitation ?? "").includes("CLAUDE_PROVIDER_CAPACITY_PAUSED")
+    && (outcome.limitation ?? "").includes("preserve the exact work package")
+    && outcome.actual.includes("Claude specialist provider capacity is paused");
+}
 
 export function isPendingCiOutcome(outcome: Outcome): boolean {
-  if (outcome.status !== "CORRECT") return false;
+  if (outcome.status !== "CORRECT" || isClaudeCapacityPausedOutcome(outcome)) return false;
 
   const pendingCandidateCi = outcome.actual.includes("registered checks are still pending")
     && (outcome.limitation ?? "").includes("durably re-observe the same candidate");
@@ -43,23 +52,58 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
       async () => this.agent.dispatchToWorker(workPackageId),
     );
 
-    for (let observation = 1; observation <= MAX_PENDING_CI_REOBSERVATIONS && isPendingCiOutcome(outcome); observation += 1) {
-      await this.reportProgress({
-        step: "await-ci-or-specialist",
-        status: "running",
-        message: `External evidence still pending; durable re-observation ${observation}/${MAX_PENDING_CI_REOBSERVATIONS}`,
-        percent: Math.min(0.85, 0.2 + observation * 0.05),
-      });
+    let pendingObservation = 0;
+    let capacityObservation = 0;
 
-      await step.sleep(`await-pending-evidence-${observation}`, PENDING_CI_SLEEP);
-      outcome = await step.do(
-        `reobserve-pending-evidence-${observation}`,
-        {
-          retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
-          timeout: "20 minutes",
-        },
-        async () => this.agent.dispatchToWorker(workPackageId),
-      );
+    while (true) {
+      if (isClaudeCapacityPausedOutcome(outcome)) {
+        if (capacityObservation >= MAX_CLAUDE_CAPACITY_REOBSERVATIONS) break;
+        capacityObservation += 1;
+
+        await this.reportProgress({
+          step: "await-claude-capacity",
+          status: "running",
+          message: `Claude subscription capacity paused; durable re-observation ${capacityObservation}/${MAX_CLAUDE_CAPACITY_REOBSERVATIONS}`,
+          percent: 0.35,
+        });
+
+        await step.sleep(`await-claude-capacity-${capacityObservation}`, CLAUDE_CAPACITY_SLEEP);
+        outcome = await step.do(
+          `reobserve-claude-capacity-${capacityObservation}`,
+          {
+            retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
+            timeout: "20 minutes",
+          },
+          async () => this.agent.dispatchToWorker(workPackageId),
+        );
+        pendingObservation = 0;
+        continue;
+      }
+
+      if (isPendingCiOutcome(outcome)) {
+        if (pendingObservation >= MAX_PENDING_CI_REOBSERVATIONS) break;
+        pendingObservation += 1;
+
+        await this.reportProgress({
+          step: "await-ci-or-specialist",
+          status: "running",
+          message: `External evidence still pending; durable re-observation ${pendingObservation}/${MAX_PENDING_CI_REOBSERVATIONS}`,
+          percent: Math.min(0.85, 0.2 + pendingObservation * 0.05),
+        });
+
+        await step.sleep(`await-pending-evidence-${pendingObservation}`, PENDING_CI_SLEEP);
+        outcome = await step.do(
+          `reobserve-pending-evidence-${pendingObservation}`,
+          {
+            retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
+            timeout: "20 minutes",
+          },
+          async () => this.agent.dispatchToWorker(workPackageId),
+        );
+        continue;
+      }
+
+      break;
     }
 
     await step.do("persist-outcome", async () => {
