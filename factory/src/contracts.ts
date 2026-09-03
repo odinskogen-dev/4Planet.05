@@ -151,8 +151,14 @@ export interface PreservationEvidence {
 export interface ClaudeProductSpecialistSpec {
   provider: "CLAUDE";
   role: "PRODUCT_INTERFACE";
-  mode: "REVIEW_ONLY";
+  mode: "REVIEW_ONLY" | "BOUNDED_CODE";
   sourceRefs?: string[];
+  /** Exact TEST KING base for a bounded code candidate. REVIEW_ONLY may omit it. */
+  baseSha?: string;
+  /** Validation contract run by the existing Claude bounded-code GitHub worker. */
+  testProfile?: "PRODUCT_UI" | "FACTORY";
+  /** Optional approved Claude model. Defaults to the strongest governed product model. */
+  model?: "claude-opus-5" | "claude-sonnet-5" | "claude-sonnet-4-6";
 }
 
 /**
