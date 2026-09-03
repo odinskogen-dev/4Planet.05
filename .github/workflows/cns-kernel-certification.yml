@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/20260824*_cns_*.sql'
+      - 'supabase/migrations/*superbrain*.sql'
       - 'supabase/tests/cns_*.sql'
       - 'supabase/functions/cns-gateway/**'
       - 'config/cns/**'
@@ -16,10 +17,10 @@ permissions:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     services:
       postgres:
-        image: postgres:17
+        image: postgis/postgis:17-3.5
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
@@ -39,12 +40,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Bootstrap Supabase-compatible DB roles
+      - name: Bootstrap Supabase-compatible DB roles and PostGIS schema
         run: |
           psql -v ON_ERROR_STOP=1 <<'SQL'
           DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF; END $$;
           DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF; END $$;
           DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
+          CREATE SCHEMA IF NOT EXISTS gis;
+          CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA gis;
           SQL
 
       - name: Apply CNS total shadow migrations
@@ -56,7 +59,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
-          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null" | grep -qx t
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903101500_superbrain_planet_convergence_01.sql
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.relationships') is not null and to_regclass('cns.public_projections') is not null" | grep -qx t
+
+      - name: Verify Planet Brain safety and public projection boundary
+        run: psql -f supabase/tests/cns_planet_convergence.sql
 
       - name: Verify event-backed GitHub state projection
         run: psql -f supabase/tests/cns_github_sync.sql
@@ -103,8 +110,11 @@ jobs:
       - name: Run 50 canonical + 50 adversarial evals
         run: psql -f /tmp/cns_eval_100.sql
 
-      - name: Run 10k project / million-event scale seed and hot-path plans
+      - name: Run prior 10k project / million-event scale seed and hot-path plans
         run: psql -f supabase/tests/cns_kernel_02_scale.sql
+
+      - name: Run 50k project + Planet graph torture test
+        run: psql -f supabase/tests/cns_planet_scale_50k.sql
 
       - name: 100 concurrent context reads
         run: |
@@ -126,21 +136,26 @@ jobs:
         run: |
           psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
           psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
+          psql -Atqc "select bool_and(c.relrowsecurity) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relkind='r'" | grep -qx t
 
       - name: Backup and restore CNS schema into clean database
         run: |
           source_events=$(psql -Atqc "select count(*) from cns.events")
           source_projects=$(psql -Atqc "select count(*) from cns.projects")
           source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
-          docker run --rm --network host -e PGPASSWORD=postgres postgres:17 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
+          source_relationships=$(psql -Atqc "select count(*) from cns.relationships")
+          docker run --rm --network host -e PGPASSWORD=postgres postgis/postgis:17-3.5 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
           createdb cns_restore
-          cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgres:17 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
+          psql -d cns_restore -v ON_ERROR_STOP=1 -c "create schema if not exists gis; create extension if not exists postgis with schema gis;"
+          cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgis/postgis:17-3.5 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
           restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
           restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
           restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
+          restored_relationships=$(psql -d cns_restore -Atqc "select count(*) from cns.relationships")
           test "$source_events" = "$restored_events"
           test "$source_projects" = "$restored_projects"
           test "$source_states" = "$restored_states"
+          test "$source_relationships" = "$restored_relationships"
           psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
           psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
@@ -156,3 +171,5 @@ jobs:
         run: |
           psql -Atqc "select pg_size_pretty(pg_database_size(current_database())) as db_size"
           psql -Atqc "select count(*) from cns.events"
+          psql -Atqc "select count(*) from cns.relationships"
+          psql -Atqc "select count(*) from cns.observations"
