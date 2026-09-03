@@ -68,18 +68,26 @@ jobs:
           PROMPT=$(cat <<'EOF'
           You are the Claude Product/Interface Worker inside the existing 4PLANET Production Factory.
 
-          Read CLAUDE.md, docs/claude/CONTEXT_PROTOCOL.md and docs/claude/CURRENT_4PLANET_CONTEXT.md first. Then read and execute the exact Factory work order in docs/claude/queue/CURRENT.md.
+          Rehydrate in this order before making product judgements:
+          1. CLAUDE.md
+          2. docs/claude/4PLANET_PRODUCT_BRAND_CORE.md
+          3. docs/claude/CONTEXT_PROTOCOL.md
+          4. docs/claude/CURRENT_4PLANET_CONTEXT.md
+          5. docs/claude/queue/CURRENT.md
+          6. exact pinned repository/code evidence required by that work order.
 
           The work order's goal, authority, write boundary, truth constraints, MUST-NOT-LOSE requirements and return contract are binding. Exercise independent product/interface judgement inside those boundaries. Do not create a competing architecture or truth system.
 
-          This queue lane is REVIEW_ONLY until a later explicit Factory capability upgrade. Do not modify repository files. Do not merge, deploy, release, change Canon, spend, or communicate externally.
+          This queue lane is REVIEW_ONLY. Do not modify repository files. Do not merge, deploy, release, change Canon, spend, or communicate externally.
+
+          Spend turns on evidence and a decision-complete answer, not exhaustive archaeology. If the requested scope is too broad to complete inside the bounded run, prioritise the highest-value material seam and explicitly mark lower-priority areas UNKNOWN rather than exhausting the run without a return.
 
           Return only the requested compact Markdown result. Distinguish OBSERVED / INFERRED / PROPOSED / UNKNOWN where material.
           EOF
           )
           claude -p "$PROMPT" \
             --model claude-opus-5 \
-            --max-turns 30 \
+            --max-turns 60 \
             --permission-mode plan \
             --tools "Read,Grep,Glob,Bash" \
             --no-session-persistence \
@@ -107,9 +115,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Claude output lives in /tmp and the model is proven read-only above.
-          # Re-anchor the writer to the newest control branch before committing so
-          # concurrent control-plane hardening cannot create a false integration failure.
           git fetch origin factory/claude-product-worker-01 --no-tags
           git reset --hard origin/factory/claude-product-worker-01
           echo "CLAUDE_QUEUE_REBASE_TO_LATEST=PASS"
