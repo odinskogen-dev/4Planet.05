@@ -1,5 +1,10 @@
 export interface FactoryActivationEvidence {
   shadowCiPassed: boolean;
+  /**
+   * Observed product-wide ONE INTERFACE convergence status. This remains
+   * release evidence for TEST KING/LIVE, but it is intentionally not a Level-2
+   * internal Factory activation requirement.
+   */
   convergencePassed: boolean;
   brainProjectionReadOnly: boolean;
   sectionAdaptersBounded: boolean;
@@ -30,9 +35,16 @@ export interface FactoryActivationGate {
   evidence: FactoryActivationEvidence;
 }
 
-const REQUIRED: Array<[keyof FactoryActivationEvidence, string]> = [
+/**
+ * Level-2 ACTIVE INTERNAL TEST PRODUCTION requirements.
+ *
+ * Product-wide convergence is deliberately excluded here. Factory-specific
+ * visual QA and outcome parity are already required below. ONE INTERFACE
+ * convergence remains a separate TEST KING/LIVE release gate and is retained
+ * in the evidence envelope for observability.
+ */
+const REQUIRED_LEVEL_2: Array<[keyof FactoryActivationEvidence, string]> = [
   ["shadowCiPassed", "SHADOW_CI_PASS"],
-  ["convergencePassed", "CONVERGENCE_PASS"],
   ["brainProjectionReadOnly", "READ_ONLY_BRAIN_PROJECTION"],
   ["sectionAdaptersBounded", "BOUNDED_SECTION_ADAPTERS"],
   ["evaluatorMaterialGateEnabled", "MATERIAL_PROGRESS_EVALUATOR"],
@@ -57,7 +69,7 @@ const MAX_EVIDENCE_AGE_MS = 2 * 60 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
 
 /**
- * Fail-closed GLOBAL ACTIVE boundary.
+ * Fail-closed Level-2 ACTIVE INTERNAL TEST PRODUCTION boundary.
  *
  * Selection overlap alone is not enough. Factory must prove real execution
  * paths, durable round-trips, outcome quality, governed learning/writeback and
@@ -68,12 +80,16 @@ const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
  * The Factory branch must also attest the exact TEST KING base it was built on,
  * and that SHA must equal the independently observed current TEST KING SHA.
  * A bare `testKingBaseCurrent: true` flag is never sufficient on its own.
+ *
+ * This gate grants no TEST KING merge, LIVE, Canon, outreach, Human Gold or
+ * spend authority. Product-wide convergence remains mandatory at those release
+ * boundaries and is observed separately.
  */
 export function evaluateFactoryActivation(
   evidence: FactoryActivationEvidence,
   nowMs = Date.now(),
 ): FactoryActivationGate {
-  const missing = REQUIRED
+  const missing = REQUIRED_LEVEL_2
     .filter(([key]) => evidence[key] !== true)
     .map(([, label]) => label);
 
