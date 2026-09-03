@@ -6,6 +6,7 @@ const OWNER = "odinskogen-dev";
 const REPO = "4Planet.05";
 const TEST_BRANCH = "king/test";
 const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
+const AI_GATEWAY_ID = "4planet-factory";
 const MAX_EXISTING_FILE_BYTES = 120_000;
 const MAX_AI_ATTEMPTS = 2;
 const MAX_CANDIDATE_EDITS = 8;
@@ -37,7 +38,13 @@ interface BrowserBinding {
 }
 
 type FactoryRuntimeEnv = Cloudflare.Env & {
-  AI?: { run(model: string, input: unknown): Promise<unknown> };
+  AI?: {
+    run(
+      model: string,
+      input: unknown,
+      options?: { gateway?: { id: string; skipCache?: boolean; cacheTtl?: number } },
+    ): Promise<unknown>;
+  };
   BROWSER?: BrowserBinding;
   FACTORY_GITHUB_TOKEN?: string;
   FACTORY_AI_MODEL?: string;
@@ -278,16 +285,25 @@ async function generateCandidate(
     "Never add LIVE release, external send, payment, Canon promotion or unsupported ecological/scientific claims.",
   ].join("\n");
 
-  const raw = await env.AI.run(model, {
-    messages: [
-      { role: "system", content: "You are a bounded senior product engineer inside 4PLANET Production Factory. Follow the machine-readable quality contract exactly." },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.1,
-    reasoning_effort: "low",
-    response_format: { type: "json_object" },
-    max_completion_tokens: 2400,
-  });
+  const raw = await env.AI.run(
+    model,
+    {
+      messages: [
+        { role: "system", content: "You are a bounded senior product engineer inside 4PLANET Production Factory. Follow the machine-readable quality contract exactly." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.1,
+      reasoning_effort: "low",
+      response_format: { type: "json_object" },
+      max_completion_tokens: 2400,
+    },
+    {
+      gateway: {
+        id: AI_GATEWAY_ID,
+        skipCache: true,
+      },
+    },
+  );
   const candidate = parseCandidate(aiText(raw));
   const content = applyCandidate(candidate, existingContent);
   const validation = validateGeneratedCandidate(content);
@@ -437,6 +453,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
       `TEST KING base ${currentBaseSha}`,
       `candidate branch ${branch}`,
       `target ${spec.targetPath}`,
+      `AI Gateway ${AI_GATEWAY_ID}`,
       "LIVE authority=false",
       "Human Gold candidate only",
     ];
@@ -484,7 +501,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
         `Factory candidate: ${pkg.title} [attempt ${attempt}]`,
       );
       candidateHeadSha = finalCommit;
-      evidence.push(`AI ${model} attempt ${attempt}`, `commit ${finalCommit}`, `self-checks ${generated.selfChecks.join(" | ") || "none"}`);
+      evidence.push(`AI ${model} via ${AI_GATEWAY_ID} attempt ${attempt}`, `commit ${finalCommit}`, `self-checks ${generated.selfChecks.join(" | ") || "none"}`);
       pr = await ensureDraftPullRequest(token, branch, pkg);
       evidence.push(`draft PR ${pr.html_url}`);
 
