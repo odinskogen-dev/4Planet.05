@@ -5,6 +5,7 @@ import { executeAutonomousPackage, type AutonomousWorkPackage } from "./autonomo
 import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
+import { factoryCandidateBranch, shouldReserveAiForCandidate } from "./aiReservation";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -17,6 +18,7 @@ interface WorkerState {
 
 const MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY = 6;
 const MAX_AI_ATTEMPTS_PER_PACKAGE = 2;
+const REPOSITORY = "odinskogen-dev/4Planet.05";
 
 abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
   abstract readonly section: Section;
@@ -99,7 +101,9 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
           "Increase the bounded Work Package budget only through governed planning; this does not authorise cash spend.",
         );
       }
-      if (!this.reserveAiBudget(requestedAttempts)) {
+
+      const reserveAi = await this.needsAiReservation(pkg, autonomous);
+      if (reserveAi && !this.reserveAiBudget(requestedAttempts)) {
         return this.finish(
           pkg,
           "BLOCKED",
@@ -148,6 +152,30 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       [],
       "The worker intentionally refuses to simulate or invent execution.",
     );
+  }
+
+  private async needsAiReservation(pkg: WorkPackage, autonomous: NonNullable<AutonomousWorkPackage["autonomous"]>): Promise<boolean> {
+    const token = (this.env as Cloudflare.Env & { FACTORY_GITHUB_TOKEN?: string }).FACTORY_GITHUB_TOKEN?.trim();
+    if (!token) return true;
+
+    const branch = factoryCandidateBranch(pkg.id, autonomous.candidateBranch);
+    const encodedBranch = branch.split("/").map(encodeURIComponent).join("/");
+    try {
+      const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodedBranch}`, {
+        headers: {
+          accept: "application/vnd.github+json",
+          authorization: `Bearer ${token}`,
+          "x-github-api-version": "2022-11-28",
+          "user-agent": "4PLANET-Production-Factory/1.0",
+        },
+      });
+      if (response.status === 404) return true;
+      if (!response.ok) return true;
+      const body = await response.json() as { object?: { sha?: string } };
+      return shouldReserveAiForCandidate(body.object?.sha, autonomous.expectedBaseSha);
+    } catch {
+      return true;
+    }
   }
 
   private reserveAiBudget(calls: number): boolean {
