@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "control_state": "INTERNAL_TEST_ONLY",
+  "authority_model": {
+    "live": "FOUNDER_GATED",
+    "test_heir": {
+      "branch": "king/test",
+      "role": "SOLE_HEIR"
+    },
+    "max_registered_sandboxes_per_product": 1,
+    "newest_wins": false,
+    "stable_alias_is_identity_proof": false,
+    "sandbox_requires_test_heir_as_exact_ancestor": true
+  },
+  "products": {
+    "ATLAS": {
+      "heir": "king/test",
+      "sandbox": {
+        "branch": "work/atlas-product-polish-01",
+        "pr": 246,
+        "head_sha_at_registration": "0f0e0b93c1fb1de4f83f2c089854d2631f57da71",
+        "required_ancestor_sha_at_registration": "ac2538f78bbfdb0e922f7f8f64cf808013fe1e34",
+        "classification": "SANDBOX",
+        "purpose": "bounded ATLAS product-polish convergence into TEST KING"
+      },
+      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+    },
+    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "MAGAZINE": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
+    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"}
+  },
+  "promotion_contract": {
+    "founder_review_requires": [
+      "exact_branch",
+      "exact_sha",
+      "immutable_deploy_marker_or_preview",
+      "required_ci_green",
+      "candidate_authority_gate_green"
+    ],
+    "donor_delta_dispositions": [
+      "ADOPT",
+      "ALREADY_PRESENT",
+      "REJECT_WITH_REASON",
+      "DEFER_WITH_REASON"
+    ],
+    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
+  },
+  "safety": {
+    "no_live_or_main_promotion_by_this_register": true,
+    "no_canon_authority_change": true,
+    "superbrain_remains_shadow_until_explicit_founder_cutover": true,
+    "factory_remains_separate_existing_lineage": true
+  }
+}
