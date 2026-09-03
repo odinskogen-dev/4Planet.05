@@ -383,6 +383,16 @@ async function waitForBrowserQa(env: FactoryRuntimeEnv, url: string): Promise<{ 
   return { ok: false, evidence: [`preview FAIL ${url}`, last] };
 }
 
+function pendingCandidateOutcome(pkg: WorkPackage, evidence: string[], branch: string, commitSha: string): Outcome {
+  return baseOutcome(pkg, {
+    status: "CORRECT",
+    evidence,
+    materialDelta: "Factory produced a bounded real TEST candidate; CI is non-terminal, so no speculative corrective mutation was attempted.",
+    actual: `Candidate remains isolated on ${branch}; commit ${commitSha}; registered checks are still pending.`,
+    limitation: "Workflow must durably re-observe the same candidate. Pending evidence must never be treated as failure, completion or a trigger for a new AI write.",
+  });
+}
+
 export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInput: WorkPackage): Promise<Outcome | undefined> {
   const pkg = pkgInput as AutonomousWorkPackage;
   const spec = pkg.autonomous;
@@ -420,6 +430,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
     if (!/^factory-candidate-[a-z0-9-]+$/.test(branch)) return blocked(pkg, "Candidate branch is outside the Factory TEST namespace.");
     await ensureCandidateBranch(token, branch, currentBaseSha);
 
+    let candidateHeadSha = await branchSha(token, branch);
     let target = await readFile(token, spec.targetPath, branch);
     const maxAttempts = Math.max(1, Math.min(spec.maxCorrectionAttempts ?? MAX_AI_ATTEMPTS, MAX_AI_ATTEMPTS));
     const evidence: string[] = [
@@ -434,6 +445,33 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
     let model = "";
     let pr: GitHubPull | undefined;
 
+    if (candidateHeadSha !== currentBaseSha) {
+      finalCommit = candidateHeadSha;
+      pr = await ensureDraftPullRequest(token, branch, pkg);
+      evidence.push(`REOBSERVE existing candidate commit ${candidateHeadSha}`, `draft PR ${pr.html_url}`);
+      const checks = await checkState(token, candidateHeadSha);
+      evidence.push(...checks.evidence.map((item) => `CHECK ${item}`));
+      if (checks.state === "PENDING") return pendingCandidateOutcome(pkg, evidence, branch, candidateHeadSha);
+      if (checks.state === "PASS") {
+        const preview = previewUrl(branch, spec.previewDomain);
+        const browserQa = await waitForBrowserQa(env, preview);
+        evidence.push(...browserQa.evidence);
+        if (browserQa.ok) {
+          return baseOutcome(pkg, {
+            status: "ACCEPTED",
+            evidence,
+            materialDelta: "Re-observed the existing bounded TEST candidate after durable CI wait; registered GitHub checks and rendered mobile Browser QA passed. Candidate remains draft and Founder-gated.",
+            actual: `PR ${pr.html_url}; commit ${candidateHeadSha}; preview ${preview}; no additional AI mutation.`,
+            limitation: "Technical/browser acceptance does not constitute Human Gold, scientific truth approval, Canon promotion or LIVE release.",
+          });
+        }
+        correctionContext = `Existing candidate passed GitHub checks but mobile preview Browser QA failed: ${browserQa.evidence.join(" | ")}`;
+      } else {
+        correctionContext = `Existing candidate checks failed: ${checks.failures.join(" | ")}`;
+      }
+      evidence.push(`REOBSERVE terminal gate requires bounded correction: ${correctionContext}`);
+    }
+
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       const generated = await generateCandidate(env, pkg, spec, target.content, correctionContext);
       model = generated.model;
@@ -445,6 +483,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
         target.sha,
         `Factory candidate: ${pkg.title} [attempt ${attempt}]`,
       );
+      candidateHeadSha = finalCommit;
       evidence.push(`AI ${model} attempt ${attempt}`, `commit ${finalCommit}`, `self-checks ${generated.selfChecks.join(" | ") || "none"}`);
       pr = await ensureDraftPullRequest(token, branch, pkg);
       evidence.push(`draft PR ${pr.html_url}`);
@@ -459,7 +498,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
           return baseOutcome(pkg, {
             status: "ACCEPTED",
             evidence,
-            materialDelta: `Produced a bounded real TEST candidate from current TEST KING, passed registered GitHub checks and rendered mobile Browser QA. Candidate remains draft and Founder-gated.`,
+            materialDelta: "Produced a bounded real TEST candidate from current TEST KING, passed registered GitHub checks and rendered mobile Browser QA. Candidate remains draft and Founder-gated.",
             actual: `PR ${pr.html_url}; commit ${finalCommit}; preview ${preview}; model ${model}; attempts ${attempt}.`,
             limitation: "Technical/browser acceptance does not constitute Human Gold, scientific truth approval, Canon promotion or LIVE release.",
           });
@@ -468,13 +507,7 @@ export async function executeAutonomousPackage(envInput: Cloudflare.Env, pkgInpu
       } else if (checks.state === "FAIL") {
         correctionContext = `GitHub candidate checks failed: ${checks.failures.join(" | ")}`;
       } else {
-        return baseOutcome(pkg, {
-          status: "CORRECT",
-          evidence,
-          materialDelta: "Factory produced a bounded real TEST candidate; CI remained pending after the bounded observation budget, so no speculative corrective mutation was attempted.",
-          actual: `Candidate remains isolated on ${branch}; commit ${finalCommit}; registered checks are still pending.`,
-          limitation: "A later governed execution may re-observe the same candidate. Pending evidence must never be treated as failure or trigger a new AI write.",
-        });
+        return pendingCandidateOutcome(pkg, evidence, branch, finalCommit);
       }
 
       if (attempt < maxAttempts) {
