@@ -6,17 +6,19 @@ const BASE = "a".repeat(40);
 const CANDIDATE = "b".repeat(40);
 
 test("AI reservation is required before a first material candidate mutation", () => {
-  assert.equal(shouldReserveAiForCandidate(undefined, BASE), true);
-  assert.equal(shouldReserveAiForCandidate(BASE, BASE), true);
+  assert.equal(shouldReserveAiForCandidate(undefined, BASE, "UNKNOWN"), true);
+  assert.equal(shouldReserveAiForCandidate(BASE, BASE, "PENDING"), true);
 });
 
-test("pure CI/browser re-observation does not consume another AI reservation", () => {
-  assert.equal(shouldReserveAiForCandidate(CANDIDATE, BASE), false);
+test("only material-candidate PENDING CI re-observation is AI-free", () => {
+  assert.equal(shouldReserveAiForCandidate(CANDIDATE, BASE, "PENDING"), false);
+  assert.equal(shouldReserveAiForCandidate(CANDIDATE, BASE, "TERMINAL"), true);
+  assert.equal(shouldReserveAiForCandidate(CANDIDATE, BASE, "UNKNOWN"), true);
 });
 
 test("unknown or malformed candidate identity fails closed to reservation", () => {
-  assert.equal(shouldReserveAiForCandidate("not-a-sha", BASE), true);
-  assert.equal(shouldReserveAiForCandidate(CANDIDATE, "bad-base"), true);
+  assert.equal(shouldReserveAiForCandidate("not-a-sha", BASE, "PENDING"), true);
+  assert.equal(shouldReserveAiForCandidate(CANDIDATE, "bad-base", "PENDING"), true);
 });
 
 test("candidate branch derivation exactly preserves Factory namespace and slug bound", () => {
