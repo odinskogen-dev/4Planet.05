@@ -6,6 +6,13 @@ import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
 import { factoryCandidateBranch, shouldReserveAiForCandidate, type CandidateCheckState } from "./aiReservation";
+import {
+  APPROVED_FACTORY_AI_MODEL,
+  MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH,
+  WORST_CASE_FACTORY_AI_USD_PER_UTC_MONTH,
+  modelIsBudgetApproved,
+  monthlyReservationAllowed,
+} from "./aiBudgetPolicy";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -19,6 +26,8 @@ interface WorkerState {
 const MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY = 6;
 const MAX_AI_ATTEMPTS_PER_PACKAGE = 2;
 const REPOSITORY = "odinskogen-dev/4Planet.05";
+
+type AiReservationDecision = "RESERVED" | "DAILY_CAP" | "MONTHLY_CAP";
 
 abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
   abstract readonly section: Section;
@@ -44,6 +53,13 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     this.sql`
       CREATE TABLE IF NOT EXISTS ai_usage (
         utc_day TEXT PRIMARY KEY,
+        reserved_calls INTEGER NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS ai_monthly_usage (
+        utc_month TEXT PRIMARY KEY,
         reserved_calls INTEGER NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -81,6 +97,21 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
 
     const autonomous = (pkg as AutonomousWorkPackage).autonomous;
     if (autonomous) {
+      const configuredModel = (this.env as Cloudflare.Env & { FACTORY_AI_MODEL?: string }).FACTORY_AI_MODEL?.trim();
+      if (!modelIsBudgetApproved(configuredModel)) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          `FACTORY_PAID_AI_HARD_CAP_FAIL_CLOSED: model override ${configuredModel} is outside the approved cost envelope.`,
+          [
+            `Approved model=${APPROVED_FACTORY_AI_MODEL}`,
+            `Worst-case Factory monthly envelope USD=${WORST_CASE_FACTORY_AI_USD_PER_UTC_MONTH.toFixed(4)}`,
+            "No model call attempted",
+          ],
+          "A different model requires a new explicit pricing calculation and governed budget policy before use.",
+        );
+      }
+
       const budget = effectiveResourceBudget(pkg.resourceBudget);
       const requestedAttempts = Math.max(
         1,
@@ -103,14 +134,24 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       }
 
       const reserveAi = await this.needsAiReservation(pkg, autonomous);
-      if (reserveAi && !this.reserveAiBudget(requestedAttempts)) {
-        return this.finish(
-          pkg,
-          "BLOCKED",
-          `ZERO_CASH_FREE_TIER_FAIL_CLOSED: worker daily AI reservation cap reached (${MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY}).`,
-          ["No Workers AI call attempted", "WAIT until next UTC quota window"],
-          "Factory never buys additional AI capacity automatically.",
-        );
+      if (reserveAi) {
+        const reservation = this.reserveAiBudget(requestedAttempts);
+        if (reservation !== "RESERVED") {
+          const monthly = reservation === "MONTHLY_CAP";
+          return this.finish(
+            pkg,
+            "BLOCKED",
+            monthly
+              ? `FACTORY_PAID_AI_HARD_CAP_FAIL_CLOSED: worker monthly AI reservation cap reached (${MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH}).`
+              : `ZERO_CASH_DAILY_FAIL_CLOSED: worker daily AI reservation cap reached (${MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY}).`,
+            [
+              "No Workers AI call attempted",
+              monthly ? "WAIT until next UTC month budget window" : "WAIT until next UTC day quota window",
+              `Worst-case Factory monthly envelope USD=${WORST_CASE_FACTORY_AI_USD_PER_UTC_MONTH.toFixed(4)} (<5)`,
+            ],
+            "Factory cannot buy, expand, or bypass AI capacity automatically.",
+          );
+        }
       }
 
       try {
@@ -173,9 +214,6 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       const body = await response.json() as { object?: { sha?: string } };
       const candidateSha = body.object?.sha;
 
-      // Asking the pure policy with PENDING is a safe material-candidate test:
-      // false is possible only for two valid, different SHAs. Everything else
-      // (missing/malformed/base identity) reserves immediately, before checks.
       if (shouldReserveAiForCandidate(candidateSha, autonomous.expectedBaseSha, "PENDING")) return true;
       if (!candidateSha) return true;
 
@@ -202,19 +240,32 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     }
   }
 
-  private reserveAiBudget(calls: number): boolean {
-    const utcDay = new Date().toISOString().slice(0, 10);
-    const row = this.sql<{ reserved_calls: number }>`SELECT reserved_calls FROM ai_usage WHERE utc_day = ${utcDay}`[0];
-    const current = Number(row?.reserved_calls ?? 0);
-    if (current + calls > MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY) return false;
-    const next = current + calls;
-    const updatedAt = new Date().toISOString();
+  private reserveAiBudget(calls: number): AiReservationDecision {
+    const iso = new Date().toISOString();
+    const utcDay = iso.slice(0, 10);
+    const utcMonth = iso.slice(0, 7);
+    const dayRow = this.sql<{ reserved_calls: number }>`SELECT reserved_calls FROM ai_usage WHERE utc_day = ${utcDay}`[0];
+    const monthRow = this.sql<{ reserved_calls: number }>`SELECT reserved_calls FROM ai_monthly_usage WHERE utc_month = ${utcMonth}`[0];
+    const dayCurrent = Number(dayRow?.reserved_calls ?? 0);
+    const monthCurrent = Number(monthRow?.reserved_calls ?? 0);
+
+    if (dayCurrent + calls > MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY) return "DAILY_CAP";
+    if (!monthlyReservationAllowed(monthCurrent, calls)) return "MONTHLY_CAP";
+
+    const dayNext = dayCurrent + calls;
+    const monthNext = monthCurrent + calls;
+    const updatedAt = iso;
     this.sql`
       INSERT INTO ai_usage (utc_day, reserved_calls, updated_at)
-      VALUES (${utcDay}, ${next}, ${updatedAt})
+      VALUES (${utcDay}, ${dayNext}, ${updatedAt})
       ON CONFLICT(utc_day) DO UPDATE SET reserved_calls = excluded.reserved_calls, updated_at = excluded.updated_at
     `;
-    return true;
+    this.sql`
+      INSERT INTO ai_monthly_usage (utc_month, reserved_calls, updated_at)
+      VALUES (${utcMonth}, ${monthNext}, ${updatedAt})
+      ON CONFLICT(utc_month) DO UPDATE SET reserved_calls = excluded.reserved_calls, updated_at = excluded.updated_at
+    `;
+    return "RESERVED";
   }
 
   private finish(
