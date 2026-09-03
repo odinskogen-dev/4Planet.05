@@ -1,8 +1,9 @@
 # CLAUDE BOUNDED PRODUCT BUILD — SPECIES WORLD SEAM COMPONENT PROOF 01
 
-id: CLAUDE-SPECIES-WORLD-SEAM-COMPONENT-PROOF-01
+id: CLAUDE-SPECIES-WORLD-SEAM-COMPONENT-PROOF-SONNET-01
 base_sha: 327a4ee39e337301adbb83995126e21391d0dc2d
 test_profile: PRODUCT_UI
+model: claude-sonnet-5
 write_scope: src/components/species/SpeciesWorldSeam.tsx
 write_scope: scripts/species-first-plank-source-contract.test.mjs
 
@@ -18,6 +19,8 @@ The review proved a material SPECIES problem: after a strong life-first hero, me
 The review's original proposal also asked to mount this into `src/pages/integrated/Species.tsx`. AXE independently checked current open PR ownership and found that the active Jaguar Master PR #79 also writes `src/pages/integrated/Species.tsx`. Therefore that mount scope is NOT CLEAR and is explicitly rejected for this run.
 
 This task proves the reusable product component and truth contract now without touching the active Species/Jaguar presentation seam. It is integration-ready evidence, not a hidden product release.
+
+This retry uses `claude-sonnet-5` on the same existing Claude OAuth/subscription path only. It is a no-paid-API fallback attempt after the Opus session limit stopped the first code run before mutation. No API-key billing or additional spend is authorised by this work order.
 
 ## User outcome
 
