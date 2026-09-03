@@ -27,6 +27,13 @@ interface FactoryStateView {
   outcomes: Array<{ work_package_id: string }>;
 }
 
+interface ReadyRecoveryObservation {
+  exactBuild: string | null;
+  selectedIds: string[];
+  queuedIds: string[];
+  receiptId: string | null;
+}
+
 async function factoryAgent(env: RuntimeEnv): Promise<any> {
   const getByName: any = getAgentByName;
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
@@ -50,15 +57,15 @@ function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso
   };
 }
 
-async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<void> {
+async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRecoveryObservation> {
   const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
-  if (!SHA40.test(buildSha)) return;
+  if (!SHA40.test(buildSha)) {
+    return { exactBuild: null, selectedIds: [], queuedIds: [], receiptId: null };
+  }
 
+  const markerId = buildReadyDrainMarkerId(buildSha) ?? null;
   const agent = await factoryAgent(env);
   const state = await agent.getFactoryState() as FactoryStateView;
-  const markerId = buildReadyDrainMarkerId(buildSha);
-  if (!markerId) return;
-
   const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
   const recoveryIds = planBuildBoundShadowReadyDrain({
     mode: state.state.mode,
@@ -73,7 +80,14 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<void> {
     work: state.work,
     recordedOutcomeIds: recorded,
   });
-  if (recoveryIds.length === 0) return;
+  if (recoveryIds.length === 0) {
+    return {
+      exactBuild: buildSha,
+      selectedIds: [],
+      queuedIds: [],
+      receiptId: markerId,
+    };
+  }
 
   const nowIso = new Date().toISOString();
   const packageMap = new Map(createShadowOrchestraPackages(nowIso).map((pkg) => [pkg.id, pkg] as const));
@@ -97,6 +111,12 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<void> {
   }
 
   await agent.upsertProject(recoveryReceipt(buildSha, recoveryIds, nowIso));
+  return {
+    exactBuild: buildSha,
+    selectedIds: recoveryIds,
+    queuedIds: recoveryIds,
+    receiptId: markerId,
+  };
 }
 
 export default {
@@ -104,7 +124,19 @@ export default {
     const env = envInput as RuntimeEnv;
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/__factory/canary") {
-      await recoverBuildBoundReadyOrchestra(env);
+      const before = await recoverBuildBoundReadyOrchestra(env);
+      const response = await activeRuntime.fetch(request, env, ctx);
+      if (!response.ok) return response;
+      const body = await response.json() as Record<string, unknown>;
+      // A Queue/Browser delivery can legitimately fall back to READY while the
+      // canary request itself is running. Re-observe once after the underlying
+      // canary has materialised its status so the same request closes that
+      // transient gap instead of waiting for another external poll.
+      const after = await recoverBuildBoundReadyOrchestra(env);
+      return Response.json({
+        ...body,
+        exactBuildReadyRecovery: { before, after },
+      }, { status: response.status });
     }
     return activeRuntime.fetch(request, env, ctx);
   },
