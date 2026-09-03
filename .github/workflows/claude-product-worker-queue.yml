@@ -106,6 +106,14 @@ jobs:
           WORK_ORDER_ID: ${{ steps.order.outputs.work_order_id }}
         run: |
           set -euo pipefail
+
+          # Claude output lives in /tmp and the model is proven read-only above.
+          # Re-anchor the writer to the newest control branch before committing so
+          # concurrent control-plane hardening cannot create a false integration failure.
+          git fetch origin factory/claude-product-worker-01 --no-tags
+          git reset --hard origin/factory/claude-product-worker-01
+          echo "CLAUDE_QUEUE_REBASE_TO_LATEST=PASS"
+
           mkdir -p docs/claude/results
           {
             echo "# CLAUDE FACTORY RESULT"
