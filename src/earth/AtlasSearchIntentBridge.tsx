@@ -1,5 +1,8 @@
 import { useEffect } from "react";
 import { LAYERS } from "./layers";
+import { repairAtlasLayerRegistry } from "./atlasRuntimeRepairs";
+
+repairAtlasLayerRegistry();
 
 export type AtlasLayerIntent = {
   layerId: string;
