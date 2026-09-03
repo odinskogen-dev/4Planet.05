@@ -1,4 +1,4 @@
-# NIGHT GIGA 05: exact-branch read-only execution proof trigger — auth retest 2026-09-03
+# NIGHT GIGA 05: exact-branch Claude Product Worker proof — auth + real review
 name: Claude Product Worker — Direct CLI Read Only Spike
 
 on:
@@ -20,7 +20,7 @@ concurrency:
 jobs:
   review-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     steps:
@@ -32,7 +32,7 @@ jobs:
             echo "::error::CLAUDE_PRODUCT_WORKER_BLOCKED: CLAUDE_CODE_OAUTH_TOKEN is missing."
             exit 1
           fi
-          echo "CLAUDE_AUTH=READY"
+          echo "CLAUDE_AUTH_SECRET=READY"
 
       - name: Checkout isolated Claude worker branch
         uses: actions/checkout@v4
@@ -48,6 +48,17 @@ jobs:
           curl -fsSL https://claude.ai/install.sh | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
+      - name: Prove live Claude OAuth authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$PATH"
+          export CLAUDE_CODE_OAUTH_TOKEN="$(printf '%s' "${CLAUDE_CODE_OAUTH_TOKEN}" | tr -d '\r\n')"
+          OUT="$(claude -p 'Return exactly CLAUDE_AUTH_PASS and nothing else.' --model claude-opus-5 --max-turns 1 --permission-mode plan --no-session-persistence)"
+          printf '%s\n' "$OUT" > /tmp/claude-auth-proof.txt
+          grep -Fxq 'CLAUDE_AUTH_PASS' /tmp/claude-auth-proof.txt
+          echo "CLAUDE_REAL_AUTH=PASS"
+
       - name: Run independent Claude Product Worker review
         id: claude_review
         continue-on-error: true
@@ -56,13 +67,8 @@ jobs:
           set +e
           export PATH="$HOME/.local/bin:$PATH"
           export CLAUDE_CODE_OAUTH_TOKEN="$(printf '%s' "${CLAUDE_CODE_OAUTH_TOKEN}" | tr -d '\r\n')"
-          if [[ -z "${CLAUDE_CODE_OAUTH_TOKEN}" ]]; then
-            echo "CLAUDE_OAUTH_NORMALIZATION_EMPTY" > /tmp/claude-product-worker-test-01.stderr
-            echo "exit_code=1" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           PROMPT=$(cat <<'EOF'
-          You are running the first real 4PLANET Claude Product Worker integration spike.
+          You are running the first real 4PLANET Claude Product Worker integration proof.
 
           Read CLAUDE.md first. Then read and execute:
           docs/claude/work-orders/CLAUDE-PRODUCT-WORKER-TEST-01.md
@@ -76,7 +82,7 @@ jobs:
           )
           claude -p "$PROMPT" \
             --model claude-opus-5 \
-            --max-turns 12 \
+            --max-turns 30 \
             --permission-mode plan \
             --tools "Read,Grep,Glob,Bash" \
             --no-session-persistence \
@@ -106,6 +112,7 @@ jobs:
         with:
           name: claude-product-worker-cli-test-01
           path: |
+            /tmp/claude-auth-proof.txt
             /tmp/claude-product-worker-test-01.md
             /tmp/claude-product-worker-test-01.stderr
           if-no-files-found: error
@@ -118,10 +125,15 @@ jobs:
           CLAUDE_EXIT_CODE: ${{ steps.claude_review.outputs.exit_code }}
         run: |
           set -euo pipefail
+          test -s /tmp/claude-auth-proof.txt
+          grep -Fxq 'CLAUDE_AUTH_PASS' /tmp/claude-auth-proof.txt
           if [[ "${CLAUDE_EXIT_CODE:-missing}" != "0" ]]; then
             echo "::error::CLAUDE_PRODUCT_WORKER_CALL_FAILED exit=${CLAUDE_EXIT_CODE:-missing}"
             if [[ -s /tmp/claude-product-worker-test-01.stderr ]]; then
               cat /tmp/claude-product-worker-test-01.stderr
+            fi
+            if [[ -s /tmp/claude-product-worker-test-01.md ]]; then
+              cat /tmp/claude-product-worker-test-01.md
             fi
             exit 1
           fi
