@@ -11,9 +11,16 @@ const MAX_PENDING_CI_REOBSERVATIONS = 12;
 const PENDING_CI_SLEEP = "2 minutes";
 
 export function isPendingCiOutcome(outcome: Outcome): boolean {
-  return outcome.status === "CORRECT"
-    && outcome.actual.includes("registered checks are still pending")
+  if (outcome.status !== "CORRECT") return false;
+
+  const pendingCandidateCi = outcome.actual.includes("registered checks are still pending")
     && (outcome.limitation ?? "").includes("durably re-observe the same candidate");
+
+  const pendingClaudeSpecialist = outcome.actual.includes("Claude specialist result is still pending")
+    && (outcome.limitation ?? "").includes("CLAUDE_SPECIALIST_PENDING")
+    && (outcome.limitation ?? "").includes("durably re-observe the same work package");
+
+  return pendingCandidateCi || pendingClaudeSpecialist;
 }
 
 export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, WorkPackageWorkflowParams> {
@@ -38,15 +45,15 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
 
     for (let observation = 1; observation <= MAX_PENDING_CI_REOBSERVATIONS && isPendingCiOutcome(outcome); observation += 1) {
       await this.reportProgress({
-        step: "await-ci",
+        step: "await-ci-or-specialist",
         status: "running",
-        message: `Candidate CI still pending; durable re-observation ${observation}/${MAX_PENDING_CI_REOBSERVATIONS}`,
+        message: `External evidence still pending; durable re-observation ${observation}/${MAX_PENDING_CI_REOBSERVATIONS}`,
         percent: Math.min(0.85, 0.2 + observation * 0.05),
       });
 
-      await step.sleep(`await-pending-ci-${observation}`, PENDING_CI_SLEEP);
+      await step.sleep(`await-pending-evidence-${observation}`, PENDING_CI_SLEEP);
       outcome = await step.do(
-        `reobserve-pending-ci-${observation}`,
+        `reobserve-pending-evidence-${observation}`,
         {
           retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
           timeout: "20 minutes",
