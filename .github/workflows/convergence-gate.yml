@@ -33,14 +33,14 @@ jobs:
           git rev-parse HEAD > exact-sha.txt
           printf '%s\n' "${GITHUB_REF_NAME}" > exact-branch.txt
 
-      - name: Use Node.js 20
+      - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
-      - name: Install locked dependencies
-        run: npm ci
+      - name: Install locked dependencies including dev toolchain
+        run: npm ci --include=dev
 
       - name: Typecheck
         run: npm run typecheck
@@ -100,6 +100,11 @@ jobs:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/jaguar-world.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
+      - name: E2E — Nature XR flat-browser runtime
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/jaguar-xr.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-desktop --project=webkit-390
+
       - name: Internal route control
         shell: bash
         run: |
@@ -108,7 +113,7 @@ jobs:
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
           const required = [
-            '/', '/atlas', '/species', '/species/orca', '/species/jaguar',
+            '/', '/atlas', '/species', '/species/orca', '/species/jaguar', '/xr/jaguar/',
             '/ecosystems/amazon-rainforest', '/living-systems', '/missions/cle4n',
             '/missions/wh4les', '/join'
           ];
