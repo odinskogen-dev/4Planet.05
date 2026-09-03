@@ -12,22 +12,44 @@ function overlaps(a: { x: number; y: number; width: number; height: number }, b:
   );
 }
 
-test("4PLANET ATLAS identity is visible on the canonical product", async ({ page }) => {
+test("Founder-selected ATLAS surface remains the product shell instead of a polish overlay", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
-  await expect(page.getByLabel("4PLANET ATLAS")).toBeVisible();
-  await expect(page.getByLabel("4PLANET ATLAS")).toContainText("4PLANET ATLAS");
+  await expect(page.locator(".atlas-identity")).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: /search the living planet/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: "LAYERS" })).toBeVisible();
 });
 
-test("recovered high-value ATLAS donor layers are present in the canonical console", async ({ page }) => {
+test("Founder-reference ATLAS layer console keeps the full recovered capability set", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
   await page.getByRole("button", { name: "LAYERS" }).click();
 
-  await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
-  await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
-  await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
-  await expect(page.getByText("FISHING · VESSEL DENSITY", { exact: true })).toBeVisible();
+  for (const label of [
+    "EARTH · BLUE MARBLE",
+    "NASA EARTHDATA · TODAY",
+    "OCEAN · SEA SURFACE TEMP",
+    "NASA · NIGHT LIGHTS",
+    "ACTIVE FIRES",
+    "VEGETATION · NDVI",
+    "SEA ICE",
+    "AIR · AEROSOLS",
+    "PRECIPITATION",
+    "DAY / NIGHT",
+    "FOREST LOSS",
+    "CORAL HEAT STRESS",
+    "PROTECTED AREAS",
+    "OCEAN · BATHYMETRY",
+    "OCEAN · OXYGEN CLIMATOLOGY",
+    "BIODIVERSITY DENSITY",
+    "WH4LES",
+    "SPECIES",
+    "SEABED · HABITATS 2025",
+    "FIRE + EVENTS",
+    "FISHING · VESSEL DENSITY",
+  ]) {
+    await expect(page.getByText(label, { exact: true })).toBeVisible();
+  }
 });
 
 test("dark ATLAS uses the existing provider dark street style without losing overlays", async ({ page }, testInfo) => {
