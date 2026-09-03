@@ -116,12 +116,12 @@ jobs:
 
           Use independent product/interface judgement. The work order defines the user outcome, constraints and evidence; it does not force a weak implementation. Implement the smallest premium change that materially closes the stated gap. Preserve MUST-NOT-LOSE value. Do not add generic SaaS/dashboard/card clutter or speculative features simply to show activity.
 
-          You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority.
+          You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority. Spend turns on finishing the bounded implementation and a compact handoff, not exhaustive archaeology.
           EOF
           )
           claude -p "$PROMPT" \
             --model claude-opus-5 \
-            --max-turns 30 \
+            --max-turns 60 \
             --permission-mode acceptEdits \
             --tools "Read,Grep,Glob,Edit,Write" \
             --no-session-persistence \
