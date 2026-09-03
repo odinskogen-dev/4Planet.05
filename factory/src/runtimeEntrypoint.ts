@@ -39,13 +39,13 @@ function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso
     id: markerId,
     name: "Orchestra exact-build READY recovery receipt",
     northStar: "Keep the single SHADOW Factory canary re-entrant across durable state without weakening acceptance or creating parallel execution authority.",
-    goal: "Record one bounded exact-build re-enqueue of unresolved allowlisted Orchestra rows that are durably READY but no longer represented by a live Queue delivery.",
+    goal: "Record bounded exact-build re-enqueue evidence for unresolved allowlisted Orchestra rows that are durably READY but no longer represented by a live Queue delivery.",
     current: `Exact-build SHADOW READY recovery queued: ${recoveredIds.join(", ") || "none"}.`,
-    gold: "The deployed canary can recover stale READY Orchestra state once per exact Factory build and then prove the original 8/8 gate without duplicate recovery loops.",
-    gap: "Runtime proof remains required; this receipt is not activation evidence.",
+    gold: "The deployed canary can re-enqueue unresolved READY Orchestra state after transient delivery/tool failure while the READY-to-DISPATCHED transition prevents duplicate concurrent recovery.",
+    gap: "Runtime proof remains required; this receipt is observability evidence, not a one-shot lock and not activation evidence.",
     priority: "P0",
     user: "4PLANET Production Factory control",
-    authorityRefs: ["FD-2026-09-02", "FACT-G02", "FACT-G07", "Production Factory Autonomous Activation #194"],
+    authorityRefs: ["FD-2026-09-02", "FACT-G02", "FACT-G07", "Production Factory Autonomous Activation #198"],
     lastMaterialProgressAt: nowIso,
   };
 }
@@ -63,7 +63,12 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<void> {
   const recoveryIds = planBuildBoundShadowReadyDrain({
     mode: state.state.mode,
     factoryBuildSha: buildSha,
-    markerPresent: state.projects.some((project) => project.id === markerId),
+    // The build receipt is evidence only. A package may legitimately return to
+    // READY after a transient Queue/Browser failure later in the same build.
+    // Duplicate safety is enforced transactionally below by moving READY to
+    // DISPATCHED before enqueue; therefore stale receipt presence must not make
+    // a retryable package permanently unreachable.
+    markerPresent: false,
     orchestraPackageIds: ORCHESTRA_PACKAGE_IDS,
     work: state.work,
     recordedOutcomeIds: recorded,
