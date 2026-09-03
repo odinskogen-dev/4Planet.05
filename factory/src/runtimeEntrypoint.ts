@@ -66,7 +66,8 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRe
   const markerId = buildReadyDrainMarkerId(buildSha) ?? null;
   const agent = await factoryAgent(env);
   const state = await agent.getFactoryState() as FactoryStateView;
-  const recorded = new Set(state.outcomes.map((item) => item.work_package_id));
+  const exactOutcomes = await agent.getOutcomesByIds([...ORCHESTRA_PACKAGE_IDS]) as Array<{ workPackageId: string }>;
+  const recorded = new Set(exactOutcomes.map((item) => item.workPackageId));
   const markerPresent = markerId ? state.projects.some((project) => project.id === markerId) : false;
   const recoveryIds = planBuildBoundShadowReadyDrain({
     mode: state.state.mode,
