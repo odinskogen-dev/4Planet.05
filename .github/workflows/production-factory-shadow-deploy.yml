@@ -21,7 +21,7 @@ env:
 
 concurrency:
   group: production-factory-autonomous-activation
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   preflight:
