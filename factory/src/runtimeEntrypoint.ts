@@ -1,6 +1,7 @@
 import { getAgentByName } from "agents";
 import activeRuntime from "./activeRuntime";
 import type { ProjectProjection, WorkPackage } from "./contracts";
+import { receiverAuthorityCurrent, requireCurrentReceiver } from "./receiverAuthority";
 import {
   createShadowOrchestraPackages,
   ORCHESTRA_PACKAGE_IDS,
@@ -14,10 +15,14 @@ import {
 export * from "./activeRuntime";
 
 const FACTORY_AGENT_NAME = "shadow-primary";
+const REPOSITORY = "odinskogen-dev/4Planet.05";
+const TEST_BRANCH = "king/test";
 const SHA40 = /^[0-9a-f]{40}$/i;
 
 interface RuntimeEnv extends Cloudflare.Env {
   FACTORY_BUILD_SHA?: string;
+  FACTORY_GITHUB_TOKEN?: string;
+  FACTORY_TEST_KING_BASE_SHA?: string;
 }
 
 interface FactoryStateView {
@@ -37,6 +42,38 @@ interface ReadyRecoveryObservation {
 async function factoryAgent(env: RuntimeEnv): Promise<any> {
   const getByName: any = getAgentByName;
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+}
+
+async function currentTestKingSha(env: RuntimeEnv): Promise<string> {
+  const token = env.FACTORY_GITHUB_TOKEN?.trim();
+  if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
+  const ref = TEST_BRANCH.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${ref}`, {
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${token}`,
+      "x-github-api-version": "2022-11-28",
+      "user-agent": "4PLANET-Production-Factory/1.0",
+    },
+  });
+  if (!response.ok) throw new Error(`CURRENT_TEST_KING_LOOKUP_FAILED:${response.status}`);
+  const body = await response.json() as { object?: { sha?: string } };
+  const sha = body.object?.sha?.trim().toLowerCase() ?? "";
+  if (!SHA40.test(sha)) throw new Error("CURRENT_TEST_KING_SHA_INVALID");
+  return sha;
+}
+
+async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha: string; currentSha: string; demoted: boolean }> {
+  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+  const currentSha = await currentTestKingSha(env);
+  const agent = await factoryAgent(env);
+  const state = await agent.getFactoryState() as FactoryStateView;
+  const current = receiverAuthorityCurrent(baseSha, currentSha);
+  if (state.state.mode === "ACTIVE" && !current) {
+    await agent.setMode("SHADOW");
+    return { baseSha, currentSha, demoted: true };
+  }
+  return { baseSha, currentSha, demoted: false };
 }
 
 function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso: string): ProjectProjection {
@@ -72,9 +109,6 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRe
   const recoveryIds = planBuildBoundShadowReadyDrain({
     mode: state.state.mode,
     factoryBuildSha: buildSha,
-    // One exact-build recovery enqueue is enough. Once queued, Cloudflare Queue
-    // owns bounded retry/backoff. The canary must not race that retry authority
-    // by creating fresh duplicate deliveries every few seconds.
     markerPresent,
     orchestraPackageIds: ORCHESTRA_PACKAGE_IDS,
     work: state.work,
@@ -96,8 +130,6 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRe
     .filter((pkg): pkg is WorkPackage => Boolean(pkg));
   if (packages.length !== recoveryIds.length) throw new Error("BUILD_BOUND_READY_RECOVERY_PACKAGE_MISMATCH");
 
-  // Move each exact allowlisted row out of READY before enqueue so repeated
-  // public canary reads cannot flood the Queue while the first delivery waits.
   for (const pkg of packages) await agent.upsertWorkPackage({ ...pkg, status: "DISPATCHED" });
 
   try {
@@ -105,7 +137,6 @@ async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRe
       packages.map((pkg) => ({ body: queueMessageFor(pkg, nowIso) })),
     );
   } catch (error) {
-    // Send failure must not strand the package in a false in-flight state.
     for (const pkg of packages) await agent.upsertWorkPackage({ ...pkg, status: "READY" });
     throw error;
   }
@@ -123,6 +154,22 @@ export default {
   async fetch(request: Request, envInput: Cloudflare.Env, ctx: ExecutionContext) {
     const env = envInput as RuntimeEnv;
     const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/__factory/")) {
+      try {
+        await failClosedStaleActiveReceiver(env);
+      } catch (error) {
+        const agent = await factoryAgent(env);
+        const state = await agent.getFactoryState() as FactoryStateView;
+        if (state.state.mode === "ACTIVE") await agent.setMode("SHADOW");
+        return Response.json({
+          ok: false,
+          active: false,
+          error: error instanceof Error ? error.message : "TEST_KING_AUTHORITY_REVALIDATION_FAILED",
+        }, { status: 409 });
+      }
+    }
+
     if (request.method === "GET" && url.pathname === "/__factory/canary") {
       const before = await recoverBuildBoundReadyOrchestra(env);
       const response = await activeRuntime.fetch(request, env, ctx);
@@ -134,6 +181,30 @@ export default {
         exactBuildReadyRecovery: { before, after },
       }, { status: response.status });
     }
+
+    if (request.method === "POST" && url.pathname === "/__factory/activation-proof/status") {
+      const response = await activeRuntime.fetch(request, env, ctx);
+      const body = await response.clone().json().catch(() => null) as Record<string, unknown> | null;
+      if (response.ok && body?.active === true) {
+        try {
+          const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+          const terminalTestSha = await currentTestKingSha(env);
+          requireCurrentReceiver(baseSha, terminalTestSha, "TERMINAL_ACTIVE");
+        } catch (error) {
+          const agent = await factoryAgent(env);
+          await agent.setMode("SHADOW");
+          return Response.json({
+            ...(body ?? {}),
+            ok: false,
+            active: false,
+            gate: { ready: false, missing: ["TERMINAL_TEST_KING_AUTHORITY"] },
+            error: error instanceof Error ? error.message : "TERMINAL_TEST_KING_AUTHORITY_FAILED",
+          }, { status: 409 });
+        }
+      }
+      return response;
+    }
+
     return activeRuntime.fetch(request, env, ctx);
   },
 
