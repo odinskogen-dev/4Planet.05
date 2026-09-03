@@ -1,3 +1,4 @@
+# Executes a bounded Cloudflare AI Gateway spend-control write and verifies exact readback.
 name: Factory AI Budget Control
 
 on:
@@ -62,7 +63,7 @@ jobs:
             create_code="$(curl -sS -o result.json -w '%{http_code}' -X POST "${AUTH[@]}" --data @payload.json "${API}")"
             [[ "$create_code" =~ ^2 ]] || { echo "AI Gateway create failed HTTP ${create_code}"; jq -c '{success,errors,messages}' result.json || true; exit 1; }
           elif [[ "$code" =~ ^2 ]]; then
-            jq --arg id "$GATEWAY_ID" --argjson limit "$LIMIT_USD" --argjson window "$WINDOW_SECONDS" '
+            jq --argjson limit "$LIMIT_USD" --argjson window "$WINDOW_SECONDS" '
               .result
               | {
                   cache_invalidate_on_update,
