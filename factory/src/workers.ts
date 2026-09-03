@@ -5,7 +5,7 @@ import { executeAutonomousPackage, type AutonomousWorkPackage } from "./autonomo
 import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
-import { factoryCandidateBranch, shouldReserveAiForCandidate } from "./aiReservation";
+import { factoryCandidateBranch, shouldReserveAiForCandidate, type CandidateCheckState } from "./aiReservation";
 
 interface WorkerState {
   role: Section | "UNASSIGNED";
@@ -158,21 +158,43 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     const token = (this.env as Cloudflare.Env & { FACTORY_GITHUB_TOKEN?: string }).FACTORY_GITHUB_TOKEN?.trim();
     if (!token) return true;
 
+    const headers = {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${token}`,
+      "x-github-api-version": "2022-11-28",
+      "user-agent": "4PLANET-Production-Factory/1.0",
+    };
     const branch = factoryCandidateBranch(pkg.id, autonomous.candidateBranch);
     const encodedBranch = branch.split("/").map(encodeURIComponent).join("/");
     try {
-      const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodedBranch}`, {
-        headers: {
-          accept: "application/vnd.github+json",
-          authorization: `Bearer ${token}`,
-          "x-github-api-version": "2022-11-28",
-          "user-agent": "4PLANET-Production-Factory/1.0",
-        },
-      });
+      const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodedBranch}`, { headers });
       if (response.status === 404) return true;
       if (!response.ok) return true;
       const body = await response.json() as { object?: { sha?: string } };
-      return shouldReserveAiForCandidate(body.object?.sha, autonomous.expectedBaseSha);
+      const candidateSha = body.object?.sha;
+      if (shouldReserveAiForCandidate(candidateSha, autonomous.expectedBaseSha, "UNKNOWN")) {
+        if (!candidateSha || candidateSha.toLowerCase() === autonomous.expectedBaseSha.toLowerCase()) return true;
+      }
+      if (!candidateSha) return true;
+
+      const checksResponse = await fetch(`https://api.github.com/repos/${REPOSITORY}/commits/${candidateSha}/check-runs?per_page=100`, { headers });
+      if (!checksResponse.ok) return true;
+      const checks = await checksResponse.json() as {
+        total_count?: number;
+        check_runs?: Array<{ status?: string; conclusion?: string | null }>;
+      };
+      const runs = Array.isArray(checks.check_runs) ? checks.check_runs : [];
+      let checkState: CandidateCheckState = "UNKNOWN";
+      if ((checks.total_count ?? 0) === 0 || runs.length === 0) {
+        checkState = "PENDING";
+      } else {
+        const terminalFailure = runs.some(
+          (check) => check.status === "completed" && !["success", "neutral", "skipped"].includes(check.conclusion ?? ""),
+        );
+        const pending = runs.some((check) => check.status !== "completed");
+        checkState = terminalFailure ? "TERMINAL" : pending ? "PENDING" : "TERMINAL";
+      }
+      return shouldReserveAiForCandidate(candidateSha, autonomous.expectedBaseSha, checkState);
     } catch {
       return true;
     }
