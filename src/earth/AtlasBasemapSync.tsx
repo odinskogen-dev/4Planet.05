@@ -55,18 +55,34 @@ function mergeStyle(base: any, overlays: ReturnType<typeof captureAtlasOverlays>
   return next;
 }
 
+function styleMatchesMode(map: any, mode: "dark" | "light") {
+  if (!map?.isStyleLoaded?.()) return false;
+  const name = String(map.getStyle?.()?.name || "").toLowerCase();
+  return name.includes(mode);
+}
+
 /**
  * Keeps the existing ATLAS map engine and overlays, while matching the street
  * basemap to ATLAS dark/light mode. OpenFreeMap is already the canonical basemap
  * provider in World; this only chooses its official Dark or Liberty style.
+ *
+ * Important: World has a one-shot vector fallback for genuine initial provider
+ * failures. A deliberate style replacement can briefly look like that failure.
+ * Therefore this component treats the requested mode as accepted only after a
+ * completed style.load proves the expected style identity. If another handler
+ * replaces the first attempt, the same requested mode is retried on the same map
+ * rather than silently accepting the wrong basemap.
  */
 export function AtlasBasemapSync() {
   useEffect(() => {
     let cancelled = false;
     let frame = 0;
     let observer: MutationObserver | null = null;
+    let attachedMap: any = null;
     let activeMode = "";
     let changing = false;
+    let retryTimer = 0;
+    let retryCount = 0;
     const styleCache = new Map<string, any>();
 
     const loadStyle = async (mode: "dark" | "light") => {
@@ -74,15 +90,16 @@ export function AtlasBasemapSync() {
       const response = await fetch(STYLE[mode]);
       if (!response.ok) throw new Error(`OpenFreeMap ${mode} style unavailable`);
       const style = await response.json();
-      // Preserve provider semantics while giving the applied style a deterministic
-      // product identity. This is observable runtime state, not a weakened test.
       style.name = mode === "dark" ? "4PLANET ATLAS DARK · OpenFreeMap" : "4PLANET ATLAS LIGHT · OpenFreeMap";
       styleCache.set(mode, style);
       return structuredClone(style);
     };
 
+    const desiredMode = (world: HTMLElement): "dark" | "light" =>
+      world.classList.contains("light") ? "light" : "dark";
+
     const sync = async (map: any, world: HTMLElement) => {
-      const mode: "dark" | "light" = world.classList.contains("light") ? "light" : "dark";
+      const mode = desiredMode(world);
       if (mode === activeMode || changing || cancelled) return;
       changing = true;
 
@@ -92,13 +109,37 @@ export function AtlasBasemapSync() {
         const overlays = captureAtlasOverlays(map);
         const merged = mergeStyle(base, overlays);
         map.setStyle(merged, { diff: false });
-        activeMode = mode;
       } catch {
         // Keep the last working map rather than blanking ATLAS when the optional
         // style endpoint is unavailable.
       } finally {
         changing = false;
       }
+    };
+
+    const verifyOrRepair = () => {
+      if (cancelled || !attachedMap) return;
+      const world = document.querySelector<HTMLElement>(".world");
+      if (!world) return;
+      const mode = desiredMode(world);
+
+      if (styleMatchesMode(attachedMap, mode)) {
+        activeMode = mode;
+        retryCount = 0;
+        return;
+      }
+
+      // The initial World fallback can legitimately win the first style race.
+      // Retry a bounded number of times after the completed style event. The
+      // fallback itself is one-shot, so a healthy provider converges without a
+      // loop. Never mark a mismatched style as accepted.
+      activeMode = "";
+      if (retryCount >= 3 || retryTimer) return;
+      retryCount += 1;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = 0;
+        void sync(attachedMap, world);
+      }, 80);
     };
 
     const attach = () => {
@@ -110,21 +151,29 @@ export function AtlasBasemapSync() {
         return;
       }
 
-      const start = () => {
+      attachedMap = map;
+      map.on?.("style.load", verifyOrRepair);
+      observer = new MutationObserver(() => {
+        activeMode = "";
+        retryCount = 0;
         void sync(map, world);
-        observer = new MutationObserver(() => void sync(map, world));
-        observer.observe(world, { attributes: true, attributeFilter: ["class"] });
-      };
+      });
+      observer.observe(world, { attributes: true, attributeFilter: ["class"] });
 
-      if (map.isStyleLoaded?.()) start();
-      else map.once?.("style.load", start);
+      if (styleMatchesMode(map, desiredMode(world))) {
+        activeMode = desiredMode(world);
+      } else {
+        void sync(map, world);
+      }
     };
 
     attach();
     return () => {
       cancelled = true;
       if (frame) cancelAnimationFrame(frame);
+      if (retryTimer) window.clearTimeout(retryTimer);
       observer?.disconnect();
+      attachedMap?.off?.("style.load", verifyOrRepair);
     };
   }, []);
 
