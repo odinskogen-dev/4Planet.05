@@ -1,16 +1,29 @@
 {
-  "inventory_version": 2,
+  "inventory_version": 3,
   "mode": "SHADOW_MIGRATION",
-  "observed_at": "2026-08-24T02:47:00+02:00",
+  "observed_at": "2026-09-03T21:00:00+02:00",
   "rules": {
     "legacy_authoritative_until_cutover": true,
     "live_code_requires_fresh_github_read": true,
     "static_code_current_claims_forbidden": true,
     "conflict_policy": "FAIL_CLOSED_INCIDENT",
     "newest_wins_forbidden": true,
-    "destructive_retirement_before_parity": false
+    "destructive_retirement_before_parity": false,
+    "giga_constitution_required_before_material_strategy": true
   },
   "sources": [
+    {
+      "source_id": "giga-constitution-2026-09-02",
+      "kind": "GOOGLE_DOC",
+      "name": "4PLANET_ GIGA STRATEGY + INTELLECTUAL CAPITAL CONSTITUTION v1.0 — 2026-09-02",
+      "uri": "https://docs.google.com/document/d/1EjeTm7HeVLRVH0lObxTD5tbkExFHb5T4ACS1doZj5CI/edit",
+      "authority": "FOUNDER_STRATEGIC_CONSTITUTION",
+      "truth_domain": "GIGA_STRATEGY_AND_INTELLECTUAL_CAPITAL",
+      "mandatory_rehydration": true,
+      "current_revision": "ANLCKQmsqBC707Ba1FG9jWRk6rH4_o4tuZVvFEAoztL2A-tviNpCHk6zIbdKzioC50550s8XT81mJuhJSHGl6eQY5e8mwyJ-9H1ww_0QwF4",
+      "content_hash_sha256": "4123d80ea3903ba9a6a0706e4a8b11892c1b67861ea8b4d21e071a935b4b56db",
+      "migration_note": "Mandatory upstream decision compass. Stage and parity-test without replacing Founder Decisions, specialist PRDs, WBS, TEST KING or legacy Drive authority before explicit cutover."
+    },
     {
       "source_id": "brain-read-first",
       "kind": "GOOGLE_DOC",
