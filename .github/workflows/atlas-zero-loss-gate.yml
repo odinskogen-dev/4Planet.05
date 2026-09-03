@@ -33,7 +33,7 @@ concurrency:
 jobs:
   atlas-zero-loss:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -78,15 +78,15 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Chromium — recovered layers, street handoff, mobile hierarchy
+      - name: Chromium — recovered capability + Founder human proof
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts tests/e2e/atlas-founder-proof.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
 
-      - name: WebKit — recovered layers, street handoff, mobile hierarchy
+      - name: WebKit — recovered capability + Founder human proof
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts tests/e2e/atlas-founder-proof.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: Record Zero Loss release facts
         shell: bash
@@ -94,6 +94,7 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const plan = fs.readFileSync('docs/atlas/ATLAS_ZERO_LOSS_MASTER_PLAN_2026-09-01.md','utf8');
+          const convergence = fs.readFileSync('docs/atlas/ATLAS_ZERO_LOSS_GOLD_CONVERGENCE_01.md','utf8');
           const required = [
             'ZERO LOSS',
             'orphan_count',
@@ -105,10 +106,24 @@ jobs:
           for (const needle of required) {
             if (!plan.includes(needle)) throw new Error(`Missing Zero Loss control: ${needle}`);
           }
+          const convergenceRequired = [
+            'Feature-by-feature zero-loss matrix',
+            'Founder-selected visual surface',
+            'true premium dark street basemap',
+            'layer/signal intent in same search',
+            'ADOPT',
+            'ALREADY PRESENT',
+            'SUPERSEDED BY BETTER IMPLEMENTATION',
+            'DEFER WITH REASON'
+          ];
+          for (const needle of convergenceRequired) {
+            if (!convergence.includes(needle)) throw new Error(`Missing Gold convergence control: ${needle}`);
+          }
           fs.writeFileSync('atlas-zero-loss-evidence.json', JSON.stringify({
             exactSha: process.env.GITHUB_SHA,
             requiredControls: required,
-            status: 'CONTROL_PRESENT_BROWSER_PROOF_REQUIRED'
+            convergenceControls: convergenceRequired,
+            status: 'EXACT_HEAD_TECHNICAL_AND_HUMAN_BROWSER_PROOF_REQUIRED'
           }, null, 2));
           NODE
 
