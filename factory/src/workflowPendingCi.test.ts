@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import type { Outcome } from "./contracts";
-import { isClaudeCapacityPausedOutcome, isPendingCiOutcome } from "./workflow";
+import { isClaudeCapacityPausedOutcome, isPendingCiOutcome } from "./workflowOutcomeState";
 
 function outcome(values: Partial<Outcome>): Outcome {
   return {
@@ -18,17 +18,18 @@ function outcome(values: Partial<Outcome>): Outcome {
 }
 
 test("pending external evidence is explicitly non-terminal for WorkPackageWorkflow", async () => {
-  const source = await readFile(new URL("./workflow.ts", import.meta.url), "utf8");
-  const pendingGuard = source.indexOf("export function isPendingCiOutcome");
-  const persist = source.indexOf("persist-outcome");
+  const workflowSource = await readFile(new URL("./workflow.ts", import.meta.url), "utf8");
+  const stateSource = await readFile(new URL("./workflowOutcomeState.ts", import.meta.url), "utf8");
+  const pendingUse = workflowSource.indexOf("isPendingCiOutcome(outcome)");
+  const persist = workflowSource.indexOf("persist-outcome");
 
-  assert.ok(pendingGuard > 0, "pending evidence guard must exist");
-  assert.match(source, /outcome\.status !== "CORRECT"/);
-  assert.match(source, /registered checks are still pending/);
-  assert.match(source, /durably re-observe the same candidate/);
-  assert.match(source, /Claude specialist result is still pending/);
-  assert.match(source, /CLAUDE_SPECIALIST_PENDING/);
-  assert.ok(persist > pendingGuard, "pending state must be classified before final persistence");
+  assert.ok(pendingUse > 0, "pending evidence classifier must be used by Workflow before persistence");
+  assert.match(stateSource, /outcome\.status !== "CORRECT"/);
+  assert.match(stateSource, /registered checks are still pending/);
+  assert.match(stateSource, /durably re-observe the same candidate/);
+  assert.match(stateSource, /Claude specialist result is still pending/);
+  assert.match(stateSource, /CLAUDE_SPECIALIST_PENDING/);
+  assert.ok(persist > pendingUse, "pending state must be classified before final persistence");
 });
 
 test("pending external evidence uses durable Workflow sleep and bounded re-observation", async () => {
