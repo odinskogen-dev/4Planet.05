@@ -51,6 +51,8 @@ jobs:
           ID="$(sed -n 's/^id:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
           BASE_SHA="$(sed -n 's/^base_sha:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
           TEST_PROFILE="$(sed -n 's/^test_profile:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
+          MODEL="$(sed -n 's/^model:[[:space:]]*//p' "$ORDER_PATH" | head -n1 | tr -d '\r\n')"
+          MODEL="${MODEL:-claude-opus-5}"
           if [[ -z "$ID" || ! "$ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
             echo "::error::Invalid work-order id"
             exit 1
@@ -63,6 +65,10 @@ jobs:
             echo "::error::Approved test_profile values are FACTORY or PRODUCT_UI"
             exit 1
           fi
+          if [[ "$MODEL" != "claude-opus-5" && "$MODEL" != "claude-sonnet-5" && "$MODEL" != "claude-sonnet-4-6" ]]; then
+            echo "::error::Unapproved Claude model: $MODEL"
+            exit 1
+          fi
           CANDIDATE="factory/claude-code/${ID}"
           cp "$ORDER_PATH" /tmp/claude-code-work-order.md
           cp CLAUDE.md /tmp/claude-code-context.md
@@ -70,7 +76,9 @@ jobs:
           echo "id=$ID" >> "$GITHUB_OUTPUT"
           echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "test_profile=$TEST_PROFILE" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
           echo "candidate=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          echo "CLAUDE_CODE_MODEL=$MODEL"
 
       - name: Create isolated candidate from pinned base
         shell: bash
@@ -103,6 +111,8 @@ jobs:
       - name: Execute bounded code work order
         id: claude
         shell: bash
+        env:
+          MODEL: ${{ steps.order.outputs.model }}
         run: |
           set -euo pipefail
           export PATH="$HOME/.local/bin:$PATH"
@@ -120,7 +130,7 @@ jobs:
           EOF
           )
           claude -p "$PROMPT" \
-            --model claude-opus-5 \
+            --model "$MODEL" \
             --max-turns 60 \
             --permission-mode acceptEdits \
             --tools "Read,Grep,Glob,Edit,Write" \
@@ -194,6 +204,7 @@ jobs:
           BASE_SHA: ${{ steps.order.outputs.base_sha }}
           CANDIDATE: ${{ steps.order.outputs.candidate }}
           TEST_PROFILE: ${{ steps.order.outputs.test_profile }}
+          MODEL: ${{ steps.order.outputs.model }}
         run: |
           set -euo pipefail
           mkdir -p docs/claude/candidate-results
@@ -206,7 +217,7 @@ jobs:
             echo "authority: BOUNDED_CODE_CANDIDATE_ONLY"
             echo "base_sha: $BASE_SHA"
             echo "candidate_branch: $CANDIDATE"
-            echo "model: claude-opus-5"
+            echo "model: $MODEL"
             echo "test_profile: $TEST_PROFILE"
             echo "completed_at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             echo "validation: $VALIDATION"
