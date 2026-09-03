@@ -127,18 +127,43 @@ jobs:
           set -euo pipefail
           export PATH="$HOME/.local/bin:$PATH"
           export CLAUDE_CODE_OAUTH_TOKEN="$(printf '%s' "${CLAUDE_CODE_OAUTH_TOKEN}" | tr -d '\r\n')"
-          PROMPT=$(cat <<'EOF'
+
+          # Claude's repository Read tool is intentionally sandboxed and cannot read /tmp.
+          # The control plane therefore injects the exact governed context into the prompt
+          # instead of widening filesystem authority. Repository tools remain bounded below.
+          PROMPT="$({
+            cat <<'EOF'
           You are the bounded Claude Code Worker inside the existing 4PLANET Production Factory.
 
-          Read /tmp/claude-code-context.md, /tmp/4planet-product-brand-core.md and /tmp/claude-code-work-order.md completely before acting. The work order is a bounded internal coding/product task. Repository evidence outranks assumptions. For Product/Interface work, the Product + Brand Core is required context but remains subordinate to fresher Founder decisions, the work order and exact code truth.
+          The complete governed operating context, Product + Brand Core and exact bounded work order are injected below by the Factory control plane. Read all three sections completely before acting. Repository evidence outranks assumptions. The Product + Brand Core is required context for Product/Interface work but remains subordinate to fresher Founder decisions, the work order and exact code truth.
 
           You MAY edit or create only paths explicitly listed as `write_scope:` in the work order. You MUST NOT touch any other file, dependency manifest, lockfile, workflow, secret, deployment, Canon, LIVE surface, or external system. Do not commit or push; the control plane does that after validation.
 
-          Use independent product/interface judgement. The work order defines the user outcome, constraints and evidence; it does not force a weak implementation. Implement the smallest premium change that materially closes the stated gap. Preserve MUST-NOT-LOSE value. Do not add generic SaaS/dashboard/card clutter or speculative features simply to show activity.
+          Use independent product/interface judgement. The work order defines the user outcome, constraints and evidence; it does not force a weak implementation. Implement the strongest premium solution that materially closes the stated gap inside the exact scope. Preserve MUST-NOT-LOSE value. Do not add generic SaaS/dashboard/card clutter or speculative features simply to show activity.
 
-          You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority. Spend turns on finishing the bounded implementation and a compact handoff, not exhaustive archaeology.
+          You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority. Work token-efficiently: spend turns on material product judgement, implementation and a compact decision-complete handoff rather than repetitive archaeology or narration.
+
+          ===== BEGIN CLAUDE OPERATING CONTEXT =====
           EOF
-          )
+            cat /tmp/claude-code-context.md
+            cat <<'EOF'
+          ===== END CLAUDE OPERATING CONTEXT =====
+
+          ===== BEGIN 4PLANET PRODUCT + BRAND CORE =====
+          EOF
+            cat /tmp/4planet-product-brand-core.md
+            cat <<'EOF'
+          ===== END 4PLANET PRODUCT + BRAND CORE =====
+
+          ===== BEGIN BOUNDED WORK ORDER =====
+          EOF
+            cat /tmp/claude-code-work-order.md
+            cat <<'EOF'
+          ===== END BOUNDED WORK ORDER =====
+
+          Execute the bounded work order now. Use repository Read/Grep/Glob for current code truth, and Edit/Write only inside the declared write_scope. Finish with the compact return requested by the work order.
+          EOF
+          })"
 
           set +e
           claude -p "$PROMPT" \
