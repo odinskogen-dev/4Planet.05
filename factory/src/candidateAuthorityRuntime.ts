@@ -24,15 +24,17 @@ export type LiveCandidateAuthorityInput = {
   declaredBaseSha: string;
 };
 
-export type LiveCandidateAuthorityDecision = CandidateAuthorityDecision & {
+type CandidateAuthorityEvidence = {
   currentTestSha?: string;
   registryCommitSha?: string;
   equivalentOpenPullRequests?: number[];
 };
 
+export type LiveCandidateAuthorityDecision = CandidateAuthorityDecision & CandidateAuthorityEvidence;
+
 const sha40 = /^[0-9a-f]{40}$/i;
 
-function fail(code: string, reason: string, evidence: Partial<LiveCandidateAuthorityDecision> = {}): LiveCandidateAuthorityDecision {
+function fail(code: string, reason: string, evidence: CandidateAuthorityEvidence = {}): LiveCandidateAuthorityDecision {
   return { ok: false, code, reason, ...evidence };
 }
 
@@ -119,22 +121,24 @@ export async function resolveLiveCandidateAuthority(
   let testIsSandboxAncestor: boolean | undefined;
 
   if (sandbox) {
+    let liveSandboxHeadSha: string;
     try {
-      sandboxHeadSha = await port.readBranchHead(sandbox.branch);
+      liveSandboxHeadSha = await port.readBranchHead(sandbox.branch);
     } catch {
       return fail("SANDBOX_HEAD_UNAVAILABLE", `Registered sandbox ${sandbox.branch} live head could not be recovered.`, {
         currentTestSha,
         registryCommitSha: currentTestSha,
       });
     }
-    if (!sha40.test(sandboxHeadSha)) {
+    if (!sha40.test(liveSandboxHeadSha)) {
       return fail("SANDBOX_HEAD_INVALID", `Registered sandbox ${sandbox.branch} did not resolve to an exact SHA.`, {
         currentTestSha,
         registryCommitSha: currentTestSha,
       });
     }
+    sandboxHeadSha = liveSandboxHeadSha;
     try {
-      testIsSandboxAncestor = await port.isAncestor(currentTestSha, sandboxHeadSha);
+      testIsSandboxAncestor = await port.isAncestor(currentTestSha, liveSandboxHeadSha);
     } catch {
       return fail("SANDBOX_ANCESTRY_UNPROVEN", `Registered sandbox ${sandbox.branch} ancestry could not be proven.`, {
         currentTestSha,
