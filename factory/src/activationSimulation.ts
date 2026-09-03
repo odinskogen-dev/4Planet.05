@@ -52,6 +52,12 @@ const FULL_EVIDENCE: FactoryActivationEvidence = Object.freeze({
 export function runActivationGateSimulation(): ActivationSimulationResult {
   const cases: ActivationSimulationCase[] = [
     { name: "complete-evidence-is-ready", evidence: { ...FULL_EVIDENCE }, expectedReady: true, expectedMissing: [] },
+    {
+      name: "product-convergence-is-observed-but-does-not-block-level-2-internal-factory",
+      evidence: { ...FULL_EVIDENCE, convergencePassed: false },
+      expectedReady: true,
+      expectedMissing: [],
+    },
     { name: "missing-zero-loss-fails-closed", evidence: { ...FULL_EVIDENCE, zeroLossLawEnabled: false }, expectedReady: false, expectedMissing: ["ZERO_LOSS_LAW"] },
     { name: "missing-outcome-parity-fails-closed", evidence: { ...FULL_EVIDENCE, outcomeQualityParityPassed: false }, expectedReady: false, expectedMissing: ["OUTCOME_QUALITY_PARITY"] },
     { name: "missing-founder-release-gate-fails-closed", evidence: { ...FULL_EVIDENCE, externalReleaseFounderGated: false }, expectedReady: false, expectedMissing: ["FOUNDER_RELEASE_GATE"] },
