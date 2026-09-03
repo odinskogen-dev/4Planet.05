@@ -1,14 +1,10 @@
-name: Claude Product Worker — Read Only Spike
+name: Claude Product Worker — Read Only Spike [LEGACY MANUAL]
 
+# Legacy integration spike retained as evidence/manual diagnostic only.
+# Normal Claude Product work MUST use the governed Factory Queue workflow.
+# Deliberately no push trigger: docs/claude and CLAUDE.md changes must never
+# create a second Claude model call or spend scarce Product Lead capacity.
 on:
-  push:
-    branches:
-      - factory/claude-product-worker-01
-    paths:
-      - "CLAUDE.md"
-      - "AGENTS.md"
-      - "docs/claude/**"
-      - ".github/workflows/claude-product-worker-readonly.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +12,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: claude-product-worker-readonly
+  group: claude-product-worker-readonly-legacy
   cancel-in-progress: true
 
 jobs:
@@ -56,7 +52,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            You are running the 4PLANET Claude Product Worker integration spike.
+            You are running the legacy 4PLANET Claude Product Worker integration spike.
 
             Read the repository's CLAUDE.md first. Then execute the REVIEW_ONLY work order at:
             docs/claude/work-orders/CLAUDE-PRODUCT-WORKER-TEST-01.md
