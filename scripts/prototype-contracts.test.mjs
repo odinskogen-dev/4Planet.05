@@ -117,13 +117,13 @@ test("public preview headers and status boundaries are committed", () => {
   assert.match(headers, /Content-Security-Policy:/);
   // The old status doc must be unambiguously marked historical, not current truth.
   assert.match(status, /HISTORICAL \/ SUPERSEDED/);
-  // Current status must fail closed on release authority without depending on a
-  // stale candidate phrase or historical SHA that changes as TEST KING moves.
+  // Current status must track TEST KING while preserving the stronger release boundaries.
   assert.match(current, /TEST KING is the sole moving public integration receiver/);
   assert.match(current, /LIVE promotion is NOT AUTHORISED/);
   assert.match(current, /LIVE authority: \*\*NOT AUTHORISED\*\*/);
   assert.match(current, /LIVE promotion occurs only after explicit action-specific Founder release/);
   assert.match(current, /No external outreach, public launch, payment, signature, binding commitment or unsupported partner\/impact claim is authorised/);
+  assert.match(current, /GIGA-PLAN-2026-09-02-v3/);
   assert.doesNotMatch(current, /RELEASE GATE CLOSED/);
 });
 
