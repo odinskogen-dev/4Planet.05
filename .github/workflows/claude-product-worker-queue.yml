@@ -43,12 +43,20 @@ jobs:
           set -euo pipefail
           test -s docs/claude/queue/CURRENT.md
           WORK_ORDER_ID="$(sed -n 's/^id:[[:space:]]*//p' docs/claude/queue/CURRENT.md | head -n 1 | tr -d '\r\n')"
+          ATTEMPT="$(sed -n 's/^dispatch_attempt:[[:space:]]*//p' docs/claude/queue/CURRENT.md | head -n 1 | tr -d '\r\n')"
+          ATTEMPT="${ATTEMPT:-1}"
           if [[ -z "$WORK_ORDER_ID" || ! "$WORK_ORDER_ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
             echo "::error::CLAUDE_QUEUE_INVALID_WORK_ORDER_ID"
             exit 1
           fi
+          if [[ ! "$ATTEMPT" =~ ^[0-9]+$ || "$ATTEMPT" -lt 1 ]]; then
+            echo "::error::CLAUDE_QUEUE_INVALID_DISPATCH_ATTEMPT"
+            exit 1
+          fi
           echo "work_order_id=$WORK_ORDER_ID" >> "$GITHUB_OUTPUT"
+          echo "dispatch_attempt=$ATTEMPT" >> "$GITHUB_OUTPUT"
           echo "CLAUDE_QUEUE_WORK_ORDER_ID=$WORK_ORDER_ID"
+          echo "CLAUDE_QUEUE_DISPATCH_ATTEMPT=$ATTEMPT"
 
       - name: Install Claude Code CLI
         shell: bash
@@ -85,15 +93,35 @@ jobs:
           Return only the requested compact Markdown result. Distinguish OBSERVED / INFERRED / PROPOSED / UNKNOWN where material.
           EOF
           )
+          set +e
           claude -p "$PROMPT" \
             --model claude-opus-5 \
             --max-turns 60 \
             --permission-mode plan \
             --tools "Read,Grep,Glob,Bash" \
             --no-session-persistence \
-            > /tmp/claude-factory-result.md
+            > /tmp/claude-factory-result.md 2>&1
+          EXIT_CODE=$?
+          set -e
+
+          if [[ "$EXIT_CODE" -ne 0 ]]; then
+            if grep -Eiq "session limit|usage limit|rate limit|capacity.*limit" /tmp/claude-factory-result.md; then
+              RETRY_AFTER="$(date -u -d '+60 minutes' +'%Y-%m-%dT%H:%M:%SZ')"
+              echo "capacity_paused=true" >> "$GITHUB_OUTPUT"
+              echo "retry_after=$RETRY_AFTER" >> "$GITHUB_OUTPUT"
+              echo "CLAUDE_PROVIDER_CAPACITY=PAUSED"
+              echo "CLAUDE_PROVIDER_RETRY_AFTER=$RETRY_AFTER"
+            else
+              echo "::error::Claude execution failed outside recognised provider-capacity conditions."
+              cat /tmp/claude-factory-result.md
+              exit "$EXIT_CODE"
+            fi
+          else
+            echo "capacity_paused=false" >> "$GITHUB_OUTPUT"
+            echo "retry_after=" >> "$GITHUB_OUTPUT"
+            echo "CLAUDE_QUEUE_REAL_CALL=PASS"
+          fi
           test -s /tmp/claude-factory-result.md
-          echo "CLAUDE_QUEUE_REAL_CALL=PASS"
 
       - name: Prove model made no repository mutation
         shell: bash
@@ -112,6 +140,9 @@ jobs:
         env:
           QUEUE_SHA: ${{ github.sha }}
           WORK_ORDER_ID: ${{ steps.order.outputs.work_order_id }}
+          DISPATCH_ATTEMPT: ${{ steps.order.outputs.dispatch_attempt }}
+          CAPACITY_PAUSED: ${{ steps.claude.outputs.capacity_paused }}
+          RETRY_AFTER: ${{ steps.claude.outputs.retry_after }}
         run: |
           set -euo pipefail
 
@@ -120,17 +151,29 @@ jobs:
           echo "CLAUDE_QUEUE_REBASE_TO_LATEST=PASS"
 
           mkdir -p docs/claude/results
+          STATUS="COMPLETED"
+          if [[ "$CAPACITY_PAUSED" == "true" ]]; then STATUS="CAPACITY_PAUSED"; fi
           {
             echo "# CLAUDE FACTORY RESULT"
             echo
             echo "work_order_id: ${WORK_ORDER_ID}"
             echo "queue_sha: ${QUEUE_SHA}"
+            echo "dispatch_attempt: ${DISPATCH_ATTEMPT}"
+            echo "status: ${STATUS}"
             echo "worker: CLAUDE_PRODUCT_INTERFACE"
             echo "model: claude-opus-5"
             echo "completed_at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            if [[ "$CAPACITY_PAUSED" == "true" ]]; then
+              echo "retry_after: ${RETRY_AFTER}"
+              echo "provider_state: SUBSCRIPTION_CAPACITY_UNAVAILABLE"
+            fi
             echo "authority: REVIEW_ONLY"
             echo
-            cat /tmp/claude-factory-result.md
+            if [[ "$CAPACITY_PAUSED" == "true" ]]; then
+              echo "Claude subscription/session capacity was unavailable. The same governed work order remains pending and must be retried; this is not a product or authentication failure. Exact provider text remains in the immutable run artifact."
+            else
+              cat /tmp/claude-factory-result.md
+            fi
           } > docs/claude/results/LATEST.md
 
           git config user.name "4PLANET Factory Claude Worker"
@@ -141,7 +184,7 @@ jobs:
             echo "::error::CLAUDE_QUEUE_RESULT_SCOPE_VIOLATION: $STAGED"
             exit 1
           fi
-          git commit -m "result(factory): Claude Product Worker ${WORK_ORDER_ID}"
+          git commit -m "result(factory): Claude Product Worker ${WORK_ORDER_ID} [${STATUS}]"
           git push origin HEAD:factory/claude-product-worker-01
           echo "CLAUDE_QUEUE_RESULT_PERSISTED=PASS"
 
@@ -149,7 +192,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: claude-factory-queue-result
+          name: claude-factory-queue-result-${{ steps.order.outputs.work_order_id }}-${{ steps.order.outputs.dispatch_attempt }}
           path: /tmp/claude-factory-result.md
           if-no-files-found: error
           retention-days: 14
