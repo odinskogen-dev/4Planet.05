@@ -1,4 +1,4 @@
-import type { Outcome, WorkPackage } from "./contracts";
+import type { ClaudeProductSpecialistSpec, Outcome, WorkPackage } from "./contracts";
 
 const OWNER = "odinskogen-dev";
 const REPO = "4Planet.05";
@@ -7,15 +7,8 @@ const QUEUE_PATH = "docs/claude/queue/CURRENT.md";
 const RESULT_PATH = "docs/claude/results/LATEST.md";
 const MAX_RESULT_CHARS = 24_000;
 
-export interface ClaudeProductSpecialistSpec {
-  provider: "CLAUDE";
-  role: "PRODUCT_INTERFACE";
-  mode: "REVIEW_ONLY";
-  sourceRefs?: string[];
-}
-
 export type ClaudeRoutedWorkPackage = WorkPackage & {
-  specialist?: ClaudeProductSpecialistSpec;
+  specialist: ClaudeProductSpecialistSpec;
 };
 
 type FactoryClaudeEnv = Cloudflare.Env & {
@@ -171,7 +164,7 @@ export function extractResultWorkOrderId(markdown: string): string | undefined {
 }
 
 export function isClaudeProductWorkPackage(pkg: WorkPackage): pkg is ClaudeRoutedWorkPackage {
-  const spec = (pkg as ClaudeRoutedWorkPackage).specialist;
+  const spec = pkg.specialist;
   return pkg.section === "PRODUCT_DESIGN"
     && spec?.provider === "CLAUDE"
     && spec.role === "PRODUCT_INTERFACE"
@@ -184,7 +177,6 @@ function bulletList(values: string[], fallback: string): string {
 
 export function buildClaudeWorkOrder(pkg: ClaudeRoutedWorkPackage): string {
   const spec = pkg.specialist;
-  if (!spec) throw new Error("Claude specialist spec is missing");
   return `# CLAUDE FACTORY WORK ORDER\n\nid: ${pkg.id}\nmode: REVIEW_ONLY\nowner: 4PLANET Production Factory / AXE\nworker_role: PRODUCT_INTERFACE\npriority: ${pkg.priority}\nproject_id: ${pkg.projectId}\n\n## Goal\n\n${pkg.title}\n\n## Goal link\n\n${pkg.goalLink}\n\n## Gap to close\n\n${pkg.gapClosed}\n\n## Deliverables\n\n${bulletList(pkg.deliverables, "No deliverables supplied — mark UNKNOWN rather than inventing.")}\n\n## Definition of done\n\n${bulletList(pkg.definitionOfDone, "No definition supplied — fail closed.")}\n\n## Required evidence\n\n${bulletList(pkg.requiredEvidence, "Repository evidence and governed current context.")}\n\n## Source refs\n\n${bulletList(spec.sourceRefs ?? [], "No additional source refs supplied; do not invent source facts.")}\n\n## Authority\n\nREAD / REVIEW ONLY. No repository mutation. No branch creation. No merge. No LIVE. No Canon promotion. No external outreach. No spend.\n\n## MUST NOT LOSE\n\n- one existing 4PLANET Production Factory; no parallel Claude factory\n- TEST KING remains the integration receiver\n- BRAIN / governed context remains programme authority\n- Founder release gates remain intact\n- active write scopes must not be duplicated\n- distinguish OBSERVED / INFERRED / PROPOSED / UNKNOWN where material\n\n## Return contract\n\nReturn a compact Factory-ingestible review that directly closes the stated gap. Include: STATUS, MATERIAL FINDINGS, RECOMMENDED ACTION, MUST-NOT-LOSE, RISKS, UNKNOWN. Do not require Founder reconstruction.\n`;
 }
 
