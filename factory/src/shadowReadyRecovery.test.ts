@@ -21,7 +21,22 @@ test("build-bound SHADOW recovery selects only unresolved allowlisted READY pack
   }), ["orch-a"]);
 });
 
-test("recovery fails closed outside SHADOW, on invalid build identity, or after exact-build receipt", () => {
+test("historical recovery receipt cannot strand unresolved READY work", () => {
+  assert.deepEqual(planBuildBoundShadowReadyDrain({
+    mode: "SHADOW",
+    factoryBuildSha: BUILD,
+    markerPresent: true,
+    orchestraPackageIds: ORCHESTRA,
+    work: [
+      { id: "orch-a", status: "READY" },
+      { id: "orch-b", status: "DISPATCHED" },
+      { id: "orch-c", status: "READY" },
+    ],
+    recordedOutcomeIds: new Set(["orch-c"]),
+  }), ["orch-a"]);
+});
+
+test("recovery fails closed outside SHADOW or on invalid build identity", () => {
   const base = {
     factoryBuildSha: BUILD,
     markerPresent: false,
@@ -31,7 +46,6 @@ test("recovery fails closed outside SHADOW, on invalid build identity, or after 
   };
   assert.deepEqual(planBuildBoundShadowReadyDrain({ ...base, mode: "ACTIVE" }), []);
   assert.deepEqual(planBuildBoundShadowReadyDrain({ ...base, mode: "SHADOW", factoryBuildSha: "bad" }), []);
-  assert.deepEqual(planBuildBoundShadowReadyDrain({ ...base, mode: "SHADOW", markerPresent: true }), []);
 });
 
 test("receipt identity is immutable per exact Factory build", () => {
