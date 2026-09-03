@@ -1,0 +1,115 @@
+name: Factory AI Budget Control
+
+on:
+  push:
+    branches:
+      - "ops/factory-ai-budget-20260903"
+    paths:
+      - ".github/workflows/factory-ai-budget-control.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GATEWAY_ID: 4planet-factory
+      LIMIT_USD: "5"
+      WINDOW_SECONDS: "2592000"
+    steps:
+      - name: Validate bounded Cloudflare credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CF_TOKEN:-}" || { echo "Missing CLOUDFLARE_FACTORY_API_TOKEN"; exit 1; }
+          test -n "${CF_ACCOUNT:-}" || { echo "Missing CLOUDFLARE_FACTORY_ACCOUNT_ID"; exit 1; }
+
+      - name: Create or update dedicated Factory AI Gateway with hard spend limit
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/ai-gateway/gateways"
+          AUTH=(-H "Authorization: Bearer ${CF_TOKEN}" -H "Content-Type: application/json")
+
+          code="$(curl -sS -o gateway.json -w '%{http_code}' "${AUTH[@]}" "${API}/${GATEWAY_ID}")"
+          if [[ "$code" == "404" ]]; then
+            cat > payload.json <<JSON
+          {
+            "id": "${GATEWAY_ID}",
+            "cache_invalidate_on_update": true,
+            "cache_ttl": 0,
+            "collect_logs": true,
+            "rate_limiting_interval": 0,
+            "rate_limiting_limit": 0,
+            "workers_ai_billing_mode": "postpaid",
+            "spend_limits": {
+              "enabled": true,
+              "rules": [{
+                "id": "factory-usd5-30d",
+                "enabled": true,
+                "limit": ${LIMIT_USD},
+                "limitType": "cost",
+                "window": ${WINDOW_SECONDS},
+                "technique": "sliding"
+              }]
+            }
+          }
+          JSON
+            create_code="$(curl -sS -o result.json -w '%{http_code}' -X POST "${AUTH[@]}" --data @payload.json "${API}")"
+            [[ "$create_code" =~ ^2 ]] || { echo "AI Gateway create failed HTTP ${create_code}"; jq -c '{success,errors,messages}' result.json || true; exit 1; }
+          elif [[ "$code" =~ ^2 ]]; then
+            jq --arg id "$GATEWAY_ID" --argjson limit "$LIMIT_USD" --argjson window "$WINDOW_SECONDS" '
+              .result
+              | {
+                  cache_invalidate_on_update,
+                  cache_ttl,
+                  collect_logs,
+                  rate_limiting_interval,
+                  rate_limiting_limit,
+                  authentication,
+                  workers_ai_billing_mode: "postpaid",
+                  spend_limits: {
+                    enabled: true,
+                    rules: [{
+                      id: "factory-usd5-30d",
+                      enabled: true,
+                      limit: $limit,
+                      limitType: "cost",
+                      window: $window,
+                      technique: "sliding"
+                    }]
+                  }
+                }
+              | with_entries(select(.value != null))
+            ' gateway.json > payload.json
+            update_code="$(curl -sS -o result.json -w '%{http_code}' -X PUT "${AUTH[@]}" --data @payload.json "${API}/${GATEWAY_ID}")"
+            [[ "$update_code" =~ ^2 ]] || { echo "AI Gateway update failed HTTP ${update_code}"; jq -c '{success,errors,messages}' result.json || true; exit 1; }
+          else
+            echo "AI Gateway lookup failed HTTP ${code}"
+            jq -c '{success,errors,messages}' gateway.json || true
+            exit 1
+          fi
+
+      - name: Verify hard cap readback without exposing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/ai-gateway/gateways/${GATEWAY_ID}"
+          curl -fsS -H "Authorization: Bearer ${CF_TOKEN}" "$API" > verify.json
+          jq -e --argjson limit "$LIMIT_USD" --argjson window "$WINDOW_SECONDS" '
+            .success == true
+            and .result.id == "4planet-factory"
+            and .result.spend_limits.enabled == true
+            and any(.result.spend_limits.rules[]?;
+              .id == "factory-usd5-30d"
+              and .enabled == true
+              and .limit == $limit
+              and .limitType == "cost"
+              and .window == $window
+              and .technique == "sliding")
+          ' verify.json >/dev/null
+          echo "FACTORY AI HARD CAP VERIFIED: USD ${LIMIT_USD} per rolling 30 days via ${GATEWAY_ID}."
