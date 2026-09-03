@@ -15,8 +15,14 @@
   "products": {
     "ATLAS": {
       "heir": "king/test",
-      "sandbox": null,
-      "lineage_state": "CONVERGED_TO_TEST_KING",
+      "sandbox": {
+        "branch": "work/atlas-zero-loss-gold-convergence-01",
+        "required_ancestor_sha_at_registration": "90db512b821371d96cc38fcf05242eff86b76f8c",
+        "classification": "SANDBOX",
+        "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate",
+        "live_authority": false
+      },
+      "lineage_state": "ZERO_LOSS_GOLD_CONVERGENCE_ACTIVE",
       "last_convergence": {
         "pr": 246,
         "sandbox_branch": "work/atlas-product-polish-01",
@@ -43,13 +49,15 @@
       "exact_sha",
       "immutable_deploy_marker_or_preview",
       "required_ci_green",
-      "candidate_authority_gate_green"
+      "candidate_authority_gate_green",
+      "founder_visible_runtime_review"
     ],
     "donor_delta_dispositions": [
       "ADOPT",
       "ALREADY_PRESENT",
       "REJECT_WITH_REASON",
-      "DEFER_WITH_REASON"
+      "DEFER_WITH_REASON",
+      "SUPERSEDED_BY_BETTER_IMPLEMENTATION"
     ],
     "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
   },
