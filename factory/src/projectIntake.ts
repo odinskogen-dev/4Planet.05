@@ -1,4 +1,4 @@
-import type { PriorityClass, ProjectProjection, Section, WorkPackage, ZeroLossEvidence } from "./contracts";
+import type { ClaudeProductSpecialistSpec, PriorityClass, ProjectProjection, Section, WorkPackage, ZeroLossEvidence } from "./contracts";
 import { compileProductionLinePackages, type ProductionLineIntake } from "./productionLines";
 
 export interface ApprovedWorkstreamIntake {
@@ -13,6 +13,7 @@ export interface ApprovedWorkstreamIntake {
   learningQuestion?: string;
   deadlineAt?: string;
   zeroLoss?: ZeroLossEvidence;
+  specialist?: ClaudeProductSpecialistSpec;
   estimatedValue?: number;
   criticalPath?: number;
   dependencyUnlock?: number;
@@ -76,6 +77,26 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
 }
 
+function validatedSpecialist(stream: ApprovedWorkstreamIntake, index: number): ClaudeProductSpecialistSpec | undefined {
+  const specialist = stream.specialist;
+  if (!specialist) return undefined;
+  if (stream.section !== "PRODUCT_DESIGN") {
+    throw new Error(`Claude Product/Interface specialist is allowed only for PRODUCT_DESIGN at workstream ${index}`);
+  }
+  if (specialist.provider !== "CLAUDE" || specialist.role !== "PRODUCT_INTERFACE" || specialist.mode !== "REVIEW_ONLY") {
+    throw new Error(`Project intake contains unsupported specialist contract at workstream ${index}`);
+  }
+  if (specialist.sourceRefs && specialist.sourceRefs.some((ref) => typeof ref !== "string" || !ref.trim())) {
+    throw new Error(`Project intake contains invalid Claude source ref at workstream ${index}`);
+  }
+  return {
+    provider: "CLAUDE",
+    role: "PRODUCT_INTERFACE",
+    mode: "REVIEW_ONLY",
+    sourceRefs: specialist.sourceRefs?.map((ref) => ref.trim()),
+  };
+}
+
 function compileManualWorkstreams(
   project: ProjectProjection,
   projectId: string,
@@ -89,6 +110,7 @@ function compileManualWorkstreams(
     if (stream.writeScopes.some((scope) => !scope.trim())) throw new Error(`Project intake contains empty write scope at workstream ${index}`);
     if (stream.definitionOfDone.length === 0) throw new Error(`Project intake requires Definition of Done at workstream ${index}`);
     if (stream.requiredEvidence.length === 0) throw new Error(`Project intake requires evidence contract at workstream ${index}`);
+    const specialist = validatedSpecialist(stream, index);
 
     return {
       id: `${slug(projectId)}-${slug(stream.section)}-${String(index + 1).padStart(2, "0")}`,
@@ -104,6 +126,7 @@ function compileManualWorkstreams(
       definitionOfDone: [...stream.definitionOfDone],
       requiredEvidence: [...stream.requiredEvidence],
       zeroLoss: stream.zeroLoss,
+      specialist,
       learningQuestion: stream.learningQuestion?.trim() || undefined,
       founderGate: project.founderGate,
       createdAt: approvedAt,

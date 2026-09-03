@@ -48,6 +48,79 @@ test("BUILD-approved idea compiles into one project and bounded queue", () => {
   assert.equal(result.receipt.type, "FOUNDER_APPROVED_PROJECT_INTAKE");
 });
 
+test("BUILD-approved Product/Interface review preserves governed Claude specialist routing", () => {
+  const result = compileApprovedProjectIntake({
+    approval: "BUILD_APPROVED",
+    authorityRef: "FOUNDER_DECISION:claude-team-connect-2026-09-03",
+    approvedAt: "2026-09-03T11:00:00Z",
+    projectId: "CLAUDE-TEAM-PROOF-01",
+    name: "Claude Product Worker proof",
+    northStar: "One governed autonomous AI team.",
+    user: "4PLANET Production Factory / AXE.",
+    goal: "Route independent product judgement to Claude without parallel authority.",
+    current: "Claude bridge exists but ordinary intake must preserve the specialist routing marker.",
+    gold: "A normal approved workstream compiles into a READY Claude Product/Interface package.",
+    gap: "Specialist routing marker is not yet proven through ordinary intake.",
+    priority: "P0",
+    workstreams: [{
+      section: "PRODUCT_DESIGN",
+      title: "Independent GOLD candidate review",
+      gapClosed: "Add independent Product/Interface judgement before TEST KING integration.",
+      deliverables: ["Compact evidence-backed review"],
+      writeScopes: [],
+      definitionOfDone: ["Claude result is correlated and Factory-ingestible"],
+      requiredEvidence: ["Repository evidence", "Correlated Claude result"],
+      specialist: {
+        provider: "CLAUDE",
+        role: "PRODUCT_INTERFACE",
+        mode: "REVIEW_ONLY",
+        sourceRefs: ["TEST KING", "BRAIN governed context"],
+      },
+    }],
+  });
+
+  assert.equal(result.packages.length, 1);
+  assert.equal(result.packages[0]?.status, "READY");
+  assert.deepEqual(result.packages[0]?.specialist, {
+    provider: "CLAUDE",
+    role: "PRODUCT_INTERFACE",
+    mode: "REVIEW_ONLY",
+    sourceRefs: ["TEST KING", "BRAIN governed context"],
+  });
+  assert.deepEqual(result.packages[0]?.writeScopes, []);
+});
+
+test("Claude specialist intake fails closed outside Product Design", () => {
+  assert.throws(() => compileApprovedProjectIntake({
+    approval: "BUILD_APPROVED",
+    authorityRef: "FOUNDER_DECISION:claude-team-connect-2026-09-03",
+    approvedAt: "2026-09-03T11:00:00Z",
+    projectId: "CLAUDE-BAD-ROUTE-01",
+    name: "Invalid Claude route",
+    northStar: "One governed autonomous AI team.",
+    user: "4PLANET Production Factory / AXE.",
+    goal: "Prove routing constraints.",
+    current: "Test.",
+    gold: "Fail closed.",
+    gap: "Invalid section.",
+    priority: "P0",
+    workstreams: [{
+      section: "CAPITAL",
+      title: "Invalid specialist route",
+      gapClosed: "None.",
+      deliverables: ["None"],
+      writeScopes: [],
+      definitionOfDone: ["Fail"],
+      requiredEvidence: ["Error"],
+      specialist: {
+        provider: "CLAUDE",
+        role: "PRODUCT_INTERFACE",
+        mode: "REVIEW_ONLY",
+      },
+    }],
+  }), /allowed only for PRODUCT_DESIGN/);
+});
+
 test("Founder-approved new species request is recognised as the reusable Species production line", () => {
   const result = compileApprovedProjectIntake({
     approval: "BUILD_APPROVED",

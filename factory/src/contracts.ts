@@ -148,6 +148,13 @@ export interface PreservationEvidence {
   checkedAt?: string;
 }
 
+export interface ClaudeProductSpecialistSpec {
+  provider: "CLAUDE";
+  role: "PRODUCT_INTERFACE";
+  mode: "REVIEW_ONLY";
+  sourceRefs?: string[];
+}
+
 /**
  * Scheduling projection only. Source authority remains CURRENT Drive/BRAIN.
  * Optional fields improve human/project context without creating a second truth store.
@@ -186,6 +193,7 @@ export interface WorkPackage {
   zeroLoss?: ZeroLossEvidence;
   preservation?: PreservationEvidence;
   execution?: ExecutionSpec;
+  specialist?: ClaudeProductSpecialistSpec;
   resourceBudget?: ResourceBudget;
   run?: RunContract;
   learningQuestion?: string;
