@@ -36,6 +36,20 @@ jobs:
           ref: factory/claude-product-worker-01
           fetch-depth: 0
 
+      - name: Validate and identify Factory work order
+        id: order
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s docs/claude/queue/CURRENT.md
+          WORK_ORDER_ID="$(sed -n 's/^id:[[:space:]]*//p' docs/claude/queue/CURRENT.md | head -n 1 | tr -d '\r\n')"
+          if [[ -z "$WORK_ORDER_ID" || ! "$WORK_ORDER_ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "::error::CLAUDE_QUEUE_INVALID_WORK_ORDER_ID"
+            exit 1
+          fi
+          echo "work_order_id=$WORK_ORDER_ID" >> "$GITHUB_OUTPUT"
+          echo "CLAUDE_QUEUE_WORK_ORDER_ID=$WORK_ORDER_ID"
+
       - name: Install Claude Code CLI
         shell: bash
         run: |
@@ -89,12 +103,14 @@ jobs:
         shell: bash
         env:
           QUEUE_SHA: ${{ github.sha }}
+          WORK_ORDER_ID: ${{ steps.order.outputs.work_order_id }}
         run: |
           set -euo pipefail
           mkdir -p docs/claude/results
           {
             echo "# CLAUDE FACTORY RESULT"
             echo
+            echo "work_order_id: ${WORK_ORDER_ID}"
             echo "queue_sha: ${QUEUE_SHA}"
             echo "worker: CLAUDE_PRODUCT_INTERFACE"
             echo "model: claude-opus-5"
@@ -112,7 +128,7 @@ jobs:
             echo "::error::CLAUDE_QUEUE_RESULT_SCOPE_VIOLATION: $STAGED"
             exit 1
           fi
-          git commit -m "result(factory): Claude Product Worker ${QUEUE_SHA:0:12}"
+          git commit -m "result(factory): Claude Product Worker ${WORK_ORDER_ID}"
           git push origin HEAD:factory/claude-product-worker-01
           echo "CLAUDE_QUEUE_RESULT_PERSISTED=PASS"
 
