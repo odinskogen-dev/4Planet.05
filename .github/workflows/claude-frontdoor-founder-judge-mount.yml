@@ -1,0 +1,100 @@
+name: Claude Front Door — Founder JUDGE Mount
+
+on:
+  push:
+    branches:
+      - preview/claude-frontdoor-founder-judge-01
+
+permissions:
+  contents: write
+
+concurrency:
+  group: claude-frontdoor-founder-judge-mount
+  cancel-in-progress: false
+
+jobs:
+  mount:
+    if: ${{ !contains(github.event.head_commit.message, '[FOUNDER-JUDGE-MOUNTED]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact comparison branch
+        uses: actions/checkout@v4
+        with:
+          ref: preview/claude-frontdoor-founder-judge-01
+          fetch-depth: 0
+
+      - name: Fail closed unless branch still descends from Claude candidate and TEST KING base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 90db512b821371d96cc38fcf05242eff86b76f8c HEAD
+          git merge-base --is-ancestor 3f86445c1daaea46c8934781601b1c8b70e989bc HEAD
+          test -f src/components/home/WorldFirstAct.tsx
+          test -f src/components/home/world-first-act.css
+
+      - name: Mount exact Claude component for isolated Founder comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          home = Path('src/pages/v5/Home.tsx')
+          text = home.read_text()
+          old_import = 'import { AtlasHero } from "./AtlasHero";'
+          new_import = old_import + '\nimport { WorldFirstAct } from "@/components/home/WorldFirstAct";'
+          if new_import not in text:
+              if text.count(old_import) != 1:
+                  raise SystemExit('Home import seam not exact; refusing mutation')
+              text = text.replace(old_import, new_import, 1)
+
+          old_mount = '      <AtlasHero />\n\n      <section id="why-4planet"'
+          new_mount = '      <AtlasHero />\n      <div id="meet-life"><WorldFirstAct /></div>\n\n      <section id="why-4planet"'
+          if new_mount not in text:
+              if text.count(old_mount) != 1:
+                  raise SystemExit('Home mount seam not exact; refusing mutation')
+              text = text.replace(old_mount, new_mount, 1)
+          home.write_text(text)
+
+          hero = Path('src/pages/v5/AtlasHero.tsx')
+          text = hero.read_text()
+          if 'href="#meet-life"' not in text:
+              if text.count('href="#why-4planet"') != 1:
+                  raise SystemExit('Hero href seam not exact; refusing mutation')
+              text = text.replace('href="#why-4planet"', 'href="#meet-life"', 1)
+          if 'MEET LIFE ↓' not in text:
+              if text.count('WHY 4PLANET ↓') != 1:
+                  raise SystemExit('Hero CTA seam not exact; refusing mutation')
+              text = text.replace('WHY 4PLANET ↓', 'MEET LIFE ↓', 1)
+          hero.write_text(text)
+          PY
+
+      - name: Verify comparison delta stays bounded
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only)
+          printf '%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 2
+          printf '%s\n' "${changed[@]}" | grep -Fx 'src/pages/v5/AtlasHero.tsx'
+          printf '%s\n' "${changed[@]}" | grep -Fx 'src/pages/v5/Home.tsx'
+
+      - name: Validate mounted proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+          npm run typecheck
+          npm run build
+          npm run test:smoke
+
+      - name: Persist Founder JUDGE comparison branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET Founder JUDGE Proof'
+          git config user.email 'actions@users.noreply.github.com'
+          git add src/pages/v5/Home.tsx src/pages/v5/AtlasHero.tsx
+          git commit -m 'proof(claude): mount front-door candidate [FOUNDER-JUDGE-MOUNTED]'
+          git push origin HEAD:preview/claude-frontdoor-founder-judge-01
+          echo 'NO TEST KING / LIVE / CANON / MERGE AUTHORITY'
