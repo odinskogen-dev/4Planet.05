@@ -59,15 +59,17 @@ jobs:
             echo "::error::Invalid base_sha"
             exit 1
           fi
-          if [[ "$TEST_PROFILE" != "FACTORY" ]]; then
-            echo "::error::Only test_profile FACTORY is approved in bounded-code v01"
+          if [[ "$TEST_PROFILE" != "FACTORY" && "$TEST_PROFILE" != "PRODUCT_UI" ]]; then
+            echo "::error::Approved test_profile values are FACTORY or PRODUCT_UI"
             exit 1
           fi
           CANDIDATE="factory/claude-code/${ID}"
           cp "$ORDER_PATH" /tmp/claude-code-work-order.md
           cp CLAUDE.md /tmp/claude-code-context.md
+          cp docs/claude/4PLANET_PRODUCT_BRAND_CORE.md /tmp/4planet-product-brand-core.md
           echo "id=$ID" >> "$GITHUB_OUTPUT"
           echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "test_profile=$TEST_PROFILE" >> "$GITHUB_OUTPUT"
           echo "candidate=$CANDIDATE" >> "$GITHUB_OUTPUT"
 
       - name: Create isolated candidate from pinned base
@@ -108,11 +110,13 @@ jobs:
           PROMPT=$(cat <<'EOF'
           You are the bounded Claude Code Worker inside the existing 4PLANET Production Factory.
 
-          Read /tmp/claude-code-context.md and /tmp/claude-code-work-order.md completely before acting. The work order is a bounded internal coding task. Repository evidence outranks assumptions.
+          Read /tmp/claude-code-context.md, /tmp/4planet-product-brand-core.md and /tmp/claude-code-work-order.md completely before acting. The work order is a bounded internal coding/product task. Repository evidence outranks assumptions. For Product/Interface work, the Product + Brand Core is required context but remains subordinate to fresher Founder decisions, the work order and exact code truth.
 
           You MAY edit or create only paths explicitly listed as `write_scope:` in the work order. You MUST NOT touch any other file, dependency manifest, lockfile, workflow, secret, deployment, Canon, LIVE surface, or external system. Do not commit or push; the control plane does that after validation.
 
-          Implement the smallest high-quality change that closes the work order. You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority.
+          Use independent product/interface judgement. The work order defines the user outcome, constraints and evidence; it does not force a weak implementation. Implement the smallest premium change that materially closes the stated gap. Preserve MUST-NOT-LOSE value. Do not add generic SaaS/dashboard/card clutter or speculative features simply to show activity.
+
+          You do not have shell authority: do not attempt to run tests or network commands. The Factory control plane will run the approved validation profile after your edits. If the task cannot be completed inside the declared scopes, stop and explain rather than expanding authority.
           EOF
           )
           claude -p "$PROMPT" \
@@ -160,14 +164,28 @@ jobs:
           printf '%s\n' "${CHANGED[@]}" > /tmp/claude-changed-files.txt
           echo "CLAUDE_CODE_SCOPE_GATE=PASS"
 
-      - name: Run approved Factory validation profile
-        working-directory: factory
+      - name: Run approved validation profile
         shell: bash
+        env:
+          TEST_PROFILE: ${{ steps.order.outputs.test_profile }}
         run: |
           set -euo pipefail
-          npm install --ignore-scripts
-          npm run typecheck
-          npm test
+          if [[ "$TEST_PROFILE" == "FACTORY" ]]; then
+            cd factory
+            npm install --ignore-scripts
+            npm run typecheck
+            npm test
+            echo "FACTORY_TYPECHECK_AND_TEST_PASS" > /tmp/claude-validation.txt
+          elif [[ "$TEST_PROFILE" == "PRODUCT_UI" ]]; then
+            npm install --ignore-scripts
+            npm run typecheck
+            npm run build
+            npm run test:smoke
+            echo "PRODUCT_UI_TYPECHECK_BUILD_SMOKE_PASS" > /tmp/claude-validation.txt
+          else
+            echo "::error::Unknown validation profile"
+            exit 1
+          fi
 
       - name: Persist candidate and evidence manifest
         shell: bash
@@ -175,10 +193,12 @@ jobs:
           ID: ${{ steps.order.outputs.id }}
           BASE_SHA: ${{ steps.order.outputs.base_sha }}
           CANDIDATE: ${{ steps.order.outputs.candidate }}
+          TEST_PROFILE: ${{ steps.order.outputs.test_profile }}
         run: |
           set -euo pipefail
           mkdir -p docs/claude/candidate-results
           RESULT="docs/claude/candidate-results/${ID}.md"
+          VALIDATION="$(cat /tmp/claude-validation.txt)"
           {
             echo "# CLAUDE BOUNDED CODE RESULT"
             echo
@@ -187,8 +207,9 @@ jobs:
             echo "base_sha: $BASE_SHA"
             echo "candidate_branch: $CANDIDATE"
             echo "model: claude-opus-5"
+            echo "test_profile: $TEST_PROFILE"
             echo "completed_at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-            echo "validation: FACTORY_TYPECHECK_AND_TEST_PASS"
+            echo "validation: $VALIDATION"
             echo "head_sha: RESOLVE_FROM_CANDIDATE_BRANCH_REF"
             echo
             echo "## Changed files"
@@ -215,5 +236,6 @@ jobs:
             /tmp/claude-code-work-order.md
             /tmp/claude-code-report.md
             /tmp/claude-changed-files.txt
+            /tmp/claude-validation.txt
           if-no-files-found: warn
           retention-days: 14
