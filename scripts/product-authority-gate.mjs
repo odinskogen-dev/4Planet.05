@@ -118,7 +118,7 @@ const reviewPaths = new Set();
 const registeredSandboxes = new Map();
 for (const [product, record] of Object.entries(registry.products || {})) {
   const liveReleased = Boolean(record?.live?.url);
-  const liveUnreleased = record?.live?.state === "UNRELEASED";
+  const liveUnreleased = record?.live?.state === "UNRELEASED" || record?.live?.identity_state === "UNRELEASED";
   if (!liveReleased && !liveUnreleased) die(`${product} missing LIVE released/unreleased state`);
   if (!record?.heir?.review_path || !record?.heir?.origin_path) {
     die(`${product} missing HEIR Founder-visible surface contract`);
