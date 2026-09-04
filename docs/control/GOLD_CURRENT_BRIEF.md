@@ -7,6 +7,7 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **BASE AUTHORITY:** `king/test` / exact parent `604c67932de09f981848881811ce0060c4c0556b`
 **ROLLBACK BASE:** `604c67932de09f981848881811ce0060c4c0556b`
 **DONOR:** PR #220 / `work/giga02-embla-human-utility-01` @ `46681b2489eff268aed933c8e73f23e07027c55f` — QUARANTINE/DONOR ONLY under current Four-State Product Control.
+**REGRESSION CORRECTION:** The first manual router convergence incorrectly removed the canonical Norwegian alias `/living-systems/oslofjorden → /living-systems/oslofjord`. Browser Product Proof caught the loss before acceptance. The alias was restored forward-only in `e33549ea6476a5c8e63936a673f9ac44bf573daf`. Future manual router convergence must compare all existing explicit aliases/redirects against the parent before classifying a route as duplicate.
 
 ## USER ARRIVES BECAUSE
 They need help making one ordinary FOOD choice and should not have to understand 4PLANET's data architecture before receiving useful decision support.
@@ -33,17 +34,17 @@ The selected priority routes into the strongest existing evidence path. Supporte
 Detailed product evidence, source status, HEALTH/WALLET/PLANET separation and comparison limitations remain available after the decision. Depth must preserve provenance and UNKNOWN states rather than compress them into one score.
 
 ## WHAT CAN BE REMOVED
-Remove or avoid architecture-first explanation, duplicate route definitions, universal-score framing and any step that does not help the user make the current bounded decision. No replacement assistant, truth store or parallel FOOD workflow is justified.
+Remove or avoid architecture-first explanation, universal-score framing and any step that does not help the user make the current bounded decision. Explicit aliases, redirects, source/truth seams and other parent routes are preservation objects until exact parent comparison proves they are redundant. No replacement assistant, truth store or parallel FOOD workflow is justified.
 
 ## WHAT MUST BE REUSED
-Existing Embla intake, FOOD intelligence, PICK product evidence, current source/truth contracts, 4SAPIEN route family and current HEIR. No replacement assistant, score or truth store is introduced.
+Existing Embla intake, FOOD intelligence, PICK product evidence, current source/truth contracts, 4SAPIEN route family, explicit parent aliases/redirects and current HEIR. No replacement assistant, score or truth store is introduced.
 
 ## CLEAN-ROOM / DONOR DECISION
 - **ADOPT:** the decision-first Embla FOOD gate, bounded priority states, explicit wallet/planet limitations and ten-prompt contract coverage from PR #220.
 - **ADAPT:** route into current HEIR rather than continuing the stale donor branch.
-- **PRESERVE:** current `FoodIntelligence`, `PickPrototype`, fail-closed source states and all current HEIR changes since the donor ancestor.
+- **PRESERVE:** current `FoodIntelligence`, `PickPrototype`, fail-closed source states, the canonical Oslofjorden alias and all current HEIR changes since the donor ancestor.
 - **REJECT:** wholesale merge of PR #220, universal sustainability score, category-wide wallet/planet ranking without evidence, or treating the donor as a candidate because it exists.
-- **CLEANUP:** remove the duplicate self-redirect definition for `/living-systems/oslofjord`; retain the actual Planet Proof route.
+- **CORRECTED LEARNING:** a route that looks duplicate by name may encode canonicalisation. Preserve explicit parent redirects unless the parent route matrix and browser contract prove removal safe.
 
 ## TRUTH BOUNDARY
 Embla identifies an evidence path, not a universal answer. Selected health/allergen paths may compare controlled product evidence. Wallet and planetary evidence remain product-level where category-wide ranking is not strong enough. UNKNOWN remains UNKNOWN. This mutation is not evidence of repeat human utility, adoption, production readiness, economic value or Founder approval.
@@ -55,4 +56,4 @@ Priority choices must remain readable and tappable without horizontal overflow o
 A first-time user can express a FOOD decision, choose the concern they care about, understand what 4PLANET can and cannot compare, and reach the existing evidence engine without being shown a fabricated overall score.
 
 ## ACCEPTANCE
-1. `king/test` remains the sole HEIR and LIVE remains untouched. 2. The old PR #220 remains donor/quarantine; no donor branch is promoted or revived. 3. `/4sapien/food/choose` renders the decision-first gate. 4. Embla FOOD intake routes to that gate. 5. Controlled health/allergen paths can proceed to comparison. 6. Wallet/planet/best-overall paths explicitly refuse unsupported whole-shelf ranking. 7. Existing FOOD source failure/unknown states remain intact. 8. Contract tests cover ten realistic FOOD prompts plus false-ranking refusal. 9. Typecheck/build/authority/Gold gates pass on the exact resulting HEIR SHA. 10. Human Gold and LIVE release remain separate Founder gates.
+1. `king/test` remains the sole HEIR and LIVE remains untouched. 2. The old PR #220 remains donor/quarantine; no donor branch is promoted or revived. 3. `/4sapien/food/choose` renders the decision-first gate. 4. Embla FOOD intake routes to that gate. 5. Controlled health/allergen paths can proceed to comparison. 6. Wallet/planet/best-overall paths explicitly refuse unsupported whole-shelf ranking. 7. Existing FOOD source failure/unknown states remain intact. 8. Contract tests cover ten realistic FOOD prompts plus false-ranking refusal. 9. Parent route/alias preservation and browser proof pass on the exact resulting HEIR SHA. 10. Typecheck/build/authority/Gold/browser gates pass on the exact resulting HEIR SHA. 11. Human Gold, repeat-human-utility proof and LIVE release remain separate Founder/evidence gates.
