@@ -138,11 +138,12 @@ test('error-to-immunity and recurrence escalation remain present', () => {
   ]) assert.ok(contract.errorToImmunity.recurrenceClasses.includes(failureClass));
 });
 
-test('existing agent operating contract already requires reduce-before-generate and TEST KING', () => {
+test('existing agent operating contract already requires reduce-before-generate and one HEIR', () => {
   assert.match(agents, /REDUCE BEFORE GENERATE/i);
   assert.match(agents, /DELETE/);
   assert.match(agents, /king\/test/);
-  assert.match(agents, /TEST KING/i);
+  assert.match(agents, /king\/test` is the only moving integrated 4PLANET HEIR line/i);
+  assert.match(agents, /ONE HEIR PER PRODUCT/i);
 });
 
 test('control-of-control: convergence workflow executes this test', () => {
