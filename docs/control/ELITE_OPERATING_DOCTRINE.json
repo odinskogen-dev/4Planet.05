@@ -1,0 +1,104 @@
+{
+  "schema": "4planet.elite-operating-doctrine.v1",
+  "founderDecisionDate": "2026-09-04",
+  "active": true,
+  "authority": "Knowledge OS SYSTEM — MANDATORY OPERATING RULES & WRITEBACK PROTOCOL v1.0",
+  "createsParallelAuthority": false,
+  "mandatorySequence": [
+    "HUMAN_VALUE_FOUNDER_INTENT",
+    "PROGRAMME_ADMISSION_WHEN_APPLICABLE",
+    "QUESTION_REQUIREMENTS",
+    "DELETE",
+    "SIMPLIFY_OPTIMISE",
+    "SIMPLEST_CAPABLE_EXECUTION",
+    "DESIRED_STATE_PROOF_ROLLBACK",
+    "EXECUTE",
+    "JIDOKA_ANDON",
+    "INDEPENDENT_VERIFY_VALIDATE_WHEN_MATERIAL",
+    "EVALUATOR_IMPROVEMENT_ONLY_WITH_TRUSTWORTHY_FITNESS",
+    "RELIABILITY_VALUE_MEASUREMENT",
+    "ERROR_TO_IMMUNITY",
+    "WRITEBACK_READBACK",
+    "DESIRED_OBSERVED_RECONCILIATION"
+  ],
+  "executionEscalation": [
+    "DETERMINISTIC_OR_EXISTING_PRIMITIVE",
+    "SIMPLE_WORKFLOW",
+    "LLM_WORKFLOW",
+    "SINGLE_AGENT",
+    "MULTI_AGENT"
+  ],
+  "hardInvariants": {
+    "memoryIsNotAuthority": true,
+    "durableRetrievalAndEnforcementRequired": true,
+    "makerMayNotBeSoleJudgeOnMaterialGate": true,
+    "autonomyMustBeEarnedFromReliability": true,
+    "sourceIsolationBreachTolerance": 0,
+    "newParallelBrainFactoryOrTaskSystemForbidden": true,
+    "evaluatorLoopMayPromoteCanon": false,
+    "evaluatorLoopMayPromoteTruthWithoutAuthority": false,
+    "oneWayDoorRequiresExistingFounderOrProfessionalGate": true,
+    "unresolvedMaterialAbnormalityStopsMutation": true
+  },
+  "andonConditions": [
+    "AUTHORITY_AMBIGUITY",
+    "STALE_CURRENT_STATE_CONFLICT",
+    "SOURCE_ISOLATION_BREACH",
+    "PROTECTED_GOLD_OR_LINEAGE_LOSS_RISK",
+    "PROTECTED_INVARIANT_REGRESSION",
+    "UNSUPPORTED_TRUTH_OR_CLAIM_PROMOTION",
+    "SECRET_OR_SECURITY_EXPOSURE",
+    "DESTRUCTIVE_UNCERTAINTY",
+    "SCOPE_OR_PERMISSION_BREACH",
+    "CRITICAL_EVALUATOR_FAILURE",
+    "WRITEBACK_READBACK_MISMATCH",
+    "ROLLBACK_IDENTITY_UNAVAILABLE"
+  ],
+  "requiredMaterialReturnFields": [
+    "HUMAN_VALUE_FOUNDER_INTENT",
+    "PROGRAMME_ADMISSION",
+    "DELETE_SIMPLIFY_REUSE",
+    "EXECUTION_CLASS",
+    "DOOR_CLASS_AUTHORITY",
+    "DESIRED_STATE",
+    "PROTECTED_GOLD_INVARIANTS",
+    "PROOF_ACCEPTANCE_EVIDENCE",
+    "ROLLBACK_REVERSIBILITY",
+    "ANDON_STOP_CONDITIONS",
+    "INDEPENDENT_VERIFIER_VALIDATOR",
+    "FITNESS_EVALUATOR_IF_USED",
+    "RELIABILITY_VALUE_EVIDENCE",
+    "WRITEBACK_READBACK_TARGETS",
+    "DESIRED_OBSERVED_RECONCILIATION",
+    "LEARNING_IMMUNITY_DELTA"
+  ],
+  "donorDisposition": {
+    "coreControl": [
+      "TOYOTA_JIDOKA_ANDON",
+      "NASA_INDEPENDENT_VERIFICATION",
+      "DARPA_HEILMEIER_PROGRAMME_ADMISSION",
+      "AMAZON_HUMAN_VALUE_BACKWARDS_AND_REVERSIBILITY",
+      "ANTHROPIC_SIMPLEST_CAPABLE_WORKFLOW_FIRST",
+      "GOOGLE_SRE_RELIABILITY_BUDGET",
+      "KUBERNETES_DESIRED_CURRENT_STATE_RECONCILIATION"
+    ],
+    "boundedCapability": [
+      "EVALUATOR_EVOLUTION",
+      "HYPOTHESIS_TOURNAMENTS",
+      "STANDARDS_FIRST_INTEROPERABILITY"
+    ],
+    "subsumedIntoExistingControls": [
+      "SKUNK_WORKS_SMALL_TEAM",
+      "MISSION_COMMAND_INTENT",
+      "NETFLIX_REVERSIBLE_DECISION_DELEGATION",
+      "PIXAR_CANDID_QUALITY_CRITIQUE"
+    ],
+    "deferredUntilConcreteNeed": [
+      "BROAD_AUTONOMOUS_EVOLUTION",
+      "FORCED_FULL_STANDARDS_MIGRATION",
+      "PROPRIETARY_ONTOLOGY_IMITATION",
+      "FIXED_AUTONOMY_THRESHOLDS",
+      "NEW_PERMANENT_MANAGEMENT_LAYER"
+    ]
+  }
+}

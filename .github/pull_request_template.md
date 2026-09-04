@@ -1,3 +1,43 @@
+## ELITE OPERATING DOCTRINE / SYSTEM 2.0
+
+**HUMAN VALUE / FOUNDER INTENT:**
+
+**PROGRAMME ADMISSION:** PASS / NOT APPLICABLE / DEFER — reason:
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:**
+
+**EXECUTION CLASS:** deterministic/existing primitive / simple workflow / LLM workflow / single agent / multi-agent
+
+**DOOR CLASS + AUTHORITY:** TWO-WAY / ONE-WAY
+
+**DESIRED STATE:**
+
+**PROTECTED GOLD / INVARIANTS:**
+
+**PROOF / ACCEPTANCE EVIDENCE:**
+
+**ROLLBACK / REVERSIBILITY:**
+
+**ANDON / STOP CONDITIONS:**
+
+**INDEPENDENT VERIFICATION / VALIDATION:**
+
+**FITNESS / EVALUATOR, if used:**
+
+**RELIABILITY / VALUE EVIDENCE:**
+
+**WRITEBACK + READBACK TARGETS:**
+
+**DESIRED ↔ OBSERVED RECONCILIATION:**
+
+**LEARNING / IMMUNITY DELTA:**
+
+- [ ] `node scripts/elite-operating-doctrine-gate.mjs` passes.
+- [ ] A more agentic/complex execution model was not used when a simpler capable mechanism existed, or the escalation is justified above.
+- [ ] Material abnormality did not get bypassed; unresolved Andon conditions fail closed.
+- [ ] Maker is not the sole judge where independent review is required.
+- [ ] Evaluator/evolution logic, if used, cannot autonomously promote Canon or truth.
+
 ## Product intent
 
 **USER ARRIVES BECAUSE:**
