@@ -30,7 +30,6 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
       style: VECTOR_STYLE,
       center: proof.center,
       zoom: proof.zoom,
-      attributionControl: true,
     });
     map.current = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
