@@ -128,6 +128,11 @@
       "heir": {"review_path": "/s4piens", "origin_path": "/domains/s4piens"},
       "sandbox": null
     },
+    "4SAPIEN": {
+      "live": {"url": null, "identity_state": "UNRELEASED"},
+      "heir": {"review_path": "/4sapien", "origin_path": "/4sapien"},
+      "sandbox": null
+    },
     "FOOD": {
       "live": {"url": "https://s4piens.com/food", "identity_state": "READBACK_REQUIRED"},
       "heir": {"review_path": "/food", "origin_path": "/4sapien/food"},
