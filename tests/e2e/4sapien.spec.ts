@@ -9,18 +9,22 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 }
 
 test.describe("4SAPIEN Personal Choice Proof", () => {
-  test("Embla front door is truthful and usable", async ({ page }) => {
+  test("Embla front door states its human job and one first action", async ({ page }) => {
     await page.goto("/4sapien");
     await expect(page).toHaveURL(/\/4sapien$/);
 
-    await expect(page.getByRole("heading", { name: "Embla." })).toBeVisible();
-    await expect(page.getByText(/Better choices for your life/i)).toBeVisible();
-    await expect(page.getByText(/NO EVIDENCE → NO RECOMMENDATION/i)).toBeVisible();
-    await expect(page.getByText(/does not claim live shelf availability/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose better." })).toBeVisible();
+    await expect(page.getByText(/says plainly\s+when it does not know/i)).toBeVisible();
+    await expect(page.getByLabel("What are you choosing?")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start", exact: true })).toBeVisible();
 
-    const foodChoice = page.getByRole("link", { name: /FOOD \/ LIVE PROOF/i });
-    await expect(foodChoice).toHaveAttribute("href", "/4sapien/food");
-    await foodChoice.click();
+    // The front door promises only what the evidence path can currently do.
+    await expect(page.getByText(/Comparisons run inside controlled groups/i)).toBeVisible();
+    await expect(page.getByText(/an honest .not enough evidence./i)).toBeVisible();
+
+    const foodWorkspace = page.getByRole("link", { name: /FOOD evidence workspace/i });
+    await expect(foodWorkspace).toHaveAttribute("href", "/4sapien/food");
+    await foodWorkspace.click();
     await expect(page).toHaveURL(/\/4sapien\/food$/);
     await expect(page.getByRole("button", { name: /READ PRODUCT/i })).toBeVisible();
 
@@ -28,7 +32,7 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test("FOOD proof exposes real lookup without a universal score", async ({ page }) => {
+  test("FOOD workspace exposes real lookup without a universal score", async ({ page }) => {
     await page.goto("/4sapien/food");
     await expect(page).toHaveURL(/\/4sapien\/food$/);
 

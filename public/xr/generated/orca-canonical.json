@@ -1,0 +1,297 @@
+{
+  "generatedFrom": [
+    "src/data/species.ts",
+    "src/data/livingSystems.ts"
+  ],
+  "species": {
+    "id": "taxon:gbif:2440483",
+    "slug": "orca",
+    "commonName": "Orca",
+    "scientificName": "Orcinus orca",
+    "gbifKey": 2440483,
+    "rank": "SPECIES",
+    "taxonomicStatus": "ACCEPTED",
+    "kingdom": "Animalia",
+    "taxonSourceUrl": "https://www.gbif.org/species/2440483",
+    "livingSystemId": "living-system:4p:coastal-sea",
+    "issue": {
+      "id": "issue:4p:marine-pressure-review",
+      "label": "Marine pressure review",
+      "status": "SOURCE_REVIEW_PENDING"
+    },
+    "solution": {
+      "id": "solution:4p:protected-restoration",
+      "label": "Protection and restoration",
+      "status": "SOURCE_REVIEW_PENDING"
+    },
+    "context": "Working execution profile. Taxonomy is source-grounded; ecological claims remain bounded by population, place and evidence.",
+    "narrativeChapters": [
+      {
+        "id": "whales-01-family-culture",
+        "eyebrow": "WH4LES_ 01 · FAMILY & CULTURE",
+        "title": "A whale is never only a whale.",
+        "summary": "Orcas live through durable social relationships. Their groups can differ in calls, diet, behaviour and habitat use, so a species-level label does not describe every population.",
+        "claims": [
+          {
+            "id": "orca-social-groups",
+            "state": "KNOWN",
+            "label": "Population-specific lives",
+            "text": "Killer whale populations can have distinct diets, behaviours, social structures and habitat use.",
+            "sourceLabel": "NOAA Fisheries — Killer Whale",
+            "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale",
+            "checkedAt": "2026-08-03",
+            "limitation": "This is a population-level statement. It must not be used to infer the behaviour of an unidentified individual or occurrence record."
+          },
+          {
+            "id": "orca-calls-culture",
+            "state": "KNOWN",
+            "label": "Calls carry group identity",
+            "text": "Some killer whale groups use distinct call structures that help maintain group cohesion and separate social traditions.",
+            "sourceLabel": "International Whaling Commission — Killer whale",
+            "sourceUrl": "https://iwc.int/about-whales/whale-species/killer-whale",
+            "checkedAt": "2026-08-03",
+            "limitation": "The public prototype does not identify dialect, pod or ecotype from a generic species record."
+          }
+        ]
+      },
+      {
+        "id": "whales-02-food-web",
+        "eyebrow": "WH4LES_ 02 · FOOD WEB",
+        "title": "What an orca eats depends on who it is.",
+        "summary": "The species has an exceptionally varied diet, but populations and ecotypes often specialise. Food connects the animal to prey, fisheries, habitat quality and human decisions.",
+        "claims": [
+          {
+            "id": "orca-diet-specialisation",
+            "state": "KNOWN",
+            "label": "Specialised foraging",
+            "text": "Different killer whale populations can specialise in different prey and hunting strategies.",
+            "sourceLabel": "NOAA Fisheries — Killer Whale",
+            "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale",
+            "checkedAt": "2026-08-03",
+            "limitation": "A GBIF occurrence does not reveal diet, prey availability or ecological condition."
+          },
+          {
+            "id": "orca-food-web-interpretation",
+            "state": "INTERPRETED",
+            "label": "A relationship, not a diagnosis",
+            "text": "Food-web context can help explain why prey and habitat matter, but it is not evidence that a specific observed whale is food-limited.",
+            "checkedAt": "2026-08-03",
+            "limitation": "4PLANET interpretation. Requires local population and prey evidence before any stronger public claim."
+          }
+        ]
+      },
+      {
+        "id": "whales-03-place-record",
+        "eyebrow": "WH4LES_ 03 · PLACE & RECORD",
+        "title": "A point on a map is a record of observation.",
+        "summary": "Occurrence data can connect a taxon to a reported place and date. It cannot, by itself, establish range, abundance, population trend, live location or ecological health.",
+        "claims": [
+          {
+            "id": "orca-taxonomy",
+            "state": "KNOWN",
+            "label": "Accepted taxon identity",
+            "text": "The prototype preserves the accepted GBIF taxon identity for Orcinus orca across SPECIES and ATLAS.",
+            "sourceLabel": "GBIF — Orcinus orca",
+            "sourceUrl": "https://www.gbif.org/species/2440483",
+            "checkedAt": "2026-08-03",
+            "limitation": "Taxonomic acceptance is not a conservation-status or population assessment."
+          },
+          {
+            "id": "orca-record-unknowns",
+            "state": "UNKNOWN",
+            "label": "Unknown until a record is inspected",
+            "text": "Population, ecotype, pod, abundance, health and present location remain unknown unless a specific source record supports them.",
+            "checkedAt": "2026-08-03",
+            "limitation": "Fail-closed rule: the interface must show unknown rather than infer from species identity or map proximity."
+          }
+        ]
+      },
+      {
+        "id": "whales-04-pressure-response",
+        "eyebrow": "WH4LES_ 04 · PRESSURE & RESPONSE",
+        "title": "Threats are real — and population-specific.",
+        "summary": "Food limitation, contaminants, vessel disturbance and underwater sound affect some killer whale populations. Responsible action begins by identifying the population, place, evidence and competent actor.",
+        "claims": [
+          {
+            "id": "orca-threats",
+            "state": "KNOWN",
+            "label": "Documented pressure categories",
+            "text": "NOAA identifies food limitations, chemical contaminants, vessel traffic and sound among threats faced by some killer whale populations.",
+            "sourceLabel": "NOAA Fisheries — Killer Whale",
+            "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale",
+            "checkedAt": "2026-08-03",
+            "limitation": "Do not transfer a threat assessment from one population to another without supporting evidence."
+          },
+          {
+            "id": "orca-response-hold",
+            "state": "UNKNOWN",
+            "label": "No generic intervention claim",
+            "text": "The prototype does not claim that one universal intervention will protect all orcas.",
+            "checkedAt": "2026-08-03",
+            "limitation": "A response path requires population-specific science, responsible institutions and an evidence-backed implementation partner."
+          }
+        ]
+      }
+    ],
+    "group": "Marine mammals",
+    "intro": "The orca is the largest member of the dolphin family — a fast, social, wide-ranging predator found in every ocean. Populations differ in prey, behaviour and calls, so a species label does not describe every group.",
+    "habitat": "All oceans, from polar seas to the tropics. Coastal groups follow prey along shelves and fjords; others range across open water.",
+    "descriptorSource": {
+      "source": "NOAA Fisheries & GBIF",
+      "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale",
+      "checkedAt": "2026-08-06",
+      "note": "General descriptive summary of identity and habitat; not a measured population or range claim."
+    },
+    "journey": "orca",
+    "missionSlug": "wh4les"
+  },
+  "livingSystemAnchor": {
+    "slug": "orca",
+    "kind": "SPECIES",
+    "index": "01",
+    "eyebrow": "SPECIES ANCHOR · OCE4N_",
+    "anchorLabel": "Orca",
+    "scientific": "Orcinus orca",
+    "domain": "OCE4N_",
+    "accent": "#2E2EFF",
+    "journeyTitle": "The Orca, followed honestly.",
+    "standfirst": "From the living animal to what it depends on, the pressures on it and possible responses — every relationship labelled by what is known, interpreted or unknown.",
+    "image": "/assets/species/orca/detail-fjord.jpg",
+    "imageAlt": "A wild orca surfacing off a green Norwegian coast",
+    "atlasEntity": "taxon:gbif:2440483",
+    "status": "LIVE",
+    "steps": [
+      {
+        "stage": "DISCOVER",
+        "intro": "Start with the animal, not the metric.",
+        "relationships": [
+          {
+            "to": {
+              "id": "orca",
+              "kind": "SPECIES",
+              "label": "Orca (Orcinus orca)",
+              "note": "The largest member of the dolphin family; found in every ocean."
+            },
+            "relation": "A fast, social predator that lives through durable relationships.",
+            "state": "KNOWN",
+            "boundary": "Populations differ in prey, behaviour and calls — a species label never describes every group.",
+            "source": "NOAA Fisheries",
+            "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale"
+          }
+        ]
+      },
+      {
+        "stage": "DEPENDS ON",
+        "intro": "A whale is never only a whale.",
+        "relationships": [
+          {
+            "to": {
+              "id": "prey",
+              "kind": "SPECIES",
+              "label": "Population-specific prey",
+              "note": "Fish-eating and mammal-eating populations differ."
+            },
+            "relation": "Each population depends on the prey its culture hunts.",
+            "state": "KNOWN",
+            "boundary": "Prey specialisation is population-specific; do not transfer one population's diet to another.",
+            "source": "NOAA Fisheries",
+            "sourceUrl": "https://www.fisheries.noaa.gov/species/killer-whale"
+          },
+          {
+            "to": {
+              "id": "habitat",
+              "kind": "PLACE",
+              "label": "Coastal shelves & fjords / open water",
+              "note": "Where prey is found."
+            },
+            "relation": "Coastal groups follow prey along shelves and fjords; others range across open water.",
+            "state": "INTERPRETED",
+            "boundary": "Range is inferred from where people have observed animals — not a complete map of where they live."
+          }
+        ]
+      },
+      {
+        "stage": "UNDER PRESSURE",
+        "intro": "Pressure is specific, not general.",
+        "relationships": [
+          {
+            "to": {
+              "id": "prey-decline",
+              "kind": "PRESSURE",
+              "label": "Reduced prey availability",
+              "note": "Fewer or less accessible prey."
+            },
+            "relation": "Some populations are affected when key prey declines.",
+            "state": "INTERPRETED",
+            "boundary": "Effects are population- and place-specific and vary in strength."
+          },
+          {
+            "to": {
+              "id": "noise",
+              "kind": "PRESSURE",
+              "label": "Underwater noise & vessel interaction",
+              "note": "Shipping, sonar, boat traffic."
+            },
+            "relation": "Noise can interfere with the communication and hunting some populations depend on.",
+            "state": "INTERPRETED",
+            "boundary": "Documented for some populations; not a uniform global claim."
+          },
+          {
+            "to": {
+              "id": "pollutants",
+              "kind": "PRESSURE",
+              "label": "Persistent pollutants",
+              "note": "Long-lived contaminants that accumulate."
+            },
+            "relation": "Persistent pollutants accumulate in some orca populations.",
+            "state": "KNOWN",
+            "boundary": "Concentrations and consequences differ between populations.",
+            "source": "Desforges et al., Science 2018",
+            "sourceUrl": "https://www.science.org/doi/10.1126/science.aat1953"
+          }
+        ]
+      },
+      {
+        "stage": "RESPONSE",
+        "intro": "No single universal fix.",
+        "relationships": [
+          {
+            "to": {
+              "id": "response",
+              "kind": "RESPONSE",
+              "label": "Population-specific action",
+              "note": "Science + responsible institutions + a competent field actor."
+            },
+            "relation": "A response path requires identifying the population, the place, the evidence and a competent actor.",
+            "state": "UNKNOWN",
+            "boundary": "The product does not claim any single intervention protects all orcas."
+          }
+        ]
+      }
+    ],
+    "handoffs": [
+      {
+        "label": "OPEN ORCA IN SPECIES",
+        "desc": "The full profile, identity and records.",
+        "to": "/species/orca?entity=taxon:gbif:2440483"
+      },
+      {
+        "label": "EXPLORE FREELY IN ATLAS",
+        "desc": "Leave the guided path and inspect the data yourself.",
+        "to": "/atlas?entity=taxon:gbif:2440483"
+      },
+      {
+        "label": "WH4LES_ MISSION",
+        "desc": "What this connects to, and how to take part.",
+        "to": "/missions/wh4les",
+        "testid": "ls-handoff-wh4les-mission"
+      },
+      {
+        "label": "FOLLOW & PARTICIPATE",
+        "desc": "Follow the animal and its mission.",
+        "to": "/join"
+      }
+    ]
+  },
+  "speciesRelationships": []
+}

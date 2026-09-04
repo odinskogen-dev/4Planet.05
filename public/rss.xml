@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>4PLANET MAGAZINE</title>
+    <link>https://4planet.org/magazine</link>
+    <description>Stories about the living planet — species, places, people, systems, solutions and culture.</description>
+    <language>en-gb</language>
+        <item>
+      <title>Why 4Planet exists</title>
+      <link>https://4planet.org/magazine/why-4planet-exists</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/why-4planet-exists</guid>
+      <description>People care about the living world. What they rarely have is a clear, credible way to act.</description>
+      <category>HUMAN</category>
+    </item>
+    <item>
+      <title>The four Domains</title>
+      <link>https://4planet.org/magazine/the-four-domains</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/the-four-domains</guid>
+      <description>One living planet, read through four connected worlds — ocean, land, human systems and culture.</description>
+      <category>PLANET</category>
+    </item>
+    <item>
+      <title>WH4LES: the intelligence that travels through whole oceans</title>
+      <link>https://4planet.org/magazine/wh4les-migratory-intelligence</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/wh4les-migratory-intelligence</guid>
+      <description>A whale is not a single animal in empty water. It is part of the ocean&apos;s living infrastructure.</description>
+      <category>LIFE</category>
+    </item>
+    <item>
+      <title>What a credible tree pathway actually looks like</title>
+      <link>https://4planet.org/magazine/credible-tree-pathway</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/credible-tree-pathway</guid>
+      <description>Planting the wrong thing in the wrong place can look like climate action while doing very little.</description>
+      <category>SOLUTIONS</category>
+    </item>
+    <item>
+      <title>AM4ZONIA: more than a forest</title>
+      <link>https://4planet.org/magazine/amazonia-more-than-a-forest</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/amazonia-more-than-a-forest</guid>
+      <description>The Amazon is closer to planetary infrastructure than to scenery.</description>
+      <category>PLANET</category>
+    </item>
+    <item>
+      <title>Making impact easy — without making it fake</title>
+      <link>https://4planet.org/magazine/making-impact-easy</link>
+      <guid isPermaLink="true">https://4planet.org/magazine/making-impact-easy</guid>
+      <description>The hard part is not generosity. It is trust. 4Planet is built around that problem.</description>
+      <category>SOLUTIONS</category>
+    </item>
+  </channel>
+</rss>
