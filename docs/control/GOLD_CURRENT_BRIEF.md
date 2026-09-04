@@ -17,6 +17,24 @@ Embla must ask what matters most in the decision before selecting an evidence pa
 ## PRIMARY ACTION
 Open Embla, state a FOOD decision, choose the priority that matters now, then use the strongest currently supported comparison or product-evidence path.
 
+## SECONDARY DEPTH
+After choosing a priority, the user can inspect the existing FOOD evidence surface and its source/UNKNOWN boundaries. The decision gate should reveal depth only when it helps the current choice; it must not create a second FOOD intelligence system.
+
+## P1 DOMINANT
+The dominant first-screen job is one decision: identify what matters most now. The priority choice must visually dominate architecture, method explanation and secondary evidence detail.
+
+## P2 ORIENTATION
+The user must understand that different priorities have different evidence readiness. Health/allergen evidence can be stronger than wallet/planet category ranking, and incomplete evidence remains visibly incomplete.
+
+## P3 ACTION / NEXT
+The selected priority routes into the strongest existing evidence path. Supported comparison proceeds; unsupported whole-shelf ranking is refused and the user is directed to bounded product evidence instead.
+
+## P4 DEPTH
+Detailed product evidence, source status, HEALTH/WALLET/PLANET separation and comparison limitations remain available after the decision. Depth must preserve provenance and UNKNOWN states rather than compress them into one score.
+
+## WHAT CAN BE REMOVED
+Remove or avoid architecture-first explanation, duplicate route definitions, universal-score framing and any step that does not help the user make the current bounded decision. No replacement assistant, truth store or parallel FOOD workflow is justified.
+
 ## WHAT MUST BE REUSED
 Existing Embla intake, FOOD intelligence, PICK product evidence, current source/truth contracts, 4SAPIEN route family and current HEIR. No replacement assistant, score or truth store is introduced.
 
@@ -29,6 +47,9 @@ Existing Embla intake, FOOD intelligence, PICK product evidence, current source/
 
 ## TRUTH BOUNDARY
 Embla identifies an evidence path, not a universal answer. Selected health/allergen paths may compare controlled product evidence. Wallet and planetary evidence remain product-level where category-wide ranking is not strong enough. UNKNOWN remains UNKNOWN. This mutation is not evidence of repeat human utility, adoption, production readiness, economic value or Founder approval.
+
+## MOBILE-FIRST RISK
+Priority choices must remain readable and tappable without horizontal overflow or burying the primary decision below explanatory copy. Mobile must preserve the same evidence-readiness and refusal boundaries as desktop; no mobile-specific truth or ranking shortcut is allowed.
 
 ## HUMAN SUCCESS
 A first-time user can express a FOOD decision, choose the concern they care about, understand what 4PLANET can and cannot compare, and reach the existing evidence engine without being shown a fabricated overall score.
