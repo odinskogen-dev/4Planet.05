@@ -4,6 +4,8 @@ on:
   push:
   pull_request:
     types: [opened, synchronize, reopened, edited, ready_for_review]
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -20,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Checkout exact candidate
+      - name: Checkout exact candidate or HEIR for scheduled audit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'schedule' && 'king/test' || github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Fetch current HEIR
@@ -34,7 +36,7 @@ jobs:
           AUTHORITY_BASE_REF: ${{ github.base_ref }}
         run: node scripts/product-authority-gate.mjs | tee product-authority-result.txt
 
-      - name: Quarantine inventory — existing branch sprawl is history, not authority
+      - name: Inventory remote refs under absolute write-authority law
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -61,18 +63,34 @@ jobs:
           done
           node <<'NODE'
           const fs = require('fs');
-          const rows = fs.readFileSync('artifacts/product-authority/branches.jsonl','utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+          const raw = fs.readFileSync('artifacts/product-authority/branches.jsonl','utf8').trim();
+          const rows = raw ? raw.split('\n').filter(Boolean).map(JSON.parse) : [];
           const registered = JSON.parse(fs.readFileSync('artifacts/product-authority/registered-sandboxes.json','utf8'));
           const classified = rows.map((row) => {
-            let role = 'HISTORY_DONOR_ARCHIVE_QUARANTINE';
-            if (row.branch === 'king/test') role = 'HEIR';
-            else if (registered[row.branch]) role = `SANDBOX:${registered[row.branch]}`;
-            else if (row.branch.startsWith('control/')) role = 'CONTROL_NO_PRODUCT_AUTHORITY';
-            else if (row.branch.startsWith('factory/')) role = 'FACTORY_SEPARATE_NO_PRODUCT_AUTHORITY';
-            return {...row, role};
+            let role = 'QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY';
+            let productWriteAuthority = false;
+            if (row.branch === 'king/test') {
+              role = 'HEIR';
+              productWriteAuthority = true;
+            } else if (registered[row.branch]) {
+              role = `SANDBOX:${registered[row.branch]}`;
+              productWriteAuthority = true;
+            } else if (row.branch.startsWith('control/') || row.branch.startsWith('ops/') || row.branch.startsWith('docs/')) {
+              role = 'SYSTEM_CONTROL_ZERO_PRODUCT_AUTHORITY';
+            } else if (row.branch.startsWith('factory/')) {
+              role = 'FACTORY_SEPARATE_ZERO_PRODUCT_AUTHORITY';
+            }
+            return {...row, role, productWriteAuthority};
           });
           const counts = classified.reduce((acc, row) => (acc[row.role] = (acc[row.role] || 0) + 1, acc), {});
-          fs.writeFileSync('artifacts/product-authority/branch-authority-inventory.json', JSON.stringify({generatedAt:new Date().toISOString(), total:classified.length, counts, branches:classified}, null, 2));
+          fs.writeFileSync('artifacts/product-authority/branch-authority-inventory.json', JSON.stringify({
+            generatedAt:new Date().toISOString(),
+            law:'ONLY_HEIR_OR_REGISTERED_SANDBOX_HAVE_PRODUCT_WRITE_AUTHORITY',
+            archiveLaw:'ARCHIVED_AND_QUARANTINE_ARE_READ_ONLY_DONORS',
+            total:classified.length,
+            counts,
+            branches:classified
+          }, null, 2));
           console.log(`remote branches inventoried=${classified.length}`);
           console.log(counts);
           NODE
@@ -99,13 +117,19 @@ jobs:
             base: pr.base.ref,
             head: pr.head.ref,
             headSha: pr.head.sha,
-            authority: pr.head.ref === 'king/test' ? 'HEIR_CONTROL' : registered.has(pr.head.ref) ? `REGISTERED_SANDBOX:${registered.get(pr.head.ref)}` : 'OPEN_PR_NO_PRODUCT_AUTHORITY_QUARANTINE'
+            authority: pr.head.ref === 'king/test'
+              ? 'HEIR_CONTROL'
+              : registered.has(pr.head.ref)
+                ? `REGISTERED_SANDBOX:${registered.get(pr.head.ref)}`
+                : pr.head.ref.startsWith('control/') || pr.head.ref.startsWith('ops/') || pr.head.ref.startsWith('docs/') || pr.head.ref.startsWith('factory/')
+                  ? 'SYSTEM_SUPPORT_ZERO_PRODUCT_AUTHORITY'
+                  : 'QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY'
           }));
           fs.writeFileSync('artifacts/product-authority/open-pr-authority-inventory.json', JSON.stringify({generatedAt:new Date().toISOString(), total:inventory.length, pullRequests:inventory}, null, 2));
           console.log(`open PRs inventoried=${inventory.length}`);
           NODE
 
-      - name: Repository hardening gap check
+      - name: Repository physical-enforcement gap check
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -121,8 +145,17 @@ jobs:
             defaultBranch: repo.default_branch,
             deleteBranchOnMerge: repo.delete_branch_on_merge,
             kingTestProtected: Boolean(branch.protected),
-            desired: {defaultBranch:'king/test or an explicitly non-stale control default', deleteBranchOnMerge:true, kingTestProtected:true},
-            state: branch.protected ? 'PARTIAL_HARDENING' : 'P0_ADMIN_HARDENING_GAP'
+            productWriteLaw: 'ONLY_HEIR_OR_REGISTERED_SANDBOX',
+            archiveLaw: 'READ_ONLY_DONOR',
+            desired: {
+              defaultBranch:'king/test or an explicitly non-stale control default',
+              deleteBranchOnMerge:true,
+              kingTestProtected:true,
+              repositoryRuleset:'physically reject unauthorised product writes and protected/archive ref mutation'
+            },
+            physicalGuarantee: branch.protected && repo.default_branch === 'king/test'
+              ? 'ADMIN_LAYER_PARTIALLY_VERIFIED_RULESET_STILL_REQUIRED'
+              : 'P0_ADMIN_HARDENING_GAP_NO_100_PERCENT_PUSH_PREVENTION_CLAIM'
           };
           fs.writeFileSync('artifacts/product-authority/repository-hardening-gap.json', JSON.stringify(report, null, 2));
           console.log(report);
