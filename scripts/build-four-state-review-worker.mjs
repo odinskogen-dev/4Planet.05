@@ -9,9 +9,11 @@ const outputPath = process.argv[4] || "artifacts/four-state-worker.mjs";
 const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
 const runtime = JSON.parse(fs.readFileSync(runtimePath, "utf8"));
 
-if (!runtime.heir?.origin || !runtime.heir?.sha) throw new Error("runtime HEIR origin/SHA missing");
+if (!runtime.heir?.origin || !runtime.heir?.sha || !runtime.heir?.render_origin) throw new Error("runtime HEIR origin/SHA/render origin missing");
 for (const [product, record] of Object.entries(registry.products || {})) {
-  if (record.sandbox && !runtime.sandboxes?.[product]?.origin) throw new Error(`runtime sandbox origin missing for ${product}`);
+  if (record.sandbox && (!runtime.sandboxes?.[product]?.origin || !runtime.sandboxes?.[product]?.render_origin)) {
+    throw new Error(`runtime sandbox origin/render origin missing for ${product}`);
+  }
 }
 
 const config = {
@@ -70,12 +72,12 @@ export default { async fetch(request) {
   for (const [product,p] of Object.entries(CONFIG.products)) {
     if (p.sandbox && path === normalise(p.sandbox.review_path)) {
       const runtime = CONFIG.sandboxes[product];
-      if (!runtime?.origin) return page('<main><h1>SANDBOX UNRESOLVED</h1></main>', product);
-      return frame(runtime.origin + p.sandbox.origin_path, product, 'SANDBOX', runtime.sha);
+      if (!runtime?.render_origin) return page('<main><h1>SANDBOX UNRESOLVED</h1></main>', product);
+      return frame(runtime.render_origin + p.sandbox.origin_path, product, 'SANDBOX', runtime.sha);
     }
   }
   for (const [product,p] of Object.entries(CONFIG.products)) {
-    if (path === normalise(p.heir.review_path)) return frame(CONFIG.heir.origin + p.heir.origin_path, product, 'HEIR', CONFIG.heir.sha);
+    if (path === normalise(p.heir.review_path)) return frame(CONFIG.heir.render_origin + p.heir.origin_path, product, 'HEIR', CONFIG.heir.sha);
   }
   return dashboard();
 }};
