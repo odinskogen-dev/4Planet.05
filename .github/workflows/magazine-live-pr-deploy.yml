@@ -1,6 +1,9 @@
 name: 4PLANET Magazine live deploy
 
 on:
+  push:
+    branches:
+      - recovery/testking-magazine
   pull_request:
     branches:
       - recovery/testking-magazine
