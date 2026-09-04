@@ -45,8 +45,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          pinned='https://feb9a95c.4planet-05.pages.dev'
+          marker=$(curl -fsS --connect-timeout 10 --max-time 30 "$pinned/magazine/public-launch-gold-01.txt")
+          [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] || { echo 'Pinned Magazine Gold marker mismatch'; exit 4; }
           cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
-          const UPSTREAM = "https://recovery-testking-magazine.4planet-05.pages.dev";
+          const UPSTREAM = "https://feb9a95c.4planet-05.pages.dev";
+          const SOURCE_SHA = "d27c841d3f15f26bf4feb7de3916a6a5fffe1795";
           const APEX = "4planetmagazine.com";
           const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
           const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
@@ -68,6 +72,7 @@ jobs:
             const headers = new Headers(response.headers);
             headers.delete("x-robots-tag");
             headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            headers.set("x-4planet-source-sha", SOURCE_SHA);
             if ((headers.get("content-type") || "").includes("text/html")) {
               headers.set("cache-control", "no-store");
               headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
@@ -88,3 +93,22 @@ jobs:
           custom_domain = true
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify pinned Magazine Gold is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_sha='d27c841d3f15f26bf4feb7de3916a6a5fffe1795'
+          for attempt in $(seq 1 30); do
+            marker=$(curl -fsS --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/public-launch-gold-01.txt' || true)
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' | tr -d '\r' || true)
+            if [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] &&
+               printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
+               printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
+              echo 'Pinned Magazine Gold candidate is live.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Pinned Magazine Gold candidate did not verify live.'
+          exit 5
