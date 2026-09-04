@@ -8,6 +8,7 @@ import { STORIES } from "@/content/stories";
 import { FIELD_NOTES } from "@/content/fieldNotes";
 import { FOUNDING_EDITION, MAGAZINE_EDITORIAL_PRINCIPLES } from "@/content/magazineEditorial";
 import { MAGAZINE_GOLD_BAR, MAGAZINE_LANES } from "@/content/magazineOperating";
+import { MAGAZINE_PUBLICATION_STATE } from "@/content/magazinePublication";
 import { FIELD_PARTNER_DISPATCHES } from "@/content/magazineEngine";
 import { img } from "@/content/imageRegistry";
 import { DOMAIN_ACCENT } from "@/styles/tokens";
@@ -69,6 +70,7 @@ export default function Magazine() {
   const leadMedia = img(lead.image);
   const secondary = STORIES.filter((story) => story.slug !== lead.slug).slice(0, 4);
   const publicDispatches = FIELD_PARTNER_DISPATCHES.filter((dispatch) => dispatch.status === "PUBLIC");
+  const publicationStatus = MAGAZINE_PUBLICATION_STATE.publicSince ? "PUBLIC" : "PRE-PUBLICATION";
 
   useEffect(() => {
     trackMagazineEntry("home");
@@ -87,8 +89,8 @@ export default function Magazine() {
           <img className="mag-hero-media" src={hero.src} alt={hero.alt} />
           <div className="mag-hero-shade" aria-hidden />
           <div className="mag-hero-topline">
-            <span>4PLANET MAGAZINE / FOUNDING EDITION</span>
-            <span>LIVE DEVELOPMENT · PRE-PUBLICATION</span>
+            <span>{MAGAZINE_PUBLICATION_STATE.publisher} / FOUNDING EDITION</span>
+            <span>{publicationStatus}</span>
           </div>
           <div className="mag-hero-copy">
             <p className="mag-kicker">WORKING EDITION 01</p>
