@@ -1,0 +1,114 @@
+name: 4PLANET Magazine live deploy
+
+on:
+  pull_request:
+    branches:
+      - recovery/testking-magazine
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && TOKEN="$candidate" && break; done
+          [ -n "$TOKEN" ] || exit 2
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy isolated Magazine worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          pinned='https://feb9a95c.4planet-05.pages.dev'
+          marker=$(curl -fsS --connect-timeout 10 --max-time 30 "$pinned/magazine/public-launch-gold-01.txt")
+          [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] || { echo 'Pinned Magazine Gold marker mismatch'; exit 4; }
+          cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
+          const UPSTREAM = "https://feb9a95c.4planet-05.pages.dev";
+          const SOURCE_SHA = "d27c841d3f15f26bf4feb7de3916a6a5fffe1795";
+          const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === `www.${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedMagazine(incoming.pathname) && !atlasEmbed) return blocked();
+
+            let upstreamPath = incoming.pathname;
+            if (incoming.pathname === "/robots.txt") upstreamPath = "/magazine-robots.txt";
+            if (incoming.pathname === "/sitemap.xml") upstreamPath = "/magazine-sitemap.xml";
+            const upstream = new URL(upstreamPath, UPSTREAM);
+            upstream.search = incoming.search;
+            const response = await fetch(new Request(upstream.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            headers.set("x-4planet-source-sha", SOURCE_SHA);
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
+          EOF
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planetmagazine-test-king"
+          main = "$RUNNER_TEMP/worker.mjs"
+          compatibility_date = "2026-08-24"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmagazine.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmagazine.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify pinned Magazine Gold is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_sha='d27c841d3f15f26bf4feb7de3916a6a5fffe1795'
+          for attempt in $(seq 1 30); do
+            marker=$(curl -fsS --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/public-launch-gold-01.txt' || true)
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' | tr -d '\r' || true)
+            if [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] &&
+               printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
+               printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
+              echo 'Pinned Magazine Gold candidate is live.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Pinned Magazine Gold candidate did not verify live.'
+          exit 5
