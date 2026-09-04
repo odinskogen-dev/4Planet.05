@@ -53,10 +53,10 @@ export function runActivationGateSimulation(): ActivationSimulationResult {
   const cases: ActivationSimulationCase[] = [
     { name: "complete-evidence-is-ready", evidence: { ...FULL_EVIDENCE }, expectedReady: true, expectedMissing: [] },
     {
-      name: "product-convergence-is-observed-but-does-not-block-level-2-internal-factory",
+      name: "missing-one-interface-convergence-fails-closed",
       evidence: { ...FULL_EVIDENCE, convergencePassed: false },
-      expectedReady: true,
-      expectedMissing: [],
+      expectedReady: false,
+      expectedMissing: ["ONE_INTERFACE_CONVERGENCE_PASS"],
     },
     { name: "missing-zero-loss-fails-closed", evidence: { ...FULL_EVIDENCE, zeroLossLawEnabled: false }, expectedReady: false, expectedMissing: ["ZERO_LOSS_LAW"] },
     { name: "missing-outcome-parity-fails-closed", evidence: { ...FULL_EVIDENCE, outcomeQualityParityPassed: false }, expectedReady: false, expectedMissing: ["OUTCOME_QUALITY_PARITY"] },
