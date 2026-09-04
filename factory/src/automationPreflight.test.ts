@@ -5,6 +5,7 @@ import type { WorkPackage } from "./contracts";
 import {
   AUTOMATION_NOT_SIMPLIFIED,
   evaluateAutomationPreflight,
+  type AutomationPreflightEvidence,
   type AutomationPreflightWorkPackage,
 } from "./automationPreflight";
 
@@ -37,7 +38,7 @@ function pkg(overrides: Partial<AutomationPreflightWorkPackage> = {}): Automatio
   return { ...base, ...overrides };
 }
 
-const simplified = {
+const simplified: AutomationPreflightEvidence = {
   requirement: "Preserve current ATLAS behaviour while reducing duplicate control work.",
   delete: {
     candidatesConsidered: ["duplicate status reconstruction", "second candidate branch"],
@@ -55,7 +56,7 @@ const simplified = {
   proofRefs: ["factory/src/automationPreflight.test.ts"],
   rollbackRef: "exact-parent-sha",
   learningWritebackRef: "SYSTEM_PROGRAM_LOG",
-} as const;
+};
 
 test("negative proof: unsimplified automation is rejected with exact fail-closed code", () => {
   const decision = evaluateAutomationPreflight(pkg());
