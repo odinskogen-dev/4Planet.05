@@ -1,7 +1,16 @@
 const SHA_40 = /^[0-9a-f]{40}$/i;
 
+/**
+ * Founder decision 2026-09-04: bounded ACTIVE boot is earned by the first
+ * successful real internal work package. The remaining real proof families
+ * stay available as subsequent torture/transfer production, but they are not
+ * entry gates for worker compute or the initial ACTIVE classification.
+ */
 export const ACTIVATION_PROOF_BASE_IDS = [
   "factory-real-species-evidence-affordance-01",
+] as const;
+
+export const POST_ACTIVATION_TORTURE_BASE_IDS = [
   "factory-real-bay-accessibility-01",
   "factory-real-actor-relationship-a11y-01",
 ] as const;

@@ -108,25 +108,28 @@ async function enforceExactBuildCertification(env: ActiveEnv): Promise<FactorySt
 
 function versionedProofCases(currentTestSha: string, buildSha: string) {
   const buildKey = activationProofBuildKey(buildSha);
-  return createRealProjectProofCases(currentTestSha).map((proof) => {
-    const id = activationProofId(proof.pkg.id, buildSha);
-    return {
-      ...proof,
-      pkg: {
-        ...proof.pkg,
-        id,
-        run: {
-          runId: `activation-${buildKey}-${proof.family.toLowerCase()}`,
-          attemptId: "01",
-          idempotencyKey: `activation:${buildSha}:${currentTestSha}:${proof.family}`,
-          inputStateHash: `factory=${buildSha};test=${currentTestSha}`,
-          expectedBaseSha: currentTestSha,
-          workerId: `activation-${proof.family.toLowerCase()}`,
-          createdAt: new Date().toISOString(),
+  const bootIds = new Set(activationProofIds(buildSha));
+  return createRealProjectProofCases(currentTestSha)
+    .map((proof) => {
+      const id = activationProofId(proof.pkg.id, buildSha);
+      return {
+        ...proof,
+        pkg: {
+          ...proof.pkg,
+          id,
+          run: {
+            runId: `activation-${buildKey}-${proof.family.toLowerCase()}`,
+            attemptId: "01",
+            idempotencyKey: `activation:${buildSha}:${currentTestSha}:${proof.family}`,
+            inputStateHash: `factory=${buildSha};test=${currentTestSha}`,
+            expectedBaseSha: currentTestSha,
+            workerId: `activation-${proof.family.toLowerCase()}`,
+            createdAt: new Date().toISOString(),
+          },
         },
-      },
-    };
-  });
+      };
+    })
+    .filter((proof) => bootIds.has(proof.pkg.id));
 }
 
 async function seedRealProof(env: ActiveEnv) {
@@ -232,9 +235,9 @@ async function certifyAndActivate(
     workPackageId: proof.ids.join("+"),
     projectId: "4planet-factory-real-proof",
     target: "FACTORY_TEST_GATE",
-    observation: "One bounded 4PLANET quality contract was exercised across SPECIES Profile, Ecosystem/Place and Actor Profile real TEST candidates on one exact Factory build.",
+    observation: "One real bounded 4PLANET activation-boot work package completed on one exact Factory build with durable execution and evaluation evidence.",
     evidence: proof.outcomes.flatMap((outcome) => outcome.evidence.slice(0, 16)),
-    proposedChange: "Retain exact Factory-build + TEST-base checks, bounded write scopes, draft-PR-only release, automatic CI/mobile QA and truth-preserving Brand contract as mandatory Factory production gates.",
+    proposedChange: "Retain exact Factory-build + TEST-base checks, bounded write scopes, draft-PR-only release, automatic CI/mobile QA and truth-preserving Brand controls; require another distinct production instance before generalising a reusable Factory rule.",
     distinctInstanceCount: proof.outcomes.length,
     safetyCorrection: false,
     weakensTruthOrSafety: false,
@@ -248,15 +251,15 @@ async function certifyAndActivate(
       id: governedProposal.proposal.id,
       workPackageId: `factory-real-proof-portfolio-${activationProofBuildKey(buildSha)}`,
       observation: governedProposal.proposal.observation,
-      expectedVsActual: `Expected exact-build cross-family bounded production proof; observed ${proof.outcomes.length} real outcomes with allAccepted=${allAccepted}.`,
+      expectedVsActual: `Expected one exact-build bounded activation-boot production proof; observed ${proof.outcomes.length} real accepted outcome(s) with allAccepted=${allAccepted}.`,
       evidence: governedProposal.proposal.evidence,
-      causeHypothesis: "Shared 4PLANET production gates can transfer when product-specific briefs, exact build identity and exact write scopes preserve variation.",
+      causeHypothesis: "A small bounded internal Factory job can establish execution readiness without making unrelated product convergence a compute prerequisite.",
       lesson: governedProposal.proposal.proposedChange,
       scope: "4P Production Factory TEST production",
-      confidence: proof.outcomes.length >= 3 && allAccepted ? "HIGH" : "MEDIUM",
+      confidence: proof.outcomes.length >= 2 && allAccepted ? "HIGH" : "MEDIUM",
       ruleProposal: governedProposal.proposal.proposedChange,
-      regressionEval: "Never reuse an activation outcome across Factory builds; never weaken truth/safety/Human Gold gates.",
-      nextTest: "Run accepted Gold Plank Reference → Transfer production and compare time, corrections, Founder burden, human quality and reuse.",
+      regressionEval: "Never reuse an activation outcome across Factory builds; never weaken truth/safety/Human Gold gates; do not generalise a reusable rule from this single boot instance.",
+      nextTest: "Run the next authorised distinct bounded internal 4PLANET work package and compare time, corrections, Founder burden, human quality and reuse before generalising.",
       status: "CANDIDATE",
       createdAt: new Date().toISOString(),
     };

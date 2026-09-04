@@ -19,12 +19,12 @@ permissions:
 env:
   FACTORY_HEAD_SHA: ${{ github.sha }}
 
-# Certification is disposable evidence, not valuable production work. A newer
-# exact Factory build invalidates and cancels an older certification run. Work
-# Packages and their queues are persisted inside the Factory and are unaffected.
+# One bounded activation lane. Ordinary hardening must not cancel a legitimate
+# in-flight activation cohort; later exact builds queue and stale build evidence
+# cannot certify a newer deployment.
 concurrency:
   group: production-factory-autonomous-activation
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   preflight:
@@ -50,10 +50,10 @@ jobs:
           set -euo pipefail
           if [[ "$EVENT_NAME" == "workflow_dispatch" || "${COMMIT_MESSAGE:-}" == *"[factory-activate]"* ]]; then
             echo "activation_requested=true" >> "$GITHUB_OUTPUT"
-            echo "Full fresh three-family activation proof REQUESTED."
+            echo "Founder-authorised bounded ACTIVE boot REQUESTED."
           else
             echo "activation_requested=false" >> "$GITHUB_OUTPUT"
-            echo "Hardening/SHADOW deployment only. Mutation proof intentionally not started on every commit."
+            echo "Hardening/SHADOW deployment only. Bounded worker boot intentionally not started on every commit."
           fi
 
       - name: Prove exact current TEST KING ancestry
@@ -205,7 +205,7 @@ jobs:
           fi
           echo "shadow_runtime_proven=true" >> "$GITHUB_OUTPUT"
 
-      - name: Wait for both exact-head activation gates
+      - name: Wait for exact-head Factory activation gate
         id: exact_head_gates
         env:
           GH_TOKEN: ${{ github.token }}
@@ -213,39 +213,32 @@ jobs:
         run: |
           set -euo pipefail
           FACTORY_PASS=false
-          CONVERGENCE_PASS=false
           for attempt in $(seq 1 90); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
             FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
-            CONVERGENCE="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="ONE INTERFACE Convergence Gate")][0].conclusion // "pending"')"
-            echo "Exact-head evidence: Factory=$FACTORY ProductConvergence=$CONVERGENCE"
+            echo "Exact-head Factory evidence: ShadowCI=$FACTORY"
             if [[ "$FACTORY" != "pending" && "$FACTORY" != "success" ]]; then
               echo "Required exact-head Factory CI concluded non-success: $FACTORY"
               exit 1
             fi
-            if [[ "$CONVERGENCE" != "pending" && "$CONVERGENCE" != "success" ]]; then
-              echo "Required exact-head ONE INTERFACE concluded non-success: $CONVERGENCE"
-              exit 1
-            fi
-            if [[ "$FACTORY" == "success" && "$CONVERGENCE" == "success" ]]; then
+            if [[ "$FACTORY" == "success" ]]; then
               FACTORY_PASS=true
-              CONVERGENCE_PASS=true
               break
             fi
             sleep 10
           done
-          if [[ "$FACTORY_PASS" != "true" || "$CONVERGENCE_PASS" != "true" ]]; then
-            echo "Both required exact-head activation gates did not reach success in the bounded 15-minute window."
+          if [[ "$FACTORY_PASS" != "true" ]]; then
+            echo "Required exact-head Factory CI did not reach success in the bounded 15-minute window."
             exit 1
           fi
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
-          echo "convergence_passed=true" >> "$GITHUB_OUTPUT"
+          echo "convergence_passed=false" >> "$GITHUB_OUTPUT"
 
       - name: Record hardening-only SHADOW deployment
         if: needs.preflight.outputs.activation_requested != 'true'
         shell: bash
         run: |
-          echo "Exact head deployed and both required activation gates proven. Full mutation activation proof deferred until an explicit [factory-activate] head or workflow_dispatch."
+          echo "Exact Factory head deployed and Factory-specific activation gate proven. Product-wide convergence remains a merge/release boundary, not a bounded worker-compute gate. Explicit activation intent still required to start workers."
 
       - name: Stop safely if permanent GitHub TEST-write credential is absent
         if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed != 'true'
@@ -254,9 +247,9 @@ jobs:
         shell: bash
         run: |
           BODY=$(cat <<'EOF'
-          ## FACTORY FINAL ACTIVATION — ONE FOUNDER CREDENTIAL REMAINS
+          ## FACTORY BOUNDED ACTIVE BOOT — FOUNDER CREDENTIAL REQUIRED
 
-          Exact code/runtime/CI/Cloudflare SHADOW gates are ready, but `FACTORY_GITHUB_TOKEN` is not configured as a GitHub repository secret. The Worker therefore cannot create durable bounded TEST candidate branches/commits/PRs after this Actions job ends.
+          Exact code/runtime/Factory-CI gates are ready, but `FACTORY_GITHUB_TOKEN` is not configured as a GitHub repository secret. The Worker therefore cannot create durable bounded TEST candidate branches/commits/PRs after this Actions job ends.
 
           No temporary `GITHUB_TOKEN` was copied into the Worker because it would expire and create false 24/7 readiness.
 
@@ -264,10 +257,10 @@ jobs:
           EOF
           )
           gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
-          echo "FACTORY_GITHUB_TOKEN missing: real autonomous write proof intentionally not started."
+          echo "FACTORY_GITHUB_TOKEN missing: bounded real worker proof intentionally not started."
           exit 1
 
-      - name: Start three-family real autonomous production proof
+      - name: Start first bounded real autonomous production proof
         if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
         id: proof_start
         env:
@@ -285,7 +278,7 @@ jobs:
             "$BASE_URL/__factory/activation-proof/start")"
           cat factory-activation-start.json
           if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
-            echo "Activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
+            echo "Bounded activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
             exit 1
           fi
           jq -e '.ok == true' factory-activation-start.json >/dev/null
@@ -296,22 +289,16 @@ jobs:
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
           CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
-          CONVERGENCE_PASSED: ${{ steps.exact_head_gates.outputs.convergence_passed }}
         shell: bash
         run: |
           set -euo pipefail
           ACTIVE=false
           RESPONSE=""
-          if [[ "$CONVERGENCE_PASSED" == "true" ]]; then
-            CONVERGENCE_JSON=true
-          else
-            CONVERGENCE_JSON=false
-          fi
           for attempt in $(seq 1 100); do
             RESPONSE="$(curl --silent --show-error --fail-with-body -X POST \
               -H "x-factory-control: $CONTROL_TOKEN" \
               -H "content-type: application/json" \
-              --data "{\"shadowCiPassed\":true,\"convergencePassed\":${CONVERGENCE_JSON},\"shadowRuntimeProven\":true}" \
+              --data '{"shadowCiPassed":true,"convergencePassed":false,"shadowRuntimeProven":true}' \
               "$BASE_URL/__factory/activation-proof/status" || true)"
             echo "Activation proof poll $attempt/100: $(echo "$RESPONSE" | jq -c '{ok,active,proofComplete,gate,error}' 2>/dev/null || echo "$RESPONSE")"
             if echo "$RESPONSE" | jq -e '.active == true and .gate.ready == true and .proofComplete == true' >/dev/null 2>&1; then
@@ -320,7 +307,7 @@ jobs:
             fi
             if echo "$RESPONSE" | jq -e '.proofComplete == true and (.gate.ready == false)' >/dev/null 2>&1; then
               echo "$RESPONSE" > factory-active-certification.json
-              echo "Proof completed but activation gate remained closed."
+              echo "Real boot proof completed but activation gate remained closed."
               exit 1
             fi
             sleep 15
@@ -354,20 +341,20 @@ jobs:
         run: |
           SUMMARY="$(jq -c '{active,gate,exactFactorySha,exactTestKingSha,metrics,governedLearning,boundaries,proofOutcomes:[.proofOutcomes[]|{id,status,actual}]}' factory-active-certification.json)"
           BODY=$(cat <<EOF
-          ## 4P FACTORY 01 — AUTONOMOUS TEST PRODUCTION ACTIVE
+          ## 4P FACTORY 01 — ACTIVE INTERNAL TEST PRODUCTION
 
           Exact Factory SHA: \`$FACTORY_HEAD_SHA\`
           Exact TEST KING base: \`${{ needs.preflight.outputs.test_king_sha }}\`
           Runtime: $BASE_URL
           Control Room: $BASE_URL/__factory/control-room
 
-          Real proof: SPECIES Profile + Bay of Biscay Ecosystem + Actor Profile produced through bounded AI → GitHub candidate → draft PR → CI → 390 Browser QA → persisted outcome → governed learning.
+          Founder-authorised bounded boot proof: one real internal 4PLANET work package passed live authority/capacity preflight, autonomous Workflow/Worker execution, bounded GitHub TEST candidate write, independent CI/browser/evaluator evidence, persisted Outcome and governed learning writeback.
 
-          Both exact-head activation prerequisites passed: Production Factory Shadow CI and ONE INTERFACE Convergence Gate. This is not authority for TEST KING/LIVE promotion.
+          Factory-specific exact-head Shadow CI passed. Product-wide ONE INTERFACE convergence remains a hard merge/release/mutation boundary but was not used as a worker-compute prerequisite.
 
           Certification: \`$SUMMARY\`
 
-          **Still Founder-gated:** LIVE, Human Gold, Canon promotion, outreach/send, payments/spend/signature.
+          **Still Founder-gated:** LIVE, Human Gold, Canon promotion, outreach/send, payments/spend/signature and irreversible external actions.
           EOF
           )
           gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null

@@ -69,9 +69,17 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
-      # P0 Jaguar proof runs before unrelated shared product journeys. A flaky or
-      # independently red ATLAS seam must not suppress evidence for the protected
-      # Founder-directed Jaguar critical path.
+      - name: Run Oslofjord Planet Proof on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/oslofjord-planet-proof.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+
+      # Other product proofs run after the current Founder-priority Planet proof.
+      # Failure in an unrelated legacy journey must not suppress Oslofjord evidence.
       - name: Run Jaguar P0 full-source proof on Chromium + WebKit desktop and mobile
         env:
           BASE_URL: http://127.0.0.1:4173

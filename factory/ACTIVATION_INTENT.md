@@ -1,13 +1,22 @@
-# Factory activation intent
+# Factory bounded ACTIVE boot — Founder decision 2026-09-04
 
-Founder-directed final activation request — 2026-09-04.
+Authority: explicit Founder decision in the 4PLANET programme conversation on 2026-09-04.
 
-Current verified TEST KING `2670eacc48e65a3c0b58dda0ffffd3d6bd0697cf` is the exact merge-base/ancestor of the single authoritative Factory lineage `factory/symphony-runtime-v01`. Prior exact-head Shadow CI, Product Authority, Founder Review and ONE INTERFACE convergence evidence are green before this activation request.
+`ACTIVE INTERNAL TEST PRODUCTION` is an isolated, bounded autonomous learning/production state. It is NOT LIVE production and grants no LIVE, Canon, outreach/send, contract, payment/spend, Human Gold, signature or irreversible external authority.
 
-Run exactly one fresh bounded internal three-family autonomous activation proof on the resulting exact Factory build. Require persisted select → execute → test → evidence → independent judgement → correction/retest where required → accepted/rejected → governed learning → writeback/readback.
+Before workers may fetch bounded real work, the existing `factory/symphony-runtime-v01` lineage must prove:
 
-ACTIVE INTERNAL TEST PRODUCTION may be certified only if immutable fresh proof returns `active=true`, `gate.ready=true` and `proofComplete=true`, with exact Factory SHA and current TEST KING revalidated at terminal classification and required production outcomes accepted.
+1. exact Factory head and current `king/test` ancestry;
+2. current candidate/work-package authority at dispatch;
+3. authenticated dedicated runtime and worker health;
+4. durable scoped GitHub TEST-write capability;
+5. non-consuming AI-capacity snapshot and bounded daily/monthly budget;
+6. WIP <= 5 and no competing activation cohort.
 
-After certification, immediately prove actual useful internal production with at least one safe bounded 4PLANET work package inside existing authority, preserving independent evaluation, evidence and learning capture.
+Once those entry gates pass, START WORKERS. Product-wide convergence/browser gates remain hard for merge, deploy, release and other receiver-sensitive mutations, but they do not block bounded autonomous worker computation.
 
-Preserve all fail-closed capacity, candidate-authority, TEST KING, LIVE, Canon, external-send/outreach, publishing, payment/spend, signature and irreversible-action boundaries. Do not evade provider quota, invent capacity, weaken gates or purchase capacity.
+The first successful real internal work package that proves current authority, autonomous pickup, real worker execution, useful output, independent evaluation, immutable evidence and governed learning writeback is sufficient terminal activation proof for the exact Factory build. A single boot outcome may write back evidence as a non-canonical learning candidate; generalising a reusable learning rule still requires repeated distinct evidence unless it is a safety correction.
+
+If `king/test` moves during safe computation, preserve work/evidence. Stop only authority-sensitive mutation, revalidate the sole receiver, forward-converge the SAME Factory lineage where required, rerun relevant mutation/release gates and continue. Terminal ACTIVE classification always revalidates current receiver identity and fails closed to SHADOW on drift.
+
+After certification, continue bounded authorised internal 4PLANET production under WIP <= 5, explicit scopes, evaluator, idempotency, retry/recovery, candidate-authority enforcement and Error-to-Immunity learning. No new Factory, Conductor, TEST KING, THIRD KING or parallel truth store.

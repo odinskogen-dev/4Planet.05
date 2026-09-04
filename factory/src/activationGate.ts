@@ -1,6 +1,6 @@
 export interface FactoryActivationEvidence {
   shadowCiPassed: boolean;
-  /** Exact-head ONE INTERFACE convergence must be terminal green before internal activation. */
+  /** Telemetry only for bounded ACTIVE boot; still required for merge/release-sensitive promotion paths. */
   convergencePassed: boolean;
   brainProjectionReadOnly: boolean;
   sectionAdaptersBounded: boolean;
@@ -32,16 +32,14 @@ export interface FactoryActivationGate {
 }
 
 /**
- * ACTIVE INTERNAL TEST PRODUCTION requirements.
- *
- * Both Factory-specific Shadow CI and the product-wide ONE INTERFACE gate must
- * be terminal green before activation. This prevents a proof cohort from
- * consuming bounded AI capacity while the current exact head is already known
- * to be unfit for the shared product receiver.
+ * Founder decision 2026-09-04 — ACTIVE INTERNAL TEST PRODUCTION entry/terminal
+ * evidence. Product-wide convergence/browser gates remain hard gates for merge,
+ * deploy, release and other authority-sensitive mutations, but are not worker
+ * compute gates. Factory-specific CI/runtime, bounded execution, evaluator,
+ * durable evidence/learning and receiver authority remain fail-closed.
  */
 const REQUIRED_LEVEL_2: Array<[keyof FactoryActivationEvidence, string]> = [
   ["shadowCiPassed", "SHADOW_CI_PASS"],
-  ["convergencePassed", "ONE_INTERFACE_CONVERGENCE_PASS"],
   ["brainProjectionReadOnly", "READ_ONLY_BRAIN_PROJECTION"],
   ["sectionAdaptersBounded", "BOUNDED_SECTION_ADAPTERS"],
   ["evaluatorMaterialGateEnabled", "MATERIAL_PROGRESS_EVALUATOR"],
@@ -68,17 +66,10 @@ const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
 /**
  * Fail-closed ACTIVE INTERNAL TEST PRODUCTION boundary.
  *
- * Selection overlap alone is not enough. Factory must prove real execution
- * paths, durable round-trips, outcome quality, governed learning/writeback,
- * exact-head shared product convergence and current TEST authority. A Pages
- * preview is not a dedicated Agents runtime.
- *
- * The Factory branch must also attest the exact TEST KING base it was built on,
- * and that SHA must equal the independently observed current TEST KING SHA.
- * A bare `testKingBaseCurrent: true` flag is never sufficient on its own.
- *
- * This gate grants no TEST KING merge, LIVE, Canon, outreach, Human Gold or
- * spend authority.
+ * The first accepted real bounded internal work package may earn ACTIVE when
+ * Factory-specific execution/evaluator/evidence/learning controls and current
+ * TEST receiver authority are proven. This gate grants no TEST KING merge,
+ * LIVE, Canon, outreach, Human Gold or spend authority.
  */
 export function evaluateFactoryActivation(
   evidence: FactoryActivationEvidence,

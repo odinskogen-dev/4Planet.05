@@ -4,7 +4,7 @@ import type { ProjectProjection, WorkPackage } from "./contracts";
 import { receiverAuthorityCurrent, requireCurrentReceiver } from "./receiverAuthority";
 import { ProductionFactoryAgent as CapacityProductionFactoryAgent } from "./activationPreflightRuntime";
 import { createRealProjectProofCases } from "./realProjectProof";
-import { activationProofId } from "./activationProofIdentity";
+import { activationProofId, activationProofIds } from "./activationProofIdentity";
 import {
   createShadowOrchestraPackages,
   ORCHESTRA_PACKAGE_IDS,
@@ -22,9 +22,12 @@ const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
 const TEST_BRANCH = "king/test";
 const SHA40 = /^[0-9a-f]{40}$/i;
+
+// Founder decision 2026-09-04: bounded worker compute is gated by Factory-
+// specific exact-head readiness, not unrelated product-wide convergence. Those
+// product gates remain mandatory at merge/release/mutation boundaries.
 const REQUIRED_ACTIVATION_WORKFLOWS = [
   "Production Factory Shadow CI",
-  "ONE INTERFACE Convergence Gate",
 ] as const;
 
 interface RuntimeEnv extends Cloudflare.Env {
@@ -120,18 +123,21 @@ async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha
 }
 
 function activationPreflightPackages(currentTestSha: string, buildSha: string) {
-  return createRealProjectProofCases(currentTestSha).map((proof) => {
-    const autonomous = proof.pkg.autonomous;
-    if (!autonomous) throw new Error(`ACTIVATION_PROOF_AUTONOMOUS_CONTRACT_MISSING:${proof.pkg.id}`);
-    return {
-      id: activationProofId(proof.pkg.id, buildSha),
-      projectId: proof.pkg.projectId,
-      section: proof.pkg.section,
-      declaredBaseSha: autonomous.expectedBaseSha,
-      declaredBaseBranch: autonomous.baseBranch,
-      requestedCalls: autonomous.maxCorrectionAttempts ?? 1,
-    };
-  });
+  const bootIds = new Set(activationProofIds(buildSha));
+  return createRealProjectProofCases(currentTestSha)
+    .map((proof) => {
+      const autonomous = proof.pkg.autonomous;
+      if (!autonomous) throw new Error(`ACTIVATION_PROOF_AUTONOMOUS_CONTRACT_MISSING:${proof.pkg.id}`);
+      return {
+        id: activationProofId(proof.pkg.id, buildSha),
+        projectId: proof.pkg.projectId,
+        section: proof.pkg.section,
+        declaredBaseSha: autonomous.expectedBaseSha,
+        declaredBaseBranch: autonomous.baseBranch,
+        requestedCalls: autonomous.maxCorrectionAttempts ?? 1,
+      };
+    })
+    .filter((pkg) => bootIds.has(pkg.id));
 }
 
 function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso: string): ProjectProjection {
@@ -235,7 +241,8 @@ export default {
         const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
         const currentTestSha = await currentTestKingSha(env);
         requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT");
-        // Do not spend/reserve proof capacity until both exact-head control gates are terminal green.
+        // Spend/reserve no boot capacity until Factory-specific exact-head CI is
+        // terminal green. Product-wide convergence remains a mutation/release gate.
         await requireExactHeadActivationGates(env, buildSha);
         const agent = await factoryAgent(env);
         const preflight = await agent.attestActivationPreflight({

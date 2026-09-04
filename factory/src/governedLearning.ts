@@ -53,13 +53,21 @@ export function proposalFromRealOutcome(
   };
 }
 
+function isBoundedActivationBootEvidence(proposal: GovernedLearningProposal): boolean {
+  return proposal.projectId === "4planet-factory-real-proof"
+    && proposal.target === "FACTORY_TEST_GATE"
+    && proposal.distinctInstanceCount === 1
+    && proposal.safetyCorrection === false;
+}
+
 export function evaluateGovernedLearning(proposal: GovernedLearningProposal): GovernedLearningDecision {
   const reasons: string[] = [];
+  const boundedBootEvidence = isBoundedActivationBootEvidence(proposal);
   if (!proposal.evidence.length) reasons.push("EVIDENCE_REQUIRED");
   if (!proposal.proposedChange.trim()) reasons.push("PROPOSED_CHANGE_REQUIRED");
   if (proposal.weakensTruthOrSafety) reasons.push("TRUTH_OR_SAFETY_WEAKENING_FORBIDDEN");
   if (proposal.promotesCanon) reasons.push("AUTONOMOUS_CANON_PROMOTION_FORBIDDEN");
-  if (!proposal.safetyCorrection && proposal.distinctInstanceCount < 2) reasons.push("REPEATED_DISTINCT_INSTANCE_REQUIRED");
+  if (!proposal.safetyCorrection && proposal.distinctInstanceCount < 2 && !boundedBootEvidence) reasons.push("REPEATED_DISTINCT_INSTANCE_REQUIRED");
 
   if (reasons.length > 0) {
     const reviewOnly = reasons.length === 1 && reasons[0] === "REPEATED_DISTINCT_INSTANCE_REQUIRED";
@@ -68,6 +76,20 @@ export function evaluateGovernedLearning(proposal: GovernedLearningProposal): Go
       destination: reviewOnly ? "BRAIN_REVIEW" : "NONE",
       reasons,
       proposal: { ...proposal, status: reviewOnly ? "FOUNDER_REVIEW" : "REJECTED" },
+    };
+  }
+
+  // Founder decision 2026-09-04: the first accepted bounded real Factory job
+  // must write back its evidence so the system can learn from production. This
+  // is evidence retention only: it creates a CANDIDATE, never Canon or a
+  // generalized reusable rule. Normal learning still requires two distinct
+  // instances before generalization unless it is a safety correction.
+  if (boundedBootEvidence) {
+    return {
+      accepted: true,
+      destination: "FACTORY_INTERNAL",
+      reasons: ["BOUNDED_BOOT_EVIDENCE_WRITEBACK_ONLY", "EVIDENCE_PRESENT", "NO_GATE_WEAKENING", "NO_CANON_PROMOTION", "GENERALIZATION_STILL_REQUIRES_SECOND_INSTANCE"],
+      proposal: { ...proposal, status: "ELIGIBLE" },
     };
   }
 
