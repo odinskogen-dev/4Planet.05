@@ -1,10 +1,6 @@
 export interface FactoryActivationEvidence {
   shadowCiPassed: boolean;
-  /**
-   * Observed product-wide ONE INTERFACE convergence status. This remains
-   * release evidence for TEST KING/LIVE, but it is intentionally not a Level-2
-   * internal Factory activation requirement.
-   */
+  /** Exact-head ONE INTERFACE convergence must be terminal green before internal activation. */
   convergencePassed: boolean;
   brainProjectionReadOnly: boolean;
   sectionAdaptersBounded: boolean;
@@ -36,15 +32,16 @@ export interface FactoryActivationGate {
 }
 
 /**
- * Level-2 ACTIVE INTERNAL TEST PRODUCTION requirements.
+ * ACTIVE INTERNAL TEST PRODUCTION requirements.
  *
- * Product-wide convergence is deliberately excluded here. Factory-specific
- * visual QA and outcome parity are already required below. ONE INTERFACE
- * convergence remains a separate TEST KING/LIVE release gate and is retained
- * in the evidence envelope for observability.
+ * Both Factory-specific Shadow CI and the product-wide ONE INTERFACE gate must
+ * be terminal green before activation. This prevents a proof cohort from
+ * consuming bounded AI capacity while the current exact head is already known
+ * to be unfit for the shared product receiver.
  */
 const REQUIRED_LEVEL_2: Array<[keyof FactoryActivationEvidence, string]> = [
   ["shadowCiPassed", "SHADOW_CI_PASS"],
+  ["convergencePassed", "ONE_INTERFACE_CONVERGENCE_PASS"],
   ["brainProjectionReadOnly", "READ_ONLY_BRAIN_PROJECTION"],
   ["sectionAdaptersBounded", "BOUNDED_SECTION_ADAPTERS"],
   ["evaluatorMaterialGateEnabled", "MATERIAL_PROGRESS_EVALUATOR"],
@@ -69,21 +66,19 @@ const MAX_EVIDENCE_AGE_MS = 2 * 60 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
 
 /**
- * Fail-closed Level-2 ACTIVE INTERNAL TEST PRODUCTION boundary.
+ * Fail-closed ACTIVE INTERNAL TEST PRODUCTION boundary.
  *
  * Selection overlap alone is not enough. Factory must prove real execution
- * paths, durable round-trips, outcome quality, governed learning/writeback and
- * current TEST authority. A Pages preview is not a dedicated Agents runtime.
- * Evidence is short-lived and commit-addressed so a stale boolean bundle cannot
- * silently activate after TEST KING or Factory has moved.
+ * paths, durable round-trips, outcome quality, governed learning/writeback,
+ * exact-head shared product convergence and current TEST authority. A Pages
+ * preview is not a dedicated Agents runtime.
  *
  * The Factory branch must also attest the exact TEST KING base it was built on,
  * and that SHA must equal the independently observed current TEST KING SHA.
  * A bare `testKingBaseCurrent: true` flag is never sufficient on its own.
  *
  * This gate grants no TEST KING merge, LIVE, Canon, outreach, Human Gold or
- * spend authority. Product-wide convergence remains mandatory at those release
- * boundaries and is observed separately.
+ * spend authority.
  */
 export function evaluateFactoryActivation(
   evidence: FactoryActivationEvidence,
