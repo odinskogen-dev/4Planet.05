@@ -2,6 +2,9 @@ import { getAgentByName } from "agents";
 import activeRuntime from "./activeRuntime";
 import type { ProjectProjection, WorkPackage } from "./contracts";
 import { receiverAuthorityCurrent, requireCurrentReceiver } from "./receiverAuthority";
+import { ProductionFactoryAgent as CapacityProductionFactoryAgent } from "./activationPreflightRuntime";
+import { createRealProjectProofCases } from "./realProjectProof";
+import { activationProofId } from "./activationProofIdentity";
 import {
   createShadowOrchestraPackages,
   ORCHESTRA_PACKAGE_IDS,
@@ -13,6 +16,7 @@ import {
 } from "./shadowReadyRecovery";
 
 export * from "./activeRuntime";
+export { CapacityProductionFactoryAgent as ProductionFactoryAgent };
 
 const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
@@ -21,6 +25,7 @@ const SHA40 = /^[0-9a-f]{40}$/i;
 
 interface RuntimeEnv extends Cloudflare.Env {
   FACTORY_BUILD_SHA?: string;
+  FACTORY_CONTROL_TOKEN?: string;
   FACTORY_GITHUB_TOKEN?: string;
   FACTORY_TEST_KING_BASE_SHA?: string;
 }
@@ -42,6 +47,16 @@ interface ReadyRecoveryObservation {
 async function factoryAgent(env: RuntimeEnv): Promise<any> {
   const getByName: any = getAgentByName;
   return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+}
+
+function controlAuthorised(request: Request, env: RuntimeEnv): boolean {
+  const expected = env.FACTORY_CONTROL_TOKEN?.trim();
+  if (!expected || expected.length < 32) return false;
+  const supplied = request.headers.get("x-factory-control")?.trim() ?? "";
+  if (supplied.length !== expected.length) return false;
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) difference |= expected.charCodeAt(index) ^ supplied.charCodeAt(index);
+  return difference === 0;
 }
 
 async function currentTestKingSha(env: RuntimeEnv): Promise<string> {
@@ -74,6 +89,20 @@ async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha
     return { baseSha, currentSha, demoted: true };
   }
   return { baseSha, currentSha, demoted: false };
+}
+
+function activationPreflightPackages(currentTestSha: string, buildSha: string) {
+  return createRealProjectProofCases(currentTestSha).map((proof) => {
+    const autonomous = proof.pkg.autonomous;
+    return {
+      id: activationProofId(proof.pkg.id, buildSha),
+      projectId: proof.pkg.projectId,
+      section: proof.pkg.section,
+      declaredBaseSha: autonomous.expectedBaseSha,
+      declaredBaseBranch: autonomous.baseBranch,
+      requestedCalls: autonomous.maxCorrectionAttempts ?? 1,
+    };
+  });
 }
 
 function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso: string): ProjectProjection {
@@ -166,6 +195,36 @@ export default {
           ok: false,
           active: false,
           error: error instanceof Error ? error.message : "TEST_KING_AUTHORITY_REVALIDATION_FAILED",
+        }, { status: 409 });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/activation-proof/start" && controlAuthorised(request, env)) {
+      try {
+        const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
+        if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+        const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+        const currentTestSha = await currentTestKingSha(env);
+        requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT");
+        const agent = await factoryAgent(env);
+        const preflight = await agent.attestActivationPreflight({
+          exactFactorySha: buildSha,
+          exactTestKingSha: currentTestSha,
+          packages: activationPreflightPackages(currentTestSha, buildSha),
+        }) as { ready?: boolean } & Record<string, unknown>;
+        if (preflight.ready !== true) {
+          return Response.json({
+            ok: false,
+            active: false,
+            error: "ACTIVATION_PREFLIGHT_BLOCKED",
+            preflight,
+          }, { status: 409 });
+        }
+      } catch (error) {
+        return Response.json({
+          ok: false,
+          active: false,
+          error: error instanceof Error ? error.message : "ACTIVATION_PREFLIGHT_FAILED",
         }, { status: 409 });
       }
     }
