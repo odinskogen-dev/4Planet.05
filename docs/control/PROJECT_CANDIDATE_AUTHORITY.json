@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "control_state": "FOUR_STATE_INTERNAL_CONTROL_ABSOLUTE_WRITE_AUTHORITY",
-  "control_revision": "2026-09-04.ZERO_LOSS_PRODUCT_AUTHORITY_HARDENING_01",
+  "control_revision": "2026-09-04.ZERO_LOSS_PRODUCT_AUTHORITY_HARDENING_02",
   "surface_registry": "docs/control/PRODUCT_SURFACE_REGISTRY.json",
   "moving_pointer_contract": {
     "stored_branch_sha_is_observation_not_durable_authority": true,
@@ -37,10 +37,10 @@
     "4PLANET": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED"},
     "ATLAS": {
       "heir": "king/test",
-      "sandbox": {"branch": "work/atlas-zero-loss-gold-convergence-01", "registration_sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547", "last_observed_sha": "a5a74d8524ab5789ecb9bce4b40b2801fc9681d7", "pr": 263, "classification": "SANDBOX", "review_path": "/atlas/sandbox", "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate", "live_authority": false},
-      "last_observed_heir_sha": "a32d5e051bbb7905c6fa491b21f9050433af7eb2",
-      "last_observed_compare": "AHEAD_19_BEHIND_0_MERGE_BASE_CURRENT_HEIR",
-      "lineage_state": "ANCESTRY_REPAIRED_REVERIFY_FRESH_HEIR_BEFORE_EACH_MUTATION_OR_PROMOTION",
+      "sandbox": {"branch": "work/atlas-zero-loss-gold-convergence-01", "registration_sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547", "last_observed_sha": "2002f0cfac364f110182f26c1e0ca4d960466456", "pr": 263, "classification": "SANDBOX", "review_path": "/atlas/sandbox", "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate", "live_authority": false},
+      "last_observed_heir_sha": "dd19870991dbe2d2bf59b38a8adde0c60018eff1",
+      "last_observed_compare": "DIVERGED_AHEAD_21_BEHIND_22_MERGE_BASE_2670eacc48e65a3c0b58dda0ffffd3d6bd0697cf_OBSERVED_2026_09_04",
+      "lineage_state": "STALE_SANDBOX_FAIL_CLOSED_FORWARD_SYNC_SAME_BRANCH_REQUIRED_NO_FURTHER_MUTATION_OR_PROMOTION",
       "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"
     },
     "MAGAZINE": {
@@ -56,6 +56,7 @@
     "JAGUAR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_AS_SPECIES_EXPERIENCE", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "ORCA": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "S4PIENS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "4SAPIEN": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_EXISTING_CANON_SEAM", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "IMPACT": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "LIVING_SYSTEMS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},

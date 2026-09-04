@@ -2,11 +2,35 @@
 
 This repository is an execution surface. It is **not** the sole source of programme truth. Current programme state, priorities, authority, Founder decisions and cross-project context live in the 4PLANET BRAIN / Knowledge OS and are synthesised by AXE / GPT Project Lead.
 
+## ELITE OPERATING DOCTRINE / SYSTEM 2.0 — mandatory for all material work
+
+Read `docs/control/ELITE_OPERATING_DOCTRINE.md` and `docs/control/ELITE_OPERATING_DOCTRINE.json` before material work. Their canonical authority is the Founder Decision in Knowledge OS `SYSTEM — MANDATORY OPERATING RULES & WRITEBACK PROTOCOL v1.0`; the repository files are memoryless-agent projections, not a parallel BRAIN or management system.
+
+Apply the relevant material-work loop:
+
+`HUMAN VALUE / FOUNDER INTENT → PROGRAMME ADMISSION when applicable → QUESTION REQUIREMENTS → DELETE → SIMPLIFY / OPTIMISE → SIMPLEST CAPABLE EXECUTION → DESIRED STATE + PROOF + ROLLBACK → EXECUTE → JIDOKA / ANDON → INDEPENDENT VERIFICATION / VALIDATION where material → evaluator improvement only with trustworthy fitness → RELIABILITY / VALUE MEASUREMENT → ERROR-TO-IMMUNITY → WRITEBACK + READBACK → DESIRED / OBSERVED RECONCILIATION`.
+
+Hard rules:
+- **SIMPLEST CAPABLE EXECUTION:** deterministic/existing primitive → simple workflow → LLM workflow → single agent → multi-agent. Escalate only when the simpler mechanism cannot responsibly solve the task.
+- **PROGRAMME ADMISSION:** a new major programme, permanent system or high-recursive-cost architecture expansion must pass the Heilmeier-class admission questions in the doctrine before WBS/automation is created.
+- **HUMAN GOLD BACKWARDS:** substantial user-facing work starts from the human outcome and extends the existing GOLD Current Brief; never create a competing product-spec system.
+- **TWO-WAY DOOR / ONE-WAY DOOR:** reversible bounded decisions may be delegated inside authority; irreversible/external decisions retain existing Founder/professional gates.
+- **JIDOKA / ANDON:** unresolved authority, stale/current-state conflict, source-isolation breach, protected-Gold/lineage loss, protected-invariant regression, unsupported claim promotion, security/secret risk, destructive uncertainty, scope breach, critical evaluator failure, writeback/readback mismatch or missing rollback identity stops mutation/promotion. Preserve evidence, correct, regression-test, then resume.
+- **AUTONOMY IS EARNED:** expand automation/agent authority only from measured reliability; activity volume or confidence does not increase authority.
+- **MAKER ≠ SOLE JUDGE:** material truth/source/security/release/impact/acceptance gates require independent verification/validation proportional to risk.
+- **EVALUATOR DISCIPLINE:** optimisation/evolution requires a trustworthy fitness function and may never autonomously promote Canon or truth.
+- **DESIRED STATE RECONCILIATION:** compare current Founder/Canon/WBS/HEIR desired state with fresh Git/runtime/source/agent evidence. Material drift becomes explicit correction or an explicit accepted exception, never silent divergence.
+- **NO PARALLEL METHOD LAYER:** this doctrine extends SpaceX/GBrain, GOLD, ZERO LOSS, ONE BRAIN / ONE FACTORY / ONE TEST KING and Error-to-Immunity. Do not create another BRAIN, Factory, task system or methodology stack.
+
+Run `node scripts/elite-operating-doctrine-gate.mjs` as part of repository-level control verification. Do not bypass, disable or weaken it to make work pass.
+
 ## AXE / AXE PL current-context fail-safe
 
 Every material 4PLANET request addressed to **AXE / AXE PL** — and every semantically equivalent material 4PLANET request even when those words are omitted — requires a **fresh connected BRAIN bootstrap before substantive current-state reasoning, prioritisation, architecture changes or execution**. Local chat context and model memory are orientation only, never programme authority.
 
-Minimum current-state path: `READ FIRST → GPT_PROJECT_LEAD_CURRENT → KNOWLEDGE_OS_STATE → relevant Founder Control / Project Pack / WBS / Active Engine / Prototype SAFE → fresh GitHub or other connected evidence when the task depends on live state`.
+Minimum current-state path: `00_ READ FIRST → 01_ PROJECT LEAD CURRENT — NOW, PRIORITIES, GATES & NEXT ACTIONS → 02_ ACTIVE TASKS — SMALL EXECUTION SURFACE → relevant bounded Context Pack / Founder Decision / WBS / Prototype SAFE only as needed → fresh GitHub/runtime/connector/external evidence whenever live state matters`.
+
+`01_ PROJECT LEAD CURRENT`, `02_ ACTIVE TASKS` and Atomic Register / Current State must expose the same `CURRENT_STATE_REV` for a committed programme projection. If they disagree, are missing, or fresher same-lane evidence proves a later material transition, classify `STALE_CURRENT / WRITEBACK_INCOMPLETE` and fail closed for the affected current-state action until propagation + readback is repaired. Legacy `GPT_PROJECT_LEAD_CURRENT` and `KNOWLEDGE_OS_STATE` are historical/deep-control sources, not the default current-state front door unless specifically required.
 
 If the required BRAIN/current-state read cannot be completed, fail closed on the affected claim with `CURRENT BRAIN READ REQUIRED` rather than guessing. Continue only bounded work that does not depend on missing state. After a material Founder decision, accepted/rejected artifact, code-line change or durable learning, write back to existing canonical authorities and read back in the same work cycle. Do not create another memory or management system.
 
@@ -62,14 +86,15 @@ Hard laws:
 
 Before material work:
 1. Read this file.
-2. Inspect the assigned task/issue/PR and exact branch.
-3. For public-product work, complete the FOUR-STATE PRODUCT AUTHORITY bootstrap above.
-4. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
-5. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
-6. Inspect recent git history for the affected area.
-7. Search for existing components/contracts before creating new architecture.
-8. Run a baseline check appropriate to the task before changing code.
-9. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+2. Read `docs/control/ELITE_OPERATING_DOCTRINE.md` and resolve the applicable elite-contract fields before mutation.
+3. Inspect the assigned task/issue/PR and exact branch.
+4. For public-product work, complete the FOUR-STATE PRODUCT AUTHORITY bootstrap above.
+5. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
+6. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
+7. Inspect recent git history for the affected area.
+8. Search for existing components/contracts before creating new architecture.
+9. Run a baseline check appropriate to the task before changing code.
+10. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
 
@@ -153,6 +178,7 @@ A commit, PR, CI pass or preview is not production. An agent report is not indep
 ## Verification
 
 For this repository the normal commands are:
+- `node scripts/elite-operating-doctrine-gate.mjs` for operating-doctrine drift;
 - `node scripts/product-authority-gate.mjs` for user-facing authority;
 - `node scripts/gold-policy-check.mjs --mode=quality-contract`;
 - `npm ci`;
@@ -170,6 +196,21 @@ Run the smallest sufficient set during iteration, then the full relevant gate be
 
 Every material agent return must include:
 - project/task identity;
+- HUMAN VALUE / FOUNDER INTENT;
+- PROGRAMME ADMISSION status when applicable;
+- QUESTION / DELETE / SIMPLIFY / REUSE decision;
+- SIMPLEST CAPABLE EXECUTION class and escalation reason when relevant;
+- DOOR CLASS + authority for material decisions;
+- DESIRED STATE and protected invariants/Gold;
+- proof / acceptance evidence;
+- rollback / reversibility;
+- ANDON / STOP conditions and whether any fired;
+- independent verifier/validator status where material;
+- fitness/evaluator basis when optimisation/evolution was used;
+- reliability/value evidence where relevant;
+- WRITEBACK + READBACK targets/status;
+- DESIRED ↔ OBSERVED reconciliation and material drift;
+- learning/immunity delta;
 - affected product;
 - resolved four-state identity: LIVE / HEIR / SANDBOX / ARCHIVED relationship;
 - product version from the Code Lineage Register;
@@ -188,7 +229,7 @@ Every material agent return must include:
 - human-test status/trigger when relevant;
 - next gate / next safe action.
 
-The return must be usable by AXE / GPT Project Lead for BRAIN writeback without reconstructing the session from scratch.
+The return must be usable by AXE / GPT Project Lead for BRAIN writeback without reconstructing the session from scratch. `NOT APPLICABLE` is allowed for an elite-contract field only with a reason; silently omitted applicable fields make the return incomplete.
 
 ## Authority
 
@@ -196,4 +237,4 @@ Do not change Locked Canon, Founder decisions, binding commitments, production r
 
 ## Learning
 
-When a material failure or strong reusable pattern occurs, preserve the evidence and record: **OBSERVATION → ROOT CAUSE → GENERALISABLE RULE → AFFECTED PRODUCTS / COMPONENTS → CORRECTION → RE-TEST → BRAIN WRITEBACK**. Do not silently erase failure history. Recurrence of an already learned material defect is a programme-control failure.
+When a material failure or strong reusable pattern occurs, preserve the evidence and record: **OBSERVATION → ROOT CAUSE → GENERALISABLE RULE → AFFECTED PRODUCTS / COMPONENTS → CORRECTION → RE-TEST → BRAIN WRITEBACK**. Do not silently erase failure history. Recurrence of an already learned material defect is a programme-control failure. A learning record is not IMMUNE until the changed control/test/contract has been propagated, exercised and read back.
