@@ -116,7 +116,7 @@ function ReadingSection({ section, proof, number }: { section: ProofSection; pro
   return (
     <section id={section.id.toLowerCase()} style={{ borderTop: `1px solid ${line}`, padding: "clamp(48px,7vw,92px) clamp(20px,6vw,86px)", display: "grid", gridTemplateColumns: "minmax(110px,.45fr) minmax(0,1.55fr)", gap: "clamp(24px,6vw,90px)" }}>
       <div>
-        <div style={{ ...mono, color: blue }}>0{number} · {section.question}</div>
+        <div style={{ ...mono, color: blue }}><span aria-hidden>0{number} · </span><span>{section.question}</span></div>
         <div style={{ marginTop: 12, ...mono, color: section.confidence === "HIGH" ? "#157c3d" : section.confidence === "MEDIUM" ? "#8a6500" : "#a03a2a" }}>EVIDENCE · {section.confidence}</div>
       </div>
       <div>
