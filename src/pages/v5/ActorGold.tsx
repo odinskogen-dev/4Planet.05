@@ -68,6 +68,46 @@ function OrcaSignatureVisual({ actor }: { actor: ActorGoldProfile }) {
   );
 }
 
+function GenericSignatureVisual({ actor }: { actor: ActorGoldProfile }) {
+  const labels = actor.work.slice(0, 3).map((item) => item.toUpperCase());
+  return (
+    <figure className="actor-gold-visual actor-gold-visual-generic" aria-labelledby={`actor-visual-${actor.slug}`}>
+      <div className="actor-gold-visual-head">
+        <span>4PLANET ACTOR VISUAL</span>
+        <span>{actor.visual.primary.replaceAll("_", " ")}</span>
+      </div>
+      <svg className="actor-gold-route" viewBox="0 0 1000 620" role="img" aria-label={`Abstract evidence relationship visual for ${actor.name}`}>
+        <rect width="1000" height="620" fill="#080808" />
+        <g className="actor-gold-grid" aria-hidden="true">
+          {Array.from({ length: 9 }).map((_, index) => <line key={`gv-${index}`} x1={100 + index * 100} y1="0" x2={100 + index * 100} y2="620" />)}
+          {Array.from({ length: 6 }).map((_, index) => <line key={`gh-${index}`} x1="0" y1={100 + index * 100} x2="1000" y2={100 + index * 100} />)}
+        </g>
+        <path className="actor-gold-corridor-shadow" d="M165 310C310 310 345 210 500 210C655 210 690 410 835 410" />
+        <path className="actor-gold-corridor" d="M165 310C310 310 345 210 500 210C655 210 690 410 835 410" />
+        <circle className="actor-gold-node" cx="165" cy="310" r="10" />
+        <circle className="actor-gold-node" cx="500" cy="210" r="10" />
+        <circle className="actor-gold-node" cx="835" cy="410" r="10" />
+        <g className="actor-gold-map-labels">
+          <text x="130" y="280">ACTOR</text>
+          <text x="448" y="180">EVIDENCE</text>
+          <text x="785" y="380">DECISION</text>
+          <text x="150" y="510" className="actor-gold-visual-word">{labels[0] ?? "IDENTITY"}</text>
+          <text x="150" y="548" className="actor-gold-visual-word">{labels[1] ?? "WORK"}</text>
+          <text x="150" y="586" className="actor-gold-visual-word">{labels[2] ?? "PROOF"}</text>
+        </g>
+      </svg>
+      <figcaption id={`actor-visual-${actor.slug}`}>
+        <strong>{actor.visual.label}</strong>
+        <span>{actor.visual.truthBoundary}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function SignatureVisual({ actor }: { actor: ActorGoldProfile }) {
+  return actor.slug === "orca" ? <OrcaSignatureVisual actor={actor} /> : <GenericSignatureVisual actor={actor} />;
+}
+
 function SectionIntro({ number, eyebrow, title, copy }: { number: string; eyebrow: string; title: string; copy: string }) {
   return (
     <header className="actor-gold-section-intro">
@@ -112,7 +152,7 @@ export function ActorsIndex() {
       <section className="actor-index-method">
         <p>GOLD METHOD</p>
         <h2>One exceptional system. Ten unlike actors. Then scale.</h2>
-        <span>ORCA is Gold 01. Get Involved is now part of the same profile grammar: identity → trust → real participation, with source and cost reality intact.</span>
+        <span>ORCA is Gold 01. veritree is Gold 02. NatureMetrics is the first public-record nature-intelligence torture test. Same identity → trust → evidence → participation grammar; different actor realities.</span>
       </section>
     </main>
   );
@@ -122,6 +162,7 @@ export function ActorProfilePage() {
   const { slug } = useParams();
   const actor = actorBySlug(slug);
   if (!actor) return <Navigate to="/actors" replace />;
+  const goldNumber = ACTOR_GOLD_PROFILES.findIndex((item) => item.id === actor.id) + 1;
 
   return (
     <main className="actor-gold">
@@ -146,20 +187,20 @@ export function ActorProfilePage() {
       </nav>
 
       <header className="actor-gold-hero">
-        <div className="actor-gold-kicker"><span>ACTOR GOLD 01</span><RelationshipMark actor={actor} /><span>{actor.publicationState}</span></div>
+        <div className="actor-gold-kicker"><span>ACTOR GOLD {String(goldNumber).padStart(2, "0")}</span><RelationshipMark actor={actor} /><span>{actor.publicationState}</span></div>
         <h1>{actor.name}</h1>
         <p>{actor.actorType}</p>
         <div className="actor-gold-hero-copy">{actor.oneLine}</div>
         <div className="actor-gold-hero-meta">
           <span>ID {actor.id}</span>
-          <span>FIELD / MONITORING</span>
-          <span>OCE4N_</span>
+          <span>{actor.visual.primary.replaceAll("_", " ")}</span>
+          <span>ACTOR GRAPH</span>
         </div>
         <a className="actor-gold-get-involved-jump" href="#get-involved">GET INVOLVED ↓</a>
       </header>
 
       <section className="actor-gold-visual-wrap">
-        <OrcaSignatureVisual actor={actor} />
+        <SignatureVisual actor={actor} />
       </section>
 
       <section className="actor-gold-section actor-gold-section-light">
@@ -181,26 +222,26 @@ export function ActorProfilePage() {
       <section className="actor-gold-section actor-gold-section-dark">
         <SectionIntro number="03" eyebrow="LIVING CONTEXT" title="The work sits inside a living system." copy="Species and ecosystems are context links, not decorations or implied outcome claims." />
         <div className="actor-gold-context-columns">
-          <div><p>SPECIES</p>{actor.species.map((item) => <span key={item}>{item}</span>)}</div>
-          <div><p>ECOSYSTEMS</p>{actor.ecosystems.map((item) => <span key={item}>{item}</span>)}</div>
+          <div><p>SPECIES / LIFE</p>{actor.species.length ? actor.species.map((item) => <span key={item}>{item}</span>) : <span>NO SPECIES-SPECIFIC CONTEXT ASSERTED</span>}</div>
+          <div><p>ECOSYSTEMS</p>{actor.ecosystems.length ? actor.ecosystems.map((item) => <span key={item}>{item}</span>) : <span>NO ECOSYSTEM CONTEXT ASSERTED</span>}</div>
         </div>
-        <Link className="actor-gold-inline-link" to="/species/orca">EXPLORE ORCA IN SPECIES →</Link>
+        {actor.slug === "orca" ? <Link className="actor-gold-inline-link" to="/species/orca">EXPLORE ORCA IN SPECIES →</Link> : <Link className="actor-gold-inline-link" to="/atlas">EXPLORE THE SHARED PLANET IN ATLAS →</Link>}
       </section>
 
       <section className="actor-gold-section actor-gold-section-paper">
         <SectionIntro number="04" eyebrow="FIELD FEED" title="A live page only when the field is live." copy="Partner material enters this feed only after source, rights and editorial release. Empty is more trustworthy than invented activity." />
         {actor.fieldFeed.length === 0 ? (
-          <div className="actor-gold-empty"><span>NO PUBLIC FIELD DISPATCHES YET</span><p>Intake → source QA → editorial review → public. This profile will populate automatically when real dispatches clear those gates.</p></div>
+          <div className="actor-gold-empty"><span>NO PUBLIC FIELD DISPATCHES YET</span><p>Intake → source QA → editorial review → public. This profile populates only when real dispatches clear those gates.</p></div>
         ) : actor.fieldFeed.map((dispatch) => <article key={dispatch.sourcePackId}>{dispatch.title}</article>)}
       </section>
 
       <section className="actor-gold-section actor-gold-section-light">
         <SectionIntro number="05" eyebrow="MAGAZINE" title="Reporting is a separate layer." copy="4PLANET editorial judgement remains independent of actor profile status, funding or partner relationships." />
-        <div className="actor-gold-editorial-list">
+        {actor.magazineCoverage.length ? <div className="actor-gold-editorial-list">
           {actor.magazineCoverage.map((item) => (
             <Link key={item.title} to={item.path}><span>{item.state}</span><h3>{item.title}</h3><b>OPEN MAGAZINE →</b></Link>
           ))}
-        </div>
+        </div> : <div className="actor-gold-empty"><span>NO 4PLANET EDITORIAL COVERAGE YET</span><p>Absence of coverage is shown as empty, not filled with promotional copy.</p></div>}
       </section>
 
       <section className="actor-gold-section actor-gold-section-dark">
@@ -211,10 +252,19 @@ export function ActorProfilePage() {
         </div>
       </section>
 
+      <section className="actor-gold-section actor-gold-section-light">
+        <SectionIntro number="07" eyebrow="SOURCES" title="Inspect the basis." copy="Public facts stay linked to the source pages used for this development profile. Relationship evidence can remain internal where disclosure would expose private communication." />
+        <div className="actor-gold-editorial-list">
+          {actor.sources.map((source) => (
+            <a key={source.url} href={source.url} target="_blank" rel="noreferrer"><span>CHECKED {source.checkedAt}</span><h3>{source.label}</h3><p>{source.role}</p><b>OPEN SOURCE ↗</b></a>
+          ))}
+        </div>
+      </section>
+
       <GetInvolvedSection actorId={actor.id} />
 
       <section className="actor-gold-section actor-gold-section-action">
-        <SectionIntro number="08" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move, when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
+        <SectionIntro number="09" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move, when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
         <div className="actor-gold-actions">
           {actor.actions.map((action) => action.path && action.state === "OPEN" ? (
             <Link key={action.label} to={action.path}><span>{action.label}</span><b>↗</b></Link>
@@ -234,7 +284,7 @@ export function ActorProfilePage() {
       <section className="actor-gold-engine-note">
         <p>ACTOR ENGINE 01</p>
         <h2>Identity to action, without losing truth.</h2>
-        <span>The profile now carries a reusable participation seam: source-backed opportunities live as separate objects and can be projected into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
+        <span>The same profile grammar now spans field monitoring, restoration/MRV and public-record nature intelligence. Source-backed opportunities remain separate objects and can project into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
         <details><summary>VIEW VISUAL LADDER</summary>{ACTOR_GOLD_VISUAL_LADDER.map((rule) => <p key={rule}>{rule}</p>)}</details>
         <details><summary>VIEW RELEASE RULES</summary>{ACTOR_GOLD_RELEASE_RULES.map((rule) => <p key={rule}>{rule}</p>)}</details>
       </section>
