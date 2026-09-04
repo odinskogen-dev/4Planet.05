@@ -1,68 +1,138 @@
 {
-  "schema_version": "1.0",
-  "control_state": "INTERNAL_TEST_ONLY",
+  "schema_version": "2.0",
+  "control_state": "FOUR_STATE_INTERNAL_CONTROL_ABSOLUTE_WRITE_AUTHORITY",
+  "surface_registry": "docs/control/PRODUCT_SURFACE_REGISTRY.json",
   "authority_model": {
-    "live": "FOUNDER_GATED",
+    "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
+    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "live": "FOUNDER_GATED_IMMUTABLE_ARTIFACT_PROMOTION_ONLY_NO_DEVELOPMENT",
     "test_heir": {
       "branch": "king/test",
-      "role": "SOLE_HEIR"
+      "role": "SOLE_HEIR",
+      "review_host": "https://test.4planet.org",
+      "product_write_authority": true
     },
+    "sandbox": "ONE_REGISTERED_BRANCH_PER_PRODUCT_MAX_PRODUCT_WRITE_AUTHORITY",
+    "archive_host": "https://archive.4planet.org",
+    "archive": "IMMUTABLE_READ_RENDER_COMPARE_DONATE_ONLY_NO_WRITE_AUTHORITY",
+    "quarantine_pending_archive": "READ_ONLY_DONOR_ZERO_WRITE_AND_CANDIDATE_AUTHORITY",
+    "max_registered_heirs_per_product": 1,
     "max_registered_sandboxes_per_product": 1,
     "newest_wins": false,
     "stable_alias_is_identity_proof": false,
-    "sandbox_requires_test_heir_as_exact_ancestor": true
+    "branch_name_is_authority": false,
+    "sandbox_requires_test_heir_ancestry": true,
+    "human_review_required_for_user_facing_promotion": true,
+    "all_material_product_delivery_requires_founder_visible_url": true,
+    "new_candidate_classes_allowed": false,
+    "new_user_facing_idea_requires_registry_before_material_code": true,
+    "unregistered_user_facing_branch_policy": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_FAIL_CLOSED"
   },
   "products": {
     "ATLAS": {
       "heir": "king/test",
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "required_ancestor_sha_at_registration": "90db512b821371d96cc38fcf05242eff86b76f8c",
+        "sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
+        "pr": 263,
+        "required_ancestor_sha_at_registration": "404fad51436d273fceb77af33beef17b3a16ea27",
         "classification": "SANDBOX",
+        "review_path": "/atlas/sandbox",
+        "exact_preview": "https://c6da6122.4planet-05.pages.dev/atlas",
         "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate",
         "live_authority": false
       },
-      "lineage_state": "STALE_SANDBOX_FAIL_CLOSED",
-      "last_convergence": {
-        "pr": 246,
-        "sandbox_branch": "work/atlas-product-polish-01",
-        "sandbox_head": "08d7d643d8df2670f48deff7273ededacc966539",
-        "test_king_base": "d686a5850ae9debe044522a67cee04b6faadc056",
-        "merge_sha": "6a5cf5edafd1b958ee121f4d8be290c2be5f2fa8",
-        "required_gates": ["ATLAS_ZERO_LOSS", "ONE_INTERFACE"],
-        "gate_state": "PASS",
+      "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED_AS_THE_ONE_SANDBOX_BEFORE_WORK"
+    },
+    "MAGAZINE": {
+      "heir": "king/test",
+      "sandbox": {
+        "branch": "recovery/testking-magazine",
+        "sha": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
+        "pr": 162,
+        "classification": "SANDBOX",
+        "review_path": "/magazine/sandbox",
+        "exact_preview": "https://17d3ba42.4planet-05.pages.dev/magazine",
+        "purpose": "Dedicated Magazine recovery/convergence lane after live regression incident",
         "live_authority": false
       },
-      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+      "live_identity": {
+        "source_sha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795",
+        "immutable_pages_deployment": "https://feb9a95c.4planet-05.pages.dev/",
+        "state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"
+      },
+      "lineage_state": "REGISTERED_RECOVERY_SANDBOX_RECONCILIATION_REQUIRED",
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED_AS_THE_ONE_SANDBOX_BEFORE_WORK"
     },
-    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "MAGAZINE": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"}
+    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"}
+  },
+  "agent_bootstrap_contract": {
+    "required_before_material_product_mutation": [
+      "fresh_connected_brain_context",
+      "product_surface_registry",
+      "affected_product_or_new_product_registry_entry",
+      "live_released_or_unreleased_state",
+      "exact_heir_branch_and_sha",
+      "active_sandbox_or_explicit_none",
+      "archive_and_quarantine_donors",
+      "exact_parent_sha",
+      "legal_write_target_heir_or_registered_sandbox",
+      "write_scope",
+      "human_review_url_contract",
+      "return_path_to_heir",
+      "rollback_identity"
+    ],
+    "failure_state": "PRODUCT_AUTHORITY_CONTEXT_UNRESOLVED",
+    "failure_effect": "NO_MATERIAL_PRODUCT_MUTATION_NO_NEW_BRANCH_CANDIDATE_NO_HIDDEN_PRODUCT_WORK"
+  },
+  "new_idea_contract": {
+    "applies_to": "EVERY_NEW_USER_FACING_IDEA_PRODUCT_FEATURE_WORLD_OR_SEAM",
+    "must_register_before_material_product_code": true,
+    "required_states": ["LIVE_RELEASED_OR_UNRELEASED", "HEIR", "SANDBOX_NONE_OR_ONE", "ARCHIVE_NAMESPACE"],
+    "founder_visible_heir_required": true,
+    "founder_visible_sandbox_required_when_active": true,
+    "local_or_container_only_product_candidate_forbidden": true
+  },
+  "donor_contract": {
+    "archive_and_quarantine_are_read_only": true,
+    "allowed_source_actions": ["READ", "RENDER", "COMPARE", "EXTRACT_DELTA"],
+    "allowed_destination_states": ["HEIR", "SANDBOX"],
+    "forbidden": ["DEVELOP_SOURCE_IN_PLACE", "REPAIR_SOURCE_IN_PLACE", "MERGE_INTO_ARCHIVE", "RESTART_ARCHIVED_BRANCH", "PROMOTE_DONOR_BRANCH_DIRECTLY"]
   },
   "promotion_contract": {
     "founder_review_requires": [
       "exact_branch",
       "exact_sha",
-      "immutable_deploy_marker_or_preview",
+      "working_founder_visible_url",
       "required_ci_green",
-      "candidate_authority_gate_green"
+      "candidate_authority_gate_green",
+      "human_use_and_visual_judgement"
     ],
     "donor_delta_dispositions": [
       "ADOPT",
       "ALREADY_PRESENT",
+      "SUPERSEDED_BY_BETTER_IMPLEMENTATION",
       "REJECT_WITH_REASON",
       "DEFER_WITH_REASON"
     ],
-    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
+    "sandbox_to_heir": "HUMAN_REVIEW_PLUS_EXACT_SHA_GATES_REQUIRED",
+    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED_EXACT_TESTED_ARTIFACT"
   },
   "safety": {
-    "no_live_or_main_promotion_by_this_register": true,
+    "no_live_or_main_development_by_this_register": true,
+    "no_archive_development_by_this_register": true,
+    "no_product_development_outside_heir_or_registered_sandbox": true,
+    "no_new_candidate_class": true,
     "no_canon_authority_change": true,
+    "no_destructive_historical_branch_cleanup_before_donor_disposition": true,
     "superbrain_remains_shadow_until_explicit_founder_cutover": true,
-    "factory_remains_separate_existing_lineage": true
+    "factory_remains_separate_existing_lineage": true,
+    "physical_repo_admin_enforcement_required_for_100_percent_push_prevention": true
   }
 }
