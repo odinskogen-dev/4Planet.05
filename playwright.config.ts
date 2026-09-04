@@ -16,10 +16,10 @@ export default defineConfig({
   retries: 0,
   reporter: [
     ["list"],
-    ["json", { outputFile: "artifacts/results.json" }],
-    ["html", { outputFolder: "playwright-report", open: "never" }],
+    ["json", { outputFile: "artifacts/atlas-gold/results.json" }],
+    ["html", { outputFolder: "artifacts/atlas-gold/playwright-report", open: "never" }],
   ],
-  outputDir: "test-results",
+  outputDir: "artifacts/atlas-gold/test-results",
   use: {
     baseURL: process.env.BASE_URL || "http://localhost:4173",
     trace: "on",
