@@ -1,0 +1,114 @@
+name: 4PLANET Magazine public launch live proof
+
+on:
+  push:
+    branches: [recovery/testking-magazine]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'vite.config.*'
+      - '.github/workflows/magazine-public-launch-live-proof.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-public-launch-live-proof
+  cancel-in-progress: true
+
+jobs:
+  prove-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for exact public launch marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='https://4planetmagazine.com/magazine/public-launch-gold-01.txt'
+          for attempt in $(seq 1 72); do
+            body=$(curl -fsS --connect-timeout 10 --max-time 20 "$marker" || true)
+            if [ "$body" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ]; then
+              echo "Exact public launch marker is live on attempt ${attempt}."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Public launch marker did not propagate to 4planetmagazine.com.'
+          exit 1
+
+      - name: Prove canonical editorial surface and isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/magazine"
+          mkdir -p "$tmp"
+
+          check_magazine() {
+            local url="$1"
+            local headers="$tmp/headers.txt"
+            local code
+            code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url")
+            surface=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-4planet-surface" {print $2}' | tail -1)
+            robots=$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="x-robots-tag" {print $2}' | tail -1)
+            [ "$code" = '200' ] || { echo "FAIL $code $url"; exit 1; }
+            [ "$surface" = 'magazine-only-live' ] || { echo "FAIL surface=$surface $url"; exit 1; }
+            case "$robots" in *noindex*) echo "FAIL noindex $url"; exit 1;; esac
+            echo "PASS $url"
+          }
+
+          root_code=$(curl -sS -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/')
+          [ "$root_code" = '308' ]
+          www_code=$(curl -sS -o /dev/null -w '%{http_code}' 'https://www.4planetmagazine.com/')
+          [ "$www_code" = '308' ]
+
+          atlas_headers="$tmp/atlas.txt"
+          atlas_code=$(curl -sS -D "$atlas_headers" -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/atlas')
+          [ "$atlas_code" = '404' ]
+          grep -qi '^x-4planet-surface: magazine-only-live' "$atlas_headers"
+
+          embed_headers="$tmp/embed.txt"
+          embed_code=$(curl -sS -D "$embed_headers" -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/atlas?embed=mag&l=bluemarble,fires,biodiv')
+          [ "$embed_code" = '200' ]
+          grep -qi '^x-4planet-surface: magazine-atlas-embed' "$embed_headers"
+
+          check_magazine 'https://4planetmagazine.com/magazine/'
+          check_magazine 'https://4planetmagazine.com/magazine/ocean-watch-1-8-million-kilometres'
+          check_magazine 'https://4planetmagazine.com/magazine/topics/nature'
+          check_magazine 'https://4planetmagazine.com/magazine/series/from-the-field'
+          check_magazine 'https://4planetmagazine.com/magazine/about'
+          check_magazine 'https://4planetmagazine.com/magazine/sources'
+          check_magazine 'https://4planetmagazine.com/magazine/corrections'
+          check_magazine 'https://4planetmagazine.com/magazine/privacy'
+          check_magazine 'https://4planetmagazine.com/magazine/archive'
+          check_magazine 'https://4planetmagazine.com/magazine/atlas'
+
+      - name: Crawl every indexable Magazine URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sitemap="$RUNNER_TEMP/magazine-sitemap.xml"
+          curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml' -o "$sitemap"
+          grep -q '<urlset' "$sitemap"
+          grep -q 'https://4planetmagazine.com/magazine/topics/nature' "$sitemap"
+          grep -q 'https://4planetmagazine.com/magazine/series/from-the-field' "$sitemap"
+          grep -q 'https://4planetmagazine.com/magazine/atlas' "$sitemap"
+          mapfile -t urls < <(grep -oE '<loc>[^<]+' "$sitemap" | sed 's#<loc>##')
+          [ "${#urls[@]}" -ge 40 ] || { echo "Sitemap unexpectedly small: ${#urls[@]}"; exit 1; }
+          for url in "${urls[@]}"; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url")
+            [ "$code" = '200' ] || { echo "Dead Magazine route: $code $url"; exit 1; }
+          done
+          echo "Crawled ${#urls[@]} public Magazine URLs with zero dead routes."
+
+      - name: Prove robots RSS and discovery files
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://4planetmagazine.com/robots.txt' | tee "$RUNNER_TEMP/robots.txt"
+          grep -q 'Sitemap: https://4planetmagazine.com/magazine-sitemap.xml' "$RUNNER_TEMP/robots.txt"
+          grep -q 'Disallow: /magazine/saved' "$RUNNER_TEMP/robots.txt"
+          curl -fsS 'https://4planetmagazine.com/rss.xml' | grep -q '<title>4PLANET MAGAZINE</title>'
+          curl -fsS 'https://4planetmagazine.com/news-sitemap.xml' | grep -q '<urlset'

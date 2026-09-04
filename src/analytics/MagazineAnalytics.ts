@@ -20,13 +20,14 @@ export function trackMagazineEntry(entry: "home" | "article", slug?: string) {
   const now = Date.now();
   const previousRaw = window.localStorage.getItem(VISIT_KEY);
   const previous = previousRaw ? Number(previousRaw) : 0;
-  const daysSinceLast = previous > 0 ? Math.max(0, Math.floor((now - previous) / 86_400_000)) : -1;
+  const returning = previous > 0;
+  const daysSinceLast = returning ? Math.max(0, Math.floor((now - previous) / 86_400_000)) : -1;
   const attribution = currentAttribution(now);
 
   trackEvent("magazine_entry", {
     entry_type: entry,
     story_slug: slug || "",
-    visitor_state: previous > 0 ? "returning" : "first_observed",
+    visitor_state: returning ? "returning" : "first_observed",
     days_since_last_observed_visit: daysSinceLast,
     referrer_host: safeReferrerHost(),
     acquisition_source: attribution.source,
@@ -36,7 +37,58 @@ export function trackMagazineEntry(entry: "home" | "article", slug?: string) {
     acquisition_landing_path: attribution.landingPath,
   });
 
+  if (entry === "article" && slug) {
+    trackEvent("article_open", { story_slug: slug, visitor_state: returning ? "returning" : "first_observed" });
+  }
+  if (returning) {
+    trackEvent("returning_reader", { days_since_last_observed_visit: daysSinceLast, entry_type: entry });
+  }
+
   window.localStorage.setItem(VISIT_KEY, String(now));
+}
+
+export function trackMagazineEngagedRead(storySlug: string, seconds: number) {
+  trackEvent("engaged_read", { story_slug: storySlug, engaged_seconds: seconds });
+}
+
+export function trackMagazineReadDepth(storySlug: string, depth: number) {
+  trackEvent("read_depth", { story_slug: storySlug, depth_percent: depth });
+}
+
+export function trackMagazineReadComplete(storySlug: string) {
+  trackEvent("read_complete", { story_slug: storySlug });
+}
+
+export function trackMagazineTopicOpen(topic: string, source: string = "navigation") {
+  trackEvent("topic_open", { topic: safeToken(topic), source });
+}
+
+export function trackMagazineSearch(query: string, resultCount?: number) {
+  const clean = query.trim().slice(0, 120);
+  if (!clean) return;
+  trackEvent("search", { search_term: clean, ...(typeof resultCount === "number" ? { result_count: resultCount } : {}) });
+}
+
+export function trackMagazineSave(storySlug: string, state: "saved" | "removed") {
+  trackEvent("save", { story_slug: storySlug, state });
+}
+
+export function trackMagazineShare(storySlug: string, method: "native" | "copy") {
+  trackEvent("share", { story_slug: storySlug, share_method: method });
+}
+
+export function trackMagazineRelatedStoryOpen(storySlug: string, destinationSlug: string) {
+  trackEvent("related_story_open", { story_slug: storySlug, destination_story_slug: destinationSlug });
+}
+
+export function trackMagazineSourceOpen(storySlug: string, sourceUrl: string, sourceLabel?: string) {
+  let sourceHost = "invalid_source";
+  try { sourceHost = new URL(sourceUrl).hostname; } catch { /* keep bounded fallback */ }
+  trackEvent("source_open", { story_slug: storySlug, source_host: sourceHost, source_label: (sourceLabel || "").slice(0, 120) });
+}
+
+export function trackMagazineAtlasOpen(source: string = "magazine") {
+  trackEvent("atlas_open", { source });
 }
 
 export function trackMagazineSecondObject(storySlug: string, destination: string, kind: string) {
@@ -49,10 +101,6 @@ export function trackMagazineSecondObject(storySlug: string, destination: string
     acquisition_medium: attribution?.medium || "unknown",
     acquisition_campaign: attribution?.campaign || "",
   });
-}
-
-export function trackMagazineShare(storySlug: string, method: "native" | "copy") {
-  trackEvent("magazine_share", { story_slug: storySlug, share_method: method });
 }
 
 export function trackMagazinePartnerAction(actorId: string, action: "submission" | "share" | "profile_open" | "qualified_inbound", dispatchId?: string) {

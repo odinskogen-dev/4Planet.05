@@ -52,11 +52,13 @@ export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
 
-  // Explicit ATLAS return state owns only the bounded startup reconstruction.
-  // MapLibre may resize after style/projection and the narrow mobile sheet settle,
-  // so fixed timers alone are not sufficient. Reconcile after actual canvas-size
-  // changes during a short startup window, then release permanently. Any real
-  // user camera input releases immediately; this never becomes a camera lock.
+  // Explicit ATLAS return state is authoritative during initial reconstruction.
+  // MapLibre can still alter effective zoom after style.load when globe projection,
+  // source placement and the narrow mobile sheet resize the canvas. Two RAFs were
+  // not enough on Chromium 390px: the URL remained correct while the live camera
+  // later settled ~0.48 zoom away. Reconcile over a short bounded startup window
+  // and once on first idle, then release permanently. Any real user input releases
+  // immediately so this never becomes a camera lock.
   useEffect(() => {
     if (!supported) return;
     const target = restoredCamera(location.search);
@@ -66,21 +68,11 @@ export default function PublicWorld() {
     let released = false;
     let probeFrame = 0;
     let firstFrame = 0;
-    let resizeFrame = 0;
-    let settleTimer = 0;
     const timers: number[] = [];
     let canvasRef: HTMLCanvasElement | null = null;
-    let resizeObserver: ResizeObserver | null = null;
-    let lastCanvasSize = "";
 
-    const stopStartupAuthority = () => {
+    const release = () => {
       released = true;
-      resizeObserver?.disconnect();
-      resizeObserver = null;
-      if (settleTimer) {
-        window.clearTimeout(settleTimer);
-        settleTimer = 0;
-      }
     };
 
     const reconcile = (map: any) => {
@@ -96,44 +88,22 @@ export default function PublicWorld() {
     const bindUserRelease = (map: any) => {
       canvasRef = map.getCanvas?.() || null;
       if (!canvasRef) return;
-      canvasRef.addEventListener("pointerdown", stopStartupAuthority, { passive: true });
-      canvasRef.addEventListener("touchstart", stopStartupAuthority, { passive: true });
-      canvasRef.addEventListener("wheel", stopStartupAuthority, { passive: true });
-    };
-
-    const observeStartupResizes = (map: any) => {
-      if (!canvasRef || typeof ResizeObserver === "undefined") return;
-      const scheduleReconcile = () => {
-        if (cancelled || released) return;
-        if (resizeFrame) cancelAnimationFrame(resizeFrame);
-        resizeFrame = requestAnimationFrame(() => reconcile(map));
-      };
-      resizeObserver = new ResizeObserver((entries) => {
-        const rect = entries[0]?.contentRect;
-        if (!rect) return;
-        const nextSize = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
-        if (nextSize === lastCanvasSize) return;
-        lastCanvasSize = nextSize;
-        scheduleReconcile();
-      });
-      resizeObserver.observe(canvasRef);
-      // Long enough to cover mobile bottom-sheet/style settling; short enough to
-      // be strictly startup-only. User input always releases sooner.
-      settleTimer = window.setTimeout(stopStartupAuthority, 2800);
+      canvasRef.addEventListener("pointerdown", release, { passive: true });
+      canvasRef.addEventListener("touchstart", release, { passive: true });
+      canvasRef.addEventListener("wheel", release, { passive: true });
     };
 
     const apply = (map: any) => {
       if (cancelled || released) return;
       bindUserRelease(map);
-      observeStartupResizes(map);
 
       firstFrame = requestAnimationFrame(() => reconcile(map));
-      for (const delay of [120, 360, 760, 1400, 2200]) {
+      for (const delay of [120, 360, 760]) {
         timers.push(window.setTimeout(() => reconcile(map), delay));
       }
 
-      // First fully-settled render remains a reconciliation point; subsequent
-      // canvas-size changes inside the bounded startup window are also covered.
+      // First fully-settled render is the final startup reconciliation point.
+      // `once` keeps this bounded; later idles after user interaction are untouched.
       map.once("idle", () => reconcile(map));
     };
 
@@ -151,16 +121,13 @@ export default function PublicWorld() {
     attach();
     return () => {
       cancelled = true;
-      resizeObserver?.disconnect();
       if (probeFrame) cancelAnimationFrame(probeFrame);
       if (firstFrame) cancelAnimationFrame(firstFrame);
-      if (resizeFrame) cancelAnimationFrame(resizeFrame);
-      if (settleTimer) window.clearTimeout(settleTimer);
       for (const timer of timers) window.clearTimeout(timer);
       if (canvasRef) {
-        canvasRef.removeEventListener("pointerdown", stopStartupAuthority);
-        canvasRef.removeEventListener("touchstart", stopStartupAuthority);
-        canvasRef.removeEventListener("wheel", stopStartupAuthority);
+        canvasRef.removeEventListener("pointerdown", release);
+        canvasRef.removeEventListener("touchstart", release);
+        canvasRef.removeEventListener("wheel", release);
       }
     };
   }, [supported, location.pathname, location.search]);

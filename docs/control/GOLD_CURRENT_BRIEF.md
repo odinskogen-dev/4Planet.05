@@ -2,61 +2,63 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-LUME-ROOM-03-PROJECTION-PLANE-QA-01
-**STATUS:** TEST / IMPLEMENTED CANDIDATE / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**ROLLBACK BASE:** `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + LUME projection-plane QA fix
-**FOUNDER DIRECTION:** Keep the Orca asset. Make the room feel like a large dark gallery rendered in lighter projected OCE4N light, with luminous grids on floor, walls and ceiling, readable intel walls, wall-mounted nodes, an optional map projection and bounded interactive Orca movement. Field audio must be real and must start only after a user gesture. The full Orca must remain inside mobile view.
-**SINGLE-SEAM RULE:** Improve only the existing `/species/orca/lume` renderer and its existing tests; no new route, renderer, map engine, 3D/XR stack, species database or parallel app.
+**CHANGE ID:** MAGAZINE-LAUNCH-GOLD-02  
+**STATUS:** TEST / FOUNDER-DIRECTED BUILD + QA  
+**BASE AUTHORITY:** `king/test` / PR #131 / issue #132 / `CUL-M4GAZINE-01`  
+**FOUNDER DIRECTION:** 23 AUG 2026 — turn the existing 4PLANET MAGAZINE prototype into a launch-ready premium global publication surface. Use the completed global media case study as operating doctrine: National Geographic awe/field visual authority + BBC trust/how-we-know + VICE human access/platform-native storytelling without fragile expansion economics + Vogue-level editing/curation/taste + TIME-level memorable franchises + Guardian-level readability/open reach/direct relationship + 4PLANET BRAIN/LPI/action/proof as the unique structural advantage.  
+**PARALLEL-CONTROL RULE:** Magazine work may progress on its bounded independent seams but must not erase, reinterpret or silently supersede other TEST KING P0 product truth. One moving line remains `king/test`; no new Magazine continuation branch.  
+**DONOR DECISION:** `ADOPT SELECTIVELY` from the existing Magazine implementation already on TEST KING and the controlled Magazine research annex/project pack. Do not wholesale revive historical M4GAZINE branches.
 
 ## USER ARRIVES BECAUSE
-They want to enter one striking species intelligence gallery and understand Orca through projected light, space, sound and controlled depth.
+They found one compelling story, species, place, person, field organisation, innovation or cultural object and want an intelligent, beautiful, low-friction way to understand more.
 
 ## ONE THING TO UNDERSTAND
-This is one species across every ocean, expressed through many distinct populations, habitats, diets and cultures.
+Every Magazine article is a complete first-touch front door into one living world. The reader gets value before being asked to understand 4PLANET as an organisation or system.
 
 ## PRIMARY ACTION
-Select one of four projected wall nodes: Identity, Culture, Place or Evidence.
+Read one excellent story with exceptional readability and visual authority.
 
 ## SECONDARY DEPTH
-Guide the 2.5D Orca plane with drag, touch or arrow keys; open the schematic Place map; explicitly start the NPS Glacier Bay Orca field recording; trigger a separately labelled procedural room echo.
+Do one relevant thing more: read a related story, explore the relevant SPECIES/ATLAS/Actor/Mission object, follow/watch later when available, or enter a real evidence-bounded action pathway when genuinely relevant.
 
 ## P1 DOMINANT
-The complete Orca projection floating in a large black gallery room.
+Full-bleed documentary image + strong editorial headline/dek. The story is always the hero.
 
 ## P2 ORIENTATION
-Luminous room geometry, species identity, wall-mounted nodes and one active projected intel wall.
+4PLANET MAGAZINE identity, editorial lane/franchise, byline/responsibility state, reading time and publication/truth context.
 
 ## P3 ACTION / NEXT
-Choose a wall projection, hear the field recording by explicit action, or return to Species.
+One clear reading action, then one contextually useful second object. No card-wall CTA spam and no forced Impact conversion.
 
 ## P4 DEPTH
-Source, evidence state and limitation remain available without competing with the animal.
+How We Know, sources, rights, uncertainty, corrections, related entities, further reporting and optional specialised 4PLANET pathways.
+
+## ARTICLE GOLD TEMPLATE
+Every launch article must follow a strict reusable reading grammar: quiet identity line → headline/dek → authorship/context → full-bleed hero → high-readability narrative column → deliberate visual/data/interview beats → How We Know / evidence boundary → one relevant second object → related-by-subject recirculation → share / next-story bottom rail. White-space and dark-mode transitions are editorial tools, not decoration.
+
+## MAGAZINE HOME GOLD TEMPLATE
+The homepage is a loyalty/recirculation hub, not an org-chart explainer. It should feel like a premium independent publication: current lead story, edited hierarchy, a strict dark-mode colour maze using the 4PLANET blue/green/red/pink system as functional navigation, recurring editorial franchises, From the Field, visual signal, trust/transparency and direct-return hooks. No dashboard-card-wall behaviour.
+
+## FIELD PARTNER LOOP
+Field partner does real work → sends evidence/story material → BRAIN structures and verifies → AXE drafts/packages → responsible human editor judges → Magazine publishes → partner shares the high-end story/profile/feed → relevant audience enters → optional funding/action → partner does more work → proof/data returns to BRAIN. Partner profiles and feeds must clearly separate profile/partner-owned material from independent editorial judgement.
+
+## EDITORIAL QUALITY GATE
+Automated gates may enforce structure, completeness, source/rights states, metadata, SEO, recirculation and truth boundaries. They cannot certify taste. Founder/responsible editor still judges headline, image, hierarchy, prose, originality, pacing and whether the finished object would be credible beside the world's best-designed publications.
 
 ## WHAT CAN BE REMOVED
-Dark electric-blue styling, compressed dashboard geometry, cards, pills, clipped animal framing, false 3D controls and hidden or unreachable wall information.
+Generic dashboard chrome; equal-weight card grids; excessive boxes; explanatory 4PLANET copy before reader value; campaign clichés; generic AI-magazine layouts; weak decorative gradients/motion; duplicated product explanations; random Most Popular modules; hard signup before value; premature newsletter sprawl; anything that competes with photography, headline or reading flow.
 
 ## WHAT MUST BE REUSED
-The existing clean-room LUME renderer, `LUME_ORCA_ROOM` manifest, transparent Orca visualisation, canonical route, NPS Glacier Bay field audio, current truth boundaries, current Species exit and current responsive contract.
-
-## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** projected cyan-white light, larger gallery depth, wall-mounted intel, inline schematic world map and bounded 2.5D guidance.
-- **REUSE:** existing LUME ROOM 03 renderer, Orca asset, source manifest and audio lifecycle.
-- **REJECT:** legacy ORCA/Jaguar CSS imports, a second renderer, runtime map dependency, false live tracking, false migration, rigged-animal claims and autoplay.
-- **DEFER:** true fin/tail articulation, rigged GLB swimming, WebXR and hardware projection until a validated asset and later adapter exist.
+One repository; `king/test`; PublicShell; existing Magazine Article Engine/SEO/analytics/source/rights systems; 4PLANET Brand OS tokens; existing image registry; shared entity/source/provenance graph; existing Actor/Mission/SPECIES/ATLAS routes; consent-first analytics. No second CMS/truth database.
 
 ## TRUTH BOUNDARY
-The central Orca is an AI-generated natural-history visualisation, not a photograph or evidence. Its interaction moves a single 2.5D projection plane and must not be called a rigged 3D animal. The Place map is schematic species-level orientation, not a live track, migration route, population range or abundance surface. The NPS Glacier Bay recording is real field audio; the room echo is procedural and separately labelled.
-
-## PERFORMANCE
-No new runtime dependency, WebGL renderer or remote map. The map remains inline SVG. ROOM 03 stays lazy-loaded; the existing local animal and audio assets are reused.
+Independent Magazine editorial, 4PLANET organisational explainers, partner/profile-owned material and sponsored/commercial material must remain visibly distinct. Coverage/profile presence never implies endorsement. Partner submission is reporting material, not automatically publishable truth. 4PLANET delivery/impact stories require actual delivery evidence. No unsupported scientific/ecological/causal claim is added for narrative drama.
 
 ## MOBILE-FIRST RISK
-At 390 and 430 px the full Orca must remain inside the viewport, nodes must remain at least 44 px, the detail wall must not intercept sound or exit controls, the map must reflow, and the experience must avoid horizontal overflow and page scroll.
+390/430 widths must preserve strong headline hierarchy, readable body measure, hero crops, one-more-action visibility, lane navigation, dark/colour-maze clarity and no horizontal overflow. Motion must have reduced-motion fallback. Article reading must remain excellent without hover.
 
 ## HUMAN SUCCESS
-Within five seconds a person understands that they are inside a large projected Orca intelligence room. Within thirty seconds they can select Place, see the bounded map, move the Orca, and deliberately hear real Orca field audio without confusing it with the procedural echo.
+A first-time reader arriving directly on any article understands the story in seconds, reads comfortably, remembers 4PLANET MAGAZINE, trusts how claims are handled, reaches at least one relevant second object without confusion and has a credible reason to return. A partner should be proud to share a properly sourced profile/story because the presentation strengthens rather than cheapens their work.
 
-## ACCEPTANCE
-1. `/species/orca/lume` identifies itself as LUME ROOM 03. 2. The room uses lighter projected cyan-white light. 3. Ceiling, floor, side and rear grid planes create visible gallery depth. 4. The full Orca is dominant and contained at desktop, 390 and 430 px. 5. Identity and active detail intel walls render in front of the room plane rather than being occluded by it. 6. Four wall nodes remain keyboard and touch accessible. 7. PLACE opens an inline schematic map with `NOT A LIVE TRACK`. 8. Drag/touch/arrows move only the bounded 2.5D plane and Enter/Home reset it. 9. NPS field audio remains off until explicit action and the procedural room echo remains separately labelled. 10. Reduced motion preserves all information. 11. Contract, typecheck, assets, lint, build, smoke and public-browser checks pass before Founder acceptance is requested. 12. LIVE KING remains untouched.
+## LAUNCH ACCEPTANCE
+1) Premium homepage + article template + dark-mode colour maze; 2) strict Article Engine quality contract; 3) first five controlled story source packs used to torture-test the templates; 4) source/rights/editorial-state safeguards; 5) article-specific SEO/canonical/JSON-LD/OG/sitemap/RSS; 6) consent-first discovery→engaged-read→second-object→share→return measurement; 7) partner-field-feed contract with no fake public entries; 8) exact-head typecheck/build/contracts/lint/assets/security; 9) Chromium desktop + 390/430 mobile + WebKit + reduced-motion; 10) immutable TEST preview; 11) Founder visual/editorial JUDGE before public indexing. No production/indexing claim is authorised by this brief.

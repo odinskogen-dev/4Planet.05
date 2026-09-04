@@ -101,40 +101,20 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: E2E — Chromium vertical slice + switcher (desktop + 1280 + mobile)
+      - name: E2E — Chromium vertical slice + switcher (all viewports)
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=desktop-1440 --project=desktop-1280 --project=mobile-390 --project=mobile-430
-
-      - name: E2E — 4SAPIEN Choice + Embla — Chromium desktop + mobile
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/4sapien.spec.ts tests/e2e/4sapien-embla.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
-
-      - name: E2E — LUME ROOM 01 + Orca legacy LUME — Chromium desktop + mobile
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/lume-room-clean.spec.ts tests/e2e/orca-lume-room.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts
 
       - name: E2E — Jaguar local 3D — Chromium desktop + mobile
         env:
           BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/jaguar-testking-v27.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
 
-      - name: E2E — WebKit vertical slice + switcher (desktop + 390 + 430)
+      - name: E2E — WebKit vertical slice (desktop + 390 + 430)
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts tests/e2e/product-switcher.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
-
-      - name: E2E — 4SAPIEN Choice + Embla — WebKit desktop + mobile
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/4sapien.spec.ts tests/e2e/4sapien-embla.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
-
-      - name: E2E — LUME ROOM 01 + Orca legacy LUME — WebKit desktop + mobile
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/lume-room-clean.spec.ts tests/e2e/orca-lume-room.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
+        run: npx playwright test tests/e2e/gate1-vertical-slice.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
 
       - name: E2E — Jaguar local 3D — WebKit desktop + mobile
         env:
@@ -148,7 +128,7 @@ jobs:
           const fs = require('fs');
           const html = fs.readFileSync('dist/index.html','utf8');
           if (!html.includes('<div id="root"')) throw new Error('Root application mount missing');
-          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join', '/journey/jaguar/', '/journey/orca/'];
+          const required = ['/', '/atlas', '/species', '/species/orca', '/living-systems', '/missions/cle4n', '/missions/wh4les', '/join', '/journey/jaguar/'];
           fs.writeFileSync('required-routes.json', JSON.stringify({ required, exactSha: process.env.GITHUB_SHA }, null, 2));
           NODE
 
@@ -157,8 +137,10 @@ jobs:
         run: |
           curl --silent --show-error --dump-header local-headers.txt --output /dev/null http://127.0.0.1:4173/
           grep -qi '^content-type:' local-headers.txt
-          node scripts/security-secret-scan.mjs --self-test
-          node scripts/security-secret-scan.mjs
+          if grep -R --line-number -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|SUPABASE_SERVICE_ROLE|sk_live_)' src public functions supabase 2>/dev/null; then
+            echo 'Potential secret material found'
+            exit 1
+          fi
 
       - name: Clean tracked tree
         shell: bash

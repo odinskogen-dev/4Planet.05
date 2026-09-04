@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
-
 const magazine = read("src/pages/v5/Magazine.tsx");
 const editorial = read("src/content/magazineEditorial.ts");
 const operating = read("src/content/magazineOperating.ts");
@@ -12,8 +11,9 @@ const stories = read("src/content/stories.ts");
 const router = read("src/routes/router.tsx");
 const story = read("src/pages/v5/StoryArticle.tsx");
 const storyRecord = read("src/pages/v5/MagazineStoryRecord.tsx");
-const mazeCss = read("src/styles/magazine-maze.css");
-const articleGoldCss = read("src/styles/magazine-article-gold.css");
+const shell = read("src/components/magazine/MagazineShell.tsx");
+const worldCss = read("src/styles/magazine-world.css");
+const gold02Css = read("src/styles/magazine-gold-02.css");
 const analytics = read("src/analytics/Analytics.tsx");
 const magazineAnalytics = read("src/analytics/MagazineAnalytics.ts");
 const seo = read("src/components/Seo.tsx");
@@ -26,154 +26,136 @@ const contentReader = read("scripts/magazine-content.mjs");
 const qualityGate = read("scripts/magazine-quality-gate.mjs");
 const packageJson = read("package.json");
 
-test("4PLANET MAGAZINE Founding Edition remains truthfully pre-publication", () => {
-  assert.match(magazine, /4PLANET MAGAZINE/);
-  assert.match(magazine, /WHAT HOLDS|FOUNDING_EDITION\.workingTitle/);
-  assert.match(magazine, /PRE-PUBLICATION/);
+test("pre-publication records remain separate from the mature reader-facing front", () => {
+  assert.doesNotMatch(magazine, /FOUNDING_EDITION\.items/);
+  assert.doesNotMatch(magazine, /EDITORIAL LAB \/ NOT THE PUBLIC FEED/);
+  assert.doesNotMatch(magazine, /LIVE DEVELOPMENT/);
   assert.match(editorial, /responsible editor \/ editorial lead must be designated/i);
-  assert.match(editorial, /THE BLOOM AROUND A BREAKING ICEBERG/);
-  assert.match(editorial, /THEY KEPT THEIR PLACES/);
-  assert.match(editorial, /OSLOFJORDEN: WHERE THE NITROGEN COMES FROM/);
-  assert.match(editorial, /ADD THEM HERE\. REMOVE THEM THERE\./);
-  assert.match(editorial, /WHAT WE KNOW\. WHAT WE DON’T\. WHAT CHANGED\./);
+  assert.match(storyRecord, /PRE-PUBLICATION RECORD/);
+  assert.match(storyRecord, /robots="noindex,follow"/);
+  assert.match(storyRecord, /A record is not an article/);
+  assert.doesNotMatch(storyRecord, /"@type"\s*:\s*"Article"/);
 });
 
-test("global media doctrine is encoded without copying a single publisher", () => {
+test("Magazine has its own editorial world, persistent theme, strict masthead and footer", () => {
+  assert.match(magazine, /MagazineShell/);
+  assert.match(story, /MagazineShell/);
+  assert.doesNotMatch(magazine, /PublicShell/);
+  assert.doesNotMatch(story, /PublicShell/);
+  assert.match(shell, /4planet-magazine-theme/);
+  assert.match(shell, /aria-pressed/);
+  assert.match(shell, /mag-world-footer/);
+  assert.match(shell, /INNOVATION/);
+  assert.equal((shell.match(/mag-world-masthead-word/g) || []).length, 2, "4PLANET and MAGAZINE must share one masthead size contract");
+  assert.match(gold02Css, /\.mag-world-masthead \.mag-world-masthead-word/);
+  assert.match(worldCss, /data-mag-theme="dark"/);
+  assert.match(worldCss, /prefers-reduced-motion/);
+});
+
+test("editorial taxonomy mixes living planet, culture, engineering and design", () => {
+  for (const token of ["NATURE", "OCEAN", "INNOVATION", "TECHNOLOGY", "DESIGN", "SCIENCE", "FIELD", "PEOPLE", "SOLUTIONS", "CLIMATE", "CITIES", "FOOD", "CULTURE"]) {
+    assert.match(operating, new RegExp(`\\"${token}\\"`));
+  }
   assert.match(operating, /National Geographic/);
-  assert.match(operating, /BBC/);
-  assert.match(operating, /VICE/);
   assert.match(operating, /Vogue/);
-  assert.match(operating, /TIME/);
   assert.match(operating, /Guardian/);
-  assert.match(operating, /AWE GETS ATTENTION/);
-  assert.match(operating, /LIFE/);
-  assert.match(operating, /PLANET/);
-  assert.match(operating, /HUMAN/);
-  assert.match(operating, /SOLUTIONS/);
-  assert.match(operating, /PEOPLE/);
-  assert.match(operating, /CULTURE/);
+  assert.match(operating, /Monocle/);
+  assert.match(operating, /WIRED/);
 });
 
-test("strict article engine encodes franchises, editorial Gold and partner-feed truth boundaries", () => {
+test("homepage is curated and deterministic rather than an endless random wall", () => {
+  assert.match(magazine, /HOME_STORY_LIMIT/);
+  assert.match(magazine, /HOME_SIGNAL_LIMIT/);
+  assert.match(magazine, /MOSAIC_SIZES/);
+  assert.match(magazine, /MOSAIC_COLORS/);
+  assert.match(magazine, /mag-story-mosaic/);
+  assert.match(magazine, /mag-story-tile--/);
+  assert.match(magazine, /useSearchParams/);
+  assert.match(magazine, /front page is edited, not exhaustive/i);
+  assert.doesNotMatch(magazine, /Math\.random/);
+  assert.match(worldCss, /grid-auto-flow: dense/);
+  assert.match(gold02Css, /@media \(max-width: 700px\)/);
+  assert.match(gold02Css, /grid-template-columns: 1fr !important/);
+});
+
+test("engineering and innovation are first-class editorial beats", () => {
+  assert.match(magazine, /ENGINEERING \/ THE LIVING WORLD/);
+  assert.match(magazine, /Air filters that remember biodiversity/);
+  assert.match(stories, /air-filter-biodiversity-time-machine/);
+  assert.match(stories, /ai-coral-photomosaics/);
+  assert.match(stories, /roads-that-warn-cars-about-moose/);
+  assert.match(stories, /SOURCE_REPORTED_EDITORIAL/);
+  assert.match(stories, /sourceLinks:/);
+  assert.match(stories, /reportingNote:/);
+});
+
+test("article template is long-form, source-visible and topic-aware", () => {
+  assert.match(story, /mag-article-world-header/);
+  assert.match(story, /mag-article-world-dek/);
+  assert.match(story, /HOW WE KNOW/);
+  assert.match(story, /mag-source-list/);
+  assert.match(story, /OPEN SOURCE/);
+  assert.match(story, /mag-article-topics/);
+  assert.match(story, /Context image; not evidence/);
+  assert.match(story, /ONE USEFUL NEXT OBJECT/);
+  assert.match(story, /Keep reading/);
+  assert.match(story, /SHARE/);
+  assert.match(stories, /relatedStories/);
+});
+
+test("strict article engine protects franchise and field boundaries", () => {
   assert.match(engine, /FROM THE FIELD/);
   assert.match(engine, /THE LIVING WORLD/);
   assert.match(engine, /PLANET EXPLAINED/);
   assert.match(engine, /WHAT WORKS/);
   assert.match(engine, /CHOICE/);
   assert.match(engine, /IMAGE \/ MAP OF THE DAY/);
-  assert.match(engine, /MAGAZINE_ARTICLE_GOLD_GRAMMAR/);
   assert.match(engine, /MAGAZINE_EDITORIAL_GOLD_DIMENSIONS/);
-  assert.match(engine, /MAGAZINE_EDITORIAL_JUDGEMENTS/);
-  assert.match(engine, /MAGAZINE_LAUNCH_STORY_QUEUE/);
-  assert.match(engine, /FIELD_PARTNER_INTAKE_CONTRACT/);
   assert.match(engine, /FIELD_PARTNER_DISPATCHES: FieldPartnerDispatch\[\] = \[\]/);
   assert.match(engine, /Empty until real field material passes source \+ rights \+ editorial gates/i);
-  assert.match(engine, /Optimise templates and distribution against downstream reader behaviour and editorial quality together/i);
-  assert.match(engine, /buildPartnerSharePath/);
-  assert.match(stories, /franchise:/);
-  assert.match(stories, /editorialType:/);
-  assert.match(stories, /byline:/);
 });
 
-test("Magazine homepage uses a functional dark-mode 4PLANET colour maze without card-wall navigation", () => {
-  assert.match(magazine, /SIX WAYS IN/);
-  assert.match(magazine, /One planet\. Enter where it matters to you\./);
-  assert.match(magazine, /mag-maze-tile/);
-  assert.match(mazeCss, /#3ae86f/);
-  assert.match(mazeCss, /#2e2eff/);
-  assert.match(mazeCss, /#ff4d22/);
-  assert.match(mazeCss, /#ff5acd/);
-  assert.match(mazeCss, /prefers-reduced-motion/);
-});
-
-test("editorial and organisational content are visibly separated", () => {
-  assert.match(magazine, /4PLANET-owned explainers|4PLANET-owned explanatory/i);
-  assert.match(story, /ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL/);
-  assert.match(story, /editorialType/);
-});
-
-test("required magazine transparency routes exist", () => {
-  assert.match(router, /path="\/magazine\/about"/);
-  assert.match(router, /path="\/magazine\/sources"/);
-  assert.match(router, /path="\/magazine\/corrections"/);
-});
-
-test("Founding Edition records have permanent routes without pretending to be published articles", () => {
-  assert.match(router, /path="\/magazine\/stories\/:id"/);
-  assert.match(magazine, /\/magazine\/stories\/\$\{item\.id\}/);
-  assert.match(storyRecord, /PRE-PUBLICATION STORY RECORD/);
-  assert.match(storyRecord, /robots="noindex,follow"/);
-  assert.match(storyRecord, /A permanent record is not a published article/);
-  assert.match(storyRecord, /SOURCE STATE/);
-  assert.match(storyRecord, /RIGHTS STATE/);
-  assert.match(storyRecord, /RESPONSIBILITY STATE/);
-  assert.doesNotMatch(storyRecord, /"@type"\s*:\s*"Article"/);
-});
-
-test("public explainers are complete first-touch front doors", () => {
-  assert.match(story, /MagazineSeo/);
-  assert.match(story, /"@type": "Article"/);
-  assert.match(story, /HOW WE KNOW/);
-  assert.match(story, /ONE USEFUL NEXT STEP/);
-  assert.match(story, /Do one useful thing more/);
-  assert.match(story, /Related by subject, not popularity/);
-  assert.match(story, /SHARE/);
-  assert.match(stories, /relatedStories/);
-  assert.match(stories, /franchiseMatch/);
-  assert.match(stories, /pathway:/);
-  assert.match(articleGoldCss, /mag-end-rail/);
-  assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
-  assert.match(seo, /og:site_name/);
-  assert.match(seo, /link\[rel="canonical"\]/);
+test("required Magazine transparency and reader routes remain inside the publication", () => {
+  for (const route of ["/magazine/about", "/magazine/sources", "/magazine/corrections", "/magazine/search", "/magazine/saved", "/magazine/archive", "/magazine/topics/:topic", "/magazine/series/:series", "/magazine/stories/:id"]) {
+    assert.ok(router.includes(`path=\"${route}\"`), `missing ${route}`);
+  }
 });
 
 test("Magazine Gold content gate is fail-closed and mandatory before builds", () => {
   assert.match(contentReader, /ts\.isCallExpression/);
   assert.match(qualityGate, /MAGAZINE GOLD FAIL/);
-  assert.match(qualityGate, /every launch article needs one bounded relevant second object/i);
-  assert.match(qualityGate, /explicit recurring franchise\/template identity/i);
-  assert.match(qualityGate, /visible authorship\/byline required/i);
+  assert.match(qualityGate, /source-reported editorial requires at least one exact source link/i);
+  assert.match(qualityGate, /headline must not begin with an internal mission\/product code/i);
+  assert.match(qualityGate, /dedicated Magazine shell/i);
   assert.match(packageJson, /magazine-quality-gate\.mjs/);
   assert.match(packageJson, /quality:magazine/);
 });
 
-test("analytics measures reading, relevant second object, share, partner attribution and return without pre-consent tracking", () => {
+test("analytics measures reading, second object, sharing and return without pre-consent tracking", () => {
   assert.match(analytics, /consent !== "granted"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
-  assert.match(analytics, /VITE_ANALYTICS_DOMAINS/);
-  assert.match(story, /magazine_engaged_read/);
-  assert.match(story, /magazine_read_depth/);
-  assert.match(story, /magazine_read_complete/);
   assert.match(magazineAnalytics, /if \(!window\.gtag\) return/);
+  assert.match(magazineAnalytics, /trackEvent\("engaged_read"/);
+  assert.match(magazineAnalytics, /trackEvent\("read_depth"/);
+  assert.match(magazineAnalytics, /trackEvent\("read_complete"/);
+  assert.match(magazineAnalytics, /trackEvent\("share"/);
   assert.match(magazineAnalytics, /magazine_relevant_second_object/);
-  assert.match(magazineAnalytics, /magazine_share/);
   assert.match(magazineAnalytics, /visitor_state/);
-  assert.match(magazineAnalytics, /acquisition_source/);
-  assert.match(magazineAnalytics, /magazine_partner_loop/);
   assert.match(privacy, /Privacy-first site measurement/);
-  assert.match(privacy, /Optional product analytics/);
-  assert.match(headers, /static\.cloudflareinsights\.com/);
   assert.match(headers, /cloudflareinsights\.com/);
-  assert.match(headers, /www\.googletagmanager\.com/);
-  assert.match(headers, /www\.google-analytics\.com/);
 });
 
-test("search foundation generates sitemap, News sitemap, RSS and static route metadata", () => {
+test("search foundation keeps sitemap, RSS, static route metadata and canonical support", () => {
   assert.match(sitemap, /\/magazine\/about/);
   assert.match(sitemap, /news-sitemap\.xml/);
   assert.match(sitemap, /rss\.xml/);
-  assert.match(sitemap, /robots\.txt/);
   assert.match(contentReader, /readFoundingEdition/);
   assert.match(prerender, /readStories/);
-  assert.match(prerender, /readImages/);
-  assert.match(prerender, /readFoundingEdition/);
   assert.match(prerender, /application\/ld\+json/);
   assert.match(prerender, /Article/);
   assert.match(prerender, /canonical/);
-  assert.match(prerender, /noindex,follow,noarchive,max-image-preview:large/);
-  assert.match(prerender, /WebPage/);
-  assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every public story route");
-  assert.ok(prerender.includes('const route = `/magazine/stories/${record.id}`'), "prerender must emit a static noindex HTML document for every pre-publication record");
-  assert.match(packageJson, /prerender-magazine-seo\.mjs/);
+  assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
+  assert.match(seo, /og:site_name/);
+  assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every story route");
 });

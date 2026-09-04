@@ -1,0 +1,246 @@
+/* 4PLANET MAGAZINE — mobile homepage correction pass 03, 2026-08-24
+   Scope: mobile/tablet only. Desktop composition remains untouched. */
+
+@media (max-width: 700px) {
+  /* Global mobile rule: white paper, black structure, brand blue accents. */
+  .mag-world[data-mag-theme="light"],
+  .mag-world[data-mag-theme="light"] .mag-home,
+  .mag-world[data-mag-theme="light"] .mag-feed-shell,
+  .mag-world[data-mag-theme="light"] .mag-franchise-section,
+  .mag-world[data-mag-theme="light"] .mag-story-stream,
+  .mag-world[data-mag-theme="light"] .mag-signal-desk,
+  .mag-world[data-mag-theme="light"] .mag-topic-index {
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+  }
+
+  /* Header stays compact and readable without losing the Magazine identity. */
+  .mag-world-header { background: var(--4p-white) !important; }
+  .mag-world-parent-row { padding-left: 16px !important; padding-right: 16px !important; }
+  .mag-world-masthead-row { padding-left: 16px !important; padding-right: 16px !important; }
+  .mag-world-primary-nav { padding-left: 16px !important; padding-right: 16px !important; }
+  .mag-world-masthead { color: var(--4p-blue) !important; }
+
+  /* Hero: strong first screen, then a clean editorial image block. */
+  .mag-home-hero {
+    padding: 32px 16px 40px !important;
+    gap: 28px !important;
+    background: var(--4p-white) !important;
+  }
+  .mag-home-hero h1 {
+    max-width: 100% !important;
+    color: var(--4p-black) !important;
+    font-size: clamp(48px, 14.4vw, 64px) !important;
+    line-height: .88 !important;
+  }
+  .mag-home-hero-aside { gap: 16px !important; padding-top: 0 !important; }
+  .mag-home-hero-visual {
+    aspect-ratio: 4 / 3 !important;
+    border: 1px solid var(--4p-black) !important;
+    background: var(--4p-white) !important;
+  }
+  .mag-home-hero-aside > p {
+    margin: 0 !important;
+    padding-top: 14px !important;
+    color: var(--4p-black) !important;
+    border-top: 1px solid var(--4p-black) !important;
+  }
+  .mag-home-hero-aside > span { color: #2a2a2a !important; }
+
+  /* Topic strip: white, thin black rules, blue active state. */
+  .mag-topic-river { background: var(--4p-white) !important; border-color: var(--4p-black) !important; }
+  .mag-topic-river-inner { padding: 10px 16px !important; }
+  .mag-topic-pill { background: var(--4p-white) !important; color: var(--4p-black) !important; border-color: var(--4p-black) !important; }
+  .mag-topic-pill.is-active { background: var(--4p-blue) !important; color: var(--4p-white) !important; border-color: var(--4p-blue) !important; }
+
+  /* Main feed — FIX the black voids caused by transparent cards over a black mosaic. */
+  .mag-feed-shell { padding: 40px 16px 50px !important; background: var(--4p-white) !important; }
+  .mag-feed-head { margin-bottom: 20px !important; border-color: var(--4p-black) !important; }
+  .mag-feed-head h2 { color: var(--4p-black) !important; }
+  .mag-story-mosaic {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    background: var(--4p-white) !important;
+    border: 0 !important;
+  }
+  .mag-world[data-mag-theme="light"] .mag-story-tile,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--lead,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--portrait,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--wide,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--compact,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--small,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--signal,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--feature,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--ink,
+  .mag-world[data-mag-theme="light"] .mag-story-tile--blue {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 0 30px !important;
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--4p-black) !important;
+  }
+  .mag-story-tile + .mag-story-tile { padding-top: 28px !important; }
+  .mag-story-tile-index {
+    padding: 0 0 9px !important;
+    color: var(--4p-black) !important;
+    border: 0 !important;
+  }
+  .mag-story-tile-index span:first-child { color: var(--4p-blue) !important; }
+  .mag-story-media {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 10 !important;
+    margin: 0 0 15px !important;
+    background: #f3f3f3 !important;
+    border: 1px solid var(--4p-black) !important;
+  }
+  .mag-story-media img { width: 100% !important; height: 100% !important; object-fit: cover !important; opacity: 1 !important; filter: none !important; }
+  .mag-story-copy { display: block !important; padding: 0 !important; color: var(--4p-black) !important; }
+  .mag-story-kicker { color: #2a2a2a !important; opacity: 1 !important; }
+  .mag-story-copy h3 {
+    margin: 11px 0 9px !important;
+    font-size: clamp(28px, 8.7vw, 36px) !important;
+    line-height: .98 !important;
+    color: var(--4p-black) !important;
+  }
+  .mag-story-copy > p { color: #2a2a2a !important; opacity: 1 !important; }
+
+  /* Signals: one clean horizontal editorial rail, no coloured resting cards. */
+  .mag-signal-desk { padding: 52px 16px 58px !important; }
+  .mag-signal-desk-head { grid-template-columns: 1fr !important; gap: 14px !important; margin-bottom: 24px !important; }
+  .mag-signal-desk-head h2 { color: var(--4p-black) !important; font-size: clamp(42px, 12.5vw, 54px) !important; }
+  .mag-signal-desk-grid {
+    display: flex !important;
+    grid-template-columns: none !important;
+    overflow-x: auto !important;
+    gap: 0 !important;
+    margin-right: -16px !important;
+    padding-right: 16px !important;
+    border: 0 !important;
+    background: var(--4p-white) !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none;
+  }
+  .mag-signal-desk-grid::-webkit-scrollbar { display: none; }
+  .mag-signal-card,
+  .mag-signal-card--wide,
+  .mag-signal-card--tall,
+  .mag-signal-card--image,
+  .mag-signal-card--text {
+    flex: 0 0 min(82vw, 330px) !important;
+    width: min(82vw, 330px) !important;
+    min-height: 0 !important;
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+    border: 1px solid var(--4p-black) !important;
+    border-right: 0 !important;
+    scroll-snap-align: start;
+  }
+  .mag-signal-card:last-child { border-right: 1px solid var(--4p-black) !important; }
+  .mag-signal-card-media,
+  .mag-signal-card--wide .mag-signal-card-media,
+  .mag-signal-card--tall .mag-signal-card-media {
+    height: 185px !important;
+    min-height: 185px !important;
+    max-height: 185px !important;
+    border-bottom: 1px solid var(--4p-black) !important;
+  }
+  .mag-signal-card-copy { min-height: 230px !important; padding: 16px !important; }
+  .mag-signal-card-copy h3,
+  .mag-signal-card--wide .mag-signal-card-copy h3 { margin: 18px 0 10px !important; font-size: 27px !important; }
+
+  /* Recurring formats: compact 2x2 white grid. */
+  .mag-franchise-visual { width: 100% !important; aspect-ratio: 16 / 10 !important; margin-bottom: 24px !important; }
+  .mag-franchise-rail { grid-template-columns: 1fr 1fr !important; border-color: var(--4p-black) !important; }
+  .mag-franchise-rail > a {
+    min-height: 118px !important;
+    padding: 13px !important;
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+    border-color: var(--4p-black) !important;
+  }
+  .mag-franchise-rail span { color: #2a2a2a !important; }
+
+  /* One intentional brand-blue anchor band. */
+  .mag-engineering-band { padding: 54px 16px !important; background: var(--4p-blue) !important; color: var(--4p-white) !important; }
+  .mag-engineering-inner { padding: 0 !important; }
+  .mag-engineering-inner h2 { font-size: clamp(44px, 12.6vw, 56px) !important; line-height: .9 !important; color: var(--4p-white) !important; }
+  .mag-engineering-copy { color: rgba(255,255,255,.9) !important; }
+
+  /* Topics: white paper with compact ruled cells. */
+  .mag-topic-index { padding: 52px 16px 58px !important; }
+  .mag-topic-index-head h2 { color: var(--4p-black) !important; font-size: clamp(43px, 12.5vw, 56px) !important; }
+  .mag-topic-grid { grid-template-columns: 1fr 1fr !important; border-color: var(--4p-black) !important; }
+  .mag-topic-card { min-height: 122px !important; padding: 13px !important; background: var(--4p-white) !important; color: var(--4p-black) !important; border-color: var(--4p-black) !important; }
+  .mag-topic-card strong { margin-top: 26px !important; font-size: 20px !important; }
+  .mag-topic-card span { display: none !important; }
+
+  /* Moving rail: keep autonomous movement but make the mobile cards smaller. */
+  .mag-story-stream { padding: 52px 0 62px !important; border-color: var(--4p-black) !important; overflow: hidden !important; }
+  .mag-story-stream-head { padding: 0 16px 24px !important; display: block !important; }
+  .mag-story-stream-head h2 {
+    margin-top: 9px !important;
+    white-space: normal !important;
+    font-size: clamp(40px, 11.6vw, 52px) !important;
+    line-height: .92 !important;
+    color: var(--4p-black) !important;
+  }
+  .mag-story-stream-viewport { overflow: hidden !important; }
+  .mag-story-stream-track { animation: mag-story-drift-02 54s linear infinite !important; width: max-content !important; }
+  .mag-story-stream-group[aria-hidden="true"] { display: flex !important; }
+  .mag-story-stream-card {
+    flex: 0 0 min(76vw, 300px) !important;
+    width: min(76vw, 300px) !important;
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+    border-color: var(--4p-black) !important;
+  }
+  .mag-story-stream-card strong { font-size: 25px !important; }
+
+  /* Atlas: clean blue introduction, then true edge-to-edge black Earth. */
+  .mag-atlas-embed { background: var(--4p-blue) !important; color: var(--4p-white) !important; }
+  .mag-atlas-embed-head {
+    display: block !important;
+    padding: 52px 16px 30px !important;
+  }
+  .mag-atlas-embed-head h2 {
+    margin-top: 10px !important;
+    font-size: clamp(43px, 12vw, 56px) !important;
+    line-height: .91 !important;
+    white-space: normal !important;
+    color: var(--4p-white) !important;
+  }
+  .mag-atlas-embed-head > p { margin-top: 18px !important; font-size: 14px !important; line-height: 1.5 !important; }
+  .mag-atlas-frame {
+    width: 100% !important;
+    height: 68svh !important;
+    min-height: 460px !important;
+    margin: 0 !important;
+    background: var(--4p-black) !important;
+  }
+  .mag-atlas-open { padding: 18px 16px 22px !important; }
+
+  /* Blue footer continues the Atlas bridge rather than creating a new colour field. */
+  .mag-world-footer { padding-left: 16px !important; padding-right: 16px !important; background: var(--4p-blue) !important; color: var(--4p-white) !important; }
+  .mag-world-footer-statement { padding-left: 0 !important; padding-right: 0 !important; }
+  .mag-world-footer-statement h2 { font-size: clamp(43px, 12vw, 54px) !important; }
+  .mag-world-footer-grid { padding-left: 0 !important; padding-right: 0 !important; }
+}
+
+/* Touch devices should not get sticky desktop hover colours. */
+@media (max-width: 700px) and (hover: none) {
+  .mag-world[data-mag-theme="light"] .mag-story-tile:hover,
+  .mag-signal-card:hover,
+  .mag-franchise-rail > a:hover,
+  .mag-topic-card:hover,
+  .mag-story-stream-card:hover {
+    background: var(--4p-white) !important;
+    color: var(--4p-black) !important;
+  }
+}

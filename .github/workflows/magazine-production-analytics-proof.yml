@@ -1,0 +1,68 @@
+name: 4PLANET Magazine production analytics proof
+
+on:
+  push:
+    branches: [recovery/testking-magazine]
+    paths:
+      - 'src/analytics/**'
+      - 'src/pages/v5/Magazine*'
+      - 'src/components/magazine/**'
+      - '.github/workflows/magazine-production-analytics-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  analytics-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Resolve Cloudflare project and verify analytics configuration
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && TOKEN="$candidate" && break; done
+          [ -n "$TOKEN" ] || { echo 'No Cloudflare API token configured.'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          auth=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          api='https://api.cloudflare.com/client/v4'
+
+          zones=$(curl -fsS "${api}/zones?name=4planetmagazine.com&status=active" "${auth[@]}")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zones")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zones")
+          [ -n "$zone_id" ] && [ -n "$account_id" ] || { echo '4planetmagazine.com active zone/account not resolved.'; exit 3; }
+
+          project=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")
+          preview_ga=$(jq -r '.result.deployment_configs.preview.env_vars.VITE_GA_MEASUREMENT_ID.value // empty' <<<"$project")
+          production_ga=$(jq -r '.result.deployment_configs.production.env_vars.VITE_GA_MEASUREMENT_ID.value // empty' <<<"$project")
+          ga="${preview_ga:-$production_ga}"
+          case "$ga" in G-*) ;; *) echo 'VITE_GA_MEASUREMENT_ID is not configured as a GA4 measurement id on Cloudflare Pages.'; exit 4;; esac
+          echo 'GA4 measurement id exists on Cloudflare Pages (value masked by this proof).'
+
+          list=$(curl -fsS "${api}/accounts/${account_id}/rum/site_info/list?per_page=100" "${auth[@]}")
+          existing=$(jq -r '.result[]? | select((.ruleset.zone_name // "") == "4planetmagazine.com" or (.rules[]?.host // "") == "4planetmagazine.com") | .site_tag' <<<"$list" | head -n1)
+          if [ -z "$existing" ]; then
+            payload=$(jq -nc --arg zone "$zone_id" --arg host '4planetmagazine.com' '{zone_tag:$zone,host:$host,auto_install:true}')
+            created=$(curl -fsS -X POST "${api}/accounts/${account_id}/rum/site_info" "${auth[@]}" --data "$payload")
+            [ "$(jq -r '.success // false' <<<"$created")" = 'true' ] || { echo 'Cloudflare Web Analytics setup failed.'; jq '{success,errors}' <<<"$created"; exit 5; }
+            echo 'Cloudflare Web Analytics created for 4planetmagazine.com.'
+          else
+            echo 'Cloudflare Web Analytics already exists for 4planetmagazine.com.'
+          fi
+
+      - name: Prove preview-host exclusion is coded
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'analyticsAllowedHost' src/analytics/Analytics.tsx
+          grep -q '4planetmagazine.com' src/analytics/Analytics.tsx
+          ! grep -q 'pages.dev' src/analytics/Analytics.tsx

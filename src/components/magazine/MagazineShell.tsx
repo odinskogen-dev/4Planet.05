@@ -1,73 +1,153 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import "@/styles/magazine-world-shell.css";
+import { trackEvent } from "@/analytics/Analytics";
+import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
+import "@/styles/magazine-world.css";
+import "@/styles/magazine-world-polish.css";
+import "@/styles/magazine-reader-polish.css";
+import "@/styles/magazine-gold-02.css";
+import "@/styles/magazine-gold-02-fixes.css";
+import "@/styles/magazine-live-round-01.css";
+import "@/styles/magazine-live-round-02.css";
+import "@/styles/magazine-mobile-round-03.css";
+import "@/styles/magazine-live-round-04.css";
+import "@/styles/magazine-live-round-05.css";
+import "@/styles/magazine-public-launch.css";
+import "@/styles/magazine-brand-typography.css";
 
 type MagazineTheme = "light" | "dark";
 const THEME_KEY = "4planet-magazine-theme-v2";
+const READ_THRESHOLDS = [25, 50, 75, 90] as const;
 
-function getInitialTheme(): MagazineTheme {
+function initialTheme(): MagazineTheme {
   if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem(THEME_KEY);
-  return stored === "dark" ? "dark" : "light";
+  if (stored === "light" || stored === "dark") return stored;
+  return "light";
+}
+
+function storySlugFromPath(pathname: string): string {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] !== "magazine" || parts.length !== 2) return "";
+  if (["about", "sources", "corrections", "privacy", "search", "saved", "archive", "atlas"].includes(parts[1])) return "";
+  return parts[1];
+}
+
+function keepMagazineWorldIsolated() {
+  document.querySelectorAll<HTMLAnchorElement>(".mag-world a[href]").forEach((anchor) => {
+    const raw = anchor.getAttribute("href") || "";
+    if (anchor.classList.contains("mag-atlas-open")) {
+      anchor.setAttribute("href", "/magazine/atlas");
+      anchor.removeAttribute("target");
+      anchor.removeAttribute("rel");
+      return;
+    }
+    if (!raw.startsWith("/") || raw.startsWith("/magazine") || raw === "/rss.xml" || raw.startsWith("/assets/")) return;
+    anchor.setAttribute("href", `https://4planet.org${raw}`);
+    anchor.setAttribute("target", "_blank");
+    anchor.setAttribute("rel", "noreferrer");
+  });
 }
 
 export function MagazineShell({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<MagazineTheme>(getInitialTheme);
+  const [theme, setTheme] = useState<MagazineTheme>(initialTheme);
+
+  useEffect(() => { window.localStorage.setItem(THEME_KEY, theme); }, [theme]);
 
   useEffect(() => {
-    window.localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
+    keepMagazineWorldIsolated();
+    const storySlug = storySlugFromPath(window.location.pathname);
+    const seen = new Set<number>();
+    let complete = false;
+    const engagedTimer = storySlug ? window.setTimeout(() => trackEvent("engaged_read", { story_slug: storySlug, engaged_seconds: 30 }), 30_000) : undefined;
+
+    const measure = () => {
+      if (!storySlug) return;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const depth = scrollable <= 0 ? 100 : Math.min(100, Math.round((window.scrollY / scrollable) * 100));
+      READ_THRESHOLDS.forEach((threshold) => {
+        if (depth >= threshold && !seen.has(threshold)) {
+          seen.add(threshold);
+          trackEvent("read_depth", { story_slug: storySlug, depth_percent: threshold });
+        }
+      });
+      if (depth >= 90 && !complete) {
+        complete = true;
+        trackEvent("read_complete", { story_slug: storySlug });
+      }
+    };
+
+    const onClick = (event: MouseEvent) => {
+      const element = event.target instanceof Element ? event.target : null;
+      const anchor = element?.closest("a");
+      const button = element?.closest("button");
+      const currentStory = storySlugFromPath(window.location.pathname);
+      if (anchor instanceof HTMLAnchorElement) {
+        const href = anchor.getAttribute("href") || "";
+        if (anchor.classList.contains("mag-source-item")) {
+          let sourceHost = "unknown";
+          try { sourceHost = new URL(anchor.href).hostname; } catch { /* bounded fallback */ }
+          trackEvent("source_open", { story_slug: currentStory, source_host: sourceHost, source_label: (anchor.textContent || "").trim().slice(0, 120) });
+        }
+        if (anchor.classList.contains("mag-related-editorial-card") || anchor.classList.contains("mag-next-story")) {
+          const parts = href.split("/").filter(Boolean);
+          const destination = parts[parts.length - 1] || "unknown";
+          trackEvent("related_story_open", { story_slug: currentStory, destination_story_slug: destination });
+        }
+        if (href === "/magazine/atlas" || anchor.classList.contains("mag-atlas-open")) trackEvent("atlas_open", { source: "magazine_link" });
+      }
+      if (button instanceof HTMLButtonElement && currentStory && /SAVE|SAVED/.test(button.textContent || "")) {
+        trackEvent("save", { story_slug: currentStory, state: /SAVED/.test(button.textContent || "") ? "removed" : "saved" });
+      }
+    };
+
+    document.addEventListener("click", onClick);
+    window.addEventListener("scroll", measure, { passive: true });
+    measure();
+    return () => {
+      if (engagedTimer) window.clearTimeout(engagedTimer);
+      document.removeEventListener("click", onClick);
+      window.removeEventListener("scroll", measure);
+    };
+  }, [children]);
 
   return (
-    <div className="mag-world-shell" data-mag-theme={theme}>
-      <header className="mag-world-shell__header">
-        <div className="mag-world-shell__utility">
-          <Link className="mag-world-shell__parent" to="/">4PLANET_</Link>
+    <div className="mag-world" data-mag-theme={theme}>
+      <a className="mag-skip-link" href="#magazine-content">SKIP TO CONTENT</a>
+      <header className="mag-world-header">
+        <div className="mag-world-parent-row">
+          <a className="mag-world-parent" href="https://4planet.org/" rel="home">4PLANET_</a>
           <span>FOR A LIVING PLANET / EDITORIAL</span>
-          <button
-            className="mag-world-shell__theme"
-            type="button"
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
-          >
-            {theme === "light" ? "DARK" : "LIGHT"}
-          </button>
+          <div className="mag-world-utility">
+            <Link to="/magazine/search" aria-label="Search 4PLANET Magazine">SEARCH</Link>
+            <Link to="/magazine/saved" aria-label="Saved and recent reading">SAVED</Link>
+            <button className="mag-theme-toggle" type="button" aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`} aria-pressed={theme === "dark"} onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}>
+              <span aria-hidden>{theme === "light" ? "DARK" : "LIGHT"}</span><i aria-hidden />
+            </button>
+          </div>
         </div>
 
-        <div className="mag-world-shell__masthead">
-          <Link to="/magazine" aria-label="4PLANET Magazine home">
-            <span>4PLANET</span>
-            <strong>MAGAZINE</strong>
-          </Link>
+        <div className="mag-world-masthead-row">
+          <Link className="mag-world-masthead" to="/magazine" aria-label="4PLANET Magazine home"><span className="mag-world-masthead-word">4PLANET</span><span className="mag-world-masthead-word">MAGAZINE</span></Link>
           <p>Nature · people · engineering · culture · what works</p>
         </div>
 
-        <nav className="mag-world-shell__nav" aria-label="Magazine primary navigation">
-          <Link to="/magazine">LATEST</Link>
-          <Link to="/magazine#lane-life">LIFE</Link>
-          <Link to="/magazine#lane-planet">PLANET</Link>
-          <Link to="/magazine#lane-human">HUMAN</Link>
-          <Link to="/magazine#lane-solutions">SOLUTIONS</Link>
-          <Link to="/magazine#lane-people">PEOPLE</Link>
-          <Link to="/magazine#lane-culture">CULTURE</Link>
+        <nav className="mag-world-primary-nav" aria-label="Magazine primary navigation">
+          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
         </nav>
       </header>
 
-      {children}
+      <div id="magazine-content">{children}</div>
 
-      <footer className="mag-world-shell__footer">
-        <div>
-          <span>4PLANET MAGAZINE</span>
-          <h2>Stories for people who want the future to work.</h2>
-          <p>Sources, uncertainty and corrections belong in the product.</p>
+      <footer className="mag-world-footer">
+        <div className="mag-world-footer-statement"><span>4PLANET MAGAZINE</span><h2>Stories for people who want the future to work.</h2><p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p></div>
+        <div className="mag-world-footer-grid">
+          <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
+          <div><p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}</div>
+          <div><p>EDITORIAL</p><Link to="/magazine/about">About</Link><Link to="/magazine/sources">Sources & method</Link><Link to="/magazine/corrections">Corrections</Link><Link to="/magazine/privacy">Privacy</Link><a href="/rss.xml">RSS</a></div>
+          <div><p>DISCOVER</p><Link to="/magazine/atlas">4PLANET Atlas</Link><Link to="/magazine/series/from-the-field">From the Field</Link><Link to="/magazine/series/the-living-world">The Living World</Link><Link to="/magazine/series/what-works">What Works</Link></div>
         </div>
-        <nav aria-label="Magazine footer navigation">
-          <Link to="/magazine">Latest</Link>
-          <Link to="/magazine/about">About</Link>
-          <Link to="/magazine/sources">Sources & method</Link>
-          <Link to="/magazine/corrections">Corrections</Link>
-        </nav>
+        <div className="mag-world-footer-bottom"><span>4PLANET_ FOR A LIVING PLANET</span><span>Sources, uncertainty and corrections belong in the product.</span></div>
       </footer>
     </div>
   );

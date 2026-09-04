@@ -12,14 +12,6 @@
  *   products, and decode it on return. (ctx was reserved earlier but never
  *   round-tripped; it is deferred — see DEFERRED KEYS below.)
  *
- * Return-camera ownership: when an explicit camera (`z` + `c`) is preserved
- * together with a `record`, that record is the canonical context-restoration
- * seam. ATLAS reconstructs the record panel without a camera move. A simultaneous
- * `entity` is only a transient panel-derived focus hint and would trigger a
- * second async focus/fit that can overwrite the saved camera. The return boundary
- * therefore omits only that redundant entity in the camera+record case. Direct
- * entity deep links and entity-only return states are preserved unchanged.
- *
  * Safety: `returnTo` only ever reconstructs an internal `/atlas` destination.
  * Any attempt to encode a different path, an absolute URL or a malformed token
  * is rejected and the caller falls back to a plain `/atlas` link.
@@ -70,21 +62,6 @@ export function readAtlasState(search: string): AtlasState {
   return out;
 }
 
-/**
- * Canonicalise a state specifically for cross-product return.
- *
- * `record` + explicit `z`/`c` already reconstructs both the exact camera and the
- * occurrence context. Keeping a simultaneous `entity` would make ATLAS execute
- * its generic entity focus path as well, which can asynchronously fit the map and
- * overwrite the preserved camera. Remove only that redundant focus hint. The
- * entity key remains fully supported everywhere else.
- */
-export function canonicalReturnState(state: AtlasState): AtlasState {
-  if (!(state.record && state.z && state.c && state.entity)) return state;
-  const { entity: _redundantEntity, ...cameraOwnedRecordState } = state;
-  return cameraOwnedRecordState;
-}
-
 /** Build the exact ATLAS href for a captured state (used on return). */
 export function atlasHrefFromState(state: AtlasState): string {
   const p = new URLSearchParams();
@@ -100,7 +77,7 @@ export function atlasHrefFromState(state: AtlasState): string {
  * no meaningful ATLAS state to preserve (so callers can omit the param).
  */
 export function encodeReturnTo(atlasSearch: string): string {
-  const state = canonicalReturnState(readAtlasState(atlasSearch));
+  const state = readAtlasState(atlasSearch);
   if (Object.keys(state).length === 0) return "";
   const href = atlasHrefFromState(state);
   return b64urlEncode(href);
@@ -122,12 +99,10 @@ export function decodeReturnTo(token: string | null | undefined): string | null 
   if (!decoded.startsWith(RETURN_PATH)) return null;
   if (decoded.includes("://") || decoded.startsWith("//")) return null;
   // Re-validate: only known ATLAS keys survive, dropping anything unexpected.
-  // Also canonicalise historical tokens so a stale camera+record+entity token
-  // cannot reintroduce the boot-time camera race when it finally returns.
   const qIndex = decoded.indexOf("?");
   const search = qIndex >= 0 ? decoded.slice(qIndex + 1) : "";
-  const cleanState = canonicalReturnState(readAtlasState(search));
-  return atlasHrefFromState(cleanState);
+  const clean = atlasHrefFromState(readAtlasState(search));
+  return clean;
 }
 
 /**
@@ -139,8 +114,6 @@ export function withReturnTo(destHref: string, atlasSearch: string): string {
   // state — they carry the already-encoded returnTo token. If one is present and
   // valid, forward it as-is so context survives the whole chain. Only when the
   // caller holds raw ATLAS state (the ATLAS page itself) do we encode afresh.
-  // decodeReturnTo canonicalises historical tokens on final return, including the
-  // explicit-camera + record ownership rule above.
   const existing = new URLSearchParams(atlasSearch).get("returnTo");
   const token = (existing && decodeReturnTo(existing)) ? existing : encodeReturnTo(atlasSearch);
   if (!token) return destHref;

@@ -1,0 +1,29 @@
+/* 4PLANET MAGAZINE — Public Launch Gold 01
+   Additive closure only: protect the existing desktop art direction while
+   hardening focus, touch, readability and reduced-motion behaviour. */
+
+.mag-skip-link{position:fixed;left:16px;top:12px;z-index:10050;transform:translateY(-160%);background:#000;color:#fff;padding:11px 14px;border:2px solid #2E2EFF;font:700 11px/1 Arial,sans-serif;letter-spacing:.12em;text-decoration:none;transition:transform .18s ease}.mag-skip-link:focus{transform:translateY(0)}
+.mag-world a:focus-visible,.mag-world button:focus-visible,.mag-world input:focus-visible{outline:3px solid #2E2EFF;outline-offset:3px}
+.mag-world[data-mag-theme="dark"] a:focus-visible,.mag-world[data-mag-theme="dark"] button:focus-visible,.mag-world[data-mag-theme="dark"] input:focus-visible{outline-color:#fff}
+#magazine-content{min-width:0}
+.mag-info-page{background:#fff;color:#090909}
+.mag-world[data-mag-theme="dark"] .mag-info-page{background:#090909;color:#f7f7f2}
+.mag-info-row strong{font-weight:700}
+
+/* Touch is never dependent on hover colour for meaning. */
+@media (hover:none){.mag-story-tile:hover,.mag-signal-card:hover,.mag-topic-card:hover{transform:none!important}.mag-world a{-webkit-tap-highlight-color:rgba(46,46,255,.16)}}
+
+@media(max-width:700px){
+  .mag-world-parent-row{gap:10px}
+  .mag-world-primary-nav{scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .mag-world-primary-nav::-webkit-scrollbar{display:none}
+  .mag-world-primary-nav a{scroll-snap-align:start;min-height:44px;display:inline-flex;align-items:center}
+  .mag-world-utility a,.mag-theme-toggle{min-height:44px;display:inline-flex;align-items:center}
+  .mag-info-page{padding-left:20px!important;padding-right:20px!important}
+  .mag-info-lead{max-width:34em}
+  .mag-info-row{grid-template-columns:38px minmax(0,1fr)!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mag-world *, .mag-world *::before, .mag-world *::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}

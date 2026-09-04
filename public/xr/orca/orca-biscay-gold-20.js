@@ -21,7 +21,6 @@
   };
 
   const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-  const isDirectBiscayLink = () => window.location.hash === '#bay-of-biscay';
 
   function mapMarkup() {
     return `
@@ -87,25 +86,11 @@
     });
   }
 
-  function openDirectBiscay(root) {
-    if (!isDirectBiscayLink()) return;
-    const card = root?.querySelector('.biscay-gold-card');
-    const toggle = card?.querySelector('.biscay-gold-card__toggle');
-    if (!card || !toggle) return;
-    card.dataset.expanded = 'true';
-    card.dataset.visible = 'true';
-    card.setAttribute('aria-hidden', 'false');
-    toggle.setAttribute('aria-expanded', 'true');
-    toggle.textContent = 'CLOSE ECOSYSTEM';
-    requestAnimationFrame(() => card.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }));
-    window.dispatchEvent(new CustomEvent('4planet:orca-ecosystem-card', { detail: { ecosystem: BISCAY.id, expanded: true, direct: true } }));
-  }
-
   function syncCard(root, detail = {}) {
     const card = root?.querySelector('.biscay-gold-card');
     if (!card) return;
     const state = detail.state || root.dataset.orcaLumeScene || root.dataset.lightLensScene || root.dataset.sceneState || 'identity';
-    const visible = state === 'habitat' || card.dataset.expanded === 'true' || isDirectBiscayLink();
+    const visible = state === 'habitat' || card.dataset.expanded === 'true';
     card.dataset.visible = visible ? 'true' : 'false';
     card.setAttribute('aria-hidden', visible ? 'false' : 'true');
     if (!reducedMotion() && state === 'habitat') card.dataset.arrival = String(Date.now());
@@ -116,15 +101,10 @@
     root.dataset.biscayGoldInstalled = 'true';
     installCard(root);
     syncCard(root);
-    openDirectBiscay(root);
     window.addEventListener('4planet:nature-journey-scene', event => requestAnimationFrame(() => syncCard(root, event.detail || {})));
     root.addEventListener('4planet:light-lens-change', () => requestAnimationFrame(() => syncCard(root)));
-    window.addEventListener('hashchange', () => {
-      syncCard(root);
-      openDirectBiscay(root);
-    });
   }
 
   window.addEventListener('DOMContentLoaded', () => install(document.getElementById('browser-experience')), { once: true });
-  window.OrcaBiscayGold20 = { install, installCard, syncCard, openDirectBiscay, ecosystem: BISCAY };
+  window.OrcaBiscayGold20 = { install, installCard, syncCard, ecosystem: BISCAY };
 })();

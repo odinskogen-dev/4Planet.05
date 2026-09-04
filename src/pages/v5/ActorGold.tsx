@@ -7,7 +7,6 @@ import {
   actorBySlug,
   type ActorGoldProfile,
 } from "@/content/actorGold";
-import { GetInvolvedSection } from "@/pages/v5/Participation";
 import "@/styles/actor-gold.css";
 
 function RelationshipMark({ actor }: { actor: ActorGoldProfile }) {
@@ -95,8 +94,7 @@ export function ActorsIndex() {
         <Link className="actor-gold-brand" to="/">4PLANET_</Link>
         <p>ACTORS</p>
         <h1>Who is doing the work?</h1>
-        <span>Discover credible actors, understand what they actually do, then find a real way to help.</span>
-        <Link className="participation-index-entry" to="/get-involved">FIND YOUR WAY TO HELP →</Link>
+        <span>Premium, source-aware profiles connecting organisations to places, species, ecosystems, evidence and action.</span>
       </header>
       <section className="actor-index-grid" aria-label="Actor Gold profiles">
         {ACTOR_GOLD_PROFILES.map((actor) => (
@@ -112,7 +110,7 @@ export function ActorsIndex() {
       <section className="actor-index-method">
         <p>GOLD METHOD</p>
         <h2>One exceptional system. Ten unlike actors. Then scale.</h2>
-        <span>ORCA is Gold 01. Get Involved is now part of the same profile grammar: identity → trust → real participation, with source and cost reality intact.</span>
+        <span>ORCA is Gold 01. The next nine profiles must stress-test the same template across unlike actor types before x100 expansion.</span>
       </section>
     </main>
   );
@@ -142,7 +140,7 @@ export function ActorProfilePage() {
 
       <nav className="actor-gold-nav" aria-label="Actor profile navigation">
         <Link className="actor-gold-brand" to="/">4PLANET_</Link>
-        <div><Link to="/actors">ACTORS</Link><a href="#get-involved">GET INVOLVED</a><Link to="/atlas">ATLAS</Link></div>
+        <div><Link to="/actors">ACTORS</Link><Link to="/magazine">MAGAZINE</Link><Link to="/atlas">ATLAS</Link></div>
       </nav>
 
       <header className="actor-gold-hero">
@@ -155,7 +153,6 @@ export function ActorProfilePage() {
           <span>FIELD / MONITORING</span>
           <span>OCE4N_</span>
         </div>
-        <a className="actor-gold-get-involved-jump" href="#get-involved">GET INVOLVED ↓</a>
       </header>
 
       <section className="actor-gold-visual-wrap">
@@ -211,10 +208,8 @@ export function ActorProfilePage() {
         </div>
       </section>
 
-      <GetInvolvedSection actorId={actor.id} />
-
       <section className="actor-gold-section actor-gold-section-action">
-        <SectionIntro number="08" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move, when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
+        <SectionIntro number="07" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move, when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
         <div className="actor-gold-actions">
           {actor.actions.map((action) => action.path && action.state === "OPEN" ? (
             <Link key={action.label} to={action.path}><span>{action.label}</span><b>↗</b></Link>
@@ -233,8 +228,8 @@ export function ActorProfilePage() {
 
       <section className="actor-gold-engine-note">
         <p>ACTOR ENGINE 01</p>
-        <h2>Identity to action, without losing truth.</h2>
-        <span>The profile now carries a reusable participation seam: source-backed opportunities live as separate objects and can be projected into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
+        <h2>Premium without needing a photo.</h2>
+        <span>The default visual system is identity → place → relationships → source data. Documentary imagery improves a page only when it is real, cleared and informative.</span>
         <details><summary>VIEW VISUAL LADDER</summary>{ACTOR_GOLD_VISUAL_LADDER.map((rule) => <p key={rule}>{rule}</p>)}</details>
         <details><summary>VIEW RELEASE RULES</summary>{ACTOR_GOLD_RELEASE_RULES.map((rule) => <p key={rule}>{rule}</p>)}</details>
       </section>

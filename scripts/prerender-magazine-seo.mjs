@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readStories, readImages, readFoundingEdition, absoluteUrl } from "./magazine-content.mjs";
+import { readArticleTemplates, readStories, readSignals, readImages, readFoundingEdition, readTopics, readFeatures, readStandfirsts, absoluteUrl } from "./magazine-content.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -8,17 +8,20 @@ const indexPath = path.join(dist, "index.html");
 if (!fs.existsSync(indexPath)) throw new Error("dist/index.html is missing; run Vite build before Magazine SEO prerender");
 
 const baseHtml = fs.readFileSync(indexPath, "utf8");
-const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
+const publicOrigin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
+const magazineOrigin = (process.env.MAGAZINE_SITE_ORIGIN || process.env.VITE_MAGAZINE_SITE_ORIGIN || "https://4planetmagazine.com").replace(/\/$/, "");
 const stories = readStories();
+const signals = readSignals();
 const images = readImages();
+const features = readFeatures();
+const standfirsts = readStandfirsts();
 const foundingEdition = readFoundingEdition();
+const topics = readTopics();
+const templates = readArticleTemplates();
+const PUBLIC_LAUNCH_DATE = "2026-08-24";
 
 function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
 function stripManagedHead(html) {
@@ -33,13 +36,7 @@ function stripManagedHead(html) {
 }
 
 function headMarkup(meta) {
-  const json = JSON.stringify(meta.jsonLd || {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: meta.title,
-    description: meta.description,
-    url: meta.canonical,
-  }).replaceAll("<", "\\u003c");
+  const json = JSON.stringify(meta.jsonLd || { "@context": "https://schema.org", "@type": "WebPage", name: meta.title, description: meta.description, url: meta.canonical }).replaceAll("<", "\\u003c");
   return [
     `<title>${escapeHtml(meta.title)}</title>`,
     `<meta name="description" content="${escapeHtml(meta.description)}">`,
@@ -74,116 +71,81 @@ function writeRoute(route, meta) {
 
 const magazineImage = images.m4gazineHero?.src || "/og.png";
 const magazineAlt = images.m4gazineHero?.alt || "4PLANET MAGAZINE";
-const absoluteMagazineImage = absoluteUrl(origin, magazineImage);
-const magazineCanonical = absoluteUrl(origin, "/magazine");
+const absoluteMagazineImage = absoluteUrl(magazineOrigin, magazineImage);
+const magazineCanonical = absoluteUrl(magazineOrigin, "/magazine");
 writeRoute("/magazine", {
-  title: "4PLANET MAGAZINE — What Holds",
-  description: "Stories about the living planet — species, places, people, systems, solutions, innovation and culture.",
+  title: "4PLANET MAGAZINE — Nature, people, engineering and what works",
+  description: "Stories and signals about the living planet — species, places, people, science, engineering, solutions and culture.",
   canonical: magazineCanonical,
   image: absoluteMagazineImage,
   imageAlt: magazineAlt,
   type: "website",
-  jsonLd: {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "4PLANET MAGAZINE",
-    description: "Stories about the living planet — species, places, people, systems, solutions, innovation and culture.",
-    url: magazineCanonical,
-    isPartOf: { "@type": "WebSite", name: "4PLANET_", url: absoluteUrl(origin, "/") },
-  },
+  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET MAGAZINE", description: "Stories and signals about the living planet.", url: magazineCanonical, isPartOf: { "@type": "WebSite", name: "4PLANET_", url: absoluteUrl(publicOrigin, "/") } },
 });
 
 const informationPages = [
-  {
-    route: "/magazine/about",
-    title: "About 4PLANET MAGAZINE",
-    description: "The editorial purpose, independence rules and current publication state of 4PLANET MAGAZINE.",
-  },
-  {
-    route: "/magazine/sources",
-    title: "Sources & Method — 4PLANET MAGAZINE",
-    description: "How 4PLANET MAGAZINE handles sources, claims, uncertainty, rights and editorial release.",
-  },
-  {
-    route: "/magazine/corrections",
-    title: "Corrections — 4PLANET MAGAZINE",
-    description: "The 4PLANET MAGAZINE corrections and transparency desk.",
-  },
+  { route: "/magazine/about", title: "About 4PLANET MAGAZINE", description: "What 4PLANET MAGAZINE publishes, how editorial independence works and what readers should expect from every story." },
+  { route: "/magazine/sources", title: "Sources & Method — 4PLANET MAGAZINE", description: "How 4PLANET MAGAZINE handles reporting, sources, claims, uncertainty, image rights, fact checking and publication." },
+  { route: "/magazine/corrections", title: "Corrections — 4PLANET MAGAZINE", description: "The 4PLANET MAGAZINE corrections and transparency desk." },
+  { route: "/magazine/privacy", title: "Privacy — 4PLANET MAGAZINE", description: "How optional analytics, saved reading and local reader state work on 4PLANET MAGAZINE." },
+  { route: "/magazine/archive", title: "Archive — 4PLANET MAGAZINE", description: "Browse full stories and source-backed Planet Signals from 4PLANET MAGAZINE." },
+  { route: "/magazine/atlas", title: "4PLANET ATLAS — Explore the planet behind the stories", description: "An interactive 4PLANET view connecting place, active-fire detections and biodiversity context on one explorable Earth." },
 ];
 for (const page of informationPages) {
-  const canonical = absoluteUrl(origin, page.route);
-  writeRoute(page.route, {
-    ...page,
-    canonical,
-    image: absoluteMagazineImage,
-    imageAlt: magazineAlt,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: page.title,
-      description: page.description,
-      url: canonical,
-      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
-    },
-  });
+  const canonical = absoluteUrl(magazineOrigin, page.route);
+  writeRoute(page.route, { ...page, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, jsonLd: { "@context": "https://schema.org", "@type": page.route.endsWith("archive") ? "CollectionPage" : "WebPage", name: page.title, description: page.description, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
 for (const story of stories) {
-  const imageMeta = images[story.image] || {};
-  const canonical = absoluteUrl(origin, `/magazine/${story.slug}`);
-  const image = absoluteUrl(origin, imageMeta.src || "/og.png");
+  const feature = features[story.slug];
+  const imageKey = feature?.hero || story.image;
+  const imageMeta = images[imageKey] || {};
+  const description = standfirsts[story.slug] || story.dek;
+  const canonical = absoluteUrl(magazineOrigin, `/magazine/${story.slug}`);
+  const image = absoluteUrl(magazineOrigin, imageMeta.src || "/og.png");
   const imageAlt = imageMeta.alt || story.title;
   const type = story.mode === "FAST" && story.publishedAt ? "NewsArticle" : "Article";
+  const citations = [...(story.sourceLinks ?? []), ...(feature?.addedSources ?? [])].map((source) => source.url);
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": type,
-    headline: story.title,
-    description: story.dek,
-    image: [image],
-    mainEntityOfPage: canonical,
-    author: { "@type": "Organization", name: "4PLANET_" },
-    publisher: { "@type": "Organization", name: "4PLANET_", url: absoluteUrl(origin, "/") },
+    "@context": "https://schema.org", "@type": type, headline: story.title, description, image: [image], mainEntityOfPage: canonical,
+    author: { "@type": "Organization", name: story.byline || "4PLANET MAGAZINE" },
+    publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical },
     isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
-    articleSection: story.lane || story.category,
-    keywords: Array.isArray(story.tags) ? story.tags.join(", ") : undefined,
-    ...(story.publishedAt ? { datePublished: story.publishedAt } : {}),
-    ...(story.updatedAt ? { dateModified: story.updatedAt } : {}),
+    articleSection: story.lane || story.category, keywords: Array.isArray(story.tags) ? story.tags.join(", ") : undefined,
+    datePublished: story.publishedAt || story.asOf || PUBLIC_LAUNCH_DATE,
+    dateModified: story.updatedAt || story.publishedAt || story.asOf || PUBLIC_LAUNCH_DATE,
+    citation: citations.length ? citations : undefined,
   };
+  writeRoute(`/magazine/${story.slug}`, { title: `${story.title} | 4PLANET MAGAZINE`, description, canonical, image, imageAlt, type: "article", section: story.lane || story.category, tags: Array.isArray(story.tags) ? story.tags : [], jsonLd });
+}
 
-  writeRoute(`/magazine/${story.slug}`, {
-    title: `${story.title} | 4PLANET MAGAZINE`,
-    description: story.dek,
-    canonical,
-    image,
-    imageAlt,
-    type: "article",
-    section: story.lane || story.category,
-    tags: Array.isArray(story.tags) ? story.tags : [],
-    jsonLd,
+for (const signal of signals) {
+  const route = `/magazine/signals/${signal.slug}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, {
+    title: `${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`, description: signal.dek, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "article", section: "Planet Signal", tags: signal.topics || [],
+    jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, datePublished: signal.publishedAt, dateModified: signal.asOf || signal.publishedAt, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
   });
 }
 
+for (const topic of topics) {
+  const route = `/magazine/topics/${topic.id.toLowerCase()}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, { title: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
+}
+
+for (const template of templates) {
+  const slug = template.id.toLowerCase().replaceAll("_", "-");
+  const route = `/magazine/series/${slug}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, { title: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
+}
+
+// Internal founding-edition commission records remain noindex working records.
 for (const record of foundingEdition.items) {
   const route = `/magazine/stories/${record.id}`;
-  const canonical = absoluteUrl(origin, route);
-  writeRoute(route, {
-    title: `${record.title} — Pre-publication record | 4PLANET MAGAZINE`,
-    description: record.summary,
-    canonical,
-    image: absoluteMagazineImage,
-    imageAlt: magazineAlt,
-    robots: "noindex,follow,noarchive,max-image-preview:large",
-    type: "website",
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: record.title,
-      description: record.summary,
-      url: canonical,
-      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — Founding Edition working records", url: magazineCanonical },
-      additionalType: "https://schema.org/DigitalDocument",
-    },
-  });
+  const canonical = absoluteUrl(magazineOrigin, route);
+  writeRoute(route, { title: `${record.title} — Working record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — controlled working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
 }
 
-console.log(`Prerendered Magazine metadata for ${stories.length + informationPages.length + foundingEdition.items.length + 1} routes at ${origin}`);
+console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${topics.length} topics + ${templates.length} series + ${informationPages.length} public utility pages + ${foundingEdition.items.length} noindex working records at canonical ${magazineOrigin}`);

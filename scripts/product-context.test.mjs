@@ -18,11 +18,6 @@ function readAtlasState(search) {
   ATLAS_STATE_KEYS.forEach((k) => { const v = p.get(k); if (v) o[k] = v; });
   return o;
 }
-function canonicalReturnState(state) {
-  if (!(state.record && state.z && state.c && state.entity)) return state;
-  const { entity: _redundantEntity, ...cameraOwnedRecordState } = state;
-  return cameraOwnedRecordState;
-}
 function atlasHrefFromState(state) {
   const p = new URLSearchParams();
   ATLAS_STATE_KEYS.forEach((k) => { if (state[k]) p.set(k, state[k]); });
@@ -30,7 +25,7 @@ function atlasHrefFromState(state) {
   return q ? `/atlas?${q}` : "/atlas";
 }
 function encodeReturnTo(search) {
-  const st = canonicalReturnState(readAtlasState(search));
+  const st = readAtlasState(search);
   if (Object.keys(st).length === 0) return "";
   return b64urlEncode(atlasHrefFromState(st));
 }
@@ -40,34 +35,19 @@ function decodeReturnTo(token) {
   if (!d.startsWith("/atlas")) return null;
   if (d.includes("://") || d.startsWith("//")) return null;
   const qi = d.indexOf("?");
-  return atlasHrefFromState(canonicalReturnState(readAtlasState(qi >= 0 ? d.slice(qi + 1) : "")));
+  return atlasHrefFromState(readAtlasState(qi >= 0 ? d.slice(qi + 1) : ""));
 }
 
-test("productContext: camera + record return owns camera and removes redundant entity refocus", () => {
+test("productContext: encode/decode round-trips full ATLAS camera + record", () => {
   const search = "?m=PLANET&l=bluemarble&z=6.20&c=9.30,63.45&record=orca-bundled&entity=taxon:gbif:2440483";
   const token = encodeReturnTo(search);
   assert.ok(token.length > 0);
   const href = decodeReturnTo(token);
   assert.match(href, /^\/atlas\?/);
-  for (const key of ["m", "l", "z", "c", "record"]) assert.ok(href.includes(`${key}=`), `href preserves ${key}`);
+  ["m=PLANET", "l=bluemarble", "z=6.20", "record=orca-bundled", "entity=taxon%3Agbif%3A2440483"].forEach((frag) => {
+    assert.ok(href.includes(frag.split("=")[0] + "="), `href preserves ${frag}`);
+  });
   assert.ok(href.includes("record=orca-bundled"));
-  assert.ok(!href.includes("entity="), "record-owned camera return omits only redundant entity focus");
-});
-
-test("productContext: direct entity-only return still round-trips entity", () => {
-  const search = "?m=PLANET&z=5.40&c=10.75,59.91&entity=taxon:gbif:2440483";
-  const href = decodeReturnTo(encodeReturnTo(search));
-  assert.ok(href.includes("entity=taxon%3Agbif%3A2440483"));
-  assert.ok(href.includes("z=5.40"));
-  assert.ok(href.includes("c=10.75%2C59.91"));
-});
-
-test("productContext: historical camera + record + entity token is canonicalised on decode", () => {
-  const historical = b64urlEncode("/atlas?m=PLANET&z=6.20&c=9.30%2C63.45&record=orca-bundled&entity=taxon%3Agbif%3A2440483");
-  const href = decodeReturnTo(historical);
-  assert.ok(href.includes("record=orca-bundled"));
-  assert.ok(href.includes("z=6.20"));
-  assert.ok(!href.includes("entity="));
 });
 
 test("productContext: rejects unsafe/external return destinations", () => {
@@ -95,8 +75,6 @@ test("productContext: decode drops unknown keys, keeps only ATLAS state", () => 
 test("productContext source uses these keys and is wired into visible controls", () => {
   const src = read("src/product/productContext.ts");
   ATLAS_STATE_KEYS.forEach((k) => assert.ok(src.includes(`"${k}"`), `schema documents ${k}`));
-  assert.match(src, /canonicalReturnState/);
-  assert.match(src, /state\.record && state\.z && state\.c && state\.entity/);
   // Visible return controls exist on Species, Living Systems and the Mission page.
   assert.match(read("src/pages/integrated/Species.tsx"), /data-testid="return-to-atlas"/);
   assert.match(read("src/pages/v5/LivingSystems.tsx"), /data-testid="return-to-atlas"/);

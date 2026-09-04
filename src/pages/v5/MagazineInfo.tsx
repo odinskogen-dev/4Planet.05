@@ -1,114 +1,185 @@
 import { Link } from "react-router-dom";
-import { PublicShell } from "@/components/layout/PublicShell";
+import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { Seo } from "@/components/Seo";
 import {
-  FOUNDING_EDITION,
   MAGAZINE_EDITORIAL_PRINCIPLES,
   MAGAZINE_SOURCE_WORKFLOW,
 } from "@/content/magazineEditorial";
-
-const pageStyle = { maxWidth: 1180, margin: "0 auto", padding: "clamp(70px,10vw,140px) clamp(20px,5vw,72px)" } as const;
-const kickerStyle = { fontFamily: "Fragment Mono, monospace", fontSize: 11, letterSpacing: ".12em", opacity: .58 } as const;
-const titleStyle = { fontSize: "clamp(48px,8vw,112px)", lineHeight: .9, letterSpacing: "-.055em", margin: "18px 0 28px" } as const;
-const bodyStyle = { fontSize: "clamp(17px,1.8vw,22px)", lineHeight: 1.55, maxWidth: 820 } as const;
+import {
+  MAGAZINE_EDITORIAL_FORMS,
+  MAGAZINE_PUBLICATION_PIPELINE,
+  MAGAZINE_PUBLICATION_STATE,
+  MAGAZINE_RELEASE_STANDARD,
+  MAGAZINE_VOICE,
+} from "@/content/magazinePublication";
+import "@/styles/magazine-world.css";
 
 function MagazineSubnav() {
   return (
-    <nav aria-label="Magazine information" style={{ display: "flex", gap: 18, flexWrap: "wrap", paddingTop: 30, marginTop: 42, borderTop: "1px solid rgba(0,0,0,.16)" }}>
-      <Link to="/magazine">4PLANET MAGAZINE</Link>
-      <Link to="/magazine/about">ABOUT</Link>
-      <Link to="/magazine/sources">SOURCES & METHOD</Link>
-      <Link to="/magazine/corrections">CORRECTIONS</Link>
+    <nav className="mag-info-nav" aria-label="Magazine information">
+      <Link to="/magazine">Latest</Link>
+      <Link to="/magazine/about">About</Link>
+      <Link to="/magazine/sources">Sources & method</Link>
+      <Link to="/magazine/corrections">Corrections</Link>
+      <Link to="/magazine/privacy">Privacy</Link>
     </nav>
   );
 }
 
 export function MagazineAbout() {
   return (
-    <PublicShell>
-      <Seo title="About 4PLANET MAGAZINE" description="The editorial purpose, independence rules and current publication state of 4PLANET MAGAZINE." path="/magazine/about" />
-      <article style={pageStyle}>
-        <p style={kickerStyle}>4PLANET MAGAZINE / ABOUT</p>
-        <h1 style={titleStyle}>A publication about what holds.</h1>
-        <p style={bodyStyle}>4PLANET MAGAZINE reports on the living planet as a set of relationships: species, places, pressures, people, culture, science and attempted solutions. It is designed as an editorial system, not a disguised marketing surface.</p>
+    <MagazineShell>
+      <Seo title="About 4PLANET MAGAZINE" description="What 4PLANET MAGAZINE publishes, how editorial independence works and what readers should expect from every story." path="/magazine/about" />
+      <main className="mag-info-page">
+        <p className="mag-info-kicker">ABOUT / 4PLANET MAGAZINE</p>
+        <h1>Stories that earn the time.</h1>
+        <p className="mag-info-lead">4PLANET Magazine is the editorial publication of 4PLANET: reporting and explanation about the living world, the people trying to understand it, and the ideas being built around it. We follow species, places, science, engineering, culture and attempted solutions — with sources, uncertainty and visual context kept close to the story.</p>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
-          <p style={kickerStyle}>FOUNDING EDITION</p>
-          <h2 style={{ fontSize: "clamp(34px,5vw,68px)", letterSpacing: "-.045em", lineHeight: 1, margin: "14px 0 20px" }}>{FOUNDING_EDITION.workingTitle}</h2>
-          <p style={bodyStyle}>{FOUNDING_EDITION.subtitle}</p>
-          <p style={{ ...bodyStyle, fontSize: 15, marginTop: 20, opacity: .66 }}>{FOUNDING_EDITION.responsibilityState}. The current edition remains a controlled pre-publication build until source, rights, contributor, responsibility and publication gates are closed.</p>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">PUBLICATION STATE</p>
+          <h2>Public founding edition.</h2>
+          <p>{MAGAZINE_PUBLICATION_STATE.promise}</p>
+          <p>Reader-facing stories are public only after their source, editorial and visual checks close. Working commissions and unfinished reporting remain outside the public feed.</p>
         </section>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
-          <p style={kickerStyle}>EDITORIAL INDEPENDENCE</p>
-          <div style={{ marginTop: 24 }}>
-            {MAGAZINE_EDITORIAL_PRINCIPLES.map((principle, index) => (
-              <div key={principle} style={{ display: "grid", gridTemplateColumns: "46px 1fr", gap: 20, padding: "18px 0", borderTop: "1px solid rgba(0,0,0,.16)" }}>
-                <span style={kickerStyle}>{String(index + 1).padStart(2, "0")}</span>
-                <p style={{ fontSize: "clamp(16px,1.5vw,19px)", lineHeight: 1.5 }}>{principle}</p>
-              </div>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">THE VOICE</p>
+          <h2>Curious. Sharp. Never pretending certainty.</h2>
+          <div className="mag-info-rows">
+            {MAGAZINE_VOICE.map((principle, index) => (
+              <div className="mag-info-row" key={principle}><span>{String(index + 1).padStart(2, "0")}</span><p>{principle}</p></div>
             ))}
           </div>
         </section>
+
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">EDITORIAL INDEPENDENCE</p>
+          <h2>Interesting beats agreeable.</h2>
+          <div className="mag-info-rows">
+            {MAGAZINE_EDITORIAL_PRINCIPLES.map((principle, index) => (
+              <div className="mag-info-row" key={principle}><span>{String(index + 1).padStart(2, "0")}</span><p>{principle}</p></div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mag-info-dark">
+          <p className="mag-info-kicker">COMMERCIAL BOUNDARY</p>
+          <h2>Money does not buy the conclusion.</h2>
+          <p>4PLANET may work with partners, funders and organisations that also appear in our wider ecosystem. That relationship does not purchase favourable coverage, story approval or suppression of material criticism. Partner-submitted material must be labelled. Source-reported editorial stays editorial. A 4PLANET product is never evidence simply because 4PLANET built it.</p>
+        </section>
         <MagazineSubnav />
-      </article>
-    </PublicShell>
+      </main>
+    </MagazineShell>
   );
 }
 
 export function MagazineSources() {
   return (
-    <PublicShell>
-      <Seo title="Sources & Method — 4PLANET MAGAZINE" description="How 4PLANET MAGAZINE handles sources, claims, uncertainty, rights and editorial release." path="/magazine/sources" />
-      <article style={pageStyle}>
-        <p style={kickerStyle}>4PLANET MAGAZINE / SOURCES & METHOD</p>
-        <h1 style={titleStyle}>Evidence before certainty.</h1>
-        <p style={bodyStyle}>A story is not ready because the prose is finished. Material claims, images and interpretations pass through a source and rights chain before a public version is accepted.</p>
+    <MagazineShell>
+      <Seo title="Sources & Method — 4PLANET MAGAZINE" description="How 4PLANET MAGAZINE handles reporting, sources, claims, uncertainty, image rights, fact checking and publication." path="/magazine/sources" />
+      <main className="mag-info-page">
+        <p className="mag-info-kicker">SOURCES & METHOD</p>
+        <h1>Evidence before certainty.</h1>
+        <p className="mag-info-lead">A story is not ready because the prose is finished. Material claims, images and interpretations move through a source, fact-check and rights chain before the public version is accepted.</p>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
-          <p style={kickerStyle}>PUBLICATION WORKFLOW</p>
-          <div style={{ marginTop: 24 }}>
-            {MAGAZINE_SOURCE_WORKFLOW.map((step, index) => (
-              <div key={step} style={{ display: "grid", gridTemplateColumns: "54px 1fr", gap: 20, padding: "18px 0", borderTop: "1px solid rgba(0,0,0,.16)" }}>
-                <span style={kickerStyle}>{String(index + 1).padStart(2, "0")}</span>
-                <strong style={{ fontSize: "clamp(17px,1.8vw,22px)", fontWeight: 500 }}>{step}</strong>
-              </div>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">ARTICLE ENGINE</p>
+          <h2>From idea to learning loop.</h2>
+          <div className="mag-info-rows">
+            {MAGAZINE_PUBLICATION_PIPELINE.map((step, index) => (
+              <div className="mag-info-row" key={step}><span>{String(index + 1).padStart(2, "0")}</span><strong>{step}</strong></div>
             ))}
           </div>
         </section>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)", background: "#090909", color: "#fff", padding: "clamp(28px,5vw,64px)" }}>
-          <p style={{ ...kickerStyle, opacity: .68 }}>READING THE EVIDENCE</p>
-          <h2 style={{ fontSize: "clamp(34px,5vw,64px)", letterSpacing: "-.045em", lineHeight: 1, margin: "18px 0 26px" }}>Observed ≠ modelled ≠ interpreted ≠ unknown.</h2>
-          <p style={{ ...bodyStyle, color: "rgba(255,255,255,.8)" }}>4PLANET MAGAZINE should distinguish what a source directly reports from what a model estimates, what the publication interprets and what remains unresolved. 4PLANET products may help a reader explore context, but product output is not automatically editorial evidence.</p>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">SOURCE CONTROL</p>
+          <div className="mag-info-rows">
+            {MAGAZINE_SOURCE_WORKFLOW.map((step, index) => (
+              <div className="mag-info-row" key={step}><span>{String(index + 1).padStart(2, "0")}</span><strong>{step}</strong></div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mag-info-dark">
+          <p className="mag-info-kicker">READING THE EVIDENCE</p>
+          <h2>Observed ≠ modelled ≠ interpreted ≠ unknown.</h2>
+          <p>We distinguish what a source directly reports from what a model estimates, what 4PLANET interprets and what remains unresolved. Source-reported editorial is written from published material and does not imply that our journalists were physically present. Original reporting will be labelled as such.</p>
+        </section>
+
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">VISUAL TRUTH</p>
+          <h2>A beautiful image is not field evidence.</h2>
+          <p>Every full story carries an image role. Documentary imagery may support a claim only where the source and rights record justify it. Context imagery is labelled as context and must not be read as proof of a named event, location, person or ecological outcome. Credits and rights remain attached to the asset record.</p>
+        </section>
+
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">AI / EDITORIAL RESPONSIBILITY</p>
+          <h2>Tools can assist. Editors remain responsible.</h2>
+          <p>4PLANET may use computational and AI tools in research assistance, transcription, synthesis, drafting support, data handling or production. They do not become a source simply by producing text, and they do not remove editorial responsibility. Material factual claims must remain traceable to evidence; invented quotations, fabricated reporting and synthetic documentary evidence are not acceptable. The published story is judged and owned by the editorial process, not by the tool that helped make it.</p>
+        </section>
+
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">RELEASE STANDARD</p>
+          <div className="mag-info-rows">
+            {MAGAZINE_RELEASE_STANDARD.map((rule, index) => (
+              <div className="mag-info-row" key={rule}><span>{String(index + 1).padStart(2, "0")}</span><p>{rule}</p></div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">FORMATS</p>
+          <div className="mag-info-rows">
+            {MAGAZINE_EDITORIAL_FORMS.map((form, index) => (
+              <div className="mag-info-row" key={form.id}><span>{String(index + 1).padStart(2, "0")}</span><p><strong>{form.label}</strong><br />{form.job}</p></div>
+            ))}
+          </div>
         </section>
         <MagazineSubnav />
-      </article>
-    </PublicShell>
+      </main>
+    </MagazineShell>
   );
 }
 
 export function MagazineCorrections() {
   return (
-    <PublicShell>
+    <MagazineShell>
       <Seo title="Corrections — 4PLANET MAGAZINE" description="The 4PLANET MAGAZINE corrections and transparency desk." path="/magazine/corrections" />
-      <article style={pageStyle}>
-        <p style={kickerStyle}>4PLANET MAGAZINE / CORRECTIONS DESK</p>
-        <h1 style={titleStyle}>What changed stays visible.</h1>
-        <p style={bodyStyle}>Material factual corrections should be attached to the affected public story rather than silently disappearing into an edit. The correction record should state what changed, why it changed and when.</p>
+      <main className="mag-info-page">
+        <p className="mag-info-kicker">CORRECTIONS DESK</p>
+        <h1>What changed stays visible.</h1>
+        <p className="mag-info-lead">Material factual corrections belong with the affected public story rather than disappearing into a silent edit. The record should say what changed, why and when.</p>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)", borderTop: "1px solid rgba(0,0,0,.16)", paddingTop: 24 }}>
-          <p style={kickerStyle}>CURRENT STATE</p>
-          <h2 style={{ fontSize: "clamp(30px,4vw,54px)", lineHeight: 1.05, letterSpacing: "-.04em", margin: "18px 0" }}>No public Founding Edition correction entries yet.</h2>
-          <p style={{ ...bodyStyle, fontSize: 16, opacity: .7 }}>Reason: the Founding Edition remains in a pre-publication state. This is not a claim that no draft has changed; it means there is not yet a released public story to which a public correction can attach.</p>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">CURRENT STATE</p>
+          <h2>No public correction entries yet.</h2>
+          <p>This does not mean drafts have never changed. It means no material correction has yet been logged against a released story in the current public edition.</p>
         </section>
 
-        <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
-          <p style={kickerStyle}>CORRECTION RULE</p>
-          <p style={bodyStyle}>Corrections must remain editorially controlled and separate from partner, funder or product pressure. Material disputes should be recorded rather than resolved by silently weakening or deleting the original evidence trail.</p>
+        <section className="mag-info-section">
+          <p className="mag-info-kicker">CORRECTION RULE</p>
+          <h2>The source trail stays intact.</h2>
+          <p>Typos and purely stylistic edits may be corrected without a formal note. Material errors in fact, attribution, interpretation or visual context require a visible correction. Corrections remain editorially controlled and separate from partner, funder or product pressure.</p>
         </section>
         <MagazineSubnav />
-      </article>
-    </PublicShell>
+      </main>
+    </MagazineShell>
+  );
+}
+
+export function MagazinePrivacy() {
+  return (
+    <MagazineShell>
+      <Seo title="Privacy — 4PLANET MAGAZINE" description="How optional analytics, saved reading and local reader state work on 4PLANET MAGAZINE." path="/magazine/privacy" />
+      <main className="mag-info-page">
+        <p className="mag-info-kicker">PRIVACY / READER PRODUCT</p>
+        <h1>Read without an account.</h1>
+        <p className="mag-info-lead">You do not need an account to read, search, save stories or continue where you left off. Saved and recent-reading state is stored locally in your browser.</p>
+        <section className="mag-info-section"><p className="mag-info-kicker">OPTIONAL ANALYTICS</p><h2>Measurement is consent-based.</h2><p>Optional usage analytics are loaded only after consent. They are used to understand whether stories are opened, read deeply, completed, saved, shared and followed into sources, related stories or ATLAS. Advertising-personalisation signals are disabled.</p></section>
+        <section className="mag-info-section"><p className="mag-info-kicker">WHAT WE WANT TO LEARN</p><h2>Value, not surveillance.</h2><p>The useful question is not how many pageviews can be accumulated. It is which stories people actually spend time with, which topics help them discover more, and where the reader product fails to earn attention.</p></section>
+        <MagazineSubnav />
+      </main>
+    </MagazineShell>
   );
 }

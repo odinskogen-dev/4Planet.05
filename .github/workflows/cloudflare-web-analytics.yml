@@ -1,7 +1,6 @@
 name: Cloudflare Web Analytics Bootstrap
 
 on:
-  workflow_dispatch:
   push:
     branches: [king/test]
     paths:
@@ -32,7 +31,7 @@ jobs:
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          domains=(4planet.org 4planetmagazine.com s4piens.com cre4tors.com 4planetmarket.com)
+          domains=(4planet.org s4piens.com cre4tors.com 4planetmarket.com)
 
           for domain in "${domains[@]}"; do
             echo "--- ${domain}"
@@ -62,4 +61,4 @@ jobs:
             echo "Web Analytics created for ${domain}; auto-install requested."
           done
 
-          echo "4species.com remains outside the canonical five-domain measurement set unless explicitly promoted later."
+          echo "4species.com is a redirect-only distribution alias; its HTTP requests remain visible in Cloudflare zone analytics, while page-level RUM is measured on the canonical destination."

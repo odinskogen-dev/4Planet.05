@@ -1,17 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
-
-const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
-const DEFAULT_ANALYTICS_DOMAINS = [
-  "4planet.org",
-  "4planetmagazine.com",
-  "s4piens.com",
-  "4species.com",
-  "cre4tors.com",
-  "4planetmarket.com",
-] as const;
 
 type ConsentState = "granted" | "denied" | null;
 type Gtag = (...args: unknown[]) => void;
@@ -24,25 +14,22 @@ declare global {
 }
 
 function measurementId(): string {
-  return import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || DEFAULT_GA_MEASUREMENT_ID;
-}
-
-function canonicalHost(host: string): string {
-  return host.trim().toLowerCase().replace(/^www\./, "");
+  return import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
 }
 
 function configuredDomains(): string[] {
-  const configured = (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
+  const explicit = (import.meta.env.VITE_ANALYTICS_DOMAINS || "")
     .split(",")
-    .map(canonicalHost)
+    .map((domain) => domain.trim().toLowerCase())
     .filter(Boolean);
-  return Array.from(new Set(configured.length ? configured : DEFAULT_ANALYTICS_DOMAINS));
+  if (explicit.length) return explicit;
+  return ["4planet.org", "4planetmagazine.com"];
 }
 
-export function isAnalyticsHostAllowed(hostname: string): boolean {
-  const host = canonicalHost(hostname);
-  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".pages.dev")) return false;
-  return configuredDomains().includes(host);
+function analyticsAllowedHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return configuredDomains().some((domain) => host === domain || host === `www.${domain}`);
 }
 
 function readConsent(): ConsentState {
@@ -61,55 +48,13 @@ function productArea(pathname: string): string {
   return "4planet";
 }
 
-function ensureGtag() {
-  window.dataLayer = window.dataLayer || [];
-  if (window.gtag) return;
-  window.gtag = function () {
-    window.dataLayer?.push(arguments);
-  } as Gtag;
-}
-
-function setConsentDefaultDenied() {
-  ensureGtag();
-  window.gtag?.("consent", "default", {
-    analytics_storage: "denied",
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-    wait_for_update: 500,
-  });
-}
-
-function updateConsent(next: Exclude<ConsentState, null>) {
-  ensureGtag();
-  window.gtag?.("consent", "update", {
-    analytics_storage: next,
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-  });
-}
-
 function installGoogleTag(id: string, domains: string[]) {
-  if (!id || document.getElementById("4planet-ga4")) return;
-
-  ensureGtag();
-  updateConsent("granted");
-
-  if (domains.length > 1) {
-    window.gtag?.("set", "linker", {
-      domains,
-      decorate_forms: true,
-    });
-  }
-
-  window.gtag?.("js", new Date());
-  window.gtag?.("config", id, {
-    send_page_view: false,
-    allow_google_signals: false,
-    allow_ad_personalization_signals: false,
-  });
-
+  if (!id || !analyticsAllowedHost() || document.getElementById("4planet-ga4")) return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer?.push(arguments); } as Gtag;
+  if (domains.length > 1) window.gtag("set", "linker", { domains, decorate_forms: true });
+  window.gtag("js", new Date());
+  window.gtag("config", id, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false });
   const script = document.createElement("script");
   script.id = "4planet-ga4";
   script.async = true;
@@ -118,11 +63,8 @@ function installGoogleTag(id: string, domains: string[]) {
 }
 
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || !window.gtag) return;
-  window.gtag("event", name, {
-    ...parameters,
-    site_host: canonicalHost(window.location.hostname),
-  });
+  if (!analyticsAllowedHost() || readConsent() !== "granted" || !window.gtag) return;
+  window.gtag("event", name, parameters);
 }
 
 export function resetAnalyticsConsent() {
@@ -133,81 +75,41 @@ export function resetAnalyticsConsent() {
 export function Analytics() {
   const location = useLocation();
   const id = measurementId();
-  const allowedHost = useMemo(() => isAnalyticsHostAllowed(window.location.hostname), []);
+  const allowedHost = analyticsAllowedHost();
   const [consent, setConsent] = useState<ConsentState>(() => readConsent());
-
-  useEffect(() => {
-    if (!allowedHost || !id) return;
-    setConsentDefaultDenied();
-    if (consent === "denied") updateConsent("denied");
-  }, [allowedHost, consent, id]);
 
   useEffect(() => {
     if (!allowedHost || !id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
+    const pagePath = `${location.pathname}${location.search}`;
+    window.gtag?.("event", "page_view", { page_title: document.title, page_location: window.location.href, page_path: pagePath, content_group: productArea(location.pathname), site_host: window.location.hostname });
 
-    window.gtag?.("event", "page_view", {
-      page_title: document.title,
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
-      content_group: productArea(location.pathname),
-      site_host: canonicalHost(window.location.hostname),
-    });
+    if (location.pathname.startsWith("/magazine/topics/")) {
+      const parts = location.pathname.split("/").filter(Boolean);
+      const topic = parts[parts.length - 1] || "unknown";
+      trackEvent("topic_open", { topic, source: "route" });
+    }
+    if (location.pathname === "/magazine/search") {
+      const query = new URLSearchParams(location.search).get("q")?.trim();
+      if (query) trackEvent("search", { search_term: query.slice(0, 120) });
+    }
+    if (location.pathname === "/magazine/atlas") trackEvent("atlas_open", { source: "magazine_route" });
   }, [allowedHost, consent, id, location.pathname, location.search]);
 
   if (!allowedHost || !id || consent !== null) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);
-    updateConsent(next);
     setConsent(next);
   };
+  const privacyHref = location.pathname.startsWith("/magazine") || window.location.hostname === "4planetmagazine.com" ? "/magazine/privacy" : "/privacy";
 
   return (
-    <aside
-      role="region"
-      aria-label="Analytics preferences"
-      style={{
-        position: "fixed",
-        left: 12,
-        right: 12,
-        bottom: 12,
-        zIndex: 9999,
-        maxWidth: 760,
-        margin: "0 auto",
-        padding: "14px 16px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 18,
-        flexWrap: "wrap",
-        background: "#080808",
-        color: "#fff",
-        border: "1px solid rgba(255,255,255,.2)",
-        fontFamily: "DM Sans, sans-serif",
-        fontSize: 13,
-        lineHeight: 1.45,
-      }}
-    >
-      <div style={{ maxWidth: 500 }}>
-        Allow optional usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}
-        <a href="/privacy" style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a>
-      </div>
+    <aside role="region" aria-label="Analytics preferences" style={{ position: "fixed", left: 12, right: 12, bottom: 12, zIndex: 9999, maxWidth: 760, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap", background: "#080808", color: "#fff", border: "1px solid rgba(255,255,255,.2)", fontFamily: "DM Sans, sans-serif", fontSize: 13, lineHeight: 1.45 }}>
+      <div style={{ maxWidth: 500 }}>Allow optional usage analytics to help improve 4PLANET. Advertising signals are disabled. {" "}<a href={privacyHref} style={{ color: "inherit", textUnderlineOffset: 3 }}>Privacy</a></div>
       <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          onClick={() => decide("denied")}
-          style={{ border: "1px solid rgba(255,255,255,.45)", background: "transparent", color: "#fff", padding: "8px 12px", cursor: "pointer" }}
-        >
-          DECLINE
-        </button>
-        <button
-          type="button"
-          onClick={() => decide("granted")}
-          style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "8px 12px", cursor: "pointer" }}
-        >
-          ALLOW
-        </button>
+        <button type="button" onClick={() => decide("denied")} style={{ border: "1px solid rgba(255,255,255,.45)", background: "transparent", color: "#fff", padding: "8px 12px", cursor: "pointer" }}>DECLINE</button>
+        <button type="button" onClick={() => decide("granted")} style={{ border: "1px solid #fff", background: "#fff", color: "#080808", padding: "8px 12px", cursor: "pointer" }}>ALLOW</button>
       </div>
     </aside>
   );
