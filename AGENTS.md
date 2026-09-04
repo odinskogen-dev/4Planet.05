@@ -28,7 +28,9 @@ Run `node scripts/elite-operating-doctrine-gate.mjs` as part of repository-level
 
 Every material 4PLANET request addressed to **AXE / AXE PL** — and every semantically equivalent material 4PLANET request even when those words are omitted — requires a **fresh connected BRAIN bootstrap before substantive current-state reasoning, prioritisation, architecture changes or execution**. Local chat context and model memory are orientation only, never programme authority.
 
-Minimum current-state path: `READ FIRST → GPT_PROJECT_LEAD_CURRENT → KNOWLEDGE_OS_STATE → relevant Founder Control / Project Pack / WBS / Active Engine / Prototype SAFE → fresh GitHub or other connected evidence when the task depends on live state`.
+Minimum current-state path: `00_ READ FIRST → 01_ PROJECT LEAD CURRENT — NOW, PRIORITIES, GATES & NEXT ACTIONS → 02_ ACTIVE TASKS — SMALL EXECUTION SURFACE → relevant bounded Context Pack / Founder Decision / WBS / Prototype SAFE only as needed → fresh GitHub/runtime/connector/external evidence whenever live state matters`.
+
+`01_ PROJECT LEAD CURRENT`, `02_ ACTIVE TASKS` and Atomic Register / Current State must expose the same `CURRENT_STATE_REV` for a committed programme projection. If they disagree, are missing, or fresher same-lane evidence proves a later material transition, classify `STALE_CURRENT / WRITEBACK_INCOMPLETE` and fail closed for the affected current-state action until propagation + readback is repaired. Legacy `GPT_PROJECT_LEAD_CURRENT` and `KNOWLEDGE_OS_STATE` are historical/deep-control sources, not the default current-state front door unless specifically required.
 
 If the required BRAIN/current-state read cannot be completed, fail closed on the affected claim with `CURRENT BRAIN READ REQUIRED` rather than guessing. Continue only bounded work that does not depend on missing state. After a material Founder decision, accepted/rejected artifact, code-line change or durable learning, write back to existing canonical authorities and read back in the same work cycle. Do not create another memory or management system.
 
