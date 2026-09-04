@@ -19,3 +19,13 @@ test("READY recovery remains fail-closed and bounded to exact build plus allowli
   assert.match(runtimeSource, /status: "READY"/);
   assert.match(runtimeSource, /FACTORY_QUEUE\.sendBatch/);
 });
+
+test("activation start proves both exact-head gates before candidate/capacity preflight can dispatch proof work", () => {
+  assert.match(runtimeSource, /"Production Factory Shadow CI"/);
+  assert.match(runtimeSource, /"ONE INTERFACE Convergence Gate"/);
+  assert.match(runtimeSource, /run\.status !== "completed" \|\| run\.conclusion !== "success"/);
+  const gateIndex = runtimeSource.indexOf("await requireExactHeadActivationGates(env, buildSha)");
+  const capacityIndex = runtimeSource.indexOf("await agent.attestActivationPreflight");
+  assert.ok(gateIndex >= 0, "exact-head gate check missing from activation start");
+  assert.ok(capacityIndex > gateIndex, "candidate/capacity preflight must come after exact-head gate proof");
+});
