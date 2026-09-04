@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 
 const preflightPath = fileURLToPath(new URL("./activationPreflightRuntime.ts", import.meta.url));
 const runtimePath = fileURLToPath(new URL("./runtimeEntrypoint.ts", import.meta.url));
-const workersPath = fileURLToPath(new URL("./workers.ts", import.meta.url));
+const dispatchRuntimePath = fileURLToPath(new URL("./index.ts", import.meta.url));
 const preflight = readFileSync(preflightPath, "utf8");
 const runtime = readFileSync(runtimePath, "utf8");
-const workers = readFileSync(workersPath, "utf8");
+const dispatchRuntime = readFileSync(dispatchRuntimePath, "utf8");
 
 function position(source: string, fragment: string): number {
   const index = source.indexOf(fragment);
@@ -43,11 +43,12 @@ test("capacity attestation is non-consuming and bound to exact Factory and TEST 
   assert.equal(preflight.includes("reserveAiBudget("), false, "preflight must never reserve AI capacity");
 });
 
-test("activation worker identity stays aligned with the dispatch worker-slot formula", () => {
+test("activation worker identity stays aligned with the actual dispatch worker-slot formula", () => {
   const formula = 'const hash = [...workPackageId].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);';
   const slot = 'const slot = section === "PRODUCT_DESIGN" || section === "CODE_QA" ? (hash % 2) + 1 : 1;';
   assert.ok(preflight.includes(formula));
   assert.ok(preflight.includes(slot));
-  assert.ok(workers.includes(formula));
-  assert.ok(workers.includes(slot));
+  assert.ok(dispatchRuntime.includes(formula));
+  assert.ok(dispatchRuntime.includes(slot));
+  assert.ok(dispatchRuntime.includes("this.workerName(pkg.section, pkg.id)"));
 });
