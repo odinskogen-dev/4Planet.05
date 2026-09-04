@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "programme": "GIGA-IMMUNITY-01",
   "close_rule": "CLOSED only when physically impossible within authority model or fail-closed before canonical value can be harmed.",
   "failure_classes": [
@@ -16,20 +16,22 @@
     {
       "id": "IMM-002",
       "class": "GOLD_VALUE_LOSS",
-      "root_cause": "unique human/product value lacked complete machine-readable preservation identity before sync/cleanup",
-      "containment": "MUST-NOT-LOSE register plus immutable donor history",
-      "permanent_hardening_required": ["exact SHA/URL/screenshots", "human value statement", "behaviour/data/source assertions", "regression tests", "donor disposition before cleanup"],
-      "regression": "replacement cannot promote while known superior donor value remains undispositioned",
-      "state": "ACTIVE_HARDENING"
+      "incidents": ["Oslofjord canonical Norwegian alias redirect was lost during Embla router convergence; exact-head Browser Product Proof detected the regression before Founder promotion and e33549ea6476a5c8e63936a673f9ac44bf573daf restored it on the same HEIR"],
+      "root_cause": "unique human/product value or compatibility behaviour can be dropped during otherwise valid product/router transfer when preservation identity is incomplete",
+      "containment": "MUST-NOT-LOSE register plus immutable donor history plus exact-head browser regression gates",
+      "permanent_hardening_required": ["exact SHA/URL/screenshots", "human value statement", "behaviour/data/source assertions", "canonical redirect matrix as MUST-NOT-LOSE behaviour", "regression tests", "donor disposition before cleanup"],
+      "regression": "replacement cannot promote while known superior donor value remains undispositioned; registered canonical aliases must resolve to canonical product routes on desktop and mobile",
+      "state": "ACTIVE_HARDENING__OSLOFJORD_ALIAS_RESTORED__EXACT_HEAD_PASS_REQUIRED"
     },
     {
       "id": "IMM-003",
       "class": "STALE_CONTEXT_OR_RECEIVER",
+      "incidents": ["A bounded Oslofjord alias/immunity correction commit prepared from HEIR 3eeaed6872b531d05cc81ec030d26d891fb25676 was rejected by GitHub as non-fast-forward after HEIR advanced; no stale mutation reached king/test"],
       "root_cause": "moving HEIR and long-lived workers/branches can diverge from current authority",
-      "containment": "fresh rehydrate plus exact ancestry/readback before mutation",
-      "permanent_hardening_required": ["morning boot reconciliation", "pre-write stale check", "post-write readback", "automatic fail-closed on HEIR advance"],
-      "regression": "stale registered sandbox must be stopped before material product mutation",
-      "state": "ACTIVE_HARDENING"
+      "containment": "fresh rehydrate plus exact ancestry/readback before mutation and non-force ref updates",
+      "permanent_hardening_required": ["morning boot reconciliation", "pre-write stale check", "post-write readback", "automatic fail-closed on HEIR advance", "never force stale correction onto HEIR"],
+      "regression": "stale registered sandbox or prepared HEIR commit must be stopped before material product mutation",
+      "state": "ACTIVE_HARDENING__NON_FAST_FORWARD_FAIL_CLOSED_PROVEN"
     },
     {
       "id": "IMM-004",
