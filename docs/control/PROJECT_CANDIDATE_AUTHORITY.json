@@ -33,16 +33,19 @@
       "heir": "king/test",
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
+        "sha": "e7d7a051160c3e0fafaef51318f1d2e918ea1664",
         "pr": 263,
         "required_ancestor_sha_at_registration": "404fad51436d273fceb77af33beef17b3a16ea27",
         "classification": "SANDBOX",
         "review_path": "/atlas/sandbox",
-        "exact_preview": "https://c6da6122.4planet-05.pages.dev/atlas",
+        "exact_preview": null,
+        "preview_state": "STALE_REVERIFY_REQUIRED_AFTER_FORWARD_SYNC",
         "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate",
         "live_authority": false
       },
-      "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
+      "lineage_last_observed_heir_sha": "e865eca1311436180c8d79bf82d06fadb463546f",
+      "lineage_last_observed_compare": "DIVERGED_AHEAD_17_BEHIND_24_MERGE_BASE_404fad51436d273fceb77af33beef17b3a16ea27",
+      "lineage_state": "DIVERGED_FROM_CURRENT_HEIR_FAIL_CLOSED_FORWARD_SYNC_REQUIRED_NO_FURTHER_SANDBOX_MUTATION",
       "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED_AS_THE_ONE_SANDBOX_BEFORE_WORK"
     },
     "MAGAZINE": {
