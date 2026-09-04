@@ -20,12 +20,18 @@ test("READY recovery remains fail-closed and bounded to exact build plus allowli
   assert.match(runtimeSource, /FACTORY_QUEUE\.sendBatch/);
 });
 
-test("activation start proves both exact-head gates before candidate/capacity preflight can dispatch proof work", () => {
-  assert.match(runtimeSource, /"Production Factory Shadow CI"/);
-  assert.match(runtimeSource, /"ONE INTERFACE Convergence Gate"/);
+test("bounded ACTIVE boot proves Factory-specific exact-head CI before candidate/capacity preflight can dispatch worker compute", () => {
+  assert.match(runtimeSource, /const REQUIRED_ACTIVATION_WORKFLOWS = \[\s*"Production Factory Shadow CI",\s*\] as const;/);
+  assert.doesNotMatch(runtimeSource, /"ONE INTERFACE Convergence Gate"/);
   assert.match(runtimeSource, /run\.status !== "completed" \|\| run\.conclusion !== "success"/);
+
+  const receiverIndex = runtimeSource.indexOf('requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT")');
   const gateIndex = runtimeSource.indexOf("await requireExactHeadActivationGates(env, buildSha)");
   const capacityIndex = runtimeSource.indexOf("await agent.attestActivationPreflight");
-  assert.ok(gateIndex >= 0, "exact-head gate check missing from activation start");
-  assert.ok(capacityIndex > gateIndex, "candidate/capacity preflight must come after exact-head gate proof");
+  assert.ok(receiverIndex >= 0, "current TEST receiver authority check missing from activation start");
+  assert.ok(gateIndex > receiverIndex, "Factory exact-head CI must come after current receiver authority proof");
+  assert.ok(capacityIndex > gateIndex, "candidate/capacity preflight must come after Factory exact-head CI proof");
+
+  assert.match(runtimeSource, /const bootIds = new Set\(activationProofIds\(buildSha\)\)/);
+  assert.match(runtimeSource, /\.filter\(\(pkg\) => bootIds\.has\(pkg\.id\)\)/);
 });
