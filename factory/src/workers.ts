@@ -7,6 +7,7 @@ import { checkPackageAdapterScope } from "./sectionAdapters";
 import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
 import { factoryCandidateBranch, shouldReserveAiForCandidate, type CandidateCheckState } from "./aiReservation";
+import { buildAiCapacitySnapshot } from "./aiCapacitySnapshot";
 import {
   APPROVED_FACTORY_AI_MODEL,
   MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH,
@@ -255,6 +256,23 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     } catch {
       return true;
     }
+  }
+
+  getAiCapacitySnapshot(requestedCalls: number = 1) {
+    const iso = new Date().toISOString();
+    const utcDay = iso.slice(0, 10);
+    const utcMonth = iso.slice(0, 7);
+    const dayRow = this.sql<{ reserved_calls: number }>`SELECT reserved_calls FROM ai_usage WHERE utc_day = ${utcDay}`[0];
+    const monthRow = this.sql<{ reserved_calls: number }>`SELECT reserved_calls FROM ai_monthly_usage WHERE utc_month = ${utcMonth}`[0];
+    return buildAiCapacitySnapshot({
+      utcDay,
+      utcMonth,
+      requestedCalls,
+      dayReserved: Number(dayRow?.reserved_calls ?? 0),
+      monthReserved: Number(monthRow?.reserved_calls ?? 0),
+      dayCap: MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY,
+      monthCap: MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH,
+    });
   }
 
   private reserveAiBudget(calls: number): AiReservationDecision {
