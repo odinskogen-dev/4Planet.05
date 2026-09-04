@@ -205,7 +205,7 @@ jobs:
           fi
           echo "shadow_runtime_proven=true" >> "$GITHUB_OUTPUT"
 
-      - name: Wait for exact-head Factory CI and observe product convergence
+      - name: Wait for both exact-head activation gates
         id: exact_head_gates
         env:
           GH_TOKEN: ${{ github.token }}
@@ -213,39 +213,39 @@ jobs:
         run: |
           set -euo pipefail
           FACTORY_PASS=false
-          CONVERGENCE="pending"
+          CONVERGENCE_PASS=false
           for attempt in $(seq 1 90); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
             FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
             CONVERGENCE="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="ONE INTERFACE Convergence Gate")][0].conclusion // "pending"')"
             echo "Exact-head evidence: Factory=$FACTORY ProductConvergence=$CONVERGENCE"
-            if [[ "$FACTORY" == "success" ]]; then
-              FACTORY_PASS=true
-              break
-            fi
             if [[ "$FACTORY" != "pending" && "$FACTORY" != "success" ]]; then
               echo "Required exact-head Factory CI concluded non-success: $FACTORY"
               exit 1
             fi
+            if [[ "$CONVERGENCE" != "pending" && "$CONVERGENCE" != "success" ]]; then
+              echo "Required exact-head ONE INTERFACE concluded non-success: $CONVERGENCE"
+              exit 1
+            fi
+            if [[ "$FACTORY" == "success" && "$CONVERGENCE" == "success" ]]; then
+              FACTORY_PASS=true
+              CONVERGENCE_PASS=true
+              break
+            fi
             sleep 10
           done
-          if [[ "$FACTORY_PASS" != "true" ]]; then
-            echo "Required exact-head Factory CI did not reach success in the bounded 15-minute window."
+          if [[ "$FACTORY_PASS" != "true" || "$CONVERGENCE_PASS" != "true" ]]; then
+            echo "Both required exact-head activation gates did not reach success in the bounded 15-minute window."
             exit 1
           fi
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
-          if [[ "$CONVERGENCE" == "success" ]]; then
-            echo "convergence_passed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "convergence_passed=false" >> "$GITHUB_OUTPUT"
-            echo "Product convergence is recorded as $CONVERGENCE but is not a Level-2 internal Factory activation gate. It remains required before TEST KING/LIVE release."
-          fi
+          echo "convergence_passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Record hardening-only SHADOW deployment
         if: needs.preflight.outputs.activation_requested != 'true'
         shell: bash
         run: |
-          echo "Exact head deployed and SHADOW canary proven. Full mutation activation proof deferred until an explicit [factory-activate] head or workflow_dispatch."
+          echo "Exact head deployed and both required activation gates proven. Full mutation activation proof deferred until an explicit [factory-activate] head or workflow_dispatch."
 
       - name: Stop safely if permanent GitHub TEST-write credential is absent
         if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed != 'true'
@@ -276,12 +276,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          RESPONSE="$(curl --silent --show-error --fail-with-body -X POST \
+          HTTP_STATUS="$(curl --silent --show-error \
+            -o factory-activation-start.json \
+            -w '%{http_code}' \
+            -X POST \
             -H "x-factory-control: $CONTROL_TOKEN" \
             -H "content-type: application/json" \
             "$BASE_URL/__factory/activation-proof/start")"
-          echo "$RESPONSE"
-          echo "$RESPONSE" | jq -e '.ok == true' >/dev/null
+          cat factory-activation-start.json
+          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+            echo "Activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
+            exit 1
+          fi
+          jq -e '.ok == true' factory-activation-start.json >/dev/null
 
       - name: Poll real production, certify fresh evidence and activate
         if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
@@ -333,6 +340,7 @@ jobs:
           path: |
             factory-shadow-health.json
             factory-shadow-canary.json
+            factory-activation-start.json
             factory-active-certification.json
           if-no-files-found: ignore
           retention-days: 30
@@ -355,7 +363,7 @@ jobs:
 
           Real proof: SPECIES Profile + Bay of Biscay Ecosystem + Actor Profile produced through bounded AI → GitHub candidate → draft PR → CI → 390 Browser QA → persisted outcome → governed learning.
 
-          Product convergence observed during Level-2 certification: `${{ steps.exact_head_gates.outputs.convergence_passed }}`. This is not authority for TEST KING/LIVE; full product convergence remains a separate release gate.
+          Both exact-head activation prerequisites passed: Production Factory Shadow CI and ONE INTERFACE Convergence Gate. This is not authority for TEST KING/LIVE promotion.
 
           Certification: \`$SUMMARY\`
 
