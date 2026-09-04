@@ -108,6 +108,7 @@ export function AppRoutes() {
       <Route path="/get-involved" element={<Suspense fallback={ActorFallback}><FindYourWayToHelp /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
+      <Route path="/living-systems/oslofjorden" element={<Navigate to="/living-systems/oslofjord" replace />} />
       <Route path="/living-systems/oslofjord" element={<PlanetProofPage slug="oslofjorden" />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
