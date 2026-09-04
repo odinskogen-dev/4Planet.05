@@ -113,9 +113,11 @@ function styleMatchesMode(map: any, mode: "dark" | "light") {
  * rather than silently accepting the wrong basemap.
  *
  * Zero-loss invariant: a theme switch may never discard active ATLAS overlays.
- * We merge them into the new style and independently rehydrate any source/layer
- * MapLibre drops during a full style replacement. Blue Marble is also kept
- * explicitly global/regional so imagery cannot stretch into street-level proof.
+ * We merge them into the new style and use MapLibre's style diff so unchanged
+ * overlay sources/layers survive the transition instead of being torn down on
+ * slower/mobile runtimes. An independent style.load repair remains as a second
+ * line of defence. Blue Marble is also kept explicitly global/regional so
+ * imagery cannot stretch into street-level proof.
  */
 export function AtlasBasemapSync() {
   useEffect(() => {
@@ -153,7 +155,7 @@ export function AtlasBasemapSync() {
         const overlays = captureAtlasOverlays(map);
         const merged = mergeStyle(base, overlays);
         map.once?.("style.load", () => restoreAtlasOverlays(map, overlays));
-        map.setStyle(merged, { diff: false });
+        map.setStyle(merged, { diff: true });
       } catch {
         // Keep the last working map rather than blanking ATLAS when the optional
         // style endpoint is unavailable.
