@@ -2,61 +2,58 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-ATLAS-RETURN-CAMERA-STALE-MAP-01
-**STATUS:** TEST / IMPLEMENTED + BROWSER-ACCEPTED / FOUNDER RELEASE NOT IMPLIED
-**BASE AUTHORITY:** `king/test` / exact parent `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
-**ROLLBACK BASE:** `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
-**IMPLEMENTED CANDIDATE:** `5d40e8c93476c6addfa349363957384e4de3d254` — `fix(atlas): ignore stale map during return camera restore`
-**PRODUCT PROOF:** Browser Product Proof #1273 PASS; ONE INTERFACE Convergence Gate #2395 PASS on the implemented candidate.
-**CONTROL DEFECT BEING CLOSED:** GOLD policy run 33422638609 correctly failed because the user-facing ATLAS mutation did not update this brief in the same bounded change. This brief repairs that control evidence only; it does not alter product behaviour or imply LIVE release.
+**CHANGE ID:** GIGA2800-HUMAN-PROOF-EMBLA-CHOICE-TRANSFER-01
+**STATUS:** HEIR / DONOR DELTA TRANSFERRED FOR TEST + HUMAN REVIEW / NOT FOUNDER APPROVED / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `604c67932de09f981848881811ce0060c4c0556b`
+**ROLLBACK BASE:** `604c67932de09f981848881811ce0060c4c0556b`
+**DONOR:** PR #220 / `work/giga02-embla-human-utility-01` @ `46681b2489eff268aed933c8e73f23e07027c55f` — QUARANTINE/DONOR ONLY under current Four-State Product Control.
+**REGRESSION CORRECTION:** The first manual router convergence incorrectly removed the canonical Norwegian alias `/living-systems/oslofjorden → /living-systems/oslofjord`. Browser Product Proof caught the loss before acceptance. The alias was restored forward-only in `e33549ea6476a5c8e63936a673f9ac44bf573daf`. Future manual router convergence must compare all existing explicit aliases/redirects against the parent before classifying a route as duplicate.
 
 ## USER ARRIVES BECAUSE
-They move between 4PLANET product surfaces and return to ATLAS expecting the globe/map camera to restore reliably rather than bind to an already-unmounted previous map instance.
+They need help making one ordinary FOOD choice and should not have to understand 4PLANET's data architecture before receiving useful decision support.
 
 ## ONE THING TO UNDERSTAND
-ATLAS return-camera authority must attach only to the currently mounted map/canvas. A stale global map reference from a previous ATLAS instance is not valid authority.
+Embla must ask what matters most in the decision before selecting an evidence path. Health/allergen comparison may be ready while wallet/planet category ranking remains incomplete. Missing comparison strength must stay visible rather than being hidden inside a universal score.
 
 ## PRIMARY ACTION
-Navigate into another product surface and return to ATLAS; the current ATLAS map should mount and restore its bounded return camera normally.
+Open Embla, state a FOOD decision, choose the priority that matters now, then use the strongest currently supported comparison or product-evidence path.
 
 ## SECONDARY DEPTH
-The fix hardens cross-product map lifecycle authority only. It does not broaden ATLAS scope, add new data, change ecological claims or redefine navigation.
+After choosing a priority, the user can inspect the existing FOOD evidence surface and its source/UNKNOWN boundaries. The decision gate should reveal depth only when it helps the current choice; it must not create a second FOOD intelligence system.
 
 ## P1 DOMINANT
-The current ATLAS map remains the visible, interactive spatial surface.
+The dominant first-screen job is one decision: identify what matters most now. The priority choice must visually dominate architecture, method explanation and secondary evidence detail.
 
 ## P2 ORIENTATION
-Cross-product navigation may temporarily leave `window.__4planet_map` pointing at the previous unmounted map until the new World publishes the current instance.
+The user must understand that different priorities have different evidence readiness. Health/allergen evidence can be stronger than wallet/planet category ranking, and incomplete evidence remains visibly incomplete.
 
 ## P3 ACTION / NEXT
-Return-camera authority waits for the current connected canvas, attaches event listeners there, restores the camera, and releases authority when the user intentionally interacts.
+The selected priority routes into the strongest existing evidence path. Supported comparison proceeds; unsupported whole-shelf ranking is refused and the user is directed to bounded product evidence instead.
 
 ## P4 DEPTH
-This is lifecycle/authority hardening. It does not change ecological claims, source semantics, map data, routes, visual hierarchy or LIVE state.
+Detailed product evidence, source status, HEALTH/WALLET/PLANET separation and comparison limitations remain available after the decision. Depth must preserve provenance and UNKNOWN states rather than compress them into one score.
 
 ## WHAT CAN BE REMOVED
-No product capability needs removal. Detached previous canvases and stale global map references must simply be rejected as current authority; no second authority or fallback renderer is introduced.
+Remove or avoid architecture-first explanation, universal-score framing and any step that does not help the user make the current bounded decision. Explicit aliases, redirects, source/truth seams and other parent routes are preservation objects until exact parent comparison proves they are redundant. No replacement assistant, truth store or parallel FOOD workflow is justified.
 
 ## WHAT MUST BE REUSED
-The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publication path, existing World/ATLAS renderer, existing camera restore/release behaviour and existing ONE INTERFACE route structure.
+Existing Embla intake, FOOD intelligence, PICK product evidence, current source/truth contracts, 4SAPIEN route family, explicit parent aliases/redirects and current HEIR. No replacement assistant, score or truth store is introduced.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** the accepted `5d40e8c` connected-canvas guard and one-frame retry while a stale/detached map reference exists.
-- **REUSE:** existing map authority, restore events, responsive settling and user-interaction release semantics.
-- **REJECT:** binding listeners to a detached canvas, adding a second map authority, changing renderer/runtime dependencies, creating a new route or introducing parallel ATLAS state.
-- **DEFER:** broader ATLAS lifecycle refactors unless a separately reproduced defect proves they are necessary.
+- **ADOPT:** the decision-first Embla FOOD gate, bounded priority states, explicit wallet/planet limitations and ten-prompt contract coverage from PR #220.
+- **ADAPT:** route into current HEIR rather than continuing the stale donor branch.
+- **PRESERVE:** current `FoodIntelligence`, `PickPrototype`, fail-closed source states, the canonical Oslofjorden alias and all current HEIR changes since the donor ancestor.
+- **REJECT:** wholesale merge of PR #220, universal sustainability score, category-wide wallet/planet ranking without evidence, or treating the donor as a candidate because it exists.
+- **CORRECTED LEARNING:** a route that looks duplicate by name may encode canonicalisation. Preserve explicit parent redirects unless the parent route matrix and browser contract prove removal safe.
 
 ## TRUTH BOUNDARY
-A global map reference is only accepted when its canvas is connected to the current document. A detached previous canvas is treated as stale and ignored until the current ATLAS map is available. This behavioural guard is not evidence of broader map correctness, ecological truth, production deployment or LIVE release.
-
-## PERFORMANCE
-No new dependency or renderer. The guard adds only a bounded `getCanvas()` connectivity check and `requestAnimationFrame` retry while the current map has not yet been published.
+Embla identifies an evidence path, not a universal answer. Selected health/allergen paths may compare controlled product evidence. Wallet and planetary evidence remain product-level where category-wide ranking is not strong enough. UNKNOWN remains UNKNOWN. This mutation is not evidence of repeat human utility, adoption, production readiness, economic value or Founder approval.
 
 ## MOBILE-FIRST RISK
-The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas and must not create a mobile-specific map authority.
+Priority choices must remain readable and tappable without horizontal overflow or burying the primary decision below explanatory copy. Mobile must preserve the same evidence-readiness and refusal boundaries as desktop; no mobile-specific truth or ranking shortcut is allowed.
 
 ## HUMAN SUCCESS
-A user can leave ATLAS, use another 4PLANET surface and return without the return-camera controller attaching to the previously unmounted ATLAS canvas or preventing the current map from restoring correctly.
+A first-time user can express a FOOD decision, choose the concern they care about, understand what 4PLANET can and cannot compare, and reach the existing evidence engine without being shown a fabricated overall score.
 
 ## ACCEPTANCE
-1. `king/test` lineage remains single-authority and LIVE remains untouched. 2. Return-camera authority does not bind to a candidate map whose canvas is detached. 3. It retries until the current map is published rather than creating parallel state. 4. Current canvas is captured once accepted and receives the existing pointer/touch/wheel release listeners. 5. Existing restore events remain intact. 6. Browser Product Proof remains PASS. 7. ONE INTERFACE Convergence remains PASS. 8. GOLD policy accepts the bounded mutation + current brief pair. 9. No new dependency, route, map renderer or ecological claim is introduced. 10. Founder JUDGE/RELEASE and LIVE remain separate gates.
+1. `king/test` remains the sole HEIR and LIVE remains untouched. 2. The old PR #220 remains donor/quarantine; no donor branch is promoted or revived. 3. `/4sapien/food/choose` renders the decision-first gate. 4. Embla FOOD intake routes to that gate. 5. Controlled health/allergen paths can proceed to comparison. 6. Wallet/planet/best-overall paths explicitly refuse unsupported whole-shelf ranking. 7. Existing FOOD source failure/unknown states remain intact. 8. Contract tests cover ten realistic FOOD prompts plus false-ranking refusal. 9. Parent route/alias preservation and browser proof pass on the exact resulting HEIR SHA. 10. Typecheck/build/authority/Gold/browser gates pass on the exact resulting HEIR SHA. 11. Human Gold, repeat-human-utility proof and LIVE release remain separate Founder/evidence gates.

@@ -1,0 +1,7 @@
+{
+  "A_PLANET_OSLOFJORD": {"must_have":["authoritative_geography","real_layers","source_provenance","species_habitat_context","bounded_pressures","relationships","progressive_sources","premium_editorial_experience","mobile_390x844","desktop","exact_sha","inspectable_url"],"must_not":["invented_precision","unsupported_causality","false_realtime","dashboard_only"]},
+  "B_HUMAN_EMBLA": {"must_have":["real_user","real_food_decision","intent","constraints","candidates","evidence","unknowns","tradeoffs","recommendation","actual_decision","feedback","measured_before_after"],"must_not":["synthetic_success","new_embla_product_line"]},
+  "C_ACTION_ECONOMICS": {"must_have":["need","project_or_intervention","capable_actor","diligence","resource_requirement","funding_object","delivery_contract","proof_of_done","outcome_measurement","verified_impact_boundary","learning"],"must_not":["done_equals_outcome","outcome_equals_verified_impact","external_send_without_release"]},
+  "D_TRANSFER": {"must_have":["reuse_architecture_pct","reuse_component_pct","reuse_map_data_pct","reuse_relationship_pct","reuse_qa_pct","cycle_time_comparison","bespoke_code_delta","founder_interventions","regressions"],"must_not":["new_world_architecture","world2_from_scratch"]},
+  "E_FACTORY": {"must_have":["attempted","accepted","rejected","corrected","mean_cycle_time","retries","regression_escapes","duplicates_prevented","founder_interventions","founder_minutes","reuse","observable_cost"],"must_not":["new_factory_lineage","self_acceptance"]}
+}
