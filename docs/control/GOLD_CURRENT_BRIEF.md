@@ -1,62 +1,43 @@
 # CURRENT GOLD BRIEF
 
-This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
+This file is the machine-readable human contract for the **current bounded ATLAS SANDBOX change**. Historical briefs belong in PR/evidence history; this file reflects the current mutation only.
 
-**CHANGE ID:** TEST-KING-ATLAS-RETURN-CAMERA-STALE-MAP-01
-**STATUS:** TEST / IMPLEMENTED + BROWSER-ACCEPTED / FOUNDER RELEASE NOT IMPLIED
-**BASE AUTHORITY:** `king/test` / exact parent `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
-**ROLLBACK BASE:** `974e422320d6b8ce5629ddc4d0d98ecd5163d90d`
-**IMPLEMENTED CANDIDATE:** `5d40e8c93476c6addfa349363957384e4de3d254` — `fix(atlas): ignore stale map during return camera restore`
-**PRODUCT PROOF:** Browser Product Proof #1273 PASS; ONE INTERFACE Convergence Gate #2395 PASS on the implemented candidate.
-**CONTROL DEFECT BEING CLOSED:** GOLD policy run 33422638609 correctly failed because the user-facing ATLAS mutation did not update this brief in the same bounded change. This brief repairs that control evidence only; it does not alter product behaviour or imply LIVE release.
+**CHANGE ID:** ATLAS-ZERO-LOSS-FORWARD-SYNC-2026-09-04
+**STATUS:** SANDBOX / FORWARD-SYNCED TO CURRENT HEIR / TECHNICAL + HUMAN PROOF REQUIRED / FOUNDER RELEASE NOT IMPLIED
+**PRODUCT:** ATLAS
+**LEGAL WRITE TARGET:** `work/atlas-zero-loss-gold-convergence-01` — the one registered ATLAS sandbox
+**CURRENT HEIR ANCESTOR:** `king/test` @ `a32d5e051bbb7905c6fa491b21f9050433af7eb2`
+**FORWARD-SYNC MERGE:** `eef3176f7de98f1017d42fc06c10f1d752a4cdf2`
+**ROLLBACK IDENTITY:** pre-sync ATLAS head `e7d7a051160c3e0fafaef51318f1d2e918ea1664`
+**LIVE AUTHORITY:** false
+**TEST KING PROMOTION AUTHORISED:** false
 
 ## USER ARRIVES BECAUSE
-They move between 4PLANET product surfaces and return to ATLAS expecting the globe/map camera to restore reliably rather than bind to an already-unmounted previous map instance.
+They need one coherent, premium ATLAS that preserves accepted 4PLANET spatial intelligence instead of losing value across stale branches, incomplete recoveries or newest-wins promotion.
 
 ## ONE THING TO UNDERSTAND
-ATLAS return-camera authority must attach only to the currently mounted map/canvas. A stale global map reference from a previous ATLAS instance is not valid authority.
+The registered ATLAS sandbox is a review candidate only. It now descends from the exact current TEST KING while preserving the bounded ATLAS zero-loss delta. Branch age, deployment recency and branch names confer no authority.
 
 ## PRIMARY ACTION
-Navigate into another product surface and return to ATLAS; the current ATLAS map should mount and restore its bounded return camera normally.
+Use ATLAS search, map, layers, source-linked records and spatial navigation on the exact immutable candidate deployment and verify that the accepted Human Gold / Zero Loss capabilities remain usable on desktop and mobile.
 
 ## SECONDARY DEPTH
-The fix hardens cross-product map lifecycle authority only. It does not broaden ATLAS scope, add new data, change ecological claims or redefine navigation.
+Validate source behaviour, observation depth, search intent, multi-layer use, selected records, zoom/context transitions and recovery behaviour without broadening scope.
 
-## P1 DOMINANT
-The current ATLAS map remains the visible, interactive spatial surface.
-
-## P2 ORIENTATION
-Cross-product navigation may temporarily leave `window.__4planet_map` pointing at the previous unmounted map until the new World publishes the current instance.
-
-## P3 ACTION / NEXT
-Return-camera authority waits for the current connected canvas, attaches event listeners there, restores the camera, and releases authority when the user intentionally interacts.
-
-## P4 DEPTH
-This is lifecycle/authority hardening. It does not change ecological claims, source semantics, map data, routes, visual hierarchy or LIVE state.
-
-## WHAT CAN BE REMOVED
-No product capability needs removal. Detached previous canvases and stale global map references must simply be rejected as current authority; no second authority or fallback renderer is introduced.
-
-## WHAT MUST BE REUSED
-The existing `AtlasReturnCameraAuthority`, existing `window.__4planet_map` publication path, existing World/ATLAS renderer, existing camera restore/release behaviour and existing ONE INTERFACE route structure.
+## MUST NOT LOSE
+The donor matrix and MUST-NOT-LOSE inventory in `docs/atlas/ATLAS_ZERO_LOSS_GOLD_CONVERGENCE_01.md` and `docs/atlas/ATLAS_HUMAN_GOLD_OMEGA.md`; accepted PR #246 value; current TEST KING controls; current source/truth boundaries; existing ONE INTERFACE behaviour.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** the accepted `5d40e8c` connected-canvas guard and one-frame retry while a stale/detached map reference exists.
-- **REUSE:** existing map authority, restore events, responsive settling and user-interaction release semantics.
-- **REJECT:** binding listeners to a detached canvas, adding a second map authority, changing renderer/runtime dependencies, creating a new route or introducing parallel ATLAS state.
-- **DEFER:** broader ATLAS lifecycle refactors unless a separately reproduced defect proves they are necessary.
+- **ADOPT:** bounded ATLAS delta already present in the registered sandbox.
+- **REUSE:** current TEST KING control plane and shared product infrastructure.
+- **REJECT:** newest-wins, old-candidate promotion, replacement sandbox, whole historical branch promotion, silent LIVE mutation.
+- **DEFER:** any additional ATLAS feature expansion until exact-head Zero Loss + ONE INTERFACE + human-visible proof passes.
 
 ## TRUTH BOUNDARY
-A global map reference is only accepted when its canvas is connected to the current document. A detached previous canvas is treated as stale and ignored until the current ATLAS map is available. This behavioural guard is not evidence of broader map correctness, ecological truth, production deployment or LIVE release.
+Ancestry repair proves only that current TEST KING is an ancestor of the same ATLAS sandbox. It does not prove product quality, runtime correctness, source correctness, Founder acceptance, TEST KING promotion or LIVE release.
 
-## PERFORMANCE
-No new dependency or renderer. The guard adds only a bounded `getCanvas()` connectivity check and `requestAnimationFrame` retry while the current map has not yet been published.
-
-## MOBILE-FIRST RISK
-The same lifecycle race can occur across viewport sizes because it is caused by mount/unmount timing, not desktop-only layout. The fix must preserve touch/pointer/wheel release listeners on the current canvas and must not create a mobile-specific map authority.
-
-## HUMAN SUCCESS
-A user can leave ATLAS, use another 4PLANET surface and return without the return-camera controller attaching to the previously unmounted ATLAS canvas or preventing the current map from restoring correctly.
+## PERFORMANCE / MOBILE
+No new renderer or parallel ATLAS architecture is authorised. Exact deployed proof must cover desktop and mobile, including search/map/layer/source behaviour.
 
 ## ACCEPTANCE
-1. `king/test` lineage remains single-authority and LIVE remains untouched. 2. Return-camera authority does not bind to a candidate map whose canvas is detached. 3. It retries until the current map is published rather than creating parallel state. 4. Current canvas is captured once accepted and receives the existing pointer/touch/wheel release listeners. 5. Existing restore events remain intact. 6. Browser Product Proof remains PASS. 7. ONE INTERFACE Convergence remains PASS. 8. GOLD policy accepts the bounded mutation + current brief pair. 9. No new dependency, route, map renderer or ecological claim is introduced. 10. Founder JUDGE/RELEASE and LIVE remain separate gates.
+1. Same registered sandbox; no replacement branch. 2. Current `king/test` is exact ancestor of sandbox head. 3. Sandbox is 0 behind current HEIR at the acceptance observation. 4. Zero-loss diff is bounded and current TEST KING control files are not regressed. 5. Candidate-authority gate passes. 6. Typecheck/build pass. 7. ATLAS Zero Loss automated suite passes. 8. ONE INTERFACE gate passes where applicable. 9. Exact immutable preview is proven. 10. Desktop/mobile/search/map/layer/source evidence is reviewable. 11. Founder JUDGE remains required for user-facing promotion. 12. LIVE/main remain untouched.
