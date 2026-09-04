@@ -10,17 +10,66 @@ Minimum current-state path: `READ FIRST → GPT_PROJECT_LEAD_CURRENT → KNOWLED
 
 If the required BRAIN/current-state read cannot be completed, fail closed on the affected claim with `CURRENT BRAIN READ REQUIRED` rather than guessing. Continue only bounded work that does not depend on missing state. After a material Founder decision, accepted/rejected artifact, code-line change or durable learning, write back to existing canonical authorities and read back in the same work cycle. Do not create another memory or management system.
 
+## FOUR-STATE PRODUCT AUTHORITY — mandatory before user-facing mutation
+
+Every material public-product task must resolve the current four human-visible product states before changing code:
+
+1. `LIVE` — current public production artifact/domain.
+2. `HEIR` — the one and only leading successor; integrated through `king/test`.
+3. `SANDBOX` — at most one registered active user-facing sandbox for the affected product.
+4. `ARCHIVED` — immutable historical deliveries/donors; never an active continuation line.
+
+Read these current repository projections before any material user-facing mutation:
+- `docs/control/FOUR_STATE_PRODUCT_CONTROL.md`;
+- `docs/control/PRODUCT_SURFACE_REGISTRY.json`;
+- `docs/control/PROJECT_CANDIDATE_AUTHORITY.json`;
+- `docs/control/CODE_LINEAGE_REGISTER.md`.
+
+Resolve all of the following before writing product code:
+- affected product/seam;
+- current LIVE URL and exact artifact/SHA when relevant;
+- current HEIR branch, exact SHA and Founder-review URL;
+- registered SANDBOX branch/SHA/review URL or explicit `NONE`;
+- allowed donors and archive constraints;
+- exact parent SHA;
+- write scope and WBS/task authority;
+- human-review gate;
+- return path to HEIR;
+- rollback identity.
+
+If this cannot be resolved, stop material user-facing mutation with:
+
+`PRODUCT AUTHORITY CONTEXT UNRESOLVED`
+
+The agent may inspect, audit or research, but it may not create another candidate, user-facing branch, stable preview authority, production mutation or competing product line.
+
+Hard laws:
+- **ONE HEIR PER PRODUCT.**
+- **MAX ONE ACTIVE USER-FACING SANDBOX PER PRODUCT.**
+- A branch, PR, deployment alias, recency, `GOLD`, `RECOVERY`, `CANDIDATE`, `RELEASE`, `AGENT`, `WORK` or `SANDBOX` name confers **zero authority** by itself.
+- Unknown historical/user-facing lineage is `HISTORY_DONOR_ARCHIVE_QUARANTINE` and fails closed for mutation.
+- A new user-facing branch must be registered as the one allowed product SANDBOX **before the first material user-facing edit**.
+- User-facing PRs return only to `king/test` unless an explicit Founder/AXE control exception exists.
+- Technical PASS is not Human Gold. Every material user-facing delivery requires a working Founder-visible URL before it may be presented as a candidate for adoption.
+- SANDBOX → HEIR requires exact-SHA gates plus human visual/use judgement.
+- HEIR → LIVE requires exact tested artifact identity plus explicit Founder release.
+- Prior LIVE/HEIR/SANDBOX value is archived before promotion or destructive cleanup.
+- Archived deliveries are read-only evidence/donors and may never silently regain authority.
+
+`node scripts/product-authority-gate.mjs` is a mandatory fail-closed authority check for user-facing work. Do not bypass, disable or weaken it to make a branch pass.
+
 ## Mandatory start-of-task bootstrap
 
 Before material work:
 1. Read this file.
 2. Inspect the assigned task/issue/PR and exact branch.
-3. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
-4. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
-5. Inspect recent git history for the affected area.
-6. Search for existing components/contracts before creating new architecture.
-7. Run a baseline check appropriate to the task before changing code.
-8. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+3. For public-product work, complete the FOUR-STATE PRODUCT AUTHORITY bootstrap above.
+4. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
+5. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
+6. Inspect recent git history for the affected area.
+7. Search for existing components/contracts before creating new architecture.
+8. Run a baseline check appropriate to the task before changing code.
+9. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
 
@@ -64,15 +113,15 @@ Before Founder review, merge or production promotion:
 
 A material coding task that cannot resolve lineage is blocked as `CODE LINEAGE UNRESOLVED`; resolve control first rather than creating another candidate.
 
-## TEST KING / LIVE KING authority
+## HEIR / SANDBOX / LIVE authority
 
-- `king/test` is the only moving 4PLANET integration/convergence line.
-- LIVE KING is the exact production state and is changed only by a separately authorised promotion.
+- `king/test` is the only moving integrated 4PLANET HEIR line.
+- Current Founder-review surfaces are governed by `docs/control/PRODUCT_SURFACE_REGISTRY.json`; the canonical review world is `test.4planet.org` and the visual archive is `archive.4planet.org`.
+- LIVE is exact production state and is changed only by a separately authorised exact-artifact promotion.
 - Product/subbrand names are branches of the 4PLANET product tree, not permanent competing Git continuation branches.
-- Historical product branches remain donor/recovery evidence.
-- Unknown historical branches are candidates until explicitly dispositioned under issue #132.
-- Do not create a new de facto product continuation outside `king/test` without explicit isolation purpose and lineage registration.
-- A pull request or direct production change from a user-facing branch other than `king/test` is not an authorised LIVE promotion path.
+- Historical product branches remain donor/archive/recovery evidence with no mutation authority unless explicitly registered into the one SANDBOX slot.
+- Do not create a new de facto product continuation outside `king/test` or the single registered SANDBOX.
+- A pull request or direct production change from an unregistered user-facing branch is not an authorised product path.
 - LIVE promotion requires a populated `docs/control/LIVE_PROMOTION_MANIFEST.json`, exact prior LIVE rollback identity, evidence and explicit Founder release authority. The fail-closed placeholder is not authority.
 
 ## Capability verification
@@ -99,18 +148,20 @@ A commit, PR, CI pass or preview is not production. An agent report is not indep
 - Prefer independently seamed changes that can merge without destabilising other work.
 - Do not redesign shared architecture to solve a local task unless the assigned task explicitly requires it.
 - Preserve rollback and exact artifact identity.
+- Multiple technical workers may support one registered SANDBOX, but they do not create additional product candidates or Founder-visible authority states.
 
 ## Verification
 
 For this repository the normal commands are:
-- `node scripts/gold-policy-check.mjs --mode=quality-contract`
-- `npm ci`
-- `npm run typecheck`
-- `npm run assets:verify`
-- `npm run lint`
-- `npm run build`
-- `npm run test:smoke`
-- `npm run test:e2e` for runtime/UI journeys when applicable
+- `node scripts/product-authority-gate.mjs` for user-facing authority;
+- `node scripts/gold-policy-check.mjs --mode=quality-contract`;
+- `npm ci`;
+- `npm run typecheck`;
+- `npm run assets:verify`;
+- `npm run lint`;
+- `npm run build`;
+- `npm run test:smoke`;
+- `npm run test:e2e` for runtime/UI journeys when applicable;
 - `node scripts/gold-visual-lock-check.mjs` after rendered product-proof evidence exists.
 
 Run the smallest sufficient set during iteration, then the full relevant gate before claiming verified completion. For UI work, verify the user-visible journey, not only unit/build output.
@@ -118,21 +169,24 @@ Run the smallest sufficient set during iteration, then the full relevant gate be
 ## Return contract
 
 Every material agent return must include:
-- project/task identity
-- product version from the Code Lineage Register
-- branch
-- exact commit SHA
-- PR or issue when applicable
-- changed files / human-visible change
-- tests and runtime evidence
-- user job and P1–P4 hierarchy for user-facing work
-- removed / merged / reused inventory for user-facing work
-- Human Craft / AI-Wash findings and structural corrections
-- donor decisions made in this iteration
-- known limitations or unresolved conflicts
-- status using the vocabulary above
-- human-test status/trigger when relevant
-- next gate / next safe action
+- project/task identity;
+- affected product;
+- resolved four-state identity: LIVE / HEIR / SANDBOX / ARCHIVED relationship;
+- product version from the Code Lineage Register;
+- branch;
+- exact commit SHA;
+- Founder-visible HEIR/SANDBOX URL when user-facing;
+- PR or issue when applicable;
+- changed files / human-visible change;
+- tests and runtime evidence;
+- user job and P1–P4 hierarchy for user-facing work;
+- removed / merged / reused inventory for user-facing work;
+- Human Craft / AI-Wash findings and structural corrections;
+- donor decisions made in this iteration;
+- known limitations or unresolved conflicts;
+- status using the vocabulary above;
+- human-test status/trigger when relevant;
+- next gate / next safe action.
 
 The return must be usable by AXE / GPT Project Lead for BRAIN writeback without reconstructing the session from scratch.
 
