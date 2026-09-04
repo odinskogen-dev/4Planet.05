@@ -20,3 +20,7 @@ The first successful real internal work package that proves current authority, a
 If `king/test` moves during safe computation, preserve work/evidence. Stop only authority-sensitive mutation, revalidate the sole receiver, forward-converge the SAME Factory lineage where required, rerun relevant mutation/release gates and continue. Terminal ACTIVE classification always revalidates current receiver identity and fails closed to SHADOW on drift.
 
 After certification, continue bounded authorised internal 4PLANET production under WIP <= 5, explicit scopes, evaluator, idempotency, retry/recovery, candidate-authority enforcement and Error-to-Immunity learning. No new Factory, Conductor, TEST KING, THIRD KING or parallel truth store.
+
+## Activation execution receipt — 2026-09-04
+
+Founder-authorised bounded ACTIVE boot dispatch requested against TEST KING `2e58a23295f0d1892e6faf0cb497d407605c7304`. This receipt authorises exactly one activation cohort on the resulting exact Factory build. All entry gates above remain fail-closed at runtime; this receipt grants no LIVE, Canon, external-send or spend authority.
