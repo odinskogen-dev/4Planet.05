@@ -1,0 +1,192 @@
+name: FOUR STATE Founder Review Control Plane
+
+on:
+  push:
+    branches:
+      - control/four-state-product-control-01
+      - king/test
+  pull_request:
+    branches:
+      - king/test
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: four-state-control-plane
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy isolated test/archive review plane
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact control source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Fetch current HEIR and registered sandboxes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin king/test
+          node scripts/product-authority-gate.mjs
+          node <<'NODE' > "$RUNNER_TEMP/sandbox-branches.txt"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          for(const item of Object.values(r.products||{})) if(item.sandbox?.branch) console.log(item.sandbox.branch);
+          NODE
+          while IFS= read -r branch; do
+            [ -z "$branch" ] && continue
+            git fetch --no-tags origin "refs/heads/$branch:refs/remotes/origin/$branch"
+          done < "$RUNNER_TEMP/sandbox-branches.txt"
+
+      - name: Resolve Cloudflare credentials and Pages deployment inventory
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && TOKEN="$candidate" && break; done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token missing'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account not resolved'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+          mkdir -p artifacts/four-state
+          : > artifacts/four-state/deployments.jsonl
+          for page in 1 2 3 4 5; do
+            out="$RUNNER_TEMP/pages-$page.json"
+            curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+              "https://api.cloudflare.com/client/v4/accounts/$account_id/pages/projects/4planet-05/deployments?page=$page&per_page=100" > "$out"
+            jq -e '.success == true' "$out" >/dev/null
+            jq -c '.result[]?' "$out" >> artifacts/four-state/deployments.jsonl
+            count=$(jq '.result | length' "$out")
+            [ "$count" -lt 100 ] && break
+          done
+          test -s artifacts/four-state/deployments.jsonl
+
+      - name: Resolve exact current HEIR/SANDBOX deployments
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const cp=require('child_process');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const rows=fs.readFileSync('artifacts/four-state/deployments.jsonl','utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+          const branchOf=d=>d.deployment_trigger?.metadata?.branch || d.source?.config?.branch || null;
+          const shaOf=d=>d.deployment_trigger?.metadata?.commit_hash || d.source?.config?.commit_hash || null;
+          const originOf=d=>d.url || (d.short_id ? `https://${d.short_id}.4planet-05.pages.dev` : null);
+          const createdOf=d=>d.created_on || d.modified_on || '';
+          const head=branch=>cp.execFileSync('git',['rev-parse',`refs/remotes/origin/${branch}`],{encoding:'utf8'}).trim();
+          const exact=(branch,sha)=>rows.filter(d=>branchOf(d)===branch && shaOf(d)===sha && originOf(d)).sort((a,b)=>createdOf(b).localeCompare(createdOf(a)))[0];
+          const heirBranch='king/test';
+          const heirSha=head(heirBranch);
+          const heirDep=exact(heirBranch,heirSha);
+          if(!heirDep) throw new Error(`No exact Cloudflare Pages deployment found for HEIR ${heirBranch}@${heirSha}`);
+          const sandboxes={};
+          for(const [product,item] of Object.entries(registry.products||{})) {
+            if(!item.sandbox?.branch) continue;
+            const sha=head(item.sandbox.branch);
+            const dep=exact(item.sandbox.branch,sha);
+            if(!dep) throw new Error(`No exact Cloudflare Pages deployment found for ${product} SANDBOX ${item.sandbox.branch}@${sha}`);
+            sandboxes[product]={branch:item.sandbox.branch,sha,origin:originOf(dep)};
+          }
+          const deployments=rows.filter(d=>originOf(d)).map(d=>({
+            branch:branchOf(d), sha:shaOf(d), url:originOf(d), environment:d.environment||'preview', created_on:createdOf(d), id:d.id||null
+          })).sort((a,b)=>String(b.created_on).localeCompare(String(a.created_on))).slice(0,300);
+          const runtime={generatedAt:new Date().toISOString(),heir:{branch:heirBranch,sha:heirSha,origin:originOf(heirDep)},sandboxes,deployments};
+          fs.writeFileSync('artifacts/four-state-runtime.json',JSON.stringify(runtime,null,2));
+          console.log(JSON.stringify({heir:runtime.heir,sandboxes:runtime.sandboxes,archiveEntries:deployments.length},null,2));
+          NODE
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Preflight framed origins
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE' > "$RUNNER_TEMP/origins.txt"
+          const fs=require('fs');const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          console.log(r.heir.origin);for(const s of Object.values(r.sandboxes||{}))console.log(s.origin);
+          NODE
+          while IFS= read -r origin; do
+            [ -z "$origin" ] && continue
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$origin/" | tr -d '\r' || true)
+            printf '%s\n' "$headers" | grep -qi '^x-frame-options: *deny' && { echo "Frame blocked by $origin"; exit 5; }
+            printf '%s\n' "$headers" | grep -qi '^x-frame-options: *sameorigin' && { echo "Frame blocked by $origin"; exit 5; }
+          done < "$RUNNER_TEMP/origins.txt"
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then
+              break
+            fi
+            sleep 5
+          done
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
+          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
+          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q '<iframe' <<<"$atlas_heir"
+          grep -q 'SANDBOX · ATLAS' <<<"$atlas_sandbox"
+          grep -q 'SANDBOX · MAGAZINE' <<<"$mag_sandbox"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
