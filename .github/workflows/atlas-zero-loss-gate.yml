@@ -12,6 +12,7 @@ on:
       - "tests/e2e/atlas-*.spec.ts"
       - "tests/e2e/map-interactivity.spec.ts"
       - "docs/atlas/**"
+      - "playwright.config.ts"
       - ".github/workflows/atlas-zero-loss-gate.yml"
   push:
     branches:
@@ -26,6 +27,7 @@ on:
       - "tests/e2e/atlas-*.spec.ts"
       - "tests/e2e/map-interactivity.spec.ts"
       - "docs/atlas/**"
+      - "playwright.config.ts"
       - ".github/workflows/atlas-zero-loss-gate.yml"
   workflow_dispatch:
 
@@ -90,6 +92,7 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173
           ATLAS_GOLD_EVIDENCE_DIR: artifacts/atlas-gold-local
+          ATLAS_LOCAL_PRECHECK: "1"
         run: |
           mkdir -p artifacts/atlas-gold-local
           npx playwright test \
