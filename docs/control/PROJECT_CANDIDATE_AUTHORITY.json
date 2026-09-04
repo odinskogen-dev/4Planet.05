@@ -22,7 +22,7 @@
         "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate",
         "live_authority": false
       },
-      "lineage_state": "ZERO_LOSS_GOLD_CONVERGENCE_ACTIVE",
+      "lineage_state": "STALE_SANDBOX_FAIL_CLOSED",
       "last_convergence": {
         "pr": 246,
         "sandbox_branch": "work/atlas-product-polish-01",
@@ -49,15 +49,13 @@
       "exact_sha",
       "immutable_deploy_marker_or_preview",
       "required_ci_green",
-      "candidate_authority_gate_green",
-      "founder_visible_runtime_review"
+      "candidate_authority_gate_green"
     ],
     "donor_delta_dispositions": [
       "ADOPT",
       "ALREADY_PRESENT",
       "REJECT_WITH_REASON",
-      "DEFER_WITH_REASON",
-      "SUPERSEDED_BY_BETTER_IMPLEMENTATION"
+      "DEFER_WITH_REASON"
     ],
     "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
   },
