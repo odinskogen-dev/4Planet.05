@@ -10,6 +10,7 @@ import { factoryCandidateBranch, shouldReserveAiForCandidate, type CandidateChec
 import { buildAiCapacitySnapshot } from "./aiCapacitySnapshot";
 import { resolveLiveCandidateAuthority } from "./candidateAuthorityRuntime";
 import { createGitHubCandidateAuthorityPort } from "./githubCandidateAuthorityPort";
+import { evaluateAutomationPreflight, type AutomationPreflightWorkPackage } from "./automationPreflight";
 import {
   APPROVED_FACTORY_AI_MODEL,
   MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH,
@@ -105,6 +106,8 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
         const baseSha = pkg.specialist.baseSha ?? pkg.run?.expectedBaseSha ?? "";
         const authorityBlocked = await this.candidateAuthorityBlock(pkg, baseSha, TEST_BRANCH);
         if (authorityBlocked) return authorityBlocked;
+        const automationBlocked = this.automationPreflightBlock(pkg);
+        if (automationBlocked) return automationBlocked;
       }
       try {
         const executed = await executeClaudeProductReview(this.env, pkg);
@@ -125,6 +128,8 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     if (autonomous) {
       const authorityBlocked = await this.candidateAuthorityBlock(pkg, autonomous.expectedBaseSha, autonomous.baseBranch);
       if (authorityBlocked) return authorityBlocked;
+      const automationBlocked = this.automationPreflightBlock(pkg);
+      if (automationBlocked) return automationBlocked;
 
       const configuredModel = (this.env as Cloudflare.Env & { FACTORY_AI_MODEL?: string }).FACTORY_AI_MODEL?.trim();
       if (!modelIsBudgetApproved(configuredModel)) {
@@ -221,6 +226,18 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       `ZERO LOSS and ${adapterScope.mode} scope passed; no proven execution adapter is configured for this package.`,
       [],
       "The worker intentionally refuses to simulate or invent execution.",
+    );
+  }
+
+  private automationPreflightBlock(pkg: WorkPackage): Outcome | undefined {
+    const preflight = evaluateAutomationPreflight(pkg as AutomationPreflightWorkPackage);
+    if (preflight.ok) return undefined;
+    return this.finish(
+      pkg,
+      "BLOCKED",
+      `${preflight.code}: ${preflight.reasons.join("; ")}.`,
+      ["No resource reservation attempted", "No autonomous/specialist execution attempted"],
+      "Question/delete/simplify/reuse evidence must be demonstrated before Factory automation is allowed.",
     );
   }
 
