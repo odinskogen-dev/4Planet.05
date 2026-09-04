@@ -65,21 +65,21 @@ jobs:
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
           zones="$RUNNER_TEMP/zones.json"
-          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' > "$zones"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active' > "$zones"
           account_id=$(jq -r '.result[0].account.id // empty' "$zones")
           [ -n "$account_id" ] || { echo 'Cloudflare account not resolved'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
           mkdir -p artifacts/four-state
           : > artifacts/four-state/deployments.jsonl
-          for page in 1 2 3 4 5; do
+          for page in $(seq 1 20); do
             out="$RUNNER_TEMP/pages-$page.json"
             curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-              "https://api.cloudflare.com/client/v4/accounts/$account_id/pages/projects/4planet-05/deployments?page=$page&per_page=100" > "$out"
+              "https://api.cloudflare.com/client/v4/accounts/$account_id/pages/projects/4planet-05/deployments?page=$page&per_page=25" > "$out"
             jq -e '.success == true' "$out" >/dev/null
             jq -c '.result[]?' "$out" >> artifacts/four-state/deployments.jsonl
             count=$(jq '.result | length' "$out")
-            [ "$count" -lt 100 ] && break
+            [ "$count" -lt 25 ] && break
           done
           test -s artifacts/four-state/deployments.jsonl
 
