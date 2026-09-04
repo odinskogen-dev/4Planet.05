@@ -137,3 +137,7 @@ North Star: more verified value moved toward 4PLANET goals per unit Founder atte
 ## 12 — Current controlled activation proof
 
 2026-09-04: explicit three-family autonomous activation proof requested against the exact current Factory lineage. This entry records activation intent only; it does **not** certify ACTIVE, 24/7 readiness, TEST KING promotion, LIVE authority, Canon authority, external outreach authority, spend authority, or outcome claims. Certification remains fail-closed on the existing Production Factory Autonomous Activation workflow and its persisted evidence.
+
+### Activation retry — receiver-drift correction
+
+2026-09-04: rerun requested after the previous real cohort correctly failed closed when TEST KING moved during certification. Factory has been forward-converged with TEST KING `404fad51436d273fceb77af33beef17b3a16ea27`; this retry must remain fail-closed if TEST KING moves again. ACTIVE may be certified only from fresh accepted three-family production evidence on this lineage, including independent judgement and canonical learning/writeback/readback.
