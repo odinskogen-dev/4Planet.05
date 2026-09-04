@@ -1,16 +1,21 @@
 {
   "schema_version": "2.0",
-  "control_state": "FOUR_STATE_INTERNAL_CONTROL",
+  "control_state": "FOUR_STATE_INTERNAL_CONTROL_ABSOLUTE_WRITE_AUTHORITY",
   "surface_registry": "docs/control/PRODUCT_SURFACE_REGISTRY.json",
   "authority_model": {
     "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
-    "live": "FOUNDER_GATED_IMMUTABLE_ARTIFACT",
+    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "live": "FOUNDER_GATED_IMMUTABLE_ARTIFACT_PROMOTION_ONLY_NO_DEVELOPMENT",
     "test_heir": {
       "branch": "king/test",
       "role": "SOLE_HEIR",
-      "review_host": "https://test.4planet.org"
+      "review_host": "https://test.4planet.org",
+      "product_write_authority": true
     },
+    "sandbox": "ONE_REGISTERED_BRANCH_PER_PRODUCT_MAX_PRODUCT_WRITE_AUTHORITY",
     "archive_host": "https://archive.4planet.org",
+    "archive": "IMMUTABLE_READ_RENDER_COMPARE_DONATE_ONLY_NO_WRITE_AUTHORITY",
+    "quarantine_pending_archive": "READ_ONLY_DONOR_ZERO_WRITE_AND_CANDIDATE_AUTHORITY",
     "max_registered_heirs_per_product": 1,
     "max_registered_sandboxes_per_product": 1,
     "newest_wins": false,
@@ -18,7 +23,10 @@
     "branch_name_is_authority": false,
     "sandbox_requires_test_heir_ancestry": true,
     "human_review_required_for_user_facing_promotion": true,
-    "unregistered_user_facing_branch_policy": "HISTORY_DONOR_ARCHIVE_QUARANTINE_FAIL_CLOSED"
+    "all_material_product_delivery_requires_founder_visible_url": true,
+    "new_candidate_classes_allowed": false,
+    "new_user_facing_idea_requires_registry_before_material_code": true,
+    "unregistered_user_facing_branch_policy": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_FAIL_CLOSED"
   },
   "products": {
     "ATLAS": {
@@ -35,17 +43,7 @@
         "live_authority": false
       },
       "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
-      "last_convergence": {
-        "pr": 246,
-        "sandbox_branch": "work/atlas-product-polish-01",
-        "sandbox_head": "08d7d643d8df2670f48deff7273ededacc966539",
-        "test_king_base": "d686a5850ae9debe044522a67cee04b6faadc056",
-        "merge_sha": "6a5cf5edafd1b958ee121f4d8be290c2be5f2fa8",
-        "required_gates": ["ATLAS_ZERO_LOSS", "ONE_INTERFACE"],
-        "gate_state": "PASS",
-        "live_authority": false
-      },
-      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED_AS_THE_ONE_SANDBOX_BEFORE_WORK"
     },
     "MAGAZINE": {
       "heir": "king/test",
@@ -65,7 +63,7 @@
         "state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"
       },
       "lineage_state": "REGISTERED_RECOVERY_SANDBOX_RECONCILIATION_REQUIRED",
-      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED_AS_THE_ONE_SANDBOX_BEFORE_WORK"
     },
     "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
     "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
@@ -78,17 +76,34 @@
     "required_before_material_product_mutation": [
       "fresh_connected_brain_context",
       "product_surface_registry",
+      "affected_product_or_new_product_registry_entry",
+      "live_released_or_unreleased_state",
       "exact_heir_branch_and_sha",
       "active_sandbox_or_explicit_none",
-      "allowed_donors",
+      "archive_and_quarantine_donors",
       "exact_parent_sha",
+      "legal_write_target_heir_or_registered_sandbox",
       "write_scope",
       "human_review_url_contract",
       "return_path_to_heir",
       "rollback_identity"
     ],
     "failure_state": "PRODUCT_AUTHORITY_CONTEXT_UNRESOLVED",
-    "failure_effect": "NO_MATERIAL_USER_FACING_MUTATION_OR_NEW_CANDIDATE"
+    "failure_effect": "NO_MATERIAL_PRODUCT_MUTATION_NO_NEW_BRANCH_CANDIDATE_NO_HIDDEN_PRODUCT_WORK"
+  },
+  "new_idea_contract": {
+    "applies_to": "EVERY_NEW_USER_FACING_IDEA_PRODUCT_FEATURE_WORLD_OR_SEAM",
+    "must_register_before_material_product_code": true,
+    "required_states": ["LIVE_RELEASED_OR_UNRELEASED", "HEIR", "SANDBOX_NONE_OR_ONE", "ARCHIVE_NAMESPACE"],
+    "founder_visible_heir_required": true,
+    "founder_visible_sandbox_required_when_active": true,
+    "local_or_container_only_product_candidate_forbidden": true
+  },
+  "donor_contract": {
+    "archive_and_quarantine_are_read_only": true,
+    "allowed_source_actions": ["READ", "RENDER", "COMPARE", "EXTRACT_DELTA"],
+    "allowed_destination_states": ["HEIR", "SANDBOX"],
+    "forbidden": ["DEVELOP_SOURCE_IN_PLACE", "REPAIR_SOURCE_IN_PLACE", "MERGE_INTO_ARCHIVE", "RESTART_ARCHIVED_BRANCH", "PROMOTE_DONOR_BRANCH_DIRECTLY"]
   },
   "promotion_contract": {
     "founder_review_requires": [
@@ -110,10 +125,14 @@
     "live_promotion": "FOUNDER_AUTHORITY_REQUIRED_EXACT_TESTED_ARTIFACT"
   },
   "safety": {
-    "no_live_or_main_promotion_by_this_register": true,
+    "no_live_or_main_development_by_this_register": true,
+    "no_archive_development_by_this_register": true,
+    "no_product_development_outside_heir_or_registered_sandbox": true,
+    "no_new_candidate_class": true,
     "no_canon_authority_change": true,
     "no_destructive_historical_branch_cleanup_before_donor_disposition": true,
     "superbrain_remains_shadow_until_explicit_founder_cutover": true,
-    "factory_remains_separate_existing_lineage": true
+    "factory_remains_separate_existing_lineage": true,
+    "physical_repo_admin_enforcement_required_for_100_percent_push_prevention": true
   }
 }
