@@ -40,6 +40,7 @@ const MagazineStoryRecord = lazy(() => import("@/pages/v5/MagazineStoryRecord").
 const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorsIndex })));
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
+const EmblaFoodChoice = lazy(() => import("@/pages/sapien/EmblaFoodChoice"));
 
 const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
@@ -85,6 +86,7 @@ export function AppRoutes() {
       <Route path="/s4piens/food/lens" element={<FoodCapture />} />
       <Route path="/4sapien" element={<FourSapienHome />} />
       <Route path="/4sapien/food" element={<PickPrototype />} />
+      <Route path="/4sapien/food/choose" element={<Suspense fallback={MagazineFallback}><EmblaFoodChoice /></Suspense>} />
       <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/food/pick" element={<PickPrototype />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
@@ -107,7 +109,6 @@ export function AppRoutes() {
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
       <Route path="/living-systems/oslofjord" element={<PlanetProofPage slug="oslofjorden" />} />
-      <Route path="/living-systems/oslofjorden" element={<Navigate to="/living-systems/oslofjord" replace />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />

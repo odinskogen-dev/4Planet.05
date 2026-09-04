@@ -1,0 +1,6 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "material_progress_requires_at_least_one":["accepted_human_or_planet_value","verified_proof_delta","measured_reuse_or_cycle_time_gain","economic_signal","reduced_founder_burden","new_immunity_that_blocks_a_real_failure_class"],
+  "never_count_alone_as_progress":["commits","documents","agents","branches","raw_tasks","ci_runs","deployed_preview_without_acceptance","agent_reported_done"],
+  "founder_report_rule":"Every claimed material improvement must name the value/proof/metric/immunity it changed."
+}

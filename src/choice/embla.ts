@@ -83,14 +83,14 @@ export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
     return {
       domain: "FOOD",
       status: "EVIDENCE_PATH_READY",
-      eyebrow: "EMBLA → FOOD → PICK_",
-      title: "Start with the product evidence.",
+      eyebrow: "EMBLA → FOOD → CHOICE",
+      title: "Tell me what matters most in this choice.",
       detail:
-        "The current FOOD proof can read a real product record, keep HEALTH, WALLET and PLANET separate, expose unknowns and compare available alternatives without inventing a universal score.",
+        "The current FOOD proof can compare controlled product evidence for selected health and allergen priorities, and inspect HEALTH, WALLET and PLANET separately without inventing one universal score.",
       truthBoundary:
-        "Embla has identified the decision path, not the answer. A recommendation is not eligible until the underlying product evidence is actually read and sufficient.",
-      nextHref: "/4sapien/food",
-      nextLabel: "OPEN LIVE FOOD PROOF",
+        "Embla has identified a usable decision path, not a universal answer. Wallet and planetary evidence do not yet support category-wide ranking, so those paths remain product evidence rather than a false best-in-category recommendation.",
+      nextHref: "/4sapien/food/choose",
+      nextLabel: "MAKE THIS CHOICE",
     };
   }
 
