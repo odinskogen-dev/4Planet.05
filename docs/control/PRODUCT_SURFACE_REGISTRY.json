@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "effective_date": "2026-09-04",
-  "control_state": "FOUR_STATE_CONTROL_ACTIVATION",
+  "control_state": "FOUR_STATE_CONTROL_ACTIVATION_ABSOLUTE_WRITE_AUTHORITY",
   "founder_review_hosts": {
     "heir_and_sandbox": "https://test.4planet.org",
     "archive": "https://archive.4planet.org"
@@ -15,15 +15,42 @@
   },
   "state_law": {
     "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
+    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "live_development_write_authority": false,
+    "live_mutation_policy": "FOUNDER_GATED_EXACT_ARTIFACT_PROMOTION_ONLY",
+    "archive_development_write_authority": false,
+    "archive_mutation_policy": "IMMUTABLE_READ_RENDER_COMPARE_DONATE_ONLY",
+    "quarantine_pending_archive_write_authority": false,
+    "quarantine_pending_archive_policy": "READ_ONLY_DONOR_ZERO_CANDIDATE_AUTHORITY",
     "max_heirs_per_product": 1,
     "max_active_user_facing_sandboxes_per_product": 1,
     "newest_wins": false,
     "branch_name_confers_authority": false,
     "deployment_recency_confers_authority": false,
     "unknown_user_facing_lineage": "FAIL_CLOSED",
-    "legacy_unregistered_refs": "HISTORY_DONOR_ARCHIVE_QUARANTINE",
+    "legacy_unregistered_refs": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR",
+    "new_candidate_classes_allowed": false,
     "live_requires_immutable_artifact_identity": true,
-    "human_review_required_for_user_facing_promotion": true
+    "human_review_required_for_user_facing_promotion": true,
+    "all_material_active_product_work_requires_founder_visible_url": true,
+    "new_user_facing_idea_requires_registry_before_material_code": true,
+    "archived_source_may_only_donate_into": ["HEIR", "SANDBOX"]
+  },
+  "new_idea_intake": {
+    "required_before_material_product_code": true,
+    "sequence": [
+      "IDEA",
+      "PRODUCT_OR_SEAM_REGISTRY_ENTRY",
+      "LIVE_RELEASED_OR_UNRELEASED_STATE",
+      "HEIR_REVIEW_PATH",
+      "SANDBOX_NONE_OR_ONE_REGISTERED_BRANCH",
+      "ARCHIVE_NAMESPACE",
+      "EXACT_PARENT_AND_WRITE_SCOPE",
+      "CODE"
+    ],
+    "unreleased_live_state_allowed": true,
+    "hidden_local_only_product_candidate_allowed": false,
+    "failure_state": "PRODUCT_AUTHORITY_CONTEXT_UNRESOLVED"
   },
   "products": {
     "4PLANET": {
@@ -124,15 +151,20 @@
   },
   "archive": {
     "index_url": "https://archive.4planet.org/",
-    "source_policy": "IMMUTABLE_PAGES_DEPLOYMENTS_TAGS_RELEASES_AND_DISPOSITIONED_HISTORICAL_REFS",
+    "source_policy": "IMMUTABLE_EXACT_SHA_PAGES_DEPLOYMENTS_TAGS_RELEASES_AND_DISPOSITIONED_HISTORICAL_REFS",
     "initial_state": "BUILDING",
+    "write_authority": false,
+    "development_authority": false,
+    "allowed_actions": ["READ", "RENDER", "COMPARE", "DONATE_BY_COPY_INTO_HEIR_OR_SANDBOX"],
+    "forbidden_actions": ["DEVELOP_IN_PLACE", "REPAIR_IN_PLACE", "MERGE_INTO_ARCHIVE", "USE_AS_RECEIVING_BRANCH", "RESTART_ARCHIVED_BRANCH", "PROMOTE_ARCHIVED_BRANCH_DIRECTLY"],
     "destructive_cleanup_before_disposition": false
   },
   "activation": {
     "control_branch": "control/four-state-product-control-01",
     "control_parent_sha": "404fad51436d273fceb77af33beef17b3a16ea27",
-    "all_unregistered_user_facing_branches": "QUARANTINED_NO_PRODUCT_AUTHORITY",
+    "all_unregistered_user_facing_branches": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY",
     "new_user_facing_sandbox_requires_registry_entry_before_first_material_mutation": true,
+    "new_user_facing_idea_requires_registry_entry_before_first_material_mutation": true,
     "sandbox_sha_rule": "REGISTRY_SHA_IS_REGISTRATION_EVIDENCE_NOT_SELF_REFERENTIAL_MOVING_HEAD; CURRENT_HEAD_COMES_FROM_GIT_AND_DEPLOY_READBACK"
   }
 }
