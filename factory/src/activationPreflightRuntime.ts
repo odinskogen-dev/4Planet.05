@@ -112,16 +112,30 @@ export class ProductionFactoryAgent extends BaseProductionFactoryAgent {
         workPackageId: pkg.id,
         declaredBaseSha: exactTestKingSha,
       });
-      const receiverMatches = decision.ok
-        && decision.receiverBranch === TEST_BRANCH
-        && decision.receiverSha?.toLowerCase() === exactTestKingSha;
+
+      if (!decision.ok) {
+        authorityReady = false;
+        authority.push({
+          workPackageId: pkg.id,
+          projectId: pkg.projectId,
+          ok: false,
+          code: decision.code,
+          reason: decision.reason,
+          currentTestSha: decision.currentTestSha,
+          registryCommitSha: decision.registryCommitSha,
+          equivalentOpenPullRequests: decision.equivalentOpenPullRequests ?? [],
+        });
+        continue;
+      }
+
+      const receiverMatches = decision.receiverBranch === TEST_BRANCH
+        && decision.receiverSha.toLowerCase() === exactTestKingSha;
       if (!receiverMatches) authorityReady = false;
       authority.push({
         workPackageId: pkg.id,
         projectId: pkg.projectId,
         ok: receiverMatches,
-        code: decision.code,
-        reason: decision.reason,
+        code: receiverMatches ? "AUTHORISED" : "WRONG_ACTIVATION_RECEIVER",
         currentTestSha: decision.currentTestSha,
         registryCommitSha: decision.registryCommitSha,
         receiverBranch: decision.receiverBranch,
