@@ -12,20 +12,30 @@ const transpiled = ts.transpileModule(source, {
 }).outputText;
 const action = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
 
-test("Bay survey action fails closed while current quantity and GBP cost are unknown", () => {
+test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
+  const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
+  assert.equal(contract.programmeEvidence.annualSurveys.state, "KNOWN");
+  assert.deepEqual(contract.programmeEvidence.annualSurveys.value, { min: 10, max: 12 });
+  assert.equal(contract.programmeEvidence.annualSurveyDays.state, "KNOWN");
+  assert.deepEqual(contract.programmeEvidence.annualSurveyDays.value, { min: 40, max: 48 });
+  assert.match(contract.programmeEvidence.annualSurveyDays.sourceNote, /Steve Jones, 4 Sep 2026/i);
+});
+
+test("Bay survey action still fails closed while bounded quantity and current GBP terms are unresolved", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
   assert.equal(contract.readiness, "BLOCKED_EXTERNAL_FACTS");
-  assert.equal(contract.fundingNeed.amount.state, "UNKNOWN");
+  assert.equal(contract.fundingNeed.amount.state, "TO_VERIFY");
   assert.equal(contract.fundingNeed.amount.value, null);
   assert.equal(contract.fundingNeed.quantity.state, "UNKNOWN");
   assert.equal(contract.fundingNeed.quantity.value, null);
   assert.equal(action.actionContractCanMatchFunding(contract), false);
 });
 
-test("Bay action contract exposes exact external blockers rather than inventing a fundable unit", () => {
+test("placeholder sponsorship prices can never be promoted into a fundable amount", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
-  assert.ok(contract.blockers.some((item) => /annual survey-day plan/i.test(item)));
-  assert.ok(contract.blockers.some((item) => /GBP costing/i.test(item)));
+  assert.match(contract.fundingNeed.amount.sourceNote, /placeholders/i);
+  assert.ok(contract.blockers.some((item) => /prices were explicitly placeholders/i.test(item)));
+  assert.ok(contract.blockers.some((item) => /survey days this action contract would fund/i.test(item)));
   assert.ok(contract.blockers.some((item) => /No external funder commitment/i.test(item)));
 });
 
@@ -46,9 +56,11 @@ test("action contract reuses existing Planet, Impact and Actor proof surfaces", 
   assert.ok(hrefs.includes("/actors"));
 });
 
-test("truth summary carries blockers and cannot report a known funding amount", () => {
+test("truth summary exposes confirmed programme scale but no fabricated funding amount", () => {
   const summary = action.actionContractTruthSummary(action.BAY_OF_BISCAY_SURVEY_ACTION);
   assert.equal(summary.canMatchFunding, false);
+  assert.deepEqual(summary.confirmedAnnualSurveys, { min: 10, max: 12 });
+  assert.deepEqual(summary.confirmedAnnualSurveyDays, { min: 40, max: 48 });
   assert.equal(summary.knownFundingAmount, null);
   assert.equal(summary.knownQuantity, null);
   assert.ok(summary.blockers.length >= 3);
