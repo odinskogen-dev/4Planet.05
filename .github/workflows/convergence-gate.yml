@@ -50,6 +50,9 @@ jobs:
       - name: System convergence control-of-control
         run: node --test scripts/system-convergence-control.test.mjs
 
+      - name: BrainBench Round 02 — authority Context Pack + Delta
+        run: node --test scripts/authority-context-compiler.test.mjs
+
       - name: Elite operating doctrine control
         run: node scripts/elite-operating-doctrine-gate.mjs
 
