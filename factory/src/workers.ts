@@ -8,6 +8,8 @@ import { evaluateZeroLoss } from "./zeroLoss";
 import { effectiveResourceBudget } from "./hardeningControl";
 import { factoryCandidateBranch, shouldReserveAiForCandidate, type CandidateCheckState } from "./aiReservation";
 import { buildAiCapacitySnapshot } from "./aiCapacitySnapshot";
+import { resolveLiveCandidateAuthority } from "./candidateAuthorityRuntime";
+import { createGitHubCandidateAuthorityPort } from "./githubCandidateAuthorityPort";
 import {
   APPROVED_FACTORY_AI_MODEL,
   MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH,
@@ -28,6 +30,7 @@ interface WorkerState {
 const MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY = 6;
 const MAX_AI_ATTEMPTS_PER_PACKAGE = 2;
 const REPOSITORY = "odinskogen-dev/4Planet.05";
+const TEST_BRANCH = "king/test";
 
 type AiReservationDecision = "RESERVED" | "DAILY_CAP" | "MONTHLY_CAP";
 
@@ -98,6 +101,11 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
     `;
 
     if (isClaudeProductWorkPackage(pkg)) {
+      if (pkg.specialist.mode === "BOUNDED_CODE") {
+        const baseSha = pkg.specialist.baseSha ?? pkg.run?.expectedBaseSha ?? "";
+        const authorityBlocked = await this.candidateAuthorityBlock(pkg, baseSha, TEST_BRANCH);
+        if (authorityBlocked) return authorityBlocked;
+      }
       try {
         const executed = await executeClaudeProductReview(this.env, pkg);
         return this.persistOutcome(pkg, executed);
@@ -115,6 +123,9 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
 
     const autonomous = (pkg as AutonomousWorkPackage).autonomous;
     if (autonomous) {
+      const authorityBlocked = await this.candidateAuthorityBlock(pkg, autonomous.expectedBaseSha, autonomous.baseBranch);
+      if (authorityBlocked) return authorityBlocked;
+
       const configuredModel = (this.env as Cloudflare.Env & { FACTORY_AI_MODEL?: string }).FACTORY_AI_MODEL?.trim();
       if (!modelIsBudgetApproved(configuredModel)) {
         return this.finish(
@@ -211,6 +222,61 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       [],
       "The worker intentionally refuses to simulate or invent execution.",
     );
+  }
+
+  private async candidateAuthorityBlock(pkg: WorkPackage, declaredBaseSha: string, declaredBaseBranch: string): Promise<Outcome | undefined> {
+    const token = (this.env as Cloudflare.Env & { FACTORY_GITHUB_TOKEN?: string }).FACTORY_GITHUB_TOKEN?.trim();
+    if (!token) {
+      return this.finish(
+        pkg,
+        "BLOCKED",
+        "CANDIDATE_AUTHORITY_UNAVAILABLE: governed GitHub TEST credential is absent; candidate dispatch fails closed.",
+        ["No candidate branch/PR/write created"],
+      );
+    }
+
+    try {
+      const authority = await resolveLiveCandidateAuthority(createGitHubCandidateAuthorityPort(token), {
+        projectId: pkg.projectId,
+        workPackageId: pkg.id,
+        declaredBaseSha,
+      });
+      if (!authority.ok) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          `CANDIDATE_AUTHORITY_FAIL_CLOSED: ${authority.code}: ${authority.reason}`,
+          [
+            `TEST_KING_CURRENT=${authority.currentTestSha ?? "UNKNOWN"}`,
+            `REGISTRY_COMMIT=${authority.registryCommitSha ?? "UNKNOWN"}`,
+            `DECLARED_BASE=${declaredBaseSha || "MISSING"}`,
+            "No candidate branch/PR/write created",
+          ],
+          "Repair or register the existing product lineage; never create a replacement candidate to bypass authority uncertainty.",
+        );
+      }
+      if (authority.receiverBranch !== declaredBaseBranch || authority.receiverSha !== declaredBaseSha) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          "CANDIDATE_RECEIVER_MISMATCH: declared execution receiver is not the exact registered product receiver.",
+          [
+            `REGISTERED_RECEIVER=${authority.receiverBranch}@${authority.receiverSha}`,
+            `DECLARED_RECEIVER=${declaredBaseBranch}@${declaredBaseSha}`,
+            "No candidate branch/PR/write created",
+          ],
+        );
+      }
+      return undefined;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown candidate-authority preflight failure";
+      return this.finish(
+        pkg,
+        "BLOCKED",
+        `CANDIDATE_AUTHORITY_RUNTIME_FAIL_CLOSED: ${message}`,
+        ["No candidate branch/PR/write created"],
+      );
+    }
   }
 
   private async needsAiReservation(pkg: WorkPackage, autonomous: NonNullable<AutonomousWorkPackage["autonomous"]>): Promise<boolean> {
