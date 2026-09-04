@@ -1,28 +1,40 @@
 {
-  "schema_version": "1.0",
-  "control_state": "INTERNAL_TEST_ONLY",
+  "schema_version": "2.0",
+  "control_state": "FOUR_STATE_INTERNAL_CONTROL",
+  "surface_registry": "docs/control/PRODUCT_SURFACE_REGISTRY.json",
   "authority_model": {
-    "live": "FOUNDER_GATED",
+    "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
+    "live": "FOUNDER_GATED_IMMUTABLE_ARTIFACT",
     "test_heir": {
       "branch": "king/test",
-      "role": "SOLE_HEIR"
+      "role": "SOLE_HEIR",
+      "review_host": "https://test.4planet.org"
     },
+    "archive_host": "https://archive.4planet.org",
+    "max_registered_heirs_per_product": 1,
     "max_registered_sandboxes_per_product": 1,
     "newest_wins": false,
     "stable_alias_is_identity_proof": false,
-    "sandbox_requires_test_heir_as_exact_ancestor": true
+    "branch_name_is_authority": false,
+    "sandbox_requires_test_heir_ancestry": true,
+    "human_review_required_for_user_facing_promotion": true,
+    "unregistered_user_facing_branch_policy": "HISTORY_DONOR_ARCHIVE_QUARANTINE_FAIL_CLOSED"
   },
   "products": {
     "ATLAS": {
       "heir": "king/test",
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "required_ancestor_sha_at_registration": "90db512b821371d96cc38fcf05242eff86b76f8c",
+        "sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
+        "pr": 263,
+        "required_ancestor_sha_at_registration": "404fad51436d273fceb77af33beef17b3a16ea27",
         "classification": "SANDBOX",
+        "review_path": "/atlas/sandbox",
+        "exact_preview": "https://c6da6122.4planet-05.pages.dev/atlas",
         "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate",
         "live_authority": false
       },
-      "lineage_state": "STALE_SANDBOX_FAIL_CLOSED",
+      "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
       "last_convergence": {
         "pr": 246,
         "sandbox_branch": "work/atlas-product-polish-01",
@@ -35,33 +47,72 @@
       },
       "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
     },
-    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "MAGAZINE": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"},
-    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "UNVERIFIED_FAIL_CLOSED"}
+    "MAGAZINE": {
+      "heir": "king/test",
+      "sandbox": {
+        "branch": "recovery/testking-magazine",
+        "sha": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
+        "pr": 162,
+        "classification": "SANDBOX",
+        "review_path": "/magazine/sandbox",
+        "exact_preview": "https://17d3ba42.4planet-05.pages.dev/magazine",
+        "purpose": "Dedicated Magazine recovery/convergence lane after live regression incident",
+        "live_authority": false
+      },
+      "live_identity": {
+        "source_sha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795",
+        "immutable_pages_deployment": "https://feb9a95c.4planet-05.pages.dev/",
+        "state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"
+      },
+      "lineage_state": "REGISTERED_RECOVERY_SANDBOX_RECONCILIATION_REQUIRED",
+      "all_other_lines": "HISTORY_DONOR_ARCHIVE_UNLESS_EXPLICITLY_RECLASSIFIED"
+    },
+    "ORCA_BAY": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "ECOSYSTEM_AMAZONIA_OSLOFJORD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "EMBLA_FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "ACTOR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"}
+  },
+  "agent_bootstrap_contract": {
+    "required_before_material_product_mutation": [
+      "fresh_connected_brain_context",
+      "product_surface_registry",
+      "exact_heir_branch_and_sha",
+      "active_sandbox_or_explicit_none",
+      "allowed_donors",
+      "exact_parent_sha",
+      "write_scope",
+      "human_review_url_contract",
+      "return_path_to_heir",
+      "rollback_identity"
+    ],
+    "failure_state": "PRODUCT_AUTHORITY_CONTEXT_UNRESOLVED",
+    "failure_effect": "NO_MATERIAL_USER_FACING_MUTATION_OR_NEW_CANDIDATE"
   },
   "promotion_contract": {
     "founder_review_requires": [
       "exact_branch",
       "exact_sha",
-      "immutable_deploy_marker_or_preview",
+      "working_founder_visible_url",
       "required_ci_green",
-      "candidate_authority_gate_green"
+      "candidate_authority_gate_green",
+      "human_use_and_visual_judgement"
     ],
     "donor_delta_dispositions": [
       "ADOPT",
       "ALREADY_PRESENT",
+      "SUPERSEDED_BY_BETTER_IMPLEMENTATION",
       "REJECT_WITH_REASON",
       "DEFER_WITH_REASON"
     ],
-    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED"
+    "sandbox_to_heir": "HUMAN_REVIEW_PLUS_EXACT_SHA_GATES_REQUIRED",
+    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED_EXACT_TESTED_ARTIFACT"
   },
   "safety": {
     "no_live_or_main_promotion_by_this_register": true,
     "no_canon_authority_change": true,
+    "no_destructive_historical_branch_cleanup_before_donor_disposition": true,
     "superbrain_remains_shadow_until_explicit_founder_cutover": true,
     "factory_remains_separate_existing_lineage": true
   }
