@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "LIVE_RESTORED_LOCKED",
+  "publicUrl": "https://4planetmagazine.com/",
+  "sourceBranch": "recovery/testking-magazine",
+  "sourceCandidateSha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795",
+  "sourceTreeSha": "5e645a7a502bf26e1ccc7d01abf554832eb240da",
+  "restorationCommit": "4145e04dfc65be67d3f9f3e164fe9d15cd343914",
+  "immutableCandidatePreview": "https://feb9a95c.4planet-05.pages.dev",
+  "lockedFileCount": 66,
+  "promotionRule": "Exact candidate identity required; update the lock only during an explicit Magazine promotion."
+}
