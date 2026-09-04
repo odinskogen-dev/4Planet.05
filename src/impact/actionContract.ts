@@ -36,6 +36,10 @@ export interface ActionContract {
   };
   boundedAction: string;
   deliveryUnit: string;
+  programmeEvidence: {
+    annualSurveys: ActionContractEvidenceField<{ min: number; max: number }>;
+    annualSurveyDays: ActionContractEvidenceField<{ min: number; max: number }>;
+  };
   fundingNeed: {
     currency: "GBP" | "NOK" | "EUR" | "USD";
     amount: ActionContractEvidenceField<number>;
@@ -56,17 +60,19 @@ export interface ActionContract {
  *
  * It deliberately reuses the existing ORCA / Bay monitoring proof rather than
  * creating a new project narrative. Route geometry, hours and distance are the
- * delivery proof dimensions already locked by the Bay contract. Current annual
- * survey quantity and current GBP costing are not present in the active product
- * evidence, so this contract MUST remain blocked instead of inventing a funding
- * amount or opening a contribution route.
+ * delivery proof dimensions already locked by the Bay contract. ORCA's COO
+ * confirmed the current Portsmouth–Santander programme scale on 4 Sep 2026:
+ * 10 or 12 surveys, with a four-day return crossing, equating to 40–48 survey
+ * days. The sponsorship prices previously shared by ORCA were explicitly
+ * described as placeholders, so current GBP amount and the bounded quantity to
+ * fund remain unresolved and this contract MUST stay closed to funding match.
  */
 export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   id: "action:4p:orca:bay-of-biscay:survey-effort:v1",
   title: "Bay of Biscay cetacean survey effort",
   system: "OCE4N_",
-  need: "Fund bounded, inspectable cetacean monitoring effort on the existing England → Bay of Biscay → Spain ferry survey corridor.",
-  place: "Bay of Biscay · existing ferry survey corridor",
+  need: "Fund bounded, inspectable cetacean monitoring effort on the existing Portsmouth → Bay of Biscay → Santander ferry survey corridor.",
+  place: "Bay of Biscay · Portsmouth–Santander ferry survey corridor",
   actor: {
     id: "actor:orca",
     name: "ORCA",
@@ -75,19 +81,31 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   },
   boundedAction: "Support a defined quantity of survey effort measured as confirmed route geometry, observation hours and distance surveyed. Sightings are biological observations, not a delivery-success metric by themselves.",
   deliveryUnit: "confirmed survey effort",
+  programmeEvidence: {
+    annualSurveys: {
+      state: "KNOWN",
+      value: { min: 10, max: 12 },
+      sourceNote: "ORCA COO Steve Jones, 4 Sep 2026: Portsmouth–Santander will have either 10 or 12 surveys this year, pending two date confirmations.",
+    },
+    annualSurveyDays: {
+      state: "KNOWN",
+      value: { min: 40, max: 48 },
+      sourceNote: "ORCA COO Steve Jones, 4 Sep 2026: the return crossing is four days, producing 40–48 days of survey time from 10–12 surveys.",
+    },
+  },
   fundingNeed: {
     currency: "GBP",
     amount: {
-      state: "UNKNOWN",
+      state: "TO_VERIFY",
       value: null,
-      sourceNote: "Current £ / survey-day costing must be confirmed before this contract can be matched or opened.",
+      sourceNote: "ORCA previously shared £4,000/year, £400/month and £250/two-week sponsorship examples but explicitly described the numbers as placeholders. Current bounded GBP terms must be confirmed before matching or opening.",
     },
     quantity: {
       state: "UNKNOWN",
       value: null,
-      sourceNote: "Current annual survey-day plan must be confirmed before this contract can be matched or opened.",
+      sourceNote: "The programme is 40–48 survey days in 2026, but the bounded quantity this specific action contract would fund has not yet been selected or agreed.",
     },
-    quantityLabel: "survey days",
+    quantityLabel: "survey days funded",
   },
   suitableFunderTypes: [
     "bounded pilot funder",
@@ -102,10 +120,10 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
       evidenceRequired: ["route geometry", "operator confirmation", "measurement method"],
     },
     {
-      id: "cost",
-      label: "Current survey quantity and GBP costing confirmed",
+      id: "scope-cost",
+      label: "Bounded funded quantity and current GBP terms confirmed",
       state: "PENDING",
-      evidenceRequired: ["survey days", "cost per unit or bounded budget", "costing date/source"],
+      evidenceRequired: ["survey days funded", "current bounded budget or unit cost", "costing date/source"],
     },
     {
       id: "commitment",
@@ -136,8 +154,8 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   outcomeBoundary: "Delivery proof demonstrates that bounded monitoring work occurred. It does not by itself demonstrate ecological improvement, cetacean population change or verified ecological impact.",
   readiness: "BLOCKED_EXTERNAL_FACTS",
   blockers: [
-    "ORCA-confirmed current annual survey-day plan is not yet present in active evidence.",
-    "ORCA-confirmed current GBP costing is not yet present in active evidence.",
+    "Current bounded GBP sponsorship terms are not confirmed; previously shared prices were explicitly placeholders.",
+    "The number of survey days this action contract would fund has not been selected or agreed.",
     "No external funder commitment exists in this contract.",
   ],
   evidenceLinks: [
@@ -166,6 +184,8 @@ export function actionContractTruthSummary(contract: ActionContract) {
     id: contract.id,
     readiness: contract.readiness,
     canMatchFunding: actionContractCanMatchFunding(contract),
+    confirmedAnnualSurveys: contract.programmeEvidence.annualSurveys.state === "KNOWN" ? contract.programmeEvidence.annualSurveys.value : null,
+    confirmedAnnualSurveyDays: contract.programmeEvidence.annualSurveyDays.state === "KNOWN" ? contract.programmeEvidence.annualSurveyDays.value : null,
     knownFundingAmount: contract.fundingNeed.amount.state === "KNOWN" ? contract.fundingNeed.amount.value : null,
     knownQuantity: contract.fundingNeed.quantity.state === "KNOWN" ? contract.fundingNeed.quantity.value : null,
     blockers: [...contract.blockers],
