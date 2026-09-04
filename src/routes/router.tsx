@@ -20,6 +20,7 @@ import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
 import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
 import Join from "@/pages/v5/Join";
 import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
+import { PlanetProofPage } from "@/pages/v5/PlanetProof";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
@@ -105,6 +106,7 @@ export function AppRoutes() {
       <Route path="/get-involved" element={<Suspense fallback={ActorFallback}><FindYourWayToHelp /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
       <Route path="/living-systems" element={<LivingSystems />} />
+      <Route path="/living-systems/oslofjorden" element={<PlanetProofPage slug="oslofjorden" />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
