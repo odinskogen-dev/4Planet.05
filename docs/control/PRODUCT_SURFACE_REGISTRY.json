@@ -36,9 +36,9 @@
       "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
+        "sha_at_registration": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
         "pr": 263,
-        "exact_preview": "https://c6da6122.4planet-05.pages.dev/atlas",
+        "exact_preview_at_registration": "https://c6da6122.4planet-05.pages.dev/atlas",
         "branch_preview": "https://work-atlas-zero-loss-gold-co.4planet-05.pages.dev/atlas",
         "review_path": "/atlas/sandbox",
         "origin_path": "/atlas",
@@ -86,9 +86,9 @@
       "heir": {"review_path": "/magazine", "origin_path": "/magazine"},
       "sandbox": {
         "branch": "recovery/testking-magazine",
-        "sha": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
+        "sha_at_registration": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
         "pr": 162,
-        "exact_preview": "https://17d3ba42.4planet-05.pages.dev/magazine",
+        "exact_preview_at_registration": "https://17d3ba42.4planet-05.pages.dev/magazine",
         "branch_preview": "https://recovery-testking-magazine.4planet-05.pages.dev/magazine",
         "review_path": "/magazine/sandbox",
         "origin_path": "/magazine",
@@ -132,6 +132,7 @@
     "control_branch": "control/four-state-product-control-01",
     "control_parent_sha": "404fad51436d273fceb77af33beef17b3a16ea27",
     "all_unregistered_user_facing_branches": "QUARANTINED_NO_PRODUCT_AUTHORITY",
-    "new_user_facing_sandbox_requires_registry_entry_before_first_material_mutation": true
+    "new_user_facing_sandbox_requires_registry_entry_before_first_material_mutation": true,
+    "sandbox_sha_rule": "REGISTRY_SHA_IS_REGISTRATION_EVIDENCE_NOT_SELF_REFERENTIAL_MOVING_HEAD; CURRENT_HEAD_COMES_FROM_GIT_AND_DEPLOY_READBACK"
   }
 }
