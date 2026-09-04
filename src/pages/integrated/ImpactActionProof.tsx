@@ -1,15 +1,18 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
 import { T } from "@/styles/tokens";
 import { BAY_OF_BISCAY_SURVEY_ACTION, actionContractTruthSummary } from "@/impact/actionContract";
 
-const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
-const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(18px,2.4vw,28px)" };
+const mono: CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
+const panel: CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(18px,2.4vw,28px)" };
 
 export function BayActionProof() {
   const action = BAY_OF_BISCAY_SURVEY_ACTION;
   const truth = actionContractTruthSummary(action);
+  const surveys = truth.confirmedAnnualSurveys;
+  const surveyDays = truth.confirmedAnnualSurveyDays;
 
   return (
     <PublicShell>
@@ -27,8 +30,9 @@ export function BayActionProof() {
 
         <div style={{ marginTop: 42, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", border: `1px solid ${T.line}` }}>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>ACTOR</div><h2 style={{ marginTop: 12 }}>{action.actor.name}</h2><p style={{ lineHeight: 1.5 }}>{action.actor.role}</p><small>{action.actor.relationshipState.replaceAll("_", " ")}</small></div>
+          <div style={panel}><div style={{ ...mono, color: T.blue }}>2026 PROGRAMME · ORCA CONFIRMED</div><h2 style={{ marginTop: 12 }}>{surveys ? `${surveys.min}–${surveys.max} surveys` : "—"}</h2><p style={{ lineHeight: 1.5 }}>{surveyDays ? `${surveyDays.min}–${surveyDays.max} survey days` : "Survey days not confirmed"}</p><small>Steve Jones · ORCA COO · 4 Sep 2026</small></div>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>DELIVERY UNIT</div><h2 style={{ marginTop: 12 }}>{action.deliveryUnit}</h2><p style={{ lineHeight: 1.5 }}>Route geometry + observation hours + distance surveyed.</p></div>
-          <div style={panel}><div style={{ ...mono, color: T.blue }}>FUNDING NEED</div><h2 style={{ marginTop: 12 }}>UNKNOWN</h2><p style={{ lineHeight: 1.5 }}>GBP amount and survey-day quantity remain closed until current ORCA costing and plan are confirmed.</p></div>
+          <div style={panel}><div style={{ ...mono, color: T.blue }}>FUNDING NEED</div><h2 style={{ marginTop: 12 }}>NOT YET OPEN</h2><p style={{ lineHeight: 1.5 }}>Current bounded GBP terms and the number of survey days to fund remain unresolved. Earlier price examples were placeholders.</p></div>
         </div>
 
         <div style={{ marginTop: 18, ...panel }}>
