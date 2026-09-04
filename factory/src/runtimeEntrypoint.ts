@@ -94,6 +94,7 @@ async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha
 function activationPreflightPackages(currentTestSha: string, buildSha: string) {
   return createRealProjectProofCases(currentTestSha).map((proof) => {
     const autonomous = proof.pkg.autonomous;
+    if (!autonomous) throw new Error(`ACTIVATION_PROOF_AUTONOMOUS_CONTRACT_MISSING:${proof.pkg.id}`);
     return {
       id: activationProofId(proof.pkg.id, buildSha),
       projectId: proof.pkg.projectId,
