@@ -133,3 +133,7 @@ Weekly: portfolio/service-level audit and worker/evaluator performance.
 Monthly: adjust scoring weights only from outcome evidence.
 
 North Star: more verified value moved toward 4PLANET goals per unit Founder attention, without lowering truth, quality or safety and without losing prior work.
+
+## 12 — Current controlled activation proof
+
+2026-09-04: explicit three-family autonomous activation proof requested against the exact current Factory lineage. This entry records activation intent only; it does **not** certify ACTIVE, 24/7 readiness, TEST KING promotion, LIVE authority, Canon authority, external outreach authority, spend authority, or outcome claims. Certification remains fail-closed on the existing Production Factory Autonomous Activation workflow and its persisted evidence.
