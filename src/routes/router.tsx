@@ -7,6 +7,7 @@ import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
 import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
+import { BayActionProof } from "@/pages/integrated/ImpactActionProof";
 import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
 import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
@@ -91,6 +92,7 @@ export function AppRoutes() {
       <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />
       <Route path="/impact/test/:unit" element={<RedirectTestUnit />} />
       <Route path="/impact/record/:recordId" element={<RedirectRecord />} />
+      <Route path="/impact/actions/bay-of-biscay-survey" element={<BayActionProof />} />
       <Route path="/impact/:slug" element={<ImpactStory />} />
       <Route path="/checkout/lab" element={<CommerceStripeLab />} />
       <Route path="/checkout/return" element={<CheckoutReturn />} />
