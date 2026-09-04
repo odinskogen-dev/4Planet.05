@@ -33,6 +33,15 @@ function git(args, fallback = "") {
   }
 }
 
+function gitSucceeds(args) {
+  try {
+    execFileSync("git", args, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isSha(value) {
   return typeof value === "string" && /^[0-9a-f]{40}$/i.test(value);
 }
@@ -70,8 +79,8 @@ for (const [product, record] of Object.entries(registry.products || {})) {
 
   const sandbox = record.sandbox;
   if (!sandbox) continue;
-  if (!sandbox.branch || !isSha(sandbox.sha) || !sandbox.review_path || !sandbox.origin_path) {
-    die(`${product} sandbox missing branch/SHA/review/origin identity`);
+  if (!sandbox.branch || !isSha(sandbox.sha_at_registration) || !sandbox.review_path || !sandbox.origin_path) {
+    die(`${product} sandbox missing branch/registration-SHA/review/origin identity`);
   }
   if (!sandbox.review_path.endsWith("/sandbox")) die(`${product} sandbox review path must end in /sandbox`);
   if (sandbox.live_authority !== false) die(`${product} sandbox may never carry LIVE authority`);
@@ -85,7 +94,7 @@ const eventName = process.env.GITHUB_EVENT_NAME || "local";
 
 let changed = [];
 if (baseRef) {
-  const remoteBase = git(["rev-parse", `origin/${baseRef}`]) ? `origin/${baseRef}` : baseRef;
+  const remoteBase = gitSucceeds(["rev-parse", `origin/${baseRef}`]) ? `origin/${baseRef}` : baseRef;
   const diff = git(["diff", "--name-only", `${remoteBase}...HEAD`]);
   changed = diff ? diff.split("\n").filter(Boolean) : [];
 } else if (process.env.GITHUB_EVENT_BEFORE && !/^0+$/.test(process.env.GITHUB_EVENT_BEFORE)) {
@@ -113,15 +122,11 @@ if (isControlBranch && userFacingChanges.length > 0) {
 }
 
 if (registeredSandbox) {
-  const headSha = git(["rev-parse", "HEAD"]);
-  if (headSha && headSha !== registeredSandbox.sha) {
-    die(`${registeredSandbox.product} sandbox registry SHA ${registeredSandbox.sha} does not match checked-out HEAD ${headSha}; update registry atomically with the sandbox change`);
-  }
-
   const heirSha = git(["rev-parse", "origin/king/test"]);
   if (!heirSha) die("cannot resolve current origin/king/test for sandbox ancestry check");
-  const ancestor = git(["merge-base", "--is-ancestor", heirSha, "HEAD"], "ERROR");
-  if (ancestor === "ERROR") die(`${registeredSandbox.product} sandbox is not proven to descend from current king/test`);
+  if (!gitSucceeds(["merge-base", "--is-ancestor", heirSha, "HEAD"])) {
+    die(`${registeredSandbox.product} sandbox is not proven to descend from current king/test; forward-sync the SAME registered sandbox or fail closed`);
+  }
 }
 
 if (eventName === "pull_request" && userFacingChanges.length > 0 && baseRef !== "king/test") {
@@ -131,10 +136,15 @@ if (eventName === "pull_request" && userFacingChanges.length > 0 && baseRef !== 
 console.log("PRODUCT AUTHORITY GATE: PASS");
 console.log(JSON.stringify({
   headBranch,
+  headSha: git(["rev-parse", "HEAD"]) || null,
   eventName,
   baseRef: baseRef || null,
   changedFiles: changed.length,
   userFacingChanges: userFacingChanges.length,
   role: isHeir ? "HEIR" : registeredSandbox ? `SANDBOX:${registeredSandbox.product}` : isControlBranch ? "CONTROL" : controlOnlyChanges ? "NON_PRODUCT_SUPPORT" : "HISTORY_OR_NON_USER_FACING",
-  registeredSandboxes: [...registeredSandboxes.entries()].map(([branch, value]) => ({ branch, product: value.product, sha: value.sha }))
+  registeredSandboxes: [...registeredSandboxes.entries()].map(([branch, value]) => ({
+    branch,
+    product: value.product,
+    shaAtRegistration: value.sha_at_registration
+  }))
 }, null, 2));
