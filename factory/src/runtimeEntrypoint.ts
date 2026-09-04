@@ -22,6 +22,10 @@ const FACTORY_AGENT_NAME = "shadow-primary";
 const REPOSITORY = "odinskogen-dev/4Planet.05";
 const TEST_BRANCH = "king/test";
 const SHA40 = /^[0-9a-f]{40}$/i;
+const REQUIRED_ACTIVATION_WORKFLOWS = [
+  "Production Factory Shadow CI",
+  "ONE INTERFACE Convergence Gate",
+] as const;
 
 interface RuntimeEnv extends Cloudflare.Env {
   FACTORY_BUILD_SHA?: string;
@@ -59,23 +63,47 @@ function controlAuthorised(request: Request, env: RuntimeEnv): boolean {
   return difference === 0;
 }
 
-async function currentTestKingSha(env: RuntimeEnv): Promise<string> {
+function githubHeaders(env: RuntimeEnv): HeadersInit {
   const token = env.FACTORY_GITHUB_TOKEN?.trim();
   if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
+  return {
+    accept: "application/vnd.github+json",
+    authorization: `Bearer ${token}`,
+    "x-github-api-version": "2022-11-28",
+    "user-agent": "4PLANET-Production-Factory/1.0",
+  };
+}
+
+async function currentTestKingSha(env: RuntimeEnv): Promise<string> {
   const ref = TEST_BRANCH.split("/").map(encodeURIComponent).join("/");
   const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${ref}`, {
-    headers: {
-      accept: "application/vnd.github+json",
-      authorization: `Bearer ${token}`,
-      "x-github-api-version": "2022-11-28",
-      "user-agent": "4PLANET-Production-Factory/1.0",
-    },
+    headers: githubHeaders(env),
   });
   if (!response.ok) throw new Error(`CURRENT_TEST_KING_LOOKUP_FAILED:${response.status}`);
   const body = await response.json() as { object?: { sha?: string } };
   const sha = body.object?.sha?.trim().toLowerCase() ?? "";
   if (!SHA40.test(sha)) throw new Error("CURRENT_TEST_KING_SHA_INVALID");
   return sha;
+}
+
+async function requireExactHeadActivationGates(env: RuntimeEnv, buildSha: string): Promise<void> {
+  if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+  const response = await fetch(
+    `https://api.github.com/repos/${REPOSITORY}/actions/runs?head_sha=${encodeURIComponent(buildSha)}&per_page=100`,
+    { headers: githubHeaders(env) },
+  );
+  if (!response.ok) throw new Error(`EXACT_HEAD_GATE_LOOKUP_FAILED:${response.status}`);
+  const body = await response.json() as {
+    workflow_runs?: Array<{ name?: string; head_sha?: string; status?: string; conclusion?: string | null }>;
+  };
+  const runs = Array.isArray(body.workflow_runs) ? body.workflow_runs : [];
+  for (const requiredName of REQUIRED_ACTIVATION_WORKFLOWS) {
+    const run = runs.find((candidate) => candidate.name === requiredName && candidate.head_sha?.toLowerCase() === buildSha);
+    if (!run) throw new Error(`EXACT_HEAD_GATE_MISSING:${requiredName}`);
+    if (run.status !== "completed" || run.conclusion !== "success") {
+      throw new Error(`EXACT_HEAD_GATE_NOT_GREEN:${requiredName}:${run.status ?? "UNKNOWN"}:${run.conclusion ?? "NONE"}`);
+    }
+  }
 }
 
 async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha: string; currentSha: string; demoted: boolean }> {
@@ -207,6 +235,8 @@ export default {
         const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
         const currentTestSha = await currentTestKingSha(env);
         requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT");
+        // Do not spend/reserve proof capacity until both exact-head control gates are terminal green.
+        await requireExactHeadActivationGates(env, buildSha);
         const agent = await factoryAgent(env);
         const preflight = await agent.attestActivationPreflight({
           exactFactorySha: buildSha,
