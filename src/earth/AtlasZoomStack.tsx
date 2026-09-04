@@ -4,6 +4,8 @@ type ZoomStackMap = {
   getZoom: () => number;
   getStyle: () => { layers?: any[] } | undefined;
   getLayer: (id: string) => any;
+  addLayer?: (layer: any, beforeId?: string) => void;
+  removeLayer?: (id: string) => void;
   getLayoutProperty?: (id: string, name: string) => unknown;
   setLayoutProperty: (id: string, name: string, value: unknown) => void;
   setLayerZoomRange?: (id: string, minzoom: number, maxzoom: number) => void;
@@ -82,11 +84,25 @@ export default function AtlasZoomStack() {
       // Blue Marble is global/regional context only. Dynamic overlays may mount
       // after the base style has already emitted its first styledata event, so do
       // not infer success from the serialised style object. Reassert the zoom
-      // range whenever the layer exists. The operation is idempotent and closes
-      // the deep-link startup race that previously let imagery stretch to street.
+      // range whenever the layer exists. Some MapLibre builds apply
+      // setLayerZoomRange at runtime without serialising maxzoom back through
+      // getStyle(); the exact-head proof deliberately inspects that serialised
+      // contract too. If it is absent, replace only this layer definition in
+      // place, keeping the existing source, paint and stacking position.
       try {
         if (map.getLayer("bluemarble")) {
           map.setLayerZoomRange?.("bluemarble", 0, ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
+          const currentLayers = map.getStyle()?.layers || [];
+          const index = currentLayers.findIndex((layer: any) => layer?.id === "bluemarble");
+          const serialised = index >= 0 ? currentLayers[index] : undefined;
+          if (serialised && (typeof serialised.maxzoom !== "number" || serialised.maxzoom > ATLAS_ZOOM_POLICY.blueMarbleMaxZoom)) {
+            const beforeId = currentLayers.slice(index + 1).find((layer: any) => layer?.id)?.id;
+            const repaired = structuredClone(serialised);
+            repaired.minzoom = 0;
+            repaired.maxzoom = ATLAS_ZOOM_POLICY.blueMarbleMaxZoom;
+            map.removeLayer?.("bluemarble");
+            map.addLayer?.(repaired, beforeId);
+          }
           root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
         }
       } catch { /* layer may be mounting; bounded startup retries cover it */ }
