@@ -56,6 +56,7 @@
     "JAGUAR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_AS_SPECIES_EXPERIENCE", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "ORCA": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "S4PIENS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "4SAPIEN": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_EXISTING_CANON_SEAM", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "IMPACT": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "LIVING_SYSTEMS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
