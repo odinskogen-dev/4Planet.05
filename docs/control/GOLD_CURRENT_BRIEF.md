@@ -2,58 +2,71 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** GIGA2800-HUMAN-PROOF-EMBLA-CHOICE-TRANSFER-01
-**STATUS:** HEIR / DONOR DELTA TRANSFERRED FOR TEST + HUMAN REVIEW / NOT FOUNDER APPROVED / NO LIVE RELEASE
-**BASE AUTHORITY:** `king/test` / exact parent `604c67932de09f981848881811ce0060c4c0556b`
-**ROLLBACK BASE:** `604c67932de09f981848881811ce0060c4c0556b`
-**DONOR:** PR #220 / `work/giga02-embla-human-utility-01` @ `46681b2489eff268aed933c8e73f23e07027c55f` — QUARANTINE/DONOR ONLY under current Four-State Product Control.
-**REGRESSION CORRECTION:** The first manual router convergence incorrectly removed the canonical Norwegian alias `/living-systems/oslofjorden → /living-systems/oslofjord`. Browser Product Proof caught the loss before acceptance. The alias was restored forward-only in `e33549ea6476a5c8e63936a673f9ac44bf573daf`. Future manual router convergence must compare all existing explicit aliases/redirects against the parent before classifying a route as duplicate.
+**CHANGE ID:** GIGA2800-REALITY-PROOF-HUMAN-RESEARCH-01
+**STATUS:** HEIR / HUMAN PROOF INSTRUMENTATION CANDIDATE / NOT REAL-WORLD HUMAN PROOF / NOT FOUNDER APPROVED / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `80446464d94b6fed4541072296d756f978f99fd5`
+**ROLLBACK BASE:** `80446464d94b6fed4541072296d756f978f99fd5`
+**LOOP ROLE:** HUMAN CONTEXT → DECISION → PROOF → LEARNING.
 
 ## USER ARRIVES BECAUSE
-They need help making one ordinary FOOD choice and should not have to understand 4PLANET's data architecture before receiving useful decision support.
+They have one real FOOD purchase decision and need to know whether Embla makes that decision materially clearer or better without hiding uncertainty.
 
 ## ONE THING TO UNDERSTAND
-Embla must ask what matters most in the decision before selecting an evidence path. Health/allergen comparison may be ready while wallet/planet category ranking remains incomplete. Missing comparison strength must stay visible rather than being hidden inside a universal score.
+This mutation does not prove Human Utility. It makes a real Human Utility test inspectable. The participant must bring a real decision and real product. Fixture, synthetic and automated sessions remain technical evidence only.
 
 ## PRIMARY ACTION
-Open Embla, state a FOOD decision, choose the priority that matters now, then use the strongest currently supported comparison or product-evidence path.
+Open `/labs/food-user-test`, consent locally, enter the Embla research flow, use one real FOOD decision and product, then record whether the decision changed, became clearer, was confirmed or was not helped.
 
 ## SECONDARY DEPTH
-After choosing a priority, the user can inspect the existing FOOD evidence surface and its source/UNKNOWN boundaries. The decision gate should reveal depth only when it helps the current choice; it must not create a second FOOD intelligence system.
+The same evidence record preserves product/package accuracy, comprehension time, alternative relevance, usefulness, trust, UNKNOWN/refusal comprehension, repeat-use intent, install intent, payment intent and explicit issue severity. JSON/CSV export remains deliberate and local-first.
 
 ## P1 DOMINANT
-The dominant first-screen job is one decision: identify what matters most now. The priority choice must visually dominate architecture, method explanation and secondary evidence detail.
+The dominant job is proof of decision value, not scanner completion. A session without a real decision cannot satisfy PROOF-H01.
 
 ## P2 ORIENTATION
-The user must understand that different priorities have different evidence readiness. Health/allergen evidence can be stronger than wallet/planet category ranking, and incomplete evidence remains visibly incomplete.
+The participant must understand why Embla sometimes compares, sometimes shows only bounded product evidence and sometimes refuses an unsupported whole-shelf or universal answer.
 
 ## P3 ACTION / NEXT
-The selected priority routes into the strongest existing evidence path. Supported comparison proceeds; unsupported whole-shelf ranking is refused and the user is directed to bounded product evidence instead.
+The research flow deep-links into the existing Embla FOOD decision gate with `?research=1` and returns to the existing Human Proof recorder. No second assistant or research product is introduced.
 
 ## P4 DEPTH
-Detailed product evidence, source status, HEALTH/WALLET/PLANET separation and comparison limitations remain available after the decision. Depth must preserve provenance and UNKNOWN states rather than compress them into one score.
+Accuracy, evidence limitations and UNKNOWN states remain inspectable. Decision effect is recorded separately from decision correctness. Payment intent is a research signal only and must never be represented as revenue.
 
 ## WHAT CAN BE REMOVED
-Remove or avoid architecture-first explanation, universal-score framing and any step that does not help the user make the current bounded decision. Explicit aliases, redirects, source/truth seams and other parent routes are preservation objects until exact parent comparison proves they are redundant. No replacement assistant, truth store or parallel FOOD workflow is justified.
+Any duplicate research surface, remote personal-data store, synthetic participant generation, moral score, universal sustainability ranking or analytics layer that does not improve the bounded proof is unnecessary.
 
 ## WHAT MUST BE REUSED
-Existing Embla intake, FOOD intelligence, PICK product evidence, current source/truth contracts, 4SAPIEN route family, explicit parent aliases/redirects and current HEIR. No replacement assistant, score or truth store is introduced.
+Existing `/labs/food-user-test`, Embla FOOD decision-first gate, `FoodIntelligence`, `PickPrototype`, localStorage privacy boundary, JSON/CSV export, source/truth contracts, 4SAPIEN route family, current HEIR and all existing route/alias MUST-NOT-LOSE behaviour.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** the decision-first Embla FOOD gate, bounded priority states, explicit wallet/planet limitations and ten-prompt contract coverage from PR #220.
-- **ADAPT:** route into current HEIR rather than continuing the stale donor branch.
-- **PRESERVE:** current `FoodIntelligence`, `PickPrototype`, fail-closed source states, the canonical Oslofjorden alias and all current HEIR changes since the donor ancestor.
-- **REJECT:** wholesale merge of PR #220, universal sustainability score, category-wide wallet/planet ranking without evidence, or treating the donor as a candidate because it exists.
-- **CORRECTED LEARNING:** a route that looks duplicate by name may encode canonicalisation. Preserve explicit parent redirects unless the parent route matrix and browser contract prove removal safe.
+- **ADOPT:** explicit decision-effect and UNKNOWN/refusal comprehension fields required by the current Reality Proof mission.
+- **ADAPT:** connect the existing recorder and Embla through a reversible research query parameter and return link.
+- **PRESERVE:** all current source/refusal semantics, existing package-accuracy checks, privacy boundary, export capability, parent redirects and HEIR value.
+- **REJECT:** new research backend, fabricated respondents, remote personal storage, new product surface, universal score or any claim that technical PASS equals Human Utility.
 
 ## TRUTH BOUNDARY
-Embla identifies an evidence path, not a universal answer. Selected health/allergen paths may compare controlled product evidence. Wallet and planetary evidence remain product-level where category-wide ranking is not strong enough. UNKNOWN remains UNKNOWN. This mutation is not evidence of repeat human utility, adoption, production readiness, economic value or Founder approval.
+`TECHNICAL PASS ≠ HUMAN VALUE`.
+`USEFULNESS SCORE ≠ REPEAT HUMAN UTILITY`.
+`PAYMENT INTENT ≠ REVENUE`.
+`DECISION CHANGED ≠ DECISION CORRECT`.
+`ONE REAL PARTICIPANT ≠ REPEATED PROOF`.
+A real-world Human Proof record exists only when an actual participant uses a real decision and real product, the result is captured, and limitations/failures remain in the evidence.
 
 ## MOBILE-FIRST RISK
-Priority choices must remain readable and tappable without horizontal overflow or burying the primary decision below explanatory copy. Mobile must preserve the same evidence-readiness and refusal boundaries as desktop; no mobile-specific truth or ranking shortcut is allowed.
+The research handoff must remain usable on a phone without forcing remote identity, horizontal overflow or hidden evidence boundaries. The participant must be able to return from Embla to the recorder without losing the local session.
 
 ## HUMAN SUCCESS
-A first-time user can express a FOOD decision, choose the concern they care about, understand what 4PLANET can and cannot compare, and reach the existing evidence engine without being shown a fabricated overall score.
+A first-time participant can bring a real decision, understand what Embla can and cannot support, use real product evidence, record whether the decision changed/clarified/confirmed/was not helped, and export an inspectable anonymous record without giving 4PLANET identity or sensitive personal data.
 
 ## ACCEPTANCE
-1. `king/test` remains the sole HEIR and LIVE remains untouched. 2. The old PR #220 remains donor/quarantine; no donor branch is promoted or revived. 3. `/4sapien/food/choose` renders the decision-first gate. 4. Embla FOOD intake routes to that gate. 5. Controlled health/allergen paths can proceed to comparison. 6. Wallet/planet/best-overall paths explicitly refuse unsupported whole-shelf ranking. 7. Existing FOOD source failure/unknown states remain intact. 8. Contract tests cover ten realistic FOOD prompts plus false-ranking refusal. 9. Parent route/alias preservation and browser proof pass on the exact resulting HEIR SHA. 10. Typecheck/build/authority/Gold/browser gates pass on the exact resulting HEIR SHA. 11. Human Gold, repeat-human-utility proof and LIVE release remain separate Founder/evidence gates.
+1. `king/test` remains the sole HEIR and LIVE remains untouched.
+2. Exact parent is `80446464d94b6fed4541072296d756f978f99fd5`; stale/non-fast-forward mutation fails closed.
+3. `/labs/food-user-test` deep-links to `/4sapien/food/choose?research=1`.
+4. Embla research mode returns to the existing local evidence recorder.
+5. Recorder captures `decisionQuestion`, `decisionEffect` and `unknownRefusalComprehension` plus existing usefulness/trust/repeat/payment-intent metrics.
+6. Recorder remains local-only and does not introduce remote personal storage.
+7. JSON/CSV evidence preserves the proof boundary that synthetic/fixture sessions are technical only.
+8. Existing wallet/planet/best-overall refusal semantics remain intact.
+9. Existing route/alias preservation remains intact.
+10. Typecheck/build/contracts/GOLD/Human Craft/Four-State/Browser/ATLAS/ONE INTERFACE gates pass on the exact resulting HEIR SHA.
+11. No Human Utility, repeat-use, willingness-to-pay, revenue, adoption or LIVE claim is made without real participant evidence and the appropriate later gates.

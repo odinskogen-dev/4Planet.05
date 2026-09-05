@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import FoodIntelligence from "@/food/FoodIntelligence";
 import PickPrototype from "@/food/PickPrototype";
 import "./embla-choice.css";
@@ -17,6 +17,8 @@ const PRIORITIES: Array<{ id: Priority; label: string; short: string; readiness:
 ];
 
 export default function EmblaFoodChoice() {
+  const [searchParams] = useSearchParams();
+  const researchMode = searchParams.get("research") === "1";
   const [priority, setPriority] = useState<Priority>("BALANCED");
   const [mode, setMode] = useState<"START" | "COMPARE" | "SCAN">("START");
   const selected = useMemo(() => PRIORITIES.find((item) => item.id === priority)!, [priority]);
@@ -30,7 +32,7 @@ export default function EmblaFoodChoice() {
     <main className="embla-choice">
       <header className="embla-choice__top">
         <Link to="/4sapien" className="embla-choice__brand">4PLANET_ / EMBLA</Link>
-        <span>FOOD DECISION · PRIVATE PROTOTYPE</span>
+        <span>{researchMode ? "FOOD DECISION · RESEARCH MODE" : "FOOD DECISION · PRIVATE PROTOTYPE"}</span>
       </header>
 
       <section className="embla-choice__hero">
@@ -64,7 +66,9 @@ export default function EmblaFoodChoice() {
 
       <section className="embla-choice__truth">
         <span>TRUTH BY DESIGN</span><h2>Here is the best we actually know.<br />Here is what we do not know.<br />You decide.</h2>
-        <Link to="/4sapien">← ASK EMBLA SOMETHING ELSE</Link>
+        {researchMode
+          ? <Link to="/labs/food-user-test#food-test-record-title">← RETURN TO HUMAN PROOF RECORD</Link>
+          : <Link to="/4sapien">← ASK EMBLA SOMETHING ELSE</Link>}
       </section>
     </main>
   );

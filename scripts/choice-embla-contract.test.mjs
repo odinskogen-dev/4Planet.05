@@ -7,6 +7,7 @@ import { normalizeGtin } from "../src/food/core.js";
 const source = await readFile(new URL("../src/choice/embla.ts", import.meta.url), "utf8");
 const foodUiSource = await readFile(new URL("../src/food/FoodIntelligence.tsx", import.meta.url), "utf8");
 const choiceUiSource = await readFile(new URL("../src/pages/sapien/EmblaFoodChoice.tsx", import.meta.url), "utf8");
+const humanProofSource = await readFile(new URL("../src/food/FoodUserTest.tsx", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -86,9 +87,9 @@ test("unrecognised decisions remain intake-only rather than fabricated", () => {
 
 test("FOOD STORE GOLD real-Norway pack accepts the three verified-format GTINs without embedding cross-check data as runtime truth", () => {
   const gtins = [
-    "07038010001918", // TINE Lettmelk 0.5% 1L — cross-check record only
-    "07038010066832", // TINE Lettmelk med kakao 330 ml — cross-check record only
-    "07622300414399", // Freia Melkesjokolade med Kvikk Lunsj 200g — cross-check record only
+    "07038010001918",
+    "07038010066832",
+    "07622300414399",
   ];
   for (const gtin of gtins) {
     assert.deepEqual(normalizeGtin(gtin), { ok: true, normalized: gtin, error: null });
@@ -110,4 +111,21 @@ test("FOOD STORE GOLD refuses a fake whole-shelf answer for wallet, planet and b
   assert.match(choiceUiSource, /There is no honest universal score/i);
   assert.match(choiceUiSource, /Planet evidence is shown where available, but category-wide ranking is not yet strong enough/i);
   assert.match(choiceUiSource, /Price observations can inform one product; alternative price ranking is not complete yet/i);
+});
+
+test("Human Proof research mode reuses Embla and returns to the existing local evidence recorder", () => {
+  assert.match(humanProofSource, /\/4sapien\/food\/choose\?research=1/);
+  assert.match(choiceUiSource, /useSearchParams/);
+  assert.match(choiceUiSource, /researchMode/);
+  assert.match(choiceUiSource, /\/labs\/food-user-test#food-test-record-title/);
+});
+
+test("Human Proof records decision effect and UNKNOWN-refusal comprehension without creating remote personal storage", () => {
+  for (const token of ["decisionQuestion", "decisionEffect", "unknownRefusalComprehension", "repeatUse", "paymentIntent", "usefulness", "trust"]) {
+    assert.ok(humanProofSource.includes(token), `missing Human Proof field ${token}`);
+  }
+  assert.match(humanProofSource, /actual participant using a real decision and real product may count as Human Proof/i);
+  assert.match(humanProofSource, /Fixture or synthetic sessions are technical evidence only/i);
+  assert.match(humanProofSource, /Local-only test record/);
+  assert.doesNotMatch(humanProofSource, /\bfetch\s*\(/, "Human Proof recorder must remain local-only until a separately authorised storage design exists");
 });
