@@ -22,7 +22,6 @@ function userForcedFlat() { if (typeof window === "undefined") return false; ret
 function requestedLayer(id: string) { if (typeof window === "undefined") return false; const raw = new URLSearchParams(window.location.search).get("l"); if (!raw) return id === "bluemarble"; return raw.split(",").includes(id); }
 function sharedMap(): ZoomStackMap | undefined { return typeof window === "undefined" ? undefined : (window as any).__4planet_map; }
 function is4PlanetLayer(id: string) { return id.startsWith("4planet-") || id.startsWith("sandbox-") || id.startsWith("atlas-"); }
-
 export default function AtlasZoomStack() {
   useEffect(() => {
     let disposed = false; let map: ZoomStackMap | undefined; let attachTimer: number | undefined; let scheduled = 0; let autoLocalProjection = false; const startupTimers: number[] = [];
