@@ -97,25 +97,12 @@ export default function AtlasZoomStack() {
         if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection });
       } catch { /* retry on next map event */ }
 
-      // A style replacement can fire after the zoom policy first applies. Do not
-      // publish the adaptive state as ready until the canonical map actually
-      // reports the requested projection; this prevents a late World style.load
-      // callback from silently restoring globe at local/street zoom.
       if (map.getProjection?.()?.type !== projection) {
         clearReadiness();
         return;
       }
 
       const styleLayers = map.getStyle()?.layers || [];
-
-      // Blue Marble is global/regional context only. Dynamic overlays may mount
-      // after the base style has already emitted its first styledata event, so do
-      // not infer success from the serialised style object. Reassert the zoom
-      // range whenever the layer exists. Some MapLibre builds apply
-      // setLayerZoomRange at runtime without serialising maxzoom back through
-      // getStyle(); the exact-head proof deliberately inspects that serialised
-      // contract too. If it is absent, replace only this layer definition in
-      // place, keeping the existing source, paint and stacking position.
       let blueMarbleReady = !requestedLayer("bluemarble");
       try {
         if (map.getLayer("bluemarble")) {
@@ -137,10 +124,6 @@ export default function AtlasZoomStack() {
         }
       } catch { /* layer may be mounting; bounded startup retries cover it */ }
 
-      // If Blue Marble is the requested active overlay, STREET/LOCAL readiness is
-      // not truthful until its serialised zoom boundary exists. Existing map
-      // events and bounded startup reconciliation will retry; no polling loop or
-      // alternate map authority is introduced.
       if (!blueMarbleReady) {
         clearReadiness();
         return;
@@ -175,10 +158,6 @@ export default function AtlasZoomStack() {
     };
 
     const reconcileStyle = () => {
-      // Invalidate the prior readiness receipt synchronously. The next frame then
-      // reasserts adaptive projection, Blue Marble bounds and labels after every
-      // completed/replaced style, so consumers cannot observe a stale STREET
-      // receipt while World or the basemap sync is still mutating the map.
       clearReadiness();
       schedule();
     };
@@ -193,13 +172,7 @@ export default function AtlasZoomStack() {
       for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.on(event, schedule);
       for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle);
       schedule();
-
-      // Bounded startup reconciliation. This is only to catch overlays added by
-      // World after the initial vector style is ready; it never becomes a live
-      // polling loop and releases completely after the startup window.
-      for (const delay of [160, 420, 900, 1600, 2600]) {
-        startupTimers.push(window.setTimeout(schedule, delay));
-      }
+      for (const delay of [160, 420, 900, 1600, 2600]) startupTimers.push(window.setTimeout(schedule, delay));
     };
 
     attach();
