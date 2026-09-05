@@ -37,6 +37,13 @@ function userForcedFlat() {
   return new URLSearchParams(window.location.search).get("p") === "2d";
 }
 
+function requestedLayer(id: string) {
+  if (typeof window === "undefined") return false;
+  const raw = new URLSearchParams(window.location.search).get("l");
+  if (!raw) return id === "bluemarble";
+  return raw.split(",").includes(id);
+}
+
 function sharedMap(): ZoomStackMap | undefined {
   return typeof window === "undefined" ? undefined : (window as any).__4planet_map;
 }
@@ -60,6 +67,17 @@ export default function AtlasZoomStack() {
     let autoLocalProjection = false;
     const startupTimers: number[] = [];
 
+    const clearReadiness = () => {
+      const root = document.documentElement;
+      delete root.dataset.atlasZoomBand;
+      delete root.dataset.atlasProjectionMode;
+      delete root.dataset.atlasPlaceLabels;
+      delete root.dataset.atlasVectorSymbolLayers;
+      delete root.dataset.atlasVisibleSymbolLayers;
+      delete root.dataset.atlasStreetQuality;
+      delete root.dataset.atlasBlueMarbleMaxZoom;
+    };
+
     const apply = () => {
       scheduled = 0;
       if (!map || disposed) return;
@@ -67,6 +85,7 @@ export default function AtlasZoomStack() {
       const zoom = map.getZoom();
       const band = atlasZoomBand(zoom);
       const forcedFlat = userForcedFlat();
+      const root = document.documentElement;
 
       if (!forcedFlat) {
         if (!autoLocalProjection && zoom >= ATLAS_ZOOM_POLICY.localProjectionStart) autoLocalProjection = true;
@@ -78,8 +97,16 @@ export default function AtlasZoomStack() {
         if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection });
       } catch { /* retry on next map event */ }
 
+      // A style replacement can fire after the zoom policy first applies. Do not
+      // publish the adaptive state as ready until the canonical map actually
+      // reports the requested projection; this prevents a late World style.load
+      // callback from silently restoring globe at local/street zoom.
+      if (map.getProjection?.()?.type !== projection) {
+        clearReadiness();
+        return;
+      }
+
       const styleLayers = map.getStyle()?.layers || [];
-      const root = document.documentElement;
 
       // Blue Marble is global/regional context only. Dynamic overlays may mount
       // after the base style has already emitted its first styledata event, so do
@@ -89,6 +116,7 @@ export default function AtlasZoomStack() {
       // getStyle(); the exact-head proof deliberately inspects that serialised
       // contract too. If it is absent, replace only this layer definition in
       // place, keeping the existing source, paint and stacking position.
+      let blueMarbleReady = !requestedLayer("bluemarble");
       try {
         if (map.getLayer("bluemarble")) {
           map.setLayerZoomRange?.("bluemarble", 0, ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
@@ -103,9 +131,20 @@ export default function AtlasZoomStack() {
             map.removeLayer?.("bluemarble");
             map.addLayer?.(repaired, beforeId);
           }
-          root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
+          const settled = map.getStyle()?.layers?.find((layer: any) => layer?.id === "bluemarble");
+          blueMarbleReady = typeof settled?.maxzoom === "number" && settled.maxzoom <= ATLAS_ZOOM_POLICY.blueMarbleMaxZoom;
+          if (blueMarbleReady) root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
         }
       } catch { /* layer may be mounting; bounded startup retries cover it */ }
+
+      // If Blue Marble is the requested active overlay, STREET/LOCAL readiness is
+      // not truthful until its serialised zoom boundary exists. Existing map
+      // events and bounded startup reconciliation will retry; no polling loop or
+      // alternate map authority is introduced.
+      if (!blueMarbleReady) {
+        clearReadiness();
+        return;
+      }
 
       const showLabels = zoom >= ATLAS_ZOOM_POLICY.labelsStart || projection === "mercator";
       const targetVisibility = showLabels ? "visible" : "none";
@@ -135,6 +174,15 @@ export default function AtlasZoomStack() {
       scheduled = window.requestAnimationFrame(apply);
     };
 
+    const reconcileStyle = () => {
+      // Invalidate the prior readiness receipt synchronously. The next frame then
+      // reasserts adaptive projection, Blue Marble bounds and labels after every
+      // completed/replaced style, so consumers cannot observe a stale STREET
+      // receipt while World or the basemap sync is still mutating the map.
+      clearReadiness();
+      schedule();
+    };
+
     const attach = () => {
       if (disposed) return;
       map = sharedMap();
@@ -142,7 +190,8 @@ export default function AtlasZoomStack() {
         attachTimer = window.setTimeout(attach, 100);
         return;
       }
-      for (const event of ["zoom", "zoomend", "moveend", "styledata", "sourcedata", "idle"]) map.on(event, schedule);
+      for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.on(event, schedule);
+      for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle);
       schedule();
 
       // Bounded startup reconciliation. This is only to catch overlays added by
@@ -160,16 +209,10 @@ export default function AtlasZoomStack() {
       if (scheduled) window.cancelAnimationFrame(scheduled);
       for (const timer of startupTimers) window.clearTimeout(timer);
       if (map) {
-        for (const event of ["zoom", "zoomend", "moveend", "styledata", "sourcedata", "idle"]) map.off(event, schedule);
+        for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.off(event, schedule);
+        for (const event of ["styledata", "style.load"]) map.off(event, reconcileStyle);
       }
-      const root = document.documentElement;
-      delete root.dataset.atlasZoomBand;
-      delete root.dataset.atlasProjectionMode;
-      delete root.dataset.atlasPlaceLabels;
-      delete root.dataset.atlasVectorSymbolLayers;
-      delete root.dataset.atlasVisibleSymbolLayers;
-      delete root.dataset.atlasStreetQuality;
-      delete root.dataset.atlasBlueMarbleMaxZoom;
+      clearReadiness();
     };
   }, []);
 
