@@ -84,15 +84,9 @@ export default function AtlasZoomStack() {
         if (!autoLocalProjection && zoom >= ATLAS_ZOOM_POLICY.localProjectionStart) autoLocalProjection = true;
         if (autoLocalProjection && zoom <= ATLAS_ZOOM_POLICY.localProjectionRelease) autoLocalProjection = false;
       }
-
       const projection: "globe" | "mercator" = forcedFlat || autoLocalProjection ? "mercator" : "globe";
-      try {
-        if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection });
-      } catch {}
-      if (map.getProjection?.()?.type !== projection) {
-        clearReadiness();
-        return;
-      }
+      try { if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection }); } catch {}
+      if (map.getProjection?.()?.type !== projection) { clearReadiness(); return; }
 
       const styleLayers = map.getStyle()?.layers || [];
       let blueMarbleReady = !requestedLayer("bluemarble");
@@ -115,10 +109,7 @@ export default function AtlasZoomStack() {
           if (blueMarbleReady) root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
         }
       } catch {}
-      if (!blueMarbleReady) {
-        clearReadiness();
-        return;
-      }
+      if (!blueMarbleReady) { clearReadiness(); return; }
 
       const showLabels = zoom >= ATLAS_ZOOM_POLICY.labelsStart || projection === "mercator";
       const targetVisibility = showLabels ? "visible" : "none";
@@ -133,7 +124,6 @@ export default function AtlasZoomStack() {
           if (showLabels) visibleSymbolLayers += 1;
         } catch {}
       }
-
       root.dataset.atlasZoomBand = band;
       root.dataset.atlasProjectionMode = projection;
       root.dataset.atlasPlaceLabels = showLabels ? "visible" : "hidden";
@@ -142,27 +132,17 @@ export default function AtlasZoomStack() {
       root.dataset.atlasStreetQuality = band === "STREET" || band === "LOCAL" ? "vector" : "hybrid";
     };
 
-    const schedule = () => {
-      if (scheduled || disposed) return;
-      scheduled = window.requestAnimationFrame(apply);
-    };
-    const reconcileStyle = () => {
-      clearReadiness();
-      schedule();
-    };
+    const schedule = () => { if (!scheduled && !disposed) scheduled = window.requestAnimationFrame(apply); };
+    const reconcileStyle = () => { clearReadiness(); schedule(); };
     const attach = () => {
       if (disposed) return;
       map = sharedMap();
-      if (!map) {
-        attachTimer = window.setTimeout(attach, 100);
-        return;
-      }
+      if (!map) { attachTimer = window.setTimeout(attach, 100); return; }
       for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.on(event, schedule);
       for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle);
       schedule();
       for (const delay of [160, 420, 900, 1600, 2600]) startupTimers.push(window.setTimeout(schedule, delay));
     };
-
     attach();
     return () => {
       disposed = true;
@@ -176,6 +156,5 @@ export default function AtlasZoomStack() {
       clearReadiness();
     };
   }, []);
-
   return null;
 }
