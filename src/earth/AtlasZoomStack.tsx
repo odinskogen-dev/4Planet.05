@@ -79,7 +79,6 @@ export default function AtlasZoomStack() {
       const band = atlasZoomBand(zoom);
       const forcedFlat = userForcedFlat();
       const root = document.documentElement;
-
       if (!forcedFlat) {
         if (!autoLocalProjection && zoom >= ATLAS_ZOOM_POLICY.localProjectionStart) autoLocalProjection = true;
         if (autoLocalProjection && zoom <= ATLAS_ZOOM_POLICY.localProjectionRelease) autoLocalProjection = false;
