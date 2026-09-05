@@ -52,12 +52,6 @@ function is4PlanetLayer(id: string) {
   return id.startsWith("4planet-") || id.startsWith("sandbox-") || id.startsWith("atlas-");
 }
 
-/**
- * Adaptive cartography recovered from the ATLAS Data Lab.
- * One canonical MapLibre engine remains authoritative: planetary imagery owns
- * global context, then the vector basemap progressively takes over local and
- * street detail so Blue Marble is never stretched into a pixelated street map.
- */
 export default function AtlasZoomStack() {
   useEffect(() => {
     let disposed = false;
@@ -81,7 +75,6 @@ export default function AtlasZoomStack() {
     const apply = () => {
       scheduled = 0;
       if (!map || disposed) return;
-
       const zoom = map.getZoom();
       const band = atlasZoomBand(zoom);
       const forcedFlat = userForcedFlat();
@@ -95,8 +88,7 @@ export default function AtlasZoomStack() {
       const projection: "globe" | "mercator" = forcedFlat || autoLocalProjection ? "mercator" : "globe";
       try {
         if (map.getProjection?.()?.type !== projection) map.setProjection?.({ type: projection });
-      } catch { /* retry on next map event */ }
-
+      } catch {}
       if (map.getProjection?.()?.type !== projection) {
         clearReadiness();
         return;
@@ -122,8 +114,7 @@ export default function AtlasZoomStack() {
           blueMarbleReady = typeof settled?.maxzoom === "number" && settled.maxzoom <= ATLAS_ZOOM_POLICY.blueMarbleMaxZoom;
           if (blueMarbleReady) root.dataset.atlasBlueMarbleMaxZoom = String(ATLAS_ZOOM_POLICY.blueMarbleMaxZoom);
         }
-      } catch { /* layer may be mounting; bounded startup retries cover it */ }
-
+      } catch {}
       if (!blueMarbleReady) {
         clearReadiness();
         return;
@@ -133,7 +124,6 @@ export default function AtlasZoomStack() {
       const targetVisibility = showLabels ? "visible" : "none";
       let symbolLayers = 0;
       let visibleSymbolLayers = 0;
-
       for (const layer of styleLayers) {
         if (layer?.type !== "symbol" || is4PlanetLayer(String(layer.id || ""))) continue;
         symbolLayers += 1;
@@ -141,7 +131,7 @@ export default function AtlasZoomStack() {
           const current = map.getLayoutProperty?.(layer.id, "visibility") ?? layer.layout?.visibility ?? "visible";
           if (current !== targetVisibility) map.setLayoutProperty(layer.id, "visibility", targetVisibility);
           if (showLabels) visibleSymbolLayers += 1;
-        } catch { /* style transition; next event retries */ }
+        } catch {}
       }
 
       root.dataset.atlasZoomBand = band;
@@ -156,12 +146,10 @@ export default function AtlasZoomStack() {
       if (scheduled || disposed) return;
       scheduled = window.requestAnimationFrame(apply);
     };
-
     const reconcileStyle = () => {
       clearReadiness();
       schedule();
     };
-
     const attach = () => {
       if (disposed) return;
       map = sharedMap();
