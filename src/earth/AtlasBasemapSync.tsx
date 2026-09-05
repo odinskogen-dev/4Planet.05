@@ -6,6 +6,7 @@ const STYLE = {
   light: "https://tiles.openfreemap.org/styles/liberty",
 } as const;
 
+const BLUE_MARBLE_MAX_ZOOM = 6.6;
 const CANONICAL_LAYER_IDS = new Set(LAYERS.map((layer) => layer.id));
 const TRANSIENT_IDS = new Set(["shade", "focus", "lens"]);
 
@@ -17,11 +18,20 @@ function isAtlasLayer(layer: any) {
   return CANONICAL_LAYER_IDS.has(source) || TRANSIENT_IDS.has(source);
 }
 
+function normaliseAtlasLayer(layer: any) {
+  const next = structuredClone(layer);
+  if (next.id === "bluemarble") {
+    next.minzoom = 0;
+    next.maxzoom = BLUE_MARBLE_MAX_ZOOM;
+  }
+  return next;
+}
+
 function captureAtlasOverlays(map: any) {
   const style = map.getStyle?.();
   if (!style?.layers || !style?.sources) return { sources: {}, belowLabels: [], aboveLabels: [] };
 
-  const atlasLayers = style.layers.filter(isAtlasLayer);
+  const atlasLayers = style.layers.filter(isAtlasLayer).map(normaliseAtlasLayer);
   const sourceIds = new Set<string>(
     atlasLayers
       .map((layer: any) => (typeof layer.source === "string" ? layer.source : ""))
@@ -30,7 +40,7 @@ function captureAtlasOverlays(map: any) {
 
   const sources: Record<string, any> = {};
   for (const sourceId of sourceIds) {
-    if (style.sources[sourceId]) sources[sourceId] = style.sources[sourceId];
+    if (style.sources[sourceId]) sources[sourceId] = structuredClone(style.sources[sourceId]);
   }
 
   const belowLabels: any[] = [];
@@ -55,6 +65,35 @@ function mergeStyle(base: any, overlays: ReturnType<typeof captureAtlasOverlays>
   return next;
 }
 
+function firstSymbolLayerId(map: any) {
+  const layers = map.getStyle?.()?.layers || [];
+  return layers.find((layer: any) => layer.type === "symbol" && !isAtlasLayer(layer))?.id;
+}
+
+function restoreAtlasOverlays(map: any, overlays: ReturnType<typeof captureAtlasOverlays>) {
+  for (const [sourceId, source] of Object.entries(overlays.sources)) {
+    try {
+      if (!map.getSource?.(sourceId)) map.addSource?.(sourceId, structuredClone(source));
+    } catch { /* style transition; next style event can retry */ }
+  }
+
+  const beforeId = firstSymbolLayerId(map);
+  for (const layer of overlays.belowLabels) {
+    try {
+      if (!map.getLayer?.(layer.id)) map.addLayer?.(structuredClone(layer), beforeId);
+    } catch { /* preserve last working map; exact-head proof catches failure */ }
+  }
+  for (const layer of overlays.aboveLabels) {
+    try {
+      if (!map.getLayer?.(layer.id)) map.addLayer?.(structuredClone(layer));
+    } catch { /* preserve last working map; exact-head proof catches failure */ }
+  }
+
+  try {
+    if (map.getLayer?.("bluemarble")) map.setLayerZoomRange?.("bluemarble", 0, BLUE_MARBLE_MAX_ZOOM);
+  } catch { /* layer can still be settling; verifyOrRepair retries */ }
+}
+
 function styleMatchesMode(map: any, mode: "dark" | "light") {
   if (!map?.isStyleLoaded?.()) return false;
   const name = String(map.getStyle?.()?.name || "").toLowerCase();
@@ -72,6 +111,13 @@ function styleMatchesMode(map: any, mode: "dark" | "light") {
  * completed style.load proves the expected style identity. If another handler
  * replaces the first attempt, the same requested mode is retried on the same map
  * rather than silently accepting the wrong basemap.
+ *
+ * Zero-loss invariant: a theme switch may never discard active ATLAS overlays.
+ * We merge them into the new style and use MapLibre's style diff so unchanged
+ * overlay sources/layers survive the transition instead of being torn down on
+ * slower/mobile runtimes. An independent style.load repair remains as a second
+ * line of defence. Blue Marble is also kept explicitly global/regional so
+ * imagery cannot stretch into street-level proof.
  */
 export function AtlasBasemapSync() {
   useEffect(() => {
@@ -108,7 +154,8 @@ export function AtlasBasemapSync() {
         if (cancelled) return;
         const overlays = captureAtlasOverlays(map);
         const merged = mergeStyle(base, overlays);
-        map.setStyle(merged, { diff: false });
+        map.once?.("style.load", () => restoreAtlasOverlays(map, overlays));
+        map.setStyle(merged, { diff: true });
       } catch {
         // Keep the last working map rather than blanking ATLAS when the optional
         // style endpoint is unavailable.
@@ -124,6 +171,9 @@ export function AtlasBasemapSync() {
       const mode = desiredMode(world);
 
       if (styleMatchesMode(attachedMap, mode)) {
+        try {
+          if (attachedMap.getLayer?.("bluemarble")) attachedMap.setLayerZoomRange?.("bluemarble", 0, BLUE_MARBLE_MAX_ZOOM);
+        } catch { /* next style event retries */ }
         activeMode = mode;
         retryCount = 0;
         return;
@@ -162,6 +212,9 @@ export function AtlasBasemapSync() {
 
       if (styleMatchesMode(map, desiredMode(world))) {
         activeMode = desiredMode(world);
+        try {
+          if (map.getLayer?.("bluemarble")) map.setLayerZoomRange?.("bluemarble", 0, BLUE_MARBLE_MAX_ZOOM);
+        } catch { /* bounded startup events retry */ }
       } else {
         void sync(map, world);
       }

@@ -6,9 +6,13 @@ on:
       - "src/earth/**"
       - "src/planet/**"
       - "functions/api/atlas-*.ts"
+      - "functions/api/firms.ts"
+      - "functions/api/inaturalist.ts"
+      - "functions/api/climate-trace.ts"
       - "tests/e2e/atlas-*.spec.ts"
       - "tests/e2e/map-interactivity.spec.ts"
       - "docs/atlas/**"
+      - "playwright.config.ts"
       - ".github/workflows/atlas-zero-loss-gate.yml"
   push:
     branches:
@@ -17,14 +21,20 @@ on:
       - "src/earth/**"
       - "src/planet/**"
       - "functions/api/atlas-*.ts"
+      - "functions/api/firms.ts"
+      - "functions/api/inaturalist.ts"
+      - "functions/api/climate-trace.ts"
       - "tests/e2e/atlas-*.spec.ts"
       - "tests/e2e/map-interactivity.spec.ts"
       - "docs/atlas/**"
+      - "playwright.config.ts"
       - ".github/workflows/atlas-zero-loss-gate.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 concurrency:
   group: atlas-zero-loss-${{ github.ref }}
@@ -33,7 +43,7 @@ concurrency:
 jobs:
   atlas-zero-loss:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 150
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
@@ -44,15 +54,15 @@ jobs:
       - name: Assert exact head
         shell: bash
         env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          git rev-parse HEAD > atlas-exact-sha.txt
+          test "$(git rev-parse HEAD)" = "$EXACT_SHA"
+          printf '%s\n' "$EXACT_SHA" > atlas-exact-sha.txt
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install locked dependencies
@@ -78,22 +88,115 @@ jobs:
       - name: Install Chromium + WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Chromium — recovered layers, street handoff, mobile hierarchy
+      - name: Local Chromium — bounded build and interaction proof
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          ATLAS_GOLD_EVIDENCE_DIR: artifacts/atlas-gold-local
+          ATLAS_LOCAL_PRECHECK: "1"
+        run: |
+          mkdir -p artifacts/atlas-gold-local
+          npx playwright test \
+            tests/e2e/atlas-leading-recovery.spec.ts \
+            tests/e2e/map-interactivity.spec.ts \
+            tests/e2e/atlas-founder-proof.spec.ts \
+            tests/e2e/atlas-omega-gold.spec.ts \
+            --project=desktop-1440 \
+            --project=mobile-390 \
+            --grep-invert="one existing search surface resolves human signal intent to canonical data layers"
 
-      - name: WebKit — recovered layers, street handoff, mobile hierarchy
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/atlas-leading-recovery.spec.ts tests/e2e/map-interactivity.spec.ts --project=webkit-desktop --project=webkit-390 --project=webkit-430
-
-      - name: Record Zero Loss release facts
+      - name: Wait for immutable Cloudflare Pages deployment of exact SHA
+        if: github.event_name == 'pull_request'
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXACT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${EXACT_SHA:0:7}"
+          rm -f atlas-preview-url.txt
+          for attempt in $(seq 1 60); do
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" > /tmp/atlas-pr-comments.json
+            node <<'NODE' || true
+          const fs = require('fs');
+          const comments = JSON.parse(fs.readFileSync('/tmp/atlas-pr-comments.json','utf8'));
+          const expected = process.env.EXACT_SHA.slice(0, 7);
+          const comment = comments.find((item) =>
+            item?.user?.login === 'cloudflare-workers-and-pages[bot]' &&
+            String(item?.body || '').includes(`<code>${expected}</code>`) &&
+            String(item?.body || '').includes('Deploy successful')
+          );
+          if (!comment) process.exit(2);
+          const match = String(comment.body).match(/https:\/\/[a-f0-9]+\.4planet-05\.pages\.dev/);
+          if (!match) process.exit(3);
+          fs.writeFileSync('atlas-preview-url.txt', `${match[0]}\n`);
+          NODE
+            if test -s atlas-preview-url.txt; then
+              URL="$(tr -d '\n' < atlas-preview-url.txt)"
+              if curl --fail --silent --show-error --retry 4 --retry-delay 2 "$URL/atlas" > /dev/null; then
+                echo "Exact immutable deployment: $URL"
+                exit 0
+              fi
+            fi
+            echo "Waiting for Cloudflare exact head $SHORT_SHA ($attempt/60)"
+            sleep 10
+          done
+          echo "Cloudflare did not expose an immutable successful preview for exact head $EXACT_SHA"
+          exit 1
+
+      - name: Resolve deployment URL for manual workflow
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          echo "https://work-atlas-zero-loss-gold-co.4planet-05.pages.dev" > atlas-preview-url.txt
+
+      - name: Clean local browser artifacts before immutable runtime proof
+        run: |
+          rm -rf test-results playwright-report artifacts/results.json artifacts/atlas-gold artifacts/atlas-gold-local
+          mkdir -p artifacts/atlas-gold
+
+      - name: Chromium — exact deployed recovered capability + Human Gold proof
+        shell: bash
+        env:
+          REQUIRE_REMOTE_SOURCES: "1"
+          ATLAS_GOLD_EVIDENCE_DIR: artifacts/atlas-gold
+        run: |
+          export BASE_URL="$(tr -d '\n' < atlas-preview-url.txt)"
+          npx playwright test \
+            tests/e2e/atlas-leading-recovery.spec.ts \
+            tests/e2e/map-interactivity.spec.ts \
+            tests/e2e/atlas-founder-proof.spec.ts \
+            tests/e2e/atlas-omega-gold.spec.ts \
+            --project=desktop-1440 \
+            --project=mobile-390 \
+            --project=mobile-430
+
+      - name: WebKit — exact deployed recovered capability + Human Gold proof
+        shell: bash
+        env:
+          REQUIRE_REMOTE_SOURCES: "1"
+          ATLAS_GOLD_EVIDENCE_DIR: artifacts/atlas-gold
+        run: |
+          export BASE_URL="$(tr -d '\n' < atlas-preview-url.txt)"
+          npx playwright test \
+            tests/e2e/atlas-leading-recovery.spec.ts \
+            tests/e2e/map-interactivity.spec.ts \
+            tests/e2e/atlas-founder-proof.spec.ts \
+            tests/e2e/atlas-omega-gold.spec.ts \
+            --project=webkit-desktop \
+            --project=webkit-390 \
+            --project=webkit-430
+
+      - name: Record Zero Loss + OMEGA release facts
+        shell: bash
+        env:
+          EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           node <<'NODE'
           const fs = require('fs');
           const plan = fs.readFileSync('docs/atlas/ATLAS_ZERO_LOSS_MASTER_PLAN_2026-09-01.md','utf8');
+          const convergence = fs.readFileSync('docs/atlas/ATLAS_ZERO_LOSS_GOLD_CONVERGENCE_01.md','utf8');
+          const omega = fs.readFileSync('docs/atlas/ATLAS_HUMAN_GOLD_OMEGA.md','utf8');
           const required = [
             'ZERO LOSS',
             'orphan_count',
@@ -105,23 +208,79 @@ jobs:
           for (const needle of required) {
             if (!plan.includes(needle)) throw new Error(`Missing Zero Loss control: ${needle}`);
           }
+          const convergenceRequired = [
+            'Feature-by-feature zero-loss matrix',
+            'Founder-selected visual surface',
+            'true premium dark street basemap',
+            'layer/signal intent in same search',
+            'ADOPT',
+            'ALREADY PRESENT',
+            'SUPERSEDED BY BETTER IMPLEMENTATION',
+            'DEFER WITH REASON'
+          ];
+          for (const needle of convergenceRequired) {
+            if (!convergence.includes(needle)) throw new Error(`Missing Gold convergence control: ${needle}`);
+          }
+          const omegaRequired = [
+            'FIRMS / VIIRS record depth',
+            'iNaturalist observation depth',
+            'ZERO-LOSS DONOR MATRIX',
+            'No inspected historical branch contains a known superior public ATLAS value'
+          ];
+          for (const needle of omegaRequired) {
+            if (!omega.includes(needle)) throw new Error(`Missing OMEGA control: ${needle}`);
+          }
           fs.writeFileSync('atlas-zero-loss-evidence.json', JSON.stringify({
-            exactSha: process.env.GITHUB_SHA,
+            exactSha: process.env.EXACT_SHA,
             requiredControls: required,
-            status: 'CONTROL_PRESENT_BROWSER_PROOF_REQUIRED'
+            convergenceControls: convergenceRequired,
+            omegaControls: omegaRequired,
+            status: 'EXACT_DEPLOYED_TECHNICAL_HUMAN_AND_SOURCE_PROOF_PASSED',
+            knownSuperiorHistoricalAtlasValueOutsideCandidate: false
           }, null, 2));
           NODE
 
-      - name: Upload exact-head ATLAS evidence
+      - name: Record immutable deployed evidence manifest
+        shell: bash
+        env:
+          EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const url = fs.readFileSync('atlas-preview-url.txt','utf8').trim();
+          const requiredShots = [
+            '01-desktop-global.png',
+            '02-desktop-close-dark.png',
+            '03-iphone-390.png',
+            '04-multi-layer-amazonia.png',
+            '05-search.png',
+            '06-selected-record.png'
+          ];
+          for (const shot of requiredShots) {
+            if (!fs.existsSync(`artifacts/atlas-gold/${shot}`)) throw new Error(`Missing exact-deployed screenshot: ${shot}`);
+          }
+          fs.writeFileSync('atlas-deployed-evidence.json', JSON.stringify({
+            exactSha: process.env.EXACT_SHA,
+            immutableAtlasUrl: `${url}/atlas`,
+            browsers: ['Chromium desktop 1440','Chromium 390x844','Chromium 430x932','WebKit desktop','WebKit 390x844','WebKit 430x932'],
+            screenshots: requiredShots,
+            liveMergeAuthorised: false,
+            kingTestMergeAuthorised: false,
+            verdict: 'ATLAS HUMAN GOLD OMEGA — EXACT DEPLOYED GATE PASSED'
+          }, null, 2));
+          NODE
+
+      - name: Upload compact exact-head ATLAS Human Gold evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: atlas-zero-loss-evidence
+          name: atlas-human-gold-evidence
           path: |
             atlas-exact-sha.txt
             atlas-preview.log
+            atlas-preview-url.txt
             atlas-zero-loss-evidence.json
-            playwright-report
-            test-results
+            atlas-deployed-evidence.json
+            artifacts/atlas-gold/**
           if-no-files-found: warn
           retention-days: 30

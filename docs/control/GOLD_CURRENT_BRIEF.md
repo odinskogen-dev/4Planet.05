@@ -1,72 +1,67 @@
 # CURRENT GOLD BRIEF
 
-This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
+This file is the machine-readable human contract for the **current bounded ATLAS SANDBOX change**. Historical briefs belong in PR/evidence history; this file reflects the current mutation only.
 
-**CHANGE ID:** GIGA2800-REALITY-PROOF-HUMAN-RESEARCH-01
-**STATUS:** HEIR / HUMAN PROOF INSTRUMENTATION CANDIDATE / NOT REAL-WORLD HUMAN PROOF / NOT FOUNDER APPROVED / NO LIVE RELEASE
-**BASE AUTHORITY:** `king/test` / exact parent `80446464d94b6fed4541072296d756f978f99fd5`
-**ROLLBACK BASE:** `80446464d94b6fed4541072296d756f978f99fd5`
-**LOOP ROLE:** HUMAN CONTEXT → DECISION → PROOF → LEARNING.
+**CHANGE ID:** ATLAS-ZERO-LOSS-THEME-OVERLAY-IMMUNITY-2026-09-05
+**STATUS:** SANDBOX / ROOT-CAUSE REPAIR + CURRENT-HEIR FORWARD-SYNC / EXACT-HEAD PROOF REQUIRED / FOUNDER RELEASE NOT IMPLIED
+**PRODUCT:** ATLAS
+**LEGAL WRITE TARGET:** `work/atlas-zero-loss-gold-convergence-01` — the one registered ATLAS sandbox
+**CURRENT HEIR ANCESTOR:** `king/test` @ `80446464d94b6fed4541072296d756f978f99fd5`
+**ROLLBACK IDENTITY:** pre-convergence-window sandbox `622af1de5291f5f59a02c4d3b85a77c4a6151714`
+**LIVE AUTHORITY:** false
+**TEST KING PROMOTION AUTHORISED:** false
 
 ## USER ARRIVES BECAUSE
-They have one real FOOD purchase decision and need to know whether Embla makes that decision materially clearer or better without hiding uncertainty.
+They need one coherent ATLAS whose active source layers and map meaning survive ordinary dark/light interaction, and whose global imagery never degrades into misleading stretched street-level pixels.
 
 ## ONE THING TO UNDERSTAND
-This mutation does not prove Human Utility. It makes a real Human Utility test inspectable. The participant must bring a real decision and real product. Fixture, synthetic and automated sessions remain technical evidence only.
+A basemap theme change replaces the MapLibre style. That replacement must preserve the same active ATLAS overlays and their truth boundaries. Blue Marble is planetary/regional context only; local and street detail belongs to the vector basemap.
 
 ## PRIMARY ACTION
-Open `/labs/food-user-test`, consent locally, enter the Embla research flow, use one real FOOD decision and product, then record whether the decision changed, became clearer, was confirmed or was not helped.
+Open ATLAS with active data layers, switch DARK ↔ LIGHT, and continue exploring without losing the active layers or camera. Zoom from planetary context into local/street scale without Blue Marble stretching beyond its bounded range.
 
 ## SECONDARY DEPTH
-The same evidence record preserves product/package accuracy, comprehension time, alternative relevance, usefulness, trust, UNKNOWN/refusal comprehension, repeat-use intent, install intent, payment intent and explicit issue severity. JSON/CSV export remains deliberate and local-first.
+The repair preserves current source-backed ATLAS capability, search, TIME, My Atlas, Product Context, live evidence sidecars and adaptive cartography. It does not add a renderer, source, claim, route, product line or parallel state model.
 
 ## P1 DOMINANT
-The dominant job is proof of decision value, not scanner completion. A session without a real decision cannot satisfy PROOF-H01.
+The living planet itself: one legible responsive globe/map and the selected place/species/record. Basemap theme and evidence controls remain subordinate.
 
 ## P2 ORIENTATION
-The participant must understand why Embla sometimes compares, sometimes shows only bounded product evidence and sometimes refuses an unsupported whole-shelf or universal answer.
+Current camera, active layers, theme, source state and selected context remain stable and interpretable across the style transition.
 
 ## P3 ACTION / NEXT
-The research flow deep-links into the existing Embla FOOD decision gate with `?research=1` and returns to the existing Human Proof recorder. No second assistant or research product is introduced.
+The user can switch theme, pan/zoom, inspect source-backed layers and continue the same exploration without reconstructing state.
 
 ## P4 DEPTH
-Accuracy, evidence limitations and UNKNOWN states remain inspectable. Decision effect is recorded separately from decision correctness. Payment intent is a research signal only and must never be represented as revenue.
+Layer provenance, limitations, dates, failure states and advanced evidence stay inspectable without becoming the primary visual hierarchy.
 
 ## WHAT CAN BE REMOVED
-Any duplicate research surface, remote personal-data store, synthetic participant generation, moral score, universal sustainability ranking or analytics layer that does not improve the bounded proof is unnecessary.
+Nothing from accepted ATLAS capability. The defect is removed by eliminating silent overlay loss during full style replacement and by enforcing the already-declared Blue Marble zoom boundary. Shared HEIR control changes are inherited through exact ancestry rather than copied as competing ATLAS product intent.
 
 ## WHAT MUST BE REUSED
-Existing `/labs/food-user-test`, Embla FOOD decision-first gate, `FoodIntelligence`, `PickPrototype`, localStorage privacy boundary, JSON/CSV export, source/truth contracts, 4SAPIEN route family, current HEIR and all existing route/alias MUST-NOT-LOSE behaviour.
+The existing single MapLibre runtime; existing OpenFreeMap dark/light styles; current canonical layer registry; current Product Context; existing source/truth semantics; current adaptive zoom policy; current mobile controls; current search/TIME/My Atlas/evidence surfaces; current HEIR route/alias preservation behaviour.
+
+## MUST NOT LOSE
+Active layer identity and order; camera state; layer provenance; failure semantics; Blue Marble global/regional role; vector street detail; accepted ATLAS donor dispositions; current HEIR controls and ONE INTERFACE behaviour; canonical `/living-systems/oslofjorden → /living-systems/oslofjord` redirect inherited from HEIR.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** explicit decision-effect and UNKNOWN/refusal comprehension fields required by the current Reality Proof mission.
-- **ADAPT:** connect the existing recorder and Embla through a reversible research query parameter and return link.
-- **PRESERVE:** all current source/refusal semantics, existing package-accuracy checks, privacy boundary, export capability, parent redirects and HEIR value.
-- **REJECT:** new research backend, fabricated respondents, remote personal storage, new product surface, universal score or any claim that technical PASS equals Human Utility.
+- **ADOPT:** no new donor slice; this is a bounded root-cause repair and lineage reconciliation to the existing registered ATLAS sandbox.
+- **REUSE:** existing overlay capture, OpenFreeMap style sync, canonical layer/source descriptors and adaptive Blue Marble policy.
+- **PRESERVE:** all current HEIR shared-control and route/alias corrections through ancestry; do not replace them with stale sandbox copies.
+- **REJECT:** second map, duplicate layer registry, theme-specific shadow state, mocked overlays, swallowing missing layers as acceptable behaviour.
+- **DEFER:** all feature expansion until exact-head Zero Loss + ONE INTERFACE + human-visible proof passes.
 
 ## TRUTH BOUNDARY
-`TECHNICAL PASS ≠ HUMAN VALUE`.
-`USEFULNESS SCORE ≠ REPEAT HUMAN UTILITY`.
-`PAYMENT INTENT ≠ REVENUE`.
-`DECISION CHANGED ≠ DECISION CORRECT`.
-`ONE REAL PARTICIPANT ≠ REPEATED PROOF`.
-A real-world Human Proof record exists only when an actual participant uses a real decision and real product, the result is captured, and limitations/failures remain in the evidence.
+Theme continuity is a UI/runtime integrity claim only. It does not prove ecological truth beyond each source contract. A missing source is never zero; a detection is not causal proof; an occurrence is not range/abundance/live tracking. Blue Marble is imagery context, not street-level evidence.
+
+## PERFORMANCE
+No new dependency, renderer or polling loop. Overlay rehydration is bounded to style replacement and only restores already-active canonical sources/layers that MapLibre failed to retain.
 
 ## MOBILE-FIRST RISK
-The research handoff must remain usable on a phone without forcing remote identity, horizontal overflow or hidden evidence boundaries. The participant must be able to return from Embla to the recorder without losing the local session.
+Theme switching and overlay continuity must pass 390/430 mobile as well as desktop. The repair must not introduce control collisions, extra interaction planes or touch regressions.
 
 ## HUMAN SUCCESS
-A first-time participant can bring a real decision, understand what Embla can and cannot support, use real product evidence, record whether the decision changed/clarified/confirmed/was not helped, and export an inspectable anonymous record without giving 4PLANET identity or sensitive personal data.
+A normal user can switch DARK ↔ LIGHT and retain active fires/other selected layers and the same camera, then zoom to street scale and see sharp vector cartography rather than stretched planetary imagery.
 
 ## ACCEPTANCE
-1. `king/test` remains the sole HEIR and LIVE remains untouched.
-2. Exact parent is `80446464d94b6fed4541072296d756f978f99fd5`; stale/non-fast-forward mutation fails closed.
-3. `/labs/food-user-test` deep-links to `/4sapien/food/choose?research=1`.
-4. Embla research mode returns to the existing local evidence recorder.
-5. Recorder captures `decisionQuestion`, `decisionEffect` and `unknownRefusalComprehension` plus existing usefulness/trust/repeat/payment-intent metrics.
-6. Recorder remains local-only and does not introduce remote personal storage.
-7. JSON/CSV evidence preserves the proof boundary that synthetic/fixture sessions are technical only.
-8. Existing wallet/planet/best-overall refusal semantics remain intact.
-9. Existing route/alias preservation remains intact.
-10. Typecheck/build/contracts/GOLD/Human Craft/Four-State/Browser/ATLAS/ONE INTERFACE gates pass on the exact resulting HEIR SHA.
-11. No Human Utility, repeat-use, willingness-to-pay, revenue, adoption or LIVE claim is made without real participant evidence and the appropriate later gates.
+1. Same registered sandbox; no replacement branch. 2. Current HEIR `80446464d94b6fed4541072296d756f978f99fd5` is an exact ancestor of sandbox head at proof time, or a fresher live HEIR is forward-synced before acceptance. 3. FOUR STATE Product Authority gate passes. 4. GOLD quality contract passes. 5. Typecheck/build pass. 6. ATLAS Zero Loss suite passes with dark/light active-layer continuity on desktop/mobile. 7. Blue Marble reports a layer zoom ceiling ≤ 6.6 and is not used as street imagery. 8. ONE INTERFACE gate passes. 9. Exact rendered desktop + mobile evidence is reviewable. 10. No LIVE/main mutation. 11. Founder JUDGE remains required for promotion.
