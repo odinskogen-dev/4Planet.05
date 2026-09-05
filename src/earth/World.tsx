@@ -54,6 +54,8 @@ import { ContextLayer, TYPE_COLOR, type ContextState } from "./Context";
 import { WorldBoundary } from "./Boundary";
 
 import { field } from "@/planet/types";
+import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleOccurrence";
+import { cinematicLanding, prefersReducedMotion, MOTION } from "@/earth/motion";
 import { authorityOf, placeId as mkPlaceId, sourceKeyOf, typeOf } from "@/planet/ids";
 import {
   occurrencesInWkt, searchTaxa, taxonOccurrences, taxonPhoto, taxonVernacular,
@@ -74,11 +76,19 @@ const readUrl = () => {
   const c = (p.get("c") || "").split(",").map(Number);
   return {
     mode: MODES.some((m) => m.id === p.get("m")) ? p.get("m") : "PLANET",
+    // Premium default: start on the clean vector basemap so place names and
+    // street-level detail are visible immediately. Blue Marble and the other
+    // NASA rasters are opt-in overlays, never the default (they hid the labels
+    // and pixelated on zoom). An explicit ?l= in the URL is still honoured.
+    // ATLAS opens on Blue Marble (founder decision — we do not ship our own
+    // world map for now). The label-ordering fix keeps place names on top of the
+    // raster, and rasters are still opt-out via the layer console. Explicit ?l=
+    // is honoured.
     on: (p.get("l") || "bluemarble").split(",").filter((x) => LAYERS.some((l) => l.id === x)),
     light: p.get("t") === "light",
     flat: p.get("p") === "2d",
     lens: ["EARTH", "NOW", "WATCH"].includes(p.get("lens")) ? p.get("lens") : "EARTH",
-    focus: p.get("f") || "",
+    focus: p.get("entity") || p.get("f") || "",
     zoom: Number(p.get("z")) || 2.1,
     center: c.length === 2 && !c.some(isNaN) ? c : [10, 25],
   };
@@ -101,6 +111,24 @@ const onKeyActivate = (fn) => (e) => {
    imagery + data overlays are added ON TOP via the existing registry, so basemap
    and science stay separate. On load failure the map falls back to raster. */
 const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+/* MapLibre + third-party vector styles may render symbol glyphs from a world
+   copy through the rear hemisphere. On the globe, 4PLANET therefore removes
+   basemap symbol layers entirely; geometry and data layers remain. Mercator
+   restores each layer's original visibility. This is deterministic, reversible
+   and safer than trying to infer which rear-facing label should be visible. */
+const setBackfaceSafeLabels = (m, flat, originalVisibility) => {
+  const layers = m.getStyle()?.layers ?? [];
+  layers.forEach((layer) => {
+    if (layer.type !== "symbol" || String(layer.id).startsWith("4planet-")) return;
+    if (!originalVisibility.has(layer.id)) {
+      originalVisibility.set(layer.id, layer.layout?.visibility ?? "visible");
+    }
+    try {
+      m.setLayoutProperty(layer.id, "visibility", flat ? originalVisibility.get(layer.id) : "none");
+    } catch { /* style may be changing; next style.load reapplies */ }
+  });
+};
 
 /* Watch items are two classes. These helpers read either without collapsing them. */
 const watchItemId = (w) =>
@@ -135,6 +163,8 @@ function WorldInner() {
   // are active right now, so any style reload can rehydrate them.
   const vectorFailed = useRef(false);
   const onRef = useRef<string[]>([]);
+  const basemapSymbolVisibility = useRef(new Map());
+  const flatRef = useRef(init.current.flat);
 
   /* ── V36 console state, preserved ─────────────────────────────────────── */
   const [ready, setReady] = useState(false);
@@ -142,6 +172,7 @@ function WorldInner() {
   const [on, setOn] = useState(() => Object.fromEntries(init.current.on.map((id) => [id, true])));
   const [light, setLight] = useState(init.current.light);
   const [flat, setFlat] = useState(init.current.flat);
+  flatRef.current = flat;
   const [status, setStatus] = useState({});
   const [busy, setBusy] = useState({});
   const [info, setInfo] = useState({});
@@ -188,8 +219,27 @@ function WorldInner() {
     return () => { alive = false; clearInterval(t); };
   }, []);
 
+  // Stable id for the open context, written to the URL as ?entity= so a deep
+  // link (and the cross-product returnTo) can reopen it. Undefined-safe: any
+  // context without a canonical id contributes no entity rather than throwing.
+  const idOfCtx = (c: ContextState | null): string => {
+    if (!c) return "";
+    switch (c.kind) {
+      case "OBSERVATION": return c.observation?.taxon?.id || c.observation?.id || "";
+      case "TAXON": return c.ref?.id || "";
+      case "PLACE": return c.place?.id || "";
+      case "LIVING_SYSTEM": return c.system?.id || "";
+      case "SIGNAL": return c.signal?.id || "";
+      case "MISSION": return c.mission?.id || "";
+      case "PRESSURE": return c.pressure?.id || "";
+      case "SOLUTION": return c.solution?.id || "";
+      default: return "";
+    }
+  };
+
   const writeUrl = useCallback((patch = {}) => {
     const m = map.current; if (!m) return;
+    const current = new URLSearchParams(window.location.search);
     const p = new URLSearchParams();
     p.set("m", patch.mode ?? mode);
     const src = patch.on ?? on;
@@ -200,7 +250,11 @@ function WorldInner() {
     const ln = patch.lens ?? lens;
     if (ln !== "EARTH") p.set("lens", ln);
     const f = "focus" in patch ? patch.focus : ctx ? idOfCtx(ctx) : "";
-    if (f) p.set("f", f);
+    if (f) p.set("entity", f);
+    ["journey", "record"].forEach((key) => {
+      const value = current.get(key);
+      if (value) p.set(key, value);
+    });
     const c = m.getCenter();
     p.set("z", m.getZoom().toFixed(2));
     p.set("c", `${c.lng.toFixed(2)},${c.lat.toFixed(2)}`);
@@ -213,7 +267,17 @@ function WorldInner() {
     const m = map.current;
     const i = RASTER_ORDER.indexOf(id);
     for (let j = i + 1; j < RASTER_ORDER.length; j++) if (m.getLayer(RASTER_ORDER[j])) return RASTER_ORDER[j];
-    return m.getLayer("lbls") ? "lbls" : undefined;
+    // Insert rasters BENEATH the basemap's place-name labels so names are never
+    // hidden. The raster-fallback style uses a layer literally named "lbls"; the
+    // vector basemap (OpenFreeMap) uses symbol layers with other names, so find
+    // the first symbol layer and anchor above it.
+    if (m.getLayer("lbls")) return "lbls";
+    try {
+      const layers = m.getStyle().layers || [];
+      const firstSymbol = layers.find((ly) => ly.type === "symbol");
+      if (firstSymbol) return firstSymbol.id;
+    } catch { /* style not ready */ }
+    return undefined;
   };
 
   const drawPoints = (id, label, srcName, note, rows, colorFallback, rFallback) => {
@@ -231,15 +295,41 @@ function WorldInner() {
     };
     if (m.getSource(id)) { m.getSource(id).setData(fc); return; }
     m.addSource(id, { type: "geojson", data: fc });
+    // Visible dot. Radius grows a little as you zoom in so points stay easy to
+    // read at street level without swamping the globe view.
     m.addLayer({
       id, type: "circle", source: id,
       paint: {
-        "circle-radius": ["get", "size"], "circle-color": ["get", "col"], "circle-opacity": 0.78,
-        "circle-stroke-width": 1, "circle-stroke-color": ["get", "col"], "circle-stroke-opacity": 0.9,
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          2, ["*", ["get", "size"], 0.9],
+          6, ["get", "size"],
+          12, ["*", ["get", "size"], 1.8],
+        ],
+        "circle-color": ["get", "col"], "circle-opacity": 0.82,
+        "circle-stroke-width": 1.25, "circle-stroke-color": ["get", "col"], "circle-stroke-opacity": 0.9,
       },
     });
+    // Invisible, larger HIT layer under the visible dot so taps/clicks land even
+    // when the point is small — a real premium/mobile ergonomics fix. It shares
+    // the same source and carries the click; it never paints anything visible.
+    const hitId = `${id}__hit`;
+    m.addLayer({
+      id: hitId, type: "circle", source: id,
+      paint: {
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          2, ["max", ["+", ["get", "size"], 8], 12],
+          12, ["max", ["+", ["get", "size"], 16], 22],
+        ],
+        "circle-color": "#000", "circle-opacity": 0.01,
+      },
+    }, id); // insert the hit layer BELOW the visible dot
+    // Pointer cursor over tappable points.
+    m.on("mouseenter", hitId, () => { m.getCanvas().style.cursor = "pointer"; });
+    m.on("mouseleave", hitId, () => { m.getCanvas().style.cursor = ""; });
 
-    m.on("click", id, (e) => {
+    const onPointClick = (e) => {
       const f = e.features && e.features[0]; if (!f) return;
 
       // v1: a point that carries a canonical id opens the shared context layer
@@ -273,8 +363,10 @@ function WorldInner() {
         planetaryContext: planetary,
         accent: col,
       });
-      return;
-    });
+    };
+    // Bind to the visible dot AND the larger invisible hit layer.
+    m.on("click", id, onPointClick);
+    m.on("click", hitId, onPointClick);
     m.on("mouseenter", id, () => { m.getCanvas().style.cursor = "pointer"; });
     m.on("mouseleave", id, () => { m.getCanvas().style.cursor = ""; });
   };
@@ -323,6 +415,7 @@ function WorldInner() {
   const removeLayer = (l) => {
     const m = map.current; if (!m) return;
     if (timers.current[l.id]) { clearInterval(timers.current[l.id]); delete timers.current[l.id]; }
+    if (m.getLayer(`${l.id}__hit`)) m.removeLayer(`${l.id}__hit`); // remove the tap target too
     if (m.getLayer(l.id)) m.removeLayer(l.id);
     if (m.getSource(l.id)) m.removeSource(l.id);
   };
@@ -336,8 +429,56 @@ function WorldInner() {
     if (m.getLayer(id)) m.moveLayer(id);
   };
 
+  // A gentle "breathing" pulse on the focus marker so the eye lands on the
+  // record. Honours reduced-motion (no pulse), is BOUNDED (a small number of
+  // breaths, then rests — never mutates paint every frame forever), and cleans
+  // itself up on unmount or when a new landing starts.
+  const pulseRaf = useRef<number | null>(null);
+  const stopFocusPulse = () => {
+    if (pulseRaf.current) { cancelAnimationFrame(pulseRaf.current); pulseRaf.current = null; }
+  };
+  const startFocusPulse = () => {
+    const m = map.current; if (!m) return;
+    stopFocusPulse();
+    if (prefersReducedMotion()) return;
+    const t0 = performance.now();
+    const totalMs = MOTION.pulseBreaths * MOTION.pulsePeriodMs;
+    const tick = (t: number) => {
+      const mm = map.current;
+      if (!mm || !mm.getLayer("focus")) { pulseRaf.current = null; return; }
+      const elapsed = t - t0;
+      if (elapsed >= totalMs) {
+        // Bounded: settle to a calm resting marker and STOP the rAF loop.
+        try {
+          mm.setPaintProperty("focus", "circle-radius", ["get", "size"]);
+          mm.setPaintProperty("focus", "circle-stroke-width", 1);
+          mm.setPaintProperty("focus", "circle-stroke-opacity", 0.9);
+        } catch { /* layer swapped out */ }
+        pulseRaf.current = null;
+        return;
+      }
+      const phase = (Math.sin((elapsed / MOTION.pulsePeriodMs) * Math.PI * 2) + 1) / 2; // 0..1
+      try {
+        mm.setPaintProperty("focus", "circle-radius", ["+", ["get", "size"], phase * 5]);
+        mm.setPaintProperty("focus", "circle-stroke-width", 1 + phase * 3);
+        mm.setPaintProperty("focus", "circle-stroke-opacity", 0.9 - phase * 0.55);
+      } catch { /* layer swapped out mid-frame */ }
+      pulseRaf.current = requestAnimationFrame(tick);
+    };
+    pulseRaf.current = requestAnimationFrame(tick);
+  };
+  // In-flight cinematic landing, so we can cancel it on interaction/unmount.
+  const landingRef = useRef<{ cancel: () => void } | null>(null);
+  const panelTimer = useRef<number | null>(null);
+  const cancelLanding = () => {
+    if (landingRef.current) { landingRef.current.cancel(); landingRef.current = null; }
+    if (panelTimer.current) { clearTimeout(panelTimer.current); panelTimer.current = null; }
+  };
+  useEffect(() => () => { stopFocusPulse(); cancelLanding(); }, []);
+
   const clearFocus = (id) => {
     const m = map.current; if (!m) return;
+    if (m.getLayer(`${id}__hit`)) m.removeLayer(`${id}__hit`);
     if (m.getLayer(id)) m.removeLayer(id);
     if (m.getSource(id)) m.removeSource(id);
   };
@@ -510,6 +651,23 @@ function WorldInner() {
   const askHere = useCallback(async (lng, lat) => {
     setOpen(false);
     setCtx({ kind: "COORDINATE", lat, lng, life: field("LOADING"), signals: field("LOADING") });
+
+    // Resolve a human place name for the header (coords are demoted to a small
+    // mono line). Free, keyless, CORS-open; on any failure we simply keep the
+    // coordinates as the header — never invent a name.
+    (async () => {
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+        if (!r.ok) return;
+        const j = await r.json();
+        const name = [j.city || j.locality, j.principalSubdivision, j.countryName]
+          .filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ")
+          || j.localityInfo?.informative?.find((x) => x.name)?.name;
+        if (name) {
+          setCtx((c) => (c && c.kind === "COORDINATE" && c.lat === lat && c.lng === lng ? { ...c, placeName: name } : c));
+        }
+      } catch { /* offline / blocked → keep coordinates as header */ }
+    })();
 
     const near = signalsNear(pool, { lat, lng }, 400);
     const sigField = poolLoading
@@ -699,13 +857,18 @@ function WorldInner() {
       touchPitch: true,
       keyboard: true,
       trackResize: true,
+      renderWorldCopies: false,
     });
     map.current = m;
     // V40: expose the live map so behavioural browser tests can read real camera
     // state (center/zoom) and assert the world stays movable with context open.
     (window as any).__4planet_map = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    m.on("style.load", () => m.setProjection({ type: init.current.flat ? "mercator" : "globe" }));
+    m.on("style.load", () => {
+      const isFlat = flatRef.current;
+      m.setProjection({ type: isFlat ? "mercator" : "globe" });
+      setBackfaceSafeLabels(m, isFlat, basemapSymbolVisibility.current);
+    });
     m.on("load", () => setReady(true));
     m.on("error", (e) => {
       const id = e && e.sourceId;
@@ -718,20 +881,32 @@ function WorldInner() {
         try {
           m.setStyle(makeStyle(light));
           m.once("styledata", () => {
-            m.setProjection({ type: flat ? "mercator" : "globe" });
+            m.setProjection({ type: flatRef.current ? "mercator" : "globe" });
+            setBackfaceSafeLabels(m, flatRef.current, basemapSymbolVisibility.current);
             onRef.current.forEach((lid) => addLayer(LAYERS.find((l) => l.id === lid), true));
           });
         } catch { /* keep whatever rendered */ }
       }
     });
     m.on("moveend", () => writeUrlRef.current());
+    // Wheel/inertial zoom keeps easing after the last moveend, so the URL can lag
+    // the true camera. `idle` fires once the map has fully settled with no pending
+    // animation — write once more there so the URL exactly matches what the user
+    // sees. This is what makes returnTo reconstruction exact.
+    m.on("idle", () => writeUrlRef.current());
+    // If the user grabs the camera mid-landing, their gesture wins: cancel the
+    // choreography so a stale moveend can't yank them back or open the panel late.
+    m.on("movestart", (e: any) => { if (e && e.originalEvent) { cancelLanding(); stopFocusPulse(); } });
+    m.on("mousedown", () => { cancelLanding(); });
+    m.on("touchstart", () => { cancelLanding(); });
     // V40 P0: the moment the user takes the camera, no async response may fit or
     // reset it. A Place focuses ONCE on open; after that the world is theirs.
     ["dragstart", "zoomstart", "rotatestart", "pitchstart"].forEach((ev) =>
       m.on(ev, () => { userMoved.current = true; }),
     );
     m.on("click", (e) => {
-      const ids = ["whales", "species", "events", "quakes", "iss", "focus", "lens"].filter((id) => m.getLayer(id));
+      const base = ["whales", "species", "events", "quakes", "iss", "emissions", "focus", "lens"];
+      const ids = base.flatMap((id) => [id, `${id}__hit`]).filter((id) => m.getLayer(id));
       const hit = ids.length ? m.queryRenderedFeatures(e.point, { layers: ids }) : [];
       if (!hit.length) askHereRef.current(e.lngLat.lng, e.lngLat.lat);
     });
@@ -753,6 +928,52 @@ function WorldInner() {
     init.current.on.forEach((id) => addLayer(LAYERS.find((l) => l.id === id)));
     // Deep link straight into an object: ?f=place:4p:bergen
     if (init.current.focus) openEntity(init.current.focus);
+    // Workstream C — deterministic bundled whale record. ?record=orca-bundled
+    // (or the canonical record id) paints a visible marker and opens the real
+    // OBSERVATION Context panel, with NO live API dependency.
+    const rec = new URLSearchParams(window.location.search).get("record");
+    if (rec === "orca-bundled" || rec === DEMO_WHALE_OBSERVATION.provenance.sourceRecordId) {
+      const o = DEMO_WHALE_OCCURRENCE;
+      // If the URL already carries a camera (returning from a journey via
+      // returnTo), the map has ALREADY initialised at that exact camera — we must
+      // reconstruct it, not re-fly. Only run the cinematic landing on a cold
+      // entry with no camera in the URL.
+      const urlp = new URLSearchParams(window.location.search);
+      const hasRestoredCamera = urlp.has("z") && urlp.has("c");
+      const targetZoom = hasRestoredCamera ? (map.current?.getZoom() ?? init.current.zoom) : Math.max(init.current.zoom, 6);
+      paintFocus("focus", [{ lon: o.lng, lat: o.lat, col: C.blue, size: 9, eid: DEMO_WHALE_OBSERVATION.id, html: `<b>${o.commonName}</b>` }], C.blue, 8);
+      focusTarget.current = { lng: o.lng, lat: o.lat, zoom: targetZoom };
+      // Make the marker breathe so the eye finds it (no-op under reduced motion).
+      startFocusPulse();
+      // Normalise the record param up-front so returnTo captures it.
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("record") !== "orca-bundled") {
+        sp.set("record", "orca-bundled");
+        window.history.replaceState(null, "", `${window.location.pathname}?${sp.toString()}`);
+      }
+      // Cinematic landing, then let the panel arrive with rhythm (a beat after the
+      // camera settles) rather than snapping in at the same instant. The whole
+      // sequence is cancellation-safe: a user interaction, route change or unmount
+      // cancels it so a stale moveend can never open the panel late.
+      const openPanel = () => setCtx({ kind: "OBSERVATION", observation: DEMO_WHALE_OBSERVATION });
+      cancelLanding();
+      if (hasRestoredCamera || !map.current) {
+        // Reconstruction (or no map yet): do NOT re-fly. The camera is already the
+        // restored one; just open the panel so state equals the returned-to state.
+        openPanel();
+      } else {
+        const landing = cinematicLanding(map.current as any, { lng: o.lng, lat: o.lat, zoom: targetZoom });
+        landingRef.current = landing;
+        landing.done.then((outcome) => {
+          if (outcome !== "settled") return; // cancelled → do nothing
+          landingRef.current = null;
+          panelTimer.current = window.setTimeout(() => {
+            panelTimer.current = null;
+            openPanel();
+          }, prefersReducedMotion() ? 0 : MOTION.panelBeatMs);
+        });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
@@ -767,6 +988,7 @@ function WorldInner() {
       m.setStyle(makeStyle(light));
       m.once("styledata", () => {
         m.setProjection({ type: flat ? "mercator" : "globe" });
+        setBackfaceSafeLabels(m, flat, basemapSymbolVisibility.current);
         RASTER_ORDER.forEach((id) => { if (active.includes(id)) addLayer(LAYERS.find((l) => l.id === id), true); });
         active.filter((id) => !RASTER_ORDER.includes(id)).forEach((id) => addLayer(LAYERS.find((l) => l.id === id), true));
       });
@@ -810,8 +1032,10 @@ function WorldInner() {
 
   const toggleProjection = () => {
     const next = !flat;
+    flatRef.current = next;
     setFlat(next);
     map.current.setProjection({ type: next ? "mercator" : "globe" });
+    setBackfaceSafeLabels(map.current, next, basemapSymbolVisibility.current);
     writeUrl({ flat: next });
   };
 

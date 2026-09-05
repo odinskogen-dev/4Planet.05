@@ -1,0 +1,76 @@
+name: GA4 Admin Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Audit or apply the canonical 4PLANET GA4 configuration
+        required: true
+        default: apply
+        type: choice
+        options:
+          - audit
+          - apply
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/ga4-admin-control.yml
+      - scripts/ga4-admin-control.py
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    env:
+      GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+      GA4_PROPERTY_ID: "551422989"
+      GA4_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'audit' && 'false' || 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify GA4 credential exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${GA4_SERVICE_ACCOUNT_JSON:-}" || {
+            echo "GA4_SERVICE_ACCOUNT_JSON is not configured as a repository secret."
+            exit 1
+          }
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google auth runtime
+        run: python -m pip install --disable-pip-version-check --no-cache-dir google-auth requests
+
+      - name: Apply canonical GA4 configuration
+        id: ga4
+        run: python scripts/ga4-admin-control.py
+
+      - name: Publish control summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## 4PLANET GA4 control"
+            echo
+            echo "Property: 551422989"
+            echo "Primary stream: ${{ steps.ga4.outputs.primary_stream }}"
+            echo "Measurement ID: ${{ steps.ga4.outputs.measurement_id }}"
+            echo "Mode: ${GA4_APPLY}"
+            echo "Outcome: ${{ steps.ga4.outcome }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report result to GA4 tracking issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "GA4 Admin Control run: **${{ steps.ga4.outcome }}**\n\nProperty: \`551422989\`\nPrimary stream: \`${{ steps.ga4.outputs.primary_stream }}\`\nMeasurement ID: \`${{ steps.ga4.outputs.measurement_id }}\`\nCommit: \`${GITHUB_SHA}\`"

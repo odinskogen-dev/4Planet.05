@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "programme": "GIGA-IMMUNITY-01",
+  "principle": "Autonomy is earned through measured reliability and reduced automatically after material failure.",
+  "levels": {
+    "A0_HOLD": "read/analyse only; no mutation",
+    "A1_BOUNDED": "reversible bounded mutation on exact registered receiver with deterministic gates",
+    "A2_REPEATABLE": "repeat proven bounded workflow automatically when current-state and duplicate checks pass",
+    "A3_COORDINATED": "schedule/dispatch multiple bounded workers inside max-five-lane law with independent evaluation",
+    "A4_HIGH_TRUST": "broader reversible execution inside Canon; still no one-way-door authority"
+  },
+  "hard_ceiling": [
+    "NO_LIVE_RELEASE_WITHOUT_FOUNDER",
+    "NO_CANON_CHANGE_WITHOUT_AUTHORITY",
+    "NO_EXTERNAL_SEND_WITHOUT_FOUNDER_RELEASE",
+    "NO_PAYMENT_OR_FINANCIAL_COMMITMENT",
+    "NO_LEGAL_COMMITMENT",
+    "NO_DESTRUCTIVE_GOLD_CLEANUP",
+    "NO_BRAIN_CUTOVER_WITHOUT_PARITY_RECOVERY_AND_FOUNDER_GATE"
+  ],
+  "metrics": [
+    "successful_bounded_executions",
+    "accepted_output_ratio",
+    "regression_rate",
+    "rollback_success_rate",
+    "truth_violations",
+    "stale_state_errors",
+    "authority_violations",
+    "duplicate_work_incidents",
+    "founder_interventions",
+    "founder_minutes",
+    "mean_cycle_time",
+    "reuse_ratio"
+  ],
+  "promotion_rule": "Increase one level only after repeated evidence on the same capability shows no P0/P1 truth/authority/regression escape and measurable accepted-value gain.",
+  "demotion_rule": "Any P0/P1 truth, authority, destructive-value or uncontrolled-duplicate incident demotes the affected capability to A0/A1 until Error-to-Immunity closure is proven.",
+  "current_capabilities": {
+    "programme_rehydrate_and_reconciliation": {"level": "A2_REPEATABLE", "reason": "repeatable read/reconcile pattern; writeback still independently checked"},
+    "factory_bounded_product_work": {"level": "A1_BOUNDED", "reason": "ACTIVE boot exists but accepted-value economics and no-regression track record remain under proof"},
+    "source_truth_adapter_transfer": {"level": "A1_BOUNDED", "reason": "marine path passed while terrestrial Jaguar transfer exposed failure; capability must harden before repetition at scale"},
+    "product_candidate_promotion": {"level": "A0_HOLD", "reason": "Founder judgement and exact gate chain required"},
+    "external_outreach": {"level": "A0_HOLD", "reason": "Founder release required"},
+    "brain_cutover": {"level": "A0_HOLD", "reason": "CNS remains shadow until parity/recovery/operational superiority"}
+  }
+}

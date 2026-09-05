@@ -1,0 +1,114 @@
+/* ORCA composition reset v31.1 — one dominant story per viewport.
+   Generic premium/context overlays are not part of the ORCA first read. LUME remains an explicit room state. */
+#browser-experience .nature-context-ribbon,
+#browser-experience .nature-premium__panel,
+#browser-experience .nature-premium__detail,
+#browser-experience .nature-premium__audio{display:none!important}
+#browser-experience .nature-premium-hotspot__label{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#browser-experience .nature-premium-hotspot:focus-visible .nature-premium-hotspot__label,
+#browser-experience .nature-premium-hotspot:hover .nature-premium-hotspot__label{opacity:1!important;visibility:visible!important}
+#browser-experience .nature-subject__meta{max-width:360px}
+#browser-experience .nature-journey-hud__copy{max-width:470px}
+#browser-experience .nature-journey-hud__title{max-width:13ch}
+#browser-experience[data-light-lens="false"] .orca-lume-intel,
+#browser-experience[data-light-lens="false"] .orca-lume-rail,
+#browser-experience[data-light-lens="false"] .orca-lume-photo,
+#browser-experience[data-light-lens="false"] .orca-lume-wireframe{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+
+@media (min-width:761px){
+  #browser-experience.is-entered .nature-stage{inset:78px 0 0!important;height:calc(100vh - 78px)!important}
+  #browser-experience .nature-journey-hud{left:max(28px,env(safe-area-inset-left))!important;right:auto!important;top:auto!important;bottom:72px!important;width:min(520px,42vw)!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
+  #browser-experience .nature-journey-hud__copy{padding:18px 20px!important;background:linear-gradient(135deg,rgba(2,11,18,.84),rgba(2,11,18,.48))!important;border:1px solid rgba(110,231,255,.16)!important;border-left:2px solid rgba(110,231,255,.56)!important;backdrop-filter:blur(12px)!important}
+  #browser-experience .nature-journey-hud__title{font-size:clamp(34px,3.2vw,52px)!important;line-height:.98!important;letter-spacing:-.045em!important;margin:8px 0 10px!important}
+  #browser-experience .nature-journey-hud__actions{display:flex!important;gap:8px!important;margin-top:10px!important}
+  #browser-experience .nature-journey-hud__actions button{min-height:42px!important;padding:0 14px!important;background:rgba(2,11,18,.72)!important;backdrop-filter:none!important}
+  #browser-experience .nature-progress{left:auto!important;right:28px!important;bottom:28px!important;width:min(440px,40vw)!important;background:rgba(2,11,18,.45)!important;backdrop-filter:none!important}
+  #browser-experience .nature-stage__instruction{display:none!important}
+  #browser-experience .nature-subject__meta{left:28px!important;top:104px!important;bottom:auto!important;padding:0!important;border:0!important;background:transparent!important;backdrop-filter:none!important}
+  #browser-experience .nature-subject__boundary{display:none!important}
+}
+
+@media (max-width:760px){
+  #browser-experience .nature-topbar__right>a{display:none!important}
+  #browser-experience .nature-entry__actions>a{width:100%!important;justify-content:center!important;box-sizing:border-box!important}
+  #browser-experience .nature-subject__meta{display:none!important}
+  #browser-experience .nature-premium-hotspot__label{display:none!important}
+  #browser-experience[data-light-lens="true"] .light-lens-caption{display:none!important}
+
+  /* Mobile is scene-first: the ocean + orca gets the viewport, while progress and
+     secondary cards disappear until the user explicitly asks for evidence. */
+  #browser-experience.is-entered .nature-stage{
+    inset:max(64px,env(safe-area-inset-top)) 0 auto!important;
+    height:58svh!important;
+    min-height:390px!important;
+    overflow:hidden!important;
+  }
+  #browser-experience .nature-progress{display:none!important}
+  #browser-experience .nature-stage__instruction{display:none!important}
+  #browser-experience .nature-journey-hud{
+    position:fixed!important;
+    left:max(12px,env(safe-area-inset-left))!important;
+    right:max(12px,env(safe-area-inset-right))!important;
+    top:auto!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    max-height:36svh!important;
+    overflow:hidden!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    z-index:84!important;
+  }
+  #browser-experience .nature-journey-hud__copy{
+    padding:12px 14px 10px!important;
+    border:1px solid rgba(110,231,255,.18)!important;
+    background:linear-gradient(180deg,rgba(2,11,18,.92),rgba(2,11,18,.78))!important;
+    backdrop-filter:none!important;
+  }
+  #browser-experience .nature-journey-hud__stage,
+  #browser-experience .nature-journey-hud__cue{font-size:9px!important;line-height:1.25!important}
+  #browser-experience .nature-journey-hud__title{
+    margin:5px 0 7px!important;
+    max-width:18ch!important;
+    font-size:clamp(27px,8vw,38px)!important;
+    line-height:.98!important;
+  }
+  #browser-experience .nature-journey-hud__actions{
+    display:grid!important;
+    grid-template-columns:auto 1fr 1fr!important;
+    gap:6px!important;
+    margin-top:7px!important;
+  }
+  #browser-experience .nature-journey-hud__actions button{
+    min-height:42px!important;
+    padding:0 9px!important;
+    font-size:8px!important;
+    background:rgba(2,11,18,.9)!important;
+    backdrop-filter:none!important;
+  }
+  #browser-experience .nature-node:not([data-active="true"]) .nature-node__label{display:none!important}
+  #browser-experience .nature-node[data-active="true"] .nature-node__label{max-width:130px!important;font-size:8px!important}
+
+  /* The LUME intelligence surface is secondary to Journey navigation on compact
+     screens. Keep it in the upper safe viewport so SEND ECHO PULSE can never
+     occupy the persistent BACK / EVIDENCE / NEXT hit region. */
+  #browser-experience[data-light-lens="true"] > .orca-lume-intel{
+    position:fixed!important;
+    left:max(12px,env(safe-area-inset-left))!important;
+    right:max(12px,env(safe-area-inset-right))!important;
+    top:max(78px,calc(env(safe-area-inset-top) + 70px))!important;
+    bottom:auto!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:116px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  #browser-experience[data-light-lens="true"] .orca-lume-rail{display:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){#browser-experience *{scroll-behavior:auto!important}}

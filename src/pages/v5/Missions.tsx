@@ -1,8 +1,11 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
+import { MissionStrip } from "@/components/MissionStrip";
+import { PRINTS } from "@/data/prints";
+import { returnHrefFromSearch, withReturnTo } from "@/product/productContext";
 import { Editorial } from "@/components/Editorial";
 import { content } from "@/content/contentRepository";
 import { missionArticle, type Block } from "@/content/narratives";
@@ -15,9 +18,9 @@ const strip = (s: string) => s.replace("_", "");
 const mono = (color: string): React.CSSProperties => ({ fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".14em", textTransform: "uppercase", color });
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.03em" };
 
-const CULTURAL = new Set(["4play", "4film", "4telier", "m4gazine"]);
-const SYSTEM = new Set(["food", "en3rgy", "circular-city", "f4shion"]);
-const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "pl4stic"]);
+const CULTURAL = new Set(["4play", "4film", "4rt", "m4gazine"]);
+const SYSTEM = new Set(["food", "en4rgy", "circular-city", "f4shion"]);
+const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "cle4n"]);
 // dark-world missions live in tokens (DARK_MISSIONS) so the header can share them
 function classify(slug: string): { label: string } {
   if (CULTURAL.has(slug)) return { label: "CULTURAL PROJECT" };
@@ -37,6 +40,8 @@ function splitArticle(blocks: Block[]): [Block[], Block[]] {
 
 export function MissionDetail() {
   const { slug } = useParams();
+  const location = useLocation();
+  const returnHref = returnHrefFromSearch(location.search);
   const m = slug ? content.getMission(slug) : undefined;
   if (!m) return <NotFound />;
 
@@ -60,6 +65,11 @@ export function MissionDetail() {
 
   return (
     <PublicShell>
+      {returnHref && (
+        <Link to={returnHref} data-testid="return-to-atlas" style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 70px)", left: 20, zIndex: 40, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: acc, padding: "10px 14px", textDecoration: "none" }}>
+          ← BACK TO OBSERVATION IN ATLAS
+        </Link>
+      )}
       {/* ── immersive entry (dark) ── */}
       <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority accent={acc} align="end">
         <Reveal>
@@ -73,6 +83,27 @@ export function MissionDetail() {
           </div>
         </Reveal>
       </CinematicImage>
+
+      {/* ── thesis chapter — each mission opens into its own world ── */}
+      <section style={{ background: dark ? "#000" : acc, color: dark ? acc : "#fff", padding: "clamp(72px,12vw,180px) clamp(20px,6vw,120px)" }}>
+        <Reveal>
+          <div style={{ ...mono(dark ? acc : "rgba(255,255,255,.8)"), marginBottom: "clamp(24px,3vw,40px)" }}>{m.code} · THE STAKES</div>
+          <p style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(24px,3.4vw,52px)", lineHeight: 1.08, letterSpacing: "-.03em", maxWidth: "18ch" }}>
+            {m.thesis}
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ── WS-B Technical Mission Strip: after cinematic opening, before article ── */}
+      <MissionStrip
+        issue={m.issue}
+        whyItMatters={m.whyItMatters}
+        approach={m.whatCanHelp}
+        contribution={m.fourPlanetRole}
+        status={status}
+        accent={acc}
+        dark={dark}
+      />
 
       {/* ── editorial reading plane (dark or white per mission) ── */}
       <Section bg={secBg} pad="clamp(64px,8.5vw,124px)">
@@ -122,13 +153,61 @@ export function MissionDetail() {
       {/* ── action + evidence ending ── */}
       <section style={{ background: dark ? base : T.ink, color: "#fff" }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,8vw,110px) clamp(20px,5vw,72px)" }}>
+          {m.slug === "4rt" && (
+            <Reveal style={{ marginBottom: "clamp(56px,8vw,96px)" }}>
+              <div style={{ ...mono(acc), marginBottom: 16 }}>PRINTS FOR PLANET · PROTOTYPE CATALOGUE</div>
+              <h2 style={{ ...display, color: "#fff", fontSize: "clamp(24px,3.2vw,42px)", lineHeight: 1.05, maxWidth: 760 }}>
+                Limited-edition prints with an honest split.
+              </h2>
+              <p style={{ fontSize: "clamp(14px,1.3vw,16px)", color: "rgba(255,255,255,.7)", marginTop: 14, maxWidth: 640, lineHeight: 1.6 }}>
+                A prototype model. Nothing is for sale yet — no active store, no completed sale, no transferred Impact
+                funds. Each work states its edition, rights, availability, an EXAMPLE proposed share split (founder approval required) and the mission pathway it would support.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 1, marginTop: 32, background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.16)" }}>
+                {PRINTS.map((pr) => (
+                  <div key={pr.id} style={{ background: dark ? base : T.ink, padding: "clamp(22px,2.5vw,32px)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
+                      <h3 style={{ ...display, color: "#fff", fontSize: "clamp(19px,2vw,26px)", letterSpacing: "-.02em" }}>{pr.title}</h3>
+                      <span style={{ ...mono(acc), fontSize: 10 }}>{pr.availability}</span>
+                    </div>
+                    <div style={{ ...mono(acc), fontSize: 10.5, marginTop: 8 }}>ARTIST · <span style={{ color: "rgba(255,255,255,.86)" }}>{pr.artist}</span></div>
+                    <p style={{ fontSize: 13.5, color: "rgba(255,255,255,.7)", marginTop: 10, lineHeight: 1.5 }}>{pr.artistNote}</p>
+                    <dl style={{ margin: "16px 0 0", display: "grid", gap: 7, fontSize: 12.5 }}>
+                      {[["Medium", pr.medium], ["Edition", pr.edition], ["Rights", pr.rights]].map(([k, v]) => (
+                        <div key={k} style={{ display: "grid", gridTemplateColumns: "84px 1fr", gap: 8 }}>
+                          <dt style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10 }}>{(k as string).toUpperCase()}</dt>
+                          <dd style={{ margin: 0, color: "rgba(255,255,255,.82)", lineHeight: 1.45 }}>{v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.14)" }}>
+                      <div style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10, marginBottom: 8 }}>EXAMPLE SPLIT · PROPOSED · FOUNDER APPROVAL REQUIRED</div>
+                      <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
+                        <span style={{ width: `${pr.share.artist}%`, background: acc }} title={`Artist ${pr.share.artist}% (example)`} />
+                        <span style={{ width: `${pr.share.production}%`, background: "rgba(255,255,255,.5)" }} title={`Production ${pr.share.production}% (example)`} />
+                        <span style={{ width: `${pr.share.fourPlanet}%`, background: "rgba(255,255,255,.28)" }} title={`4PLANET ${pr.share.fourPlanet}% (example)`} />
+                      </div>
+                      <div style={{ ...mono("rgba(255,255,255,.6)"), fontSize: 10, marginTop: 8 }}>
+                        ARTIST {pr.share.artist}% · PRODUCTION {pr.share.production}% · 4PLANET {pr.share.fourPlanet}% · EXAMPLE ONLY
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 14, ...mono(acc), fontSize: 10.5 }}>PATHWAY · <span style={{ color: "rgba(255,255,255,.86)" }}>{pr.pathway}</span></div>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>{pr.pathwayState}</p>
+                  </div>
+                ))}
+              </div>
+              <p style={{ ...mono("rgba(255,255,255,.5)"), fontSize: 10.5, marginTop: 20, letterSpacing: ".06em" }}>
+                NO ACTIVE STORE · NO COMPLETED SALES · NO TRANSFERRED IMPACT FUNDS · NO PRINT-LICENCE AGREEMENT · EXAMPLE/PROPOSED SPLITS PENDING FOUNDER APPROVAL · PROTOTYPE MODEL ONLY
+              </p>
+            </Reveal>
+          )}
           <Reveal>
             <div style={{ ...mono(acc), marginBottom: 20 }}>HOW TO TAKE PART</div>
             <h2 style={{ ...display, color: "#fff", fontSize: "clamp(26px,3.6vw,48px)", lineHeight: 1.04, maxWidth: 760 }}>
               Follow {strip(m.name)} as its evidence, partners and pathways come together.
             </h2>
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
-              <Button to="/people" primary accent={acc} arrow>{m.joinLabel || "FOLLOW THIS MISSION"}</Button>
+              <Button to={withReturnTo("/join", location.search)} primary accent={acc} arrow testId="mission-to-join">{m.joinLabel || "FOLLOW THIS MISSION"}</Button>
               {m.impactPathwaySlug
                 ? <Button to={"/impact/" + m.impactPathwaySlug} onDark accent="#fff">FOLLOW THE PATHWAY</Button>
                 : <Button to="/partners" onDark accent="#fff">EXPLORE PARTNERSHIP</Button>}
