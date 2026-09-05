@@ -2,61 +2,71 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** TEST-KING-LUME-ROOM-03-PROJECTION-PLANE-QA-01
-**STATUS:** TEST / IMPLEMENTED CANDIDATE / FOUNDER REVIEW REQUIRED
-**BASE AUTHORITY:** `king/test` / PR #131 / exact parent `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**ROLLBACK BASE:** `e90b3f1b28292fc166e108f8e0ba7a7c9d15dfe4`
-**IMPLEMENTED CANDIDATE:** atomic TEST KING commit created from this brief + LUME projection-plane QA fix
-**FOUNDER DIRECTION:** Keep the Orca asset. Make the room feel like a large dark gallery rendered in lighter projected OCE4N light, with luminous grids on floor, walls and ceiling, readable intel walls, wall-mounted nodes, an optional map projection and bounded interactive Orca movement. Field audio must be real and must start only after a user gesture. The full Orca must remain inside mobile view.
-**SINGLE-SEAM RULE:** Improve only the existing `/species/orca/lume` renderer and its existing tests; no new route, renderer, map engine, 3D/XR stack, species database or parallel app.
+**CHANGE ID:** GIGA2800-REALITY-PROOF-HUMAN-RESEARCH-01
+**STATUS:** HEIR / HUMAN PROOF INSTRUMENTATION CANDIDATE / NOT REAL-WORLD HUMAN PROOF / NOT FOUNDER APPROVED / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `80446464d94b6fed4541072296d756f978f99fd5`
+**ROLLBACK BASE:** `80446464d94b6fed4541072296d756f978f99fd5`
+**LOOP ROLE:** HUMAN CONTEXT → DECISION → PROOF → LEARNING.
 
 ## USER ARRIVES BECAUSE
-They want to enter one striking species intelligence gallery and understand Orca through projected light, space, sound and controlled depth.
+They have one real FOOD purchase decision and need to know whether Embla makes that decision materially clearer or better without hiding uncertainty.
 
 ## ONE THING TO UNDERSTAND
-This is one species across every ocean, expressed through many distinct populations, habitats, diets and cultures.
+This mutation does not prove Human Utility. It makes a real Human Utility test inspectable. The participant must bring a real decision and real product. Fixture, synthetic and automated sessions remain technical evidence only.
 
 ## PRIMARY ACTION
-Select one of four projected wall nodes: Identity, Culture, Place or Evidence.
+Open `/labs/food-user-test`, consent locally, enter the Embla research flow, use one real FOOD decision and product, then record whether the decision changed, became clearer, was confirmed or was not helped.
 
 ## SECONDARY DEPTH
-Guide the 2.5D Orca plane with drag, touch or arrow keys; open the schematic Place map; explicitly start the NPS Glacier Bay Orca field recording; trigger a separately labelled procedural room echo.
+The same evidence record preserves product/package accuracy, comprehension time, alternative relevance, usefulness, trust, UNKNOWN/refusal comprehension, repeat-use intent, install intent, payment intent and explicit issue severity. JSON/CSV export remains deliberate and local-first.
 
 ## P1 DOMINANT
-The complete Orca projection floating in a large black gallery room.
+The dominant job is proof of decision value, not scanner completion. A session without a real decision cannot satisfy PROOF-H01.
 
 ## P2 ORIENTATION
-Luminous room geometry, species identity, wall-mounted nodes and one active projected intel wall.
+The participant must understand why Embla sometimes compares, sometimes shows only bounded product evidence and sometimes refuses an unsupported whole-shelf or universal answer.
 
 ## P3 ACTION / NEXT
-Choose a wall projection, hear the field recording by explicit action, or return to Species.
+The research flow deep-links into the existing Embla FOOD decision gate with `?research=1` and returns to the existing Human Proof recorder. No second assistant or research product is introduced.
 
 ## P4 DEPTH
-Source, evidence state and limitation remain available without competing with the animal.
+Accuracy, evidence limitations and UNKNOWN states remain inspectable. Decision effect is recorded separately from decision correctness. Payment intent is a research signal only and must never be represented as revenue.
 
 ## WHAT CAN BE REMOVED
-Dark electric-blue styling, compressed dashboard geometry, cards, pills, clipped animal framing, false 3D controls and hidden or unreachable wall information.
+Any duplicate research surface, remote personal-data store, synthetic participant generation, moral score, universal sustainability ranking or analytics layer that does not improve the bounded proof is unnecessary.
 
 ## WHAT MUST BE REUSED
-The existing clean-room LUME renderer, `LUME_ORCA_ROOM` manifest, transparent Orca visualisation, canonical route, NPS Glacier Bay field audio, current truth boundaries, current Species exit and current responsive contract.
+Existing `/labs/food-user-test`, Embla FOOD decision-first gate, `FoodIntelligence`, `PickPrototype`, localStorage privacy boundary, JSON/CSV export, source/truth contracts, 4SAPIEN route family, current HEIR and all existing route/alias MUST-NOT-LOSE behaviour.
 
 ## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** projected cyan-white light, larger gallery depth, wall-mounted intel, inline schematic world map and bounded 2.5D guidance.
-- **REUSE:** existing LUME ROOM 03 renderer, Orca asset, source manifest and audio lifecycle.
-- **REJECT:** legacy ORCA/Jaguar CSS imports, a second renderer, runtime map dependency, false live tracking, false migration, rigged-animal claims and autoplay.
-- **DEFER:** true fin/tail articulation, rigged GLB swimming, WebXR and hardware projection until a validated asset and later adapter exist.
+- **ADOPT:** explicit decision-effect and UNKNOWN/refusal comprehension fields required by the current Reality Proof mission.
+- **ADAPT:** connect the existing recorder and Embla through a reversible research query parameter and return link.
+- **PRESERVE:** all current source/refusal semantics, existing package-accuracy checks, privacy boundary, export capability, parent redirects and HEIR value.
+- **REJECT:** new research backend, fabricated respondents, remote personal storage, new product surface, universal score or any claim that technical PASS equals Human Utility.
 
 ## TRUTH BOUNDARY
-The central Orca is an AI-generated natural-history visualisation, not a photograph or evidence. Its interaction moves a single 2.5D projection plane and must not be called a rigged 3D animal. The Place map is schematic species-level orientation, not a live track, migration route, population range or abundance surface. The NPS Glacier Bay recording is real field audio; the room echo is procedural and separately labelled.
-
-## PERFORMANCE
-No new runtime dependency, WebGL renderer or remote map. The map remains inline SVG. ROOM 03 stays lazy-loaded; the existing local animal and audio assets are reused.
+`TECHNICAL PASS ≠ HUMAN VALUE`.
+`USEFULNESS SCORE ≠ REPEAT HUMAN UTILITY`.
+`PAYMENT INTENT ≠ REVENUE`.
+`DECISION CHANGED ≠ DECISION CORRECT`.
+`ONE REAL PARTICIPANT ≠ REPEATED PROOF`.
+A real-world Human Proof record exists only when an actual participant uses a real decision and real product, the result is captured, and limitations/failures remain in the evidence.
 
 ## MOBILE-FIRST RISK
-At 390 and 430 px the full Orca must remain inside the viewport, nodes must remain at least 44 px, the detail wall must not intercept sound or exit controls, the map must reflow, and the experience must avoid horizontal overflow and page scroll.
+The research handoff must remain usable on a phone without forcing remote identity, horizontal overflow or hidden evidence boundaries. The participant must be able to return from Embla to the recorder without losing the local session.
 
 ## HUMAN SUCCESS
-Within five seconds a person understands that they are inside a large projected Orca intelligence room. Within thirty seconds they can select Place, see the bounded map, move the Orca, and deliberately hear real Orca field audio without confusing it with the procedural echo.
+A first-time participant can bring a real decision, understand what Embla can and cannot support, use real product evidence, record whether the decision changed/clarified/confirmed/was not helped, and export an inspectable anonymous record without giving 4PLANET identity or sensitive personal data.
 
 ## ACCEPTANCE
-1. `/species/orca/lume` identifies itself as LUME ROOM 03. 2. The room uses lighter projected cyan-white light. 3. Ceiling, floor, side and rear grid planes create visible gallery depth. 4. The full Orca is dominant and contained at desktop, 390 and 430 px. 5. Identity and active detail intel walls render in front of the room plane rather than being occluded by it. 6. Four wall nodes remain keyboard and touch accessible. 7. PLACE opens an inline schematic map with `NOT A LIVE TRACK`. 8. Drag/touch/arrows move only the bounded 2.5D plane and Enter/Home reset it. 9. NPS field audio remains off until explicit action and the procedural room echo remains separately labelled. 10. Reduced motion preserves all information. 11. Contract, typecheck, assets, lint, build, smoke and public-browser checks pass before Founder acceptance is requested. 12. LIVE KING remains untouched.
+1. `king/test` remains the sole HEIR and LIVE remains untouched.
+2. Exact parent is `80446464d94b6fed4541072296d756f978f99fd5`; stale/non-fast-forward mutation fails closed.
+3. `/labs/food-user-test` deep-links to `/4sapien/food/choose?research=1`.
+4. Embla research mode returns to the existing local evidence recorder.
+5. Recorder captures `decisionQuestion`, `decisionEffect` and `unknownRefusalComprehension` plus existing usefulness/trust/repeat/payment-intent metrics.
+6. Recorder remains local-only and does not introduce remote personal storage.
+7. JSON/CSV evidence preserves the proof boundary that synthetic/fixture sessions are technical only.
+8. Existing wallet/planet/best-overall refusal semantics remain intact.
+9. Existing route/alias preservation remains intact.
+10. Typecheck/build/contracts/GOLD/Human Craft/Four-State/Browser/ATLAS/ONE INTERFACE gates pass on the exact resulting HEIR SHA.
+11. No Human Utility, repeat-use, willingness-to-pay, revenue, adoption or LIVE claim is made without real participant evidence and the appropriate later gates.

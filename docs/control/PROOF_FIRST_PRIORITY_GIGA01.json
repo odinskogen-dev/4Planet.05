@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "formula": "HUMAN_OR_PLANET_VALUE * PROOF_DELTA * REUSE * ECONOMIC_SIGNAL * SPEED / COMPLEXITY / DEPENDENCIES / FOUNDER_BURDEN",
+  "defer_by_default": ["new_broad_roadmaps","new_speculative_products","parallel_systems","broad_research_without_current_proof_question","vanity_content","giant_partner_or_funder_longlists","architecture_polish_without_blocker","agent_output_without_receiver"],
+  "current_order": [
+    "P0_PHYSICAL_HEIR_AUTHORITY_OR_EXACT_BLOCKER",
+    "P0_OSLOFJORD_PLANET_GOLD_01",
+    "P0_FACTORY_REAL_PRODUCTION_SCORECARD",
+    "P0_EMBLA_REAL_DECISION_01_AFTER_RECEIVER_RESOLUTION",
+    "P1_ACTION_ECONOMIC_PROOF_01",
+    "P1_OSLOFJORD_TO_GBR_TRANSFER_AFTER_STABLE_PRIMITIVES"
+  ]
+}
