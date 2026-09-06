@@ -12,8 +12,10 @@ const topics = readTopics();
 const templates = readArticleTemplates();
 
 const publicRoutes = ["/", "/domains", "/missions", "/living-systems", "/atlas", "/species", "/impact", "/about", "/privacy", "/join"];
+const publishedFilmSlugs = ["yanuni", "the-territory", "seaspiracy", "chasing-coral", "cowspiracy", "kiss-the-ground", "my-octopus-teacher", "a-plastic-ocean", "common-ground", "sea-of-shadows"];
 const magazineStaticRoutes = [
   "/magazine",
+  "/films",
   "/magazine/about",
   "/magazine/sources",
   "/magazine/corrections",
@@ -24,6 +26,7 @@ const magazineStaticRoutes = [
 const toSeriesSlug = (value) => value.toLowerCase().replaceAll("_", "-");
 const magazineRoutes = [...new Set([
   ...magazineStaticRoutes,
+  ...publishedFilmSlugs.map((slug) => `/films/${slug}`),
   ...stories.map((story) => `/magazine/${story.slug}`),
   ...signals.map((signal) => `/magazine/signals/${signal.slug}`),
   ...topics.map((topic) => `/magazine/topics/${topic.id.toLowerCase()}`),
@@ -42,14 +45,9 @@ function writeSitemap(filename, origin, routes) {
   fs.writeFileSync(path.join(publicDir, filename), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, "utf8");
 }
 
-// Canonical hosts never mix. The general 4PLANET sitemap owns product routes;
-// 4planetmagazine.com owns only the public editorial surface.
 writeSitemap("sitemap.xml", publicOrigin, publicRoutes);
 writeSitemap("magazine-sitemap.xml", magazineOrigin, magazineRoutes);
 
-// Google News sitemaps are deliberately bounded to genuinely time-stamped stories
-// published within the last 48 hours. Evergreen launch features do not become
-// news merely because they are newly discoverable.
 const now = Date.now();
 const newsStories = stories.filter((story) => {
   if (!story.publishedAt) return false;
@@ -64,11 +62,9 @@ const rssSignalItems = signals.map((signal) => `    <item>\n      <title>${escap
 const rssItems = [...rssStoryItems, ...rssSignalItems].join("\n");
 fs.writeFileSync(path.join(publicDir, "rss.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>4PLANET MAGAZINE</title>\n    <link>${escapeXml(`${magazineOrigin}/magazine`)}</link>\n    <description>Stories and signals about the living planet — species, places, people, systems, solutions and culture.</description>\n    <language>en-gb</language>\n${rssItems}\n  </channel>\n</rss>\n`, "utf8");
 
-// The shared build still generates a public robots file for 4planet.org. The
-// isolated Magazine Worker serves the Magazine sitemap from its own host.
 const robots = `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(publicOrigin, "/sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
-const magazineRobots = `User-agent: *\nAllow: /magazine\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\n`;
+const magazineRobots = `User-agent: *\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "magazine-robots.txt"), magazineRobots, "utf8");
 
 console.log(`Generated public sitemap (${publicRoutes.length} URLs @ ${publicOrigin}); Magazine sitemap (${magazineRoutes.length} URLs @ ${magazineOrigin}); News sitemap (${newsStories.length} eligible stories); RSS (${stories.length} stories + ${signals.length} signals).`);
