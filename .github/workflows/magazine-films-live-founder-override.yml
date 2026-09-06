@@ -75,22 +75,24 @@ jobs:
           [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
-      - name: Deploy exact Films build to isolated Pages branch
+      - name: Deploy exact Films build to isolated Pages deployment
         shell: bash
         run: |
           set -euo pipefail
+          deploy_log="$RUNNER_TEMP/pages-deploy.log"
           npx --yes wrangler@latest pages deploy dist \
             --project-name=4planet-05 \
             --branch=magazine-live-films \
-            --commit-hash="$GITHUB_SHA"
-          upstream='https://magazine-live-films.4planet-05.pages.dev'
+            --commit-hash="$GITHUB_SHA" 2>&1 | tee "$deploy_log"
+          upstream=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
+          [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages deployment URL.'; exit 4; }
           for attempt in $(seq 1 30); do
             code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream/films" || true)
             [ "$code" = '200' ] && { echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"; echo "Pages upstream ready: $upstream"; exit 0; }
             sleep 4
           done
-          echo 'New Magazine Films Pages upstream did not become reachable.'
-          exit 4
+          echo "New Magazine Films Pages upstream did not become reachable: $upstream"
+          exit 5
 
       - name: Promote bounded Magazine + Films worker
         shell: bash
