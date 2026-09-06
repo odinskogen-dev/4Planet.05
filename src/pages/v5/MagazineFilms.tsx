@@ -3,11 +3,14 @@ import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { Seo } from "@/components/Seo";
 import { trackEvent } from "@/analytics/Analytics";
-import { FILMS, PUBLISHED_FILMS, filmBySlug, relatedFilms, type FilmRecord, type FilmTopic } from "@/content/magazineFilms";
+import { PUBLISHED_FILMS, filmBySlug, relatedFilms, type FilmRecord, type FilmTopic } from "@/content/magazineFilms";
 import "@/styles/magazine-films.css";
 import "@/styles/magazine-films-gold-02.css";
+import "@/styles/magazine-films-premium-03.css";
 
 type FilterId = "ALL" | FilmTopic;
+type MazeLayout = "wide" | "portrait" | "small" | "compact" | "feature";
+
 const FILTER_OPTIONS: Array<{ id: FilterId; label: string }> = [
   { id: "ALL", label: "ALL" },
   { id: "OCEAN", label: "OCEAN" },
@@ -17,6 +20,10 @@ const FILTER_OPTIONS: Array<{ id: FilterId; label: string }> = [
   { id: "ENERGY", label: "ENERGY" },
   { id: "SOLUTIONS", label: "SOLUTIONS" },
   { id: "PEOPLE", label: "PEOPLE" },
+];
+
+const MAZE_LAYOUTS: MazeLayout[] = [
+  "wide", "portrait", "small", "small", "small", "compact", "feature", "portrait", "wide", "small", "compact", "feature",
 ];
 
 function accessLabel(film: FilmRecord) {
@@ -37,10 +44,10 @@ function FilmImage({ film, eager = false, decorative = false }: { film: FilmReco
 
   if (failed) {
     return (
-      <div className="mag-film-image-fallback" aria-label={decorative ? undefined : `${film.title} contextual film material`} aria-hidden={decorative || undefined}>
+      <div className="mag-film-image-fallback" aria-label={decorative ? undefined : `${film.title} film image unavailable`} aria-hidden={decorative || undefined}>
         <span>4PLANET FILMS</span>
         <strong>{film.title}</strong>
-        <small>{film.year} / {film.focus}</small>
+        <small>{film.year} / IMAGE TEMPORARILY UNAVAILABLE</small>
       </div>
     );
   }
@@ -51,8 +58,9 @@ function FilmImage({ film, eager = false, decorative = false }: { film: FilmReco
       alt={decorative ? "" : film.imageAlt}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
+      referrerPolicy="no-referrer"
       onError={() => {
-        if (src !== film.fallbackImageUrl) setSrc(film.fallbackImageUrl);
+        if (film.fallbackImageUrl && src !== film.fallbackImageUrl) setSrc(film.fallbackImageUrl);
         else setFailed(true);
       }}
     />
@@ -60,16 +68,17 @@ function FilmImage({ film, eager = false, decorative = false }: { film: FilmReco
 }
 
 function FilmCard({ film, index }: { film: FilmRecord; index: number }) {
+  const layout = MAZE_LAYOUTS[index % MAZE_LAYOUTS.length];
   return (
-    <article className={`mag-film-card ${index === 0 ? "mag-film-card--lead" : ""}`} data-accent={film.accent}>
+    <article className={`mag-film-card mag-film-card--${layout}`} data-accent={film.accent} data-layout={layout}>
       <div className="mag-film-card-index"><span>{String(index + 1).padStart(2, "0")}</span><span>{film.focus}</span></div>
       <Link
         className="mag-film-card-media"
         to={`/films/${film.slug}`}
         aria-label={`Open ${film.title}`}
-        onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: "films_grid" })}
+        onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `films_grid_${layout}` })}
       >
-        <FilmImage film={film} eager={index < 2} />
+        <FilmImage film={film} eager={index < 3} />
       </Link>
       <div className="mag-film-card-copy">
         <p className="mag-film-meta">{film.year} · {film.runtime} · {accessLabel(film)}</p>
@@ -107,7 +116,7 @@ export function MagazineFilmsIndex() {
     <MagazineShell>
       <Seo
         title="4PLANET FILMS — Films worth your attention"
-        description="A curated selection of documentary films about the living planet, people, systems, pressure and solutions — linked back to the original filmmakers and distributors."
+        description="A curated documentary selection about the living planet, people, systems, pressure and solutions — always linked back to the original filmmakers and distributors."
         path="/films"
         image={PUBLISHED_FILMS[0]?.imageUrl}
       />
@@ -119,7 +128,7 @@ export function MagazineFilmsIndex() {
           </div>
           <div className="mag-films-hero-note">
             <p>Documentaries that make the living world harder to ignore — and easier to understand.</p>
-            <span>4PLANET does not re-host these films. We curate, contextualise and point you to the filmmakers or original distributors. Availability can vary by country.</span>
+            <span>Curated by 4PLANET. Films remain with their filmmakers and distributors; availability can vary by country.</span>
           </div>
         </section>
 
@@ -139,19 +148,10 @@ export function MagazineFilmsIndex() {
 
         <section className="mag-film-selection" aria-labelledby="selection-title">
           <header className="mag-film-selection-head">
-            <div><p className="mag-films-eyebrow">SELECTION 02 / {PUBLISHED_FILMS.length} FILMS</p><h2 id="selection-title">Start here.</h2></div>
+            <div><p className="mag-films-eyebrow">CURATED SELECTION / {PUBLISHED_FILMS.length} FILMS</p><h2 id="selection-title">Start here.</h2></div>
             <p>Selected for cinematic quality, relevance to a living planet and a clear route back to the people who made the work.</p>
           </header>
           <div className="mag-film-grid">{films.map((film, index) => <FilmCard key={film.slug} film={film} index={index} />)}</div>
-        </section>
-
-        <section className="mag-films-method">
-          <p className="mag-films-eyebrow">WHY THIS EXISTS</p>
-          <div><h2>Important films already exist. Distribution is part of the work.</h2><p>4PLANET FILMS is a discovery layer inside 4PLANET Magazine: a small, edited selection rather than an endless feed. Each film stays with its creator or distributor. Our job is to help people find it, understand why it matters and connect the story to the wider living planet.</p></div>
-        </section>
-
-        <section className="mag-film-research-note">
-          <span>EDITORIAL PIPELINE</span><strong>{FILMS.length} qualified records / {PUBLISHED_FILMS.length} live</strong><p>The public selection spans oceans, forests, wildlife, food, climate, energy, Indigenous stewardship, restoration, infrastructure and practical solutions. Research candidates remain unpublished until their source, availability and rights state passes the same gate.</p>
         </section>
       </main>
     </MagazineShell>
@@ -183,10 +183,10 @@ export function MagazineFilmDetail() {
         <figure className="mag-film-detail-media-wrap">
           <div className="mag-film-detail-media" aria-label={`${film.title} film media`}>
             {film.trailerId ? (
-              <iframe src={`https://www.youtube-nocookie.com/embed/${film.trailerId}?rel=0`} title={`${film.title} official trailer`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+              <iframe src={`https://www.youtube-nocookie.com/embed/${film.trailerId}?rel=0`} title={`${film.title} official film or trailer`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
             ) : <FilmImage film={film} eager />}
           </div>
-          <figcaption>{film.trailerId ? "Official trailer embedded from YouTube. Card imagery is contextual 4PLANET material." : `${film.imageCredit}. ${film.imageRights}.`}</figcaption>
+          <figcaption>{film.trailerId ? `Official ${film.access === "FULL_FREE" ? "film" : "trailer"} media. Card image comes from the linked film material.` : `${film.imageCredit}. Rights remain with the film/rightsholder.`}</figcaption>
         </figure>
 
         <section className="mag-film-detail-body">
@@ -195,7 +195,7 @@ export function MagazineFilmDetail() {
             <p className="mag-film-dek">{film.description}</p>
             <p>{film.credit}</p>
             <p className="mag-film-availability"><strong>AVAILABILITY</strong><br />{film.availabilityNote}</p>
-            <p className="mag-film-source-note">Synopsis condensed from official film/distributor material for discovery. 4PLANET has not independently verified every claim made inside the film.</p>
+            <p className="mag-film-source-note">Description condensed from official film/distributor material for discovery. 4PLANET has not independently verified every claim made inside the film.</p>
           </div>
           <aside className="mag-film-detail-actions">
             <span>{accessLabel(film)}</span>
