@@ -1,0 +1,173 @@
+name: 4PLANET Films live founder override
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - '.github/workflows/magazine-films-live-founder-override.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-films-live-founder-override
+  cancel-in-progress: true
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact Magazine Gold source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Magazine quality and contract tests
+        run: npm run test:magazine
+
+      - name: Production build
+        env:
+          VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+        run: npm run build
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy exact Films build to isolated Pages branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=magazine-live-films \
+            --commit-hash="$GITHUB_SHA"
+          upstream='https://magazine-live-films.4planet-05.pages.dev'
+          for attempt in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream/films" || true)
+            [ "$code" = '200' ] && { echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"; echo "Pages upstream ready: $upstream"; exit 0; }
+            sleep 4
+          done
+          echo 'New Magazine Films Pages upstream did not become reachable.'
+          exit 4
+
+      - name: Promote bounded Magazine + Films worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/worker.mjs" <<EOF
+          const UPSTREAM = "${FILMS_UPSTREAM}";
+          const SOURCE_SHA = "${GITHUB_SHA}";
+          const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowedEditorial = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p === "/films" || p === "/films/" || p.startsWith("/films/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === `www.\${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedEditorial(incoming.pathname) && !atlasEmbed) return blocked();
+            let upstreamPath = incoming.pathname;
+            if (incoming.pathname === "/robots.txt") upstreamPath = "/magazine-robots.txt";
+            if (incoming.pathname === "/sitemap.xml") upstreamPath = "/magazine-sitemap.xml";
+            const upstream = new URL(upstreamPath, UPSTREAM);
+            upstream.search = incoming.search;
+            const response = await fetch(new Request(upstream.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            headers.set("x-4planet-source-sha", SOURCE_SHA);
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
+          EOF
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planetmagazine-test-king"
+          main = "$RUNNER_TEMP/worker.mjs"
+          compatibility_date = "2026-09-06"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmagazine.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmagazine.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify exact Films build live
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_sha="$GITHUB_SHA"
+          verify_live() {
+            local url="$1"
+            local expected="$2"
+            for attempt in $(seq 1 30); do
+              headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
+              code=$(printf '%s\n' "$headers" | awk 'NR==1{print $2}')
+              if [ "$code" = "$expected" ] &&
+                 printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
+                 printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
+                echo "PASS $url"
+                return 0
+              fi
+              sleep 4
+            done
+            echo "FAIL $url"
+            return 1
+          }
+          verify_live 'https://4planetmagazine.com/magazine/' '200'
+          verify_live 'https://4planetmagazine.com/films' '200'
+          verify_live 'https://4planetmagazine.com/films/yanuni' '200'
+          verify_live 'https://4planetmagazine.com/films/the-territory' '200'
+          sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
+          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films'
+          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films/yanuni'
+          robots=$(curl -fsS 'https://4planetmagazine.com/robots.txt')
+          printf '%s' "$robots" | grep -q 'Allow: /films'
