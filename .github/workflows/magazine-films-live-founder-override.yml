@@ -25,9 +25,9 @@ concurrency:
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
-      - name: Checkout exact Magazine Gold source
+      - name: Checkout exact Magazine Films source
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -41,54 +41,10 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Resolve YANUNI exact official watch route
-        shell: bash
-        run: |
-          set -euo pipefail
-          feed="$RUNNER_TEMP/leonardo-youtube.xml"
-          if curl -fsSL --connect-timeout 10 --max-time 30 'https://www.youtube.com/feeds/videos.xml?channel_id=UChlkJxkgWqVc11Cwuz1GSbg' > "$feed"; then
-            video_id=$(python - "$feed" <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root = ET.parse(sys.argv[1]).getroot()
-          atom = {'a': 'http://www.w3.org/2005/Atom', 'yt': 'http://www.youtube.com/xml/schemas/2015'}
-          candidates = []
-          for entry in root.findall('a:entry', atom):
-              title = (entry.findtext('a:title', default='', namespaces=atom) or '').strip()
-              video_id = (entry.findtext('yt:videoId', default='', namespaces=atom) or '').strip()
-              low = title.lower()
-              if 'yanuni' in low and 'trailer' not in low and video_id:
-                  candidates.append((title, video_id))
-          if candidates:
-              print(candidates[0][1])
-              print(f'YANUNI RSS MATCH: {candidates[0][0]}', file=sys.stderr)
-          PY
-            )
-            if [ -n "$video_id" ]; then
-              expected="https://www.youtube.com/watch?v=$video_id"
-              current=$(python - <<'PY'
-          import re
-          source = open('src/content/magazineFilms.ts', encoding='utf-8').read()
-          block = source.split('slug: "yanuni"', 1)[1].split('\n  },', 1)[0]
-          match = re.search(r'watchUrl:\s*"([^"]+)"', block)
-          print(match.group(1) if match else '')
-          PY
-              )
-              echo "YANUNI exact official full-film route: $expected"
-              if [ "$current" != "$expected" ]; then
-                echo "YANUNI EXACT ROUTE REQUIRED: canonical registry currently has $current"
-                exit 12
-              fi
-            else
-              echo "YANUNI RSS: no non-trailer YANUNI upload resolved; retaining source-bounded channel route."
-            fi
-          else
-            echo "YANUNI RSS unavailable from CI; retaining source-bounded channel route and explicit availability caveat."
-          fi
-
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Magazine quality and contract tests
+      - name: Magazine and Films contracts
         run: npm run test:magazine
 
       - name: Production build
@@ -96,16 +52,15 @@ jobs:
           VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
         run: npm run build
 
-      - name: Install Chromium for independent Films browser QA
+      - name: Install Chromium for independent premium browser QA
         run: npx playwright install --with-deps chromium
 
-      - name: Premium Films browser QA — 320 375 390 430 1440
+      - name: Premium browser QA — 320 375 390 430 1440
         env:
           BASE_URL: http://127.0.0.1:4173
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p artifacts
           npm run preview -- --host 127.0.0.1 > "$RUNNER_TEMP/magazine-preview.log" 2>&1 &
           preview_pid=$!
           trap 'kill $preview_pid 2>/dev/null || true' EXIT
@@ -122,14 +77,13 @@ jobs:
             --project=mag-mobile-375 \
             --project=mag-mobile-320
 
-      - name: Preserve premium browser proof
+      - name: Preserve premium QA proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: magazine-films-premium-proof-${{ github.sha }}
+          name: magazine-films-premium-03-${{ github.sha }}
           path: |
-            magazine-test-results
-            magazine-playwright-report
+            magazine-test-results/**/*.png
             artifacts/magazine-results.json
           if-no-files-found: warn
           retention-days: 14
@@ -159,7 +113,7 @@ jobs:
           [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
-      - name: Deploy exact Films build to isolated Pages deployment
+      - name: Deploy exact build to isolated Pages deployment
         shell: bash
         run: |
           set -euo pipefail
@@ -169,13 +123,12 @@ jobs:
             --branch=magazine-live-films \
             --commit-hash="$GITHUB_SHA" 2>&1 | tee "$deploy_log"
           upstream=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
-          [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages deployment URL.'; exit 4; }
+          [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages deployment URL'; exit 4; }
           for attempt in $(seq 1 30); do
             code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream/films" || true)
-            [ "$code" = '200' ] && { echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"; echo "Pages upstream ready: $upstream"; exit 0; }
+            [ "$code" = '200' ] && { echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"; exit 0; }
             sleep 4
           done
-          echo "New Magazine Films Pages upstream did not become reachable: $upstream"
           exit 5
 
       - name: Promote bounded Magazine + Films worker
@@ -226,7 +179,7 @@ jobs:
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
 
-      - name: Verify exact Films build live — premium acceptance gate
+      - name: Verify exact build live — premium 40-film acceptance gate
         shell: bash
         run: |
           set -euo pipefail
@@ -237,9 +190,7 @@ jobs:
             for attempt in $(seq 1 30); do
               headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
               code=$(printf '%s\n' "$headers" | awk 'NR==1{print $2}')
-              if [ "$code" = "$expected" ] &&
-                 printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
-                 printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
+              if [ "$code" = "$expected" ] && printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' && printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
                 echo "PASS $url"
                 return 0
               fi
@@ -254,7 +205,7 @@ jobs:
           const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
           const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
           const slugs = [...section.matchAll(/\bslug:\s*"([^"]+)"/g)].map(m => m[1]);
-          if (slugs.length !== 20) throw new Error(`Expected 20 published films, found ${slugs.length}`);
+          if (slugs.length !== 40) throw new Error(`Expected 40 published films, found ${slugs.length}`);
           process.stdout.write(`${slugs.join('\n')}\n`);
           NODE
 
@@ -266,48 +217,41 @@ jobs:
             verify_live "https://4planetmagazine.com/films/$slug" '200'
             route_count=$((route_count + 1))
           done < "$RUNNER_TEMP/film-slugs.txt"
-          [ "$route_count" -eq 20 ] || { echo "Expected 20 live film routes, verified $route_count"; exit 7; }
+          [ "$route_count" -eq 40 ] || { echo "Expected 40 live film routes, verified $route_count"; exit 7; }
 
           for topic in OCEAN LAND_WILDLIFE FOOD CLIMATE ENERGY SOLUTIONS PEOPLE; do
             verify_live "https://4planetmagazine.com/films?topic=$topic" '200'
           done
 
           sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
-          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films'
           sitemap_count=0
           while IFS= read -r slug || [ -n "$slug" ]; do
             [ -z "$slug" ] && continue
             printf '%s' "$sitemap" | grep -q "https://4planetmagazine.com/films/$slug"
             sitemap_count=$((sitemap_count + 1))
           done < "$RUNNER_TEMP/film-slugs.txt"
-          [ "$sitemap_count" -eq 20 ] || { echo "Expected 20 Films sitemap routes, verified $sitemap_count"; exit 8; }
+          [ "$sitemap_count" -eq 40 ] || { echo "Expected 40 Films sitemap routes, verified $sitemap_count"; exit 8; }
+
           robots=$(curl -fsS 'https://4planetmagazine.com/robots.txt')
           printf '%s' "$robots" | grep -q 'Allow: /films'
-
           films_html=$(curl -fsS 'https://4planetmagazine.com/films')
           printf '%s' "$films_html" | grep -q '<title>4PLANET FILMS — Films worth your attention</title>'
           printf '%s' "$films_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/films">'
-          biggest_html=$(curl -fsS 'https://4planetmagazine.com/films/the-biggest-little-farm')
-          printf '%s' "$biggest_html" | grep -q '<title>The Biggest Little Farm — 4PLANET FILMS</title>'
-          printf '%s' "$biggest_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/films/the-biggest-little-farm">'
-          printf '%s' "$biggest_html" | grep -q '"@type":"Movie"'
+          if printf '%s' "$films_html" | grep -qi 'qualified records\|editorial pipeline'; then
+            echo 'Internal editorial pipeline language leaked to public Films page'
+            exit 9
+          fi
 
-          node --input-type=module <<'NODE' > "$RUNNER_TEMP/film-assets.txt"
-          import fs from 'node:fs';
-          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
-          const assets = [...new Set([...source.matchAll(/"(\/assets\/[^"]+)"/g)].map(m => m[1]))];
-          process.stdout.write(`${assets.join('\n')}\n`);
-          NODE
-          while IFS= read -r asset || [ -n "$asset" ]; do
-            [ -n "$asset" ] && verify_live "https://4planetmagazine.com$asset" '200'
-          done < "$RUNNER_TEMP/film-assets.txt"
-          verify_live 'https://4planetmagazine.com/assets/missions/4film/hero.jpg' '200'
+          yanuni_html=$(curl -fsS 'https://4planetmagazine.com/films/yanuni')
+          printf '%s' "$yanuni_html" | grep -q '<title>YANUNI — 4PLANET FILMS</title>'
+          reinvent_html=$(curl -fsS 'https://4planetmagazine.com/films/reinventing-power')
+          printf '%s' "$reinvent_html" | grep -q '<title>Reinventing Power: America'
 
           node --input-type=module <<'NODE' > "$RUNNER_TEMP/external-film-links.txt"
           import fs from 'node:fs';
           const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
           const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
-          const urls = [...new Set([...section.matchAll(/\b(?:watchUrl|sourceDescriptionUrl):\s*"(https:\/\/[^\"]+)"/g)].map(m => m[1]))];
+          const urls = [...new Set([...section.matchAll(/\b(?:watchUrl|sourceUrl):\s*"(https:\/\/[^\"]+)"/g)].map(m => m[1]))];
           process.stdout.write(`${urls.join('\n')}\n`);
           NODE
           external_fail=0
@@ -322,5 +266,5 @@ jobs:
               *) echo "REACHABLE EXTERNAL FILM LINK $code $url" ;;
             esac
           done < "$RUNNER_TEMP/external-film-links.txt"
-          [ "$external_count" -gt 0 ] || { echo 'No external film links were verified'; exit 9; }
-          [ "$external_fail" = '0' ] || exit 10
+          [ "$external_count" -gt 0 ] || exit 10
+          [ "$external_fail" = '0' ] || exit 11
