@@ -107,7 +107,7 @@ jobs:
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
             const incoming = new URL(request.url);
-            if (incoming.hostname === `www.\${APEX}`) { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.hostname === "www.4planetmagazine.com") { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
             if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
             const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
             if (!allowedEditorial(incoming.pathname) && !atlasEmbed) return blocked();
