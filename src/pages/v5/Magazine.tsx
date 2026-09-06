@@ -16,6 +16,7 @@ import "@/styles/magazine-home.css";
 import "@/styles/magazine-home-closure.css";
 import "@/styles/magazine-world.css";
 import "@/styles/magazine-films-gold-02.css";
+import "@/styles/magazine-films-premium-03.css";
 
 const MOSAIC_SIZES = ["lead", "portrait", "small", "wide", "compact", "small", "feature", "portrait", "small", "wide", "compact", "feature"] as const;
 const MOSAIC_COLORS = ["", "ink", "", "", "blue", "", "", "", "", "", "", ""] as const;
@@ -44,6 +45,16 @@ function safeImageFallback(event: React.SyntheticEvent<HTMLImageElement>) {
   const target = event.currentTarget;
   const fallback = img("heroEarth").src;
   if (target.src.endsWith(fallback)) return;
+  target.src = fallback;
+}
+
+function filmImageFallback(event: React.SyntheticEvent<HTMLImageElement>, fallback: string) {
+  const target = event.currentTarget;
+  if (!fallback || target.src === fallback || target.dataset.filmFallbackUsed === "true") {
+    target.style.visibility = "hidden";
+    return;
+  }
+  target.dataset.filmFallbackUsed = "true";
   target.src = fallback;
 }
 
@@ -130,7 +141,7 @@ function FilmStream() {
                   tabIndex={copy === 1 ? -1 : undefined}
                   onClick={() => trackEvent("films_home_rail_open", { film_slug: film.slug })}
                 >
-                  <img src={film.imageUrl} alt={copy === 1 ? "" : film.imageAlt} loading="lazy" decoding="async" onError={safeImageFallback} />
+                  <img src={film.imageUrl} alt={copy === 1 ? "" : film.imageAlt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={(event) => filmImageFallback(event, film.fallbackImageUrl)} />
                   <span>{film.focus} · {film.runtime}</span><strong>{film.title}</strong>
                 </Link>
               ))}
