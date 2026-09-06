@@ -1,11 +1,14 @@
 import type { ProjectProjection, WorkPackage, ZeroLossEvidence } from "./contracts";
 import type { AutonomousWorkPackage } from "./autonomousExecution";
+import type { AutomationPreflightEvidence } from "./automationPreflight";
 
 export const REAL_FACTORY_PROOF_VERSION = "REAL_4PLANET_PROOF_01" as const;
 
+type RealProofWorkPackage = AutonomousWorkPackage & { automationPreflight: AutomationPreflightEvidence };
+
 export interface RealProofCase {
   project: ProjectProjection;
-  pkg: AutonomousWorkPackage;
+  pkg: RealProofWorkPackage;
   family: "SPECIES_PROFILE" | "ECOSYSTEM_PLACE" | "ACTOR_PROFILE";
 }
 
@@ -25,6 +28,28 @@ function zeroLossForBoundedProof(currentTestSha: string, recoveryAuthority: stri
   };
 }
 
+function automationPreflightForBoundedProof(currentTestSha: string, targetPath: string, requirement: string): AutomationPreflightEvidence {
+  return {
+    requirement,
+    delete: {
+      candidatesConsidered: ["whole-surface redesign", "new product candidate", "single bounded change on the registered receiver"],
+      removedOrRejected: ["whole-surface redesign rejected as unnecessary", "new product candidate rejected because the registered TEST receiver already exists"],
+    },
+    simplify: {
+      beforeSteps: 4,
+      afterSteps: 2,
+      changes: ["reduce scope to one declared file", "reuse existing TEST receiver and existing Factory execution/evaluation loop"],
+    },
+    reuse: ["king/test registered receiver", "existing Factory GitHub TEST-write adapter", "existing independent evaluator and canonical writeback/readback"],
+    cycleBaseline: "Activation proof baseline is one bounded existing-file mutation followed by deterministic evidence and independent judgement; no new architecture is introduced.",
+    minimalLoop: ["mutate the single declared target on an ephemeral WP branch", "test/evaluate and accept, correct or reject before canonical writeback"],
+    automationJustification: "This is reversible A1 internal TEST work on an existing registered receiver and is specifically intended to prove the existing Factory loop without Founder execution burden.",
+    proofRefs: [`current-test:${currentTestSha}:${targetPath}`, `target:${targetPath}`],
+    rollbackRef: `rollback-to-current-test:${currentTestSha}:${targetPath}`,
+    learningWritebackRef: "FACTORY_INTERNAL:real-proof-learning",
+  };
+}
+
 function project(id: string, name: string, goal: string, current: string, gold: string, gap: string, authorityRef: string): ProjectProjection {
   return { id, name, northStar: "Produce a materially useful, truthful, premium 4PLANET TEST improvement through the autonomous Factory loop.", user: "A normal public 4PLANET visitor", goal, current, gold, gap, priority: "P0", authorityRefs: [authorityRef] };
 }
@@ -41,17 +66,20 @@ export function createRealProjectProofCases(currentTestSha: string, nowIso = new
   // Factory proof packages are ephemeral execution evidence, never product candidates.
   const speciesPath = "src/components/species/SpeciesEvidenceSeam.tsx";
   const speciesProject = project("SPECIES", "SPECIES Profile — human evidence seam", "Make scientific evidence easier for a normal human to understand and intentionally open without weakening provenance or uncertainty.", "The current shared evidence seam is truthful and deep, but disclosure rows rely on raw state labels and a visually suppressed native details marker.", "A small premium human-first improvement makes source rows unmistakably interactive while preserving every evidence/truth boundary.", "Improve disclosure affordance without adding dashboard density or claiming the overall SPECIES template is Human Gold.", authorityRef);
-  const speciesPkg = packageBase("factory-real-species-evidence-affordance-01", speciesProject.id, "SPECIES — make source evidence disclosure clearer for humans", speciesPath, "Clarify the expandable evidence-row affordance while preserving the existing source/provenance/uncertainty model.", ["Existing SpeciesEvidenceSeam behaviour and truth copy remain intact.", "Each source summary gains an explicit human-readable disclosure cue such as OPEN EVIDENCE or SOURCE DETAILS.", "No unsupported scientific or conservation claim is added.", "No overall SPECIES Human Gold claim is added.", "Mobile layout remains compact and accessible."], ["typecheck/build/contract CI", "draft TEST PR", "390 mobile rendered preview", "truth boundary preserved"], zeroLossForBoundedProof(currentTestSha, "#145 TEST KING SPECIES TOTAL RECOVERY", speciesPath, nowIso), nowIso) as AutonomousWorkPackage;
+  const speciesPkg = packageBase("factory-real-species-evidence-affordance-01", speciesProject.id, "SPECIES — make source evidence disclosure clearer for humans", speciesPath, "Clarify the expandable evidence-row affordance while preserving the existing source/provenance/uncertainty model.", ["Existing SpeciesEvidenceSeam behaviour and truth copy remain intact.", "Each source summary gains an explicit human-readable disclosure cue such as OPEN EVIDENCE or SOURCE DETAILS.", "No unsupported scientific or conservation claim is added.", "No overall SPECIES Human Gold claim is added.", "Mobile layout remains compact and accessible."], ["typecheck/build/contract CI", "draft TEST PR", "390 mobile rendered preview", "truth boundary preserved"], zeroLossForBoundedProof(currentTestSha, "#145 TEST KING SPECIES TOTAL RECOVERY", speciesPath, nowIso), nowIso) as RealProofWorkPackage;
+  speciesPkg.automationPreflight = automationPreflightForBoundedProof(currentTestSha, speciesPath, "Question whether SPECIES evidence disclosure needs anything beyond one clearer existing-row affordance; reject broader redesign and automate only the smallest reversible TEST change.");
   speciesPkg.autonomous = { kind: "GITHUB_TEST_WRITE", repository: "odinskogen-dev/4Planet.05", baseBranch: "king/test", expectedBaseSha: currentTestSha, targetPath: speciesPath, brief: "Make the existing Species evidence source rows obviously expandable to a normal person. Preserve all current provenance, refresh, uncertainty, rights, update and forbidden-inference content. The native details marker is suppressed with listStyle:none, so add a small explicit disclosure cue within each summary. Keep the visual language premium and quiet. Do not redesign the whole component and do not call the Species profile Gold.", sourceRefs: [speciesPath, "#145"], maxCorrectionAttempts: 1 };
 
   const bayPath = "public/ecosystem/bay-of-biscay/index.html";
   const bayProject = project("ORCA", "Bay of Biscay — accessible place experience", "Improve a real ecosystem Gold candidate for keyboard/mobile use while preserving corridor truth semantics.", "The current Bay page has a strong place-first monitoring story but no explicit skip-to-main-content keyboard affordance.", "The page keeps its current visual/narrative identity while gaining a proper skip link and focusable main destination.", "Add one accessibility improvement without turning the corridor into a migration path or changing ecological claims.", authorityRef);
-  const bayPkg = packageBase("factory-real-bay-accessibility-01", bayProject.id, "Bay of Biscay — add premium keyboard skip-to-content affordance", bayPath, "Close a real keyboard-accessibility gap on the existing Bay of Biscay TEST experience.", ["A keyboard-accessible skip link targets the main content.", "The skip link is visually unobtrusive until focused and fits the existing dark premium visual language.", "PILOT CORRIDOR ≠ MIGRATION TRACK meaning remains explicit.", "UNKNOWN survey-day/cost states remain unknown.", "No new ecological, survey or ORCA relationship claim is introduced."], ["build/contract CI", "draft TEST PR", "390 mobile rendered preview", "truth boundary preserved"], zeroLossForBoundedProof(currentTestSha, "#117 Ecosystems Gold + #147 ORCA/Bay recovery", bayPath, nowIso), nowIso) as AutonomousWorkPackage;
+  const bayPkg = packageBase("factory-real-bay-accessibility-01", bayProject.id, "Bay of Biscay — add premium keyboard skip-to-content affordance", bayPath, "Close a real keyboard-accessibility gap on the existing Bay of Biscay TEST experience.", ["A keyboard-accessible skip link targets the main content.", "The skip link is visually unobtrusive until focused and fits the existing dark premium visual language.", "PILOT CORRIDOR ≠ MIGRATION TRACK meaning remains explicit.", "UNKNOWN survey-day/cost states remain unknown.", "No new ecological, survey or ORCA relationship claim is introduced."], ["build/contract CI", "draft TEST PR", "390 mobile rendered preview", "truth boundary preserved"], zeroLossForBoundedProof(currentTestSha, "#117 Ecosystems Gold + #147 ORCA/Bay recovery", bayPath, nowIso), nowIso) as RealProofWorkPackage;
+  bayPkg.automationPreflight = automationPreflightForBoundedProof(currentTestSha, bayPath, "Question whether Bay accessibility needs a new interaction system; reject it and automate only one standard skip-to-content improvement on the existing page.");
   bayPkg.autonomous = { kind: "GITHUB_TEST_WRITE", repository: "odinskogen-dev/4Planet.05", baseBranch: "king/test", expectedBaseSha: currentTestSha, targetPath: bayPath, brief: "Add a real keyboard skip-to-content affordance to this existing self-contained Bay of Biscay HTML page. Give main a stable id, add a skip link at the start of body, and CSS that keeps it visually hidden/off-canvas until keyboard focus then presents it clearly in the existing premium dark/cyan visual system. Preserve ALL current text and especially PILOT CORRIDOR ≠ MIGRATION TRACK, schematic/not-to-scale wording, effort/observation separation and UNKNOWN cost/day states. Make no other redesign.", sourceRefs: [bayPath, "#117", "#147"], maxCorrectionAttempts: 1 };
 
   const actorPath = "src/pages/v5/ActorGold.tsx";
   const actorProject = project("ACTORS", "Actor Gold — relationship-state accessibility", "Make Actor relationship truth equally clear to assistive-technology users without changing relationship evidence states.", "Relationship state is visually shown as DIRECT DIALOGUE / VERIFIED PARTNER / PUBLIC RECORD but the badge has no explicit semantic label for screen readers.", "Relationship truth is communicated as a labelled status while keeping the existing visual badge and underlying actor state untouched.", "Strengthen accessibility and truth clarity without implying a new partnership, endorsement or outcome.", authorityRef);
-  const actorPkg = packageBase("factory-real-actor-relationship-a11y-01", actorProject.id, "Actor Gold — label relationship status explicitly for assistive technology", actorPath, "Make the existing evidence-bearing relationship badge semantically explicit without changing its visual/state logic.", ["RelationshipMark keeps the existing DIRECT DIALOGUE / VERIFIED PARTNER / PUBLIC RECORD mapping.", "The rendered relationship status has an explicit accessible label such as Relationship status: PUBLIC RECORD.", "No actor relationship state is upgraded or inferred.", "No partnership, endorsement or outcome claim is introduced.", "Existing Actor profile structure and visual identity remain unchanged."], ["typecheck/build/contract CI", "draft TEST PR", "390 mobile rendered preview", "relationship truth preserved"], zeroLossForBoundedProof(currentTestSha, "#221 Actor Gold torture test + #152 Actor recovery", actorPath, nowIso), nowIso) as AutonomousWorkPackage;
+  const actorPkg = packageBase("factory-real-actor-relationship-a11y-01", actorProject.id, "Actor Gold — label relationship status explicitly for assistive technology", actorPath, "Make the existing evidence-bearing relationship badge semantically explicit without changing its visual/state logic.", ["RelationshipMark keeps the existing DIRECT DIALOGUE / VERIFIED PARTNER / PUBLIC RECORD mapping.", "The rendered relationship status has an explicit accessible label such as Relationship status: PUBLIC RECORD.", "No actor relationship state is upgraded or inferred.", "No partnership, endorsement or outcome claim is introduced.", "Existing Actor profile structure and visual identity remain unchanged."], ["typecheck/build/contract CI", "draft TEST PR", "390 mobile rendered preview", "relationship truth preserved"], zeroLossForBoundedProof(currentTestSha, "#221 Actor Gold torture test + #152 Actor recovery", actorPath, nowIso), nowIso) as RealProofWorkPackage;
+  actorPkg.automationPreflight = automationPreflightForBoundedProof(currentTestSha, actorPath, "Question whether Actor relationship accessibility requires data or visual changes; reject both and automate only the missing semantic label on the existing status badge.");
   actorPkg.autonomous = { kind: "GITHUB_TEST_WRITE", repository: "odinskogen-dev/4Planet.05", baseBranch: "king/test", expectedBaseSha: currentTestSha, targetPath: actorPath, brief: "Make one surgical accessibility/truth improvement only: keep RelationshipMark's existing state-to-label mapping exactly, but give the visible badge an explicit accessible semantic label (for example aria-label=`Relationship status: ${label}`). Do not alter actor data, publication state, copy, visual hierarchy, routes, relationship evidence or any partnership/endorsement claims.", sourceRefs: [actorPath, "#221", "#152"], maxCorrectionAttempts: 1 };
 
   return [{ project: speciesProject, pkg: speciesPkg, family: "SPECIES_PROFILE" }, { project: bayProject, pkg: bayPkg, family: "ECOSYSTEM_PLACE" }, { project: actorProject, pkg: actorPkg, family: "ACTOR_PROFILE" }];
