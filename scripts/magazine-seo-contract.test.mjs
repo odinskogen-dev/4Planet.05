@@ -8,6 +8,7 @@ const editorial = read("src/content/magazineEditorial.ts");
 const operating = read("src/content/magazineOperating.ts");
 const engine = read("src/content/magazineEngine.ts");
 const stories = read("src/content/stories.ts");
+const films = read("src/content/magazineFilms.ts");
 const router = read("src/routes/router.tsx");
 const story = read("src/pages/v5/StoryArticle.tsx");
 const storyRecord = read("src/pages/v5/MagazineStoryRecord.tsx");
@@ -158,4 +159,15 @@ test("search foundation keeps sitemap, RSS, static route metadata and canonical 
   assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
   assert.match(seo, /og:site_name/);
   assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every story route");
+});
+
+test("Films routes have fail-closed static SEO and share metadata", () => {
+  assert.match(films, /const published: FilmRecord\[\] = \[/);
+  assert.match(prerender, /function readPublishedFilms\(\)/);
+  assert.match(prerender, /expected 20 published films/);
+  assert.ok(prerender.includes('writeRoute("/films"'), "prerender must emit /films");
+  assert.ok(prerender.includes('writeRoute(route, {'), "prerender must emit film detail routes");
+  assert.match(prerender, /`\/films\/\$\{film\.slug\}`/);
+  assert.match(prerender, /"@type": "Movie"/);
+  assert.match(prerender, /\/assets\/missions\/4film\/hero\.jpg/);
 });

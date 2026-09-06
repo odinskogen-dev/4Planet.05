@@ -16,9 +16,21 @@
 .mag-film-card[data-accent="yellow"], .mag-film-related-card[data-accent="yellow"], .mag-film-home-card[data-accent="yellow"] { --film-accent:#f1df52; --film-accent-ink:#151309; }
 .mag-film-card[data-accent="orange"], .mag-film-related-card[data-accent="orange"], .mag-film-home-card[data-accent="orange"] { --film-accent:#ff7658; --film-accent-ink:#150b06; }
 .mag-film-card[data-accent="pink"], .mag-film-related-card[data-accent="pink"], .mag-film-home-card[data-accent="pink"] { --film-accent:#ff669f; --film-accent-ink:#150711; }
-.mag-film-card[data-accent="violet"], .mag-film-related-card[data-accent="violet"], .mag-film-home-card[data-accent="violet"] { --film-accent:#8878ff; --film-accent-ink:#fff; }
+.mag-film-card[data-accent="violet"], .mag-film-related-card[data-accent="violet"], .mag-film-home-card[data-accent="violet"] { --film-accent:#8878ff; --film-accent-ink:#080808; }
 .mag-film-card[data-accent="cyan"], .mag-film-related-card[data-accent="cyan"], .mag-film-home-card[data-accent="cyan"] { --film-accent:#63dcff; --film-accent-ink:#071018; }
 .mag-film-card[data-accent="ink"], .mag-film-related-card[data-accent="ink"], .mag-film-home-card[data-accent="ink"] { --film-accent:#07182e; --film-accent-ink:#fff; }
+
+.mag-film-card a:focus-visible,
+.mag-film-related-card:focus-visible,
+.mag-film-filter a:focus-visible,
+.mag-film-watch:focus-visible,
+.mag-film-source:focus-visible,
+.mag-film-back:focus-visible,
+.mag-film-next a:focus-visible,
+.mag-film-home-stream a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
 
 @media (hover:hover) {
   .mag-film-card:hover {

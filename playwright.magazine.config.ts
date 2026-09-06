@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: /magazine-(world-class|article-sprint|public-launch)\.spec\.ts/,
+  testMatch: /magazine-(world-class|article-sprint|public-launch|films-gold)\.spec\.ts/,
   timeout: 120_000,
   expect: { timeout: 12_000 },
   fullyParallel: false,
@@ -27,6 +27,8 @@ export default defineConfig({
     { name: "mag-android-412", use: { ...devices["Pixel 5"], viewport: { width: 412, height: 915 }, hasTouch: true, isMobile: true } },
     { name: "mag-mobile-430", use: { ...devices["Desktop Chrome"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
     { name: "mag-mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
+    { name: "mag-mobile-375", use: { ...devices["Desktop Chrome"], viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true } },
+    { name: "mag-mobile-320", use: { ...devices["Desktop Chrome"], viewport: { width: 320, height: 800 }, hasTouch: true, isMobile: true } },
     { name: "mag-webkit-430", use: { ...devices["iPhone 14 Pro Max"], viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true } },
     { name: "mag-webkit-390", use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } },
   ],

@@ -20,6 +20,26 @@ const topics = readTopics();
 const templates = readArticleTemplates();
 const PUBLIC_LAUNCH_DATE = "2026-08-24";
 
+function readPublishedFilms() {
+  const source = fs.readFileSync(path.join(root, "src/content/magazineFilms.ts"), "utf8");
+  const section = source.split("const published: FilmRecord[] = [")[1]?.split("];\n\nconst research: FilmRecord[] = [")[0] ?? "";
+  const blocks = section.split(/\n  \},\n  \{/).map((block) => block.replace(/^\s*\{/, "").replace(/\}\s*$/, ""));
+  const pickString = (block, key) => new RegExp(`\\b${key}:\\s*\"([^\"]+)\"`).exec(block)?.[1];
+  const films = blocks.map((block) => ({
+    slug: pickString(block, "slug"),
+    title: pickString(block, "title"),
+    year: Number(/\byear:\s*(\d+)/.exec(block)?.[1] || 0),
+    focus: pickString(block, "focus"),
+    director: pickString(block, "director"),
+    runtime: pickString(block, "runtime"),
+    description: pickString(block, "description"),
+  })).filter((film) => film.slug && film.title && film.year && film.director && film.runtime && film.description);
+  if (films.length !== 20) throw new Error(`Magazine Films SEO gate: expected 20 published films, recovered ${films.length}.`);
+  return films;
+}
+
+const films = readPublishedFilms();
+
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
@@ -96,6 +116,46 @@ for (const page of informationPages) {
   writeRoute(page.route, { ...page, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, jsonLd: { "@context": "https://schema.org", "@type": page.route.endsWith("archive") ? "CollectionPage" : "WebPage", name: page.title, description: page.description, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
+const filmsCanonical = absoluteUrl(magazineOrigin, "/films");
+const filmsImage = absoluteUrl(magazineOrigin, "/assets/missions/4film/hero.jpg");
+writeRoute("/films", {
+  title: "4PLANET FILMS — Films worth your attention",
+  description: "A curated selection of documentary films about the living planet, people, systems, pressure and solutions — linked back to the original filmmakers and distributors.",
+  canonical: filmsCanonical,
+  image: filmsImage,
+  imageAlt: "4PLANET FILMS — documentary storytelling for a living planet",
+  type: "website",
+  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } },
+});
+
+for (const film of films) {
+  const route = `/films/${film.slug}`;
+  const canonical = absoluteUrl(magazineOrigin, route);
+  const minutes = Number.parseInt(film.runtime, 10);
+  writeRoute(route, {
+    title: `${film.title} — 4PLANET FILMS`,
+    description: film.description,
+    canonical,
+    image: filmsImage,
+    imageAlt: `${film.title} — 4PLANET FILMS contextual editorial image`,
+    type: "video.movie",
+    section: film.focus,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      name: film.title,
+      description: film.description,
+      url: canonical,
+      image: [filmsImage],
+      dateCreated: String(film.year),
+      duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined,
+      director: { "@type": "Person", name: film.director },
+      genre: "Documentary",
+      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET FILMS", url: filmsCanonical },
+    },
+  });
+}
+
 for (const story of stories) {
   const feature = features[story.slug];
   const imageKey = feature?.hero || story.image;
@@ -148,4 +208,4 @@ for (const record of foundingEdition.items) {
   writeRoute(route, { title: `${record.title} — Working record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — controlled working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
 }
 
-console.log(`Prerendered Magazine metadata for ${stories.length} stories + ${signals.length} signals + ${topics.length} topics + ${templates.length} series + ${informationPages.length} public utility pages + ${foundingEdition.items.length} noindex working records at canonical ${magazineOrigin}`);
+console.log(`Prerendered Magazine metadata for ${films.length} Films + ${stories.length} stories + ${signals.length} signals + ${topics.length} topics + ${templates.length} series + ${informationPages.length} public utility pages + ${foundingEdition.items.length} noindex working records at canonical ${magazineOrigin}`);
