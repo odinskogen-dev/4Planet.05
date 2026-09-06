@@ -19,6 +19,13 @@ test("aiText still fails closed for arbitrary non-text Workers AI payloads", () 
   assert.throws(() => aiText({ result: { metadata: "not a candidate" } }), /no usable text response/);
 });
 
+test("strict JSON maker call disables model thinking", async () => {
+  const source = await readFile(new URL("./autonomousExecution.ts", import.meta.url), "utf8");
+  assert.match(source, /chat_template_kwargs:\s*\{\s*enable_thinking:\s*false\s*\}/);
+  assert.match(source, /response_format:\s*\{\s*type:\s*"json_object"\s*\}/);
+  assert.match(source, /const DEFAULT_MODEL = "@cf\/zai-org\/glm-4\.7-flash";/);
+});
+
 test("autonomous execution never treats pending CI as a corrective-edit signal", async () => {
   const source = await readFile(new URL("./autonomousExecution.ts", import.meta.url), "utf8");
   assert.match(source, /const CHECK_POLL_ATTEMPTS = 8;/);
