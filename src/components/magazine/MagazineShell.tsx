@@ -42,7 +42,7 @@ function keepMagazineWorldIsolated() {
       anchor.removeAttribute("rel");
       return;
     }
-    if (!raw.startsWith("/") || raw.startsWith("/magazine") || raw === "/rss.xml" || raw.startsWith("/assets/")) return;
+    if (!raw.startsWith("/") || raw.startsWith("/magazine") || raw.startsWith("/films") || raw === "/rss.xml" || raw.startsWith("/assets/")) return;
     anchor.setAttribute("href", `https://4planet.org${raw}`);
     anchor.setAttribute("target", "_blank");
     anchor.setAttribute("rel", "noreferrer");
@@ -133,7 +133,7 @@ export function MagazineShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="mag-world-primary-nav" aria-label="Magazine primary navigation">
-          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
+          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/films">FILMS</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
         </nav>
       </header>
 
@@ -142,10 +142,10 @@ export function MagazineShell({ children }: { children: ReactNode }) {
       <footer className="mag-world-footer">
         <div className="mag-world-footer-statement"><span>4PLANET MAGAZINE</span><h2>Stories for people who want the future to work.</h2><p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p></div>
         <div className="mag-world-footer-grid">
-          <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
+          <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/films">4PLANET Films</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
           <div><p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}</div>
           <div><p>EDITORIAL</p><Link to="/magazine/about">About</Link><Link to="/magazine/sources">Sources & method</Link><Link to="/magazine/corrections">Corrections</Link><Link to="/magazine/privacy">Privacy</Link><a href="/rss.xml">RSS</a></div>
-          <div><p>DISCOVER</p><Link to="/magazine/atlas">4PLANET Atlas</Link><Link to="/magazine/series/from-the-field">From the Field</Link><Link to="/magazine/series/the-living-world">The Living World</Link><Link to="/magazine/series/what-works">What Works</Link></div>
+          <div><p>DISCOVER</p><Link to="/films">4PLANET Films</Link><Link to="/magazine/atlas">4PLANET Atlas</Link><Link to="/magazine/series/from-the-field">From the Field</Link><Link to="/magazine/series/the-living-world">The Living World</Link><Link to="/magazine/series/what-works">What Works</Link></div>
         </div>
         <div className="mag-world-footer-bottom"><span>4PLANET_ FOR A LIVING PLANET</span><span>Sources, uncertainty and corrections belong in the product.</span></div>
       </footer>
