@@ -24,3 +24,7 @@ After certification, continue bounded authorised internal 4PLANET production und
 ## Activation execution receipt — 2026-09-04
 
 Founder-authorised bounded ACTIVE boot dispatch requested against TEST KING `2e58a23295f0d1892e6faf0cb497d407605c7304`. This receipt authorises exactly one activation cohort on the resulting exact Factory build. All entry gates above remain fail-closed at runtime; this receipt grants no LIVE, Canon, external-send or spend authority.
+
+## Activation execution receipt — 2026-09-06
+
+Founder-authorised A1 bounded Factory production dispatch requested against current TEST KING `ce532830640817f83c11923bdfb4c394f222baad`. Use only the existing `factory/symphony-runtime-v01` activation/runtime path and exactly one bounded activation cohort. All entry gates above remain fail-closed at runtime; this receipt grants no LIVE/main, Canon, external-send/share/submit, payment/spend, destructive Gold, legal/IP/equity or CNS/BRAIN cutover authority.
