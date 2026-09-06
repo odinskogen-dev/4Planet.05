@@ -277,14 +277,26 @@ jobs:
             -H "content-type: application/json" \
             "$BASE_URL/__factory/activation-proof/start")"
           cat factory-activation-start.json
+
+          if [[ "$HTTP_STATUS" == "409" ]] \
+            && jq -e '.error == "ACTIVATION_PREFLIGHT_BLOCKED"' factory-activation-start.json >/dev/null \
+            && jq -e '[.preflight.authority[]?.code] | length > 0 and all(. == "RECEIVER_SINGLE_WRITER_CONFLICT")' factory-activation-start.json >/dev/null; then
+            echo "Local receiver conflict parked. Factory deployment/canary remain valid; no bypass branch, provider reservation or second writer created."
+            echo "production_started=false" >> "$GITHUB_OUTPUT"
+            echo "parked=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
             echo "Bounded activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
             exit 1
           fi
           jq -e '.ok == true' factory-activation-start.json >/dev/null
+          echo "production_started=true" >> "$GITHUB_OUTPUT"
+          echo "parked=false" >> "$GITHUB_OUTPUT"
 
       - name: Poll real production, certify fresh evidence and activate
-        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true' && steps.proof_start.outputs.production_started == 'true'
         id: activate
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
@@ -318,6 +330,21 @@ jobs:
             exit 1
           fi
           echo "active=true" >> "$GITHUB_OUTPUT"
+
+      - name: Record locally parked package without global Factory failure
+        if: steps.proof_start.outputs.parked == 'true'
+        shell: bash
+        run: |
+          jq '{
+            active:false,
+            proofComplete:false,
+            parked:true,
+            localCapability:"PRODUCT_MUTATION_TO_CURRENT_RECEIVER",
+            reason:.error,
+            preflight:.preflight,
+            boundaries:{live:false,humanGoldFounderOnly:true,canonPromotion:false,outreach:false,automaticSpend:false}
+          }' factory-activation-start.json > factory-active-certification.json
+          echo "Blocked product mutation remains parked locally. Unrelated SHADOW source/browser production evidence remains valid."
 
       - name: Upload immutable Factory certification evidence
         if: always()
