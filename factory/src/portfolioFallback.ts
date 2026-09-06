@@ -4,10 +4,11 @@ const SHA40 = /^[0-9a-f]{40}$/i;
 
 export const PORTFOLIO_FALLBACK_AUTHORITY = "FOUNDER_ORDER:4PLANET_AUTONOMOUS_VALUE_CLOSURE_02";
 export const PORTFOLIO_FALLBACK_CONTROL = "ISSUE_273:PORTFOLIO_LEARNING_FACTORY";
+export const PORTFOLIO_FALLBACK_LEASE = "CONCURRENCY_LAW_GIGA01:LANE_D:OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER";
 
 function key(sha: string): string {
   const clean = sha.trim().toLowerCase();
-  if (!SHA40.test(clean)) throw new Error("PORTFOLIO_FALLBACK_TEST_SHA_INVALID");
+  if (!SHA40.test(clean)) throw new Error("PORTFOLIO_FALLBACK_SHA_INVALID");
   return clean.slice(0, 12);
 }
 
@@ -23,14 +24,14 @@ function project(
   return {
     id,
     name,
-    northStar: "Advance a real 4PLANET proof while a separate mutable receiver is locally parked, without creating a second writer or bypass branch.",
+    northStar: "Advance the current Conductor-authorised Great Barrier Reef transfer proof while a separate mutable receiver is locally parked, without creating a second writer, product line or bypass branch.",
     user: "A normal public 4PLANET visitor",
     goal,
     current,
     gold,
     gap,
     priority,
-    authorityRefs: [PORTFOLIO_FALLBACK_AUTHORITY, PORTFOLIO_FALLBACK_CONTROL],
+    authorityRefs: [PORTFOLIO_FALLBACK_AUTHORITY, PORTFOLIO_FALLBACK_CONTROL, PORTFOLIO_FALLBACK_LEASE],
   };
 }
 
@@ -52,7 +53,7 @@ function sourcePackage(input: {
     title: input.title,
     section: "RESEARCH_DATA",
     priority: input.priority,
-    goalLink: "4PLANET AUTONOMOUS VALUE CLOSURE 02 — second-project dispatch and source-bounded transfer proof",
+    goalLink: "CONDUCTOR LANE D — OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER",
     gapClosed: `Re-verify ${input.sourceLabel} from the deployed Factory before any new transfer claim or product mutation is promoted.`,
     deliverables: [
       `Bounded current-source reachability evidence for ${input.sourceLabel}`,
@@ -76,7 +77,7 @@ function sourcePackage(input: {
     run: {
       runId: `portfolio-value-closure-${input.id}`,
       attemptId: "01",
-      idempotencyKey: `portfolio-fallback:${input.id}:${input.exactTestSha}`,
+      idempotencyKey: `portfolio-fallback:${input.id}:${input.exactTestSha}:${input.exactFactorySha}`,
       inputStateHash: `factory=${input.exactFactorySha};test=${input.exactTestSha};source=${input.targetUrl}`,
       expectedBaseSha: input.exactTestSha,
       workerId: "portfolio-fallback-research-data",
@@ -90,7 +91,7 @@ function sourcePackage(input: {
       maxBrowserCalls: 0,
       maxQueueRetries: 3,
     },
-    learningQuestion: "Can the Factory keep producing bounded evidence on the next highest-value conflict-free project while a separate TEST receiver remains writer-blocked?",
+    learningQuestion: "Can the Factory keep producing bounded evidence on the current Conductor-authorised GBR transfer while a separate TEST receiver remains writer-blocked?",
     createdAt: input.createdAt,
     estimatedValue: 7,
     criticalPath: 8,
@@ -111,7 +112,7 @@ export function createPortfolioFallbackQueue(
   createdAt = new Date().toISOString(),
 ): { projects: ProjectProjection[]; packages: WorkPackage[] } {
   const testKey = key(exactTestSha);
-  if (!SHA40.test(exactFactorySha.trim().toLowerCase())) throw new Error("PORTFOLIO_FALLBACK_FACTORY_SHA_INVALID");
+  const factoryKey = key(exactFactorySha);
 
   const gbr = project(
     "PLANET_GBR_TRANSFER_02",
@@ -119,22 +120,13 @@ export function createPortfolioFallbackQueue(
     "Prove the Oslofjord PlanetProof contract transfers to a fundamentally different marine system without inventing a second renderer or flattening source scale.",
     "The shared PlanetProof schema and eight-question reading grammar are seeded with AIMS and NOAA Coral Reef Watch evidence; product mutation is not legal while the sole TEST receiver has another writer.",
     "A source-bounded transfer pack whose current primary evidence is machine-reverified before later route/browser/Human Gold work.",
-    "Use the conflict-free read-only lane to verify current primary evidence now; preserve OPEN relationship/action fields until separate evidence resolves them.",
+    "Use the conflict-free read-only Lane D scope to verify current primary evidence now; preserve OPEN relationship/action fields until separate evidence resolves them.",
     "P0",
-  );
-  const amazonia = project(
-    "PLANET_AMAZONIA_TRANSFER_03",
-    "PLANET Proof 03 — Amazonia transfer",
-    "Prepare the third PlanetProof transfer with source-bounded land-cover/fire evidence without creating a second Planet architecture.",
-    "Amazonia is seeded behind GBR with MapBiomas Amazonia and NASA FIRMS source contracts; no product mutation is authorised by this fallback lane.",
-    "Current primary transfer sources are machine-reverified and ready for the later governed product-transfer step.",
-    "Only perform read-only source proof after the higher-priority GBR source checks are terminal.",
-    "P1",
   );
 
   const packages = [
     sourcePackage({
-      id: `portfolio-gbr-aims-source-${testKey}`,
+      id: `portfolio-gbr-aims-source-${testKey}-${factoryKey}`,
       projectId: gbr.id,
       title: "GBR transfer — verify current AIMS 2025–26 condition source",
       sourceLabel: "Australian Institute of Marine Science Great Barrier Reef Annual Summary 2025–26",
@@ -146,7 +138,7 @@ export function createPortfolioFallbackQueue(
       createdAt,
     }),
     sourcePackage({
-      id: `portfolio-gbr-noaa-crw-source-${testKey}`,
+      id: `portfolio-gbr-noaa-crw-source-${testKey}-${factoryKey}`,
       projectId: gbr.id,
       title: "GBR transfer — verify NOAA Coral Reef Watch heat-stress source",
       sourceLabel: "NOAA Coral Reef Watch Daily 5 km heat-stress monitoring",
@@ -157,21 +149,9 @@ export function createPortfolioFallbackQueue(
       priority: "P0",
       createdAt,
     }),
-    sourcePackage({
-      id: `portfolio-amazonia-mapbiomas-source-${testKey}`,
-      projectId: amazonia.id,
-      title: "Amazonia transfer — verify MapBiomas Amazonia collection source",
-      sourceLabel: "MapBiomas Amazonia Collection",
-      targetUrl: "https://amazonia.mapbiomas.org/en/en/mapbiomas-amazonia-collection/",
-      allowedHost: "amazonia.mapbiomas.org",
-      exactTestSha,
-      exactFactorySha,
-      priority: "P1",
-      createdAt,
-    }),
   ];
 
-  return { projects: [gbr, amazonia], packages };
+  return { projects: [gbr], packages };
 }
 
 function record(value: unknown): Record<string, unknown> | undefined {
