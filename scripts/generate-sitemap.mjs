@@ -11,8 +11,16 @@ const signals = readSignals();
 const topics = readTopics();
 const templates = readArticleTemplates();
 
+function readPublishedFilmSlugs() {
+  const source = fs.readFileSync(path.join(root, "src/content/magazineFilms.ts"), "utf8");
+  const publishedSection = source.split("const published: FilmRecord[] = [")[1]?.split("];\n\nconst research: FilmRecord[] = [")[0] ?? "";
+  const slugs = [...publishedSection.matchAll(/\bslug:\s*"([^"]+)"/g)].map((match) => match[1]);
+  if (slugs.length === 0) throw new Error("Magazine Films sitemap gate: no published films recovered from canonical registry.");
+  return [...new Set(slugs)];
+}
+
 const publicRoutes = ["/", "/domains", "/missions", "/living-systems", "/atlas", "/species", "/impact", "/about", "/privacy", "/join"];
-const publishedFilmSlugs = ["yanuni", "the-territory", "seaspiracy", "chasing-coral", "cowspiracy", "kiss-the-ground", "my-octopus-teacher", "a-plastic-ocean", "common-ground", "sea-of-shadows"];
+const publishedFilmSlugs = readPublishedFilmSlugs();
 const magazineStaticRoutes = [
   "/magazine",
   "/films",
@@ -51,8 +59,8 @@ writeSitemap("magazine-sitemap.xml", magazineOrigin, magazineRoutes);
 const now = Date.now();
 const newsStories = stories.filter((story) => {
   if (!story.publishedAt) return false;
-  const published = Date.parse(story.publishedAt);
-  return Number.isFinite(published) && published <= now && now - published <= 48 * 60 * 60 * 1000;
+  const publishedAt = Date.parse(story.publishedAt);
+  return Number.isFinite(publishedAt) && publishedAt <= now && now - publishedAt <= 48 * 60 * 60 * 1000;
 });
 const newsUrls = newsStories.map((story) => `  <url>\n    <loc>${escapeXml(`${magazineOrigin}/magazine/${story.slug}`)}</loc>\n    <news:news>\n      <news:publication><news:name>4PLANET MAGAZINE</news:name><news:language>en</news:language></news:publication>\n      <news:publication_date>${escapeXml(story.publishedAt)}</news:publication_date>\n      <news:title>${escapeXml(story.title)}</news:title>\n    </news:news>\n  </url>`).join("\n");
 fs.writeFileSync(path.join(publicDir, "news-sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsUrls}\n</urlset>\n`, "utf8");
@@ -67,4 +75,4 @@ fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
 const magazineRobots = `User-agent: *\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "magazine-robots.txt"), magazineRobots, "utf8");
 
-console.log(`Generated public sitemap (${publicRoutes.length} URLs @ ${publicOrigin}); Magazine sitemap (${magazineRoutes.length} URLs @ ${magazineOrigin}); News sitemap (${newsStories.length} eligible stories); RSS (${stories.length} stories + ${signals.length} signals).`);
+console.log(`Generated public sitemap (${publicRoutes.length} URLs @ ${publicOrigin}); Magazine sitemap (${magazineRoutes.length} URLs @ ${magazineOrigin}, ${publishedFilmSlugs.length} Films); News sitemap (${newsStories.length} eligible stories); RSS (${stories.length} stories + ${signals.length} signals).`);

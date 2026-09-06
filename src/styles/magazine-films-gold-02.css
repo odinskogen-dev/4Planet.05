@@ -1,0 +1,267 @@
+/* 4PLANET FILMS — GOLD 02 closure layer.
+   Additive override over the accepted Films 01 direction: denser mobile discovery,
+   deterministic Magazine colour-on-interaction, Films identity, related discovery and home rail. */
+
+.mag-world-primary-nav a[aria-current="page"]::after { right: 0; }
+.mag-world[data-mag-section="films"] .mag-world-masthead { letter-spacing: -.06em; }
+
+.mag-film-card,
+.mag-film-related-card,
+.mag-film-home-card {
+  --film-accent: #315dff;
+  --film-accent-ink: #fff;
+}
+.mag-film-card[data-accent="blue"], .mag-film-related-card[data-accent="blue"], .mag-film-home-card[data-accent="blue"] { --film-accent:#315dff; --film-accent-ink:#fff; }
+.mag-film-card[data-accent="green"], .mag-film-related-card[data-accent="green"], .mag-film-home-card[data-accent="green"] { --film-accent:#42ef7c; --film-accent-ink:#07110b; }
+.mag-film-card[data-accent="yellow"], .mag-film-related-card[data-accent="yellow"], .mag-film-home-card[data-accent="yellow"] { --film-accent:#f1df52; --film-accent-ink:#151309; }
+.mag-film-card[data-accent="orange"], .mag-film-related-card[data-accent="orange"], .mag-film-home-card[data-accent="orange"] { --film-accent:#ff7658; --film-accent-ink:#150b06; }
+.mag-film-card[data-accent="pink"], .mag-film-related-card[data-accent="pink"], .mag-film-home-card[data-accent="pink"] { --film-accent:#ff669f; --film-accent-ink:#150711; }
+.mag-film-card[data-accent="violet"], .mag-film-related-card[data-accent="violet"], .mag-film-home-card[data-accent="violet"] { --film-accent:#8878ff; --film-accent-ink:#fff; }
+.mag-film-card[data-accent="cyan"], .mag-film-related-card[data-accent="cyan"], .mag-film-home-card[data-accent="cyan"] { --film-accent:#63dcff; --film-accent-ink:#071018; }
+.mag-film-card[data-accent="ink"], .mag-film-related-card[data-accent="ink"], .mag-film-home-card[data-accent="ink"] { --film-accent:#07182e; --film-accent-ink:#fff; }
+
+@media (hover:hover) {
+  .mag-film-card:hover {
+    background: var(--film-accent) !important;
+    color: var(--film-accent-ink) !important;
+  }
+  .mag-film-card:hover .mag-film-card-index,
+  .mag-film-card:hover .mag-film-meta,
+  .mag-film-card:hover .mag-film-card-copy > p,
+  .mag-film-card:hover .mag-film-card-foot span {
+    color: color-mix(in srgb, var(--film-accent-ink) 78%, transparent) !important;
+  }
+  .mag-film-related-card:hover,
+  .mag-film-home-card:hover {
+    background: var(--film-accent);
+    color: var(--film-accent-ink);
+  }
+}
+
+.mag-film-detail-media-wrap { margin: 0; }
+.mag-film-detail-media-wrap > figcaption {
+  padding: 10px 0 0;
+  font: 500 8px/1.5 'Fragment Mono', monospace;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: rgba(8,8,8,.48);
+}
+.mag-film-availability {
+  margin-top: 32px !important;
+  padding: 18px 0;
+  border-top: 1px solid rgba(8,8,8,.16);
+  border-bottom: 1px solid rgba(8,8,8,.16);
+  font-size: 12px !important;
+}
+.mag-film-availability strong {
+  font: 600 8px/1 'Fragment Mono', monospace;
+  letter-spacing: .12em;
+}
+
+.mag-film-related {
+  padding: clamp(72px, 9vw, 132px) 0;
+  border-bottom: 1px solid #080808;
+}
+.mag-film-related > header {
+  display: grid;
+  grid-template-columns: .45fr 1.55fr;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 38px;
+}
+.mag-film-related > header h2 {
+  margin: 0;
+  font: 500 clamp(42px, 6vw, 82px)/.9 'Instrument Sans', sans-serif;
+  letter-spacing: -.055em;
+}
+.mag-film-related > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #080808;
+  border-left: 1px solid #080808;
+}
+.mag-film-related-card {
+  min-width: 0;
+  padding: 0 0 20px;
+  border-right: 1px solid #080808;
+  border-bottom: 1px solid #080808;
+  transition: background-color .18s ease, color .18s ease;
+}
+.mag-film-related-media {
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background:#080808;
+  border-bottom:1px solid #080808;
+}
+.mag-film-related-media img,
+.mag-film-related-media .mag-film-image-fallback { width:100%;height:100%;object-fit:cover;display:block; }
+.mag-film-related-card > span,
+.mag-film-related-card > strong,
+.mag-film-related-card > small { display:block; margin-left:18px; margin-right:18px; }
+.mag-film-related-card > span { margin-top:16px; font:600 8px/1.35 'Fragment Mono',monospace; letter-spacing:.09em; opacity:.62; }
+.mag-film-related-card > strong { margin-top:12px; font:500 clamp(24px,2.6vw,38px)/.96 'Instrument Sans',sans-serif; letter-spacing:-.04em; }
+.mag-film-related-card > small { margin-top:18px; font:500 8px/1.3 'Fragment Mono',monospace; letter-spacing:.08em; opacity:.55; }
+
+/* Magazine home → Films discovery. Uses the existing doubled horizontal stream primitive. */
+.mag-film-home-stream {
+  width: min(1680px,100%);
+  margin: 0 auto;
+  padding: clamp(54px,7vw,108px) 0 clamp(60px,8vw,118px);
+  border-top: 1px solid var(--mw-ink);
+  border-bottom: 1px solid var(--mw-ink);
+  background: var(--mw-paper);
+  color: var(--mw-ink);
+  overflow: hidden;
+}
+.mag-film-home-stream-head {
+  margin: 0 clamp(18px,3.8vw,64px) 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mw-ink);
+  display: grid;
+  grid-template-columns: 1fr minmax(250px,480px);
+  gap: 30px;
+  align-items: end;
+}
+.mag-film-home-stream-head h2 {
+  margin: 10px 0 0;
+  font-size: clamp(44px,6.6vw,92px);
+  line-height:.88;
+  letter-spacing:-.06em;
+  font-weight:570;
+}
+.mag-film-home-stream-head > div:last-child { display:grid; gap:18px; }
+.mag-film-home-stream-head > div:last-child p { margin:0; max-width:470px; color:var(--mw-soft); font-size:14px; line-height:1.5; }
+.mag-film-home-stream-head > div:last-child a { width:max-content; padding-bottom:5px; border-bottom:1px solid currentColor; font-size:9px; font-weight:650; letter-spacing:.13em; }
+.mag-film-home-stream .mag-story-stream-viewport {
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+}
+.mag-film-home-stream .mag-story-stream-viewport::-webkit-scrollbar { display:none; }
+.mag-film-home-stream .mag-story-stream-track {
+  display:flex;
+  width:max-content;
+  will-change:transform;
+  animation: mag-film-stream-move 72s linear infinite;
+}
+.mag-film-home-stream .mag-story-stream-group { display:flex; flex:0 0 auto; }
+.mag-film-home-stream .mag-story-stream-card {
+  flex:0 0 clamp(220px,18vw,300px);
+  width:clamp(220px,18vw,300px);
+  min-height:330px;
+  padding:0 0 20px;
+  border-right:1px solid var(--mw-ink);
+  border-top:1px solid var(--mw-ink);
+  border-bottom:1px solid var(--mw-ink);
+  background:var(--mw-paper);
+  transition:background-color .18s ease,color .18s ease;
+}
+.mag-film-home-stream .mag-story-stream-card:first-child { border-left:1px solid var(--mw-ink); }
+.mag-film-home-stream .mag-story-stream-card img { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; border-bottom:1px solid var(--mw-ink); }
+.mag-film-home-stream .mag-story-stream-card span,
+.mag-film-home-stream .mag-story-stream-card strong { display:block; margin-left:16px; margin-right:16px; }
+.mag-film-home-stream .mag-story-stream-card span { margin-top:14px; font:600 7.5px/1.4 'Fragment Mono',monospace; letter-spacing:.08em; opacity:.62; }
+.mag-film-home-stream .mag-story-stream-card strong { margin-top:12px; font:500 clamp(23px,2.1vw,34px)/.96 'Instrument Sans',sans-serif; letter-spacing:-.04em; }
+.mag-film-home-stream:focus-within .mag-story-stream-track,
+.mag-film-home-stream:hover .mag-story-stream-track,
+.mag-film-home-stream:active .mag-story-stream-track { animation-play-state:paused; }
+@keyframes mag-film-stream-move { from{transform:translate3d(0,0,0)} to{transform:translate3d(-50%,0,0)} }
+
+@media (hover:none) {
+  .mag-film-card {
+    box-shadow: inset 0 3px 0 var(--film-accent);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mag-film-card:active,
+  .mag-film-related-card:active,
+  .mag-film-home-card:active {
+    background: var(--film-accent) !important;
+    color: var(--film-accent-ink) !important;
+  }
+}
+
+@media (max-width:1000px) {
+  .mag-film-related > header { grid-template-columns:1fr; }
+}
+
+@media (max-width:640px) {
+  .mag-world[data-mag-section="films"] .mag-world-masthead .mag-world-masthead-word { font-size:clamp(29px,8.9vw,38px); }
+  .mag-films-hero { padding:46px 14px 50px !important; }
+  .mag-films-hero h1 { font-size:clamp(50px,16.7vw,74px) !important; line-height:.86 !important; }
+  .mag-films-hero-note p { font-size:20px !important; }
+  .mag-films-hero-note span { font-size:11px !important; }
+  .mag-film-filter { min-height:48px !important; padding-inline:12px !important; gap:18px !important; }
+  .mag-film-filter a { min-height:44px; display:inline-flex; align-items:center; font-size:8px !important; }
+  .mag-film-selection { padding:52px 10px 76px !important; }
+  .mag-film-selection-head { margin-bottom:28px !important; gap:18px !important; }
+  .mag-film-selection-head h2 { font-size:45px !important; }
+  .mag-film-selection-head > p { font-size:12px !important; }
+  .mag-film-grid { grid-template-columns:repeat(12,minmax(0,1fr)) !important; }
+  .mag-film-card,
+  .mag-film-card--lead { grid-column:span 6 !important; }
+  .mag-film-card-index { min-height:32px !important; padding:8px 8px !important; gap:5px !important; font-size:6.5px !important; overflow:hidden; }
+  .mag-film-card-index span:last-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:72%; text-align:right; }
+  .mag-film-card-media { aspect-ratio:4/3 !important; }
+  .mag-film-image-fallback { min-height:0 !important; padding:12px !important; gap:5px !important; }
+  .mag-film-image-fallback span,.mag-film-image-fallback small { font-size:6px !important; }
+  .mag-film-image-fallback strong { font-size:20px !important; }
+  .mag-film-card-copy { min-height:0 !important; padding:11px 10px 12px !important; }
+  .mag-film-meta { margin:0 0 8px !important; font-size:6.5px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mag-film-card-copy h2 { margin:0 0 8px !important; font-size:clamp(18px,5.4vw,23px) !important; line-height:.94 !important; }
+  .mag-film-card-copy > p { display:none !important; }
+  .mag-film-card-foot { padding-top:8px !important; align-items:center !important; }
+  .mag-film-card-foot span { display:none !important; }
+  .mag-film-card-foot a { min-height:30px; display:inline-flex; align-items:center; font-size:7px !important; padding-bottom:2px !important; }
+  .mag-films-method { padding:68px 14px !important; }
+  .mag-films-method h2 { font-size:43px !important; }
+  .mag-film-research-note { padding:24px 14px 56px !important; }
+  .mag-film-detail { padding:30px 14px 90px !important; }
+  .mag-film-back { margin-bottom:50px !important; }
+  .mag-film-detail-head h1 { font-size:clamp(48px,15.5vw,72px) !important; line-height:.88 !important; }
+  .mag-film-detail-meta { gap:11px !important; font-size:7px !important; }
+  .mag-film-detail-media-wrap > figcaption { font-size:6.5px; }
+  .mag-film-detail-body { padding:46px 0 !important; }
+  .mag-film-dek { font-size:27px !important; }
+  .mag-film-watch { min-height:48px; align-items:center; }
+  .mag-film-why { padding:62px 0 !important; }
+  .mag-film-why h2 { font-size:40px !important; }
+  .mag-film-related { padding:58px 0 !important; }
+  .mag-film-related > header h2 { font-size:42px !important; }
+  .mag-film-related > div { grid-template-columns:1fr 1fr; }
+  .mag-film-related-card:nth-child(3) { display:none; }
+  .mag-film-related-card > span,.mag-film-related-card > strong,.mag-film-related-card > small { margin-left:10px; margin-right:10px; }
+  .mag-film-related-card > span { font-size:6.5px; }
+  .mag-film-related-card > strong { font-size:20px; }
+  .mag-film-related-card > small { font-size:6.5px; }
+
+  .mag-film-home-stream { padding:48px 0 58px; }
+  .mag-film-home-stream-head { grid-template-columns:1fr; gap:16px; margin:0 14px 22px; }
+  .mag-film-home-stream-head h2 { font-size:46px; }
+  .mag-film-home-stream-head > div:last-child p { font-size:12px; }
+  .mag-film-home-stream .mag-story-stream-card {
+    flex-basis:42vw;
+    width:42vw;
+    min-width:138px;
+    max-width:178px;
+    min-height:230px;
+    padding-bottom:12px;
+  }
+  .mag-film-home-stream .mag-story-stream-card img { aspect-ratio:4/3; }
+  .mag-film-home-stream .mag-story-stream-card span,.mag-film-home-stream .mag-story-stream-card strong { margin-left:9px; margin-right:9px; }
+  .mag-film-home-stream .mag-story-stream-card span { margin-top:9px; font-size:6px; }
+  .mag-film-home-stream .mag-story-stream-card strong { margin-top:8px; font-size:18px; }
+  .mag-film-home-stream .mag-story-stream-track { animation-duration:82s; }
+}
+
+@media (max-width:340px) {
+  .mag-film-card-copy h2 { font-size:17px !important; }
+  .mag-film-card-index span:last-child { display:none; }
+  .mag-film-home-stream .mag-story-stream-card { flex-basis:44vw; width:44vw; min-width:132px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .mag-film-home-stream .mag-story-stream-track { animation:none !important; transform:none !important; }
+  .mag-film-card,.mag-film-related-card,.mag-film-home-card { transition:none !important; }
+}

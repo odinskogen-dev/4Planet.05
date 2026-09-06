@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { trackEvent } from "@/analytics/Analytics";
 import { MAGAZINE_TOPICS } from "@/content/magazineOperating";
 import "@/styles/magazine-world.css";
@@ -51,6 +51,8 @@ function keepMagazineWorldIsolated() {
 
 export function MagazineShell({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<MagazineTheme>(initialTheme);
+  const location = useLocation();
+  const isFilms = location.pathname === "/films" || location.pathname.startsWith("/films/");
 
   useEffect(() => { window.localStorage.setItem(THEME_KEY, theme); }, [theme]);
 
@@ -112,12 +114,12 @@ export function MagazineShell({ children }: { children: ReactNode }) {
   }, [children]);
 
   return (
-    <div className="mag-world" data-mag-theme={theme}>
+    <div className="mag-world" data-mag-theme={theme} data-mag-section={isFilms ? "films" : "magazine"}>
       <a className="mag-skip-link" href="#magazine-content">SKIP TO CONTENT</a>
       <header className="mag-world-header">
         <div className="mag-world-parent-row">
           <a className="mag-world-parent" href="https://4planet.org/" rel="home">4PLANET_</a>
-          <span>FOR A LIVING PLANET / EDITORIAL</span>
+          <span>{isFilms ? "FOR A LIVING PLANET / DOCUMENTARY" : "FOR A LIVING PLANET / EDITORIAL"}</span>
           <div className="mag-world-utility">
             <Link to="/magazine/search" aria-label="Search 4PLANET Magazine">SEARCH</Link>
             <Link to="/magazine/saved" aria-label="Saved and recent reading">SAVED</Link>
@@ -128,19 +130,19 @@ export function MagazineShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="mag-world-masthead-row">
-          <Link className="mag-world-masthead" to="/magazine" aria-label="4PLANET Magazine home"><span className="mag-world-masthead-word">4PLANET</span><span className="mag-world-masthead-word">MAGAZINE</span></Link>
-          <p>Nature · people · engineering · culture · what works</p>
+          <Link className="mag-world-masthead" to={isFilms ? "/films" : "/magazine"} aria-label={isFilms ? "4PLANET Films home" : "4PLANET Magazine home"}><span className="mag-world-masthead-word">4PLANET</span><span className="mag-world-masthead-word">{isFilms ? "FILMS" : "MAGAZINE"}</span></Link>
+          <p>{isFilms ? "Documentary · fieldwork · science · culture · living systems" : "Nature · people · engineering · culture · what works"}</p>
         </div>
 
         <nav className="mag-world-primary-nav" aria-label="Magazine primary navigation">
-          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/films">FILMS</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
+          <Link to="/magazine">LATEST</Link><Link to="/magazine?lane=LIFE">LIFE</Link><Link to="/magazine?lane=PLANET">PLANET</Link><Link to="/magazine?topic=INNOVATION">INNOVATION</Link><Link to="/magazine?lane=PEOPLE">PEOPLE</Link><Link to="/magazine?lane=CULTURE">CULTURE</Link><Link to="/films" aria-current={isFilms ? "page" : undefined}>FILMS</Link><Link to="/magazine?lane=HUMAN">IDEAS</Link><Link to="/magazine#topics">TOPICS +</Link>
         </nav>
       </header>
 
       <div id="magazine-content">{children}</div>
 
       <footer className="mag-world-footer">
-        <div className="mag-world-footer-statement"><span>4PLANET MAGAZINE</span><h2>Stories for people who want the future to work.</h2><p>Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it.</p></div>
+        <div className="mag-world-footer-statement"><span>{isFilms ? "4PLANET FILMS" : "4PLANET MAGAZINE"}</span><h2>{isFilms ? "Films worth your attention." : "Stories for people who want the future to work."}</h2><p>{isFilms ? "A curated documentary selection about the living world, human systems and the people trying to change them." : "Independent-minded editorial work about the living world, the people measuring it, and the ideas being built around it."}</p></div>
         <div className="mag-world-footer-grid">
           <div><p>READ</p><Link to="/magazine">Latest</Link><Link to="/films">4PLANET Films</Link><Link to="/magazine/search">Search</Link><Link to="/magazine/saved">Saved / recent</Link><Link to="/magazine/archive">Archive</Link></div>
           <div><p>TOPICS</p>{MAGAZINE_TOPICS.slice(0, 6).map((topic) => <Link key={topic.id} to={`/magazine/topics/${topic.id.toLowerCase()}`}>{topic.label}</Link>)}</div>
