@@ -22,6 +22,8 @@ import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
+const MagazineFilms = lazy(() => import("@/pages/v5/MagazineFilms").then((module) => ({ default: module.MagazineFilmsIndex })));
+const MagazineFilmDetail = lazy(() => import("@/pages/v5/MagazineFilms").then((module) => ({ default: module.MagazineFilmDetail })));
 const StoryArticle = lazy(() => import("@/pages/v5/StoryArticle").then((module) => ({ default: module.StoryArticle })));
 const MagazineAbout = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineAbout })));
 const MagazineSources = lazy(() => import("@/pages/v5/MagazineInfo").then((module) => ({ default: module.MagazineSources })));
@@ -94,6 +96,8 @@ export function AppRoutes() {
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
+      <Route path="/films" element={<Suspense fallback={MagazineFallback}><MagazineFilms /></Suspense>} />
+      <Route path="/films/:slug" element={<Suspense fallback={MagazineFallback}><MagazineFilmDetail /></Suspense>} />
       <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
