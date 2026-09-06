@@ -23,18 +23,25 @@ const PUBLIC_LAUNCH_DATE = "2026-08-24";
 function readPublishedFilms() {
   const source = fs.readFileSync(path.join(root, "src/content/magazineFilms.ts"), "utf8");
   const section = source.split("const published: FilmRecord[] = [")[1]?.split("];\n\nconst research: FilmRecord[] = [")[0] ?? "";
-  const blocks = section.split(/\n  \},\n  \{/).map((block) => block.replace(/^\s*\{/, "").replace(/\}\s*$/, ""));
+  const blocks = [...section.matchAll(/publishedFilm\(\{([\s\S]*?)\}\),/g)].map((match) => match[1]);
   const pickString = (block, key) => new RegExp(`\\b${key}:\\s*\"([^\"]+)\"`).exec(block)?.[1];
-  const films = blocks.map((block) => ({
-    slug: pickString(block, "slug"),
-    title: pickString(block, "title"),
-    year: Number(/\byear:\s*(\d+)/.exec(block)?.[1] || 0),
-    focus: pickString(block, "focus"),
-    director: pickString(block, "director"),
-    runtime: pickString(block, "runtime"),
-    description: pickString(block, "description"),
-  })).filter((film) => film.slug && film.title && film.year && film.director && film.runtime && film.description);
-  if (films.length !== 20) throw new Error(`Magazine Films SEO gate: expected 20 published films, recovered ${films.length}.`);
+  const films = blocks.map((block) => {
+    const imageVideoId = pickString(block, "imageVideoId") || pickString(block, "trailerId");
+    const imageUrlOverride = pickString(block, "imageUrlOverride");
+    const fallbackOverride = pickString(block, "imageFallbackOverride");
+    return {
+      slug: pickString(block, "slug"),
+      title: pickString(block, "title"),
+      year: Number(/\byear:\s*(\d+)/.exec(block)?.[1] || 0),
+      focus: pickString(block, "focus"),
+      director: pickString(block, "director"),
+      runtime: pickString(block, "runtime"),
+      description: pickString(block, "description"),
+      image: imageUrlOverride || (imageVideoId ? `https://i.ytimg.com/vi/${imageVideoId}/maxresdefault.jpg` : ""),
+      imageFallback: fallbackOverride || (imageVideoId ? `https://i.ytimg.com/vi/${imageVideoId}/hqdefault.jpg` : ""),
+    };
+  }).filter((film) => film.slug && film.title && film.year && film.director && film.runtime && film.description && film.image);
+  if (films.length !== 40) throw new Error(`Magazine Films SEO gate: expected 40 published films, recovered ${films.length}.`);
   return films;
 }
 
@@ -117,13 +124,13 @@ for (const page of informationPages) {
 }
 
 const filmsCanonical = absoluteUrl(magazineOrigin, "/films");
-const filmsImage = absoluteUrl(magazineOrigin, "/assets/missions/4film/hero.jpg");
+const filmsImage = films[0].image;
 writeRoute("/films", {
   title: "4PLANET FILMS — Films worth your attention",
-  description: "A curated selection of documentary films about the living planet, people, systems, pressure and solutions — linked back to the original filmmakers and distributors.",
+  description: "A curated documentary selection about the living planet, people, systems, pressure and solutions — linked back to the original filmmakers and distributors.",
   canonical: filmsCanonical,
   image: filmsImage,
-  imageAlt: "4PLANET FILMS — documentary storytelling for a living planet",
+  imageAlt: `${films[0].title} — official film material featured by 4PLANET FILMS`,
   type: "website",
   jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } },
 });
@@ -136,8 +143,8 @@ for (const film of films) {
     title: `${film.title} — 4PLANET FILMS`,
     description: film.description,
     canonical,
-    image: filmsImage,
-    imageAlt: `${film.title} — 4PLANET FILMS contextual editorial image`,
+    image: film.image,
+    imageAlt: `${film.title} — official film material`,
     type: "video.movie",
     section: film.focus,
     jsonLd: {
@@ -146,7 +153,7 @@ for (const film of films) {
       name: film.title,
       description: film.description,
       url: canonical,
-      image: [filmsImage],
+      image: [film.image],
       dateCreated: String(film.year),
       duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined,
       director: { "@type": "Person", name: film.director },
@@ -201,7 +208,6 @@ for (const template of templates) {
   writeRoute(route, { title: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
-// Internal founding-edition commission records remain noindex working records.
 for (const record of foundingEdition.items) {
   const route = `/magazine/stories/${record.id}`;
   const canonical = absoluteUrl(magazineOrigin, route);
