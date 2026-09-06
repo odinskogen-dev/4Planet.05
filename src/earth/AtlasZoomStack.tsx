@@ -39,7 +39,12 @@ export default function AtlasZoomStack() {
       for (const layer of styleLayers) { if (layer?.type !== "symbol" || is4PlanetLayer(String(layer.id || ""))) continue; symbolLayers += 1; try { const current = map.getLayoutProperty?.(layer.id, "visibility") ?? layer.layout?.visibility ?? "visible"; if (current !== targetVisibility) map.setLayoutProperty(layer.id, "visibility", targetVisibility); if (showLabels) visibleSymbolLayers += 1; } catch {} }
       root.dataset.atlasZoomBand = band; root.dataset.atlasProjectionMode = projection; root.dataset.atlasPlaceLabels = showLabels ? "visible" : "hidden"; root.dataset.atlasVectorSymbolLayers = String(symbolLayers); root.dataset.atlasVisibleSymbolLayers = String(visibleSymbolLayers); root.dataset.atlasStreetQuality = band === "STREET" || band === "LOCAL" ? "vector" : "hybrid";
     };
-    const schedule = () => { if (!scheduled && !disposed) scheduled = window.requestAnimationFrame(apply); }; const reconcileStyle = () => { clearReadiness(); schedule(); };
+    const schedule = () => { if (!scheduled && !disposed) scheduled = window.requestAnimationFrame(apply); };
+    // Style events are frequent while MapLibre settles layers. Do not erase a
+    // previously validated zoom contract between a style event and the next
+    // animation frame; apply() already clears readiness if projection or the
+    // requested Blue Marble handoff is actually invalid.
+    const reconcileStyle = () => { schedule(); };
     const attach = () => { if (disposed) return; map = sharedMap(); if (!map) { attachTimer = window.setTimeout(attach, 100); return; } for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.on(event, schedule); for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle); schedule(); for (const delay of [160, 420, 900, 1600, 2600]) startupTimers.push(window.setTimeout(schedule, delay)); };
     attach();
     return () => { disposed = true; if (attachTimer) window.clearTimeout(attachTimer); if (scheduled) window.cancelAnimationFrame(scheduled); for (const timer of startupTimers) window.clearTimeout(timer); if (map) { for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.off(event, schedule); for (const event of ["styledata", "style.load"]) map.off(event, reconcileStyle); } clearReadiness(); };
