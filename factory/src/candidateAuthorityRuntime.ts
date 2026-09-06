@@ -7,6 +7,9 @@ import {
   type ProjectCandidateAuthority,
 } from "./candidateAuthority";
 
+const CONCURRENCY_LAW_PATH = "docs/control/CONCURRENCY_LAW_GIGA01.json";
+const FACTORY_OWNER = "EXISTING_FACTORY_AUTHORITY";
+
 export type CandidateAuthorityRuntimePort = {
   readBranchHead(branch: string): Promise<string>;
   readTextFileAtCommit(path: string, commitSha: string): Promise<string | null>;
@@ -48,6 +51,60 @@ function parseRegistry(raw: string): ProjectCandidateAuthority | null {
   }
 }
 
+type ConcurrencyLane = { id?: string; objective?: string; owner?: string; receiver?: string };
+type ConcurrencyLaw = { current_lanes?: ConcurrencyLane[] };
+
+function parseConcurrencyLaw(raw: string): ConcurrencyLaw | null {
+  try {
+    const parsed = JSON.parse(raw) as ConcurrencyLaw;
+    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.current_lanes)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function receiverConcurrencyBlock(
+  port: CandidateAuthorityRuntimePort,
+  currentTestSha: string,
+  receiverBranch: string,
+): Promise<LiveCandidateAuthorityDecision | undefined> {
+  let raw: string | null;
+  try {
+    raw = await port.readTextFileAtCommit(CONCURRENCY_LAW_PATH, currentTestSha);
+  } catch {
+    return fail("CONCURRENCY_LAW_UNAVAILABLE", "Current Concurrency Law could not be read from exact TEST KING; receiver write must fail closed.", {
+      currentTestSha,
+      registryCommitSha: currentTestSha,
+    });
+  }
+  if (!raw) {
+    return fail("CONCURRENCY_LAW_MISSING", "Current Concurrency Law is absent on exact TEST KING; receiver write must fail closed.", {
+      currentTestSha,
+      registryCommitSha: currentTestSha,
+    });
+  }
+  const law = parseConcurrencyLaw(raw);
+  if (!law) {
+    return fail("CONCURRENCY_LAW_INVALID", "Current Concurrency Law is malformed; receiver write must fail closed.", {
+      currentTestSha,
+      registryCommitSha: currentTestSha,
+    });
+  }
+
+  const conflicts = (law.current_lanes ?? []).filter(
+    (lane) => lane.receiver === receiverBranch && lane.owner !== FACTORY_OWNER,
+  );
+  if (conflicts.length > 0) {
+    return fail(
+      "RECEIVER_SINGLE_WRITER_CONFLICT",
+      `Registered receiver ${receiverBranch} is already owned by active lane(s) ${conflicts.map((lane) => lane.id ?? lane.objective ?? "UNKNOWN").join(", ")}; Factory must not create a bypass branch or become a second writer.`,
+      { currentTestSha, registryCommitSha: currentTestSha },
+    );
+  }
+  return undefined;
+}
+
 /**
  * Resolves public-product candidate authority from live connected GitHub state.
  *
@@ -55,6 +112,7 @@ function parseRegistry(raw: string): ProjectCandidateAuthority | null {
  * - registry is read from the exact current TEST KING commit, never a floating alias;
  * - registered sandbox ancestry is proven against that same TEST KING commit;
  * - the declared base must equal the registered receiver's exact live head;
+ * - current Concurrency Law is read from the same TEST KING commit and enforces one writer per mutable receiver;
  * - equivalent open Work Package PRs block new dispatch rather than creating duplicates;
  * - any missing/unparseable/unproven state fails closed.
  *
@@ -156,6 +214,9 @@ export async function resolveLiveCandidateAuthority(
     testIsSandboxAncestor,
   });
   if (!authority.ok) return { ...authority, currentTestSha, registryCommitSha: currentTestSha };
+
+  const concurrencyBlocked = await receiverConcurrencyBlock(port, currentTestSha, authority.receiverBranch);
+  if (concurrencyBlocked) return concurrencyBlocked;
 
   let equivalents: Array<{ number: number; headBranch: string }>;
   try {
