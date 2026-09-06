@@ -14,6 +14,7 @@ import "@/styles/magazine-live-round-04.css";
 import "@/styles/magazine-live-round-05.css";
 import "@/styles/magazine-public-launch.css";
 import "@/styles/magazine-brand-typography.css";
+import "@/styles/magazine-films-premium-03.css";
 
 type MagazineTheme = "light" | "dark";
 const THEME_KEY = "4planet-magazine-theme-v2";
