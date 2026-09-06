@@ -1,0 +1,202 @@
+name: CNS Kernel 02 Certification
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260824*_cns_*.sql'
+      - 'supabase/migrations/20260826*_cns_*.sql'
+      - 'supabase/migrations/*superbrain*.sql'
+      - 'supabase/tests/cns_*.sql'
+      - 'supabase/functions/cns-gateway/**'
+      - 'config/cns/**'
+      - '.github/workflows/cns-kernel-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bootstrap Supabase-compatible DB roles and PostGIS schema
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
+          DROP EXTENSION IF EXISTS postgis CASCADE;
+          CREATE SCHEMA IF NOT EXISTS gis;
+          CREATE EXTENSION postgis WITH SCHEMA gis;
+          DO $$ BEGIN
+            IF (SELECT n.nspname FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace WHERE e.extname='postgis') <> 'gis' THEN
+              RAISE EXCEPTION 'POSTGIS_SCHEMA_MUST_MATCH_SUPABASE_GIS';
+            END IF;
+          END $$;
+          SQL
+
+      - name: Apply canonical CNS base migrations
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
+
+      - name: Replay recovered remote SUPERBRAIN history
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071803_cns_truth_provenance_recovery.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071851_cns_control_of_control.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071927_cns_failure_memory.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072023_cns_authority_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072057_cns_authority_replay_guard.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072138_cns_narrow_context.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072215_cns_evaluator_integrity.sql
+          psql -Atqc "select to_regclass('cns.entities') is not null and to_regclass('cns.failure_records') is not null and to_regclass('cns.authority_bindings') is not null and to_regclass('cns.evaluation_contracts') is not null" | grep -qx t
+
+      - name: Apply Planet Brain convergence migrations
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903101500_superbrain_planet_convergence_01.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903103000_superbrain_public_boundary_hardening_02.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903104000_superbrain_security_function_hardening_03.sql
+          psql -Atqc "select to_regclass('cns.change_trials') is not null and to_regclass('cns.v_wip_control') is not null and to_regclass('cns.relationships') is not null and to_regclass('cns.public_projections') is not null and to_regclass('public.superbrain_public_v1') is not null" | grep -qx t
+
+      - name: Verify Planet Brain safety and public projection boundary
+        run: psql -f supabase/tests/cns_planet_convergence.sql
+
+      - name: Verify event-backed GitHub state projection
+        run: psql -f supabase/tests/cns_github_sync.sql
+
+      - name: Verify acceptance hardening and deterministic fresh-context behavior
+        run: psql -f supabase/tests/cns_acceptance_hardening.sql
+
+      - name: Prepare deterministic 100-eval runner
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/tests/cns_kernel_02_eval_100.sql').read_text()
+          helpers = Path('supabase/tests/cns_kernel_02_eval_helpers.sql').read_text()
+          state = "(select event_id from cns.events where idempotency_key='eval-state-1')"
+          context = "(select context_snapshot_id from cns.context_snapshots where project_id='EVAL-PROJECT' and intent='certification' order by compiled_at limit 1)"
+          src = src.replace(":'initial_context'::uuid", context)
+          src = src.replace(":'initial_state_event'", state)
+          src = src.replace("create temp table eval_catalog(", helpers + "\ncreate temp table eval_catalog(", 1)
+          replacements = {
+            'A17': "('A17','ADVERSARIAL','Can lease release clear its scope?', $$pg_temp.release_and_verify_scope()$$),",
+            'A24': "('A24','ADVERSARIAL','Does a self task dependency surface in Doctor?', $$pg_temp.create_self_dependency_and_verify()$$),",
+            'A25': "('A25','ADVERSARIAL','Does Doctor create an incident for an invariant breach?', $$pg_temp.doctor_scan_and_verify_open()$$),",
+            'A26': "('A26','ADVERSARIAL','Does Doctor resolve healed incidents without rewriting truth?', $$pg_temp.heal_and_verify_resolved()$$),",
+            'A27': "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_memory('EVAL-MEM-DUP','EVAL-PROJECT','EPISODIC',2::smallint,'Learning','{\"x\":1}','TEST','eval-brain','rev-1')=(select fingerprint from cns.memory_items where memory_id='EVAL-MEM'))$$),",
+            'A28': "('A28','ADVERSARIAL','Does Librarian deduplicate same fingerprint?', $$(select cns.librarian_propose_memory('EVAL-MEM-DUP','EVAL-PROJECT','EPISODIC',2::smallint,'Learning','{\"x\":1}','TEST','eval-brain','rev-1')=(select fingerprint from cns.memory_items where memory_id='EVAL-MEM'))$$),",
+            'A34': "('A34','ADVERSARIAL','Can a correcting code observation restore SHA equality?', $$pg_temp.correct_code_and_verify()$$),",
+            'A38': "('A38','ADVERSARIAL','Does staging raw legacy entity preserve a fingerprint?', $$pg_temp.stage_legacy_and_verify()$$),",
+          }
+          replacements['A27'] = "('A27','ADVERSARIAL','Does Librarian create CANDIDATE rather than Canon directly?', $$pg_temp.librarian_propose_and_verify()$$),"
+          out = []
+          for line in src.splitlines():
+            stripped = line.lstrip()
+            replaced = False
+            for key, value in replacements.items():
+              if stripped.startswith("('" + key + "'"):
+                out.append(value)
+                replaced = True
+                break
+            if not replaced:
+              out.append(line)
+          Path('/tmp/cns_eval_100.sql').write_text('\n'.join(out) + '\n')
+          PY
+
+      - name: Run 50 canonical + 50 adversarial evals
+        run: psql -f /tmp/cns_eval_100.sql
+
+      - name: Run prior 10k project / million-event scale seed and hot-path plans
+        run: psql -f supabase/tests/cns_kernel_02_scale.sql
+
+      - name: Run 50k project + Planet graph torture test
+        run: psql -f supabase/tests/cns_planet_scale_50k.sql
+
+      - name: 100 concurrent context reads
+        run: |
+          rm -rf /tmp/cns-context && mkdir -p /tmp/cns-context
+          seq 1 100 | xargs -I{} -P 25 sh -c 'psql -Atqc "select cns.compile_project_context('"'"'SCALE-00001'"'"','"'"'concurrency'"'"',0,30000,900)" > /tmp/cns-context/{}.ok'
+          test "$(find /tmp/cns-context -name '*.ok' | wc -l)" -eq 100
+          test "$(grep -L '[0-9a-f-]\{36\}' /tmp/cns-context/*.ok | wc -l)" -eq 0
+
+      - name: 100 competing lease attempts produce exactly one winner
+        run: |
+          rm -rf /tmp/cns-leases && mkdir -p /tmp/cns-leases
+          set +e
+          seq 1 100 | xargs -I{} -P 25 sh -c 'psql -Atqc "select cns.acquire_lease('"'"'SCALE-00001'"'"','"'"'ST-1-1'"'"','"'"'scale-worker'"'"',array['"'"'shared:scale:scope'"'"'],'"'"'base'"'"',3600)" > /tmp/cns-leases/{}.ok 2>/tmp/cns-leases/{}.err'
+          set -e
+          winners=$(grep -l '[0-9a-f-]\{36\}' /tmp/cns-leases/*.ok | wc -l)
+          test "$winners" -eq 1
+
+      - name: Verify core security boundaries
+        run: |
+          psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
+          psql -Atqc "select not has_table_privilege('service_role','cns.events','UPDATE') and not has_table_privilege('service_role','cns.project_current_state','UPDATE')" | grep -qx t
+          psql -Atqc "select bool_and(c.relrowsecurity) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='cns' and c.relkind='r'" | grep -qx t
+
+      - name: Backup and restore CNS schema into clean database
+        run: |
+          source_events=$(psql -Atqc "select count(*) from cns.events")
+          source_projects=$(psql -Atqc "select count(*) from cns.projects")
+          source_states=$(psql -Atqc "select count(*) from cns.project_current_state")
+          source_relationships=$(psql -Atqc "select count(*) from cns.relationships")
+          docker run --rm --network host -e PGPASSWORD=postgres postgis/postgis:17-3.5 pg_dump -h 127.0.0.1 -U postgres -d postgres --schema=cns --format=custom > /tmp/cns-kernel-02.dump
+          createdb cns_restore
+          psql -d cns_restore -v ON_ERROR_STOP=1 <<'SQL'
+          DROP EXTENSION IF EXISTS postgis CASCADE;
+          CREATE SCHEMA IF NOT EXISTS gis;
+          CREATE EXTENSION postgis WITH SCHEMA gis;
+          SQL
+          cat /tmp/cns-kernel-02.dump | docker run --rm -i --network host -e PGPASSWORD=postgres postgis/postgis:17-3.5 pg_restore -h 127.0.0.1 -U postgres --no-owner --dbname=cns_restore
+          restored_events=$(psql -d cns_restore -Atqc "select count(*) from cns.events")
+          restored_projects=$(psql -d cns_restore -Atqc "select count(*) from cns.projects")
+          restored_states=$(psql -d cns_restore -Atqc "select count(*) from cns.project_current_state")
+          restored_relationships=$(psql -d cns_restore -Atqc "select count(*) from cns.relationships")
+          test "$source_events" = "$restored_events"
+          test "$source_projects" = "$restored_projects"
+          test "$source_states" = "$restored_states"
+          test "$source_relationships" = "$restored_relationships"
+          psql -d cns_restore -Atqc "select count(*) from cns.v_project_health" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_prototype_safe" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_roadmap" >/dev/null
+          psql -d cns_restore -Atqc "select count(*) from cns.v_wip_control" >/dev/null
+
+      - name: Deno type-check CNS Gateway
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check --config supabase/functions/cns-gateway/deno.json supabase/functions/cns-gateway/index.ts
+
+      - name: Report database footprint
+        run: |
+          psql -Atqc "select pg_size_pretty(pg_database_size(current_database())) as db_size"
+          psql -Atqc "select count(*) from cns.events"
+          psql -Atqc "select count(*) from cns.relationships"
+          psql -Atqc "select count(*) from cns.observations"
