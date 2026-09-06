@@ -25,9 +25,9 @@ async function expectTwoUpMobile(page: import("@playwright/test").Page) {
 test.describe("4PLANET FILMS — premium product closure", () => {
   test("index is dense, legible, image-safe and navigable", async ({ page }, testInfo) => {
     await page.goto("/films");
-    await expect(page.getByRole("heading", { name: "Films worth your attention." })).toBeVisible();
+    await expect(page.locator("#films-title")).toHaveText("Films worth your attention.");
     await expect(page.locator(".mag-world-masthead-word").nth(1)).toHaveText("FILMS");
-    await expect(page.getByRole("link", { name: "FILMS", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.locator(".mag-world-primary-nav").getByRole("link", { name: "FILMS", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".mag-film-card")).toHaveCount(20);
     await expect(page.locator(".mag-film-filter a")).toHaveCount(8);
     await expectNoHorizontalOverflow(page);
@@ -65,7 +65,7 @@ test.describe("4PLANET FILMS — premium product closure", () => {
     await page.goto("/films/yanuni");
     await expect(page.getByRole("heading", { name: "YANUNI", exact: true })).toBeVisible();
     await expect(page.getByText("AVAILABILITY", { exact: true })).toBeVisible();
-    await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", /^https:\/\//);
+    await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", "https://www.youtube.com/watch?v=RhDdAONYZeQ");
     await expect(page.locator(".mag-film-source")).toHaveAttribute("href", /^https:\/\//);
     await expect(page.locator(".mag-film-related-card")).toHaveCount(3);
     await expect(page.getByRole("link", { name: "EXPLORE THE FULL SELECTION" })).toBeVisible();

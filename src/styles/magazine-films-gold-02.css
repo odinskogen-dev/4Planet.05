@@ -156,7 +156,9 @@
   display:flex;
   width:max-content;
   will-change:transform;
-  animation: mag-film-stream-move 72s linear infinite;
+}
+.mag-home .mag-story-stream.mag-film-home-stream .mag-story-stream-viewport > .mag-story-stream-track {
+  animation: mag-film-stream-move 72s linear infinite !important;
 }
 .mag-film-home-stream .mag-story-stream-group { display:flex; flex:0 0 auto; }
 .mag-film-home-stream .mag-story-stream-card {
@@ -264,7 +266,7 @@
   .mag-film-home-stream .mag-story-stream-card span,.mag-film-home-stream .mag-story-stream-card strong { margin-left:9px; margin-right:9px; }
   .mag-film-home-stream .mag-story-stream-card span { margin-top:9px; font-size:6px; }
   .mag-film-home-stream .mag-story-stream-card strong { margin-top:8px; font-size:18px; }
-  .mag-film-home-stream .mag-story-stream-track { animation-duration:82s; }
+  .mag-home .mag-story-stream.mag-film-home-stream .mag-story-stream-viewport > .mag-story-stream-track { animation-duration:82s !important; }
 }
 
 @media (max-width:340px) {
@@ -274,6 +276,11 @@
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .mag-film-home-stream .mag-story-stream-track { animation:none !important; transform:none !important; }
+  .mag-home .mag-story-stream.mag-film-home-stream .mag-story-stream-viewport > .mag-story-stream-track {
+    animation: none !important;
+    animation-name: none !important;
+    animation-duration: 0s !important;
+    transform: none !important;
+  }
   .mag-film-card,.mag-film-related-card,.mag-film-home-card { transition:none !important; }
 }

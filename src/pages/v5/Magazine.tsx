@@ -114,7 +114,7 @@ function FilmStream() {
   return (
     <section className="mag-story-stream mag-film-home-stream" aria-labelledby="film-stream-title">
       <header className="mag-story-stream-head mag-film-home-stream-head">
-        <div><p className="mag-feed-kicker">4PLANET FILMS / DOCUMENTARY SELECTION</p><h2 id="film-stream-title">Films worth your attention.</h2></div>
+        <div><p className="mag-feed-kicker">DOCUMENTARY SELECTION / 4CULTURE_</p><h2 id="film-stream-title">4PLANET FILMS</h2></div>
         <div><p>Documentaries that make the living world harder to ignore — and easier to understand.</p><Link to="/films">EXPLORE ALL FILMS →</Link></div>
       </header>
       <div className="mag-story-stream-viewport" aria-label="Selected 4PLANET films">
