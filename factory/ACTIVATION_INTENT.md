@@ -32,3 +32,7 @@ Founder-authorised A1 bounded Factory production dispatch requested against curr
 ## Continuous A1 dispatch receipt — 2026-09-06 13:01 Europe/Oslo
 
 Founder-authorised continuous A1 bounded production remains active. Dispatch exactly one fresh cohort on this exact Factory build through the existing activation path after revalidating current TEST KING, WIP, single-writer receiver authority and absence of a competing activation cohort. Local receiver conflicts remain fail-closed and must not be bypassed with a new candidate class. No LIVE/main, Canon, external-send/share/submit, payment/spend, destructive Gold, legal/IP/equity or CNS/BRAIN cutover authority is granted.
+
+## Local-park immunity reproof — 2026-09-06
+
+Re-run one exact-head bounded activation cohort on the same Factory lineage to prove that a current `RECEIVER_SINGLE_WRITER_CONFLICT` parks only the affected product mutation while Cloudflare runtime/canary and unrelated legal Factory capability remain healthy. The cohort must create no bypass branch, no second writer, no provider reservation for the blocked package, no LIVE/main/Canon/external/spend action and no Human Gold claim. All other authority failures remain fail-closed.
