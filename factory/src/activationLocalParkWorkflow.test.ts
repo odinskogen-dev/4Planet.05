@@ -19,3 +19,13 @@ test("local parking never claims ACTIVE or Human Gold", () => {
   assert.match(workflow, /canonPromotion:false/);
   assert.match(workflow, /automaticSpend:false/);
 });
+
+test("activation control calls use the exact post-secret deployment and same-job protected token", () => {
+  assert.match(workflow, /Rebind exact Factory code after runtime secrets/);
+  assert.match(workflow, /id: bound_deploy/);
+  assert.match(workflow, /DEPLOYMENT_URL: \$\{\{ steps\.bound_deploy\.outputs\.deployment-url \}\}/);
+  assert.match(workflow, /4planet-factory-control-token/);
+  assert.match(workflow, /CONTROL_TOKEN="\$\(cat "\$RUNNER_TEMP\/4planet-factory-control-token"\)"/);
+  assert.doesNotMatch(workflow, /CONTROL_TOKEN: \$\{\{ steps\.runtime_secrets\.outputs\.control_token \}\}/);
+  assert.doesNotMatch(workflow, /DEPLOYMENT_URL: \$\{\{ steps\.deploy\.outputs\.deployment-url \}\}/);
+});
