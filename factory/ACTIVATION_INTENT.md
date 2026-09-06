@@ -28,3 +28,7 @@ Founder-authorised bounded ACTIVE boot dispatch requested against TEST KING `2e5
 ## Activation execution receipt — 2026-09-06
 
 Founder-authorised A1 bounded Factory production dispatch requested against current TEST KING `ce532830640817f83c11923bdfb4c394f222baad`. Use only the existing `factory/symphony-runtime-v01` activation/runtime path and exactly one bounded activation cohort. All entry gates above remain fail-closed at runtime; this receipt grants no LIVE/main, Canon, external-send/share/submit, payment/spend, destructive Gold, legal/IP/equity or CNS/BRAIN cutover authority.
+
+## Continuous A1 dispatch receipt — 2026-09-06 13:01 Europe/Oslo
+
+Founder-authorised continuous A1 bounded production remains active. Dispatch exactly one fresh cohort on this exact Factory build through the existing activation path after revalidating current TEST KING, WIP, single-writer receiver authority and absence of a competing activation cohort. Local receiver conflicts remain fail-closed and must not be bypassed with a new candidate class. No LIVE/main, Canon, external-send/share/submit, payment/spend, destructive Gold, legal/IP/equity or CNS/BRAIN cutover authority is granted.
