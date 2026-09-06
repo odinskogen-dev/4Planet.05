@@ -1,7 +1,8 @@
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { MagazineShell } from "@/components/magazine/MagazineShell";
 import { Seo } from "@/components/Seo";
-import { FILM_CANDIDATES, PUBLISHED_FILMS, filmBySlug, type PublishedFilm } from "@/content/magazineFilms";
+import { PUBLISHED_FILMS, filmBySlug, type PublishedFilm } from "@/content/magazineFilms";
+import { FILM_RESEARCH_CANDIDATES } from "@/content/magazineFilmResearch";
 import "@/styles/magazine-films.css";
 
 const FILTERS = ["ALL", "OCEAN", "AMAZONIA", "FOOD", "CLIMATE", "SOLUTIONS"] as const;
@@ -78,7 +79,7 @@ export function MagazineFilmsIndex() {
         </section>
 
         <section className="mag-film-research-note">
-          <span>RESEARCH POOL</span><strong>{FILM_CANDIDATES.length} qualified candidates</strong><p>The first ten are published. The wider candidate pool spans oceans, forests, wildlife, food, climate, energy, materials, Indigenous stewardship, restoration and practical solutions.</p>
+          <span>RESEARCH POOL</span><strong>{FILM_RESEARCH_CANDIDATES.length} qualified candidates</strong><p>The first ten are published. The wider candidate pool spans oceans, forests, wildlife, food, climate, energy, materials, Indigenous stewardship, restoration and practical solutions.</p>
         </section>
       </main>
     </MagazineShell>
