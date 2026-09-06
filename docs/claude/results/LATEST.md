@@ -1,13 +1,13 @@
 # CLAUDE FACTORY RESULT
 
 work_order_id: portfolio-oslofjord-human-gold-review-ce5328306408-014b0b5ebdf8
-queue_sha: 18ace2137fcab20f296d1e7f292b8f3dcaec8523
-dispatch_attempt: 1
+queue_sha: bee3cbacea32928e0a58e7c2fc946850df83683b
+dispatch_attempt: 2
 status: CAPACITY_PAUSED
 worker: CLAUDE_PRODUCT_INTERFACE
 model: claude-opus-5
-completed_at: 2026-09-06T21:16:48Z
-retry_after: 2026-09-06T22:16:47Z
+completed_at: 2026-09-06T22:19:03Z
+retry_after: 2026-09-06T23:19:02Z
 provider_state: SUBSCRIPTION_CAPACITY_UNAVAILABLE
 authority: REVIEW_ONLY
 
