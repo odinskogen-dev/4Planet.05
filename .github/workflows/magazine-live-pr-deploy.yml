@@ -41,19 +41,21 @@ jobs:
           [ -n "$account_id" ] || exit 3
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
-      - name: Deploy isolated Magazine worker
+      - name: Deploy pinned Magazine + Films worker
         shell: bash
         run: |
           set -euo pipefail
-          pinned='https://feb9a95c.4planet-05.pages.dev'
-          marker=$(curl -fsS --connect-timeout 10 --max-time 30 "$pinned/magazine/public-launch-gold-01.txt")
-          [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] || { echo 'Pinned Magazine Gold marker mismatch'; exit 4; }
+          pinned='https://516fa13a.4planet-05.pages.dev'
+          magazine_marker=$(curl -fsS --connect-timeout 10 --max-time 30 "$pinned/magazine/public-launch-gold-01.txt")
+          films_marker=$(curl -fsS --connect-timeout 10 --max-time 30 "$pinned/films-live-01.txt")
+          [ "$magazine_marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] || { echo 'Pinned Magazine Gold marker mismatch'; exit 4; }
+          [ "$films_marker" = '4PLANET_FILMS_MVP_01' ] || { echo 'Pinned Films marker mismatch'; exit 5; }
           cat > "$RUNNER_TEMP/worker.mjs" <<'EOF'
-          const UPSTREAM = "https://feb9a95c.4planet-05.pages.dev";
-          const SOURCE_SHA = "d27c841d3f15f26bf4feb7de3916a6a5fffe1795";
+          const UPSTREAM = "https://516fa13a.4planet-05.pages.dev";
+          const SOURCE_SHA = "8671f336a9d66b7ad4f7b4b8f315091b3f6dc0d0";
           const APEX = "4planetmagazine.com";
-          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
-          const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest","/films-live-01.txt"]);
+          const allowedMagazine = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p === "/films" || p === "/films/" || p.startsWith("/films/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
             const incoming = new URL(request.url);
@@ -83,7 +85,7 @@ jobs:
           cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
           name = "4planetmagazine-test-king"
           main = "$RUNNER_TEMP/worker.mjs"
-          compatibility_date = "2026-08-24"
+          compatibility_date = "2026-09-06"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
           [[routes]]
           pattern = "4planetmagazine.com"
@@ -94,21 +96,25 @@ jobs:
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
 
-      - name: Verify pinned Magazine Gold is live
+      - name: Verify pinned Magazine + Films build is live
         shell: bash
         run: |
           set -euo pipefail
-          expected_sha='d27c841d3f15f26bf4feb7de3916a6a5fffe1795'
+          expected_sha='8671f336a9d66b7ad4f7b4b8f315091b3f6dc0d0'
           for attempt in $(seq 1 30); do
-            marker=$(curl -fsS --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/public-launch-gold-01.txt' || true)
-            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' | tr -d '\r' || true)
-            if [ "$marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] &&
-               printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
-               printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
-              echo 'Pinned Magazine Gold candidate is live.'
+            magazine_marker=$(curl -fsS --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/public-launch-gold-01.txt' || true)
+            films_marker=$(curl -fsS --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/films-live-01.txt' || true)
+            magazine_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine/' | tr -d '\r' || true)
+            films_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/films' | tr -d '\r' || true)
+            if [ "$magazine_marker" = '4PLANET_MAGAZINE_PUBLIC_LAUNCH_GOLD_01' ] &&
+               [ "$films_marker" = '4PLANET_FILMS_MVP_01' ] &&
+               printf '%s\n' "$magazine_headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
+               printf '%s\n' "$films_headers" | grep -qi '^x-4planet-surface: magazine-only-live$' &&
+               printf '%s\n' "$films_headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
+              echo 'Pinned Magazine + Films candidate is live.'
               exit 0
             fi
             sleep 5
           done
-          echo 'Pinned Magazine Gold candidate did not verify live.'
-          exit 5
+          echo 'Pinned Magazine + Films candidate did not verify live.'
+          exit 6
