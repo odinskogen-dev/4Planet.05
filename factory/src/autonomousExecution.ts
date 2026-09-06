@@ -285,6 +285,7 @@ async function generateCandidate(
     ],
     temperature: 0.1,
     reasoning_effort: "low",
+    chat_template_kwargs: { enable_thinking: false },
     response_format: { type: "json_object" },
     max_completion_tokens: 2400,
   });
