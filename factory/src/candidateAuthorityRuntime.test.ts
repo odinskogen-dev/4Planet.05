@@ -4,10 +4,12 @@ import {
   resolveLiveCandidateAuthority,
   type CandidateAuthorityRuntimePort,
 } from "./candidateAuthorityRuntime";
+import { PROJECT_CANDIDATE_AUTHORITY_PATH } from "./candidateAuthority";
 import type { ProjectCandidateAuthority } from "./candidateAuthority";
 
 const TEST_SHA = "1111111111111111111111111111111111111111";
 const SANDBOX_SHA = "2222222222222222222222222222222222222222";
+const CONCURRENCY_LAW_PATH = "docs/control/CONCURRENCY_LAW_GIGA01.json";
 
 function registry(sandbox = false): ProjectCandidateAuthority {
   return {
@@ -43,6 +45,8 @@ function port(options: {
   ancestor?: boolean;
   equivalents?: number[];
   openPrSearchFails?: boolean;
+  concurrencyLanes?: Array<{ id: string; objective: string; owner: string; receiver: string }>;
+  concurrencyMissing?: boolean;
 } = {}): CandidateAuthorityRuntimePort {
   const value = options.registry === undefined ? registry(false) : options.registry;
   return {
@@ -51,9 +55,14 @@ function port(options: {
       if (branch === "work/atlas-one") return options.sandboxHead ?? SANDBOX_SHA;
       throw new Error(`unknown branch ${branch}`);
     },
-    async readTextFileAtCommit(_path, commitSha) {
-      assert.equal(commitSha, TEST_SHA, "registry must be bound to exact current TEST KING");
-      return value ? JSON.stringify(value) : null;
+    async readTextFileAtCommit(path, commitSha) {
+      assert.equal(commitSha, TEST_SHA, "governed authority reads must bind to exact current TEST KING");
+      if (path === PROJECT_CANDIDATE_AUTHORITY_PATH) return value ? JSON.stringify(value) : null;
+      if (path === CONCURRENCY_LAW_PATH) {
+        if (options.concurrencyMissing) return null;
+        return JSON.stringify({ current_lanes: options.concurrencyLanes ?? [] });
+      }
+      throw new Error(`unexpected governed path ${path}`);
     },
     async isAncestor(baseSha, headSha) {
       assert.equal(baseSha, TEST_SHA);
@@ -67,7 +76,7 @@ function port(options: {
   };
 }
 
-test("exact TEST KING with no sandbox authorises only exact TEST receiver", async () => {
+test("exact TEST KING with no sandbox authorises exact TEST receiver when it has no competing writer", async () => {
   const decision = await resolveLiveCandidateAuthority(port(), {
     projectId: "ATLAS",
     workPackageId: "WP-ATLAS-01",
@@ -79,6 +88,59 @@ test("exact TEST KING with no sandbox authorises only exact TEST receiver", asyn
     assert.equal(decision.receiverSha, TEST_SHA);
     assert.equal(decision.registryCommitSha, TEST_SHA);
   }
+});
+
+test("current non-Factory lane owning TEST KING blocks Factory as second writer before candidate creation", async () => {
+  const decision = await resolveLiveCandidateAuthority(port({
+    concurrencyLanes: [
+      {
+        id: "A",
+        objective: "PLANET_GOLD_01_OSLOFJORD",
+        owner: "PRODUCT_MAKER_PLUS_INDEPENDENT_JUDGE",
+        receiver: "king/test",
+      },
+    ],
+  }), {
+    projectId: "ATLAS",
+    workPackageId: "WP-ATLAS-CONFLICT",
+    declaredBaseSha: TEST_SHA,
+  });
+  assert.equal(decision.ok, false);
+  if (!decision.ok) {
+    assert.equal(decision.code, "RECEIVER_SINGLE_WRITER_CONFLICT");
+    assert.match(decision.reason, /must not create a bypass branch or become a second writer/);
+  }
+});
+
+test("missing concurrency law fails closed before product dispatch", async () => {
+  const decision = await resolveLiveCandidateAuthority(port({ concurrencyMissing: true }), {
+    projectId: "ATLAS",
+    workPackageId: "WP-ATLAS-CONCURRENCY-MISSING",
+    declaredBaseSha: TEST_SHA,
+  });
+  assert.equal(decision.ok, false);
+  if (!decision.ok) assert.equal(decision.code, "CONCURRENCY_LAW_MISSING");
+});
+
+test("registered sandbox is not blocked by a lane owning TEST KING because receiver differs", async () => {
+  const decision = await resolveLiveCandidateAuthority(port({
+    registry: registry(true),
+    ancestor: true,
+    concurrencyLanes: [
+      {
+        id: "A",
+        objective: "PLANET_GOLD_01_OSLOFJORD",
+        owner: "PRODUCT_MAKER_PLUS_INDEPENDENT_JUDGE",
+        receiver: "king/test",
+      },
+    ],
+  }), {
+    projectId: "ATLAS",
+    workPackageId: "WP-ATLAS-SANDBOX-FREE",
+    declaredBaseSha: SANDBOX_SHA,
+  });
+  assert.equal(decision.ok, true);
+  if (decision.ok) assert.equal(decision.receiverBranch, "work/atlas-one");
 });
 
 test("missing authority registry on exact TEST KING fails closed", async () => {
