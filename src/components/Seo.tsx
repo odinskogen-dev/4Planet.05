@@ -30,7 +30,7 @@ interface SeoProps {
 }
 
 function publicOrigin(path: string): string {
-  if (path === "/magazine" || path.startsWith("/magazine/")) {
+  if (path === "/magazine" || path.startsWith("/magazine/") || path === "/films" || path.startsWith("/films/")) {
     const magazineConfigured = import.meta.env.VITE_MAGAZINE_SITE_ORIGIN?.trim();
     return (magazineConfigured || DEFAULT_MAGAZINE_ORIGIN).replace(/\/$/, "");
   }
