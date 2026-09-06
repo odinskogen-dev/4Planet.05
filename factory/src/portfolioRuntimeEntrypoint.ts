@@ -4,6 +4,7 @@ import {
   createPortfolioFallbackQueue,
   isOnlyReceiverWriterConflict,
 } from "./portfolioFallback";
+import { localReadOnlyWorkflowParkDecision } from "./localInFlightPark";
 
 export * from "./runtimeEntrypoint";
 
@@ -87,6 +88,7 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
   const state = await factory.getFactoryState() as FactoryStateView;
   const projectIds = new Set((state.projects ?? []).map((project) => project.id).filter(Boolean));
   const activeWork = new Map((state.work ?? []).map((row) => [row.id, row.status] as const));
+  const locallyParked: Array<{ workPackageId: string; workflowId: string; trackedStatus: string; reason: string }> = [];
 
   for (const project of queue.projects) {
     if (!projectIds.has(project.id)) await factory.upsertProject(project);
@@ -98,17 +100,29 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
   for (const pkg of queue.packages) {
     if (outcomeById.has(pkg.id)) continue;
     const workflowId = `factory-portfolio-fallback-${pkg.id}`;
-    const tracked = await factory.getWorkflow?.(workflowId);
+    const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
     if (tracked) {
-      return {
-        status: "IN_FLIGHT",
-        projectId: pkg.projectId,
-        workPackageId: pkg.id,
-        workflowId,
-        trackedStatus: tracked.status ?? "UNKNOWN",
-        exactFactorySha,
-        exactTestSha,
-      };
+      const trackedStatus = tracked.status ?? "UNKNOWN";
+      const park = localReadOnlyWorkflowParkDecision({
+        status: trackedStatus,
+        createdAt: tracked.createdAt ?? null,
+        writeScopes: pkg.writeScopes,
+      });
+      if (!park.park) {
+        return {
+          status: "IN_FLIGHT",
+          projectId: pkg.projectId,
+          workPackageId: pkg.id,
+          workflowId,
+          trackedStatus,
+          trackedCreatedAt: tracked.createdAt ?? null,
+          parkReason: park.reason,
+          exactFactorySha,
+          exactTestSha,
+        };
+      }
+      locallyParked.push({ workPackageId: pkg.id, workflowId, trackedStatus, reason: park.reason });
+      continue;
     }
 
     await factory.runWorkflow(
@@ -138,6 +152,7 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
       exactTestSha,
       writeScopes: pkg.writeScopes,
       execution: pkg.execution,
+      locallyParked,
     };
   }
 
@@ -146,6 +161,7 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
     exactFactorySha,
     exactTestSha,
     terminalOutcomes: outcomeRows.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status })),
+    locallyParked,
   };
 }
 
@@ -184,7 +200,7 @@ export default {
       return Response.json({
         ...original,
         portfolioFallback: fallback,
-        portfolioRule: "LOCAL RECEIVER BLOCK -> PARK MUTATION -> DISPATCH NEXT LEGAL READ-ONLY PORTFOLIO PACKAGE",
+        portfolioRule: "LOCAL RECEIVER/PROVIDER BLOCK -> PARK ONLY LOCAL READ-ONLY CAPABILITY -> DISPATCH NEXT LEGAL PACKAGE",
       }, { status: 409 });
     } catch (error) {
       const original = typeof body === "object" && body !== null ? body as Record<string, unknown> : {};
