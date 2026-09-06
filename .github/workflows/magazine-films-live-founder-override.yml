@@ -142,7 +142,7 @@ jobs:
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
 
-      - name: Verify exact Films build live
+      - name: Verify exact Films build live — full acceptance gate
         shell: bash
         run: |
           set -euo pipefail
@@ -164,12 +164,59 @@ jobs:
             echo "FAIL $url"
             return 1
           }
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/film-slugs.txt"
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
+          const slugs = [...section.matchAll(/\bslug:\s*"([^"]+)"/g)].map(m => m[1]);
+          if (slugs.length !== 20) throw new Error(`Expected 20 published films, found ${slugs.length}`);
+          process.stdout.write(slugs.join('\n'));
+          NODE
+
           verify_live 'https://4planetmagazine.com/magazine/' '200'
           verify_live 'https://4planetmagazine.com/films' '200'
-          verify_live 'https://4planetmagazine.com/films/yanuni' '200'
-          verify_live 'https://4planetmagazine.com/films/the-territory' '200'
+          while IFS= read -r slug; do
+            [ -n "$slug" ] && verify_live "https://4planetmagazine.com/films/$slug" '200'
+          done < "$RUNNER_TEMP/film-slugs.txt"
+
+          for topic in OCEAN LAND_WILDLIFE FOOD CLIMATE ENERGY SOLUTIONS PEOPLE; do
+            verify_live "https://4planetmagazine.com/films?topic=$topic" '200'
+          done
+
           sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
           printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films'
-          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films/yanuni'
+          while IFS= read -r slug; do
+            [ -n "$slug" ] && printf '%s' "$sitemap" | grep -q "https://4planetmagazine.com/films/$slug"
+          done < "$RUNNER_TEMP/film-slugs.txt"
           robots=$(curl -fsS 'https://4planetmagazine.com/robots.txt')
           printf '%s' "$robots" | grep -q 'Allow: /films'
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/film-assets.txt"
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const assets = [...new Set([...source.matchAll(/"(\/assets\/[^"]+)"/g)].map(m => m[1]))];
+          process.stdout.write(assets.join('\n'));
+          NODE
+          while IFS= read -r asset; do
+            [ -n "$asset" ] && verify_live "https://4planetmagazine.com$asset" '200'
+          done < "$RUNNER_TEMP/film-assets.txt"
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/external-film-links.txt"
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
+          const urls = [...new Set([...section.matchAll(/\b(?:watchUrl|sourceDescriptionUrl):\s*"(https:\/\/[^\"]+)"/g)].map(m => m[1]))];
+          process.stdout.write(urls.join('\n'));
+          NODE
+          external_fail=0
+          while IFS= read -r url; do
+            [ -z "$url" ] && continue
+            code=$(curl -L -sS -A 'Mozilla/5.0 4PLANET-Link-QA/1.0' -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+            case "$code" in
+              404|410) echo "BROKEN EXTERNAL FILM LINK $code $url"; external_fail=1 ;;
+              000) echo "UNVERIFIED EXTERNAL FILM LINK $code $url" ;;
+              *) echo "REACHABLE EXTERNAL FILM LINK $code $url" ;;
+            esac
+          done < "$RUNNER_TEMP/external-film-links.txt"
+          [ "$external_fail" = '0' ] || exit 9
