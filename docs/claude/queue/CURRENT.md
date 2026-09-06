@@ -1,7 +1,7 @@
 # CLAUDE FACTORY WORK ORDER
 
 id: portfolio-oslofjord-human-gold-review-ce5328306408-014b0b5ebdf8
-dispatch_attempt: 2
+dispatch_attempt: 3
 mode: REVIEW_ONLY
 owner: 4PLANET Production Factory / AXE
 worker_role: PRODUCT_INTERFACE
@@ -64,4 +64,4 @@ READ / REVIEW ONLY. No repository mutation. No branch creation. No merge. No LIV
 ## Return contract
 
 Return a compact Factory-ingestible review that directly closes the stated gap. Include: STATUS, MATERIAL FINDINGS, RECOMMENDED ACTION, MUST-NOT-LOSE, RISKS, UNKNOWN. Do not require Founder reconstruction.
-retry_requested_at: 2026-09-06T22:18:40.202Z
+retry_requested_at: 2026-09-06T23:20:44.187Z
