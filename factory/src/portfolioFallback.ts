@@ -2,9 +2,10 @@ import type { ProjectProjection, WorkPackage } from "./contracts";
 
 const SHA40 = /^[0-9a-f]{40}$/i;
 
-export const PORTFOLIO_FALLBACK_AUTHORITY = "FOUNDER_ORDER:4PLANET_AUTONOMOUS_VALUE_CLOSURE_02";
-export const PORTFOLIO_FALLBACK_CONTROL = "ISSUE_273:PORTFOLIO_LEARNING_FACTORY";
+export const PORTFOLIO_FALLBACK_AUTHORITY = "FOUNDER_ORDER:4PLANET_FACTORY_PRODUCTION_RAMP_03";
+export const PORTFOLIO_FALLBACK_CONTROL = "ISSUE_273:GIGA_IMMUNITY_EXECUTION_CONTROL";
 export const PORTFOLIO_FALLBACK_LEASE = "CONCURRENCY_LAW_GIGA01:LANE_D:OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER";
+export const PORTFOLIO_OSLOFJORD_REVIEW_LEASE = "ISSUE_273:LANE_A:PLANET_GOLD_01_OSLOFJORD";
 
 function key(sha: string): string {
   const clean = sha.trim().toLowerCase();
@@ -15,24 +16,16 @@ function key(sha: string): string {
 function project(
   id: string,
   name: string,
+  northStar: string,
+  user: string,
   goal: string,
   current: string,
   gold: string,
   gap: string,
   priority: "P0" | "P1",
+  authorityRefs: string[],
 ): ProjectProjection {
-  return {
-    id,
-    name,
-    northStar: "Advance the current Conductor-authorised Great Barrier Reef transfer proof while a separate mutable receiver is locally parked, without creating a second writer, product line or bypass branch.",
-    user: "A normal public 4PLANET visitor",
-    goal,
-    current,
-    gold,
-    gap,
-    priority,
-    authorityRefs: [PORTFOLIO_FALLBACK_AUTHORITY, PORTFOLIO_FALLBACK_CONTROL, PORTFOLIO_FALLBACK_LEASE],
-  };
+  return { id, name, northStar, user, goal, current, gold, gap, priority, authorityRefs };
 }
 
 function sourcePackage(input: {
@@ -69,13 +62,9 @@ function sourcePackage(input: {
       "No product, LIVE, Canon, partnership, spend or external-release mutation occurs",
     ],
     requiredEvidence: ["source PASS", "final url", "bounded bytes", "content fingerprint"],
-    execution: {
-      kind: "HTTP_SOURCE_CHECK",
-      targetUrl: input.targetUrl,
-      allowedHosts: [input.allowedHost],
-    },
+    execution: { kind: "HTTP_SOURCE_CHECK", targetUrl: input.targetUrl, allowedHosts: [input.allowedHost] },
     run: {
-      runId: `portfolio-value-closure-${input.id}`,
+      runId: `portfolio-production-ramp-${input.id}`,
       attemptId: "01",
       idempotencyKey: `portfolio-fallback:${input.id}:${input.exactTestSha}:${input.exactFactorySha}`,
       inputStateHash: `factory=${input.exactFactorySha};test=${input.exactTestSha};source=${input.targetUrl}`,
@@ -106,6 +95,78 @@ function sourcePackage(input: {
   };
 }
 
+function oslofjordReviewPackage(input: {
+  id: string;
+  projectId: string;
+  exactTestSha: string;
+  exactFactorySha: string;
+  createdAt: string;
+}): WorkPackage {
+  return {
+    id: input.id,
+    projectId: input.projectId,
+    title: "Oslofjord Human Gold — focused current-HEIR comprehension and provenance review",
+    section: "PRODUCT_DESIGN",
+    priority: "P0",
+    goalLink: "CONDUCTOR LANE A — PLANET_GOLD_01_OSLOFJORD",
+    gapClosed: "Produce one fresh, narrowly scoped Product/Interface correction contract for the current Oslofjord HEIR without becoming a second writer or repeating the failed multipass Claude pattern.",
+    deliverables: [
+      "Rank the three highest-impact blockers to 5-second comprehension of the current Oslofjord Planet proof",
+      "Identify the single most important provenance/source-presentation blocker that could undermine trust",
+      "Return one minimal next correction contract for the existing maker; do not propose a redesign or new product architecture",
+    ],
+    dependencies: [],
+    writeScopes: [],
+    definitionOfDone: [
+      "Review is bound to exact current TEST KING and current Factory build",
+      "Only the current Oslofjord/Planet proof is reviewed; unrelated repo archaeology is explicitly out of scope",
+      "Findings distinguish OBSERVED, INFERRED, PROPOSED and UNKNOWN where material",
+      "The result is a compact ranked correction contract usable by the existing maker without Founder reconstruction",
+      "No repository, TEST KING, LIVE, Canon, outreach, spend or external-release mutation occurs",
+    ],
+    requiredEvidence: [
+      "fresh correlated Claude work-order result",
+      "top three comprehension blockers",
+      "one provenance/source-presentation blocker",
+      "one minimal next correction contract",
+    ],
+    specialist: {
+      provider: "CLAUDE",
+      role: "PRODUCT_INTERFACE",
+      mode: "REVIEW_ONLY",
+      model: "claude-opus-5",
+      sourceRefs: [
+        `king/test@${input.exactTestSha}`,
+        PORTFOLIO_OSLOFJORD_REVIEW_LEASE,
+        "PLANET_PROOF_READING_GRAMMAR:WHAT_IS_HERE→WHAT_IS_HAPPENING→WHY→DEPENDENCIES→CHANGE→EVIDENCE→ACTOR→ACTION",
+        "SCOPE_LAW:ONE_PASS_ONE_DELIVERABLE_NO_UNRELATED_REPO_ARCHAEOLOGY",
+      ],
+    },
+    run: {
+      runId: `portfolio-production-ramp-${input.id}`,
+      attemptId: "01",
+      idempotencyKey: `portfolio-oslofjord-review:${input.id}:${input.exactTestSha}:${input.exactFactorySha}`,
+      inputStateHash: `factory=${input.exactFactorySha};test=${input.exactTestSha};specialist=CLAUDE_REVIEW_ONLY;scope=OSLOFJORD_ONE_PASS`,
+      expectedBaseSha: input.exactTestSha,
+      workerId: "portfolio-oslofjord-claude-review",
+      createdAt: input.createdAt,
+    },
+    resourceBudget: { maxAttempts: 1, maxCorrectionAttempts: 0, maxQueueRetries: 3 },
+    learningQuestion: "Can a one-pass, review-only specialist package complete reliably and produce a materially useful current-HEIR correction contract after the failed oversized Claude multipass work order?",
+    createdAt: input.createdAt,
+    estimatedValue: 10,
+    criticalPath: 10,
+    dependencyUnlock: 9,
+    proofValue: 10,
+    cashValue: 2,
+    learningValue: 10,
+    risk: 1,
+    founderBurden: 0,
+    concurrencyCost: 0,
+    status: "READY",
+  };
+}
+
 export function createPortfolioFallbackQueue(
   exactTestSha: string,
   exactFactorySha: string,
@@ -114,17 +175,40 @@ export function createPortfolioFallbackQueue(
   const testKey = key(exactTestSha);
   const factoryKey = key(exactFactorySha);
 
+  const oslofjord = project(
+    "PLANET_GOLD_01_OSLOFJORD",
+    "PLANET Gold 01 — Oslofjord Human Gold",
+    "Make one real place understandable, trustworthy and action-relevant to a normal person using the existing Planet proof architecture.",
+    "A normal public 4PLANET visitor",
+    "Move the existing Oslofjord proof toward Human Gold while preserving the sole TEST writer and all MUST-NOT-LOSE product value.",
+    "The current HEIR is writer-owned by another active lane, so mutation is illegal from this Factory fallback; a read-only specialist review remains conflict-free.",
+    "A current-HEIR correction contract that materially improves the next legal maker pass without inventing a second writer, renderer or product line.",
+    "Obtain one focused Product/Interface review now; defer mutation until receiver authority is legal.",
+    "P0",
+    [PORTFOLIO_FALLBACK_AUTHORITY, PORTFOLIO_FALLBACK_CONTROL, PORTFOLIO_OSLOFJORD_REVIEW_LEASE],
+  );
+
   const gbr = project(
     "PLANET_GBR_TRANSFER_02",
     "PLANET Proof 02 — Great Barrier Reef transfer",
+    "Advance the current Conductor-authorised Great Barrier Reef transfer proof while a separate mutable receiver is locally parked, without creating a second writer, product line or bypass branch.",
+    "A normal public 4PLANET visitor",
     "Prove the Oslofjord PlanetProof contract transfers to a fundamentally different marine system without inventing a second renderer or flattening source scale.",
     "The shared PlanetProof schema and eight-question reading grammar are seeded with AIMS and NOAA Coral Reef Watch evidence; product mutation is not legal while the sole TEST receiver has another writer.",
     "A source-bounded transfer pack whose current primary evidence is machine-reverified before later route/browser/Human Gold work.",
     "Use the conflict-free read-only Lane D scope to verify current primary evidence now; preserve OPEN relationship/action fields until separate evidence resolves them.",
     "P0",
+    [PORTFOLIO_FALLBACK_AUTHORITY, PORTFOLIO_FALLBACK_CONTROL, PORTFOLIO_FALLBACK_LEASE],
   );
 
   const packages = [
+    oslofjordReviewPackage({
+      id: `portfolio-oslofjord-human-gold-review-${testKey}-${factoryKey}`,
+      projectId: oslofjord.id,
+      exactTestSha,
+      exactFactorySha,
+      createdAt,
+    }),
     sourcePackage({
       id: `portfolio-gbr-aims-source-${testKey}-${factoryKey}`,
       projectId: gbr.id,
@@ -151,7 +235,7 @@ export function createPortfolioFallbackQueue(
     }),
   ];
 
-  return { projects: [gbr], packages };
+  return { projects: [oslofjord, gbr], packages };
 }
 
 function record(value: unknown): Record<string, unknown> | undefined {

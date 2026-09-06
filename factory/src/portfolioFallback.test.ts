@@ -4,20 +4,41 @@ import {
   createPortfolioFallbackQueue,
   isOnlyReceiverWriterConflict,
   PORTFOLIO_FALLBACK_LEASE,
+  PORTFOLIO_OSLOFJORD_REVIEW_LEASE,
 } from "./portfolioFallback";
 
 const TEST_SHA = "ce532830640817f83c11923bdfb4c394f222baad";
-const FACTORY_SHA = "eff122f67a9e99cc5749b5b23609afd6b33d89d6";
+const FACTORY_SHA = "8b203ae4c383d3663571719d47309664322ef780";
 
-test("portfolio fallback stays inside current Conductor Lane D and remains read-only", () => {
-  const queue = createPortfolioFallbackQueue(TEST_SHA, FACTORY_SHA, "2026-09-06T14:45:00.000Z");
+test("production-ramp queue puts one focused read-only Oslofjord material review ahead of GBR source proof", () => {
+  const queue = createPortfolioFallbackQueue(TEST_SHA, FACTORY_SHA, "2026-09-06T20:45:00.000Z");
 
-  assert.deepEqual(queue.projects.map((project) => project.id), ["PLANET_GBR_TRANSFER_02"]);
-  assert.equal(queue.projects[0].authorityRefs.includes(PORTFOLIO_FALLBACK_LEASE), true);
-  assert.equal(queue.packages.length, 2);
-  assert.equal(queue.packages.some((pkg) => pkg.projectId === "PLANET_AMAZONIA_TRANSFER_03"), false);
+  assert.deepEqual(queue.projects.map((project) => project.id), [
+    "PLANET_GOLD_01_OSLOFJORD",
+    "PLANET_GBR_TRANSFER_02",
+  ]);
+  assert.equal(queue.projects[0].authorityRefs?.includes(PORTFOLIO_OSLOFJORD_REVIEW_LEASE), true);
+  assert.equal(queue.projects[1].authorityRefs?.includes(PORTFOLIO_FALLBACK_LEASE), true);
+  assert.equal(queue.packages.length, 3);
 
-  for (const pkg of queue.packages) {
+  const review = queue.packages[0];
+  assert.equal(review.projectId, "PLANET_GOLD_01_OSLOFJORD");
+  assert.equal(review.section, "PRODUCT_DESIGN");
+  assert.equal(review.specialist?.provider, "CLAUDE");
+  assert.equal(review.specialist?.role, "PRODUCT_INTERFACE");
+  assert.equal(review.specialist?.mode, "REVIEW_ONLY");
+  assert.equal(review.specialist?.model, "claude-opus-5");
+  assert.deepEqual(review.writeScopes, []);
+  assert.equal(review.execution, undefined);
+  assert.equal(review.run?.expectedBaseSha, TEST_SHA);
+  assert.equal(review.deliverables.length, 3);
+  assert.equal(review.specialist?.sourceRefs?.some((ref) => ref.includes("ONE_PASS_ONE_DELIVERABLE")), true);
+});
+
+test("production-ramp queue preserves bounded read-only GBR source checks after the material review", () => {
+  const queue = createPortfolioFallbackQueue(TEST_SHA, FACTORY_SHA, "2026-09-06T20:45:00.000Z");
+
+  for (const pkg of queue.packages.slice(1)) {
     assert.equal(pkg.projectId, "PLANET_GBR_TRANSFER_02");
     assert.equal(pkg.status, "READY");
     assert.deepEqual(pkg.writeScopes, []);
@@ -26,6 +47,9 @@ test("portfolio fallback stays inside current Conductor Lane D and remains read-
     assert.equal(pkg.resourceBudget?.maxModelCalls, 0);
     assert.equal(pkg.run?.expectedBaseSha, TEST_SHA);
   }
+
+  assert.equal(queue.packages.some((pkg) => pkg.projectId === "PLANET_AMAZONIA_TRANSFER_03"), false);
+  assert.equal(queue.packages.some((pkg) => pkg.specialist?.mode === "BOUNDED_CODE"), false);
 });
 
 test("portfolio fallback recognises only the proven receiver-writer conflict as a safe trigger", () => {
@@ -46,12 +70,12 @@ test("portfolio fallback recognises only the proven receiver-writer conflict as 
   assert.equal(isOnlyReceiverWriterConflict({ error: "OTHER" }), false);
 });
 
-test("portfolio fallback binds outcome identity to exact TEST and Factory state", () => {
-  const first = createPortfolioFallbackQueue(TEST_SHA, FACTORY_SHA, "2026-09-06T14:45:00.000Z");
+test("production-ramp outcome identity stays bound to exact TEST and Factory state", () => {
+  const first = createPortfolioFallbackQueue(TEST_SHA, FACTORY_SHA, "2026-09-06T20:45:00.000Z");
   const changedTest = `a${TEST_SHA.slice(1)}`;
   const changedFactory = `a${FACTORY_SHA.slice(1)}`;
-  const second = createPortfolioFallbackQueue(changedTest, FACTORY_SHA, "2026-09-06T14:45:00.000Z");
-  const third = createPortfolioFallbackQueue(TEST_SHA, changedFactory, "2026-09-06T14:45:00.000Z");
+  const second = createPortfolioFallbackQueue(changedTest, FACTORY_SHA, "2026-09-06T20:45:00.000Z");
+  const third = createPortfolioFallbackQueue(TEST_SHA, changedFactory, "2026-09-06T20:45:00.000Z");
 
   assert.notEqual(first.packages[0].id, second.packages[0].id);
   assert.notEqual(first.packages[0].id, third.packages[0].id);
