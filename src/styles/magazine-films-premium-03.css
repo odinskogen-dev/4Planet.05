@@ -1,0 +1,174 @@
+/* 4PLANET MAGAZINE + FILMS — PREMIUM 03
+   Final loaded closure layer. Keeps light surfaces calm, makes Films a dense editorial maze,
+   stabilises the Magazine accent system, and makes the existing theme toggle materially dark. */
+
+/* Masthead authority: black in light, light in dark. */
+.mag-world[data-mag-theme="light"] .mag-world-masthead { color:#080808 !important; }
+.mag-world[data-mag-theme="dark"] .mag-world-masthead { color:#f4f2eb !important; }
+
+/* FILMS — resting cards stay paper. Accent appears only through interaction/touch cue. */
+.mag-world .mag-film-card {
+  background:var(--mw-paper) !important;
+  color:var(--mw-ink) !important;
+  transition:background-color .2s ease,color .2s ease,transform .2s ease !important;
+}
+.mag-world .mag-film-card-index,
+.mag-world .mag-film-meta,
+.mag-world .mag-film-card-copy > p,
+.mag-world .mag-film-card-foot span { color:var(--mw-soft) !important; }
+.mag-world .mag-film-card-media,
+.mag-world .mag-film-related-media { background:#080808; }
+
+@media (hover:hover) {
+  .mag-world .mag-film-card:hover,
+  .mag-world .mag-film-card:focus-within {
+    background:var(--film-accent) !important;
+    color:var(--film-accent-ink) !important;
+  }
+  .mag-world .mag-film-card:hover .mag-film-card-index,
+  .mag-world .mag-film-card:hover .mag-film-meta,
+  .mag-world .mag-film-card:hover .mag-film-card-copy > p,
+  .mag-world .mag-film-card:hover .mag-film-card-foot span,
+  .mag-world .mag-film-card:focus-within .mag-film-card-index,
+  .mag-world .mag-film-card:focus-within .mag-film-meta,
+  .mag-world .mag-film-card:focus-within .mag-film-card-copy > p,
+  .mag-world .mag-film-card:focus-within .mag-film-card-foot span {
+    color:color-mix(in srgb,var(--film-accent-ink) 78%,transparent) !important;
+  }
+}
+
+/* Editorial maze — deterministic, dense and irregular without becoming a feed wall. */
+.mag-world .mag-film-grid {
+  grid-auto-flow:dense !important;
+  align-items:stretch;
+}
+.mag-world .mag-film-card--wide { grid-column:span 8 !important; }
+.mag-world .mag-film-card--portrait { grid-column:span 4 !important; }
+.mag-world .mag-film-card--small { grid-column:span 4 !important; }
+.mag-world .mag-film-card--compact { grid-column:span 5 !important; }
+.mag-world .mag-film-card--feature { grid-column:span 7 !important; }
+
+.mag-world .mag-film-card--wide .mag-film-card-media,
+.mag-world .mag-film-card--feature .mag-film-card-media { aspect-ratio:16/9 !important; }
+.mag-world .mag-film-card--portrait .mag-film-card-media { aspect-ratio:4/5 !important; }
+.mag-world .mag-film-card--small .mag-film-card-media { aspect-ratio:4/3 !important; }
+.mag-world .mag-film-card--compact .mag-film-card-media { aspect-ratio:5/4 !important; }
+.mag-world .mag-film-card--portrait .mag-film-card-copy h2,
+.mag-world .mag-film-card--small .mag-film-card-copy h2 { font-size:clamp(27px,2.6vw,42px) !important; }
+.mag-world .mag-film-card-copy > p {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+}
+
+/* All published imagery is film material; avoid stylising it into generic 4PLANET photography. */
+.mag-world .mag-film-card-media img,
+.mag-world .mag-film-related-media img,
+.mag-world .mag-film-home-card img {
+  filter:none !important;
+  object-position:center;
+}
+.mag-world .mag-film-card:hover .mag-film-card-media img { filter:none !important; }
+
+/* Dark mode: the toggle already changes data-mag-theme. This final layer prevents legacy white CSS from winning. */
+.mag-world[data-mag-theme="dark"],
+.mag-world[data-mag-theme="dark"] body { background:var(--mw-bg) !important; color:var(--mw-ink) !important; }
+.mag-world[data-mag-theme="dark"] main,
+.mag-world[data-mag-theme="dark"] .mag-home,
+.mag-world[data-mag-theme="dark"] .mag-films,
+.mag-world[data-mag-theme="dark"] .mag-film-detail,
+.mag-world[data-mag-theme="dark"] .mag-feed-shell,
+.mag-world[data-mag-theme="dark"] .mag-topic-index,
+.mag-world[data-mag-theme="dark"] .mag-read-now,
+.mag-world[data-mag-theme="dark"] .mag-edition,
+.mag-world[data-mag-theme="dark"] .mag-independence,
+.mag-world[data-mag-theme="dark"] .mag-franchise-section,
+.mag-world[data-mag-theme="dark"] .mag-film-home-stream,
+.mag-world[data-mag-theme="dark"] .mag-story-stream,
+.mag-world[data-mag-theme="dark"] .mag-atlas-embed,
+.mag-world[data-mag-theme="dark"] .mag-world-footer {
+  background:var(--mw-bg) !important;
+  color:var(--mw-ink) !important;
+}
+.mag-world[data-mag-theme="dark"] section { border-color:var(--mw-line) !important; }
+.mag-world[data-mag-theme="dark"] :is(
+  .mag-films-hero,.mag-film-filter,.mag-film-selection,.mag-film-selection-head,
+  .mag-film-detail-head,.mag-film-detail-meta,.mag-film-detail-body,.mag-film-why,
+  .mag-film-next,.mag-film-related,.mag-film-related>div,.mag-film-related-card,
+  .mag-film-home-stream-head,.mag-feed-head,.mag-topic-river,.mag-topic-grid,
+  .mag-topic-card,.mag-read-now-head,.mag-edition-head,.mag-principle-list,
+  .mag-principle-row,.mag-franchise-rail,.mag-world-footer-grid,.mag-world-footer-bottom
+) { border-color:var(--mw-line) !important; }
+.mag-world[data-mag-theme="dark"] :is(
+  .mag-film-card,.mag-film-related-card,.mag-topic-card,.mag-edition-card
+) {
+  background:var(--mw-paper) !important;
+  color:var(--mw-ink) !important;
+}
+.mag-world[data-mag-theme="dark"] :is(
+  .mag-films-hero-note span,.mag-film-selection-head>p,.mag-film-card-copy>p,
+  .mag-film-card-foot span,.mag-film-detail-story>p,.mag-film-detail-meta,
+  .mag-film-detail-media-wrap>figcaption,.mag-feed-head p,.mag-home-hero-aside span,
+  .mag-read-now-head>p,.mag-edition-head>p
+) { color:var(--mw-soft) !important; }
+.mag-world[data-mag-theme="dark"] .mag-film-back,
+.mag-world[data-mag-theme="dark"] .mag-film-source,
+.mag-world[data-mag-theme="dark"] .mag-film-next a { color:var(--mw-ink) !important; }
+.mag-world[data-mag-theme="dark"] .mag-film-dek { color:var(--mw-ink) !important; }
+.mag-world[data-mag-theme="dark"] .mag-film-watch { background:var(--mw-blue) !important; color:#fff !important; }
+
+/* Keep deliberate Magazine colour cards alive in dark mode. */
+.mag-world[data-mag-theme="dark"] .mag-story-tile--ink { background:#0c0e12 !important; color:#f8f5ec !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--blue { background:#315dff !important; color:#fdfcf7 !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--green { background:#48ef7d !important; color:#06140b !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--pink { background:#ff5a94 !important; color:#150711 !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--orange { background:#ff7853 !important; color:#150b06 !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--yellow { background:#f3dd58 !important; color:#151309 !important; }
+.mag-world[data-mag-theme="dark"] .mag-story-tile--violet { background:#725cff !important; color:#fff !important; }
+
+/* Mobile maze: density first, with intermittent full-width moments for rhythm. */
+@media (max-width:640px) {
+  .mag-world .mag-film-selection { padding-inline:10px !important; }
+  .mag-world .mag-film-grid { grid-template-columns:repeat(12,minmax(0,1fr)) !important; }
+  .mag-world .mag-film-card--wide,
+  .mag-world .mag-film-card--portrait,
+  .mag-world .mag-film-card--small,
+  .mag-world .mag-film-card--compact,
+  .mag-world .mag-film-card--feature { grid-column:span 6 !important; }
+  .mag-world .mag-film-card:nth-child(7n+1),
+  .mag-world .mag-film-card:nth-child(11n+6) { grid-column:span 12 !important; }
+  .mag-world .mag-film-card:nth-child(7n+1) .mag-film-card-media { aspect-ratio:16/9 !important; }
+  .mag-world .mag-film-card:nth-child(4n+2) .mag-film-card-media { aspect-ratio:1/1 !important; }
+  .mag-world .mag-film-card:nth-child(4n+3) .mag-film-card-media { aspect-ratio:4/5 !important; }
+  .mag-world .mag-film-card-copy { min-height:0 !important; }
+  .mag-world .mag-film-card-copy>p { display:none !important; }
+  .mag-world .mag-film-card:nth-child(7n+1) .mag-film-card-copy>p,
+  .mag-world .mag-film-card:nth-child(11n+6) .mag-film-card-copy>p {
+    display:-webkit-box !important;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    font-size:11px !important;
+    line-height:1.4 !important;
+  }
+  .mag-world .mag-film-card:nth-child(7n+1) .mag-film-card-copy h2,
+  .mag-world .mag-film-card:nth-child(11n+6) .mag-film-card-copy h2 { font-size:28px !important; }
+}
+
+@media (hover:none) {
+  .mag-world .mag-film-card { box-shadow:inset 0 3px 0 var(--film-accent) !important; }
+  .mag-world .mag-film-card:active { background:var(--film-accent) !important; color:var(--film-accent-ink) !important; }
+}
+
+/* Fail-safe accessibility: the Film rail must become genuinely static. */
+@media (prefers-reduced-motion:reduce) {
+  .mag-world .mag-film-home-stream .mag-story-stream-track,
+  .mag-world .mag-film-home-stream .mag-story-stream-track * {
+    animation:none !important;
+    animation-name:none !important;
+    transform:none !important;
+    transition:none !important;
+  }
+  .mag-world .mag-film-card,
+  .mag-world .mag-film-card-media img { transition:none !important; }
+}
