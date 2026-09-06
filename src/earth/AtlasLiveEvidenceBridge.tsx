@@ -315,8 +315,8 @@ export function AtlasLiveEvidenceBridge() {
 
       const rounded = bbox.map((value) => Number(value.toFixed(2)));
       const key = rounded.join(",");
-      if (key === lastFirmsKey && firmsData.features.length) {
-        renderFirms();
+      if (key === lastFirmsKey) {
+        if (firmsData.features.length) renderFirms();
         return;
       }
       lastFirmsKey = key;
@@ -376,8 +376,8 @@ export function AtlasLiveEvidenceBridge() {
         return;
       }
 
-      if (gbifKey === lastTaxonKey && inatData.features.length) {
-        renderInat();
+      if (gbifKey === lastTaxonKey) {
+        if (inatData.features.length) renderInat();
         return;
       }
       lastTaxonKey = gbifKey;
