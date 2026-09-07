@@ -1,20 +1,107 @@
 import { AgentWorkflow } from "agents/workflows";
 import type { AgentWorkflowEvent, AgentWorkflowStep } from "agents/workflows";
 import type { ProductionFactoryAgent } from "./index";
+import type { WorkPackage } from "./contracts";
 import { isClaudeCapacityPausedOutcome, isPendingCiOutcome } from "./workflowOutcomeState";
+
+type ReadOnlyPortfolioContinuation = {
+  exactFactorySha: string;
+  exactTestSha: string;
+  index: number;
+  packages: WorkPackage[];
+};
 
 type WorkPackageWorkflowParams = {
   workPackageId: string;
+  portfolioFallback?: ReadOnlyPortfolioContinuation;
 };
 
 const MAX_PENDING_CI_REOBSERVATIONS = 12;
 const PENDING_CI_SLEEP = "2 minutes";
 const MAX_CLAUDE_CAPACITY_REOBSERVATIONS = 48;
 const CLAUDE_CAPACITY_SLEEP = "1 hour";
+const SHA40 = /^[0-9a-f]{40}$/i;
+
+function validatePortfolioContinuation(currentWorkPackageId: string, continuation: ReadOnlyPortfolioContinuation) {
+  if (!SHA40.test(continuation.exactFactorySha) || !SHA40.test(continuation.exactTestSha)) {
+    throw new Error("PORTFOLIO_CONTINUATION_EXACT_LINEAGE_INVALID");
+  }
+  if (!Number.isInteger(continuation.index) || continuation.index < 0 || continuation.index >= continuation.packages.length) {
+    throw new Error("PORTFOLIO_CONTINUATION_INDEX_INVALID");
+  }
+  if (continuation.packages[continuation.index]?.id !== currentWorkPackageId) {
+    throw new Error("PORTFOLIO_CONTINUATION_CURRENT_PACKAGE_MISMATCH");
+  }
+  for (const pkg of continuation.packages) {
+    if (pkg.writeScopes.length !== 0) throw new Error("PORTFOLIO_CONTINUATION_MUTABLE_PACKAGE_FORBIDDEN");
+    if (pkg.run?.expectedBaseSha !== continuation.exactTestSha) {
+      throw new Error("PORTFOLIO_CONTINUATION_TEST_LINEAGE_MISMATCH");
+    }
+    if (pkg.run?.factoryBuildSha !== continuation.exactFactorySha) {
+      throw new Error("PORTFOLIO_CONTINUATION_FACTORY_LINEAGE_MISMATCH");
+    }
+  }
+}
+
+async function dispatchNextReadOnlyPortfolioPackage(
+  agent: ProductionFactoryAgent,
+  currentWorkPackageId: string,
+  continuation: ReadOnlyPortfolioContinuation,
+) {
+  validatePortfolioContinuation(currentWorkPackageId, continuation);
+  const nextIndex = continuation.index + 1;
+  const next = continuation.packages[nextIndex];
+  if (!next) return { status: "PORTFOLIO_EXHAUSTED" } as const;
+
+  const workflowId = `factory-portfolio-fallback-${next.id}`;
+  const factory = agent as any;
+  const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
+  if (tracked) {
+    return {
+      status: "ALREADY_TRACKED",
+      workPackageId: next.id,
+      workflowId,
+      trackedStatus: tracked.status ?? "UNKNOWN",
+    } as const;
+  }
+
+  await factory.runWorkflow(
+    "WORK_PACKAGE_WORKFLOW",
+    {
+      workPackageId: next.id,
+      portfolioFallback: {
+        ...continuation,
+        index: nextIndex,
+      },
+    },
+    {
+      id: workflowId,
+      metadata: {
+        portfolioFallback: true,
+        continuationTrigger: "TERMINAL_OR_LOCAL_PROVIDER_PAUSE",
+        authority: "4PLANET_FACTORY_PREMIUM_AUTONOMOUS_PRODUCTION_MARATHON_04",
+        projectId: next.projectId,
+        section: next.section,
+        exactFactorySha: continuation.exactFactorySha,
+        exactTestSha: continuation.exactTestSha,
+        readOnly: true,
+      },
+      agentBinding: "PRODUCTION_FACTORY",
+    },
+  );
+
+  return {
+    status: "DISPATCHED",
+    workPackageId: next.id,
+    workflowId,
+    projectId: next.projectId,
+  } as const;
+}
 
 export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, WorkPackageWorkflowParams> {
   async run(event: AgentWorkflowEvent<WorkPackageWorkflowParams>, step: AgentWorkflowStep) {
-    const { workPackageId } = event.payload;
+    const { workPackageId, portfolioFallback } = event.payload;
+    if (portfolioFallback) validatePortfolioContinuation(workPackageId, portfolioFallback);
 
     await this.reportProgress({
       step: "dispatch",
@@ -37,6 +124,11 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
 
     while (true) {
       if (isClaudeCapacityPausedOutcome(outcome)) {
+        if (portfolioFallback && capacityObservation === 0) {
+          await step.do("continue-after-local-provider-pause", async () =>
+            dispatchNextReadOnlyPortfolioPackage(this.agent, workPackageId, portfolioFallback),
+          );
+        }
         if (capacityObservation >= MAX_CLAUDE_CAPACITY_REOBSERVATIONS) break;
         capacityObservation += 1;
 
@@ -89,6 +181,12 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
     await step.do("persist-outcome", async () => {
       await this.agent.finalizeWorkflowOutcome(outcome);
     });
+
+    if (portfolioFallback) {
+      await step.do("continue-after-terminal", async () =>
+        dispatchNextReadOnlyPortfolioPackage(this.agent, workPackageId, portfolioFallback),
+      );
+    }
 
     await step.reportComplete(outcome);
     return outcome;

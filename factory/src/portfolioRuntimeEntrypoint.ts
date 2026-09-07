@@ -97,7 +97,8 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
     if (!outcomeById.has(pkg.id) && !activeWork.has(pkg.id)) await factory.upsertWorkPackage(pkg);
   }
 
-  for (const pkg of queue.packages) {
+  for (let index = 0; index < queue.packages.length; index += 1) {
+    const pkg = queue.packages[index];
     if (outcomeById.has(pkg.id)) continue;
     const workflowId = `factory-portfolio-fallback-${pkg.id}`;
     const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
@@ -127,17 +128,26 @@ async function dispatchNextPortfolioFallback(env: PortfolioRuntimeEnv) {
 
     await factory.runWorkflow(
       "WORK_PACKAGE_WORKFLOW",
-      { workPackageId: pkg.id },
+      {
+        workPackageId: pkg.id,
+        portfolioFallback: {
+          exactFactorySha,
+          exactTestSha,
+          index,
+          packages: queue.packages,
+        },
+      },
       {
         id: workflowId,
         metadata: {
           portfolioFallback: true,
-          authority: "4PLANET_AUTONOMOUS_VALUE_CLOSURE_02",
+          authority: "4PLANET_FACTORY_PREMIUM_AUTONOMOUS_PRODUCTION_MARATHON_04",
           projectId: pkg.projectId,
           section: pkg.section,
           exactFactorySha,
           exactTestSha,
           readOnly: true,
+          terminalContinuation: true,
         },
         agentBinding: "PRODUCTION_FACTORY",
       },
@@ -200,7 +210,7 @@ export default {
       return Response.json({
         ...original,
         portfolioFallback: fallback,
-        portfolioRule: "LOCAL RECEIVER/PROVIDER BLOCK -> PARK ONLY LOCAL READ-ONLY CAPABILITY -> DISPATCH NEXT LEGAL PACKAGE",
+        portfolioRule: "LOCAL RECEIVER/PROVIDER BLOCK -> PARK ONLY LOCAL READ-ONLY CAPABILITY -> DISPATCH NEXT LEGAL PACKAGE -> TERMINAL EVENT CONTINUES QUEUE",
       }, { status: 409 });
     } catch (error) {
       const original = typeof body === "object" && body !== null ? body as Record<string, unknown> : {};
