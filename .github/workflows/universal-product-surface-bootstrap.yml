@@ -1,0 +1,46 @@
+name: Universal Product Surface Bootstrap
+
+on:
+  push:
+    branches:
+      - control/universal-live-heir-sandbox-01
+    paths:
+      - 'scripts/bootstrap-universal-product-surfaces.mjs'
+      - '.github/workflows/universal-product-surface-bootstrap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: universal-product-surface-bootstrap
+  cancel-in-progress: true
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: control/universal-live-heir-sandbox-01
+          fetch-depth: 0
+      - name: Rebuild canonical surface registry
+        run: node scripts/bootstrap-universal-product-surfaces.mjs
+      - name: Validate governance-only diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          [ "$changed" = "docs/control/PRODUCT_SURFACE_REGISTRY.json" ] || { echo 'Unexpected bootstrap mutation'; exit 2; }
+      - name: Commit generated registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET Factory Control'
+          git config user.email 'factory-control@users.noreply.github.com'
+          git add docs/control/PRODUCT_SURFACE_REGISTRY.json
+          git commit -m 'control: register canonical sandboxes for all product surfaces'
+          git push origin HEAD:control/universal-live-heir-sandbox-01
