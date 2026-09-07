@@ -8,3 +8,4 @@
 @media (max-width: 640px) {
   .mag-home > section:not(.mag-home-hero):not(.mag-topic-river) { contain-intrinsic-size: auto 1100px; }
 }
+/* Direct-live Human Gold dispatch after measured LCP/CLS repair. */
