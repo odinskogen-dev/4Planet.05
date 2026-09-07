@@ -65,3 +65,46 @@ test("truth summary exposes confirmed programme scale but no fabricated funding 
   assert.equal(summary.knownQuantity, null);
   assert.ok(summary.blockers.length >= 3);
 });
+
+test("AC-SC01-0001 is a real pre-action gate, not a fabricated transaction", () => {
+  const contract = action.AC_SC01_0001;
+  assert.equal(contract.id, "AC-SC01-0001");
+  assert.equal(contract.cellId, "CELL-SC01-VERIFIED-PLASTIC-RECOVERY");
+  assert.equal(contract.environment, "CONTROLLED");
+  assert.equal(contract.selectedProviderId.state, "TO_VERIFY");
+  assert.equal(contract.selectedProviderId.value, null);
+  assert.equal(contract.proposedResourceFlow.amount.state, "TO_VERIFY");
+  assert.equal(contract.proposedResourceFlow.amount.value, null);
+  assert.equal(contract.proposedResourceFlow.quantity.state, "TO_VERIFY");
+  assert.equal(contract.proposedResourceFlow.quantity.value, null);
+  assert.equal(contract.authorityState, "FOUNDER_RELEASE_REQUIRED");
+  assert.equal(action.universalActionContractCanBeginResourceFlow(contract), false);
+  assert.ok(contract.blockers.some((item) => /Founder has not released/i.test(item)));
+  assert.ok(contract.claimsProhibited.some((item) => /Payment equals delivery/i.test(item)));
+});
+
+test("resource flow cannot open by changing only the provider; every pre-action gate must close", () => {
+  const contract = action.AC_SC01_0001;
+  const providerOnly = {
+    ...contract,
+    selectedProviderId: { state: "KNOWN", value: "provider-pattern:plastic-bank:fixed-contribution:v1", sourceNote: "test" },
+  };
+  assert.equal(action.universalActionContractCanBeginResourceFlow(providerOnly), false);
+});
+
+test("resource flow opens only when provider, diligence, exact economics, release and blockers all close", () => {
+  const contract = action.AC_SC01_0001;
+  const released = {
+    ...contract,
+    selectedProviderId: { state: "KNOWN", value: "provider-pattern:plastic-bank:fixed-contribution:v1", sourceNote: "verified same-day" },
+    actorDiligenceState: "DILIGENCE_COMPLETE",
+    proposedResourceFlow: {
+      ...contract.proposedResourceFlow,
+      amount: { state: "KNOWN", value: 100, sourceNote: "same-day checkout fixture" },
+      quantity: { state: "KNOWN", value: 5000, sourceNote: "same-day checkout fixture" },
+    },
+    authorityState: "RELEASED",
+    blockers: [],
+  };
+  assert.equal(action.universalActionContractCanBeginResourceFlow(released), true);
+});
