@@ -1,0 +1,44 @@
+name: Patch Universal Four State Control
+
+on:
+  push:
+    branches:
+      - control/universal-live-heir-sandbox-01
+    paths:
+      - 'scripts/patch-universal-four-state-control.mjs'
+      - '.github/workflows/patch-universal-four-state-control.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: patch-universal-four-state-control
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: control/universal-live-heir-sandbox-01
+          fetch-depth: 0
+      - run: node scripts/patch-universal-four-state-control.mjs
+      - name: Assert bounded governance-only patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          changed="$(git diff --name-only)"
+          [ "$changed" = '.github/workflows/four-state-control-plane.yml' ] || { echo "Unexpected change: $changed"; exit 2; }
+      - name: Commit repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET Factory Control'
+          git config user.email 'factory-control@users.noreply.github.com'
+          git add .github/workflows/four-state-control-plane.yml
+          git commit -m 'control: preserve exact HEIR artifact and retry path readback'
+          git push origin HEAD:control/universal-live-heir-sandbox-01
