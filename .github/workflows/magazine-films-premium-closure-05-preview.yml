@@ -1,0 +1,138 @@
+name: 4PLANET Films Premium Closure 05 Preview
+
+on:
+  push:
+    branches:
+      - work/magazine-films-premium-closure-05
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'playwright.magazine.config.ts'
+      - '.github/workflows/magazine-films-premium-closure-05-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-films-premium-closure-05-preview
+  cancel-in-progress: true
+
+jobs:
+  verify-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact closure candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Magazine and Films contracts
+        run: npm run test:magazine
+
+      - name: Production build
+        env:
+          VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+        run: npm run build
+
+      - name: Install Chromium and WebKit for independent human QA
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Start exact production build locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/films-preview.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' 'http://127.0.0.1:4173/films' || true)
+            [ "$code" = '200' ] && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/films-preview.log" || true
+          exit 4
+
+      - name: Premium Films browser QA — all authority viewports
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/magazine-films-gold.spec.ts --config playwright.magazine.config.ts
+
+      - name: Preserve premium QA proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: magazine-films-closure-05-${{ github.sha }}
+          path: |
+            magazine-test-results/**/*.png
+            magazine-test-results/**/*.zip
+            artifacts/magazine-results.json
+            magazine-playwright-report/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 5; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 6; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy exact candidate to isolated Cloudflare Pages preview only
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_log="$RUNNER_TEMP/pages-preview.log"
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=magazine-films-premium-closure-05 \
+            --commit-hash="$GITHUB_SHA" 2>&1 | tee "$deploy_log"
+          immutable=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
+          [ -n "$immutable" ] || { echo 'Could not resolve immutable Pages preview URL'; exit 7; }
+          echo "FILMS_PREVIEW_IMMUTABLE=$immutable" >> "$GITHUB_ENV"
+          echo "Immutable preview: $immutable"
+
+      - name: Verify isolated preview — never touch live worker or custom domain
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "${FILMS_PREVIEW_IMMUTABLE:-}" ] || exit 8
+          for route in /films /films/yanuni /films/reinventing-power /magazine; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$FILMS_PREVIEW_IMMUTABLE$route" || true)
+            [ "$code" = '200' ] || { echo "Preview failed $code $route"; exit 9; }
+            echo "PASS $FILMS_PREVIEW_IMMUTABLE$route"
+          done
+          echo "PREVIEW ONLY — no worker deploy, no custom-domain mutation, no LIVE promotion."
