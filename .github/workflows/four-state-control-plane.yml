@@ -72,15 +72,44 @@ jobs:
 
           mkdir -p artifacts/four-state
           : > artifacts/four-state/deployments.jsonl
-          for page in $(seq 1 20); do
+          inventory_meta="artifacts/four-state/deployment-inventory.json"
+          page=1
+          max_pages=200
+          complete=0
+          total_pages=""
+          total_count=""
+          while [ "$page" -le "$max_pages" ]; do
             out="$RUNNER_TEMP/pages-$page.json"
             curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
               "https://api.cloudflare.com/client/v4/accounts/$account_id/pages/projects/4planet-05/deployments?page=$page&per_page=25" > "$out"
             jq -e '.success == true' "$out" >/dev/null
             jq -c '.result[]?' "$out" >> artifacts/four-state/deployments.jsonl
             count=$(jq '.result | length' "$out")
-            [ "$count" -lt 25 ] && break
+            api_total_pages=$(jq -r '.result_info.total_pages // empty' "$out")
+            api_total_count=$(jq -r '.result_info.total_count // empty' "$out")
+            [ -n "$api_total_pages" ] && total_pages="$api_total_pages"
+            [ -n "$api_total_count" ] && total_count="$api_total_count"
+
+            if [ -n "$total_pages" ] && [ "$page" -ge "$total_pages" ]; then
+              complete=1
+              break
+            fi
+            if [ "$count" -lt 25 ]; then
+              complete=1
+              break
+            fi
+            page=$((page + 1))
           done
+
+          complete_json=false
+          [ "$complete" -eq 1 ] && complete_json=true
+          printf '{"complete":%s,"pagesFetched":%d,"reportedTotalPages":%s,"reportedTotalCount":%s,"hardPageCap":%d}\n' \
+            "$complete_json" "$page" "${total_pages:-null}" "${total_count:-null}" "$max_pages" > "$inventory_meta"
+
+          if [ "$complete" -ne 1 ]; then
+            echo "Cloudflare deployment inventory incomplete after $page pages (reported total_pages=${total_pages:-unknown}); fail closed."
+            exit 4
+          fi
           test -s artifacts/four-state/deployments.jsonl
 
       - name: Resolve exact current HEIR/SANDBOX deployments
