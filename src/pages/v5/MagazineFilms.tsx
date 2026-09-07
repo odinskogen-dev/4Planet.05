@@ -8,6 +8,7 @@ import "@/styles/magazine-films.css";
 import "@/styles/magazine-films-gold-02.css";
 import "@/styles/magazine-films-premium-03.css";
 import "@/styles/magazine-films-premium-04.css";
+import "@/styles/magazine-films-live-07.css";
 
 type FilterId = "ALL" | FilmTopic;
 type MazeLayout = "wide" | "portrait" | "small" | "compact" | "feature";
@@ -37,6 +38,7 @@ const MAZE_LAYOUTS: MazeLayout[] = [
 
 const SAVED_KEY = "4planet-films-saved-v1";
 const FEATURED_SLUGS = ["yanuni", "the-territory", "chasing-coral", "my-octopus-teacher", "breaking-boundaries", "the-biggest-little-farm"];
+const FEATURED_MAZE_LAYOUTS = ["hero", "portrait", "compact", "wide", "wide", "feature"] as const;
 
 function accessLabel(film: FilmRecord) {
   if (film.access === "FULL_FREE") return "WATCH FREE";
@@ -175,6 +177,59 @@ function FilmCard({ film, index, saved, onSave }: { film: FilmRecord; index: num
   );
 }
 
+
+function FeaturedMaze({ films }: { films: FilmRecord[] }) {
+  if (!films.length) return null;
+  return (
+    <section className="mag-film-featured" aria-labelledby="film-featured-title">
+      <header className="mag-film-featured-head">
+        <div><p className="mag-films-eyebrow">FEATURED / EDITOR&apos;S CUT</p><h2 id="film-featured-title">Start here.</h2></div>
+        <p>A small set of films that open the living planet from different directions.</p>
+      </header>
+      <div className="mag-film-featured-maze">
+        {films.map((film, index) => {
+          const layout = FEATURED_MAZE_LAYOUTS[index % FEATURED_MAZE_LAYOUTS.length];
+          return (
+            <Link key={film.slug} className={`mag-film-featured-card mag-film-featured-card--${layout}`} data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `featured_maze_${layout}` })}>
+              <FilmImage film={film} eager={index < 2} decorative />
+              <span className="mag-film-featured-shade" aria-hidden />
+              <div className="mag-film-featured-copy"><span>{accessLabel(film)} · {film.runtime}</span><strong>{film.title}</strong></div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function WatchNowRail({ films }: { films: FilmRecord[] }) {
+  if (!films.length) return null;
+  const loop = [...films, ...films];
+  return (
+    <section className="mag-film-watch-now" aria-labelledby="film-watch-now-title">
+      <header>
+        <div><p className="mag-films-eyebrow">WATCH NOW / FREE TO WATCH</p><h2 id="film-watch-now-title">Watch now.</h2></div>
+        <p>Full films currently available from official publishers and rights holders.</p>
+      </header>
+      <div className="mag-film-watch-viewport" tabIndex={0} aria-label="Free films — moving horizontally; use arrow keys or swipe to explore" onKeyDown={(event) => {
+        if (event.key === "ArrowRight") event.currentTarget.scrollBy({ left: 340, behavior: "smooth" });
+        if (event.key === "ArrowLeft") event.currentTarget.scrollBy({ left: -340, behavior: "smooth" });
+      }}>
+        <div className="mag-film-watch-track">
+          {loop.map((film, index) => {
+            const duplicate = index >= films.length;
+            return (
+              <Link key={`${film.slug}-${index}`} className="mag-film-watch-card" data-accent={film.accent} to={`/films/${film.slug}`} aria-hidden={duplicate || undefined} tabIndex={duplicate ? -1 : 0} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: "watch_now_rail" })}>
+                <div><FilmImage film={film} decorative /></div><span>{film.runtime} · {film.director}</span><strong>{film.title}</strong>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FilmRail({ title, eyebrow, films }: { title: string; eyebrow: string; films: FilmRecord[] }) {
   if (!films.length) return null;
   return (
@@ -268,53 +323,31 @@ export function MagazineFilmsIndex() {
           </div>
           <div className="mag-films-hero-note">
             <p>Documentaries that make the living world harder to ignore — and easier to understand.</p>
-            <span>Curated by 4PLANET. Films remain with their filmmakers and distributors; availability can vary by country.</span>
+            <span>Curated by 4PLANET. Watch routes stay with filmmakers and distributors.</span>
           </div>
         </section>
 
+        {showEditorialLanes ? (<><FeaturedMaze films={featured} /><WatchNowRail films={free} /></>) : null}
+
         <section className="mag-film-discovery-tools" aria-label="Find a film">
-          <form onSubmit={submitSearch} role="search">
-            <label htmlFor="film-search">FIND A FILM</label>
-            <div><input id="film-search" type="search" value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Title, director, ocean, food…" autoComplete="off" /><button type="submit">SEARCH →</button></div>
-          </form>
+          <form onSubmit={submitSearch} role="search"><label htmlFor="film-search">FIND A FILM</label><div><input id="film-search" type="search" value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Title, director, ocean, food…" autoComplete="off" /><button type="submit">SEARCH →</button></div></form>
           <button type="button" className={savedOnly ? "is-active" : ""} aria-pressed={savedOnly} onClick={toggleSavedOnly}>SAVED {saved.size}</button>
         </section>
 
         <nav className="mag-film-filter" aria-label="Film topics">
           {availableFilters.map((filter) => {
             const params = new URLSearchParams(searchParams);
-            if (filter.id === "ALL") params.delete("topic");
-            else params.set("topic", filter.id);
-            return (
-              <Link
-                key={filter.id}
-                className={active === filter.id ? "is-active" : ""}
-                aria-current={active === filter.id ? "page" : undefined}
-                to={`/films${params.toString() ? `?${params.toString()}` : ""}`}
-                onClick={() => trackEvent("film_filter_use", { filter: filter.id.toLowerCase() })}
-              >
-                {filter.label}
-              </Link>
-            );
+            if (filter.id === "ALL") params.delete("topic"); else params.set("topic", filter.id);
+            return <Link key={filter.id} className={active === filter.id ? "is-active" : ""} aria-current={active === filter.id ? "page" : undefined} to={`/films${params.toString() ? `?${params.toString()}` : ""}`} onClick={() => trackEvent("film_filter_use", { filter: filter.id.toLowerCase() })}>{filter.label}</Link>;
           })}
         </nav>
 
-        {showEditorialLanes ? (
-          <section className="mag-film-editorial-lanes" aria-label="Curated ways into 4PLANET Films">
-            <FilmRail eyebrow="FEATURED" title="Begin with these." films={featured} />
-            <FilmRail eyebrow="WATCH FREE" title="Watch now." films={free} />
-            <FilmRail eyebrow="SHORT FILMS" title="Thirty minutes or less." films={shorts} />
-            <FilmRail eyebrow="NEW TO 4PLANET" title="Recently added." films={recent} />
-          </section>
-        ) : null}
-
         <section className="mag-film-selection" aria-labelledby="selection-title">
-          <header className="mag-film-selection-head">
-            <div><p className="mag-films-eyebrow">CURATED SELECTION / {films.length} {films.length === 1 ? "FILM" : "FILMS"}</p><h2 id="selection-title">{savedOnly ? "Your saved films." : query ? `Results for “${query}”.` : active === "ALL" ? "Explore the selection." : FILTER_OPTIONS.find((item) => item.id === active)?.label}</h2></div>
-            <p>{query || savedOnly || active !== "ALL" ? "A focused view of the same curated selection. Clear the search or filters whenever you want the full editorial map." : "Selected for cinematic quality, relevance to a living planet and a clear route back to the people who made the work."}</p>
-          </header>
+          <header className="mag-film-selection-head"><div><p className="mag-films-eyebrow">CURATED SELECTION / {films.length} {films.length === 1 ? "FILM" : "FILMS"}</p><h2 id="selection-title">{savedOnly ? "Your saved films." : query ? `Results for “${query}”.` : active === "ALL" ? "Explore the selection." : FILTER_OPTIONS.find((item) => item.id === active)?.label}</h2></div><p>{query || savedOnly || active !== "ALL" ? "A focused view of the same curated selection. Clear the search or filters whenever you want the full editorial map." : "Selected for cinematic quality, relevance to a living planet and a clear route back to the people who made the work."}</p></header>
           {films.length ? <div className="mag-film-grid">{films.map((film, index) => <FilmCard key={film.slug} film={film} index={index} saved={saved.has(film.slug)} onSave={() => toggle(film.slug)} />)}</div> : <div className="mag-film-empty"><h3>No films match this view.</h3><Link to="/films">RESET DISCOVERY →</Link></div>}
         </section>
+
+        {showEditorialLanes ? <section className="mag-film-editorial-lanes mag-film-editorial-lanes--secondary" aria-label="More ways into 4PLANET Films"><FilmRail eyebrow="SHORT FILMS" title="Thirty minutes or less." films={shorts} /><FilmRail eyebrow="NEW TO 4PLANET" title="Recently added." films={recent} /></section> : null}
       </main>
     </MagazineShell>
   );

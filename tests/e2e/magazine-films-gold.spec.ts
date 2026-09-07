@@ -8,6 +8,7 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 async function expectFilmImagesAreReal(page: import("@playwright/test").Page) {
   const cards = page.locator(".mag-film-card");
   await expect(cards).toHaveCount(40);
+  const seenSources = new Set<string>();
   for (let i = 0; i < 40; i += 1) {
     const card = cards.nth(i);
     await card.scrollIntoViewIfNeeded();
@@ -17,8 +18,12 @@ async function expectFilmImagesAreReal(page: import("@playwright/test").Page) {
       const img = node as HTMLImageElement;
       return { loaded: img.complete && img.naturalWidth > 0, src: img.currentSrc || img.src };
     }), { timeout: 15_000 }).toMatchObject({ loaded: true });
-    const src = await image.getAttribute("src");
-    expect(src || "").not.toMatch(/\/assets\/(brand|domains|missions)\//);
+    const dimensions = await image.evaluate((node) => ({ width: (node as HTMLImageElement).naturalWidth, height: (node as HTMLImageElement).naturalHeight, src: (node as HTMLImageElement).currentSrc || (node as HTMLImageElement).src }));
+    expect(dimensions.width, `film ${i + 1} image should be at least 480px wide`).toBeGreaterThanOrEqual(480);
+    expect(dimensions.height, `film ${i + 1} image should be at least 270px high`).toBeGreaterThanOrEqual(270);
+    expect(dimensions.src).not.toMatch(/\/assets\/(brand|domains|missions)\//);
+    expect(seenSources.has(dimensions.src), `film ${i + 1} should not duplicate another film image`).toBe(false);
+    seenSources.add(dimensions.src);
   }
 }
 
@@ -50,9 +55,11 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
     await expect(page.locator(".mag-world-primary-nav").getByRole("link", { name: "FILMS", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".mag-film-card")).toHaveCount(40);
     await expect(page.locator(".mag-film-filter a")).toHaveCount(8);
-    await expect(page.locator(".mag-film-lane")).toHaveCount(4);
-    await expect(page.getByRole("heading", { name: "Begin with these." })).toBeVisible();
+    await expect(page.locator(".mag-film-featured-card")).toHaveCount(6);
+    await expect(page.getByRole("heading", { name: "Start here." })).toBeVisible();
+    await expect(page.locator(".mag-film-watch-now")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Watch now." })).toBeVisible();
+    await expect(page.locator(".mag-film-lane")).toHaveCount(2);
     await expect(page.getByRole("heading", { name: "Thirty minutes or less." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recently added." })).toBeVisible();
     await expect(page.getByText(/qualified records/i)).toHaveCount(0);
@@ -60,7 +67,7 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
     await expectNoHorizontalOverflow(page);
     await expectMaze(page);
 
-    if (testInfo.project.name === "mag-mobile-390") await expectFilmImagesAreReal(page);
+    if (["mag-mobile-390", "mag-webkit-390"].includes(testInfo.project.name)) await expectFilmImagesAreReal(page);
 
     await page.getByRole("link", { name: "FOOD", exact: true }).click();
     await expect(page).toHaveURL(/\/films\?topic=FOOD$/);
@@ -73,6 +80,18 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
       await page.goto("/films");
       await page.screenshot({ path: testInfo.outputPath("films-index-closure-05.png"), fullPage: true });
     }
+  });
+
+  test("Watch Now rail moves on its own and pauses for interaction", async ({ page }) => {
+    await page.goto("/films");
+    const track = page.locator(".mag-film-watch-track");
+    await expect(track).toBeVisible();
+    const animationName = await track.evaluate((node) => getComputedStyle(node).animationName);
+    expect(animationName).toContain("film-watch-now-loop");
+    const viewport = page.locator(".mag-film-watch-viewport");
+    await viewport.focus();
+    await expect.poll(async () => track.evaluate((node) => getComputedStyle(node).animationPlayState)).toBe("paused");
+    await viewport.press("ArrowRight");
   });
 
   test("search, filters and local saved list work without an account", async ({ page }) => {

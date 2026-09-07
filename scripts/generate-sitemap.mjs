@@ -72,7 +72,10 @@ fs.writeFileSync(path.join(publicDir, "rss.xml"), `<?xml version="1.0" encoding=
 
 const robots = `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(publicOrigin, "/sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
-const magazineRobots = `User-agent: *\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\n`;
+const magazineRobots = `User-agent: OAI-SearchBot\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nUser-agent: Googlebot\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nUser-agent: Bingbot\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nUser-agent: *\nAllow: /magazine\nAllow: /films\nDisallow: /magazine/saved\nDisallow: /magazine/search\n\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\n`;
 fs.writeFileSync(path.join(publicDir, "magazine-robots.txt"), magazineRobots, "utf8");
 
 console.log(`Generated public sitemap (${publicRoutes.length} URLs @ ${publicOrigin}); Magazine sitemap (${magazineRoutes.length} URLs @ ${magazineOrigin}, ${publishedFilmSlugs.length} Films); News sitemap (${newsStories.length} eligible stories); RSS (${stories.length} stories + ${signals.length} signals).`);
+
+const indexNowKey = "4planet-indexnow-2026-9f7b3c1d5e8a";
+fs.writeFileSync(path.join(publicDir, `${indexNowKey}.txt`), `${indexNowKey}\n`, "utf8");

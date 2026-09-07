@@ -37,6 +37,11 @@ function readPublishedFilms() {
       director: pickString(block, "director"),
       runtime: pickString(block, "runtime"),
       description: pickString(block, "description"),
+      watchUrl: pickString(block, "watchUrl"),
+      sourceUrl: pickString(block, "sourceUrl"),
+      sourceLabel: pickString(block, "sourceLabel"),
+      selectionNote: pickString(block, "selectionNote"),
+      availabilityNote: pickString(block, "availabilityNote"),
       image: imageUrlOverride || (imageVideoId ? `https://i.ytimg.com/vi/${imageVideoId}/maxresdefault.jpg` : ""),
       imageFallback: fallbackOverride || (imageVideoId ? `https://i.ytimg.com/vi/${imageVideoId}/hqdefault.jpg` : ""),
     };
@@ -88,9 +93,45 @@ function headMarkup(meta) {
   ].join("\n    ");
 }
 
+function staticMarkupForRoute(route, meta) {
+  if (route === "/films") {
+    const items = films.map((film) => `<li><a href="${escapeHtml(`/films/${film.slug}`)}">${escapeHtml(film.title)}</a> — ${film.year}, ${escapeHtml(film.runtime)}, directed by ${escapeHtml(film.director)}</li>`).join("");
+    return `<main class="mag-static-prerender" data-4planet-static-prerender="films-index"><p>4PLANET FILMS</p><h1>Films worth your attention.</h1><p>${escapeHtml(meta.description)}</p><h2>Curated documentary selection</h2><ul>${items}</ul></main>`;
+  }
+  if (route.startsWith("/films/")) {
+    const slug = route.split("/").filter(Boolean).pop();
+    const film = films.find((candidate) => candidate.slug === slug);
+    if (!film) return "";
+    return `<article class="mag-static-prerender" data-4planet-static-prerender="film-detail"><p>4PLANET FILMS / ${escapeHtml(film.focus)}</p><h1>${escapeHtml(film.title)}</h1><p>${escapeHtml(film.description)}</p><p><strong>${film.year}</strong> · ${escapeHtml(film.runtime)} · Directed by ${escapeHtml(film.director)}</p><p><a href="${escapeHtml(film.watchUrl)}">Watch ${escapeHtml(film.title)}</a></p><h2>Why 4PLANET selected it</h2><p>${escapeHtml(film.selectionNote || film.description)}</p><h2>Availability</h2><p>${escapeHtml(film.availabilityNote || "See the official source for current availability.")}</p><p><a href="${escapeHtml(film.sourceUrl)}">${escapeHtml(film.sourceLabel || "Official film source")}</a></p><nav><a href="/films">Explore all 4PLANET Films</a> · <a href="/magazine">Open 4PLANET Magazine</a> · <a href="/magazine/atlas">Open 4PLANET Atlas</a></nav></article>`;
+  }
+  if (route === "/magazine") {
+    const items = stories.slice(0, 13).map((story) => `<li><a href="${escapeHtml(`/magazine/${story.slug}`)}">${escapeHtml(story.title)}</a> — ${escapeHtml(standfirsts[story.slug] || story.dek)}</li>`).join("");
+    return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-index"><p>4PLANET MAGAZINE</p><h1>Nature, people, engineering and what works.</h1><p>${escapeHtml(meta.description)}</p><p><a href="/films">Explore 4PLANET Films</a></p><ul>${items}</ul></main>`;
+  }
+  if (route.startsWith("/magazine/") && !route.startsWith("/magazine/signals/") && !route.startsWith("/magazine/topics/") && !route.startsWith("/magazine/series/")) {
+    const slug = route.split("/").filter(Boolean).pop();
+    const story = stories.find((candidate) => candidate.slug === slug);
+    if (story) {
+      const feature = features[story.slug];
+      const blocks = feature?.blocks ?? story.blocks ?? [];
+      const body = blocks.map((block) => block.k === "sub" ? `<h2>${escapeHtml(block.t)}</h2>` : `<p>${escapeHtml(block.t)}</p>`).join("");
+      const sourceMap = new Map();
+      for (const source of story.sourceLinks ?? []) sourceMap.set(source.url, source);
+      for (const source of feature?.addedSources ?? []) sourceMap.set(source.url, source);
+      const sourceLinks = [...sourceMap.values()].map((source) => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label || source.publisher || source.url)}</a></li>`).join("");
+      return `<article class="mag-static-prerender" data-4planet-static-prerender="magazine-story"><p>4PLANET MAGAZINE</p><h1>${escapeHtml(story.title)}</h1><p>${escapeHtml(standfirsts[story.slug] || story.dek)}</p>${body}${sourceLinks ? `<h2>Sources</h2><ul>${sourceLinks}</ul>` : ""}</article>`;
+    }
+  }
+  if (route.startsWith("/magazine/")) return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-page"><h1>${escapeHtml(meta.title)}</h1><p>${escapeHtml(meta.description)}</p></main>`;
+  return "";
+}
+
 function writeRoute(route, meta) {
   const clean = stripManagedHead(baseHtml);
-  const html = clean.replace("</head>", `    ${headMarkup(meta)}\n  </head>`);
+  const withHead = clean.replace("</head>", `    ${headMarkup(meta)}
+  </head>`);
+  const staticMarkup = staticMarkupForRoute(route, meta);
+  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`) : withHead;
   const target = route === "/" ? path.join(dist, "index.html") : path.join(dist, route.replace(/^\//, ""), "index.html");
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, html, "utf8");
@@ -132,7 +173,13 @@ writeRoute("/films", {
   image: filmsImage,
   imageAlt: `${films[0].title} — official film material featured by 4PLANET FILMS`,
   type: "website",
-  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } },
+  jsonLd: {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "CollectionPage", "@id": `${filmsCanonical}#page`, name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical }, mainEntity: { "@id": `${filmsCanonical}#list` } },
+      { "@type": "ItemList", "@id": `${filmsCanonical}#list`, name: "4PLANET FILMS curated documentary selection", numberOfItems: films.length, itemListElement: films.map((film, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Movie", name: film.title, url: absoluteUrl(magazineOrigin, `/films/${film.slug}`), image: film.image, dateCreated: String(film.year), director: { "@type": "Person", name: film.director } } })) }
+    ]
+  },
 });
 
 for (const film of films) {
@@ -149,16 +196,14 @@ for (const film of films) {
     section: film.focus,
     jsonLd: {
       "@context": "https://schema.org",
-      "@type": "Movie",
-      name: film.title,
-      description: film.description,
-      url: canonical,
-      image: [film.image],
-      dateCreated: String(film.year),
-      duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined,
-      director: { "@type": "Person", name: film.director },
-      genre: "Documentary",
-      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET FILMS", url: filmsCanonical },
+      "@graph": [
+        { "@type": "Movie", "@id": `${canonical}#movie`, name: film.title, description: film.description, url: canonical, image: [film.image], dateCreated: String(film.year), duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined, director: { "@type": "Person", name: film.director }, genre: "Documentary", sameAs: film.sourceUrl, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET FILMS", url: filmsCanonical } },
+        { "@type": "BreadcrumbList", "@id": `${canonical}#breadcrumb`, itemListElement: [
+          { "@type": "ListItem", position: 1, name: "4PLANET MAGAZINE", item: magazineCanonical },
+          { "@type": "ListItem", position: 2, name: "4PLANET FILMS", item: filmsCanonical },
+          { "@type": "ListItem", position: 3, name: film.title, item: canonical }
+        ] }
+      ]
     },
   });
 }
