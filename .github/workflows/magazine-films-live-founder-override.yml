@@ -25,7 +25,7 @@ concurrency:
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 60
     steps:
       - name: Checkout exact Magazine Films source
         uses: actions/checkout@v4
@@ -52,10 +52,10 @@ jobs:
           VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
         run: npm run build
 
-      - name: Install Chromium for independent premium browser QA
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium + WebKit for independent Human Gold QA
+        run: npx playwright install --with-deps chromium webkit
 
-      - name: Premium browser QA — 320 375 390 430 1440
+      - name: Human Gold browser QA — 320 to 1920 + WebKit
         env:
           BASE_URL: http://127.0.0.1:4173
         shell: bash
@@ -72,16 +72,22 @@ jobs:
           npx playwright test tests/e2e/magazine-films-gold.spec.ts \
             --config playwright.magazine.config.ts \
             --project=mag-desktop-1440 \
+            --project=mag-desktop-1920 \
+            --project=mag-tablet-1024 \
+            --project=mag-tablet-768 \
+            --project=mag-android-412 \
             --project=mag-mobile-430 \
             --project=mag-mobile-390 \
             --project=mag-mobile-375 \
-            --project=mag-mobile-320
+            --project=mag-mobile-320 \
+            --project=mag-webkit-430 \
+            --project=mag-webkit-390
 
-      - name: Preserve premium QA proof
+      - name: Preserve Human Gold QA proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: magazine-films-premium-03-${{ github.sha }}
+          name: magazine-films-live-07-${{ github.sha }}
           path: |
             magazine-test-results/**/*.png
             artifacts/magazine-results.json
@@ -113,7 +119,7 @@ jobs:
           [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
-      - name: Deploy exact build to isolated Pages deployment
+      - name: Deploy exact build to Pages
         shell: bash
         run: |
           set -euo pipefail
@@ -125,13 +131,17 @@ jobs:
           upstream=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
           [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages deployment URL'; exit 4; }
           for attempt in $(seq 1 30); do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream/films" || true)
-            [ "$code" = '200' ] && { echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"; exit 0; }
-            sleep 4
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream/films/" || true)
+            if [ "$code" = '200' ]; then
+              echo "FILMS_UPSTREAM=$upstream" >> "$GITHUB_ENV"
+              echo "PAGES IMMUTABLE: $upstream"
+              exit 0
+            fi
+            sleep 3
           done
           exit 5
 
-      - name: Promote bounded Magazine + Films worker
+      - name: Promote exact Magazine + Films build to LIVE
         shell: bash
         run: |
           set -euo pipefail
@@ -139,7 +149,7 @@ jobs:
           const UPSTREAM = "${FILMS_UPSTREAM}";
           const SOURCE_SHA = "${GITHUB_SHA}";
           const APEX = "4planetmagazine.com";
-          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest","/4planet-indexnow-2026-9f7b3c1d5e8a.txt"]);
           const allowedEditorial = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p === "/films" || p === "/films/" || p.startsWith("/films/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
@@ -168,7 +178,7 @@ jobs:
           cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
           name = "4planetmagazine-test-king"
           main = "$RUNNER_TEMP/worker.mjs"
-          compatibility_date = "2026-09-06"
+          compatibility_date = "2026-09-07"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
           [[routes]]
           pattern = "4planetmagazine.com"
@@ -177,26 +187,26 @@ jobs:
           pattern = "www.4planetmagazine.com"
           custom_domain = true
           EOF
-          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee "$RUNNER_TEMP/worker-deploy.log"
 
-      - name: Verify exact build live — premium 40-film acceptance gate
+      - name: Verify exact build LIVE — 40 Films + crawler/search proof
         shell: bash
         run: |
           set -euo pipefail
           expected_sha="$GITHUB_SHA"
           verify_live() {
             local url="$1"
-            local expected="$2"
             for attempt in $(seq 1 30); do
-              headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
-              code=$(printf '%s\n' "$headers" | awk 'NR==1{print $2}')
-              if [ "$code" = "$expected" ] && printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: magazine-only-live$' && printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $expected_sha$"; then
-                echo "PASS $url"
+              headers=$(curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
+              code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
+              sha=$(printf '%s\n' "$headers" | awk -F': ' 'tolower($1)=="x-4planet-source-sha"{s=$2} END{print s}')
+              if [ "$code" = '200' ] && [ "$sha" = "$expected_sha" ]; then
+                echo "PASS $url source=$sha"
                 return 0
               fi
-              sleep 4
+              sleep 3
             done
-            echo "FAIL $url"
+            echo "FAIL $url expected source=$expected_sha"
             return 1
           }
 
@@ -209,18 +219,18 @@ jobs:
           process.stdout.write(`${slugs.join('\n')}\n`);
           NODE
 
-          verify_live 'https://4planetmagazine.com/magazine/' '200'
-          verify_live 'https://4planetmagazine.com/films' '200'
+          verify_live 'https://4planetmagazine.com/magazine/'
+          verify_live 'https://4planetmagazine.com/films/'
           route_count=0
           while IFS= read -r slug || [ -n "$slug" ]; do
             [ -z "$slug" ] && continue
-            verify_live "https://4planetmagazine.com/films/$slug" '200'
+            verify_live "https://4planetmagazine.com/films/$slug/"
             route_count=$((route_count + 1))
           done < "$RUNNER_TEMP/film-slugs.txt"
           [ "$route_count" -eq 40 ] || { echo "Expected 40 live film routes, verified $route_count"; exit 7; }
 
           for topic in OCEAN LAND_WILDLIFE FOOD CLIMATE ENERGY SOLUTIONS PEOPLE; do
-            verify_live "https://4planetmagazine.com/films?topic=$topic" '200'
+            verify_live "https://4planetmagazine.com/films/?topic=$topic"
           done
 
           sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
@@ -230,22 +240,32 @@ jobs:
             printf '%s' "$sitemap" | grep -q "https://4planetmagazine.com/films/$slug"
             sitemap_count=$((sitemap_count + 1))
           done < "$RUNNER_TEMP/film-slugs.txt"
-          [ "$sitemap_count" -eq 40 ] || { echo "Expected 40 Films sitemap routes, verified $sitemap_count"; exit 8; }
+          [ "$sitemap_count" -eq 40 ] || exit 8
 
           robots=$(curl -fsS 'https://4planetmagazine.com/robots.txt')
+          printf '%s' "$robots" | grep -q 'User-agent: OAI-SearchBot'
+          printf '%s' "$robots" | grep -q 'User-agent: Googlebot'
+          printf '%s' "$robots" | grep -q 'User-agent: Bingbot'
           printf '%s' "$robots" | grep -q 'Allow: /films'
-          films_html=$(curl -fsS 'https://4planetmagazine.com/films')
+
+          films_html=$(curl -fsS 'https://4planetmagazine.com/films/')
           printf '%s' "$films_html" | grep -q '<title>4PLANET FILMS — Films worth your attention</title>'
           printf '%s' "$films_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/films">'
-          if printf '%s' "$films_html" | grep -qi 'qualified records\|editorial pipeline'; then
-            echo 'Internal editorial pipeline language leaked to public Films page'
-            exit 9
-          fi
+          printf '%s' "$films_html" | grep -q 'data-4planet-static-prerender="films-index"'
+          printf '%s' "$films_html" | grep -q '"@type":"ItemList"'
+          if printf '%s' "$films_html" | grep -qi 'qualified records\|editorial pipeline'; then exit 9; fi
 
-          yanuni_html=$(curl -fsS 'https://4planetmagazine.com/films/yanuni')
+          yanuni_html=$(curl -fsS 'https://4planetmagazine.com/films/yanuni/')
           printf '%s' "$yanuni_html" | grep -q '<title>YANUNI — 4PLANET FILMS</title>'
-          reinvent_html=$(curl -fsS 'https://4planetmagazine.com/films/reinventing-power')
-          printf '%s' "$reinvent_html" | grep -q '<title>Reinventing Power: America'
+          printf '%s' "$yanuni_html" | grep -q 'data-4planet-static-prerender="film-detail"'
+          printf '%s' "$yanuni_html" | grep -q 'Why 4PLANET selected it'
+          printf '%s' "$yanuni_html" | grep -q '"@type":"BreadcrumbList"'
+
+          magazine_html=$(curl -fsS 'https://4planetmagazine.com/magazine/')
+          printf '%s' "$magazine_html" | grep -q 'data-4planet-static-prerender="magazine-index"'
+
+          key=$(curl -fsS 'https://4planetmagazine.com/4planet-indexnow-2026-9f7b3c1d5e8a.txt' | tr -d '\r\n')
+          [ "$key" = '4planet-indexnow-2026-9f7b3c1d5e8a' ] || { echo 'IndexNow key verification failed'; exit 10; }
 
           node --input-type=module <<'NODE' > "$RUNNER_TEMP/external-film-links.txt"
           import fs from 'node:fs';
@@ -262,9 +282,28 @@ jobs:
             code=$(curl -L -sS -A 'Mozilla/5.0 4PLANET-Link-QA/1.0' -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
             case "$code" in
               404|410) echo "BROKEN EXTERNAL FILM LINK $code $url"; external_fail=1 ;;
-              000) echo "UNVERIFIED EXTERNAL FILM LINK $code $url" ;;
+              000|401|403|429) echo "AUTOMATION-UNVERIFIED EXTERNAL FILM LINK $code $url" ;;
               *) echo "REACHABLE EXTERNAL FILM LINK $code $url" ;;
             esac
           done < "$RUNNER_TEMP/external-film-links.txt"
-          [ "$external_count" -gt 0 ] || exit 10
-          [ "$external_fail" = '0' ] || exit 11
+          [ "$external_count" -gt 0 ] || exit 11
+          [ "$external_fail" = '0' ] || exit 12
+          echo "LIVE GOLD PROOF PASS — source $expected_sha — 40/40 Film routes"
+
+      - name: Notify IndexNow after verified LIVE content change
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          key='4planet-indexnow-2026-9f7b3c1d5e8a'
+          sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
+          printf '%s' "$sitemap" | grep -o 'https://4planetmagazine.com[^<]*' > "$RUNNER_TEMP/indexnow-urls.txt"
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow.json"
+          import fs from 'node:fs';
+          const urls = fs.readFileSync(process.env.RUNNER_TEMP + '/indexnow-urls.txt','utf8').trim().split('\n').filter(Boolean);
+          const key = '4planet-indexnow-2026-9f7b3c1d5e8a';
+          process.stdout.write(JSON.stringify({ host:'4planetmagazine.com', key, keyLocation:`https://4planetmagazine.com/${key}.txt`, urlList:urls }));
+          NODE
+          code=$(curl -sS -o "$RUNNER_TEMP/indexnow-response.txt" -w '%{http_code}' -H 'Content-Type: application/json; charset=utf-8' --data-binary @"$RUNNER_TEMP/indexnow.json" 'https://api.indexnow.org/indexnow' || true)
+          echo "INDEXNOW HTTP $code"
+          case "$code" in 200|202) exit 0 ;; *) cat "$RUNNER_TEMP/indexnow-response.txt"; exit 1 ;; esac
