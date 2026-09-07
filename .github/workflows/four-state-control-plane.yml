@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - control/four-state-product-control-01
+      - control/universal-live-heir-sandbox-01
       - king/test
   pull_request:
     branches:
@@ -20,9 +21,9 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy isolated test/archive review plane
+    name: Deploy universal LIVE HEIR SANDBOX review plane
     runs-on: ubuntu-latest
-    timeout-minutes: 24
+    timeout-minutes: 35
     steps:
       - name: Checkout exact control source
         uses: actions/checkout@v4
@@ -30,7 +31,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
-      - name: Fetch current HEIR and registered sandboxes
+      - name: Fetch current HEIR and every registered sandbox
         shell: bash
         run: |
           set -euo pipefail
@@ -39,7 +40,10 @@ jobs:
           node <<'NODE' > "$RUNNER_TEMP/sandbox-branches.txt"
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
-          for(const item of Object.values(r.products||{})) if(item.sandbox?.branch) console.log(item.sandbox.branch);
+          for(const [product,item] of Object.entries(r.products||{})) {
+            if(!item.sandbox?.branch) throw new Error(`${product} has no registered sandbox`);
+            console.log(item.sandbox.branch);
+          }
           NODE
           while IFS= read -r branch; do
             [ -z "$branch" ] && continue
@@ -83,7 +87,7 @@ jobs:
           done
           test -s artifacts/four-state/deployments.jsonl
 
-      - name: Resolve exact current HEIR/SANDBOX deployments
+      - name: Resolve exact artifact identity for HEIR and all sandboxes
         shell: bash
         run: |
           set -euo pipefail
@@ -97,34 +101,57 @@ jobs:
           const originOf=d=>d.url || (d.short_id ? `https://${d.short_id}.4planet-05.pages.dev` : null);
           const createdOf=d=>d.created_on || d.modified_on || '';
           const head=branch=>cp.execFileSync('git',['rev-parse',`refs/remotes/origin/${branch}`],{encoding:'utf8'}).trim();
-          const exact=(branch,sha)=>rows.filter(d=>branchOf(d)===branch && shaOf(d)===sha && originOf(d)).sort((a,b)=>createdOf(b).localeCompare(createdOf(a)))[0];
+          const newest=list=>list.sort((a,b)=>createdOf(b).localeCompare(createdOf(a)))[0];
+          const exact=(branch,sha)=>newest(rows.filter(d=>branchOf(d)===branch && shaOf(d)===sha && originOf(d)));
+          const exactSha=sha=>newest(rows.filter(d=>shaOf(d)===sha && originOf(d)));
+          const renderForSha=sha=>`https://artifact-${sha.slice(0,12)}-render.4planet.org`;
+
           const heirBranch='king/test';
           const heirSha=head(heirBranch);
-          const heirDep=exact(heirBranch,heirSha);
-          if(!heirDep) throw new Error(`No exact Cloudflare Pages deployment found for HEIR ${heirBranch}@${heirSha}`);
+          const heirDep=exact(heirBranch,heirSha) || exactSha(heirSha);
+          if(!heirDep) throw new Error(`No exact Cloudflare Pages artifact found for HEIR ${heirBranch}@${heirSha}`);
+          const heir={branch:heirBranch,sha:heirSha,origin:originOf(heirDep),render_origin:renderForSha(heirSha),deployment_branch:branchOf(heirDep),artifact_identity_mode:branchOf(heirDep)===heirBranch?'EXACT_BRANCH_SHA':'EXACT_SHA_EQUIVALENT'};
+
           const sandboxes={};
           for(const [product,item] of Object.entries(registry.products||{})) {
-            if(!item.sandbox?.branch) continue;
-            const sha=head(item.sandbox.branch);
-            const dep=exact(item.sandbox.branch,sha);
-            if(!dep) throw new Error(`No exact Cloudflare Pages deployment found for ${product} SANDBOX ${item.sandbox.branch}@${sha}`);
-            const renderSlug=product.toLowerCase().replace(/[^a-z0-9-]+/g,'-');
-            sandboxes[product]={branch:item.sandbox.branch,sha,origin:originOf(dep),render_origin:`https://${renderSlug}-sandbox-render.4planet.org`};
+            const branch=item.sandbox?.branch;
+            if(!branch) throw new Error(`${product} has no sandbox branch`);
+            const sha=head(branch);
+            const dep=exact(branch,sha) || exactSha(sha);
+            if(!dep) throw new Error(`No exact Pages artifact found for ${product} SANDBOX ${branch}@${sha}`);
+            sandboxes[product]={
+              branch,sha,origin:originOf(dep),render_origin:renderForSha(sha),
+              deployment_branch:branchOf(dep),
+              artifact_identity_mode:branchOf(dep)===branch?'EXACT_BRANCH_SHA':'EXACT_SHA_EQUIVALENT'
+            };
           }
+
+          const liveOrigins=new Map();
+          const lives={};
+          for(const [product,item] of Object.entries(registry.products||{})) {
+            if(!item.live?.url) {
+              if(item.live?.identity_state!=='UNRELEASED') throw new Error(`${product} LIVE unresolved`);
+              lives[product]={status:'UNRELEASED',render_origin:null,upstream_origin:null};
+              continue;
+            }
+            const u=new URL(item.live.url);
+            const upstream=u.origin;
+            const hostSlug=u.hostname.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+            const render=`https://live-${hostSlug}-render.4planet.org`;
+            liveOrigins.set(upstream,render);
+            lives[product]={status:'RELEASED',upstream_origin:upstream,render_origin:render,source_url:item.live.url,identity_state:item.live.identity_state||'UNKNOWN'};
+          }
+
           const deployments=rows.filter(d=>originOf(d)).map(d=>({
-            branch:branchOf(d), sha:shaOf(d), url:originOf(d), environment:d.environment||'preview', created_on:createdOf(d), id:d.id||null
+            branch:branchOf(d),sha:shaOf(d),url:originOf(d),environment:d.environment||'preview',created_on:createdOf(d),id:d.id||null
           })).sort((a,b)=>String(b.created_on).localeCompare(String(a.created_on))).slice(0,300);
-          const runtime={
-            generatedAt:new Date().toISOString(),
-            heir:{branch:heirBranch,sha:heirSha,origin:originOf(heirDep),render_origin:'https://heir-render.4planet.org'},
-            sandboxes,
-            deployments
-          };
+
+          const runtime={generatedAt:new Date().toISOString(),heir,sandboxes,lives,liveOrigins:Object.fromEntries(liveOrigins),deployments};
           fs.writeFileSync('artifacts/four-state-runtime.json',JSON.stringify(runtime,null,2));
-          console.log(JSON.stringify({heir:runtime.heir,sandboxes:runtime.sandboxes,archiveEntries:deployments.length},null,2));
+          console.log(JSON.stringify({heir,sandboxCount:Object.keys(sandboxes).length,liveCount:Object.values(lives).filter(x=>x.status==='RELEASED').length,unreleased:Object.entries(lives).filter(([,x])=>x.status==='UNRELEASED').map(([p])=>p)},null,2));
           NODE
 
-      - name: Deploy read-only HEIR and SANDBOX render proxies
+      - name: Deploy deduplicated read-only artifact and LIVE render proxies
         shell: bash
         run: |
           set -euo pipefail
@@ -149,46 +176,86 @@ jobs:
             npx --yes wrangler@latest deploy --config "$config" | tee "artifacts/four-state/${worker_name}.txt"
           }
 
-          heir_origin=$(jq -r '.heir.origin' artifacts/four-state-runtime.json)
-          deploy_proxy "4planet-heir-render-v1" "heir-render.4planet.org" "$heir_origin"
-
-          node <<'NODE' > "$RUNNER_TEMP/sandbox-proxies.tsv"
+          node <<'NODE' > "$RUNNER_TEMP/render-proxies.tsv"
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
-          for(const [product,s] of Object.entries(r.sandboxes||{})) {
-            const slug=product.toLowerCase().replace(/[^a-z0-9-]+/g,'-');
-            console.log([`4planet-${slug}-sandbox-render-v1`,`${slug}-sandbox-render.4planet.org`,s.origin].join('\t'));
+          const map=new Map();
+          map.set(r.heir.render_origin,r.heir.origin);
+          for(const s of Object.values(r.sandboxes||{})) map.set(s.render_origin,s.origin);
+          for(const [upstream,render] of Object.entries(r.liveOrigins||{})) map.set(render,upstream);
+          for(const [render,upstream] of map) {
+            const host=new URL(render).hostname;
+            const worker=`4planet-${host.split('.')[0]}-v2`;
+            console.log([worker,host,upstream].join('\t'));
           }
           NODE
           while IFS=$'\t' read -r worker host upstream; do
             [ -z "$worker" ] && continue
             deploy_proxy "$worker" "$host" "$upstream"
-          done < "$RUNNER_TEMP/sandbox-proxies.tsv"
+          done < "$RUNNER_TEMP/render-proxies.tsv"
 
-      - name: Verify render proxies
+      - name: Verify every render proxy twice
         shell: bash
         run: |
           set -euo pipefail
-          for host in heir-render.4planet.org atlas-sandbox-render.4planet.org magazine-sandbox-render.4planet.org; do
-            ok=0
-            for attempt in $(seq 1 24); do
-              headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://$host/" | tr -d '\r' || true)
-              if printf '%s\n' "$headers" | grep -qi '^x-4planet-render-proxy: read-only-v1$'; then ok=1; break; fi
-              sleep 5
-            done
-            [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
-          done
+          node <<'NODE' > "$RUNNER_TEMP/render-hosts.txt"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          const hosts=new Set([new URL(r.heir.render_origin).hostname]);
+          for(const s of Object.values(r.sandboxes||{})) hosts.add(new URL(s.render_origin).hostname);
+          for(const l of Object.values(r.lives||{})) if(l.render_origin) hosts.add(new URL(l.render_origin).hostname);
+          console.log([...hosts].sort().join('\n'));
+          NODE
+          verify_hosts() {
+            while IFS= read -r host; do
+              [ -z "$host" ] && continue
+              ok=0
+              for attempt in $(seq 1 18); do
+                headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://$host/" | tr -d '\r' || true)
+                if printf '%s\n' "$headers" | grep -qi '^x-4planet-render-proxy: read-only-v1$'; then ok=1; break; fi
+                sleep 4
+              done
+              [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+            done < "$RUNNER_TEMP/render-hosts.txt"
+          }
+          verify_hosts
+          sleep 3
+          verify_hosts
 
-      - name: Build isolated review/archive Worker
+      - name: Verify every underlying product surface before publishing control plane
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE' > "$RUNNER_TEMP/underlying-surfaces.tsv"
+          const fs=require('fs');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const runtime=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          for(const [product,p] of Object.entries(registry.products||{})) {
+            if(p.live?.url) console.log([product,'LIVE',runtime.lives[product].render_origin+p.live.origin_path].join('\t'));
+            console.log([product,'HEIR',runtime.heir.render_origin+p.heir.origin_path].join('\t'));
+            console.log([product,'SANDBOX',runtime.sandboxes[product].render_origin+p.sandbox.origin_path].join('\t'));
+          }
+          NODE
+          verify_surfaces() {
+            while IFS=$'\t' read -r product state url; do
+              [ -z "$url" ] && continue
+              curl -fsS --connect-timeout 10 --max-time 45 -o /dev/null "$url" || { echo "Underlying surface failed: $product $state $url"; exit 8; }
+            done < "$RUNNER_TEMP/underlying-surfaces.tsv"
+          }
+          verify_surfaces
+          sleep 3
+          verify_surfaces
+
+      - name: Build isolated universal review/archive Worker
         run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
 
-      - name: Deploy review control Worker on new subdomains only
+      - name: Deploy universal review control Worker
         shell: bash
         run: |
           set -euo pipefail
           cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
           cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
-          name = "4planet-four-state-control-v1"
+          name = "4planet-four-state-control-v2"
           main = "$RUNNER_TEMP/four-state-worker.mjs"
           compatibility_date = "2026-09-04"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
@@ -201,38 +268,84 @@ jobs:
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
 
-      - name: Verify public Founder review surfaces
+      - name: Verify all LIVE HEIR SANDBOX URLs twice
         shell: bash
         run: |
           set -euo pipefail
+          node <<'NODE' > "$RUNNER_TEMP/review-routes.tsv"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          for(const [product,p] of Object.entries(r.products||{})) {
+            console.log([product,'LIVE',p.live.review_path,p.live.url?'RELEASED':'UNRELEASED'].join('\t'));
+            console.log([product,'HEIR',p.heir.canonical_review_path||p.heir.review_path,'RELEASED'].join('\t'));
+            console.log([product,'SANDBOX',p.sandbox.review_path,'RELEASED'].join('\t'));
+          }
+          NODE
+          verify_routes() {
+            local pass="$1"
+            while IFS=$'\t' read -r product state path release; do
+              [ -z "$path" ] && continue
+              h="$RUNNER_TEMP/h-$pass-$(echo "$product-$state" | tr -cd '[:alnum:]-').txt"
+              b="$RUNNER_TEMP/b-$pass-$(echo "$product-$state" | tr -cd '[:alnum:]-').html"
+              curl -fsS --connect-timeout 10 --max-time 45 -D "$h" -o "$b" "https://test.4planet.org$path"
+              tr -d '\r' < "$h" > "$h.clean"
+              grep -qi '^x-4planet-control-plane: four-state-v2$' "$h.clean" || { echo "control header fail: $product $state $path"; exit 9; }
+              grep -qi "^x-4planet-state: $state$" "$h.clean" || { echo "state header fail: $product $state $path"; exit 10; }
+              grep -qi "^x-4planet-product: $product$" "$h.clean" || { echo "product header fail: $product $state $path"; exit 11; }
+              if [ "$state" = 'LIVE' ] && [ "$release" = 'UNRELEASED' ]; then
+                grep -q 'LIVE UNRELEASED' "$b" || { echo "unreleased truth fail: $product"; exit 12; }
+              else
+                grep -q "title=\"$product $state\"" "$b" || { echo "frame identity fail: $product $state"; exit 13; }
+              fi
+            done < "$RUNNER_TEMP/review-routes.tsv"
+            echo "PASS $pass" | tee "artifacts/four-state/public-readback-pass-$pass.txt"
+          }
+
           ok=0
           for attempt in $(seq 1 24); do
-            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
-            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
-            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then ok=1; break; fi
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            if printf '%s\n' "$headers" | grep -qi '^x-4planet-control-plane: four-state-v2$'; then ok=1; break; fi
             sleep 5
           done
-          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
-          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
-          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
-          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
-          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
-          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
-          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
-          grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
-          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
-          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
-          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
-          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+          [ "$ok" -eq 1 ] || { echo 'Universal control domain did not become healthy'; exit 14; }
+
+          verify_routes 1
+          sleep 4
+          verify_routes 2
+          curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | grep -q '4PLANET_ PRODUCT CONTROL'
+          curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | grep -q '4PLANET_ VISUAL ARCHIVE'
+
+      - name: Emit zero-loss authority evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const cp=require('child_process');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const registered=new Map(Object.entries(registry.products||{}).map(([p,x])=>[x.sandbox.branch,p]));
+          const raw=cp.execFileSync('git',['ls-remote','--heads','origin'],{encoding:'utf8'}).trim();
+          const branches=raw.split('\n').filter(Boolean).map(line=>{const [sha,ref]=line.split(/\s+/);return {sha,branch:ref.replace('refs/heads/','')};});
+          const rows=branches.map(x=>{
+            if(x.branch==='king/test') return {...x,role:'HEIR',productWriteAuthority:true};
+            if(registered.has(x.branch)) return {...x,role:`SANDBOX:${registered.get(x.branch)}`,productWriteAuthority:true};
+            if(/^(control|ops|docs|factory)\//.test(x.branch)) return {...x,role:'SYSTEM_SUPPORT_ZERO_PRODUCT_AUTHORITY',productWriteAuthority:false};
+            if(x.branch.startsWith('archive/')) return {...x,role:'ARCHIVE_READ_ONLY_DONOR',productWriteAuthority:false};
+            return {...x,role:'QUARANTINE_PENDING_ZERO_LOSS_DISPOSITION_READ_ONLY_DONOR',productWriteAuthority:false};
+          });
+          const report={generatedAt:new Date().toISOString(),law:'ONLY king/test AND THE 15 REGISTERED SANDBOXES HAVE PRODUCT WRITE AUTHORITY',destructiveCleanup:'BLOCKED_UNTIL_UNIQUE_VALUE_DISPOSITION',registeredProducts:Object.keys(registry.products).length,registeredSandboxes:[...registered.entries()].map(([branch,product])=>({product,branch})),branchCount:rows.length,branches:rows};
+          fs.writeFileSync('artifacts/four-state/zero-loss-branch-authority.json',JSON.stringify(report,null,2));
+          if(report.registeredProducts!==15 || report.registeredSandboxes.length!==15) throw new Error('universal sandbox count mismatch');
+          NODE
 
       - name: Upload control-plane evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: four-state-control-plane
+          name: universal-four-state-control-plane
           path: |
             artifacts/four-state-runtime.json
             artifacts/four-state-worker.mjs
             artifacts/four-state
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 90
