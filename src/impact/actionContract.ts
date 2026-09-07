@@ -192,3 +192,147 @@ export function actionContractTruthSummary(contract: ActionContract) {
     proofBoundary: contract.outcomeBoundary,
   };
 }
+
+/**
+ * Generic pre-action instance view of the canonical Universal IMPACT ActionContract.
+ * This is an additive runtime projection of the existing docs/IMPACT_CONTRACT_V0.md
+ * schema, not a second ActionContract authority or transaction system.
+ */
+export interface UniversalActionContractInstance {
+  id: string;
+  cellId: string;
+  version: string;
+  environment: "TEST" | "CONTROLLED" | "PRODUCTION";
+  problem: string;
+  actionScope: string;
+  providerCandidateIds: string[];
+  selectedProviderId: ActionContractEvidenceField<string>;
+  actorDiligenceState: "DILIGENCE_PENDING" | "DILIGENCE_COMPLETE";
+  proposedResourceFlow: {
+    currency: "GBP" | "NOK" | "EUR" | "USD";
+    amount: ActionContractEvidenceField<number>;
+    quantity: ActionContractEvidenceField<number>;
+    quantityLabel: string;
+  };
+  deliveryDefinition: string;
+  baseline: string;
+  counterfactual: string;
+  acceptanceCriteria: string[];
+  evidenceRequired: string[];
+  claimsAllowed: string[];
+  claimsProhibited: string[];
+  remedy: string;
+  independentReviewRequired: boolean;
+  sourceRefs: string[];
+  authorityState: "DRAFT" | "FOUNDER_RELEASE_REQUIRED" | "RELEASED";
+  successCriteriaLockedAt: string;
+  blockers: string[];
+}
+
+export const AC_SC01_0001: UniversalActionContractInstance = {
+  id: "AC-SC01-0001",
+  cellId: "CELL-SC01-VERIFIED-PLASTIC-RECOVERY",
+  version: "1.0-pre-action",
+  environment: "CONTROLLED",
+  problem: "Test whether 4PLANET can turn a small real plastic-recovery resource flow into inspectable, non-inflated delivery proof and a reusable Proof Passport without confusing payment, provider evidence, ecological outcome or verified impact.",
+  actionScope: "One smallest legitimate fixed plastic-recovery contribution through a provider that passes current evidence-payload, rights, price and claims diligence. No recurring subscription and no automatic escalation.",
+  providerCandidateIds: [
+    "provider-pattern:plastic-bank:fixed-contribution:v1",
+    "provider-pattern:plastic-fischer:certificate:v1",
+    "provider-pattern:cleanhub:recovery:v1",
+  ],
+  selectedProviderId: {
+    state: "TO_VERIFY",
+    value: null,
+    sourceNote: "Plastic Bank is the current working activation candidate because public evidence combines low fixed-entry friction with unique claim identity and chain-of-custody. It remains unqualified until exact fixed-tier checkout, evidence payload, rights and terms are read back.",
+  },
+  actorDiligenceState: "DILIGENCE_PENDING",
+  proposedResourceFlow: {
+    currency: "USD",
+    amount: {
+      state: "TO_VERIFY",
+      value: null,
+      sourceNote: "Plastic Bank public pricing says every US$100 Fixed Contribution unlocks two weeks of Professional Impact Account access and Fixed Contribution starts at 5,000 bottles. Exact same-day checkout amount/currency must be confirmed before Founder release.",
+    },
+    quantity: {
+      state: "TO_VERIFY",
+      value: null,
+      sourceNote: "Public pricing says Fixed Contribution starts at 5,000 bottles. Do not convert this into kg or treat it as the exact purchased quantity until checkout confirms the order terms.",
+    },
+    quantityLabel: "provider-defined bottles / authenticated plastic recovery claim",
+  },
+  deliveryDefinition: "A provider-authenticated recovery/allocation record is returned for the exact funded quantity with inspectable unique claim/allocation identity and evidence sufficient to distinguish resource flow from delivery. Provider claim alone is not independent verification.",
+  baseline: "No 4PLANET real provider transaction, delivery record or production Proof Passport exists for SUPER CELL 01 before this contract.",
+  counterfactual: "Without 4PLANET, a purchaser can fund the provider directly and receive provider-native account/certificate proof. The experiment succeeds for 4PLANET only if 4PLANET adds inspectable state separation, evidence provenance, claim boundaries, reusable Decision Trace/Learning, or lower downstream diligence/reporting burden beyond the native receipt/certificate.",
+  acceptanceCriteria: [
+    "Exact provider, checkout amount, quantity and terms are read back before resource flow.",
+    "Success criteria remain unchanged after resource flow begins.",
+    "Real payment/resource flow is recorded separately from delivery.",
+    "Actual provider evidence payload is captured without fabricating unavailable fields.",
+    "Unique claim/allocation identity and double-count semantics are recorded exactly as evidenced.",
+    "Delivery may advance only when actual delivery evidence exists.",
+    "Passport STANDARD/VERIFIED depth is derived mechanically rather than chosen for marketing.",
+    "No ecological outcome or verified impact claim is made unless later independent evidence supports it.",
+    "Counterfactual value of 4PLANET versus provider-native proof is explicitly assessed.",
+  ],
+  evidenceRequired: [
+    "checkout/order confirmation",
+    "actual amount/currency and quantity",
+    "provider transaction/order reference",
+    "provider certificate/account record",
+    "unique claim/allocation ID if supplied",
+    "provider methodology/source reference",
+    "delivery/allocation evidence actually supplied",
+    "evidence timestamps",
+    "rights/display terms actually applicable to the purchased tier",
+    "refund/remedy terms applicable to the purchased tier",
+  ],
+  claimsAllowed: [
+    "A real resource flow occurred when actual payment evidence exists.",
+    "Provider-reported recovery/allocation may be described as provider-reported when the actual evidence payload supports it.",
+    "4PLANET may describe its own Proof Passport state and limitations.",
+  ],
+  claimsProhibited: [
+    "Plastic Bank, Plastic Fischer or CleanHub is a 4PLANET partner unless separately agreed.",
+    "Provider candidate is qualified before diligence closes.",
+    "Enterprise API/audit/location features apply to a Fixed Contribution without evidence.",
+    "Payment equals delivery.",
+    "Provider-reported delivery equals independent verification.",
+    "Recovered plastic proves ecological outcome or verified impact.",
+    "Ocean leakage avoided, biodiversity improved or ecosystem recovery unless separately evidenced.",
+  ],
+  remedy: "If checkout terms, quantity, rights or evidence differ materially from the preflight, HOLD before payment. If payment occurs but delivery/evidence fails, preserve the full history, record the failed state, use the provider's applicable remedy/refund path if justified, and do not auto-escalate spend to another provider.",
+  independentReviewRequired: true,
+  sourceRefs: [
+    "https://plasticbank.com/pricing/",
+    "https://plasticbank.com/plastic-credit-methodology/",
+    "https://plasticbank.com/faq/",
+    "https://shop.plasticfischer.com/products/plastic-certificate",
+    "https://www.cleanhub.com/api-integration",
+  ],
+  authorityState: "FOUNDER_RELEASE_REQUIRED",
+  successCriteriaLockedAt: "2026-09-07T22:54:00Z",
+  blockers: [
+    "Exact provider is not yet qualified/selected.",
+    "Same-day checkout amount, quantity and applicable terms are not yet locked.",
+    "Actual fixed-tier evidence payload and public reuse/display rights are not yet observed.",
+    "Founder has not released the exact payment/transaction.",
+  ],
+};
+
+export function universalActionContractCanBeginResourceFlow(contract: UniversalActionContractInstance): boolean {
+  return (
+    contract.selectedProviderId.state === "KNOWN" &&
+    Boolean(contract.selectedProviderId.value) &&
+    contract.actorDiligenceState === "DILIGENCE_COMPLETE" &&
+    contract.proposedResourceFlow.amount.state === "KNOWN" &&
+    typeof contract.proposedResourceFlow.amount.value === "number" &&
+    contract.proposedResourceFlow.amount.value > 0 &&
+    contract.proposedResourceFlow.quantity.state === "KNOWN" &&
+    typeof contract.proposedResourceFlow.quantity.value === "number" &&
+    contract.proposedResourceFlow.quantity.value > 0 &&
+    contract.authorityState === "RELEASED" &&
+    Boolean(contract.successCriteriaLockedAt) &&
+    contract.blockers.length === 0
+  );
+}
