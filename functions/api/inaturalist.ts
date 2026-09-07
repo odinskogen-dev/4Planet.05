@@ -64,10 +64,20 @@ function commercialWebStatus(licence: string) {
 }
 
 async function resolveExactTaxon(query: string) {
-  // iNaturalist's autocomplete endpoint is the provider path intended for taxon-name
-  // resolution. 4PLANET still promotes identity only after an exact scientific-name
-  // match below; provider ranking/fuzzy suggestions never become identity by themselves.
-  const url = `${BASE}/taxa/autocomplete?q=${encodeURIComponent(query)}&per_page=20`;
+  // Use the supported observations taxon_name filter for identity resolution rather
+  // than issuing a separate autocomplete request. The immutable Cloudflare runtime
+  // can retrieve iNaturalist observations but the autocomplete subrequest is
+  // provider-rate-limited (429) from that egress path. We still fail closed: only a
+  // returned observation whose taxon scientific name exactly equals the requested
+  // name may promote taxon identity. Fuzzy/provider-ranked matches never qualify.
+  const qs = new URLSearchParams({
+    taxon_name: query,
+    per_page: "5",
+    page: "1",
+    order_by: "observed_on",
+    order: "desc",
+  });
+  const url = `${BASE}/observations?${qs.toString()}`;
   const response = await fetch(url, {
     headers: {
       accept: "application/json",
@@ -80,7 +90,8 @@ async function resolveExactTaxon(query: string) {
   if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH" };
 
   const want = query.toLocaleLowerCase("en");
-  const exact = data.results.find((row: any) => String(row?.name || "").trim().toLocaleLowerCase("en") === want);
+  const exactRow = data.results.find((row: any) => String(row?.taxon?.name || "").trim().toLocaleLowerCase("en") === want);
+  const exact = exactRow?.taxon;
   if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED" };
 
   return {
