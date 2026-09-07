@@ -1,16 +1,7 @@
-export const PICK_WALLET_VERSION = "p18-pick-wallet-0.6.0";
+export const PICK_WALLET_VERSION = "p18-pick-wallet-0.7.0";
 
-export function unknownWallet(reason = "No current price observation is connected to this GTIN.") {
-  return {
-    version: PICK_WALLET_VERSION,
-    state: "UNKNOWN",
-    confidence: "UNKNOWN",
-    directness: "NONE",
-    summary: reason,
-    limitation: "Missing price data cannot improve rank.",
-    observation: null,
-    source: null,
-  };
+export function unknownWallet(reason = "No current price observation is connected to this GTIN.", evidenceState = "UNKNOWN") {
+  return { version: PICK_WALLET_VERSION, evidenceState, state: "UNKNOWN", confidence: "UNKNOWN", directness: "NONE", summary: reason, limitation: "Missing price data cannot improve rank.", observation: null, source: null };
 }
 
 function ageDays(date) {
@@ -21,7 +12,7 @@ function ageDays(date) {
 
 export function normaliseWalletEnvelope(envelope) {
   if (!envelope || envelope.kind !== "found" || !envelope.latest) {
-    return unknownWallet(envelope?.kind === "source_error" ? "Price source is currently unavailable." : "No NOK price observation was found for this GTIN.");
+    return envelope?.kind === "source_error" ? unknownWallet("Price source is currently unavailable.", "UNAVAILABLE") : unknownWallet("No NOK price observation was found for this GTIN.", "UNKNOWN");
   }
   const observation = envelope.latest;
   const days = ageDays(observation.date ?? observation.created);
@@ -29,20 +20,8 @@ export function normaliseWalletEnvelope(envelope) {
   const confidence = days === null ? "LIMITED" : days <= 7 ? "MODERATE" : "LIMITED";
   const place = [observation.location?.brand || observation.location?.name, observation.location?.city].filter(Boolean).join(" · ");
   const priceText = typeof observation.price === "number" ? `${observation.price.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NOK` : "Price unavailable";
-  const unitText = typeof observation.unitPrice === "number" && observation.unitPriceUnit
-    ? `${observation.unitPrice.toLocaleString("nb-NO", { maximumFractionDigits: 2 })} ${observation.unitPriceUnit}`
-    : null;
-
-  return {
-    version: PICK_WALLET_VERSION,
-    state: freshness,
-    confidence,
-    directness: "OBSERVED PRICE",
-    summary: `${priceText}${unitText ? ` · ${unitText}` : ""}${place ? ` · ${place}` : ""}`,
-    limitation: envelope.limitation || "Observed price is not guaranteed to match the user's current shelf price.",
-    observation: { ...observation, ageDays: days },
-    source: envelope.source ?? null,
-  };
+  const unitText = typeof observation.unitPrice === "number" && observation.unitPriceUnit ? `${observation.unitPrice.toLocaleString("nb-NO", { maximumFractionDigits: 2 })} ${observation.unitPriceUnit}` : null;
+  return { version: PICK_WALLET_VERSION, evidenceState: "OBSERVED", state: freshness, confidence, directness: "OBSERVED PRICE", summary: `${priceText}${unitText ? ` · ${unitText}` : ""}${place ? ` · ${place}` : ""}`, limitation: envelope.limitation || "Observed price is not guaranteed to match the user's current shelf price.", observation: { ...observation, ageDays: days }, source: envelope.source ?? null };
 }
 
 export function compareWallet(a, b) {
@@ -52,13 +31,7 @@ export function compareWallet(a, b) {
   const bUnitName = b?.observation?.unitPriceUnit;
   if (typeof aUnit === "number" && typeof bUnit === "number" && aUnitName && aUnitName === bUnitName) {
     const delta = bUnit - aUnit;
-    return {
-      known: true,
-      favourable: delta < -0.005,
-      delta,
-      unit: aUnitName,
-      explanation: Math.abs(delta) < 0.005 ? `Same observed unit price (${aUnitName}).` : `${Math.abs(delta).toLocaleString("nb-NO", { maximumFractionDigits: 2 })} ${aUnitName} ${delta < 0 ? "lower" : "higher"}.`,
-    };
+    return { known: true, favourable: delta < -0.005, delta, unit: aUnitName, explanation: Math.abs(delta) < 0.005 ? `Same observed unit price (${aUnitName}).` : `${Math.abs(delta).toLocaleString("nb-NO", { maximumFractionDigits: 2 })} ${aUnitName} ${delta < 0 ? "lower" : "higher"}.` };
   }
   return { known: false, favourable: false, delta: null, unit: null, explanation: "No directly comparable observed unit price." };
 }
