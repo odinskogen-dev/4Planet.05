@@ -110,6 +110,7 @@ export function AppRoutes() {
       <Route path="/living-systems" element={<LivingSystems />} />
       <Route path="/living-systems/oslofjorden" element={<Navigate to="/living-systems/oslofjord" replace />} />
       <Route path="/living-systems/oslofjord" element={<PlanetProofPage slug="oslofjorden" />} />
+      <Route path="/living-systems/great-barrier-reef" element={<PlanetProofPage slug="great-barrier-reef" />} />
       <Route path="/living-systems/:slug" element={<LivingSystemJourney />} />
       <Route path="/reports" element={<Reports />} />
       <Route path="/about" element={<About />} />
