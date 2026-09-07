@@ -1,0 +1,62 @@
+name: 4PLANET Films Closure 06 Live Verification
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/films-live-verify-closure06.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOURCE_SHA: 63ebeda86d5d872b6400871c99b3c8e28e301380
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for exact worker version and verify all 40 Films
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_direct() {
+            local url="$1"
+            local ok=0
+            for attempt in $(seq 1 20); do
+              headers=$(curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
+              code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{print $2; exit}')
+              sha=$(printf '%s\n' "$headers" | awk -F': ' 'tolower($1)=="x-4planet-source-sha"{print $2; exit}')
+              if [ "$code" = '200' ] && [ "$sha" = "$SOURCE_SHA" ]; then
+                echo "PASS $url source=$sha"
+                ok=1
+                break
+              fi
+              echo "WAIT $attempt $url code=${code:-none} source=${sha:-none}"
+              sleep 2
+            done
+            [ "$ok" = '1' ] || { echo "FAIL $url"; return 1; }
+          }
+
+          verify_direct 'https://4planetmagazine.com/magazine/'
+          verify_direct 'https://4planetmagazine.com/films/'
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/film-slugs.txt"
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
+          const slugs = [...section.matchAll(/\bslug:\s*"([^"]+)"/g)].map(m => m[1]);
+          if (slugs.length !== 40) throw new Error(`Expected 40 published films, found ${slugs.length}`);
+          process.stdout.write(`${slugs.join('\n')}\n`);
+          NODE
+
+          count=0
+          while IFS= read -r slug || [ -n "$slug" ]; do
+            [ -z "$slug" ] && continue
+            verify_direct "https://4planetmagazine.com/films/$slug/"
+            count=$((count + 1))
+          done < "$RUNNER_TEMP/film-slugs.txt"
+          [ "$count" -eq 40 ] || exit 2
+          echo "LIVE VERIFIED — 4PLANET FILMS Closure 06 source $SOURCE_SHA"
