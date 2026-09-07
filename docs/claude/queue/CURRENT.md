@@ -1,7 +1,7 @@
 # CLAUDE FACTORY WORK ORDER
 
-id: portfolio-oslofjord-human-gold-review-ce5328306408-014b0b5ebdf8
-dispatch_attempt: 4
+id: portfolio-oslofjord-human-gold-review-18586b69e35c-d46cb56473e1
+dispatch_attempt: 1
 mode: REVIEW_ONLY
 owner: 4PLANET Production Factory / AXE
 worker_role: PRODUCT_INTERFACE
@@ -43,7 +43,7 @@ Produce one fresh, narrowly scoped Product/Interface correction contract for the
 
 ## Source refs
 
-- king/test@ce532830640817f83c11923bdfb4c394f222baad
+- king/test@18586b69e35cbdefef7722a08e46617e8c8182a7
 - ISSUE_273:LANE_A:PLANET_GOLD_01_OSLOFJORD
 - PLANET_PROOF_READING_GRAMMAR:WHAT_IS_HERE→WHAT_IS_HAPPENING→WHY→DEPENDENCIES→CHANGE→EVIDENCE→ACTOR→ACTION
 - SCOPE_LAW:ONE_PASS_ONE_DELIVERABLE_NO_UNRELATED_REPO_ARCHAEOLOGY
@@ -64,4 +64,3 @@ READ / REVIEW ONLY. No repository mutation. No branch creation. No merge. No LIV
 ## Return contract
 
 Return a compact Factory-ingestible review that directly closes the stated gap. Include: STATUS, MATERIAL FINDINGS, RECOMMENDED ACTION, MUST-NOT-LOSE, RISKS, UNKNOWN. Do not require Founder reconstruction.
-retry_requested_at: 2026-09-07T00:22:47.067Z
