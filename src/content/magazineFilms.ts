@@ -272,7 +272,7 @@ const published: FilmRecord[] = [
   publishedFilm({
     slug: "before-the-flood", title: "Before the Flood", year: 2016, focus: "CLIMATE / SYSTEMS / POLITICS", topics: ["CLIMATE", "PEOPLE", "SOLUTIONS"], accent: "blue", director: "Fisher Stevens", runtime: "96 MIN", access: "TRAILER", platform: "NATIONAL GEOGRAPHIC",
     description: "Leonardo DiCaprio travels across the world to understand climate disruption, its political economy and the responses available to societies now.", credit: "Directed by Fisher Stevens.",
-    watchUrl: "https://www.beforetheflood.com/", trailerId: "f0z7Sf_S4tY", sourceUrl: "https://www.beforetheflood.com/", sourceLabel: "BEFORE THE FLOOD / OFFICIAL", selectionNote: "A broad entry point into climate science, politics, consumption and system-level response.", availabilityNote: "Official film site and trailer route linked; full viewing availability varies by market."
+    watchUrl: "https://www.beforetheflood.com/", trailerId: "D9xFFyUOpXo", imageVideoId: "D9xFFyUOpXo", sourceUrl: "https://www.beforetheflood.com/", sourceLabel: "BEFORE THE FLOOD / OFFICIAL", selectionNote: "A broad entry point into climate science, politics, consumption and system-level response.", availabilityNote: "Official film site and trailer route linked; full viewing availability varies by market."
   }),
   publishedFilm({
     slug: "2040", title: "2040", year: 2019, focus: "SOLUTIONS / ENERGY / FOOD / SYSTEMS", topics: ["SOLUTIONS", "ENERGY", "FOOD", "CLIMATE"], accent: "yellow", director: "Damon Gameau", runtime: "92 MIN", access: "STREAM", platform: "MODERN FILMS / RENT OR BUY",
