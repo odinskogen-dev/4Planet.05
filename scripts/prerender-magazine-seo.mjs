@@ -131,7 +131,7 @@ function writeRoute(route, meta) {
   const withHead = clean.replace("</head>", `    ${headMarkup(meta)}
   </head>`);
   const staticMarkup = staticMarkupForRoute(route, meta);
-  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`) : withHead;
+  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root"></div><noscript>${staticMarkup}</noscript>`) : withHead;
   const target = route === "/" ? path.join(dist, "index.html") : path.join(dist, route.replace(/^\//, ""), "index.html");
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, html, "utf8");

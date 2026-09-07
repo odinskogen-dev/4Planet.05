@@ -70,7 +70,7 @@ function StoryTile({ story, index }: { story: Story; index: number }) {
     <article className={className}>
       <div className="mag-story-tile-index"><span>{String(index + 1).padStart(2, "0")}</span><span>{story.location ?? story.lane}</span></div>
       <Link className="mag-story-media" to={`/magazine/${story.slug}`} onClick={() => trackEvent("magazine_story_open", { story_slug: story.slug, content_type: story.editorialType.toLowerCase(), placement: `mosaic_${size}` })}>
-        <img src={media.src} alt={media.alt} loading={index < 3 ? "eager" : "lazy"} decoding="async" onError={safeImageFallback} />
+        <img src={media.src} srcSet={media.srcMobile ? `${media.srcMobile} 720w, ${media.src} 1600w` : undefined} sizes="(max-width: 640px) 96vw, 50vw" alt={media.alt} loading="lazy" decoding="async" fetchPriority="low" onError={safeImageFallback} />
       </Link>
       <div className="mag-story-copy">
         <div className="mag-story-kicker"><span>{story.category}</span><span>·</span><span>{storyStatus(story)}</span><span>·</span><span>{experience}</span><span>·</span><span>{readMins} MIN</span></div>
@@ -87,7 +87,7 @@ function SignalTile({ index }: { index: number }) {
   const layout = index === 0 ? "lead" : "compact";
   return (
     <Link className={`mag-signal-card mag-signal-card--${layout}`} data-accent={signal.accent} to={`/magazine/signals/${signal.slug}`}>
-      <img className="mag-signal-card-media" src={media.src} alt={media.alt} loading="lazy" decoding="async" onError={safeImageFallback} />
+      <img className="mag-signal-card-media" src={media.src} srcSet={media.srcMobile ? `${media.srcMobile} 720w, ${media.src} 1600w` : undefined} sizes="(max-width: 640px) 96vw, 50vw" alt={media.alt} loading="lazy" decoding="async" fetchPriority="low" onError={safeImageFallback} />
       <div className="mag-signal-card-copy"><span>{String(index + 1).padStart(2, "0")} / {signal.publisher}</span><h3>{signal.title}</h3><p>{signal.dek}</p><b>READ SIGNAL →</b></div>
     </Link>
   );
@@ -107,7 +107,7 @@ function StoryStream() {
                 const readMins = featureReadMins(story.slug, story.readMins);
                 return (
                   <Link className="mag-story-stream-card" to={`/magazine/${story.slug}`} key={`${copy}-${story.slug}`} tabIndex={copy === 1 ? -1 : undefined}>
-                    <img src={media.src} alt={copy === 1 ? "" : media.alt} loading="lazy" decoding="async" onError={safeImageFallback} />
+                    <img src={media.src} srcSet={media.srcMobile ? `${media.srcMobile} 720w, ${media.src} 1600w` : undefined} sizes="(max-width: 640px) 72vw, 24vw" alt={copy === 1 ? "" : media.alt} loading="lazy" decoding="async" fetchPriority="low" onError={safeImageFallback} />
                     <span>{story.category} · {readMins} MIN</span><strong>{story.title}</strong>
                   </Link>
                 );
@@ -141,7 +141,7 @@ function FilmStream() {
                   tabIndex={copy === 1 ? -1 : undefined}
                   onClick={() => trackEvent("films_home_rail_open", { film_slug: film.slug })}
                 >
-                  <img src={film.imageUrl} alt={copy === 1 ? "" : film.imageAlt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={(event) => filmImageFallback(event, film.fallbackImageUrl)} />
+                  <img src={film.fallbackImageUrl || film.imageUrl} alt={copy === 1 ? "" : film.imageAlt} loading="lazy" decoding="async" fetchPriority="low" referrerPolicy="no-referrer" onError={(event) => filmImageFallback(event, film.imageUrl)} />
                   <span>{film.focus} · {film.runtime}</span><strong>{film.title}</strong>
                 </Link>
               ))}
@@ -176,7 +176,7 @@ export default function Magazine() {
         <section className="mag-home-hero" aria-labelledby="magazine-title">
           <div><p className="mag-home-hero-kicker">4PLANET MAGAZINE / FOR A LIVING PLANET</p><h1 id="magazine-title">The world is alive. So is the story.</h1></div>
           <div className="mag-home-hero-aside">
-            <figure className="mag-home-hero-visual"><img src={hero.src} alt={hero.alt} loading="eager" decoding="async" onError={safeImageFallback} /><figcaption>4CULTURE_ / EDITORIAL SYSTEM</figcaption></figure>
+            <figure className="mag-home-hero-visual"><img src={hero.src} srcSet={hero.srcMobile ? `${hero.srcMobile} 720w, ${hero.src} 1600w` : undefined} sizes="(max-width: 640px) 96vw, 42vw" alt={hero.alt} width="1200" height="800" loading="eager" decoding="async" fetchPriority="high" onError={safeImageFallback} /><figcaption>4CULTURE_ / EDITORIAL SYSTEM</figcaption></figure>
             <p>Nature without nostalgia. Technology without hype. Culture with consequence.</p><span>Animals, people, places and the ideas being built around a living planet — reported with curiosity, sources and room for uncertainty.</span>
           </div>
         </section>
@@ -196,7 +196,7 @@ export default function Magazine() {
         ) : null}
 
         {!currentLabel ? (
-          <section className="mag-feed-shell mag-franchise-section" aria-labelledby="series-title"><header className="mag-feed-head"><div><p className="mag-feed-kicker">RECURRING EDITORIAL</p><h2 id="series-title">Reasons to come back.</h2></div><p>Recognisable formats, different material. The story chooses the form; the Magazine keeps the standard.</p></header><figure className="mag-franchise-visual"><img src={recurringVisual.src} alt={recurringVisual.alt} loading="lazy" decoding="async" onError={safeImageFallback} /><figcaption>FIELD / SYSTEMS / CULTURE / ACTION</figcaption></figure><div className="mag-franchise-rail"><Link to="/magazine/series/from-the-field"><span>FIELD / PEOPLE / PLACE</span><strong>From the Field</strong></Link><Link to="/magazine/series/the-living-world"><span>SPECIES / ECOSYSTEMS</span><strong>The Living World</strong></Link><Link to="/magazine/series/planet-explained"><span>SYSTEMS / EVIDENCE</span><strong>Planet Explained</strong></Link><Link to="/magazine/series/what-works"><span>SOLUTIONS / LIMITS</span><strong>What Works</strong></Link></div></section>
+          <section className="mag-feed-shell mag-franchise-section" aria-labelledby="series-title"><header className="mag-feed-head"><div><p className="mag-feed-kicker">RECURRING EDITORIAL</p><h2 id="series-title">Reasons to come back.</h2></div><p>Recognisable formats, different material. The story chooses the form; the Magazine keeps the standard.</p></header><figure className="mag-franchise-visual"><img src={recurringVisual.src} srcSet={recurringVisual.srcMobile ? `${recurringVisual.srcMobile} 720w, ${recurringVisual.src} 1600w` : undefined} sizes="(max-width: 640px) 96vw, 80vw" alt={recurringVisual.alt} loading="lazy" decoding="async" fetchPriority="low" onError={safeImageFallback} /><figcaption>FIELD / SYSTEMS / CULTURE / ACTION</figcaption></figure><div className="mag-franchise-rail"><Link to="/magazine/series/from-the-field"><span>FIELD / PEOPLE / PLACE</span><strong>From the Field</strong></Link><Link to="/magazine/series/the-living-world"><span>SPECIES / ECOSYSTEMS</span><strong>The Living World</strong></Link><Link to="/magazine/series/planet-explained"><span>SYSTEMS / EVIDENCE</span><strong>Planet Explained</strong></Link><Link to="/magazine/series/what-works"><span>SOLUTIONS / LIMITS</span><strong>What Works</strong></Link></div></section>
         ) : null}
 
         {!currentLabel ? (

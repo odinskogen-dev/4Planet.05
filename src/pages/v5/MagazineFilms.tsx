@@ -114,14 +114,15 @@ function useSavedFilms() {
   return { saved, toggle };
 }
 
-function FilmImage({ film, eager = false, decorative = false }: { film: FilmRecord; eager?: boolean; decorative?: boolean }) {
-  const [src, setSrc] = useState(film.imageUrl);
+function FilmImage({ film, eager = false, decorative = false, compact = false }: { film: FilmRecord; eager?: boolean; decorative?: boolean; compact?: boolean }) {
+  const initialSrc = compact && film.fallbackImageUrl ? film.fallbackImageUrl : film.imageUrl;
+  const [src, setSrc] = useState(initialSrc);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setSrc(film.imageUrl);
+    setSrc(compact && film.fallbackImageUrl ? film.fallbackImageUrl : film.imageUrl);
     setFailed(false);
-  }, [film.imageUrl]);
+  }, [film.imageUrl, film.fallbackImageUrl, compact]);
 
   if (failed) {
     return (
@@ -140,8 +141,10 @@ function FilmImage({ film, eager = false, decorative = false }: { film: FilmReco
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       referrerPolicy="no-referrer"
+      fetchPriority={eager ? "high" : "low"}
       onError={() => {
-        if (film.fallbackImageUrl && src !== film.fallbackImageUrl) setSrc(film.fallbackImageUrl);
+        if (src !== film.imageUrl && film.imageUrl) setSrc(film.imageUrl);
+        else if (film.fallbackImageUrl && src !== film.fallbackImageUrl) setSrc(film.fallbackImageUrl);
         else setFailed(true);
       }}
     />
@@ -159,7 +162,7 @@ function FilmCard({ film, index, saved, onSave }: { film: FilmRecord; index: num
         aria-label={`Open ${film.title}`}
         onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `films_grid_${layout}` })}
       >
-        <FilmImage film={film} eager={index < 3} />
+        <FilmImage film={film} compact />
       </Link>
       <div className="mag-film-card-copy">
         <p className="mag-film-meta">{film.year} · {film.runtime} · {accessLabel(film)}</p>
@@ -191,7 +194,7 @@ function FeaturedMaze({ films }: { films: FilmRecord[] }) {
           const layout = FEATURED_MAZE_LAYOUTS[index % FEATURED_MAZE_LAYOUTS.length];
           return (
             <Link key={film.slug} className={`mag-film-featured-card mag-film-featured-card--${layout}`} data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `featured_maze_${layout}` })}>
-              <FilmImage film={film} eager={index < 2} decorative />
+              <FilmImage film={film} eager={index === 0} decorative />
               <span className="mag-film-featured-shade" aria-hidden />
               <div className="mag-film-featured-copy"><span>{accessLabel(film)} · {film.runtime}</span><strong>{film.title}</strong></div>
             </Link>
@@ -220,7 +223,7 @@ function WatchNowRail({ films }: { films: FilmRecord[] }) {
             const duplicate = index >= films.length;
             return (
               <Link key={`${film.slug}-${index}`} className="mag-film-watch-card" data-accent={film.accent} to={`/films/${film.slug}`} aria-hidden={duplicate || undefined} tabIndex={duplicate ? -1 : 0} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: "watch_now_rail" })}>
-                <div><FilmImage film={film} decorative /></div><span>{film.runtime} · {film.director}</span><strong>{film.title}</strong>
+                <div><FilmImage film={film} decorative compact /></div><span>{film.runtime} · {film.director}</span><strong>{film.title}</strong>
               </Link>
             );
           })}
@@ -238,7 +241,7 @@ function FilmRail({ title, eyebrow, films }: { title: string; eyebrow: string; f
       <div className="mag-film-lane-track">
         {films.map((film) => (
           <Link key={film.slug} className="mag-film-lane-card" data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `lane_${eyebrow.toLowerCase().split(" ").join("_")}` })}>
-            <div><FilmImage film={film} decorative /></div>
+            <div><FilmImage film={film} decorative compact /></div>
             <span>{accessLabel(film)} · {film.runtime}</span>
             <strong>{film.title}</strong>
           </Link>
@@ -251,7 +254,7 @@ function FilmRail({ title, eyebrow, films }: { title: string; eyebrow: string; f
 function RelatedFilmCard({ film }: { film: FilmRecord }) {
   return (
     <Link className="mag-film-related-card" data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: "related_films" })}>
-      <div className="mag-film-related-media"><FilmImage film={film} decorative /></div>
+      <div className="mag-film-related-media"><FilmImage film={film} decorative compact /></div>
       <span>{film.focus}</span>
       <strong>{film.title}</strong>
       <small>{film.year} · {film.runtime}</small>
