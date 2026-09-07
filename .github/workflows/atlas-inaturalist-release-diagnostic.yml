@@ -20,10 +20,15 @@ jobs:
         shell: bash
         run: |
           set -u
-          echo '=== 4PLANET frozen Pages Function ==='
+          echo '=== 4PLANET frozen Pages Function — exact name ==='
           curl -sS -D /tmp/h1 -o /tmp/b1 -w '\nHTTP=%{http_code}\n' 'https://ceae8a48.4planet-05.pages.dev/api/inaturalist?q=Orcinus%20orca&perPage=5&quality=research' || true
           cat /tmp/h1 || true
           cat /tmp/b1 || true
+          echo
+          echo '=== 4PLANET frozen Pages Function — known verified taxonId ==='
+          curl -sS -D /tmp/h4 -o /tmp/b4 -w '\nHTTP=%{http_code}\n' 'https://ceae8a48.4planet-05.pages.dev/api/inaturalist?taxonId=41521&perPage=5&quality=research' || true
+          cat /tmp/h4 || true
+          head -c 2500 /tmp/b4 || true
           echo
           echo '=== iNaturalist taxa autocomplete ==='
           curl -sS -D /tmp/h2 -o /tmp/b2 -w '\nHTTP=%{http_code}\n' -H 'Accept: application/json' -A '4PLANET-ATLAS/1.0 (+https://4planet.org)' 'https://api.inaturalist.org/v1/taxa/autocomplete?q=Orcinus%20orca&per_page=20' || true
