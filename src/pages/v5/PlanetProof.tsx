@@ -145,6 +145,8 @@ export function PlanetProofPage({ slug }: { slug: string }) {
   const proof = planetProofBySlug(slug);
   if (!proof) return null;
   const isCandidate = proof.state === "FOUNDER_REVIEW";
+  const preservesOslofjordProductIdentity = proof.slug === "oslofjorden";
+  const displayName = preservesOslofjordProductIdentity ? "Oslofjorden" : proof.name;
   return (
     <main style={{ background: paper, color: ink }}>
       <nav style={{ minHeight: 52, padding: "0 clamp(18px,4vw,54px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, borderBottom: `1px solid ${line}`, background: paper }}>
@@ -154,7 +156,8 @@ export function PlanetProofPage({ slug }: { slug: string }) {
 
       <header style={{ minHeight: "74vh", display: "grid", alignContent: "end", padding: "clamp(70px,10vw,150px) clamp(20px,6vw,86px) clamp(46px,7vw,90px)" }}>
         <div style={{ ...mono, color: blue }}><span>{proof.domain} · PLANET PROOF {proof.index} · </span>{isCandidate ? <span>HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED</span> : <span>TRANSFER PACK — IN DEVELOPMENT</span>}</div>
-        <h1 style={{ margin: "18px 0 0", fontSize: "clamp(60px,12vw,176px)", lineHeight: .78, letterSpacing: "-.075em", fontWeight: 520 }}>{proof.name}</h1>
+        <h1 style={{ margin: "18px 0 0", fontSize: "clamp(60px,12vw,176px)", lineHeight: .78, letterSpacing: "-.075em", fontWeight: 520 }}>{displayName}</h1>
+        {preservesOslofjordProductIdentity && <div style={{ marginTop: 24, ...mono, color: blue }}>BOUNDED REFERENCE CELL · {proof.name}</div>}
         <div style={{ marginTop: "clamp(32px,5vw,62px)", display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(260px,.7fr)", gap: "clamp(28px,7vw,100px)", alignItems: "end" }}>
           <p style={{ margin: 0, maxWidth: 850, fontSize: "clamp(23px,3.6vw,48px)", lineHeight: 1.04, letterSpacing: "-.03em" }}>{proof.oneLine}</p>
           <p style={{ margin: 0, color: dim, fontSize: 13.5, lineHeight: 1.58 }}>{proof.truthBoundary}</p>
