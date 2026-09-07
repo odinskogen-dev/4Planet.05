@@ -9,7 +9,7 @@ const films = read("src/content/magazineFilms.ts");
 const page = read("src/pages/v5/MagazineFilms.tsx");
 const shell = read("src/components/magazine/MagazineShell.tsx");
 const home = read("src/pages/v5/Magazine.tsx");
-const css = read("src/styles/magazine-films-gold-02.css") + "\n" + read("src/styles/magazine-films-premium-03.css");
+const css = read("src/styles/magazine-films-gold-02.css") + "\n" + read("src/styles/magazine-films-premium-03.css") + "\n" + read("src/styles/magazine-films-premium-04.css");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const published = films.split("const published: FilmRecord[] = [")[1]?.split("];\n\nconst research: FilmRecord[] = [")[0] ?? "";
 const research = films.split("const research: FilmRecord[] = [")[1]?.split("];\n\nexport const FILMS")[0] ?? "";
@@ -30,11 +30,11 @@ test("Films has one canonical 50-record registry with 40 published", () => {
   assert.match(films, /export const PUBLISHED_FILMS = published/);
 });
 
-test("Premium 03 promotes the requested twenty additional films", () => {
+test("Premium selection contains the requested forty public films", () => {
   for (const slug of premiumAdditions) assert.ok(publishedSlugs.includes(slug), `${slug} must be published`);
 });
 
-test("Every public film has a watch route, source, description and film-specific image decision", () => {
+test("Every public film has watch, source, description and film-specific artwork decisions", () => {
   assert.equal((published.match(/\bwatchUrl:/g) || []).length, 40);
   assert.equal((published.match(/\bsourceUrl:/g) || []).length, 40);
   assert.equal((published.match(/\bdescription:/g) || []).length, 40);
@@ -53,7 +53,16 @@ test("Public Films surface contains no internal pipeline language", () => {
   assert.match(page, /CURATED SELECTION/);
 });
 
-test("Films discovery uses explicit topics and exposes only populated filters", () => {
+test("Discovery is editorial first but supports search, topic filtering and saved films", () => {
+  assert.match(page, /FEATURED_SLUGS/);
+  assert.match(page, /WATCH FREE/);
+  assert.match(page, /SHORT FILMS/);
+  assert.match(page, /NEW TO 4PLANET/);
+  assert.match(page, /role="search"/);
+  assert.match(page, /film_search/);
+  assert.match(page, /SAVED_KEY/);
+  assert.match(page, /localStorage/);
+  assert.match(page, /film_save_toggle/);
   assert.match(page, /film\.topics\.includes/);
   assert.doesNotMatch(page, /film\.focus\.includes/);
   assert.match(page, /availableFilters/);
@@ -88,22 +97,29 @@ test("Films grid is an editorial maze and interaction colour remains determinist
   assert.match(css, /background:var\(--film-accent\) !important/);
 });
 
-test("Light mastheads are black and dark mode has a final whole-publication closure layer", () => {
+test("Light mastheads are black and dark mode has a whole-publication closure layer", () => {
   assert.match(css, /data-mag-theme="light"[^\n]+mag-world-masthead[^\n]+#080808/);
   assert.match(css, /data-mag-theme="dark"[^\n]+mag-world-masthead[^\n]+#f4f2eb/);
   assert.match(css, /data-mag-theme="dark"[^\n]+\.mag-home/);
   assert.match(css, /data-mag-theme="dark"[^\n]+\.mag-films/);
   assert.match(css, /background:var\(--mw-bg\) !important/);
+  assert.match(css, /mag-film-discovery-tools/);
 });
 
-test("Detail pages retain source transparency, official media and related discovery", () => {
-  assert.match(page, /relatedFilms\(film\.slug, 3\)/);
-  assert.match(page, /KEEP DISCOVERING/);
-  assert.match(page, /AVAILABILITY/);
+test("Every detail page is film-first and preserves source transparency and onward discovery", () => {
+  assert.match(page, /mag-film-key-art/);
+  assert.match(page, /mag-film-primary-actions/);
+  assert.match(page, /SAVE FILM/);
+  assert.match(page, /SHARE/);
+  assert.match(page, /film_share/);
+  assert.match(page, /relatedFilms\(film\.slug, 4\)/);
+  assert.match(page, /WHY 4PLANET SELECTED IT/);
+  assert.match(page, /CONTINUE THE STORY/);
+  assert.match(page, /OPEN 4PLANET ATLAS/);
+  assert.match(page, /SOURCE \/ AVAILABILITY/);
   assert.match(page, /film_watch_click/);
   assert.match(page, /film_source_click/);
   assert.match(page, /youtube-nocookie\.com/);
-  assert.match(page, /Card image comes from the linked film material/);
 });
 
 test("Sitemap derives published Films from the canonical published registry", () => {
