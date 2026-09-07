@@ -160,14 +160,17 @@
   .mag-world .mag-film-card:active { background:var(--film-accent) !important; color:var(--film-accent-ink) !important; }
 }
 
-/* Fail-safe accessibility: the Film rail must become genuinely static. */
+/* Accessibility authority: this selector deliberately outranks the legacy auto-motion selector. */
 @media (prefers-reduced-motion:reduce) {
-  .mag-world .mag-film-home-stream .mag-story-stream-track,
-  .mag-world .mag-film-home-stream .mag-story-stream-track * {
+  .mag-world .mag-home .mag-story-stream.mag-film-home-stream .mag-story-stream-viewport > .mag-story-stream-track,
+  .mag-world .mag-home .mag-story-stream.mag-film-home-stream .mag-story-stream-viewport > .mag-story-stream-track * {
     animation:none !important;
     animation-name:none !important;
+    animation-duration:0s !important;
+    animation-iteration-count:1 !important;
     transform:none !important;
     transition:none !important;
+    will-change:auto !important;
   }
   .mag-world .mag-film-card,
   .mag-world .mag-film-card-media img { transition:none !important; }
