@@ -182,7 +182,7 @@ function FilmRail({ title, eyebrow, films }: { title: string; eyebrow: string; f
       <header><div><p className="mag-films-eyebrow">{eyebrow}</p><h2>{title}</h2></div><span>{films.length} SELECTED</span></header>
       <div className="mag-film-lane-track">
         {films.map((film) => (
-          <Link key={film.slug} className="mag-film-lane-card" data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `lane_${eyebrow.toLowerCase().replaceAll(" ", "_")}` })}>
+          <Link key={film.slug} className="mag-film-lane-card" data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `lane_${eyebrow.toLowerCase().split(" ").join("_")}` })}>
             <div><FilmImage film={film} decorative /></div>
             <span>{accessLabel(film)} · {film.runtime}</span>
             <strong>{film.title}</strong>
@@ -233,7 +233,7 @@ export function MagazineFilmsIndex() {
   const showEditorialLanes = active === "ALL" && !query && !savedOnly;
 
   useEffect(() => {
-    trackEvent("films_index_view", { published_films: PUBLISHED_FILMS.length, filter: active.toLowerCase(), query: query || undefined, saved_only: savedOnly });
+    trackEvent("films_index_view", { published_films: PUBLISHED_FILMS.length, filter: active.toLowerCase(), query: query || "", saved_only: savedOnly });
   }, [active, query, savedOnly]);
 
   const submitSearch = (event: React.FormEvent<HTMLFormElement>) => {
@@ -258,7 +258,7 @@ export function MagazineFilmsIndex() {
         title="4PLANET FILMS — Films worth your attention"
         description="A curated documentary selection about the living planet, people, systems, pressure and solutions — always linked back to the original filmmakers and distributors."
         path="/films"
-        image={PUBLISHED_FILMS[0]?.imageUrl}
+        image={PUBLISHED_FILMS[0].imageUrl}
       />
       <main className="mag-films">
         <section className="mag-films-hero" aria-labelledby="films-title">
@@ -337,15 +337,18 @@ export function MagazineFilmDetail() {
 
   const share = async () => {
     const url = `${window.location.origin}/films/${film.slug}`;
+    let method = "clipboard";
     try {
-      if (navigator.share) {
-        await navigator.share({ title: `${film.title} — 4PLANET FILMS`, text: film.description, url });
+      const nativeShare = (navigator as Navigator & { share?: (data?: ShareData) => Promise<void> }).share;
+      if (typeof nativeShare === "function") {
+        await nativeShare.call(navigator, { title: `${film.title} — 4PLANET FILMS`, text: film.description, url });
         setShareState("shared");
+        method = "native";
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
         setShareState("copied");
       }
-      trackEvent("film_share", { film_slug: film.slug, method: navigator.share ? "native" : "clipboard" });
+      trackEvent("film_share", { film_slug: film.slug, method });
     } catch {
       setShareState("idle");
     }
@@ -390,7 +393,7 @@ export function MagazineFilmDetail() {
           <div className="mag-film-detail-story">
             <p className="mag-films-eyebrow">THE FILM</p>
             <p className="mag-film-dek">{film.description}</p>
-            <div className="mag-film-themes" aria-label="Film themes">{film.topics.map((topic) => <Link key={topic} to={`/films?topic=${topic}`}>{topic.replace("LAND_WILDLIFE", "LAND + WILDLIFE").replaceAll("_", " ")}</Link>)}</div>
+            <div className="mag-film-themes" aria-label="Film themes">{film.topics.map((topic) => <Link key={topic} to={`/films?topic=${topic}`}>{topic.replace("LAND_WILDLIFE", "LAND + WILDLIFE").split("_").join(" ")}</Link>)}</div>
           </div>
           <aside className="mag-film-facts">
             <dl>
