@@ -117,12 +117,12 @@ jobs:
             const branch=item.sandbox?.branch;
             if(!branch) throw new Error(`${product} has no sandbox branch`);
             const sha=head(branch);
-            const dep=exact(branch,sha) || exactSha(sha);
+            const dep=sha===heirSha ? heirDep : (exact(branch,sha) || exactSha(sha));
             if(!dep) throw new Error(`No exact Pages artifact found for ${product} SANDBOX ${branch}@${sha}`);
             sandboxes[product]={
               branch,sha,origin:originOf(dep),render_origin:renderForSha(sha),
               deployment_branch:branchOf(dep),
-              artifact_identity_mode:branchOf(dep)===branch?'EXACT_BRANCH_SHA':'EXACT_SHA_EQUIVALENT'
+              artifact_identity_mode:sha===heirSha?'EXACT_SHA_SAME_AS_HEIR':(branchOf(dep)===branch?'EXACT_BRANCH_SHA':'EXACT_SHA_EQUIVALENT')
             };
           }
 
@@ -181,7 +181,7 @@ jobs:
           const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
           const map=new Map();
           map.set(r.heir.render_origin,r.heir.origin);
-          for(const s of Object.values(r.sandboxes||{})) map.set(s.render_origin,s.origin);
+          for(const s of Object.values(r.sandboxes||{})) if(!map.has(s.render_origin)) map.set(s.render_origin,s.origin);
           for(const [upstream,render] of Object.entries(r.liveOrigins||{})) map.set(render,upstream);
           for(const [render,upstream] of map) {
             const host=new URL(render).hostname;
@@ -239,7 +239,12 @@ jobs:
           verify_surfaces() {
             while IFS=$'\t' read -r product state url; do
               [ -z "$url" ] && continue
-              curl -fsS --connect-timeout 10 --max-time 45 -o /dev/null "$url" || { echo "Underlying surface failed: $product $state $url"; exit 8; }
+              ok=0
+              for attempt in $(seq 1 10); do
+                if curl -fsS --connect-timeout 10 --max-time 45 -o /dev/null "$url"; then ok=1; break; fi
+                sleep 3
+              done
+              [ "$ok" -eq 1 ] || { echo "Underlying surface failed after retries: $product $state $url"; exit 8; }
             done < "$RUNNER_TEMP/underlying-surfaces.tsv"
           }
           verify_surfaces
