@@ -1,0 +1,34 @@
+name: 4PLANET Films Closure 06 Visible Preview Fix
+
+on:
+  push:
+    branches:
+      - work/magazine-films-premium-closure-05
+    paths:
+      - 'scripts/closure06-visible-preview-fix.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-once:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/magazine-films-premium-closure-05
+          fetch-depth: 1
+      - name: Apply explicit reduced-motion proof fix
+        run: node scripts/closure06-visible-preview-fix.mjs
+      - name: Commit exact test-harness correction
+        run: |
+          set -euo pipefail
+          git diff -- tests/e2e/magazine-films-gold.spec.ts
+          git diff --quiet --exit-code -- . ':!tests/e2e/magazine-films-gold.spec.ts' || {
+            echo 'Unexpected files changed'; git status --short; exit 1;
+          }
+          git config user.name '4PLANET Closure 06'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tests/e2e/magazine-films-gold.spec.ts
+          git commit -m 'FILMS CLOSURE 06: make reduced-motion proof explicit'
+          git push origin HEAD:work/magazine-films-premium-closure-05
