@@ -1,0 +1,101 @@
+name: 4PLANET Films LIVE Closure 07 Performance Audit
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/films-live-closure07-performance-audit.yml'
+
+permissions:
+  contents: read
+
+timeout-minutes: 25
+
+jobs:
+  lighthouse-live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify exact LIVE source before performance audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='1911b9ecc2e042bb86968fc9099f9a4e6608b37b'
+          for url in 'https://4planetmagazine.com/films/' 'https://4planetmagazine.com/magazine/' 'https://4planetmagazine.com/films/yanuni/'; do
+            headers=$(curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r')
+            code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
+            sha=$(printf '%s\n' "$headers" | awk -F': ' 'tolower($1)=="x-4planet-source-sha"{s=$2} END{print s}')
+            [ "$code" = '200' ] && [ "$sha" = "$expected" ] || { echo "LIVE AUTHORITY MISMATCH $url code=$code sha=$sha"; exit 2; }
+          done
+      - name: Install Lighthouse
+        run: npm install --no-save --ignore-scripts lighthouse@latest
+      - name: Audit LIVE Films + Magazine mobile and desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/lighthouse-live-07
+          audit() {
+            local label="$1"; local url="$2"; local mode="$3"
+            local preset=''
+            if [ "$mode" = 'desktop' ]; then preset='--preset=desktop'; fi
+            npx lighthouse "$url" $preset \
+              --chrome-flags='--headless --no-sandbox --disable-gpu' \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --output=json \
+              --output-path="artifacts/lighthouse-live-07/${label}-${mode}.json" \
+              --quiet
+          }
+          audit films-index 'https://4planetmagazine.com/films/' mobile
+          audit films-index 'https://4planetmagazine.com/films/' desktop
+          audit yanuni 'https://4planetmagazine.com/films/yanuni/' mobile
+          audit magazine 'https://4planetmagazine.com/magazine/' mobile
+      - name: Summarise performance proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir='artifacts/lighthouse-live-07';
+          const files=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).sort();
+          const rows=[];
+          for (const file of files) {
+            const r=JSON.parse(fs.readFileSync(path.join(dir,file),'utf8'));
+            const c=r.categories;
+            const a=r.audits;
+            const row={
+              file,
+              performance:Math.round((c.performance?.score??0)*100),
+              accessibility:Math.round((c.accessibility?.score??0)*100),
+              bestPractices:Math.round((c['best-practices']?.score??0)*100),
+              seo:Math.round((c.seo?.score??0)*100),
+              lcp:a['largest-contentful-paint']?.numericValue??null,
+              cls:a['cumulative-layout-shift']?.numericValue??null,
+              tbt:a['total-blocking-time']?.numericValue??null,
+              fcp:a['first-contentful-paint']?.numericValue??null,
+              speedIndex:a['speed-index']?.numericValue??null,
+            };
+            rows.push(row);
+            console.log(JSON.stringify(row));
+          }
+          fs.writeFileSync(path.join(dir,'summary.json'),JSON.stringify(rows,null,2));
+          const filmsMobile=rows.find(r=>r.file==='films-index-mobile.json');
+          if (!filmsMobile) throw new Error('Missing Films mobile Lighthouse result');
+          // Fail only on material regressions; avoid gaming scores.
+          if (filmsMobile.performance < 60) throw new Error(`Material Films mobile performance failure: ${filmsMobile.performance}`);
+          if (filmsMobile.lcp != null && filmsMobile.lcp > 5000) throw new Error(`Material Films mobile LCP failure: ${filmsMobile.lcp}ms`);
+          if (filmsMobile.cls != null && filmsMobile.cls > 0.25) throw new Error(`Material Films mobile CLS failure: ${filmsMobile.cls}`);
+          if (filmsMobile.tbt != null && filmsMobile.tbt > 1000) throw new Error(`Material Films mobile TBT failure: ${filmsMobile.tbt}ms`);
+          NODE
+      - name: Preserve Lighthouse proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: films-live-07-lighthouse-${{ github.sha }}
+          path: artifacts/lighthouse-live-07
+          if-no-files-found: error
+          retention-days: 14
