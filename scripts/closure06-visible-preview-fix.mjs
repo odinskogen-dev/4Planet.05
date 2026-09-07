@@ -1,5 +1,6 @@
 import fs from "node:fs";
 
+// One-shot Closure 06 test-harness correction; delete after successful application.
 const path = "tests/e2e/magazine-films-gold.spec.ts";
 let source = fs.readFileSync(path, "utf8");
 const before = '  test("automatic Films rail becomes static without losing discovery", async ({ page }) => {\n    await page.goto("/magazine");';
