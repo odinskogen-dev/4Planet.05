@@ -224,6 +224,7 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
 test.describe("4PLANET FILMS — reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
   test("automatic Films rail becomes static without losing discovery", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/magazine");
     await expect.poll(() => page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
     const track = page.locator(".mag-film-home-stream .mag-story-stream-track");
