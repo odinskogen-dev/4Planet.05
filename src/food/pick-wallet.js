@@ -1,8 +1,9 @@
-export const PICK_WALLET_VERSION = "p18-pick-wallet-0.6.0";
+export const PICK_WALLET_VERSION = "p18-pick-wallet-0.7.0";
 
-export function unknownWallet(reason = "No current price observation is connected to this GTIN.") {
+export function unknownWallet(reason = "No current price observation is connected to this GTIN.", evidenceState = "UNKNOWN") {
   return {
     version: PICK_WALLET_VERSION,
+    evidenceState,
     state: "UNKNOWN",
     confidence: "UNKNOWN",
     directness: "NONE",
@@ -21,7 +22,9 @@ function ageDays(date) {
 
 export function normaliseWalletEnvelope(envelope) {
   if (!envelope || envelope.kind !== "found" || !envelope.latest) {
-    return unknownWallet(envelope?.kind === "source_error" ? "Price source is currently unavailable." : "No NOK price observation was found for this GTIN.");
+    return envelope?.kind === "source_error"
+      ? unknownWallet("Price source is currently unavailable.", "UNAVAILABLE")
+      : unknownWallet("No NOK price observation was found for this GTIN.", "UNKNOWN");
   }
   const observation = envelope.latest;
   const days = ageDays(observation.date ?? observation.created);
@@ -35,6 +38,7 @@ export function normaliseWalletEnvelope(envelope) {
 
   return {
     version: PICK_WALLET_VERSION,
+    evidenceState: "OBSERVED",
     state: freshness,
     confidence,
     directness: "OBSERVED PRICE",
