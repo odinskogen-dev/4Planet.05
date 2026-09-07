@@ -25,7 +25,7 @@ concurrency:
 jobs:
   verify-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - name: Checkout exact closure candidate
         uses: actions/checkout@v4
@@ -51,6 +51,31 @@ jobs:
         env:
           VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
         run: npm run build
+
+      - name: External watch/source QA — all 40 films
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/magazine-films-external-links.mjs > "$RUNNER_TEMP/film-links.tsv"
+          line_count=$(wc -l < "$RUNNER_TEMP/film-links.tsv" | tr -d ' ')
+          [ "$line_count" = '80' ] || { echo "Expected 80 watch/source decisions, got $line_count"; exit 20; }
+          hard_fail=0
+          checked=0
+          protected=0
+          while IFS=$'\t' read -r slug kind url; do
+            [ -z "$url" ] && continue
+            checked=$((checked+1))
+            code=$(curl -L -sS -A 'Mozilla/5.0 4PLANET-Films-QA/1.0' -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 35 "$url" || true)
+            case "$code" in
+              404|410) echo "BROKEN $slug $kind $code $url"; hard_fail=1 ;;
+              401|403|429|000) echo "BOT_OR_ACCESS_PROTECTED $slug $kind $code $url"; protected=$((protected+1)) ;;
+              2*|3*) echo "REACHABLE $slug $kind $code $url" ;;
+              *) echo "NON_FATAL_REMOTE_RESPONSE $slug $kind $code $url" ;;
+            esac
+          done < "$RUNNER_TEMP/film-links.tsv"
+          echo "Checked $checked external decisions; $protected access-protected; hard_fail=$hard_fail"
+          [ "$checked" = '80' ] || exit 21
+          [ "$hard_fail" = '0' ] || exit 22
 
       - name: Install Chromium and WebKit for independent human QA
         run: npx playwright install --with-deps chromium webkit
