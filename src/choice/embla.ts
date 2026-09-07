@@ -11,7 +11,19 @@ export type EmblaIntakeResult = {
   nextLabel?: string;
 };
 
-export type EmblaFoodCategory = "COFFEE" | "BUTTER" | "MILK";
+export type EmblaFoodCategory =
+  | "GREEK_PLAIN_YOGHURT"
+  | "SKYR_PROTEIN_YOGHURT"
+  | "PLAIN_YOGHURT"
+  | "ROLLED_OATS"
+  | "GRANOLA"
+  | "MUESLI"
+  | "CORN_FLAKES"
+  | "FROZEN_PIZZA"
+  | "TORTILLA_CHIPS"
+  | "POTATO_CHIPS"
+  | "ENERGY_DRINK"
+  | "CARBONATED_SOFT_DRINK";
 
 export type EmblaShoppingItem = {
   raw: string;
@@ -23,10 +35,24 @@ export type EmblaShoppingItem = {
 
 const hasAny = (value: string, words: string[]) => words.some((word) => value.includes(word));
 
+/**
+ * These terms intentionally mirror FOOD's human-controlled direct-substitute
+ * profiles. A broad food family is never promoted to evidence-ready merely
+ * because Embla recognises the noun.
+ */
 const FOOD_CATEGORY_TERMS: Array<{ category: EmblaFoodCategory; label: string; terms: string[] }> = [
-  { category: "COFFEE", label: "Coffee", terms: ["kaffe", "coffee", "espresso"] },
-  { category: "BUTTER", label: "Butter", terms: ["smør", "smor", "butter"] },
-  { category: "MILK", label: "Milk", terms: ["melk", "milk"] },
+  { category: "GREEK_PLAIN_YOGHURT", label: "Greek-style plain yoghurt", terms: ["gresk yoghurt", "gresk yogurt", "greek yoghurt", "greek yogurt"] },
+  { category: "SKYR_PROTEIN_YOGHURT", label: "Skyr / protein yoghurt", terms: ["skyr", "proteinyoghurt", "protein yoghurt", "protein yogurt"] },
+  { category: "PLAIN_YOGHURT", label: "Plain yoghurt", terms: ["naturell yoghurt", "naturell yogurt", "plain yoghurt", "plain yogurt"] },
+  { category: "ROLLED_OATS", label: "Rolled oats", terms: ["havregryn", "rolled oats", "oat flakes"] },
+  { category: "GRANOLA", label: "Granola", terms: ["granola"] },
+  { category: "MUESLI", label: "Muesli", terms: ["müsli", "musli", "muesli"] },
+  { category: "CORN_FLAKES", label: "Corn flakes", terms: ["corn flakes", "cornflakes"] },
+  { category: "FROZEN_PIZZA", label: "Frozen pizza", terms: ["frossenpizza", "frossen pizza", "frozen pizza"] },
+  { category: "TORTILLA_CHIPS", label: "Tortilla chips", terms: ["tortillachips", "tortilla chips", "nachos", "nacho chips"] },
+  { category: "POTATO_CHIPS", label: "Potato chips", terms: ["potetgull", "potetchips", "potato chips", "potato crisps"] },
+  { category: "ENERGY_DRINK", label: "Energy drink", terms: ["energidrikk", "energy drink"] },
+  { category: "CARBONATED_SOFT_DRINK", label: "Carbonated soft drink", terms: ["brus", "soft drink", "soda"] },
 ];
 
 export function parseEmblaShoppingList(input: string): EmblaShoppingItem[] {
@@ -79,16 +105,16 @@ export function summariseEmblaShoppingList(items: EmblaShoppingItem[]) {
 export function resolveEmblaIntake(prompt: string): EmblaIntakeResult {
   const value = prompt.trim().toLowerCase();
 
-  if (hasAny(value, ["food", "grocery", "groceries", "product", "barcode", "eat", "meal", "shopping list", "handleliste", "kaffe", "coffee", "smør", "smor", "butter", "melk", "milk"])) {
+  if (hasAny(value, ["food", "grocery", "groceries", "product", "barcode", "eat", "meal", "shopping list", "handleliste", "kaffe", "coffee", "smør", "smor", "butter", "melk", "milk", "yoghurt", "yogurt", "havregryn", "granola", "muesli", "müsli", "pizza", "potetgull", "chips", "brus", "soda", "energidrikk", "energy drink"])) {
     return {
       domain: "FOOD",
       status: "EVIDENCE_PATH_READY",
       eyebrow: "EMBLA → FOOD → CHOICE",
       title: "Tell me what matters most in this choice.",
       detail:
-        "The current FOOD proof can compare controlled product evidence for selected health and allergen priorities, and inspect HEALTH, WALLET and PLANET separately without inventing one universal score.",
+        "The current FOOD proof can read a real barcode, compare only human-controlled direct substitutes for selected health and allergen priorities, and inspect HEALTH, WALLET and PLANET separately without inventing one universal score.",
       truthBoundary:
-        "Embla has identified a usable decision path, not a universal answer. Wallet and planetary evidence do not yet support category-wide ranking, so those paths remain product evidence rather than a false best-in-category recommendation.",
+        "Embla has identified a usable decision path, not a universal answer. A recognised shopping-list noun is not automatically a controlled comparison category. Wallet and planetary evidence do not yet support category-wide ranking, so those paths remain product evidence rather than a false best-in-category recommendation.",
       nextHref: "/4sapien/food/choose",
       nextLabel: "MAKE THIS CHOICE",
     };
