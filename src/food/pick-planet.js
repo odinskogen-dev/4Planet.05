@@ -1,6 +1,6 @@
 import { classifyHealthProfile } from "./pick-health.js";
 
-export const PICK_PLANET_VERSION = "p18-pick-planet-0.7.0";
+export const PICK_PLANET_VERSION = "p18-pick-planet-0.8.0";
 
 export const PLANET_SOURCES = {
   nnr2023: {
@@ -15,19 +15,22 @@ export const PLANET_SOURCES = {
     title: "AGRIBALYSE 3.2",
     sourceClass: "PUBLIC LCA REFERENCE DATABASE",
     url: "https://agribalyse.ademe.fr/",
-    checkedAt: "2026-08-20",
+    checkedAt: "2026-09-07",
+    truthBoundary: "Reference/category LCA evidence. Not an exact SKU footprint and not a consumer eco-score.",
   },
 };
 
 function out(profile, state, confidence, summary, evidence, limitation) {
+  const evidenceSources = evidence.map((id) => PLANET_SOURCES[id]).filter(Boolean);
   return {
     version: PICK_PLANET_VERSION,
+    evidenceState: evidenceSources.length > 0 ? "MODELLED" : "UNKNOWN",
     profile,
     state,
     confidence,
     directness: "CATEGORY PROXY",
     summary,
-    evidence: evidence.map((id) => PLANET_SOURCES[id]).filter(Boolean),
+    evidence: evidenceSources,
     limitation,
     exactSkuFootprint: false,
   };
