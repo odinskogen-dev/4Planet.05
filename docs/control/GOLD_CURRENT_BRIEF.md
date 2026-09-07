@@ -8,7 +8,7 @@ This file is the machine-readable human contract for the **current bounded TEST 
 **ROLLBACK BASE:** `18586b69e35cbdefef7722a08e46617e8c8182a7`
 **LOOP ROLE:** ACTION PROVIDER DILIGENCE → TEST CONTRACT → PROOF BOUNDARY → LEARNING.
 
-## USER / ACTOR ARRIVES BECAUSE
+## USER ARRIVES BECAUSE
 4PLANET needs a legitimate low-friction route from a bounded action choice into an inspectable provider-side transaction state without pretending that payment equals delivery, ecological outcome or verified impact.
 
 ## ONE THING TO UNDERSTAND
@@ -28,6 +28,12 @@ The code may build a reviewable test request object only. Production execution r
 
 ## P4 DEPTH
 Proof Passport remains the evidence/claim consumer. TEST state is pinned to D0. Provider records can later support transaction/allocation evidence, but physical delivery, outcome and independent impact verification remain separate evidence gates.
+
+## SECONDARY DEPTH
+Provider-specific reporting and transaction semantics are retained only as source-bounded diligence. Exact project geography, double-count control, delivery evidence, remedies, ecological outcome and independent verification remain unresolved until their own evidence gates close.
+
+## MOBILE-FIRST RISK
+This slice is contract-first and introduces no new visual surface. When a user-facing Action Cell is added, dense state labels must remain readable on mobile without collapsing distinct payment, allocation, delivery, evidence, outcome or impact states into a single progress badge.
 
 ## WHAT CAN BE REMOVED
 Any provider-specific platform architecture, generic marketplace, second IMPACT state machine, automatic impact claim, secret storage, live transaction button or bespoke Ecologi UI is unnecessary for this slice.
