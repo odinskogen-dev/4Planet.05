@@ -1,119 +1,58 @@
 # CLAUDE FACTORY RESULT
 
-work_order_id: portfolio-oslofjord-human-gold-review-ce5328306408-014b0b5ebdf8
-queue_sha: cd5297483d26aa5f131f53f385d734eee2d5cf5d
-dispatch_attempt: 4
+work_order_id: portfolio-oslofjord-human-gold-review-18586b69e35c-d46cb56473e1
+queue_sha: fc553361b9bd689c1569e7c8c715cb2c26a830fc
+dispatch_attempt: 1
 status: COMPLETED
 worker: CLAUDE_PRODUCT_INTERFACE
 model: claude-opus-5
-completed_at: 2026-09-07T00:28:55Z
+completed_at: 2026-09-07T00:35:36Z
 authority: REVIEW_ONLY
-
-Write is disabled in this session, and the lane is REVIEW_ONLY, so the deliverable is returned inline.
-
----
 
 # OSLOFJORD HUMAN GOLD — HEIR COMPREHENSION & PROVENANCE REVIEW
 
-id: portfolio-oslofjord-human-gold-review-ce5328306408-014b0b5ebdf8
-mode: REVIEW_ONLY · worker_role: PRODUCT_INTERFACE · project: PLANET_GOLD_01_OSLOFJORD
+id: `portfolio-oslofjord-human-gold-review-18586b69e35c-d46cb56473e1` · mode: REVIEW_ONLY · PRODUCT_INTERFACE
 
 ## STATUS
 
-REVIEW COMPLETE. No repository, TEST KING, LIVE, Canon, outreach or spend mutation occurred.
+REVIEW COMPLETE. No repository, TEST KING, LIVE, Canon, outreach or spend mutation. Full deliverable at `/home/runner/.claude/plans/you-are-the-claude-woolly-globe.md`.
 
-Bound to `king/test@ce532830640817f83c11923bdfb4c394f222baad` (OBSERVED present locally; parent `fdd770f4`). Reviewed surface: `/living-systems/oslofjord` → `PlanetProofPage slug="oslofjorden"`. Evidence at that SHA: `src/pages/v5/PlanetProof.tsx` (183 lines, whole render), `src/planet/proofs/planetProofs.ts` (`OSLOFJORD_PROOF`), `src/routes/router.tsx:111-113`, `tests/e2e/oslofjord-planet-proof.spec.ts`, `src/styles/global.css:36`.
+Bound to `king/test@18586b69e35c`, OBSERVED to be the **exact current `origin/king/test` head** (`git rev-list --count 18586b69..origin/king/test` = 0). Surface: `/living-systems/oslofjord` → `PlanetProofPage slug="oslofjorden"` (`src/routes/router.tsx:111-112`, `src/pages/v5/PlanetProof.tsx`, `OSLOFJORD_PROOF` in `src/planet/proofs/planetProofs.ts`, `tests/e2e/oslofjord-planet-proof.spec.ts`).
 
-Scope law honoured: no unrelated repo archaeology. Runtime rendering was **not** executed (REVIEW_ONLY — no build or artifact mutation). Findings derive from exact pinned source and are marked OBSERVED / INFERRED accordingly.
+**Lead finding for the Conductor:** the Oslofjord seam is **byte-unchanged since the previous review**. `ce532830` is an ancestor of the pin; the entire diff between them is `package.json`, `src/impact/proofPassport.ts`, `scripts/proof-passport-contract.test.mjs` — none on this seam. The prior contract was never applied. A fourth read of unchanged code is precisely the multipass pattern the work order forbids.
 
 ## MATERIAL FINDINGS
 
-### Top three blockers to 5-second comprehension — ranked
+**Top three 5-second comprehension blockers**
 
-**B1 · The proof has no mobile layout at all; on a phone the hero and all eight reading sections collapse into unreadable slivers.**
+**B1 · No responsive capability at all.** OBSERVED: `PlanetProof.tsx` has **zero `className` attributes**; all layout is inline-style grid, unreachable by any `@media` rule, and `global.css` queries are entirely class-scoped. Two 2-column grids survive to 390px (header `minmax(0,1fr) minmax(260px,.7fr)`; every `ReadingSection` `minmax(110px,.45fr) minmax(0,1.55fr)`). INFERRED: ~55px for the hero sentence, ~209px for `clamp(30px,5vw,66px)` headlines. OBSERVED test gap: the spec titled *"mobile remains readable"* asserts only `scrollWidth <= innerWidth+1` — squeezed columns never overflow, so it **cannot fail on unreadability**.
 
-OBSERVED: `PlanetProof.tsx` contains **zero `className` attributes** (grep count 0). Every layout is an inline-style two-column grid. Inline styles are unreachable by any `@media` rule without an `!important` class hook, so the page is structurally incapable of responsive adaptation. `index.html` sets a correct `width=device-width` viewport, so 390px is real CSS px.
+**B2 · The first screen answers none of the eight questions.** OBSERVED: the most chromatically dominant line is `OCE4N_ · PLANET PROOF 01 · HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED`; `oneLine` describes 4PLANET's *method*, not the fjord's *condition*; no geographic anchor exists — "Norway" appears once in all rendered copy, buried in the `WHY` summary. The dominant answer (*"The system is under severe cumulative pressure."*) already exists in data but sits behind a 74vh header, a `min(68vh,720px)` map and an 8-link index.
 
-INFERRED (track arithmetic at 390px):
-- Header (`minmax(0,1fr) minmax(260px,.7fr)`, padding `6vw`=23.4px, gap 28px): 315.2px of track space; column 2 floors at 260px, leaving **~55px** for column 1 — which holds the hero sentence at `clamp(23px,3.6vw,48px)`. One short word per line.
-- Every `ReadingSection` (`minmax(110px,.45fr) minmax(0,1.55fr)`, gap 24px): the question rail floors at 110px of 343px, leaving **~209px** for a `clamp(30px,5vw,66px)` headline at `letter-spacing:-.045em`.
+**B3 · Flat hierarchy plus a ninth decision before the first answer.** OBSERVED: one component renders all eight sections at identical type scale — WHAT IS HAPPENING weighs exactly what HOW DO WE KNOW weighs. `HUMAN-FIRST READING ORDER` emits eight equal anchors to questions the reader cannot yet evaluate.
 
-Why #1: mobile is a first-class 4PLANET quality law, and this is the one defect that makes the entire reading grammar unreadable rather than merely slow.
+**Single most important provenance blocker**
 
-Truth-gate consequence (OBSERVED): the spec titled *"Oslofjord mobile remains readable, interactive and source-inspectable"* asserts only `scrollWidth <= innerWidth+1` plus element visibility. Squeezed columns do not overflow — **the test passes while the claim in its own title is false.**
+**P1 · The proof dates no evidence, while asserting time-bounding as its own law.** OBSERVED: `ProofSource` and `ProofMapLayer` carry **no vintage field**; the ledger renders state/label/authority/supports only. *"Tilstandsrapport for Oslofjorden"* renders undated despite id `mdir-state-2025` and a `/2025/januar-2025/` URL; the interventions 1950–2024 range survives only as prose. The page's own copy says *"Change must be spatial and time-bounded"* and *"action state must remain time-stamped and updateable."* A reader cannot answer *is this current?* — and for a "severe cumulative pressure" claim, currency **is** the claim.
 
-**B2 · The first screen answers none of the eight questions and leads with internal Factory vocabulary instead of the fjord. (OBSERVED)**
+Same seam: all eight sections are `confidence: "HIGH"`, so the traffic-light chip discriminates nothing and grades a judgement claim like a bathymetry measurement; `OPEN` renders alarm-red on transfer packs via the ternary fallback; `AUTHORITATIVE`/`OPERATIONAL` have no key. The prior review's self-certifying `MAP · READY` is re-OBSERVED unfixed — ranked below P1 because it is a failure-mode risk, whereas undated evidence is unconditional.
 
-The `74vh` header presents, in order: (1) eyebrow `OCE4N_ · PLANET PROOF 01 · HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED` — the most chromatically dominant line on screen is maker-internal review state; (2) `Oslofjorden` at up to 176px, with no country/where anchor; (3) `oneLine`: *"A real fjord read through real seabed, habitat, water-status, pressure and action evidence"* — this describes 4PLANET's **method**, not the fjord's **condition**; (4) `truthBoundary` at 13.5px in `dim`.
+## RECOMMENDED ACTION — `OSLOFJORD-CORRECTION-01`
 
-The dominant human answer already exists in the data — `WHAT_IS_HAPPENING.headline`: *"The system is under severe cumulative pressure."* — but sits behind the 74vh header, a full-bleed dark map at `min(68vh,720px)`, and an eight-link index. INFERRED ~2.5 screens of mobile scroll before the first substantive answer.
-
-At 5 seconds a first-time human learns: a codename, a governance status, a place name, and that 4PLANET has a method. Not what is happening to the fjord.
-
-**B3 · Flat hierarchy plus visible engineering/governance telemetry: nothing is P1. (OBSERVED)**
-
-All eight sections render through one identical component at identical type scale — WHAT IS HERE has exactly the weight of WHAT CAN BE DONE; the reading-order block emits eight equal links. Meanwhile the public surface exposes `MAP · READY`/`DEGRADED`, `PROOF STATE · FOUNDER_REVIEW`, `MAKER ≠ JUDGE`, and per-source `AUTHORITATIVE`/`OPERATIONAL` badges whose distinction is never explained.
-
-Contributing entry mismatch (OBSERVED): `LivingSystems.tsx:193-195` says *"AMAZONIA, OSLOFJORDEN AND BEE … ARE IN DEVELOPMENT — OPEN THEM ABOVE TO SEE THE STRUCTURE"*, and the card links `/living-systems/oslofjorden` (`src/data/livingSystems.ts:205`), which `router.tsx:111` redirects into a different page architecture badged as a Human Gold candidate.
-
-### The single most important provenance / source-presentation blocker
-
-**P1 · The map asserts source-backed evidence that the interface never verifies and never explains.** The trust claim is bound to layer *registration*, not to evidence *arrival* or *legibility*.
-
-Two OBSERVED components of one seam in `EvidenceMap`:
-
-1. **State is not bound to evidence.** `setStatus(current => current === "DEGRADED" ? current : "READY")` fires inside `m.on("load")` immediately after the `addSource`/`addLayer` loop; `load` resolves on basemap style load, and the `try/catch` only catches synchronous registration throws. No overlay tile has been requested when `MAP · READY` appears under the banner **`REAL GEOSPATIAL EVIDENCE · NO ILLUSTRATED ECOLOGY`**. INFERRED failure mode specific to WMS (not generic network failure, which `m.on("error")` would catch): a `GetMap` returning HTTP 200 with a blank tile or a rendered `ServiceException` image — the standard result of a renamed `LAYERS` value or SRS mismatch against the three hardcoded endpoints — yields **`MAP · READY`, a ticked `ECOLOGICAL STATUS` box, and zero authority pixels**, with nothing in the UI able to contradict it.
-
-2. **No layer is interpretable.** `ProofMapLayer` carries no legend, vintage or retrieved-at field, and nothing renders one. `ECOLOGICAL STATUS` is a classified colour raster — the primary WHAT IS HAPPENING evidence — shown with no key. INFERRED conflation on the same seam: `SEABED / DEPTH` binds `sourceId: "ngu-marine-wms"` (MarineGrunnkart `Dybdeforhold`) while the adjacent facts assert *"a regular 1 m grid"* from the distinct `ngu-bathy-1m` dataset — precisely the merge the page's own copy forbids (*"do not merge unlike evidence into one score"*).
-
-Why this outranks other provenance items: an unverified truth-claim is worse than a missing one. The page's entire differentiation is *"Nothing important should require trust in 4PLANET alone"* — and the element carrying that promise is self-certifying.
-
-Lesser, deferrable: `OPEN SOURCE ↗` on all eight ledger cards reads as free/open-source software, not "open this source at the issuing authority."
-
-## RECOMMENDED ACTION — one minimal correction contract
-
-For the **existing maker**. No redesign, no new page architecture, no new component, no new primitive. Four ordered edits, three files, each independently revertable.
-
-**C0 · Precondition (AGENTS.md, blocking).** `docs/control/GOLD_CURRENT_BRIEF.md` at `ce532830` is scoped to `GIGA2800-REALITY-PROOF-HUMAN-RESEARCH-01` (Embla FOOD). It does **not** cover the Oslofjord proof, which is nonetheless badged `HUMAN GOLD CANDIDATE`. Write the Oslofjord brief in the same bounded change, before the code edits.
-
-**C1 · Fix mobile by reusing an existing primitive — zero new CSS.** `src/styles/global.css:36` already ships `@media (max-width:900px) { .os-two { grid-template-columns:1fr !important; } }`, and stylesheet `!important` overrides inline style. Add `className="os-two"` to the header split grid and the `ReadingSection` grid. Two attributes; desktop asymmetry untouched. Also cap or reflow the layer panel at ≤640px — INFERRED it currently sits ~358×258px over a 574px map on a 390×844 device, covering the evidence it inspects.
-
-**C2 · Make the first screen answer the dominant question.** Promote `WHAT_IS_HAPPENING.headline` into the header as P1, demote `oneLine` to support, add a plain geographic anchor, and move `HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED` out of first chromatic position into the existing footer beside `PROOF STATE`. The badge must remain present and machine-assertable — the ATLAS lesson in `CURRENT_4PLANET_CONTEXT.md:104` is that human-first cleanup must not delete an enforced truth phrase. **Move it; do not remove it.**
-
-**C3 · Bind the evidence claim to arriving evidence.** Replace the single global `MAP · READY` with per-layer state driven by real tile events (`sourcedata`/`error` per source id), rendered on the layer row that already exists under `INSPECT THE EVIDENCE`. A layer that returned no tile must not read as delivered evidence, and the `REAL GEOSPATIAL EVIDENCE` banner must degrade when nothing arrived. Add `legend` + `retrievedAt` to `ProofMapLayer` and render them in the same row. Re-bind `SEABED / DEPTH` to the source actually drawn, or move the 1 m grid fact out of adjacency.
-
-**C4 · Make the mobile test test what its title claims.** In the 390px case, assert measured rendered width of the hero paragraph and of a `ReadingSection` headline above a stated minimum, plus one per-layer evidence state. Overflow-only assertions must stop being cited as mobile Human Gold evidence.
-
-Capacity split: **C0+C1+C2** first (comprehension, low risk, reversible); **C3+C4** second (truth binding, needs runtime evidence).
+Three code files, no redesign, no new primitive, each step revertable.
+**C0** write the Oslofjord Gold brief first — the current one is scoped to Embla FOOD. **C1** add `className="os-two"` to the two grids, reusing `global.css:36` (stylesheet `!important` beats inline style; zero new CSS) and constrain the map panel ≤640px. **C2** promote `WHAT_IS_HAPPENING.headline` to P1, add a geographic anchor, **move** the candidate badge to the footer — move, do not remove; it is machine-asserted. **C3** add optional `vintage` to source + layer, populated only from the cited document, `VINTAGE · UNKNOWN` where unestablished; add the AUTHORITATIVE/OPERATIONAL key; neutralise `OPEN`. **C4** assert measured widths at 390px and add `aria-pressed` to layer toggles.
+**Deferred, non-blocking:** binding `MAP · READY` to per-layer tile arrival and re-binding `SEABED / DEPTH` — needs runtime evidence this lane cannot produce.
 
 ## MUST-NOT-LOSE
 
-- `/living-systems/oslofjorden` → `/living-systems/oslofjord` redirect (`router.tsx:111`) and the alias-regression immunity behind `e33549ea` / `80446464`.
-- `slug: "oslofjorden"` and the coupled `proof.slug === "oslofjorden"` transfer-block condition — C2 must touch neither.
-- The eight exact question strings, `"Nothing important should require trust in 4PLANET alone."`, `"HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED"`, and the `MAP BOUNDARY · navigation/view extent…` phrase — all machine-asserted; truth invariants, not copy.
-- ≥6 `OPEN SOURCE` links and the eight-source ledger.
-- Layer separation: no merged fjord score, no invented boundary, migration route, population estimate or causal attribution.
-- One Factory, one TEST KING receiver, Founder release gates, no parallel writer on this seam.
+`/oslofjorden` → `/oslofjord` redirect and `slug: "oslofjorden"` with its transfer-block condition; the eight question strings, *"Nothing important should require trust in 4PLANET alone."*, the candidate badge and the MAP BOUNDARY phrase (truth invariants, not copy); ≥6 `OPEN SOURCE` links; no merged fjord score or invented boundary/route/population/causation; one Factory, one TEST KING receiver, Founder gates.
 
 ## RISKS
 
-- C3 is the only edit with real regression surface: `sourcedata` fires repeatedly and needs debouncing, and a stricter state machine may turn a currently-green page amber. Correct if the overlays genuinely are not rendering — but observe it before shipping, or an honest fix reads as a break.
-- C2 edits strings adjacent to machine-asserted phrases; the ATLAS precedent is a copy cleanup that removed an enforced phrase. Run the spec before and after.
-- INFERRED items (mobile track widths, WMS silent-blank behaviour) are deterministic from source but unrendered here. One 390px screenshot and one network check settle both; do not promote to OBSERVED without that.
-- No Oslofjord Gold brief exists (C0). Coding without it repeats the control failure, not only the product one.
+The material risk is another review, not a bad edit — two independent reads now agree on B1 and B2. C2 touches strings adjacent to asserted phrases (run the spec before and after). C3 vintages must come from the source document, not the id string.
 
 ## UNKNOWN
 
-- Whether the three WMS endpoints currently return imagery — not fetched (REVIEW_ONLY, no network evidence).
-- Whether `ce532830` is still TEST KING head at read time. `factory/claude-product-worker-01` does not contain that commit or these source files; the pin was resolved from local object history, not a live branch read.
-- `CURRENT_4PLANET_CONTEXT.md` freshness marker is `2026-09-02`; later TEST KING head/ownership changes are unverified from this lane.
-- Whether another active lane owns the `PlanetProof.tsx` write seam — confirm before dispatching C1–C4.
-- Rendered-vs-inferred visual state, device performance, and screen-reader traversal of the eight-section grammar.
+WMS endpoint liveness (no network taken); freshness of the local `origin/king/test` ref against remote; whether another lane holds the `PlanetProof.tsx` write lock — confirm before dispatch; rendered visual state, performance, screen-reader traversal; `CURRENT_4PLANET_CONTEXT.md` marker is 2026-09-02 against today's 2026-09-07.
 
-## BRAND LEARNING CANDIDATES
-
-**L1 — A passing test named for a human quality is not evidence of that quality.** Evidence: the 390px spec asserts only non-overflow yet is titled *"mobile remains readable."* CHALLENGES current Gold evidence practice. Rule: when an e2e test name claims a human property (readable, understandable, inspectable), it must assert a measured proxy for it, or be renamed to what it actually checks. Applies to all Gold proof specs; not to build/type gates.
-
-**L2 — Governance state is not the first thing a human should read.** Evidence: the candidate badge is the most visually dominant element above a 176px title. CONFIRMS "human understanding before internal architecture"; REFINES it — candidate/review badges stay present and machine-assertable but belong in a consistent footer/status position, never P1. Applies to every proof/candidate surface; not to safety or truth-boundary warnings that change how the content itself should be read.
-
-**L3 — A trust indicator must be bound to the arrival of the thing it certifies.** Evidence: `MAP · READY` resolves on basemap style-load, independent of any authority overlay. CONFIRMS "truth/source depth must survive interface simplification" and extends it to runtime: any READY/VERIFIED/SOURCE-BACKED signal must derive from the evidence event, not the render event. Applies wherever 4PLANET displays third-party evidence state.
+**Next gate:** dispatch C0→C4 to the existing maker after lock confirmation. Do not dispatch another Oslofjord review.
