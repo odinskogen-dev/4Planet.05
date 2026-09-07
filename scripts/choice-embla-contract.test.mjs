@@ -47,14 +47,20 @@ test("ten realistic FOOD decisions all enter the same bounded human-choice gate"
   }
 });
 
-test("Embla 02 parses the first controlled shopping categories without pretending unsupported categories are ready", () => {
+test("Embla shopping-list readiness mirrors FOOD controlled direct-substitute profiles", () => {
+  const controlled = embla.parseEmblaShoppingList("havregryn\ngranola; potetgull, frossenpizza");
+  assert.equal(controlled.length, 4);
+  assert.deepEqual(controlled.map((item) => item.category), ["ROLLED_OATS", "GRANOLA", "POTATO_CHIPS", "FROZEN_PIZZA"]);
+  assert.ok(controlled.every((item) => item.status === "EVIDENCE_PATH_READY"));
+  assert.deepEqual(embla.summariseEmblaShoppingList(controlled), { total: 4, supported: 4, unsupported: 0 });
+});
+
+test("recognised FOOD nouns are not promoted to controlled category readiness without a matching FOOD profile", () => {
   const items = embla.parseEmblaShoppingList("Kaffe\nmelk; smør, pasta");
   assert.equal(items.length, 4);
-  assert.deepEqual(items.slice(0, 3).map((item) => item.category), ["COFFEE", "MILK", "BUTTER"]);
-  assert.ok(items.slice(0, 3).every((item) => item.status === "EVIDENCE_PATH_READY"));
-  assert.equal(items[3].supported, false);
-  assert.equal(items[3].status, "NOT_COVERED_YET");
-  assert.deepEqual(embla.summariseEmblaShoppingList(items), { total: 4, supported: 3, unsupported: 1 });
+  assert.ok(items.every((item) => item.supported === false));
+  assert.ok(items.every((item) => item.status === "NOT_COVERED_YET"));
+  assert.deepEqual(embla.summariseEmblaShoppingList(items), { total: 4, supported: 0, unsupported: 4 });
 });
 
 test("HOME and CAR fail closed while their evidence adapters are absent", () => {
