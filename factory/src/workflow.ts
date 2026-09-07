@@ -37,14 +37,14 @@ function validatePortfolioContinuation(currentWorkPackageId: string, continuatio
     if (pkg.run?.expectedBaseSha !== continuation.exactTestSha) {
       throw new Error("PORTFOLIO_CONTINUATION_TEST_LINEAGE_MISMATCH");
     }
-    if (pkg.run?.factoryBuildSha !== continuation.exactFactorySha) {
+    if (!pkg.run?.inputStateHash.includes(`factory=${continuation.exactFactorySha}`)) {
       throw new Error("PORTFOLIO_CONTINUATION_FACTORY_LINEAGE_MISMATCH");
     }
   }
 }
 
 async function dispatchNextReadOnlyPortfolioPackage(
-  agent: ProductionFactoryAgent,
+  agent: any,
   currentWorkPackageId: string,
   continuation: ReadOnlyPortfolioContinuation,
 ) {
