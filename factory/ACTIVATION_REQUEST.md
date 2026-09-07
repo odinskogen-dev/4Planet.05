@@ -1,6 +1,6 @@
 # 4PLANET Factory Activation Request
 
-Requested by Founder via AXE on 2026-09-06.
+Requested by Founder via AXE on 2026-09-06 and continued under ACCEPTED VALUE CLOSURE 05 on 2026-09-07.
 
 Purpose: trigger one bounded ACTIVE internal-test-production cohort on the existing `factory/symphony-runtime-v01` lineage using the existing Production Factory Autonomous Activation workflow.
 
@@ -20,8 +20,10 @@ Success is accepted bounded value + evidence + learning + writeback/readback, no
 
 ## Current lineage activation — 2026-09-07
 
-- Current HEIR reconciled into Factory ancestry: `king/test@8195d9d29f6d85698be1dd7fe71cd54ee9fc8321`.
-- Reconciled Factory parent: `9658371d8f953b983e3efbcfde894d31e4d536a7`.
-- Trigger reason: prior exact deployment correctly failed closed when TEST KING moved during activation; retry now uses physically reconciled HEIR ancestry rather than stale or cosmetic rebinding.
+- Current HEIR to reconcile as second parent: `king/test@18586b69e35cbdefef7722a08e46617e8c8182a7`.
+- Current Factory parent before reconciliation: `d726810ce0c7606ea5960cfd6462a77bbaa4d78f`.
+- The HEIR delta since the prior reconciled parent is one CI dependency repair only (`@vitejs/plugin-react` in root package.json); no Factory paths overlap.
+- Prior activation correctly failed closed when TEST KING moved during deploy. This commit reconciles the current HEIR physically and triggers the existing workflow in the same lineage transaction.
 - Required proof: local receiver/provider block must not stop unrelated read-only production; terminal outcome must persist and continue to next deterministic legal package without duplicate dispatch.
+- If TEST moves again, stop stale mutation but classify repeated churn as activation-starvation and continue with conflict-free work rather than weakening exact-lineage safety.
 - This request grants no additional product-write, LIVE, Canon, outreach, spend or legal authority.
