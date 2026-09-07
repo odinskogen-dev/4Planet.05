@@ -33,7 +33,26 @@ test("ORCA Gold remains truth-bounded and field feed fails closed", () => {
   assert.match(page, /Intake → source QA → editorial review → public/);
 });
 
-test("Actor Gold page exposes work place living context editorial proof and action layers", () => {
+test("Gold 02 veritree preserves active relationship but does not manufacture a pilot", () => {
+  assert.match(engine, /P17-A307/);
+  assert.match(engine, /slug: "veritree"/);
+  assert.match(engine, /active direct relationship/i);
+  assert.match(engine, /draft \/ not sent/i);
+  assert.match(engine, /does not imply pilot acceptance, contract, funding, delivery or endorsement/i);
+  assert.match(engine, /Activate a 4PLANET pilot/);
+  assert.match(engine, /Founder release, actor acceptance/i);
+});
+
+test("NatureMetrics proves public-record mode without implying relationship", () => {
+  assert.match(engine, /P17-A310/);
+  assert.match(engine, /slug: "naturemetrics"/);
+  assert.match(engine, /PUBLIC_RECORD_ONLY/);
+  assert.match(engine, /No direct 4PLANET relationship/i);
+  assert.match(engine, /eDNA/);
+  assert.match(engine, /NatureMetrics public product pages/);
+});
+
+test("Actor Gold page exposes work place living context editorial proof source and action layers", () => {
   for (const token of [
     "WHAT THEY ACTUALLY DO",
     "PLACES / ATLAS",
@@ -41,16 +60,20 @@ test("Actor Gold page exposes work place living context editorial proof and acti
     "FIELD FEED",
     "MAGAZINE",
     "PROJECTS / DATA / PROOF",
+    "SOURCES",
     "FOLLOW / SUPPORT / ACT",
     "RELATIONSHIP / EDITORIAL DISCLOSURE",
   ]) assert.match(page, new RegExp(token.replace(/[\/]/g, "\\/")));
+  assert.match(page, /OPEN SOURCE/);
   assert.match(router, /path="\/actors"/);
   assert.match(router, /path="\/actors\/:slug"/);
 });
 
-test("Actor Gold has a responsive rights-safe signature visual", () => {
+test("Actor Gold has responsive rights-safe signature visuals for unlike actor types", () => {
   assert.match(page, /actor-gold-route/);
   assert.match(page, /Illustrative monitoring corridor/);
+  assert.match(page, /GenericSignatureVisual/);
+  assert.match(page, /Abstract evidence relationship visual/);
   assert.match(css, /actor-gold-corridor/);
   assert.match(css, /@media \(max-width: 620px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -59,5 +82,7 @@ test("Actor Gold has a responsive rights-safe signature visual", () => {
 test("Actor scale strategy is torture-test-first not x100 generation", () => {
   assert.match(engine, /ACTOR_TORTURE_TEST_ARCHETYPES/);
   assert.match(page, /ORCA is Gold 01/);
+  assert.match(page, /veritree is Gold 02/);
+  assert.match(page, /NatureMetrics is the first public-record nature-intelligence torture test/i);
   assert.match(page, /One exceptional system\. Ten unlike actors\. Then scale\./i);
 });
