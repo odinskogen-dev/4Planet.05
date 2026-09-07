@@ -29,6 +29,19 @@ export interface ProofSection {
   confidence: ProofConfidence;
 }
 
+export interface TransferAudit {
+  basis: "STRUCTURAL_COMPONENT_CLASSIFICATION";
+  reused: string[];
+  adapted: string[];
+  netNew: string[];
+  structuralReuseRatio: number;
+  founderMinutes: number | null;
+  elapsedBuildMinutes: number | null;
+  dependencies: string[];
+  defectsOrRetries: string[];
+  qualityState: string;
+}
+
 export interface PlanetProof {
   slug: string;
   index: string;
@@ -44,6 +57,7 @@ export interface PlanetProof {
   sections: ProofSection[];
   sources: ProofSource[];
   transferNote: string;
+  transferAudit?: TransferAudit;
 }
 
 const NGU_BATHYMETRY = "https://geo.ngu.no/mapserver/MarineGrunnkartWMS?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=Dybdeforhold&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE&SRS=EPSG:3857&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}";
@@ -53,21 +67,21 @@ const MDIR_INTERVENTIONS = "https://kart2.miljodirektoratet.no/arcgis/services/i
 export const OSLOFJORD_PROOF: PlanetProof = {
   slug: "oslofjorden",
   index: "01",
-  name: "Oslofjorden",
+  name: "Bunnefjorden",
   domain: "OCE4N_",
   state: "FOUNDER_REVIEW",
-  oneLine: "A real fjord read through real seabed, habitat, water-status, pressure and action evidence.",
-  truthBoundary: "This surface does not invent an ecological boundary, migration route, population estimate or causal attribution. Map overlays come from named public geospatial services. Claims remain bounded to what their sources support.",
-  center: [10.58, 59.35],
-  zoom: 7.2,
-  bounds: [[9.75, 58.75], [11.25, 60.05]],
+  oneLine: "A bounded threshold-fjord microcosm where oxygen, deep-water renewal and one measured wastewater intervention make system change inspectable.",
+  truthBoundary: "Bunnefjorden is used as a bounded Reference Cell inside the wider Oslofjord system. The map extent is a product reading boundary, not an ecological border. The NIVA intervention result is reported for bottom-water oxygen conditions; it is not evidence that the whole Oslofjord ecosystem was restored.",
+  center: [10.70, 59.80],
+  zoom: 9.2,
+  bounds: [[10.50, 59.70], [10.88, 59.91]],
   sources: [
     {
       id: "ngu-bathy-1m",
       label: "Dybdedata i Oslofjorden – terrengmodell – 1-m-grid",
       authority: "Norges geologiske undersøkelse / Geonorge",
       url: "https://data.norge.no/nb/datasets/819b3fc2-9bc5-3610-9e76-f80245be8f12/dybdedata-i-oslofjorden-terrengmodell-1-m-grid",
-      supports: "Detailed bathymetry for the mapped Inner Oslofjord coverage; source data were collected using interferometric sonar and multibeam echo sounding.",
+      supports: "Detailed bathymetry for mapped Inner Oslofjord coverage; source measurements include interferometric sonar and multibeam echo sounding.",
       state: "AUTHORITATIVE",
     },
     {
@@ -79,11 +93,27 @@ export const OSLOFJORD_PROOF: PlanetProof = {
       state: "OPERATIONAL",
     },
     {
+      id: "niva-bunnefjorden-2025",
+      label: "Mulighetsvurdering – Overføring av Gjersjøvann til Bunnefjorden",
+      authority: "NIVA",
+      url: "https://www.niva.no/publikasjoner/publikasjon?cristinid=10302191",
+      supports: "Reports the observed/model-supported oxygen-condition effect associated with lowering the Nordre Follo wastewater outfall from 45 m to 137 m, including an 82% reduction in the area of anoxic bottom water immediately before deep-water renewal.",
+      state: "AUTHORITATIVE",
+    },
+    {
+      id: "niva-deepwater-2021",
+      label: "Ny utslippsledning kan ha gitt hyppigere dypvannsfornyelse i Bunnefjorden",
+      authority: "NIVA",
+      url: "https://www.niva.no/nyheter/ny-utslippsledning-kan-ha-gitt-hyppigere-dypvannsfornyelse-i-bunnefjorden",
+      supports: "Explains Bunnefjorden as a threshold basin, the oxygen/deep-water-renewal mechanism and the bounded hypothesis that the deeper outfall contributed to more frequent renewal.",
+      state: "AUTHORITATIVE",
+    },
+    {
       id: "mdir-state-2025",
       label: "Tilstandsrapport for Oslofjorden",
       authority: "Miljødirektoratet",
       url: "https://www.miljodirektoratet.no/publikasjoner/2025/januar-2025/tilstandsrapport-for-oslofjorden/",
-      supports: "Current state and development of important parts of the Oslofjord ecosystem.",
+      supports: "State and development of important parts of the wider Oslofjord ecosystem; used only where the claim scope is wider than Bunnefjorden.",
       state: "AUTHORITATIVE",
     },
     {
@@ -91,7 +121,7 @@ export const OSLOFJORD_PROOF: PlanetProof = {
       label: "Oslofjorden – miljøtilstand og tiltaksarbeid",
       authority: "Klima- og miljødepartementet / Regjeringen",
       url: "https://www.regjeringen.no/no/tema/klima-og-miljo/naturmangfold/innsiktsartikler-naturmangfold/oslofjorden/id3139220/",
-      supports: "Current public synthesis of condition, principal pressures, habitat decline, actor responsibility and plan direction.",
+      supports: "Public synthesis of wider Oslofjord condition, principal pressures, habitat decline, actor responsibility and plan direction.",
       state: "AUTHORITATIVE",
     },
     {
@@ -107,23 +137,15 @@ export const OSLOFJORD_PROOF: PlanetProof = {
       label: "Fysiske inngrep i Oslofjorden",
       authority: "Miljødirektoratet",
       url: "https://kartkatalog.miljodirektoratet.no/MapService/Details/inngrep_oslofjorden",
-      supports: "Mapped physical interventions in eelgrass, shallow soft-bottom and kelp habitats, time-referenced from 1950 through 2024.",
+      supports: "Mapped physical interventions in eelgrass, shallow soft-bottom and kelp habitats, time-referenced from 1950 through 2024 within the programme scope.",
       state: "OPERATIONAL",
-    },
-    {
-      id: "hi-frisk-oslofjord",
-      label: "Sluttrapport for Frisk Oslofjord",
-      authority: "Havforskningsinstituttet",
-      url: "https://www.hi.no/templates/reporteditor/report-pdf?id=89800&nc=5179296299",
-      supports: "Marine ecological base-map work, shallow-water mapping and documented mapping of the Tisler cold-water coral reef.",
-      state: "AUTHORITATIVE",
     },
     {
       id: "regjeringen-plan",
       label: "Helhetlig tiltaksplan for Oslofjorden",
       authority: "Klima- og miljødepartementet",
       url: "https://www.regjeringen.no/no/dokumenter/helhetlig-tiltaksplan-for-en-ren-og-rik-oslofjord-med-et-aktivt-friluftsliv/id2842258/",
-      supports: "Governance, measures and responsibility across wastewater, agriculture, fisheries, restoration and other action areas.",
+      supports: "Governance, measures and responsibility across wastewater, agriculture, fisheries, restoration and other action areas in the wider Oslofjord system.",
       state: "AUTHORITATIVE",
     },
   ],
@@ -134,77 +156,89 @@ export const OSLOFJORD_PROOF: PlanetProof = {
   ],
   sections: [
     {
-      id: "WHAT_IS_HERE", question: "WHAT IS HERE?", headline: "A fjord is terrain, water and living habitat — not a blue polygon.",
-      summary: "The proof begins with the real seabed and the habitats that sit on it. Detailed bathymetry exists for mapped parts of the Inner Oslofjord, while marine mapping programmes provide ecological and geological context at finer scales than the old seeded bounding box.",
-      facts: ["The Inner Oslofjord bathymetry dataset is a regular 1 m grid.", "Its source measurements include interferometric sonar and multibeam echo sounding.", "Frisk Oslofjord documented marine ecological mapping including the Tisler cold-water coral reef and shallow-water mapping work."],
-      sourceIds: ["ngu-bathy-1m", "ngu-marine-wms", "hi-frisk-oslofjord"], confidence: "HIGH",
+      id: "WHAT_IS_HERE", question: "WHAT IS HERE?", headline: "A deep basin behind a shallow threshold.",
+      summary: "Bunnefjorden is a threshold fjord inside the Inner Oslofjord. A shallow ridge near the entrance restricts exchange with the rest of the fjord, making deep-water renewal and oxygen a legible control on what can persist at depth.",
+      facts: ["NIVA describes a threshold around 50 m separating Bunnefjorden deep water from the rest of Inner Oslofjord.", "Detailed Inner Oslofjord bathymetry is measurement-derived rather than an illustrated seabed."],
+      sourceIds: ["niva-deepwater-2021", "ngu-bathy-1m", "ngu-marine-wms"], confidence: "HIGH",
     },
     {
-      id: "WHAT_IS_HAPPENING", question: "WHAT IS HAPPENING?", headline: "The system is under severe cumulative pressure.",
-      summary: "Official assessments describe a serious ecological situation. Large parts of the fjord have moderate ecological status and poor chemical status; cod is at historically low levels, important kelp and eelgrass habitats are declining, and some enclosed bays and basins experience critically low bottom-water oxygen.",
-      facts: ["Water-body status can be inspected as live official map data rather than converted into a single invented fjord score.", "The condition report separates ecosystem components and their development instead of implying one universal trend."],
-      sourceIds: ["mdir-state-2025", "regjeringen-oslofjord", "mdir-water"], confidence: "HIGH",
+      id: "WHAT_IS_HAPPENING", question: "WHAT IS HAPPENING?", headline: "The core signal is oxygen debt at depth.",
+      summary: "When deep water is not renewed, oxygen is consumed and anoxic conditions can persist. NIVA monitoring has documented periods of near-anoxic deep water followed by full deep-water renewal; the wider Oslofjord remains under cumulative ecological pressure.",
+      facts: ["In February 2021 NIVA reported water below 70 m was almost oxygen-free before full deep-water renewal later that spring.", "Oxygen conditions at depth are a bounded state signal, not a universal health score for the whole fjord."],
+      sourceIds: ["niva-deepwater-2021", "mdir-state-2025"], confidence: "HIGH",
     },
     {
-      id: "WHY", question: "WHY?", headline: "No single villain explains the fjord.",
-      summary: "The pressure picture is cumulative: nutrient inputs from agriculture and wastewater, industrial pollution, fisheries and coastal development interact with a changing climate. The interface keeps these as separate pressures instead of collapsing them into one causal claim.",
-      facts: ["The Oslofjord catchment connects land activity across much of eastern Norway to coastal water quality.", "Climate change can amplify effects of existing human pressures."],
-      sourceIds: ["regjeringen-oslofjord", "regjeringen-plan"], confidence: "HIGH",
+      id: "WHY", question: "WHY?", headline: "Physical shape and human inputs meet in the same basin.",
+      summary: "The threshold limits renewal of deep water while organic loading and other human pressures consume oxygen. The Reference Cell keeps the physical mechanism, wastewater intervention and wider nutrient/pressure picture separate so that causality is not overstated.",
+      facts: ["Deep water below the threshold is oxygenated when denser new water enters the basin.", "The wider Oslofjord pressure picture includes wastewater, agriculture, fisheries and coastal development; these are not collapsed into one Bunnefjorden cause."],
+      sourceIds: ["niva-deepwater-2021", "regjeringen-oslofjord", "regjeringen-plan"], confidence: "HIGH",
     },
     {
-      id: "DEPENDS_ON", question: "WHAT DEPENDS ON WHAT?", headline: "Habitat quality is part of the food web.",
-      summary: "Eelgrass meadows and kelp forests are not decorative layers: official synthesis identifies them as important nursery habitat for fish and other marine life. Oxygen, light and seabed condition determine which communities can persist locally.",
-      facts: ["Eelgrass and kelp are important nursery habitats.", "Local oxygen conditions can become low enough that bottom-water life is lost in some enclosed areas."],
-      sourceIds: ["regjeringen-oslofjord", "mdir-state-2025"], confidence: "HIGH",
+      id: "DEPENDS_ON", question: "WHAT DEPENDS ON WHAT?", headline: "Oxygen availability constrains bottom-water life.",
+      summary: "NIVA explains that marine organisms have minimum oxygen requirements and that low concentrations force mobile species to leave while anoxia can eliminate bottom-water life. This is a dependency between water state and biological viability, not a population estimate.",
+      facts: ["NIVA notes shrimp occurrence is limited to areas above a minimum oxygen concentration and cod has higher oxygen requirements.", "Observation of oxygen conditions does not establish local abundance or population trend."],
+      sourceIds: ["niva-deepwater-2021"], confidence: "HIGH",
     },
     {
-      id: "WHAT_CHANGED", question: "WHAT CHANGED?", headline: "Change must be spatial and time-bounded.",
-      summary: "The physical-intervention service records mapped interventions in selected shallow habitats and time-references them from 1950 through 2024. The condition report supplies a separate ecological development view. 4PLANET does not merge these into causation unless the evidence supports that link.",
-      facts: ["Mapped intervention types include marinas, dredging, infill, cables, buildings, roads and bridges.", "The intervention dataset specifically covers eelgrass, shallow soft-bottom areas and kelp occurrences within its programme scope."],
-      sourceIds: ["mdir-interventions", "mdir-state-2025"], confidence: "HIGH",
+      id: "WHAT_CHANGED", question: "WHAT CHANGED?", headline: "One intervention produced a measurable oxygen-state delta.",
+      summary: "NIVA's 2025 assessment reports that lowering the Nordre Follo wastewater outfall from 45 m to 137 m radically improved Bunnefjorden oxygen conditions: the area with anoxic bottom water immediately before deep-water renewal was reduced by 82%. This is unusually strong Reference Cell evidence because intervention, mechanism and measured state change can be read together.",
+      facts: ["Intervention: wastewater outfall depth changed from 45 m to 137 m.", "Reported state delta: 82% reduction in area with anoxic bottom water immediately before deep-water renewal.", "Claim boundary: oxygen-condition improvement in Bunnefjorden is not equivalent to restored biodiversity or verified whole-ecosystem impact."],
+      sourceIds: ["niva-bunnefjorden-2025", "niva-deepwater-2021"], confidence: "HIGH",
     },
     {
-      id: "HOW_WE_KNOW", question: "HOW DO WE KNOW?", headline: "Every visible layer has an owner, method and boundary.",
-      summary: "Bathymetry, ecological status, physical interventions and ecosystem assessment come from different authorities and methods. They stay separate in the map and converge only in the human explanation where their scopes genuinely overlap.",
-      facts: ["Bathymetry is measurement-derived, not AI-drawn coastline or seabed.", "Operational WMS layers remain attributable to their source authority.", "Source links remain directly inspectable from the proof."],
-      sourceIds: ["ngu-bathy-1m", "ngu-marine-wms", "mdir-water", "mdir-interventions", "mdir-state-2025"], confidence: "HIGH",
+      id: "HOW_WE_KNOW", question: "HOW DO WE KNOW?", headline: "Measurement, monitoring and model interpretation stay attributable.",
+      summary: "Bathymetry, water-body status, physical interventions, repeated monitoring and NIVA's intervention assessment use different methods. 4PLANET keeps those sources visible and does not merge them into a synthetic confidence score.",
+      facts: ["The 82% figure is attributed directly to NIVA's 2025 assessment.", "Operational WMS layers remain attributable to their source authority.", "The 2021 NIVA article describes the mechanism as a bounded possibility, not certainty, for the earlier renewal event."],
+      sourceIds: ["niva-bunnefjorden-2025", "niva-deepwater-2021", "ngu-marine-wms", "mdir-water"], confidence: "HIGH",
     },
     {
-      id: "WHO_CAN_ACT", question: "WHO CAN ACT?", headline: "Responsibility is distributed across real institutions.",
-      summary: "The Oslofjord plan assigns work across environmental and sector authorities, municipalities, counties and state administrators. The product should connect a pressure to the competent actor rather than present a generic donate button.",
-      facts: ["The national plan is coordinated by the climate and environment authorities with participation across sectors.", "Municipal and sector responsibilities matter because major pressures originate in wastewater, agriculture, fisheries and land use."],
-      sourceIds: ["regjeringen-plan", "regjeringen-oslofjord"], confidence: "HIGH",
+      id: "WHO_CAN_ACT", question: "WHO CAN ACT?", headline: "The Cell resolves competent actors before generic calls to action.",
+      summary: "Wastewater operators and municipalities can affect discharge infrastructure; environmental authorities coordinate wider Oslofjord measures; research and monitoring institutions establish evidence. The interface should connect each pressure/intervention to the actor with actual authority or delivery capability.",
+      facts: ["Nordre Follo wastewater infrastructure is part of the observed Bunnefjorden intervention case.", "The national Oslofjord plan distributes responsibility across municipal, sector and state actors."],
+      sourceIds: ["niva-bunnefjorden-2025", "regjeringen-plan"], confidence: "HIGH",
     },
     {
-      id: "WHAT_CAN_BE_DONE", question: "WHAT CAN BE DONE?", headline: "Actions already exist; the intelligence problem is fit, responsibility and proof.",
-      summary: "Current public action directions include wastewater nitrogen removal, reduced agricultural runoff, fisheries measures, habitat restoration and stronger protection of shallow coastal nature. 4PLANET presents these as source-backed action pathways — not as proof that outcomes have already occurred.",
-      facts: ["The existing plan contains 63 measures and 19 knowledge-acquisition points.", "A renewed 2026–2030 plan is being developed, so action state must remain time-stamped and updateable."],
-      sourceIds: ["regjeringen-plan", "regjeringen-oslofjord"], confidence: "HIGH",
+      id: "WHAT_CAN_BE_DONE", question: "WHAT CAN BE DONE?", headline: "Measure first; scale only what has an inspectable mechanism and owner.",
+      summary: "The Bunnefjorden case shows that an infrastructure intervention can alter a measurable ecological state variable. Wider action still includes wastewater nitrogen removal, reduced runoff, fisheries measures and restoration, but each pathway requires its own actor, delivery and Proof Passport before stronger claims.",
+      facts: ["The current Cell does not convert the 82% oxygen-state result into a biodiversity or impact score.", "Oslofjord restoration and Handelens Miljøfond remain a separate later Action opportunity rather than being forced into this first international Action Cell."],
+      sourceIds: ["niva-bunnefjorden-2025", "regjeringen-plan", "regjeringen-oslofjord"], confidence: "HIGH",
     },
   ],
-  transferNote: "Oslofjord is the first Human Gold proof. The interface/data contract is designed to transfer next to Great Barrier Reef and Amazonia without copying truth manually or inventing new page architecture.",
+  transferNote: "Bunnefjorden is the provisional Super Cell winner because one bounded place links physical form, ecological state, a real intervention, measurable change, real actors and inspectable sources. The same page/data grammar is transferred next to Great Barrier Reef; transfer quality is measured separately from visual similarity.",
 };
 
 export const GREAT_BARRIER_REEF_TRANSFER: PlanetProof = {
   slug: "great-barrier-reef", index: "02", name: "Great Barrier Reef", domain: "OCE4N_", state: "TRANSFER_SEEDED",
-  oneLine: "Transfer test: long-term reef condition plus near-real-time heat stress.",
-  truthBoundary: "Seeded transfer pack only. Regional coral-cover indicators do not describe every reef or all dimensions of reef health.",
+  oneLine: "Transfer test: 40 years of field monitoring plus current heat-stress context, rendered through the same Planet Proof grammar as Bunnefjorden.",
+  truthBoundary: "Transfer candidate only. Regional coral-cover estimates do not describe every reef, every habitat or all dimensions of reef health. Heat stress is a pressure signal, not proof of bleaching or ecological outcome at every reef.",
   center: [147.3, -18.2], zoom: 4.6, bounds: [[142, -24.5], [154, -10]], mapLayers: [],
   sources: [
-    { id: "aims-2026", label: "Great Barrier Reef Annual Summary Report 2025–26", authority: "Australian Institute of Marine Science", url: "https://www.aims.gov.au/monitoring-great-barrier-reef/gbr-condition-summary-2025-26", supports: "2025–26 LTMP condition results from 121 surveyed reefs, including regional hard-coral-cover estimates and disturbance context.", state: "AUTHORITATIVE" },
+    { id: "aims-2026", label: "Great Barrier Reef Annual Summary Report 2025–26", authority: "Australian Institute of Marine Science", url: "https://www.aims.gov.au/monitoring-great-barrier-reef/gbr-condition-summary-2025-26", supports: "2025–26 LTMP condition results from 121 surveyed reefs, including regional hard-coral-cover estimates, disturbance context, 5,175 manta tows, about 1,035 km of survey effort and 135 survey days.", state: "AUTHORITATIVE" },
     { id: "noaa-crw", label: "Daily 5 km Coral Bleaching Heat Stress Monitoring", authority: "NOAA Coral Reef Watch", url: "https://coralreefwatch.noaa.gov/product/5km", supports: "Daily satellite SST, anomaly, HotSpot, Degree Heating Weeks and bleaching-alert products.", state: "OPERATIONAL" },
   ],
   sections: [
-    { id: "WHAT_IS_HERE", question: "WHAT IS HERE?", headline: "A reef system large enough that regional summaries are not local truth.", summary: "AIMS provides reef-level and regional monitoring; the transfer must preserve that spatial hierarchy.", facts: ["The 2025–26 LTMP surveyed 121 reefs."], sourceIds: ["aims-2026"], confidence: "HIGH" },
-    { id: "WHAT_IS_HAPPENING", question: "WHAT IS HAPPENING?", headline: "Initial recovery sits inside continuing climate pressure.", summary: "In 2026 regional hard coral cover increased in the north and centre and was relatively stable in the south, while heat stress and disturbance continued.", facts: ["Regional hard coral cover was reported at 35.1% north, 31.6% central and 26.4% south in 2026."], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
-    { id: "WHY", question: "WHY?", headline: "Heat, cyclones and crown-of-thorns act at different scales.", summary: "The transfer will keep disturbances separate and time-stamped rather than convert them into one reef-health score.", facts: [], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
-    { id: "DEPENDS_ON", question: "WHAT DEPENDS ON WHAT?", headline: "OPEN FOR TRANSFER", summary: "Dependency graph will be populated through the shared Living Systems contract after reef/habitat identity is resolved.", facts: [], sourceIds: ["aims-2026"], confidence: "OPEN" },
-    { id: "WHAT_CHANGED", question: "WHAT CHANGED?", headline: "Long-term monitoring makes change measurable.", summary: "AIMS annual and long-term series allow current condition to be read against earlier observations.", facts: [], sourceIds: ["aims-2026"], confidence: "HIGH" },
-    { id: "HOW_WE_KNOW", question: "HOW DO WE KNOW?", headline: "Field monitoring + satellite heat stress.", summary: "The transfer intentionally combines distinct evidence modes without treating either as the whole ecosystem.", facts: [], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
-    { id: "WHO_CAN_ACT", question: "WHO CAN ACT?", headline: "OPEN FOR ACTOR RESOLUTION", summary: "Actor graph is not yet promoted in this transfer pack.", facts: [], sourceIds: [], confidence: "OPEN" },
-    { id: "WHAT_CAN_BE_DONE", question: "WHAT CAN BE DONE?", headline: "OPEN FOR ACTION RESOLUTION", summary: "No generic solution claim is promoted before actor, place and intervention evidence are resolved.", facts: [], sourceIds: [], confidence: "OPEN" },
+    { id: "WHAT_IS_HERE", question: "WHAT IS HERE?", headline: "A reef system too large for one regional number to be local truth.", summary: "AIMS monitoring resolves individual reefs and regional summaries. The transfer therefore preserves spatial hierarchy instead of treating the Great Barrier Reef as one homogeneous object.", facts: ["The 2025–26 LTMP surveyed 121 reefs.", "AIMS reports 5,175 manta tows covering about 1,035 km over 135 survey days."], sourceIds: ["aims-2026"], confidence: "HIGH" },
+    { id: "WHAT_IS_HAPPENING", question: "WHAT IS HAPPENING?", headline: "Initial coral-cover recovery sits inside continuing disturbance risk.", summary: "AIMS reports slight increases or broadly similar hard coral cover in 2026 after recent bleaching disturbance, while the Reef continues to face heat, cyclones and crown-of-thorns starfish pressure.", facts: ["2026 regional hard coral cover: 35.1% north, 31.6% central and 26.4% south.", "Of 121 surveyed reefs, 16% declined, 56% showed no net change and 28% increased in hard coral cover."], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
+    { id: "WHY", question: "WHY?", headline: "Heat, cyclones and crown-of-thorns act at different scales and times.", summary: "The transfer keeps disturbance classes and observation windows separate. A regional average cannot identify the cause of change on an individual reef without supporting evidence.", facts: [], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
+    { id: "DEPENDS_ON", question: "WHAT DEPENDS ON WHAT?", headline: "Relationship transfer remains deliberately incomplete.", summary: "The shared eight-question grammar transfers immediately, but reef-specific species/habitat dependencies must be resolved from appropriate sources before the Living Systems graph can be promoted.", facts: [], sourceIds: ["aims-2026"], confidence: "OPEN" },
+    { id: "WHAT_CHANGED", question: "WHAT CHANGED?", headline: "Long-term field monitoring makes change comparable across years.", summary: "AIMS' LTMP provides a 40-year observation context. Current regional coral cover is therefore read against earlier observations rather than presented as an isolated snapshot.", facts: ["2026 is the 40th year of LTMP data."], sourceIds: ["aims-2026"], confidence: "HIGH" },
+    { id: "HOW_WE_KNOW", question: "HOW DO WE KNOW?", headline: "Field surveys and satellite heat stress remain separate evidence modes.", summary: "AIMS manta-tow monitoring measures reef condition in the field; NOAA Coral Reef Watch supplies thermal-stress observations. Neither source is silently promoted into the other's claim class.", facts: [], sourceIds: ["aims-2026", "noaa-crw"], confidence: "HIGH" },
+    { id: "WHO_CAN_ACT", question: "WHO CAN ACT?", headline: "OPEN FOR ACTOR RESOLUTION", summary: "Actor roles are not promoted simply because the transfer page exists. Management, science, Traditional Owner, tourism and restoration actors need explicit role evidence before action routing.", facts: [], sourceIds: [], confidence: "OPEN" },
+    { id: "WHAT_CAN_BE_DONE", question: "WHAT CAN BE DONE?", headline: "OPEN FOR INTERVENTION FIT", summary: "The transfer does not manufacture a generic reef solution. Intervention fit, delivery ownership and proof latency remain separate next gates.", facts: [], sourceIds: [], confidence: "OPEN" },
   ],
-  transferNote: "Transfer 02 reuses the Oslofjord reading sequence while forcing it to handle a very different marine system, monitoring scale and near-real-time thermal signal.",
+  transferNote: "Transfer 02 reuses the same PlanetProof schema, PlanetProofPage, EvidenceMap, ReadingSection, SourceLedger and eight-question reading grammar. It adapts geography/source/claim bindings and adds GBR-specific evidence. Structural reuse is inspectable; elapsed time and Founder minutes remain UNKNOWN until instrumented rather than fabricated.",
+  transferAudit: {
+    basis: "STRUCTURAL_COMPONENT_CLASSIFICATION",
+    reused: ["PlanetProof schema", "PlanetProofPage", "EvidenceMap", "ReadingSection", "SourceLedger", "eight-question reading grammar"],
+    adapted: ["geography/bounds", "source bindings", "claim wording"],
+    netNew: ["AIMS 2025-26 evidence binding", "NOAA Coral Reef Watch evidence binding", "GBR direct product route"],
+    structuralReuseRatio: 0.5,
+    founderMinutes: null,
+    elapsedBuildMinutes: null,
+    dependencies: ["AIMS LTMP", "NOAA Coral Reef Watch"],
+    defectsOrRetries: [],
+    qualityState: "TECHNICAL_TRANSFER_IMPLEMENTED_HUMAN_GOLD_UNPROVEN",
+  },
 };
 
 export const AMAZONIA_TRANSFER: PlanetProof = {
