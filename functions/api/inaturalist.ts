@@ -64,7 +64,10 @@ function commercialWebStatus(licence: string) {
 }
 
 async function resolveExactTaxon(query: string) {
-  const url = `${BASE}/taxa?q=${encodeURIComponent(query)}&per_page=20&order_by=observations_count`;
+  // iNaturalist's autocomplete endpoint is the provider path intended for taxon-name
+  // resolution. 4PLANET still promotes identity only after an exact scientific-name
+  // match below; provider ranking/fuzzy suggestions never become identity by themselves.
+  const url = `${BASE}/taxa/autocomplete?q=${encodeURIComponent(query)}&per_page=20`;
   const response = await fetch(url, {
     headers: {
       accept: "application/json",
