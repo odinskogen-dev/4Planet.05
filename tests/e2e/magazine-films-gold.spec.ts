@@ -141,7 +141,11 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
   test("all 40 film detail routes have film art, watch/source pathways and no internal overflow", async ({ page }, testInfo) => {
     test.skip(!["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name), "all-40 route proof runs on one mobile and one desktop authority viewport");
     await page.goto("/films");
-    const hrefs = await page.locator(".mag-film-card h2 a").evaluateAll((nodes) => [...new Set(nodes.map((node) => (node as HTMLAnchorElement).getAttribute("href")).filter(Boolean))] as string[]);
+    const cards = page.locator(".mag-film-card");
+    const links = page.locator(".mag-film-card > .mag-film-card-media");
+    await expect(cards).toHaveCount(40);
+    await expect(links).toHaveCount(40);
+    const hrefs = await links.evaluateAll((nodes) => [...new Set(nodes.map((node) => (node as HTMLAnchorElement).getAttribute("href")).filter(Boolean))] as string[]);
     expect(hrefs).toHaveLength(40);
 
     await page.route("https://www.youtube-nocookie.com/**", (route) => route.abort());
@@ -221,6 +225,7 @@ test.describe("4PLANET FILMS — reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
   test("automatic Films rail becomes static without losing discovery", async ({ page }) => {
     await page.goto("/magazine");
+    await expect.poll(() => page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
     const track = page.locator(".mag-film-home-stream .mag-story-stream-track");
     await expect(track).toBeVisible();
     const animationName = await track.evaluate((node) => getComputedStyle(node).animationName);
