@@ -1,0 +1,234 @@
+from pathlib import Path
+import re
+
+root = Path('.')
+
+def require_replace(text, old, new, label, count=1):
+    if old not in text:
+        raise SystemExit(f'{label}: anchor missing')
+    return text.replace(old, new, count)
+
+# 1) Films product: featured cinematic maze -> moving Watch Now -> discovery -> full library -> secondary discovery.
+tsx_path = root / 'src/pages/v5/MagazineFilms.tsx'
+tsx = tsx_path.read_text()
+tsx = require_replace(tsx, 'import "@/styles/magazine-films-premium-04.css";', 'import "@/styles/magazine-films-premium-04.css";\nimport "@/styles/magazine-films-live-07.css";', 'films css import')
+anchor = 'const FEATURED_SLUGS = ["yanuni", "the-territory", "chasing-coral", "my-octopus-teacher", "breaking-boundaries", "the-biggest-little-farm"];'
+tsx = require_replace(tsx, anchor, anchor + '\nconst FEATURED_MAZE_LAYOUTS = ["hero", "portrait", "compact", "wide", "wide", "feature"] as const;', 'featured layouts')
+
+component_anchor = 'function FilmRail({ title, eyebrow, films }: { title: string; eyebrow: string; films: FilmRecord[] }) {'
+components = r'''
+function FeaturedMaze({ films }: { films: FilmRecord[] }) {
+  if (!films.length) return null;
+  return (
+    <section className="mag-film-featured" aria-labelledby="film-featured-title">
+      <header className="mag-film-featured-head">
+        <div><p className="mag-films-eyebrow">FEATURED / EDITOR&apos;S CUT</p><h2 id="film-featured-title">Start here.</h2></div>
+        <p>A small set of films that open the living planet from different directions.</p>
+      </header>
+      <div className="mag-film-featured-maze">
+        {films.map((film, index) => {
+          const layout = FEATURED_MAZE_LAYOUTS[index % FEATURED_MAZE_LAYOUTS.length];
+          return (
+            <Link key={film.slug} className={`mag-film-featured-card mag-film-featured-card--${layout}`} data-accent={film.accent} to={`/films/${film.slug}`} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: `featured_maze_${layout}` })}>
+              <FilmImage film={film} eager={index < 2} decorative />
+              <span className="mag-film-featured-shade" aria-hidden />
+              <div className="mag-film-featured-copy"><span>{accessLabel(film)} · {film.runtime}</span><strong>{film.title}</strong></div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function WatchNowRail({ films }: { films: FilmRecord[] }) {
+  if (!films.length) return null;
+  const loop = [...films, ...films];
+  return (
+    <section className="mag-film-watch-now" aria-labelledby="film-watch-now-title">
+      <header>
+        <div><p className="mag-films-eyebrow">WATCH NOW / FREE TO WATCH</p><h2 id="film-watch-now-title">Watch now.</h2></div>
+        <p>Full films currently available from official publishers and rights holders.</p>
+      </header>
+      <div className="mag-film-watch-viewport" tabIndex={0} aria-label="Free films — moving horizontally; use arrow keys or swipe to explore" onKeyDown={(event) => {
+        if (event.key === "ArrowRight") event.currentTarget.scrollBy({ left: 340, behavior: "smooth" });
+        if (event.key === "ArrowLeft") event.currentTarget.scrollBy({ left: -340, behavior: "smooth" });
+      }}>
+        <div className="mag-film-watch-track">
+          {loop.map((film, index) => {
+            const duplicate = index >= films.length;
+            return (
+              <Link key={`${film.slug}-${index}`} className="mag-film-watch-card" data-accent={film.accent} to={`/films/${film.slug}`} aria-hidden={duplicate || undefined} tabIndex={duplicate ? -1 : 0} onClick={() => trackEvent("film_open", { film_slug: film.slug, placement: "watch_now_rail" })}>
+                <div><FilmImage film={film} decorative /></div><span>{film.runtime} · {film.director}</span><strong>{film.title}</strong>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+'''
+tsx = require_replace(tsx, component_anchor, components + component_anchor, 'featured/watch components')
+tsx = tsx.replace('Curated by 4PLANET. Films remain with their filmmakers and distributors; availability can vary by country.', 'Curated by 4PLANET. Watch routes stay with filmmakers and distributors.', 1)
+
+tail_pattern = re.compile(r'        <section className="mag-film-discovery-tools"[\s\S]*?        </section>\n      </main>', re.M)
+new_tail = r'''        {showEditorialLanes ? (<><FeaturedMaze films={featured} /><WatchNowRail films={free} /></>) : null}
+
+        <section className="mag-film-discovery-tools" aria-label="Find a film">
+          <form onSubmit={submitSearch} role="search"><label htmlFor="film-search">FIND A FILM</label><div><input id="film-search" type="search" value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Title, director, ocean, food…" autoComplete="off" /><button type="submit">SEARCH →</button></div></form>
+          <button type="button" className={savedOnly ? "is-active" : ""} aria-pressed={savedOnly} onClick={toggleSavedOnly}>SAVED {saved.size}</button>
+        </section>
+
+        <nav className="mag-film-filter" aria-label="Film topics">
+          {availableFilters.map((filter) => {
+            const params = new URLSearchParams(searchParams);
+            if (filter.id === "ALL") params.delete("topic"); else params.set("topic", filter.id);
+            return <Link key={filter.id} className={active === filter.id ? "is-active" : ""} aria-current={active === filter.id ? "page" : undefined} to={`/films${params.toString() ? `?${params.toString()}` : ""}`} onClick={() => trackEvent("film_filter_use", { filter: filter.id.toLowerCase() })}>{filter.label}</Link>;
+          })}
+        </nav>
+
+        <section className="mag-film-selection" aria-labelledby="selection-title">
+          <header className="mag-film-selection-head"><div><p className="mag-films-eyebrow">CURATED SELECTION / {films.length} {films.length === 1 ? "FILM" : "FILMS"}</p><h2 id="selection-title">{savedOnly ? "Your saved films." : query ? `Results for “${query}”.` : active === "ALL" ? "Explore the selection." : FILTER_OPTIONS.find((item) => item.id === active)?.label}</h2></div><p>{query || savedOnly || active !== "ALL" ? "A focused view of the same curated selection. Clear the search or filters whenever you want the full editorial map." : "Selected for cinematic quality, relevance to a living planet and a clear route back to the people who made the work."}</p></header>
+          {films.length ? <div className="mag-film-grid">{films.map((film, index) => <FilmCard key={film.slug} film={film} index={index} saved={saved.has(film.slug)} onSave={() => toggle(film.slug)} />)}</div> : <div className="mag-film-empty"><h3>No films match this view.</h3><Link to="/films">RESET DISCOVERY →</Link></div>}
+        </section>
+
+        {showEditorialLanes ? <section className="mag-film-editorial-lanes mag-film-editorial-lanes--secondary" aria-label="More ways into 4PLANET Films"><FilmRail eyebrow="SHORT FILMS" title="Thirty minutes or less." films={shorts} /><FilmRail eyebrow="NEW TO 4PLANET" title="Recently added." films={recent} /></section> : null}
+      </main>'''
+tsx, n = tail_pattern.subn(new_tail, tsx, count=1)
+if n != 1:
+    raise SystemExit(f'Films index tail replacement count={n}')
+tsx_path.write_text(tsx)
+
+css = r'''/* 4PLANET FILMS — LIVE PREMIUM + SEARCH DISCOVERY CLOSURE 07 */
+.mag-film-featured{padding:clamp(46px,6vw,92px) clamp(10px,1.5vw,24px) clamp(22px,3vw,44px);border-bottom:1px solid var(--mw-ink);background:var(--mw-paper)}
+.mag-film-featured-head,.mag-film-watch-now>header{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:clamp(28px,6vw,92px);align-items:end;margin:0 clamp(4px,2.2vw,34px) clamp(24px,3vw,46px)}
+.mag-film-featured-head h2,.mag-film-watch-now>header h2{margin:10px 0 0;font:500 clamp(48px,7vw,108px)/.86 'Instrument Sans',sans-serif;letter-spacing:-.065em}
+.mag-film-featured-head>p,.mag-film-watch-now>header>p{max-width:560px;margin:0;color:var(--mw-soft);font:450 clamp(14px,1.3vw,19px)/1.45 'DM Sans',sans-serif}
+.mag-film-featured-maze{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:minmax(168px,16vw);gap:1px;background:var(--mw-ink);border:1px solid var(--mw-ink)}
+.mag-film-featured-card{position:relative;min-width:0;overflow:hidden;background:#090909;color:#fff;isolation:isolate}
+.mag-film-featured-card--hero{grid-column:1/7;grid-row:1/3}.mag-film-featured-card--portrait{grid-column:7/10;grid-row:1/3}.mag-film-featured-card--compact{grid-column:10/13;grid-row:1/2}.mag-film-featured-card--wide{grid-column:10/13;grid-row:2/3}.mag-film-featured-card--wide:nth-child(5){grid-column:1/7;grid-row:3/4}.mag-film-featured-card--feature{grid-column:7/13;grid-row:3/4}
+.mag-film-featured-card>img,.mag-film-featured-card>.mag-film-image-fallback{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .35s ease}.mag-film-featured-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.74) 100%);z-index:1}.mag-film-featured-copy{position:absolute;z-index:2;left:clamp(14px,2vw,28px);right:clamp(14px,2vw,28px);bottom:clamp(14px,2vw,26px);display:grid;gap:8px}.mag-film-featured-copy>span{font:600 7px/1.2 'Fragment Mono',monospace;letter-spacing:.1em;text-transform:uppercase;opacity:.82}.mag-film-featured-copy>strong{max-width:900px;font:500 clamp(24px,3.1vw,54px)/.9 'Instrument Sans',sans-serif;letter-spacing:-.052em;text-wrap:balance}.mag-film-featured-card--compact .mag-film-featured-copy>strong,.mag-film-featured-card--wide:not(:nth-child(5)) .mag-film-featured-copy>strong{font-size:clamp(20px,2vw,34px)}
+.mag-film-watch-now{padding:clamp(58px,7vw,104px) 0 clamp(62px,7vw,108px);overflow:hidden;border-bottom:1px solid var(--mw-ink);background:var(--mw-paper)}.mag-film-watch-viewport{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;outline-offset:4px}.mag-film-watch-viewport::-webkit-scrollbar{display:none}.mag-film-watch-track{display:flex;width:max-content;will-change:transform;animation:film-watch-now-loop 44s linear infinite}.mag-film-watch-card{--film-accent:#315dff;flex:0 0 clamp(230px,23vw,380px);width:clamp(230px,23vw,380px);border-top:1px solid var(--mw-ink);border-right:1px solid var(--mw-ink);border-bottom:1px solid var(--mw-ink);background:var(--mw-paper);color:var(--mw-ink);transition:background-color .2s ease,color .2s ease}.mag-film-watch-card:first-child{border-left:1px solid var(--mw-ink)}.mag-film-watch-card>div{aspect-ratio:16/10;overflow:hidden;background:#080808;border-bottom:1px solid var(--mw-ink)}.mag-film-watch-card img,.mag-film-watch-card .mag-film-image-fallback{display:block;width:100%;height:100%;object-fit:cover}.mag-film-watch-card>span,.mag-film-watch-card>strong{display:block;margin-left:14px;margin-right:14px}.mag-film-watch-card>span{margin-top:13px;font:600 7px/1.35 'Fragment Mono',monospace;letter-spacing:.075em;color:var(--mw-soft)}.mag-film-watch-card>strong{margin-top:9px;margin-bottom:18px;font:500 clamp(23px,2.35vw,38px)/.92 'Instrument Sans',sans-serif;letter-spacing:-.045em}.mag-film-watch-viewport:hover .mag-film-watch-track,.mag-film-watch-viewport:focus-within .mag-film-watch-track,.mag-film-watch-viewport:active .mag-film-watch-track{animation-play-state:paused}
+.mag-film-editorial-lanes--secondary{border-top:1px solid var(--mw-ink)}
+.mag-static-prerender{max-width:1180px;margin:0 auto;padding:48px clamp(18px,5vw,72px) 100px;font-family:'DM Sans',Arial,sans-serif;color:#080808;background:#fff}.mag-static-prerender h1{max-width:980px;margin:0 0 24px;font:500 clamp(44px,7vw,96px)/.9 Arial,sans-serif;letter-spacing:-.055em}.mag-static-prerender h2{margin:42px 0 12px;font:600 22px/1.1 Arial,sans-serif}.mag-static-prerender p,.mag-static-prerender li{max-width:780px;font-size:16px;line-height:1.55}.mag-static-prerender nav,.mag-static-prerender ul{display:grid;gap:9px;margin-top:24px}
+@media(hover:hover){.mag-film-featured-card:hover>img,.mag-film-featured-card:focus-visible>img{transform:scale(1.025);filter:saturate(1.06) contrast(1.02)}.mag-film-watch-card:hover,.mag-film-watch-card:focus-visible{background:var(--film-accent);color:var(--film-accent-ink)}.mag-film-watch-card:hover>span,.mag-film-watch-card:focus-visible>span{color:inherit;opacity:.8}}
+@keyframes film-watch-now-loop{to{transform:translate3d(-50%,0,0)}}
+@media(max-width:900px){.mag-film-featured-head,.mag-film-watch-now>header{grid-template-columns:1fr}.mag-film-featured-maze{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(180px,34vw)}.mag-film-featured-card--hero{grid-column:1/3;grid-row:auto;min-height:52vw}.mag-film-featured-card--portrait,.mag-film-featured-card--compact,.mag-film-featured-card--wide,.mag-film-featured-card--wide:nth-child(5),.mag-film-featured-card--feature{grid-column:auto;grid-row:auto}.mag-film-featured-card--feature{grid-column:1/3}}
+@media(max-width:640px){.mag-film-featured{padding:38px 0 18px}.mag-film-featured-head,.mag-film-watch-now>header{margin-left:10px;margin-right:10px}.mag-film-featured-head h2,.mag-film-watch-now>header h2{font-size:clamp(48px,17vw,76px)}.mag-film-featured-maze{border-left:0;border-right:0;grid-auto-rows:176px}.mag-film-featured-card--hero{min-height:300px}.mag-film-featured-copy{left:12px;right:12px;bottom:12px}.mag-film-featured-copy>strong{font-size:clamp(24px,8vw,36px)}.mag-film-featured-card--compact .mag-film-featured-copy>strong,.mag-film-featured-card--wide:not(:nth-child(5)) .mag-film-featured-copy>strong{font-size:22px}.mag-film-watch-now{padding:50px 0 58px}.mag-film-watch-card{flex-basis:72vw;width:72vw}}
+@media(prefers-reduced-motion:reduce){.mag-film-watch-track{animation:none!important;transform:none!important}.mag-film-featured-card>img{transition:none!important}}
+'''
+(root / 'src/styles/magazine-films-live-07.css').write_text(css)
+
+# 2) Static first-response HTML + stronger Movie/Collection structured data.
+pre_path = root / 'scripts/prerender-magazine-seo.mjs'
+pre = pre_path.read_text()
+pre = require_replace(pre, '      description: pickString(block, "description"),\n      image: imageUrlOverride', '      description: pickString(block, "description"),\n      watchUrl: pickString(block, "watchUrl"),\n      sourceUrl: pickString(block, "sourceUrl"),\n      sourceLabel: pickString(block, "sourceLabel"),\n      selectionNote: pickString(block, "selectionNote"),\n      availabilityNote: pickString(block, "availabilityNote"),\n      image: imageUrlOverride', 'prerender film fields')
+
+write_pattern = re.compile(r'function writeRoute\(route, meta\) \{[\s\S]*?\n\}', re.M)
+write_repl = r'''function staticMarkupForRoute(route, meta) {
+  if (route === "/films") {
+    const items = films.map((film) => `<li><a href="${escapeHtml(`/films/${film.slug}`)}">${escapeHtml(film.title)}</a> — ${film.year}, ${escapeHtml(film.runtime)}, directed by ${escapeHtml(film.director)}</li>`).join("");
+    return `<main class="mag-static-prerender" data-4planet-static-prerender="films-index"><p>4PLANET FILMS</p><h1>Films worth your attention.</h1><p>${escapeHtml(meta.description)}</p><h2>Curated documentary selection</h2><ul>${items}</ul></main>`;
+  }
+  if (route.startsWith("/films/")) {
+    const slug = route.split("/").filter(Boolean).pop();
+    const film = films.find((candidate) => candidate.slug === slug);
+    if (!film) return "";
+    return `<article class="mag-static-prerender" data-4planet-static-prerender="film-detail"><p>4PLANET FILMS / ${escapeHtml(film.focus)}</p><h1>${escapeHtml(film.title)}</h1><p>${escapeHtml(film.description)}</p><p><strong>${film.year}</strong> · ${escapeHtml(film.runtime)} · Directed by ${escapeHtml(film.director)}</p><p><a href="${escapeHtml(film.watchUrl)}">Watch ${escapeHtml(film.title)}</a></p><h2>Why 4PLANET selected it</h2><p>${escapeHtml(film.selectionNote || film.description)}</p><h2>Availability</h2><p>${escapeHtml(film.availabilityNote || "See the official source for current availability.")}</p><p><a href="${escapeHtml(film.sourceUrl)}">${escapeHtml(film.sourceLabel || "Official film source")}</a></p><nav><a href="/films">Explore all 4PLANET Films</a> · <a href="/magazine">Open 4PLANET Magazine</a> · <a href="/magazine/atlas">Open 4PLANET Atlas</a></nav></article>`;
+  }
+  if (route === "/magazine") {
+    const items = stories.slice(0, 13).map((story) => `<li><a href="${escapeHtml(`/magazine/${story.slug}`)}">${escapeHtml(story.title)}</a> — ${escapeHtml(standfirsts[story.slug] || story.dek)}</li>`).join("");
+    return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-index"><p>4PLANET MAGAZINE</p><h1>Nature, people, engineering and what works.</h1><p>${escapeHtml(meta.description)}</p><p><a href="/films">Explore 4PLANET Films</a></p><ul>${items}</ul></main>`;
+  }
+  if (route.startsWith("/magazine/") && !route.startsWith("/magazine/signals/") && !route.startsWith("/magazine/topics/") && !route.startsWith("/magazine/series/")) {
+    const slug = route.split("/").filter(Boolean).pop();
+    const story = stories.find((candidate) => candidate.slug === slug);
+    if (story) {
+      const feature = features[story.slug];
+      const blocks = feature?.blocks ?? story.blocks ?? [];
+      const body = blocks.map((block) => block.k === "sub" ? `<h2>${escapeHtml(block.t)}</h2>` : `<p>${escapeHtml(block.t)}</p>`).join("");
+      const sourceMap = new Map();
+      for (const source of story.sourceLinks ?? []) sourceMap.set(source.url, source);
+      for (const source of feature?.addedSources ?? []) sourceMap.set(source.url, source);
+      const sourceLinks = [...sourceMap.values()].map((source) => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label || source.publisher || source.url)}</a></li>`).join("");
+      return `<article class="mag-static-prerender" data-4planet-static-prerender="magazine-story"><p>4PLANET MAGAZINE</p><h1>${escapeHtml(story.title)}</h1><p>${escapeHtml(standfirsts[story.slug] || story.dek)}</p>${body}${sourceLinks ? `<h2>Sources</h2><ul>${sourceLinks}</ul>` : ""}</article>`;
+    }
+  }
+  if (route.startsWith("/magazine/")) return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-page"><h1>${escapeHtml(meta.title)}</h1><p>${escapeHtml(meta.description)}</p></main>`;
+  return "";
+}
+
+function writeRoute(route, meta) {
+  const clean = stripManagedHead(baseHtml);
+  const withHead = clean.replace("</head>", `    ${headMarkup(meta)}\n  </head>`);
+  const staticMarkup = staticMarkupForRoute(route, meta);
+  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`) : withHead;
+  const target = route === "/" ? path.join(dist, "index.html") : path.join(dist, route.replace(/^\//, ""), "index.html");
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, html, "utf8");
+}'''
+pre, n = write_pattern.subn(write_repl, pre, count=1)
+if n != 1:
+    raise SystemExit(f'writeRoute replacement count={n}')
+
+pre = require_replace(pre,
+'  jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } },',
+'''  jsonLd: {\n    "@context": "https://schema.org",\n    "@graph": [\n      { "@type": "CollectionPage", "@id": `${filmsCanonical}#page`, name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical }, mainEntity: { "@id": `${filmsCanonical}#list` } },\n      { "@type": "ItemList", "@id": `${filmsCanonical}#list`, name: "4PLANET FILMS curated documentary selection", numberOfItems: films.length, itemListElement: films.map((film, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Movie", name: film.title, url: absoluteUrl(magazineOrigin, `/films/${film.slug}`), image: film.image, dateCreated: String(film.year), director: { "@type": "Person", name: film.director } } })) }\n    ]\n  },''', 'Films ItemList schema')
+
+pre = require_replace(pre,
+'''    jsonLd: {\n      "@context": "https://schema.org",\n      "@type": "Movie",\n      name: film.title,\n      description: film.description,\n      url: canonical,\n      image: [film.image],\n      dateCreated: String(film.year),\n      duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined,\n      director: { "@type": "Person", name: film.director },\n      genre: "Documentary",\n      isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET FILMS", url: filmsCanonical },\n    },''',
+'''    jsonLd: {\n      "@context": "https://schema.org",\n      "@graph": [\n        { "@type": "Movie", "@id": `${canonical}#movie`, name: film.title, description: film.description, url: canonical, image: [film.image], dateCreated: String(film.year), duration: Number.isFinite(minutes) ? `PT${minutes}M` : undefined, director: { "@type": "Person", name: film.director }, genre: "Documentary", sameAs: film.sourceUrl, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET FILMS", url: filmsCanonical } },\n        { "@type": "BreadcrumbList", "@id": `${canonical}#breadcrumb`, itemListElement: [\n          { "@type": "ListItem", position: 1, name: "4PLANET MAGAZINE", item: magazineCanonical },\n          { "@type": "ListItem", position: 2, name: "4PLANET FILMS", item: filmsCanonical },\n          { "@type": "ListItem", position: 3, name: film.title, item: canonical }\n        ] }\n      ]\n    },''', 'Film Breadcrumb schema')
+pre_path.write_text(pre)
+
+# 3) Robots/search distribution: explicit OAI-SearchBot + Google/Bing and IndexNow key.
+sitemap_path = root / 'scripts/generate-sitemap.mjs'
+sitemap = sitemap_path.read_text()
+sitemap = require_replace(sitemap,
+'''const magazineRobots = `User-agent: *\\nAllow: /magazine\\nAllow: /films\\nDisallow: /magazine/saved\\nDisallow: /magazine/search\\n\\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\\n`;''',
+'''const magazineRobots = `User-agent: OAI-SearchBot\\nAllow: /magazine\\nAllow: /films\\nDisallow: /magazine/saved\\nDisallow: /magazine/search\\n\\nUser-agent: Googlebot\\nAllow: /magazine\\nAllow: /films\\nDisallow: /magazine/saved\\nDisallow: /magazine/search\\n\\nUser-agent: Bingbot\\nAllow: /magazine\\nAllow: /films\\nDisallow: /magazine/saved\\nDisallow: /magazine/search\\n\\nUser-agent: *\\nAllow: /magazine\\nAllow: /films\\nDisallow: /magazine/saved\\nDisallow: /magazine/search\\n\\nSitemap: ${absoluteUrl(magazineOrigin, "/magazine-sitemap.xml")}\\nSitemap: ${absoluteUrl(magazineOrigin, "/news-sitemap.xml")}\\n`;''', 'robots policy')
+sitemap += '\nconst indexNowKey = "4planet-indexnow-2026-9f7b3c1d5e8a";\nfs.writeFileSync(path.join(publicDir, `${indexNowKey}.txt`), `${indexNowKey}\\n`, "utf8");\n'
+sitemap_path.write_text(sitemap)
+
+# 4) Browser QA: image quality/uniqueness + new hierarchy/motion + WebKit image proof.
+test_path = root / 'tests/e2e/magazine-films-gold.spec.ts'
+test = test_path.read_text()
+test = require_replace(test, '  for (let i = 0; i < 40; i += 1) {', '  const seenSources = new Set<string>();\n  for (let i = 0; i < 40; i += 1) {', 'image seen set')
+test = require_replace(test,
+'''    await expect.poll(async () => image.evaluate((node) => {\n      const img = node as HTMLImageElement;\n      return { loaded: img.complete && img.naturalWidth > 0, src: img.currentSrc || img.src };\n    }), { timeout: 15_000 }).toMatchObject({ loaded: true });\n    const src = await image.getAttribute("src");\n    expect(src || "").not.toMatch(/\\/assets\\/(brand|domains|missions)\\//);''',
+'''    await expect.poll(async () => image.evaluate((node) => {\n      const img = node as HTMLImageElement;\n      return { loaded: img.complete && img.naturalWidth > 0, src: img.currentSrc || img.src };\n    }), { timeout: 15_000 }).toMatchObject({ loaded: true });\n    const dimensions = await image.evaluate((node) => ({ width: (node as HTMLImageElement).naturalWidth, height: (node as HTMLImageElement).naturalHeight, src: (node as HTMLImageElement).currentSrc || (node as HTMLImageElement).src }));\n    expect(dimensions.width, `film ${i + 1} image should be at least 480px wide`).toBeGreaterThanOrEqual(480);\n    expect(dimensions.height, `film ${i + 1} image should be at least 270px high`).toBeGreaterThanOrEqual(270);\n    expect(dimensions.src).not.toMatch(/\\/assets\\/(brand|domains|missions)\\//);\n    expect(seenSources.has(dimensions.src), `film ${i + 1} should not duplicate another film image`).toBe(false);\n    seenSources.add(dimensions.src);''', 'image quality block')
+test = require_replace(test,
+'''    await expect(page.locator(".mag-film-lane")).toHaveCount(4);\n    await expect(page.getByRole("heading", { name: "Begin with these." })).toBeVisible();\n    await expect(page.getByRole("heading", { name: "Watch now." })).toBeVisible();\n    await expect(page.getByRole("heading", { name: "Thirty minutes or less." })).toBeVisible();''',
+'''    await expect(page.locator(".mag-film-featured-card")).toHaveCount(6);\n    await expect(page.getByRole("heading", { name: "Start here." })).toBeVisible();\n    await expect(page.locator(".mag-film-watch-now")).toBeVisible();\n    await expect(page.getByRole("heading", { name: "Watch now." })).toBeVisible();\n    await expect(page.locator(".mag-film-lane")).toHaveCount(2);\n    await expect(page.getByRole("heading", { name: "Thirty minutes or less." })).toBeVisible();''', 'new index hierarchy')
+test = test.replace('    if (testInfo.project.name === "mag-mobile-390") await expectFilmImagesAreReal(page);', '    if (["mag-mobile-390", "mag-webkit-390"].includes(testInfo.project.name)) await expectFilmImagesAreReal(page);', 1)
+motion_anchor = '  test("search, filters and local saved list work without an account", async ({ page }) => {'
+motion_test = '''  test("Watch Now rail moves on its own and pauses for interaction", async ({ page }) => {\n    await page.goto("/films");\n    const track = page.locator(".mag-film-watch-track");\n    await expect(track).toBeVisible();\n    const animationName = await track.evaluate((node) => getComputedStyle(node).animationName);\n    expect(animationName).toContain("film-watch-now-loop");\n    const viewport = page.locator(".mag-film-watch-viewport");\n    await viewport.focus();\n    await expect.poll(async () => track.evaluate((node) => getComputedStyle(node).animationPlayState)).toBe("paused");\n    await viewport.press("ArrowRight");\n  });\n\n'''
+test = require_replace(test, motion_anchor, motion_test + motion_anchor, 'motion test anchor')
+reduced_anchor = '    await expect(animationDuration).toBe("0s");'
+if reduced_anchor in test:
+    test = test.replace(reduced_anchor, reduced_anchor + '\n    await page.goto("/films");\n    const watchTrack = page.locator(".mag-film-watch-track");\n    await expect(watchTrack).toBeVisible();\n    await expect.poll(async () => watchTrack.evaluate((node) => getComputedStyle(node).animationName)).toBe("none");', 1)
+test_path.write_text(test)
+
+# 5) LIVE release gate: full viewport/WebKit matrix, canonical slash handling, crawler HTML, OAI and IndexNow.
+wf_path = root / '.github/workflows/magazine-films-live-founder-override.yml'
+wf = wf_path.read_text()
+wf = wf.replace('timeout-minutes: 35', 'timeout-minutes: 45', 1)
+wf = wf.replace('npx playwright install --with-deps chromium', 'npx playwright install --with-deps chromium webkit', 1)
+wf = require_replace(wf,
+'''            --project=mag-desktop-1440 \\\n            --project=mag-mobile-430 \\\n            --project=mag-mobile-390 \\\n            --project=mag-mobile-375 \\\n            --project=mag-mobile-320''',
+'''            --project=mag-desktop-1440 \\\n            --project=mag-desktop-1920 \\\n            --project=mag-tablet-1024 \\\n            --project=mag-tablet-768 \\\n            --project=mag-android-412 \\\n            --project=mag-mobile-430 \\\n            --project=mag-mobile-390 \\\n            --project=mag-mobile-375 \\\n            --project=mag-mobile-320 \\\n            --project=mag-webkit-430 \\\n            --project=mag-webkit-390''', 'browser matrix')
+wf = require_replace(wf, '"/site.webmanifest"]);', '"/site.webmanifest","/4planet-indexnow-2026-9f7b3c1d5e8a.txt"]);', 'worker IndexNow key')
+wf = wf.replace('"$upstream/films"', '"$upstream/films/"', 1)
+wf = wf.replace("verify_live 'https://4planetmagazine.com/films' '200'", "verify_live 'https://4planetmagazine.com/films/' '200'", 1)
+wf = wf.replace('verify_live "https://4planetmagazine.com/films/$slug" \'200\'', 'verify_live "https://4planetmagazine.com/films/$slug/" \'200\'', 1)
+wf = wf.replace("films_html=$(curl -fsS 'https://4planetmagazine.com/films')", "films_html=$(curl -fsS 'https://4planetmagazine.com/films/')", 1)
+wf = wf.replace("yanuni_html=$(curl -fsS 'https://4planetmagazine.com/films/yanuni')", "yanuni_html=$(curl -fsS 'https://4planetmagazine.com/films/yanuni/')", 1)
+wf = wf.replace("reinvent_html=$(curl -fsS 'https://4planetmagazine.com/films/reinventing-power')", "reinvent_html=$(curl -fsS 'https://4planetmagazine.com/films/reinventing-power/')", 1)
+wf = require_replace(wf, "          printf '%s' \"$robots\" | grep -q 'Allow: /films'", "          printf '%s' \"$robots\" | grep -q 'Allow: /films'\n          printf '%s' \"$robots\" | grep -q 'User-agent: OAI-SearchBot'", 'OAI live gate')
+wf = require_replace(wf, "          printf '%s' \"$films_html\" | grep -q '<link rel=\"canonical\" href=\"https://4planetmagazine.com/films\">'", "          printf '%s' \"$films_html\" | grep -q '<link rel=\"canonical\" href=\"https://4planetmagazine.com/films\">'\n          printf '%s' \"$films_html\" | grep -q 'data-4planet-static-prerender=\"films-index\"'\n          printf '%s' \"$films_html\" | grep -q '\"@type\":\"ItemList\"'", 'Films crawler/schema gate')
+wf = require_replace(wf, "          printf '%s' \"$yanuni_html\" | grep -q '<title>YANUNI — 4PLANET FILMS</title>'", "          printf '%s' \"$yanuni_html\" | grep -q '<title>YANUNI — 4PLANET FILMS</title>'\n          printf '%s' \"$yanuni_html\" | grep -q 'data-4planet-static-prerender=\"film-detail\"'\n          printf '%s' \"$yanuni_html\" | grep -q '\"@type\":\"BreadcrumbList\"'", 'Film detail crawler/schema gate')
+wf = wf.rstrip() + '''\n\n      - name: Notify IndexNow after verified LIVE content change\n        continue-on-error: true\n        shell: bash\n        run: |\n          set -euo pipefail\n          key='4planet-indexnow-2026-9f7b3c1d5e8a'\n          sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')\n          printf '%s' "$sitemap" | grep -o 'https://4planetmagazine.com[^<]*' > "$RUNNER_TEMP/indexnow-urls.txt"\n          node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow.json"\n          import fs from 'node:fs';\n          const urls = fs.readFileSync(process.env.RUNNER_TEMP + '/indexnow-urls.txt','utf8').trim().split('\\n').filter(Boolean);\n          const key = '4planet-indexnow-2026-9f7b3c1d5e8a';\n          process.stdout.write(JSON.stringify({ host:'4planetmagazine.com', key, keyLocation:`https://4planetmagazine.com/${key}.txt`, urlList:urls }));\n          NODE\n          code=$(curl -sS -o "$RUNNER_TEMP/indexnow-response.txt" -w '%{http_code}' -H 'Content-Type: application/json; charset=utf-8' --data-binary @"$RUNNER_TEMP/indexnow.json" 'https://api.indexnow.org/indexnow' || true)\n          echo "INDEXNOW HTTP $code"\n          case "$code" in 200|202) exit 0 ;; *) cat "$RUNNER_TEMP/indexnow-response.txt"; exit 1 ;; esac\n'''
+wf_path.write_text(wf)
+
+print('Closure 07 patches prepared on authoritative LIVE source.')
