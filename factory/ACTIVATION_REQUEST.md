@@ -17,3 +17,11 @@ Authority:
 - No CNS/BRAIN cutover.
 
 Success is accepted bounded value + evidence + learning + writeback/readback, not deployment or CI alone.
+
+## Current lineage activation — 2026-09-07
+
+- Current HEIR reconciled into Factory ancestry: `king/test@8195d9d29f6d85698be1dd7fe71cd54ee9fc8321`.
+- Reconciled Factory parent: `9658371d8f953b983e3efbcfde894d31e4d536a7`.
+- Trigger reason: prior exact deployment correctly failed closed when TEST KING moved during activation; retry now uses physically reconciled HEIR ancestry rather than stale or cosmetic rebinding.
+- Required proof: local receiver/provider block must not stop unrelated read-only production; terminal outcome must persist and continue to next deterministic legal package without duplicate dispatch.
+- This request grants no additional product-write, LIVE, Canon, outreach, spend or legal authority.
