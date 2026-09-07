@@ -2,71 +2,67 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** GIGA2800-REALITY-PROOF-HUMAN-RESEARCH-01
-**STATUS:** HEIR / HUMAN PROOF INSTRUMENTATION CANDIDATE / NOT REAL-WORLD HUMAN PROOF / NOT FOUNDER APPROVED / NO LIVE RELEASE
-**BASE AUTHORITY:** `king/test` / exact parent `80446464d94b6fed4541072296d756f978f99fd5`
-**ROLLBACK BASE:** `80446464d94b6fed4541072296d756f978f99fd5`
-**LOOP ROLE:** HUMAN CONTEXT → DECISION → PROOF → LEARNING.
+**CHANGE ID:** REFERENCE-CELL-ACTION-CONTRACT-01
+**STATUS:** HEIR / ACTION CELL INTERNAL TEST CONTRACT / NOT A REAL TRANSACTION / NOT A PARTNERSHIP / NOT FOUNDER APPROVED / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `18586b69e35cbdefef7722a08e46617e8c8182a7`
+**ROLLBACK BASE:** `18586b69e35cbdefef7722a08e46617e8c8182a7`
+**LOOP ROLE:** ACTION PROVIDER DILIGENCE → TEST CONTRACT → PROOF BOUNDARY → LEARNING.
 
-## USER ARRIVES BECAUSE
-They have one real FOOD purchase decision and need to know whether Embla makes that decision materially clearer or better without hiding uncertainty.
+## USER / ACTOR ARRIVES BECAUSE
+4PLANET needs a legitimate low-friction route from a bounded action choice into an inspectable provider-side transaction state without pretending that payment equals delivery, ecological outcome or verified impact.
 
 ## ONE THING TO UNDERSTAND
-This mutation does not prove Human Utility. It makes a real Human Utility test inspectable. The participant must bring a real decision and real product. Fixture, synthetic and automated sessions remain technical evidence only.
+This mutation creates the minimum provider-agnostic Action lifecycle plus a no-spend Ecologi habitat-restoration TEST request contract. It performs no network request, stores no API key, spends no money and makes no Ecologi partnership or delivery claim.
 
 ## PRIMARY ACTION
-Open `/labs/food-user-test`, consent locally, enter the Embla research flow, use one real FOOD decision and product, then record whether the decision changed, became clearer, was confirmed or was not helped.
-
-## SECONDARY DEPTH
-The same evidence record preserves product/package accuracy, comprehension time, alternative relevance, usefulness, trust, UNKNOWN/refusal comprehension, repeat-use intent, install intent, payment intent and explicit issue severity. JSON/CSV export remains deliberate and local-first.
+Use the existing IMPACT truth seam to inspect an Action lifecycle whose states remain explicit from DISCOVERED through IMPACT_CLAIM_ELIGIBLE, with INVALIDATED_REMEDIED available for failed/remedied records. A TEST Ecologi request may be constructed with `test:true` for technical validation only.
 
 ## P1 DOMINANT
-The dominant job is proof of decision value, not scanner completion. A session without a real decision cannot satisfy PROOF-H01.
+Truthful state progression is dominant. `COMMITTED`, `PAID`, `ALLOCATED`, `IN_DELIVERY`, `DELIVERED`, `EVIDENCED`, `VERIFIED`, `OUTCOME_OBSERVED` and `IMPACT_CLAIM_ELIGIBLE` are not synonyms.
 
 ## P2 ORIENTATION
-The participant must understand why Embla sometimes compares, sometimes shows only bounded product evidence and sometimes refuses an unsupported whole-shelf or universal answer.
+Ecologi is the provisional lead provider pattern because its public docs expose an Impact API, explicit `test:true`, habitat restoration in square metres, idempotency support, monthly pending→paid semantics and a public Reporting API. Provider selection remains diligence, not endorsement or partnership.
 
 ## P3 ACTION / NEXT
-The research flow deep-links into the existing Embla FOOD decision gate with `?research=1` and returns to the existing Human Proof recorder. No second assistant or research product is introduced.
+The code may build a reviewable test request object only. Production execution requires a real account/API key, explicit Founder spend authority and separate legal/claim review. No token is accepted by the builder and no HTTP call occurs.
 
 ## P4 DEPTH
-Accuracy, evidence limitations and UNKNOWN states remain inspectable. Decision effect is recorded separately from decision correctness. Payment intent is a research signal only and must never be represented as revenue.
+Proof Passport remains the evidence/claim consumer. TEST state is pinned to D0. Provider records can later support transaction/allocation evidence, but physical delivery, outcome and independent impact verification remain separate evidence gates.
 
 ## WHAT CAN BE REMOVED
-Any duplicate research surface, remote personal-data store, synthetic participant generation, moral score, universal sustainability ranking or analytics layer that does not improve the bounded proof is unnecessary.
+Any provider-specific platform architecture, generic marketplace, second IMPACT state machine, automatic impact claim, secret storage, live transaction button or bespoke Ecologi UI is unnecessary for this slice.
 
 ## WHAT MUST BE REUSED
-Existing `/labs/food-user-test`, Embla FOOD decision-first gate, `FoodIntelligence`, `PickPrototype`, localStorage privacy boundary, JSON/CSV export, source/truth contracts, 4SAPIEN route family, current HEIR and all existing route/alias MUST-NOT-LOSE behaviour.
+Existing `src/impact/actionContract.ts`, `src/impact/proofPassport.ts`, truth-spine contribution/delivery/outcome/impact separation, IMPACT routes, current HEIR and existing contract/smoke gates.
 
-## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** explicit decision-effect and UNKNOWN/refusal comprehension fields required by the current Reality Proof mission.
-- **ADAPT:** connect the existing recorder and Embla through a reversible research query parameter and return link.
-- **PRESERVE:** all current source/refusal semantics, existing package-accuracy checks, privacy boundary, export capability, parent redirects and HEIR value.
-- **REJECT:** new research backend, fabricated respondents, remote personal storage, new product surface, universal score or any claim that technical PASS equals Human Utility.
+## CLEAN-ROOM / PROVIDER DECISION
+- **LEAD PATTERN:** Ecologi habitat restoration API for internal TEST mechanics only.
+- **BACKUP PATTERN:** cleanup-specific providers remain under diligence; no provider is locked as strategic partner.
+- **PRESERVE:** provider-agnostic Action lifecycle and Proof Passport boundaries.
+- **REJECT:** real payment/order, hidden API credential, auto-advance from provider response to delivery/outcome/impact, partnership language, or universal environmental score.
 
 ## TRUTH BOUNDARY
-`TECHNICAL PASS ≠ HUMAN VALUE`.
-`USEFULNESS SCORE ≠ REPEAT HUMAN UTILITY`.
-`PAYMENT INTENT ≠ REVENUE`.
-`DECISION CHANGED ≠ DECISION CORRECT`.
-`ONE REAL PARTICIPANT ≠ REPEATED PROOF`.
-A real-world Human Proof record exists only when an actual participant uses a real decision and real product, the result is captured, and limitations/failures remain in the evidence.
-
-## MOBILE-FIRST RISK
-The research handoff must remain usable on a phone without forcing remote identity, horizontal overflow or hidden evidence boundaries. The participant must be able to return from Embla to the recorder without losing the local session.
+`TEST REQUEST ≠ COMMITMENT`.
+`COMMITMENT ≠ PAYMENT`.
+`PAYMENT ≠ ALLOCATION`.
+`ALLOCATION ≠ DELIVERY`.
+`DELIVERY ≠ EVIDENCE`.
+`EVIDENCE ≠ VERIFIED OUTCOME`.
+`OUTCOME ≠ VERIFIED IMPACT`.
+`PROVIDER REPORT ≠ INDEPENDENT VERIFICATION`.
 
 ## HUMAN SUCCESS
-A first-time participant can bring a real decision, understand what Embla can and cannot support, use real product evidence, record whether the decision changed/clarified/confirmed/was not helped, and export an inspectable anonymous record without giving 4PLANET identity or sensitive personal data.
+A reviewer can see exactly which state an action occupies, why a TEST request cannot become physical proof, what unit the provider exposes, what remains unknown, and which additional evidence would be required before any stronger claim.
 
 ## ACCEPTANCE
-1. `king/test` remains the sole HEIR and LIVE remains untouched.
-2. Exact parent is `80446464d94b6fed4541072296d756f978f99fd5`; stale/non-fast-forward mutation fails closed.
-3. `/labs/food-user-test` deep-links to `/4sapien/food/choose?research=1`.
-4. Embla research mode returns to the existing local evidence recorder.
-5. Recorder captures `decisionQuestion`, `decisionEffect` and `unknownRefusalComprehension` plus existing usefulness/trust/repeat/payment-intent metrics.
-6. Recorder remains local-only and does not introduce remote personal storage.
-7. JSON/CSV evidence preserves the proof boundary that synthetic/fixture sessions are technical only.
-8. Existing wallet/planet/best-overall refusal semantics remain intact.
-9. Existing route/alias preservation remains intact.
-10. Typecheck/build/contracts/GOLD/Human Craft/Four-State/Browser/ATLAS/ONE INTERFACE gates pass on the exact resulting HEIR SHA.
-11. No Human Utility, repeat-use, willingness-to-pay, revenue, adoption or LIVE claim is made without real participant evidence and the appropriate later gates.
+1. `king/test` remains sole HEIR; LIVE remains untouched.
+2. Exact parent is `18586b69e35cbdefef7722a08e46617e8c8182a7`; mutation fast-forwards only.
+3. Canonical lifecycle contains DISCOVERED → DILIGENCED → SELECTED → COMMITTED → PAID → ALLOCATED → IN_DELIVERY → DELIVERED → EVIDENCED → VERIFIED → OUTCOME_OBSERVED → IMPACT_CLAIM_ELIGIBLE plus INVALIDATED_REMEDIED.
+4. Normal forward transitions advance one state at a time.
+5. TEST records cannot advance beyond SELECTED and remain Proof Passport D0.
+6. Ecologi test request forces `test:true`, requires an idempotency key, performs no network execution and contains no bearer token.
+7. Ecologi provider pattern identifies the public unit as m² habitat restoration funded and keeps exact geography, double-count control, delivery, outcomes and independent verification bounded/explicit.
+8. Existing ORCA Action Contract and Proof Passport remain reused; no second IMPACT architecture is introduced.
+9. Contract/smoke tests include the new Action lifecycle invariants.
+10. Typecheck/build/contracts/GOLD/Four-State/ONE INTERFACE gates pass on the exact resulting HEIR SHA.
+11. No spend, order, external send, partnership, delivery, outcome, verified-impact or LIVE claim is made.
