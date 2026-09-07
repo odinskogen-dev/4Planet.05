@@ -135,8 +135,8 @@ const published: FilmRecord[] = [
     watchUrl: "https://www.youtube.com/watch?v=QiFjJCUd9ro", trailerId: "QiFjJCUd9ro", sourceUrl: "https://www.youtube.com/watch?v=QiFjJCUd9ro", sourceLabel: "NATIONAL GEOGRAPHIC / OFFICIAL", selectionNote: "A species-level crisis connected to fishing, organised crime and conservation action.", availabilityNote: "Official route verified. Full viewing availability varies by market."
   }),
   publishedFilm({
-    slug: "artifishal", title: "Artifishal", year: 2019, focus: "RIVERS / SALMON / AQUACULTURE", topics: ["OCEAN", "FOOD", "SOLUTIONS"], accent: "pink", director: "Liars & Thieves!", runtime: "79 MIN", access: "FULL_FREE", platform: "PATAGONIA FILMS",
-    description: "A film about wild salmon, hatcheries and fish farms — and the human decisions shaping rivers, fisheries and the future of wild fish.", credit: "A Patagonia film. Direction credited by Patagonia to Liars & Thieves!.",
+    slug: "artifishal", title: "Artifishal", year: 2019, focus: "RIVERS / SALMON / AQUACULTURE", topics: ["OCEAN", "FOOD", "SOLUTIONS"], accent: "pink", director: "Josh “Bones” Murphy", runtime: "79 MIN", access: "FULL_FREE", platform: "PATAGONIA FILMS",
+    description: "A film about wild salmon, hatcheries and fish farms — and the human decisions shaping rivers, fisheries and the future of wild fish.", credit: "Directed and produced by Josh “Bones” Murphy; a film by Liars & Thieves!; executive produced by Yvon Chouinard.",
     watchUrl: "https://www.youtube.com/watch?v=XdNJ0JAwT7I", trailerId: "XdNJ0JAwT7I", sourceUrl: "https://www.youtube.com/watch?v=XdNJ0JAwT7I", sourceLabel: "PATAGONIA / OFFICIAL FULL FILM", selectionNote: "Wild salmon, aquaculture, river systems and the difference between managing nature and keeping it alive.", availabilityNote: "Full film is available free through Patagonia’s official release."
   }),
   publishedFilm({
@@ -155,7 +155,7 @@ const published: FilmRecord[] = [
     watchUrl: "https://www.youtube.com/watch?v=75A9WGxoUn8", trailerId: "75A9WGxoUn8", sourceUrl: "https://www.youtube.com/watch?v=75A9WGxoUn8", sourceLabel: "PATAGONIA / OFFICIAL FULL FILM", selectionNote: "Energy transition through ownership, local incentives and renewable infrastructure rather than technology alone.", availabilityNote: "Full film is available free on Patagonia’s official YouTube channel."
   }),
   publishedFilm({
-    slug: "blue-heart", title: "Blue Heart", year: 2018, focus: "RIVERS / HYDROPOWER / EUROPE", topics: ["LAND_WILDLIFE", "ENERGY", "SOLUTIONS", "PEOPLE"], accent: "blue", director: "Britton Caillouette", runtime: "43 MIN", access: "FULL_FREE", platform: "PATAGONIA / YOUTUBE",
+    slug: "blue-heart", title: "Blue Heart", year: 2019, focus: "RIVERS / HYDROPOWER / EUROPE", topics: ["LAND_WILDLIFE", "ENERGY", "SOLUTIONS", "PEOPLE"], accent: "blue", director: "Britton Caillouette", runtime: "43 MIN", access: "FULL_FREE", platform: "PATAGONIA / YOUTUBE",
     description: "A journey through some of Europe’s last wild rivers as communities and conservationists confront a wave of planned hydropower development.", credit: "Directed by Britton Caillouette.",
     watchUrl: "https://www.youtube.com/watch?v=OhmHByZ0Xd8", trailerId: "OhmHByZ0Xd8", sourceUrl: "https://www.youtube.com/watch?v=OhmHByZ0Xd8", sourceLabel: "PATAGONIA / OFFICIAL FULL FILM", selectionNote: "A useful tension inside the energy transition: renewable power can still carry ecological costs.", availabilityNote: "Full film is available free on Patagonia’s official YouTube channel."
   }),
@@ -210,7 +210,7 @@ const published: FilmRecord[] = [
     watchUrl: "https://www.youtube.com/watch?v=dUfcDGZIruI", trailerId: "dUfcDGZIruI", sourceUrl: "https://www.youtube.com/watch?v=dUfcDGZIruI", sourceLabel: "PATAGONIA / OFFICIAL FULL FILM", selectionNote: "A seven-minute restoration story where place, marine habitat and local stewardship meet.", availabilityNote: "Full film is linked from Patagonia’s official film page."
   }),
   publishedFilm({
-    slug: "corazon-salado", title: "Corazón Salado", year: 2023, focus: "OCEAN / INDIGENOUS STEWARDSHIP / PATAGONIA", topics: ["OCEAN", "PEOPLE", "SOLUTIONS"], accent: "pink", director: "Dani Casado", runtime: "28 MIN", access: "FULL_FREE", platform: "PATAGONIA FILMS",
+    slug: "corazon-salado", title: "Corazón Salado", year: 2023, focus: "OCEAN / INDIGENOUS STEWARDSHIP / PATAGONIA", topics: ["OCEAN", "PEOPLE", "SOLUTIONS"], accent: "pink", director: "Dani Casado", runtime: "27 MIN", access: "FULL_FREE", platform: "PATAGONIA FILMS",
     description: "Ramón Navarro joins members of the Kawésqar community working to protect ancestral waters in Chilean Patagonia from industrial pressure.", credit: "Directed by Dani Casado.",
     watchUrl: "https://www.youtube.com/watch?v=R48JeOPv1R4", trailerId: "R48JeOPv1R4", sourceUrl: "https://www.youtube.com/watch?v=R48JeOPv1R4", sourceLabel: "PATAGONIA / OFFICIAL FULL FILM", selectionNote: "Ocean conservation seen through Indigenous stewardship, place and industrial pressure.", availabilityNote: "Official Patagonia film route; current availability is linked."
   }),
