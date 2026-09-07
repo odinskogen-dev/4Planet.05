@@ -1,0 +1,44 @@
+name: 4PLANET Films LIVE Closure 07 Run
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/films-live-closure07-run.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/magazine-public-launch-gold-01
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Apply bounded LIVE source patch
+        run: python3 .github/closure07/apply.py
+      - name: Validate source before LIVE deployment workflow
+        run: |
+          npm ci
+          npm run typecheck
+          npm run test:magazine
+          VITE_MAGAZINE_SITE_ORIGIN=https://4planetmagazine.com npm run build
+      - name: Commit to authoritative LIVE source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f .github/workflows/films-live-closure07-run.yml .github/workflows/films-live-closure07-apply.yml .github/closure07/apply.py
+          git config user.name '4PLANET LIVE Closure 07'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git status --short
+          git commit -m 'FILMS LIVE 07: cinematic maze + search discovery hardening'
+          git push origin HEAD:work/magazine-public-launch-gold-01
