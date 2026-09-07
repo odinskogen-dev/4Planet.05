@@ -10,11 +10,10 @@ on:
 permissions:
   contents: read
 
-timeout-minutes: 25
-
 jobs:
   lighthouse-live:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -85,7 +84,6 @@ jobs:
           fs.writeFileSync(path.join(dir,'summary.json'),JSON.stringify(rows,null,2));
           const filmsMobile=rows.find(r=>r.file==='films-index-mobile.json');
           if (!filmsMobile) throw new Error('Missing Films mobile Lighthouse result');
-          // Fail only on material regressions; avoid gaming scores.
           if (filmsMobile.performance < 60) throw new Error(`Material Films mobile performance failure: ${filmsMobile.performance}`);
           if (filmsMobile.lcp != null && filmsMobile.lcp > 5000) throw new Error(`Material Films mobile LCP failure: ${filmsMobile.lcp}ms`);
           if (filmsMobile.cls != null && filmsMobile.cls > 0.25) throw new Error(`Material Films mobile CLS failure: ${filmsMobile.cls}`);
