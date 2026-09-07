@@ -2,66 +2,76 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** REFERENCE-CELL-PLANET-TRANSFER-01
-**STATUS:** HEIR / PROVISIONAL SUPER CELL + TRANSFER CELL / FOUNDER_REVIEW / HUMAN GOLD UNPROVEN / NO LIVE RELEASE
-**BASE AUTHORITY:** `king/test` / exact parent `ee08e19433f5f421b9fed3751c258b8ee5a9196e`
-**ROLLBACK BASE:** `ee08e19433f5f421b9fed3751c258b8ee5a9196e`
-**LOOP ROLE:** REAL PLACE → STATE → PRESSURE / DEPENDENCY → INTERVENTION → SOURCE → TRANSFER → LEARNING.
+**CHANGE ID:** REFERENCE-CELL-ORCA-PARTNER-01
+**STATUS:** HEIR / PARTNER CELL FRESH HUMAN CANDIDATE / FUNDING UNIT CLOSED / FOUNDER_REVIEW / HUMAN GOLD UNPROVEN / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `7c6947e263cf20de1220dd0ac6fbfcefcf989536`
+**ROLLBACK BASE:** `7c6947e263cf20de1220dd0ac6fbfcefcf989536`
+**LOOP ROLE:** REAL PARTNER → REAL MONITORING → HUMAN UNDERSTANDING → DECISION → ACTION SEAM → PROOF.
 
 ## USER ARRIVES BECAUSE
-A normal person needs one bounded place where the ecological problem, the mechanism, the evidence, the responsible actors and a measurable change can be understood without first understanding all of 4PLANET.
+A non-expert funder, route stakeholder or ORCA/4PLANET partner reviewer needs to understand what the Bay of Biscay monitoring programme actually does, what it measures, what support could enable and what cannot yet be claimed.
 
 ## ONE THING TO UNDERSTAND
-Bunnefjorden is the provisional Super Cell winner: a threshold basin where oxygen debt and deep-water renewal make ecological state legible, and where NIVA reports a real wastewater-infrastructure intervention from 45 m to 137 m associated with an 82% reduction in anoxic bottom-water area immediately before deep-water renewal.
+ORCA surveyors use a real ferry corridor to collect measurable survey effort and marine-mammal observations. 4PLANET can make that programme decision-ready without turning sightings into population claims or turning future funding into ecological impact claims.
 
 ## PRIMARY ACTION
-Read Bunnefjorden through the existing eight-question Planet Proof sequence at `/living-systems/oslofjord`, then compare the same product grammar transferred to Great Barrier Reef at `/living-systems/great-barrier-reef`.
+Use `/impact/actions/bay-of-biscay-survey` as the fresh current-HEIR ORCA Partner Cell: understand route, actor, effort-versus-observation semantics, current public evidence, partner-confirmed 2026 programme range, funding blockers and the proof ladder.
 
 ## SECONDARY DEPTH
-Inspect source ownership, methodology, operational map layers, claim boundaries and the explicit GBR REUSED / ADAPTED / NEW transfer audit. The page must expose what remains OPEN rather than manufacturing completeness.
+Inspect ORCA public sources, attributable partner correspondence, delivery-proof fields and the exact truth required before a funding unit can open. Species intelligence remains a downstream link; legacy LUME/XR is not the primary product path.
 
 ## P1 DOMINANT
-The bounded micro-living-system and its causal intelligibility dominate. Bunnefjorden is not presented as all Oslofjord, and the 82% oxygen-state delta is not converted into biodiversity recovery or whole-ecosystem impact.
+Human decision utility dominates. The interface must answer: is this a credible bounded monitoring programme worth supporting once current terms are confirmed?
 
 ## P2 ORIENTATION
-The stable route identity remains Oslofjord for continuity, while the product object inside that route is now Bunnefjorden. Geography, map bounds, source ledger and reading copy all make that bounded scope explicit.
+The route is Portsmouth → English Channel → Bay of Biscay → Santander. It is explicitly a survey corridor, not an orca migration route, habitat boundary or inferred animal movement path.
 
 ## P3 ACTION / NEXT
-The Great Barrier Reef direct route reuses the same PlanetProof schema, PlanetProofPage, EvidenceMap, ReadingSection, SourceLedger and eight-question reading grammar. Reef-specific sources and claims remain adapted or new; actor/intervention fit remains OPEN rather than invented.
+The funding/action seam remains CLOSED until ORCA confirms current actual sponsorship terms, exact funded unit/quantity, delivery period/geography, proof fields, double-count treatment and permitted public claims.
 
 ## P4 DEPTH
-AIMS 2025–26 field monitoring and NOAA Coral Reef Watch are separate evidence modes. A regional coral-cover number is not local reef truth, and heat stress is a pressure signal rather than proof of bleaching or ecological outcome at every reef.
+Survey effort is route geometry + observation hours + distance + date/method context. Biological observations are separate records. Observation ≠ population, habitat or migration route. Payment ≠ delivery. Delivery ≠ outcome. Outcome ≠ verified impact.
 
 ## WHAT CAN BE REMOVED
-No new Planet app, second Living Systems architecture, duplicated map framework, generic ecosystem database, new router family, speculative reef relationship graph or decorative network diagram is required for this slice.
+Legacy XR/LUME as the main ORCA entry point, donor branch wholesale merges, generic fundraising copy, unverified price examples, migration-route illustrations, automatic impact claims and any new second Action architecture are unnecessary for this slice.
 
 ## WHAT MUST BE REUSED
-Existing `PlanetProof` schema, `PlanetProofPage`, `EvidenceMap`, `ReadingSection`, `SourceLedger`, current Living Systems navigation, source/claim grammar, exact HEIR, existing Gold/contract/browser gates and the same eight human questions.
+Existing `/impact/actions/bay-of-biscay-survey` route, `BAY_OF_BISCAY_SURVEY_ACTION`, IMPACT truth semantics, Proof Passport, current ORCA species route, PublicShell/tokens, exact HEIR, Gold gates and current public ORCA evidence where source-fit exists.
 
 ## TRUTH BOUNDARY
-`PRODUCT BOUNDS ≠ ECOLOGICAL BORDER`.
-`OXYGEN-STATE IMPROVEMENT ≠ RESTORED BIODIVERSITY`.
-`INTERVENTION + OBSERVED CHANGE ≠ UNIVERSAL CAUSALITY`.
-`REGIONAL CORAL COVER ≠ EVERY REEF`.
-`HEAT STRESS ≠ BLEACHING AT EVERY REEF`.
-`TECHNICAL TRANSFER ≠ HUMAN GOLD`.
-`STRUCTURAL REUSE RATIO ≠ VERIFIED TIME OR FOUNDER-MINUTE SAVING`.
+`SURVEY CORRIDOR ≠ MIGRATION ROUTE`.
+`OBSERVATION ≠ POPULATION`.
+`OBSERVATION ≠ HABITAT`.
+`SURVEY EFFORT ≠ ECOLOGICAL OUTCOME`.
+`PARTNER-CORRESPONDENCE RANGE ≠ PUBLIC DATASET`.
+`PLACEHOLDER PRICE ≠ CURRENT FUNDING TERMS`.
+`PAYMENT ≠ DELIVERY`.
+`DELIVERY ≠ OUTCOME`.
+`OUTCOME ≠ VERIFIED IMPACT`.
 
 ## MOBILE-FIRST RISK
-The reading sequence, source ledger and map controls must remain legible on narrow screens. The bounded-place message must appear before dense evidence, and transfer/audit labels may wrap but must not hide source or claim boundaries.
+The proof ladder is dense and the state separation must survive narrow screens. Route, funding-closed state and the effort/observation distinction must remain visible before deeper source material. No legacy XR interaction may be required to understand the Partner Cell.
 
 ## HUMAN SUCCESS
-Within five seconds a person recognises Bunnefjorden as a bounded real place with an oxygen problem. Within 30 seconds they understand why the basin renews poorly and that one real infrastructure change produced a measured oxygen-state delta. Within three minutes they can inspect sources, actors/action directions and the same 4PLANET reading grammar on a very different reef system.
+Within five seconds a person understands that a real ferry route is being used to monitor whales and dolphins. Within 30 seconds they understand the difference between survey effort and sightings and that funding terms are not yet open. Within three minutes they can inspect current sources, ORCA value, blockers and exactly what would constitute truthful delivery proof.
+
+## DONOR DECISION
+- `agent/orca-bay-biscay-gold-20` is **DONOR / RESEARCH ONLY** against current HEIR: compare is heavily diverged (383 commits ahead / 831 behind at audit) and cannot be merged wholesale.
+- `agent/orca-lume-19` is **DONOR / ARCHIVE-LEANING** for ORCA Partner Cell work: compare is heavily diverged (377 commits ahead / 831 behind) and LUME/XR must not dominate before normal human value works.
+- Existing static `/journey/orca`, `/ecosystem/bay-of-biscay` and XR assets remain preservation/research sources only for this slice; no wholesale revival.
+- Current React Partner Cell is built from scratch around Human Gold + current truth and selectively reuses only proven semantics/source links.
 
 ## ACCEPTANCE
 1. `king/test` remains sole HEIR; LIVE remains untouched.
-2. `/living-systems/oslofjord` keeps route continuity but renders Bunnefjorden as the bounded provisional Super Cell.
-3. NIVA sources are attributable; 45 m → 137 m and 82% are bound to the NIVA assessment and not promoted into biodiversity/whole-ecosystem impact.
-4. `/living-systems/great-barrier-reef` renders the same `PlanetProofPage`, not a new product architecture.
-5. Bunnefjorden and GBR expose the same ordered eight question IDs.
-6. GBR uses AIMS + NOAA source bindings rather than copied Oslofjord/NIVA truth.
-7. Transfer audit explicitly separates REUSED, ADAPTED and NEW.
-8. `structuralReuseRatio` is a transparent component-classification metric only; Founder minutes and elapsed build minutes remain UNKNOWN/null until instrumented.
-9. Contract/smoke tests enforce Bunnefjorden truth boundaries and GBR transfer structure.
-10. Gold policy, Four-State, typecheck, production build, contract/smoke, browser/mobile and ONE INTERFACE gates must pass on the exact resulting SHA before the slice is accepted.
-11. No LIVE promotion, external release, partnership claim, payment, order or unsupported ecological impact claim occurs.
+2. Current ORCA Partner Cell uses the existing React action route, not a new product family or legacy LUME/XR front door.
+3. Human Gold fields explicitly define primary user, trigger, job, barrier, decision and desired outcome.
+4. 5s/30s/3m value is explicit and testable.
+5. Route boundary states survey corridor ≠ migration route/habitat/animal movement.
+6. Effort and biological observations are separately modelled; all required truth rules are present.
+7. 10–12 surveys / 40–48 survey days remain attributed to Steve Jones partner correspondence, not silently promoted to a public source.
+8. Current public ORCA evidence includes the 22 June 2026 Portsmouth–Santander survey and 2025 programme effort context with aggregation limitations.
+9. Funding seam stays closed; earlier placeholder prices are not displayed as current terms.
+10. Fresh page links to current species/IMPACT/Actor surfaces and does not require `/species/orca/lume` or `/journey/orca`.
+11. Contract/smoke tests enforce Partner Cell truth and donor separation.
+12. Gold policy, Four-State, typecheck, build, contract/smoke, browser/mobile and ONE INTERFACE gates must pass on exact resulting SHA before accepted.
+13. No external send, payment, order, partnership claim, live release or unsupported ecological claim occurs.
