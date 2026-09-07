@@ -1,0 +1,48 @@
+name: 4PLANET Films LIVE Closure 07 Measured Performance Repair
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/films-live-closure07-performance-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/magazine-public-launch-gold-01
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Apply measured performance repair
+        run: python3 .github/closure07-performance/apply.py
+      - name: Validate before direct LIVE gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          npm run test:magazine
+          VITE_MAGAZINE_SITE_ORIGIN=https://4planetmagazine.com npm run build
+          grep -q 'data-4planet-static-prerender="films-index"' dist/films/index.html
+          grep -q '<noscript><main class="mag-static-prerender"' dist/films/index.html
+          grep -q 'data-4planet-static-prerender="magazine-index"' dist/magazine/index.html
+      - name: Commit product source only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET LIVE Closure 07'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html scripts/prerender-magazine-seo.mjs src/content/imageRegistry.ts src/pages/v5/Magazine.tsx src/pages/v5/MagazineFilms.tsx src/styles/magazine-home-closure.css
+          git diff --cached --quiet && { echo 'No repair diff'; exit 2; }
+          git commit -m 'FILMS LIVE 07: measured mobile performance repair'
+          git push origin HEAD:work/magazine-public-launch-gold-01
