@@ -1,0 +1,76 @@
+name: 4PLANET Films Closure 06 Founder Visible Preview
+
+on:
+  push:
+    branches:
+      - work/magazine-films-premium-closure-05
+    paths:
+      - '.github/workflows/closure06-founder-visible-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  founder-visible-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Typecheck before inspection deploy
+        run: npm run typecheck
+      - name: Build exact candidate
+        run: npm run build
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 5; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 6; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+      - name: Deploy founder-visible isolated Pages preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_log="$RUNNER_TEMP/founder-visible-preview.log"
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=magazine-films-premium-closure-05 \
+            --commit-hash="$GITHUB_SHA" 2>&1 | tee "$deploy_log"
+          immutable=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
+          [ -n "$immutable" ] || { echo 'Could not resolve immutable preview URL'; exit 7; }
+          echo "FOUNDER_VISIBLE_PREVIEW=$immutable" >> "$GITHUB_ENV"
+          echo "FOUNDER VISIBLE PREVIEW: $immutable"
+      - name: Smoke verify visible preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in /films /films/yanuni /films/artifishal /magazine; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$FOUNDER_VISIBLE_PREVIEW$route" || true)
+            [ "$code" = '200' ] || { echo "FAIL $code $route"; exit 9; }
+            echo "PASS $FOUNDER_VISIBLE_PREVIEW$route"
+          done
+          echo 'INSPECTION PREVIEW ONLY — no Worker, no custom domain, no LIVE mutation.'
