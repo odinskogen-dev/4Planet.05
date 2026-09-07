@@ -26,7 +26,8 @@ test("recovered About donor is routed as separate Story System and Founder pages
   assert.match(router, /path="\/about\/system" element={<AboutSystem \/>}/);
   assert.match(router, /path="\/about\/founder" element={<Founder \/>}/);
   assert.match(about, /Everything I love is alive\./);
-  assert.match(about, /founder-portrait\.svg/);
+  assert.match(about, /founder-hero\.svg/);
+  assert.doesNotMatch(about, /founder-portrait\.svg/);
 });
 
 test("public missions expose truthful deeper product handoffs", () => {
