@@ -42,14 +42,19 @@ async function expectMaze(page: import("@playwright/test").Page) {
   }
 }
 
-test.describe("4PLANET FILMS — premium product closure", () => {
-  test("index is a 40-film image-led maze with no internal pipeline noise", async ({ page }, testInfo) => {
+test.describe("4PLANET FILMS — premium release closure 05", () => {
+  test("index is a 40-film image-led editorial product with useful discovery lanes", async ({ page }, testInfo) => {
     await page.goto("/films");
     await expect(page.locator("#films-title")).toHaveText("Films worth your attention.");
     await expect(page.locator(".mag-world-masthead-word").nth(1)).toHaveText("FILMS");
     await expect(page.locator(".mag-world-primary-nav").getByRole("link", { name: "FILMS", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".mag-film-card")).toHaveCount(40);
     await expect(page.locator(".mag-film-filter a")).toHaveCount(8);
+    await expect(page.locator(".mag-film-lane")).toHaveCount(4);
+    await expect(page.getByRole("heading", { name: "Begin with these." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Watch now." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Thirty minutes or less." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recently added." })).toBeVisible();
     await expect(page.getByText(/qualified records/i)).toHaveCount(0);
     await expect(page.getByText(/editorial pipeline/i)).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
@@ -61,12 +66,33 @@ test.describe("4PLANET FILMS — premium product closure", () => {
     await expect(page).toHaveURL(/\/films\?topic=FOOD$/);
     await expect(page.locator(".mag-film-card").first()).toBeVisible();
     expect(await page.locator(".mag-film-card").count()).toBeGreaterThan(0);
+    await expect(page.locator(".mag-film-lane")).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
 
-    if (testInfo.project.name === "mag-mobile-390" || testInfo.project.name === "mag-desktop-1440") {
+    if (["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name)) {
       await page.goto("/films");
-      await page.screenshot({ path: testInfo.outputPath("films-index-premium.png"), fullPage: true });
+      await page.screenshot({ path: testInfo.outputPath("films-index-closure-05.png"), fullPage: true });
     }
+  });
+
+  test("search, filters and local saved list work without an account", async ({ page }) => {
+    await page.goto("/films");
+    const search = page.getByRole("searchbox", { name: "FIND A FILM" });
+    await search.fill("octopus");
+    await page.getByRole("button", { name: "SEARCH" }).click();
+    await expect(page).toHaveURL(/q=octopus/);
+    await expect(page.locator(".mag-film-card")).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: "My Octopus Teacher" })).toBeVisible();
+
+    await page.goto("/films");
+    const firstSave = page.locator(".mag-film-card-save").first();
+    await firstSave.click();
+    await expect(firstSave).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: /SAVED 1/ }).click();
+    await expect(page).toHaveURL(/saved=1/);
+    await expect(page.locator(".mag-film-card")).toHaveCount(1);
+    await page.reload();
+    await expect(page.locator(".mag-film-card")).toHaveCount(1);
   });
 
   test("desktop hover keeps each film accent instead of snapping back to brand blue", async ({ page }) => {
@@ -84,13 +110,18 @@ test.describe("4PLANET FILMS — premium product closure", () => {
     expect(second).not.toBe("rgb(49, 93, 255)");
   });
 
-  test("detail pages make description, watch, source and next discovery unambiguous", async ({ page }, testInfo) => {
+  test("detail page makes art, watch, trailer, context, source and next discovery obvious", async ({ page }, testInfo) => {
     await page.goto("/films/yanuni");
     await expect(page.getByRole("heading", { name: "YANUNI", exact: true })).toBeVisible();
-    await expect(page.getByText("AVAILABILITY", { exact: true })).toBeVisible();
+    await expect(page.locator(".mag-film-key-art img")).toBeVisible();
     await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", "https://www.youtube.com/watch?v=RhDdAONYZeQ");
     await expect(page.locator(".mag-film-source")).toHaveAttribute("href", /^https:\/\//);
-    await expect(page.locator(".mag-film-related-card")).toHaveCount(3);
+    await expect(page.locator(".mag-film-related-card")).toHaveCount(4);
+    await expect(page.getByRole("button", { name: "SAVE FILM +" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "SHARE" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Watch the trailer." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Continue into place, species and living systems." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "OPEN 4PLANET ATLAS" })).toHaveAttribute("href", "/magazine/atlas");
     await expect(page.getByRole("link", { name: "EXPLORE THE FULL SELECTION" })).toBeVisible();
     await expect(page.locator("iframe")).toHaveAttribute("title", /YANUNI official film or trailer/);
     await expect(page.locator(".mag-film-dek")).not.toBeEmpty();
@@ -99,11 +130,37 @@ test.describe("4PLANET FILMS — premium product closure", () => {
     await page.goto("/films/reinventing-power");
     await expect(page.getByRole("heading", { name: "Reinventing Power: America’s Renewable Energy Boom", exact: true })).toBeVisible();
     await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", "https://vimeo.com/268692241");
-    await expect(page.locator(".mag-film-related-card")).toHaveCount(3);
+    await expect(page.locator(".mag-film-related-card")).toHaveCount(4);
     await expectNoHorizontalOverflow(page);
 
-    if (testInfo.project.name === "mag-mobile-390" || testInfo.project.name === "mag-desktop-1440") {
-      await page.screenshot({ path: testInfo.outputPath("films-detail-premium.png"), fullPage: true });
+    if (["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name)) {
+      await page.screenshot({ path: testInfo.outputPath("films-detail-closure-05.png"), fullPage: true });
+    }
+  });
+
+  test("all 40 film detail routes have film art, watch/source pathways and no internal overflow", async ({ page }, testInfo) => {
+    test.skip(!["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name), "all-40 route proof runs on one mobile and one desktop authority viewport");
+    await page.goto("/films");
+    const hrefs = await page.locator(".mag-film-card h2 a").evaluateAll((nodes) => [...new Set(nodes.map((node) => (node as HTMLAnchorElement).getAttribute("href")).filter(Boolean))] as string[]);
+    expect(hrefs).toHaveLength(40);
+
+    await page.route("https://www.youtube-nocookie.com/**", (route) => route.abort());
+    for (const href of hrefs) {
+      await page.goto(href);
+      await expect(page.locator(".mag-film-detail")).toHaveAttribute("data-film-slug", href.split("/").pop() || "");
+      const art = page.locator(".mag-film-key-art img");
+      await expect(art, `${href} must show official film art`).toHaveCount(1);
+      await expect.poll(async () => art.evaluate((node) => {
+        const img = node as HTMLImageElement;
+        return img.complete && img.naturalWidth > 0;
+      }), { timeout: 15_000 }).toBe(true);
+      const artSrc = await art.getAttribute("src");
+      expect(artSrc || "").not.toMatch(/\/assets\/(brand|domains|missions)\//);
+      await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", /^https:\/\//);
+      await expect(page.locator(".mag-film-source")).toHaveAttribute("href", /^https:\/\//);
+      await expect(page.locator(".mag-film-context")).toBeVisible();
+      await expect(page.locator(".mag-film-related-card").first()).toBeVisible();
+      await expectNoHorizontalOverflow(page);
     }
   });
 
@@ -128,9 +185,9 @@ test.describe("4PLANET FILMS — premium product closure", () => {
       if (first && second) expect(second.x).toBeLessThan(viewport.width);
     }
 
-    if (testInfo.project.name === "mag-mobile-390" || testInfo.project.name === "mag-desktop-1440") {
+    if (["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name)) {
       await rail.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: testInfo.outputPath("magazine-films-rail-premium.png"), fullPage: false });
+      await page.screenshot({ path: testInfo.outputPath("magazine-films-rail-closure-05.png"), fullPage: false });
     }
   });
 
