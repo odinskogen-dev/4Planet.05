@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const localAtlasPrecheck = process.env.ATLAS_LOCAL_PRECHECK === "1";
+
 /**
  * Gate 1 acceptance config. retries=0 so a flake is a failure, never masked.
- * trace + video + screenshot are always ON for the vertical-slice run so the
- * delivery package carries machine-readable evidence. Four viewport projects
- * cover the required matrix: 1440x900, 1280x800, 390x844, 430x932.
+ * Exact deployed acceptance keeps trace + video + screenshot always ON. The
+ * bounded local ATLAS precheck retains those diagnostics only for failures so
+ * its failure package stays machine-consumable without weakening release proof.
+ * Four viewport projects cover the required matrix: 1440x900, 1280x800,
+ * 390x844, 430x932.
  */
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -16,15 +20,15 @@ export default defineConfig({
   retries: 0,
   reporter: [
     ["list"],
-    ["json", { outputFile: "artifacts/results.json" }],
-    ["html", { outputFolder: "playwright-report", open: "never" }],
+    ["json", { outputFile: "artifacts/atlas-gold/results.json" }],
+    ["html", { outputFolder: "artifacts/atlas-gold/playwright-report", open: "never" }],
   ],
-  outputDir: "test-results",
+  outputDir: "artifacts/atlas-gold/test-results",
   use: {
     baseURL: process.env.BASE_URL || "http://localhost:4173",
-    trace: "on",
-    video: "on",
-    screenshot: "on",
+    trace: localAtlasPrecheck ? "retain-on-failure" : "on",
+    video: localAtlasPrecheck ? "retain-on-failure" : "on",
+    screenshot: localAtlasPrecheck ? "only-on-failure" : "on",
     launchOptions: {
       // Use an explicit Chromium only when CI intentionally supplies one.
       // Otherwise use the exact browser revision installed by this repo's
