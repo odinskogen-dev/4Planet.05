@@ -1,0 +1,54 @@
+name: 4PLANET Films LIVE Closure 07 Source Run
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/films-live-closure07-source-run.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/magazine-public-launch-gold-01
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Apply source-only portion of validated Closure 07 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('.github/closure07/apply.py').read_text()
+          marker = '# 5) LIVE release gate:'
+          if marker not in source:
+              raise SystemExit('Closure 07 source marker missing')
+          Path('/tmp/closure07-source.py').write_text(source.split(marker,1)[0])
+          PY
+          python3 /tmp/closure07-source.py
+      - name: Validate source before direct LIVE deployment workflow
+        run: |
+          npm ci
+          npm run typecheck
+          npm run test:magazine
+          VITE_MAGAZINE_SITE_ORIGIN=https://4planetmagazine.com npm run build
+      - name: Commit only product/search source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET LIVE Closure 07'
+          git config user.email 'actions@users.noreply.github.com'
+          git add src/pages/v5/MagazineFilms.tsx src/styles/magazine-films-live-07.css scripts/prerender-magazine-seo.mjs scripts/generate-sitemap.mjs tests/e2e/magazine-films-gold.spec.ts public/4planet-indexnow-2026-9f7b3c1d5e8a.txt
+          git diff --cached --check
+          git commit -m 'FILMS LIVE 07: cinematic maze + crawlable search discovery'
+          git push origin HEAD:work/magazine-public-launch-gold-01
