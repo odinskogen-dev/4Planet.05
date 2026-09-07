@@ -1,0 +1,36 @@
+name: ATLAS iNaturalist release diagnostic
+
+on:
+  push:
+    branches:
+      - fix/release-atlas-inaturalist-20260909
+    paths:
+      - '.github/workflows/atlas-inaturalist-release-diagnostic.yml'
+      - 'functions/api/inaturalist.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe exact frozen Pages endpoint and upstream iNaturalist API
+        shell: bash
+        run: |
+          set -u
+          echo '=== 4PLANET frozen Pages Function ==='
+          curl -sS -D /tmp/h1 -o /tmp/b1 -w '\nHTTP=%{http_code}\n' 'https://ceae8a48.4planet-05.pages.dev/api/inaturalist?q=Orcinus%20orca&perPage=5&quality=research' || true
+          cat /tmp/h1 || true
+          cat /tmp/b1 || true
+          echo
+          echo '=== iNaturalist taxa autocomplete ==='
+          curl -sS -D /tmp/h2 -o /tmp/b2 -w '\nHTTP=%{http_code}\n' -H 'Accept: application/json' -A '4PLANET-ATLAS/1.0 (+https://4planet.org)' 'https://api.inaturalist.org/v1/taxa/autocomplete?q=Orcinus%20orca&per_page=20' || true
+          cat /tmp/h2 || true
+          head -c 2000 /tmp/b2 || true
+          echo
+          echo '=== iNaturalist observations by known Orca taxon id ==='
+          curl -sS -D /tmp/h3 -o /tmp/b3 -w '\nHTTP=%{http_code}\n' -H 'Accept: application/json' -A '4PLANET-ATLAS/1.0 (+https://4planet.org)' 'https://api.inaturalist.org/v1/observations?taxon_id=41521&geo=true&quality_grade=research&per_page=1&order_by=observed_on&order=desc' || true
+          cat /tmp/h3 || true
+          head -c 2000 /tmp/b3 || true
