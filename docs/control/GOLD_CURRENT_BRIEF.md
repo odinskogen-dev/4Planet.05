@@ -1,67 +1,67 @@
 # CURRENT GOLD BRIEF
 
-This file is the machine-readable human contract for the **current bounded ATLAS SANDBOX change**. Historical briefs belong in PR/evidence history; this file reflects the current mutation only.
+This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** ATLAS-ZERO-LOSS-THEME-OVERLAY-IMMUNITY-2026-09-05
-**STATUS:** SANDBOX / ROOT-CAUSE REPAIR + CURRENT-HEIR FORWARD-SYNC / EXACT-HEAD PROOF REQUIRED / FOUNDER RELEASE NOT IMPLIED
-**PRODUCT:** ATLAS
-**LEGAL WRITE TARGET:** `work/atlas-zero-loss-gold-convergence-01` — the one registered ATLAS sandbox
-**CURRENT HEIR ANCESTOR:** `king/test` @ `80446464d94b6fed4541072296d756f978f99fd5`
-**ROLLBACK IDENTITY:** pre-convergence-window sandbox `622af1de5291f5f59a02c4d3b85a77c4a6151714`
-**LIVE AUTHORITY:** false
-**TEST KING PROMOTION AUTHORISED:** false
+**CHANGE ID:** REFERENCE-CELL-PLANET-TRANSFER-01
+**STATUS:** HEIR / PROVISIONAL SUPER CELL + TRANSFER CELL / FOUNDER_REVIEW / HUMAN GOLD UNPROVEN / NO LIVE RELEASE
+**BASE AUTHORITY:** `king/test` / exact parent `ee08e19433f5f421b9fed3751c258b8ee5a9196e`
+**ROLLBACK BASE:** `ee08e19433f5f421b9fed3751c258b8ee5a9196e`
+**LOOP ROLE:** REAL PLACE → STATE → PRESSURE / DEPENDENCY → INTERVENTION → SOURCE → TRANSFER → LEARNING.
 
 ## USER ARRIVES BECAUSE
-They need one coherent ATLAS whose active source layers and map meaning survive ordinary dark/light interaction, and whose global imagery never degrades into misleading stretched street-level pixels.
+A normal person needs one bounded place where the ecological problem, the mechanism, the evidence, the responsible actors and a measurable change can be understood without first understanding all of 4PLANET.
 
 ## ONE THING TO UNDERSTAND
-A basemap theme change replaces the MapLibre style. That replacement must preserve the same active ATLAS overlays and their truth boundaries. Blue Marble is planetary/regional context only; local and street detail belongs to the vector basemap.
+Bunnefjorden is the provisional Super Cell winner: a threshold basin where oxygen debt and deep-water renewal make ecological state legible, and where NIVA reports a real wastewater-infrastructure intervention from 45 m to 137 m associated with an 82% reduction in anoxic bottom-water area immediately before deep-water renewal.
 
 ## PRIMARY ACTION
-Open ATLAS with active data layers, switch DARK ↔ LIGHT, and continue exploring without losing the active layers or camera. Zoom from planetary context into local/street scale without Blue Marble stretching beyond its bounded range.
+Read Bunnefjorden through the existing eight-question Planet Proof sequence at `/living-systems/oslofjord`, then compare the same product grammar transferred to Great Barrier Reef at `/living-systems/great-barrier-reef`.
 
 ## SECONDARY DEPTH
-The repair preserves current source-backed ATLAS capability, search, TIME, My Atlas, Product Context, live evidence sidecars and adaptive cartography. It does not add a renderer, source, claim, route, product line or parallel state model.
+Inspect source ownership, methodology, operational map layers, claim boundaries and the explicit GBR REUSED / ADAPTED / NEW transfer audit. The page must expose what remains OPEN rather than manufacturing completeness.
 
 ## P1 DOMINANT
-The living planet itself: one legible responsive globe/map and the selected place/species/record. Basemap theme and evidence controls remain subordinate.
+The bounded micro-living-system and its causal intelligibility dominate. Bunnefjorden is not presented as all Oslofjord, and the 82% oxygen-state delta is not converted into biodiversity recovery or whole-ecosystem impact.
 
 ## P2 ORIENTATION
-Current camera, active layers, theme, source state and selected context remain stable and interpretable across the style transition.
+The stable route identity remains Oslofjord for continuity, while the product object inside that route is now Bunnefjorden. Geography, map bounds, source ledger and reading copy all make that bounded scope explicit.
 
 ## P3 ACTION / NEXT
-The user can switch theme, pan/zoom, inspect source-backed layers and continue the same exploration without reconstructing state.
+The Great Barrier Reef direct route reuses the same PlanetProof schema, PlanetProofPage, EvidenceMap, ReadingSection, SourceLedger and eight-question reading grammar. Reef-specific sources and claims remain adapted or new; actor/intervention fit remains OPEN rather than invented.
 
 ## P4 DEPTH
-Layer provenance, limitations, dates, failure states and advanced evidence stay inspectable without becoming the primary visual hierarchy.
+AIMS 2025–26 field monitoring and NOAA Coral Reef Watch are separate evidence modes. A regional coral-cover number is not local reef truth, and heat stress is a pressure signal rather than proof of bleaching or ecological outcome at every reef.
 
 ## WHAT CAN BE REMOVED
-Nothing from accepted ATLAS capability. The defect is removed by eliminating silent overlay loss during full style replacement and by enforcing the already-declared Blue Marble zoom boundary. Shared HEIR control changes are inherited through exact ancestry rather than copied as competing ATLAS product intent.
+No new Planet app, second Living Systems architecture, duplicated map framework, generic ecosystem database, new router family, speculative reef relationship graph or decorative network diagram is required for this slice.
 
 ## WHAT MUST BE REUSED
-The existing single MapLibre runtime; existing OpenFreeMap dark/light styles; current canonical layer registry; current Product Context; existing source/truth semantics; current adaptive zoom policy; current mobile controls; current search/TIME/My Atlas/evidence surfaces; current HEIR route/alias preservation behaviour.
-
-## MUST NOT LOSE
-Active layer identity and order; camera state; layer provenance; failure semantics; Blue Marble global/regional role; vector street detail; accepted ATLAS donor dispositions; current HEIR controls and ONE INTERFACE behaviour; canonical `/living-systems/oslofjorden → /living-systems/oslofjord` redirect inherited from HEIR.
-
-## CLEAN-ROOM / DONOR DECISION
-- **ADOPT:** no new donor slice; this is a bounded root-cause repair and lineage reconciliation to the existing registered ATLAS sandbox.
-- **REUSE:** existing overlay capture, OpenFreeMap style sync, canonical layer/source descriptors and adaptive Blue Marble policy.
-- **PRESERVE:** all current HEIR shared-control and route/alias corrections through ancestry; do not replace them with stale sandbox copies.
-- **REJECT:** second map, duplicate layer registry, theme-specific shadow state, mocked overlays, swallowing missing layers as acceptable behaviour.
-- **DEFER:** all feature expansion until exact-head Zero Loss + ONE INTERFACE + human-visible proof passes.
+Existing `PlanetProof` schema, `PlanetProofPage`, `EvidenceMap`, `ReadingSection`, `SourceLedger`, current Living Systems navigation, source/claim grammar, exact HEIR, existing Gold/contract/browser gates and the same eight human questions.
 
 ## TRUTH BOUNDARY
-Theme continuity is a UI/runtime integrity claim only. It does not prove ecological truth beyond each source contract. A missing source is never zero; a detection is not causal proof; an occurrence is not range/abundance/live tracking. Blue Marble is imagery context, not street-level evidence.
-
-## PERFORMANCE
-No new dependency, renderer or polling loop. Overlay rehydration is bounded to style replacement and only restores already-active canonical sources/layers that MapLibre failed to retain.
+`PRODUCT BOUNDS ≠ ECOLOGICAL BORDER`.
+`OXYGEN-STATE IMPROVEMENT ≠ RESTORED BIODIVERSITY`.
+`INTERVENTION + OBSERVED CHANGE ≠ UNIVERSAL CAUSALITY`.
+`REGIONAL CORAL COVER ≠ EVERY REEF`.
+`HEAT STRESS ≠ BLEACHING AT EVERY REEF`.
+`TECHNICAL TRANSFER ≠ HUMAN GOLD`.
+`STRUCTURAL REUSE RATIO ≠ VERIFIED TIME OR FOUNDER-MINUTE SAVING`.
 
 ## MOBILE-FIRST RISK
-Theme switching and overlay continuity must pass 390/430 mobile as well as desktop. The repair must not introduce control collisions, extra interaction planes or touch regressions.
+The reading sequence, source ledger and map controls must remain legible on narrow screens. The bounded-place message must appear before dense evidence, and transfer/audit labels may wrap but must not hide source or claim boundaries.
 
 ## HUMAN SUCCESS
-A normal user can switch DARK ↔ LIGHT and retain active fires/other selected layers and the same camera, then zoom to street scale and see sharp vector cartography rather than stretched planetary imagery.
+Within five seconds a person recognises Bunnefjorden as a bounded real place with an oxygen problem. Within 30 seconds they understand why the basin renews poorly and that one real infrastructure change produced a measured oxygen-state delta. Within three minutes they can inspect sources, actors/action directions and the same 4PLANET reading grammar on a very different reef system.
 
 ## ACCEPTANCE
-1. Same registered sandbox; no replacement branch. 2. Current HEIR `80446464d94b6fed4541072296d756f978f99fd5` is an exact ancestor of sandbox head at proof time, or a fresher live HEIR is forward-synced before acceptance. 3. FOUR STATE Product Authority gate passes. 4. GOLD quality contract passes. 5. Typecheck/build pass. 6. ATLAS Zero Loss suite passes with dark/light active-layer continuity on desktop/mobile. 7. Blue Marble reports a layer zoom ceiling ≤ 6.6 and is not used as street imagery. 8. ONE INTERFACE gate passes. 9. Exact rendered desktop + mobile evidence is reviewable. 10. No LIVE/main mutation. 11. Founder JUDGE remains required for promotion.
+1. `king/test` remains sole HEIR; LIVE remains untouched.
+2. `/living-systems/oslofjord` keeps route continuity but renders Bunnefjorden as the bounded provisional Super Cell.
+3. NIVA sources are attributable; 45 m → 137 m and 82% are bound to the NIVA assessment and not promoted into biodiversity/whole-ecosystem impact.
+4. `/living-systems/great-barrier-reef` renders the same `PlanetProofPage`, not a new product architecture.
+5. Bunnefjorden and GBR expose the same ordered eight question IDs.
+6. GBR uses AIMS + NOAA source bindings rather than copied Oslofjord/NIVA truth.
+7. Transfer audit explicitly separates REUSED, ADAPTED and NEW.
+8. `structuralReuseRatio` is a transparent component-classification metric only; Founder minutes and elapsed build minutes remain UNKNOWN/null until instrumented.
+9. Contract/smoke tests enforce Bunnefjorden truth boundaries and GBR transfer structure.
+10. Gold policy, Four-State, typecheck, production build, contract/smoke, browser/mobile and ONE INTERFACE gates must pass on the exact resulting SHA before the slice is accepted.
+11. No LIVE promotion, external release, partnership claim, payment, order or unsupported ecological impact claim occurs.
