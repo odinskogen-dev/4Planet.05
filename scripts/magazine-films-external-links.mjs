@@ -1,5 +1,6 @@
 import fs from "node:fs";
 
+// Closure 06: canonical 40-film WATCH + SOURCE inventory gate.
 const source = fs.readFileSync("src/content/magazineFilms.ts", "utf8");
 const section = source.split("const published: FilmRecord[] = [")[1]?.split("];\n\nconst research: FilmRecord[] = [")[0] ?? "";
 const blocks = [...section.matchAll(/publishedFilm\(\{([\s\S]*?)\}\),/g)].map((match) => match[1]);
