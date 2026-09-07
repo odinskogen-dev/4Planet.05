@@ -122,7 +122,7 @@ const published: FilmRecord[] = [
   publishedFilm({
     slug: "a-plastic-ocean", title: "A Plastic Ocean", year: 2016, focus: "OCEAN / PLASTIC", topics: ["OCEAN", "SOLUTIONS"], accent: "blue", director: "Craig Leeson", runtime: "102 MIN", access: "SOURCE", platform: "OFFICIAL FILM",
     description: "A global expedition traces plastic pollution through marine environments, wildlife and food chains while examining technologies and practical responses.", credit: "Directed by Craig Leeson.",
-    watchUrl: "https://aplasticocean.movie/", trailerId: "6zrn4-FfbXw", sourceUrl: "https://aplasticocean.movie/", sourceLabel: "A PLASTIC OCEAN / OFFICIAL", selectionNote: "Ocean plastic pressure, marine life, food chains and solution pathways.", availabilityNote: "Use the official film route for current viewing options."
+    watchUrl: "https://aplasticocean.movie/", trailerId: "gd9ZFVgoQ68", imageVideoId: "gd9ZFVgoQ68", sourceUrl: "https://aplasticocean.movie/", sourceLabel: "A PLASTIC OCEAN / OFFICIAL", selectionNote: "Ocean plastic pressure, marine life, food chains and solution pathways.", availabilityNote: "Use the official film route for current viewing options."
   }),
   publishedFilm({
     slug: "common-ground", title: "Common Ground", year: 2023, focus: "FOOD / SOIL / SYSTEMS", topics: ["FOOD", "CLIMATE", "SOLUTIONS"], accent: "orange", director: "Josh Tickell & Rebecca Tickell", runtime: "105 MIN", access: "SOURCE", platform: "OFFICIAL FILM",
