@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "effective_date": "2026-09-04",
-  "control_state": "FOUR_STATE_CONTROL_ACTIVATION_ABSOLUTE_WRITE_AUTHORITY",
+  "effective_date": "2026-09-07",
+  "control_state": "UNIVERSAL_LIVE_HEIR_SANDBOX_ZERO_LOSS",
   "founder_review_hosts": {
     "heir_and_sandbox": "https://test.4planet.org",
     "archive": "https://archive.4planet.org"
@@ -14,8 +14,16 @@
     "live_authority": false
   },
   "state_law": {
-    "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
-    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "human_visible_states": [
+      "LIVE",
+      "HEIR",
+      "SANDBOX",
+      "ARCHIVED"
+    ],
+    "product_development_write_targets": [
+      "HEIR",
+      "SANDBOX"
+    ],
     "live_development_write_authority": false,
     "live_mutation_policy": "FOUNDER_GATED_EXACT_ARTIFACT_PROMOTION_ONLY",
     "archive_development_write_authority": false,
@@ -34,7 +42,10 @@
     "human_review_required_for_user_facing_promotion": true,
     "all_material_active_product_work_requires_founder_visible_url": true,
     "new_user_facing_idea_requires_registry_before_material_code": true,
-    "archived_source_may_only_donate_into": ["HEIR", "SANDBOX"]
+    "archived_source_may_only_donate_into": [
+      "HEIR",
+      "SANDBOX"
+    ]
   },
   "new_idea_intake": {
     "required_before_material_product_code": true,
@@ -54,104 +65,346 @@
   },
   "products": {
     "4PLANET": {
-      "live": {"url": "https://4planet.org/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/", "origin_path": "/"},
-      "sandbox": null
-    },
-    "ATLAS": {
-      "live": {"url": "https://4planet.org/atlas", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
+      "live": {
+        "url": "https://4planet.org/",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/live",
+        "origin_path": "/"
+      },
+      "heir": {
+        "review_path": "/",
+        "origin_path": "/",
+        "canonical_review_path": "/heir"
+      },
       "sandbox": {
-        "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "sha_at_registration": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
-        "pr": 263,
-        "exact_preview_at_registration": "https://c6da6122.4planet-05.pages.dev/atlas",
-        "branch_preview": "https://work-atlas-zero-loss-gold-co.4planet-05.pages.dev/atlas",
-        "review_path": "/atlas/sandbox",
-        "origin_path": "/atlas",
-        "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
+        "branch": "sandbox/4planet",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/sandbox",
+        "origin_path": "/",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
         "live_authority": false
       }
     },
+    "ATLAS": {
+      "live": {
+        "url": "https://4planet.org/atlas",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/atlas/live",
+        "origin_path": "/atlas"
+      },
+      "heir": {
+        "review_path": "/atlas",
+        "origin_path": "/atlas",
+        "canonical_review_path": "/atlas/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/atlas",
+        "sha_at_registration": "118abbb1695b072fe3d6687a3c51ed984d510243",
+        "pr": null,
+        "review_path": "/atlas/sandbox",
+        "origin_path": "/atlas",
+        "lineage_state": "CANONICAL_SANDBOX_ADOPTED_FROM_REGISTERED_ZERO_LOSS_CANDIDATE",
+        "live_authority": false,
+        "donor_pr": 263,
+        "donor_branch": "work/atlas-zero-loss-gold-convergence-01"
+      }
+    },
     "SPECIES": {
-      "live": {"url": "https://4planet.org/species", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/species", "origin_path": "/species"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/species",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/species/live",
+        "origin_path": "/species"
+      },
+      "heir": {
+        "review_path": "/species",
+        "origin_path": "/species",
+        "canonical_review_path": "/species/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/species",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/species/sandbox",
+        "origin_path": "/species",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "LIVING_SYSTEMS": {
-      "live": {"url": "https://4planet.org/living-systems", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/living-systems", "origin_path": "/living-systems"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/living-systems",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/living-systems/live",
+        "origin_path": "/living-systems"
+      },
+      "heir": {
+        "review_path": "/living-systems",
+        "origin_path": "/living-systems",
+        "canonical_review_path": "/living-systems/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/living-systems",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/living-systems/sandbox",
+        "origin_path": "/living-systems",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "ORCA": {
-      "live": {"url": "https://4planet.org/species/orca", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/orca", "origin_path": "/species/orca"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/species/orca",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/orca/live",
+        "origin_path": "/species/orca"
+      },
+      "heir": {
+        "review_path": "/orca",
+        "origin_path": "/species/orca",
+        "canonical_review_path": "/orca/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/orca",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/orca/sandbox",
+        "origin_path": "/species/orca",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "AMAZONIA": {
-      "live": {"url": "https://4planet.org/missions/am4zonia", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/amazonia", "origin_path": "/missions/am4zonia"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/missions/am4zonia",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/amazonia/live",
+        "origin_path": "/missions/am4zonia"
+      },
+      "heir": {
+        "review_path": "/amazonia",
+        "origin_path": "/missions/am4zonia",
+        "canonical_review_path": "/amazonia/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/amazonia",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/amazonia/sandbox",
+        "origin_path": "/missions/am4zonia",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "OSLOFJORD": {
-      "live": {"url": "https://4planet.org/living-systems/oslofjord", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/oslofjord", "origin_path": "/living-systems/oslofjord"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/living-systems/oslofjord",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/oslofjord/live",
+        "origin_path": "/living-systems/oslofjord"
+      },
+      "heir": {
+        "review_path": "/oslofjord",
+        "origin_path": "/living-systems/oslofjord",
+        "canonical_review_path": "/oslofjord/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/oslofjord",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/oslofjord/sandbox",
+        "origin_path": "/living-systems/oslofjord",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "IMPACT": {
-      "live": {"url": "https://4planet.org/impact", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/impact", "origin_path": "/impact"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/impact",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/impact/live",
+        "origin_path": "/impact"
+      },
+      "heir": {
+        "review_path": "/impact",
+        "origin_path": "/impact",
+        "canonical_review_path": "/impact/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/impact",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/impact/sandbox",
+        "origin_path": "/impact",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "MAGAZINE": {
       "live": {
         "url": "https://4planetmagazine.com/",
         "source_sha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795",
         "immutable_pages_deployment": "https://feb9a95c.4planet-05.pages.dev/",
-        "identity_state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"
+        "identity_state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04",
+        "review_path": "/magazine/live",
+        "origin_path": "/"
       },
-      "heir": {"review_path": "/magazine", "origin_path": "/magazine"},
+      "heir": {
+        "review_path": "/magazine",
+        "origin_path": "/magazine",
+        "canonical_review_path": "/magazine/heir"
+      },
       "sandbox": {
-        "branch": "recovery/testking-magazine",
-        "sha_at_registration": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
-        "pr": 162,
-        "exact_preview_at_registration": "https://17d3ba42.4planet-05.pages.dev/magazine",
-        "branch_preview": "https://recovery-testking-magazine.4planet-05.pages.dev/magazine",
+        "branch": "sandbox/magazine",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
         "review_path": "/magazine/sandbox",
         "origin_path": "/magazine",
-        "lineage_state": "REGISTERED_RECOVERY_SANDBOX_RECONCILIATION_REQUIRED",
-        "live_authority": false
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR_RECOVERY_BRANCH_PRESERVED_AS_DONOR",
+        "live_authority": false,
+        "zero_loss_donors": [
+          {
+            "branch": "recovery/testking-magazine",
+            "sha": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
+            "pr": 162,
+            "state": "READ_ONLY_DONOR_RECONCILIATION_REQUIRED"
+          }
+        ]
       }
     },
     "S4PIENS": {
-      "live": {"url": "https://s4piens.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/s4piens", "origin_path": "/domains/s4piens"},
-      "sandbox": null
+      "live": {
+        "url": "https://s4piens.com/",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/s4piens/live",
+        "origin_path": "/"
+      },
+      "heir": {
+        "review_path": "/s4piens",
+        "origin_path": "/domains/s4piens",
+        "canonical_review_path": "/s4piens/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/s4piens",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/s4piens/sandbox",
+        "origin_path": "/domains/s4piens",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "4SAPIEN": {
-      "live": {"url": null, "identity_state": "UNRELEASED"},
-      "heir": {"review_path": "/4sapien", "origin_path": "/4sapien"},
-      "sandbox": null
+      "live": {
+        "url": null,
+        "identity_state": "UNRELEASED",
+        "review_path": "/4sapien/live",
+        "origin_path": null
+      },
+      "heir": {
+        "review_path": "/4sapien",
+        "origin_path": "/4sapien",
+        "canonical_review_path": "/4sapien/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/4sapien",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/4sapien/sandbox",
+        "origin_path": "/4sapien",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "FOOD": {
-      "live": {"url": "https://s4piens.com/food", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/food", "origin_path": "/4sapien/food"},
-      "sandbox": null
+      "live": {
+        "url": "https://s4piens.com/food",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/food/live",
+        "origin_path": "/food"
+      },
+      "heir": {
+        "review_path": "/food",
+        "origin_path": "/4sapien/food",
+        "canonical_review_path": "/food/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/food",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/food/sandbox",
+        "origin_path": "/4sapien/food",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "CRE4TORS": {
-      "live": {"url": "https://cre4tors.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/cre4tors", "origin_path": "/missions/4rt"},
-      "sandbox": null
+      "live": {
+        "url": "https://cre4tors.com/",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/cre4tors/live",
+        "origin_path": "/"
+      },
+      "heir": {
+        "review_path": "/cre4tors",
+        "origin_path": "/missions/4rt",
+        "canonical_review_path": "/cre4tors/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/cre4tors",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/cre4tors/sandbox",
+        "origin_path": "/missions/4rt",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "MARKET": {
-      "live": {"url": "https://4planetmarket.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/market", "origin_path": "/impact"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planetmarket.com/",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/market/live",
+        "origin_path": "/"
+      },
+      "heir": {
+        "review_path": "/market",
+        "origin_path": "/impact",
+        "canonical_review_path": "/market/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/market",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/market/sandbox",
+        "origin_path": "/impact",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     },
     "ACTORS": {
-      "live": {"url": "https://4planet.org/actors", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/actors", "origin_path": "/actors"},
-      "sandbox": null
+      "live": {
+        "url": "https://4planet.org/actors",
+        "identity_state": "READBACK_REQUIRED",
+        "review_path": "/actors/live",
+        "origin_path": "/actors"
+      },
+      "heir": {
+        "review_path": "/actors",
+        "origin_path": "/actors",
+        "canonical_review_path": "/actors/heir"
+      },
+      "sandbox": {
+        "branch": "sandbox/actors",
+        "sha_at_registration": "ce532830640817f83c11923bdfb4c394f222baad",
+        "pr": null,
+        "review_path": "/actors/sandbox",
+        "origin_path": "/actors",
+        "lineage_state": "CANONICAL_SANDBOX_BASELINE_FROM_HEIR",
+        "live_authority": false
+      }
     }
   },
   "archive": {
@@ -160,16 +413,39 @@
     "initial_state": "BUILDING",
     "write_authority": false,
     "development_authority": false,
-    "allowed_actions": ["READ", "RENDER", "COMPARE", "DONATE_BY_COPY_INTO_HEIR_OR_SANDBOX"],
-    "forbidden_actions": ["DEVELOP_IN_PLACE", "REPAIR_IN_PLACE", "MERGE_INTO_ARCHIVE", "USE_AS_RECEIVING_BRANCH", "RESTART_ARCHIVED_BRANCH", "PROMOTE_ARCHIVED_BRANCH_DIRECTLY"],
+    "allowed_actions": [
+      "READ",
+      "RENDER",
+      "COMPARE",
+      "DONATE_BY_COPY_INTO_HEIR_OR_SANDBOX"
+    ],
+    "forbidden_actions": [
+      "DEVELOP_IN_PLACE",
+      "REPAIR_IN_PLACE",
+      "MERGE_INTO_ARCHIVE",
+      "USE_AS_RECEIVING_BRANCH",
+      "RESTART_ARCHIVED_BRANCH",
+      "PROMOTE_ARCHIVED_BRANCH_DIRECTLY"
+    ],
     "destructive_cleanup_before_disposition": false
   },
   "activation": {
-    "control_branch": "control/four-state-product-control-01",
-    "control_parent_sha": "404fad51436d273fceb77af33beef17b3a16ea27",
+    "control_branch": "control/universal-live-heir-sandbox-01",
+    "control_parent_sha": "ce532830640817f83c11923bdfb4c394f222baad",
     "all_unregistered_user_facing_branches": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY",
     "new_user_facing_sandbox_requires_registry_entry_before_first_material_mutation": true,
     "new_user_facing_idea_requires_registry_entry_before_first_material_mutation": true,
-    "sandbox_sha_rule": "REGISTRY_SHA_IS_REGISTRATION_EVIDENCE_NOT_SELF_REFERENTIAL_MOVING_HEAD; CURRENT_HEAD_COMES_FROM_GIT_AND_DEPLOY_READBACK"
+    "sandbox_sha_rule": "REGISTRY_SHA_IS_REGISTRATION_EVIDENCE_NOT_SELF_REFERENTIAL_MOVING_HEAD; CURRENT_HEAD_COMES_FROM_GIT_AND_DEPLOY_READBACK",
+    "zero_loss_cleanup_rule": "NO_BRANCH_DELETION_BEFORE_PRODUCT_SCOPED_UNIQUE_VALUE_DISPOSITION_AND_ROLLBACK_PRESERVATION"
+  },
+  "route_law": {
+    "canonical_pattern": "https://test.4planet.org/<product>/{live|heir|sandbox}",
+    "legacy_heir_shortcuts_preserved": true,
+    "root_product_paths": {
+      "live": "/live",
+      "heir": "/heir",
+      "sandbox": "/sandbox"
+    },
+    "unreleased_live_behavior": "VISIBLE_TRUTHFUL_UNRELEASED_STATE_NEVER_MIRROR_OR_FAKE"
   }
 }
