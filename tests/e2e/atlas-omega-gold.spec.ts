@@ -127,7 +127,7 @@ test("OMEGA — deployed exact-name iNaturalist endpoint is real-data-or-explici
   }
 });
 
-test("OMEGA — deployed selected observation answers the seven human questions when provider records are available", async ({ page }, testInfo) => {
+test("OMEGA — deployed observation evidence answers the seven human questions when public location exists and preserves withheld-coordinate truth otherwise", async ({ page }, testInfo) => {
   test.skip(!REMOTE || testInfo.project.name !== "desktop-1440", "single immutable desktop evidence capture");
   await page.goto(ATLAS);
   await waitForAtlas(page);
@@ -141,12 +141,31 @@ test("OMEGA — deployed selected observation answers the seven human questions 
   }
 
   expect(state).toBe("live");
-  const record = await page.evaluate(async () => {
+  const source = await page.evaluate(async () => {
     const response = await fetch("/api/inaturalist?q=Orcinus%20orca&perPage=20&quality=research");
     const data = await response.json();
-    return response.ok ? (data.records || []).find((row: any) => row?.publicCoordinates) || null : null;
+    return {
+      ok: response.ok,
+      records: data.records || [],
+      limitations: data.limitations || [],
+      semantics: data.semantics || "",
+      resolvedTaxon: data.resolvedTaxon || null,
+    };
   });
-  expect(record?.publicCoordinates).toBeTruthy();
+
+  expect(source.ok).toBe(true);
+  expect(source.records.length).toBeGreaterThan(0);
+  expect(source.resolvedTaxon?.name).toBe("Orcinus orca");
+  expect(source.semantics).toBe("PUBLIC_OCCURRENCE_RECORDS_RETURNED");
+  expect(source.limitations.join(" ")).toMatch(/Only public coordinates supplied by iNaturalist are returned.*obscured\/private locations are never reconstructed/i);
+
+  const record = source.records.find((row: any) => row?.publicCoordinates) || null;
+  if (!record) {
+    expect(source.records.every((row: any) => row?.publicCoordinates == null)).toBe(true);
+    await expect(page.getByText(/Orcinus orca/i).first()).toBeVisible();
+    await evidence(page, "06-selected-record-no-public-coordinates.png");
+    return;
+  }
 
   await page.evaluate((row: any) => {
     const map = (window as any).__4planet_map;
