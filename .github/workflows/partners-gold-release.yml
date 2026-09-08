@@ -10,6 +10,7 @@ on:
       - src/routes/router.tsx
       - scripts/check-partners-hub.mjs
       - scripts/render-partner-briefs.mjs
+      - scripts/validate-partners-live.mjs
       - .github/workflows/partners-gold-release.yml
   workflow_dispatch:
 
@@ -64,6 +65,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('dist/index.html')
+          s = p.read_text()
+          old = '<meta name="robots" content="index,follow,max-image-preview:large" />'
+          new = '<meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />'
+          if old in s:
+              s = s.replace(old, new)
+          elif new not in s:
+              raise SystemExit('PARTNERS_RELEASE_FAIL robots meta source contract changed')
+          p.write_text(s)
+          PY
+          grep -qi '<meta name="robots" content="noindex' dist/index.html || { echo 'PARTNERS_RELEASE_FAIL static noindex meta absent'; exit 22; }
           cat > dist/_headers <<'EOF'
           /*
             X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
@@ -181,8 +195,10 @@ jobs:
           for route in "${routes[@]}"; do
             code=$(curl -LsS -o /tmp/partners-body -w '%{http_code}' "${PREVIEW}${route}")
             [ "$code" = "200" ] || { echo "PARTNERS_RELEASE_FAIL $route HTTP $code"; exit 10; }
-            grep -q 'The living world is connected\|4PLANET' /tmp/partners-body || { echo "PARTNERS_RELEASE_FAIL body contract $route"; exit 11; }
+            grep -q '4PLANET' /tmp/partners-body || { echo "PARTNERS_RELEASE_FAIL raw body contract $route"; exit 11; }
           done
+          curl -LsS "${PREVIEW}/" -o /tmp/partners-root
+          grep -qi '<meta name="robots" content="noindex' /tmp/partners-root || { echo 'PARTNERS_RELEASE_FAIL static preview noindex meta absent'; exit 23; }
           headers=$(curl -LsSI "${PREVIEW}/")
           grep -qi '^x-robots-tag:.*noindex' <<<"$headers" || { echo 'PARTNERS_RELEASE_FAIL X-Robots-Tag noindex absent'; exit 12; }
           robots=$(curl -LsS "${PREVIEW}/robots.txt")
@@ -240,7 +256,7 @@ jobs:
           [[ "$active" == "true" ]] || { echo 'PARTNERS_RELEASE_FAIL custom domain did not become active in bounded window'; exit 18; }
           echo "domain_active=true" >> "$GITHUB_OUTPUT"
 
-      - name: Public runtime readback
+      - name: Public HTTP / TLS / NOINDEX readback
         shell: bash
         run: |
           set -euo pipefail
@@ -248,27 +264,36 @@ jobs:
           ready=false
           for attempt in $(seq 1 36); do
             code=$(curl -LsS -o /tmp/live-body -w '%{http_code}' "$LIVE/" || true)
-            if [[ "$code" == "200" ]] && grep -q 'The living world is connected' /tmp/live-body; then ready=true; break; fi
+            if [[ "$code" == "200" ]] && grep -q '4PLANET_' /tmp/live-body; then ready=true; break; fi
             echo "Public readback pending ($attempt/36) HTTP=${code:-none}"
             sleep 5
           done
-          [[ "$ready" == "true" ]] || { echo 'PARTNERS_RELEASE_FAIL public body readback'; exit 19; }
+          [[ "$ready" == "true" ]] || { echo 'PARTNERS_RELEASE_FAIL public HTTP body readback'; exit 19; }
+          grep -qi '<meta name="robots" content="noindex' /tmp/live-body || { echo 'PARTNERS_RELEASE_FAIL live static noindex meta'; exit 24; }
           headers=$(curl -LsSI "$LIVE/")
           grep -qi '^x-robots-tag:.*noindex' <<<"$headers" || { echo 'PARTNERS_RELEASE_FAIL live noindex header'; exit 20; }
+          robots=$(curl -LsS "$LIVE/robots.txt")
+          grep -q 'Disallow: /' <<<"$robots" || { echo 'PARTNERS_RELEASE_FAIL live robots deny absent'; exit 25; }
           for path in /system /proof /partnerships /capital /trust /founder /briefs/overview /downloads/4planet-overview.pdf; do
             code=$(curl -LsS -o /dev/null -w '%{http_code}' "$LIVE$path")
             [[ "$code" == "200" ]] || { echo "PARTNERS_RELEASE_FAIL live $path HTTP $code"; exit 21; }
           done
+          echo "PARTNERS_LIVE_HTTP=PASS"
           echo "PARTNERS_LIVE_URL=$LIVE"
           echo "PARTNERS_LIVE_SHA=$GITHUB_SHA"
-          echo "PARTNERS_PUBLIC_READBACK=PASS"
+
+      - name: Rendered live-domain desktop / tablet / mobile certification
+        env:
+          PARTNERS_BASE_URL: https://partners.4planet.org
+        run: node scripts/validate-partners-live.mjs
 
       - name: Preserve QA evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: partners-gold-${{ github.sha }}
           path: |
             partners-release-evidence/**
             dist/downloads/*.pdf
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
