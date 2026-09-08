@@ -37,6 +37,11 @@ function restoredCamera(search: string) {
   return { zoom, center: center as [number, number] };
 }
 
+function returnAuthorityKey(pathname: string, search: string) {
+  const params = new URLSearchParams(search);
+  return [pathname, params.get("record") || "", params.get("journey") || "", params.get("entity") || ""].join("|");
+}
+
 function webglAvailable() {
   if (typeof document === "undefined") return false;
   try {
@@ -55,12 +60,22 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const cameraAuthorityKey = useMemo(
+    () => returnAuthorityKey(location.pathname, location.search),
+    [location.pathname, location.search],
+  );
 
   // Explicit ATLAS return state owns only the bounded startup reconstruction.
   // MapLibre may resize after style/projection and the narrow mobile sheet settle,
   // so fixed timers alone are not sufficient. Reconcile after actual canvas-size
   // changes during a short startup window, then release permanently. Any real
   // user camera input releases immediately; this never becomes a camera lock.
+  //
+  // Critical authority rule: World writes z/c back into the URL while the map is
+  // settling. Those self-authored camera writes must NOT restart this effect and
+  // silently redefine the returned camera target. The dependency is therefore a
+  // stable semantic return key (record/journey/entity), while the z/c target is
+  // captured once when that return context is mounted.
   useEffect(() => {
     if (!supported) return;
     const target = restoredCamera(location.search);
@@ -163,11 +178,18 @@ export default function PublicWorld() {
         canvasRef.removeEventListener("wheel", stopStartupAuthority);
       }
     };
-  }, [supported, location.pathname, location.search]);
+    // cameraAuthorityKey deliberately excludes self-authored z/c URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supported, cameraAuthorityKey]);
 
   if (supported) {
     return (
       <>
+        <header className="atlas-product-identity" aria-label="4PLANET ATLAS">
+          <Link to="/" className="atlas-product-identity-link" aria-label="4PLANET home">
+            <span>4PLANET_</span><strong>ATLAS</strong>
+          </Link>
+        </header>
         {/* Founder-selected coherent ATLAS surface. Recovery sidecars add capability
             without adding a duplicate visual shell or competing state model. */}
         <AtlasPlaceNameBridge />
