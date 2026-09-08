@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Resolve Cloudflare and inspect existing archive owner
+      - name: Resolve Cloudflare and verify archive + TEST isolation
         env:
           TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -36,27 +36,28 @@ jobs:
           [ -n "$account_id" ] || exit 3
 
           domains=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "${api}/accounts/${account_id}/workers/domains")
-          echo '=== CURRENT CUSTOM DOMAIN BINDINGS ==='
-          jq -r '.result[]? | select(.hostname == "test.4planet.org" or .hostname == "archive.4planet.org") | [.hostname,.service,.environment,.zone_name,.id] | @tsv' <<<"$domains"
+          test_service=$(jq -r '.result[]? | select(.hostname == "test.4planet.org") | .service // empty' <<<"$domains" | head -1)
+          archive_service=$(jq -r '.result[]? | select(.hostname == "archive.4planet.org") | .service // empty' <<<"$domains" | head -1)
 
-          echo '=== ARCHIVE PUBLIC HEADERS ==='
-          curl -sSIL --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' | sed -n '1,80p' || true
+          [ "$test_service" = '4planet-four-state-control-v1' ] || { echo "Unexpected TEST service: $test_service"; exit 4; }
+          [ "$archive_service" = '4planet-core-archive-20260908' ] || { echo "Unexpected ARCHIVE service: $archive_service"; exit 5; }
 
-          echo '=== ARCHIVE HTML TITLE ==='
-          curl -sSL --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr '\n' ' ' | sed -n 's/.*<title>\([^<]*\)<\/title>.*/\1/p' | head -1 || true
-
-          echo '=== ARCHIVE ROUTE CHECKS ==='
+          expected='c78f3b9814e823fdaa9167ccc784d2a88283215d'
           for path in / /atlas /species /living-systems /impact; do
-            tmp=$(mktemp)
-            code=$(curl -sS -L -o "$tmp" -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://archive.4planet.org${path}" || true)
-            echo "${path} -> ${code}"
-            if [ "$code" != '200' ]; then
-              echo "--- body ${path} ---"
-              head -c 1200 "$tmp" || true
-              echo
-            fi
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://archive.4planet.org${path}" | tr -d '\r')
+            printf '%s\n' "$headers" | grep -qi '^HTTP/.* 200' || { echo "Archive HTTP failed: $path"; exit 6; }
+            printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: core-old-live-archive$' || { echo "Archive surface header missing: $path"; exit 7; }
+            printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: ${expected}$" || { echo "Archive source SHA mismatch: $path"; exit 8; }
+            printf '%s\n' "$headers" | grep -qi '^x-robots-tag: noindex, nofollow, noarchive$' || { echo "Archive noindex missing: $path"; exit 9; }
+            echo "ARCHIVE PASS ${path} -> ${expected}"
           done
 
-          echo '=== TEST ROOT CHECK ==='
-          code=$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://test.4planet.org/' || true)
-          echo "test.4planet.org -> ${code}"
+          test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r')
+          printf '%s\n' "$test_headers" | grep -qi '^HTTP/.* 200' || { echo 'TEST control HTTP failed'; exit 10; }
+          printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' || { echo 'TEST control-plane marker missing'; exit 11; }
+
+          title=$(curl -fsSL --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr '\n' ' ' | sed -n 's/.*<title>\([^<]*\)<\/title>.*/\1/p' | head -1)
+          echo "ARCHIVE TITLE: ${title}"
+          echo "TEST SERVICE: ${test_service}"
+          echo "ARCHIVE SERVICE: ${archive_service}"
+          echo 'ARCHIVE + TEST ISOLATION PASS'
