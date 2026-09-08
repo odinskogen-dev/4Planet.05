@@ -1,0 +1,143 @@
+name: 4PLANET old LIVE archive domain
+
+on:
+  push:
+    branches:
+      - ops/archive-live-20260908
+    paths:
+      - .github/workflows/archive-live-domain-deploy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo 'No Cloudflare token available'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "${api}/zones?name=4planet.org&status=active")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account_id" ] || { echo 'Unable to resolve Cloudflare account for 4planet.org'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Fail closed if archive hostname is owned by another Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          domains=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains")
+          existing=$(jq -r '.result[]? | select(.hostname == "archive.4planet.org") | .service // empty' <<<"$domains" | head -1)
+          if [ -n "$existing" ] && [ "$existing" != '4planet-core-archive-20260908' ]; then
+            echo "archive.4planet.org already belongs to unexpected service: $existing"
+            exit 4
+          fi
+
+      - name: Deploy immutable old LIVE archive Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/archive-worker.mjs" <<'EOF'
+          const UPSTREAM = "https://d3d3fae0.4planet-05.pages.dev";
+          const SOURCE_SHA = "c78f3b9814e823fdaa9167ccc784d2a88283215d";
+          const ARCHIVE_HOST = "archive.4planet.org";
+
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              const upstream = new URL(incoming.pathname + incoming.search, UPSTREAM);
+              const response = await fetch(new Request(upstream.toString(), request));
+              const headers = new Headers(response.headers);
+
+              const location = headers.get("location");
+              if (location) {
+                try {
+                  const target = new URL(location, upstream);
+                  if (target.hostname === "d3d3fae0.4planet-05.pages.dev") {
+                    target.protocol = "https:";
+                    target.hostname = ARCHIVE_HOST;
+                    target.port = "";
+                    headers.set("location", target.toString());
+                  }
+                } catch {}
+              }
+
+              headers.set("x-4planet-surface", "core-old-live-archive");
+              headers.set("x-4planet-source-sha", SOURCE_SHA);
+              headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+              if ((headers.get("content-type") || "").includes("text/html")) {
+                headers.set("cache-control", "no-store");
+              }
+
+              return new Response(response.body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers,
+              });
+            },
+          };
+          EOF
+
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-core-archive-20260908"
+          main = "$RUNNER_TEMP/archive-worker.mjs"
+          compatibility_date = "2026-09-08"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify archive domain and exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='c78f3b9814e823fdaa9167ccc784d2a88283215d'
+          ok=0
+          for attempt in $(seq 1 36); do
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$headers" | grep -qi '^HTTP/.* 200' \
+              && printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: core-old-live-archive$' \
+              && printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: ${expected}$"; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo 'Archive root did not verify'; exit 5; }
+
+          for path in /atlas /species /living-systems /impact; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://archive.4planet.org${path}")
+            [ "$code" = '200' ] || { echo "Archive route failed: ${path} -> ${code}"; exit 6; }
+          done
+
+          echo 'ARCHIVE LIVE PASS'
+          echo 'URL=https://archive.4planet.org/'
+          echo "SOURCE_SHA=${expected}"
