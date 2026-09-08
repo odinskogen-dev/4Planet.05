@@ -54,12 +54,22 @@
   },
   "products": {
     "4PLANET": {
-      "live": {"url": "https://4planet.org/", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/", "origin_path": "/"},
       "sandbox": null
     },
     "ATLAS": {
-      "live": {"url": "https://4planet.org/atlas", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/atlas",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/atlas",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
@@ -74,12 +84,22 @@
       }
     },
     "SPECIES": {
-      "live": {"url": "https://4planet.org/species", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/species",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/species",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/species", "origin_path": "/species"},
       "sandbox": null
     },
     "LIVING_SYSTEMS": {
-      "live": {"url": "https://4planet.org/living-systems", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/living-systems",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/living-systems",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/living-systems", "origin_path": "/living-systems"},
       "sandbox": null
     },
@@ -99,7 +119,12 @@
       "sandbox": null
     },
     "IMPACT": {
-      "live": {"url": "https://4planet.org/impact", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/impact",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/impact",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/impact", "origin_path": "/impact"},
       "sandbox": null
     },
