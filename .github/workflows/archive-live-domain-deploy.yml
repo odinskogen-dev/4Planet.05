@@ -42,25 +42,23 @@ jobs:
           api='https://api.cloudflare.com/client/v4'
           zone=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "${api}/zones?name=4planet.org&status=active")
           account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
-          [ -n "$account_id" ] || { echo 'Unable to resolve Cloudflare account for 4planet.org'; exit 3; }
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          [ -n "$account_id" ] && [ -n "$zone_id" ] || { echo 'Unable to resolve Cloudflare account/zone for 4planet.org'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
 
-      - name: Fail closed if archive hostname is owned by another Worker
+      - name: Stage immutable old LIVE Worker without touching any domain
         shell: bash
         run: |
           set -euo pipefail
-          api='https://api.cloudflare.com/client/v4'
-          domains=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains")
-          existing=$(jq -r '.result[]? | select(.hostname == "archive.4planet.org") | .service // empty' <<<"$domains" | head -1)
-          if [ -n "$existing" ] && [ "$existing" != '4planet-core-archive-20260908' ]; then
-            echo "archive.4planet.org already belongs to unexpected service: $existing"
-            exit 4
-          fi
+          upstream='https://d3d3fae0.4planet-05.pages.dev'
+          expected='c78f3b9814e823fdaa9167ccc784d2a88283215d'
 
-      - name: Deploy immutable old LIVE archive Worker
-        shell: bash
-        run: |
-          set -euo pipefail
+          for path in / /atlas /species /living-systems /impact; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${upstream}${path#/}")
+            [ "$code" = '200' ] || { echo "Pinned old LIVE artifact failed before switch: ${path} -> ${code}"; exit 4; }
+          done
+
           cat > "$RUNNER_TEMP/archive-worker.mjs" <<'EOF'
           const UPSTREAM = "https://d3d3fae0.4planet-05.pages.dev";
           const SOURCE_SHA = "c78f3b9814e823fdaa9167ccc784d2a88283215d";
@@ -89,9 +87,7 @@ jobs:
               headers.set("x-4planet-surface", "core-old-live-archive");
               headers.set("x-4planet-source-sha", SOURCE_SHA);
               headers.set("x-robots-tag", "noindex, nofollow, noarchive");
-              if ((headers.get("content-type") || "").includes("text/html")) {
-                headers.set("cache-control", "no-store");
-              }
+              if ((headers.get("content-type") || "").includes("text/html")) headers.set("cache-control", "no-store");
 
               return new Response(response.body, {
                 status: response.status,
@@ -107,22 +103,61 @@ jobs:
           main = "$RUNNER_TEMP/archive-worker.mjs"
           compatibility_date = "2026-09-08"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
-
-          [[routes]]
-          pattern = "archive.4planet.org"
-          custom_domain = true
+          workers_dev = false
+          preview_urls = false
           EOF
 
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
 
-      - name: Verify archive domain and exact source identity
+      - name: Reassign archive hostname only, with automatic restoration on failure
         shell: bash
         run: |
           set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          hostname='archive.4planet.org'
+          new_service='4planet-core-archive-20260908'
           expected='c78f3b9814e823fdaa9167ccc784d2a88283215d'
+
+          domains=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains" "${auth[@]}")
+          old_service=$(jq -r --arg h "$hostname" '.result[]? | select(.hostname == $h) | .service // empty' <<<"$domains" | head -1)
+          old_id=$(jq -r --arg h "$hostname" '.result[]? | select(.hostname == $h) | .id // empty' <<<"$domains" | head -1)
+
+          if [ -n "$old_service" ] && [ "$old_service" != '4planet-four-state-control-v1' ] && [ "$old_service" != "$new_service" ]; then
+            echo "Refusing to take archive hostname from unexpected service: $old_service"
+            exit 5
+          fi
+
+          switched=0
+          restore_old() {
+            rc=$?
+            trap - ERR
+            if [ "$switched" -eq 1 ] && [ -n "$old_service" ] && [ "$old_service" != "$new_service" ]; then
+              echo "Archive verification failed; restoring archive.4planet.org to ${old_service}"
+              curl -fsS -X PUT "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains" "${auth[@]}" \
+                --data "{\"hostname\":\"${hostname}\",\"service\":\"${old_service}\",\"zone_id\":\"${CLOUDFLARE_ZONE_ID}\",\"zone_name\":\"4planet.org\"}" >/tmp/archive-restore.json || true
+            fi
+            exit "$rc"
+          }
+          trap restore_old ERR
+
+          if [ "$old_service" != "$new_service" ]; then
+            direct=$(curl -sS -X PUT "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains" "${auth[@]}" \
+              --data "{\"hostname\":\"${hostname}\",\"service\":\"${new_service}\",\"zone_id\":\"${CLOUDFLARE_ZONE_ID}\",\"zone_name\":\"4planet.org\"}")
+
+            if [ "$(jq -r '.success // false' <<<"$direct")" != 'true' ]; then
+              [ -n "$old_id" ] || { echo "$direct"; exit 6; }
+              curl -fsS -X DELETE "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains/${old_id}" "${auth[@]}" >/tmp/archive-detach.json
+              attach=$(curl -fsS -X PUT "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains" "${auth[@]}" \
+                --data "{\"hostname\":\"${hostname}\",\"service\":\"${new_service}\",\"zone_id\":\"${CLOUDFLARE_ZONE_ID}\",\"zone_name\":\"4planet.org\"}")
+              [ "$(jq -r '.success // false' <<<"$attach")" = 'true' ] || { echo "$attach"; exit 7; }
+            fi
+            switched=1
+          fi
+
           ok=0
           for attempt in $(seq 1 36); do
-            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://${hostname}/" | tr -d '\r' || true)
             if printf '%s\n' "$headers" | grep -qi '^HTTP/.* 200' \
               && printf '%s\n' "$headers" | grep -qi '^x-4planet-surface: core-old-live-archive$' \
               && printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: ${expected}$"; then
@@ -131,13 +166,20 @@ jobs:
             fi
             sleep 5
           done
-          [ "$ok" -eq 1 ] || { echo 'Archive root did not verify'; exit 5; }
+          [ "$ok" -eq 1 ] || { echo 'Archive root did not verify after hostname switch'; false; }
 
           for path in /atlas /species /living-systems /impact; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://archive.4planet.org${path}")
-            [ "$code" = '200' ] || { echo "Archive route failed: ${path} -> ${code}"; exit 6; }
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://${hostname}${path}")
+            [ "$code" = '200' ] || { echo "Archive route failed: ${path} -> ${code}"; false; }
           done
 
+          domains_after=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/domains" "${auth[@]}")
+          bound=$(jq -r --arg h "$hostname" '.result[]? | select(.hostname == $h) | .service // empty' <<<"$domains_after" | head -1)
+          [ "$bound" = "$new_service" ] || { echo "Archive domain bound to unexpected service after switch: $bound"; false; }
+
+          trap - ERR
           echo 'ARCHIVE LIVE PASS'
-          echo 'URL=https://archive.4planet.org/'
+          echo "URL=https://${hostname}/"
           echo "SOURCE_SHA=${expected}"
+          echo "SERVICE=${new_service}"
+          echo "PREVIOUS_ARCHIVE_SERVICE=${old_service}"
