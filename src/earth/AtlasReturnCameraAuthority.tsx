@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 type AtlasMapLike = {
@@ -30,22 +30,28 @@ const EPSILON_CENTER = 0.01;
  *
  * Important: ATLAS itself continuously serialises camera changes back into
  * `z`/`c`. Those self-authored URL writes must never restart this authority or
- * promote a transient responsive camera into the new return target. Therefore
- * the effect is keyed only by pathname + semantic record identity. A genuine
- * cross-product return remounts ATLAS (or changes record), so it still captures
- * the current returned `z`/`c` exactly once.
+ * promote a transient responsive camera into the new return target. Capture
+ * the entry URL once per semantic pathname + record transition, while ignoring
+ * subsequent camera-only URL writes for the same semantic ATLAS record.
  */
 export function AtlasReturnCameraAuthority() {
   const location = useLocation();
   const { pathname, search } = location;
   const record = new URLSearchParams(search).get("record") || "";
+  const semanticKey = `${pathname}|${record}`;
+  const entrySearchRef = useRef<{ key: string; search: string }>({ key: "", search: "" });
+
+  // BrowserRouter keeps this authority mounted across product navigation. Save
+  // the exact entry search whenever the semantic route/record changes, but do
+  // not overwrite it when ATLAS later writes only camera z/c state.
+  if (entrySearchRef.current.key !== semanticKey) {
+    entrySearchRef.current = { key: semanticKey, search };
+  }
 
   useEffect(() => {
     if (!pathname.startsWith("/atlas")) return;
 
-    // Read the camera from the current location only when semantic return
-    // authority starts. Do not subscribe this effect to later z/c URL writes.
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(entrySearchRef.current.search);
     const zoom = Number(params.get("z"));
     const center = (params.get("c") || "").split(",").map(Number);
     if (!Number.isFinite(zoom) || center.length !== 2 || center.some((n) => !Number.isFinite(n))) return;
