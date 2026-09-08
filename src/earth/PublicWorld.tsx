@@ -5,6 +5,7 @@ import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
 import { AtlasSearchIntentBridge } from "./AtlasSearchIntentBridge";
 import { AtlasLiveEvidenceBridge } from "./AtlasLiveEvidenceBridge";
+import "./atlas-live-polish.css";
 
 const World = lazy(() => import("./World"));
 
@@ -46,6 +47,8 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const embedMode = new URLSearchParams(location.search).get("embed");
+  const embedHome = embedMode === "home";
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
   // mounted at the BrowserRouter level. PublicWorld must never run a second
@@ -56,7 +59,7 @@ export default function PublicWorld() {
   // settling and releases on genuine user camera input.
   if (supported) {
     return (
-      <>
+      <div className={`atlas-runtime${embedHome ? " atlas-runtime--embed-home" : ""}`} data-atlas-embed={embedMode || undefined}>
         <header className="atlas-product-identity" aria-label="4PLANET ATLAS">
           <Link to="/" className="atlas-product-identity-link" aria-label="4PLANET home">
             <span>4PLANET_</span><strong>ATLAS</strong>
@@ -72,7 +75,7 @@ export default function PublicWorld() {
         </Suspense>
         <AtlasLiveEvidenceBridge />
         <AtlasSavedViews />
-      </>
+      </div>
     );
   }
 

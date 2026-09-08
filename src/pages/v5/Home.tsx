@@ -154,7 +154,7 @@ export default function Home() {
           </div>
           <div>
             <p style={{ margin: 0, maxWidth: 620, color: "rgba(255,255,255,.82)", fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all depend on living systems. 4PLANET exists to make those relationships easier to see — and credible ways to act on them easier to find.</p>
-            <Link to="/about" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>THE STORY →</Link>
+            <Link to="/impact" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>MAKE A DIFFERENCE →</Link>
           </div>
         </div>
       </section>
