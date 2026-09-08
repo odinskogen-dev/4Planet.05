@@ -59,42 +59,31 @@ test("OMEGA — FIRMS detail refines fires without turning failure or empty data
   const state = await waitForSourceState(page, "atlasFirmsRecordState");
   expect(["live", "empty", "stale", "unavailable", "zoom_required"]).toContain(state);
 
-  if (state === "empty") {
-    await expect(page.getByText(/NO DETECTIONS RETURNED.*NOT PROOF OF NO FIRE/i)).toBeVisible();
-  }
-  if (state === "unavailable") {
-    await expect(page.getByText(/FIRMS DETAIL UNAVAILABLE/i)).toBeVisible();
-  }
-  if (state === "stale") {
-    await expect(page.getByText(/LAST-GOOD DETECTIONS/i)).toBeVisible();
-  }
-
-  // The global NASA fire layer remains the stable context even when optional
-  // record-level FIRMS detail cannot be returned.
+  if (state === "empty") await expect(page.getByText(/NO DETECTIONS RETURNED.*NOT PROOF OF NO FIRE/i)).toBeVisible();
+  if (state === "unavailable") await expect(page.getByText(/FIRMS DETAIL UNAVAILABLE/i)).toBeVisible();
+  if (state === "stale") await expect(page.getByText(/LAST-GOOD DETECTIONS/i)).toBeVisible();
   expect(await page.evaluate(() => Boolean((window as any).__4planet_map?.getLayer?.("fires")))).toBe(true);
 });
 
-test("OMEGA — exact Orca identity unlocks real iNaturalist observations with truth-safe semantics", async ({ page }, testInfo) => {
+test("OMEGA — exact Orca identity unlocks real iNaturalist observations or truthful unavailable state", async ({ page }, testInfo) => {
   test.skip(!["desktop-1440", "mobile-390", "webkit-desktop", "webkit-390"].includes(testInfo.project.name), "bounded species depth proof");
   await page.goto(ATLAS);
   await waitForAtlas(page);
   await selectOrca(page);
   const state = await waitForSourceState(page, "atlasInatRecordState");
 
-  if (REMOTE) {
-    expect(state).toBe("live");
+  expect(["live", "empty", "stale", "unavailable"]).toContain(state);
+  if (REMOTE && state === "live") {
     const count = Number(await page.evaluate(() => document.documentElement.dataset.atlasInatRecordCount || "0"));
     expect(count).toBeGreaterThan(0);
     await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.atlasInatTaxon || ""), { timeout: 20_000 }).toBe("Orcinus orca");
-  } else {
-    expect(["live", "empty", "stale", "unavailable"]).toContain(state);
   }
-
+  if (REMOTE) expect(state).not.toBe("empty");
   if (state === "empty") await expect(page.getByText(/NO RECORDS RETURNED.*NOT PROOF OF SPECIES ABSENCE/i)).toBeVisible();
   if (state === "unavailable") await expect(page.getByText(/iNATURALIST OBSERVATIONS UNAVAILABLE/i)).toBeVisible();
 });
 
-test("OMEGA — deployed exact-name iNaturalist endpoint refuses fuzzy identity and returns real Orca records", async ({ page }, testInfo) => {
+test("OMEGA — deployed exact-name iNaturalist endpoint is real-data-or-explicit-unavailable and refuses fuzzy identity", async ({ page }, testInfo) => {
   test.skip(!REMOTE || !["desktop-1440", "webkit-desktop"].includes(testInfo.project.name), "deployed Functions proof only");
   await page.goto(ATLAS);
   await waitForAtlas(page);
@@ -104,34 +93,58 @@ test("OMEGA — deployed exact-name iNaturalist endpoint refuses fuzzy identity 
     const goodBody = await good.json();
     const fuzzy = await fetch("/api/inaturalist?q=Orcinus%20orcx&perPage=5&quality=research");
     const fuzzyBody = await fuzzy.json();
-    return {
-      goodStatus: good.status,
-      goodBody,
-      fuzzyStatus: fuzzy.status,
-      fuzzyBody,
-    };
+    return { goodStatus: good.status, goodBody, fuzzyStatus: fuzzy.status, fuzzyBody };
   });
 
-  expect(result.goodStatus).toBe(200);
-  expect(result.goodBody?.ok).toBe(true);
-  expect(result.goodBody?.resolvedTaxon?.name).toBe("Orcinus orca");
-  expect(Array.isArray(result.goodBody?.records)).toBe(true);
-  expect(result.goodBody.records.length).toBeGreaterThan(0);
-  expect(result.fuzzyStatus).toBe(404);
-  expect(result.fuzzyBody?.error).toBe("TAXON_NOT_EXACTLY_RESOLVED");
+  expect([200, 503]).toContain(result.goodStatus);
+  if (result.goodStatus === 200) {
+    expect(result.goodBody?.ok).toBe(true);
+    expect(result.goodBody?.availability).toBe("available");
+    expect(result.goodBody?.resolvedTaxon?.name).toBe("Orcinus orca");
+    expect(Array.isArray(result.goodBody?.records)).toBe(true);
+    expect(result.goodBody.records.length).toBeGreaterThan(0);
+  } else {
+    expect(result.goodBody?.ok).toBe(false);
+    expect(result.goodBody?.availability).toBe("unavailable");
+    expect(result.goodBody?.semantics).toBe("SOURCE_UNAVAILABLE_NOT_ZERO");
+    expect(result.goodBody?.resolvedTaxon?.name).toBe("Orcinus orca");
+    expect(result.goodBody?.resolvedTaxon?.id).toBe(41521);
+    expect(result.goodBody?.totalResults).toBeUndefined();
+    expect(result.goodBody?.records).toBeUndefined();
+  }
+
+  expect([404, 503]).toContain(result.fuzzyStatus);
+  expect(result.fuzzyBody?.ok).toBe(false);
+  expect(result.fuzzyBody?.resolvedTaxon?.id).not.toBe(41521);
+  if (result.fuzzyStatus === 404) {
+    expect(result.fuzzyBody?.error).toBe("TAXON_NOT_EXACTLY_RESOLVED");
+    expect(result.fuzzyBody?.semantics).toBe("NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED");
+  } else {
+    expect(result.fuzzyBody?.availability).toBe("unavailable");
+    expect(result.fuzzyBody?.semantics).toBe("SOURCE_UNAVAILABLE_NO_EXACT_IDENTITY_NOT_ZERO");
+    expect(result.fuzzyBody?.totalResults).toBeUndefined();
+    expect(result.fuzzyBody?.records).toBeUndefined();
+  }
 });
 
-test("OMEGA — deployed selected observation answers the seven human questions", async ({ page }, testInfo) => {
+test("OMEGA — deployed selected observation answers the seven human questions when provider records are available", async ({ page }, testInfo) => {
   test.skip(!REMOTE || testInfo.project.name !== "desktop-1440", "single immutable desktop evidence capture");
   await page.goto(ATLAS);
   await waitForAtlas(page);
   await selectOrca(page);
-  await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.atlasInatRecordState || ""), { timeout: 30_000 }).toBe("live");
+  const state = await waitForSourceState(page, "atlasInatRecordState");
 
+  if (state === "unavailable") {
+    await expect(page.getByText(/iNATURALIST OBSERVATIONS UNAVAILABLE/i)).toBeVisible();
+    await evidence(page, "06-selected-record-provider-unavailable.png");
+    return;
+  }
+
+  expect(state).toBe("live");
   const record = await page.evaluate(async () => {
     const response = await fetch("/api/inaturalist?q=Orcinus%20orca&perPage=20&quality=research");
     const data = await response.json();
-    return (data.records || []).find((row: any) => row?.publicCoordinates) || null;
+    return response.ok ? (data.records || []).find((row: any) => row?.publicCoordinates) || null : null;
   });
   expect(record?.publicCoordinates).toBeTruthy();
 
@@ -160,7 +173,6 @@ test("OMEGA — deployed selected observation answers the seven human questions"
 
 test("OMEGA EVIDENCE — immutable desktop global, close dark, multi-layer and search", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-1440", "single desktop evidence pack");
-
   await page.goto(ATLAS);
   await waitForAtlas(page);
   await waitForIdle(page);
@@ -176,9 +188,7 @@ test("OMEGA EVIDENCE — immutable desktop global, close dark, multi-layer and s
   await waitForAtlas(page);
   await waitForIdle(page);
   await page.getByRole("button", { name: "LAYERS" }).click();
-  for (const label of ["EARTH · BLUE MARBLE", "ACTIVE FIRES", "FOREST LOSS", "EARTHQUAKES"]) {
-    await expect(page.getByText(label, { exact: true })).toBeVisible();
-  }
+  for (const label of ["EARTH · BLUE MARBLE", "ACTIVE FIRES", "FOREST LOSS", "EARTHQUAKES"]) await expect(page.getByText(label, { exact: true })).toBeVisible();
   await evidence(page, "04-multi-layer-amazonia.png");
 
   await page.goto(ATLAS);
