@@ -24,26 +24,36 @@ const EPSILON_CENTER = 0.01;
  *
  * A cross-product return carrying both `z` and `c` is an explicit user-created
  * camera state. Responsive MapLibre/layout settling may otherwise adjust that
- * camera after construction (the 430px Gate-1 failure). Preserve the explicit
- * camera through load/style/resize/idle settling, then relinquish authority on
- * the first genuine user camera gesture. This is event-driven: no polling and
- * no permanent camera lock.
+ * camera after construction. Preserve the explicit camera through
+ * load/style/resize/idle settling, then relinquish authority on the first
+ * genuine user camera gesture.
+ *
+ * Important: ATLAS itself continuously serialises camera changes back into
+ * `z`/`c`. Those self-authored URL writes must never restart this authority or
+ * promote a transient responsive camera into the new return target. Therefore
+ * the effect is keyed only by pathname + semantic record identity. A genuine
+ * cross-product return remounts ATLAS (or changes record), so it still captures
+ * the current returned `z`/`c` exactly once.
  */
 export function AtlasReturnCameraAuthority() {
-  const { pathname, search } = useLocation();
+  const location = useLocation();
+  const { pathname, search } = location;
+  const record = new URLSearchParams(search).get("record") || "";
 
   useEffect(() => {
     if (!pathname.startsWith("/atlas")) return;
 
-    const params = new URLSearchParams(search);
+    // Read the camera from the current location only when semantic return
+    // authority starts. Do not subscribe this effect to later z/c URL writes.
+    const params = new URLSearchParams(window.location.search);
     const zoom = Number(params.get("z"));
     const center = (params.get("c") || "").split(",").map(Number);
     if (!Number.isFinite(zoom) || center.length !== 2 || center.some((n) => !Number.isFinite(n))) return;
 
     // This guard is specifically for reconstructed cross-product/record context,
-    // not generic ATLAS deep links. A plain explicit camera still remains fully
-    // user-owned from first render.
-    if (!params.get("record")) return;
+    // not generic ATLAS deep links. A plain explicit camera remains user-owned
+    // from first render.
+    if (!record) return;
 
     const target = { zoom, center: [center[0], center[1]] as [number, number] };
     let disposed = false;
@@ -79,8 +89,7 @@ export function AtlasReturnCameraAuthority() {
 
       // Cross-product navigation can leave window.__4planet_map pointing at the
       // previously unmounted ATLAS instance until the new World publishes its
-      // map. Never bind return-camera authority to a detached/stale canvas;
-      // wait one frame for the current ATLAS map instead.
+      // map. Never bind return-camera authority to a detached/stale canvas.
       if (!candidate || (candidateCanvas && !candidateCanvas.isConnected)) {
         mountFrame = requestAnimationFrame(attach);
         return;
@@ -94,9 +103,6 @@ export function AtlasReturnCameraAuthority() {
       canvas?.addEventListener("touchstart", release, { passive: true });
       canvas?.addEventListener("wheel", release, { passive: true });
 
-      // Apply after the current World map has been exposed, then let the event
-      // hooks own any subsequent responsive/style settling until the user takes
-      // control.
       restore();
       requestAnimationFrame(restore);
     };
@@ -107,7 +113,7 @@ export function AtlasReturnCameraAuthority() {
       if (mountFrame) cancelAnimationFrame(mountFrame);
       release();
     };
-  }, [pathname, search]);
+  }, [pathname, record]);
 
   return null;
 }
