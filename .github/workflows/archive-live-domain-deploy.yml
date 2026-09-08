@@ -55,7 +55,7 @@ jobs:
           expected='c78f3b9814e823fdaa9167ccc784d2a88283215d'
 
           for path in / /atlas /species /living-systems /impact; do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${upstream}${path#/}")
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${upstream}${path}")
             [ "$code" = '200' ] || { echo "Pinned old LIVE artifact failed before switch: ${path} -> ${code}"; exit 4; }
           done
 
