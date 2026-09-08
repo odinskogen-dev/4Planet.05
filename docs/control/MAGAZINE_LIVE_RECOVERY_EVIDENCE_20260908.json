@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "record_type": "P0_LIVE_IDENTITY_RECOVERY_EVIDENCE",
+  "product": "MAGAZINE",
+  "public_domains": ["https://4planetmagazine.com/", "https://4planetmagazine.com/films/"],
+  "recovered_at": "2026-09-08",
+  "exact_source": {
+    "branch": "work/magazine-public-launch-gold-01",
+    "sha": "0c201fd0bb64be12eb7b4dba481ade4680fa90d2",
+    "immutable_pages_deployment": "https://6c806159.4planet-05.pages.dev",
+    "worker_version_id": "92da5327-dcdc-4e1f-a2e2-0f1bd5662262"
+  },
+  "runtime_readback": {
+    "source_sha_header_verified": true,
+    "magazine_root_pass": true,
+    "films_root_pass": true,
+    "published_film_routes_expected": 40,
+    "published_film_routes_passed": 40,
+    "sitemap_and_crawler_proof": true,
+    "dark_mode_present_and_persistent": true,
+    "browser_qa": "PASS_CHROMIUM_WEBKIT_320_TO_1920"
+  },
+  "must_not_lose": [
+    "4PLANET Films public surface",
+    "all canonical published Film routes",
+    "Magazine dark/light theme toggle",
+    "persistent Magazine theme state",
+    "Magazine/Films source and truth semantics",
+    "exact source-SHA runtime readback",
+    "sitemap and crawler visibility"
+  ],
+  "release_control_law": {
+    "sandbox_live_write_authority": false,
+    "historical_artifact_may_not_be_repinned_from_stale_registry_metadata": true,
+    "runtime_identity_readback_required_before_and_after_live_mutation": true,
+    "pre_films_or_pre_dark_artifact_is_release_regression": true,
+    "founder_release_required_for_future_live_mutation": true
+  },
+  "canonical_registry_update_required": true,
+  "note": "Evidence/control record only. Must be atomically reconciled into PRODUCT_SURFACE_REGISTRY during final P0 release-control integration; it does not create a competing product authority."
+}
