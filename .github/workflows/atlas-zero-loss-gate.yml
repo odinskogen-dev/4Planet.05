@@ -263,21 +263,25 @@ jobs:
           }
           const selectedRecordVariants = [
             '06-selected-record.png',
-            '06-selected-record-provider-unavailable.png'
+            '06-selected-record-provider-unavailable.png',
+            '06-selected-record-no-public-coordinates.png'
           ];
           const selectedRecordShot = selectedRecordVariants.find((shot) => fs.existsSync(`artifacts/atlas-gold/${shot}`));
           if (!selectedRecordShot) {
-            throw new Error('Missing selected-record evidence: require live provider record OR explicit provider-unavailable-not-zero screenshot');
+            throw new Error('Missing selected-record evidence: require public live record, provider-unavailable-not-zero, OR provider-available-without-public-coordinates proof');
           }
           const evidenceShots = [...fixedShots, selectedRecordShot];
+          const selectedRecordEvidenceState = selectedRecordShot === '06-selected-record.png'
+            ? 'LIVE_PROVIDER_RECORD'
+            : selectedRecordShot === '06-selected-record-provider-unavailable.png'
+              ? 'PROVIDER_UNAVAILABLE_NOT_ZERO'
+              : 'PROVIDER_AVAILABLE_NO_PUBLIC_COORDINATES';
           fs.writeFileSync('atlas-deployed-evidence.json', JSON.stringify({
             exactSha: process.env.EXACT_SHA,
             immutableAtlasUrl: `${url}/atlas`,
             browsers: ['Chromium desktop 1440','Chromium 390x844','Chromium 430x932','WebKit desktop','WebKit 390x844','WebKit 430x932'],
             screenshots: evidenceShots,
-            selectedRecordEvidenceState: selectedRecordShot === '06-selected-record.png'
-              ? 'LIVE_PROVIDER_RECORD'
-              : 'PROVIDER_UNAVAILABLE_NOT_ZERO',
+            selectedRecordEvidenceState,
             liveMergeAuthorised: false,
             kingTestMergeAuthorised: false,
             verdict: 'ATLAS HUMAN GOLD OMEGA — EXACT DEPLOYED GATE PASSED'
