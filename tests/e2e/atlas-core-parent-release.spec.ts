@@ -94,24 +94,36 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(settled.lng - target.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(settled.lat - target.lat)).toBeLessThanOrEqual(0.05);
 
-  // The camera becomes user-owned only after a genuine input boundary. A raw
-  // map.jumpTo() is application code, not a user gesture, so it must not be used
-  // to claim that startup authority should have released. Explicitly cross the
-  // same pointer boundary a real touch/drag crosses, then prove later map state
-  // is no longer reclaimed by return-camera reconstruction.
+  // Prove user ownership with an actual browser input, not application code.
+  // The wheel event is delivered by Playwright through the browser input stack,
+  // which crosses ATLAS' real user-release boundary and changes the live camera.
   const canvas = page.locator("canvas.maplibregl-canvas");
-  await canvas.dispatchEvent("pointerdown", { pointerType: "touch", isPrimary: true, button: 0, buttons: 1 });
-  await page.evaluate(() => {
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.wheel(0, -700);
+  await page.waitForFunction(() => {
     const map = (window as any).__4planet_map;
-    map.jumpTo({ center: [-7.1, 47.1], zoom: 8.1 });
-  });
-  await page.waitForTimeout(700);
+    return map && !map.isMoving() && !map.isZooming() && !map.isEasing();
+  }, undefined, { timeout: 8_000 }).catch(() => {});
+  await page.waitForTimeout(400);
+
   const userOwned = await page.evaluate(() => {
     const map = (window as any).__4planet_map;
     const center = map.getCenter();
     return { zoom: map.getZoom(), lng: center.lng, lat: center.lat };
   });
-  expect(Math.abs(userOwned.zoom - 8.1)).toBeLessThanOrEqual(0.05);
-  expect(Math.abs(userOwned.lng - -7.1)).toBeLessThanOrEqual(0.05);
-  expect(Math.abs(userOwned.lat - 47.1)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(userOwned.zoom - target.zoom)).toBeGreaterThan(0.1);
+
+  // Responsive/style settling must not reclaim the original return camera once
+  // a genuine user gesture has taken ownership.
+  await page.waitForTimeout(1_200);
+  const afterSettle = await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    const center = map.getCenter();
+    return { zoom: map.getZoom(), lng: center.lng, lat: center.lat };
+  });
+  expect(Math.abs(afterSettle.zoom - userOwned.zoom)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(afterSettle.lng - userOwned.lng)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(afterSettle.lat - userOwned.lat)).toBeLessThanOrEqual(0.05);
 });
