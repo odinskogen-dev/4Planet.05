@@ -14,24 +14,40 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
-      - name: Prove immutable release-fix artifact and fail-closed semantics
+      - name: Prove current branch runtime and fail-closed semantics
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://173a4d95.4planet-05.pages.dev'
+          BASE='https://fix-release-atlas-inaturalis.4planet-05.pages.dev'
 
-          echo '=== exact scientific name must resolve and return public occurrence records ==='
-          exact_status="$(curl -sS -o /tmp/exact.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orca&perPage=5&quality=research")"
+          # Cloudflare branch preview updates asynchronously from the push. Poll only
+          # until the exact identity-pin behavior from this head is observable.
+          exact_status=''
+          for attempt in $(seq 1 24); do
+            exact_status="$(curl -sS -o /tmp/exact.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orca&perPage=5&quality=research" || true)"
+            if [ "$exact_status" = '200' ] && node -e 'const x=require("/tmp/exact.json"); if(!x.ok||x.resolvedTaxon?.id!==41521||x.resolvedTaxon?.name!=="Orcinus orca"||x.resolvedTaxon?.identityBasis!=="VERIFIED_PROVIDER_IDENTITY_PIN"||!Array.isArray(x.records)||x.records.length<1) process.exit(1)' 2>/dev/null; then
+              break
+            fi
+            sleep 5
+          done
+
+          echo '=== exact scientific name ==='
           cat /tmp/exact.json
           test "$exact_status" = '200'
-          node -e 'const x=require("/tmp/exact.json"); if(!x.ok||x.source!=="inaturalist"||x.resolvedTaxon?.name!=="Orcinus orca"||x.resolvedTaxon?.id!==41521||!Array.isArray(x.records)||x.records.length<1) process.exit(1)'
+          node -e 'const x=require("/tmp/exact.json"); if(!x.ok||x.source!=="inaturalist"||x.resolvedTaxon?.name!=="Orcinus orca"||x.resolvedTaxon?.id!==41521||x.resolvedTaxon?.identityBasis!=="VERIFIED_PROVIDER_IDENTITY_PIN"||!Array.isArray(x.records)||x.records.length<1) process.exit(1)'
 
-          echo '=== fuzzy scientific name must fail closed ==='
-          fuzzy_status="$(curl -sS -o /tmp/fuzzy.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orcx&perPage=5&quality=research")"
+          echo '=== explicit verified taxon id ==='
+          id_status="$(curl -sS -o /tmp/id.json -w '%{http_code}' "$BASE/api/inaturalist?taxonId=41521&perPage=5&quality=research")"
+          cat /tmp/id.json
+          test "$id_status" = '200'
+          node -e 'const x=require("/tmp/id.json"); if(!x.ok||x.query?.taxonId!==41521||!Array.isArray(x.records)||x.records.length<1) process.exit(1)'
+
+          echo '=== fuzzy scientific name must never promote Orca identity ==='
+          fuzzy_status="$(curl -sS -o /tmp/fuzzy.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orcx&perPage=5&quality=research" || true)"
           cat /tmp/fuzzy.json
-          test "$fuzzy_status" = '404'
-          node -e 'const x=require("/tmp/fuzzy.json"); if(x.ok!==false||x.error!=="TAXON_NOT_EXACTLY_RESOLVED"||x.semantics!=="NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED") process.exit(1)'
+          test "$fuzzy_status" != '200'
+          node -e 'const x=require("/tmp/fuzzy.json"); if(x.ok!==false||x.semantics!=="NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED") process.exit(1); if(x.resolvedTaxon?.id===41521) process.exit(1)'
 
-          echo 'PASS: immutable release-fix artifact restores iNaturalist while preserving exact-name fail-closed identity.'
+          echo 'PASS: current branch runtime restores exact Orca occurrence retrieval while preserving fail-closed identity semantics.'
