@@ -100,6 +100,7 @@ jobs:
             tests/e2e/map-interactivity.spec.ts \
             tests/e2e/atlas-founder-proof.spec.ts \
             tests/e2e/atlas-omega-gold.spec.ts \
+            tests/e2e/atlas-core-parent-release.spec.ts \
             --project=desktop-1440 \
             --project=mobile-390 \
             --grep-invert="one existing search surface resolves human signal intent to canonical data layers"
@@ -167,6 +168,7 @@ jobs:
             tests/e2e/map-interactivity.spec.ts \
             tests/e2e/atlas-founder-proof.spec.ts \
             tests/e2e/atlas-omega-gold.spec.ts \
+            tests/e2e/atlas-core-parent-release.spec.ts \
             --project=desktop-1440 \
             --project=mobile-390 \
             --project=mobile-430
@@ -183,6 +185,7 @@ jobs:
             tests/e2e/map-interactivity.spec.ts \
             tests/e2e/atlas-founder-proof.spec.ts \
             tests/e2e/atlas-omega-gold.spec.ts \
+            tests/e2e/atlas-core-parent-release.spec.ts \
             --project=webkit-desktop \
             --project=webkit-390 \
             --project=webkit-430
