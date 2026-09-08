@@ -1,0 +1,78 @@
+name: ATLAS iNaturalist release diagnostic
+
+on:
+  push:
+    branches:
+      - fix/release-atlas-inaturalist-20260909
+    paths:
+      - '.github/workflows/atlas-inaturalist-release-diagnostic.yml'
+      - 'functions/api/inaturalist.ts'
+      - 'tests/e2e/atlas-omega-gold.spec.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Prove current branch runtime and fail-closed semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://fix-release-atlas-inaturalis.4planet-05.pages.dev'
+
+          # Cloudflare branch preview updates asynchronously from the push. Poll
+          # until this head's explicit availability contract is observable.
+          exact_status=''
+          for attempt in $(seq 1 24); do
+            exact_status="$(curl -sS -o /tmp/exact.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orca&perPage=5&quality=research" || true)"
+            if node -e '
+              const x=require("/tmp/exact.json");
+              const identity=x.resolvedTaxon?.id===41521 && x.resolvedTaxon?.name==="Orcinus orca" && x.resolvedTaxon?.identityBasis==="VERIFIED_PROVIDER_IDENTITY_PIN";
+              const live=process.argv[1]==="200" && x.ok===true && x.availability==="available" && identity && Array.isArray(x.records) && x.records.length>0;
+              const down=process.argv[1]==="503" && x.ok===false && x.availability==="unavailable" && x.semantics==="SOURCE_UNAVAILABLE_NOT_ZERO" && identity && x.totalResults===undefined && x.records===undefined;
+              if(!live&&!down) process.exit(1);
+            ' "$exact_status" 2>/dev/null; then
+              break
+            fi
+            sleep 5
+          done
+
+          echo '=== exact scientific name: real data OR explicit unavailable-not-zero ==='
+          cat /tmp/exact.json
+          test "$exact_status" = '200' -o "$exact_status" = '503'
+          node -e '
+            const x=require("/tmp/exact.json");
+            const status=process.argv[1];
+            const identity=x.resolvedTaxon?.id===41521 && x.resolvedTaxon?.name==="Orcinus orca" && x.resolvedTaxon?.identityBasis==="VERIFIED_PROVIDER_IDENTITY_PIN";
+            if(!identity) process.exit(1);
+            if(status==="200" && !(x.ok===true && x.availability==="available" && Array.isArray(x.records) && x.records.length>0)) process.exit(1);
+            if(status==="503" && !(x.ok===false && x.availability==="unavailable" && x.semantics==="SOURCE_UNAVAILABLE_NOT_ZERO" && x.totalResults===undefined && x.records===undefined)) process.exit(1);
+          ' "$exact_status"
+
+          echo '=== explicit verified taxon id: real data OR explicit unavailable-not-zero ==='
+          id_status="$(curl -sS -o /tmp/id.json -w '%{http_code}' "$BASE/api/inaturalist?taxonId=41521&perPage=5&quality=research" || true)"
+          cat /tmp/id.json
+          test "$id_status" = '200' -o "$id_status" = '503'
+          node -e '
+            const x=require("/tmp/id.json");
+            const status=process.argv[1];
+            if(status==="200" && !(x.ok===true && x.query?.taxonId===41521 && Array.isArray(x.records) && x.records.length>0)) process.exit(1);
+            if(status==="503" && !(x.ok===false && x.availability==="unavailable" && x.semantics==="SOURCE_UNAVAILABLE_NOT_ZERO" && x.resolvedTaxon?.id===41521 && x.totalResults===undefined && x.records===undefined)) process.exit(1);
+          ' "$id_status"
+
+          echo '=== fuzzy scientific name must never promote Orca identity ==='
+          fuzzy_status="$(curl -sS -o /tmp/fuzzy.json -w '%{http_code}' "$BASE/api/inaturalist?q=Orcinus%20orcx&perPage=5&quality=research" || true)"
+          cat /tmp/fuzzy.json
+          test "$fuzzy_status" = '404' -o "$fuzzy_status" = '503'
+          node -e '
+            const x=require("/tmp/fuzzy.json");
+            const status=process.argv[1];
+            if(x.ok!==false || x.resolvedTaxon?.id===41521) process.exit(1);
+            if(status==="404" && !(x.error==="TAXON_NOT_EXACTLY_RESOLVED" && x.semantics==="NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED")) process.exit(1);
+            if(status==="503" && !(x.availability==="unavailable" && x.semantics==="SOURCE_UNAVAILABLE_NO_EXACT_IDENTITY_NOT_ZERO" && x.totalResults===undefined && x.records===undefined)) process.exit(1);
+          ' "$fuzzy_status"
+
+          echo 'PASS: current branch runtime proves provider-up/provider-down truth semantics and fail-closed identity.'
