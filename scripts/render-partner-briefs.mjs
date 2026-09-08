@@ -17,10 +17,31 @@ const briefs = [
   ["science", "4planet-science-data-brief.pdf"],
 ];
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+async function gotoWithProvisioningRetry(page, url) {
+  let lastError;
+  for (let attempt = 1; attempt <= 45; attempt += 1) {
+    try {
+      const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
+      if (response && response.status() < 500) {
+        await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+        if (attempt > 1) console.log(`PARTNERS_TLS_READY_AFTER_ATTEMPT=${attempt}`);
+        return response;
+      }
+      lastError = new Error(`HTTP ${response?.status() ?? "unknown"}`);
+    } catch (error) {
+      lastError = error;
+    }
+    console.log(`PARTNERS_PREVIEW_PROVISIONING_WAIT=${attempt}/45 ${String(lastError?.message || lastError).split("\n")[0]}`);
+    await sleep(4000);
+  }
+  throw lastError || new Error(`PARTNERS_RENDER_FAIL preview never became browser-ready: ${url}`);
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   const desktop = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
-  await desktop.goto(`${base}/`, { waitUntil: "networkidle" });
+  await gotoWithProvisioningRetry(desktop, `${base}/`);
   const body = await desktop.locator("body").innerText();
   if (!body.includes("The living world is connected.")) throw new Error("PARTNERS_RENDER_FAIL homepage thesis missing");
   const robots = await desktop.locator('meta[name="robots"]').getAttribute("content");
@@ -28,14 +49,14 @@ try {
   await desktop.screenshot({ path: path.join(evidence, "partners-home-desktop.png"), fullPage: true });
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
-  await mobile.goto(`${base}/`, { waitUntil: "networkidle" });
+  await gotoWithProvisioningRetry(mobile, `${base}/`);
   const horizontalOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (horizontalOverflow > 2) throw new Error(`PARTNERS_RENDER_FAIL mobile horizontal overflow ${horizontalOverflow}px`);
   await mobile.screenshot({ path: path.join(evidence, "partners-home-mobile.png"), fullPage: true });
   await mobile.close();
 
   for (const [slug, filename] of briefs) {
-    await desktop.goto(`${base}/briefs/${slug}`, { waitUntil: "networkidle" });
+    await gotoWithProvisioningRetry(desktop, `${base}/briefs/${slug}`);
     const text = await desktop.locator("body").innerText();
     if (!text.includes("4PLANET")) throw new Error(`PARTNERS_RENDER_FAIL brief content missing ${slug}`);
     const target = path.join(out, filename);
