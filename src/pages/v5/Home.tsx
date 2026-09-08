@@ -7,6 +7,7 @@ import { img, type ImageKey } from "@/content/imageRegistry";
 import { IMPACT_UNITS } from "@/data/impactUnits";
 import type { DomainKey } from "@/types/content";
 import { AtlasHero } from "./AtlasHero";
+import { HomeAtlasEmbed } from "./HomeAtlasEmbed";
 
 const mono: React.CSSProperties = {
   fontFamily: T.mono,
@@ -157,6 +158,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomeAtlasEmbed />
 
       <section style={{ background: "#fff", color: T.ink }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,7vw,100px) clamp(20px,5vw,72px)" }}>
