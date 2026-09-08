@@ -17,7 +17,7 @@ const BASE = "https://api.inaturalist.org/v1";
 // Each entry must be independently verified against the named provider and keyed
 // by the exact scientific name. It exists because iNaturalist name-resolution
 // requests are currently rate-limited from Cloudflare egress while ID-based
-// observation requests remain healthy. Unknown/fuzzy names never use this map.
+// observation requests may remain healthy. Unknown/fuzzy names never use this map.
 const VERIFIED_PROVIDER_TAXA: Record<string, {
   id: number;
   name: string;
@@ -86,6 +86,39 @@ function commercialWebStatus(licence: string) {
   return "REVIEW_REQUIRED";
 }
 
+const providerUnavailableReason = (status: number) => status === 429 ? "RATE_LIMITED" : "PROVIDER_UNAVAILABLE";
+
+const unavailablePayload = ({
+  reason,
+  upstreamStatus = null,
+  query = null,
+  resolvedTaxon = null,
+  identityResolved = false,
+}: {
+  reason: string;
+  upstreamStatus?: number | null;
+  query?: unknown;
+  resolvedTaxon?: unknown;
+  identityResolved?: boolean;
+}) => ({
+  ok: false,
+  source: "inaturalist",
+  availability: "unavailable",
+  reason,
+  upstreamStatus,
+  retryable: true,
+  resolvedTaxon,
+  query,
+  semantics: identityResolved
+    ? "SOURCE_UNAVAILABLE_NOT_ZERO"
+    : "SOURCE_UNAVAILABLE_NO_EXACT_IDENTITY_NOT_ZERO",
+  limitations: [
+    "Provider unavailability is not evidence of zero observations, absence, population decline or range change.",
+    "Occurrences, when available, are reported observations, not range, abundance, population trend or live tracking.",
+    "No fuzzy or guessed taxon identity is promoted while source resolution is unavailable.",
+  ],
+});
+
 async function resolveExactTaxon(query: string) {
   const want = query.toLocaleLowerCase("en");
   const verified = VERIFIED_PROVIDER_TAXA[want];
@@ -123,13 +156,19 @@ async function resolveExactTaxon(query: string) {
     },
     cf: { cacheTtl: 86400 } as RequestInit["cf"],
   });
-  if (!response.ok) return { ok: false as const, error: `TAXON_UPSTREAM_${response.status}` };
+  if (!response.ok) {
+    return {
+      ok: false as const,
+      error: `TAXON_UPSTREAM_${response.status}`,
+      upstreamStatus: response.status,
+    };
+  }
   const data = await response.json() as any;
-  if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH" };
+  if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH", upstreamStatus: null };
 
   const exactRow = data.results.find((row: any) => String(row?.taxon?.name || "").trim().toLocaleLowerCase("en") === want);
   const exact = exactRow?.taxon;
-  if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED" };
+  if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED", upstreamStatus: null };
 
   return {
     ok: true as const,
@@ -179,10 +218,29 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
     providerIdentityUrl?: string | null;
   } | null = null;
 
+  const queryShape = () => ({
+    input: query || null,
+    taxonId,
+    page,
+    perPage,
+    quality,
+    d1,
+    d2,
+    bbox: bboxProvided ? { swlat, swlng, nelat, nelng } : null,
+  });
+
   if (!taxonId && query) {
     try {
       const resolved = await resolveExactTaxon(query);
       if (!resolved.ok) {
+        if (resolved.upstreamStatus) {
+          return json(unavailablePayload({
+            reason: providerUnavailableReason(resolved.upstreamStatus),
+            upstreamStatus: resolved.upstreamStatus,
+            query: { input: query },
+            identityResolved: false,
+          }), 503, 60);
+        }
         const status = resolved.error === "TAXON_NOT_EXACTLY_RESOLVED" ? 404 : 502;
         return json({
           ok: false,
@@ -195,7 +253,11 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       resolvedTaxon = resolved.taxon;
       taxonId = resolved.taxon.id;
     } catch {
-      return json({ ok: false, source: "inaturalist", error: "TAXON_RESOLUTION_FAILURE", query }, 502, 60);
+      return json(unavailablePayload({
+        reason: "TAXON_RESOLUTION_FAILURE",
+        query: { input: query },
+        identityResolved: false,
+      }), 503, 60);
     }
   }
 
@@ -226,10 +288,25 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
       },
       cf: { cacheTtl: 300 } as RequestInit["cf"],
     });
-    if (!response.ok) return json({ ok: false, source: "inaturalist", error: `UPSTREAM_${response.status}` }, 502, 60);
+    if (!response.ok) {
+      return json(unavailablePayload({
+        reason: providerUnavailableReason(response.status),
+        upstreamStatus: response.status,
+        query: queryShape(),
+        resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+        identityResolved: Boolean(resolvedTaxon || taxonId),
+      }), 503, 60);
+    }
 
     const data = await response.json() as any;
-    if (!Array.isArray(data?.results)) return json({ ok: false, source: "inaturalist", error: "CONTRACT_MISMATCH" }, 502, 60);
+    if (!Array.isArray(data?.results)) {
+      return json(unavailablePayload({
+        reason: "PROVIDER_CONTRACT_MISMATCH",
+        query: queryShape(),
+        resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+        identityResolved: Boolean(resolvedTaxon || taxonId),
+      }), 503, 60);
+    }
 
     const records = data.results.map((row: any) => {
       const publicCoords = Array.isArray(row?.geojson?.coordinates) && row.geojson.coordinates.length >= 2
@@ -274,10 +351,11 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
     return json({
       ok: true,
       source: "inaturalist",
+      availability: "available",
       api: "https://api.inaturalist.org/v1",
       retrievedAt: new Date().toISOString(),
       resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
-      query: { input: query || null, taxonId, page, perPage, quality, d1, d2, bbox: bboxProvided ? { swlat, swlng, nelat, nelng } : null },
+      query: queryShape(),
       totalResults: Number(data?.total_results ?? records.length),
       records,
       semantics: records.length ? "PUBLIC_OCCURRENCE_RECORDS_RETURNED" : "NO_OBSERVATIONS_RETURNED_FOR_QUERY",
@@ -288,8 +366,13 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         "Scientific-name query identity is exact-match only; verified provider identity pins may be used when provider name-resolution is rate-limited, and fuzzy names are never promoted.",
       ],
     }, 200, 300);
-  } catch (error) {
-    return json({ ok: false, source: "inaturalist", error: String((error as Error)?.message || error) }, 502, 60);
+  } catch {
+    return json(unavailablePayload({
+      reason: "NETWORK_FAILURE",
+      query: queryShape(),
+      resolvedTaxon: resolvedTaxon || (taxonId ? { id: taxonId, name: null, preferredCommonName: null, rank: null } : null),
+      identityResolved: Boolean(resolvedTaxon || taxonId),
+    }), 503, 60);
   }
 };
 
