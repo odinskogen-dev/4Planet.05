@@ -36,8 +36,8 @@ jobs:
           [ -n "$account_id" ] || exit 3
 
           domains=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "${api}/accounts/${account_id}/workers/domains")
-          echo '=== CUSTOM DOMAINS ON 4planet-four-state-control-v1 ==='
-          jq -r '.result[]? | select(.service == "4planet-four-state-control-v1") | [.hostname,.service,.environment,.zone_name,.id] | @tsv' <<<"$domains"
+          echo '=== CURRENT CUSTOM DOMAIN BINDINGS ==='
+          jq -r '.result[]? | select(.hostname == "test.4planet.org" or .hostname == "archive.4planet.org") | [.hostname,.service,.environment,.zone_name,.id] | @tsv' <<<"$domains"
 
           echo '=== ARCHIVE PUBLIC HEADERS ==='
           curl -sSIL --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' | sed -n '1,80p' || true
@@ -45,10 +45,18 @@ jobs:
           echo '=== ARCHIVE HTML TITLE ==='
           curl -sSL --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr '\n' ' ' | sed -n 's/.*<title>\([^<]*\)<\/title>.*/\1/p' | head -1 || true
 
-          echo '=== EXISTING WORKER UPSTREAM URL REFS ==='
-          tmp=$(mktemp)
-          if curl -fsS -H "Authorization: Bearer $TOKEN" "${api}/accounts/${account_id}/workers/services/4planet-four-state-control-v1/environments/production/content" -o "$tmp"; then
-            grep -Eo 'https://[A-Za-z0-9._/-]+\.pages\.dev[A-Za-z0-9._/?=&%-]*|https://[A-Za-z0-9._/-]+\.4planet[^"[:space:]]*' "$tmp" | sort -u | head -40 || true
-          elif curl -fsS -H "Authorization: Bearer $TOKEN" "${api}/accounts/${account_id}/workers/scripts/4planet-four-state-control-v1/content" -o "$tmp"; then
-            grep -Eo 'https://[A-Za-z0-9._/-]+\.pages\.dev[A-Za-z0-9._/?=&%-]*|https://[A-Za-z0-9._/-]+\.4planet[^"[:space:]]*' "$tmp" | sort -u | head -40 || true
-          fi
+          echo '=== ARCHIVE ROUTE CHECKS ==='
+          for path in / /atlas /species /living-systems /impact; do
+            tmp=$(mktemp)
+            code=$(curl -sS -L -o "$tmp" -w '%{http_code}' --connect-timeout 10 --max-time 30 "https://archive.4planet.org${path}" || true)
+            echo "${path} -> ${code}"
+            if [ "$code" != '200' ]; then
+              echo "--- body ${path} ---"
+              head -c 1200 "$tmp" || true
+              echo
+            fi
+          done
+
+          echo '=== TEST ROOT CHECK ==='
+          code=$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://test.4planet.org/' || true)
+          echo "test.4planet.org -> ${code}"
