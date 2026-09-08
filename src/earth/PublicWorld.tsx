@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
@@ -28,20 +28,6 @@ function retainedContext(search: string) {
   return query ? `?${query}` : "";
 }
 
-function restoredCamera(search: string) {
-  const params = new URLSearchParams(search);
-  if (!params.has("z") || !params.has("c")) return null;
-  const zoom = Number(params.get("z"));
-  const center = (params.get("c") || "").split(",").map(Number);
-  if (!Number.isFinite(zoom) || center.length !== 2 || center.some((value) => !Number.isFinite(value))) return null;
-  return { zoom, center: center as [number, number] };
-}
-
-function returnAuthorityKey(pathname: string, search: string) {
-  const params = new URLSearchParams(search);
-  return [pathname, params.get("record") || "", params.get("journey") || "", params.get("entity") || ""].join("|");
-}
-
 function webglAvailable() {
   if (typeof document === "undefined") return false;
   try {
@@ -60,127 +46,14 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
-  const cameraAuthorityKey = useMemo(
-    () => returnAuthorityKey(location.pathname, location.search),
-    [location.pathname, location.search],
-  );
 
-  // Explicit ATLAS return state owns only the bounded startup reconstruction.
-  // MapLibre may resize after style/projection and the narrow mobile sheet settle,
-  // so fixed timers alone are not sufficient. Reconcile after actual canvas-size
-  // changes during a short startup window, then release permanently. Any real
-  // user camera input releases immediately; this never becomes a camera lock.
-  //
-  // Critical authority rule: World writes z/c back into the URL while the map is
-  // settling. Those self-authored camera writes must NOT restart this effect and
-  // silently redefine the returned camera target. The dependency is therefore a
-  // stable semantic return key (record/journey/entity), while the z/c target is
-  // captured once when that return context is mounted.
-  useEffect(() => {
-    if (!supported) return;
-    const target = restoredCamera(location.search);
-    if (!target) return;
-
-    let cancelled = false;
-    let released = false;
-    let probeFrame = 0;
-    let firstFrame = 0;
-    let resizeFrame = 0;
-    let settleTimer = 0;
-    const timers: number[] = [];
-    let canvasRef: HTMLCanvasElement | null = null;
-    let resizeObserver: ResizeObserver | null = null;
-    let lastCanvasSize = "";
-
-    const stopStartupAuthority = () => {
-      released = true;
-      resizeObserver?.disconnect();
-      resizeObserver = null;
-      if (settleTimer) {
-        window.clearTimeout(settleTimer);
-        settleTimer = 0;
-      }
-    };
-
-    const reconcile = (map: any) => {
-      if (cancelled || released) return;
-      const center = map.getCenter?.();
-      const zoom = Number(map.getZoom?.());
-      const needsCenter = !center || Math.abs(center.lng - target.center[0]) > 0.00001 || Math.abs(center.lat - target.center[1]) > 0.00001;
-      const needsZoom = !Number.isFinite(zoom) || Math.abs(zoom - target.zoom) > 0.01;
-      map.resize();
-      if (needsCenter || needsZoom) map.jumpTo({ center: target.center, zoom: target.zoom });
-    };
-
-    const bindUserRelease = (map: any) => {
-      canvasRef = map.getCanvas?.() || null;
-      if (!canvasRef) return;
-      canvasRef.addEventListener("pointerdown", stopStartupAuthority, { passive: true });
-      canvasRef.addEventListener("touchstart", stopStartupAuthority, { passive: true });
-      canvasRef.addEventListener("wheel", stopStartupAuthority, { passive: true });
-    };
-
-    const observeStartupResizes = (map: any) => {
-      if (!canvasRef || typeof ResizeObserver === "undefined") return;
-      const scheduleReconcile = () => {
-        if (cancelled || released) return;
-        if (resizeFrame) cancelAnimationFrame(resizeFrame);
-        resizeFrame = requestAnimationFrame(() => reconcile(map));
-      };
-      resizeObserver = new ResizeObserver((entries) => {
-        const rect = entries[0]?.contentRect;
-        if (!rect) return;
-        const nextSize = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
-        if (nextSize === lastCanvasSize) return;
-        lastCanvasSize = nextSize;
-        scheduleReconcile();
-      });
-      resizeObserver.observe(canvasRef);
-      settleTimer = window.setTimeout(stopStartupAuthority, 2800);
-    };
-
-    const apply = (map: any) => {
-      if (cancelled || released) return;
-      bindUserRelease(map);
-      observeStartupResizes(map);
-
-      firstFrame = requestAnimationFrame(() => reconcile(map));
-      for (const delay of [120, 360, 760, 1400, 2200]) {
-        timers.push(window.setTimeout(() => reconcile(map), delay));
-      }
-
-      map.once("idle", () => reconcile(map));
-    };
-
-    const attach = () => {
-      if (cancelled) return;
-      const map = (window as any).__4planet_map;
-      if (!map) {
-        probeFrame = requestAnimationFrame(attach);
-        return;
-      }
-      if (map.isStyleLoaded()) apply(map);
-      else map.once("style.load", () => apply(map));
-    };
-
-    attach();
-    return () => {
-      cancelled = true;
-      resizeObserver?.disconnect();
-      if (probeFrame) cancelAnimationFrame(probeFrame);
-      if (firstFrame) cancelAnimationFrame(firstFrame);
-      if (resizeFrame) cancelAnimationFrame(resizeFrame);
-      if (settleTimer) window.clearTimeout(settleTimer);
-      for (const timer of timers) window.clearTimeout(timer);
-      if (canvasRef) {
-        canvasRef.removeEventListener("pointerdown", stopStartupAuthority);
-        canvasRef.removeEventListener("touchstart", stopStartupAuthority);
-        canvasRef.removeEventListener("wheel", stopStartupAuthority);
-      }
-    };
-    // cameraAuthorityKey deliberately excludes self-authored z/c URL changes.
-  }, [supported, cameraAuthorityKey]);
-
+  // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
+  // mounted at the BrowserRouter level. PublicWorld must never run a second
+  // startup/resize camera reconciler against the same MapLibre instance; two
+  // owners race on narrow responsive layouts and can overwrite the user-created
+  // cross-product return camera. World still initialises directly from URL z/c,
+  // while the single global authority protects that exact state through startup
+  // settling and releases on genuine user camera input.
   if (supported) {
     return (
       <>
