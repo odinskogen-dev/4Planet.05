@@ -179,7 +179,6 @@ export default function PublicWorld() {
       }
     };
     // cameraAuthorityKey deliberately excludes self-authored z/c URL changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supported, cameraAuthorityKey]);
 
   if (supported) {
