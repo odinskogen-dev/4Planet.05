@@ -1,0 +1,87 @@
+{
+  "schema_version": "2.0",
+  "control_state": "FOUR_STATE_INTERNAL_CONTROL_ABSOLUTE_WRITE_AUTHORITY",
+  "control_revision": "2026-09-04.ZERO_LOSS_PRODUCT_AUTHORITY_HARDENING_02",
+  "surface_registry": "docs/control/PRODUCT_SURFACE_REGISTRY.json",
+  "moving_pointer_contract": {
+    "stored_branch_sha_is_observation_not_durable_authority": true,
+    "current_branch_heads_must_be_resolved_from_fresh_git": true,
+    "current_runtime_identity_must_be_resolved_from_fresh_deployment_evidence": true,
+    "stored_observation_mismatch": "FAIL_CLOSED_REVERIFY_BEFORE_MUTATION_PROMOTION_OR_RELEASE",
+    "newest_wins": false,
+    "branch_name_is_authority": false,
+    "deployment_recency_is_authority": false
+  },
+  "authority_model": {
+    "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
+    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "live": "FOUNDER_GATED_IMMUTABLE_ARTIFACT_PROMOTION_ONLY_NO_DEVELOPMENT",
+    "test_heir": {"branch": "king/test", "role": "SOLE_HEIR", "review_host": "https://test.4planet.org", "product_write_authority": true},
+    "sandbox": "ONE_REGISTERED_BRANCH_PER_PRODUCT_MAX_PRODUCT_WRITE_AUTHORITY",
+    "archive_host": "https://archive.4planet.org",
+    "archive": "IMMUTABLE_READ_RENDER_COMPARE_DONATE_ONLY_NO_WRITE_AUTHORITY",
+    "quarantine_pending_archive": "READ_ONLY_DONOR_ZERO_WRITE_AND_CANDIDATE_AUTHORITY",
+    "max_registered_heirs_per_product": 1,
+    "max_registered_sandboxes_per_product": 1,
+    "newest_wins": false,
+    "stable_alias_is_identity_proof": false,
+    "branch_name_is_authority": false,
+    "sandbox_requires_test_heir_ancestry": true,
+    "human_review_required_for_user_facing_promotion": true,
+    "all_material_product_delivery_requires_founder_visible_url": true,
+    "new_candidate_classes_allowed": false,
+    "new_user_facing_idea_requires_registry_before_material_code": true,
+    "unregistered_user_facing_branch_policy": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_FAIL_CLOSED"
+  },
+  "products": {
+    "4PLANET": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED"},
+    "ATLAS": {
+      "heir": "king/test",
+      "sandbox": {"branch": "work/atlas-zero-loss-gold-convergence-01", "registration_sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547", "last_observed_sha": "2002f0cfac364f110182f26c1e0ca4d960466456", "pr": 263, "classification": "SANDBOX", "review_path": "/atlas/sandbox", "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate", "live_authority": false},
+      "last_observed_heir_sha": "dd19870991dbe2d2bf59b38a8adde0c60018eff1",
+      "last_observed_compare": "DIVERGED_AHEAD_21_BEHIND_22_MERGE_BASE_2670eacc48e65a3c0b58dda0ffffd3d6bd0697cf_OBSERVED_2026_09_04",
+      "lineage_state": "STALE_SANDBOX_FAIL_CLOSED_FORWARD_SYNC_SAME_BRANCH_REQUIRED_NO_FURTHER_MUTATION_OR_PROMOTION",
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"
+    },
+    "MAGAZINE": {
+      "heir": "king/test",
+      "sandbox": {"branch": "recovery/testking-magazine", "registration_sha": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0", "last_observed_sha": "b568e04dc676ba3d3d5561516febe5202431c684", "pr": 162, "classification": "SANDBOX", "review_path": "/magazine/sandbox", "purpose": "Dedicated Magazine recovery/convergence lane after live regression incident", "live_authority": false},
+      "live_identity": {"source_sha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795", "immutable_pages_deployment": "https://feb9a95c.4planet-05.pages.dev/", "state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"},
+      "last_observed_heir_sha": "a32d5e051bbb7905c6fa491b21f9050433af7eb2",
+      "last_observed_compare": "DIVERGED_AHEAD_16_BEHIND_20",
+      "lineage_state": "REGISTERED_SANDBOX_DIVERGED_FAIL_CLOSED_FORWARD_SYNC_REQUIRED_BEFORE_FURTHER_MUTATION_OR_PROMOTION",
+      "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"
+    },
+    "SPECIES": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "JAGUAR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_AS_SPECIES_EXPERIENCE", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "ORCA": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "S4PIENS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "4SAPIEN": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_EXISTING_CANON_SEAM", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "FOOD": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "IMPACT": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "LIVING_SYSTEMS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "ACTORS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "PROOF_HUB": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"},
+    "CAPITAL": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY"}
+  },
+  "agent_bootstrap_contract": {
+    "required_before_material_product_mutation": ["fresh_connected_brain_context", "product_surface_registry", "affected_product_registry_entry", "live_released_or_unreleased_state", "fresh_exact_heir_branch_and_sha", "fresh_active_sandbox_head_or_explicit_none", "archive_and_quarantine_donors", "exact_parent_sha", "legal_write_target_heir_or_registered_sandbox", "write_scope", "human_review_url_contract", "return_path_to_heir", "rollback_identity"],
+    "failure_state": "PRODUCT_AUTHORITY_CONTEXT_UNRESOLVED",
+    "failure_effect": "NO_MATERIAL_PRODUCT_MUTATION_NO_NEW_BRANCH_CANDIDATE_NO_HIDDEN_PRODUCT_WORK"
+  },
+  "donor_contract": {"archive_and_quarantine_are_read_only": true, "allowed_source_actions": ["READ", "RENDER", "COMPARE", "EXTRACT_DELTA"], "allowed_destination_states": ["HEIR", "SANDBOX"], "forbidden": ["DEVELOP_SOURCE_IN_PLACE", "REPAIR_SOURCE_IN_PLACE", "MERGE_INTO_ARCHIVE", "RESTART_ARCHIVED_BRANCH", "PROMOTE_DONOR_BRANCH_DIRECTLY"]},
+  "promotion_contract": {
+    "founder_review_requires": ["fresh_exact_branch", "fresh_exact_sha", "working_founder_visible_url", "required_ci_green", "candidate_authority_gate_green", "human_use_and_visual_judgement"],
+    "donor_delta_dispositions": ["ADOPT", "ALREADY_PRESENT", "SUPERSEDED_BY_BETTER_IMPLEMENTATION", "REJECT_WITH_REASON", "DEFER_WITH_REASON"],
+    "sandbox_to_heir": "HUMAN_REVIEW_PLUS_EXACT_SHA_GATES_REQUIRED",
+    "live_promotion": "FOUNDER_AUTHORITY_REQUIRED_EXACT_TESTED_ARTIFACT",
+    "live_manifest": "docs/control/LIVE_PROMOTION_MANIFEST.json",
+    "stored_sha_never_sufficient_for_promotion": true
+  },
+  "factory_contract": {
+    "maker_not_judge": true,
+    "factory_has_product_authority": false,
+    "must_fail_closed_if": ["HEIR_AMBIGUOUS", "SANDBOX_DIVERGED", "CANDIDATE_REGISTER_STALE_UNRESOLVED", "EXACT_SHA_UNAVAILABLE", "PROTOTYPE_SAFE_CONFLICT", "FOUNDER_REJECTED_CANDIDATE_SELECTED", "DEPLOYMENT_PROVENANCE_UNPROVEN"]
+  },
+  "safety": {"no_live_or_main_development_by_this_register": true, "no_archive_development_by_this_register": true, "no_product_development_outside_heir_or_registered_sandbox": true, "no_new_candidate_class": true, "no_canon_authority_change": true, "no_destructive_historical_branch_cleanup_before_donor_disposition": true, "superbrain_remains_shadow_until_explicit_founder_cutover": true, "factory_remains_separate_existing_lineage": true, "physical_repo_admin_enforcement_required_for_100_percent_push_prevention": true}
+}

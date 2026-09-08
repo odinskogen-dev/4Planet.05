@@ -36,7 +36,9 @@ async function openOslo(page: import("@playwright/test").Page) {
 }
 
 test.describe("ATLAS remains interactive while place context is open", () => {
-  test("desktop pan and zoom work and place context can be closed and reopened", async ({ page }) => {
+  test("desktop pan and zoom work and place context can be closed and reopened", async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.name.includes("desktop"), "Desktop mouse/double-click contract; mobile interaction is covered by the dedicated mobile bottom-sheet test.");
+
     await page.goto(ATLAS);
     await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
 

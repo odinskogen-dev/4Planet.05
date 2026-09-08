@@ -221,6 +221,21 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   expect(restored.t).toBe(atlasAfter.t);
   expect(restored.p).toBe(atlasAfter.p);
   expect(restored.l).toBe(atlasAfter.l);
+
+  // The return camera authority is intentionally event-driven. On narrow mobile
+  // layouts MapLibre can finish one responsive/style settle after isStyleLoaded()
+  // becomes true. Wait for the live map to converge to the explicit returned
+  // camera instead of sampling that transient frame. This still fails closed if
+  // the user-created camera is not actually restored.
+  await page.waitForFunction(
+    ({ expectedZoom }) => {
+      const m = (window as any).__4planet_map;
+      return Boolean(m) && Math.abs(m.getZoom() - expectedZoom) <= 0.25;
+    },
+    { expectedZoom: postZoom },
+    { timeout: 8_000 },
+  );
+
   const restoredLive = await mapState(page);
   expect(Math.abs(restoredLive.zoom - postZoom)).toBeLessThanOrEqual(0.25);
   expect(Math.abs(restoredLive.zoom - before.zoom)).toBeGreaterThan(0.1);

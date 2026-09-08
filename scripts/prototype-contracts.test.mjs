@@ -117,9 +117,10 @@ test("public preview headers and status boundaries are committed", () => {
   assert.match(headers, /Content-Security-Policy:/);
   // The old status doc must be unambiguously marked historical, not current truth.
   assert.match(status, /HISTORICAL \/ SUPERSEDED/);
-  // Current status source must state the honest local-candidate truth.
-  assert.match(current, /LOCAL CANDIDATE — NOT PUBLISHED, NOT DEPLOYED, NOT GATE 1 PASSED/);
-  assert.match(current, /de9e01a37482b7678104690056cc6146e9b286a3/);
+  // Current status source must state the current TEST KING truth without implying LIVE authority.
+  assert.match(current, /TEST KING is the sole moving public integration receiver/);
+  assert.match(current, /LIVE promotion is NOT AUTHORISED/);
+  assert.match(current, /GIGA-PLAN-2026-09-02-v3/);
   assert.doesNotMatch(current, /RELEASE GATE CLOSED/);
 });
 

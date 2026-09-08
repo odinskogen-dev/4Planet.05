@@ -1,0 +1,16 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "exact_end_state":{},
+  "accepted_deliveries":[],
+  "rejected_or_corrected_deliveries":[],
+  "open_blockers":[],
+  "new_failures":[],
+  "error_to_immunity_changes":[],
+  "giga_proof_delta":{"PLANET":null,"HUMAN":null,"ACTION_ECONOMICS":null,"COMPOUNDING_FACTORY":null},
+  "founder_decisions_required":[],
+  "next_highest_ev_objectives":[],
+  "desired_state_next_cycle":{},
+  "autonomy_budget_snapshot":{},
+  "writeback_complete":false,
+  "readback_complete":false
+}

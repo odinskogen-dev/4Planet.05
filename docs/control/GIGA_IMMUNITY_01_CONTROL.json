@@ -1,0 +1,62 @@
+{
+  "id": "GIGA-IMMUNITY-01",
+  "status": "ACTIVE_EXECUTION",
+  "authority": {
+    "founder": "Odin Oddekalv",
+    "programme_control": "GPT/AXE",
+    "brain": "current canonical BRAIN/Knowledge OS until explicit cutover",
+    "heir": "king/test",
+    "max_material_lanes": 5
+  },
+  "objective": "CURE_SYSTEMIC_FAILURE__PRODUCE_IRREFUTABLE_PROOF__INCREASE_AUTONOMY_AND_COMPOUNDING",
+  "priority_formula": "REAL_HUMAN_OR_PLANET_VALUE * PROOF_DELTA * REUSE * ECONOMIC_SIGNAL * SPEED / COMPLEXITY / DEPENDENCIES / FOUNDER_BURDEN",
+  "absolute_laws": [
+    "ONE_BRAIN",
+    "ONE_PROGRAMME_CONTROL",
+    "ONE_HEIR",
+    "MAX_ONE_SANDBOX_PER_PRODUCT",
+    "NO_THIRD_KING",
+    "NO_NEWEST_WINS",
+    "NO_GOLD_LOSS",
+    "NO_AUTOMATE_BEFORE_SIMPLIFY",
+    "MAKER_NOT_JUDGE",
+    "NO_ACTIVITY_AS_PROGRESS",
+    "NO_EXTERNAL_SEND_WITHOUT_FOUNDER_RELEASE",
+    "NO_CLAIM_ABOVE_EVIDENCE",
+    "NO_REPEATED_MATERIAL_FAILURE_WITHOUT_NEW_IMMUNITY"
+  ],
+  "immunity_close_rule": "A failure class is closed only when it is physically prevented by authority controls or fails closed before canonical value can be harmed.",
+  "daily_loop": {
+    "night_close": [
+      "exact_end_state",
+      "accepted_deliveries",
+      "rejected_deliveries",
+      "open_blockers",
+      "new_failures",
+      "error_to_immunity_changes",
+      "giga_proof_delta",
+      "founder_decisions_required",
+      "next_highest_ev_objectives",
+      "desired_state_next_cycle",
+      "writeback_readback"
+    ],
+    "morning_boot": [
+      "rehydrate_canonical_truth",
+      "compare_desired_vs_actual",
+      "detect_stale_conflicting_work",
+      "read_previous_failures_learnings",
+      "recompute_giga_ev_priorities",
+      "dispatch_permitted_work",
+      "jidoka_stop_on_abnormality",
+      "escalate_only_founder_or_professional_gates"
+    ]
+  },
+  "lanes": {
+    "A": {"name": "PLANET_GOLD_01_OSLOFJORD", "receiver": "king/test", "state": "ACTIVE"},
+    "B": {"name": "EMBLA_REAL_DECISION_01", "receiver": "EXISTING_REGISTERED_RECEIVER_ONLY", "state": "READY_AFTER_AUTHORITY_RESOLUTION"},
+    "C": {"name": "ACTION_ECONOMIC_PROOF_01", "receiver": "CONTROL_ARTIFACT_ONLY_UNTIL_PRODUCT_RECEIVER_RESOLVED", "state": "ACTIVE_RESEARCH_AND_CONVERSION"},
+    "D": {"name": "OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER", "receiver": "NO_NEW_PRODUCT_LINE", "state": "BLOCKED_UNTIL_OSLOFJORD_PRIMITIVES_STABLE"},
+    "E": {"name": "FACTORY_SUPERBRAIN_PRODUCTION_PROOF", "receiver": "factory/symphony-runtime-v01", "state": "ACTIVE"}
+  },
+  "founder_release_boundary": "No external communication, production release, irreversible canon cutover, payment, legal or financial commitment without explicit Founder authority."
+}
