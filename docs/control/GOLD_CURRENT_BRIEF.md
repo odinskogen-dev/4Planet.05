@@ -19,6 +19,9 @@ The five CORE parent systems are one connected public product family. A release 
 ## PRIMARY ACTION
 Certify the existing `king/test` HEIR as one immutable CORE release candidate. Do not redesign, fork a new KING/HEIR, create another registry, or mutate LIVE during certification.
 
+## SECONDARY DEPTH
+Preserve the proven child and context seams that demonstrate the parent systems without turning child-specific implementation into new parent architecture: ORCA and JAGUAR for SPECIES; OSLOFJORD and AMAZONIA boundaries for LIVING SYSTEMS; source-aware ATLAS context handoff; truthful IMPACT test/proof states; and the shared shell/routes that connect all five CORE parents.
+
 ## CURRENT RELEASE REPAIR
 ATLAS cross-product return-camera ownership was repaired by removing a duplicate startup/resize camera authority from `PublicWorld` and retaining the canonical global `AtlasReturnCameraAuthority`. The final proof semantics were then corrected so user-camera ownership is tested with actual browser wheel input rather than application `map.jumpTo()` masquerading as user input. The genuine CORE shared journey on the exact tested parent passes Chromium desktop/1280/mobile 390/430, including the previously failing mobile-430 ATLAS return-camera seam.
 
@@ -41,6 +44,9 @@ Zero loss and honest release readiness. Candidate recency does not confer author
 Run all affected exact-SHA gates on the resulting commit and bind the successful Cloudflare immutable deployment to that same SHA. Inspect actual browser screenshots/evidence before declaring Human Gold. No further mutation after final freeze unless a release-blocking regression is proven.
 
 ## P4 DEPTH — TRUTH BOUNDARIES
+The release is allowed to expose only the level of certainty the underlying evidence supports. Source availability, delivery state, evidence state and outcome state remain separately represented and fail closed where required.
+
+## TRUTH BOUNDARY
 ATLAS: occurrence ≠ range ≠ population ≠ live tracking. Provider failure must degrade honestly and must never become a fake zero. Fuzzy taxon resolution fails closed.
 
 IMPACT: PAYMENT ≠ DELIVERY ≠ EVIDENCE ≠ OUTCOME ≠ VERIFIED IMPACT. Test records remain explicit tests; no physical/ecological delivery or independent verification is inferred from payment, provider evidence or internal records.
