@@ -12,8 +12,8 @@ export interface MissionSource { title: string; url: string; confidence: "high" 
 export interface MissionContent {
   slug: string;
   domain: DomainKey;
-  code: string;          // "OCE4N_ / 01"
-  name: string;          // "WH4LES_"
+  code: string;
+  name: string;
   hero: string;
   thesis: string;
   issue: string;
@@ -22,9 +22,9 @@ export interface MissionContent {
   whatCanHelp: string;
   fourPlanetRole: string;
   currentStatus: MissionStatusLabel;
-  impactPathway?: string;     // public unit label
-  impactPathwaySlug?: string; // route under /impact/:slug
-  publicStatus?: string;      // "PUBLIC SUPPORT CLOSED"
+  impactPathway?: string;
+  impactPathwaySlug?: string;
+  publicStatus?: string;
   joinLabel: string;
   visualDirection: string;
   atStake?: string;
@@ -34,7 +34,6 @@ export interface MissionContent {
 const ls = (s: string) => s.split("·").map((x) => x.trim()).filter(Boolean);
 
 export const MISSION_CONTENT: MissionContent[] = [
-  // ───────────── OCE4N_ ─────────────
   {
     slug: "cle4n", domain: "OCE4N_", code: "OCE4N_ / 01", name: "CLE4N_",
     hero: "A cleaner ocean, from source to sea.",
@@ -88,8 +87,6 @@ export const MISSION_CONTENT: MissionContent[] = [
     visualDirection: "Deep water, kelp and seagrass texture, shellfish reefs, tidal field notes, restraint and marine scale.",
     sources: [],
   },
-
-  // ───────────── E4RTH_ ─────────────
   {
     slug: "clim4te", domain: "E4RTH_", code: "E4RTH_ / 01", name: "CLIM4TE_",
     hero: "From climate concern to visible restoration.",
@@ -145,8 +142,6 @@ export const MISSION_CONTENT: MissionContent[] = [
     visualDirection: "Soil textures, wild grass, topographic markers, restoration field notes, long-term ecological atmosphere.",
     sources: [],
   },
-
-  // ───────────── S4PIENS_ ─────────────
   {
     slug: "food", domain: "S4PIENS_", code: "S4PIENS_ / 01", name: "FOOD_",
     hero: "Food is ecological infrastructure.",
@@ -199,23 +194,21 @@ export const MISSION_CONTENT: MissionContent[] = [
     visualDirection: "Material swatches, repair detail, garment architecture, studio light, restrained editorial fashion, no generic eco-fashion imagery.",
     sources: [],
   },
-
-  // ───────────── 4CULTURE_ ─────────────
   {
-    slug: "m4gazine", domain: "4CULTURE_", code: "4CULTURE_ / 01", name: "M4GAZINE_",
+    slug: "m4gazine", domain: "4CULTURE_", code: "4CULTURE_ / 01", name: "4PLANET MAGAZINE",
     hero: "Field intelligence for a living planet.",
     thesis: "Facts matter. But facts without attention, context and emotional relevance often fail to enter public life.",
     issue: "Ecological work can remain fragmented, technical or invisible when it lacks a strong narrative layer.",
     whyItMatters: "Journalism, essays, photography, field notes and editorial systems can make complex ecological reality understandable, memorable and culturally present.",
     livingSystem: ls("Reporting · field documentation · science communication · public attention · culture · learning · participation"),
     whatCanHelp: "Rigorous editorial work, source-based storytelling, field reporting, visual essays and formats that connect ecological systems to daily life.",
-    fourPlanetRole: "The editorial engine of 4Planet — mission notes, field intelligence, essays, reports and public storytelling across the system.",
-    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK M4GAZINE_",
+    fourPlanetRole: "The editorial engine of 4PLANET — mission notes, field intelligence, essays, reports and public storytelling across the system.",
+    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "OPEN 4PLANET MAGAZINE",
     visualDirection: "Editorial layouts, field notes, documentary photography, technical captions, printed matter, precise typography.",
     sources: [],
   },
   {
-    slug: "4film", domain: "4CULTURE_", code: "4CULTURE_ / 02", name: "4FILM_",
+    slug: "4film", domain: "4CULTURE_", code: "4CULTURE_ / 02", name: "4PLANET FILM",
     hero: "Documentary storytelling for living systems.",
     thesis: "Some ecological realities need more than explanation. They need image, sound, time, human presence and cinematic force.",
     issue: "Many ecological stories fail to reach people because they are communicated without enough emotional depth, cultural relevance or visual precision.",
@@ -223,7 +216,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     livingSystem: ls("Documentary · fieldwork · science · sound · place · species · public attention · cultural memory"),
     whatCanHelp: "Long-form and short-form documentary, field-based storytelling, collaboration with researchers and local communities, and distribution that connects audiences back to credible action.",
     fourPlanetRole: "A film pathway for documentaries about whales, forests, species, field partners, cultural change and ecological restoration.",
-    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK 4FILM_",
+    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "OPEN 4PLANET FILM",
     visualDirection: "Cinematic documentary, Nordic ocean, field footage, black-blue atmosphere, restrained typography, high emotional gravity.",
     sources: [],
   },
@@ -255,7 +248,6 @@ export const MISSION_CONTENT: MissionContent[] = [
   },
 ];
 
-
 const AT_STAKE: Record<string, string> = {
   "wh4les": "If whale populations decline, the ocean loses navigators of its food webs and nutrient cycles — and a species that moves the public to care.",
   "cor4l": "Lose reef structure and the nurseries, coastal protection and livelihoods built on it weaken together.",
@@ -277,6 +269,5 @@ const AT_STAKE: Record<string, string> = {
 MISSION_CONTENT.forEach((m) => { m.atStake = AT_STAKE[m.slug]; });
 
 export const findMissionContent = (slug: string) => MISSION_CONTENT.find((m) => m.slug === slug) || null;
-
 export const MISSIONS = MISSION_CONTENT;
 export const findMission = findMissionContent;

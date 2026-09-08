@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
 import LabsOverview from "@/pages/labs/LabsOverview";
@@ -24,10 +24,9 @@ import { PlanetProofPage } from "@/pages/v5/PlanetProof";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
-import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
+import { CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
-import PartnersHub from "@/pages/partners/PartnersHub";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
@@ -54,16 +53,14 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
-
-function isPartnersHost() {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname.toLowerCase();
-  return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
+function ExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return <div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />;
 }
 
 export function AppRoutes() {
-  if (isPartnersHost()) return <PartnersHub />;
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -81,7 +78,8 @@ export function AppRoutes() {
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
       <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
-      <Route path="/missions/m4gazine" element={<Navigate to="/magazine" replace />} />
+      <Route path="/missions/m4gazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
+      <Route path="/missions/4film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
@@ -127,16 +125,16 @@ export function AppRoutes() {
       <Route path="/about/story" element={<AboutStory />} />
       <Route path="/about/system" element={<AboutSystem />} />
       <Route path="/about/founder" element={<Founder />} />
-      <Route path="/magazine" element={<Suspense fallback={MagazineFallback}><Magazine /></Suspense>} />
+      <Route path="/magazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
       <Route path="/magazine/sources" element={<Suspense fallback={MagazineFallback}><MagazineSources /></Suspense>} />
       <Route path="/magazine/corrections" element={<Suspense fallback={MagazineFallback}><MagazineCorrections /></Suspense>} />
       <Route path="/magazine/stories/:id" element={<Suspense fallback={MagazineFallback}><MagazineStoryRecord /></Suspense>} />
       <Route path="/magazine/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
-      <Route path="/stories" element={<Navigate to="/magazine" replace />} />
+      <Route path="/stories" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/privacy" element={<Privacy />} />
-      <Route path="/culture/film" element={<CultureFilm />} />
+      <Route path="/culture/film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/play" element={<CulturePlay />} />
       <Route path="/os/*" element={<LabsOverview />} />
       <Route path="/m/:slug" element={<MtoMission />} />
