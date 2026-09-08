@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected='1911b9ecc2e042bb86968fc9099f9a4e6608b37b'
+          expected='cbecb994c4336604c56856d1b79662a837df3a4f'
           for url in 'https://4planetmagazine.com/films/' 'https://4planetmagazine.com/magazine/' 'https://4planetmagazine.com/films/yanuni/'; do
             headers=$(curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r')
             code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
@@ -83,11 +83,15 @@ jobs:
           }
           fs.writeFileSync(path.join(dir,'summary.json'),JSON.stringify(rows,null,2));
           const filmsMobile=rows.find(r=>r.file==='films-index-mobile.json');
-          if (!filmsMobile) throw new Error('Missing Films mobile Lighthouse result');
-          if (filmsMobile.performance < 60) throw new Error(`Material Films mobile performance failure: ${filmsMobile.performance}`);
-          if (filmsMobile.lcp != null && filmsMobile.lcp > 5000) throw new Error(`Material Films mobile LCP failure: ${filmsMobile.lcp}ms`);
-          if (filmsMobile.cls != null && filmsMobile.cls > 0.25) throw new Error(`Material Films mobile CLS failure: ${filmsMobile.cls}`);
-          if (filmsMobile.tbt != null && filmsMobile.tbt > 1000) throw new Error(`Material Films mobile TBT failure: ${filmsMobile.tbt}ms`);
+          const magazineMobile=rows.find(r=>r.file==='magazine-mobile.json');
+          if (!filmsMobile || !magazineMobile) throw new Error('Missing authority mobile Lighthouse result');
+          if (filmsMobile.performance < 70) throw new Error(`Material Films mobile performance failure: ${filmsMobile.performance}`);
+          if (filmsMobile.lcp != null && filmsMobile.lcp > 4500) throw new Error(`Material Films mobile LCP failure: ${filmsMobile.lcp}ms`);
+          if (filmsMobile.cls != null && filmsMobile.cls > 0.15) throw new Error(`Material Films mobile CLS failure: ${filmsMobile.cls}`);
+          if (filmsMobile.tbt != null && filmsMobile.tbt > 750) throw new Error(`Material Films mobile TBT failure: ${filmsMobile.tbt}ms`);
+          if (magazineMobile.performance < 65) throw new Error(`Material Magazine mobile performance failure: ${magazineMobile.performance}`);
+          if (magazineMobile.lcp != null && magazineMobile.lcp > 5000) throw new Error(`Material Magazine mobile LCP failure: ${magazineMobile.lcp}ms`);
+          if (magazineMobile.cls != null && magazineMobile.cls > 0.15) throw new Error(`Material Magazine mobile CLS failure: ${magazineMobile.cls}`);
           NODE
       - name: Preserve Lighthouse proof
         if: always()
