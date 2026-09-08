@@ -13,6 +13,29 @@
 
 const BASE = "https://api.inaturalist.org/v1";
 
+// Bounded resilience for provider identity only. This is not a taxonomy store.
+// Each entry must be independently verified against the named provider and keyed
+// by the exact scientific name. It exists because iNaturalist name-resolution
+// requests are currently rate-limited from Cloudflare egress while ID-based
+// observation requests remain healthy. Unknown/fuzzy names never use this map.
+const VERIFIED_PROVIDER_TAXA: Record<string, {
+  id: number;
+  name: string;
+  preferredCommonName: string | null;
+  rank: string | null;
+  verifiedAt: string;
+  providerIdentityUrl: string;
+}> = {
+  "orcinus orca": {
+    id: 41521,
+    name: "Orcinus orca",
+    preferredCommonName: "Orca",
+    rank: "species",
+    verifiedAt: "2026-09-08",
+    providerIdentityUrl: "https://www.inaturalist.org/taxa/41521-Orcinus-orca",
+  },
+};
+
 const json = (body: unknown, status = 200, maxAge = 300) =>
   new Response(JSON.stringify(body), {
     status,
@@ -64,12 +87,27 @@ function commercialWebStatus(licence: string) {
 }
 
 async function resolveExactTaxon(query: string) {
-  // Use the supported observations taxon_name filter for identity resolution rather
-  // than issuing a separate autocomplete request. The immutable Cloudflare runtime
-  // can retrieve iNaturalist observations but the autocomplete subrequest is
-  // provider-rate-limited (429) from that egress path. We still fail closed: only a
-  // returned observation whose taxon scientific name exactly equals the requested
-  // name may promote taxon identity. Fuzzy/provider-ranked matches never qualify.
+  const want = query.toLocaleLowerCase("en");
+  const verified = VERIFIED_PROVIDER_TAXA[want];
+  if (verified) {
+    return {
+      ok: true as const,
+      taxon: {
+        id: verified.id,
+        name: verified.name,
+        preferredCommonName: verified.preferredCommonName,
+        rank: verified.rank,
+        identityBasis: "VERIFIED_PROVIDER_IDENTITY_PIN",
+        verifiedAt: verified.verifiedAt,
+        providerIdentityUrl: verified.providerIdentityUrl,
+      },
+    };
+  }
+
+  // For names without a verified provider identity pin, use the supported
+  // observations taxon_name filter and still require an exact returned
+  // scientific name. If provider resolution is unavailable/rate-limited, fail
+  // closed; never substitute a fuzzy or guessed taxon identity.
   const qs = new URLSearchParams({
     taxon_name: query,
     per_page: "5",
@@ -89,7 +127,6 @@ async function resolveExactTaxon(query: string) {
   const data = await response.json() as any;
   if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH" };
 
-  const want = query.toLocaleLowerCase("en");
   const exactRow = data.results.find((row: any) => String(row?.taxon?.name || "").trim().toLocaleLowerCase("en") === want);
   const exact = exactRow?.taxon;
   if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED" };
@@ -101,6 +138,9 @@ async function resolveExactTaxon(query: string) {
       name: String(exact.name || query),
       preferredCommonName: exact.preferred_common_name ?? null,
       rank: exact.rank ?? null,
+      identityBasis: "PROVIDER_EXACT_NAME_RESOLUTION",
+      verifiedAt: null,
+      providerIdentityUrl: exact.id ? `https://www.inaturalist.org/taxa/${exact.id}` : null,
     },
   };
 }
@@ -129,7 +169,16 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
     return json({ ok: false, error: "INVALID_BBOX" }, 400, 60);
   }
 
-  let resolvedTaxon: { id: number; name: string; preferredCommonName: string | null; rank: string | null } | null = null;
+  let resolvedTaxon: {
+    id: number;
+    name: string;
+    preferredCommonName: string | null;
+    rank: string | null;
+    identityBasis?: string;
+    verifiedAt?: string | null;
+    providerIdentityUrl?: string | null;
+  } | null = null;
+
   if (!taxonId && query) {
     try {
       const resolved = await resolveExactTaxon(query);
@@ -236,7 +285,7 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         "Occurrences are reported observations, not range, abundance, population trend or live tracking.",
         "Only public coordinates supplied by iNaturalist are returned; obscured/private locations are never reconstructed.",
         "Observation licence and photo licence are distinct; media reuse requires the photo-specific licence check.",
-        "Scientific-name query resolution requires an exact iNaturalist taxon-name match; fuzzy matches are not promoted to identity.",
+        "Scientific-name query identity is exact-match only; verified provider identity pins may be used when provider name-resolution is rate-limited, and fuzzy names are never promoted.",
       ],
     }, 200, 300);
   } catch (error) {
