@@ -27,6 +27,7 @@ import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
+import PartnersHub from "@/pages/partners/PartnersHub";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
@@ -54,7 +55,15 @@ function MtoMission() { const { slug } = useParams(); return <Navigate to={"/mis
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
 
+function isPartnersHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
+}
+
 export function AppRoutes() {
+  if (isPartnersHost()) return <PartnersHub />;
+
   return (
     <Routes>
       <Route path="/" element={<Home />} />
