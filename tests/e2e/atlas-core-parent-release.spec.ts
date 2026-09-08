@@ -94,7 +94,13 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(settled.lng - target.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(settled.lat - target.lat)).toBeLessThanOrEqual(0.05);
 
-  // Once startup authority has released, a real user-owned camera change must stick.
+  // The camera becomes user-owned only after a genuine input boundary. A raw
+  // map.jumpTo() is application code, not a user gesture, so it must not be used
+  // to claim that startup authority should have released. Explicitly cross the
+  // same pointer boundary a real touch/drag crosses, then prove later map state
+  // is no longer reclaimed by return-camera reconstruction.
+  const canvas = page.locator("canvas.maplibregl-canvas");
+  await canvas.dispatchEvent("pointerdown", { pointerType: "touch", isPrimary: true, button: 0, buttons: 1 });
   await page.evaluate(() => {
     const map = (window as any).__4planet_map;
     map.jumpTo({ center: [-7.1, 47.1], zoom: 8.1 });
