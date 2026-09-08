@@ -248,22 +248,33 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const url = fs.readFileSync('atlas-preview-url.txt','utf8').trim();
-          const requiredShots = [
+          const fixedShots = [
             '01-desktop-global.png',
             '02-desktop-close-dark.png',
             '03-iphone-390.png',
             '04-multi-layer-amazonia.png',
-            '05-search.png',
-            '06-selected-record.png'
+            '05-search.png'
           ];
-          for (const shot of requiredShots) {
+          for (const shot of fixedShots) {
             if (!fs.existsSync(`artifacts/atlas-gold/${shot}`)) throw new Error(`Missing exact-deployed screenshot: ${shot}`);
           }
+          const selectedRecordVariants = [
+            '06-selected-record.png',
+            '06-selected-record-provider-unavailable.png'
+          ];
+          const selectedRecordShot = selectedRecordVariants.find((shot) => fs.existsSync(`artifacts/atlas-gold/${shot}`));
+          if (!selectedRecordShot) {
+            throw new Error('Missing selected-record evidence: require live provider record OR explicit provider-unavailable-not-zero screenshot');
+          }
+          const evidenceShots = [...fixedShots, selectedRecordShot];
           fs.writeFileSync('atlas-deployed-evidence.json', JSON.stringify({
             exactSha: process.env.EXACT_SHA,
             immutableAtlasUrl: `${url}/atlas`,
             browsers: ['Chromium desktop 1440','Chromium 390x844','Chromium 430x932','WebKit desktop','WebKit 390x844','WebKit 430x932'],
-            screenshots: requiredShots,
+            screenshots: evidenceShots,
+            selectedRecordEvidenceState: selectedRecordShot === '06-selected-record.png'
+              ? 'LIVE_PROVIDER_RECORD'
+              : 'PROVIDER_UNAVAILABLE_NOT_ZERO',
             liveMergeAuthorised: false,
             kingTestMergeAuthorised: false,
             verdict: 'ATLAS HUMAN GOLD OMEGA — EXACT DEPLOYED GATE PASSED'
