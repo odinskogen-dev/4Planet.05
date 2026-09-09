@@ -21,13 +21,22 @@ test("participation routes and global menu expose all four ways to take part", (
   assert.doesNotMatch(bridge, /DesktopTakePart|completion-takepart-menu/);
 });
 
-test("recovered About donor is routed as separate Story System and Founder pages", () => {
+test("About routes preserve the approved Story System and Founder surfaces", () => {
   assert.match(router, /path="\/about\/story" element={<AboutStory \/>}/);
   assert.match(router, /path="\/about\/system" element={<AboutSystem \/>}/);
   assert.match(router, /path="\/about\/founder" element={<Founder \/>}/);
   assert.match(about, /Everything I love is alive\./);
-  assert.match(about, /founder-hero\.svg/);
-  assert.doesNotMatch(about, /founder-portrait\.svg/);
+  assert.match(about, /founder-grass\.jpg/);
+  assert.doesNotMatch(about, /founder-hero\.svg|founder-portrait\.svg/);
+});
+
+test("Magazine and Film are external public projects rather than duplicate 4planet.org surfaces", () => {
+  assert.match(shell, /4PLANET MAGAZINE/);
+  assert.match(shell, /https:\/\/4planetmagazine\.com/);
+  assert.match(shell, /4PLANET FILM/);
+  assert.match(shell, /https:\/\/4planetmagazine\.com\/films/);
+  assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com"/);
+  assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com\/films"/);
 });
 
 test("public missions expose truthful deeper product handoffs", () => {
