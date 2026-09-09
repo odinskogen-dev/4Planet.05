@@ -187,7 +187,7 @@ const pr = read('.github/pull_request_template.md');
 ].forEach((marker) => requireMarker(pr, marker, '.github/pull_request_template.md'));
 
 const contextRegressions = read('docs/control/AXE_CONTEXT_REGRESSION_TESTS.md');
-[
+const requiredContextRegressions = [
   'CR-15 — New-chat AXE / AXE PL fail-safe',
   'CR-16 — CURRENT_STATE_REV atomic propagation',
   'CR-17 — Moving pointer invalidation',
@@ -196,7 +196,24 @@ const contextRegressions = read('docs/control/AXE_CONTEXT_REGRESSION_TESTS.md');
   'CR-22 — ELITE doctrine empirical Andon matrix',
   'CR-23 — Autonomy Budget cannot promote itself',
   'CR-24 — Fitness-function boundary',
-  'CR-25 — Memoryless-agent conflict test'
+  'CR-25 — Memoryless-agent conflict test',
+  'CR-26 — Semantic current versus volatile runtime',
+  'CR-27 — Dual freshness barrier',
+  'CR-28 — Post-commit header/body contradiction scan',
+  'CR-29 — Spreadsheet grid-bound write preflight',
+  'CR-30 — BRAIN GREEN is not programme completion'
+];
+requiredContextRegressions.forEach((marker) => requireMarker(contextRegressions, marker, 'docs/control/AXE_CONTEXT_REGRESSION_TESTS.md'));
+
+// BRAIN GREEN continuity: the repository must retain explicit regression contracts for
+// semantic/runtime separation, terminal freshness, contradiction readback, sheet bounds,
+// and the prohibition on treating BRAIN health as programme/release completion.
+[
+  'RUNTIME_ONLY',
+  'CERTIFIED_HEADER_BODY_DIVERGENCE',
+  'SHEET_GRID_BOUNDARY_WRITE_ASSUMPTION',
+  'HTTP 400/out-of-grid is classified `NO WRITE`',
+  'GREEN means semantic/control integrity only'
 ].forEach((marker) => requireMarker(contextRegressions, marker, 'docs/control/AXE_CONTEXT_REGRESSION_TESTS.md'));
 
 const headBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || git(['branch', '--show-current']) || 'UNKNOWN';
@@ -214,5 +231,6 @@ console.log(`EMPIRICAL ANDON PROOF: PASS ${andonPasses}/${adversarial.length}`);
 console.log(`AUTONOMY STATE: ${calibration.status}`);
 console.log('AUTONOMY THRESHOLDS: UNSET_PENDING_REAL_BASELINE');
 console.log(`FITNESS REGISTRY: PASS ${Object.keys(fitness).length} bounded contracts`);
+console.log(`BRAIN GREEN CONTINUITY REGRESSIONS: PASS 5/5`);
 console.log(`DESIRED-STATE HEIR AUTHORITY: ${heirAuthorityState}`);
 console.log(`OBSERVED EXECUTION: ${headBranch}@${headSha}`);
