@@ -1,0 +1,60 @@
+name: SAFE LIVE MapLibre Security Remediation
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/safe-live-maplibre-security-remediation.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: safe-live-maplibre-security-remediation
+  cancel-in-progress: false
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact trigger head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Generate minimal locked security update
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --save-exact maplibre-gl@6.8.0
+          npm audit --audit-level=high
+          npm run typecheck
+          npm run build
+          npm run test:smoke
+
+      - name: Commit only dependency remediation and remove one-off workflow
+        shell: bash
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin king/test --no-tags
+          test "$(git rev-parse origin/king/test)" = "$TRIGGER_SHA" || { echo 'king/test moved; refusing write'; exit 3; }
+          git config user.name '4PLANET Release Control'
+          git config user.email 'actions@users.noreply.github.com'
+          git rm .github/workflows/safe-live-maplibre-security-remediation.yml
+          git add package.json package-lock.json
+          changed="$(git diff --cached --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'.github/workflows/safe-live-maplibre-security-remediation.yml\npackage-lock.json\npackage.json'
+          git diff --cached --check
+          git commit -m 'fix(security): update MapLibre past critical sanitizer advisory'
+          git push origin HEAD:king/test
