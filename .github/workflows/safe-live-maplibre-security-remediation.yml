@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # MapLibre 6 removes the legacy default export; PlanetProof is already namespace-import compatible.
+          # MapLibre 6 compatibility is bounded to the PlanetProof import and typed error event handling.
           npm install --save-exact maplibre-gl@6.8.0
           npm audit --audit-level=high
           npm run typecheck
