@@ -30,6 +30,7 @@ jobs:
           mkdir -p products/4sapien/site
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > products/4sapien/site/index.html
           cp products/4sapien/cloudflare/_headers products/4sapien/site/_headers
+          python products/4sapien/build/apply_provider_guard.py products/4sapien/site/index.html
 
       - name: Zero-loss source and security QA
         run: |
@@ -41,6 +42,7 @@ jobs:
           grep -q 'four_sapien_list_items' "$SITE"
           grep -q 'four_sapien_shops' "$SITE"
           grep -q 'four-sapien-receipts' "$SITE"
+          grep -q 'googleEnabled' "$SITE"
           ! grep -q 'S4PIENS' "$SITE"
           ! grep -Eqi 'service[_-]?role|sb_secret_' "$SITE"
           python - <<'PY'
@@ -72,7 +74,7 @@ jobs:
           google=$(jq -r '(.external.google // false) | tostring' /tmp/auth.json)
           echo "email=$email" >> "$GITHUB_OUTPUT"
           echo "google=$google" >> "$GITHUB_OUTPUT"
-          if [ "$email" = true ] && [ "$google" = true ]; then echo 'ready=1' >> "$GITHUB_OUTPUT"; else echo 'ready=0' >> "$GITHUB_OUTPUT"; fi
+          if [ "$email" = true ]; then echo 'launch_ready=1' >> "$GITHUB_OUTPUT"; else echo 'launch_ready=0' >> "$GITHUB_OUTPUT"; fi
           echo "Auth provider state: email=${email}, google=${google}"
 
       - name: Detect existing auth-management credentials without exposing values
@@ -113,10 +115,10 @@ jobs:
           root=$(curl -fsS "${auth[@]}" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active')
           account=$(jq -r '.result[0].account.id // empty' <<<"$root")
           [ -n "$account" ] || { echo 'Cloudflare account unresolved'; exit 9; }
+          echo "account=$account" >> "$GITHUB_OUTPUT"
           zone_json=$(curl -fsS "${auth[@]}" "https://api.cloudflare.com/client/v4/zones?name=${CUSTOM_DOMAIN}&status=active")
           zone=$(jq -r '.result[0].id // empty' <<<"$zone_json")
           [ -n "$zone" ] || { echo '4sapien.com zone missing/inactive'; exit 10; }
-          echo "account=$account" >> "$GITHUB_OUTPUT"
           echo "zone=$zone" >> "$GITHUB_OUTPUT"
 
       - name: Deploy isolated Workers static-assets candidate
@@ -131,7 +133,12 @@ jobs:
           url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler-worker.log | tail -n1 || true)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
-          curl -fsS "$url" | grep -q 'Ask Embla'
+          for i in 1 2 3 4 5; do
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" | grep -q 'Ask Embla'; then exit 0; fi
+            sleep 2
+          done
+          echo 'Worker candidate runtime verification failed'
+          exit 11
 
       - name: Fail closed on conflicting 4sapien.com Worker authority
         id: domaincheck
@@ -145,9 +152,9 @@ jobs:
           if [ -n "$current" ] && [ "$current" != "$CF_SERVICE" ]; then echo "4sapien.com conflict: ${current}"; exit 12; fi
           echo "current=${current:-none}" >> "$GITHUB_OUTPUT"
 
-      - name: Attach 4sapien.com only after database + Email + Google gates pass
+      - name: Attach 4sapien.com after database + Email Auth gates pass
         id: prod
-        if: steps.db.outputs.ready == '1' && steps.auth.outputs.ready == '1'
+        if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1'
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
           CF_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
@@ -157,7 +164,11 @@ jobs:
           curl -fsS -X PUT -H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/domains" --data "{\"hostname\":\"${CUSTOM_DOMAIN}\",\"service\":\"${CF_SERVICE}\",\"zone_id\":\"${CF_ZONE_ID}\"}" | tee /tmp/domain.json
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
-          for i in 1 2 3 4 5; do if curl -fsS "https://${CUSTOM_DOMAIN}" | grep -q 'Ask Embla'; then exit 0; fi; sleep 3; done
+          for i in 1 2 3 4 5 6 7 8; do
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" | grep -q 'Ask Embla'; then exit 0; fi
+            sleep 3
+          done
+          echo 'Custom-domain runtime verification failed'
           exit 13
 
       - name: Release summary
@@ -169,7 +180,7 @@ jobs:
             echo '- Syntax/security QA: PASS'
             echo "- Database: ${{ steps.db.outputs.ready }}"
             echo "- Email Auth: ${{ steps.auth.outputs.email }}"
-            echo "- Google Auth: ${{ steps.auth.outputs.google }}"
+            echo "- Google Auth: ${{ steps.auth.outputs.google }} (provider-guarded until enabled)"
             echo "- Supabase management token available: ${{ steps.authsecrets.outputs.supabase_access }}"
             echo "- Google OAuth ID available: ${{ steps.authsecrets.outputs.google_id }}"
             echo "- Google OAuth secret available: ${{ steps.authsecrets.outputs.google_secret }}"
