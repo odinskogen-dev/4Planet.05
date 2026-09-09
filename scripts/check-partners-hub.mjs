@@ -90,20 +90,29 @@ if (process.env.GITHUB_ACTIONS === "true") {
     return parsed;
   };
 
+  const printFindings = (prefix, audit) => {
+    for (const [name, finding] of Object.entries(audit.vulnerabilities || {})) {
+      if (!["moderate", "high", "critical"].includes(finding.severity)) continue;
+      const fix = finding.fixAvailable === true ? "available" : finding.fixAvailable ? "breaking-or-specific" : "none";
+      const via = Array.isArray(finding.via)
+        ? finding.via.map((item) => typeof item === "string" ? item : `${item.source || "advisory"}:${item.title || "untitled"}`).join(" | ")
+        : String(finding.via || "unknown");
+      console.log(`${prefix}_AUDIT_FINDING package=${name} severity=${finding.severity} direct=${Boolean(finding.isDirect)} fix=${fix} via=${via}`);
+    }
+  };
+
   const prodAudit = runAudit(["--omit=dev"]);
   const prodCounts = prodAudit.metadata.vulnerabilities;
+  console.log(`PARTNERS_PROD_DEP_AUDIT critical=${prodCounts.critical || 0} high=${prodCounts.high || 0} moderate=${prodCounts.moderate || 0} low=${prodCounts.low || 0}`);
+  printFindings("PARTNERS_PROD", prodAudit);
   assert((prodCounts.high || 0) === 0 && (prodCounts.critical || 0) === 0,
     `production dependency audit high=${prodCounts.high || 0} critical=${prodCounts.critical || 0}`);
-  console.log(`PARTNERS_PROD_DEP_AUDIT=PASS critical=${prodCounts.critical || 0} high=${prodCounts.high || 0} moderate=${prodCounts.moderate || 0} low=${prodCounts.low || 0}`);
+  console.log("PARTNERS_PROD_DEP_AUDIT=PASS");
 
   const fullAudit = runAudit([]);
   const fullCounts = fullAudit.metadata.vulnerabilities;
   console.log(`PARTNERS_FULL_DEP_AUDIT critical=${fullCounts.critical || 0} high=${fullCounts.high || 0} moderate=${fullCounts.moderate || 0} low=${fullCounts.low || 0}`);
-  for (const [name, finding] of Object.entries(fullAudit.vulnerabilities || {})) {
-    if (!["moderate", "high", "critical"].includes(finding.severity)) continue;
-    const fix = finding.fixAvailable === true ? "available" : finding.fixAvailable ? "breaking-or-specific" : "none";
-    console.log(`PARTNERS_AUDIT_FINDING package=${name} severity=${finding.severity} direct=${Boolean(finding.isDirect)} fix=${fix}`);
-  }
+  printFindings("PARTNERS_FULL", fullAudit);
 }
 
 console.log("PARTNERS_CONTRACT=PASS");
