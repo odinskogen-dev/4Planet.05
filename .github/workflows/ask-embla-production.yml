@@ -33,6 +33,7 @@ jobs:
           python products/4sapien/build/apply_provider_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_meal_plan_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
 
       - name: Zero-loss source and security QA
         run: |
@@ -53,6 +54,11 @@ jobs:
           grep -q 'RATE_LIMITED' "$SITE"
           grep -q 'DELVIS DATADEKNING' "$SITE"
           grep -q 'price:p.embla_price' "$SITE"
+          grep -q '4SAPIEN YELLOW TEST 01' "$SITE"
+          grep -q '#FFFF00' "$SITE"
+          grep -q '#000000' "$SITE"
+          grep -q 'paper:"#FFFF00"' "$SITE"
+          grep -q 'ink:"#000000"' "$SITE"
           ! grep -q 'world.openfoodfacts.org' "$SITE"
           ! grep -q 'cgi/search.pl' "$SITE"
           ! grep -q 'S4PIENS' "$SITE"
@@ -160,7 +166,7 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/four-sapien-worker.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-worker.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-worker.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-worker.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/four-sapien-worker.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-worker.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-worker.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-worker.html && grep -q '4SAPIEN YELLOW TEST 01' /tmp/four-sapien-worker.html && grep -q '#FFFF00' /tmp/four-sapien-worker.html && grep -q '#000000' /tmp/four-sapien-worker.html; then exit 0; fi
             sleep 2
           done
           echo 'Worker candidate runtime verification failed'
@@ -191,7 +197,7 @@ jobs:
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" -o /tmp/four-sapien-production.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-production.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-production.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-production.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" -o /tmp/four-sapien-production.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-production.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-production.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-production.html && grep -q '4SAPIEN YELLOW TEST 01' /tmp/four-sapien-production.html && grep -q '#FFFF00' /tmp/four-sapien-production.html && grep -q '#000000' /tmp/four-sapien-production.html; then exit 0; fi
             sleep 3
           done
           echo 'Custom-domain runtime verification failed'
@@ -204,6 +210,7 @@ jobs:
             echo '## 4SAPIEN / Ask Embla production gate'
             echo '- Claude-leading source: PASS'
             echo '- Syntax/security QA: PASS'
+            echo '- YELLOW TEST 01: #FFFF00 + #000000'
             echo "- Database incl. product cache: ${{ steps.db.outputs.ready }}"
             echo "- Product gateway auth boundary: ${{ steps.gateway.outputs.ready }}"
             echo "- Email Auth: ${{ steps.auth.outputs.email }}"
