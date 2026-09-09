@@ -58,7 +58,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
       setStatus((current) => current === "DEGRADED" ? current : "READY");
     });
     m.on("error", (event) => {
-      const message = String((event as { error?: Error }).error?.message ?? "");
+      const message = String(event.error?.message ?? "");
       if (message && !message.includes("glyph")) setStatus("DEGRADED");
     });
     return () => {
