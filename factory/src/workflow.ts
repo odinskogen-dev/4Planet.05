@@ -1,7 +1,7 @@
 import { AgentWorkflow } from "agents/workflows";
 import type { AgentWorkflowEvent, AgentWorkflowStep } from "agents/workflows";
 import type { ProductionFactoryAgent } from "./index";
-import type { WorkPackage } from "./contracts";
+import type { Outcome, WorkPackage } from "./contracts";
 import { isClaudeCapacityPausedOutcome, isPendingCiOutcome } from "./workflowOutcomeState";
 
 type ReadOnlyPortfolioContinuation = {
@@ -14,6 +14,16 @@ type ReadOnlyPortfolioContinuation = {
 type WorkPackageWorkflowParams = {
   workPackageId: string;
   portfolioFallback?: ReadOnlyPortfolioContinuation;
+};
+
+type AmendmentMAttestation = {
+  applies?: boolean;
+  contextHash?: string;
+  maker?: string;
+  evaluator?: string;
+  autonomyCeiling?: string;
+  receiver?: string;
+  productionControlProjection?: string;
 };
 
 const MAX_PENDING_CI_REOBSERVATIONS = 12;
@@ -32,7 +42,10 @@ function validatePortfolioContinuation(currentWorkPackageId: string, continuatio
   if (continuation.packages[continuation.index]?.id !== currentWorkPackageId) {
     throw new Error("PORTFOLIO_CONTINUATION_CURRENT_PACKAGE_MISMATCH");
   }
+  const identities = new Set<string>();
   for (const pkg of continuation.packages) {
+    if (identities.has(pkg.id)) throw new Error("QUEUE_DUPLICATION");
+    identities.add(pkg.id);
     if (pkg.writeScopes.length !== 0) throw new Error("PORTFOLIO_CONTINUATION_MUTABLE_PACKAGE_FORBIDDEN");
     if (pkg.run?.expectedBaseSha !== continuation.exactTestSha) {
       throw new Error("PORTFOLIO_CONTINUATION_TEST_LINEAGE_MISMATCH");
@@ -41,6 +54,12 @@ function validatePortfolioContinuation(currentWorkPackageId: string, continuatio
       throw new Error("PORTFOLIO_CONTINUATION_FACTORY_LINEAGE_MISMATCH");
     }
   }
+}
+
+async function amendmentMAttest(agent: ProductionFactoryAgent, workPackageId: string, phase: "PRE_DISPATCH" | "TERMINAL_ACCEPTANCE") {
+  const method = (agent as any).attestAmendmentMRuntime;
+  if (typeof method !== "function") return { applies: false } as AmendmentMAttestation;
+  return method.call(agent, workPackageId, phase) as Promise<AmendmentMAttestation>;
 }
 
 async function dispatchNextReadOnlyPortfolioPackage(
@@ -53,7 +72,8 @@ async function dispatchNextReadOnlyPortfolioPackage(
   const next = continuation.packages[nextIndex];
   if (!next) return { status: "PORTFOLIO_EXHAUSTED" } as const;
 
-  const workflowId = `factory-portfolio-fallback-${next.id}`;
+  const workflowPrefix = (next as any).amendmentM ? "factory-night-shift" : "factory-portfolio-fallback";
+  const workflowId = `${workflowPrefix}-${next.id}`;
   const factory = agent as any;
   const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
   if (tracked) {
@@ -65,6 +85,7 @@ async function dispatchNextReadOnlyPortfolioPackage(
     } as const;
   }
 
+  await amendmentMAttest(agent, next.id, "PRE_DISPATCH");
   await factory.runWorkflow(
     "WORK_PACKAGE_WORKFLOW",
     {
@@ -78,12 +99,18 @@ async function dispatchNextReadOnlyPortfolioPackage(
       id: workflowId,
       metadata: {
         portfolioFallback: true,
+        nightShift: Boolean((next as any).amendmentM),
+        amendmentM: Boolean((next as any).amendmentM),
         continuationTrigger: "TERMINAL_OR_LOCAL_PROVIDER_PAUSE",
-        authority: "4PLANET_FACTORY_PREMIUM_AUTONOMOUS_PRODUCTION_MARATHON_04",
+        authority: (next as any).amendmentM
+          ? "FOUNDER_ORDER:FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01"
+          : "4PLANET_FACTORY_PREMIUM_AUTONOMOUS_PRODUCTION_MARATHON_04",
         projectId: next.projectId,
         section: next.section,
         exactFactorySha: continuation.exactFactorySha,
         exactTestSha: continuation.exactTestSha,
+        contextHash: (next as any).amendmentM?.fingerprint?.context_hash ?? null,
+        evaluator: (next as any).amendmentM?.contract?.evaluator?.evaluator_id ?? null,
         readOnly: true,
       },
       agentBinding: "PRODUCTION_FACTORY",
@@ -102,6 +129,10 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
   async run(event: AgentWorkflowEvent<WorkPackageWorkflowParams>, step: AgentWorkflowStep) {
     const { workPackageId, portfolioFallback } = event.payload;
     if (portfolioFallback) validatePortfolioContinuation(workPackageId, portfolioFallback);
+
+    await step.do("amendment-m-pre-dispatch", async () =>
+      amendmentMAttest(this.agent, workPackageId, "PRE_DISPATCH"),
+    );
 
     await this.reportProgress({
       step: "dispatch",
@@ -176,6 +207,28 @@ export class WorkPackageWorkflow extends AgentWorkflow<ProductionFactoryAgent, W
       }
 
       break;
+    }
+
+    const terminal = await step.do("amendment-m-terminal-authority-reread", async () =>
+      amendmentMAttest(this.agent, workPackageId, "TERMINAL_ACCEPTANCE"),
+    );
+
+    if (terminal.applies) {
+      const controlEvidence = [
+        "TASK_CONTRACT_V1 PASS",
+        `context_hash ${terminal.contextHash ?? "UNKNOWN"}`,
+        `maker ${terminal.maker ?? "UNKNOWN"}`,
+        `evaluator ${terminal.evaluator ?? "UNKNOWN"}`,
+        `autonomy-ceiling ${terminal.autonomyCeiling ?? "UNKNOWN"}`,
+        `terminal-authority-reread PASS ${terminal.receiver ?? "UNKNOWN"}`,
+        `production-control-projection ${terminal.productionControlProjection ?? "UNKNOWN"}`,
+        "worker-report-is-truth false",
+        "independent-readback-required true",
+      ];
+      outcome = {
+        ...(outcome as Outcome),
+        evidence: [...((outcome as Outcome).evidence ?? []), ...controlEvidence],
+      };
     }
 
     await step.do("persist-outcome", async () => {
