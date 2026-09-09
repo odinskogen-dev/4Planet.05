@@ -1,0 +1,30 @@
+name: 4SAPIEN auth redirect diagnose
+
+on:
+  push:
+    branches: [build/ask-embla-live-20260909]
+    paths: ['.github/workflows/embla-auth-diagnose.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize source and inspect auth redirect
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/embla && mkdir -p /tmp/embla
+          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/embla/index.html
+          python - <<'PY'
+          import pathlib,re
+          s=pathlib.Path('/tmp/embla/index.html').read_text()
+          for term in ['signInWithOAuth','redirectTo','function AuthScreen','const google','async function google']:
+              print('\n===',term,'===')
+              for m in re.finditer(re.escape(term),s):
+                  a=max(0,m.start()-500); b=min(len(s),m.end()+900)
+                  print(s[a:b])
+          PY
