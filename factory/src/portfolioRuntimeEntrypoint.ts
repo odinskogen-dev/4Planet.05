@@ -5,21 +5,44 @@ import {
   isOnlyReceiverWriterConflict,
 } from "./portfolioFallback";
 import { localReadOnlyWorkflowParkDecision } from "./localInFlightPark";
+import {
+  buildTaskContractV1,
+  verifyRuntimeSnapshot,
+  type BoundTaskContract,
+  type RuntimeAuthoritySnapshot,
+} from "./amendmentMRuntime";
+import {
+  createNightShiftPortfolio,
+  NIGHT_SHIFT_AUTHORITY,
+  NIGHT_SHIFT_PROJECT_ID,
+} from "./nightShiftPortfolio";
+import type { WorkPackage } from "./contracts";
 
 export * from "./runtimeEntrypoint";
 
 const FACTORY_AGENT_NAME = "shadow-primary";
+const REPOSITORY = "odinskogen-dev/4Planet.05";
+const RECEIVER_REF = "king/test";
+const LIVE_CONTROL_REF = "release/one-interface-sprint2-6bbfebb";
+const FOUNDER_AUTHORITY_REVISION = "FOUNDER_DECISION_AMENDMENT_M+L_CURRENT_2026-09-09";
+const PROGRAMME_STATE_REVISION = "CSR-2026-09-08-05";
+const EVALUATOR_ID = "AXE_PROGRAMME_QA_INDEPENDENT";
 const SHA40 = /^[0-9a-f]{40}$/i;
 
 interface PortfolioRuntimeEnv extends Cloudflare.Env {
   FACTORY_BUILD_SHA?: string;
   FACTORY_CONTROL_TOKEN?: string;
+  FACTORY_GITHUB_TOKEN?: string;
   FACTORY_TEST_KING_BASE_SHA?: string;
 }
 
 type FactoryStateView = {
   projects?: Array<{ id?: string }>;
   work?: Array<{ id?: string; status?: string }>;
+};
+
+type ContractedNightPackage = WorkPackage & {
+  amendmentM: BoundTaskContract;
 };
 
 function authorised(request: Request, env: PortfolioRuntimeEnv): boolean {
@@ -40,6 +63,44 @@ function exactIdentity(env: PortfolioRuntimeEnv) {
   if (!SHA40.test(exactFactorySha)) throw new Error("PORTFOLIO_FALLBACK_FACTORY_SHA_MISSING_OR_INVALID");
   if (!SHA40.test(exactTestSha)) throw new Error("PORTFOLIO_FALLBACK_TEST_SHA_MISSING_OR_INVALID");
   return { exactFactorySha, exactTestSha };
+}
+
+function githubHeaders(env: PortfolioRuntimeEnv): HeadersInit {
+  const token = env.FACTORY_GITHUB_TOKEN?.trim();
+  if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
+  return {
+    accept: "application/vnd.github+json",
+    authorization: `Bearer ${token}`,
+    "x-github-api-version": "2022-11-28",
+    "user-agent": "4PLANET-Production-Factory/1.0",
+  };
+}
+
+async function currentRefSha(env: PortfolioRuntimeEnv, ref: string): Promise<string> {
+  const encoded = ref.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encoded}`, {
+    headers: githubHeaders(env),
+  });
+  if (!response.ok) throw new Error(`RUNTIME_AUTHORITY_REF_LOOKUP_FAILED:${ref}:${response.status}`);
+  const body = await response.json() as { object?: { sha?: string } };
+  const sha = body.object?.sha?.trim().toLowerCase() ?? "";
+  if (!SHA40.test(sha)) throw new Error(`RUNTIME_AUTHORITY_REF_SHA_INVALID:${ref}`);
+  return sha;
+}
+
+async function freshAuthority(env: PortfolioRuntimeEnv): Promise<RuntimeAuthoritySnapshot> {
+  const [receiverSha, liveControlSha] = await Promise.all([
+    currentRefSha(env, RECEIVER_REF),
+    currentRefSha(env, LIVE_CONTROL_REF),
+  ]);
+  return {
+    founder_authority_revision: FOUNDER_AUTHORITY_REVISION,
+    programme_state_revision: PROGRAMME_STATE_REVISION,
+    receiver_ref: RECEIVER_REF,
+    receiver_sha: receiverSha,
+    live_control_ref: LIVE_CONTROL_REF,
+    live_control_sha: liveControlSha,
+  };
 }
 
 async function agent(env: PortfolioRuntimeEnv): Promise<any> {
@@ -76,6 +137,192 @@ async function portfolioStatus(env: PortfolioRuntimeEnv) {
       outreach: false,
       spend: false,
     },
+  };
+}
+
+async function buildNightShiftQueue(env: PortfolioRuntimeEnv) {
+  const { exactFactorySha, exactTestSha } = exactIdentity(env);
+  const fresh = await freshAuthority(env);
+  if (fresh.receiver_sha !== exactTestSha) {
+    throw new Error(`HEIR_DRIFT:deployed=${exactTestSha}:current=${fresh.receiver_sha}`);
+  }
+
+  const base = createNightShiftPortfolio(exactTestSha, exactFactorySha);
+  const packages: ContractedNightPackage[] = [];
+  for (const pkg of base.packages) {
+    const makerId = `FACTORY_CLOUDFLARE_WORKER:${pkg.section}:${pkg.id}`;
+    const amendmentM = await buildTaskContractV1(pkg, {
+      founderAuthorityRevision: FOUNDER_AUTHORITY_REVISION,
+      programmeStateRevision: PROGRAMME_STATE_REVISION,
+      factoryBuildSha: exactFactorySha,
+      receiverRef: RECEIVER_REF,
+      receiverSha: exactTestSha,
+      liveControlRef: fresh.live_control_ref,
+      liveControlSha: fresh.live_control_sha,
+      makerId,
+      evaluatorId: EVALUATOR_ID,
+      physicalEnvironmentContainmentVerified: false,
+    });
+    const failures = verifyRuntimeSnapshot(amendmentM.contract, fresh);
+    if (failures.length > 0) throw new Error(`STALE_CONTEXT:${failures.join(",")}`);
+    packages.push({ ...pkg, amendmentM });
+  }
+  return { ...base, packages, exactFactorySha, exactTestSha, fresh };
+}
+
+async function nightShiftStatus(env: PortfolioRuntimeEnv) {
+  const queue = await buildNightShiftQueue(env);
+  const factory: any = await agent(env);
+  const outcomes = await factory.getOutcomesByIds(queue.packages.map((pkg) => pkg.id)) as Array<{
+    workPackageId: string;
+    status: string;
+    evidence?: string[];
+    completedAt?: string;
+    actual?: string;
+    limitation?: string;
+  }>;
+  const state = await factory.getFactoryState() as FactoryStateView;
+  const work = new Map((state.work ?? []).map((row) => [row.id, row.status] as const));
+  const outcomeById = new Map(outcomes.map((outcome) => [outcome.workPackageId, outcome] as const));
+  const terminalFailures = queue.packages.flatMap((pkg) => verifyRuntimeSnapshot(pkg.amendmentM.contract, queue.fresh));
+  const packageRows = queue.packages.map((pkg) => ({
+    id: pkg.id,
+    projectId: pkg.projectId,
+    status: outcomeById.get(pkg.id)?.status ?? work.get(pkg.id) ?? "NOT_INGESTED",
+    targetUrl: pkg.execution?.targetUrl ?? null,
+    viewport: pkg.execution?.viewport ?? null,
+    contextHash: pkg.amendmentM.fingerprint.context_hash,
+    maker: pkg.amendmentM.contract.evaluator.maker_id,
+    evaluator: pkg.amendmentM.contract.evaluator.evaluator_id,
+    autonomyCeiling: pkg.amendmentM.autonomy_ceiling,
+  }));
+  const terminalCount = packageRows.filter((row) => ["ACCEPTED", "BLOCKED", "REJECTED"].includes(row.status)).length;
+  return {
+    ok: true,
+    lane: "FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01",
+    sourceWorkPackage: NIGHT_SHIFT_PROJECT_ID,
+    authority: NIGHT_SHIFT_AUTHORITY,
+    exactFactorySha: queue.exactFactorySha,
+    exactTestSha: queue.exactTestSha,
+    productionControlProjection: `${queue.fresh.live_control_ref}@${queue.fresh.live_control_sha}`,
+    founderAuthorityRevision: FOUNDER_AUTHORITY_REVISION,
+    programmeStateRevision: PROGRAMME_STATE_REVISION,
+    taskContractVersion: "V1",
+    physicalEnvironmentContainmentVerified: false,
+    autonomyCeiling: "B0.5",
+    complete: terminalCount === packageRows.length && packageRows.length > 0,
+    terminalAuthorityReread: {
+      pass: terminalFailures.length === 0,
+      failures: [...new Set(terminalFailures)],
+      receiver: `${queue.fresh.receiver_ref}@${queue.fresh.receiver_sha}`,
+      productionControlProjection: `${queue.fresh.live_control_ref}@${queue.fresh.live_control_sha}`,
+    },
+    packages: packageRows,
+    outcomes,
+    boundaries: {
+      wip: 1,
+      writeScopes: 0,
+      modelCalls: 0,
+      liveMutation: false,
+      heirMutation: false,
+      canon: false,
+      outreach: false,
+      spend: false,
+      automatedQaIsHumanGold: false,
+      workerReportIsTruth: false,
+    },
+  };
+}
+
+async function dispatchNextNightShift(env: PortfolioRuntimeEnv) {
+  const queue = await buildNightShiftQueue(env);
+  const factory: any = await agent(env);
+  const state = await factory.getFactoryState() as FactoryStateView;
+  const projectIds = new Set((state.projects ?? []).map((project) => project.id).filter(Boolean));
+  const activeWork = new Map((state.work ?? []).map((row) => [row.id, row.status] as const));
+  const outcomes = await factory.getOutcomesByIds(queue.packages.map((pkg) => pkg.id)) as Array<{ workPackageId: string; status: string }>;
+  const outcomeById = new Map(outcomes.map((outcome) => [outcome.workPackageId, outcome] as const));
+
+  for (const project of queue.projects) {
+    if (!projectIds.has(project.id)) await factory.upsertProject(project);
+  }
+  for (const pkg of queue.packages) {
+    if (!outcomeById.has(pkg.id) && !activeWork.has(pkg.id)) await factory.upsertWorkPackage(pkg);
+  }
+
+  for (let index = 0; index < queue.packages.length; index += 1) {
+    const pkg = queue.packages[index];
+    if (outcomeById.has(pkg.id)) continue;
+    const workflowId = `factory-night-shift-${pkg.id}`;
+    const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
+    if (tracked) {
+      return {
+        status: "IN_FLIGHT",
+        workPackageId: pkg.id,
+        workflowId,
+        trackedStatus: tracked.status ?? "UNKNOWN",
+        contextHash: pkg.amendmentM.fingerprint.context_hash,
+        exactFactorySha: queue.exactFactorySha,
+        exactTestSha: queue.exactTestSha,
+      };
+    }
+
+    const preDispatchFresh = await freshAuthority(env);
+    const preDispatchFailures = verifyRuntimeSnapshot(pkg.amendmentM.contract, preDispatchFresh);
+    if (preDispatchFailures.length > 0) {
+      throw new Error(`STALE_CONTEXT_PRE_DISPATCH:${preDispatchFailures.join(",")}`);
+    }
+
+    await factory.runWorkflow(
+      "WORK_PACKAGE_WORKFLOW",
+      {
+        workPackageId: pkg.id,
+        portfolioFallback: {
+          exactFactorySha: queue.exactFactorySha,
+          exactTestSha: queue.exactTestSha,
+          index,
+          packages: queue.packages,
+        },
+      },
+      {
+        id: workflowId,
+        metadata: {
+          nightShift: true,
+          amendmentM: true,
+          authority: NIGHT_SHIFT_AUTHORITY,
+          sourceWorkPackage: NIGHT_SHIFT_PROJECT_ID,
+          projectId: pkg.projectId,
+          section: pkg.section,
+          exactFactorySha: queue.exactFactorySha,
+          exactTestSha: queue.exactTestSha,
+          contextHash: pkg.amendmentM.fingerprint.context_hash,
+          evaluator: EVALUATOR_ID,
+          readOnly: true,
+          terminalContinuation: true,
+        },
+        agentBinding: "PRODUCTION_FACTORY",
+      },
+    );
+
+    return {
+      status: "DISPATCHED",
+      projectId: pkg.projectId,
+      workPackageId: pkg.id,
+      workflowId,
+      contextHash: pkg.amendmentM.fingerprint.context_hash,
+      exactFactorySha: queue.exactFactorySha,
+      exactTestSha: queue.exactTestSha,
+      productionControlProjection: `${preDispatchFresh.live_control_ref}@${preDispatchFresh.live_control_sha}`,
+      writeScopes: pkg.writeScopes,
+      execution: pkg.execution,
+    };
+  }
+
+  return {
+    status: "EXHAUSTED",
+    exactFactorySha: queue.exactFactorySha,
+    exactTestSha: queue.exactTestSha,
+    terminalOutcomes: outcomes.map((outcome) => ({ id: outcome.workPackageId, status: outcome.status })),
   };
 }
 
@@ -187,6 +434,46 @@ export default {
         return Response.json({
           ok: false,
           error: error instanceof Error ? error.message : "PORTFOLIO_FALLBACK_STATUS_FAILED",
+        }, { status: 409 });
+      }
+    }
+
+    if (request.method === "GET" && url.pathname === "/__factory/night-shift") {
+      try {
+        return Response.json({ runtimeUrl: url.origin, ...(await nightShiftStatus(env)) });
+      } catch (error) {
+        return Response.json({
+          ok: false,
+          lane: "FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01",
+          runtimeUrl: url.origin,
+          error: error instanceof Error ? error.message : "NIGHT_SHIFT_STATUS_FAILED",
+        }, { status: 409 });
+      }
+    }
+
+    if (request.method === "GET" && url.pathname === "/__factory/canary") {
+      const response = await runtimeEntrypoint.fetch(request, env, ctx);
+      if (!response.ok) return response;
+      const body = await response.clone().json().catch(() => null) as Record<string, unknown> | null;
+      try {
+        const dispatch = await dispatchNextNightShift(env);
+        const status = await nightShiftStatus(env);
+        return Response.json({
+          ...(body ?? {}),
+          nightShift: {
+            runtimeUrl: url.origin,
+            dispatch,
+            status,
+          },
+        }, { status: response.status });
+      } catch (error) {
+        return Response.json({
+          ...(body ?? {}),
+          nightShift: {
+            runtimeUrl: url.origin,
+            ok: false,
+            error: error instanceof Error ? error.message : "NIGHT_SHIFT_DISPATCH_FAILED",
+          },
         }, { status: 409 });
       }
     }
