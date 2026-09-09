@@ -120,62 +120,67 @@ function ReadingSection({ section, proof, number }: { section: ProofSection; pro
         <div style={{ marginTop: 12, ...mono, color: section.confidence === "HIGH" ? "#157c3d" : section.confidence === "MEDIUM" ? "#8a6500" : "#a03a2a" }}>EVIDENCE · {section.confidence}</div>
       </div>
       <div>
-        <h2 style={{ margin: 0, fontSize: "clamp(31px,4.7vw,72px)", lineHeight: .96, letterSpacing: "-.05em", maxWidth: "14ch" }}>{section.title}</h2>
-        {section.summary && <p style={{ margin: "20px 0 0", maxWidth: 760, fontSize: "clamp(17px,1.5vw,20px)", lineHeight: 1.62, color: dim }}>{section.summary}</p>}
-        <div style={{ marginTop: 28, display: "grid", gap: 16 }}>
-          {section.points.map((point) => <p key={point} style={{ margin: 0, maxWidth: 780, fontSize: 16, lineHeight: 1.66 }}>{point}</p>)}
-        </div>
-        {section.sourceIds.length > 0 && (
-          <div style={{ marginTop: 30, display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {section.sourceIds.map((id) => {
-              const source = sources[id];
-              if (!source) return null;
-              return <a key={id} href={source.url} target="_blank" rel="noreferrer" style={{ ...mono, color: blue, textDecoration: "none", border: `1px solid ${line}`, padding: "8px 10px", background: "#fff" }}>{source.shortLabel} ↗</a>;
-            })}
-          </div>
-        )}
+        <h2 style={{ margin: 0, color: ink, fontSize: "clamp(30px,5vw,66px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520, maxWidth: 980 }}>{section.headline}</h2>
+        <p style={{ margin: "24px 0 0", maxWidth: 850, color: "#292929", fontSize: "clamp(17px,2vw,22px)", lineHeight: 1.52 }}>{section.summary}</p>
+        {section.facts.length > 0 && <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,240px),1fr))", borderTop: `1px solid ${line}`, borderLeft: `1px solid ${line}` }}>{section.facts.map((fact) => <div key={fact} style={{ padding: 18, borderRight: `1px solid ${line}`, borderBottom: `1px solid ${line}`, fontSize: 14, lineHeight: 1.55 }}>{fact}</div>)}</div>}
+        {section.sourceIds.length > 0 && <div style={{ marginTop: 24, display: "flex", gap: 8, flexWrap: "wrap" }}>{section.sourceIds.map((id) => { const source = sources[id]; return source ? <a key={id} href={source.url} target="_blank" rel="noreferrer" style={{ ...mono, color: blue, textDecoration: "none", borderBottom: `1px solid ${blue}`, paddingBottom: 2 }}>{source.authority} ↗</a> : null; })}</div>}
       </div>
     </section>
   );
 }
 
-function SourceRegister({ proof }: { proof: PlanetProof }) {
+function SourceLedger({ proof }: { proof: PlanetProof }) {
   return (
-    <section style={{ padding: "clamp(58px,8vw,110px) clamp(20px,6vw,86px)", background: paper, borderTop: `1px solid ${line}` }}>
-      <div style={{ ...mono, color: blue }}>SOURCE REGISTER</div>
-      <h2 style={{ margin: "12px 0 0", fontSize: "clamp(31px,4vw,58px)", letterSpacing: "-.045em", maxWidth: "14ch" }}>Every public claim should have somewhere to go.</h2>
-      <div style={{ marginTop: 34, display: "grid", gap: 1, background: line }}>
-        {proof.sources.map((source) => (
-          <a key={source.id} href={source.url} target="_blank" rel="noreferrer" style={{ padding: "18px 20px", background: "#fff", color: ink, textDecoration: "none", display: "grid", gridTemplateColumns: "minmax(120px,.65fr) minmax(0,1.35fr)", gap: 20 }}>
-            <span style={{ ...mono, color: blue }}>{source.shortLabel}</span>
-            <span><strong>{source.authority}</strong><span style={{ display: "block", marginTop: 5, color: dim, lineHeight: 1.45, fontSize: 14 }}>{source.scope}</span></span>
-          </a>
-        ))}
+    <section style={{ background: "#0a0a0a", color: "#fff", padding: "clamp(54px,8vw,110px) clamp(20px,6vw,86px)" }}>
+      <div style={{ ...mono, color: "#79dcff" }}>HOW WE KNOW · SOURCE LEDGER</div>
+      <h2 style={{ margin: "15px 0 0", fontSize: "clamp(34px,5vw,68px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>Nothing important should require trust in 4PLANET alone.</h2>
+      <div style={{ marginTop: 38, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,330px),1fr))", borderTop: "1px solid rgba(255,255,255,.18)", borderLeft: "1px solid rgba(255,255,255,.18)" }}>
+        {proof.sources.map((source) => <a key={source.id} href={source.url} target="_blank" rel="noreferrer" style={{ color: "#fff", textDecoration: "none", padding: "22px", borderRight: "1px solid rgba(255,255,255,.18)", borderBottom: "1px solid rgba(255,255,255,.18)" }}><div style={{ ...mono, color: source.state === "OPERATIONAL" ? "#79dcff" : "#7effa4" }}>{source.state}</div><h3 style={{ margin: "10px 0 0", fontSize: 18, lineHeight: 1.16 }}>{source.label}</h3><div style={{ marginTop: 7, color: "rgba(255,255,255,.58)", fontSize: 12 }}>{source.authority}</div><p style={{ margin: "14px 0 0", color: "rgba(255,255,255,.72)", fontSize: 13, lineHeight: 1.55 }}>{source.supports}</p><div style={{ marginTop: 14, ...mono, color: "#fff" }}>OPEN SOURCE ↗</div></a>)}
       </div>
     </section>
   );
 }
 
-export function PlanetProofPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const proof = slug ? planetProofBySlug[slug] : undefined;
-  if (!proof) return <Navigate to="/living-systems" replace />;
-
+export function PlanetProofPage({ slug }: { slug: string }) {
+  const proof = planetProofBySlug(slug);
+  if (!proof) return null;
+  const isCandidate = proof.state === "FOUNDER_REVIEW";
+  const preservesOslofjordProductIdentity = proof.slug === "oslofjorden";
+  const displayName = preservesOslofjordProductIdentity ? "Oslofjorden" : proof.name;
   return (
-    <main style={{ background: "#fff", color: ink }}>
-      <header style={{ padding: "clamp(120px,14vw,190px) clamp(20px,6vw,86px) clamp(60px,8vw,100px)", borderBottom: `1px solid ${line}` }}>
-        <Link to="/living-systems" style={{ ...mono, color: blue, textDecoration: "none" }}>← LIVING SYSTEMS</Link>
-        <div style={{ marginTop: 38, ...mono, color: blue }}>{proof.eyebrow}</div>
-        <h1 style={{ margin: "13px 0 0", fontSize: "clamp(47px,8vw,118px)", lineHeight: .88, letterSpacing: "-.06em", maxWidth: "10ch" }}>{proof.title}</h1>
-        <p style={{ margin: "26px 0 0", maxWidth: 820, color: dim, fontSize: "clamp(18px,1.8vw,24px)", lineHeight: 1.55 }}>{proof.intro}</p>
-        <div style={{ marginTop: 30, display: "flex", gap: 9, flexWrap: "wrap" }}>
-          <span style={{ ...mono, color: "#157c3d", border: "1px solid #157c3d", padding: "7px 9px" }}>EARLY EVIDENCE VIEW</span>
-          <span style={{ ...mono, color: dim, border: `1px solid ${line}`, padding: "7px 9px" }}>SOURCE-BACKED · BOUNDED</span>
+    <main style={{ background: paper, color: ink }}>
+      <nav style={{ minHeight: 52, padding: "0 clamp(18px,4vw,54px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, borderBottom: `1px solid ${line}`, background: paper }}>
+        <Link to="/" style={{ color: ink, textDecoration: "none", fontWeight: 700, letterSpacing: "-.03em" }}>4PLANET_</Link>
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}><Link to="/living-systems" style={{ ...mono, color: ink, textDecoration: "none" }}>LIVING SYSTEMS</Link><Link to="/atlas" style={{ ...mono, color: ink, textDecoration: "none" }}>ATLAS</Link></div>
+      </nav>
+
+      <header style={{ minHeight: "74vh", display: "grid", alignContent: "end", padding: "clamp(70px,10vw,150px) clamp(20px,6vw,86px) clamp(46px,7vw,90px)" }}>
+        <div style={{ ...mono, color: blue }}><span>{proof.domain} · PLANET PROOF {proof.index} · </span>{isCandidate ? <span>HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED</span> : <span>TRANSFER PACK — IN DEVELOPMENT</span>}</div>
+        <h1 style={{ margin: "18px 0 0", fontSize: "clamp(60px,12vw,176px)", lineHeight: .78, letterSpacing: "-.075em", fontWeight: 520 }}>{displayName}</h1>
+        {preservesOslofjordProductIdentity && <div style={{ marginTop: 24, ...mono, color: blue }}>BOUNDED REFERENCE CELL · {proof.name}</div>}
+        <div style={{ marginTop: "clamp(32px,5vw,62px)", display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(260px,.7fr)", gap: "clamp(28px,7vw,100px)", alignItems: "end" }}>
+          <p style={{ margin: 0, maxWidth: 850, fontSize: "clamp(23px,3.6vw,48px)", lineHeight: 1.04, letterSpacing: "-.03em" }}>{proof.oneLine}</p>
+          <p style={{ margin: 0, color: dim, fontSize: 13.5, lineHeight: 1.58 }}>{proof.truthBoundary}</p>
         </div>
       </header>
+
       <EvidenceMap proof={proof} />
-      {proof.sections.map((section, i) => <ReadingSection key={section.id} section={section} proof={proof} number={i + 1} />)}
-      <SourceRegister proof={proof} />
+
+      <section style={{ padding: "clamp(40px,6vw,78px) clamp(20px,6vw,86px)", borderBottom: `1px solid ${line}` }}>
+        <div style={{ ...mono, color: blue }}>HUMAN-FIRST READING ORDER</div>
+        <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: "8px 18px" }}>{proof.sections.map((section, index) => <a key={section.id} href={`#${section.id.toLowerCase()}`} style={{ color: ink, textDecoration: "none", fontSize: 13, borderBottom: `1px solid ${line}`, paddingBottom: 5 }}>0{index + 1} {section.question}</a>)}</div>
+      </section>
+
+      {proof.sections.map((section, index) => <ReadingSection key={section.id} section={section} proof={proof} number={index + 1} />)}
+      <SourceLedger proof={proof} />
+
+      <section style={{ padding: "clamp(50px,8vw,100px) clamp(20px,6vw,86px)", borderBottom: `1px solid ${line}` }}>
+        <div style={{ ...mono, color: blue }}>COMPOUNDING / TRANSFER</div>
+        <p style={{ margin: "18px 0 0", maxWidth: 900, fontSize: "clamp(22px,3vw,40px)", lineHeight: 1.15, letterSpacing: "-.025em" }}>{proof.transferNote}</p>
+        {proof.slug === "oslofjorden" && <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap" }}><span style={{ ...mono, border: `1px solid ${line}`, padding: "11px 13px" }}>NEXT TRANSFER · GREAT BARRIER REEF</span><span style={{ ...mono, border: `1px solid ${line}`, padding: "11px 13px" }}>THIRD TRANSFER · AMAZONIA</span></div>}
+      </section>
+
+      <footer style={{ padding: "22px clamp(20px,6vw,86px) 38px", display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}><div style={{ ...mono, color: dim }}>PROOF STATE · {proof.state}</div><div style={{ ...mono, color: dim }}>MAKER ≠ JUDGE · HUMAN GOLD REQUIRES FOUNDER REVIEW</div></footer>
     </main>
   );
 }
