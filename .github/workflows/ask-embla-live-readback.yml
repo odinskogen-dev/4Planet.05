@@ -1,0 +1,37 @@
+name: 4SAPIEN Ask Embla live readback
+
+on:
+  push:
+    branches: [build/ask-embla-live-20260909]
+    paths:
+      - '.github/workflows/ask-embla-live-readback.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-readback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live production payload and headers
+        run: |
+          set -euo pipefail
+          curl -fsS -D /tmp/headers.txt -H 'Sec-Fetch-Mode: navigate' https://4sapien.com -o /tmp/live.html
+          grep -q 'Ask Embla' /tmp/live.html
+          grep -q '4SAPIEN by 4PLANET' /tmp/live.html
+          grep -q '4PLANET ID · INNLOGGET' /tmp/live.html
+          grep -q 'Fullfør 4SAPIEN-profilen din.' /tmp/live.html
+          grep -q 'LIST_HYDRATE_FAILED' /tmp/live.html
+          grep -q 'SHOPS_HYDRATE_FAILED' /tmp/live.html
+          grep -q 'aria-label="4PLANET ID – innlogget"' /tmp/live.html
+          ! grep -q 'S4PIENS' /tmp/live.html
+          ! grep -Eqi 'service[_-]?role|sb_secret_' /tmp/live.html
+          grep -Eqi '^permissions-policy:.*camera=\(self\)' /tmp/headers.txt
+          grep -Eqi '^content-security-policy:.*ghvdzetmplqkdtfqiror\.supabase\.co' /tmp/headers.txt
+          python - <<'PY'
+          import hashlib, pathlib
+          b=pathlib.Path('/tmp/live.html').read_bytes()
+          print('LIVE_BYTES',len(b))
+          print('LIVE_SHA256',hashlib.sha256(b).hexdigest())
+          PY
