@@ -10,6 +10,24 @@ const transpiled = ts.transpileModule(withoutTypeImport, {
 }).outputText;
 const action = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
 
+function productionRecord(overrides = {}) {
+  return {
+    actionId: "action:production:plastic:1",
+    providerPatternId: action.PLASTIC_BANK_FIXED_CONTRIBUTION_PATTERN.id,
+    environment: "PRODUCTION",
+    state: "PAID",
+    quantity: 5000,
+    unit: "bottles",
+    geography: null,
+    providerReference: "provider:pending",
+    idempotencyKey: "4p-production-plastic-1",
+    proofClaimDistance: "D1",
+    evidenceRefs: [],
+    limitations: [],
+    ...overrides,
+  };
+}
+
 test("canonical action lifecycle preserves payment/delivery/outcome/impact separation", () => {
   assert.deepEqual(action.ACTION_LIFECYCLE, [
     "DISCOVERED", "DILIGENCED", "SELECTED", "COMMITTED", "PAID", "ALLOCATED",
@@ -57,11 +75,82 @@ test("TEST lifecycle remains D0 and cannot imply commitment, payment or delivery
   assert.ok(action.validateActionLifecycleRecord(illegal).includes("test_claim_boundary"));
 });
 
-test("provider pattern remains diligence, not partnership or independent verification", () => {
-  const pattern = action.ECOLOGI_HABITAT_RESTORATION_PATTERN;
-  assert.equal(pattern.supportsTestMode, true);
-  assert.equal(pattern.unit, "m² habitat restoration funded");
-  assert.match(pattern.doubleCountTreatment, /UNRESOLVED/i);
-  assert.ok(pattern.limitations.some((item) => /No Ecologi partnership/i.test(item)));
-  assert.ok(pattern.limitations.some((item) => /No real request/i.test(item)));
+test("provider candidates remain diligence records and fixed tier never inherits enterprise capabilities", () => {
+  const bank = action.PLASTIC_BANK_FIXED_CONTRIBUTION_PATTERN;
+  assert.equal(bank.supportsTestMode, false);
+  assert.equal(bank.unitMinimum, 5000);
+  assert.match(bank.reportingApi, /NOT_VERIFIED_FOR_FIXED_CONTRIBUTION/i);
+  assert.ok(bank.limitations.some((item) => /Candidate only/i.test(item)));
+  assert.ok(bank.limitations.some((item) => /Enterprise audit trail/i.test(item)));
+
+  const fischer = action.PLASTIC_FISCHER_CERTIFICATE_PATTERN;
+  assert.equal(fischer.unitMinimum, 5);
+  assert.match(fischer.reportingApi, /NO PUBLIC BUYER API VERIFIED/i);
+
+  const cleanhub = action.CLEANHUB_RECOVERY_PATTERN;
+  assert.match(cleanhub.reportingApi, /exact access contract/i);
+  assert.ok(cleanhub.limitations.some((item) => /Process verification does not by itself/i.test(item)));
+});
+
+test("payment success plus delivery failure remains PAID/D1 and cannot self-promote", () => {
+  const record = productionRecord({ integrity: { deliveryState: "FAILED" } });
+  assert.deepEqual(action.validateActionLifecycleRecord(record), []);
+  const illegal = { ...record, state: "DELIVERED", proofClaimDistance: "D2", evidenceRefs: ["evidence:fake-delivery"] };
+  assert.ok(action.validateActionLifecycleRecord(illegal).includes("delivery_state_conflict"));
+});
+
+test("partial or incorrect quantity is surfaced and cannot be verified as complete", () => {
+  const record = productionRecord({
+    state: "VERIFIED",
+    proofClaimDistance: "D3",
+    evidenceRefs: ["evidence:provider"],
+    integrity: { expectedQuantity: 5000, reportedQuantity: 4200, deliveryState: "PARTIAL" },
+  });
+  const failures = action.validateActionLifecycleRecord(record);
+  assert.ok(failures.includes("partial_delivery"));
+  assert.ok(failures.includes("quantity_mismatch"));
+  assert.ok(failures.includes("partial_delivery_cannot_verify"));
+});
+
+test("missing evidence blocks delivered/verified states", () => {
+  const record = productionRecord({ state: "DELIVERED", proofClaimDistance: "D2", evidenceRefs: [] });
+  assert.ok(action.validateActionLifecycleRecord(record).includes("missing_delivery_or_outcome_evidence"));
+});
+
+test("contradictory or provider-only evidence cannot be called VERIFIED", () => {
+  const contradictory = productionRecord({
+    state: "VERIFIED",
+    proofClaimDistance: "D3",
+    evidenceRefs: ["evidence:provider"],
+    integrity: { contradictoryEvidence: true },
+  });
+  assert.ok(action.validateActionLifecycleRecord(contradictory).includes("contradictory_evidence_cannot_verify"));
+
+  const providerOnly = productionRecord({
+    state: "VERIFIED",
+    proofClaimDistance: "D3",
+    evidenceRefs: ["evidence:provider"],
+    integrity: { providerClaimOnly: true },
+  });
+  assert.ok(action.validateActionLifecycleRecord(providerOnly).includes("provider_claim_not_independent"));
+});
+
+test("refund preserves history and requires invalidated/remedied state", () => {
+  const refunded = productionRecord({ integrity: { refundState: "CONFIRMED" } });
+  assert.ok(action.validateActionLifecycleRecord(refunded).includes("refund_requires_remedy_state"));
+  const remedied = { ...refunded, state: "INVALIDATED_REMEDIED", proofClaimDistance: "D0" };
+  assert.ok(!action.validateActionLifecycleRecord(remedied).includes("refund_requires_remedy_state"));
+});
+
+test("stale evidence is rejected at the configured evidence-age boundary", () => {
+  const record = productionRecord({
+    integrity: { evidenceObservedAt: "2026-09-01T00:00:00Z", evidenceMaxAgeHours: 24 },
+  });
+  assert.ok(action.validateActionLifecycleRecord(record, new Date("2026-09-08T00:00:00Z")).includes("stale_evidence"));
+});
+
+test("repeated submission is detectable by idempotency key before provider mutation", () => {
+  const first = productionRecord();
+  const second = { ...productionRecord(), actionId: "action:production:plastic:2" };
+  assert.deepEqual(action.duplicateIdempotencyKeys([first, second]), ["4p-production-plastic-1"]);
 });

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "effective_date": "2026-09-04",
+  "effective_date": "2026-09-08",
   "control_state": "FOUR_STATE_CONTROL_ACTIVATION_ABSOLUTE_WRITE_AUTHORITY",
   "founder_review_hosts": {
     "heir_and_sandbox": "https://test.4planet.org",
@@ -54,12 +54,22 @@
   },
   "products": {
     "4PLANET": {
-      "live": {"url": "https://4planet.org/", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/", "origin_path": "/"},
       "sandbox": null
     },
     "ATLAS": {
-      "live": {"url": "https://4planet.org/atlas", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/atlas",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/atlas",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
@@ -74,12 +84,22 @@
       }
     },
     "SPECIES": {
-      "live": {"url": "https://4planet.org/species", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/species",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/species",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/species", "origin_path": "/species"},
       "sandbox": null
     },
     "LIVING_SYSTEMS": {
-      "live": {"url": "https://4planet.org/living-systems", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/living-systems",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/living-systems",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/living-systems", "origin_path": "/living-systems"},
       "sandbox": null
     },
@@ -99,16 +119,21 @@
       "sandbox": null
     },
     "IMPACT": {
-      "live": {"url": "https://4planet.org/impact", "identity_state": "READBACK_REQUIRED"},
+      "live": {
+        "url": "https://4planet.org/impact",
+        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
+        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/impact",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+      },
       "heir": {"review_path": "/impact", "origin_path": "/impact"},
       "sandbox": null
     },
     "MAGAZINE": {
       "live": {
         "url": "https://4planetmagazine.com/",
-        "source_sha": "d27c841d3f15f26bf4feb7de3916a6a5fffe1795",
-        "immutable_pages_deployment": "https://feb9a95c.4planet-05.pages.dev/",
-        "identity_state": "IMMUTABLE_WORKER_PIN_VERIFIED_2026_09_04"
+        "source_sha": "0c201fd0bb64be12eb7b4dba481ade4680fa90d2",
+        "immutable_pages_deployment": "https://6c806159.4planet-05.pages.dev/",
+        "identity_state": "IMMUTABLE_FILMS_DARK_WORKER_PIN_VERIFIED_2026_09_08"
       },
       "heir": {"review_path": "/magazine", "origin_path": "/magazine"},
       "sandbox": {

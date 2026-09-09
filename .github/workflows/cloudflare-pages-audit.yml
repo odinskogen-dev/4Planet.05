@@ -14,78 +14,132 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    timeout-minutes: 15
     steps:
-      - name: Audit Pages and domains
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Audit exact LIVE routing and origins read-only
         id: audit
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "missing token"; exit 1; }
-          api="https://api.cloudflare.com/client/v4"
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          zone_json="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
-          account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
-          [[ -n "${account_id}" ]] || { echo "no account id"; exit 1; }
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo 'no Cloudflare account id'; exit 1; }
 
-          projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
-          jq -e '.success == true' <<<"${projects}" >/dev/null
-          deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")"
-
-          targets='["4planet.org","4planetmagazine.com","s4piens.com","4species.com","cre4tors.com","4planetmarket.com"]'
-          mapfile -t matching < <(jq -r --argjson targets "$targets" '
-            .result[]?
-            | select(any(.domains[]?; . as $d | any($targets[]; . == $d)))
-            | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))]
-            | @tsv
-          ' <<<"${projects}")
+          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+          jq -e '.success == true' <<<"$projects" >/dev/null
+          all_deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
+          jq -e '.success == true' <<<"$all_deployments" >/dev/null
+          custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
 
           {
-            echo "# Cloudflare Pages mapping"
+            echo '# Cloudflare exact LIVE routing — release closure read-only audit'
             echo
-            echo "Account: ${account_id}"
+            echo "Audit source HEIR: \`${GITHUB_SHA}\`"
+            echo "Account: \`${account_id}\`"
             echo
-            if ((${#matching[@]} == 0)); then
-              echo "No matching Pages projects found for canonical domains."
-            else
-              echo "| Project | Production branch | Domains |"
-              echo "|---|---|---|"
-              for row in "${matching[@]}"; do
-                IFS=$'\t' read -r name branch domains <<<"${row}"
-                echo "| \`${name}\` | \`${branch}\` | ${domains} |"
-              done
-            fi
-
+            echo '## Zone / apex DNS'
             echo
-            echo "## Latest production deployments"
-            echo
-            echo "| Commit | Branch | Stage | Status | Created | URL |"
-            echo "|---|---|---|---|---|---|"
-            jq -r '.result[]? | [(.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.name // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"${deployments}" | while IFS=$'\t' read -r commit branch stage status created url; do
-              echo "| \`${commit:0:12}\` | \`${branch}\` | ${stage} | **${status}** | ${created} | ${url} |"
-            done
-
-            echo
-            echo "## Zone/DNS presence"
-            echo
-            for domain in 4planet.org 4planetmagazine.com s4piens.com 4species.com cre4tors.com 4planetmarket.com; do
-              z="$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")"
-              zid="$(jq -r '.result[0].id // empty' <<<"${z}")"
-              status="$(jq -r '.result[0].status // "missing"' <<<"${z}")"
-              if [[ -z "$zid" ]]; then
-                echo "- ${domain}: zone missing/inaccessible"
+            echo '| Domain | Zone | Apex DNS | Worker routes |'
+            echo '|---|---|---|---|'
+            for domain in 4planet.org s4piens.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
+              zone=$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")
+              zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+              zstatus=$(jq -r '.result[0].status // "missing"' <<<"$zone")
+              if [ -z "$zid" ]; then
+                echo "| ${domain} | missing | | |"
                 continue
               fi
-              dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")"
-              records="$(jq -r '[.result[]? | (.type + " " + (.content // ""))] | join("; ")' <<<"${dns}")"
-              echo "- ${domain}: zone ${status}; ${records:-no apex record}"
+              dns=$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")
+              records=$(jq -r '[.result[]? | select(.type != "MX" and .type != "TXT") | (.type + " " + (.content // ""))] | join("; ")' <<<"$dns")
+              routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+              route_text=$(jq -r '[.result[]? | (.pattern + " → " + (.script // "<none>"))] | join("; ")' <<<"$routes")
+              echo "| ${domain} | ${zstatus} | ${records:-none} | ${route_text:-none} |"
             done
-          } > /tmp/cf-report.md
 
+            echo
+            echo '## Pages projects touching canonical domains'
+            echo
+            echo '| Project | Production branch | Domains |'
+            echo '|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+              echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+            done
+
+            echo
+            echo '## Current Pages production deployments by matching project'
+            echo
+            echo '| Project | Commit | Branch | Status | Created | Immutable URL |'
+            echo '|---|---|---|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | .name' <<<"$projects" | while IFS= read -r project; do
+              dep=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=3" "${auth[@]}")
+              jq -r --arg p "$project" '.result[]? | [$p, (.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"$dep" | while IFS=$'\t' read -r p commit branch status created url; do
+                echo "| \`${p}\` | \`${commit}\` | \`${branch}\` | ${status} | ${created} | ${url} |"
+              done
+            done
+
+            echo
+            echo '## Worker custom domains → exact Pages origins'
+            echo
+            echo '| Hostname | Service | Pages origin(s) in Worker | Origin source commit / branch / environment |'
+            echo '|---|---|---|---|'
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service; do
+              tmp=$(mktemp)
+              if curl -fsS "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" > "$tmp"; then
+                origins=$(grep -Eo '[a-zA-Z0-9-]+\.4planet-05\.pages\.dev' "$tmp" | sort -u | paste -sd ', ' - || true)
+              else
+                origins='SCRIPT_FETCH_FAILED'
+              fi
+              [ -n "$origins" ] || origins='NO_PAGES_ORIGIN_LITERAL_FOUND'
+              source='UNRESOLVED'
+              if [[ "$origins" != 'SCRIPT_FETCH_FAILED' && "$origins" != 'NO_PAGES_ORIGIN_LITERAL_FOUND' ]]; then
+                source=''
+                while IFS= read -r origin; do
+                  [ -n "$origin" ] || continue
+                  url="https://${origin}"
+                  row=$(jq -c --arg u "$url" '.result[]? | select(.url==$u)' <<<"$all_deployments" | head -n1)
+                  if [ -n "$row" ]; then
+                    commit=$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")
+                    branch=$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")
+                    environment=$(jq -r '.environment // ""' <<<"$row")
+                    source+="${origin}: ${commit} / ${branch} / ${environment}; "
+                  else
+                    source+="${origin}: DEPLOYMENT_NOT_FOUND_IN_FIRST_100; "
+                  fi
+                done < <(tr ',' '\n' <<<"$origins" | sed 's/^ *//;s/ *$//')
+              fi
+              echo "| ${hostname} | \`${service}\` | ${origins} | ${source} |"
+              rm -f "$tmp"
+            done
+
+            echo
+            echo '> READ-ONLY AUDIT. No DNS, Worker, Pages project, deployment or public domain was mutated.'
+          } > /tmp/cf-report.md
           cat /tmp/cf-report.md
 
-      - name: Report to analytics issue
+      - name: Report to existing analytics/control issue
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -94,5 +148,5 @@ jobs:
           if [[ -f /tmp/cf-report.md ]]; then
             gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/cf-report.md
           else
-            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Pages audit failed before report generation."
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare exact LIVE routing audit failed before report generation on \`${GITHUB_SHA}\`."
           fi

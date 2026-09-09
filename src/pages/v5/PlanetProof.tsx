@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { planetProofBySlug, type PlanetProof, type ProofMapLayer, type ProofSection } from "@/planet/proofs/planetProofs";
 
@@ -58,7 +58,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
       setStatus((current) => current === "DEGRADED" ? current : "READY");
     });
     m.on("error", (event) => {
-      const message = String((event as { error?: Error }).error?.message ?? "");
+      const message = String(event.error?.message ?? "");
       if (message && !message.includes("glyph")) setStatus("DEGRADED");
     });
     return () => {

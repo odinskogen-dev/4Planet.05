@@ -82,7 +82,18 @@ export function PublicCompletionBridge() {
   useEffect(() => {
     const darkAbout = pathname === "/about/story" || pathname === "/about/founder";
     document.body.classList.toggle("completion-dark-about", darkAbout);
-    return () => document.body.classList.remove("completion-dark-about");
+
+    const syncTop = () => {
+      document.body.classList.toggle("completion-dark-about-top", darkAbout && window.scrollY < 24);
+    };
+    syncTop();
+    window.addEventListener("scroll", syncTop, { passive: true });
+
+    return () => {
+      document.body.classList.remove("completion-dark-about");
+      document.body.classList.remove("completion-dark-about-top");
+      window.removeEventListener("scroll", syncTop);
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -124,6 +135,14 @@ export function PublicCompletionBridge() {
   return (
     <>
       {hosts.main && createPortal(<RouteCTA pathname={pathname} />, hosts.main)}
+      <style>{`
+        body.completion-dark-about-top .public-header{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+        body.completion-dark-about-top .public-brand,
+        body.completion-dark-about-top .public-header__nav-button,
+        body.completion-dark-about-top .public-header__join,
+        body.completion-dark-about-top .public-header__menu{color:#fff!important}
+        body.completion-dark-about-top .public-header + div[aria-hidden]{display:none!important}
+      `}</style>
     </>
   );
 }

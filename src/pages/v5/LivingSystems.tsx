@@ -9,14 +9,12 @@ import { NotFound } from "@/pages/system";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".12em" };
 
-/* Forward captured ATLAS returnTo onto the next hop so the journey can return. */
 function forwarder(search: string) {
   const returnHref = returnHrefFromSearch(search);
   const token = new URLSearchParams(search).get("returnTo");
   return (href: string) => (returnHref && token ? `${href}${href.includes("?") ? "&" : "?"}returnTo=${token}` : href);
 }
 
-/* ── Progressive relationship reveal — the reusable core ── */
 function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i: number; accent: string }) {
   return (
     <div style={{ borderTop: `1px solid ${T.line}`, padding: "clamp(26px,3.6vw,44px) 0" }}>
@@ -53,10 +51,6 @@ function RelationshipStepBlock({ step, i, accent }: { step: RelationshipStep; i:
   );
 }
 
-/* ── Decision utility — reusable, source-preserving, and deliberately non-prescriptive. ──
-   This converts the relationship graph into a practical reading sequence without
-   inventing a recommendation. It only reflects the evidence states and boundaries
-   already present in the anchor. */
 function RelationshipDecisionUtility({ a }: { a: LivingSystemAnchor }) {
   const dependency = a.steps.find((step) => step.stage === "DEPENDS ON");
   const pressure = a.steps.find((step) => step.stage === "UNDER PRESSURE");
@@ -102,14 +96,12 @@ function RelationshipDecisionUtility({ a }: { a: LivingSystemAnchor }) {
   );
 }
 
-/* ── The reusable anchor journey (used inline for Orca + standalone per anchor) ── */
 function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; search: string; showReturn: boolean }) {
   const fwd = forwarder(search);
   const returnHref = returnHrefFromSearch(search);
   return (
     <div>
       <div style={{ ...mono, color: a.accent }}>{a.eyebrow}</div>
-      {/* EXACT title text preserved for the live Orca journey (E2E + human continuity). */}
       <h2 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(28px,3.6vw,46px)", letterSpacing: "-.035em", lineHeight: 1.0, marginTop: 10 }}>{a.journeyTitle}</h2>
       <p style={{ marginTop: 16, fontSize: "clamp(15px,1.5vw,18px)", color: T.dim, maxWidth: 660, lineHeight: 1.6 }}>{a.standfirst}</p>
 
@@ -118,11 +110,6 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
       </div>
 
       <RelationshipDecisionUtility a={a} />
-
-      {/* Recovered LSI depth is progressive disclosure under the clean journey.
-          Only anchors with recovered intelligence (Amazonia + Pollination/Food)
-          render this panel; Orca/Oslofjord remain unchanged until their donor
-          intelligence is explicitly recovered and source-bounded. */}
       <LivingSystemsIntelligencePanel anchorSlug={a.slug} accent={a.accent} />
 
       <div className="tw" style={{ marginTop: 36, border: `1px solid ${T.line}` }}>
@@ -145,7 +132,6 @@ function AnchorJourney({ a, search, showReturn }: { a: LivingSystemAnchor; searc
   );
 }
 
-/* ── LIVING SYSTEMS home — features the live Orca journey inline + anchor index ── */
 export function LivingSystems() {
   const location = useLocation();
   const returnHref = returnHrefFromSearch(location.search);
@@ -164,18 +150,15 @@ export function LivingSystems() {
           Understand how life, places and human systems depend on one another.
         </h1>
         <p style={{ fontSize: "clamp(15px,1.6vw,18px)", color: T.dim, marginTop: 18, maxWidth: 680, lineHeight: 1.6 }}>
-          ATLAS shows what is here, where and when. Living Systems reads the same shared planet as relationships —
-          revealed step by step, each one labelled by what is known, interpreted or unknown. Start from a species, a
-          place or a system.
+          ATLAS shows what is here, where and when. Living Systems reads the same shared planet as relationships — revealed step by step, each one labelled by what is known, interpreted or unknown. Start from a species, a place or a system.
         </p>
 
-        {/* Anchor index — proves the reusable model across four starting points. */}
         <div className="ls-anchors" style={{ marginTop: "clamp(32px,4vw,52px)", borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
           {LIVING_SYSTEM_ANCHORS.map((a) => (
             <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ ...mono, color: a.accent }}>{a.index} · {a.kind} ANCHOR</span>
-                <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "LIVE" : "IN DEVELOPMENT"}</span>
+                <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "LIVE" : "EARLY EVIDENCE"}</span>
               </div>
               <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(20px,2vw,26px)", letterSpacing: "-.02em", marginTop: 12 }}>{a.anchorLabel}</div>
               <p style={{ fontSize: 13.5, color: T.dim, marginTop: 8, lineHeight: 1.5, maxWidth: 340 }}>{a.standfirst.split(" — ")[0]}.</p>
@@ -183,22 +166,19 @@ export function LivingSystems() {
           ))}
         </div>
 
-        {/* The live journey, inline (Orca) — keeps journey contracts + human continuity. */}
         <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY · 01 · LIVE</div>
         <div style={{ marginTop: 10 }}>
           <AnchorJourney a={orca} search={location.search} showReturn={false} />
         </div>
 
         <p style={{ marginTop: 32, ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.7, maxWidth: 700 }}>
-          THE ORCA JOURNEY IS LIVE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD USE THE SAME
-          REUSABLE MODEL AND ARE IN DEVELOPMENT — OPEN THEM ABOVE TO SEE THE STRUCTURE.
+          THE ORCA JOURNEY IS LIVE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD ARE EARLY EVIDENCE VIEWS. RELATIONSHIPS REMAIN BOUNDED BY THEIR CURRENT SOURCE AND EVIDENCE STATE.
         </p>
       </Section>
     </PublicShell>
   );
 }
 
-/* ── Standalone anchor journey page ── */
 export function LivingSystemJourney() {
   const { slug } = useParams();
   const location = useLocation();
@@ -217,10 +197,9 @@ export function LivingSystemJourney() {
         <Link to={fwd("/living-systems")} style={{ ...mono, color: a.accent }}>← LIVING SYSTEMS</Link>
         {a.status !== "LIVE" && (
           <div style={{ marginTop: 16 }}>
-            <span style={{ ...mono, color: "#000", background: "#8A6500", padding: "5px 9px", fontSize: 10 }}>IN DEVELOPMENT · STRUCTURE PREVIEW</span>
-            <p style={{ margin: "12px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, maxWidth: 640 }}>
-              This anchor uses the same reusable relationship model as the live Orca journey. Its relationships are shown
-              at honest evidence states; the journey is still being built out.
+            <span style={{ ...mono, color: T.ink, border: `1px solid ${T.line}`, padding: "5px 9px", fontSize: 10 }}>EARLY EVIDENCE VIEW</span>
+            <p style={{ margin: "12px 0 0", color: T.dim, fontSize: 14, lineHeight: 1.6, maxWidth: 640 }}>
+              This view shows only relationships currently supported by the connected evidence. Coverage is incomplete and will expand as sources and relationships are reviewed.
             </p>
           </div>
         )}

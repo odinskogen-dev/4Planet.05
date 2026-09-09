@@ -1,3 +1,35 @@
+.atlas-product-identity {
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  z-index: 42;
+  pointer-events: auto;
+}
+.atlas-product-identity-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 32px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(8,8,8,.82);
+  color: #fff;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  font-family: "Fragment Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  box-sizing: border-box;
+}
+.atlas-product-identity-link span { opacity: .72; }
+.atlas-product-identity-link strong { font-weight: 500; color: #8f8fff; }
+.world.light ~ .atlas-product-identity .atlas-product-identity-link,
+body:has(.world.light) .atlas-product-identity-link {
+  background: rgba(255,255,255,.94);
+  color: #080808;
+  border-color: rgba(8,8,8,.16);
+}
+
 .atlas-leading-time {
   position: absolute;
   top: 162px;
@@ -59,15 +91,29 @@
 .atlas-leading-time-body p { margin: 8px 0 0; font-size: 9px; line-height: 1.5; opacity: .58; }
 
 @media (max-width: 760px) {
+  .atlas-product-identity {
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    left: 10px;
+  }
+  .atlas-product-identity-link {
+    min-height: 34px;
+    padding: 7px 9px;
+    font-size: 9.5px;
+  }
+
+  /* Reserve one explicit vertical control stack on mobile:
+     identity → search → lens rail → Layers/My Atlas → Time. */
+  .world .search-wrap { top: calc(env(safe-area-inset-top, 0px) + 54px); }
+
   /* One interaction plane at a time. The expanded layer console owns the mobile
      work area; secondary controls remain behind it and cannot intercept taps. */
   .atlas-panel:not(.rest) {
     z-index: 50;
-    top: 108px !important;
+    top: calc(env(safe-area-inset-top, 0px) + 158px) !important;
     left: 10px;
     width: calc(100vw - 20px);
     max-width: none;
-    max-height: calc(100vh - 152px);
+    max-height: calc(100vh - 202px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     padding: 14px;
     background: rgba(8,8,8,.97);
@@ -82,10 +128,26 @@
   .atlas-leading-time,
   .atlas-leading-time-body { box-sizing: border-box; }
 
-  /* Resting controls occupy deliberate non-overlapping corners below Search. */
-  .atlas-panel.rest { top: 116px !important; left: 10px; z-index: 24; max-width: 52vw; }
-  .atlas-saved-views { top: 116px !important; right: 10px !important; z-index: 23 !important; max-width: 44vw; }
-  .atlas-leading-time { top: 166px; right: 10px; width: auto; z-index: 22; }
+  /* Resting controls occupy deliberate non-overlapping corners BELOW the lens
+     rail. The old 116px placement physically overlapped the ~106–146px lens row. */
+  .atlas-panel.rest {
+    top: calc(env(safe-area-inset-top, 0px) + 158px) !important;
+    left: 10px;
+    z-index: 24;
+    max-width: 52vw;
+  }
+  .atlas-saved-views {
+    top: calc(env(safe-area-inset-top, 0px) + 158px) !important;
+    right: 10px !important;
+    z-index: 23 !important;
+    max-width: 44vw;
+  }
+  .atlas-leading-time {
+    top: calc(env(safe-area-inset-top, 0px) + 210px);
+    right: 10px;
+    width: auto;
+    z-index: 22;
+  }
 
   /* TIME expands into the same bounded work area as Layers, but one level below
      Layers so an accidentally simultaneous open state cannot create a tap trap. */
@@ -96,7 +158,9 @@
     max-width: none;
     z-index: 49;
   }
-  .atlas-leading-time-body { max-height: calc(100vh - 220px); }
+  .atlas-leading-time-body {
+    max-height: calc(100vh - 264px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
 
   /* PublicWorld renders My Atlas/TIME as siblings of .world, so a .world:has(...)
      selector cannot reach them. Body is the smallest shared ancestor. When Layers
@@ -115,4 +179,19 @@
   /* Search is the primary action on mobile; give its results usable vertical room
      without letting the dropdown consume the whole globe. */
   .results { max-height: min(52vh, 430px); overscroll-behavior: contain; }
+
+  /* The persistent 26px truth/status strip is part of the interaction plane.
+     Keep MapLibre buttons and sheets above it AND above the iOS home indicator. */
+  .world .maplibregl-ctrl-bottom-right {
+    margin-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  }
+  .world .ctx,
+  .world .lens-panel {
+    bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  }
+  .world .status-strip {
+    height: calc(26px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
 }

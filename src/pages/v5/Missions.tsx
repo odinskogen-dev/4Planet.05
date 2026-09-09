@@ -21,14 +21,12 @@ const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, l
 const CULTURAL = new Set(["4play", "4film", "4rt", "m4gazine"]);
 const SYSTEM = new Set(["food", "en4rgy", "circular-city", "f4shion"]);
 const FLAGSHIP = new Set(["wh4les", "clim4te", "am4zonia", "cle4n"]);
-// dark-world missions live in tokens (DARK_MISSIONS) so the header can share them
 function classify(slug: string): { label: string } {
   if (CULTURAL.has(slug)) return { label: "CULTURAL PROJECT" };
   if (SYSTEM.has(slug)) return { label: "SYSTEM DOSSIER" };
   return { label: "MISSION DOSSIER" };
 }
 
-// split the article at the first section label after the opening movement (story-led, not by %)
 function splitArticle(blocks: Block[]): [Block[], Block[]] {
   let subs = 0;
   for (let i = 0; i < blocks.length; i++) {
@@ -50,8 +48,8 @@ export function MissionDetail() {
   const flagship = FLAGSHIP.has(m.slug);
   const cultural = CULTURAL.has(m.slug);
   const dark = DARK_MISSIONS.has(m.slug);
-  const base = "#000";                              // §2 — pure black world
-  const secBg = dark ? base : T.paper;              // reading planes: black on dark missions, white on light
+  const base = "#000";
+  const secBg = dark ? base : T.paper;
   const secText = dark ? "#fff" : T.ink;
   const secDim = dark ? "rgba(255,255,255,.60)" : T.dim;
   const secBody = dark ? "rgba(255,255,255,.86)" : T.ink;
@@ -70,7 +68,6 @@ export function MissionDetail() {
           ← BACK TO OBSERVATION IN ATLAS
         </Link>
       )}
-      {/* ── immersive entry (dark) ── */}
       <CinematicImage meta={hero} fallback={dhero} height="100svh" overlay={0.54} priority accent={acc} align="end">
         <Reveal>
           <div style={{ ...mono("#fff"), marginBottom: 16 }}>
@@ -84,7 +81,30 @@ export function MissionDetail() {
         </Reveal>
       </CinematicImage>
 
-      {/* ── thesis chapter — each mission opens into its own world ── */}
+      {m.slug === "4rt" && (
+        <section style={{ background: acc, color: "#fff" }}>
+          <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(40px,6vw,76px) clamp(20px,5vw,72px)" }}>
+            <Reveal>
+              <div style={{ ...mono("rgba(255,255,255,.78)"), marginBottom: 14 }}>4RT_ · WORKING PROTOTYPES</div>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,.72fr)", gap: "clamp(28px,6vw,88px)", alignItems: "end" }} className="art-prototype-bridge">
+                <div>
+                  <h2 style={{ ...display, margin: 0, fontSize: "clamp(32px,5vw,68px)", lineHeight: .96, maxWidth: "13ch" }}>The first working forms of 4RT are already visible.</h2>
+                  <p style={{ margin: "20px 0 0", maxWidth: 760, fontSize: "clamp(15px,1.45vw,19px)", lineHeight: 1.62, color: "rgba(255,255,255,.9)" }}>CRE4TORS is the creator-side prototype. 4PLANET MARKET is the public market beta. Together they are the clearest current expression of Prints for Planet: art and limited editions with transparent economics, connected to 4PLANET Missions and verified Impact pathways as those pathways become real.</p>
+                </div>
+                <div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <a href="https://cre4tors.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>CRE4TORS · PROTOTYPE <span aria-hidden>↗</span></a>
+                    <a href="https://4planetmarket.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>4PLANET MARKET · BETA <span aria-hidden>↗</span></a>
+                  </div>
+                  <div style={{ ...mono("rgba(255,255,255,.72)"), marginTop: 14, fontSize: 9.5, lineHeight: 1.6 }}>PROTOTYPE / BETA · NO CLAIM OF DELIVERED ECOLOGICAL IMPACT</div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+          <style>{`@media(max-width:760px){.art-prototype-bridge{grid-template-columns:1fr!important}}`}</style>
+        </section>
+      )}
+
       <section style={{ background: dark ? "#000" : acc, color: dark ? acc : "#fff", padding: "clamp(72px,12vw,180px) clamp(20px,6vw,120px)" }}>
         <Reveal>
           <div style={{ ...mono(dark ? acc : "rgba(255,255,255,.8)"), marginBottom: "clamp(24px,3vw,40px)" }}>{m.code} · THE STAKES</div>
@@ -94,7 +114,6 @@ export function MissionDetail() {
         </Reveal>
       </section>
 
-      {/* ── WS-B Technical Mission Strip: after cinematic opening, before article ── */}
       <MissionStrip
         issue={m.issue}
         whyItMatters={m.whyItMatters}
@@ -105,20 +124,16 @@ export function MissionDetail() {
         dark={dark}
       />
 
-      {/* ── editorial reading plane (dark or white per mission) ── */}
       <Section bg={secBg} pad="clamp(64px,8.5vw,124px)">
         <Reveal><div style={{ ...mono(dark ? acc : T.dim), marginBottom: "clamp(30px,4vw,48px)" }}>{label}</div></Reveal>
         <Editorial blocks={partA} accent={acc} dark={dark} />
       </Section>
 
-      {/* ── large documentary image ── */}
       <CinematicImage meta={second ?? dhero} fallback={dhero} height="min(72vh, 720px)" accent={acc} />
 
-      {/* ── case material (dark or white per mission) ── */}
       <Section bg={secBg} pad="clamp(64px,8.5vw,124px)">
         {partB.length > 0 && <Editorial blocks={partB} accent={acc} dark={dark} />}
 
-        {/* living system — a quiet enumeration, not a chip wall */}
         <Reveal style={{ marginTop: "clamp(44px,6vw,76px)" }}>
           <div style={{ ...mono(dark ? acc : T.dim), marginBottom: 12 }}>The living system</div>
           <p style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(18px,1.8vw,24px)", letterSpacing: "-.02em", color: secText, maxWidth: 820, lineHeight: 1.4 }}>
@@ -126,7 +141,6 @@ export function MissionDetail() {
           </p>
         </Reveal>
 
-        {/* what can help / what 4planet is building */}
         <Reveal delay={60} style={{ marginTop: "clamp(44px,6vw,76px)" }}>
           <div className="tw-plain" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(28px,4vw,64px)" }}>
             {([["WHAT CAN HELP", m.whatCanHelp], ["WHAT 4PLANET IS BUILDING", m.fourPlanetRole]] as [string, string][]).map(([h, b]) => (
@@ -139,18 +153,14 @@ export function MissionDetail() {
         </Reveal>
       </Section>
 
-      {/* ── flagship: a second story/evidence image ── */}
       {flagship && (
         <CinematicImage meta={dhero} height="min(58vh, 560px)" position="50% 45%" accent={acc}
           caption={`${strip(m.domain)} / ${DOMAIN_DESC[m.domain]}`} />
       )}
 
-      {/* v25: the white→dark fade is gone (not premium). Where a white plane precedes the dark
-          ending, a real image carries the transition instead of a gradient. */}
       {!flagship && !dark && missionSecondary(m.slug) && (
         <CinematicImage meta={missionSecondary(m.slug)!} height="min(66vh, 660px)" position="50% 50%" accent={acc} />
       )}
-      {/* ── action + evidence ending ── */}
       <section style={{ background: dark ? base : T.ink, color: "#fff" }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,8vw,110px) clamp(20px,5vw,72px)" }}>
           {m.slug === "4rt" && (

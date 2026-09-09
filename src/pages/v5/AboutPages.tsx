@@ -102,17 +102,13 @@ export function Founder() {
   return (
     <PublicShell>
       <article style={{ background: "#fff", color: T.ink }}>
-        <header style={{ minHeight: "92svh", background: "#050505", color: "#fff", display: "flex", alignItems: "flex-end" }}>
-          <div style={{ ...max, width: "100%", paddingTop: 120, paddingBottom: "clamp(58px,8vw,110px)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <img src="/assets/brand/founder-portrait.svg" alt="Odin Oddekalv in a mountain landscape" width={92} height={92} style={{ width: "clamp(72px,8vw,108px)", height: "clamp(72px,8vw,108px)", borderRadius: "50%", objectFit: "cover", border: "1px solid rgba(255,255,255,.35)" }} />
-              <div>
-                <div style={{ ...mono, color: "rgba(255,255,255,.58)" }}>FOUNDER_</div>
-                <div style={{ ...mono, color: T.acid, marginTop: 7 }}>ODIN ODDEKALV</div>
-              </div>
-            </div>
-            <h1 style={{ ...display, marginTop: 30, fontSize: "clamp(50px,9vw,138px)", lineHeight: .82, maxWidth: "9ch" }}>Everything I love is alive.</h1>
-            <p style={{ marginTop: 30, maxWidth: 760, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.8)" }}>4PLANET began long before it had a name. It began with a simple fact: the places, animals and people worth fighting for are not separate from one another.</p>
+        <header className="founder-hero" style={{ minHeight: "100svh", background: "#050505", color: "#fff", position: "relative", overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
+          <img className="founder-hero__image" src="/assets/brand/founder-grass.jpg" alt="Odin Oddekalv sitting in grass wearing a dark beanie" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "54% 50%" }} />
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.18) 35%,rgba(0,0,0,.76) 78%,rgba(0,0,0,.94) 100%)" }} />
+          <div style={{ ...max, position: "relative", zIndex: 1, width: "100%", paddingTop: 140, paddingBottom: "clamp(58px,8vw,110px)" }}>
+            <div style={{ ...mono, color: T.blue }}>FOUNDER_ · ODIN ODDEKALV</div>
+            <h1 style={{ ...display, marginTop: 22, fontSize: "clamp(54px,9.5vw,146px)", lineHeight: .82, maxWidth: "8.5ch", textWrap: "balance" }}>Everything I love is alive.</h1>
+            <p style={{ marginTop: 30, maxWidth: 720, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.86)", textWrap: "pretty" }}>4PLANET began long before it had a name. It began with a simple fact: the places, animals and people worth fighting for are not separate from one another.</p>
           </div>
         </header>
         <AboutNav active="founder" />
@@ -152,17 +148,17 @@ export function Founder() {
 
         <section style={{ background: "#050805", color: "#fff" }}>
           <div style={{ ...max, paddingTop: "clamp(74px,10vw,150px)", paddingBottom: "clamp(74px,10vw,150px)" }}>
-            <div style={{ ...mono, color: T.acid }}>WHY 4PLANET</div>
+            <div style={{ ...mono, color: T.blue }}>WHY 4PLANET</div>
             <h2 style={{ ...display, marginTop: 20, fontSize: "clamp(38px,6vw,88px)", lineHeight: .93, maxWidth: "14ch" }}>The goal is not to make people care about an environmental abstraction.</h2>
             <p style={{ marginTop: 30, maxWidth: 760, fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.65, color: "rgba(255,255,255,.76)" }}>It is to help people see the living systems already underneath their own lives — and give that understanding somewhere credible to go.</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 34 }}>
-              <Link to="/about/system" style={{ ...mono, background: T.acid, color: "#050805", padding: "13px 17px", textDecoration: "none" }}>SEE THE SYSTEM →</Link>
+              <Link to="/about/system" style={{ ...mono, background: T.blue, color: "#fff", padding: "13px 17px", textDecoration: "none" }}>SEE THE SYSTEM →</Link>
               <Link to="/" style={{ ...mono, border: "1px solid rgba(255,255,255,.38)", color: "#fff", padding: "12px 17px", textDecoration: "none" }}>ENTER 4PLANET →</Link>
             </div>
           </div>
         </section>
       </article>
-      <style>{`@media(max-width:760px){.founder-split{grid-template-columns:1fr!important}}`}</style>
+      <style>{`@media(max-width:760px){.founder-split{grid-template-columns:1fr!important}.founder-hero__image{object-position:58% 50%!important}}`}</style>
     </PublicShell>
   );
 }

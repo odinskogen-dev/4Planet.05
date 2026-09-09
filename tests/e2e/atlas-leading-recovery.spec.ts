@@ -12,25 +12,48 @@ function overlaps(a: { x: number; y: number; width: number; height: number }, b:
   );
 }
 
-test("4PLANET ATLAS identity is visible on the canonical product", async ({ page }) => {
+test("Founder-selected ATLAS surface remains the product shell instead of a rejected polish overlay", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
-  await expect(page.getByLabel("4PLANET ATLAS")).toBeVisible();
-  await expect(page.getByLabel("4PLANET ATLAS")).toContainText("4PLANET ATLAS");
+  await expect(page.locator(".atlas-identity")).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: /search the living planet/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: "LAYERS" })).toBeVisible();
 });
 
-test("recovered high-value ATLAS donor layers are present in the canonical console", async ({ page }) => {
+test("Founder-reference ATLAS layer console keeps the full recovered capability set", async ({ page }) => {
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
   await page.getByRole("button", { name: "LAYERS" }).click();
 
-  await expect(page.getByText("OCEAN · BATHYMETRY", { exact: true })).toBeVisible();
-  await expect(page.getByText("SEABED · HABITATS 2025", { exact: true })).toBeVisible();
-  await expect(page.getByText("OCEAN · OXYGEN CLIMATOLOGY", { exact: true })).toBeVisible();
-  await expect(page.getByText("FISHING · VESSEL DENSITY", { exact: true })).toBeVisible();
+  for (const label of [
+    "EARTH · BLUE MARBLE",
+    "NASA EARTHDATA · TODAY",
+    "OCEAN · SEA SURFACE TEMP",
+    "NASA · NIGHT LIGHTS",
+    "ACTIVE FIRES",
+    "VEGETATION · NDVI",
+    "SEA ICE",
+    "AIR · AEROSOLS",
+    "PRECIPITATION",
+    "DAY / NIGHT",
+    "FOREST LOSS",
+    "CORAL HEAT STRESS",
+    "PROTECTED AREAS",
+    "OCEAN · BATHYMETRY",
+    "OCEAN · OXYGEN CLIMATOLOGY",
+    "BIODIVERSITY DENSITY",
+    "WH4LES",
+    "SPECIES",
+    "SEABED · HABITATS 2025",
+    "FIRE + EVENTS",
+    "FISHING · VESSEL DENSITY",
+    "CLIM4TE TRACE",
+  ]) {
+    await expect(page.getByText(label, { exact: true })).toBeVisible();
+  }
 });
 
-test("dark ATLAS uses the existing provider dark street style without losing overlays", async ({ page }, testInfo) => {
+test("dark ATLAS uses the provider dark street style without losing the planetary overlay", async ({ page }, testInfo) => {
   test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded basemap proof");
   await page.goto(`${ATLAS}?l=bluemarble`);
   await page.waitForFunction(() => {
@@ -48,6 +71,33 @@ test("dark ATLAS uses the existing provider dark street style without losing ove
   });
   expect(state.name.toLowerCase()).toContain("dark");
   expect(state.blueMarble).toBe(true);
+});
+
+test("dark close zoom is sharp vector cartography rather than stretched satellite imagery", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded close-zoom proof");
+  await page.goto(`${ATLAS}?l=bluemarble&c=10.7522,59.9139&z=15`);
+  await page.waitForFunction(() => document.documentElement.dataset.atlasZoomBand === "STREET");
+  await page.waitForFunction(() => String((window as any).__4planet_map?.getStyle?.()?.name || "").toLowerCase().includes("dark"));
+
+  const state = await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    const blueMarble = map.getStyle()?.layers?.find((layer: any) => layer.id === "bluemarble");
+    return {
+      projection: map.getProjection?.()?.type,
+      blueMarbleMaxZoom: blueMarble?.maxzoom,
+      band: document.documentElement.dataset.atlasZoomBand,
+      streetQuality: document.documentElement.dataset.atlasStreetQuality,
+      visibleSymbols: Number(document.documentElement.dataset.atlasVisibleSymbolLayers || "0"),
+      styleName: String(map.getStyle?.()?.name || ""),
+    };
+  });
+
+  expect(state.projection).toBe("mercator");
+  expect(state.blueMarbleMaxZoom).toBeLessThanOrEqual(6.6);
+  expect(state.band).toBe("STREET");
+  expect(state.streetQuality).toBe("vector");
+  expect(state.visibleSymbols).toBeGreaterThan(0);
+  expect(state.styleName.toLowerCase()).toContain("dark");
 });
 
 test("clicked-location naming never sends the recovered BigDataCloud arbitrary-coordinate request", async ({ page }, testInfo) => {
@@ -69,21 +119,23 @@ test("clicked-location naming never sends the recovered BigDataCloud arbitrary-c
   expect(leaked).toBe(0);
 });
 
-test("high-intent species search resolves canonical Orca and Humpback results", async ({ page }, testInfo) => {
+test("priority species search resolves aliases and scientific names", async ({ page }, testInfo) => {
   test.skip(!["desktop-1440", "mobile-390"].includes(testInfo.project.name), "bounded live-search proof");
   await page.goto(ATLAS);
   await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
 
   const input = page.getByRole("textbox", { name: /search the living planet/i });
-  await input.fill("orca");
-  const orca = page.locator(".results .ritem").filter({ hasText: "Orcinus orca" }).first();
-  await expect(orca).toBeVisible({ timeout: 15_000 });
-  await expect(orca).toContainText(/Orca|Killer Whale|Orcinus orca/i);
-
-  await input.fill("humpback whale");
-  const humpback = page.locator(".results .ritem").filter({ hasText: "Megaptera novaeangliae" }).first();
-  await expect(humpback).toBeVisible({ timeout: 15_000 });
-  await expect(humpback).toContainText(/Humpback Whale|Megaptera novaeangliae/i);
+  for (const [query, scientific] of [
+    ["orca", "Orcinus orca"],
+    ["killer whale", "Orcinus orca"],
+    ["Orcinus orca", "Orcinus orca"],
+    ["humpback whale", "Megaptera novaeangliae"],
+    ["jaguar", "Panthera onca"],
+    ["blue whale", "Balaenoptera musculus"],
+  ] as const) {
+    await input.fill(query);
+    await expect(page.locator(".results .ritem").filter({ hasText: scientific }).first()).toBeVisible({ timeout: 15_000 });
+  }
 });
 
 test("priority place language resolves Norway, Oslofjord, Bay of Biscay and Amazonia", async ({ page }, testInfo) => {
@@ -97,10 +149,36 @@ test("priority place language resolves Norway, Oslofjord, Bay of Biscay and Amaz
     ["Oslofjord", "Oslofjord"],
     ["Bay of Biscay", "Bay of Biscay"],
     ["Amazonia", "Amazon Basin"],
+    ["Amazon Rainforest", "Amazon Basin"],
   ] as const) {
     await input.fill(query);
     await expect(page.locator(".results .ritem").filter({ hasText: expected }).first()).toBeVisible({ timeout: 5_000 });
   }
+});
+
+test("one existing search surface resolves human signal intent to canonical data layers", async ({ page }, testInfo) => {
+  test.skip(!["desktop-1440", "mobile-390", "webkit-desktop"].includes(testInfo.project.name), "bounded data-intent proof");
+  await page.goto(ATLAS);
+  await page.waitForFunction(() => (window as any).__4planet_map?.isStyleLoaded?.());
+  const input = page.getByRole("textbox", { name: /search the living planet/i });
+
+  for (const [query, layerId, label] of [
+    ["wildfires", "fires", "ACTIVE FIRES"],
+    ["earthquakes", "quakes", "EARTHQUAKES"],
+    ["forest loss", "forest", "FOREST LOSS"],
+    ["emissions", "emissions", "CLIMATE TRACE"],
+    ["bathymetry", "emodnet-bathymetry", "OCEAN · BATHYMETRY"],
+  ] as const) {
+    await input.fill(query);
+    const result = page.locator(`[data-atlas-intent-layer="${layerId}"]`).first();
+    await expect(result).toBeVisible({ timeout: 5_000 });
+    await expect(result).toContainText(label);
+  }
+
+  await input.fill("emissions");
+  await page.locator('[data-atlas-intent-layer="emissions"]').first().click();
+  await expect(page).toHaveURL(/(?:^|[?&])l=[^&]*emissions/);
+  await page.waitForFunction(() => Boolean((window as any).__4planet_map?.getLayer?.("emissions")), undefined, { timeout: 15_000 });
 });
 
 test("adaptive zoom stops stretching Blue Marble and hands local detail to vectors", async ({ page }) => {

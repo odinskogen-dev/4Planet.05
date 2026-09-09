@@ -38,8 +38,8 @@ const ABOUT = [
 ] as const;
 
 const CULTURE = [
-  ["M4GAZINE", "Editorial", "/magazine"],
-  ["4FILM", "Film", "/missions/4film"],
+  ["4PLANET MAGAZINE", "Editorial", "/magazine"],
+  ["4PLANET FILM", "Film", "/missions/4film"],
   ["4RT", "Art", "/missions/4rt"],
   ["4PLAY", "Play", "/missions/4play"],
 ] as const;
@@ -167,7 +167,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 }
 
 function topIsDark(pathname: string) {
-  if (pathname === "/" || pathname === "/about") return true;
+  if (pathname === "/" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/founder") return true;
   if (pathname === "/atlas" || pathname === "/impact" || pathname.startsWith("/impact/")) return true;
   if (pathname.startsWith("/domains/") || pathname.startsWith("/missions/")) return true;
   if (pathname === "/domains" || pathname.startsWith("/species/") || pathname.startsWith("/ecosystems/")) return true;
