@@ -1,6 +1,6 @@
 import { callable } from "agents";
 import { ProductionFactoryAgent as BaseProductionFactoryAgent } from "./index";
-import type { Section } from "./contracts";
+import type { Section, WorkPackage } from "./contracts";
 import {
   BrainControlWorker,
   CapitalWorker,
@@ -13,9 +13,23 @@ import {
 import { resolveLiveCandidateAuthority } from "./candidateAuthorityRuntime";
 import { createGitHubCandidateAuthorityPort } from "./githubCandidateAuthorityPort";
 import type { AiCapacitySnapshot } from "./aiCapacitySnapshot";
+import {
+  assertTaskContractShape,
+  requireAutonomyLevel,
+  verifyBoundTaskContract,
+  verifyRuntimeSnapshot,
+  type BoundTaskContract,
+  type RuntimeAuthoritySnapshot,
+} from "./amendmentMRuntime";
 
 const SHA40 = /^[0-9a-f]{40}$/i;
 const TEST_BRANCH = "king/test";
+const REPOSITORY = "odinskogen-dev/4Planet.05";
+const LIVE_CONTROL_REF = "release/one-interface-sprint2-6bbfebb";
+const FOUNDER_AUTHORITY_REVISION = "FOUNDER_DECISION_AMENDMENT_M+L_CURRENT_2026-09-09";
+const PROGRAMME_STATE_REVISION = "CSR-2026-09-08-05";
+
+type ContractedWorkPackage = WorkPackage & { amendmentM?: BoundTaskContract };
 
 export interface ActivationPreflightPackage {
   id: string;
@@ -51,6 +65,81 @@ function validCalls(value: number): boolean {
 }
 
 export class ProductionFactoryAgent extends BaseProductionFactoryAgent {
+  private runtimeToken(): string {
+    const token = ((this as any).env as Cloudflare.Env & { FACTORY_GITHUB_TOKEN?: string }).FACTORY_GITHUB_TOKEN?.trim();
+    if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
+    return token;
+  }
+
+  private async currentRefSha(ref: string): Promise<string> {
+    const encoded = ref.split("/").map(encodeURIComponent).join("/");
+    const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encoded}`, {
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${this.runtimeToken()}`,
+        "x-github-api-version": "2022-11-28",
+        "user-agent": "4PLANET-Production-Factory/1.0",
+      },
+    });
+    if (!response.ok) throw new Error(`RUNTIME_AUTHORITY_REF_LOOKUP_FAILED:${ref}:${response.status}`);
+    const body = await response.json() as { object?: { sha?: string } };
+    const sha = body.object?.sha?.trim().toLowerCase() ?? "";
+    if (!SHA40.test(sha)) throw new Error(`RUNTIME_AUTHORITY_REF_SHA_INVALID:${ref}`);
+    return sha;
+  }
+
+  private amendmentMWorkPackage(workPackageId: string): ContractedWorkPackage | undefined {
+    const row = this.sql<{ payload: string }>`SELECT payload FROM work_packages WHERE id = ${workPackageId}`[0];
+    return row ? JSON.parse(row.payload) as ContractedWorkPackage : undefined;
+  }
+
+  private async amendmentMFreshAuthority(): Promise<RuntimeAuthoritySnapshot> {
+    const [receiverSha, liveControlSha] = await Promise.all([
+      this.currentRefSha(TEST_BRANCH),
+      this.currentRefSha(LIVE_CONTROL_REF),
+    ]);
+    return {
+      founder_authority_revision: FOUNDER_AUTHORITY_REVISION,
+      programme_state_revision: PROGRAMME_STATE_REVISION,
+      receiver_ref: TEST_BRANCH,
+      receiver_sha: receiverSha,
+      live_control_ref: LIVE_CONTROL_REF,
+      live_control_sha: liveControlSha,
+    };
+  }
+
+  async attestAmendmentMRuntime(workPackageId: string, phase: "PRE_DISPATCH" | "TERMINAL_ACCEPTANCE") {
+    const pkg = this.amendmentMWorkPackage(workPackageId);
+    if (!pkg) throw new Error(`UNKNOWN_WORK_PACKAGE:${workPackageId}`);
+    if (!pkg.amendmentM) return { applies: false, workPackageId, phase };
+
+    assertTaskContractShape(pkg.amendmentM.contract);
+    await verifyBoundTaskContract(pkg.amendmentM);
+    requireAutonomyLevel(pkg.amendmentM.contract, "B0.5");
+    const fresh = await this.amendmentMFreshAuthority();
+    const failures = verifyRuntimeSnapshot(pkg.amendmentM.contract, fresh);
+    if (failures.length > 0) throw new Error(`STALE_CONTEXT_${phase}:${failures.join(",")}`);
+
+    return {
+      applies: true,
+      workPackageId,
+      phase,
+      contextHash: pkg.amendmentM.fingerprint.context_hash,
+      maker: pkg.amendmentM.contract.evaluator.maker_id,
+      evaluator: pkg.amendmentM.contract.evaluator.evaluator_id,
+      autonomyCeiling: pkg.amendmentM.autonomy_ceiling,
+      receiver: `${fresh.receiver_ref}@${fresh.receiver_sha}`,
+      productionControlProjection: `${fresh.live_control_ref}@${fresh.live_control_sha}`,
+      workerReportIsTruth: false,
+      independentReadbackRequired: true,
+    };
+  }
+
+  override async dispatchToWorker(workPackageId: string) {
+    await this.attestAmendmentMRuntime(workPackageId, "PRE_DISPATCH");
+    return super.dispatchToWorker(workPackageId);
+  }
+
   @callable()
   async attestActivationPreflight(input: ActivationPreflightInput) {
     const exactFactorySha = input.exactFactorySha?.trim().toLowerCase() ?? "";
@@ -144,9 +233,6 @@ export class ProductionFactoryAgent extends BaseProductionFactoryAgent {
       });
     }
 
-    // Capacity is read only after candidate authority passes for every proof package.
-    // This prevents even a non-consuming capacity probe from being treated as authority
-    // for an unregistered/stale product lineage.
     const capacity: ActivationCapacityRow[] = [];
     let capacityReady = false;
     if (authorityReady) {
