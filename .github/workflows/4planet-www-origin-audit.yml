@@ -1,0 +1,63 @@
+name: 4PLANET WWW Origin Audit
+
+on:
+  push:
+    branches: [build/ask-embla-live-20260909]
+    paths:
+      - '.github/workflows/4planet-www-origin-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve Cloudflare token
+        id: cf
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          [ -n "$token" ] || { echo 'Missing Cloudflare token'; exit 1; }
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Audit apex and www behavior
+        env:
+          CF_TOKEN: ${{ steps.cf.outputs.token }}
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${CF_TOKEN}" -H 'Content-Type: application/json')
+          hosts=(
+            '4sapien.com|4sapien.com'
+            '4planet.org|4planet.org'
+            '4planetmagazine.com|4planetmagazine.com'
+            '4species.com|4species.com'
+            '4planetmarket.com|4planetmarket.com'
+            'cre4tors.com|cre4tors.com'
+            's4piens.com|s4piens.com'
+            'partners.4planet.org|4planet.org'
+          )
+          echo 'DOMAIN_AUDIT_BEGIN'
+          for pair in "${hosts[@]}"; do
+            host="${pair%%|*}"; zone_name="${pair##*|}"
+            zone_json=$(curl -fsS "${auth[@]}" "https://api.cloudflare.com/client/v4/zones?name=${zone_name}&status=active")
+            zone=$(jq -r '.result[0].id // empty' <<<"$zone_json")
+            www="www.${host}"
+            if [ -n "$zone" ]; then
+              dns_json=$(curl -fsS "${auth[@]}" "https://api.cloudflare.com/client/v4/zones/${zone}/dns_records?name=${www}")
+              dns_count=$(jq -r '.result | length' <<<"$dns_json")
+              dns_types=$(jq -r '[.result[]?.type] | unique | join(",")' <<<"$dns_json")
+            else
+              dns_count=0; dns_types=''
+            fi
+            apex=$(curl -ILsS --max-time 12 -o /dev/null -w '%{http_code}|%{url_effective}' "https://${host}" || true)
+            wwwres=$(curl -ILsS --max-time 12 -o /dev/null -w '%{http_code}|%{url_effective}' "https://${www}" || true)
+            echo "HOST=${host} WWW_DNS=${dns_count} WWW_TYPES=${dns_types:-none} APEX=${apex:-ERR} WWW=${wwwres:-ERR}"
+          done
+          echo 'DOMAIN_AUDIT_END'
