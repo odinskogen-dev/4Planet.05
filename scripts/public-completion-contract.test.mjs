@@ -30,11 +30,11 @@ test("About routes preserve the approved Story System and Founder surfaces", () 
   assert.doesNotMatch(about, /founder-hero\.svg|founder-portrait\.svg/);
 });
 
-test("Magazine and Film are external public projects rather than duplicate 4planet.org surfaces", () => {
+test("Magazine and Film are external public projects reached through controlled 4planet.org redirect routes", () => {
   assert.match(shell, /4PLANET MAGAZINE/);
-  assert.match(shell, /https:\/\/4planetmagazine\.com/);
+  assert.match(shell, /\["4PLANET MAGAZINE", "Editorial", "\/magazine"\]/);
   assert.match(shell, /4PLANET FILM/);
-  assert.match(shell, /https:\/\/4planetmagazine\.com\/films/);
+  assert.match(shell, /\["4PLANET FILM", "Film", "\/missions\/4film"\]/);
   assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com"/);
   assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com\/films"/);
 });
