@@ -15,7 +15,7 @@ permissions:
 env:
   SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
   SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
-  CF_PROJECT: 4sapien
+  CF_PROJECT: four-sapien-embla
   CUSTOM_DOMAIN: 4sapien.com
 
 jobs:
@@ -145,11 +145,15 @@ jobs:
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
           code=$(curl -sS -o /tmp/pages-project.json -w '%{http_code}' "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT}" || true)
           if [ "$code" = "404" ]; then
-            curl -fsS -X POST "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects" \
-              --data "{\"name\":\"${CF_PROJECT}\",\"production_branch\":\"main\"}" | tee /tmp/pages-create.json
+            create_code=$(curl -sS -o /tmp/pages-create.json -w '%{http_code}' -X POST "${auth[@]}" \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects" \
+              --data "{\"name\":\"${CF_PROJECT}\",\"production_branch\":\"main\"}" || true)
+            cat /tmp/pages-create.json || true
+            [ "$create_code" = "200" ] || { echo "Cloudflare project create HTTP ${create_code}"; exit 10; }
             test "$(jq -r '.success' /tmp/pages-create.json)" = true
           elif [ "$code" != "200" ]; then
             cat /tmp/pages-project.json || true
+            echo "Cloudflare project lookup HTTP ${code}"
             exit 10
           fi
 
