@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://4planet.org/sitemap.xml
+Sitemap: https://4planet.org/news-sitemap.xml

@@ -1,0 +1,12 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "rehydrate":{"locked_canon":false,"founder_decisions":false,"programme_control":false,"atomic_priorities":false,"brain_authority":false,"product_authority":false,"github_runtime":false},
+  "desired_vs_actual":[],
+  "stale_or_conflicting_work":[],
+  "prior_failures_and_learnings":[],
+  "giga_ev_recomputed":false,
+  "permitted_dispatches":[],
+  "jidoka_stops":[],
+  "founder_or_professional_escalations":[],
+  "readback_complete":false
+}

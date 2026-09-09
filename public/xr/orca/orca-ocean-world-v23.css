@@ -1,0 +1,111 @@
+/* ORCA ocean world v23 — scene-specific 2.5D depth language.
+   Presentation only: procedural light/current/acoustic/evidence cues are not live ocean data. */
+.nature-browser[data-premium-config*="/orca/"] .nature-world__background,
+.nature-browser[data-premium-config*="/orca/"] .nature-world__detail,
+.nature-browser[data-premium-config*="/orca/"] .nature-world__state{
+  position:absolute;inset:-3%;pointer-events:none;transform-origin:50% 50%;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-world__background{
+  background:
+    radial-gradient(ellipse at 50% -8%,rgba(126,199,255,.22) 0 18%,transparent 49%),
+    linear-gradient(180deg,rgba(16,55,88,.18) 0%,rgba(3,19,38,.28) 34%,rgba(1,8,20,.7) 100%);
+  opacity:.9;
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-world__detail{
+  opacity:.42;
+  background:
+    repeating-linear-gradient(104deg,transparent 0 56px,rgba(141,207,255,.045) 58px 59px,transparent 61px 118px),
+    radial-gradient(ellipse at 50% 12%,rgba(133,204,255,.12),transparent 38%);
+  transform:perspective(900px) rotateX(1deg) scale(1.03);
+}
+.nature-browser[data-premium-config*="/orca/"] .nature-world__state{
+  opacity:.34;
+  background:
+    radial-gradient(circle at 18% 62%,rgba(92,170,255,.08) 0 1px,transparent 2px),
+    radial-gradient(circle at 72% 42%,rgba(92,170,255,.08) 0 1px,transparent 2px),
+    radial-gradient(circle at 46% 78%,rgba(92,170,255,.07) 0 1px,transparent 2px);
+  background-size:86px 86px,112px 112px,138px 138px;
+}
+
+/* Encounter: bright surface above, deep water below. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="identity"] .nature-world__detail{
+  opacity:.58;
+  background:
+    repeating-linear-gradient(97deg,transparent 0 38px,rgba(170,224,255,.08) 40px 41px,transparent 43px 82px),
+    linear-gradient(180deg,rgba(148,216,255,.14),transparent 34%);
+  transform:perspective(900px) rotateX(3deg) translateY(-2%) scale(1.06);
+}
+
+/* Prey: lateral current bands and clustered living signals. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="dependency"] .nature-world__detail{
+  opacity:.5;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 54px,rgba(115,194,255,.055) 56px 57px,transparent 59px 112px),
+    radial-gradient(ellipse at 72% 54%,rgba(82,163,229,.12),transparent 28%);
+  transform:translateX(-2%) scale(1.04);
+}
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="dependency"] .nature-world__state{
+  opacity:.48;background-size:58px 58px,84px 84px,116px 116px;
+}
+
+/* Habitat: shelf/fjord planes create near/mid/far depth without claiming mapped bathymetry. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="habitat"] .nature-world__detail{
+  inset:24% -6% -8%;opacity:.72;
+  background:
+    linear-gradient(164deg,transparent 0 39%,rgba(8,34,57,.42) 40% 53%,transparent 54%),
+    linear-gradient(194deg,transparent 0 56%,rgba(4,22,40,.64) 57% 72%,transparent 73%),
+    linear-gradient(180deg,transparent 0 65%,rgba(1,10,22,.72) 100%);
+  transform:perspective(700px) rotateX(17deg) translateY(9%) scale(1.08);
+}
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="habitat"] .nature-world__state{
+  opacity:.22;background:radial-gradient(ellipse at 35% 58%,rgba(98,178,235,.14),transparent 32%);
+}
+
+/* Pressure: acoustic energy becomes visually legible, explicitly interpretive. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="pressure"] .nature-world__detail{
+  opacity:.82;
+  background:
+    repeating-radial-gradient(circle at 76% 48%,transparent 0 42px,rgba(255,103,72,.11) 44px 45px,transparent 47px 72px),
+    repeating-linear-gradient(0deg,transparent 0 46px,rgba(255,115,76,.045) 47px 48px,transparent 50px 94px);
+  transform:scale(1.02);
+}
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="pressure"] .nature-world__state{
+  opacity:.48;background:linear-gradient(90deg,transparent 0 52%,rgba(255,77,34,.09) 72%,transparent 100%);
+}
+
+/* Response / actors / action: the world opens and stabilises around pathways. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="response"] .nature-world__detail,
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="actors"] .nature-world__detail,
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="action"] .nature-world__detail{
+  opacity:.46;
+  background:
+    linear-gradient(118deg,transparent 0 46%,rgba(97,187,255,.08) 47% 48%,transparent 49%),
+    linear-gradient(62deg,transparent 0 58%,rgba(97,187,255,.055) 59% 60%,transparent 61%),
+    radial-gradient(ellipse at 52% 45%,rgba(60,151,219,.13),transparent 38%);
+}
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="actors"] .nature-world__state,
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="action"] .nature-world__state{
+  opacity:.5;background-size:72px 72px,104px 104px,144px 144px;
+}
+
+/* Proof: quiet sonar/evidence field; no implication of live instrumentation. */
+.nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="proof"] .nature-world__detail{
+  opacity:.5;
+  background:
+    linear-gradient(rgba(117,194,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(117,194,255,.05) 1px,transparent 1px),
+    radial-gradient(circle at 50% 50%,transparent 0 18%,rgba(117,194,255,.08) 18.4% 18.8%,transparent 19.2% 31%,rgba(117,194,255,.055) 31.4% 31.8%,transparent 32.2%);
+  background-size:72px 72px,72px 72px,100% 100%;
+}
+
+@media(max-width:760px){
+  .nature-browser[data-premium-config*="/orca/"] .nature-world__detail{opacity:.32;filter:none}
+  .nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="habitat"] .nature-world__detail{opacity:.5}
+  .nature-browser[data-premium-config*="/orca/"][data-cinematic-scene="pressure"] .nature-world__detail{opacity:.58}
+  .nature-browser[data-premium-config*="/orca/"] .nature-world__state{opacity:.24}
+}
+@media(prefers-reduced-motion:reduce){
+  .nature-browser[data-premium-config*="/orca/"] .nature-world__background,
+  .nature-browser[data-premium-config*="/orca/"] .nature-world__detail,
+  .nature-browser[data-premium-config*="/orca/"] .nature-world__state{transition:none!important;animation:none!important}
+}

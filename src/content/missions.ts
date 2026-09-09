@@ -12,8 +12,8 @@ export interface MissionSource { title: string; url: string; confidence: "high" 
 export interface MissionContent {
   slug: string;
   domain: DomainKey;
-  code: string;          // "OCE4N_ / 01"
-  name: string;          // "WH4LES_"
+  code: string;
+  name: string;
   hero: string;
   thesis: string;
   issue: string;
@@ -22,9 +22,9 @@ export interface MissionContent {
   whatCanHelp: string;
   fourPlanetRole: string;
   currentStatus: MissionStatusLabel;
-  impactPathway?: string;     // public unit label
-  impactPathwaySlug?: string; // route under /impact/:slug
-  publicStatus?: string;      // "PUBLIC SUPPORT CLOSED"
+  impactPathway?: string;
+  impactPathwaySlug?: string;
+  publicStatus?: string;
   joinLabel: string;
   visualDirection: string;
   atStake?: string;
@@ -34,9 +34,22 @@ export interface MissionContent {
 const ls = (s: string) => s.split("·").map((x) => x.trim()).filter(Boolean);
 
 export const MISSION_CONTENT: MissionContent[] = [
-  // ───────────── OCE4N_ ─────────────
   {
-    slug: "wh4les", domain: "OCE4N_", code: "OCE4N_ / 01", name: "WH4LES_",
+    slug: "cle4n", domain: "OCE4N_", code: "OCE4N_ / 01", name: "CLE4N_",
+    hero: "A cleaner ocean, from source to sea.",
+    thesis: "A clean ocean is a systems problem, not only a clean-up problem. It begins with production, consumption, collection, rivers, coastlines and infrastructure — long before waste reaches the water.",
+    issue: "Pollution and waste enter marine systems through poorly managed material flows, stormwater, rivers, coastlines, ports and consumer systems. Recovery matters, but prevention and interception matter too.",
+    whyItMatters: "Ocean pollution affects species, habitats, coastlines, food systems and public trust in the health of the sea.",
+    livingSystem: ls("Rivers · coastlines · marine species · seabirds · fisheries · beaches · waste systems · material flows"),
+    whatCanHelp: "Source reduction, better material systems, interception before the sea, coastal recovery, transparent weighing and reporting, local field operations and policy change.",
+    fourPlanetRole: "A measurable pathway designed to support one kilogram of marine waste recovery only after an approved delivery partner, measurement method, evidence standard and reporting model are confirmed.",
+    currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 KG OCEAN WASTE_", impactPathwaySlug: "ocean-waste",
+    publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK CLE4N_",
+    visualDirection: "Deep blue, rough coastlines, boats, material close-ups, recovery teams, clean white reporting overlays.",
+    sources: [],
+  },
+  {
+    slug: "wh4les", domain: "OCE4N_", code: "OCE4N_ / 02", name: "WH4LES_",
     hero: "Migratory intelligence across the oceans.",
     thesis: "Whales are not isolated animals. They are part of the ocean's living infrastructure — moving through food webs, migration corridors and nutrient cycles across enormous distances.",
     issue: "Shipping, underwater noise, vessel strike, fishing pressure and climate-driven changes in prey distribution can disrupt whale populations and the waters they depend on. Many marine corridors remain difficult to monitor across large distances and jurisdictions.",
@@ -49,7 +62,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     sources: [],
   },
   {
-    slug: "cor4l", domain: "OCE4N_", code: "OCE4N_ / 02", name: "COR4L_",
+    slug: "cor4l", domain: "OCE4N_", code: "OCE4N_ / 03", name: "COR4L_",
     hero: "Rebuilding reef resilience.",
     thesis: "Coral reefs are living structures: dense ecological systems that support marine life, coastal livelihoods and the integrity of vulnerable shorelines.",
     issue: "Warming water, ocean acidification, pollution, disease and bleaching events place reef systems under severe pressure.",
@@ -62,34 +75,18 @@ export const MISSION_CONTENT: MissionContent[] = [
     sources: [],
   },
   {
-    slug: "pl4stic", domain: "OCE4N_", code: "OCE4N_ / 03", name: "PL4STIC_",
-    hero: "Stop waste before it reaches the sea.",
-    thesis: "Marine waste is not only an ocean problem. It is a systems problem that begins with production, consumption, collection, rivers, coastlines and infrastructure.",
-    issue: "Waste enters marine systems through poorly managed material flows, stormwater, rivers, coastlines, ports and consumer systems. Recovery matters, but prevention and interception matter too.",
-    whyItMatters: "Marine debris affects species, habitats, coastlines, food systems and public trust in the health of the ocean.",
-    livingSystem: ls("Rivers · coastlines · marine species · seabirds · fisheries · beaches · waste systems · material flows"),
-    whatCanHelp: "Source reduction, better material systems, interception before the sea, coastal recovery, transparent weighing and reporting, local field operations and policy change.",
-    fourPlanetRole: "A measurable pathway designed to support one kilogram of marine waste recovery only after an approved delivery partner, measurement method, evidence standard and reporting model are confirmed.",
-    currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 KG OCEAN WASTE_", impactPathwaySlug: "ocean-waste",
-    publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK PL4STIC_",
-    visualDirection: "Deep blue, rough coastlines, boats, material close-ups, recovery teams, clean white reporting overlays.",
+    slug: "rewild-marine", domain: "OCE4N_", code: "OCE4N_ / 04", name: "RE:WILD_ Marine",
+    hero: "Rebuilding the coastal habitats that ocean life depends on.",
+    thesis: "Marine rewilding is the long work of returning function to degraded coastal and shallow-sea systems — seagrass meadows, kelp forests, shellfish and oyster beds and the food webs they support.",
+    issue: "Coastal and shallow-marine habitats have been lost or simplified through physical damage, pollution, nutrient loading, warming and the removal of key species and natural processes. What remains is often fragmented.",
+    whyItMatters: "Recovered marine habitats store carbon, buffer shorelines, filter water, and rebuild the nurseries that fish, birds and mammals depend on. Coastal recovery is some of the most achievable marine restoration there is.",
+    livingSystem: ls("Seagrass · kelp · shellfish and oyster beds · fish nurseries · marine mammals · nutrients · currents · habitat connectivity"),
+    whatCanHelp: "Protecting and reconnecting coastal habitat, restoring seagrass and kelp, rebuilding shellfish and oyster beds, reducing nutrient and pollution pressure, and monitoring recovery over time with credible partners.",
+    fourPlanetRole: "A pathway to support restoration of degraded coastal and marine habitat through approved local models. 4PLANET is not currently delivering marine restoration itself.",
+    currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK RE:WILD_ Marine",
+    visualDirection: "Deep water, kelp and seagrass texture, shellfish reefs, tidal field notes, restraint and marine scale.",
     sources: [],
   },
-  {
-    slug: "4ntarctica", domain: "OCE4N_", code: "OCE4N_ / 04", name: "4NTARCTICA_",
-    hero: "Protecting the southern boundary of the living planet.",
-    thesis: "Antarctica and the Southern Ocean are not remote background landscapes. They are major parts of Earth's climate and ocean systems.",
-    issue: "Polar marine systems are under pressure from warming, sea-ice change, fishing pressure, pollution and the cumulative effects of global emissions.",
-    whyItMatters: "What happens in polar systems does not stay at the poles. Antarctic waters, sea ice, marine food webs and climate processes are connected to the wider ocean.",
-    livingSystem: ls("Sea ice · krill · penguins · seals · whales · Southern Ocean currents · polar food webs · global climate systems"),
-    whatCanHelp: "Stronger protection, better science communication, precautionary management, support for credible research and conservation partners, and public understanding of polar interdependence.",
-    fourPlanetRole: "A mission domain for Antarctic intelligence, protection pathways and cultural attention around the ecosystems that help regulate the planetary system.",
-    currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK 4NTARCTICA_",
-    visualDirection: "Ice geometry, deep blue-black water, satellite-like textures, sparse white field notes, polar scale and restraint.",
-    sources: [],
-  },
-
-  // ───────────── E4RTH_ ─────────────
   {
     slug: "clim4te", domain: "E4RTH_", code: "E4RTH_ / 01", name: "CLIM4TE_",
     hero: "From climate concern to visible restoration.",
@@ -132,7 +129,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     sources: [],
   },
   {
-    slug: "rewild", domain: "E4RTH_", code: "E4RTH_ / 04", name: "RE:WILD_",
+    slug: "rewild-land", domain: "E4RTH_", code: "E4RTH_ / 04", name: "RE:WILD_ Land",
     hero: "Returning damaged landscapes to life.",
     thesis: "Rewilding is not decoration. It is the long work of rebuilding ecological function in damaged or simplified landscapes.",
     issue: "Land can lose complexity through fragmentation, intensive use, drainage, pollution, erosion and the removal of species and natural processes.",
@@ -145,8 +142,6 @@ export const MISSION_CONTENT: MissionContent[] = [
     visualDirection: "Soil textures, wild grass, topographic markers, restoration field notes, long-term ecological atmosphere.",
     sources: [],
   },
-
-  // ───────────── S4PIENS_ ─────────────
   {
     slug: "food", domain: "S4PIENS_", code: "S4PIENS_ / 01", name: "FOOD_",
     hero: "Food is ecological infrastructure.",
@@ -161,7 +156,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     sources: [],
   },
   {
-    slug: "en3rgy", domain: "S4PIENS_", code: "S4PIENS_ / 02", name: "EN3RGY_",
+    slug: "en4rgy", domain: "S4PIENS_", code: "S4PIENS_ / 02", name: "EN4RGY_",
     hero: "Energy shapes every other system.",
     thesis: "Energy is not only a technical sector. It is the infrastructure behind homes, transport, industry, food, communication and public life.",
     issue: "Energy decisions are often communicated as simple binaries, even though they involve trade-offs across ecosystems, materials, cost, access, reliability and justice.",
@@ -169,7 +164,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     livingSystem: ls("Energy infrastructure · materials · land use · water · grids · households · industry · mobility · public policy"),
     whatCanHelp: "Energy efficiency, demand reduction, clean generation, better grids, responsible material use, accessible public understanding and transition models that account for people and ecosystems.",
     fourPlanetRole: "A mission domain for energy intelligence and public explanation — making complex system choices more legible without reducing them to slogans.",
-    currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK EN3RGY_",
+    currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK EN4RGY_",
     visualDirection: "Infrastructure, grids, geothermal, hydro, solar, materials, architecture, technical diagrams and restrained system photography.",
     sources: [],
   },
@@ -199,23 +194,21 @@ export const MISSION_CONTENT: MissionContent[] = [
     visualDirection: "Material swatches, repair detail, garment architecture, studio light, restrained editorial fashion, no generic eco-fashion imagery.",
     sources: [],
   },
-
-  // ───────────── 4CULTURE_ ─────────────
   {
-    slug: "m4gazine", domain: "4CULTURE_", code: "4CULTURE_ / 01", name: "M4GAZINE_",
+    slug: "m4gazine", domain: "4CULTURE_", code: "4CULTURE_ / 01", name: "4PLANET MAGAZINE",
     hero: "Field intelligence for a living planet.",
     thesis: "Facts matter. But facts without attention, context and emotional relevance often fail to enter public life.",
     issue: "Ecological work can remain fragmented, technical or invisible when it lacks a strong narrative layer.",
     whyItMatters: "Journalism, essays, photography, field notes and editorial systems can make complex ecological reality understandable, memorable and culturally present.",
     livingSystem: ls("Reporting · field documentation · science communication · public attention · culture · learning · participation"),
     whatCanHelp: "Rigorous editorial work, source-based storytelling, field reporting, visual essays and formats that connect ecological systems to daily life.",
-    fourPlanetRole: "The editorial engine of 4Planet — mission notes, field intelligence, essays, reports and public storytelling across the system.",
-    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK M4GAZINE_",
+    fourPlanetRole: "The editorial engine of 4PLANET — mission notes, field intelligence, essays, reports and public storytelling across the system.",
+    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "OPEN 4PLANET MAGAZINE",
     visualDirection: "Editorial layouts, field notes, documentary photography, technical captions, printed matter, precise typography.",
     sources: [],
   },
   {
-    slug: "4film", domain: "4CULTURE_", code: "4CULTURE_ / 02", name: "4FILM_",
+    slug: "4film", domain: "4CULTURE_", code: "4CULTURE_ / 02", name: "4PLANET FILM",
     hero: "Documentary storytelling for living systems.",
     thesis: "Some ecological realities need more than explanation. They need image, sound, time, human presence and cinematic force.",
     issue: "Many ecological stories fail to reach people because they are communicated without enough emotional depth, cultural relevance or visual precision.",
@@ -223,21 +216,21 @@ export const MISSION_CONTENT: MissionContent[] = [
     livingSystem: ls("Documentary · fieldwork · science · sound · place · species · public attention · cultural memory"),
     whatCanHelp: "Long-form and short-form documentary, field-based storytelling, collaboration with researchers and local communities, and distribution that connects audiences back to credible action.",
     fourPlanetRole: "A film pathway for documentaries about whales, forests, species, field partners, cultural change and ecological restoration.",
-    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK 4FILM_",
+    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "OPEN 4PLANET FILM",
     visualDirection: "Cinematic documentary, Nordic ocean, field footage, black-blue atmosphere, restrained typography, high emotional gravity.",
     sources: [],
   },
   {
-    slug: "4telier", domain: "4CULTURE_", code: "4CULTURE_ / 03", name: "4TELIER_",
-    hero: "Art, design and objects with a mission connection.",
-    thesis: "Art and design can make ecological questions inhabitable: not as decoration, but as objects, spaces and images that carry attention into daily life.",
-    issue: "Ecological communication can become abstract or disposable when it has no physical, cultural or aesthetic form that people want to keep close.",
-    whyItMatters: "Objects, exhibitions, editions and design systems can create durable cultural memory and route attention back toward mission work.",
-    livingSystem: ls("Art · design · material culture · exhibitions · publishing · objects · public imagination · mission funding"),
-    whatCanHelp: "Limited editions, exhibitions, design collaborations, objects with clear impact routing and visual work that deepens rather than trivialises ecological meaning.",
-    fourPlanetRole: "A cultural studio and exhibition pathway that connects art, design, objects and mission storytelling through shared 4Planet infrastructure.",
-    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK 4TELIER_",
-    visualDirection: "Gallery architecture, technical grids, materials, editions, restrained object photography, white space and exact alignment.",
+    slug: "4rt", domain: "4CULTURE_", code: "4CULTURE_ / 03", name: "4RT_",
+    hero: "Prints for Planet — art that carries the mission.",
+    thesis: "4RT_ is Prints for Planet: limited-edition art, photography and illustration where each edition carries a transparent split between the artist, production and 4PLANET, and routes a defined contribution toward a mission or a verified Impact pathway.",
+    issue: "Ecological attention fades when it has no lasting form. Art can hold it — but only if the money behind a print is honest about who is paid and what, if anything, reaches the ground.",
+    whyItMatters: "Prints and editions can create durable cultural memory and a clear, auditable route from a purchase to a mission — without overstating what has actually been delivered.",
+    livingSystem: ls("Artists · photographers · illustrators · designers · print production · editions · rights · mission funding · public imagination"),
+    whatCanHelp: "Limited editions with a stated artist share, production share and 4PLANET share; clear edition and rights state; and a defined mission or verified Impact-pathway contribution — never an implied ecological outcome.",
+    fourPlanetRole: "A cultural studio and print pathway (Prints for Planet) connecting artists, editions and mission storytelling through shared 4Planet infrastructure. No active store, no completed sales and no transferred Impact funds exist yet.",
+    currentStatus: "STRATEGIC CONCEPT", impactPathway: "Not an Impact Unit. A cultural mission.", joinLabel: "TRACK 4RT_",
+    visualDirection: "Gallery architecture, print editions, paper and ink, restrained object photography, white space and exact alignment.",
     sources: [],
   },
   {
@@ -255,28 +248,26 @@ export const MISSION_CONTENT: MissionContent[] = [
   },
 ];
 
-
 const AT_STAKE: Record<string, string> = {
   "wh4les": "If whale populations decline, the ocean loses navigators of its food webs and nutrient cycles — and a species that moves the public to care.",
   "cor4l": "Lose reef structure and the nurseries, coastal protection and livelihoods built on it weaken together.",
-  "pl4stic": "Every uncollected flow of waste compounds downstream — in species, coastlines and public trust in the sea.",
-  "4ntarctica": "Polar systems help regulate the wider ocean and climate; their unravelling does not stay at the poles.",
+  "cle4n": "Every uncollected flow of waste compounds downstream — in species, coastlines and public trust in the sea.",
+  "rewild-marine": "Recovered seagrass, kelp and shellfish beds rebuild the food webs and carbon stores coastal life depends on.",
   "clim4te": "Without restoration tied to real places, climate concern stays abstract and meaningful action stays delayed.",
   "am4zonia": "Past a threshold of forest loss, rainforest systems can shift toward drier, simpler and less recoverable states.",
   "species": "Remove key species and the relationships holding an ecosystem together can quietly weaken or fail.",
-  "rewild": "Simplified landscapes hold less water, less life and less resilience against the next disturbance.",
+  "rewild-land": "Simplified landscapes hold less water, less life and less resilience against the next disturbance.",
   "food": "How we farm and eat shapes the fate of soil, water and biodiversity at landscape scale.",
-  "en3rgy": "Energy choices lock in decades of emissions, extraction and land use — for better or worse.",
+  "en4rgy": "Energy choices lock in decades of emissions, extraction and land use — for better or worse.",
   "circular-city": "Linear cities export their pressure outward; the design choices made now compound for generations.",
   "f4shion": "A culture of disposability normalises waste; a culture of longevity makes the opposite desirable.",
   "m4gazine": "Without a narrative layer, ecological work stays invisible to the people who could carry it forward.",
   "4film": "Stories that never reach people cannot move them; attention is the scarce resource.",
-  "4telier": "Ideas without form fade; objects and exhibitions give ecological meaning something to hold onto.",
+  "4rt": "Art and prints carry ecological attention into daily life, and route support back to missions.",
   "4play": "If ecological action stays separate from culture, it never reaches the rooms where change spreads.",
 };
 MISSION_CONTENT.forEach((m) => { m.atStake = AT_STAKE[m.slug]; });
 
 export const findMissionContent = (slug: string) => MISSION_CONTENT.find((m) => m.slug === slug) || null;
-
 export const MISSIONS = MISSION_CONTENT;
 export const findMission = findMissionContent;

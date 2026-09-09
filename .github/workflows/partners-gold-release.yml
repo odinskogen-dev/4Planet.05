@@ -1,0 +1,299 @@
+name: 4PLANET Partners Gold Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - src/content/partnersHub.json
+      - src/pages/partners/**
+      - src/styles/partners-hub.css
+      - src/routes/router.tsx
+      - scripts/check-partners-hub.mjs
+      - scripts/render-partner-briefs.mjs
+      - scripts/validate-partners-live.mjs
+      - .github/workflows/partners-gold-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: partners-4planet-gold-release
+  cancel-in-progress: true
+
+jobs:
+  build-qa-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Exact-authority preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin king/test --no-tags
+          CURRENT="$(git rev-parse origin/king/test)"
+          if [[ "$CURRENT" != "$GITHUB_SHA" ]]; then
+            echo "PARTNERS_RELEASE_FAIL stale dispatch: current king/test=$CURRENT dispatched=$GITHUB_SHA"
+            exit 2
+          fi
+          node -e "const d=require('./src/content/partnersHub.json'); if(d.meta.canonicalHost!=='partners.4planet.org') process.exit(3)"
+          echo "PARTNERS_EXACT_AUTHORITY=$GITHUB_SHA"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Partners truth / privacy contract
+        run: node scripts/check-partners-hub.mjs
+
+      - name: Typecheck current HEIR
+        run: npx tsc -b
+
+      - name: Build isolated public projection
+        run: npx vite build
+
+      - name: Add dedicated noindex and SPA controls to Partners artifact only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('dist/index.html')
+          s = p.read_text()
+          old = '<meta name="robots" content="index,follow,max-image-preview:large" />'
+          new = '<meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />'
+          if old in s:
+              s = s.replace(old, new)
+          elif new not in s:
+              raise SystemExit('PARTNERS_RELEASE_FAIL robots meta source contract changed')
+          p.write_text(s)
+          PY
+          grep -qi '<meta name="robots" content="noindex' dist/index.html || { echo 'PARTNERS_RELEASE_FAIL static noindex meta absent'; exit 22; }
+          cat > dist/_headers <<'EOF'
+          /*
+            X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+            X-Content-Type-Options: nosniff
+            Referrer-Policy: strict-origin-when-cross-origin
+            Permissions-Policy: camera=(), microphone=(), geolocation=()
+          EOF
+          cat > dist/_redirects <<'EOF'
+          /* /index.html 200
+          EOF
+          cat > dist/robots.txt <<'EOF'
+          User-agent: *
+          Disallow: /
+          EOF
+
+      - name: Resolve Cloudflare release credential and zone
+        id: cf
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'PARTNERS_RELEASE_FAIL missing Cloudflare token'; exit 3; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          jq -e '.success == true' <<<"$zone" >/dev/null
+          ZONE_ID=$(jq -r '.result[0].id // empty' <<<"$zone")
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$ZONE_ID" ] && [ -n "$ACCOUNT_ID" ] || { echo 'PARTNERS_RELEASE_FAIL zone/account unresolved'; exit 4; }
+          echo "zone_id=$ZONE_ID" >> "$GITHUB_OUTPUT"
+          echo "account_id=$ACCOUNT_ID" >> "$GITHUB_OUTPUT"
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+
+      - name: Fail closed on DNS or Pages collision
+        shell: bash
+        env:
+          ZONE_ID: ${{ steps.cf.outputs.zone_id }}
+          ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          dns=$(curl -fsS "${api}/zones/${ZONE_ID}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}")
+          bad=$(jq -r '[.result[]? | select(.type!="CNAME" or .content!="4planet-partners.pages.dev")] | length' <<<"$dns")
+          [ "$bad" = "0" ] || { echo 'PARTNERS_RELEASE_FAIL existing partners DNS collision'; jq -r '.result[] | [.type,.name,.content] | @tsv' <<<"$dns"; exit 5; }
+
+          projects=$(curl -fsS "${api}/accounts/${ACCOUNT_ID}/pages/projects" "${auth[@]}")
+          if jq -e '.result[]? | select(.name=="4planet-partners")' <<<"$projects" >/dev/null; then
+            branch=$(jq -r '.result[] | select(.name=="4planet-partners") | .production_branch // empty' <<<"$projects")
+            [[ "$branch" == "king/test" ]] || { echo "PARTNERS_RELEASE_FAIL project collision production_branch=$branch"; exit 6; }
+            echo "PARTNERS_PROJECT=existing"
+          else
+            created=$(curl -fsS -X POST "${api}/accounts/${ACCOUNT_ID}/pages/projects" "${auth[@]}" --data '{"name":"4planet-partners","production_branch":"king/test"}')
+            jq -e '.success == true and .result.name == "4planet-partners"' <<<"$created" >/dev/null || { echo "$created"; exit 7; }
+            echo "PARTNERS_PROJECT=created"
+          fi
+
+      - name: Deploy QA candidate to dedicated Pages project
+        id: preview_deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=king/test --commit-hash="$GITHUB_SHA" --commit-dirty=false
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          deps=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-partners/deployments?page=1&per_page=20" "${auth[@]}")
+          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha)][0].url // empty' <<<"$deps")
+          [ -n "$URL" ] || { echo 'PARTNERS_RELEASE_FAIL exact preview deployment URL unresolved'; exit 8; }
+          echo "preview_url=$URL" >> "$GITHUB_OUTPUT"
+          echo "PARTNERS_PREVIEW=$URL"
+
+      - name: Install Chromium for visual + PDF QA
+        run: npx playwright install --with-deps chromium
+
+      - name: Render visual evidence and briefs from exact deployed content
+        env:
+          PARTNERS_BASE_URL: ${{ steps.preview_deploy.outputs.preview_url }}
+        run: node scripts/render-partner-briefs.mjs
+
+      - name: PDF render verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils >/dev/null
+          mkdir -p partners-release-evidence/pdf-renders
+          for pdf in dist/downloads/*.pdf; do
+            name=$(basename "$pdf" .pdf)
+            pdftoppm -f 1 -singlefile -png -r 110 "$pdf" "partners-release-evidence/pdf-renders/$name" >/dev/null 2>&1
+            test -s "partners-release-evidence/pdf-renders/$name.png" || { echo "PARTNERS_RELEASE_FAIL PDF render $name"; exit 9; }
+          done
+          echo "PARTNERS_PDF_RENDER_VERIFY=PASS"
+
+      - name: Exact preview route QA before public DNS
+        env:
+          PREVIEW: ${{ steps.preview_deploy.outputs.preview_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes=(/ /system /proof /partnerships /capital /trust /founder /briefs/overview /briefs/company)
+          for route in "${routes[@]}"; do
+            code=$(curl -LsS -o /tmp/partners-body -w '%{http_code}' "${PREVIEW}${route}")
+            [ "$code" = "200" ] || { echo "PARTNERS_RELEASE_FAIL $route HTTP $code"; exit 10; }
+            grep -q '4PLANET' /tmp/partners-body || { echo "PARTNERS_RELEASE_FAIL raw body contract $route"; exit 11; }
+          done
+          curl -LsS "${PREVIEW}/" -o /tmp/partners-root
+          grep -qi '<meta name="robots" content="noindex' /tmp/partners-root || { echo 'PARTNERS_RELEASE_FAIL static preview noindex meta absent'; exit 23; }
+          headers=$(curl -LsSI "${PREVIEW}/")
+          grep -qi '^x-robots-tag:.*noindex' <<<"$headers" || { echo 'PARTNERS_RELEASE_FAIL X-Robots-Tag noindex absent'; exit 12; }
+          robots=$(curl -LsS "${PREVIEW}/robots.txt")
+          grep -q 'Disallow: /' <<<"$robots" || { echo 'PARTNERS_RELEASE_FAIL robots deny absent'; exit 13; }
+          echo "PARTNERS_PREVIEW_QA=PASS"
+
+      - name: Deploy exact artifact including generated briefs
+        id: final_deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=king/test --commit-hash="$GITHUB_SHA" --commit-dirty=false
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          deps=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-partners/deployments?page=1&per_page=20" "${auth[@]}")
+          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha)][0].url // empty' <<<"$deps")
+          [ -n "$URL" ] || exit 14
+          echo "final_preview_url=$URL" >> "$GITHUB_OUTPUT"
+          echo "PARTNERS_FINAL_PREVIEW=$URL"
+
+      - name: Attach authorised partners.4planet.org custom domain
+        id: domain
+        env:
+          ZONE_ID: ${{ steps.cf.outputs.zone_id }}
+          ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+
+          domains=$(curl -fsS "${api}/accounts/${ACCOUNT_ID}/pages/projects/4planet-partners/domains" "${auth[@]}" || echo '{"success":false,"result":[]}')
+          if ! jq -e '.result[]? | select(.name=="partners.4planet.org")' <<<"$domains" >/dev/null; then
+            add=$(curl -fsS -X POST "${api}/accounts/${ACCOUNT_ID}/pages/projects/4planet-partners/domains" "${auth[@]}" --data '{"name":"partners.4planet.org"}')
+            jq -e '.success == true' <<<"$add" >/dev/null || { echo "$add"; echo 'PARTNERS_RELEASE_FAIL custom-domain API'; exit 15; }
+          fi
+
+          dns=$(curl -fsS "${api}/zones/${ZONE_ID}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}")
+          count=$(jq -r '.result | length' <<<"$dns")
+          if [ "$count" = "0" ]; then
+            rec=$(curl -fsS -X POST "${api}/zones/${ZONE_ID}/dns_records" "${auth[@]}" --data '{"type":"CNAME","name":"partners","content":"4planet-partners.pages.dev","proxied":true,"ttl":1}')
+            jq -e '.success == true' <<<"$rec" >/dev/null || { echo "$rec"; echo 'PARTNERS_RELEASE_FAIL DNS create'; exit 16; }
+          else
+            jq -e 'all(.result[]; .type=="CNAME" and .content=="4planet-partners.pages.dev")' <<<"$dns" >/dev/null || { echo 'PARTNERS_RELEASE_FAIL DNS changed during release'; exit 17; }
+          fi
+
+          active=false
+          for attempt in $(seq 1 60); do
+            current=$(curl -fsS "${api}/accounts/${ACCOUNT_ID}/pages/projects/4planet-partners/domains" "${auth[@]}" || true)
+            status=$(jq -r '.result[]? | select(.name=="partners.4planet.org") | .status // empty' <<<"$current")
+            echo "partners domain status: ${status:-unknown} ($attempt/60)"
+            if [[ "$status" == "active" ]]; then active=true; break; fi
+            sleep 5
+          done
+          [[ "$active" == "true" ]] || { echo 'PARTNERS_RELEASE_FAIL custom domain did not become active in bounded window'; exit 18; }
+          echo "domain_active=true" >> "$GITHUB_OUTPUT"
+
+      - name: Public HTTP / TLS / NOINDEX readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIVE='https://partners.4planet.org'
+          ready=false
+          for attempt in $(seq 1 36); do
+            code=$(curl -LsS -o /tmp/live-body -w '%{http_code}' "$LIVE/" || true)
+            if [[ "$code" == "200" ]] && grep -q '4PLANET_' /tmp/live-body; then ready=true; break; fi
+            echo "Public readback pending ($attempt/36) HTTP=${code:-none}"
+            sleep 5
+          done
+          [[ "$ready" == "true" ]] || { echo 'PARTNERS_RELEASE_FAIL public HTTP body readback'; exit 19; }
+          grep -qi '<meta name="robots" content="noindex' /tmp/live-body || { echo 'PARTNERS_RELEASE_FAIL live static noindex meta'; exit 24; }
+          headers=$(curl -LsSI "$LIVE/")
+          grep -qi '^x-robots-tag:.*noindex' <<<"$headers" || { echo 'PARTNERS_RELEASE_FAIL live noindex header'; exit 20; }
+          robots=$(curl -LsS "$LIVE/robots.txt")
+          grep -q 'Disallow: /' <<<"$robots" || { echo 'PARTNERS_RELEASE_FAIL live robots deny absent'; exit 25; }
+          for path in /system /proof /partnerships /capital /trust /founder /briefs/overview /downloads/4planet-overview.pdf; do
+            code=$(curl -LsS -o /dev/null -w '%{http_code}' "$LIVE$path")
+            [[ "$code" == "200" ]] || { echo "PARTNERS_RELEASE_FAIL live $path HTTP $code"; exit 21; }
+          done
+          echo "PARTNERS_LIVE_HTTP=PASS"
+          echo "PARTNERS_LIVE_URL=$LIVE"
+          echo "PARTNERS_LIVE_SHA=$GITHUB_SHA"
+
+      - name: Rendered live-domain desktop / tablet / mobile certification
+        env:
+          PARTNERS_BASE_URL: https://partners.4planet.org
+        run: node scripts/validate-partners-live.mjs
+
+      - name: Preserve QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: partners-gold-${{ github.sha }}
+          path: |
+            partners-release-evidence/**
+            dist/downloads/*.pdf
+          if-no-files-found: warn
+          retention-days: 30

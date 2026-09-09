@@ -1,0 +1,6 @@
+{
+  "bootstrap":"READ_GIGA01_EXECUTION_README_THEN_REHYDRATE_LIVE_AUTHORITY",
+  "issue":273,
+  "required_before_mutation":["authority_readback","receiver_readback","duplicate_objective_check","stale_check","autonomy_budget_check","stop_condition_check"],
+  "required_after_mutation":["exact_sha_readback","gate_status","failure_classification","proof_delta","writeback_readback"]
+}

@@ -68,7 +68,7 @@ export function AllMissions() {
         <Reveal>
           <div style={{ borderTop: `1px solid ${T.line}`, paddingTop: 32, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
             <p style={{ fontSize: "clamp(18px,1.8vw,24px)", fontWeight: 500, letterSpacing: "-.02em", maxWidth: 520 }}>Every Mission is a living system made easier to understand, support and follow.</p>
-            <Button to="/people" primary arrow>JOIN 4PLANET</Button>
+            <Button to="/join" primary arrow>JOIN 4PLANET</Button>
           </div>
         </Reveal>
       </Section>

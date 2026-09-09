@@ -1,0 +1,16 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "jidoka_stop_on":[
+    "UNKNOWN_PRODUCT_AUTHORITY",
+    "STALE_RECEIVER",
+    "DUPLICATE_MATERIAL_OBJECTIVE",
+    "SOURCE_ISOLATION_VIOLATION",
+    "TRUTH_SEMANTIC_COLLAPSE",
+    "UNPRESERVED_UNIQUE_GOLD",
+    "KNOWN_SUPERIOR_DONOR_UNDISPOSITIONED_BEFORE_PROMOTION",
+    "P0_OR_P1_SECURITY_RISK",
+    "DESTRUCTIVE_IRREVERSIBLE_ACTION_WITHOUT_AUTHORITY",
+    "FOUNDER_RELEASE_BOUNDARY_CROSSED"
+  ],
+  "on_stop":["contain","preserve_evidence","classify_failure","harden_lower_stack","add_regression","writeback","readback","resume_only_after_gate"]
+}

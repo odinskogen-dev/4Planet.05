@@ -1,0 +1,85 @@
+name: TEST KING — Species + Lens Proof Gate
+
+on:
+  push:
+    branches:
+      - king/test
+    paths:
+      - "functions/api/species-identify.ts"
+      - "src/species/**"
+      - "src/capture/**"
+      - "src/components/species/**"
+      - "src/pages/integrated/SpeciesEngineLab.tsx"
+      - "src/pages/integrated/SpeciesRoute.tsx"
+      - "src/pages/integrated/UniversalSpeciesProfilePage.tsx"
+      - "src/pages/lens/**"
+      - "src/pages/sapiens/FoodCapture.tsx"
+      - "src/routes/router.tsx"
+      - "tests/e2e/species-engine-registry.spec.ts"
+      - "tests/e2e/species-canonical-media.spec.ts"
+      - "tests/e2e/species-engine.spec.ts"
+      - "tests/e2e/shared-capture.spec.ts"
+      - ".github/workflows/test-king-species-lens-proof.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact TEST KING
+        uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck application
+        run: npm run typecheck
+      - name: Typecheck Cloudflare recognition function
+        run: npx tsc --noEmit --target ES2020 --module ESNext --moduleResolution bundler --lib ES2020,DOM,DOM.Iterable --skipLibCheck functions/api/species-identify.ts
+      - name: Production build
+        run: npm run build
+      - name: Contract and smoke tests
+        run: npm run test:smoke
+      - name: Start local preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > species-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/species/lab >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat species-preview.log
+          exit 1
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Species + Lens — Chromium mobile
+        run: npx playwright test tests/e2e/species-engine-registry.spec.ts tests/e2e/species-canonical-media.spec.ts tests/e2e/species-engine.spec.ts tests/e2e/shared-capture.spec.ts --project=mobile-390 --project=mobile-430
+      - name: Species + Lens — WebKit mobile
+        run: npx playwright test tests/e2e/species-engine-registry.spec.ts tests/e2e/species-canonical-media.spec.ts tests/e2e/species-engine.spec.ts tests/e2e/shared-capture.spec.ts --project=webkit-390 --project=webkit-430
+      - name: TEST KING truth boundary control
+        run: |
+          grep -R "TEST_BROWSER" src/species/registry.ts src/species/engine.ts
+          grep -R "No automatic species, food or verification claim" src/capture/CaptureExperience.tsx
+          grep -R "UNIVERSAL · NOT GOLD" src/pages/integrated/UniversalSpeciesProfilePage.tsx
+          grep -R "Image licences can be more restrictive" src/components/species/ResolvedSpeciesMediaGallery.tsx
+          grep -R "PROVIDER_NOT_CONFIGURED" functions/api/species-identify.ts src/pages/lens/LensRecognitionPanel.tsx
+          grep -R "AI_SUGGESTED" functions/api/species-identify.ts
+          grep -R 'path="/species/lab"' src/routes/router.tsx
+          grep -R 'path="/lens"' src/routes/router.tsx
+          grep -R 'path="/food/lens"' src/routes/router.tsx
+          grep -R 'path="/magazine"' src/routes/router.tsx
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-king-species-lens-evidence
+          path: |
+            species-preview.log
+            artifacts
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 30

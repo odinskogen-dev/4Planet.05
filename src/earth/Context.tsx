@@ -19,7 +19,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { SPECIES_PROFILES } from "@/data/species";
+import { withReturnTo } from "@/product/productContext";
 import type {
   DataStatus,
   EntityId,
@@ -113,6 +115,7 @@ export type ContextState =
       kind: "COORDINATE";
       lat: number;
       lng: number;
+      placeName?: string;
       life: Field<{ total: number; names: string[] }>;
       signals: Field<Array<Signal & { distanceKm: number }>>;
     }
@@ -156,6 +159,7 @@ const STATUS_TEXT: Record<DataStatus, string> = {
   SOURCE_UNAVAILABLE: "SOURCE DOWN",
   SEEDED: "SEEDED",
   PLANNED: "PLANNED",
+  BUNDLED: "BUNDLED · NOT LIVE",
 };
 
 const STATUS_CLASS: Record<DataStatus, string> = {
@@ -167,6 +171,7 @@ const STATUS_CLASS: Record<DataStatus, string> = {
   SOURCE_UNAVAILABLE: "bad",
   SEEDED: "seeded",
   PLANNED: "none",
+  BUNDLED: "none",
 };
 
 /**
@@ -185,6 +190,8 @@ const STATUS_MEANING: Partial<Record<DataStatus, string>> = {
   SEEDED:
     "4PLANET prototype content. This is our reasoning, not a source record, and it has not been reviewed by a domain expert.",
   PLANNED: "Designed, not yet built.",
+  BUNDLED:
+    "A real source record shipped with the app as a checked historical snapshot. It is not a live read and not the animal's current position.",
 };
 
 export const Stat = ({ s }: { s: DataStatus }) => (
@@ -372,6 +379,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
   following,
   onFollow,
 }) => {
+  const navigate = useNavigate();
   const color = TYPE_COLOR[ctx.kind] ?? "#fff";
   const ref = refOf(ctx);
   const isOn = ref ? following(ref.id) : false;
@@ -872,14 +880,41 @@ export const ContextLayer: React.FC<ContextProps> = ({
     const { observation: ob } = ctx;
     const o = ob.occurrence;
     const p = ob.provenance;
+    // Route into SPECIES when this record's taxon matches the catalogue.
+    const sciMatch = (o.scientificName || "").toLowerCase();
+    const speciesMatch = SPECIES_PROFILES.find(
+      (s) => (o.taxonKey && s.gbifKey === o.taxonKey) || s.scientificName.toLowerCase() === sciMatch,
+    );
+    // Source image shown ONLY when both URL and licence are present.
+    const showImg = !!(o.mediaUrl && o.mediaLicence);
+    const bundled = ob.provenance?.delivery === "BUNDLED_SNAPSHOT";
     return (
       <div className="ctx">
         {head(o.commonName || ob.taxon.label, OBSERVATION_LABEL, ob.id)}
         <div className="ctx-body">
+          {bundled && (
+            <div className="note-box" style={{ color, marginBottom: 6, fontWeight: 600 }}>
+              BUNDLED SOURCE SNAPSHOT · NOT LIVE · {ob.provenance.sourceId?.toUpperCase() || "GBIF"} RECORD {o.sourceRecordId} · CHECKED {ob.provenance.checkedAt} — HISTORICAL OBSERVATION, NOT THE ANIMAL'S CURRENT POSITION
+            </div>
+          )}
+          {showImg ? (
+            <figure style={{ margin: "0 0 4px", position: "relative" }}>
+              <img src={o.mediaUrl} alt={`${o.commonName || o.scientificName} — illustrative of the species, not this occurrence`} loading="lazy"
+                style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "'Fragment Mono', monospace", letterSpacing: ".08em", background: "rgba(0,0,0,.72)", color: "#fff", padding: "4px 7px", fontSize: 9 }}>ILLUSTRATIVE OF SPECIES — NOT THIS OCCURRENCE</div>
+              <figcaption className="foot" style={{ padding: "6px 0", lineHeight: 1.6 }}>
+                {o.mediaAttribution || "Illustration"} · {o.mediaLicence}
+              </figcaption>
+            </figure>
+          ) : (
+            <div className="note-box" style={{ color }}>
+              No licensed image on this record — showing the record without a photo.
+            </div>
+          )}
           <div className="sec">
             <div className="sec-h">
               <span>WHAT WAS RECORDED</span>
-              <Stat s="LIVE" />
+              <Stat s={bundled ? "BUNDLED" : "LIVE"} />
             </div>
             <div className="sec-body">
               <div className="hrow">
@@ -897,6 +932,12 @@ export const ContextLayer: React.FC<ContextProps> = ({
                   {Math.abs(o.lng).toFixed(3)}°{o.lng >= 0 ? "E" : "W"}
                 </span>
               </div>
+              {typeof o.coordinateUncertaintyM === "number" && (
+                <div className="hrow">
+                  <span>Coordinate uncertainty</span>
+                  <span style={{ color }}>±{Math.round(o.coordinateUncertaintyM).toLocaleString()} m</span>
+                </div>
+              )}
               <div className="hrow">
                 <span>4PLANET checked</span>
                 <span style={{ opacity: 0.7 }}>{timeAgo(p.checkedAt)}</span>
@@ -911,12 +952,29 @@ export const ContextLayer: React.FC<ContextProps> = ({
                   </a>
                 </div>
               )}
+              {speciesMatch && (
+                <div className="src-line">
+                  <Link
+                    to={`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`}
+                    onClick={(e) => {
+                      // Encode returnTo from the LIVE ATLAS url at click time, so the
+                      // post-interaction camera (written by the last moveend) is the
+                      // one that returns — not a stale render-time snapshot.
+                      e.preventDefault();
+                      navigate(withReturnTo(`/species/${speciesMatch.slug}?entity=${encodeURIComponent(speciesMatch.id)}`, window.location.search));
+                    }}
+                  >
+                    Open {speciesMatch.commonName} in SPECIES →
+                  </Link>
+                </div>
+              )}
               <Source ids={["gbif"]} />
               {/* Honest about what we do NOT have from the source. Brief §29. */}
               <div className="foot" style={{ marginTop: 10, lineHeight: 1.7 }}>
-                COORDINATE UNCERTAINTY · NOT CHECKED — SENSITIVITY / OBFUSCATION ·
-                NOT CHECKED. 4PLANET does not yet read these fields from the source
-                record.
+                {typeof o.coordinateUncertaintyM === "number" ? "" : "COORDINATE UNCERTAINTY · NOT CHECKED — "}
+                SENSITIVITY / OBFUSCATION · NOT CHECKED. Sensitive locations are
+                generalised. This point is where a record was reported, not where
+                the animal is now.
               </div>
             </div>
           </div>
@@ -1220,14 +1278,14 @@ export const ContextLayer: React.FC<ContextProps> = ({
 
   /* ── COORDINATE (V36's "WHAT IS HAPPENING HERE", now a first-class object) ─ */
   if (ctx.kind === "COORDINATE") {
-    const { lat, lng, life, signals } = ctx;
+    const { lat, lng, life, signals, placeName } = ctx;
+    const coordText = `${Math.abs(lat).toFixed(3)}°${lat >= 0 ? "N" : "S"}  ${Math.abs(lng).toFixed(3)}°${lng >= 0 ? "E" : "W"}`;
     return (
       <div className="ctx">
         {head(
-          `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"} ${Math.abs(lng).toFixed(2)}°${
-            lng >= 0 ? "E" : "W"
-          }`,
+          placeName || "Selected location",
           "What is happening here",
+          coordText,
         )}
         <div className="ctx-body">
           <Section

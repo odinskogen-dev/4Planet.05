@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "programme": "GIGA-IMMUNITY-01",
+  "chain": ["MAKER","DETERMINISTIC_TECHNICAL_GATES","INDEPENDENT_EVALUATOR","ADVERSARIAL_RED_TEAM","GPT_PROGRAMME_TRUTH_SYNTHESIS","FOUNDER_JUDGEMENT_WHERE_HUMAN_GOLD_OR_ONE_WAY_DOOR"],
+  "prohibitions": [
+    "maker_cannot_self_promote",
+    "technical_pass_does_not_equal_human_gold",
+    "agent_report_does_not_equal_verified_delivery",
+    "newest_does_not_equal_best",
+    "deployed_does_not_equal_authoritative"
+  ],
+  "minimum_evidence": ["exact_sha","exact_receiver","changed_file_manifest","tests","runtime_or_rendered_evidence_where_material","known_limitations","rollback"],
+  "founder_gate_required_for": ["visual_human_gold_lock","live_release","irreversible_canon_change","destructive_value_cleanup","external_release","legal_or_financial_commitment"]
+}

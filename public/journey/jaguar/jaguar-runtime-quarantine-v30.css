@@ -1,0 +1,13 @@
+/* TEST KING Jaguar runtime quarantine. The currently stored v27 GLB derivative is structurally invalid.
+   Keep the public integration tree truthful and stable on controlled species media until a complete
+   rights-safe GLB passes binary integrity + loader/render proof on the authoritative Jaguar line. */
+.jaguar[data-jaguar3d="failed"] .loading,
+.jaguar[data-jaguar3d="deferred"] .loading,
+.jaguar[data-jaguar3d="failed"] .three-stage,
+.jaguar[data-jaguar3d="deferred"] .three-stage,
+.jaguar[data-jaguar3d="failed"] .controls,
+.jaguar[data-jaguar3d="deferred"] .controls{display:none!important}
+.jaguar[data-jaguar3d="failed"] .photo-fallback,
+.jaguar[data-jaguar3d="deferred"] .photo-fallback{opacity:.96!important}
+.jaguar[data-jaguar3d="failed"] .three-wrap,
+.jaguar[data-jaguar3d="deferred"] .three-wrap{cursor:default}

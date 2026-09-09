@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_AUTHORISED",
+  "sourceBranch": "king/test",
+  "testKingSha": "c942f0a3c24cbbaebffb51e3dd925245ecba5e2a",
+  "priorLiveSha": "3ff36765d6ae0cabdb83ff47e4a747cca4bdb282",
+  "founderDecisionRef": null,
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/33653323016",
+  "rollbackRef": "main@3ff36765d6ae0cabdb83ff47e4a747cca4bdb282",
+  "note": "Fail-closed PREPARED packet. testKingSha is the last fully audited product head before later control-only status/manifest commits. It passed Public Preview Gate 33653322531, Browser Product Proof 33653323016, ONE INTERFACE 33653322612, GOLD/WORLD CLASS 33653322530, GOLD Human Craft 33653322350 and ATLAS Zero Loss 33653322541. This manifest does NOT authorise LIVE. Freeze/re-audit the final release candidate after any product-facing change, then populate founderDecisionRef only after Odin gives explicit action-specific LIVE release authority."
+}

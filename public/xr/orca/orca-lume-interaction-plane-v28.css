@@ -1,0 +1,35 @@
+/* ORCA LUME interaction plane v28.
+   Hit-testing correction only: the stable V72 intelligence panel must sit above
+   non-interactive cinematic/HUD copy while explicit controls remain reachable. */
+
+.nature-browser[data-light-lens="true"] > .orca-lume-intel{
+  z-index:72!important;
+  isolation:isolate;
+  pointer-events:none!important;
+}
+
+.nature-browser[data-light-lens="true"] > .orca-lume-intel a,
+.nature-browser[data-light-lens="true"] > .orca-lume-intel button,
+.nature-browser[data-light-lens="true"] > .orca-lume-intel [tabindex]:not([tabindex="-1"]){
+  position:relative;
+  z-index:2;
+  pointer-events:auto!important;
+}
+
+.nature-browser[data-light-lens="true"] > .orca-lume-intel .orca-lume-echo-trigger{
+  touch-action:manipulation;
+}
+
+.nature-browser[data-light-lens="true"] > .orca-lume-intel .orca-lume-echo-trigger:focus-visible{
+  outline:1px solid var(--lume-white,#f7fdff);
+  outline-offset:4px;
+}
+
+/* The mobile HUD and the projected echo control can occupy the same screen
+   strip. Once the explicit pulse has fired, its trigger must yield the pointer
+   plane immediately so the ordinary Journey NEXT action cannot be intercepted. */
+@media(max-width:760px){
+  .nature-browser[data-light-lens="true"][data-echo-active="true"] > .orca-lume-intel .orca-lume-echo-trigger{
+    pointer-events:none!important;
+  }
+}
