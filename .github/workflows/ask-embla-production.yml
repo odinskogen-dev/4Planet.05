@@ -32,6 +32,7 @@ jobs:
           cp products/4sapien/cloudflare/_headers products/4sapien/site/_headers
           python products/4sapien/build/apply_provider_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_meal_plan_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
 
       - name: Zero-loss source and security QA
         run: |
@@ -48,8 +49,14 @@ jobs:
           grep -q 'MEAL_PLAN_HYDRATE_FAILED' "$SITE"
           grep -q 'MEAL_PLAN_SAVE_FAILED' "$SITE"
           grep -q 'Valgene lagres til 4SAPIEN-profilen din for denne uken.' "$SITE"
+          grep -q 'functions/v1/embla-products' "$SITE"
+          grep -q 'RATE_LIMITED' "$SITE"
+          grep -q 'DELVIS DATADEKNING' "$SITE"
+          grep -q 'price:p.embla_price' "$SITE"
+          ! grep -q 'world.openfoodfacts.org' "$SITE"
+          ! grep -q 'cgi/search.pl' "$SITE"
           ! grep -q 'S4PIENS' "$SITE"
-          ! grep -Eqi 'service[_-]?role|sb_secret_' "$SITE"
+          ! grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$SITE"
           python - <<'PY'
           import re, pathlib
           s=pathlib.Path('products/4sapien/site/index.html').read_text()
@@ -64,11 +71,25 @@ jobs:
         run: |
           set -euo pipefail
           ok=1
-          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans; do
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache; do
             code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
             [ "$code" = "200" ] || { ok=0; echo "DB gate missing: ${table} HTTP ${code}"; }
           done
           echo "ready=$ok" >> "$GITHUB_OUTPUT"
+
+      - name: Verify authenticated product gateway boundary
+        id: gateway
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"q":"yoghurt"}' "${SUPABASE_URL}/functions/v1/embla-products" || true)
+          if [ "$code" = "401" ]; then
+            echo 'ready=1' >> "$GITHUB_OUTPUT"
+            echo 'Product gateway exists and rejects unauthenticated product requests: PASS'
+          else
+            echo "Product gateway auth boundary unexpected HTTP ${code}"
+            cat /tmp/gateway.json || true
+            exit 7
+          fi
 
       - name: Verify Supabase Auth providers
         id: auth
@@ -139,7 +160,7 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/four-sapien-worker.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-worker.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-worker.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/four-sapien-worker.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-worker.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-worker.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-worker.html; then exit 0; fi
             sleep 2
           done
           echo 'Worker candidate runtime verification failed'
@@ -157,9 +178,9 @@ jobs:
           if [ -n "$current" ] && [ "$current" != "$CF_SERVICE" ]; then echo "4sapien.com conflict: ${current}"; exit 12; fi
           echo "current=${current:-none}" >> "$GITHUB_OUTPUT"
 
-      - name: Attach 4sapien.com after database + Email Auth gates pass
+      - name: Attach 4sapien.com after database + Auth + gateway gates pass
         id: prod
-        if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1'
+        if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
           CF_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
@@ -170,7 +191,7 @@ jobs:
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" -o /tmp/four-sapien-production.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-production.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-production.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" -o /tmp/four-sapien-production.html && grep -q 'four_sapien_meal_plans' /tmp/four-sapien-production.html && grep -q '4PLANET ID · INNLOGGET' /tmp/four-sapien-production.html && grep -q 'functions/v1/embla-products' /tmp/four-sapien-production.html; then exit 0; fi
             sleep 3
           done
           echo 'Custom-domain runtime verification failed'
@@ -183,7 +204,8 @@ jobs:
             echo '## 4SAPIEN / Ask Embla production gate'
             echo '- Claude-leading source: PASS'
             echo '- Syntax/security QA: PASS'
-            echo "- Database incl. weekly meal plan: ${{ steps.db.outputs.ready }}"
+            echo "- Database incl. product cache: ${{ steps.db.outputs.ready }}"
+            echo "- Product gateway auth boundary: ${{ steps.gateway.outputs.ready }}"
             echo "- Email Auth: ${{ steps.auth.outputs.email }}"
             echo "- Google Auth: ${{ steps.auth.outputs.google }}"
             echo "- Supabase management token available: ${{ steps.authsecrets.outputs.supabase_access }}"
