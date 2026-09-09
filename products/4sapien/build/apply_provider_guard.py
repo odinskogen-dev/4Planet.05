@@ -21,6 +21,20 @@ def regex_once(pattern, replacement, label):
     s = s2
 
 
+# Auth return is product-local. Never rely on the Supabase Site URL fallback
+# (4planet.org) for a login initiated from 4sapien.com.
+replace_once(
+    'options:{emailRedirectTo:window.location.origin}',
+    'options:{emailRedirectTo:"https://4sapien.com/"}',
+    "email confirmation return",
+)
+replace_once(
+    'options:{redirectTo:window.location.origin}',
+    'options:{redirectTo:"https://4sapien.com/"}',
+    "Google OAuth return",
+)
+
+
 # Provider guard: only show Google when production Supabase reports it enabled.
 old_head = '''function AuthScreen(){
  const[email,setEmail]=useState("");const[password,setPassword]=useState("");const[mode,setMode]=useState("signin");const[busy,setBusy]=useState(false);const[msg,setMsg]=useState("");'''
@@ -94,6 +108,9 @@ replace_once('<Meg profile={profile} setProfile={persistProfile} user={user} sav
 
 # Fail closed if intended authenticated-state invariants are absent.
 for marker in [
+    'https://4sapien.com/',
+    'emailRedirectTo:"https://4sapien.com/"',
+    'redirectTo:"https://4sapien.com/"',
     '4PLANET ID · INNLOGGET',
     'Fullfør 4SAPIEN-profilen din.',
     'user={user} saveState={saveState}',
@@ -105,6 +122,9 @@ for marker in [
 ]:
     if marker not in s:
         raise SystemExit(f"4SAPIEN authenticated-state invariant missing: {marker}")
+
+if 'redirectTo:window.location.origin' in s or 'emailRedirectTo:window.location.origin' in s:
+    raise SystemExit("4SAPIEN OAuth/email return still depends on window.location.origin")
 
 p.write_text(s)
 print("4SAPIEN provider + authenticated profile guard applied")
