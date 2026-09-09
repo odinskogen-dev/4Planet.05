@@ -20,16 +20,10 @@ jobs:
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/embla.html
           python products/4sapien/build/apply_provider_guard.py /tmp/embla.html
           python products/4sapien/build/apply_meal_plan_guard.py /tmp/embla.html
-      - name: Print sanitized search anchors
+      - name: Print exact product search block
         run: |
           python - <<'PY'
-          import pathlib,re
-          s=pathlib.Path('/tmp/embla.html').read_text()
-          pats=['openfoodfacts','cgi/search','search.pl','productName','setQuery','setResults','debounce','450','24','Kilde utilgjengelig','source unavailable']
-          lines=s.splitlines()
-          hits=set()
-          for i,line in enumerate(lines):
-              if any(p.lower() in line.lower() for p in pats):
-                  for j in range(max(0,i-2),min(len(lines),i+4)): hits.add(j)
-          for j in sorted(hits): print(f'{j+1}: {lines[j]}')
+          import pathlib
+          lines=pathlib.Path('/tmp/embla.html').read_text().splitlines()
+          for j in range(132,159): print(f'{j+1}: {lines[j]}')
           PY
