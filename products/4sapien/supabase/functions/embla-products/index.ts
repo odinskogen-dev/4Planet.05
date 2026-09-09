@@ -5,8 +5,8 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const KASSALAPP_KEY = Deno.env.get("KASSALAPP_API_KEY") || Deno.env.get("KASSALAPP_TOKEN") || "";
 const OFF_BASE = "https://world.openfoodfacts.org";
 const KASS_BASE = "https://kassal.app/api/v1";
-const OFF_FIELDS = "code,product_name,product_name_nb,brands,quantity,image_front_small_url,image_small_url,nutriments,nutriscore_grade,ecoscore_grade,environmental_score_grade,nova_group,categories_tags_en,allergens_tags,countries_tags,ingredients_text";
-const UA = "4SAPIEN-Embla/1.0 (https://4sapien.com; odin@4planet.org)";
+const OFF_FIELDS = "code,product_name,product_name_nb,brands,quantity,image_front_small_url,image_small_url,nutriments,nutriscore_grade,ecoscore_grade,environmental_score_grade,nova_group,categories_tags_en,allergens_tags,countries_tags,ingredients_text,additives_tags";
+const UA = "4SAPIEN-Embla/1.1 (https://4sapien.com; odin@4planet.org)";
 
 const cors = {
   "Access-Control-Allow-Origin": "https://4sapien.com",
@@ -46,7 +46,8 @@ async function sha256(input: string) {
 }
 
 async function cacheKey(kind: string, q: string) {
-  return await sha256(`4sapien:v1:${kind}:${q.toLocaleLowerCase("nb-NO").trim()}`);
+  // v2 invalidates pre-intent-ranking search cache.
+  return await sha256(`4sapien:v2:${kind}:${q.toLocaleLowerCase("nb-NO").trim()}`);
 }
 
 async function cacheRead(key: string) {
@@ -87,7 +88,7 @@ async function offTextSearch(q: string) {
   const d = await offJson(url);
   const products = (d?.products || []).filter((p: any) => p?.code && (p?.product_name || p?.product_name_nb || p?.brands));
   products.sort((a: any, b: any) => norwayRank(b) - norwayRank(a));
-  return products.slice(0, 40);
+  return products.slice(0, 50);
 }
 
 async function offBarcode(ean: string) {
@@ -112,7 +113,14 @@ async function kassJson(path: string) {
 
 function nutritionMap(n: any[]) {
   const by = new Map((n || []).map((x: any) => [x?.code, x?.amount]));
-  return { "energy-kcal_100g": by.get("energi_kcal"), proteins_100g: by.get("protein"), sugars_100g: by.get("sukkerarter"), salt_100g: by.get("salt"), "saturated-fat_100g": by.get("mettet_fett") };
+  return {
+    "energy-kcal_100g": by.get("energi_kcal"),
+    proteins_100g: by.get("protein"),
+    sugars_100g: by.get("sukkerarter"),
+    salt_100g: by.get("salt"),
+    "saturated-fat_100g": by.get("mettet_fett"),
+    fiber_100g: by.get("fiber"),
+  };
 }
 
 function kassToOffLike(k: any, off: any = null) {
@@ -131,9 +139,85 @@ function kassToOffLike(k: any, off: any = null) {
     nutriments: { ...nutritionMap(k?.nutrition || []), ...(off?.nutriments || {}) },
     allergens_tags: off?.allergens_tags?.length ? off.allergens_tags : allergens,
     ingredients_text: off?.ingredients_text || k?.ingredients || "",
+    additives_tags: off?.additives_tags || [],
     embla_source: off ? "kassalapp+openfoodfacts" : "kassalapp",
     embla_price: price, embla_store: store, embla_vendor: k?.vendor || null,
   };
+}
+
+function norm(v: unknown) {
+  return String(v || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("nb-NO").replace(/[^a-z0-9æøå]+/g, " ").trim().replace(/\s+/g, " ");
+}
+function tokenSet(v: unknown) { return new Set(norm(v).split(" ").filter(Boolean)); }
+function arrText(v: unknown) { return Array.isArray(v) ? v.join(" ") : String(v || ""); }
+
+function relevanceFor(p: any, q: string) {
+  const query = norm(q);
+  const qt = query.split(" ").filter(Boolean);
+  const name = norm(p?.product_name_nb || p?.product_name || "");
+  const nameTokens = tokenSet(name);
+  const brand = norm(p?.brands || "");
+  const categories = norm(arrText(p?.categories_tags_en));
+  const ingredients = norm(p?.ingredients_text || "");
+  let score = 0;
+  let why = "weak";
+
+  if (name === query) { score = 120; why = "exact_name"; }
+  else if (qt.length && qt.every((t) => nameTokens.has(t))) { score = 108; why = "name_words"; }
+  else if (name.startsWith(query + " ")) { score = 102; why = "name_prefix"; }
+  else if (` ${name} `.includes(` ${query} `)) { score = 98; why = "name_phrase"; }
+  else if (name.includes(query)) { score = 66; why = "name_compound"; }
+  else if (qt.length && qt.every((t) => tokenSet(brand).has(t))) { score = 52; why = "brand"; }
+  else if (categories.includes(query)) { score = 42; why = "category"; }
+  else if (ingredients.includes(query)) { score = 24; why = "ingredient"; }
+
+  const norway = norwayRank(p) ? 6 : 0;
+  score += norway;
+  const band = score >= 90 ? "DIRECT" : score >= 55 ? "RELATED" : "WEAK";
+  return { score, band, why };
+}
+
+const NUTRI_SCORE: Record<string, number> = { a: 100, b: 82, c: 62, d: 38, e: 18 };
+function healthFor(p: any) {
+  const grade = String(p?.nutriscore_grade || "").toLowerCase();
+  const nova = Number(p?.nova_group || 0) || null;
+  const parts: number[] = [];
+  const signals: any[] = [];
+  if (grade in NUTRI_SCORE) {
+    parts.push(NUTRI_SCORE[grade]);
+    signals.push({ kind: "nutri", label: `NUTRI-SCORE ${grade.toUpperCase()}`, tone: grade === "a" || grade === "b" ? "positive" : grade === "d" || grade === "e" ? "warning" : "neutral" });
+  }
+  if (nova) {
+    const processing = nova === 1 ? 92 : nova === 2 ? 78 : nova === 3 ? 58 : 28;
+    parts.push(processing);
+    if (nova === 4) signals.push({ kind: "nova", label: "NOVA 4 · ULTRAPROSESSERT", tone: "warning" });
+    else signals.push({ kind: "nova", label: `NOVA ${nova}`, tone: nova === 1 ? "positive" : "neutral" });
+  }
+  const score = parts.length ? Math.round(parts.reduce((a, b) => a + b, 0) / parts.length) : null;
+  return { score, signals, confidence: parts.length >= 2 ? "SOURCE" : parts.length === 1 ? "PARTIAL" : "UNKNOWN" };
+}
+
+function decorateAndRank(products: any[], q: string) {
+  const decorated = products.map((p: any, providerIndex: number) => {
+    const rel = relevanceFor(p, q);
+    const health = healthFor(p);
+    return {
+      ...p,
+      embla_relevance: rel.score,
+      embla_relevance_band: rel.band,
+      embla_match: rel.why,
+      embla_provider_order: providerIndex,
+      embla_health_score: health.score,
+      embla_health_signals: health.signals,
+      embla_health_confidence: health.confidence,
+    };
+  });
+  decorated.sort((a: any, b: any) => (b.embla_relevance - a.embla_relevance) || (a.embla_provider_order - b.embla_provider_order));
+  // When the provider contains a useful direct-answer set, suppress ingredient/category noise.
+  // This is a universal intent rule: a query for a grocery noun should return products named as that noun before recipes/meals merely containing it.
+  const direct = decorated.filter((p: any) => p.embla_relevance_band === "DIRECT");
+  const filtered = direct.length >= 4 ? decorated.filter((p: any) => p.embla_relevance >= 55) : decorated;
+  return filtered.slice(0, 40);
 }
 
 async function kassSearch(q: string) {
@@ -157,14 +241,14 @@ async function buildSearch(q: string) {
         try { enrich = await offBulk(k.map((x: any) => String(x?.ean || "")).filter(Boolean)); sources.openfoodfacts = "ok"; }
         catch (e: any) { sources.openfoodfacts = e?.code || "SOURCE_DOWN"; }
         sources.kassalapp = "ok";
-        const products = k.map((x: any) => kassToOffLike(x, enrich.get(String(x?.ean || ""))));
+        const products = decorateAndRank(k.map((x: any) => kassToOffLike(x, enrich.get(String(x?.ean || "")))), q);
         return { products, state: sources.openfoodfacts === "ok" ? "OK" : "PARTIAL", sources };
       }
       sources.kassalapp = "no_match";
     } catch (e: any) { sources.kassalapp = e?.code || "SOURCE_DOWN"; }
   }
   try {
-    const products = await offTextSearch(q);
+    const products = decorateAndRank(await offTextSearch(q), q);
     sources.openfoodfacts = "ok";
     const partial = !!KASSALAPP_KEY && sources.kassalapp !== "ok" && sources.kassalapp !== "no_match";
     return { products, state: products.length ? (partial ? "PARTIAL" : "OK") : "NO_MATCH", sources };
@@ -189,8 +273,15 @@ async function buildEan(ean: string) {
     return { products: [], state: rate ? "RATE_LIMITED" : (Object.values(sources).includes("SOURCE_DOWN") ? "SOURCE_DOWN" : "NO_MATCH"), sources };
   }
   const representative = prices[0] || kass || { ean };
-  const product = kassToOffLike(representative, off);
+  const product: any = kassToOffLike(representative, off);
   product.embla_prices = prices.map((p: any) => ({ store: p?.store?.name || null, code: p?.store?.code || null, price: typeof p?.current_price === "number" ? p.current_price : p?.current_price?.price ?? null, date: p?.current_price?.date || null })).filter((x: any) => x.price != null);
+  const health = healthFor(product);
+  product.embla_relevance = 120;
+  product.embla_relevance_band = "DIRECT";
+  product.embla_match = "ean";
+  product.embla_health_score = health.score;
+  product.embla_health_signals = health.signals;
+  product.embla_health_confidence = health.confidence;
   const partial = Object.values(sources).some((x) => x === "SOURCE_DOWN" || x === "RATE_LIMITED");
   return { products: [product], state: partial ? "PARTIAL" : "OK", sources };
 }
@@ -211,7 +302,7 @@ Deno.serve(async (req: Request) => {
     if (cached && isFresh(cached)) return json({ ok: true, ...cached.payload, cache: "hit", kassalappConfigured: !!KASSALAPP_KEY });
     try {
       const out = isEan ? await buildEan(raw) : await buildSearch(raw);
-      const payload = { ...out, query: raw, kind };
+      const payload = { ...out, query: raw, kind, ranking: "intent-first-v2" };
       await cacheWrite(key, kind, payload, out.state, isEan ? 43200 : 21600);
       return json({ ok: true, ...payload, cache: "miss", kassalappConfigured: !!KASSALAPP_KEY });
     } catch (e: any) {
