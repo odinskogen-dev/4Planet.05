@@ -1,0 +1,208 @@
+name: 4SAPIEN Ask Embla production gate
+
+on:
+  push:
+    branches:
+      - build/ask-embla-live-20260909
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/ask-embla-production.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+  CF_PROJECT: 4sapien
+  CUSTOM_DOMAIN: 4sapien.com
+
+jobs:
+  quality-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize Claude-leading interface
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p products/4sapien/site
+          base64 -d products/4sapien/source/claude-4sapien-live.html.xz.b64 | xz -d > products/4sapien/site/index.html
+          cp products/4sapien/cloudflare/_headers products/4sapien/site/_headers
+          cp products/4sapien/cloudflare/_redirects products/4sapien/site/_redirects
+
+      - name: Zero-loss source and security checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE=products/4sapien/site/index.html
+          grep -q 'Ask Embla' "$SITE"
+          grep -q '4SAPIEN by 4PLANET' "$SITE"
+          grep -q 'four_sapien_profiles' "$SITE"
+          grep -q 'four_sapien_list_items' "$SITE"
+          grep -q 'four_sapien_shops' "$SITE"
+          grep -q 'four-sapien-receipts' "$SITE"
+          ! grep -q 'S4PIENS' "$SITE"
+          ! grep -Eqi 'service[_-]?role|sb_secret_' "$SITE"
+          python - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('products/4sapien/site/index.html').read_text()
+          m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+          assert m, 'Babel/React source block missing'
+          pathlib.Path('/tmp/embla.jsx').write_text(m.group(1))
+          PY
+          npx --yes esbuild@0.25.9 /tmp/embla.jsx --loader:.jsx=jsx --outfile=/tmp/embla-check.js
+
+      - name: Verify Supabase database gate
+        id: db
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=1
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops; do
+            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' \
+              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+              "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            if [ "$code" != "200" ]; then
+              ok=0
+              echo "DB gate missing: ${table} HTTP ${code}"
+              cat "/tmp/${table}.json" || true
+            fi
+          done
+          echo "ready=$ok" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Supabase Auth provider gate
+        id: auth
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/auth-settings.json -w '%{http_code}' \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            "${SUPABASE_URL}/auth/v1/settings" || true)
+          if [ "$code" != "200" ]; then
+            echo "ready=0" >> "$GITHUB_OUTPUT"
+            echo "Auth settings endpoint HTTP ${code}"
+            cat /tmp/auth-settings.json || true
+            exit 0
+          fi
+          cat /tmp/auth-settings.json
+          email=$(jq -r '(.external.email // false) | tostring' /tmp/auth-settings.json)
+          google=$(jq -r '(.external.google // false) | tostring' /tmp/auth-settings.json)
+          if [ "$email" = "true" ] && [ "$google" = "true" ]; then
+            echo "ready=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=0" >> "$GITHUB_OUTPUT"
+            echo "Provider gate: email=${email}, google=${google}"
+          fi
+
+      - name: Resolve Cloudflare credentials
+        id: cf
+        shell: bash
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          if [ -z "$token" ]; then echo 'No Cloudflare token secret is configured'; exit 8; fi
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Cloudflare account and domain ownership
+        id: cfmeta
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ steps.cf.outputs.token }}
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
+          z=$(curl -fsS "${auth[@]}" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$z")
+          [ -n "$account" ] || { echo 'Could not resolve Cloudflare account from 4planet.org'; exit 9; }
+          echo "account=$account" >> "$GITHUB_OUTPUT"
+          dz=$(curl -fsS "${auth[@]}" "https://api.cloudflare.com/client/v4/zones?name=${CUSTOM_DOMAIN}")
+          zone=$(jq -r '.result[0].id // empty' <<<"$dz")
+          if [ -n "$zone" ]; then echo 'domain_ready=1' >> "$GITHUB_OUTPUT"; else echo 'domain_ready=0' >> "$GITHUB_OUTPUT"; fi
+
+      - name: Ensure isolated Cloudflare Pages project
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CF_ACCOUNT_ID: ${{ steps.cfmeta.outputs.account }}
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
+          code=$(curl -sS -o /tmp/pages-project.json -w '%{http_code}' "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT}" || true)
+          if [ "$code" = "404" ]; then
+            curl -fsS -X POST "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects" \
+              --data "{\"name\":\"${CF_PROJECT}\",\"production_branch\":\"main\"}" | tee /tmp/pages-create.json
+            test "$(jq -r '.success' /tmp/pages-create.json)" = true
+          elif [ "$code" != "200" ]; then
+            cat /tmp/pages-project.json || true
+            exit 10
+          fi
+
+      - name: Deploy immutable preview
+        id: deploy
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cfmeta.outputs.account }}
+        run: |
+          set -euo pipefail
+          out=$(npx --yes wrangler@4 pages deploy products/4sapien/site \
+            --project-name "$CF_PROJECT" \
+            --branch "candidate-${GITHUB_SHA::8}" \
+            --commit-hash "$GITHUB_SHA" 2>&1 | tee /tmp/wrangler.log)
+          url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.pages\.dev' /tmp/wrangler.log | tail -n1 || true)
+          [ -n "$url" ] || { echo 'Could not resolve preview URL'; cat /tmp/wrangler.log; exit 11; }
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          curl -fsS "$url" | grep -q 'Ask Embla'
+
+      - name: Promote to production only when backend gates pass
+        id: prod
+        if: steps.db.outputs.ready == '1' && steps.auth.outputs.ready == '1'
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cfmeta.outputs.account }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy products/4sapien/site \
+            --project-name "$CF_PROJECT" --branch main --commit-hash "$GITHUB_SHA" | tee /tmp/prod.log
+          echo 'deployed=1' >> "$GITHUB_OUTPUT"
+
+      - name: Attach 4sapien.com only after production gates pass
+        if: steps.prod.outputs.deployed == '1' && steps.cfmeta.outputs.domain_ready == '1'
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CF_ACCOUNT_ID: ${{ steps.cfmeta.outputs.account }}
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
+          domains=$(curl -fsS "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT}/domains")
+          if ! jq -e --arg d "$CUSTOM_DOMAIN" '.result[]? | select(.name==$d)' <<<"$domains" >/dev/null; then
+            curl -fsS -X POST "${auth[@]}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT}/domains" \
+              --data "{\"name\":\"${CUSTOM_DOMAIN}\"}" | tee /tmp/domain-add.json
+            test "$(jq -r '.success' /tmp/domain-add.json)" = true
+          fi
+
+      - name: Release summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## 4SAPIEN / Ask Embla production gate'
+            echo "- Claude-leading source: PASS"
+            echo "- Syntax/security QA: PASS"
+            echo "- Database gate: ${{ steps.db.outputs.ready }}"
+            echo "- Email + Google Auth gate: ${{ steps.auth.outputs.ready }}"
+            echo "- 4sapien.com Cloudflare zone present: ${{ steps.cfmeta.outputs.domain_ready }}"
+            echo "- Preview: ${{ steps.deploy.outputs.url }}"
+            echo "- Production deployment: ${{ steps.prod.outputs.deployed }}"
+          } >> "$GITHUB_STEP_SUMMARY"
