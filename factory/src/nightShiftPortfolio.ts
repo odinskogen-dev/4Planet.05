@@ -1,5 +1,6 @@
 import type { ProjectProjection, WorkPackage } from "./contracts";
 
+// Finite deploy-triggered SHADOW run only. This module installs no cron or standing scheduler.
 const SHA40 = /^[0-9a-f]{40}$/i;
 export const NIGHT_SHIFT_PROJECT_ID = "FACTORY_ACTIVE_01";
 export const NIGHT_SHIFT_AUTHORITY = "FOUNDER_ORDER:FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01";
