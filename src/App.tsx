@@ -7,6 +7,7 @@ import { Analytics } from "@/analytics/Analytics";
 import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
+import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
@@ -26,14 +27,16 @@ function AtlasProductSwitcher() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <ContextRetained />
-      <Analytics />
-      <ProductRouteAnalytics />
-      <AtlasReturnCameraAuthority />
-      <AtlasProductSwitcher />
-      <PublicCompletionBridge />
-      <AppRoutes />
+      <FourPlanetIdentityProvider>
+        <ScrollToTop />
+        <ContextRetained />
+        <Analytics />
+        <ProductRouteAnalytics />
+        <AtlasReturnCameraAuthority />
+        <AtlasProductSwitcher />
+        <PublicCompletionBridge />
+        <AppRoutes />
+      </FourPlanetIdentityProvider>
     </BrowserRouter>
   );
 }
