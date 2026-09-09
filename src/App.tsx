@@ -7,11 +7,18 @@ import { Analytics } from "@/analytics/Analytics";
 import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
+import PartnersHub from "@/pages/partners/PartnersHub";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
+
+function isPartnersHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
+}
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
@@ -24,6 +31,8 @@ function AtlasProductSwitcher() {
 }
 
 export default function App() {
+  if (isPartnersHost()) return <PartnersHub />;
+
   return (
     <BrowserRouter>
       <ScrollToTop />
