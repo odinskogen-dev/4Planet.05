@@ -1,0 +1,121 @@
+name: 4PLANET Legal Deploy
+
+on:
+  push:
+    branches:
+      - build/4planet-legal-20260909
+    paths:
+      - 'products/4planet-legal/**'
+      - '.github/workflows/4planet-legal-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax and content QA
+        run: |
+          set -euo pipefail
+          node --check products/4planet-legal/worker.mjs
+          grep -q "Privacy Policy" products/4planet-legal/worker.mjs
+          grep -q "Terms of Service" products/4planet-legal/worker.mjs
+          grep -q "923 003 789" products/4planet-legal/worker.mjs
+          grep -q "odin@4planet.org" products/4planet-legal/worker.mjs
+          ! grep -Eqi 'service_role|SUPABASE_SERVICE_ROLE|sb_secret_' products/4planet-legal/worker.mjs
+
+      - name: Resolve Cloudflare authority
+        id: cf
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          [ -n "$token" ] || { echo 'Missing Cloudflare token'; exit 1; }
+          zone_json=$(curl -fsS -H "Authorization: Bearer $token" -H 'Content-Type: application/json' 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active')
+          zone=$(jq -r '.result[0].id // empty' <<<"$zone_json")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone_json")
+          [ -n "$zone" ] && [ -n "$account" ] || { echo 'Could not resolve 4planet.org zone/account'; exit 1; }
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+          echo "zone=$zone" >> "$GITHUB_OUTPUT"
+          echo "account=$account" >> "$GITHUB_OUTPUT"
+
+      - name: Preflight route conflict audit
+        env:
+          CF_TOKEN: ${{ steps.cf.outputs.token }}
+          ZONE_ID: ${{ steps.cf.outputs.zone }}
+        run: |
+          set -euo pipefail
+          routes=$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/workers/routes")
+          for pattern in '4planet.org/privacy*' '4planet.org/terms*'; do
+            owner=$(jq -r --arg p "$pattern" '.result[]? | select(.pattern==$p) | .script // empty' <<<"$routes")
+            if [ -n "$owner" ] && [ "$owner" != 'fourplanet-legal' ]; then
+              echo "ROUTE_CONFLICT: $pattern already owned by $owner"
+              exit 1
+            fi
+            echo "ROUTE_OK: $pattern existing_owner=${owner:-none}"
+          done
+
+      - name: Freeze homepage proof
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 20 https://4planet.org/ -o /tmp/home-before.html
+          sha256sum /tmp/home-before.html | tee /tmp/home-before.sha
+
+      - name: Deploy isolated legal worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/wrangler.toml <<'EOF'
+          name = "fourplanet-legal"
+          main = "products/4planet-legal/worker.mjs"
+          compatibility_date = "2026-09-09"
+          routes = [
+            { pattern = "4planet.org/privacy*", zone_name = "4planet.org" },
+            { pattern = "4planet.org/terms*", zone_name = "4planet.org" }
+          ]
+          EOF
+          npx --yes wrangler@4 deploy --config /tmp/wrangler.toml
+
+      - name: Production verification
+        run: |
+          set -euo pipefail
+          verify() {
+            url="$1" marker="$2" out="$3"
+            for i in 1 2 3 4 5 6; do
+              code=$(curl -sSL --max-time 20 -o "$out" -w '%{http_code}' "$url" || true)
+              if [ "$code" = '200' ] && grep -q "$marker" "$out"; then
+                echo "PASS $url"
+                return 0
+              fi
+              echo "retry $i: $url http=$code"
+              sleep 5
+            done
+            echo "FAIL $url"
+            return 1
+          }
+          verify 'https://4planet.org/privacy' 'Privacy Policy' /tmp/privacy.html
+          verify 'https://4planet.org/terms' 'Terms of Service' /tmp/terms.html
+          grep -q 'SKOG COMMUNICATIONS AS' /tmp/privacy.html
+          grep -q 'odin@4planet.org' /tmp/privacy.html
+
+      - name: Prove homepage unchanged
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 20 https://4planet.org/ -o /tmp/home-after.html
+          before=$(sha256sum /tmp/home-before.html | awk '{print $1}')
+          after=$(sha256sum /tmp/home-after.html | awk '{print $1}')
+          echo "HOME_BEFORE=$before"
+          echo "HOME_AFTER=$after"
+          [ "$before" = "$after" ] || { echo 'Homepage body changed during legal cutover; investigate.'; exit 1; }
+          echo 'HOME_UNCHANGED=PASS'
