@@ -134,7 +134,7 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" | grep -q 'Ask Embla'; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/four-sapien-worker.html && grep -q 'Ask Embla' /tmp/four-sapien-worker.html; then exit 0; fi
             sleep 2
           done
           echo 'Worker candidate runtime verification failed'
@@ -165,7 +165,7 @@ jobs:
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" | grep -q 'Ask Embla'; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}" -o /tmp/four-sapien-production.html && grep -q 'Ask Embla' /tmp/four-sapien-production.html; then exit 0; fi
             sleep 3
           done
           echo 'Custom-domain runtime verification failed'
