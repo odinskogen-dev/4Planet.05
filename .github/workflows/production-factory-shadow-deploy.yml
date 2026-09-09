@@ -138,8 +138,10 @@ jobs:
         run: |
           set -euo pipefail
           CONTROL_TOKEN="$(openssl rand -hex 32)"
+          CONTROL_TOKEN_FILE="$RUNNER_TEMP/4planet-factory-control-token"
           echo "::add-mask::$CONTROL_TOKEN"
-          echo "control_token=$CONTROL_TOKEN" >> "$GITHUB_OUTPUT"
+          umask 077
+          printf '%s' "$CONTROL_TOKEN" > "$CONTROL_TOKEN_FILE"
 
           printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
           printf '%s' "$FACTORY_HEAD_SHA" | npx wrangler secret put FACTORY_BUILD_SHA
@@ -152,15 +154,30 @@ jobs:
             echo "github_write_installed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # `wrangler secret put` creates and immediately deploys a new Worker version.
+      # The URL emitted by the earlier code deploy can therefore identify the
+      # pre-secret version. Re-deploy exact code after all secrets so the URL used
+      # for authenticated control calls is guaranteed to bind exact code + secrets.
+      - name: Rebind exact Factory code after runtime secrets
+        id: bound_deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          workingDirectory: factory
+          packageManager: npm
+          wranglerVersion: "4.128.0"
+          command: deploy
+
       - name: Resolve deployed Worker URL
         id: runtime
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOYMENT_URL: ${{ steps.bound_deploy.outputs.deployment-url }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ -z "${DEPLOYMENT_URL:-}" ]]; then
-            echo "Wrangler did not return a deployment URL."
+            echo "Post-secret exact deployment did not return a deployment URL."
             exit 1
           fi
           BASE_URL="${DEPLOYMENT_URL%/}"
@@ -265,10 +282,10 @@ jobs:
         id: proof_start
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
-          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
         shell: bash
         run: |
           set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
           HTTP_STATUS="$(curl --silent --show-error \
             -o factory-activation-start.json \
             -w '%{http_code}' \
@@ -277,21 +294,33 @@ jobs:
             -H "content-type: application/json" \
             "$BASE_URL/__factory/activation-proof/start")"
           cat factory-activation-start.json
+
+          if [[ "$HTTP_STATUS" == "409" ]] \
+            && jq -e '.error == "ACTIVATION_PREFLIGHT_BLOCKED"' factory-activation-start.json >/dev/null \
+            && jq -e '[.preflight.authority[]?.code] | length > 0 and all(. == "RECEIVER_SINGLE_WRITER_CONFLICT")' factory-activation-start.json >/dev/null; then
+            echo "Local receiver conflict parked. Factory deployment/canary remain valid; no bypass branch, provider reservation or second writer created."
+            echo "production_started=false" >> "$GITHUB_OUTPUT"
+            echo "parked=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
             echo "Bounded activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
             exit 1
           fi
           jq -e '.ok == true' factory-activation-start.json >/dev/null
+          echo "production_started=true" >> "$GITHUB_OUTPUT"
+          echo "parked=false" >> "$GITHUB_OUTPUT"
 
       - name: Poll real production, certify fresh evidence and activate
-        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true' && steps.proof_start.outputs.production_started == 'true'
         id: activate
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
-          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
         shell: bash
         run: |
           set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
           ACTIVE=false
           RESPONSE=""
           for attempt in $(seq 1 100); do
@@ -318,6 +347,21 @@ jobs:
             exit 1
           fi
           echo "active=true" >> "$GITHUB_OUTPUT"
+
+      - name: Record locally parked package without global Factory failure
+        if: steps.proof_start.outputs.parked == 'true'
+        shell: bash
+        run: |
+          jq '{
+            active:false,
+            proofComplete:false,
+            parked:true,
+            localCapability:"PRODUCT_MUTATION_TO_CURRENT_RECEIVER",
+            reason:.error,
+            preflight:.preflight,
+            boundaries:{live:false,humanGoldFounderOnly:true,canonPromotion:false,outreach:false,automaticSpend:false}
+          }' factory-activation-start.json > factory-active-certification.json
+          echo "Blocked product mutation remains parked locally. Unrelated SHADOW source/browser production evidence remains valid."
 
       - name: Upload immutable Factory certification evidence
         if: always()

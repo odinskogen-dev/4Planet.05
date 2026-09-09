@@ -1,0 +1,311 @@
+import { getAgentByName } from "agents";
+import activeRuntime from "./activeRuntime";
+import type { ProjectProjection, WorkPackage } from "./contracts";
+import { receiverAuthorityCurrent, requireCurrentReceiver } from "./receiverAuthority";
+import { ProductionFactoryAgent as CapacityProductionFactoryAgent } from "./activationPreflightRuntime";
+import { createRealProjectProofCases } from "./realProjectProof";
+import { activationProofId, activationProofIds } from "./activationProofIdentity";
+import {
+  createShadowOrchestraPackages,
+  ORCHESTRA_PACKAGE_IDS,
+  queueMessageFor,
+} from "./shadowOrchestra";
+import {
+  buildReadyDrainMarkerId,
+  planBuildBoundShadowReadyDrain,
+} from "./shadowReadyRecovery";
+
+export * from "./activeRuntime";
+export { CapacityProductionFactoryAgent as ProductionFactoryAgent };
+
+const FACTORY_AGENT_NAME = "shadow-primary";
+const REPOSITORY = "odinskogen-dev/4Planet.05";
+const TEST_BRANCH = "king/test";
+const SHA40 = /^[0-9a-f]{40}$/i;
+
+// Founder decision 2026-09-04: bounded worker compute is gated by Factory-
+// specific exact-head readiness, not unrelated product-wide convergence. Those
+// product gates remain mandatory at merge/release/mutation boundaries.
+const REQUIRED_ACTIVATION_WORKFLOWS = [
+  "Production Factory Shadow CI",
+] as const;
+
+interface RuntimeEnv extends Cloudflare.Env {
+  FACTORY_BUILD_SHA?: string;
+  FACTORY_CONTROL_TOKEN?: string;
+  FACTORY_GITHUB_TOKEN?: string;
+  FACTORY_TEST_KING_BASE_SHA?: string;
+}
+
+interface FactoryStateView {
+  state: { mode: string };
+  projects: Array<{ id: string }>;
+  work: Array<{ id: string; status: string }>;
+  outcomes: Array<{ work_package_id: string }>;
+}
+
+interface ReadyRecoveryObservation {
+  exactBuild: string | null;
+  selectedIds: string[];
+  queuedIds: string[];
+  receiptId: string | null;
+}
+
+async function factoryAgent(env: RuntimeEnv): Promise<any> {
+  const getByName: any = getAgentByName;
+  return getByName(env.PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+}
+
+function controlAuthorised(request: Request, env: RuntimeEnv): boolean {
+  const expected = env.FACTORY_CONTROL_TOKEN?.trim();
+  if (!expected || expected.length < 32) return false;
+  const supplied = request.headers.get("x-factory-control")?.trim() ?? "";
+  if (supplied.length !== expected.length) return false;
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) difference |= expected.charCodeAt(index) ^ supplied.charCodeAt(index);
+  return difference === 0;
+}
+
+function githubHeaders(env: RuntimeEnv): HeadersInit {
+  const token = env.FACTORY_GITHUB_TOKEN?.trim();
+  if (!token) throw new Error("FACTORY_GITHUB_TOKEN_MISSING");
+  return {
+    accept: "application/vnd.github+json",
+    authorization: `Bearer ${token}`,
+    "x-github-api-version": "2022-11-28",
+    "user-agent": "4PLANET-Production-Factory/1.0",
+  };
+}
+
+async function currentTestKingSha(env: RuntimeEnv): Promise<string> {
+  const ref = TEST_BRANCH.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${ref}`, {
+    headers: githubHeaders(env),
+  });
+  if (!response.ok) throw new Error(`CURRENT_TEST_KING_LOOKUP_FAILED:${response.status}`);
+  const body = await response.json() as { object?: { sha?: string } };
+  const sha = body.object?.sha?.trim().toLowerCase() ?? "";
+  if (!SHA40.test(sha)) throw new Error("CURRENT_TEST_KING_SHA_INVALID");
+  return sha;
+}
+
+async function requireExactHeadActivationGates(env: RuntimeEnv, buildSha: string): Promise<void> {
+  if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+  const response = await fetch(
+    `https://api.github.com/repos/${REPOSITORY}/actions/runs?head_sha=${encodeURIComponent(buildSha)}&per_page=100`,
+    { headers: githubHeaders(env) },
+  );
+  if (!response.ok) throw new Error(`EXACT_HEAD_GATE_LOOKUP_FAILED:${response.status}`);
+  const body = await response.json() as {
+    workflow_runs?: Array<{ name?: string; head_sha?: string; status?: string; conclusion?: string | null }>;
+  };
+  const runs = Array.isArray(body.workflow_runs) ? body.workflow_runs : [];
+  for (const requiredName of REQUIRED_ACTIVATION_WORKFLOWS) {
+    const run = runs.find((candidate) => candidate.name === requiredName && candidate.head_sha?.toLowerCase() === buildSha);
+    if (!run) throw new Error(`EXACT_HEAD_GATE_MISSING:${requiredName}`);
+    if (run.status !== "completed" || run.conclusion !== "success") {
+      throw new Error(`EXACT_HEAD_GATE_NOT_GREEN:${requiredName}:${run.status ?? "UNKNOWN"}:${run.conclusion ?? "NONE"}`);
+    }
+  }
+}
+
+async function failClosedStaleActiveReceiver(env: RuntimeEnv): Promise<{ baseSha: string; currentSha: string; demoted: boolean }> {
+  const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+  const currentSha = await currentTestKingSha(env);
+  const agent = await factoryAgent(env);
+  const state = await agent.getFactoryState() as FactoryStateView;
+  const current = receiverAuthorityCurrent(baseSha, currentSha);
+  if (state.state.mode === "ACTIVE" && !current) {
+    await agent.setMode("SHADOW");
+    return { baseSha, currentSha, demoted: true };
+  }
+  return { baseSha, currentSha, demoted: false };
+}
+
+function activationPreflightPackages(currentTestSha: string, buildSha: string) {
+  const bootIds = new Set(activationProofIds(buildSha));
+  return createRealProjectProofCases(currentTestSha)
+    .map((proof) => {
+      const autonomous = proof.pkg.autonomous;
+      if (!autonomous) throw new Error(`ACTIVATION_PROOF_AUTONOMOUS_CONTRACT_MISSING:${proof.pkg.id}`);
+      return {
+        id: activationProofId(proof.pkg.id, buildSha),
+        projectId: proof.pkg.projectId,
+        section: proof.pkg.section,
+        declaredBaseSha: autonomous.expectedBaseSha,
+        declaredBaseBranch: autonomous.baseBranch,
+        requestedCalls: autonomous.maxCorrectionAttempts ?? 1,
+      };
+    })
+    .filter((pkg) => bootIds.has(pkg.id));
+}
+
+function recoveryReceipt(factoryBuildSha: string, recoveredIds: string[], nowIso: string): ProjectProjection {
+  const markerId = buildReadyDrainMarkerId(factoryBuildSha);
+  if (!markerId) throw new Error("BUILD_BOUND_READY_RECOVERY_INVALID_SHA");
+  return {
+    id: markerId,
+    name: "Orchestra exact-build READY recovery receipt",
+    northStar: "Keep the single SHADOW Factory canary re-entrant across durable state without weakening acceptance or creating parallel execution authority.",
+    goal: "Record bounded exact-build re-enqueue evidence for unresolved allowlisted Orchestra rows that are durably READY but no longer represented by a live Queue delivery.",
+    current: `Exact-build SHADOW READY recovery queued: ${recoveredIds.join(", ") || "none"}.`,
+    gold: "The deployed canary can re-enqueue unresolved READY Orchestra state after transient delivery/tool failure while the READY-to-DISPATCHED transition prevents duplicate concurrent recovery.",
+    gap: "Runtime proof remains required; this receipt is observability evidence, not activation evidence.",
+    priority: "P0",
+    user: "4PLANET Production Factory control",
+    authorityRefs: ["FD-2026-09-02", "FACT-G02", "FACT-G07", "Production Factory Autonomous Activation #202"],
+    lastMaterialProgressAt: nowIso,
+  };
+}
+
+async function recoverBuildBoundReadyOrchestra(env: RuntimeEnv): Promise<ReadyRecoveryObservation> {
+  const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
+  if (!SHA40.test(buildSha)) {
+    return { exactBuild: null, selectedIds: [], queuedIds: [], receiptId: null };
+  }
+
+  const markerId = buildReadyDrainMarkerId(buildSha) ?? null;
+  const agent = await factoryAgent(env);
+  const state = await agent.getFactoryState() as FactoryStateView;
+  const exactOutcomes = await agent.getOutcomesByIds([...ORCHESTRA_PACKAGE_IDS]) as Array<{ workPackageId: string }>;
+  const recorded = new Set(exactOutcomes.map((item) => item.workPackageId));
+  const markerPresent = markerId ? state.projects.some((project) => project.id === markerId) : false;
+  const recoveryIds = planBuildBoundShadowReadyDrain({
+    mode: state.state.mode,
+    factoryBuildSha: buildSha,
+    markerPresent,
+    orchestraPackageIds: ORCHESTRA_PACKAGE_IDS,
+    work: state.work,
+    recordedOutcomeIds: recorded,
+  });
+  if (recoveryIds.length === 0) {
+    return {
+      exactBuild: buildSha,
+      selectedIds: [],
+      queuedIds: [],
+      receiptId: markerId,
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+  const packageMap = new Map(createShadowOrchestraPackages(nowIso).map((pkg) => [pkg.id, pkg] as const));
+  const packages = recoveryIds
+    .map((id) => packageMap.get(id))
+    .filter((pkg): pkg is WorkPackage => Boolean(pkg));
+  if (packages.length !== recoveryIds.length) throw new Error("BUILD_BOUND_READY_RECOVERY_PACKAGE_MISMATCH");
+
+  for (const pkg of packages) await agent.upsertWorkPackage({ ...pkg, status: "DISPATCHED" });
+
+  try {
+    await env.FACTORY_QUEUE.sendBatch(
+      packages.map((pkg) => ({ body: queueMessageFor(pkg, nowIso) })),
+    );
+  } catch (error) {
+    for (const pkg of packages) await agent.upsertWorkPackage({ ...pkg, status: "READY" });
+    throw error;
+  }
+
+  await agent.upsertProject(recoveryReceipt(buildSha, recoveryIds, nowIso));
+  return {
+    exactBuild: buildSha,
+    selectedIds: recoveryIds,
+    queuedIds: recoveryIds,
+    receiptId: markerId,
+  };
+}
+
+export default {
+  async fetch(request: Request, envInput: Cloudflare.Env, ctx: ExecutionContext) {
+    const env = envInput as RuntimeEnv;
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/__factory/")) {
+      try {
+        await failClosedStaleActiveReceiver(env);
+      } catch (error) {
+        const agent = await factoryAgent(env);
+        const state = await agent.getFactoryState() as FactoryStateView;
+        if (state.state.mode === "ACTIVE") await agent.setMode("SHADOW");
+        return Response.json({
+          ok: false,
+          active: false,
+          error: error instanceof Error ? error.message : "TEST_KING_AUTHORITY_REVALIDATION_FAILED",
+        }, { status: 409 });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/activation-proof/start" && controlAuthorised(request, env)) {
+      try {
+        const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
+        if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+        const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+        const currentTestSha = await currentTestKingSha(env);
+        requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT");
+        // Spend/reserve no boot capacity until Factory-specific exact-head CI is
+        // terminal green. Product-wide convergence remains a mutation/release gate.
+        await requireExactHeadActivationGates(env, buildSha);
+        const agent = await factoryAgent(env);
+        const preflight = await agent.attestActivationPreflight({
+          exactFactorySha: buildSha,
+          exactTestKingSha: currentTestSha,
+          packages: activationPreflightPackages(currentTestSha, buildSha),
+        }) as { ready?: boolean } & Record<string, unknown>;
+        if (preflight.ready !== true) {
+          return Response.json({
+            ok: false,
+            active: false,
+            error: "ACTIVATION_PREFLIGHT_BLOCKED",
+            preflight,
+          }, { status: 409 });
+        }
+      } catch (error) {
+        return Response.json({
+          ok: false,
+          active: false,
+          error: error instanceof Error ? error.message : "ACTIVATION_PREFLIGHT_FAILED",
+        }, { status: 409 });
+      }
+    }
+
+    if (request.method === "GET" && url.pathname === "/__factory/canary") {
+      const before = await recoverBuildBoundReadyOrchestra(env);
+      const response = await activeRuntime.fetch(request, env, ctx);
+      if (!response.ok) return response;
+      const body = await response.json() as Record<string, unknown>;
+      const after = await recoverBuildBoundReadyOrchestra(env);
+      return Response.json({
+        ...body,
+        exactBuildReadyRecovery: { before, after },
+      }, { status: response.status });
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/activation-proof/status") {
+      const response = await activeRuntime.fetch(request, env, ctx);
+      const body = await response.clone().json().catch(() => null) as Record<string, unknown> | null;
+      if (response.ok && body?.active === true) {
+        try {
+          const baseSha = env.FACTORY_TEST_KING_BASE_SHA?.trim().toLowerCase() ?? "";
+          const terminalTestSha = await currentTestKingSha(env);
+          requireCurrentReceiver(baseSha, terminalTestSha, "TERMINAL_ACTIVE");
+        } catch (error) {
+          const agent = await factoryAgent(env);
+          await agent.setMode("SHADOW");
+          return Response.json({
+            ...(body ?? {}),
+            ok: false,
+            active: false,
+            gate: { ready: false, missing: ["TERMINAL_TEST_KING_AUTHORITY"] },
+            error: error instanceof Error ? error.message : "TERMINAL_TEST_KING_AUTHORITY_FAILED",
+          }, { status: 409 });
+        }
+      }
+      return response;
+    }
+
+    return activeRuntime.fetch(request, env, ctx);
+  },
+
+  async queue(batch: MessageBatch<any>, env: Cloudflare.Env, ctx: ExecutionContext) {
+    return activeRuntime.queue(batch, env, ctx);
+  },
+};
