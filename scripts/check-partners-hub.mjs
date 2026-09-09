@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const dataPath = path.join(root, "src/content/partnersHub.json");
@@ -64,6 +65,46 @@ for (const proof of data.proofCases) {
 }
 
 assert(!/@[a-z0-9.-]+\.[a-z]{2,}/i.test(JSON.stringify(data)), "email address leaked into public projection content");
+
+// CI-only dependency exposure classification. npm's install summary can mix build/dev
+// tooling with browser-shipped dependencies, so a raw critical count is not enough to
+// certify or reject the public static property. Fail closed only if the production
+// dependency graph contains HIGH or CRITICAL advisories; preserve the full graph
+// findings in the release log for explicit classification and remediation.
+if (process.env.GITHUB_ACTIONS === "true") {
+  const runAudit = (extraArgs = []) => {
+    const proc = spawnSync("npm", ["audit", ...extraArgs, "--json"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 20 * 1024 * 1024,
+    });
+    let parsed;
+    try {
+      parsed = JSON.parse(proc.stdout || "{}");
+    } catch (error) {
+      throw new Error(`PARTNERS_FAIL npm audit JSON unreadable: ${error.message}`);
+    }
+    if (!parsed.metadata?.vulnerabilities) {
+      throw new Error(`PARTNERS_FAIL npm audit metadata missing: ${(proc.stderr || "").slice(0, 500)}`);
+    }
+    return parsed;
+  };
+
+  const prodAudit = runAudit(["--omit=dev"]);
+  const prodCounts = prodAudit.metadata.vulnerabilities;
+  assert((prodCounts.high || 0) === 0 && (prodCounts.critical || 0) === 0,
+    `production dependency audit high=${prodCounts.high || 0} critical=${prodCounts.critical || 0}`);
+  console.log(`PARTNERS_PROD_DEP_AUDIT=PASS critical=${prodCounts.critical || 0} high=${prodCounts.high || 0} moderate=${prodCounts.moderate || 0} low=${prodCounts.low || 0}`);
+
+  const fullAudit = runAudit([]);
+  const fullCounts = fullAudit.metadata.vulnerabilities;
+  console.log(`PARTNERS_FULL_DEP_AUDIT critical=${fullCounts.critical || 0} high=${fullCounts.high || 0} moderate=${fullCounts.moderate || 0} low=${fullCounts.low || 0}`);
+  for (const [name, finding] of Object.entries(fullAudit.vulnerabilities || {})) {
+    if (!["moderate", "high", "critical"].includes(finding.severity)) continue;
+    const fix = finding.fixAvailable === true ? "available" : finding.fixAvailable ? "breaking-or-specific" : "none";
+    console.log(`PARTNERS_AUDIT_FINDING package=${name} severity=${finding.severity} direct=${Boolean(finding.isDirect)} fix=${fix}`);
+  }
+}
 
 console.log("PARTNERS_CONTRACT=PASS");
 console.log("PARTNERS_PREVIEW_IDENTITY=PASS");
