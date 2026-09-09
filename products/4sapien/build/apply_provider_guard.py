@@ -56,8 +56,9 @@ new_onboarding = '''function Onboarding({onDone,user,saveState}){const[p,setP]=u
 regex_once(r'function Onboarding\(\{onDone\}\).*?(?=\nfunction Meg\()', new_onboarding + "\n", "signed-in onboarding")
 
 
-# Profile screen: explicit identity, provider and sync state.
-new_meg = '''function Meg({profile,setProfile,user,onLogout,saveState}){const displayName=user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split("@")[0]||"4PLANET-bruker";const provider=user?.app_metadata?.provider==="google"?"Google":(user?.app_metadata?.provider||"4PLANET");return(<div>
+# Profile screen: explicit identity, provider, sync state and an unmistakable exit.
+new_meg = '''function Meg({profile,setProfile,user,onLogout,saveState,onClose}){const displayName=user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split("@")[0]||"4PLANET-bruker";const provider=user?.app_metadata?.provider==="google"?"Google":(user?.app_metadata?.provider||"4PLANET");return(<div>
+ <button onClick={onClose} aria-label="Lukk profil" style={{display:"inline-flex",alignItems:"center",gap:6,border:"none",background:"none",padding:"0 0 14px",fontFamily:T.body,fontSize:13.5,fontWeight:600,color:T.blue,cursor:"pointer"}}><Icon name="back" size={16}/>Tilbake</button>
  <p style={{fontFamily:T.body,fontSize:14,color:T.soft,margin:"0 0 18px",lineHeight:1.5}}>4SAPIEN-profilen din styrer hva Embla anbefaler og hva hun ekskluderer. Profilen er koblet til din 4PLANET-konto og følger deg mellom enheter.</p>
  <ProfileFields p={profile} setP={setProfile}/>
  <div style={{marginTop:20,border:"1px solid "+T.line,borderRadius:12,padding:14,fontFamily:T.body,fontSize:12.5,color:T.soft,lineHeight:1.5,background:T.blueWash}}>
@@ -82,20 +83,25 @@ regex_once(hydration_pattern, new_hydration, "profile-authority hydration")
 replace_once('if(!hasProfile)return <Onboarding onDone={completeOnboarding}/>;', 'if(!hasProfile)return <Onboarding onDone={completeOnboarding} user={user} saveState={saveState}/>;', "onboarding identity props")
 
 
-# Persistent, compact signed-in affordance on every normal app view.
+# Persistent signed-in affordance. On the profile screen the pill also acts as a close/toggle.
 old_header = '''   <header style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:20}}><div><div style={{fontFamily:T.display,fontWeight:700,fontSize:23,letterSpacing:-.4,lineHeight:1}}>Ask Embla</div><div style={{fontFamily:T.mono,fontSize:10,letterSpacing:1,color:T.faint,marginTop:6}}>4SAPIEN by 4PLANET</div></div>{store&&tab!=="okonomi"&&tab!=="meg"&&<span style={{fontFamily:T.mono,fontSize:11,color:T.blue,background:T.blueWash,padding:"5px 9px",borderRadius:8}}>{store}</span>}</header>'''
-new_header = '''   <header style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,marginBottom:20}}><div><div style={{fontFamily:T.display,fontWeight:700,fontSize:23,letterSpacing:-.4,lineHeight:1}}>Ask Embla</div><div style={{fontFamily:T.mono,fontSize:10,letterSpacing:1,color:T.faint,marginTop:6}}>4SAPIEN by 4PLANET</div></div><div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:7,flexWrap:"wrap"}}>{store&&tab!=="okonomi"&&tab!=="meg"&&<span style={{fontFamily:T.mono,fontSize:10.5,color:T.blue,background:T.blueWash,padding:"5px 8px",borderRadius:8}}>{store}</span>}<button onClick={()=>setTab("meg")} aria-label="4PLANET ID – innlogget" title={user?.email||"4PLANET ID"} style={{border:"1px solid "+T.line,background:T.paper,borderRadius:999,padding:"5px 8px",display:"flex",alignItems:"center",gap:5,cursor:"pointer",color:T.ink}}><span style={{fontFamily:T.mono,fontSize:8.5,letterSpacing:.45}}>4PLANET ID</span><span aria-hidden="true" style={{fontFamily:T.body,fontSize:10,color:saveState==="SYNC-FEIL"?T.red:T.blue}}>✓</span></button></div></header>'''
+new_header = '''   <header style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,marginBottom:20}}><div><div style={{fontFamily:T.display,fontWeight:700,fontSize:23,letterSpacing:-.4,lineHeight:1}}>Ask Embla</div><div style={{fontFamily:T.mono,fontSize:10,letterSpacing:1,color:T.faint,marginTop:6}}>4SAPIEN by 4PLANET</div></div><div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:7,flexWrap:"wrap"}}>{store&&tab!=="okonomi"&&tab!=="meg"&&<span style={{fontFamily:T.mono,fontSize:10.5,color:T.blue,background:T.blueWash,padding:"5px 8px",borderRadius:8}}>{store}</span>}<button onClick={()=>setTab(tab==="meg"?"hjem":"meg")} aria-label={tab==="meg"?"Lukk profil":"4PLANET ID – innlogget"} title={tab==="meg"?"Tilbake til Hjem":(user?.email||"4PLANET ID")} style={{border:"1px solid "+T.line,background:T.paper,borderRadius:999,padding:"5px 8px",display:"flex",alignItems:"center",gap:5,cursor:"pointer",color:T.ink}}><span style={{fontFamily:T.mono,fontSize:8.5,letterSpacing:.45}}>{tab==="meg"?"LUKK":"4PLANET ID"}</span><span aria-hidden="true" style={{fontFamily:T.body,fontSize:10,color:saveState==="SYNC-FEIL"?T.red:T.blue}}>{tab==="meg"?"←":"✓"}</span></button></div></header>'''
 replace_once(old_header, new_header, "persistent identity header")
 
+# Pass explicit close action into the profile view.
+replace_once('<Meg profile={profile} setProfile={persistProfile} user={user} saveState={saveState} onLogout={()=>SB.auth.signOut()}/>', '<Meg profile={profile} setProfile={persistProfile} user={user} saveState={saveState} onLogout={()=>SB.auth.signOut()} onClose={()=>setTab("hjem")}/>', "profile close action")
 
-# Fail closed if the intended authenticated-state invariants are absent.
+
+# Fail closed if intended authenticated-state invariants are absent.
 for marker in [
     '4PLANET ID · INNLOGGET',
     'Fullfør 4SAPIEN-profilen din.',
     'user={user} saveState={saveState}',
     'LIST_HYDRATE_FAILED',
     'SHOPS_HYDRATE_FAILED',
-    'aria-label="4PLANET ID – innlogget"',
+    'aria-label={tab==="meg"?"Lukk profil":"4PLANET ID – innlogget"}',
+    'aria-label="Lukk profil"',
+    'onClose={()=>setTab("hjem")}',
 ]:
     if marker not in s:
         raise SystemExit(f"4SAPIEN authenticated-state invariant missing: {marker}")
