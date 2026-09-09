@@ -26,6 +26,7 @@ jobs:
       - name: Materialize Claude-leading interface
         run: |
           set -euo pipefail
+          rm -rf products/4sapien/site
           mkdir -p products/4sapien/site
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > products/4sapien/site/index.html
           cp products/4sapien/cloudflare/_headers products/4sapien/site/_headers
@@ -57,10 +58,8 @@ jobs:
           set -euo pipefail
           ok=1
           for table in four_sapien_profiles four_sapien_list_items four_sapien_shops; do
-            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' \
-              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
-              "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
-            [ "$code" = "200" ] || { ok=0; echo "DB gate missing: ${table} HTTP ${code}"; cat "/tmp/${table}.json" || true; }
+            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            [ "$code" = "200" ] || { ok=0; echo "DB gate missing: ${table} HTTP ${code}"; }
           done
           echo "ready=$ok" >> "$GITHUB_OUTPUT"
 
@@ -75,6 +74,28 @@ jobs:
           echo "google=$google" >> "$GITHUB_OUTPUT"
           if [ "$email" = true ] && [ "$google" = true ]; then echo 'ready=1' >> "$GITHUB_OUTPUT"; else echo 'ready=0' >> "$GITHUB_OUTPUT"; fi
           echo "Auth provider state: email=${email}, google=${google}"
+
+      - name: Detect existing auth-management credentials without exposing values
+        id: authsecrets
+        env:
+          SB_ACCESS: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GID1: ${{ secrets.SUPABASE_GOOGLE_CLIENT_ID }}
+          GID2: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GID3: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GSEC1: ${{ secrets.SUPABASE_GOOGLE_CLIENT_SECRET }}
+          GSEC2: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GSEC3: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          gid="${GID1:-${GID2:-${GID3:-}}}"
+          gsec="${GSEC1:-${GSEC2:-${GSEC3:-}}}"
+          [ -n "$SB_ACCESS" ] && sb=1 || sb=0
+          [ -n "$gid" ] && gi=1 || gi=0
+          [ -n "$gsec" ] && gs=1 || gs=0
+          echo "supabase_access=$sb" >> "$GITHUB_OUTPUT"
+          echo "google_id=$gi" >> "$GITHUB_OUTPUT"
+          echo "google_secret=$gs" >> "$GITHUB_OUTPUT"
+          echo "Credential availability only: supabase_access=$sb google_id=$gi google_secret=$gs"
 
       - name: Resolve Cloudflare authority
         id: cf
@@ -109,7 +130,8 @@ jobs:
           npx --yes wrangler@4 deploy --config wrangler.jsonc 2>&1 | tee /tmp/wrangler-worker.log
           url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler-worker.log | tail -n1 || true)
           echo "url=$url" >> "$GITHUB_OUTPUT"
-          if [ -n "$url" ]; then curl -fsS "$url" | grep -q 'Ask Embla'; fi
+          [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
+          curl -fsS "$url" | grep -q 'Ask Embla'
 
       - name: Fail closed on conflicting 4sapien.com Worker authority
         id: domaincheck
@@ -118,13 +140,9 @@ jobs:
           CF_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
         run: |
           set -euo pipefail
-          domains=$(curl -fsS -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/domains")
+          domains=$(curl -fsS -H "Authorization: Bearer ${CF_API_TOKEN}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/domains")
           current=$(jq -r --arg h "$CUSTOM_DOMAIN" '.result[]? | select(.hostname==$h) | .service' <<<"$domains" | head -n1)
-          if [ -n "$current" ] && [ "$current" != "$CF_SERVICE" ]; then
-            echo "4sapien.com is already bound to another Worker service: ${current}"
-            exit 12
-          fi
+          if [ -n "$current" ] && [ "$current" != "$CF_SERVICE" ]; then echo "4sapien.com conflict: ${current}"; exit 12; fi
           echo "current=${current:-none}" >> "$GITHUB_OUTPUT"
 
       - name: Attach 4sapien.com only after database + Email + Google gates pass
@@ -136,19 +154,10 @@ jobs:
           CF_ZONE_ID: ${{ steps.cf.outputs.zone }}
         run: |
           set -euo pipefail
-          curl -fsS -X PUT \
-            -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/domains" \
-            --data "{\"hostname\":\"${CUSTOM_DOMAIN}\",\"service\":\"${CF_SERVICE}\",\"zone_id\":\"${CF_ZONE_ID}\"}" \
-            | tee /tmp/domain.json
+          curl -fsS -X PUT -H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/domains" --data "{\"hostname\":\"${CUSTOM_DOMAIN}\",\"service\":\"${CF_SERVICE}\",\"zone_id\":\"${CF_ZONE_ID}\"}" | tee /tmp/domain.json
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
-          for i in 1 2 3 4 5; do
-            if curl -fsS "https://${CUSTOM_DOMAIN}" | grep -q 'Ask Embla'; then exit 0; fi
-            sleep 3
-          done
-          echo 'Custom-domain runtime verification failed'
+          for i in 1 2 3 4 5; do if curl -fsS "https://${CUSTOM_DOMAIN}" | grep -q 'Ask Embla'; then exit 0; fi; sleep 3; done
           exit 13
 
       - name: Release summary
@@ -161,6 +170,9 @@ jobs:
             echo "- Database: ${{ steps.db.outputs.ready }}"
             echo "- Email Auth: ${{ steps.auth.outputs.email }}"
             echo "- Google Auth: ${{ steps.auth.outputs.google }}"
+            echo "- Supabase management token available: ${{ steps.authsecrets.outputs.supabase_access }}"
+            echo "- Google OAuth ID available: ${{ steps.authsecrets.outputs.google_id }}"
+            echo "- Google OAuth secret available: ${{ steps.authsecrets.outputs.google_secret }}"
             echo '- 4sapien.com Cloudflare zone: PASS'
             echo "- Isolated Worker candidate: ${{ steps.deploy.outputs.url }}"
             echo "- Custom-domain conflict: ${{ steps.domaincheck.outputs.current }}"
