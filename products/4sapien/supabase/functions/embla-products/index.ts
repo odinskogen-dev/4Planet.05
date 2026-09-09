@@ -21,6 +21,24 @@ function json(body: unknown, status = 200) {
 
 function timeout(ms: number) { return AbortSignal.timeout(ms); }
 
+async function requireUser(req: Request) {
+  const auth = req.headers.get("Authorization") || "";
+  if (!auth.toLowerCase().startsWith("bearer ")) return null;
+  const token = auth.slice(7).trim();
+  if (!token) return null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${token}` },
+      signal: timeout(4000),
+    });
+    if (!r.ok) return null;
+    const user = await r.json().catch(() => null);
+    return user?.id ? user : null;
+  } catch {
+    return null;
+  }
+}
+
 async function sha256(input: string) {
   const bytes = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -180,6 +198,8 @@ async function buildEan(ean: string) {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ ok: false, state: "BAD_REQUEST" }, 405);
+  const user = await requireUser(req);
+  if (!user) return json({ ok: false, state: "UNAUTHENTICATED", products: [] }, 401);
   try {
     const body = await req.json().catch(() => ({}));
     const raw = String(body?.q || body?.ean || "").trim();
