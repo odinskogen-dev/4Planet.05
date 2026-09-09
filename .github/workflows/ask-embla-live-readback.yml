@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+
 jobs:
   live-readback:
     runs-on: ubuntu-latest
@@ -24,9 +28,11 @@ jobs:
           grep -q 'Fullfør 4SAPIEN-profilen din.' /tmp/live.html
           grep -q 'LIST_HYDRATE_FAILED' /tmp/live.html
           grep -q 'SHOPS_HYDRATE_FAILED' /tmp/live.html
+          grep -q 'functions/v1/embla-products' /tmp/live.html
+          grep -q 'RATE_LIMITED' /tmp/live.html
           grep -q 'aria-label="4PLANET ID – innlogget"' /tmp/live.html
           ! grep -q 'S4PIENS' /tmp/live.html
-          ! grep -Eqi 'service[_-]?role|sb_secret_' /tmp/live.html
+          ! grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/live.html
           grep -Eqi '^permissions-policy:.*camera=\(self\)' /tmp/headers.txt
           grep -Eqi '^content-security-policy:.*ghvdzetmplqkdtfqiror\.supabase\.co' /tmp/headers.txt
           python - <<'PY'
@@ -35,3 +41,15 @@ jobs:
           print('LIVE_BYTES',len(b))
           print('LIVE_SHA256',hashlib.sha256(b).hexdigest())
           PY
+
+      - name: Verify live product gateway rejects unauthenticated calls before data access
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H 'Content-Type: application/json' \
+            --data '{"q":"yoghurt"}' \
+            "${SUPABASE_URL}/functions/v1/embla-products" || true)
+          test "$code" = "401"
+          grep -Eq 'UNAUTHENTICATED|Invalid JWT|Missing authorization' /tmp/gateway.json
+          echo "LIVE_GATEWAY_UNAUTH_HTTP=${code}"
