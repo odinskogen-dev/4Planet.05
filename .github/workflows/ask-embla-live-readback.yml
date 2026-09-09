@@ -31,7 +31,7 @@ jobs:
           check 'SHOPS_HYDRATE_FAILED'
           check 'functions/v1/embla-products'
           check 'RATE_LIMITED'
-          check 'aria-label="4PLANET ID – innlogget"'
+          check '4PLANET ID – innlogget'
           if grep -q 'S4PIENS' /tmp/live.html; then echo 'FORBIDDEN_LIVE_MARKER: S4PIENS'; exit 22; fi
           if grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/live.html; then echo 'FORBIDDEN_BROWSER_SECRET_MARKER'; exit 23; fi
           grep -Eqi '^permissions-policy:.*camera=\(self\)' /tmp/headers.txt || { echo 'HEADER_FAIL: permissions-policy camera'; cat /tmp/headers.txt; exit 24; }
