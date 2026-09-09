@@ -44,6 +44,14 @@ soft:"#000000",faint:"#000000",line:"rgba(0,0,0,0.22)",line2:"rgba(0,0,0,0.50)",
 blueWash:"#FFFF00",redWash:"#FFFF00",fill:"#FFFF00",'''
 replace_once(old_tokens, new_tokens, "central palette")
 
+# The canonical interface had a translucent white fixed bottom navigation.
+# For the founder's full-surface yellow test it must be the same exact yellow.
+replace_once(
+    'background:"rgba(255,255,255,0.94)",backdropFilter:"blur(8px)"',
+    'background:"#FFFF00",backdropFilter:"blur(8px)"',
+    "bottom navigation background",
+)
+
 # Explicit marker used by production QA/readback. Keep this test reversible by
 # removing this build guard; canonical Claude source itself is untouched.
 marker = '<!-- 4SAPIEN YELLOW TEST 01 | #FFFF00 + #000000 -->\n'
@@ -57,9 +65,13 @@ for required in [
     'ink:"#000000"',
     'blue:"#000000"',
     'fill:"#FFFF00"',
+    'background:"#FFFF00",backdropFilter:"blur(8px)"',
 ]:
     if required not in s:
         raise SystemExit(f"4SAPIEN yellow-theme invariant missing: {required}")
 
+if 'background:"rgba(255,255,255,0.94)"' in s:
+    raise SystemExit("4SAPIEN yellow-theme invariant failed: white bottom navigation remains")
+
 p.write_text(s)
-print("4SAPIEN YELLOW TEST 01 applied: #FFFF00 / #000000")
+print("4SAPIEN YELLOW TEST 01 applied: #FFFF00 / #000000 / full bottom nav yellow")
