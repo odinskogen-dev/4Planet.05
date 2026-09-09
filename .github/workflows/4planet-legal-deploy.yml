@@ -76,7 +76,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
         run: |
           set -euo pipefail
-          cat > /tmp/wrangler.toml <<'EOF'
+          cat > wrangler.legal.toml <<'EOF'
           name = "fourplanet-legal"
           main = "products/4planet-legal/worker.mjs"
           compatibility_date = "2026-09-09"
@@ -85,7 +85,8 @@ jobs:
             { pattern = "4planet.org/terms*", zone_name = "4planet.org" }
           ]
           EOF
-          npx --yes wrangler@4 deploy --config /tmp/wrangler.toml
+          npx --yes wrangler@4 deploy --config wrangler.legal.toml
+          rm -f wrangler.legal.toml
 
       - name: Production verification
         run: |
