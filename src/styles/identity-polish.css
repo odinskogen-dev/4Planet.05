@@ -1,3 +1,4 @@
-/* Public header: joining is the primary identity entry. Sign-in remains available
-   inside the identity flow, but does not compete with MENU in global chrome. */
-.fourplanet-id-login{display:none!important}
+/* Public header stays visually clean. Identity remains available through the
+   dedicated JOIN / 4PLANET ID entry points, but no account utility is rendered
+   in the global header chrome. */
+.fourplanet-id-utility{display:none!important}
