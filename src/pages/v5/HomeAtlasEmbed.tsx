@@ -3,7 +3,7 @@ import { T } from "@/styles/tokens";
 
 export function HomeAtlasEmbed() {
   return (
-    <section className="home-atlas-embed" aria-label="Explore 4PLANET Atlas">
+    <section className="home-atlas-embed" aria-label="Explore 4PLANET ATLAS">
       <div className="home-atlas-embed__frame">
         <iframe
           title="4PLANET ATLAS interactive globe"
@@ -21,7 +21,7 @@ export function HomeAtlasEmbed() {
 
       <div className="home-atlas-embed__entry">
         <Link className="home-atlas-embed__open" to="/atlas?l=bluemarble,fires,biodiv">
-          Enter 4Planet Atlas
+          Enter 4PLANET ATLAS
         </Link>
         <span>Planetary intelligence</span>
       </div>
