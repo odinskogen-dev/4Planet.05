@@ -16,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MARKET_UPSTREAM: https://7c906ff3.4planet-05.pages.dev
-  MARKET_MARKER: 4market-first-creator-d051e56
-  MARKET_SOURCE_SHA: d051e5683745db858caba1e86a82fda2cfa1f8e5
+  MARKET_UPSTREAM: https://2d8e7dc5.4planet-05.pages.dev
+  MARKET_MARKER: 4market-first-creator-31ffa3c
+  MARKET_SOURCE_SHA: 31ffa3c9333883d459a646c8221c5dddc85213c6
   ROLLBACK_UPSTREAM: https://4482f621.4planet-05.pages.dev
 
 jobs:
