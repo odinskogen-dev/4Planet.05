@@ -1,0 +1,37 @@
+name: 4PLANET Films — LIVE State Probe 20260910
+
+on:
+  push:
+    branches:
+      - release/magazine-films-41-millison-20260910
+    paths:
+      - '.github/workflows/films-live-state-probe-20260910.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe current LIVE state repeatedly
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            echo "=== ATTEMPT $attempt $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+            for route in /films/ /films/yanuni/ /films/inside-africas-food-forest-mega-project/ /magazine/; do
+              headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "https://4planetmagazine.com$route" | tr -d '\r' || true)
+              code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
+              sha=$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^x-4planet-source-sha:/{v=$2} END{print v}')
+              ray=$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^cf-ray:/{v=$2} END{print v}')
+              echo "$route code=$code sha=$sha ray=$ray"
+            done
+            detail_code=$(curl -L -sS -o /tmp/detail.html -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project/' || true)
+            if grep -Fq 'Inside Africa' /tmp/detail.html 2>/dev/null; then title=yes; else title=no; fi
+            sitemap_code=$(curl -sS -o /tmp/sitemap.xml -w '%{http_code}' --connect-timeout 10 --max-time 30 'https://4planetmagazine.com/magazine-sitemap.xml' || true)
+            if grep -q 'inside-africas-food-forest-mega-project' /tmp/sitemap.xml 2>/dev/null; then sitemap=yes; else sitemap=no; fi
+            echo "detail=$detail_code title=$title sitemap=$sitemap_code contains_new=$sitemap"
+            sleep 5
+          done
