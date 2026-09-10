@@ -29,6 +29,7 @@ export type MarketProduct = {
 };
 
 const ODIN_SITE = "https://oddekalv.org";
+const ODIN_SOURCE_IMAGE_ROOT = "https://raw.githubusercontent.com/odinskogen-dev/OdinOddekalv-site/main/odin-oddekalv%203/public";
 
 export const ODIN_ODDEKALV_CREATOR: MarketCreator = {
   id: "creator:odin-oddekalv",
@@ -57,7 +58,7 @@ function product(
     location,
     year,
     caption,
-    imageUrl: `${ODIN_SITE}${sourceImagePath}`,
+    imageUrl: `${ODIN_SOURCE_IMAGE_ROOT}${sourceImagePath}`,
     sourceImagePath,
     sourceUrl: ODIN_ODDEKALV_CREATOR.sourceUrl,
     orientation,
