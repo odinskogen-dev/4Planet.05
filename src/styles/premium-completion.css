@@ -133,6 +133,26 @@ main:has(.ls-anchors) .ls-anchors{
   color:#fff!important;
 }
 
+/* FOUNDER — use the current portrait asset as the human focal point instead of the incorrect landscape/background hero. */
+.founder-hero{
+  isolation:isolate;
+}
+.founder-hero__image{
+  opacity:0!important;
+  pointer-events:none;
+}
+.founder-hero::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:50%;
+  right:clamp(24px,6vw,96px);
+  width:clamp(300px,38vw,560px);
+  aspect-ratio:1;
+  transform:translateY(-50%);
+  background:url("/assets/brand/founder-portrait.svg") center/cover no-repeat;
+}
+
 /* Mission/domain continuation surfaces — show that the system keeps going. */
 .completion-route-cta{background:#050505;color:#fff;position:relative;overflow:hidden}
 .completion-route-cta::before{content:"";position:absolute;top:0;left:0;width:96px;height:4px;background:var(--blue)}
@@ -163,6 +183,11 @@ main:has(.ls-anchors) .ls-anchors{
   main:has(.sp-hero) .tw > article > a{margin-top:22px!important}
   main:has(.ls-anchors) > section:first-child{padding-top:clamp(210px,76vw,360px)!important}
   main:has(.ls-anchors) > section:first-child::before{height:520px;background-position:54% 34%}
+  .founder-hero::before{
+    top:41%;
+    right:-8vw;
+    width:min(88vw,520px);
+  }
 }
 
 @media(prefers-reduced-motion:reduce){
