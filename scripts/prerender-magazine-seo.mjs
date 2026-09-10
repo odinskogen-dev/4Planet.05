@@ -46,7 +46,7 @@ function readPublishedFilms() {
       imageFallback: fallbackOverride || (imageVideoId ? `https://i.ytimg.com/vi/${imageVideoId}/hqdefault.jpg` : ""),
     };
   }).filter((film) => film.slug && film.title && film.year && film.director && film.runtime && film.description && film.image);
-  if (films.length !== 40) throw new Error(`Magazine Films SEO gate: expected 40 published films, recovered ${films.length}.`);
+  if (films.length !== 41) throw new Error(`Magazine Films SEO gate: expected 41 published films, recovered ${films.length}.`);
   return films;
 }
 
