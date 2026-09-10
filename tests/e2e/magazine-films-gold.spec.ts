@@ -7,9 +7,9 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
 
 async function expectFilmImagesAreReal(page: import("@playwright/test").Page) {
   const cards = page.locator(".mag-film-card");
-  await expect(cards).toHaveCount(40);
+  await expect(cards).toHaveCount(41);
   const seenSources = new Set<string>();
-  for (let i = 0; i < 40; i += 1) {
+  for (let i = 0; i < 41; i += 1) {
     const card = cards.nth(i);
     await card.scrollIntoViewIfNeeded();
     const image = card.locator(".mag-film-card-media img");
@@ -48,12 +48,12 @@ async function expectMaze(page: import("@playwright/test").Page) {
 }
 
 test.describe("4PLANET FILMS — premium release closure 05", () => {
-  test("index is a 40-film image-led editorial product with useful discovery lanes", async ({ page }, testInfo) => {
+  test("index is a 41-film image-led editorial product with useful discovery lanes", async ({ page }, testInfo) => {
     await page.goto("/films");
     await expect(page.locator("#films-title")).toHaveText("Films worth your attention.");
     await expect(page.locator(".mag-world-masthead-word").nth(1)).toHaveText("FILMS");
     await expect(page.locator(".mag-world-primary-nav").getByRole("link", { name: "FILMS", exact: true })).toHaveAttribute("aria-current", "page");
-    await expect(page.locator(".mag-film-card")).toHaveCount(40);
+    await expect(page.locator(".mag-film-card")).toHaveCount(41);
     await expect(page.locator(".mag-film-filter a")).toHaveCount(8);
     await expect(page.locator(".mag-film-featured-card")).toHaveCount(6);
     await expect(page.getByRole("heading", { name: "Start here." })).toBeVisible();
@@ -62,6 +62,10 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
     await expect(page.locator(".mag-film-lane")).toHaveCount(2);
     await expect(page.getByRole("heading", { name: "Thirty minutes or less." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recently added." })).toBeVisible();
+    const newRail = page.locator('.mag-film-lane[aria-label="Recently added."]');
+    const newest = newRail.locator(".mag-film-lane-card").first();
+    await expect(newest).toHaveAttribute("href", "/films/inside-africas-food-forest-mega-project");
+    await expect(newest).toContainText("Inside Africa’s Food Forest Mega-Project");
     await expect(page.getByText(/qualified records/i)).toHaveCount(0);
     await expect(page.getByText(/editorial pipeline/i)).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
@@ -152,20 +156,28 @@ test.describe("4PLANET FILMS — premium release closure 05", () => {
     await expect(page.locator(".mag-film-related-card")).toHaveCount(4);
     await expectNoHorizontalOverflow(page);
 
+    await page.goto("/films/inside-africas-food-forest-mega-project");
+    await expect(page.getByRole("heading", { name: "Inside Africa’s Food Forest Mega-Project", exact: true })).toBeVisible();
+    await expect(page.locator(".mag-film-watch")).toHaveAttribute("href", "https://www.youtube.com/watch?v=xbBdIG--b58");
+    await expect(page.locator(".mag-film-source")).toHaveAttribute("href", /fao\.org\/agroecology\/in-action/);
+    await expect(page.locator(".mag-film-key-art img")).toBeVisible();
+    await expect(page.locator(".mag-film-related-card")).toHaveCount(4);
+    await expectNoHorizontalOverflow(page);
+
     if (["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name)) {
       await page.screenshot({ path: testInfo.outputPath("films-detail-closure-05.png"), fullPage: true });
     }
   });
 
-  test("all 40 film detail routes have film art, watch/source pathways and no internal overflow", async ({ page }, testInfo) => {
-    test.skip(!["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name), "all-40 route proof runs on one mobile and one desktop authority viewport");
+  test("all 41 film detail routes have film art, watch/source pathways and no internal overflow", async ({ page }, testInfo) => {
+    test.skip(!["mag-mobile-390", "mag-desktop-1440"].includes(testInfo.project.name), "all-41 route proof runs on one mobile and one desktop authority viewport");
     await page.goto("/films");
     const cards = page.locator(".mag-film-card");
     const links = page.locator(".mag-film-card > .mag-film-card-media");
-    await expect(cards).toHaveCount(40);
-    await expect(links).toHaveCount(40);
+    await expect(cards).toHaveCount(41);
+    await expect(links).toHaveCount(41);
     const hrefs = await links.evaluateAll((nodes) => [...new Set(nodes.map((node) => (node as HTMLAnchorElement).getAttribute("href")).filter(Boolean))] as string[]);
-    expect(hrefs).toHaveLength(40);
+    expect(hrefs).toHaveLength(41);
 
     await page.route("https://www.youtube-nocookie.com/**", (route) => route.abort());
     for (const href of hrefs) {
