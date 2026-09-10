@@ -34,7 +34,7 @@ export function About() {
         </div>
         <div style={{ marginTop: 48, borderTop: `1px solid ${T.lineStrong}` }}>
           {CH.map(([h, paras]) => (
-            <div key={h} id={({ "The Story": "story", "The System": "system", "The Founder": "founder", "The Road Ahead": "road" } as Record<string,string>)[h] || undefined} className="chapter" style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "clamp(14px,3vw,40px)", padding: "30px 0", borderBottom: `1px solid ${T.line}`, scrollMarginTop: 80 }}>
+            <div key={h} id={({ "The Story": "story", "How the System Works": "system", "The Founder": "founder", "The Road Ahead": "road" } as Record<string,string>)[h] || undefined} className="chapter" style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "clamp(14px,3vw,40px)", padding: "30px 0", borderBottom: `1px solid ${T.line}`, scrollMarginTop: 80 }}>
               <div className="chapter-rail mono" style={{ fontSize: 11, color: T.blue, letterSpacing: ".06em" }}>{h}</div>
               <div style={{ display: "grid", gap: 14, maxWidth: 720 }}>
                 {paras.map((para, i) => <p key={i} style={{ fontSize: 16, color: T.ink, lineHeight: 1.65 }}>{para}</p>)}
