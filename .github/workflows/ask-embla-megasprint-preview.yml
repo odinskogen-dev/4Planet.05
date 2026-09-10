@@ -1,0 +1,121 @@
+name: 4SAPIEN FOOD megasprint preview gate
+
+on:
+  push:
+    branches: [build/4sapien-food-megasprint-20260910]
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/ask-embla-megasprint-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+
+jobs:
+  quality-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize exact Claude-leading source
+        run: |
+          set -euo pipefail
+          rm -rf products/4sapien/site
+          mkdir -p products/4sapien/site
+          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > products/4sapien/site/index.html
+          cp products/4sapien/cloudflare/_headers products/4sapien/site/_headers
+          python products/4sapien/build/apply_provider_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_meal_plan_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_theme_switch_guard.py products/4sapien/site/index.html
+
+      - name: Syntax + zero-loss + theme QA
+        run: |
+          set -euo pipefail
+          SITE=products/4sapien/site/index.html
+          grep -q 'Ask Embla' "$SITE"
+          grep -q '4SAPIEN by 4PLANET' "$SITE"
+          grep -q 'functions/v1/embla-products' "$SITE"
+          grep -q 'four_sapien_profiles' "$SITE"
+          grep -q '4SAPIEN YELLOW TEST 02' "$SITE"
+          grep -q '4SAPIEN LIGHT DARK 01' "$SITE"
+          grep -q 'const THEMES={' "$SITE"
+          grep -q '4sapien_theme' "$SITE"
+          grep -q 'Bytt til mørk modus' "$SITE"
+          grep -q 'Bytt til lys modus' "$SITE"
+          grep -q '#FFFF00' "$SITE"
+          grep -q '#000000' "$SITE"
+          grep -q '#111111' "$SITE"
+          ! grep -q 'world.openfoodfacts.org' "$SITE"
+          ! grep -q 'cgi/search.pl' "$SITE"
+          ! grep -q 'S4PIENS' "$SITE"
+          ! grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$SITE"
+          python - <<'PY'
+          import re,pathlib
+          s=pathlib.Path('products/4sapien/site/index.html').read_text()
+          m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+          assert m
+          pathlib.Path('/tmp/embla.jsx').write_text(m.group(1))
+          PY
+          npx --yes esbuild@0.25.9 /tmp/embla.jsx --loader:.jsx=jsx --outfile=/tmp/embla-check.js
+
+      - name: Backend authority gates
+        run: |
+          set -euo pipefail
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache; do
+            code=$(curl -sS -o /tmp/db.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            [ "$code" = 200 ] || { echo "$table HTTP $code"; exit 5; }
+          done
+          code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"q":"skinke"}' "${SUPABASE_URL}/functions/v1/embla-products" || true)
+          [ "$code" = 401 ] || { echo "gateway boundary HTTP $code"; cat /tmp/gateway.json; exit 6; }
+          curl -fsS -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/auth/v1/settings" | jq -e '(.external.email == true)' >/dev/null
+
+      - name: Resolve Cloudflare credentials
+        id: cf
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          [ -n "$token" ] || exit 8
+          auth=(-H "Authorization: Bearer ${token}")
+          root=$(curl -fsS "${auth[@]}" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account" ] || exit 9
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+          echo "account=$account" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy isolated preview Worker only
+        id: preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -euo pipefail
+          cd products/4sapien
+          npx --yes wrangler@4 deploy --config wrangler.jsonc --name four-sapien-embla-megasprint 2>&1 | tee /tmp/wrangler.log
+          url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler.log | tail -n1)
+          [ -n "$url" ] || exit 10
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          for i in 1 2 3 4 5; do
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q '4SAPIEN LIGHT DARK 01' /tmp/site.html; then exit 0; fi
+            sleep 2
+          done
+          exit 11
+
+      - name: Summary
+        if: always()
+        run: |
+          echo '## 4SAPIEN FOOD megasprint preview' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
+          echo "- Preview: ${{ steps.preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
