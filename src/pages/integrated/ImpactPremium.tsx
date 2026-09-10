@@ -22,9 +22,9 @@ export function ImpactPublicHome() {
             <div className="impact-eyebrow">4PLANET IMPACT_ · FOR A LIVING PLANET</div>
             <h1 className="impact-hero__title">Action for the planet, made credible.</h1>
             <p className="impact-hero__lede">
-              Four ways to act for living systems — each one grounded in real ecology and delivered by a chosen field
-              partner. We are the mission owner and initiator; the science is sourced, and nothing is counted as done
-              until the evidence supports it.
+              Four possible pathways for living systems — each grounded in source-backed ecology, with partner selection,
+              delivery and evidence requirements kept visible before any pathway opens. Nothing is counted as done until
+              the evidence supports it.
             </p>
           </div>
           <div className="impact-scroll-cue">SCROLL ↓</div>
@@ -55,10 +55,9 @@ export function ImpactPublicHome() {
         {/* honest footer */}
         <section style={{ background: "#000", padding: "clamp(40px,6vw,80px) clamp(20px,5vw,96px) 120px" }}>
           <p style={{ ...mono, fontSize: 12, lineHeight: 1.7, color: "rgba(255,255,255,.72)", maxWidth: "74ch", borderLeft: `2px solid ${T.acid}`, paddingLeft: 16 }}>
-            The ecological facts on every page are sourced to FAO, IPCC, UNEP and IUCN. The delivery model — field
-            partner, price and proof — is shown at its true status and is not yet open. When a pathway becomes real, it
-            will say so, with sources. 4PLANET is the mission owner and initiator; a field partner is who we choose to
-            carry the work out.
+            The ecological facts on every page are source-backed. The delivery model — including field-partner status,
+            price and proof requirements — is shown at its current state and is not yet open. A future pathway will only
+            describe delivery or partnership as active when the evidence and status support that claim.
           </p>
         </section>
       </div>
@@ -128,8 +127,8 @@ export function ImpactStory() {
           <h2 className="impact-h">Why we chose this mission</h2>
           <p className="impact-p">{u.whyWeChose}</p>
           <p className="impact-p" style={{ color: "rgba(255,255,255,.66)", fontSize: 14.5 }}>
-            4PLANET is the mission owner and initiator. Delivery is carried out by a chosen field partner — see the
-            status below.
+            4PLANET is developing the pathway. Any field delivery would require a separately selected field partner whose
+            status is shown below; no delivery relationship is implied before that status is established.
           </p>
 
           <h2 className="impact-h">Why it helps Earth</h2>
@@ -173,7 +172,7 @@ export function ImpactStory() {
           <ol className="impact-pathway">
             {[
               ["CONTRIBUTION", "A person chooses to support a unit of action."],
-              ["VERIFIED FIELD PARTNER", "A partner selected for transparent delivery and reporting."],
+              ["QUALIFIED FIELD PARTNER", "A field partner is selected only when qualification and delivery requirements are met."],
               ["DELIVERY", "The partner carries out the work in the field."],
               ["EVIDENCE", "Delivery is recorded with verifiable evidence."],
               ["REVIEW", "The evidence is checked before anything is claimed."],
@@ -197,7 +196,7 @@ export function ImpactStory() {
           <div className="impact-status">
             <span className={`impact-status__badge${statusAcid ? " acid" : ""}`}>{DELIVERY_LABEL[u.delivery.status]} · NOT OPEN</span>
             <dl className="impact-def">
-              <dt>MISSION OWNER</dt><dd>4PLANET — initiator</dd>
+              <dt>PATHWAY</dt><dd>4PLANET — in development</dd>
               <dt>FIELD PARTNER</dt><dd>{u.delivery.fieldPartner}</dd>
               <dt>WHERE</dt><dd>{u.delivery.where}</dd>
               <dt>PROOF</dt><dd>{u.delivery.proof}</dd>
