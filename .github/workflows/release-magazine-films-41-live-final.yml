@@ -17,7 +17,7 @@ concurrency:
 jobs:
   promote:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       SOURCE_SHA: 564ec416457b95c5af620a9cc094c62d29f8d865
       FILMS_UPSTREAM: https://7cb098aa.4planet-05.pages.dev
@@ -169,41 +169,91 @@ jobs:
           "$RUNNER_TEMP/render-worker.sh" "$FILMS_UPSTREAM" "$SOURCE_SHA" "$RUNNER_TEMP/worker.mjs"
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee release-proof/live-promotion.log
 
-      - name: LIVE readback with automatic exact rollback on any failure
+      - name: LIVE readback with propagation tolerance and exact rollback
         shell: bash
         run: |
           set -euo pipefail
-          verify_live() {
+
+          read_route() {
             local url="$1"
-            local headers code
-            headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "$url" | tr -d '\r')
+            local expected_sha="$2"
+            local headers code sha
+            headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
             code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
-            [ "$code" = '200' ] || return 1
-            printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $SOURCE_SHA$" || return 1
+            sha=$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^x-4planet-source-sha:/{v=$2} END{print v}')
+            [ "$code" = '200' ] && [ "$sha" = "$expected_sha" ]
           }
+
+          wait_for_core_sha() {
+            local expected_sha="$1"
+            local attempt route ok
+            for attempt in $(seq 1 18); do
+              ok=1
+              for route in /magazine/ /films/ /films/yanuni/ /films/inside-africas-food-forest-mega-project/; do
+                if ! read_route "$LIVE_ORIGIN$route" "$expected_sha"; then ok=0; break; fi
+              done
+              if [ "$ok" -eq 1 ]; then
+                echo "PASS core routes converged to $expected_sha on attempt $attempt"
+                return 0
+              fi
+              echo "WAIT edge propagation attempt $attempt/18"
+              sleep 5
+            done
+            return 1
+          }
+
+          verify_all_41() {
+            local expected_sha="$1"
+            local sweep slug count failed
+            for sweep in 1 2 3 4; do
+              count=0
+              failed=0
+              while IFS= read -r slug || [ -n "$slug" ]; do
+                [ -z "$slug" ] && continue
+                if ! read_route "$LIVE_ORIGIN/films/$slug/" "$expected_sha"; then
+                  echo "SWEEP $sweep mismatch $slug"
+                  failed=1
+                  break
+                fi
+                count=$((count + 1))
+              done < release-proof/film-slugs.txt
+              if [ "$failed" -eq 0 ] && [ "$count" -eq 41 ]; then
+                echo "PASS 41/41 routes on sweep $sweep"
+                return 0
+              fi
+              sleep 5
+            done
+            return 1
+          }
+
+          verify_content() {
+            local attempt live_sitemap live_detail
+            for attempt in $(seq 1 12); do
+              live_sitemap=$(curl -fsS "$LIVE_ORIGIN/magazine-sitemap.xml" || true)
+              live_detail=$(curl -fsS "$LIVE_ORIGIN/films/inside-africas-food-forest-mega-project/" || true)
+              if printf '%s' "$live_sitemap" | grep -q 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project' && printf '%s' "$live_detail" | grep -Fq 'Inside Africa'; then
+                echo "PASS sitemap + Millison detail on attempt $attempt"
+                return 0
+              fi
+              sleep 5
+            done
+            return 1
+          }
+
           failed=0
-          verify_live "$LIVE_ORIGIN/magazine/" || failed=1
-          verify_live "$LIVE_ORIGIN/films/" || failed=1
-          count=0
-          while IFS= read -r slug || [ -n "$slug" ]; do
-            [ -z "$slug" ] && continue
-            verify_live "$LIVE_ORIGIN/films/$slug/" || { echo "FAIL LIVE $slug"; failed=1; break; }
-            count=$((count + 1))
-          done < release-proof/film-slugs.txt
-          [ "$count" -eq 41 ] || failed=1
-          live_sitemap=$(curl -fsS "$LIVE_ORIGIN/magazine-sitemap.xml" || true)
-          printf '%s' "$live_sitemap" | grep -q 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project' || failed=1
-          live_detail=$(curl -fsS "$LIVE_ORIGIN/films/inside-africas-food-forest-mega-project/" || true)
-          printf '%s' "$live_detail" | grep -Fq 'Inside Africa' || failed=1
+          wait_for_core_sha "$SOURCE_SHA" || failed=1
+          if [ "$failed" -eq 0 ]; then verify_all_41 "$SOURCE_SHA" || failed=1; fi
+          if [ "$failed" -eq 0 ]; then verify_content || failed=1; fi
+
           if [ "$failed" -ne 0 ]; then
-            echo "LIVE verification failed — rolling back exactly to $EXPECTED_PREVIOUS_SHA"
+            echo "LIVE verification failed after propagation window — rolling back exactly to $EXPECTED_PREVIOUS_SHA"
             "$RUNNER_TEMP/render-worker.sh" "$ROLLBACK_UPSTREAM" "$EXPECTED_PREVIOUS_SHA" "$RUNNER_TEMP/worker.mjs"
             npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee release-proof/rollback.log
-            rollback_headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "$LIVE_ORIGIN/films/" | tr -d '\r')
-            printf '%s\n' "$rollback_headers" | grep -qi "^x-4planet-source-sha: $EXPECTED_PREVIOUS_SHA$" || { echo 'ROLLBACK READBACK FAILED'; exit 11; }
+            wait_for_core_sha "$EXPECTED_PREVIOUS_SHA" || { echo 'ROLLBACK CONVERGENCE FAILED'; exit 11; }
             echo 'ROLLBACK PASS'
             exit 12
           fi
+
           curl -sSIL "$LIVE_ORIGIN/films/" | tr -d '\r' > release-proof/post-live-films-headers.txt
           curl -sSIL "$LIVE_ORIGIN/films/inside-africas-food-forest-mega-project/" | tr -d '\r' > release-proof/post-live-millison-headers.txt
           printf 'NEW_SOURCE_SHA=%s\nPREVIOUS_SOURCE_SHA=%s\nIMMUTABLE_UPSTREAM=%s\nROLLBACK_UPSTREAM=%s\nVERIFIED_AT=%s\nFILM_COUNT=41\nNEWEST=inside-africas-food-forest-mega-project\n' "$SOURCE_SHA" "$EXPECTED_PREVIOUS_SHA" "$FILMS_UPSTREAM" "$ROLLBACK_UPSTREAM" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" | tee release-proof/post-live-identity.txt
