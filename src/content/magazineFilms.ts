@@ -285,6 +285,11 @@ const published: FilmRecord[] = [
     description: "A renewable-energy documentary told through workers and communities, connecting clean power to jobs, equity, innovation and local economic change.", credit: "Directed by Tony Valentino. Produced for the Sierra Club.",
     watchUrl: "https://vimeo.com/268692241", trailerId: "xx4P2yOXDDs", sourceUrl: "https://www.sierraclub.org/reinventing-power", sourceLabel: "SIERRA CLUB / OFFICIAL", selectionNote: "Energy transition as an employment, community and infrastructure story — not only a technology story.", availabilityNote: "The Sierra Club provides the film and current viewing routes."
   }),
+  publishedFilm({
+    slug: "inside-africas-food-forest-mega-project", title: "Inside Africa’s Food Forest Mega-Project", year: 2024, focus: "NIGER / LAND RESTORATION / FOOD / WATER / GREAT GREEN WALL", topics: ["FOOD", "LAND_WILDLIFE", "CLIMATE", "SOLUTIONS", "PEOPLE"], accent: "green", director: "Andrew Millison", runtime: "14 MIN", access: "FULL_FREE", platform: "ANDREW MILLISON / YOUTUBE",
+    description: "A journey into Niger’s Sahel, where communities are harvesting rain, restoring degraded land and rebuilding food security — showing what ecological recovery can look like at landscape scale.", credit: "Created and presented by Andrew Millison, documenting UN World Food Programme-supported land recovery work in Niger’s Sahel.",
+    watchUrl: "https://www.youtube.com/watch?v=xbBdIG--b58", trailerId: "xbBdIG--b58", imageVideoId: "xbBdIG--b58", sourceUrl: "https://www.youtube.com/watch?v=xbBdIG--b58", sourceLabel: "ANDREW MILLISON / OFFICIAL FULL FILM", sourceDescriptionUrl: "https://www.fao.org/agroecology/in-action/detail/inside-africa%27s-food-forest-mega-project/en", selectionNote: "Because restoration becomes tangible: water, soil, trees, food and people reconnecting inside the same living system.", availabilityNote: "Published free on Andrew Millison’s official YouTube channel on 13 November 2024; FAO also catalogues the film as an agroecology case."
+  }),
 ];
 
 const research: FilmRecord[] = [
