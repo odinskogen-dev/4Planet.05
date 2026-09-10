@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
-import Home from "@/pages/v5/Home";
+import FourPlanetHome from "@/pages/v5/Home";
 import LabsOverview from "@/pages/labs/LabsOverview";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
@@ -54,16 +54,16 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
-function RootHome() {
+function Home() {
   const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   if (host === "4planetmarket.com" || host === "www.4planetmarket.com") return <MarketHome />;
-  return <Home />;
+  return <FourPlanetHome />;
 }
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<RootHome />} />
+      <Route path="/" element={<Home />} />
       <Route path="/market" element={<MarketHome />} />
       <Route path="/market/:slug" element={<MarketProductPage />} />
       <Route path="/labs" element={<LabsOverview />} />
