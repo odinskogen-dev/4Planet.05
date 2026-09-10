@@ -19,26 +19,36 @@ const researchSlugs = [...research.matchAll(/\bslug:\s*"([^"]+)"/g)].map((match)
 const premiumAdditions = [
   "newtok", "the-scale-of-hope", "takayna", "treeline", "jalpi", "corazon-salado", "undammed", "laxathjod", "range-rider", "the-shitthropocene",
   "a-net-plus", "sea-country-malu-lag", "home-grown", "fire-lines", "this-is-not-a-drill", "the-last-observers", "we-can-get-there-from-here", "before-the-flood", "2040", "reinventing-power",
+  "inside-africas-food-forest-mega-project",
 ];
 
-test("Films has one canonical 50-record registry with 40 published", () => {
-  assert.equal(publishedSlugs.length, 40);
+test("Films has one canonical 51-record registry with 41 published", () => {
+  assert.equal(publishedSlugs.length, 41);
   assert.equal(researchSlugs.length, 10);
-  assert.equal(new Set([...publishedSlugs, ...researchSlugs]).size, 50);
+  assert.equal(new Set([...publishedSlugs, ...researchSlugs]).size, 51);
   assert.equal(fs.existsSync(path.join(root, "src/content/magazineFilmResearch.ts")), false);
   assert.match(films, /export const FILMS: FilmRecord\[\]/);
   assert.match(films, /export const PUBLISHED_FILMS = published/);
 });
 
-test("Premium selection contains the requested forty public films", () => {
+test("Premium selection contains the requested public films", () => {
   for (const slug of premiumAdditions) assert.ok(publishedSlugs.includes(slug), `${slug} must be published`);
 });
 
+test("Andrew Millison film is the newest canonical published record with source-backed routes", () => {
+  assert.equal(publishedSlugs.at(-1), "inside-africas-food-forest-mega-project");
+  assert.match(published, /Inside Africa’s Food Forest Mega-Project/);
+  assert.match(published, /youtube\.com\/watch\?v=xbBdIG--b58/);
+  assert.match(published, /fao\.org\/agroecology\/in-action/);
+  assert.match(published, /runtime: "14 MIN"/);
+  assert.match(published, /access: "FULL_FREE"/);
+});
+
 test("Every public film has watch, source, description and film-specific artwork decisions", () => {
-  assert.equal((published.match(/\bwatchUrl:/g) || []).length, 40);
-  assert.equal((published.match(/\bsourceUrl:/g) || []).length, 40);
-  assert.equal((published.match(/\bdescription:/g) || []).length, 40);
-  assert.equal((published.match(/\bavailabilityNote:/g) || []).length, 40);
+  assert.equal((published.match(/\bwatchUrl:/g) || []).length, 41);
+  assert.equal((published.match(/\bsourceUrl:/g) || []).length, 41);
+  assert.equal((published.match(/\bdescription:/g) || []).length, 41);
+  assert.equal((published.match(/\bavailabilityNote:/g) || []).length, 41);
   assert.doesNotMatch(published, /contextualImage/);
   assert.doesNotMatch(published, /\/assets\/(?:brand|domains|missions)\//);
   assert.match(films, /https:\/\/i\.ytimg\.com\/vi\//);
