@@ -1,0 +1,148 @@
+name: 4PLANET Films 41 — Millison Release QA
+
+on:
+  push:
+    branches:
+      - release/magazine-films-41-millison-20260910
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'playwright.magazine.config.ts'
+      - '.github/workflows/release-magazine-films-41-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-magazine-films-41-millison-20260910
+  cancel-in-progress: true
+
+jobs:
+  verify-and-stage-exact-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact release candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Magazine and Films contracts
+        run: npm run test:magazine
+
+      - name: Verify canonical 41-film registry and newest placement contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
+          const slugs = [...section.matchAll(/\bslug:\s*"([^"]+)"/g)].map(m => m[1]);
+          if (slugs.length !== 41) throw new Error(`Expected 41 published films, found ${slugs.length}`);
+          if (slugs.at(-1) !== 'inside-africas-food-forest-mega-project') throw new Error(`Newest canonical record is ${slugs.at(-1)}`);
+          console.log(`PASS: ${slugs.length} published; Millison is newest canonical record.`);
+          NODE
+
+      - name: Production build
+        env:
+          VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+        run: npm run build
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Browser QA — desktop + iPhone-size + WebKit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/films-preview.log" 2>&1 &
+          preview_pid=$!
+          trap 'kill $preview_pid 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' 'http://127.0.0.1:4173/films' || true)
+            [ "$code" = '200' ] && break
+            sleep 1
+          done
+          npx playwright test tests/e2e/magazine-films-gold.spec.ts \
+            --config playwright.magazine.config.ts \
+            --project=mag-desktop-1440 \
+            --project=mag-mobile-390 \
+            --project=mag-webkit-390
+
+      - name: Preserve release QA proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: films-41-millison-qa-${{ github.sha }}
+          path: |
+            magazine-test-results/**/*.png
+            artifacts/magazine-results.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Deploy exact candidate to isolated Cloudflare Pages branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_log="$RUNNER_TEMP/pages-deploy.log"
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=release-films-41-millison \
+            --commit-hash="$GITHUB_SHA" 2>&1 | tee "$deploy_log"
+          upstream=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$deploy_log" | head -1 || true)
+          [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages deployment URL'; exit 4; }
+          echo "FILMS41_UPSTREAM=$upstream" >> "$GITHUB_ENV"
+          echo "IMMUTABLE_PAGES=$upstream"
+
+      - name: Verify staged exact artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in /films/ /films/inside-africas-food-forest-mega-project/ /magazine/; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$FILMS41_UPSTREAM$route" || true)
+            [ "$code" = '200' ] || { echo "FAIL $code $route"; exit 5; }
+            echo "PASS $route"
+          done
+          sitemap=$(curl -fsS "$FILMS41_UPSTREAM/magazine-sitemap.xml")
+          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project'
+          echo "PASS sitemap Millison route"
