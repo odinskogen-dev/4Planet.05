@@ -53,21 +53,16 @@ soft:"#000000",faint:"#000000",line:"rgba(0,0,0,0.22)",line2:"rgba(0,0,0,0.50)",
 blueWash:"#F5F3EF",redWash:"#F5F3EF",fill:"#F5F3EF",'''
 replace_once(old_tokens, new_tokens, "central palette")
 
-# Remove the remaining hard-coded legacy blue/red border tints introduced by
-# product-health signal badges. Yellow 02 UI remains black/yellow/off-white.
 replace_once('rgba(255,77,34,.28)', 'rgba(0,0,0,.35)', "health warning border tint")
 replace_once('rgba(46,46,255,.22)', 'rgba(0,0,0,.24)', "health positive border tint")
 
-# The application shell, header, search interaction and bottom navigation stay
-# signature yellow. The fixed bottom navigation must never fall back to white.
 replace_once(
     'background:"rgba(255,255,255,0.94)",backdropFilter:"blur(8px)"',
     'background:"#FFFF00",backdropFilter:"blur(8px)"',
     "bottom navigation background",
 )
 
-# Calm sustained-use surfaces. These are visual wrappers only; no behavior,
-# state, auth, product ranking or persistence logic changes.
+# Calm sustained-use surfaces. Visual wrappers only; product/auth/data logic untouched.
 replace_once(
     'function ProfileFields({p,setP}){const set=(k,v)=>setP({...p,[k]:v});const tog=(a)=>set("avoid",p.avoid.includes(a)?p.avoid.filter((x)=>x!==a):[...p.avoid,a]);\n return(<div>',
     'function ProfileFields({p,setP}){const set=(k,v)=>setP({...p,[k]:v});const tog=(a)=>set("avoid",p.avoid.includes(a)?p.avoid.filter((x)=>x!==a):[...p.avoid,a]);\n return(<div style={{background:T.calm,border:"1px solid "+T.line,borderRadius:16,padding:16}}>',
@@ -89,13 +84,8 @@ replace_once(
     "shopping list calm surface",
 )
 replace_once(
-    'function Meals({addMany,budget,setBudget,selectedMeals,setSelectedMeals}){const[show,setShow]=useState(null);const sel=useMemo(()=>new Set(selectedMeals||[]),[selectedMeals]);',
-    'function Meals({addMany,budget,setBudget,selectedMeals,setSelectedMeals}){const[show,setShow]=useState(null);const sel=useMemo(()=>new Set(selectedMeals||[]),[selectedMeals]);',
-    "meal function identity",
-)
-replace_once(
-    ' return(<div style={{paddingBottom:sel.size>0?70:0}}>\n   <p style={{fontFamily:T.body,fontSize:14,color:T.soft,margin:"0 0 14px",lineHeight:1.5}}>Velg middagene du vil lage, så samler Embla ingrediensene til én handleliste — uten dobbeltføring. Valgene lagres til 4SAPIEN-profilen din for denne uken.</p>',
-    ' return(<div style={{paddingBottom:sel.size>0?70:16,background:T.calm,border:"1px solid "+T.line,borderRadius:18,paddingTop:16,paddingLeft:16,paddingRight:16}}>\n   <p style={{fontFamily:T.body,fontSize:14,color:T.soft,margin:"0 0 14px",lineHeight:1.5}}>Velg middagene du vil lage, så samler Embla ingrediensene til én handleliste — uten dobbeltføring. Valgene lagres til 4SAPIEN-profilen din for denne uken.</p>',
+    'return(<div style={{paddingBottom:sel.size>0?70:0}}>',
+    'return(<div style={{paddingBottom:sel.size>0?70:16,background:T.calm,border:"1px solid "+T.line,borderRadius:18,paddingTop:16,paddingLeft:16,paddingRight:16}}>',
     "meals calm surface",
 )
 replace_once(
@@ -120,23 +110,14 @@ replace_exact_count(
     "about and add-shop calm sheets",
 )
 
-# Explicit production marker. Canonical Claude source remains untouched; only
-# this deterministic build guard defines the visual experiment.
 marker = '<!-- 4SAPIEN YELLOW TEST 02 | #FFFF00 + #000000 + #F5F3EF calm -->\n'
 replace_once('<body>\n', marker + '<body>\n', "test marker")
 
 for required in [
-    '#FFFF00',
-    '#000000',
-    '#F5F3EF',
-    '4SAPIEN YELLOW TEST 02',
-    'paper:"#FFFF00"',
-    'calm:"#F5F3EF"',
-    'ink:"#000000"',
-    'blue:"#000000"',
-    'fill:"#F5F3EF"',
-    'background:"#FFFF00",backdropFilter:"blur(8px)"',
-    'background:T.calm',
+    '#FFFF00', '#000000', '#F5F3EF', '4SAPIEN YELLOW TEST 02',
+    'paper:"#FFFF00"', 'calm:"#F5F3EF"', 'ink:"#000000"',
+    'blue:"#000000"', 'fill:"#F5F3EF"',
+    'background:"#FFFF00",backdropFilter:"blur(8px)"', 'background:T.calm',
 ]:
     if required not in s:
         raise SystemExit(f"4SAPIEN Yellow 02 invariant missing: {required}")
