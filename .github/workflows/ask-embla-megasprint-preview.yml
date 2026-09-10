@@ -64,6 +64,11 @@ jobs:
           PY
           npx --yes esbuild@0.25.9 /tmp/embla.jsx --loader:.jsx=jsx --outfile=/tmp/embla-check.js
 
+      - name: Search Intelligence 02 candidate QA
+        run: |
+          set -euo pipefail
+          npx --yes tsx@4 products/4sapien/qa/search-intelligence.test.ts
+
       - name: Backend authority gates
         run: |
           set -euo pipefail
@@ -117,5 +122,6 @@ jobs:
           echo '## 4SAPIEN FOOD megasprint preview' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
           echo "- Preview: ${{ steps.preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
