@@ -1,0 +1,94 @@
+name: 4PLANET Films 41 — Build Current-LIVE Rollback Artifact
+
+on:
+  push:
+    branches:
+      - release/magazine-films-41-millison-20260910
+    paths:
+      - '.github/workflows/release-magazine-films-41-rollback-artifact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-rollback-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ROLLBACK_SHA: 3e85724b57bb6bed42b53eb5f6bec5bbcbbbd334
+    steps:
+      - name: Checkout exact current LIVE source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ROLLBACK_SHA }}
+          fetch-depth: 1
+
+      - name: Prove exact rollback source
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(git rev-parse HEAD)
+          [ "$actual" = "$ROLLBACK_SHA" ] || { echo "FAIL $actual != $ROLLBACK_SHA"; exit 2; }
+          echo "PASS exact current LIVE source $actual"
+
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install and build exact source
+        env:
+          VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          npm run test:magazine
+          npm run build
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 3; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Deploy exact current LIVE source as isolated immutable rollback artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p rollback-proof
+          log="$RUNNER_TEMP/rollback-pages.log"
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=rollback-films-3e85724b \
+            --commit-hash="$ROLLBACK_SHA" 2>&1 | tee "$log"
+          upstream=$(grep -Eo 'https://[0-9a-f]{8}\.4planet-05\.pages\.dev' "$log" | head -1 || true)
+          [ -n "$upstream" ] || { echo 'Could not resolve immutable Pages URL'; exit 4; }
+          for route in /films/ /magazine/; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$upstream$route" || true)
+            [ "$code" = '200' ] || { echo "FAIL rollback artifact $code $route"; exit 5; }
+          done
+          printf 'ROLLBACK_SOURCE_SHA=%s\nROLLBACK_UPSTREAM=%s\nVERIFIED_AT=%s\n' "$ROLLBACK_SHA" "$upstream" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" | tee rollback-proof/rollback-identity.txt
+
+      - name: Preserve rollback identity
+        uses: actions/upload-artifact@v4
+        with:
+          name: films-current-live-rollback-${{ env.ROLLBACK_SHA }}
+          path: rollback-proof/rollback-identity.txt
+          if-no-files-found: error
+          retention-days: 30
