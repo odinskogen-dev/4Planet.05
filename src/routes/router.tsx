@@ -26,6 +26,7 @@ import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
+import { MarketHome, MarketProductPage } from "@/pages/market/MarketHome";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -53,11 +54,18 @@ const toHome = <Navigate to="/" replace />;
 function MtoMission() { const { slug } = useParams(); return <Navigate to={"/missions/" + slug} replace />; }
 function RedirectTestUnit() { const { unit } = useParams(); return <Navigate to={`/impact/lab/${unit}`} replace />; }
 function RedirectRecord() { const { recordId } = useParams(); return <Navigate to={`/impact/lab/records/${recordId}`} replace />; }
+function RootHome() {
+  const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
+  if (host === "4planetmarket.com" || host === "www.4planetmarket.com") return <MarketHome />;
+  return <Home />;
+}
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<RootHome />} />
+      <Route path="/market" element={<MarketHome />} />
+      <Route path="/market/:slug" element={<MarketProductPage />} />
       <Route path="/labs" element={<LabsOverview />} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />
