@@ -1,0 +1,219 @@
+name: 4PLANET Films 41 — Safe LIVE Final
+
+on:
+  push:
+    branches:
+      - release/magazine-films-41-millison-20260910
+    paths:
+      - '.github/workflows/release-magazine-films-41-live-final.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-live-founder-release
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: 564ec416457b95c5af620a9cc094c62d29f8d865
+      FILMS_UPSTREAM: https://7cb098aa.4planet-05.pages.dev
+      LIVE_ORIGIN: https://4planetmagazine.com
+      EXPECTED_PREVIOUS_SHA: 3e85724b57bb6bed42b53eb5f6bec5bbcbbbd334
+      ROLLBACK_UPSTREAM: https://a8354c21.4planet-05.pages.dev
+    steps:
+      - name: Checkout exact verified product source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+
+      - name: Prove exact verified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(git rev-parse HEAD)
+          [ "$actual" = "$SOURCE_SHA" ] || { echo "FAIL exact source $actual != $SOURCE_SHA"; exit 2; }
+          echo "PASS exact verified source $SOURCE_SHA"
+
+      - name: Archive and verify current LIVE before mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-proof
+          curl -sSIL --connect-timeout 10 --max-time 30 "$LIVE_ORIGIN/films/" | tr -d '\r' | tee release-proof/pre-live-films-headers.txt
+          curl -sSIL --connect-timeout 10 --max-time 30 "$LIVE_ORIGIN/magazine/" | tr -d '\r' | tee release-proof/pre-live-magazine-headers.txt
+          curl -fsS --connect-timeout 10 --max-time 30 "$LIVE_ORIGIN/magazine-sitemap.xml" > release-proof/pre-live-magazine-sitemap.xml
+          previous=$(awk 'BEGIN{IGNORECASE=1} /^x-4planet-source-sha:/{v=$2} END{print v}' release-proof/pre-live-films-headers.txt)
+          [ "$previous" = "$EXPECTED_PREVIOUS_SHA" ] || { echo "FAIL current LIVE changed: $previous != $EXPECTED_PREVIOUS_SHA"; exit 3; }
+          for route in /films/ /magazine/; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$ROLLBACK_UPSTREAM$route" || true)
+            [ "$code" = '200' ] || { echo "FAIL rollback artifact $code $route"; exit 4; }
+          done
+          printf 'PREVIOUS_SOURCE_SHA=%s\nROLLBACK_UPSTREAM=%s\nCAPTURED_AT=%s\n' "$previous" "$ROLLBACK_UPSTREAM" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" | tee release-proof/pre-live-identity.txt
+
+      - name: Verify immutable candidate and all 41 film routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' > release-proof/film-slugs.txt
+          import fs from 'node:fs';
+          const source = fs.readFileSync('src/content/magazineFilms.ts','utf8');
+          const section = source.split('const published: FilmRecord[] = [')[1]?.split('];\n\nconst research: FilmRecord[] = [')[0] ?? '';
+          const slugs = [...section.matchAll(/\bslug:\s*"([^"]+)"/g)].map(m => m[1]);
+          if (slugs.length !== 41) throw new Error(`Expected 41 published films, found ${slugs.length}`);
+          if (slugs.at(-1) !== 'inside-africas-food-forest-mega-project') throw new Error('Millison is not newest canonical record');
+          process.stdout.write(`${slugs.join('\n')}\n`);
+          NODE
+          count=0
+          while IFS= read -r slug || [ -n "$slug" ]; do
+            [ -z "$slug" ] && continue
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$FILMS_UPSTREAM/films/$slug/" || true)
+            [ "$code" = '200' ] || { echo "FAIL candidate $code $slug"; exit 5; }
+            count=$((count + 1))
+          done < release-proof/film-slugs.txt
+          [ "$count" -eq 41 ] || exit 6
+          detail=$(curl -fsS "$FILMS_UPSTREAM/films/inside-africas-food-forest-mega-project/")
+          printf '%s' "$detail" | grep -Fq 'Inside Africa' || { echo 'FAIL candidate detail title'; exit 7; }
+          sitemap=$(curl -fsS "$FILMS_UPSTREAM/magazine-sitemap.xml")
+          printf '%s' "$sitemap" | grep -q 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project' || { echo 'FAIL candidate sitemap'; exit 8; }
+          echo "PASS immutable candidate: 41/41 + Millison + sitemap"
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 9; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 10; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Write worker helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/render-worker.sh" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          upstream="$1"
+          source_sha="$2"
+          target="$3"
+          cat > "$target" <<EOF
+          const UPSTREAM = "${upstream}";
+          const SOURCE_SHA = "${source_sha}";
+          const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest"]);
+          const allowedEditorial = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p === "/films" || p === "/films/" || p.startsWith("/films/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === "www.4planetmagazine.com") { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedEditorial(incoming.pathname) && !atlasEmbed) return blocked();
+            let upstreamPath = incoming.pathname;
+            if (incoming.pathname === "/robots.txt") upstreamPath = "/magazine-robots.txt";
+            if (incoming.pathname === "/sitemap.xml") upstreamPath = "/magazine-sitemap.xml";
+            const upstreamUrl = new URL(upstreamPath, UPSTREAM);
+            upstreamUrl.search = incoming.search;
+            const response = await fetch(new Request(upstreamUrl.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            headers.set("x-4planet-source-sha", SOURCE_SHA);
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
+          EOF
+          SCRIPT
+          chmod +x "$RUNNER_TEMP/render-worker.sh"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planetmagazine-test-king"
+          main = "$RUNNER_TEMP/worker.mjs"
+          compatibility_date = "2026-09-10"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmagazine.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmagazine.com"
+          custom_domain = true
+          EOF
+
+      - name: Promote exact verified artifact to LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/render-worker.sh" "$FILMS_UPSTREAM" "$SOURCE_SHA" "$RUNNER_TEMP/worker.mjs"
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee release-proof/live-promotion.log
+
+      - name: LIVE readback with automatic exact rollback on any failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_live() {
+            local url="$1"
+            local headers code
+            headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "$url" | tr -d '\r')
+            code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
+            [ "$code" = '200' ] || return 1
+            printf '%s\n' "$headers" | grep -qi "^x-4planet-source-sha: $SOURCE_SHA$" || return 1
+          }
+          failed=0
+          verify_live "$LIVE_ORIGIN/magazine/" || failed=1
+          verify_live "$LIVE_ORIGIN/films/" || failed=1
+          count=0
+          while IFS= read -r slug || [ -n "$slug" ]; do
+            [ -z "$slug" ] && continue
+            verify_live "$LIVE_ORIGIN/films/$slug/" || { echo "FAIL LIVE $slug"; failed=1; break; }
+            count=$((count + 1))
+          done < release-proof/film-slugs.txt
+          [ "$count" -eq 41 ] || failed=1
+          live_sitemap=$(curl -fsS "$LIVE_ORIGIN/magazine-sitemap.xml" || true)
+          printf '%s' "$live_sitemap" | grep -q 'https://4planetmagazine.com/films/inside-africas-food-forest-mega-project' || failed=1
+          live_detail=$(curl -fsS "$LIVE_ORIGIN/films/inside-africas-food-forest-mega-project/" || true)
+          printf '%s' "$live_detail" | grep -Fq 'Inside Africa' || failed=1
+          if [ "$failed" -ne 0 ]; then
+            echo "LIVE verification failed — rolling back exactly to $EXPECTED_PREVIOUS_SHA"
+            "$RUNNER_TEMP/render-worker.sh" "$ROLLBACK_UPSTREAM" "$EXPECTED_PREVIOUS_SHA" "$RUNNER_TEMP/worker.mjs"
+            npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee release-proof/rollback.log
+            rollback_headers=$(curl -sSIL --connect-timeout 10 --max-time 30 "$LIVE_ORIGIN/films/" | tr -d '\r')
+            printf '%s\n' "$rollback_headers" | grep -qi "^x-4planet-source-sha: $EXPECTED_PREVIOUS_SHA$" || { echo 'ROLLBACK READBACK FAILED'; exit 11; }
+            echo 'ROLLBACK PASS'
+            exit 12
+          fi
+          curl -sSIL "$LIVE_ORIGIN/films/" | tr -d '\r' > release-proof/post-live-films-headers.txt
+          curl -sSIL "$LIVE_ORIGIN/films/inside-africas-food-forest-mega-project/" | tr -d '\r' > release-proof/post-live-millison-headers.txt
+          printf 'NEW_SOURCE_SHA=%s\nPREVIOUS_SOURCE_SHA=%s\nIMMUTABLE_UPSTREAM=%s\nROLLBACK_UPSTREAM=%s\nVERIFIED_AT=%s\nFILM_COUNT=41\nNEWEST=inside-africas-food-forest-mega-project\n' "$SOURCE_SHA" "$EXPECTED_PREVIOUS_SHA" "$FILMS_UPSTREAM" "$ROLLBACK_UPSTREAM" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" | tee release-proof/post-live-identity.txt
+          echo "LIVE RELEASE PASS — $SOURCE_SHA — 41/41 Films — Millison #1 NEW"
+
+      - name: Preserve release proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: films-41-live-final-${{ github.sha }}
+          path: release-proof/**
+          if-no-files-found: error
+          retention-days: 30
