@@ -1,0 +1,19 @@
+{
+  "version": "SEARCH-GOLD-01",
+  "language": "nb-NO",
+  "purpose": "Representative Norwegian grocery-intent queries for relevance, provider coverage and lens regression QA.",
+  "queries": [
+    "skinke","ost","gulost","brunost","melk","lettmelk","helmelk","yoghurt","gresk yoghurt","smør",
+    "margarin","egg","brød","grovbrød","knekkebrød","havregryn","müsli","frokostblanding","leverpostei","salami",
+    "kalkunpålegg","kyllingpålegg","syltetøy","peanøttsmør","honning","majones","ketchup","sennep","pesto","hummus",
+    "kylling","kyllingfilet","kjøttdeig","karbonadedeig","biff","svinefilet","pølser","bacon","laks","torsk",
+    "makrell i tomat","fiskekaker","reker","tunfisk","pasta","spaghetti","ris","nudler","poteter","pommes frites",
+    "frossenpizza","pizza","tortilla","tacolefser","tacoskjell","salsa","tacokrydder","hermetiske tomater","tomatpuré","kokosmelk",
+    "kikerter","linser","bønner","mais","erter","gulrot","brokkoli","paprika","tomat","agurk",
+    "avokado","løk","hvitløk","spinat","salat","epler","bananer","appelsiner","druer","jordbær",
+    "blåbær","kaffe","filterkaffe","instant kaffe","te","kakao","juice","appelsinjuice","brus","cola",
+    "mineralvann","vann","energidrikk","sjokolade","potetgull","nøtter","mandler","popcorn","kjeks","is",
+    "proteinbar","proteinpudding","cottage cheese","kesam","fløte","rømme","crème fraîche","fetaost","mozzarella","parmesan",
+    "mel","hvetemel","sukker","salt","olivenolje","rapsolje","buljong","soyasaus","fiskesaus","eddik"
+  ]
+}
