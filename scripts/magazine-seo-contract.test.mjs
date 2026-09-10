@@ -164,7 +164,7 @@ test("search foundation keeps sitemap, RSS, static route metadata and canonical 
 test("Films routes have fail-closed static SEO and share metadata", () => {
   assert.match(films, /const published: FilmRecord\[\] = \[/);
   assert.match(prerender, /function readPublishedFilms\(\)/);
-  assert.match(prerender, /expected 40 published films/);
+  assert.match(prerender, /expected 41 published films/);
   assert.ok(prerender.includes('writeRoute("/films"'), "prerender must emit /films");
   assert.ok(prerender.includes('writeRoute(route, {'), "prerender must emit film detail routes");
   assert.match(prerender, /`\/films\/\$\{film\.slug\}`/);
