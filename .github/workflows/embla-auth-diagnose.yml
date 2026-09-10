@@ -14,18 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Materialize source and inspect Yellow 02 anchors
+      - name: Materialize final pre-theme source and inspect Yellow 02 anchors
         run: |
           set -euo pipefail
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/embla.html
+          python products/4sapien/build/apply_provider_guard.py /tmp/embla.html
+          python products/4sapien/build/apply_meal_plan_guard.py /tmp/embla.html
+          python products/4sapien/build/apply_product_gateway_guard.py /tmp/embla.html
           python - <<'PY'
           import pathlib,re
           s=pathlib.Path('/tmp/embla.html').read_text()
-          terms=['function ProductRow','function Detail','function ProfileFields','function Meals','function Economy','function Learn','function SearchBox','function Search','function Handle','function Meg']
+          terms=['const T={','function ProductRow','function Detail','function ProfileFields','function Onboarding','function AuthScreen','function Meals','function Economy','function Learn','function SearchResults','function Handle','function Meg','return(<div style={{fontFamily:T.body,background:T.paper']
           for term in terms:
               print('\n===',term,'===')
               m=re.search(re.escape(term),s)
               if m:
-                  a=max(0,m.start()-250); b=min(len(s),m.start()+5200)
+                  a=max(0,m.start()-250); b=min(len(s),m.start()+6200)
                   print(s[a:b])
           PY
