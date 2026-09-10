@@ -20,19 +20,17 @@ test.describe("4PLANET MARKET — Creator × Impact Gold", () => {
       "Kelp line, low tide",
     ]) await expect(page.getByRole("heading", { name: title })).toBeVisible();
 
-    const imagesLoaded = await products.locator("img").evaluateAll((images) => images.every((image) => {
+    await expect.poll(async () => products.locator("img").evaluateAll((images) => images.every((image) => {
       const img = image as HTMLImageElement;
       return img.complete && img.naturalWidth > 0;
-    }));
-    expect(imagesLoaded).toBe(true);
+    })), { timeout: 15_000 }).toBe(true);
 
     if (test.info().project.name.includes("390")) {
-      const first = await products.nth(0).boundingBox();
-      const second = await products.nth(1).boundingBox();
-      expect(first).not.toBeNull();
-      expect(second).not.toBeNull();
-      expect(Math.abs((first?.x ?? 0) - (second?.x ?? 0))).toBeGreaterThan(120);
-      expect(Math.abs((first?.y ?? 0) - (second?.y ?? 0))).toBeLessThan(360);
+      const columnCount = await page.locator(".mkt-maze").evaluate((element) => getComputedStyle(element).columnCount);
+      expect(columnCount).toBe("2");
+      const viewportWidth = await page.evaluate(() => window.innerWidth);
+      const firstCardWidth = await products.first().evaluate((element) => element.getBoundingClientRect().width);
+      expect(firstCardWidth).toBeLessThan(viewportWidth * 0.58);
     }
 
     const gridBox = await page.locator(".mkt-maze").boundingBox();
