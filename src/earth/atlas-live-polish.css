@@ -46,6 +46,14 @@
 }
 .atlas-runtime--embed-home .maplibregl-ctrl-bottom-right{margin-bottom:8px!important}
 
+/* Overlay arbitration: search results and the 4PLANET site menu must sit above
+   Atlas utility controls. This prevents LAYERS / MY ATLAS from bleeding through
+   the open navigation panel on narrow screens. */
+.atlas-runtime:not(.atlas-runtime--embed-home) .search-wrap:has(.site-menu),
+.atlas-runtime:not(.atlas-runtime--embed-home) .search-wrap:has(.results){
+  z-index:80!important;
+}
+
 /* Main mobile Atlas: preserve capabilities but reduce button noise. Search is
    row one; lenses row two; Layers/My Atlas row three. */
 @media(max-width:760px){
