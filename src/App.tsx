@@ -1,6 +1,7 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ShareMetadata } from "@/components/ShareMetadata";
 import { ContextRetained } from "@/product/ContextRetained";
 import { ProductSwitcher } from "@/product/ProductSwitcher";
 import { Analytics } from "@/analytics/Analytics";
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <FourPlanetIdentityProvider>
+        <ShareMetadata />
         <ScrollToTop />
         <ContextRetained />
         <Analytics />
