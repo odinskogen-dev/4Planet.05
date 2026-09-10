@@ -13,6 +13,7 @@ import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
+import "@/styles/identity-polish.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
