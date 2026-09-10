@@ -1,0 +1,3 @@
+/* Public header: joining is the primary identity entry. Sign-in remains available
+   inside the identity flow, but does not compete with MENU in global chrome. */
+.fourplanet-id-login{display:none!important}
