@@ -9,7 +9,17 @@ export type StoryEditorialType = "ORGANISATIONAL_EXPLAINER" | "INDEPENDENT_EDITO
 export interface StoryPathway {
   label: string;
   to: string;
-  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine";
+  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine" | "actor";
+}
+
+export interface StorySource {
+  label: string;
+  publisher: string;
+  url: string;
+  publishedAt?: string;
+  checkedAt: string;
+  supports: string;
+  limitation?: string;
 }
 
 export interface Story {
@@ -26,6 +36,8 @@ export interface Story {
   readMins: number;
   tags: string[];
   pathway?: StoryPathway;
+  sources?: StorySource[];
+  gold?: boolean;
   blocks: Block[];
 }
 
@@ -88,8 +100,8 @@ export const STORIES: Story[] = [
   },
   {
     slug: "wh4les-migratory-intelligence",
-    title: "WH4LES: the intelligence that travels through whole oceans",
-    dek: "A whale is not a single animal in empty water. It is part of the ocean's living infrastructure.",
+    title: "What a ferry can tell us about whales",
+    dek: "In the Bay of Biscay, repeated crossings turn an ordinary transport route into a long-running window on marine life — if observation effort is kept separate from the animals themselves.",
     category: "Mission Stories",
     lane: "LIFE",
     mode: "EVERGREEN",
@@ -97,17 +109,53 @@ export const STORIES: Story[] = [
     editorialType: "ORGANISATIONAL_EXPLAINER",
     byline: "4PLANET Editorial Desk",
     image: "wh4lesHero",
-    readMins: 5,
-    tags: ["whales", "ocean", "migration", "monitoring", "wh4les"],
-    pathway: { label: "Enter WH4LES", to: "/missions/wh4les", kind: "mission" },
+    readMins: 6,
+    tags: ["whales", "Bay of Biscay", "ORCA", "monitoring", "citizen science", "survey effort"],
+    pathway: { label: "Enter the ORCA Living System", to: "/living-systems/orca", kind: "living_systems" },
+    gold: true,
+    sources: [
+      {
+        label: "Beaked whales in the Bay of Biscay",
+        publisher: "ORCA",
+        url: "https://orca.org.uk/news-blog/beaked-whales-in-the-bay-of-biscay",
+        publishedAt: "2022-03-16",
+        checkedAt: "2026-09-01",
+        supports: "Long-term ferry survey effort, beaked-whale encounters and the distinction between observations, effort and inferred distribution.",
+        limitation: "ORCA summary of a published analysis; this story does not turn encounter records into population estimates.",
+      },
+      {
+        label: "Brittany Ferries End of Season Roundup 2025",
+        publisher: "ORCA",
+        url: "https://orca.org.uk/news-blog/brittany-ferries-end-of-season-roundup-2025",
+        publishedAt: "2025",
+        checkedAt: "2026-09-01",
+        supports: "2025 survey programme scale, repeated ferry-route monitoring and ORCA's report that the Bay appeared unusually quiet that season.",
+        limitation: "A quiet survey season is an observation requiring follow-up, not proof of a population decline or identified cause.",
+      },
+      {
+        label: "Survey Highlights — Portsmouth–Santander 22/06/2026",
+        publisher: "ORCA",
+        url: "https://orca.org.uk/news-blog/survey-highlights-portsmouth-santander-22-06-2026",
+        publishedAt: "2026-07-13",
+        checkedAt: "2026-09-01",
+        supports: "A recent 2026 example of trained surveyors repeatedly observing cetaceans while crossing the Bay of Biscay.",
+        limitation: "One survey account is a snapshot, not a trend or abundance estimate.",
+      },
+    ],
     blocks: [
-      L("Follow one whale for a year and you begin to see the ocean the way it actually works — not a flat blue surface, but a set of connected systems held together by movement."),
-      P("Whales carry nutrients between feeding and breeding grounds across some of the longest migrations on Earth. Their presence supports the plankton productivity that feeds much of the sea and helps produce the oxygen we breathe."),
-      S("The pressure"),
-      P("Those corridors now cross shipping lanes, industrial noise, fishing gear and waters reshaped by a changing climate. Much of the pressure is hard to monitor, because the routes stretch across enormous distances and many jurisdictions at once."),
-      Q("Whale protection is no longer only about whales. It is about protecting the systems they help keep alive."),
-      P("Better monitoring across borders, quieter and safer shipping, protected routes and reduced entanglement all help — and underneath them, a public that understands why any of it matters."),
-      P("WH4LES is being developed as a public Mission world for exactly that: whale intelligence, documentation and credible future partner pathways, connecting understanding, evidence and cultural reach into something people can follow."),
+      L("A ferry is designed to move people across water. Run the same route again and again with trained observers on the bridge, and it can become something else as well: a repeatable line through a living sea."),
+      P("That is the useful idea behind ORCA's ferry surveys. Surveyors record what they see, but the sightings are only half the evidence. The other half is effort: where the ship travelled, how much water was surveyed, when observations were possible and under what conditions."),
+      S("The map is not the animals"),
+      P("ORCA has described a long Bay of Biscay dataset in which 244,400 kilometres of surveyed water and 419 beaked-whale encounters from 2006 to 2018 were analysed to investigate how encounter rates varied across space and time. The result can inform questions about distribution and seasonality. It does not mean 419 whales lived there, and the route is not a migration track."),
+      Q("A point on a map is an observation. A kilometre surveyed is effort. A population trend is a different claim."),
+      P("That distinction sounds technical until it changes the story. More sightings can mean more animals, more observation effort, different routes, better conditions or some combination. Less can mean the reverse. Long-running monitoring becomes valuable because it gives analysts a better chance of separating those possibilities instead of treating every dot as equal."),
+      S("A year that looked different"),
+      P("ORCA reported 42 surveys across its Brittany Ferries programme between March and November 2025. Common dolphins were the most frequently recorded species. The organisation also described the Bay of Biscay as noticeably quiet for marine wildlife that season and explicitly framed the question as something long-term monitoring could investigate further — an anomaly to examine, not a cause already known."),
+      P("The surveys continued in 2026. On a June Portsmouth–Santander crossing, ORCA surveyors again recorded common dolphins and later Cuvier's beaked whales among the observations described from the route. One crossing is not a trend. It is another piece of the time series."),
+      S("What 4PLANET should do with this"),
+      P("The useful public product is not a dramatic map covered in whale icons. It is a way to move from a species to a place, then into source records, survey effort, limitations and the people doing the monitoring — without silently changing what any of those things mean."),
+      P("That is why the ORCA journey is a strong 4PLANET proof case. SPECIES can hold identity. ATLAS can hold spatial records and effort context. Living Systems can explain relationships. The Actor profile can show who does the work. Each surface can reuse the same evidence while keeping uncertainty visible."),
+      Q("The goal is not to make the ocean look knowable. It is to make what we actually know easier to use."),
     ],
   },
   {

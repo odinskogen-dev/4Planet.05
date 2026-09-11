@@ -1,0 +1,41 @@
+name: Magazine Gold Story Gate
+
+on:
+  pull_request:
+    paths:
+      - "src/content/stories.ts"
+      - "src/components/StorySources.tsx"
+      - "src/pages/v5/StoryArticle.tsx"
+      - "src/styles/magazine-story-sources.css"
+      - "scripts/magazine-gold-story-contract.test.mjs"
+      - ".github/workflows/magazine-gold-story-gate.yml"
+  push:
+    branches:
+      - "work/giga02-magazine-gold-story-01"
+    paths:
+      - "src/content/stories.ts"
+      - "src/components/StorySources.tsx"
+      - "src/pages/v5/StoryArticle.tsx"
+      - "src/styles/magazine-story-sources.css"
+      - "scripts/magazine-gold-story-contract.test.mjs"
+      - ".github/workflows/magazine-gold-story-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  magazine-gold-story:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node --test scripts/magazine-gold-story-contract.test.mjs
+      - run: npm run typecheck
+      - run: npm run build
