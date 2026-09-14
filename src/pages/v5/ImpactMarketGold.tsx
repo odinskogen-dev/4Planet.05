@@ -105,11 +105,7 @@ export default function ImpactMarketGold() {
 
       <FirstMarketProducts />
 
-      <section className="mkt-product-stage">
-        <div className="mkt-art-frame" aria-label="Synthetic abstract artwork fixture">
-          <div className="mkt-art mkt-art-one"><i /><i /><i /></div>
-          <span>DEMO ARTWORK · FIXTURE</span>
-        </div>
+      <section className="mkt-product-stage mkt-product-stage--no-art">
         <div className="mkt-product-copy">
           <div className="mkt-eyebrow">4RT_ EDITION / GOLD FIXTURE</div>
           <h2>TIDAL<br />MEMORY 01</h2>
