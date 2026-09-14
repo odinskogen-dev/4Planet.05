@@ -144,11 +144,15 @@ jobs:
           url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler.log | tail -n1)
           [ -n "$url" ] || exit 10
           echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "::notice title=4SAPIEN Human Gold Preview::$url"
+          ready=0
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'EMBLA HUMAN GOLD 02' /tmp/site.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'EMBLA HUMAN GOLD 02' /tmp/site.html; then ready=1; break; fi
             sleep 2
           done
-          exit 11
+          [ "$ready" = 1 ] || exit 11
+          headers=$(curl -sS -D - -o /tmp/cors-body -X OPTIONS -H "Origin: $url" -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: authorization,apikey,content-type' "${SUPABASE_URL}/functions/v1/embla-core-preview" | tr -d '\r')
+          grep -Fqi "access-control-allow-origin: $url" <<<"$headers" || { echo "Embla Core CORS does not allow isolated preview origin"; echo "$headers"; exit 12; }
 
       - name: Summary
         if: always()
@@ -161,5 +165,6 @@ jobs:
           echo '- Private Core tables: anonymous access denied' >> "$GITHUB_STEP_SUMMARY"
           echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Embla Core unauthenticated boundary: gated at 401' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Isolated preview → Embla Core CORS: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
           echo "- Preview: ${{ steps.preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
