@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>4SAPIEN — Understand your life. Decide for yourself.</title>
+<meta name="description" content="4SAPIEN helps you understand food, money and everyday choices through facts, sources and your own priorities. Embla helps you understand; you decide."/>
+<link rel="canonical" href="https://4sapien.com/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="4SAPIEN"/>
+<meta property="og:title" content="4SAPIEN — Understand your life. Decide for yourself."/>
+<meta property="og:description" content="One place for the decisions that shape your life. Facts, not advice."/>
+<meta property="og:url" content="https://4sapien.com/"/>
+<meta name="theme-color" content="#FFFFFF"/>
+<script>if(location.hostname==='www.4sapien.com')location.replace('https://4sapien.com'+location.pathname+location.search+location.hash)</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fff;--ink:#0a0a0a;--blue:#2e2eff;--soft:#565048;--faint:#777168;--line:rgba(10,10,10,.1);--line2:rgba(10,10,10,.17);--fill:#f6f5f1;--red:#ff4d22;--green:#21885b;--bluewash:rgba(46,46,255,.06);--disp:'Instrument Sans',sans-serif;--body:'DM Sans',sans-serif;--mono:'Fragment Mono',monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5}button,input,select,textarea{font:inherit}button,a{color:inherit}a{text-decoration:none}.hidden{display:none!important}.wrap{width:min(1080px,calc(100% - 40px));margin:auto}.mono{font-family:var(--mono);letter-spacing:.06em}h1,h2,h3{font-family:var(--disp);line-height:1.05;letter-spacing:-.025em;margin:0}.eyebrow{font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}.muted{color:var(--soft)}.faint{color:var(--faint)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line2);background:transparent;padding:12px 18px;border-radius:11px;font-weight:600;cursor:pointer;min-height:44px}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.ink{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.danger{border-color:rgba(255,77,34,.4);color:var(--red)}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.small{padding:8px 12px;min-height:36px;font-size:13px}.btn.full{width:100%}
+.sitehead{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}.sitehead .inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:18px}.mark{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:-.02em}.mark small{display:block;font:9px var(--mono);letter-spacing:.12em;color:var(--faint)}.headlinks{display:flex;align-items:center;gap:16px;font-size:14px;font-weight:600}
+.hero{padding:clamp(52px,9vw,104px) 0 clamp(44px,7vw,80px)}.herogrid{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:clamp(32px,6vw,70px)}.hero h1{font-size:clamp(2.5rem,6vw,4.35rem)}.hero .sub{font-size:clamp(1.03rem,1.7vw,1.22rem);max-width:34ch;color:var(--soft);margin:22px 0 28px}.ctas{display:flex;gap:11px;flex-wrap:wrap}.trustline{margin-top:20px;font-size:13px;color:var(--faint)}
+.embla-demo{border:1px solid var(--line2);border-radius:24px;padding:18px;background:#fff;box-shadow:0 32px 60px -38px rgba(10,10,10,.35)}.demo-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-body{padding:17px 0 2px}.bubble{border:1px solid var(--line2);border-radius:14px;padding:13px 14px;margin:10px 0;font-size:14px}.bubble.user{margin-left:34px;background:var(--fill)}.proofrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.truth{font:10px var(--mono);border:1px solid var(--line2);border-radius:5px;padding:3px 7px}.truth.model{color:var(--blue)}.truth.unknown{color:var(--faint)}
+.band{padding:clamp(58px,8vw,94px) 0;border-top:1px solid var(--line)}.band.fill{background:var(--fill)}.band h2{font-size:clamp(1.85rem,3.5vw,2.7rem);max-width:17ch}.lead{font-size:clamp(1rem,1.5vw,1.15rem);color:var(--soft);max-width:55ch;margin:16px 0 0}.prompts{display:grid;gap:10px;margin-top:28px;max-width:610px}.prompt{border:1px solid var(--line2);border-radius:13px;padding:14px 16px}.worlds{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}.world{border:1px solid var(--line2);border-radius:17px;padding:24px;min-height:210px;display:flex;flex-direction:column}
