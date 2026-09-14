@@ -1,0 +1,41 @@
+name: 4PLANET domain routing ops v4
+
+on:
+  push:
+    branches:
+      - ops/domain-routing-20260914
+    paths:
+      - .github/workflows/domain-routing-ops-v4.yml
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout ops branch
+        uses: actions/checkout@v4
+
+      - name: Validate Factory Cloudflare credential
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_API_TOKEN"
+          test -n "$CF_ACCOUNT_ID"
+          echo "::add-mask::$CF_API_TOKEN"
+          echo "::add-mask::$CF_ACCOUNT_ID"
+          response=$(curl -fsS -H "Authorization: Bearer $CF_API_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify)
+          test "$(jq -r '.success' <<<"$response")" = "true"
+          test "$CF_ACCOUNT_ID" = "d53c17b06219066a0325eec01c21729e"
+          echo 'Factory Cloudflare credential valid.'
+
+      - name: Configure Atlas and Species product domains
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+        shell: bash
+        run: bash .ops/domain-router/configure.sh
