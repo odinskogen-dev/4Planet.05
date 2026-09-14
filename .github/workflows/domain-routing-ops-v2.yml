@@ -1,0 +1,23 @@
+name: 4PLANET domain routing ops v2
+
+on:
+  push:
+    branches:
+      - ops/domain-routing-20260914
+    paths:
+      - .github/workflows/domain-routing-ops-v2.yml
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ops branch
+        uses: actions/checkout@v4
+      - name: Configure Cloudflare domains
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: bash .ops/domain-router/configure.sh
