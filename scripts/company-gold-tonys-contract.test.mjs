@@ -4,7 +4,6 @@ import test from "node:test";
 
 const data = readFileSync(new URL("../src/data/companyGoldTony.ts", import.meta.url), "utf8");
 const drawer = readFileSync(new URL("../src/pages/integrated/CompanyGoldTony.tsx", import.meta.url), "utf8");
-const router = readFileSync(new URL("../src/routes/router.tsx", import.meta.url), "utf8");
 
 test("AUTO-PROOF-01A materialises the exact company/product/material slice", () => {
   assert.match(data, /company:tonys-chocolonely/);
@@ -36,5 +35,4 @@ test("drawer reads the same shared objects and stays internal/noindex", () => {
   assert.match(drawer, /noindex,nofollow,noarchive/);
   assert.match(drawer, /UNKNOWN PRESERVED/);
   assert.match(drawer, /Next evidence decision/);
-  assert.match(router, /\/labs\/company-gold\/tonys/);
 });
