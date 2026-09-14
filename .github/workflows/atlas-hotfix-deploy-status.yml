@@ -32,5 +32,10 @@ jobs:
           curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' > zones.json
           ACCOUNT=$(jq -r '.result[0].account.id // empty' zones.json)
           [ -n "$ACCOUNT" ] || { cat zones.json; exit 3; }
-          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/pages/projects/4planet-05/deployments?env=production&per_page=5" > deployments.json
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/pages/projects/4planet-05/deployments?env=production&per_page=3" > deployments.json
           jq -r '.result[] | [.id,.environment,.latest_stage.name,.latest_stage.status,.deployment_trigger.metadata.commit_hash,.url,.created_on] | @tsv' deployments.json
+
+          echo '===== LIVE 4planet.org headers ====='
+          curl -sSI 'https://4planet.org/?atlas_header_probe=1' | tr -d '\r'
+          echo '===== LIVE 4planetatlas.com headers ====='
+          curl -sSI 'https://4planetatlas.com/?embed=home&atlas_header_probe=1' | tr -d '\r'
