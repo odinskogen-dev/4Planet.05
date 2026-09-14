@@ -21,7 +21,7 @@ export function MagazineAtlas() {
           </div>
         </header>
         <section className="mag-public-atlas-frame" aria-label="Interactive 4PLANET ATLAS">
-          <iframe title="4PLANET ATLAS interactive globe" src="/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18" allow="fullscreen" referrerPolicy="strict-origin-when-cross-origin" />
+          <iframe title="4PLANET ATLAS interactive globe" src="/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18" loading="eager" allow="fullscreen" referrerPolicy="strict-origin-when-cross-origin" />
         </section>
         <nav className="mag-public-atlas-next" aria-label="Continue reading">
           <Link to="/magazine/topics/nature">FOLLOW NATURE →</Link>
