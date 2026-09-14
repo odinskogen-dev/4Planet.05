@@ -1,0 +1,137 @@
+name: 4PLANET Magazine ATLAS embed LIVE hotfix
+
+on:
+  push:
+    branches:
+      - work/magazine-public-launch-gold-01
+    paths:
+      - '.github/workflows/magazine-atlas-embed-live-hotfix.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magazine-atlas-embed-live-hotfix
+  cancel-in-progress: true
+
+jobs:
+  promote-exact-atlas-hotfix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MAGAZINE_UPSTREAM: https://3af7c116.4planet-05.pages.dev
+      SOURCE_SHA: e868e3a0b37677618d3072de2aaf0fe750c3c150
+    steps:
+      - name: Verify exact Pages candidate before promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in '/magazine/' '/magazine/atlas' '/films/' '/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18'; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$MAGAZINE_UPSTREAM$route" || true)
+            [ "$code" = '200' ] || { echo "Candidate failed $code $route"; exit 2; }
+            echo "PASS candidate $route"
+          done
+
+      - name: Resolve Cloudflare credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && TOKEN="$candidate" && break
+          done
+          [ -n "$TOKEN" ] || { echo 'Cloudflare token unavailable'; exit 3; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zones="$RUNNER_TEMP/zones.json"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmagazine.com' > "$zones"
+          account_id=$(jq -r '.result[0].account.id // empty' "$zones")
+          [ -n "$account_id" ] || { echo 'Cloudflare account could not be resolved'; exit 4; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Promote exact ATLAS-fixed candidate to 4planetmagazine.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/worker.mjs" <<EOF
+          const UPSTREAM = "${MAGAZINE_UPSTREAM}";
+          const SOURCE_SHA = "${SOURCE_SHA}";
+          const APEX = "4planetmagazine.com";
+          const STATIC_FILES = new Set(["/favicon.ico","/favicon.svg","/apple-touch-icon.png","/og.png","/robots.txt","/sitemap.xml","/magazine-sitemap.xml","/magazine-robots.txt","/news-sitemap.xml","/rss.xml","/manifest.webmanifest","/site.webmanifest","/4planet-indexnow-2026-9f7b3c1d5e8a.txt"]);
+          const allowedEditorial = (p) => p === "/magazine" || p === "/magazine/" || p.startsWith("/magazine/") || p === "/films" || p === "/films/" || p.startsWith("/films/") || p.startsWith("/assets/") || STATIC_FILES.has(p);
+          const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
+          export default { async fetch(request) {
+            const incoming = new URL(request.url);
+            if (incoming.hostname === "www.4planetmagazine.com") { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
+            if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
+            const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
+            if (!allowedEditorial(incoming.pathname) && !atlasEmbed) return blocked();
+            let upstreamPath = incoming.pathname;
+            if (incoming.pathname === "/robots.txt") upstreamPath = "/magazine-robots.txt";
+            if (incoming.pathname === "/sitemap.xml") upstreamPath = "/magazine-sitemap.xml";
+            const upstream = new URL(upstreamPath, UPSTREAM);
+            upstream.search = incoming.search;
+            const response = await fetch(new Request(upstream.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.set("x-4planet-surface", atlasEmbed ? "magazine-atlas-embed" : "magazine-only-live");
+            headers.set("x-4planet-source-sha", SOURCE_SHA);
+            if ((headers.get("content-type") || "").includes("text/html")) {
+              headers.set("cache-control", "no-store");
+              headers.set("x-robots-tag", atlasEmbed ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+            }
+            return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
+          }};
+          EOF
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planetmagazine-test-king"
+          main = "$RUNNER_TEMP/worker.mjs"
+          compatibility_date = "2026-09-07"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmagazine.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmagazine.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml"
+
+      - name: Verify ATLAS hotfix on public LIVE domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_source() {
+            local url="$1"
+            local expected_surface="$2"
+            for attempt in $(seq 1 30); do
+              headers=$(curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true)
+              code=$(printf '%s\n' "$headers" | awk '/^HTTP\//{c=$2} END{print c}')
+              sha=$(printf '%s\n' "$headers" | awk -F': ' 'tolower($1)=="x-4planet-source-sha"{s=$2} END{print s}')
+              surface=$(printf '%s\n' "$headers" | awk -F': ' 'tolower($1)=="x-4planet-surface"{s=$2} END{print s}')
+              if [ "$code" = '200' ] && [ "$sha" = "$SOURCE_SHA" ] && [ "$surface" = "$expected_surface" ]; then
+                echo "PASS LIVE $url source=$sha surface=$surface"
+                return 0
+              fi
+              sleep 3
+            done
+            echo "FAIL LIVE $url expected source=$SOURCE_SHA surface=$expected_surface"
+            return 1
+          }
+
+          verify_source 'https://4planetmagazine.com/magazine/' 'magazine-only-live'
+          verify_source 'https://4planetmagazine.com/magazine/atlas' 'magazine-only-live'
+          verify_source 'https://4planetmagazine.com/films/' 'magazine-only-live'
+          verify_source 'https://4planetmagazine.com/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18' 'magazine-atlas-embed'
+
+          root_code=$(curl -sS -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/')
+          [ "$root_code" = '308' ] || { echo "FAIL root redirect=$root_code"; exit 6; }
+          echo "MAGAZINE ATLAS EMBED LIVE HOTFIX PASS — $SOURCE_SHA"
