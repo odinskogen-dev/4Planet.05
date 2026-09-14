@@ -1,10 +1,26 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
+import { parseEmblaShoppingList, summariseEmblaShoppingList } from "../../choice/embla";
+import {
+  confirmEmblaMemory,
+  deleteEmblaMemory,
+  getStoredSession,
+  listEmblaMemories,
+  readFoodFinancePermission,
+  runEmblaTurn,
+  setFoodFinancePermission,
+  signInEmbla,
+  signOutEmbla,
+  supersedeEmblaMemory,
+  type EmblaMemory,
+  type EmblaSession,
+} from "./emblaRuntime";
 import "./embla-02.css";
 
 type EmblaMode = "LIST" | "ASK";
+type ChatMessage = { role: "user" | "assistant"; content: string; tools?: string[] };
+type RuntimeState = "idle" | "thinking" | "complete" | "error";
 
 const financeModules = [
   { title: "MONEY MAP", text: "One honest picture of income, fixed costs, debt, assets, goals and recurring commitments. Manual-first; connected accounts later." },
@@ -20,11 +36,39 @@ export function FourSapienHome() {
   const [analysed, setAnalysed] = useState(false);
   const [saved, setSaved] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
+  const [session, setSession] = useState<EmblaSession | null>(() => getStoredSession());
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [runtimeState, setRuntimeState] = useState<RuntimeState>("idle");
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [memories, setMemories] = useState<EmblaMemory[]>([]);
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [foodFinanceAllowed, setFoodFinanceAllowed] = useState(false);
+  const [controlBusy, setControlBusy] = useState(false);
 
   const items = useMemo(() => parseEmblaShoppingList(shoppingList), [shoppingList]);
   const summary = useMemo(() => summariseEmblaShoppingList(items), [items]);
-  const embla = useMemo(() => submittedPrompt === null ? null : resolveEmblaIntake(submittedPrompt), [submittedPrompt]);
+
+  const refreshControls = async (activeSession: EmblaSession) => {
+    try {
+      const [memoryResult, permissionResult] = await Promise.all([
+        listEmblaMemories(activeSession),
+        readFoodFinancePermission(activeSession),
+      ]);
+      setSession(memoryResult.session);
+      setMemories(memoryResult.memories);
+      setFoodFinanceAllowed(permissionResult.allowed);
+    } catch {
+      // The chat remains usable even if a secondary control surface is temporarily unavailable.
+    }
+  };
+
+  useEffect(() => {
+    if (session) void refreshControls(session);
+  }, []);
 
   const analyseList = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,9 +76,42 @@ export function FourSapienHome() {
     setSaved(false);
   };
 
-  const runEmbla = (event: FormEvent<HTMLFormElement>) => {
+  const authenticate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmittedPrompt(prompt);
+    setAuthError(null);
+    try {
+      const next = await signInEmbla(email.trim(), password);
+      setSession(next);
+      setPassword("");
+      await refreshControls(next);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "SIGN_IN_FAILED");
+    }
+  };
+
+  const runEmbla = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const text = prompt.trim();
+    if (!text || !session || runtimeState === "thinking") return;
+    setPrompt("");
+    setRuntimeError(null);
+    setRuntimeState("thinking");
+    setMessages((current) => [...current, { role: "user", content: text }]);
+    try {
+      const result = await runEmblaTurn(session, text, conversationId);
+      setSession(result.session);
+      setConversationId(result.turn.conversation_id || conversationId);
+      setMessages((current) => [...current, {
+        role: "assistant",
+        content: result.turn.answer || "Embla returned no answer.",
+        tools: result.turn.tools_used || [],
+      }]);
+      setRuntimeState("complete");
+      await refreshControls(result.session);
+    } catch (error) {
+      setRuntimeState("error");
+      setRuntimeError(error instanceof Error ? error.message : "EMBLA_RUNTIME_FAILED");
+    }
   };
 
   const saveList = () => {
@@ -44,11 +121,72 @@ export function FourSapienHome() {
     setSaved(true);
   };
 
+  const logout = () => {
+    signOutEmbla();
+    setSession(null);
+    setConversationId(null);
+    setMessages([]);
+    setMemories([]);
+    setFoodFinanceAllowed(false);
+    setRuntimeState("idle");
+    setRuntimeError(null);
+  };
+
+  const changePermission = async () => {
+    if (!session || controlBusy) return;
+    setControlBusy(true);
+    try {
+      const result = await setFoodFinancePermission(session, !foodFinanceAllowed);
+      setSession(result.session);
+      setFoodFinanceAllowed(!foodFinanceAllowed);
+    } finally {
+      setControlBusy(false);
+    }
+  };
+
+  const confirmMemory = async (memory: EmblaMemory) => {
+    if (!session || controlBusy) return;
+    setControlBusy(true);
+    try {
+      const result = await confirmEmblaMemory(session, memory.id);
+      setSession(result.session);
+      await refreshControls(result.session);
+    } finally {
+      setControlBusy(false);
+    }
+  };
+
+  const removeMemory = async (memory: EmblaMemory) => {
+    if (!session || controlBusy) return;
+    setControlBusy(true);
+    try {
+      const result = await deleteEmblaMemory(session, memory.id);
+      setSession(result.session);
+      await refreshControls(result.session);
+    } finally {
+      setControlBusy(false);
+    }
+  };
+
+  const changeMemory = async (memory: EmblaMemory) => {
+    if (!session || controlBusy || typeof window === "undefined") return;
+    const content = window.prompt("Change what Embla should remember", memory.content)?.trim();
+    if (!content || content === memory.content) return;
+    setControlBusy(true);
+    try {
+      const result = await supersedeEmblaMemory(session, memory, content);
+      setSession(result.session);
+      await refreshControls(result.session);
+    } finally {
+      setControlBusy(false);
+    }
+  };
+
   return (
     <main className="embla02">
       <header className="embla02__header">
         <Link to="/" className="embla02__brand">4PLANET_</Link>
-        <span className="embla02__byline">4SAPIEN / EMBLA 02</span>
+        <span className="embla02__byline">4SAPIEN / EMBLA HUMAN GOLD</span>
       </header>
 
       <section className="embla02__hero">
@@ -123,10 +261,7 @@ export function FourSapienHome() {
               </div>
 
               <div className="embla02__action-bar">
-                <div>
-                  <strong>{store}</strong>
-                  <span>Context saved only when you choose to save this list.</span>
-                </div>
+                <div><strong>{store}</strong><span>Context saved only when you choose to save this list.</span></div>
                 <button type="button" onClick={saveList}>Use this list</button>
               </div>
               {saved ? <p className="embla02__saved">Saved on this device. This is the first bounded LEARN receipt — not a claim that products were purchased.</p> : null}
@@ -136,29 +271,79 @@ export function FourSapienHome() {
       ) : (
         <section className="embla02__workspace embla02__workspace--ask" aria-labelledby="embla-ask-title">
           <div className="embla02__workspace-head">
-            <div><p className="embla02__eyebrow">ASK EMBLA</p><h2 id="embla-ask-title">What are you trying to decide?</h2></div>
+            <div><p className="embla02__eyebrow">ASK EMBLA / REAL LIFE MODEL</p><h2 id="embla-ask-title">What are you trying to decide?</h2></div>
+            {session ? <span className="embla02__truth-chip">PRIVATE SESSION / {session.user.email || "SIGNED IN"}</span> : <span className="embla02__truth-chip">SIGN IN REQUIRED</span>}
           </div>
-          <form onSubmit={runEmbla} className="embla02__ask-form">
-            <textarea aria-label="Ask Embla" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Can I afford this home without making the rest of my life tighter?" />
-            <button type="submit" className="embla02__primary">Ask Embla</button>
-          </form>
-          {embla ? (
-            <article className="embla02__answer" aria-live="polite">
-              <div><span>{embla.eyebrow}</span><strong>{embla.status.replaceAll("_", " ")}</strong></div>
-              <h3>{embla.title}</h3>
-              <p>{embla.detail}</p>
-              <small>{embla.truthBoundary}</small>
-              {embla.nextHref && embla.nextLabel ? <Link to={embla.nextHref}>{embla.nextLabel} →</Link> : null}
-            </article>
-          ) : null}
+
+          {!session ? (
+            <form onSubmit={authenticate} className="embla02__auth" aria-label="Sign in to 4SAPIEN">
+              <div>
+                <label>Email<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+                <label>Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+              </div>
+              <p>Your password is sent directly to the existing 4SAPIEN Supabase Auth service and is never stored by this interface.</p>
+              {authError ? <p className="embla02__error" role="alert">{authError}</p> : null}
+              <button type="submit" className="embla02__primary">Enter 4SAPIEN</button>
+            </form>
+          ) : (
+            <>
+              <div className="embla02__sessionbar">
+                <div><span>EMBLA CORE</span><strong>{conversationId ? "Conversation active" : "Ready"}</strong></div>
+                <div className="embla02__session-actions">
+                  <button type="button" onClick={() => setMemoryOpen((open) => !open)}>Memory · {memories.length}</button>
+                  <button type="button" onClick={changePermission} disabled={controlBusy}>{foodFinanceAllowed ? "Food budget sharing: ON" : "Food budget sharing: OFF"}</button>
+                  <button type="button" onClick={logout}>Sign out</button>
+                </div>
+              </div>
+
+              {memoryOpen ? (
+                <section className="embla02__memory" aria-label="Embla memory">
+                  <div><p className="embla02__eyebrow">YOUR MEMORY</p><h3>You control what persists.</h3></div>
+                  {memories.length ? memories.map((memory) => (
+                    <article key={memory.id}>
+                      <div><span>{memory.memory_type.replaceAll("_", " ")} · {memory.state}</span><p>{memory.content}</p></div>
+                      <div>
+                        {memory.state === "proposed" ? <button type="button" onClick={() => void confirmMemory(memory)} disabled={controlBusy}>Remember</button> : null}
+                        <button type="button" onClick={() => void changeMemory(memory)} disabled={controlBusy}>Change</button>
+                        <button type="button" onClick={() => void removeMemory(memory)} disabled={controlBusy}>Delete</button>
+                      </div>
+                    </article>
+                  )) : <p className="embla02__boundary">Nothing durable is stored yet. Normal conversation is not automatically memory.</p>}
+                </section>
+              ) : null}
+
+              <div className="embla02__chat" aria-live="polite">
+                {messages.length === 0 ? (
+                  <div className="embla02__chat-empty">
+                    <strong>One Embla. Your private Life Model.</strong>
+                    <span>Try: “How much money do I actually have available now?” or “Remember that I’m saving 50,000 NOK for Japan.”</span>
+                  </div>
+                ) : messages.map((message, index) => (
+                  <article key={`${message.role}-${index}`} data-role={message.role}>
+                    <span>{message.role === "assistant" ? "EMBLA" : "YOU"}</span>
+                    <p>{message.content}</p>
+                    {message.tools?.length ? <small>Used verified tools: {Array.from(new Set(message.tools)).join(" · ")}</small> : null}
+                  </article>
+                ))}
+                {runtimeState === "thinking" ? <div className="embla02__thinking"><span /> Embla is checking your Life Model and the tools needed for this answer.</div> : null}
+              </div>
+
+              <form onSubmit={runEmbla} className="embla02__ask-form">
+                <textarea aria-label="Ask Embla" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Can I afford this without making the rest of my life tighter?" disabled={runtimeState === "thinking"} />
+                <div className="embla02__ask-actions">
+                  <p>Facts, calculations and unknowns stay distinct. You decide.</p>
+                  <button type="submit" className="embla02__primary" disabled={!prompt.trim() || runtimeState === "thinking"}>{runtimeState === "thinking" ? "Checking…" : "Ask Embla"}</button>
+                </div>
+              </form>
+              {runtimeError ? <p className="embla02__error" role="alert">Embla could not complete that turn: {runtimeError}. Your message is not presented as answered.</p> : null}
+              <p className="embla02__boundary">Food can access only the bounded Finance food-budget context when you explicitly switch sharing on above. It cannot read salary, debt, investments or unrestricted Finance data through that seam.</p>
+            </>
+          )}
         </section>
       )}
 
       <section className="embla02__principle">
-        <div>
-          <p className="embla02__eyebrow">ONE SAPIEN / MANY CHOICES</p>
-          <h2>Understand me. Understand the world. Help me choose. Help me act.</h2>
-        </div>
+        <div><p className="embla02__eyebrow">ONE SAPIEN / MANY CHOICES</p><h2>Understand me. Understand the world. Help me choose. Help me act.</h2></div>
         <div className="embla02__principle-links">
           <Link to="/4sapien/food">FOOD / LIVE PROOF</Link>
           <Link to="/4sapien/finance">4FINANCE / MONEY CONTEXT</Link>
