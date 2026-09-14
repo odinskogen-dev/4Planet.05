@@ -100,9 +100,13 @@ jobs:
       - name: Backend authority gates
         run: |
           set -euo pipefail
-          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache four_sapien_embla_memories four_sapien_embla_messages four_sapien_permissions; do
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache; do
             code=$(curl -sS -o /tmp/db.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
-            [ "$code" = 200 ] || { echo "$table HTTP $code"; exit 5; }
+            [ "$code" = 200 ] || { echo "$table expected schema-readable HTTP 200, got $code"; exit 5; }
+          done
+          for table in four_sapien_embla_memories four_sapien_embla_messages four_sapien_permissions; do
+            code=$(curl -sS -o /tmp/private.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            case "$code" in 401|403) ;; *) echo "$table expected anonymous denial, got HTTP $code"; cat /tmp/private.json; exit 5;; esac
           done
           code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"q":"skinke"}' "${SUPABASE_URL}/functions/v1/embla-products" || true)
           [ "$code" = 401 ] || { echo "gateway boundary HTTP $code"; cat /tmp/gateway.json; exit 6; }
@@ -154,6 +158,7 @@ jobs:
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
           echo '- Canonical Embla Core seam: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Memory + Food/Finance permission controls: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Private Core tables: anonymous access denied' >> "$GITHUB_STEP_SUMMARY"
           echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Embla Core unauthenticated boundary: gated at 401' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
