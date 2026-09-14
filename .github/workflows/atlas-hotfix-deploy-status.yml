@@ -1,0 +1,36 @@
+name: 4PLANET ATLAS hotfix deploy status
+
+on:
+  push:
+    branches: [work/magazine-public-launch-gold-01]
+    paths: ['.github/workflows/atlas-hotfix-deploy-status.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve Cloudflare and inspect production
+        env:
+          T1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          T2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          T3: ${{ secrets.CF_API_TOKEN }}
+          T4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=''
+          for c in "$T1" "$T2" "$T3" "$T4"; do [ -n "$c" ] && TOKEN="$c" && break; done
+          [ -n "$TOKEN" ] || { echo 'NO_TOKEN'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' > zones.json
+          ACCOUNT=$(jq -r '.result[0].account.id // empty' zones.json)
+          [ -n "$ACCOUNT" ] || { cat zones.json; exit 3; }
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/pages/projects/4planet-05/deployments?env=production&per_page=5" > deployments.json
+          jq -r '.result[] | [.id,.environment,.latest_stage.name,.latest_stage.status,.deployment_trigger.metadata.commit_hash,.url,.created_on] | @tsv' deployments.json
