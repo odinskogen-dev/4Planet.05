@@ -35,14 +35,42 @@ jobs:
           echo "RESULT PRODUCTION_BRANCH=$(jq -r '.result.production_branch // "UNKNOWN"' <<<"${project}")"
           echo "RESULT DOMAINS=$(jq -r '[.result.domains[]?] | join(",")' <<<"${project}")"
 
-          envs="$(jq -c '.result.deployment_configs.production.env_vars // {}' <<<"${project}")"
+          prod_envs="$(jq -c '.result.deployment_configs.production.env_vars // {}' <<<"${project}")"
+          preview_envs="$(jq -c '.result.deployment_configs.preview.env_vars // {}' <<<"${project}")"
 
-          required=(
+          inspect_env() {
+            scope="$1"
+            envs="$2"
+            shift 2
+            for key in "$@"; do
+              type="$(jq -r --arg k "$key" '.[$k].type // empty' <<<"${envs}")"
+              if [[ -z "$type" ]]; then
+                echo "$scope $key=MISSING"
+              elif [[ "$type" == "secret_text" ]]; then
+                echo "$scope $key=PRESENT(secret_text)"
+              else
+                value="$(jq -r --arg k "$key" '.[$k].value // "<no-value>"' <<<"${envs}")"
+                case "$key" in
+                  STRIPE_PAYMENT_ENV|STRIPE_CHECKOUT_TEST_ENABLED|STRIPE_CHECKOUT_LIVE_ENABLED|STRIPE_LIVE_RELEASE_APPROVED|STRIPE_WEBHOOK_LIVE_ENABLED|STRIPE_INVOICE_LIVE_ENABLED|MARKET_STRIPE_LIVE_CANARY_ENABLED)
+                    echo "$scope $key=$value($type)"
+                    ;;
+                  *)
+                    echo "$scope $key=PRESENT($type)"
+                    ;;
+                esac
+              fi
+            done
+          }
+
+          keys=(
             STRIPE_PAYMENT_ENV
+            STRIPE_TEST_SECRET_KEY
             STRIPE_LIVE_SECRET_KEY
-            STRIPE_WEBHOOK_SECRET_LIVE
+            STRIPE_CHECKOUT_TEST_ENABLED
             STRIPE_CHECKOUT_LIVE_ENABLED
             STRIPE_LIVE_RELEASE_APPROVED
+            STRIPE_WEBHOOK_SECRET_TEST
+            STRIPE_WEBHOOK_SECRET_LIVE
             STRIPE_WEBHOOK_LIVE_ENABLED
             STRIPE_INVOICE_LIVE_ENABLED
             STRIPE_INTERNAL_BILLING_TOKEN
@@ -51,28 +79,27 @@ jobs:
             MARKET_STRIPE_LIVE_CANARY_ENABLED
           )
 
-          for key in "${required[@]}"; do
-            type="$(jq -r --arg k "$key" '.[$k].type // empty' <<<"${envs}")"
-            if [[ -z "$type" ]]; then
-              echo "ENV $key=MISSING"
-            elif [[ "$type" == "secret_text" ]]; then
-              echo "ENV $key=PRESENT(secret_text)"
-            else
-              value="$(jq -r --arg k "$key" '.[$k].value // "<no-value>"' <<<"${envs}")"
-              case "$key" in
-                STRIPE_PAYMENT_ENV|STRIPE_CHECKOUT_LIVE_ENABLED|STRIPE_LIVE_RELEASE_APPROVED|STRIPE_WEBHOOK_LIVE_ENABLED|STRIPE_INVOICE_LIVE_ENABLED|MARKET_STRIPE_LIVE_CANARY_ENABLED)
-                  echo "ENV $key=$value($type)"
-                  ;;
-                *)
-                  echo "ENV $key=PRESENT($type)"
-                  ;;
-              esac
-            fi
-          done
+          inspect_env "PRODUCTION_ENV" "$prod_envs" "${keys[@]}"
+          inspect_env "PREVIEW_ENV" "$preview_envs" "${keys[@]}"
 
-          live_price_count="$(jq -r '[keys[] | select(startswith("STRIPE_LIVE_PRICE_"))] | length' <<<"${envs}")"
+          live_price_count="$(jq -r '[keys[] | select(startswith("STRIPE_LIVE_PRICE_"))] | length' <<<"${prod_envs}")"
           echo "RESULT STRIPE_LIVE_PRICE_ENV_COUNT=$live_price_count"
-          jq -r 'keys[] | select(startswith("STRIPE_LIVE_PRICE_")) | "LIVE_PRICE_ENV " + . + "=PRESENT"' <<<"${envs}" | sort || true
+          jq -r 'keys[] | select(startswith("STRIPE_LIVE_PRICE_")) | "LIVE_PRICE_ENV " + . + "=PRESENT"' <<<"${prod_envs}" | sort || true
+
+          projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
+          echo "RESULT PAGES_PROJECTS_WITH_MARKET_DOMAIN_BEGIN"
+          jq -r '.result[]? | select(any(.domains[]?; . == "4planetmarket.com" or . == "www.4planetmarket.com")) | "MARKET_PROJECT name=" + .name + " production_branch=" + (.production_branch // "UNKNOWN") + " domains=" + ([.domains[]?] | join(","))' <<<"${projects}" || true
+          echo "RESULT PAGES_PROJECTS_WITH_MARKET_DOMAIN_END"
+
+          market_zone="$(curl -fsS "${api}/zones?name=4planetmarket.com&status=active" "${auth[@]}" || true)"
+          market_zone_id="$(jq -r '.result[0].id // empty' <<<"${market_zone:-{}}" 2>/dev/null || true)"
+          if [[ -n "$market_zone_id" ]]; then
+            echo "RESULT MARKET_ZONE=RESOLVED"
+            dns="$(curl -fsS "${api}/zones/${market_zone_id}/dns_records?per_page=100" "${auth[@]}")"
+            jq -r '.result[]? | select(.name == "4planetmarket.com" or .name == "www.4planetmarket.com") | "MARKET_DNS name=" + .name + " type=" + .type + " content=" + .content + " proxied=" + (.proxied|tostring)' <<<"${dns}" || true
+          else
+            echo "RESULT MARKET_ZONE=NOT_RESOLVED_WITH_CURRENT_TOKEN"
+          fi
 
       - name: Probe deployed payment routes read-only
         shell: bash
@@ -80,13 +107,19 @@ jobs:
           set -u
           probe() {
             url="$1"
-            code="$(curl -L -sS --max-time 15 -o /tmp/probe-body -w '%{http_code}' "$url" || true)"
-            ctype="$(curl -L -sSI --max-time 15 "$url" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2; exit}' || true)"
-            echo "PROBE $url HTTP=$code CONTENT_TYPE=${ctype:-UNKNOWN}"
+            headers="$(mktemp)"
+            body="$(mktemp)"
+            code="$(curl -L -sS --max-time 15 -D "$headers" -o "$body" -w '%{http_code}' "$url" || true)"
+            ctype="$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="content-type"{v=$2} END{print v}' || true)"
+            server="$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="server"{v=$2} END{print v}' || true)"
+            cf_ray="$(tr -d '\r' < "$headers" | awk -F': ' 'tolower($1)=="cf-ray"{v=$2} END{print v}' || true)"
+            title="$(grep -oi '<title>[^<]*' "$body" 2>/dev/null | head -1 | sed 's/<title>//I' || true)"
+            echo "PROBE $url HTTP=$code CONTENT_TYPE=${ctype:-UNKNOWN} SERVER=${server:-UNKNOWN} CF_RAY=${cf_ray:+PRESENT} TITLE=${title:-NONE}"
           }
           probe "https://4planet.org/api/stripe/catalog"
           probe "https://4planetmarket.com/api/stripe/catalog"
           probe "https://4planetmarket.com/4market-live-canary.html"
+          probe "https://4planetmarket.com/"
 
       - name: Audit conclusion
         shell: bash
