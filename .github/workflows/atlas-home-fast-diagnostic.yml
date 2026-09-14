@@ -1,0 +1,65 @@
+name: 4PLANET ATLAS home fast diagnostic
+
+on:
+  push:
+    branches: [work/magazine-public-launch-gold-01]
+    paths: ['.github/workflows/atlas-home-fast-diagnostic.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect live page once
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > ./diag.mjs <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          const events = [];
+          page.on('console', m => events.push(`CONSOLE ${m.type()} ${m.text()}`));
+          page.on('pageerror', e => events.push(`PAGEERROR ${e.message}`));
+          page.on('requestfailed', r => events.push(`REQFAIL ${r.url()} :: ${r.failure()?.errorText}`));
+          page.on('response', r => {
+            const u = r.url();
+            if (u.includes('4planetatlas.com') || u.includes('/atlas')) events.push(`RESP ${r.status()} ${u}`);
+          });
+          try {
+            const resp = await page.goto(`https://4planet.org/?diag=${Date.now()}`, {waitUntil:'domcontentloaded', timeout:60000});
+            console.log('TOP', resp?.status(), page.url());
+            await page.waitForTimeout(4000);
+            const iframes = await page.locator('iframe').evaluateAll(els => els.map(e => ({title:e.title,src:e.getAttribute('src'),clientWidth:e.clientWidth,clientHeight:e.clientHeight})));
+            console.log('IFRAMES', JSON.stringify(iframes));
+            for (const f of page.frames()) console.log('FRAME', f.url());
+            const atlasFrame = page.frames().find(f => f.url().includes('4planetatlas.com'));
+            if (atlasFrame) {
+              console.log('ATLAS_FRAME_FOUND', atlasFrame.url());
+              console.log('ATLAS_HTML_LEN', (await atlasFrame.content()).length);
+              console.log('MAP_STATE', JSON.stringify(await atlasFrame.evaluate(() => ({
+                readyState: document.readyState,
+                title: document.title,
+                map: Boolean(window.__4planet_map),
+                canvases: [...document.querySelectorAll('canvas')].map(c => ({w:c.width,h:c.height,class:c.className})),
+                bodyText: document.body?.innerText?.slice(0,500),
+              }))));
+            } else {
+              console.log('ATLAS_FRAME_NOT_FOUND');
+            }
+            console.log('EVENTS_START');
+            for (const e of events.slice(-120)) console.log(e);
+            console.log('EVENTS_END');
+          } finally { await browser.close(); }
+          NODE
+          node ./diag.mjs
