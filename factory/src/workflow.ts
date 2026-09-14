@@ -72,8 +72,7 @@ async function dispatchNextReadOnlyPortfolioPackage(
   const next = continuation.packages[nextIndex];
   if (!next) return { status: "PORTFOLIO_EXHAUSTED" } as const;
 
-  const workflowPrefix = (next as any).amendmentM ? "factory-night-shift" : "factory-portfolio-fallback";
-  const workflowId = `${workflowPrefix}-${next.id}`;
+  const workflowId = `factory-portfolio-fallback-${next.id}`;
   const factory = agent as any;
   const tracked = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
   if (tracked) {
