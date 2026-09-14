@@ -15,7 +15,6 @@ permissions:
 env:
   SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
   SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
-  HUMAN_GOLD_PREVIEW_URL: https://four-sapien-embla-megasprint.odin-skogen.workers.dev/
 
 jobs:
   quality-preview:
@@ -105,31 +104,6 @@ jobs:
           set -euo pipefail
           npx --yes tsx@4 products/4sapien/qa/search-intelligence.test.ts
 
-      - name: Allow exact Human Gold OAuth return
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          set -euo pipefail
-          [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] || { echo 'SUPABASE_ACCESS_TOKEN missing; cannot update Auth redirect allowlist'; exit 31; }
-          auth=(-H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" -H 'Content-Type: application/json')
-          endpoint='https://api.supabase.com/v1/projects/ghvdzetmplqkdtfqiror/config/auth'
-          curl -fsS "${auth[@]}" "$endpoint" > /tmp/auth-config.json
-          current=$(jq -r '.uri_allow_list // ""' /tmp/auth-config.json)
-          merged=$(python - "$current" "$HUMAN_GOLD_PREVIEW_URL" <<'PY'
-          import sys
-          current, wanted = sys.argv[1], sys.argv[2]
-          values=[x.strip() for x in current.split(',') if x.strip()]
-          if wanted not in values:
-              values.append(wanted)
-          print(','.join(values))
-          PY
-          )
-          payload=$(jq -n --arg v "$merged" '{uri_allow_list:$v}')
-          curl -fsS -X PATCH "${auth[@]}" "$endpoint" -d "$payload" > /tmp/auth-config-patched.json
-          curl -fsS "${auth[@]}" "$endpoint" > /tmp/auth-config-verify.json
-          jq -e --arg wanted "$HUMAN_GOLD_PREVIEW_URL" '(.uri_allow_list // "") | split(",") | map(gsub("^ +| +$";"")) | index($wanted) != null' /tmp/auth-config-verify.json >/dev/null
-          echo 'Exact Human Gold preview redirect allowlist: PASS'
-
       - name: Backend authority gates
         run: |
           set -euo pipefail
@@ -207,8 +181,8 @@ jobs:
           echo '## 4SAPIEN Embla Human Gold preview' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
-          echo '- Exact Human Gold preview origin added to Supabase Auth redirect allowlist' >> "$GITHUB_STEP_SUMMARY"
-          echo '- Preview auth returns to preview origin' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Preview frontend requests OAuth return to its own origin' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Supabase Auth redirect allowlist remains an external project setting, not a build mutation' >> "$GITHUB_STEP_SUMMARY"
           echo '- Founder-visible Human Gold badge + Ask Embla jump: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Canonical Embla Core seam: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Memory + Food/Finance permission controls: gated' >> "$GITHUB_STEP_SUMMARY"
