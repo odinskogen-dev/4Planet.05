@@ -1,0 +1,88 @@
+name: Market Preview Smoke Once
+
+on:
+  push:
+    branches:
+      - axe/market-independent-live-20260914
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  smoke:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Cloudflare branch preview and local assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://axe-market-independent-live.4planet-05.pages.dev'
+          ok=0
+          for i in $(seq 1 30); do
+            code=$(curl -LsS -o /tmp/market.html -w '%{http_code}' "${base}/market" || true)
+            if [ "$code" = '200' ] && grep -q 'PHOTOGRAPHS' /tmp/market.html && grep -q '4PLANET MARKET' /tmp/market.html; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          [ "$ok" = '1' ] || { echo 'Market preview did not converge'; exit 1; }
+
+          curl -LfsS "${base}/market/reinebringen-vista" -o /tmp/product.html
+          grep -q 'Above the fjord' /tmp/product.html || { echo 'Product route missing expected work'; exit 1; }
+
+          curl -LfsS -D /tmp/image.headers "${base}/market/odin/reinebringen-vista.jpg" -o /tmp/image.jpg
+          grep -qi '^content-type: image/jpeg' /tmp/image.headers || { echo 'Market image not served as JPEG'; cat /tmp/image.headers; exit 1; }
+          bytes=$(wc -c < /tmp/image.jpg)
+          [ "$bytes" -gt 100000 ] || { echo "Market image unexpectedly small: ${bytes}"; exit 1; }
+
+          curl -LfsS "${base}/" -o /tmp/root.html
+          if grep -q 'PHOTOGRAPHS FROM A' /tmp/root.html; then
+            echo 'Market leaked onto non-Market host root'
+            exit 1
+          fi
+          curl -LfsS -o /dev/null "${base}/atlas"
+
+          if grep -R 'https://oddekalv.org' src/market src/pages/market public/market 2>/dev/null; then
+            echo 'External ODIN runtime dependency detected'
+            exit 1
+          fi
+
+          {
+            echo '## Market preview smoke: PASS'
+            echo
+            echo "- Branch preview: ${base}/market"
+            echo '- Market catalogue route: 200 + expected copy'
+            echo '- Product route: 200 + expected product'
+            echo "- Local JPEG: served by Market, ${bytes} bytes"
+            echo '- Non-Market root remains non-Market'
+            echo '- Atlas route responds'
+            echo '- No https://oddekalv.org runtime dependency in Market paths'
+          } > /tmp/report.md
+          cat /tmp/report.md
+
+      - name: Post result to PR 299
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment 299 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/report.md
+
+      - name: Remove one-time smoke workflow
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/market-preview-smoke-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/market-preview-smoke-once.yml
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore(market): remove one-time preview smoke"
+          git push origin HEAD:${GITHUB_REF_NAME}
