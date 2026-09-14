@@ -17,14 +17,17 @@ function isAssetPath(path) {
 function firstSegment(path) { return path.split("/").filter(Boolean)[0] || ""; }
 function redirectTo(url, status = 308) { return Response.redirect(url, status); }
 function atlasClean(path) {
-  if (path === "/atlas") return "/";
+  if (path === "/atlas" || path === "/atlas/") return "/";
   if (path.startsWith("/atlas/")) return path.slice(6) || "/";
   return path;
 }
 function speciesClean(path) {
-  if (path === "/species") return "/";
+  if (path === "/species" || path === "/species/") return "/";
   if (path.startsWith("/species/")) return path.slice(8) || "/";
   return path;
+}
+function withTrailingSlash(path) {
+  return path.endsWith("/") ? path : `${path}/`;
 }
 
 function edgeShim(product) {
@@ -38,10 +41,10 @@ function edgeShim(product) {
       : (p==='/'?'/atlas':(p==='/atlas'||p.startsWith('/atlas/')?p:p));
     const toClean=p=>{
       if(PRODUCT==='species'){
-        if(p==='/species') return '/';
+        if(p==='/species'||p==='/species/') return '/';
         if(p.startsWith('/species/')) return p.slice(8)||'/';
       }else{
-        if(p==='/atlas') return '/';
+        if(p==='/atlas'||p==='/atlas/') return '/';
         if(p.startsWith('/atlas/')) return p.slice(6)||'/';
       }
       return p;
@@ -80,9 +83,9 @@ function edgeShim(product) {
 async function proxy(request, targetPath, product) {
   const incoming = new URL(request.url);
   const target = new URL(ORIGIN);
-  target.pathname = targetPath;
+  target.pathname = withTrailingSlash(targetPath);
   target.search = incoming.search;
-  const response = await fetch(new Request(target.toString(), request));
+  const response = await fetch(new Request(target.toString(), request), { redirect: "manual" });
   const type = response.headers.get("content-type") || "";
   if (!type.includes("text/html")) return response;
   return new HTMLRewriter()
@@ -124,7 +127,8 @@ export default {
       if (path === "/atlas" || path.startsWith("/atlas/")) return redirectTo(`https://4planetatlas.com${atlasClean(path)}${url.search}`);
       if (isAssetPath(path)) return proxyAsset(request);
       if (RESERVED.has(firstSegment(path))) return redirectTo(`https://4planet.org${path}${url.search}`);
-      return proxy(request, path === "/" ? "/species" : `/species${path}`, "species");
+      const internalPath = path === "/" ? "/species" : `/species${path}`;
+      return proxy(request, internalPath, "species");
     }
 
     return fetch(request);
