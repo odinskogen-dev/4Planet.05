@@ -52,18 +52,19 @@ jobs:
             echo "Pages custom domain already attached."
           fi
 
-          # Make the apex point only to the existing Pages project. Preserve unrelated records (MX/TXT/etc.).
           dns_before="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
           jq -e '.success == true' <<<"${dns_before}" >/dev/null
 
-          mapfile -t conflicting_ids < <(jq -r --arg target "${subdomain}" '.result[]? | select((.type == "A" or .type == "AAAA" or .type == "CNAME") and not(.type == "CNAME" and .content == $target)) | .id' <<<"${dns_before}")
+          mapfile -t conflicting_ids < <(jq -r --arg target "${subdomain}" '.result[]? | select((.type == "A" or .type == "AAAA" or .type == "CNAME") and (((.type == "CNAME") and (.content == $target)) | not)) | .id' <<<"${dns_before}")
           for rid in "${conflicting_ids[@]}"; do
             echo "Removing conflicting apex address record ${rid}"
             deleted="$(curl -fsS -X DELETE "${api}/zones/${zone_id}/dns_records/${rid}" "${auth[@]}")"
+            echo "${deleted}" | jq '{success, errors, messages}'
             jq -e '.success == true' <<<"${deleted}" >/dev/null
           done
 
           dns_mid="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+          jq -e '.success == true' <<<"${dns_mid}" >/dev/null
           if jq -e --arg target "${subdomain}" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"${dns_mid}" >/dev/null; then
             cname_id="$(jq -r --arg target "${subdomain}" '.result[]? | select(.type == "CNAME" and .content == $target) | .id' <<<"${dns_mid}" | head -n1)"
             patched="$(curl -fsS -X PATCH "${api}/zones/${zone_id}/dns_records/${cname_id}" "${auth[@]}" --data "{\"proxied\":true,\"ttl\":1}")"
