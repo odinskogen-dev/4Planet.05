@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { capturePostHog } from "@/analytics/PostHogSink";
 
 export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
 
 const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
 const DEFAULT_ANALYTICS_DOMAINS = [
   "4planet.org",
+  "test.4planet.org",
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
@@ -118,11 +120,15 @@ function installGoogleTag(id: string, domains: string[]) {
 }
 
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || !window.gtag) return;
-  window.gtag("event", name, {
+  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname)) return;
+
+  const shared = {
     ...parameters,
     site_host: canonicalHost(window.location.hostname),
-  });
+  };
+
+  window.gtag?.("event", name, shared);
+  capturePostHog(name, shared);
 }
 
 export function resetAnalyticsConsent() {
@@ -146,13 +152,19 @@ export function Analytics() {
     if (!allowedHost || !id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
 
-    window.gtag?.("event", "page_view", {
+    const pageProperties = {
       page_title: document.title,
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
+      page_path: location.pathname,
       content_group: productArea(location.pathname),
       site_host: canonicalHost(window.location.hostname),
+    };
+
+    window.gtag?.("event", "page_view", {
+      ...pageProperties,
+      page_location: window.location.href,
+      page_path: `${location.pathname}${location.search}`,
     });
+    capturePostHog("$pageview", pageProperties);
   }, [allowedHost, consent, id, location.pathname, location.search]);
 
   if (!allowedHost || !id || consent !== null) return null;
