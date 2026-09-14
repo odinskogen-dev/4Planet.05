@@ -169,6 +169,21 @@ jobs:
           wranglerVersion: "4.128.0"
           command: deploy
 
+      # Re-apply only the ephemeral control secret after the exact code deploy.
+      # This closes the observed Cloudflare version-binding failure where the
+      # control call could hit exact code while FACTORY_CONTROL_TOKEN was stale.
+      - name: Rebind control token after exact deploy
+        working-directory: factory
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+          echo "::add-mask::$CONTROL_TOKEN"
+          printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
+
       - name: Resolve deployed Worker URL
         id: runtime
         env:
