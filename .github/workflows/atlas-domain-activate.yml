@@ -18,7 +18,7 @@ jobs:
       DOMAIN: 4planetatlas.com
       PROJECT: 4planet-05
     steps:
-      - name: Attach Atlas domain and convert apex DNS
+      - name: Move 4planetatlas.com from legacy Worker binding to existing Pages project
         shell: bash
         run: |
           set -euo pipefail
@@ -26,62 +26,79 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
 
           zone_json="$(curl -fsS "${api}/zones?name=${DOMAIN}" "${auth[@]}")"
+          jq -e '.success == true' <<<"${zone_json}" >/dev/null
           zone_id="$(jq -r '.result[0].id // empty' <<<"${zone_json}")"
           account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
-          [[ -n "$zone_id" && -n "$account_id" ]] || exit 1
+          [[ -n "$zone_id" && -n "$account_id" ]] || { echo "zone/account missing"; exit 1; }
 
           project_json="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}" "${auth[@]}")"
+          jq -e '.success == true' <<<"${project_json}" >/dev/null
           subdomain="$(jq -r '.result.subdomain // empty' <<<"${project_json}")"
           production_branch="$(jq -r '.result.production_branch // empty' <<<"${project_json}")"
-          echo "Pages project=${PROJECT}; production_branch=${production_branch}; target=${subdomain}"
+          echo "Pages target: ${PROJECT} / ${production_branch} / ${subdomain}"
 
-          domains="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}")"
-          if ! jq -e --arg d "$DOMAIN" 'any(.result[]?; .name == $d)' <<<"$domains" >/dev/null; then
-            add="$(curl -fsS -X POST "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}" --data "{\"name\":\"${DOMAIN}\"}")"
-            jq -e '.success == true' <<<"$add" >/dev/null
+          worker_domains="$(curl -fsS "${api}/accounts/${account_id}/workers/domains?hostname=${DOMAIN}" "${auth[@]}")"
+          jq -e '.success == true' <<<"${worker_domains}" >/dev/null
+          echo "WORKER_BINDING_BEFORE"
+          echo "$worker_domains" | jq '[.result[]? | select(.hostname == env.DOMAIN) | {id,hostname,service,environment,zone_name}]'
+
+          mapfile -t exact_ids < <(jq -r --arg d "$DOMAIN" '.result[]? | select(.hostname == $d) | .id' <<<"$worker_domains")
+          if ((${#exact_ids[@]} > 1)); then
+            echo "Refusing: more than one exact Worker custom-domain binding found for ${DOMAIN}."
+            exit 2
           fi
+          if ((${#exact_ids[@]} == 1)); then
+            worker_id="${exact_ids[0]}"
+            service="$(jq -r --arg id "$worker_id" '.result[]? | select(.id == $id) | .service' <<<"$worker_domains")"
+            echo "Detaching exact Worker custom domain only: ${DOMAIN} -> ${service} (${worker_id})"
+            detached="$(curl -fsS -X DELETE "${api}/accounts/${account_id}/workers/domains/${worker_id}" "${auth[@]}")"
+            echo "$detached" | jq '{success,errors,messages}'
+            jq -e '.success == true' <<<"$detached" >/dev/null
+          else
+            echo "No Worker custom-domain binding remains for ${DOMAIN}."
+          fi
+
+          # Ensure the domain remains associated with the existing Pages project.
+          pages_domains="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}")"
+          if ! jq -e --arg d "$DOMAIN" 'any(.result[]?; .name == $d)' <<<"$pages_domains" >/dev/null; then
+            attached="$(curl -fsS -X POST "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}" --data "{\"name\":\"${DOMAIN}\"}")"
+            echo "$attached" | jq '{success,errors,messages,result:(.result|{name,status})}'
+            jq -e '.success == true' <<<"$attached" >/dev/null
+          fi
+
+          # The Worker-owned read-only synthetic AAAA should disappear after detach.
+          for attempt in 1 2 3 4 5 6; do
+            dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+            readonly_count="$(jq '[.result[]? | select(.meta.read_only == true)] | length' <<<"$dns")"
+            echo "DNS settle attempt ${attempt}: read_only=${readonly_count}"
+            [[ "$readonly_count" == "0" ]] && break
+            sleep 3
+          done
 
           dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
-          echo "DNS_BEFORE"
-          echo "$dns" | jq '[.result[]? | {id,type,name,content,proxied,ttl,meta,settings,comment}]'
-
-          if jq -e --arg target "$subdomain" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"$dns" >/dev/null; then
-            echo "Correct CNAME already present."
-          else
-            rid="$(jq -r '.result[]? | select(.type == "A" or .type == "AAAA" or .type == "CNAME") | .id' <<<"$dns" | head -n1)"
-            if [[ -n "$rid" ]]; then
-              echo "Attempting in-place conversion of apex record ${rid} to CNAME ${subdomain}"
-              set +e
-              put_body="$(curl -sS -X PUT "${api}/zones/${zone_id}/dns_records/${rid}" "${auth[@]}" --data "{\"type\":\"CNAME\",\"name\":\"${DOMAIN}\",\"content\":\"${subdomain}\",\"ttl\":1,\"proxied\":true}" -w $'\nHTTP_STATUS:%{http_code}')"
-              put_rc=$?
-              set -e
-              echo "$put_body"
-              put_json="$(sed '/^HTTP_STATUS:/d' <<<"$put_body")"
-              if [[ $put_rc -ne 0 ]] || ! jq -e '.success == true' <<<"$put_json" >/dev/null 2>&1; then
-                echo "PUT conversion failed; attempting delete + create with full error capture."
-                set +e
-                del_body="$(curl -sS -X DELETE "${api}/zones/${zone_id}/dns_records/${rid}" "${auth[@]}" -w $'\nHTTP_STATUS:%{http_code}')"
-                del_rc=$?
-                set -e
-                echo "$del_body"
-                del_json="$(sed '/^HTTP_STATUS:/d' <<<"$del_body")"
-                if [[ $del_rc -ne 0 ]] || ! jq -e '.success == true' <<<"$del_json" >/dev/null 2>&1; then
-                  echo "ERROR: Cloudflare refused both conversion and deletion."
-                  exit 1
-                fi
-                create="$(curl -fsS -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "{\"type\":\"CNAME\",\"name\":\"${DOMAIN}\",\"content\":\"${subdomain}\",\"ttl\":1,\"proxied\":true}")"
-                echo "$create" | jq '{success,errors,messages,result:(.result|{type,name,content,proxied,ttl})}'
-                jq -e '.success == true' <<<"$create" >/dev/null
-              fi
-            else
-              create="$(curl -fsS -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "{\"type\":\"CNAME\",\"name\":\"${DOMAIN}\",\"content\":\"${subdomain}\",\"ttl\":1,\"proxied\":true}")"
-              jq -e '.success == true' <<<"$create" >/dev/null
-            fi
+          echo "DNS_AFTER_WORKER_DETACH"
+          echo "$dns" | jq '[.result[]? | {id,type,name,content,proxied,ttl,meta}]'
+          if jq -e '.result[]? | select(.meta.read_only == true)' <<<"$dns" >/dev/null; then
+            echo "Read-only Worker DNS still present; fail closed."
+            exit 3
           fi
 
-          final_domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains/${DOMAIN}" "${auth[@]}")"
-          echo "PAGES_DOMAIN_STATE"
-          echo "$final_domain" | jq '.result | {name,status,validation_data,verification_data}'
-          dns_final="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
-          echo "DNS_AFTER"
-          echo "$dns_final" | jq '[.result[]? | {type,name,content,proxied,ttl}]'
+          # If Pages did not synthesize the CNAME automatically, create the exact apex CNAME now.
+          if jq -e --arg target "$subdomain" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"$dns" >/dev/null; then
+            echo "Correct Pages CNAME already present."
+          else
+            conflicts="$(jq '[.result[]? | select(.type == "A" or .type == "AAAA" or .type == "CNAME")] | length' <<<"$dns")"
+            [[ "$conflicts" == "0" ]] || { echo "Unexpected editable apex address conflict; refusing to overwrite."; exit 4; }
+            created_dns="$(curl -fsS -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "{\"type\":\"CNAME\",\"name\":\"${DOMAIN}\",\"content\":\"${subdomain}\",\"ttl\":1,\"proxied\":true}")"
+            echo "$created_dns" | jq '{success,errors,messages,result:(.result|{type,name,content,proxied,ttl})}'
+            jq -e '.success == true' <<<"$created_dns" >/dev/null
+          fi
+
+          echo "FINAL_DNS"
+          final_dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+          echo "$final_dns" | jq '[.result[]? | {type,name,content,proxied,ttl,meta}]'
+
+          echo "FINAL_PAGES_DOMAIN"
+          final_pages="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains/${DOMAIN}" "${auth[@]}")"
+          echo "$final_pages" | jq '.result | {name,status,validation_data,verification_data}'
+          jq -e '.success == true' <<<"$final_pages" >/dev/null
