@@ -78,10 +78,14 @@ export function ShareMetadata() {
 
   useEffect(() => {
     const path = normalisePath(pathname);
-    if ((manifest.excludedPrefixes || []).some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) return;
+    const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase().replace(/^www\./, "") : "";
+    const effectivePath = host === "4planetatlas.com" && path === "/" ? "/atlas" : path;
+    if ((manifest.excludedPrefixes || []).some((prefix) => effectivePath === prefix || effectivePath.startsWith(`${prefix}/`))) return;
 
-    const meta = resolveMeta(path);
-    const canonical = absoluteUrl(meta.canonicalPath || path);
+    const meta = resolveMeta(effectivePath);
+    const canonical = effectivePath === "/atlas"
+      ? "https://4planetatlas.com/"
+      : absoluteUrl(meta.canonicalPath || effectivePath);
     const image = absoluteUrl(meta.image);
 
     document.title = meta.title;

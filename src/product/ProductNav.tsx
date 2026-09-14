@@ -26,17 +26,26 @@ export function contextHref(path: string, currentSearch = "", overrides: Record<
   return query ? `${path}?${query}` : path;
 }
 
-function activeProduct(pathname: string): ProductKey {
-  if (pathname.startsWith("/atlas")) return "ATLAS";
+export function activeProduct(pathname: string, hostname = ""): ProductKey {
+  const host = hostname.toLowerCase().replace(/^www\./, "");
+  if (host === "4planetatlas.com" || pathname.startsWith("/atlas")) return "ATLAS";
   if (pathname.startsWith("/species")) return "SPECIES";
   if (pathname.startsWith("/living-systems")) return "LIVING SYSTEMS";
   if (pathname.startsWith("/impact")) return "IMPACT";
   return "4PLANET";
 }
 
+export function productHref(key: ProductKey, path: string, currentSearch = "") {
+  const host = typeof window !== "undefined" ? window.location.hostname.toLowerCase().replace(/^www\./, "") : "";
+  if (key === "ATLAS") return `https://4planetatlas.com${contextHref("/", currentSearch)}`;
+  const relative = contextHref(path, currentSearch);
+  if (host === "4planetatlas.com") return `https://4planet.org${relative}`;
+  return relative;
+}
+
 export function ProductNav() {
   const location = useLocation();
-  const active = activeProduct(location.pathname);
+  const active = activeProduct(location.pathname, typeof window !== "undefined" ? window.location.hostname : "");
   const hasContext = CONTEXT_KEYS.some((key) => new URLSearchParams(location.search).has(key));
 
   return (
@@ -45,7 +54,7 @@ export function ProductNav() {
         {PRODUCTS.map((product) => (
           <Link
             key={product.key}
-            to={contextHref(product.path, location.search)}
+            to={productHref(product.key, product.path, location.search)}
             aria-current={active === product.key ? "page" : undefined}
             className={active === product.key ? "is-active" : ""}
           >

@@ -6,6 +6,7 @@ export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
 const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
 const DEFAULT_ANALYTICS_DOMAINS = [
   "4planet.org",
+  "4planetatlas.com",
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
@@ -50,7 +51,8 @@ function readConsent(): ConsentState {
   return value === "granted" || value === "denied" ? value : null;
 }
 
-function productArea(pathname: string): string {
+function productArea(pathname: string, hostname = ""): string {
+  if (canonicalHost(hostname) === "4planetatlas.com") return "atlas";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
@@ -150,7 +152,7 @@ export function Analytics() {
       page_title: document.title,
       page_location: window.location.href,
       page_path: `${location.pathname}${location.search}`,
-      content_group: productArea(location.pathname),
+      content_group: productArea(location.pathname, window.location.hostname),
       site_host: canonicalHost(window.location.hostname),
     });
   }, [allowedHost, consent, id, location.pathname, location.search]);

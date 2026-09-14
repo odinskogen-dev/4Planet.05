@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse, trackProductEntry, type ProductArea } from "@/analytics/ProductAnalytics";
 
-function classifyProduct(pathname: string): ProductArea {
+function classifyProduct(pathname: string, hostname = ""): ProductArea {
+  if (hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com") return "atlas";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
@@ -36,7 +37,7 @@ export function ProductRouteAnalytics() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const product = classifyProduct(pathname);
+    const product = classifyProduct(pathname, window.location.hostname);
     const routeKey = `4p:entry:${pathname}`;
     if (!window.sessionStorage.getItem(routeKey)) {
       trackProductEntry(product, pathname, entryKind());

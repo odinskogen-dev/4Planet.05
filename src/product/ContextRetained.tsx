@@ -8,8 +8,8 @@ import { useLocation } from "react-router-dom";
  */
 const CONTEXT_KEYS = ["entity", "journey", "record"] as const;
 
-function productOf(pathname: string) {
-  if (pathname.startsWith("/atlas")) return "ATLAS";
+function productOf(pathname: string, hostname = "") {
+  if (hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com" || pathname.startsWith("/atlas")) return "ATLAS";
   if (pathname.startsWith("/species")) return "SPECIES";
   if (pathname.startsWith("/impact")) return "IMPACT";
   return "4PLANET";
@@ -23,7 +23,7 @@ export function ContextRetained() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const hasContext = CONTEXT_KEYS.some((key) => Boolean(params.get(key)));
-    const product = productOf(location.pathname);
+    const product = productOf(location.pathname, window.location.hostname);
 
     if (!previous.current.initialized) {
       previous.current = { initialized: true, product };

@@ -8,7 +8,13 @@ test("four public products have distinct routes and a context-preserving switche
   const routes = read("src/routes/router.tsx");
   const nav = read("src/product/ProductNav.tsx");
   for (const route of ["/atlas", "/species", "/impact"]) assert.match(routes + nav, new RegExp(route.replace("/", "\\/")));
-  assert.match(routes, /<Route path="\/" element=\{<Home \/>\}/);
+  assert.match(routes, /<Route path="\/" element=\{<RootHome \/>\}/);
+  assert.match(routes, /4planetatlas\.com/);
+  assert.match(nav, /https:\/\/4planetatlas\.com/);
+  const app = read("src/App.tsx");
+  const share = read("src/components/ShareMetadata.tsx");
+  assert.match(app, /4planetatlas\.com/);
+  assert.match(share, /https:\/\/4planetatlas\.com\//);
   assert.match(routes, /<Route path="\/story" element=\{<Navigate to="\/" replace \/>\}/);
   assert.match(routes, /<Route path="\/atlas"[\s\S]+<PublicWorld/);
   assert.match(nav, /key: "4PLANET", label: "4PLANET", path: "\/"/);
