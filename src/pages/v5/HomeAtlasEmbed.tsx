@@ -8,7 +8,7 @@ export function HomeAtlasEmbed() {
         <iframe
           title="4PLANET ATLAS interactive globe"
           src="/atlas?embed=home&l=bluemarble,fires,biodiv&z=1.65&c=5,18"
-          loading="lazy"
+          loading="eager"
           allow="fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"
         />
