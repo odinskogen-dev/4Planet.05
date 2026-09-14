@@ -26,9 +26,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/atlas-live
-          cat > "$RUNNER_TEMP/atlas-live-smoke.mjs" <<'NODE'
+          cat > ./atlas-live-smoke.mjs <<'NODE'
           import fs from 'node:fs';
-          import { chromium, webkit } from 'playwright';
+          import { chromium, webkit } from '@playwright/test';
 
           const targets = [
             {
@@ -75,18 +75,13 @@ jobs:
                     map?.triggerRepaint?.();
                   });
 
-                  await frame.waitForFunction(() => {
-                    const map = window.__4planet_map;
-                    return Boolean(map?.isStyleLoaded?.());
-                  }, null, { timeout: 60000 }).catch(() => {});
+                  await frame.waitForFunction(() => Boolean(window.__4planet_map?.isStyleLoaded?.()), null, { timeout: 60000 }).catch(() => {});
                   await page.waitForTimeout(2500);
 
                   const canvas = frame.locator('.maplibregl-canvas').first();
                   await canvas.waitFor({ state: 'visible', timeout: 30000 });
                   const box = await canvas.boundingBox();
-                  if (!box || box.width < 100 || box.height < 100) {
-                    throw new Error(`invalid canvas bounds ${JSON.stringify(box)}`);
-                  }
+                  if (!box || box.width < 100 || box.height < 100) throw new Error(`invalid canvas bounds ${JSON.stringify(box)}`);
 
                   const state = await frame.evaluate(() => {
                     const map = window.__4planet_map;
@@ -101,17 +96,11 @@ jobs:
                       containerHeight: rect?.height ?? 0,
                     };
                   });
-                  if (!state.map || state.canvasWidth < 100 || state.canvasHeight < 100) {
-                    throw new Error(`invalid live map state ${JSON.stringify(state)}`);
-                  }
+                  if (!state.map || state.canvasWidth < 100 || state.canvasHeight < 100) throw new Error(`invalid live map state ${JSON.stringify(state)}`);
 
                   const file = `artifacts/atlas-live/${engineName}-${target.name}.png`;
                   await canvas.screenshot({ path: file });
                   const bytes = fs.statSync(file).size;
-                  // A flat/black WebGL canvas compresses to only a few KB at this viewport.
-                  // The real Earth imagery/layers are materially larger. Keep the threshold
-                  // conservative so this catches the production black-canvas regression
-                  // without turning normal imagery variance into a flaky gate.
                   if (bytes < 8000) throw new Error(`canvas screenshot suspiciously small (${bytes} bytes)`);
 
                   console.log(`PASS ${engineName} ${target.url} bytes=${bytes} state=${JSON.stringify(state)}`);
@@ -134,7 +123,7 @@ jobs:
             process.exit(1);
           }
           NODE
-          node "$RUNNER_TEMP/atlas-live-smoke.mjs"
+          node ./atlas-live-smoke.mjs
       - name: Upload public render proof
         if: always()
         uses: actions/upload-artifact@v4
