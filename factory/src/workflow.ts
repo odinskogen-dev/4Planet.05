@@ -56,8 +56,8 @@ function validatePortfolioContinuation(currentWorkPackageId: string, continuatio
   }
 }
 
-async function amendmentMAttest(agent: ProductionFactoryAgent, workPackageId: string, phase: "PRE_DISPATCH" | "TERMINAL_ACCEPTANCE") {
-  const method = (agent as any).attestAmendmentMRuntime;
+async function amendmentMAttest(agent: any, workPackageId: string, phase: "PRE_DISPATCH" | "TERMINAL_ACCEPTANCE") {
+  const method = agent?.attestAmendmentMRuntime;
   if (typeof method !== "function") return { applies: false } as AmendmentMAttestation;
   return method.call(agent, workPackageId, phase) as Promise<AmendmentMAttestation>;
 }
