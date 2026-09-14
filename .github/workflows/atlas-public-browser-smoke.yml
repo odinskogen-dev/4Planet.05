@@ -1,0 +1,145 @@
+name: 4PLANET ATLAS public browser smoke
+
+on:
+  push:
+    branches: [work/magazine-public-launch-gold-01]
+    paths: ['.github/workflows/atlas-public-browser-smoke.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  live-browser-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Prove live ATLAS embeds render non-black WebGL canvases
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/atlas-live
+          cat > "$RUNNER_TEMP/atlas-live-smoke.mjs" <<'NODE'
+          import fs from 'node:fs';
+          import { chromium, webkit } from 'playwright';
+
+          const targets = [
+            {
+              name: '4planet-home',
+              url: 'https://4planet.org/',
+              iframe: 'iframe[src*="embed=home"]',
+            },
+            {
+              name: 'magazine-atlas',
+              url: 'https://4planetmagazine.com/magazine/atlas/',
+              iframe: 'iframe[src*="embed=mag"]',
+            },
+          ];
+
+          const engines = [
+            ['chromium', chromium],
+            ['webkit', webkit],
+          ];
+
+          const failures = [];
+          for (const [engineName, browserType] of engines) {
+            const browser = await browserType.launch();
+            try {
+              for (const target of targets) {
+                const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+                try {
+                  await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+                  const iframe = page.locator(target.iframe).first();
+                  await iframe.waitFor({ state: 'attached', timeout: 60000 });
+                  await iframe.scrollIntoViewIfNeeded();
+                  const frame = await iframe.contentFrame();
+                  if (!frame) throw new Error('iframe content frame unavailable');
+
+                  await frame.waitForFunction(() => {
+                    const map = window.__4planet_map;
+                    if (!map || typeof map.getContainer !== 'function') return false;
+                    const rect = map.getContainer()?.getBoundingClientRect?.();
+                    return Boolean(rect && rect.width > 32 && rect.height > 32);
+                  }, null, { timeout: 90000 });
+
+                  await frame.evaluate(() => {
+                    const map = window.__4planet_map;
+                    map?.resize?.();
+                    map?.triggerRepaint?.();
+                  });
+
+                  await frame.waitForFunction(() => {
+                    const map = window.__4planet_map;
+                    return Boolean(map?.isStyleLoaded?.());
+                  }, null, { timeout: 60000 }).catch(() => {});
+                  await page.waitForTimeout(2500);
+
+                  const canvas = frame.locator('.maplibregl-canvas').first();
+                  await canvas.waitFor({ state: 'visible', timeout: 30000 });
+                  const box = await canvas.boundingBox();
+                  if (!box || box.width < 100 || box.height < 100) {
+                    throw new Error(`invalid canvas bounds ${JSON.stringify(box)}`);
+                  }
+
+                  const state = await frame.evaluate(() => {
+                    const map = window.__4planet_map;
+                    const c = map?.getCanvas?.();
+                    const rect = map?.getContainer?.()?.getBoundingClientRect?.();
+                    return {
+                      map: Boolean(map),
+                      styleLoaded: Boolean(map?.isStyleLoaded?.()),
+                      canvasWidth: c?.width ?? 0,
+                      canvasHeight: c?.height ?? 0,
+                      containerWidth: rect?.width ?? 0,
+                      containerHeight: rect?.height ?? 0,
+                    };
+                  });
+                  if (!state.map || state.canvasWidth < 100 || state.canvasHeight < 100) {
+                    throw new Error(`invalid live map state ${JSON.stringify(state)}`);
+                  }
+
+                  const file = `artifacts/atlas-live/${engineName}-${target.name}.png`;
+                  await canvas.screenshot({ path: file });
+                  const bytes = fs.statSync(file).size;
+                  // A flat/black WebGL canvas compresses to only a few KB at this viewport.
+                  // The real Earth imagery/layers are materially larger. Keep the threshold
+                  // conservative so this catches the production black-canvas regression
+                  // without turning normal imagery variance into a flaky gate.
+                  if (bytes < 8000) throw new Error(`canvas screenshot suspiciously small (${bytes} bytes)`);
+
+                  console.log(`PASS ${engineName} ${target.url} bytes=${bytes} state=${JSON.stringify(state)}`);
+                } catch (error) {
+                  const message = `${engineName} ${target.name}: ${error?.stack || error}`;
+                  console.error(`FAIL ${message}`);
+                  failures.push(message);
+                  await page.screenshot({ path: `artifacts/atlas-live/FAIL-${engineName}-${target.name}.png`, fullPage: true }).catch(() => {});
+                } finally {
+                  await page.close();
+                }
+              }
+            } finally {
+              await browser.close();
+            }
+          }
+
+          if (failures.length) {
+            console.error(`\n${failures.length} public browser proof(s) failed:\n${failures.join('\n\n')}`);
+            process.exit(1);
+          }
+          NODE
+          node "$RUNNER_TEMP/atlas-live-smoke.mjs"
+      - name: Upload public render proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-public-live-render-proof
+          path: artifacts/atlas-live/*.png
+          if-no-files-found: warn
+          retention-days: 14
