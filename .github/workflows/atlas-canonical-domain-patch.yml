@@ -117,12 +117,17 @@ jobs:
           contract.write_text(c)
           PY
 
-      - name: Validate build and contracts
+      - name: Validate Atlas contracts and production build
         shell: bash
         run: |
           set -euo pipefail
           npm ci
-          npm run test:contracts
+          node --test \
+            scripts/prototype-contracts.test.mjs \
+            scripts/product-context.test.mjs \
+            scripts/share-seo-contract.test.mjs \
+            scripts/atlas-source-bridge-contract.test.mjs \
+            scripts/user-proof-analytics-contract.test.mjs
           npm run build
           git diff --check
 
