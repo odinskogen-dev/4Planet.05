@@ -1,0 +1,29 @@
+name: 4PLANET Magazine ATLAS live probe
+
+on:
+  push:
+    branches: [work/magazine-public-launch-gold-01]
+    paths: ['.github/workflows/magazine-atlas-live-probe.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Print public route status and headers
+        shell: bash
+        run: |
+          set -u
+          for url in \
+            'https://4planetmagazine.com/magazine/' \
+            'https://4planetmagazine.com/magazine/atlas' \
+            'https://4planetmagazine.com/magazine/atlas/' \
+            'https://4planetmagazine.com/atlas?embed=mag&l=bluemarble,fires,biodiv&z=1.65&c=5,18'; do
+            echo "===== $url ====="
+            curl -sS -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true
+            echo "----- follow -----"
+            curl -sSL -D - -o /dev/null --connect-timeout 10 --max-time 30 "$url" | tr -d '\r' || true
+          done
