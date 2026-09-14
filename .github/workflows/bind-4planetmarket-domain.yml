@@ -1,4 +1,4 @@
-name: Bind 4planetmarket.com to first creator masonry
+name: Bind 4planetmarket.com to independent creator catalogue
 
 on:
   push:
@@ -13,13 +13,14 @@ permissions:
 
 concurrency:
   group: bind-4planetmarket-domain
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
-  MARKET_UPSTREAM: https://2d8e7dc5.4planet-05.pages.dev
-  MARKET_MARKER: 4market-first-creator-31ffa3c
-  MARKET_SOURCE_SHA: 31ffa3c9333883d459a646c8221c5dddc85213c6
+  MARKET_UPSTREAM: https://92418bca.4planet-05.pages.dev
+  MARKET_MARKER: 4market-independent-f903681
+  MARKET_SOURCE_SHA: f903681af186fb05dd993c7cdc79ffa9ed6b0557
   ROLLBACK_UPSTREAM: https://4482f621.4planet-05.pages.dev
+  ROLLBACK_MARKER: 4market-rollback-4482f621
 
 jobs:
   bind-domain:
@@ -80,18 +81,22 @@ jobs:
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
           echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
 
-      - name: Verify immutable Market candidate HTTP
+      - name: Verify exact immutable Market candidate
         shell: bash
         run: |
           set -euo pipefail
-          for path in /market /cre4tors; do
+          for path in /market /market/reinebringen-vista /market/odin/reinebringen-vista.jpg; do
             url="$MARKET_UPSTREAM$path"
             code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
             echo "$url -> HTTP $code"
             test "$code" = "200"
           done
+          headers="$RUNNER_TEMP/asset.headers"
+          bytes=$(curl -L -sS -D "$headers" "$MARKET_UPSTREAM/market/odin/reinebringen-vista.jpg" -o "$RUNNER_TEMP/asset.jpg" -w '%{size_download}')
+          grep -qi '^content-type: image/jpeg' "$headers"
+          test "$bytes" -gt 100000
 
-      - name: Browser preflight — six real works and two-column mobile masonry
+      - name: Browser preflight — six self-hosted works, product route, mobile safety
         shell: bash
         run: |
           set -euo pipefail
@@ -101,26 +106,31 @@ jobs:
           import { chromium } from 'playwright';
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-          await page.goto(`${process.env.MARKET_UPSTREAM}/market`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForSelector('.mkt-maze-card', { timeout: 30000 });
+          await page.goto(`${process.env.MARKET_UPSTREAM}/market`, { waitUntil: 'networkidle', timeout: 60000 });
+          await page.waitForSelector('.market-product-card', { timeout: 30000 });
           const body = (await page.locator('body').innerText()).toLowerCase();
-          for (const token of ['art that', 'something', 'odin oddekalv', 'above the fjord', 'kelp line, low tide', 'catalogue live']) {
+          for (const token of ['odin oddekalv', 'above the fjord', 'kelp line, low tide', 'not yet for sale']) {
             if (!body.includes(token)) throw new Error(`Market preflight missing: ${token}`);
           }
-          const cards = page.locator('.mkt-maze-card');
+          const cards = page.locator('.market-product-card');
           if (await cards.count() !== 6) throw new Error(`Expected six Market products, got ${await cards.count()}`);
-          const columns = await page.locator('.mkt-maze').evaluate(el => getComputedStyle(el).columnCount);
-          if (columns !== '2') throw new Error(`Expected 2 mobile masonry columns, got ${columns}`);
-          await page.waitForFunction(() => [...document.querySelectorAll('.mkt-maze-card img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
-          const fixtureVisible = await page.locator('.mkt-legacy-model .mkt-product-stage').isVisible();
-          if (fixtureVisible) throw new Error('Old single-product fixture is still visible.');
+          const imgs = page.locator('.market-product-card img');
+          await page.waitForFunction(() => [...document.querySelectorAll('.market-product-card img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
+          const externalImage = await imgs.evaluateAll((nodes) => nodes.find((img) => new URL(img.src).hostname !== location.hostname)?.src ?? null);
+          if (externalImage) throw new Error(`External Market image dependency: ${externalImage}`);
+          const srcs = await imgs.evaluateAll((nodes) => nodes.map((img) => img.getAttribute('src')));
+          if (!srcs.every((src) => src?.startsWith('/market/odin/'))) throw new Error(`Unexpected Market asset path: ${JSON.stringify(srcs)}`);
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           if (overflow > 2) throw new Error(`Mobile horizontal overflow: ${overflow}px`);
-          console.log('PASS — immutable Market candidate has six loaded real works in two-column mobile masonry.');
+          await page.goto(`${process.env.MARKET_UPSTREAM}/market/reinebringen-vista`, { waitUntil: 'networkidle', timeout: 60000 });
+          const productText = (await page.locator('body').innerText()).toLowerCase();
+          if (!productText.includes('above the fjord') || !productText.includes('local market copy')) throw new Error('Product route or independence disclosure missing.');
+          console.log('PASS — exact immutable candidate has six self-hosted creator works and a working product route.');
           await browser.close();
           NODE
 
-      - name: Deploy isolated 4MARKET custom-domain proxy
+      - name: Deploy isolated 4PLANET MARKET custom-domain proxy
+        id: deploy_market
         shell: bash
         run: |
           set -euo pipefail
@@ -135,7 +145,8 @@ jobs:
               const response = await fetch(new Request(upstream.toString(), request));
               const headers = new Headers(response.headers);
               headers.set("x-robots-tag", "noindex, nofollow, noarchive");
-              headers.set("x-4planet-prototype", MARKER);
+              headers.set("x-4planet-market", MARKER);
+              headers.set("x-4planet-market-source", "$MARKET_SOURCE_SHA");
               return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
             }
           };
@@ -143,7 +154,7 @@ jobs:
           cat > "$RUNNER_TEMP/4planetmarket-wrangler.toml" <<EOF
           name = "4planetmarket-prototype"
           main = "$RUNNER_TEMP/4planetmarket-worker.mjs"
-          compatibility_date = "2026-09-10"
+          compatibility_date = "2026-09-14"
           account_id = "$CLOUDFLARE_ACCOUNT_ID"
           [[routes]]
           pattern = "4planetmarket.com"
@@ -153,8 +164,9 @@ jobs:
           custom_domain = true
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/4planetmarket-wrangler.toml"
+          touch "$RUNNER_TEMP/market-deployed"
 
-      - name: Verify live HTTPS and exact Worker marker
+      - name: Verify live HTTPS, exact Worker marker and self-hosted image
         shell: bash
         run: |
           set -euo pipefail
@@ -163,9 +175,10 @@ jobs:
             for attempt in $(seq 1 24); do
               headers="$RUNNER_TEMP/headers-${attempt}.txt"
               code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
-              marker=$(grep -i '^x-4planet-prototype:' "$headers" | tr -d '\r' || true)
-              echo "$url -> HTTP $code · $marker (attempt $attempt/24)"
-              if [ "$code" = "200" ] && echo "$marker" | grep -q "$MARKET_MARKER"; then return 0; fi
+              marker=$(grep -i '^x-4planet-market:' "$headers" | tr -d '\r' || true)
+              source=$(grep -i '^x-4planet-market-source:' "$headers" | tr -d '\r' || true)
+              echo "$url -> HTTP $code · $marker · $source (attempt $attempt/24)"
+              if [ "$code" = "200" ] && echo "$marker" | grep -q "$MARKET_MARKER" && echo "$source" | grep -q "$MARKET_SOURCE_SHA"; then return 0; fi
               sleep 5
             done
             return 1
@@ -173,6 +186,10 @@ jobs:
           check_live "https://4planetmarket.com/"
           check_live "https://www.4planetmarket.com/"
           check_live "https://4planetmarket.com/market"
+          image_headers="$RUNNER_TEMP/live-image.headers"
+          bytes=$(curl -L -sS -D "$image_headers" 'https://4planetmarket.com/market/odin/reinebringen-vista.jpg' -o "$RUNNER_TEMP/live-image.jpg" -w '%{size_download}')
+          grep -qi '^content-type: image/jpeg' "$image_headers"
+          test "$bytes" -gt 100000
 
       - name: Browser verify LIVE Market root
         shell: bash
@@ -182,24 +199,80 @@ jobs:
           import { chromium } from 'playwright';
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-          await page.goto('https://4planetmarket.com/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForSelector('.mkt-maze-card', { timeout: 30000 });
+          await page.goto('https://4planetmarket.com/', { waitUntil: 'networkidle', timeout: 60000 });
+          await page.waitForSelector('.market-product-card', { timeout: 30000 });
           if (new URL(page.url()).hostname !== '4planetmarket.com') throw new Error(`Unexpected hostname: ${page.url()}`);
-          const cards = page.locator('.mkt-maze-card');
+          const cards = page.locator('.market-product-card');
           if (await cards.count() !== 6) throw new Error(`LIVE expected six products, got ${await cards.count()}`);
-          const columns = await page.locator('.mkt-maze').evaluate(el => getComputedStyle(el).columnCount);
-          if (columns !== '2') throw new Error(`LIVE expected 2 mobile columns, got ${columns}`);
-          await page.waitForFunction(() => [...document.querySelectorAll('.mkt-maze-card img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
+          await page.waitForFunction(() => [...document.querySelectorAll('.market-product-card img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
+          const externalImage = await page.locator('.market-product-card img').evaluateAll((nodes) => nodes.find((img) => new URL(img.src).hostname !== location.hostname)?.src ?? null);
+          if (externalImage) throw new Error(`LIVE external image dependency: ${externalImage}`);
           const body = (await page.locator('body').innerText()).toLowerCase();
-          if (!body.includes('odin oddekalv') || !body.includes('catalogue live')) throw new Error('LIVE Market catalogue identity missing.');
-          console.log('PASS — 4planetmarket.com LIVE renders six real creator works in two-column mobile masonry.');
+          if (!body.includes('odin oddekalv') || !body.includes('above the fjord') || !body.includes('kelp line, low tide')) throw new Error('LIVE Market catalogue identity missing.');
+          const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+          if (overflow > 2) throw new Error(`LIVE mobile horizontal overflow: ${overflow}px`);
+          console.log('PASS — 4planetmarket.com LIVE renders six self-hosted creator works.');
           await browser.close();
           NODE
+          touch "$RUNNER_TEMP/live-verified"
+
+      - name: Automatic rollback if any post-deploy verification fails
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$RUNNER_TEMP/market-deployed" ] || [ -f "$RUNNER_TEMP/live-verified" ]; then
+            echo 'No rollback required.'
+            exit 0
+          fi
+          echo 'Post-deploy verification failed. Restoring prior immutable Market origin.'
+          cat > "$RUNNER_TEMP/4planetmarket-rollback.mjs" <<EOF
+          const UPSTREAM = "$ROLLBACK_UPSTREAM";
+          const MARKER = "$ROLLBACK_MARKER";
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              const upstream = new URL(incoming.pathname || "/", UPSTREAM);
+              upstream.search = incoming.search;
+              const response = await fetch(new Request(upstream.toString(), request));
+              const headers = new Headers(response.headers);
+              headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+              headers.set("x-4planet-market", MARKER);
+              return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+            }
+          };
+          EOF
+          cat > "$RUNNER_TEMP/4planetmarket-rollback.toml" <<EOF
+          name = "4planetmarket-prototype"
+          main = "$RUNNER_TEMP/4planetmarket-rollback.mjs"
+          compatibility_date = "2026-09-14"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "4planetmarket.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmarket.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/4planetmarket-rollback.toml"
+          for attempt in $(seq 1 12); do
+            headers="$RUNNER_TEMP/rollback-headers-${attempt}.txt"
+            code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' 'https://4planetmarket.com/' || true)
+            marker=$(grep -i '^x-4planet-market:' "$headers" | tr -d '\r' || true)
+            if [ "$code" = '200' ] && echo "$marker" | grep -q "$ROLLBACK_MARKER"; then
+              echo 'ROLLBACK VERIFIED.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'ROLLBACK COULD NOT BE VERIFIED.'
+          exit 1
 
       - name: Record reversible binding state
+        if: success()
         run: |
           echo "LIVE 4planetmarket.com -> $MARKET_UPSTREAM"
           echo "Source exact candidate: $MARKET_SOURCE_SHA"
           echo "Worker marker: $MARKET_MARKER"
           echo "Rollback upstream: $ROLLBACK_UPSTREAM"
-          echo "4planet.org remains untouched. Market remains noindex; commerce/payment/POD/payout/ecological outcomes remain unclaimed."
+          echo "4planet.org and its production branch were not changed. Market remains noindex; commerce/payment/POD/payout/ecological outcomes remain unclaimed."
