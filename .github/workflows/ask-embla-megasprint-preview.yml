@@ -2,7 +2,7 @@ name: 4SAPIEN FOOD megasprint preview gate
 
 on:
   push:
-    branches: [build/4sapien-food-megasprint-20260910]
+    branches: [build/4sapien-food-megasprint-20260910, build/embla-core-20260914]
     paths:
       - 'products/4sapien/**'
       - '.github/workflows/ask-embla-megasprint-preview.yml'
@@ -33,6 +33,23 @@ jobs:
           python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_theme_switch_guard.py products/4sapien/site/index.html
+
+      - name: Human Gold source probe
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('products/4sapien/site/index.html').read_text()
+          print('HUMAN_GOLD_SOURCE_PROBE')
+          for term in ['Ask Embla','function Hjem','function App','const ask','function Chat','function Home','setTab("']:
+              print('\n###',term)
+              hits=list(re.finditer(re.escape(term),s,re.I))[:6]
+              print('hits',len(hits))
+              for h in hits:
+                  a=max(0,h.start()-700); b=min(len(s),h.end()+1400)
+                  print(s[a:b].replace('\n',' ')[:2200])
+          PY
 
       - name: Syntax + zero-loss + theme QA
         run: |
@@ -78,6 +95,8 @@ jobs:
           done
           code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"q":"skinke"}' "${SUPABASE_URL}/functions/v1/embla-products" || true)
           [ "$code" = 401 ] || { echo "gateway boundary HTTP $code"; cat /tmp/gateway.json; exit 6; }
+          core_code=$(curl -sS -o /tmp/core.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"message":"health check"}' "${SUPABASE_URL}/functions/v1/embla-core-preview" || true)
+          [ "$core_code" = 401 ] || { echo "embla core auth boundary HTTP $core_code"; cat /tmp/core.json; exit 7; }
           curl -fsS -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/auth/v1/settings" | jq -e '(.external.email == true)' >/dev/null
 
       - name: Resolve Cloudflare credentials
@@ -123,5 +142,6 @@ jobs:
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
           echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Embla Core unauthenticated boundary: gated at 401' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
           echo "- Preview: ${{ steps.preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
