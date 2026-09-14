@@ -1,0 +1,63 @@
+name: 4PLANET domain routing ops v3
+
+on:
+  push:
+    branches:
+      - ops/domain-routing-20260914
+    paths:
+      - .github/workflows/domain-routing-ops-v3.yml
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout ops branch
+        uses: actions/checkout@v4
+
+      - name: Resolve valid Cloudflare token and configure domains
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          chosen=''
+          chosen_name=''
+          i=0
+          for raw in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            i=$((i+1))
+            case "$i" in
+              1) name='CLOUDFLARE_API_TOKEN' ;;
+              2) name='CLOUDFLARE_TOKEN' ;;
+              3) name='CF_API_TOKEN' ;;
+              4) name='CF_TOKEN' ;;
+            esac
+            if [ -z "$raw" ]; then
+              echo "$name: absent"
+              continue
+            fi
+            token=$(printf '%s' "$raw" | tr -d '\r\n')
+            token="${token#Bearer }"; token="${token#bearer }"
+            token="${token#CLOUDFLARE_API_TOKEN=}"; token="${token#CF_API_TOKEN=}"
+            token="${token#\"}"; token="${token%\"}"; token="${token#\'}"; token="${token%\'}"
+            echo "::add-mask::$token"
+            code=$(curl -sS -o /tmp/cf-verify.json -w '%{http_code}' -H "Authorization: Bearer $token" "$api/user/tokens/verify" || true)
+            success=$(jq -r '.success // false' /tmp/cf-verify.json 2>/dev/null || echo false)
+            if [ "$code" = '200' ] && [ "$success" = 'true' ]; then
+              chosen="$token"
+              chosen_name="$name"
+              echo "$name: VALID"
+              break
+            fi
+            echo "$name: rejected (HTTP $code)"
+          done
+          [ -n "$chosen" ] || { echo 'No valid Cloudflare token found in configured repository secrets.'; exit 2; }
+          echo "Using validated credential source: $chosen_name"
+          CF_API_TOKEN="$chosen" bash .ops/domain-router/configure.sh
