@@ -48,9 +48,122 @@ function webglAvailable() {
   }
 }
 
+/**
+ * Embedded WebKit can initialise MapLibre while the iframe is still settling at
+ * a zero/stale layout size. The shell then appears while the WebGL canvas stays
+ * black until a later resize. This recovery owns viewport sizing only; it never
+ * changes camera, URL state, layers or product state.
+ */
+function AtlasEmbeddedViewportRecovery({ enabled }: { enabled: boolean }) {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+
+    let disposed = false;
+    let pollId: number | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+    let intersectionObserver: IntersectionObserver | null = null;
+    let observedContainer: HTMLElement | null = null;
+    const timeouts = new Set<number>();
+
+    const sync = () => {
+      if (disposed) return false;
+      const atlasMap = (window as any).__4planet_map;
+      if (!atlasMap || typeof atlasMap.resize !== "function") return false;
+
+      const container = typeof atlasMap.getContainer === "function" ? atlasMap.getContainer() : null;
+      if (!container) return false;
+      const rect = container.getBoundingClientRect();
+      if (rect.width < 32 || rect.height < 32) return false;
+
+      try {
+        atlasMap.resize();
+        if (typeof atlasMap.triggerRepaint === "function") atlasMap.triggerRepaint();
+      } catch {
+        return false;
+      }
+      return true;
+    };
+
+    const afterLayout = () => {
+      if (disposed) return;
+      requestAnimationFrame(() => requestAnimationFrame(sync));
+    };
+
+    const settle = () => {
+      afterLayout();
+      [50, 150, 350, 750, 1500].forEach((delay) => {
+        const id = window.setTimeout(sync, delay);
+        timeouts.add(id);
+      });
+    };
+
+    const attachObservers = () => {
+      if (disposed) return false;
+      const atlasMap = (window as any).__4planet_map;
+      const container = atlasMap && typeof atlasMap.getContainer === "function" ? atlasMap.getContainer() : null;
+      if (!container) return false;
+
+      if (container !== observedContainer) {
+        resizeObserver?.disconnect();
+        intersectionObserver?.disconnect();
+        observedContainer = container;
+
+        if (typeof ResizeObserver !== "undefined") {
+          resizeObserver = new ResizeObserver(() => afterLayout());
+          resizeObserver.observe(container);
+        }
+        if (typeof IntersectionObserver !== "undefined") {
+          intersectionObserver = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0)) settle();
+          }, { threshold: [0, 0.01, 0.25] });
+          intersectionObserver.observe(container);
+        }
+      }
+
+      settle();
+      return true;
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") settle();
+    };
+
+    window.addEventListener("pageshow", settle);
+    window.addEventListener("resize", afterLayout);
+    window.addEventListener("orientationchange", settle);
+    document.addEventListener("visibilitychange", onVisible);
+
+    let attempts = 0;
+    pollId = window.setInterval(() => {
+      attempts += 1;
+      if (attachObservers() || attempts >= 60) {
+        if (pollId !== null) window.clearInterval(pollId);
+        pollId = null;
+      }
+    }, 50);
+    attachObservers();
+
+    return () => {
+      disposed = true;
+      if (pollId !== null) window.clearInterval(pollId);
+      timeouts.forEach((id) => window.clearTimeout(id));
+      resizeObserver?.disconnect();
+      intersectionObserver?.disconnect();
+      window.removeEventListener("pageshow", settle);
+      window.removeEventListener("resize", afterLayout);
+      window.removeEventListener("orientationchange", settle);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [enabled]);
+
+  return null;
+}
+
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const embedMode = new URLSearchParams(location.search).get("embed");
+  const embedded = Boolean(embedMode);
 
   // Explicit ATLAS return state is authoritative during initial reconstruction.
   // MapLibre can still alter effective zoom after style.load when globe projection,
@@ -102,8 +215,6 @@ export default function PublicWorld() {
         timers.push(window.setTimeout(() => reconcile(map), delay));
       }
 
-      // First fully-settled render is the final startup reconciliation point.
-      // `once` keeps this bounded; later idles after user interaction are untouched.
       map.once("idle", () => reconcile(map));
     };
 
@@ -138,6 +249,7 @@ export default function PublicWorld() {
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
+        <AtlasEmbeddedViewportRecovery enabled={embedded} />
         <AtlasSavedViews />
       </>
     );
