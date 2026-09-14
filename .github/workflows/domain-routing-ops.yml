@@ -1,0 +1,367 @@
+name: 4PLANET domain routing ops
+
+on:
+  push:
+    branches:
+      - ops/domain-routing-20260914
+    paths:
+      - .github/workflows/domain-routing-ops.yml
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_API: https://api.cloudflare.com/client/v4
+      WORKER_NAME: 4planet-product-domains
+    steps:
+      - name: Preflight Cloudflare and discover production Pages origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_API_TOKEN"
+          test -n "$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+
+          verify=$(curl -fsS "${auth[@]}" "$CF_API/user/tokens/verify")
+          test "$(jq -r '.success' <<<"$verify")" = "true"
+
+          projects=$(curl -fsS "${auth[@]}" "$CF_API/accounts/$CF_ACCOUNT_ID/pages/projects")
+          test "$(jq -r '.success' <<<"$projects")" = "true"
+          project_name=$(jq -r '[.result[] | select(((.domains // []) | index("4planet.org")) != null)][0].name // empty' <<<"$projects")
+          if [ -z "$project_name" ]; then
+            project_name=$(jq -r '[.result[] | select(.name == "4planet-05")][0].name // empty' <<<"$projects")
+          fi
+          test -n "$project_name"
+          subdomain=$(jq -r --arg n "$project_name" '[.result[] | select(.name == $n)][0].subdomain // empty' <<<"$projects")
+          if [ -z "$subdomain" ]; then subdomain="${project_name}.pages.dev"; fi
+          case "$subdomain" in
+            *.pages.dev) ;;
+            *) subdomain="${subdomain}.pages.dev" ;;
+          esac
+          curl -fsSI --max-time 20 "https://$subdomain/" >/dev/null
+          echo "PROJECT_NAME=$project_name" >> "$GITHUB_ENV"
+          echo "PAGES_ORIGIN=$subdomain" >> "$GITHUB_ENV"
+          echo "Cloudflare Pages origin resolved: $subdomain"
+
+      - name: Resolve zones
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+          zone_id() {
+            local name="$1" json id status
+            json=$(curl -fsS "${auth[@]}" "$CF_API/zones?name=$name")
+            test "$(jq -r '.success' <<<"$json")" = "true"
+            id=$(jq -r '.result[0].id // empty' <<<"$json")
+            status=$(jq -r '.result[0].status // empty' <<<"$json")
+            test -n "$id"
+            test "$status" = "active"
+            printf '%s' "$id"
+          }
+          echo "ZONE_PLANET=$(zone_id 4planet.org)" >> "$GITHUB_ENV"
+          echo "ZONE_ATLAS=$(zone_id 4planetatlas.com)" >> "$GITHUB_ENV"
+          echo "ZONE_SPECIES=$(zone_id 4species.com)" >> "$GITHUB_ENV"
+
+      - name: Upload host-aware edge router
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > worker.mjs <<'WORKER'
+          const ORIGIN = "https://__PAGES_ORIGIN__";
+
+          const RESERVED = new Set([
+            "labs","os","story","domains","missions","atlas","species","lens","food","s4piens","4sapien",
+            "impact","checkout","join","people","brands","partners","actors","get-involved","funders",
+            "living-systems","reports","about","magazine","stories","privacy","culture","m","marketplace",
+            "store","cart","members","ambassadors","portal","sponsors","oce4n","e4rth","4culture","system","404"
+          ]);
+          const ASSET_PREFIXES = ["/assets/","/api/","/fonts/","/images/","/icons/","/static/","/data/","/media/","/.well-known/"];
+
+          function isAssetPath(path) {
+            if (ASSET_PREFIXES.some((prefix) => path.startsWith(prefix))) return true;
+            if (["/favicon.ico","/robots.txt","/sitemap.xml","/manifest.webmanifest"].includes(path)) return true;
+            const last = path.split("/").pop() || "";
+            return last.includes(".");
+          }
+
+          function firstSegment(path) {
+            return path.split("/").filter(Boolean)[0] || "";
+          }
+
+          function redirectTo(url, status = 308) {
+            return Response.redirect(url, status);
+          }
+
+          function atlasCleanFromInternal(path) {
+            if (path === "/atlas") return "/";
+            if (path.startsWith("/atlas/")) return path.slice(6) || "/";
+            return path;
+          }
+
+          function speciesCleanFromInternal(path) {
+            if (path === "/species") return "/";
+            if (path.startsWith("/species/")) return path.slice(8) || "/";
+            return path;
+          }
+
+          function edgeShim(product) {
+            return `(() => {
+              const PRODUCT = ${JSON.stringify(product)};
+              const nativePush = history.pushState.bind(history);
+              const nativeReplace = history.replaceState.bind(history);
+              const RESERVED = new Set(${JSON.stringify([...RESERVED])});
+              const first = (p) => p.split('/').filter(Boolean)[0] || '';
+              const toInternal = (p) => {
+                if (PRODUCT === 'species') {
+                  if (p === '/') return '/species';
+                  if (p === '/species' || p.startsWith('/species/')) return p;
+                  return '/species' + p;
+                }
+                if (p === '/' || p === '/atlas') return '/atlas';
+                if (p.startsWith('/atlas/')) return p;
+                return p;
+              };
+              const toClean = (p) => {
+                if (PRODUCT === 'species') {
+                  if (p === '/species') return '/';
+                  if (p.startsWith('/species/')) return p.slice(8) || '/';
+                } else {
+                  if (p === '/atlas') return '/';
+                  if (p.startsWith('/atlas/')) return p.slice(6) || '/';
+                }
+                return p;
+              };
+              const externalTarget = (u) => {
+                const p = u.pathname;
+                if (PRODUCT === 'species') {
+                  if (p === '/atlas' || p.startsWith('/atlas/')) {
+                    const clean = p === '/atlas' ? '/' : (p.slice(6) || '/');
+                    return 'https://4planetatlas.com' + clean + u.search + u.hash;
+                  }
+                  if (!(p === '/species' || p.startsWith('/species/')) && RESERVED.has(first(p))) {
+                    return 'https://4planet.org' + p + u.search + u.hash;
+                  }
+                } else {
+                  if (p === '/species' || p.startsWith('/species/')) {
+                    const clean = p === '/species' ? '/' : (p.slice(8) || '/');
+                    return 'https://4species.com' + clean + u.search + u.hash;
+                  }
+                  if (!(p === '/atlas' || p.startsWith('/atlas/')) && RESERVED.has(first(p))) {
+                    return 'https://4planet.org' + p + u.search + u.hash;
+                  }
+                }
+                return null;
+              };
+              const cleanAddressBar = () => {
+                const clean = toClean(location.pathname);
+                if (clean !== location.pathname) nativeReplace(history.state, '', clean + location.search + location.hash);
+              };
+              const initial = toInternal(location.pathname);
+              if (initial !== location.pathname) nativeReplace(history.state, '', initial + location.search + location.hash);
+
+              history.pushState = function(state, title, url) {
+                if (url != null) {
+                  const u = new URL(url, location.href);
+                  const ext = externalTarget(u);
+                  if (ext) { location.assign(ext); return; }
+                }
+                const result = nativePush(state, title, url);
+                queueMicrotask(cleanAddressBar);
+                return result;
+              };
+              history.replaceState = function(state, title, url) {
+                if (url != null) {
+                  const u = new URL(url, location.href);
+                  const ext = externalTarget(u);
+                  if (ext) { location.replace(ext); return; }
+                }
+                const result = nativeReplace(state, title, url);
+                queueMicrotask(cleanAddressBar);
+                return result;
+              };
+              addEventListener('popstate', () => {
+                const internal = toInternal(location.pathname);
+                if (internal !== location.pathname) nativeReplace(history.state, '', internal + location.search + location.hash);
+                queueMicrotask(cleanAddressBar);
+              }, true);
+              addEventListener('DOMContentLoaded', cleanAddressBar, { once: true });
+            })();`;
+          }
+
+          async function proxyProduct(request, targetPath, product) {
+            const incoming = new URL(request.url);
+            const target = new URL(ORIGIN);
+            target.pathname = targetPath;
+            target.search = incoming.search;
+            const proxied = new Request(target.toString(), request);
+            const response = await fetch(proxied);
+            const type = response.headers.get("content-type") || "";
+            if (!type.includes("text/html")) return response;
+            return new HTMLRewriter()
+              .on("head", { element(el) { el.prepend(`<script>${edgeShim(product)}</script>`, { html: true }); } })
+              .transform(response);
+          }
+
+          async function proxyAsset(request) {
+            const incoming = new URL(request.url);
+            const target = new URL(ORIGIN);
+            target.pathname = incoming.pathname;
+            target.search = incoming.search;
+            return fetch(new Request(target.toString(), request));
+          }
+
+          export default {
+            async fetch(request) {
+              const url = new URL(request.url);
+              const host = url.hostname.toLowerCase();
+              const path = url.pathname;
+
+              if (host === "4planet.org") {
+                if (path === "/atlas" || path.startsWith("/atlas/")) {
+                  return redirectTo(`https://4planetatlas.com${atlasCleanFromInternal(path)}${url.search}`);
+                }
+                if (path === "/species" || path.startsWith("/species/")) {
+                  return redirectTo(`https://4species.com${speciesCleanFromInternal(path)}${url.search}`);
+                }
+                return fetch(request);
+              }
+
+              if (host === "www.4planetatlas.com") {
+                return redirectTo(`https://4planetatlas.com${path}${url.search}`);
+              }
+              if (host === "www.4species.com") {
+                return redirectTo(`https://4species.com${path}${url.search}`);
+              }
+
+              if (host === "4planetatlas.com") {
+                if (path === "/atlas" || path.startsWith("/atlas/")) {
+                  return redirectTo(`https://4planetatlas.com${atlasCleanFromInternal(path)}${url.search}`);
+                }
+                if (path === "/species" || path.startsWith("/species/")) {
+                  return redirectTo(`https://4species.com${speciesCleanFromInternal(path)}${url.search}`);
+                }
+                if (isAssetPath(path)) return proxyAsset(request);
+                if (path !== "/" && RESERVED.has(firstSegment(path))) {
+                  return redirectTo(`https://4planet.org${path}${url.search}`);
+                }
+                if (path !== "/") return redirectTo(`https://4planet.org${path}${url.search}`);
+                return proxyProduct(request, "/atlas", "atlas");
+              }
+
+              if (host === "4species.com") {
+                if (path === "/species" || path.startsWith("/species/")) {
+                  return redirectTo(`https://4species.com${speciesCleanFromInternal(path)}${url.search}`);
+                }
+                if (path === "/atlas" || path.startsWith("/atlas/")) {
+                  return redirectTo(`https://4planetatlas.com${atlasCleanFromInternal(path)}${url.search}`);
+                }
+                if (isAssetPath(path)) return proxyAsset(request);
+                if (RESERVED.has(firstSegment(path))) {
+                  return redirectTo(`https://4planet.org${path}${url.search}`);
+                }
+                const internalPath = path === "/" ? "/species" : `/species${path}`;
+                return proxyProduct(request, internalPath, "species");
+              }
+
+              return fetch(request);
+            }
+          };
+          WORKER
+          sed -i "s|__PAGES_ORIGIN__|$PAGES_ORIGIN|g" worker.mjs
+          metadata=$(jq -nc '{main_module:"worker.mjs",compatibility_date:"2026-09-14"}')
+          response=$(curl -fsS -X PUT \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -F "metadata=$metadata;type=application/json" \
+            -F "worker.mjs=@worker.mjs;filename=worker.mjs;type=application/javascript+module" \
+            "$CF_API/accounts/$CF_ACCOUNT_ID/workers/scripts/$WORKER_NAME")
+          test "$(jq -r '.success' <<<"$response")" = "true"
+          echo "Worker uploaded: $WORKER_NAME"
+
+      - name: Configure DNS for product domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+
+          reset_host() {
+            local zone="$1" name="$2" type="$3" content="$4"
+            local existing ids
+            existing=$(curl -fsS "${auth[@]}" "$CF_API/zones/$zone/dns_records?name=$name")
+            test "$(jq -r '.success' <<<"$existing")" = "true"
+            ids=$(jq -r '.result[] | select(.type=="A" or .type=="AAAA" or .type=="CNAME") | .id' <<<"$existing")
+            if [ -n "$ids" ]; then
+              while read -r id; do
+                [ -z "$id" ] && continue
+                curl -fsS -X DELETE "${auth[@]}" "$CF_API/zones/$zone/dns_records/$id" | jq -e '.success == true' >/dev/null
+              done <<<"$ids"
+            fi
+            payload=$(jq -nc --arg type "$type" --arg name "$name" --arg content "$content" '{type:$type,name:$name,content:$content,proxied:true,ttl:1}')
+            curl -fsS -X POST "${auth[@]}" --data "$payload" "$CF_API/zones/$zone/dns_records" | jq -e '.success == true' >/dev/null
+          }
+
+          reset_host "$ZONE_ATLAS" "4planetatlas.com" "A" "192.0.2.1"
+          reset_host "$ZONE_ATLAS" "www.4planetatlas.com" "CNAME" "4planetatlas.com"
+          reset_host "$ZONE_SPECIES" "4species.com" "A" "192.0.2.1"
+          reset_host "$ZONE_SPECIES" "www.4species.com" "CNAME" "4species.com"
+          echo "DNS configured without touching MX/TXT or unrelated records."
+
+      - name: Bind worker routes idempotently
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+
+          ensure_route() {
+            local zone="$1" pattern="$2" routes id payload
+            routes=$(curl -fsS "${auth[@]}" "$CF_API/zones/$zone/workers/routes")
+            test "$(jq -r '.success' <<<"$routes")" = "true"
+            id=$(jq -r --arg p "$pattern" '.result[] | select(.pattern == $p) | .id' <<<"$routes" | head -n1)
+            payload=$(jq -nc --arg pattern "$pattern" --arg script "$WORKER_NAME" '{pattern:$pattern,script:$script}')
+            if [ -n "$id" ]; then
+              curl -fsS -X PUT "${auth[@]}" --data "$payload" "$CF_API/zones/$zone/workers/routes/$id" | jq -e '.success == true' >/dev/null
+            else
+              curl -fsS -X POST "${auth[@]}" --data "$payload" "$CF_API/zones/$zone/workers/routes" | jq -e '.success == true' >/dev/null
+            fi
+          }
+
+          ensure_route "$ZONE_ATLAS" "4planetatlas.com/*"
+          ensure_route "$ZONE_ATLAS" "www.4planetatlas.com/*"
+          ensure_route "$ZONE_SPECIES" "4species.com/*"
+          ensure_route "$ZONE_SPECIES" "www.4species.com/*"
+          ensure_route "$ZONE_PLANET" "4planet.org/atlas*"
+          ensure_route "$ZONE_PLANET" "4planet.org/species*"
+          echo "Worker routes bound."
+
+      - name: Verify public routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe() {
+            local url="$1" expected="$2"
+            local ok=0
+            for i in $(seq 1 18); do
+              headers=$(curl -ksS -D - -o /dev/null --max-time 20 "$url" || true)
+              status=$(awk 'toupper($1) ~ /^HTTP\// {code=$2} END {print code}' <<<"$headers")
+              location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/,""); print substr($0,11)}' <<<"$headers" | tail -n1 | xargs || true)
+              if [[ "$expected" == "2xx" && "$status" =~ ^2 ]]; then ok=1; break; fi
+              if [[ "$expected" != "2xx" && "$status" =~ ^30[1278]$ && "$location" == "$expected"* ]]; then ok=1; break; fi
+              sleep 5
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "Probe failed: $url status=$status location=$location expected=$expected" >&2
+              return 1
+            fi
+            echo "OK $url -> status=$status ${location:+location=$location}"
+          }
+
+          probe "https://4planet.org/atlas" "https://4planetatlas.com/"
+          probe "https://4planet.org/species/orca" "https://4species.com/orca"
+          probe "https://4planetatlas.com/" "2xx"
+          probe "https://4species.com/" "2xx"
+          probe "https://4species.com/orca" "2xx"
+          probe "https://www.4species.com/orca" "https://4species.com/orca"
