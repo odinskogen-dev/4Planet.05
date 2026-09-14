@@ -25,6 +25,7 @@ import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CulturePlay } from "@/pages/v5/Culture";
+import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
 
@@ -47,6 +48,7 @@ const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", backgrou
 const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 const toImpact = <Navigate to="/impact" replace />;
+const toMarket = <Navigate to="/market" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toHome = <Navigate to="/" replace />;
@@ -77,10 +79,11 @@ export function AppRoutes() {
       <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
-      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/missions/4telier" element={toMarket} />
+      <Route path="/missions/4rt" element={toMarket} />
       <Route path="/missions/m4gazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/missions/4film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
-      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/culture/telier" element={toMarket} />
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
@@ -136,14 +139,18 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+      <Route path="/market" element={<MarketHome />} />
+      <Route path="/cre4tor" element={<OdinCreatorPage />} />
+      <Route path="/cre4tor/odin" element={<OdinCreatorPage />} />
+      <Route path="/creator/odin" element={<OdinCreatorPage />} />
       <Route path="/os/*" element={<LabsOverview />} />
       <Route path="/m/:slug" element={<MtoMission />} />
       <Route path="/m/:slug/support" element={toImpact} />
       <Route path="/m/:slug/campaign" element={toImpact} />
-      <Route path="/marketplace" element={toImpact} />
-      <Route path="/store" element={toImpact} />
-      <Route path="/cart" element={toImpact} />
-      <Route path="/checkout" element={toImpact} />
+      <Route path="/marketplace" element={toMarket} />
+      <Route path="/store" element={toMarket} />
+      <Route path="/cart" element={toMarket} />
+      <Route path="/checkout" element={toMarket} />
       <Route path="/members" element={toJoin} />
       <Route path="/ambassadors" element={toJoin} />
       <Route path="/portal/*" element={toImpact} />
