@@ -17,9 +17,9 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       ATLAS_DOMAIN: 4planetatlas.com
       PROJECT: 4planet-05
-      EXPECTED_SHA: 9d26352ff5805143b1ce84d7db19bbcacd24731a
+      EXPECTED_SHA: 81c53152e8ca9ebb8de9926a0071d7f352acc503
     steps:
-      - name: Verify production deployment, Pages domain and HTTP behavior
+      - name: Verify production deploy and first-party embed policy
         shell: bash
         run: |
           set -euo pipefail
@@ -31,18 +31,15 @@ jobs:
           account_id="$(jq -r '.result[0].account.id // empty' <<<"$zone_json")"
           [[ -n "$account_id" ]] || { echo 'ERROR: Cloudflare account id missing'; exit 1; }
 
-          echo "PAGES_DOMAIN"
           domain_json="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains/${ATLAS_DOMAIN}" "${auth[@]}")"
           echo "$domain_json" | jq '.result | {name,status,validation_data,verification_data}'
           jq -e '.success == true and .result.status == "active"' <<<"$domain_json" >/dev/null
 
           matched=0
-          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18; do
             deployments="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/deployments?env=production&per_page=10" "${auth[@]}")"
             jq -e '.success == true' <<<"$deployments" >/dev/null
-            echo "PRODUCTION_DEPLOYMENTS_ATTEMPT_${attempt}"
-            echo "$deployments" | jq '[.result[0:5][]? | {id,url,environment,created_on,latest_stage,source,aliases}]'
-
+            echo "$deployments" | jq '[.result[0:3][]? | {id,url,environment,created_on,latest_stage,aliases,deployment_trigger}]'
             if jq -e --arg sha "$EXPECTED_SHA" '
               any(.result[]?;
                 (.environment == "production") and
@@ -55,27 +52,30 @@ jobs:
             fi
             sleep 5
           done
+          [[ "$matched" == "1" ]] || { echo "ERROR: expected merge SHA not deployed successfully"; exit 2; }
 
-          [[ "$matched" == "1" ]] || {
-            echo "ERROR: expected merge SHA is not yet a successful production Pages deployment"
-            exit 2
+          headers="$(mktemp)"
+          body="$(mktemp)"
+          code="$(curl -sS --max-time 30 -D "$headers" -o "$body" -w '%{http_code}' "https://${ATLAS_DOMAIN}/")"
+          cat "$headers"
+          [[ "$code" == "200" ]] || { echo "ERROR: Atlas root HTTP ${code}"; exit 3; }
+          grep -qi '<div id="root"' "$body" || { echo 'ERROR: SPA root missing'; exit 4; }
+
+          if grep -qi '^x-frame-options:' "$headers"; then
+            echo 'ERROR: X-Frame-Options still present and can block cross-origin first-party embeds'
+            exit 5
+          fi
+          csp="$(grep -i '^content-security-policy:' "$headers" | tr -d '\r' || true)"
+          [[ -n "$csp" ]] || { echo 'ERROR: CSP missing'; exit 6; }
+          grep -Fq "frame-ancestors 'self' https://4planet.org https://www.4planet.org https://4planetmagazine.com https://www.4planetmagazine.com" <<<"$csp" || {
+            echo 'ERROR: first-party frame-ancestors allowlist missing'
+            exit 7
           }
 
-          echo "ATLAS_HTTP_HEADERS"
-          atlas_headers="$(mktemp)"
-          atlas_body="$(mktemp)"
-          atlas_code="$(curl -sS --max-time 30 -L -D "$atlas_headers" -o "$atlas_body" -w '%{http_code}' "https://${ATLAS_DOMAIN}/")"
-          cat "$atlas_headers"
-          echo "ATLAS_FINAL_HTTP=${atlas_code}"
-          [[ "$atlas_code" == "200" ]] || { echo 'ERROR: Atlas root did not return 200'; exit 3; }
-          grep -qi '<div id="root"' "$atlas_body" || { echo 'ERROR: Atlas root missing SPA root shell'; exit 4; }
-
-          echo "LEGACY_ATLAS_HTTP_HEADERS"
           legacy_headers="$(mktemp)"
-          legacy_body="$(mktemp)"
-          legacy_code="$(curl -sS --max-time 30 -D "$legacy_headers" -o "$legacy_body" -w '%{http_code}' "https://4planet.org/atlas")"
+          legacy_code="$(curl -sS --max-time 30 -D "$legacy_headers" -o /dev/null -w '%{http_code}' "https://4planet.org/atlas")"
           cat "$legacy_headers"
-          echo "LEGACY_ATLAS_HTTP=${legacy_code}"
-          [[ "$legacy_code" =~ ^(200|301|302|307|308)$ ]] || { echo 'ERROR: legacy Atlas route unavailable'; exit 5; }
+          [[ "$legacy_code" == "308" ]] || { echo "ERROR: 4planet.org/atlas no longer canonical-redirects (${legacy_code})"; exit 8; }
+          grep -qi '^location: https://4planetatlas.com/' "$legacy_headers" || { echo 'ERROR: canonical redirect target incorrect'; exit 9; }
 
-          echo "ATLAS_LIVE_VERIFY_PASS"
+          echo "ATLAS_FIRST_PARTY_EMBED_VERIFY_PASS"
