@@ -18,7 +18,7 @@ jobs:
       DOMAIN: 4planetatlas.com
       PROJECT: 4planet-05
     steps:
-      - name: Attach 4planetatlas.com to existing Pages project
+      - name: Attach Atlas domain and correct apex DNS
         shell: bash
         run: |
           set -euo pipefail
@@ -32,37 +32,57 @@ jobs:
           zone_id="$(jq -r '.result[0].id // empty' <<<"${zone_json}")"
           zone_status="$(jq -r '.result[0].status // empty' <<<"${zone_json}")"
           account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
-
-          [[ -n "${zone_id}" ]] || { echo "ERROR: Cloudflare zone ${DOMAIN} not found for this token/account"; exit 1; }
-          [[ -n "${account_id}" ]] || { echo "ERROR: account id missing"; exit 1; }
+          [[ -n "${zone_id}" && -n "${account_id}" ]] || { echo "ERROR: zone/account not found"; exit 1; }
           echo "Zone found: ${DOMAIN} status=${zone_status}"
 
           project_json="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}" "${auth[@]}")"
           jq -e '.success == true' <<<"${project_json}" >/dev/null
           production_branch="$(jq -r '.result.production_branch // empty' <<<"${project_json}")"
           subdomain="$(jq -r '.result.subdomain // empty' <<<"${project_json}")"
+          [[ -n "${subdomain}" ]] || { echo "ERROR: Pages subdomain missing"; exit 1; }
           echo "Pages project: ${PROJECT}; production_branch=${production_branch}; subdomain=${subdomain}"
 
           existing="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}")"
           jq -e '.success == true' <<<"${existing}" >/dev/null
-
-          if jq -e --arg d "${DOMAIN}" 'any(.result[]?; .name == $d)' <<<"${existing}" >/dev/null; then
-            echo "Domain already attached; no mutation needed."
-          else
+          if ! jq -e --arg d "${DOMAIN}" 'any(.result[]?; .name == $d)' <<<"${existing}" >/dev/null; then
             created="$(curl -fsS -X POST "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains" "${auth[@]}" --data "{\"name\":\"${DOMAIN}\"}")"
             echo "${created}" | jq '{success, errors, messages, result: (.result | {name,status,created_on,validation_data})}'
             jq -e '.success == true' <<<"${created}" >/dev/null
+          else
+            echo "Pages custom domain already attached."
           fi
 
-          # Read back exact state. Cloudflare creates the apex CNAME automatically when the zone uses Cloudflare nameservers.
+          # Make the apex point only to the existing Pages project. Preserve unrelated records (MX/TXT/etc.).
+          dns_before="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+          jq -e '.success == true' <<<"${dns_before}" >/dev/null
+
+          mapfile -t conflicting_ids < <(jq -r --arg target "${subdomain}" '.result[]? | select((.type == "A" or .type == "AAAA" or .type == "CNAME") and not(.type == "CNAME" and .content == $target)) | .id' <<<"${dns_before}")
+          for rid in "${conflicting_ids[@]}"; do
+            echo "Removing conflicting apex address record ${rid}"
+            deleted="$(curl -fsS -X DELETE "${api}/zones/${zone_id}/dns_records/${rid}" "${auth[@]}")"
+            jq -e '.success == true' <<<"${deleted}" >/dev/null
+          done
+
+          dns_mid="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+          if jq -e --arg target "${subdomain}" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"${dns_mid}" >/dev/null; then
+            cname_id="$(jq -r --arg target "${subdomain}" '.result[]? | select(.type == "CNAME" and .content == $target) | .id' <<<"${dns_mid}" | head -n1)"
+            patched="$(curl -fsS -X PATCH "${api}/zones/${zone_id}/dns_records/${cname_id}" "${auth[@]}" --data "{\"proxied\":true,\"ttl\":1}")"
+            jq -e '.success == true' <<<"${patched}" >/dev/null
+            echo "Existing Pages CNAME retained and proxied."
+          else
+            created_dns="$(curl -fsS -X POST "${api}/zones/${zone_id}/dns_records" "${auth[@]}" --data "{\"type\":\"CNAME\",\"name\":\"${DOMAIN}\",\"content\":\"${subdomain}\",\"ttl\":1,\"proxied\":true}")"
+            echo "${created_dns}" | jq '{success, errors, messages, result: (.result | {type,name,content,proxied,ttl})}'
+            jq -e '.success == true' <<<"${created_dns}" >/dev/null
+          fi
+
           final_domain="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${PROJECT}/domains/${DOMAIN}" "${auth[@]}")"
           jq -e '.success == true' <<<"${final_domain}" >/dev/null
           echo "FINAL_PAGES_DOMAIN_STATE"
           echo "${final_domain}" | jq '.result | {name,status,created_on,validation_data,verification_data}'
 
-          dns="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
-          jq -e '.success == true' <<<"${dns}" >/dev/null
+          dns_final="$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=${DOMAIN}&per_page=100" "${auth[@]}")"
+          jq -e '.success == true' <<<"${dns_final}" >/dev/null
           echo "FINAL_DNS_STATE"
-          echo "${dns}" | jq '[.result[]? | {type,name,content,proxied,ttl}]'
+          echo "${dns_final}" | jq '[.result[]? | {type,name,content,proxied,ttl}]'
 
-          echo "ATLAS_DOMAIN_ACTIVATION_COMPLETE"
+          echo "ATLAS_DOMAIN_DNS_COMPLETE"
