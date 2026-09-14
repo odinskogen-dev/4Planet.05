@@ -7,7 +7,7 @@ export function HomeAtlasEmbed() {
       <div className="home-atlas-embed__frame">
         <iframe
           title="4PLANET ATLAS interactive globe"
-          src="/atlas?embed=home&l=bluemarble,fires,biodiv&z=1.65&c=5,18"
+          src="https://4planetatlas.com/?embed=home&l=bluemarble,fires,biodiv&z=1.65&c=5,18"
           loading="eager"
           allow="fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"
