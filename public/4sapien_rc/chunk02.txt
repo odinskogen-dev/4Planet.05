@@ -1,0 +1,26 @@
+{margin-top:12px;font-size:13px;color:var(--soft)}
+.searchbar{display:flex;gap:8px}.searchbar input{flex:1;border:1px solid var(--line2);border-radius:11px;padding:12px}.productgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.product{border:1px solid var(--line2);border-radius:13px;padding:12px}.product img{width:56px;height:56px;object-fit:cover;border-radius:8px;background:var(--fill)}.product .name{font-weight:600;margin-top:8px}.product .sub{font-size:11px;color:var(--faint);margin:3px 0 9px}
+.doc{padding:54px 0 90px}.doc h1{font-size:clamp(2.3rem,6vw,4rem);max-width:15ch}.doc h2{font-size:1.45rem;margin:34px 0 10px}.doc p{max-width:68ch;color:var(--soft)}
+@media(max-width:760px){.herogrid,.worlds,.howgrid,.grid2,.grid3,.formgrid{grid-template-columns:1fr}.hero .embla-demo{grid-row:1}.headlinks .methodlink{display:none}.appbar .mark small{display:none}.appnav{gap:0}.appnav a{padding:7px 8px}.productgrid{grid-template-columns:1fr}.wrap{width:min(100% - 28px,1080px)}.appmain{padding-top:24px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+</style>
+</head>
+<body><div id="root"><header class="sitehead"><div class="wrap inner"><a class="mark" href="/">4SAPIEN<small>by 4PLANET</small></a><div class="headlinks"><a class="methodlink" href="/method">Method</a><a href="/login">Log in</a></div></div></header><main>
+<section class="hero"><div class="wrap herogrid"><div><h1>One place for the decisions that shape your life.</h1><p class="sub">4SAPIEN helps you understand food, money and everyday choices — through facts, real sources and your own priorities. Embla reads the detail. You decide.</p><div class="ctas"><a class="btn primary" href="/login">Get started</a><a class="btn" href="/login">Log in</a></div><div class="trustline">Facts, not advice. Sources and uncertainty are shown when the runtime has them.</div></div><div class="embla-demo"><div class="demo-top"><b>Embla</b><span class="mono faint" style="font-size:10px">ONE INTELLIGENCE</span></div><div class="demo-body"><div class="bubble user">What should I understand about my money and food this week?</div><div class="bubble"><b>Embla</b><br><span class="muted">I separate what is known from what is modelled, use only the tools you permit, and show what is still missing before you decide.</span><div class="proofrow"><span class="truth">SOURCE</span><span class="truth model">MODELLED</span><span class="truth unknown">UNKNOWN</span></div></div></div></div></div></section>
+<section class="band"><div class="wrap"><div class="eyebrow">Meet Embla</div><h2>One intelligence across your whole life.</h2><p class="lead">The same Embla can work across Food and Money while keeping personal state, memory, events, knowledge and inference distinct.</p></div></section>
+<section class="band fill"><div class="wrap"><div class="eyebrow">Your life, one place</div><h2>Two worlds. One 4SAPIEN.</h2><div class="worlds"><div class="world"><div class="k">Food</div><h3>Choose well, honestly.</h3><p>Understand products, shopping and food choices using source-aware evidence and your priorities.</p><a href="/login">Open Food →</a></div><div class="world"><div class="k">Money</div><h3>Know where you stand.</h3><p>Understand liquidity, obligations, cash flow and plans without confusing formue, cash, forecasts and facts.</p><a href="/login">Open Money →</a></div></div></div></section>
+<section class="band"><div class="wrap"><div class="eyebrow">How 4SAPIEN works</div><h2>Facts, not advice.</h2><div class="howgrid"><div><b>Understand</b> — see your current reality before acting.</div><div><b>Ask</b> — use Embla with the context and tools you permit.</div><div><b>Capture</b> — add new information without silently turning it into verified truth.</div><div><b>Decide + Act</b> — compare trade-offs, then choose what happens.</div></div></div></section>
+<section class="final"><div class="wrap"><h2>Create your 4SAPIEN.</h2><div class="ctas"><a class="btn primary" href="/login">Get started</a><a class="btn" href="/login">Log in</a></div></div></section><footer class="footer"><div class="wrap inner"><span class="mono">4SAPIEN · by 4PLANET</span><nav><a href="/method">Method</a><a href="/privacy">Privacy</a></nav></div></footer></main></div>
+<script>
+window.__start4Sapien=function(){
+  if(window.__4sapienStarted || !window.supabase) return;
+  window.__4sapienStarted=true;
+(() => {
+'use strict';
+const SB_URL='https://ghvdzetmplqkdtfqiror.supabase.co';
+const SB_KEY='sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE';
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const root=document.getElementById('root');
+const $=(q,el=document)=>el.querySelector(q); const $$=(q,el=document)=>Array.from(el.querySelectorAll(q));
+const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
