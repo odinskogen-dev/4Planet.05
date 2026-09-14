@@ -184,7 +184,7 @@ export function ImpactTestJourney() {
             ["01", "UNDERSTAND", `Open the connected ${slug === "tree" ? "pollinator" : "orca"} context.`],
             ["02", "CONTRIBUTE", "Create a local test contribution. No payment."],
             ["03", "DELIVERY", "Fixture returns NOT DELIVERED. No provider request."],
-            ["04", "PROOF", "Create a Personal Impact Record with outcome and system impact unassessed."],
+            ["04", "PROOF", "Create a Personal Impact Record with outcome unassessed and verified impact unavailable."],
           ].map(([n, title, text]) => <div key={n} style={{ ...panel, borderRight: 0 }}><div style={{ ...mono, color: T.blue }}>{n}</div><h2 style={{ marginTop: 14, fontSize: 20 }}>{title}</h2><p style={{ marginTop: 10, fontSize: 13.5, lineHeight: 1.5, color: "rgba(8,8,8,.7)" }}>{text}</p></div>)}
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 28 }}>
@@ -200,16 +200,20 @@ export function ImpactTestJourney() {
 }
 
 function RecordStatus({ record }: { record: PersonalImpactRecord }) {
+  const impactState = record.impact.status === "VERIFIED"
+    ? "VERIFIED"
+    : `NOT VERIFIED — ${record.impact.status.replace(/_/g, " ")}`;
   const rows: [string, string, string][] = [
     ["Contribution", displayContributionState(record.contribution.status), "ok"],
+    ["Payment", "NOT PAID — TEST ENVIRONMENT", "no"],
     ["Delivery", record.delivery.status.replace(/_/g, " "), "no"],
     ["Outcome", record.outcome.status.replace(/_/g, " "), "no"],
-    ["System impact", record.impact.status.replace(/_/g, " "), "no"],
+    ["Verified impact", impactState, record.impact.status === "VERIFIED" ? "ok" : "no"],
   ];
   return (
-    <div className="four" style={{ marginTop: 24 }}>
-      {rows.map(([label, value, tone]) => (
-        <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}>
+    <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", borderTop: `1px solid ${T.line}` }}>
+      {rows.map(([label, value, tone], index) => (
+        <div key={label} style={{ borderLeft: index === 0 ? "none" : `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, padding: "14px" }}>
           <div style={{ ...mono, color: "rgba(8,8,8,.55)" }}>{label.toUpperCase()}</div>
           <div style={{ marginTop: 8, fontSize: 13, color: tone === "no" ? T.red : "#1c7a3a", fontWeight: 500 }}>{value}</div>
         </div>
@@ -250,15 +254,19 @@ export function PersonalImpactRecordPage() {
         <article aria-label="Personal Impact test share card">
         <p style={{ ...panel, marginTop: 18, maxWidth: "72ch", fontSize: 16, lineHeight: 1.6, color: "rgba(8,8,8,.8)" }}>
           You created a <strong>local test contribution</strong> for {record.contribution.quantity} × {record.unit.unitLabel}.
-          <strong> No provider was contacted, nothing was delivered, and no outcome was assessed.</strong> This record lives only on this device.
+          <strong> No payment occurred, no provider was contacted, nothing was delivered, and no outcome or verified impact was established.</strong> This record lives only on this device.
         </p>
         <RecordStatus record={record} />
+        <p style={{ marginTop: 16, maxWidth: "72ch", fontSize: 12.5, lineHeight: 1.55, color: "rgba(8,8,8,.65)", borderLeft: `2px solid ${T.red}`, paddingLeft: 12 }}>
+          Proof boundary: this is a local TEST record. Payment evidence: NONE. Delivery evidence: {record.delivery.evidenceRefs.length > 0 ? `${record.delivery.evidenceRefs.length} reference(s)` : "NONE — UNPROVEN"}. Independent verification: NONE. Missing evidence cannot promote delivery, outcome or verified impact.
+        </p>
         <details style={{ marginTop: 24, ...mono, color: "rgba(8,8,8,.5)" }}>
           <summary style={{ cursor: "pointer", color: T.blue }}>Technical detail</summary>
           <div style={{ marginTop: 10, lineHeight: 1.7, wordBreak: "break-all" }}>
             <div>Record: {record.id}</div>
             <div>Provider: {record.delivery.providerId}</div>
             <div>Provider reference: {record.delivery.providerReference}</div>
+            <div>Delivery evidence refs: {record.delivery.evidenceRefs.length || "NONE"}</div>
             <div>Created locally: {record.createdAt}</div>
           </div>
         </details>
