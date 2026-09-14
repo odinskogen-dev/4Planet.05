@@ -15,7 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      GH_STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+      GH_STRIPE_LIVE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+      GH_STRIPE_WEBHOOK_SECRET_TEST: ${{ secrets.STRIPE_WEBHOOK_SECRET_TEST }}
+      GH_STRIPE_WEBHOOK_SECRET_LIVE: ${{ secrets.STRIPE_WEBHOOK_SECRET_LIVE }}
+      GH_STRIPE_INTERNAL_BILLING_TOKEN: ${{ secrets.STRIPE_INTERNAL_BILLING_TOKEN }}
+      GH_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      GH_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
+      - name: Check GitHub secret presence without revealing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          check() { if [[ -n "${2:-}" ]]; then echo "GITHUB_SECRET $1=PRESENT"; else echo "GITHUB_SECRET $1=MISSING"; fi; }
+          check CLOUDFLARE_API_TOKEN "${CLOUDFLARE_API_TOKEN:-}"
+          check STRIPE_TEST_SECRET_KEY "${GH_STRIPE_TEST_SECRET_KEY:-}"
+          check STRIPE_LIVE_SECRET_KEY "${GH_STRIPE_LIVE_SECRET_KEY:-}"
+          check STRIPE_WEBHOOK_SECRET_TEST "${GH_STRIPE_WEBHOOK_SECRET_TEST:-}"
+          check STRIPE_WEBHOOK_SECRET_LIVE "${GH_STRIPE_WEBHOOK_SECRET_LIVE:-}"
+          check STRIPE_INTERNAL_BILLING_TOKEN "${GH_STRIPE_INTERNAL_BILLING_TOKEN:-}"
+          check SUPABASE_URL "${GH_SUPABASE_URL:-}"
+          check SUPABASE_SERVICE_ROLE_KEY "${GH_SUPABASE_SERVICE_ROLE_KEY:-}"
+
       - name: Audit Cloudflare payment runtime without mutation
         shell: bash
         run: |
