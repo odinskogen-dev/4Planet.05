@@ -62,7 +62,7 @@ attach_domain() {
     --arg service "$WORKER_NAME" \
     --arg zone_id "$zone_id" \
     --arg zone_name "$zone_name" \
-    '{hostname:$hostname,service:$service,zone_id:$zone_id,zone_name:$zone_name}')
+    '{hostname:$hostname,service:$service,zone_id:$zone_id,zone_name:$zone_name,override_existing_origin:true}')
   response=$(curl -sS -X PUT "${AUTH[@]}" --data "$payload" "$CF_API/accounts/$CF_ACCOUNT_ID/workers/domains")
   cf_assert "$response" "attach custom domain $hostname"
   echo "ATTACHED $hostname -> $WORKER_NAME"
