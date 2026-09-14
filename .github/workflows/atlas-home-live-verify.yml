@@ -1,0 +1,105 @@
+name: 4PLANET ATLAS home LIVE verify
+
+on:
+  push:
+    branches: [work/magazine-public-launch-gold-01]
+    paths: ['.github/workflows/atlas-home-live-verify.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live-home-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Wait for production and prove public ATLAS iframe renders
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > ./atlas-home-live-verify.mjs <<'NODE'
+          import { chromium } from '@playwright/test';
+
+          const browser = await chromium.launch();
+          try {
+            let last = '';
+            for (let attempt = 1; attempt <= 24; attempt++) {
+              const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+              const consoleErrors = [];
+              page.on('console', msg => {
+                if (msg.type() === 'error' || /content security policy|refused|blocked/i.test(msg.text())) consoleErrors.push(msg.text());
+              });
+              page.on('pageerror', err => consoleErrors.push(`PAGEERROR ${err.message}`));
+              try {
+                await page.goto(`https://4planet.org/?atlas_hotfix=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+                const iframe = page.locator('iframe[title="4PLANET ATLAS interactive globe"]').first();
+                await iframe.waitFor({ state: 'attached', timeout: 30000 });
+                await iframe.scrollIntoViewIfNeeded();
+                const src = await iframe.getAttribute('src');
+                const handle = await iframe.elementHandle();
+                const frame = await handle?.contentFrame();
+                const frameUrl = frame?.url() || '';
+                last = `attempt=${attempt} src=${src} frameUrl=${frameUrl} errors=${JSON.stringify(consoleErrors.slice(-8))}`;
+                console.log(last);
+
+                if (src?.startsWith('https://4planetatlas.com/')) {
+                  if (!frame) throw new Error('iframe Frame unavailable');
+                  await frame.waitForFunction(() => {
+                    const map = window.__4planet_map;
+                    if (!map || typeof map.getContainer !== 'function') return false;
+                    const rect = map.getContainer()?.getBoundingClientRect?.();
+                    const canvas = map.getCanvas?.();
+                    return Boolean(rect && rect.width > 100 && rect.height > 100 && canvas && canvas.width > 100 && canvas.height > 100);
+                  }, null, { timeout: 45000 });
+                  await frame.evaluate(() => {
+                    window.__4planet_map?.resize?.();
+                    window.__4planet_map?.triggerRepaint?.();
+                  });
+                  await page.waitForTimeout(2500);
+                  const state = await frame.evaluate(() => {
+                    const map = window.__4planet_map;
+                    const canvas = map?.getCanvas?.();
+                    const rect = map?.getContainer?.()?.getBoundingClientRect?.();
+                    return {
+                      href: location.href,
+                      map: Boolean(map),
+                      width: canvas?.width || 0,
+                      height: canvas?.height || 0,
+                      containerWidth: rect?.width || 0,
+                      containerHeight: rect?.height || 0,
+                      styleLoaded: Boolean(map?.isStyleLoaded?.()),
+                    };
+                  });
+                  console.log('ATLAS_HOME_LIVE_PASS', JSON.stringify(state));
+                  if (!state.map || state.width < 100 || state.height < 100) throw new Error(`invalid map state ${JSON.stringify(state)}`);
+                  await page.screenshot({ path: 'atlas-home-live-pass.png', fullPage: true });
+                  process.exit(0);
+                }
+              } catch (error) {
+                console.log(`attempt ${attempt} not ready: ${error?.message || error}`);
+              } finally {
+                await page.close();
+              }
+              await new Promise(resolve => setTimeout(resolve, 15000));
+            }
+            throw new Error(`LIVE ATLAS embed never became healthy. Last: ${last}`);
+          } finally {
+            await browser.close();
+          }
+          NODE
+          node ./atlas-home-live-verify.mjs
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-home-live-proof
+          path: atlas-home-live-pass.png
+          if-no-files-found: warn
+          retention-days: 7
