@@ -2,6 +2,9 @@ import { FIRST_MARKET_PRODUCTS } from "@/market/firstCreatorCatalogue";
 import "@/styles/market-first-products.css";
 
 export function FirstMarketProducts() {
+  const productCount = String(FIRST_MARKET_PRODUCTS.length).padStart(2, "0");
+  const creatorCount = new Set(FIRST_MARKET_PRODUCTS.map((product) => product.creator)).size;
+
   return (
     <section className="mkt-first-products" aria-labelledby="mkt-first-products-title">
       <div className="mkt-first-products__head">
@@ -10,8 +13,8 @@ export function FirstMarketProducts() {
           <h2 id="mkt-first-products-title">THE FIRST<br /><em>WORKS.</em></h2>
         </div>
         <div className="mkt-first-products__status">
-          <strong>06</strong>
-          <span>PRODUCTS · CREATOR 01</span>
+          <strong>{productCount}</strong>
+          <span>PRODUCTS · {creatorCount} CREATORS</span>
         </div>
       </div>
 
@@ -26,7 +29,7 @@ export function FirstMarketProducts() {
             <div className="mkt-first-product__image">
               <img
                 src={product.imageUrl}
-                alt={`${product.title} — ${product.location}`}
+                alt={`${product.title} — ${product.creator}`}
                 loading={index < 3 ? "eager" : "lazy"}
                 decoding="async"
               />
