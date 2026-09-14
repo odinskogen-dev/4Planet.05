@@ -33,6 +33,7 @@ jobs:
           python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_theme_switch_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_embla_core_guard.py products/4sapien/site/index.html
 
       - name: Human Gold source probe
         run: |
@@ -42,7 +43,7 @@ jobs:
           import re
           s=Path('products/4sapien/site/index.html').read_text()
           print('HUMAN_GOLD_SOURCE_PROBE')
-          for term in ['Ask Embla','function Hjem','function App','const ask','function Chat','function Home','setTab("']:
+          for term in ['Ask Embla','function App','function Home','function HumanGoldEmbla','embla-core-preview','four_sapien_embla_memories','four_sapien_set_permission']:
               print('\n###',term)
               hits=list(re.finditer(re.escape(term),s,re.I))[:6]
               print('hits',len(hits))
@@ -51,13 +52,23 @@ jobs:
                   print(s[a:b].replace('\n',' ')[:2200])
           PY
 
-      - name: Syntax + zero-loss + theme QA
+      - name: Syntax + zero-loss + Human Gold QA
         run: |
           set -euo pipefail
           SITE=products/4sapien/site/index.html
           grep -q 'Ask Embla' "$SITE"
           grep -q '4SAPIEN by 4PLANET' "$SITE"
           grep -q 'functions/v1/embla-products' "$SITE"
+          grep -q 'functions/v1/embla-core-preview' "$SITE"
+          grep -q 'EMBLA HUMAN GOLD 02' "$SITE"
+          grep -q 'FACTS, NOT ADVICE' "$SITE"
+          grep -q 'four_sapien_embla_memories' "$SITE"
+          grep -q 'four_sapien_embla_messages' "$SITE"
+          grep -q 'four_sapien_confirm_memory' "$SITE"
+          grep -q 'four_sapien_delete_memory' "$SITE"
+          grep -q 'four_sapien_supersede_memory' "$SITE"
+          grep -q 'four_sapien_set_permission' "$SITE"
+          grep -q 'read_budget_context' "$SITE"
           grep -q 'four_sapien_profiles' "$SITE"
           grep -q '4SAPIEN YELLOW TEST 02' "$SITE"
           grep -q '4SAPIEN LIGHT DARK 01' "$SITE"
@@ -89,7 +100,7 @@ jobs:
       - name: Backend authority gates
         run: |
           set -euo pipefail
-          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache; do
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache four_sapien_embla_memories four_sapien_embla_messages four_sapien_permissions; do
             code=$(curl -sS -o /tmp/db.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
             [ "$code" = 200 ] || { echo "$table HTTP $code"; exit 5; }
           done
@@ -130,7 +141,7 @@ jobs:
           [ -n "$url" ] || exit 10
           echo "url=$url" >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q '4SAPIEN LIGHT DARK 01' /tmp/site.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'EMBLA HUMAN GOLD 02' /tmp/site.html; then exit 0; fi
             sleep 2
           done
           exit 11
@@ -138,9 +149,11 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo '## 4SAPIEN FOOD megasprint preview' >> "$GITHUB_STEP_SUMMARY"
+          echo '## 4SAPIEN Embla Human Gold preview' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Canonical Embla Core seam: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Memory + Food/Finance permission controls: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Embla Core unauthenticated boundary: gated at 401' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
