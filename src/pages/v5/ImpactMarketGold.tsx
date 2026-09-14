@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { FirstMarketProducts } from "@/components/market/FirstMarketProducts";
 import {
   GOLD_PRODUCT,
   IMPACT_CONTRACTS,
@@ -101,6 +102,8 @@ export default function ImpactMarketGold() {
         </div>
         <div className="mkt-livebar"><TruthPill>DEMO · NOT LIVE COMMERCE</TruthPill><span>No payment · POD · creator payout or ecological outcome is represented as real.</span></div>
       </section>
+
+      <FirstMarketProducts />
 
       <section className="mkt-product-stage">
         <div className="mkt-art-frame" aria-label="Synthetic abstract artwork fixture">
