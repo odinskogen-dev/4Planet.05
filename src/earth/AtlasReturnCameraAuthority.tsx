@@ -49,7 +49,8 @@ export function AtlasReturnCameraAuthority() {
   }
 
   useEffect(() => {
-    if (!pathname.startsWith("/atlas")) return;
+    const atlasHost = window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
+    if (!atlasHost && !pathname.startsWith("/atlas")) return;
 
     const params = new URLSearchParams(entrySearchRef.current.search);
     const zoom = Number(params.get("z"));

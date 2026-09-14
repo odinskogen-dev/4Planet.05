@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { contextHref, type ProductKey } from "@/product/ProductNav";
+import { activeProduct, productHref, type ProductKey } from "@/product/ProductNav";
 
 /**
  * Product-family switcher for ONE INTERFACE.
@@ -19,14 +19,6 @@ const PRODUCTS: Product[] = [
   { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "Understand the relationships", path: "/living-systems", index: 3 },
   { key: "IMPACT", label: "IMPACT", descriptor: "Join credible action", path: "/impact", index: 4 },
 ];
-
-function activeProduct(pathname: string): ProductKey {
-  if (pathname.startsWith("/atlas")) return "ATLAS";
-  if (pathname.startsWith("/species")) return "SPECIES";
-  if (pathname.startsWith("/living-systems")) return "LIVING SYSTEMS";
-  if (pathname.startsWith("/impact")) return "IMPACT";
-  return "4PLANET";
-}
 
 /**
  * Variant A is retained as a reversible donor/reference treatment.
@@ -81,7 +73,7 @@ function TypeMark({ activeLabel, dark, accent = "#2E2EFF" }: { activeLabel: stri
 
 export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "B" }: { dark?: boolean; accent?: string; variant?: SwitcherVariant }) {
   const location = useLocation();
-  const active = activeProduct(location.pathname);
+  const active = activeProduct(location.pathname, typeof window !== "undefined" ? window.location.hostname : "");
   const activeIdx = PRODUCTS.find((p) => p.key === active)!.index;
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -158,7 +150,7 @@ export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "B
               return (
                 <Link
                   key={p.key}
-                  to={contextHref(p.path, location.search)}
+                  to={productHref(p.key, p.path, location.search)}
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => setOpen(false)}
                   style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 18px", textDecoration: "none",

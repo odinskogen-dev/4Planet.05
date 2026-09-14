@@ -46,6 +46,16 @@ const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
 const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
+
+function isAtlasHost() {
+  if (typeof window === "undefined") return false;
+  return window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
+}
+
+function RootHome() {
+  if (isAtlasHost()) return <Suspense fallback={WorldFallback}><PublicWorld /></Suspense>;
+  return <Home />;
+}
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
@@ -57,7 +67,7 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<RootHome />} />
       <Route path="/labs" element={<LabsOverview />} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />

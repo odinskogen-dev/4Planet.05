@@ -18,7 +18,8 @@ import "@/styles/identity-polish.css";
 
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
-  if (!pathname.startsWith("/atlas")) return null;
+  const atlasHost = typeof window !== "undefined" && window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
+  if (!atlasHost && !pathname.startsWith("/atlas")) return null;
   return (
     <div style={{ position: "fixed", top: 14, left: 14, zIndex: 90 }}>
       <ProductSwitcher dark />
