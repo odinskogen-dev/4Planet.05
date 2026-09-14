@@ -10,4 +10,8 @@ target = sys.argv[1]
 subprocess.run([sys.executable, str(here / "apply_yellow_theme_base.py"), target], check=True)
 subprocess.run([sys.executable, str(here / "apply_theme_switch_guard.py"), target], check=True)
 
-print("4SAPIEN theme pipeline applied: Yellow 02 base + Light/Dark 01")
+# Add the isolated Finance world as a sibling route without touching the
+# existing Ask Embla / Food root artifact.
+subprocess.run([sys.executable, str(here / "apply_finance_route.py"), target], check=True)
+
+print("4SAPIEN theme pipeline applied: Yellow 02 base + Light/Dark 01 + Finance route")
