@@ -1,4 +1,4 @@
-name: Bind 4planetmarket.com to restored Gold interface + first products
+name: Bind 4planetmarket.com to restored Gold interface + real products
 
 on:
   push:
@@ -16,11 +16,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  MARKET_UPSTREAM: https://6528d95b.4planet-05.pages.dev
-  MARKET_SOURCE_SHA: ccd3021c3fdcd30e4f0c8f56a369729c8e70e5a5
-  MARKET_MARKER: 4market-gold-first-products-ccd3021
-  ROLLBACK_UPSTREAM: https://4482f621.4planet-05.pages.dev
-  ROLLBACK_MARKER: 4market-restored-4482f621
+  MARKET_UPSTREAM: https://1ae04048.4planet-05.pages.dev
+  MARKET_SOURCE_SHA: 90f04d71ddb56ba01cf460a96713404c22cb4822
+  MARKET_MARKER: 4market-11-products-amalie-90f04d7
+  ROLLBACK_UPSTREAM: https://6528d95b.4planet-05.pages.dev
+  ROLLBACK_MARKER: 4market-gold-first-products-ccd3021
 
 jobs:
   bind-domain:
@@ -72,21 +72,25 @@ jobs:
           test -n "$ACCOUNT_ID"
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
 
-      - name: Verify exact immutable candidate and self-hosted asset
+      - name: Verify exact immutable candidate and self-hosted assets
         shell: bash
         run: |
           set -euo pipefail
-          for path in /market /market/odin/reinebringen-vista.jpg /market/odin/seaweed-coast.jpg; do
+          for path in \
+            /market \
+            /market/odin/reinebringen-vista.jpg \
+            /market/amalie/a01-dense-animals-green-leaves.jpg \
+            /market/amalie/a15-pig-society-turquoise.jpg; do
             code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$MARKET_UPSTREAM$path" || true)
             echo "$MARKET_UPSTREAM$path -> HTTP $code"
             test "$code" = "200"
           done
           headers="$RUNNER_TEMP/asset.headers"
-          bytes=$(curl -L -sS -D "$headers" "$MARKET_UPSTREAM/market/odin/reinebringen-vista.jpg" -o "$RUNNER_TEMP/asset.jpg" -w '%{size_download}')
+          bytes=$(curl -L -sS -D "$headers" "$MARKET_UPSTREAM/market/amalie/a01-dense-animals-green-leaves.jpg" -o "$RUNNER_TEMP/asset.jpg" -w '%{size_download}')
           grep -qi '^content-type: image/jpeg' "$headers"
           test "$bytes" -gt 100000
 
-      - name: Browser preflight — old Market preserved + six real products
+      - name: Browser preflight — Gold Market + eleven real products
         shell: bash
         run: |
           set -euo pipefail
@@ -100,17 +104,25 @@ jobs:
             await page.goto(`${process.env.MARKET_UPSTREAM}/market`, { waitUntil: 'networkidle', timeout: 60000 });
             await page.waitForSelector('.mkt-first-product', { timeout: 30000 });
             const body = (await page.locator('body').innerText()).toLowerCase();
-            for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'kelp line, low tide']) {
-              if (!body.includes(token)) throw new Error(`Preflight missing preserved/new Market token: ${token}`);
+            for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'amalie marie myrtvedt', 'dense animals / green leaves', 'pig society / turquoise']) {
+              if (!body.includes(token)) throw new Error(`Preflight missing Market token: ${token}`);
             }
-            if (await page.locator('.mkt-first-product').count() !== 6) throw new Error('Expected six first products.');
+            for (const forbidden of ['still water, two skies', 'demo artwork · fixture']) {
+              if (body.includes(forbidden)) throw new Error(`Preflight still contains removed content: ${forbidden}`);
+            }
+            const products = page.locator('.mkt-first-product');
+            if (await products.count() !== 11) throw new Error(`Expected 11 real products, got ${await products.count()}.`);
             if (await page.locator('.mkt-product-stage').count() < 1) throw new Error('Original Gold product stage is missing.');
             if (await page.locator('.mkt-economy').count() < 1) throw new Error('Original Market economy section is missing.');
             if (await page.locator('.mkt-dashboard').count() < 1) throw new Error('Original creator dashboard is missing.');
+            await products.last().scrollIntoViewIfNeeded();
             await page.waitForFunction(() => [...document.querySelectorAll('.mkt-first-product img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
             const imgs = page.locator('.mkt-first-product img');
             const srcs = await imgs.evaluateAll(nodes => nodes.map(img => img.getAttribute('src')));
-            if (!srcs.every(src => src?.startsWith('/market/odin/'))) throw new Error(`Unexpected image source: ${JSON.stringify(srcs)}`);
+            const amalie = srcs.filter(src => src?.startsWith('/market/amalie/'));
+            const odin = srcs.filter(src => src?.startsWith('/market/odin/'));
+            if (amalie.length !== 6 || odin.length !== 5) throw new Error(`Expected 6 Amalie + 5 Odin assets, got ${amalie.length} + ${odin.length}.`);
+            if (srcs.some(src => src?.includes('fjord-valley-mirror'))) throw new Error('Removed sunglasses asset is still referenced.');
             const external = await imgs.evaluateAll(nodes => nodes.find(img => new URL(img.src).hostname !== location.hostname)?.src ?? null);
             if (external) throw new Error(`External image dependency: ${external}`);
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -118,7 +130,7 @@ jobs:
             await page.close();
           }
           await browser.close();
-          console.log('PASS — restored Gold interface preserved and six real self-hosted products render on desktop + mobile.');
+          console.log('PASS — Gold Market preserved; 11 real self-hosted products render, including six Amalie works; wrong portrait and demo visual absent.');
           NODE
 
       - name: Deploy isolated Market Worker
@@ -180,11 +192,11 @@ jobs:
           check_live 'https://www.4planetmarket.com/'
           check_live 'https://4planetmarket.com/market'
           image_headers="$RUNNER_TEMP/live-image.headers"
-          bytes=$(curl -L -sS -D "$image_headers" "https://4planetmarket.com/market/odin/reinebringen-vista.jpg?release=$MARKET_SOURCE_SHA" -o "$RUNNER_TEMP/live-image.jpg" -w '%{size_download}')
+          bytes=$(curl -L -sS -D "$image_headers" "https://4planetmarket.com/market/amalie/a01-dense-animals-green-leaves.jpg?release=$MARKET_SOURCE_SHA" -o "$RUNNER_TEMP/live-image.jpg" -w '%{size_download}')
           grep -qi '^content-type: image/jpeg' "$image_headers"
           test "$bytes" -gt 100000
 
-      - name: Browser verify LIVE exact Worker — Market, not creator landing page
+      - name: Browser verify LIVE exact Worker — cleaned Market + Amalie
         shell: bash
         run: |
           set -euo pipefail
@@ -212,13 +224,24 @@ jobs:
               }
               await page.waitForSelector('.mkt-first-product', { timeout: 30000 });
               const body = (await page.locator('body').innerText()).toLowerCase();
-              for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'kelp line, low tide']) {
+              for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'amalie marie myrtvedt', 'dense animals / green leaves', 'pig society / turquoise']) {
                 if (!body.includes(token)) throw new Error(`LIVE missing Market token: ${token}\n${body.slice(0, 2500)}`);
               }
-              if (await page.locator('.mkt-first-product').count() !== 6) throw new Error('LIVE expected six products.');
+              for (const forbidden of ['still water, two skies', 'demo artwork · fixture']) {
+                if (body.includes(forbidden)) throw new Error(`LIVE still contains removed content: ${forbidden}`);
+              }
+              const products = page.locator('.mkt-first-product');
+              if (await products.count() !== 11) throw new Error(`LIVE expected 11 products, got ${await products.count()}.`);
               if (await page.locator('.mkt-product-stage').count() < 1 || await page.locator('.mkt-economy').count() < 1 || await page.locator('.mkt-dashboard').count() < 1) throw new Error('LIVE old Market interface was not preserved.');
+              await products.last().scrollIntoViewIfNeeded();
               await page.waitForFunction(() => [...document.querySelectorAll('.mkt-first-product img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
-              const external = await page.locator('.mkt-first-product img').evaluateAll(nodes => nodes.find(img => new URL(img.src).hostname !== location.hostname)?.src ?? null);
+              const imgs = page.locator('.mkt-first-product img');
+              const srcs = await imgs.evaluateAll(nodes => nodes.map(img => img.getAttribute('src')));
+              const amalie = srcs.filter(src => src?.startsWith('/market/amalie/'));
+              const odin = srcs.filter(src => src?.startsWith('/market/odin/'));
+              if (amalie.length !== 6 || odin.length !== 5) throw new Error(`LIVE expected 6 Amalie + 5 Odin assets, got ${amalie.length} + ${odin.length}.`);
+              if (srcs.some(src => src?.includes('fjord-valley-mirror'))) throw new Error('LIVE sunglasses asset is still referenced.');
+              const external = await imgs.evaluateAll(nodes => nodes.find(img => new URL(img.src).hostname !== location.hostname)?.src ?? null);
               if (external) throw new Error(`LIVE external image dependency: ${external}`);
               const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
               if (overflow > 2) throw new Error(`LIVE horizontal overflow ${overflow}px at ${viewport.width}px`);
@@ -229,7 +252,7 @@ jobs:
             if (!verified) throw new Error(`Exact Worker did not reach browser edge for ${viewport.width}px. Last: ${last}`);
           }
           await browser.close();
-          console.log('PASS — LIVE exact Worker renders restored Market interface with six real products on desktop + mobile.');
+          console.log('PASS — LIVE exact Worker shows preserved Gold Market with 11 real products, including six Amalie works; wrong portrait and demo visual absent.');
           NODE
           touch "$RUNNER_TEMP/live-verified"
 
@@ -242,7 +265,7 @@ jobs:
             echo 'No rollback required.'
             exit 0
           fi
-          echo 'Restoring previous immutable Market origin.'
+          echo 'Restoring previous accepted Market origin.'
           cat > "$RUNNER_TEMP/rollback.mjs" <<EOF
           const UPSTREAM = "$ROLLBACK_UPSTREAM";
           const MARKER = "$ROLLBACK_MARKER";
@@ -293,4 +316,4 @@ jobs:
           echo "Source exact candidate: $MARKET_SOURCE_SHA"
           echo "Worker marker: $MARKET_MARKER"
           echo "Rollback upstream: $ROLLBACK_UPSTREAM"
-          echo "Existing Gold Market interface preserved. Six real self-hosted creator works inserted as first products. Commerce remains off. 4planet.org untouched."
+          echo "Existing Gold Market interface preserved. 11 real self-hosted products across two creators. Six Amalie Marie Myrtvedt works live. Wrong Odin portrait and demo artwork visual removed. Commerce remains off. 4planet.org untouched."
