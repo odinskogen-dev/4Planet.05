@@ -124,7 +124,7 @@ jobs:
           if (overflow > 2) throw new Error(`Mobile horizontal overflow: ${overflow}px`);
           await page.goto(`${process.env.MARKET_UPSTREAM}/market/reinebringen-vista`, { waitUntil: 'networkidle', timeout: 60000 });
           const productText = (await page.locator('body').innerText()).toLowerCase();
-          if (!productText.includes('above the fjord') || !productText.includes('local market copy')) throw new Error('Product route or independence disclosure missing.');
+          if (!productText.includes('above the fjord') || !productText.includes('image asset is stored directly with 4planet market')) throw new Error('Product route or independence disclosure missing.');
           console.log('PASS — exact immutable candidate has six self-hosted creator works and a working product route.');
           await browser.close();
           NODE
