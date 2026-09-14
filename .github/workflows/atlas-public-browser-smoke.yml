@@ -59,7 +59,8 @@ jobs:
                   const iframe = page.locator(target.iframe).first();
                   await iframe.waitFor({ state: 'attached', timeout: 60000 });
                   await iframe.scrollIntoViewIfNeeded();
-                  const frame = await iframe.contentFrame();
+                  const iframeHandle = await iframe.elementHandle();
+                  const frame = await iframeHandle?.contentFrame();
                   if (!frame) throw new Error('iframe content frame unavailable');
 
                   await frame.waitForFunction(() => {
