@@ -1,0 +1,21 @@
+name: TEMP Market asset audit
+on:
+  push:
+    branches:
+      - axe/market-clean-amalie-20260914
+    paths:
+      - '.github/workflows/market-asset-audit-temp.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List assets
+        run: find public/market/odin -maxdepth 1 -type f -printf '%f %s\n' | sort
+      - uses: actions/upload-artifact@v4
+        with:
+          name: current-market-odin-assets
+          path: public/market/odin/*.jpg
+          if-no-files-found: error
