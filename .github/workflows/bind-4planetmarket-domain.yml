@@ -65,10 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           file="$RUNNER_TEMP/zones.json"
-          status=$(curl -sS -o "$file" -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            'https://api.cloudflare.com/client/v4/zones?name=4planetmarket.com&status=active')
+          status=$(curl -sS -o "$file" -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planetmarket.com&status=active')
           test "$status" = "200"
           jq -e '.success == true' "$file" >/dev/null
           ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' "$file")
@@ -142,6 +139,7 @@ jobs:
               headers.set("x-robots-tag", "noindex, nofollow, noarchive");
               headers.set("x-4planet-market", MARKER);
               headers.set("x-4planet-market-source", SOURCE);
+              headers.set("cache-control", "no-store");
               return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
             }
           };
@@ -169,7 +167,7 @@ jobs:
             local url="$1"
             for attempt in $(seq 1 24); do
               headers="$RUNNER_TEMP/headers-${attempt}.txt"
-              code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$url" || true)
+              code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${url}?release=${MARKET_SOURCE_SHA}&attempt=${attempt}" || true)
               marker=$(grep -i '^x-4planet-market:' "$headers" | tr -d '\r' || true)
               source=$(grep -i '^x-4planet-market-source:' "$headers" | tr -d '\r' || true)
               echo "$url -> HTTP $code · $marker · $source"
@@ -182,37 +180,56 @@ jobs:
           check_live 'https://www.4planetmarket.com/'
           check_live 'https://4planetmarket.com/market'
           image_headers="$RUNNER_TEMP/live-image.headers"
-          bytes=$(curl -L -sS -D "$image_headers" 'https://4planetmarket.com/market/odin/reinebringen-vista.jpg' -o "$RUNNER_TEMP/live-image.jpg" -w '%{size_download}')
+          bytes=$(curl -L -sS -D "$image_headers" "https://4planetmarket.com/market/odin/reinebringen-vista.jpg?release=$MARKET_SOURCE_SHA" -o "$RUNNER_TEMP/live-image.jpg" -w '%{size_download}')
           grep -qi '^content-type: image/jpeg' "$image_headers"
           test "$bytes" -gt 100000
 
-      - name: Browser verify LIVE root — Market, not creator landing page
+      - name: Browser verify LIVE exact Worker — Market, not creator landing page
         shell: bash
         run: |
           set -euo pipefail
-          node --input-type=module <<'NODE'
+          MARKET_MARKER="$MARKET_MARKER" MARKET_SOURCE_SHA="$MARKET_SOURCE_SHA" node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
           const browser = await chromium.launch({ headless: true });
+          const expectedMarker = process.env.MARKET_MARKER;
+          const expectedSource = process.env.MARKET_SOURCE_SHA;
           for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}]) {
-            const page = await browser.newPage({ viewport });
-            await page.goto('https://4planetmarket.com/', { waitUntil: 'networkidle', timeout: 60000 });
-            if (new URL(page.url()).hostname !== '4planetmarket.com') throw new Error(`Unexpected live hostname: ${page.url()}`);
-            await page.waitForSelector('.mkt-first-product', { timeout: 30000 });
-            const body = (await page.locator('body').innerText()).toLowerCase();
-            for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'kelp line, low tide']) {
-              if (!body.includes(token)) throw new Error(`LIVE missing Market token: ${token}`);
+            let verified = false;
+            let last = '';
+            for (let attempt = 1; attempt <= 12; attempt++) {
+              const page = await browser.newPage({ viewport });
+              const url = `https://4planetmarket.com/?release=${expectedSource}&browser_attempt=${attempt}&w=${viewport.width}`;
+              const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              const headers = response?.headers() ?? {};
+              const marker = headers['x-4planet-market'] ?? '';
+              const source = headers['x-4planet-market-source'] ?? '';
+              last = `marker=${marker} source=${source} url=${page.url()}`;
+              console.log(`Browser ${viewport.width}px attempt ${attempt}: ${last}`);
+              if (marker !== expectedMarker || source !== expectedSource) {
+                await page.close();
+                await new Promise(r => setTimeout(r, 5000));
+                continue;
+              }
+              await page.waitForSelector('.mkt-first-product', { timeout: 30000 });
+              const body = (await page.locator('body').innerText()).toLowerCase();
+              for (const token of ['art that', 'one sale', 'creator dashboard', 'first products', 'above the fjord', 'kelp line, low tide']) {
+                if (!body.includes(token)) throw new Error(`LIVE missing Market token: ${token}\n${body.slice(0, 2500)}`);
+              }
+              if (await page.locator('.mkt-first-product').count() !== 6) throw new Error('LIVE expected six products.');
+              if (await page.locator('.mkt-product-stage').count() < 1 || await page.locator('.mkt-economy').count() < 1 || await page.locator('.mkt-dashboard').count() < 1) throw new Error('LIVE old Market interface was not preserved.');
+              await page.waitForFunction(() => [...document.querySelectorAll('.mkt-first-product img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
+              const external = await page.locator('.mkt-first-product img').evaluateAll(nodes => nodes.find(img => new URL(img.src).hostname !== location.hostname)?.src ?? null);
+              if (external) throw new Error(`LIVE external image dependency: ${external}`);
+              const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+              if (overflow > 2) throw new Error(`LIVE horizontal overflow ${overflow}px at ${viewport.width}px`);
+              await page.close();
+              verified = true;
+              break;
             }
-            if (await page.locator('.mkt-first-product').count() !== 6) throw new Error('LIVE expected six products.');
-            if (await page.locator('.mkt-product-stage').count() < 1 || await page.locator('.mkt-economy').count() < 1 || await page.locator('.mkt-dashboard').count() < 1) throw new Error('LIVE old Market interface was not preserved.');
-            await page.waitForFunction(() => [...document.querySelectorAll('.mkt-first-product img')].every(img => img.complete && img.naturalWidth > 0), null, { timeout: 30000 });
-            const external = await page.locator('.mkt-first-product img').evaluateAll(nodes => nodes.find(img => new URL(img.src).hostname !== location.hostname)?.src ?? null);
-            if (external) throw new Error(`LIVE external image dependency: ${external}`);
-            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-            if (overflow > 2) throw new Error(`LIVE horizontal overflow ${overflow}px at ${viewport.width}px`);
-            await page.close();
+            if (!verified) throw new Error(`Exact Worker did not reach browser edge for ${viewport.width}px. Last: ${last}`);
           }
           await browser.close();
-          console.log('PASS — LIVE 4planetmarket.com is the restored Market interface with six real products inside it.');
+          console.log('PASS — LIVE exact Worker renders restored Market interface with six real products on desktop + mobile.');
           NODE
           touch "$RUNNER_TEMP/live-verified"
 
@@ -238,6 +255,7 @@ jobs:
               const headers = new Headers(response.headers);
               headers.set("x-robots-tag", "noindex, nofollow, noarchive");
               headers.set("x-4planet-market", MARKER);
+              headers.set("cache-control", "no-store");
               return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
             }
           };
@@ -257,7 +275,7 @@ jobs:
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/rollback.toml"
           for attempt in $(seq 1 18); do
             headers="$RUNNER_TEMP/rb-$attempt.txt"
-            code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' 'https://4planetmarket.com/' || true)
+            code=$(curl -sS -D "$headers" -o /dev/null -w '%{http_code}' "https://4planetmarket.com/?rollback=$attempt" || true)
             marker=$(grep -i '^x-4planet-market:' "$headers" | tr -d '\r' || true)
             if [ "$code" = '200' ] && echo "$marker" | grep -q "$ROLLBACK_MARKER"; then
               echo 'ROLLBACK VERIFIED.'
