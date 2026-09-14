@@ -8,6 +8,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import PartnersHub from "@/pages/partners/PartnersHub";
+import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
@@ -20,6 +21,12 @@ function isPartnersHost() {
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
 }
 
+function isCreatorHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "cre4tor.com" || host === "www.cre4tor.com" || host === "cre4tor.4planet.org";
+}
+
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
   if (!pathname.startsWith("/atlas")) return null;
@@ -30,11 +37,9 @@ function AtlasProductSwitcher() {
   );
 }
 
-export default function App() {
-  if (isPartnersHost()) return <PartnersHub />;
-
+function StandardApp() {
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
       <ContextRetained />
       <Analytics />
@@ -55,6 +60,16 @@ export default function App() {
           .world:has(.site-menu) .site-menu{max-height:calc(100svh - 76px);overflow-y:auto;overscroll-behavior:contain}
         }
       `}</style>
+    </>
+  );
+}
+
+export default function App() {
+  if (isPartnersHost()) return <PartnersHub />;
+
+  return (
+    <BrowserRouter>
+      {isCreatorHost() ? <OdinCreatorPage /> : <StandardApp />}
     </BrowserRouter>
   );
 }
