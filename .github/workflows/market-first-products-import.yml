@@ -49,12 +49,13 @@ jobs:
           import_anchor = 'import { Link } from "react-router-dom";\n'
           insert_anchor = '      </section>\n\n      <section className="mkt-product-stage">'
           import_line = 'import { FirstMarketProducts } from "@/components/market/FirstMarketProducts";\n'
-          component = '      </section>\n\n      <FirstMarketProducts />\n\n      <section className="mkt-product-stage">'
+          component_line = '      <FirstMarketProducts />\n\n'
+          component = '      </section>\n\n' + component_line + '      <section className="mkt-product-stage">'
           assert import_anchor in original, 'Import anchor missing'
           assert insert_anchor in original, 'Existing Market hero/product-stage boundary missing'
           assert import_line not in original, 'Patch already present'
           modified = original.replace(import_anchor, import_anchor + import_line, 1).replace(insert_anchor, component, 1)
-          restored = modified.replace(import_line, '', 1).replace('\n      <FirstMarketProducts />\n', '\n', 1)
+          restored = modified.replace(import_line, '', 1).replace(component_line, '', 1)
           assert restored == original, 'Patch changed more than import + one insertion point'
           p.write_text(modified)
           print('PASS: existing ImpactMarketGold preserved; only FirstMarketProducts import + insertion added.')
