@@ -1,0 +1,56 @@
+name: TEMP Import Amalie Market artworks
+on:
+  push:
+    branches:
+      - axe/market-clean-amalie-20260914
+    paths:
+      - '.github/workflows/market-amalie-import-temp.yml'
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download exact Drive exports and extract six distinct works
+        shell: bash
+        env:
+          TOP7_URL: 'https://sdmntprnortheu.oaiusercontent.com/files/00000000-cd98-81f4-807e-12ad7bb32645/raw?se=2026-09-14T21%3A59%3A30Z&sp=r&sv=2026-02-06&sr=b&scid=32b9e035-0ef9-5963-a3d8-6f6578305a9e&skoid=e32cbaad-a1eb-4299-9f16-1b364ab43781&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T19%3A16%3A19Z&ske=2026-09-15T19%3A16%3A19Z&sks=b&skv=2026-02-06&sig=Vru103ReytqwRwn15%2BADUQQOTW96SMU84D8nfojbL5M%3D'
+          A12A15_URL: 'https://sdmntprukwest.oaiusercontent.com/files/00000000-a268-8243-83bf-916140724f12/raw?se=2026-09-14T21%3A58%3A55Z&sp=r&sv=2026-02-06&sr=b&scid=ceee0f05-c101-552f-8222-ced1193bf80d&skoid=e32cbaad-a1eb-4299-9f16-1b364ab43781&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A02%3A40Z&ske=2026-09-15T20%3A02%3A40Z&sks=b&skv=2026-02-06&sig=Rt9Eal998HuSX3xxaDCGjflgt5uxkvFOdkFhx4u2k50%3D'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/top7" "$RUNNER_TEMP/a12a15" public/market/amalie
+          curl -fsSL "$TOP7_URL" -o "$RUNNER_TEMP/top7.docx"
+          curl -fsSL "$A12A15_URL" -o "$RUNNER_TEMP/a12a15.docx"
+          unzip -q "$RUNNER_TEMP/top7.docx" -d "$RUNNER_TEMP/top7"
+          unzip -q "$RUNNER_TEMP/a12a15.docx" -d "$RUNNER_TEMP/a12a15"
+          cp "$RUNNER_TEMP/top7/word/media/image6.jpg" public/market/amalie/a01-dense-animals-green-leaves.jpg
+          cp "$RUNNER_TEMP/top7/word/media/image5.jpg" public/market/amalie/a07-people-on-pink.jpg
+          cp "$RUNNER_TEMP/a12a15/word/media/image5.jpg" public/market/amalie/a12-pirate-frogs.jpg
+          cp "$RUNNER_TEMP/a12a15/word/media/image2.jpg" public/market/amalie/a13-frog-holiday-pool-world.jpg
+          cp "$RUNNER_TEMP/a12a15/word/media/image3.jpg" public/market/amalie/a14-frog-treehouse-snake-mole.jpg
+          cp "$RUNNER_TEMP/a12a15/word/media/image4.jpg" public/market/amalie/a15-pig-society-turquoise.jpg
+          for f in public/market/amalie/*.jpg; do
+            test -s "$f"
+            test "$(stat -c%s "$f")" -gt 100000
+            file "$f" | grep -qi 'JPEG image data'
+          done
+          test "$(find public/market/amalie -maxdepth 1 -type f -name '*.jpg' | wc -l)" -eq 6
+      - name: Remove wrong sunglasses asset
+        run: |
+          set -euo pipefail
+          test -f public/market/odin/fjord-valley-mirror.jpg
+          rm public/market/odin/fjord-valley-mirror.jpg
+      - name: Commit assets and remove temporary import workflows
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/market-amalie-import-temp.yml .github/workflows/market-asset-audit-temp.yml
+          git add public/market/amalie public/market/odin/fjord-valley-mirror.jpg
+          git status --short
+          git commit -m '4MARKET: import six Amalie works and remove wrong Odin portrait'
+          git push origin HEAD:axe/market-clean-amalie-20260914
