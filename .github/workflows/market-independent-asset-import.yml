@@ -1,0 +1,73 @@
+name: Market Independent Asset Import
+
+on:
+  push:
+    branches:
+      - axe/market-independent-live-20260914
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-independent-asset-import
+  cancel-in-progress: false
+
+jobs:
+  vendor-assets:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 4PLANET candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch creator source repository once
+        run: git clone --depth 1 https://github.com/odinskogen-dev/odin.git /tmp/odin-source
+
+      - name: Copy exact six creator assets into Market
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/market/odin
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/archive/reinebringen-vista.jpg" public/market/odin/reinebringen-vista.jpg
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/archive/fjord-valley-mirror.jpg" public/market/odin/fjord-valley-mirror.jpg
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/archive/fjord-island-cabins.jpg" public/market/odin/fjord-island-cabins.jpg
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/archive/reinebringen-clifftop.jpg" public/market/odin/reinebringen-clifftop.jpg
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/field/lofoten-beach.jpg" public/market/odin/lofoten-beach.jpg
+          cp "/tmp/odin-source/odin-oddekalv 2/public/images/odin/archive/seaweed-coast.jpg" public/market/odin/seaweed-coast.jpg
+          test "$(find public/market/odin -maxdepth 1 -type f -name '*.jpg' | wc -l)" -eq 6
+          file public/market/odin/*.jpg
+          sha256sum public/market/odin/*.jpg | tee /tmp/market-assets.sha256
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify no runtime dependency on oddekalv.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R "oddekalv.org" src/market src/pages/market public/market 2>/dev/null; then
+            echo "Runtime dependency on oddekalv.org found"
+            exit 1
+          fi
+          for asset in reinebringen-vista fjord-valley-mirror fjord-island-cabins reinebringen-clifftop lofoten-beach seaweed-coast; do
+            test -s "public/market/odin/${asset}.jpg"
+          done
+
+      - name: Commit vendored assets and remove one-time importer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/market-independent-asset-import.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/market/odin .github/workflows/market-independent-asset-import.yml
+          git commit -m "chore(market): vendor creator assets into 4PLANET Market"
+          git push origin HEAD:${GITHUB_REF_NAME}
