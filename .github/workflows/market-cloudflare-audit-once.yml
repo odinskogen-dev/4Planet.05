@@ -41,51 +41,77 @@ jobs:
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
       - name: Audit exact 4planetmarket.com routing read-only
+        id: audit
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
           api='https://api.cloudflare.com/client/v4'
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
-          zone=$(curl -fsS "${api}/zones?name=4planetmarket.com" "${auth[@]}")
-          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
-          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
-          [ -n "$zid" ] && [ -n "$account_id" ]
-          dns=$(curl -fsS "${api}/zones/${zid}/dns_records?name=4planetmarket.com&per_page=100" "${auth[@]}")
-          routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
-          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
-          custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
-          all_deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
+          get_json() {
+            local label="$1" url="$2" out="$3"
+            local code
+            code=$(curl -sS -o "$out" -w '%{http_code}' "$url" "${auth[@]}" || true)
+            echo "${label}: HTTP ${code}" >&2
+            if [[ "$code" != 2* ]]; then
+              printf '{"success":false,"result":[],"audit_http":"%s"}\n' "$code" > "$out"
+            fi
+          }
+
+          get_json zone "${api}/zones?name=4planetmarket.com" /tmp/zone.json
+          zid=$(jq -r '.result[0].id // empty' /tmp/zone.json)
+          account_id=$(jq -r '.result[0].account.id // empty' /tmp/zone.json)
+
+          if [ -n "$zid" ]; then
+            get_json dns "${api}/zones/${zid}/dns_records?name=4planetmarket.com&per_page=50" /tmp/dns.json
+            get_json routes "${api}/zones/${zid}/workers/routes" /tmp/routes.json
+          else
+            echo '{"result":[]}' > /tmp/dns.json
+            echo '{"result":[]}' > /tmp/routes.json
+          fi
+
+          if [ -n "$account_id" ]; then
+            get_json projects "${api}/accounts/${account_id}/pages/projects" /tmp/projects.json
+            get_json custom_domains "${api}/accounts/${account_id}/workers/domains" /tmp/custom-domains.json
+            get_json deployments "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=25" /tmp/deployments.json
+          else
+            echo '{"result":[]}' > /tmp/projects.json
+            echo '{"result":[]}' > /tmp/custom-domains.json
+            echo '{"result":[]}' > /tmp/deployments.json
+          fi
+
           {
             echo '## 4PLANET MARKET Cloudflare pre-release audit'
             echo
             echo "Candidate: \`${GITHUB_SHA}\`"
+            echo "Zone found: $([ -n "$zid" ] && echo yes || echo no)"
+            echo "Account resolved: $([ -n "$account_id" ] && echo yes || echo no)"
             echo
             echo '### DNS / Worker route'
             echo '```text'
-            jq -r '.result[]? | [.type,.name,.content,(.proxied|tostring)] | @tsv' <<<"$dns"
-            jq -r '.result[]? | [.pattern,(.script // "<none>")] | @tsv' <<<"$routes"
+            jq -r '.result[]? | [.type,.name,.content,(.proxied|tostring)] | @tsv' /tmp/dns.json
+            jq -r '.result[]? | [.pattern,(.script // "<none>")] | @tsv' /tmp/routes.json
             echo '```'
             echo
             echo '### Pages projects containing 4planetmarket.com'
             echo '| Project | Production branch | Domains |'
             echo '|---|---|---|'
-            jq -r '.result[]? | select(any(.domains[]?; test("(^|\\.)4planetmarket\\.com$"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+            jq -r '.result[]? | select(any(.domains[]?; test("(^|\\.)4planetmarket\\.com$"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' /tmp/projects.json | while IFS=$'\t' read -r name branch domains; do
               echo "| \`${name}\` | \`${branch}\` | ${domains} |"
             done
             echo
             echo '### Worker custom-domain routing'
             echo '| Hostname | Worker | Pages origin | Source deployment |'
             echo '|---|---|---|---|'
-            jq -r '.result[]? | select(.hostname | test("^(www\\.)?4planetmarket\\.com$")) | [(.hostname // ""), (.service // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service; do
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?4planetmarket\\.com$")) | [(.hostname // ""), (.service // "")] | @tsv' /tmp/custom-domains.json | while IFS=$'\t' read -r hostname service; do
               tmp=$(mktemp)
-              curl -fsS "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" > "$tmp" || true
+              curl -sS "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" > "$tmp" || true
               origins=$(grep -Eo '[a-zA-Z0-9-]+\.4planet-05\.pages\.dev' "$tmp" | sort -u | paste -sd ', ' - || true)
               source='UNRESOLVED'
               if [ -n "$origins" ]; then
                 source=''
                 while IFS= read -r origin; do
                   [ -n "$origin" ] || continue
-                  row=$(jq -c --arg u "https://${origin}" '.result[]? | select(.url==$u)' <<<"$all_deployments" | head -n1)
+                  row=$(jq -c --arg u "https://${origin}" '.result[]? | select(.url==$u)' /tmp/deployments.json | head -n1)
                   if [ -n "$row" ]; then
                     commit=$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")
                     branch=$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")
@@ -98,22 +124,38 @@ jobs:
               rm -f "$tmp"
             done
             echo
+            echo '### Current 4planet-05 production deployments'
+            echo '| Commit | Branch | Status | URL |'
+            echo '|---|---|---|---|'
+            jq -r '.result[]? | select(.environment=="production") | [(.deployment_trigger.metadata.commit_hash // ""),(.deployment_trigger.metadata.branch // ""),(.latest_stage.status // ""),(.url // "")] | @tsv' /tmp/deployments.json | head -5 | while IFS=$'\t' read -r commit branch status url; do
+              echo "| \`${commit}\` | \`${branch}\` | ${status} | ${url} |"
+            done
+            echo
             echo '> Read-only audit. No Cloudflare configuration changed.'
           } > /tmp/market-cf-audit.md
           cat /tmp/market-cf-audit.md
 
       - name: Post audit to PR 299
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh pr comment 299 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/market-cf-audit.md
+        shell: bash
+        run: |
+          if [ -f /tmp/market-cf-audit.md ]; then
+            gh pr comment 299 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/market-cf-audit.md
+          else
+            gh pr comment 299 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare Market audit failed before report generation on \`${GITHUB_SHA}\`. No Cloudflare changes were made."
+          fi
 
       - name: Remove one-time audit workflow
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
-          rm .github/workflows/market-cloudflare-audit-once.yml
+          rm -f .github/workflows/market-cloudflare-audit-once.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .github/workflows/market-cloudflare-audit-once.yml
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "chore(market): remove one-time Cloudflare audit"
           git push origin HEAD:${GITHUB_REF_NAME}
