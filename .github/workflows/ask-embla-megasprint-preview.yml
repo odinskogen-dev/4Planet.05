@@ -35,6 +35,7 @@ jobs:
           python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_theme_switch_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_embla_core_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_human_gold_preview_guard.py products/4sapien/site/index.html
 
       - name: Human Gold source probe
         run: |
@@ -44,7 +45,7 @@ jobs:
           import re
           s=Path('products/4sapien/site/index.html').read_text()
           print('HUMAN_GOLD_SOURCE_PROBE')
-          for term in ['Ask Embla','function App','function Home','function HumanGoldEmbla','embla-core-preview','four_sapien_embla_memories','four_sapien_set_permission']:
+          for term in ['Ask Embla','function App','function Home','function HumanGoldEmbla','embla-core-preview','four_sapien_embla_memories','four_sapien_set_permission','HUMAN GOLD PREVIEW','SPØR EMBLA']:
               print('\n###',term)
               hits=list(re.finditer(re.escape(term),s,re.I))[:6]
               print('hits',len(hits))
@@ -80,6 +81,11 @@ jobs:
           grep -q '#FFFF00' "$SITE"
           grep -q '#000000' "$SITE"
           grep -q '#111111' "$SITE"
+          grep -q 'HUMAN GOLD PREVIEW' "$SITE"
+          grep -q 'SPØR EMBLA ↑' "$SITE"
+          grep -q 'emailRedirectTo:window.location.origin+"/"' "$SITE"
+          grep -q 'redirectTo:window.location.origin+"/"' "$SITE"
+          grep -q 'id="human-gold-embla"' "$SITE"
           ! grep -q 'world.openfoodfacts.org' "$SITE"
           ! grep -q 'cgi/search.pl' "$SITE"
           ! grep -q 'S4PIENS' "$SITE"
@@ -148,7 +154,7 @@ jobs:
           echo "::notice title=4SAPIEN Human Gold Preview::$url"
           ready=0
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'EMBLA HUMAN GOLD 02' /tmp/site.html; then ready=1; break; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'HUMAN GOLD PREVIEW' /tmp/site.html && grep -q 'SPØR EMBLA ↑' /tmp/site.html; then ready=1; break; fi
             sleep 2
           done
           [ "$ready" = 1 ] || exit 11
@@ -175,6 +181,8 @@ jobs:
           echo '## 4SAPIEN Embla Human Gold preview' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Preview auth returns to preview origin' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Founder-visible Human Gold badge + Ask Embla jump: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Canonical Embla Core seam: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Memory + Food/Finance permission controls: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Private Core tables: anonymous access denied' >> "$GITHUB_STEP_SUMMARY"
