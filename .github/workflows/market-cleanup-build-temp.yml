@@ -27,19 +27,10 @@ jobs:
           from pathlib import Path
           p = Path('src/pages/v5/ImpactMarketGold.tsx')
           s = p.read_text()
-          old = '''      <section className="mkt-product-stage">
-        <div className="mkt-art-frame" aria-label="Synthetic abstract artwork fixture">
-          <div className="mkt-art mkt-art-one"><i /><i /><i /></div>
-          <span>DEMO ARTWORK · FIXTURE</span>
-        </div>
-        <div className="mkt-product-copy">'''
-          new = '''      <section className="mkt-product-stage mkt-product-stage--no-art">
-        <div className="mkt-product-copy">'''
-          assert old in s, 'Expected demo artwork block not found exactly once'
-          assert s.count(old) == 1
-          s = s.replace(old, new, 1)
-          p.write_text(s)
-
+          old = '      <section className="mkt-product-stage">\n        <div className="mkt-art-frame" aria-label="Synthetic abstract artwork fixture">\n          <div className="mkt-art mkt-art-one"><i /><i /><i /></div>\n          <span>DEMO ARTWORK · FIXTURE</span>\n        </div>\n        <div className="mkt-product-copy">'
+          new = '      <section className="mkt-product-stage mkt-product-stage--no-art">\n        <div className="mkt-product-copy">'
+          assert s.count(old) == 1, 'Expected demo artwork block not found exactly once'
+          p.write_text(s.replace(old, new, 1))
           css = Path('src/styles/impact-market-gold.css')
           c = css.read_text()
           rule = '\n.mkt-product-stage--no-art{grid-template-columns:1fr;min-height:auto}.mkt-product-stage--no-art .mkt-product-copy{max-width:1000px;padding:8vw 6vw}\n'
@@ -53,10 +44,10 @@ jobs:
           test ! -f public/market/odin/fjord-valley-mirror.jpg
           test "$(find public/market/odin -maxdepth 1 -type f -name '*.jpg' | wc -l)" -eq 5
           test "$(find public/market/amalie -maxdepth 1 -type f -name '*.jpg' | wc -l)" -eq 6
-          ! grep -q 'fjord-valley-mirror' src/market/firstCreatorCatalogue.ts
-          ! grep -q 'Still Water, Two Skies' src/market/firstCreatorCatalogue.ts
-          ! grep -q 'Synthetic abstract artwork fixture' src/pages/v5/ImpactMarketGold.tsx
-          ! grep -q 'DEMO ARTWORK · FIXTURE' src/pages/v5/ImpactMarketGold.tsx
+          if grep -q 'fjord-valley-mirror' src/market/firstCreatorCatalogue.ts; then exit 1; fi
+          if grep -q 'Still Water, Two Skies' src/market/firstCreatorCatalogue.ts; then exit 1; fi
+          if grep -q 'Synthetic abstract artwork fixture' src/pages/v5/ImpactMarketGold.tsx; then exit 1; fi
+          if grep -q 'DEMO ARTWORK · FIXTURE' src/pages/v5/ImpactMarketGold.tsx; then exit 1; fi
           test "$(grep -c 'market:amalie:' src/market/firstCreatorCatalogue.ts)" -eq 6
           grep -q 'Amalie Marie Myrtvedt' src/market/firstCreatorCatalogue.ts
           grep -q 'ART PRINT' src/market/firstCreatorCatalogue.ts
