@@ -11,9 +11,11 @@ permissions:
 jobs:
   status:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    env:
+      EXPECTED_SHA: 2914b6f3f9a5296e3f1450eaa0a956754c374737
     steps:
-      - name: Resolve Cloudflare and inspect production
+      - name: Resolve Cloudflare and wait for exact production deploy
         env:
           T1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           T2: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -32,10 +34,27 @@ jobs:
           curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' > zones.json
           ACCOUNT=$(jq -r '.result[0].account.id // empty' zones.json)
           [ -n "$ACCOUNT" ] || { cat zones.json; exit 3; }
-          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/pages/projects/4planet-05/deployments?env=production&per_page=3" > deployments.json
-          jq -r '.result[] | [.id,.environment,.latest_stage.name,.latest_stage.status,.deployment_trigger.metadata.commit_hash,.url,.created_on] | @tsv' deployments.json
+
+          found=0
+          for attempt in $(seq 1 36); do
+            curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT/pages/projects/4planet-05/deployments?env=production&per_page=5" > deployments.json
+            jq -r '.result[] | [.id,.latest_stage.name,.latest_stage.status,.deployment_trigger.metadata.commit_hash,.url,.created_on] | @tsv' deployments.json
+            row=$(jq -r --arg sha "$EXPECTED_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash == $sha) | [.id,.latest_stage.status,.url] | @tsv' deployments.json | head -1)
+            if [ -n "$row" ]; then
+              status=$(printf '%s' "$row" | cut -f2)
+              echo "EXPECTED $row"
+              if [ "$status" = 'success' ]; then found=1; break; fi
+              if [ "$status" = 'failure' ]; then exit 4; fi
+            fi
+            sleep 10
+          done
+          [ "$found" = '1' ] || { echo 'Exact production deploy did not become successful'; exit 5; }
 
           echo '===== LIVE 4planet.org headers ====='
-          curl -sSI 'https://4planet.org/?atlas_header_probe=1' | tr -d '\r'
-          echo '===== LIVE 4planetatlas.com headers ====='
-          curl -sSI 'https://4planetatlas.com/?embed=home&atlas_header_probe=1' | tr -d '\r'
+          headers=$(curl -sSI 'https://4planet.org/?atlas_header_probe=final' | tr -d '\r')
+          printf '%s\n' "$headers"
+          printf '%s\n' "$headers" | grep -qi 'cache-control:.*no-store' || { echo 'Missing no-store on live home'; exit 6; }
+          printf '%s\n' "$headers" | grep -qi 'frame-src.*https://4planetatlas.com' || { echo 'Missing Atlas frame-src on live home'; exit 7; }
+          printf '%s\n' "$headers" | grep -qi 'connect-src.*https://eonet.gsfc.nasa.gov' || { echo 'Missing EONET connect-src on live home'; exit 8; }
+
+          echo 'ATLAS_HOTFIX_DEPLOY_HEADERS_PASS'
