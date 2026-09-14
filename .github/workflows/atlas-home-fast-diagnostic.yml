@@ -1,4 +1,4 @@
-name: 4PLANET ATLAS home WebKit diagnostic
+name: 4PLANET ATLAS home WebKit LIVE gate
 
 on:
   push:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  diagnostic:
+  live-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,60 +20,76 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps webkit
-      - name: Inspect live page once in WebKit
+      - name: Wait for and prove live ATLAS render
         shell: bash
         run: |
           set -euo pipefail
-          cat > ./diag.mjs <<'NODE'
+          cat > ./live-gate.mjs <<'NODE'
           import fs from 'node:fs';
           import { webkit } from '@playwright/test';
+
           const browser = await webkit.launch();
-          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-          const events = [];
-          page.on('console', m => events.push(`CONSOLE ${m.type()} ${m.text()}`));
-          page.on('pageerror', e => events.push(`PAGEERROR ${e.message}`));
-          page.on('requestfailed', r => events.push(`REQFAIL ${r.url()} :: ${r.failure()?.errorText}`));
-          page.on('response', r => {
-            const u = r.url();
-            if (u.includes('4planetatlas.com') || u.includes('/atlas')) events.push(`RESP ${r.status()} ${u}`);
-          });
+          let last = '';
           try {
-            const resp = await page.goto(`https://4planet.org/?diag=${Date.now()}`, {waitUntil:'domcontentloaded', timeout:60000});
-            console.log('TOP', resp?.status(), page.url());
-            await page.waitForTimeout(5000);
-            const iframe = page.locator('iframe[title="4PLANET ATLAS interactive globe"]').first();
-            await iframe.scrollIntoViewIfNeeded();
-            const iframes = await page.locator('iframe').evaluateAll(els => els.map(e => ({title:e.title,src:e.getAttribute('src'),clientWidth:e.clientWidth,clientHeight:e.clientHeight})));
-            console.log('IFRAMES', JSON.stringify(iframes));
-            for (const f of page.frames()) console.log('FRAME', f.url());
-            const atlasFrame = page.frames().find(f => f.url().includes('4planetatlas.com'));
-            if (!atlasFrame) throw new Error('ATLAS_FRAME_NOT_FOUND');
-            console.log('ATLAS_FRAME_FOUND', atlasFrame.url());
-            const state = await atlasFrame.evaluate(() => {
-              const map = window.__4planet_map;
-              const canvas = map?.getCanvas?.();
-              const rect = map?.getContainer?.()?.getBoundingClientRect?.();
-              return {
-                readyState: document.readyState,
-                title: document.title,
-                map: Boolean(map),
-                canvasWidth: canvas?.width || 0,
-                canvasHeight: canvas?.height || 0,
-                containerWidth: rect?.width || 0,
-                containerHeight: rect?.height || 0,
-                styleLoaded: Boolean(map?.isStyleLoaded?.()),
-                bodyText: document.body?.innerText?.slice(0,500),
-              };
-            });
-            console.log('MAP_STATE', JSON.stringify(state));
-            console.log('EVENTS_START');
-            for (const e of events.slice(-120)) console.log(e);
-            console.log('EVENTS_END');
-            if (!state.map || state.canvasWidth < 100 || state.canvasHeight < 100) throw new Error(`ATLAS_NOT_RENDERING ${JSON.stringify(state)}`);
-            const canvas = atlasFrame.locator('.maplibregl-canvas').first();
-            await canvas.screenshot({path:'webkit-atlas-home-canvas.png'});
-            console.log('CANVAS_BYTES', fs.statSync('webkit-atlas-home-canvas.png').size);
-            console.log('ATLAS_HOME_WEBKIT_PASS');
-          } finally { await browser.close(); }
+            for (let attempt = 1; attempt <= 30; attempt++) {
+              const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+              const errors = [];
+              page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+              page.on('pageerror', e => errors.push(`PAGEERROR ${e.message}`));
+              page.on('requestfailed', r => errors.push(`REQFAIL ${r.url()} :: ${r.failure()?.errorText}`));
+              try {
+                const response = await page.goto(`https://4planet.org/?atlas_live_gate=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                if (response?.status() !== 200) throw new Error(`home HTTP ${response?.status()}`);
+                const iframe = page.locator('iframe[title="4PLANET ATLAS interactive globe"]').first();
+                await iframe.waitFor({ state: 'attached', timeout: 30000 });
+                await iframe.scrollIntoViewIfNeeded();
+                const src = await iframe.getAttribute('src');
+                if (!src?.startsWith('https://4planetatlas.com/')) throw new Error(`stale iframe src ${src}`);
+                await page.waitForTimeout(6000);
+                const atlasFrame = page.frames().find(f => f.url().includes('4planetatlas.com'));
+                if (!atlasFrame) throw new Error('Atlas frame missing');
+                const state = await atlasFrame.evaluate(() => {
+                  const map = window.__4planet_map;
+                  const canvas = map?.getCanvas?.();
+                  const rect = map?.getContainer?.()?.getBoundingClientRect?.();
+                  return {
+                    map: Boolean(map),
+                    canvasWidth: canvas?.width || 0,
+                    canvasHeight: canvas?.height || 0,
+                    containerWidth: rect?.width || 0,
+                    containerHeight: rect?.height || 0,
+                    styleLoaded: Boolean(map?.isStyleLoaded?.()),
+                    href: location.href,
+                  };
+                });
+                const eonetBlocked = errors.some(e => /eonet\.gsfc\.nasa\.gov.*content security policy|content security policy.*eonet\.gsfc\.nasa\.gov/i.test(e));
+                last = `attempt=${attempt} src=${src} state=${JSON.stringify(state)} eonetBlocked=${eonetBlocked} errors=${JSON.stringify(errors.slice(-10))}`;
+                console.log(last);
+                if (!state.map || state.canvasWidth < 100 || state.canvasHeight < 100 || eonetBlocked) throw new Error('live gate not ready');
+                const canvas = atlasFrame.locator('.maplibregl-canvas').first();
+                await canvas.screenshot({ path: 'atlas-home-webkit-live.png' });
+                const bytes = fs.statSync('atlas-home-webkit-live.png').size;
+                if (bytes < 8000) throw new Error(`suspicious canvas screenshot ${bytes} bytes`);
+                console.log(`ATLAS_HOME_WEBKIT_LIVE_PASS bytes=${bytes}`);
+                process.exit(0);
+              } catch (error) {
+                console.log(`attempt ${attempt}: ${error?.message || error}`);
+              } finally {
+                await page.close();
+              }
+              await new Promise(resolve => setTimeout(resolve, 12000));
+            }
+            throw new Error(`ATLAS live gate failed. Last state: ${last}`);
+          } finally {
+            await browser.close();
+          }
           NODE
-          node ./diag.mjs
+          node ./live-gate.mjs
+      - name: Upload render proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-home-webkit-live-proof
+          path: atlas-home-webkit-live.png
+          if-no-files-found: warn
+          retention-days: 7
