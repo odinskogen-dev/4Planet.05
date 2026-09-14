@@ -10,6 +10,7 @@ permissions:
   pull-requests: write
   issues: write
 
+# One-time release gate. Self-removes after execution.
 jobs:
   smoke:
     if: github.actor != 'github-actions[bot]'
