@@ -1,0 +1,129 @@
+name: 4MARKET Private LIVE Canary Stage
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: 4market-private-live-canary
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      STRIPE_LIVE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+      STRIPE_MARKET_WEBHOOK_SECRET_LIVE: ${{ secrets.STRIPE_MARKET_WEBHOOK_SECRET_LIVE }}
+      PRODIGI_LIVE_API_KEY: ${{ secrets.PRODIGI_LIVE_API_KEY }}
+      MARKET_UPSTREAM: https://f9588c18.4planet-05.pages.dev
+      MARKET_SOURCE_SHA: 0061d27addfeb68760a091c2bf1bf944c791c231
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.MARKET_SOURCE_SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Require provider credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in CLOUDFLARE_API_TOKEN STRIPE_LIVE_SECRET_KEY STRIPE_MARKET_WEBHOOK_SECRET_LIVE PRODIGI_LIVE_API_KEY; do
+            test -n "${!key:-}" || { echo "MISSING $key"; exit 2; }
+          done
+          [[ "$STRIPE_LIVE_SECRET_KEY" == sk_live_* ]]
+          [[ "$STRIPE_MARKET_WEBHOOK_SECRET_LIVE" == whsec_* ]]
+          echo "::add-mask::$STRIPE_LIVE_SECRET_KEY"
+          echo "::add-mask::$STRIPE_MARKET_WEBHOOK_SECRET_LIVE"
+          echo "::add-mask::$PRODIGI_LIVE_API_KEY"
+      - name: Verify providers and exact canary SKU
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/stripe.json -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_LIVE_SECRET_KEY:")
+          test "$code" = 200
+          jq -e '.charges_enabled == true' /tmp/stripe.json >/dev/null
+          code=$(curl -sS -o /tmp/prodigi.json -w '%{http_code}' https://api.prodigi.com/v4.0/products/GLOBAL-FAP-8X12 -H "X-API-Key: $PRODIGI_LIVE_API_KEY")
+          test "$code" = 200
+          jq -e '[.product.variants[]?.shipsTo[]?] | index("NO") != null' /tmp/prodigi.json >/dev/null
+      - name: Resolve Cloudflare account
+        shell: bash
+        run: |
+          set -euo pipefail
+          zone=$(curl -fsS 'https://api.cloudflare.com/client/v4/zones?name=4planetmarket.com&status=active' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Build exact runtime and generate private tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/market-commerce-contract.test.mjs
+          npx --yes tsx@latest scripts/market-commerce-integration.test.ts
+          npx tsc --noEmit
+          callback=$(openssl rand -hex 32)
+          canary=$(openssl rand -hex 32)
+          echo "::add-mask::$callback"
+          echo "::add-mask::$canary"
+          echo "MARKET_PRODIGI_CALLBACK_TOKEN=$callback" >> "$GITHUB_ENV"
+          echo "MARKET_LIVE_CANARY_TOKEN=$canary" >> "$GITHUB_ENV"
+      - name: Deploy isolated Worker — canary ON, public checkout OFF
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/wrangler.toml <<EOF
+          name = "4planetmarket-prototype"
+          main = "$GITHUB_WORKSPACE/workers/4planetmarket-commerce.ts"
+          compatibility_date = "2026-09-15"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [vars]
+          MARKET_UPSTREAM = "$MARKET_UPSTREAM"
+          MARKET_SOURCE_SHA = "$MARKET_SOURCE_SHA"
+          MARKET_MARKER = "4market-private-canary-${MARKET_SOURCE_SHA:0:7}"
+          MARKET_COMMERCE_ENV = "LIVE"
+          MARKET_PUBLIC_ORIGIN = "https://4planetmarket.com"
+          MARKET_STRIPE_LIVE_ENABLED = "false"
+          MARKET_FULFILMENT_LIVE_ENABLED = "true"
+          MARKET_LIVE_RELEASE_APPROVED = "false"
+          MARKET_LIVE_CANARY_ENABLED = "true"
+          MARKET_PHOTO_SAMPLE_APPROVED = "false"
+          MARKET_ART_SAMPLE_APPROVED = "false"
+          [[routes]]
+          pattern = "4planetmarket.com"
+          custom_domain = true
+          [[routes]]
+          pattern = "www.4planetmarket.com"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config /tmp/wrangler.toml
+          put(){ printf '%s' "$2" | npx --yes wrangler@latest secret put "$1" --name 4planetmarket-prototype --config /tmp/wrangler.toml >/dev/null; }
+          put STRIPE_LIVE_SECRET_KEY "$STRIPE_LIVE_SECRET_KEY"
+          put STRIPE_MARKET_WEBHOOK_SECRET_LIVE "$STRIPE_MARKET_WEBHOOK_SECRET_LIVE"
+          put PRODIGI_LIVE_API_KEY "$PRODIGI_LIVE_API_KEY"
+          put MARKET_PRODIGI_CALLBACK_TOKEN "$MARKET_PRODIGI_CALLBACK_TOKEN"
+          put MARKET_LIVE_CANARY_TOKEN "$MARKET_LIVE_CANARY_TOKEN"
+      - name: Prove public checkout is still closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            code=$(curl -sS -o /tmp/status.json -w '%{http_code}' "https://4planetmarket.com/api/market-commerce-status?attempt=$attempt" || true)
+            if [ "$code" = 200 ] && jq -e '.environment=="LIVE" and .publicCheckoutEnabled==false' /tmp/status.json >/dev/null 2>&1; then exit 0; fi
+            sleep 3
+          done
+          exit 1
+      - name: Create private real checkout URL only
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=$(jq -n --arg token "$MARKET_LIVE_CANARY_TOKEN" --arg attempt "canary${GITHUB_RUN_ID}" '{productId:"market:odin:reinebringen-vista",token:$token,attemptId:$attempt}')
+          response=$(curl -fsS -X POST https://4planetmarket.com/api/market-canary-checkout -H 'content-type: application/json' --data "$request")
+          url=$(jq -r '.url // empty' <<<"$response")
+          session=$(jq -r '.sessionId // empty' <<<"$response")
+          [[ "$session" == cs_live_* ]]
+          test -n "$url"
+          echo "Private canary session: $session" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open private Stripe Checkout]($url)" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Public checkout remains closed. Payment must be completed manually by Founder with a Norwegian shipping address.' >> "$GITHUB_STEP_SUMMARY"
