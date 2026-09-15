@@ -22,7 +22,6 @@ export async function createMarketCheckoutSession(args: {
   form.set("billing_address_collection", "auto");
   form.set("shipping_address_collection[allowed_countries][0]", "NO");
   form.set("phone_number_collection[enabled]", "true");
-  form.set("consent_collection[terms_of_service]", "required");
   form.set("success_url", `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
   form.set("cancel_url", `${origin}/?checkout=cancel&product=${encodeURIComponent(product.slug)}`);
   form.set("client_reference_id", product.id);
