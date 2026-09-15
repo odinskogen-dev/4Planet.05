@@ -88,7 +88,7 @@ export const FIRST_MARKET_PRODUCTS: FirstMarketProduct[] = [
     imageUrl: "/market/odin/lofoten-beach.jpg",
     productType: "PHOTOGRAPHIC PRINT",
     state: "RELEASE GATED",
-    commerce: photoCommerce(),
+    commerce: { ...photoCommerce(), printSize: "9 × 12 IN", podSku: "GLOBAL-FAP-9X12" },
   },
   {
     id: "market:odin:seaweed-coast",
