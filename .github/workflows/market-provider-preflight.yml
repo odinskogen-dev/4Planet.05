@@ -1,0 +1,63 @@
+name: 4MARKET Provider Preflight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provider-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STRIPE_LIVE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+      PRODIGI_LIVE_API_KEY: ${{ secrets.PRODIGI_LIVE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hard credential gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${STRIPE_LIVE_SECRET_KEY:-}" || { echo 'MISSING STRIPE_LIVE_SECRET_KEY'; exit 2; }
+          test -n "${PRODIGI_LIVE_API_KEY:-}" || { echo 'MISSING PRODIGI_LIVE_API_KEY'; exit 2; }
+          [[ "$STRIPE_LIVE_SECRET_KEY" == sk_live_* ]] || { echo 'INVALID STRIPE_LIVE_SECRET_KEY'; exit 2; }
+          echo "::add-mask::$STRIPE_LIVE_SECRET_KEY"
+          echo "::add-mask::$PRODIGI_LIVE_API_KEY"
+      - name: Verify Stripe LIVE account can accept charges
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/stripe.json -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_LIVE_SECRET_KEY:")
+          test "$code" = 200
+          jq -e '.charges_enabled == true' /tmp/stripe.json >/dev/null
+          jq -r '"Stripe account " + .id + " · country=" + (.country // "unknown") + " · charges=" + (.charges_enabled|tostring) + " · payouts=" + (.payouts_enabled|tostring)' /tmp/stripe.json
+      - name: Verify exact Prodigi launch SKU candidates + Norway support
+        shell: bash
+        run: |
+          set -euo pipefail
+          for sku in GLOBAL-FAP-8X12 GLOBAL-FAP-8X8 GLOBAL-FAP-9X12 GLOBAL-FAP-6X8; do
+            code=$(curl -sS -o "/tmp/$sku.json" -w '%{http_code}' "https://api.prodigi.com/v4.0/products/$sku" -H "X-API-Key: $PRODIGI_LIVE_API_KEY")
+            echo "$sku -> HTTP $code"
+            test "$code" = 200
+            jq -e '.outcome|ascii_downcase == "ok"' "/tmp/$sku.json" >/dev/null
+            jq -e '[.product.variants[]?.shipsTo[]?] | index("NO") != null' "/tmp/$sku.json" >/dev/null
+            jq -r '"  " + .product.sku + " · " + .product.description' "/tmp/$sku.json"
+            jq -r '[.product.variants[]? | select(.shipsTo | index("NO")) | .printAreaSizes.default] | first | "  recommended px: " + ((.horizontalResolution // 0)|tostring) + "x" + ((.verticalResolution // 0)|tostring)' "/tmp/$sku.json"
+          done
+      - name: Quote Standard shipping to Norway in NOK
+        shell: bash
+        run: |
+          set -euo pipefail
+          quote(){
+            local sku="$1"
+            payload=$(jq -n --arg sku "$sku" '{shippingMethod:"Standard",destinationCountryCode:"NO",currencyCode:"NOK",items:[{sku:$sku,copies:1,attributes:{},assets:[{printArea:"default"}]}]}')
+            code=$(curl -sS -o "/tmp/quote-$sku.json" -w '%{http_code}' -X POST https://api.prodigi.com/v4.0/quotes -H "X-API-Key: $PRODIGI_LIVE_API_KEY" -H 'Content-Type: application/json' --data "$payload")
+            test "$code" = 200
+            jq -e '(.outcome|ascii_downcase) == "created" or (.outcome|ascii_downcase) == "createdwithissues"' "/tmp/quote-$sku.json" >/dev/null
+            jq -r --arg sku "$sku" '(.quotes[] | select((.shipmentMethod|ascii_downcase)=="standard") | .costSummary) as $c | $sku + " · item " + $c.items.amount + " " + $c.items.currency + " · shipping " + $c.shipping.amount + " " + $c.shipping.currency' "/tmp/quote-$sku.json"
+          }
+          quote GLOBAL-FAP-8X12
+          quote GLOBAL-FAP-8X8
+          quote GLOBAL-FAP-9X12
+          quote GLOBAL-FAP-6X8
+      - name: Provider preflight verdict
+        run: |
+          echo 'PASS — Stripe LIVE account + exact Prodigi SKUs + Norway fulfilment + live NOK quotes verified.'
