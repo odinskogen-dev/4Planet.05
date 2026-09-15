@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 p = Path(sys.argv[1])
@@ -108,4 +109,6 @@ for marker in [
         raise SystemExit(f"4SAPIEN meal-plan invariant missing: {marker}")
 
 p.write_text(s)
-print("4SAPIEN weekly meal-plan persistence guard applied")
+auth_callback_guard = Path(__file__).resolve().with_name('apply_auth_callback_guard.py')
+subprocess.run([sys.executable, str(auth_callback_guard), str(p)], check=True)
+print("4SAPIEN weekly meal-plan persistence guard applied + auth callback guard")
