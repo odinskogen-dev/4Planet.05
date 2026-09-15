@@ -1,4 +1,4 @@
-name: 4SAPIEN Finance typography restore
+name: 4SAPIEN Finance UX inspect
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  restore:
+  inspect:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
