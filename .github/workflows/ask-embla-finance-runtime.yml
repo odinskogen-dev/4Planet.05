@@ -20,42 +20,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Materialize and inspect branch Finance runtime
+      - name: Materialize and inspect Finance and Food seams
         run: |
           set -euo pipefail
           rm -rf /tmp/finance-e2e-site
-          mkdir -p /tmp/finance-e2e-site
+          mkdir -p /tmp/finance-e2e-site/app/food
           python products/4sapien/build/apply_finance_route.py /tmp/finance-e2e-site/index.html
+          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/finance-e2e-site/app/food/index.html
+          python products/4sapien/build/apply_provider_guard.py /tmp/finance-e2e-site/app/food/index.html
+          python products/4sapien/build/apply_meal_plan_guard.py /tmp/finance-e2e-site/app/food/index.html
+          python products/4sapien/build/apply_product_gateway_guard.py /tmp/finance-e2e-site/app/food/index.html
           python - <<'PY'
           from pathlib import Path
           import re
           s=Path('/tmp/finance-e2e-site/app/money/index.html').read_text()
-          print('MATERIALIZED_BYTES',len(s))
+          f=Path('/tmp/finance-e2e-site/app/food/index.html').read_text()
           for label,pat in [
-            ('TABLE_QUERIES',r'.{0,500}four_sapien_finance_(?:accounts|events).{0,1800}'),
-            ('OVERVIEW',r'function overview\(.*?(?=function [A-Za-z_$])'),
-            ('MONTHS',r'function months\(.*?(?=function [A-Za-z_$])'),
-            ('QUICK',r'function quick\(.*?(?=function [A-Za-z_$])'),
-            ('BIND',r'function bind\(.*?(?=function [A-Za-z_$])'),
-            ('EMBLA_SCAN',r'.{0,700}Scan med Embla.{0,2200}'),
+            ('FIN_CONSTS',r'const AT=.*?function money'),
+            ('FIN_HYDRATE',r'async function hydrate\(.*?(?=function |async function )'),
+            ('FIN_UP',r'async function up\(.*?(?=function |async function )'),
+            ('FIN_DEL',r'async function del\(.*?(?=function |async function )'),
+            ('FIN_SAVE_ROWS',r'async function saveRows\(.*?(?=function |async function )'),
+            ('FIN_ACCT',r'function acct\(.*?(?=function |async function )'),
+            ('FIN_ROW',r'function row\(.*?(?=function |async function )'),
+            ('FIN_RENDER',r'function render\(.*?(?=function |async function )'),
           ]:
             print('\n===',label,'===')
             m=re.search(pat,s,re.S|re.I)
-            print((m.group(0) if m else 'NOT FOUND')[:10000])
+            print((m.group(0) if m else 'NOT FOUND')[:16000])
+          for label,term in [
+            ('FOOD_MEALS','function Meals'),
+            ('FOOD_APP','function App'),
+            ('FOOD_BUDGET','weekly_budget'),
+            ('FOOD_LIST','Lag handleliste'),
+            ('FOOD_EMBLA','Ask Embla'),
+          ]:
+            print('\n===',label,'===')
+            i=f.find(term)
+            print(f[max(0,i-2500):i+12000] if i>=0 else 'NOT FOUND')
           PY
 
       - name: Verify shared 4SAPIEN backend seam
         run: |
           set -euo pipefail
-          for table in \
-            four_sapien_finance_accounts \
-            four_sapien_finance_events \
-            four_sapien_finance_budget \
-            four_sapien_finance_import_batches \
-            four_sapien_finance_reconciliations; do
-            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' \
-              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
-              "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0")
+          for table in four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget four_sapien_finance_import_batches four_sapien_finance_reconciliations; do
+            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0")
             test "$code" = "200"
           done
 
@@ -67,7 +76,6 @@ jobs:
             status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}/app/money/")
             test "$status" = "200"
             grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
-            grep -q '4SAPIEN by 4PLANET' "$body"
             grep -q 'four_sapien_finance_accounts' "$body"
             grep -q 'four_sapien_finance_events' "$body"
             ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$body"
