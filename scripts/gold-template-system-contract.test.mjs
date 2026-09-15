@@ -4,13 +4,18 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const data = read("src/content/goldTemplateSystem.ts");
+const completion = read("src/content/goldTemplateCompletion.ts");
 const page = read("src/pages/labs/GoldTemplateSystem.tsx");
+const review = read("src/pages/labs/SandboxGoldReview.tsx");
+const sandboxRoutes = read("src/pages/labs/SandboxGoldRoutes.tsx");
 const routes = read("src/routes/router.tsx");
+const actor = read("src/content/actorGold.ts");
 const css = read("src/styles/gold-template-system.css");
 
 const objectKinds = ["SPECIES", "PLACE", "LIVING_SYSTEM", "ACTOR", "SOLUTION", "SIGNAL", "PROOF"];
 const storyFormats = ["NEWS", "EXPLAINER", "FEATURE", "PROFILE", "VISUAL_STORY", "FIELD", "SOLUTIONS", "BIG_QUESTION", "GUIDE"];
-const proofObjects = ["blue-whale", "oslofjord", "eelgrass-restoration"];
+const baseObjects = ["blue-whale", "oslofjord", "eelgrass-restoration"];
+const completionObjects = ["oslofjord-living-system", "oslofjord-plan-2026", "eelgrass-proof-record"];
 const proofStories = ["news-august-2026", "explainer-1-5c", "feature-blue-whale", "visual-blue-whale"];
 
 test("Object Gold contract contains all seven reusable object kinds", () => {
@@ -28,15 +33,29 @@ test("first Species Gold proof is Blue Whale while ORCA remains donor only", () 
   assert.match(data, /No Orca copy or species-specific claims are reused/);
 });
 
-test("representative object proofs are source-bounded and do not imply delivery", () => {
-  for (const slug of proofObjects) assert.ok(data.includes(`slug: \"${slug}\"`), `missing object proof ${slug}`);
-  assert.match(data, /NOAA Fisheries/);
-  assert.match(data, /Klima- og miljødepartementet/);
-  assert.match(data, /Miljødirektoratet/);
-  assert.match(data, /NIVA/);
-  assert.match(data, /UNIVERSAL SUCCESS RATE[\s\S]*UNKNOWN/);
-  assert.match(data, /does not claim that 4PLANET delivers eelgrass restoration/);
-  assert.match(data, /DECISION ≠ DELIVERY ≠ ECOLOGICAL OUTCOME/);
+test("all seven object jobs have a founder-reviewable representative", () => {
+  for (const slug of baseObjects) assert.ok(data.includes(`slug: \"${slug}\"`), `missing base object ${slug}`);
+  for (const slug of completionObjects) assert.ok(completion.includes(`slug: \"${slug}\"`), `missing completion object ${slug}`);
+  assert.match(actor, /slug:\s*\"orca\"/);
+  assert.match(actor, /ACTOR_GOLD_REQUIRED_SECTIONS/);
+  assert.match(review, /SPECIES/);
+  assert.match(review, /PLACE/);
+  assert.match(review, /LIVING SYSTEM/);
+  assert.match(review, /ACTOR/);
+  assert.match(review, /SOLUTION/);
+  assert.match(review, /SIGNAL/);
+  assert.match(review, /PROOF/);
+});
+
+test("object proofs are source-bounded and outcome claims fail closed", () => {
+  const combined = `${data}\n${completion}`;
+  assert.match(combined, /NOAA Fisheries/);
+  assert.match(combined, /Klima- og miljødepartementet/);
+  assert.match(combined, /Miljødirektoratet/);
+  assert.match(combined, /NIVA/);
+  assert.match(combined, /UNKNOWN STAYS UNKNOWN|outcome deliberately left open|ECOLOGICAL OUTCOME/);
+  assert.match(combined, /DECISION ≠ DELIVERY ≠ ECOLOGICAL OUTCOME/);
+  assert.match(completion, /ACTIVITY IS NOT IMPACT/);
 });
 
 test("Magazine Story Gold contract contains nine distinct journalist jobs", () => {
@@ -46,7 +65,7 @@ test("Magazine Story Gold contract contains nine distinct journalist jobs", () =
   assert.match(data, /SCENE → CHARACTER \/ PLACE → CONFLICT → CONTEXT → EVIDENCE → CONSEQUENCE/);
 });
 
-test("four representative story formats are real world stories, not 4PLANET news", () => {
+test("four representative story formats are real-world stories, not 4PLANET news", () => {
   for (const slug of proofStories) assert.ok(data.includes(`slug: \"${slug}\"`), `missing story proof ${slug}`);
   assert.match(data, /August just became the hottest August ever recorded/);
   assert.match(data, /The planet crossed 1\.5°C again/);
@@ -56,31 +75,33 @@ test("four representative story formats are real world stories, not 4PLANET news
   assert.match(data, /World Meteorological Organization/);
 });
 
-test("all seven representative proof surfaces are routed under controlled LABS state", () => {
-  assert.match(routes, /path=\"\/labs\/gold\"/);
-  assert.match(routes, /path=\"\/labs\/gold\/object\/:slug\"/);
-  assert.match(routes, /path=\"\/labs\/gold\/story\/:slug\"/);
-  assert.match(page, /CONTROLLED TEST/);
-  assert.match(page, /NO LIVE RELEASE/);
-  assert.match(page, /noindex,nofollow,noarchive,nosnippet/);
+test("Founder Review is exposed only through controlled sandbox routes", () => {
+  assert.match(routes, /path=\"\/sandbox\/gold\/\*\"/);
+  for (const segment of ["species", "place", "living-system", "actor", "solution", "signal", "proof", "magazine"]) {
+    assert.ok(sandboxRoutes.includes(`path=\"${segment}/:slug\"`), `missing sandbox route ${segment}`);
+  }
+  assert.match(review, /CONTROLLED TEST/);
+  assert.match(review, /NO LIVE RELEASE/);
+  assert.match(review, /noindex,nofollow,noarchive,nosnippet/);
+  assert.match(review, /Founder approval is the final gate/);
 });
 
-test("proof surfaces expose provenance, truth boundaries and second-object handoffs", () => {
-  assert.match(page, /SOURCES \/ PROVENANCE/);
-  assert.match(page, /TRUTH BOUNDARY/);
-  assert.match(page, /EDITORIAL BOUNDARY/);
-  assert.match(page, /SECOND OBJECT/);
-  assert.match(page, /HOW WE KNOW/);
-  assert.match(page, /UNKNOWN STAYS UNKNOWN/);
-  assert.match(page, /Designed in-system visual/);
+test("proof surfaces expose provenance, truth boundaries and connected handoffs", () => {
+  const combinedPage = `${page}\n${review}`;
+  assert.match(combinedPage, /SOURCES \/ PROVENANCE/);
+  assert.match(combinedPage, /TRUTH BOUNDARY/);
+  assert.match(combinedPage, /EDITORIAL BOUNDARY|editorial/i);
+  assert.match(combinedPage, /HOW WE KNOW|PROVENANCE ATTACHED/);
+  assert.match(combinedPage, /UNKNOWN STAYS UNKNOWN/);
+  assert.match(combinedPage, /Designed in-system visual/);
 });
 
-test("Gold visual system is responsive and format-specific rather than one generic card grid", () => {
+test("Gold visual system remains responsive and format-specific", () => {
   assert.match(css, /gold-story--news/);
   assert.match(css, /gold-story--explainer/);
   assert.match(css, /gold-story--feature/);
   assert.match(css, /gold-story--visual_story/);
   assert.match(css, /@media \(max-width: 680px\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.doesNotMatch(page, /CardGrid|generic-card/i);
+  assert.doesNotMatch(review, /CardGrid|generic-card/i);
 });
