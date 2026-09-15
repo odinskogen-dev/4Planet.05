@@ -20,63 +20,82 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Materialize and inspect Finance and Food seams
+      - name: Materialize guarded candidate
         run: |
           set -euo pipefail
           rm -rf /tmp/finance-e2e-site
           mkdir -p /tmp/finance-e2e-site/app/food
+          touch /tmp/finance-e2e-site/index.html
           python products/4sapien/build/apply_finance_route.py /tmp/finance-e2e-site/index.html
+          python products/4sapien/build/apply_finance_canonical_guard.py /tmp/finance-e2e-site
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/finance-e2e-site/app/food/index.html
           python products/4sapien/build/apply_provider_guard.py /tmp/finance-e2e-site/app/food/index.html
           python products/4sapien/build/apply_meal_plan_guard.py /tmp/finance-e2e-site/app/food/index.html
           python products/4sapien/build/apply_product_gateway_guard.py /tmp/finance-e2e-site/app/food/index.html
+          python products/4sapien/build/apply_food_money_guard.py /tmp/finance-e2e-site/app/food/index.html
+
+      - name: Candidate product truth checks
+        run: |
+          set -euo pipefail
+          MONEY=/tmp/finance-e2e-site/app/money/index.html
+          FOOD=/tmp/finance-e2e-site/app/food/index.html
+          grep -q 'AXE_FINANCE_CANONICAL_V1' "$MONEY"
+          grep -q 'four_sapien_finance_save_event' "$MONEY"
+          grep -q 'four_sapien_finance_save_account' "$MONEY"
+          grep -q 'four_sapien_finance_batch_save_events' "$MONEY"
+          grep -q 'four_sapien_finance_soft_delete_event' "$MONEY"
+          grep -q 'four_sapien_embla_finance_tool' "$MONEY"
+          grep -q 'Canonical Finance Twin' "$MONEY"
+          grep -q 'FACTS, NOT ADVICE' "$MONEY"
+          grep -q 'FOUR_SAPIEN_FOOD_MONEY_V1' "$FOOD"
+          grep -q 'plan_food_until_payday' "$FOOD"
+          grep -q 'FOOD × MONEY · DETERMINISTISK' "$FOOD"
+          grep -q 'Eksakt handlekurvsum er UKJENT' "$FOOD"
+          ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/finance-e2e-site
+
+      - name: Parse guarded Food React source
+        run: |
+          set -euo pipefail
           python - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path('/tmp/finance-e2e-site/app/money/index.html').read_text()
-          f=Path('/tmp/finance-e2e-site/app/food/index.html').read_text()
-          for label,pat in [
-            ('FIN_CONSTS',r'const AT=.*?function money'),
-            ('FIN_HYDRATE',r'async function hydrate\(.*?(?=function |async function )'),
-            ('FIN_UP',r'async function up\(.*?(?=function |async function )'),
-            ('FIN_DEL',r'async function del\(.*?(?=function |async function )'),
-            ('FIN_SAVE_ROWS',r'async function saveRows\(.*?(?=function |async function )'),
-            ('FIN_ACCT',r'function acct\(.*?(?=function |async function )'),
-            ('FIN_ROW',r'function row\(.*?(?=function |async function )'),
-            ('FIN_RENDER',r'function render\(.*?(?=function |async function )'),
-          ]:
-            print('\n===',label,'===')
-            m=re.search(pat,s,re.S|re.I)
-            print((m.group(0) if m else 'NOT FOUND')[:16000])
-          for label,term in [
-            ('FOOD_MEALS','function Meals'),
-            ('FOOD_APP','function App'),
-            ('FOOD_BUDGET','weekly_budget'),
-            ('FOOD_LIST','Lag handleliste'),
-            ('FOOD_EMBLA','Ask Embla'),
-          ]:
-            print('\n===',label,'===')
-            i=f.find(term)
-            print(f[max(0,i-2500):i+12000] if i>=0 else 'NOT FOUND')
+          import re,pathlib
+          s=pathlib.Path('/tmp/finance-e2e-site/app/food/index.html').read_text()
+          m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+          assert m,'Babel source missing'
+          pathlib.Path('/tmp/food-e2e.jsx').write_text(m.group(1))
           PY
+          npx --yes esbuild@0.25.9 /tmp/food-e2e.jsx --loader:.jsx=jsx --outfile=/tmp/food-e2e.js
+
+      - name: Parse injected Finance experience
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib
+          s=pathlib.Path('/tmp/finance-e2e-site/app/money/index.html').read_text()
+          i=s.index('<!-- AXE_FINANCE_EXPERIENCE_V2 -->')
+          a=s.rfind('<script',0,i); a=s.index('>',a)+1
+          b=s.index('</script>',i)
+          pathlib.Path('/tmp/finance-experience.js').write_text(s[a:b])
+          PY
+          node --check /tmp/finance-experience.js
 
       - name: Verify shared 4SAPIEN backend seam
         run: |
           set -euo pipefail
-          for table in four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget four_sapien_finance_import_batches four_sapien_finance_reconciliations; do
-            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0")
+          for object in four_sapien_finance_accounts four_sapien_finance_events four_sapien_embla_tool_calls; do
+            code=$(curl -sS -o "/tmp/${object}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${object}?select=*&limit=0")
             test "$code" = "200"
           done
+          for rpc in four_sapien_finance_twin four_sapien_embla_finance_tool four_sapien_plan_food_until_payday_context; do
+            code=$(curl -sS -o "/tmp/${rpc}.json" -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' "${SUPABASE_URL}/rest/v1/rpc/${rpc}" -d '{}')
+            test "$code" = "401" -o "$code" = "403"
+          done
 
-      - name: Verify live Finance route remains healthy
+      - name: Verify current live baseline remains healthy
         run: |
           set -euo pipefail
           for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
-            body="/tmp/finance-live.html"
+            body=/tmp/live-money.html
             status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}/app/money/")
             test "$status" = "200"
             grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
-            grep -q 'four_sapien_finance_accounts' "$body"
-            grep -q 'four_sapien_finance_events' "$body"
-            ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$body"
           done
