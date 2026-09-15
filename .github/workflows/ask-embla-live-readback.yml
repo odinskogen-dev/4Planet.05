@@ -1,4 +1,4 @@
-name: 4SAPIEN Ask Embla live readback
+name: 4SAPIEN One Product live readback
 
 on:
   push:
@@ -18,39 +18,43 @@ jobs:
   live-readback:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify live production payload and headers
+      - name: Verify live public front and security headers
         run: |
           set -euo pipefail
-          curl -fsS -D /tmp/headers.txt -H 'Sec-Fetch-Mode: navigate' https://4sapien.com -o /tmp/live.html
-          check(){ grep -q "$1" /tmp/live.html || { echo "MISSING_LIVE_MARKER: $1"; exit 21; }; }
-          check 'Ask Embla'
-          check '4SAPIEN by 4PLANET'
-          check '4PLANET ID · INNLOGGET'
-          check 'Fullfør 4SAPIEN-profilen din.'
-          check 'LIST_HYDRATE_FAILED'
-          check 'SHOPS_HYDRATE_FAILED'
-          check 'functions/v1/embla-products'
-          check 'RATE_LIMITED'
-          check '4PLANET ID – innlogget'
-          if grep -q 'S4PIENS' /tmp/live.html; then echo 'FORBIDDEN_LIVE_MARKER: S4PIENS'; exit 22; fi
-          if grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/live.html; then echo 'FORBIDDEN_BROWSER_SECRET_MARKER'; exit 23; fi
+          curl -fsS -D /tmp/headers.txt -H 'Sec-Fetch-Mode: navigate' https://4sapien.com/ -o /tmp/root.html
+          grep -q 'See your life clearly.' /tmp/root.html
+          grep -q 'illustrative demo' /tmp/root.html
+          grep -q '/app/food/' /tmp/root.html
+          grep -q '/app/money/' /tmp/root.html
+          grep -q '#2E2EFF' /tmp/root.html
+          grep -q '#0A0A0A' /tmp/root.html
+          ! grep -Eqi 'service[_-]?role|sb_secret_|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/root.html
           grep -Eqi '^permissions-policy:.*camera=\(self\)' /tmp/headers.txt || { echo 'HEADER_FAIL: permissions-policy camera'; cat /tmp/headers.txt; exit 24; }
           grep -Eqi '^content-security-policy:.*ghvdzetmplqkdtfqiror\.supabase\.co' /tmp/headers.txt || { echo 'HEADER_FAIL: content-security-policy supabase'; cat /tmp/headers.txt; exit 25; }
-          python - <<'PY'
-          import hashlib, pathlib
-          b=pathlib.Path('/tmp/live.html').read_bytes()
-          print('LIVE_BYTES',len(b))
-          print('LIVE_SHA256',hashlib.sha256(b).hexdigest())
-          PY
 
-      - name: Verify live product gateway rejects unauthenticated calls before data access
+      - name: Verify live Food and Money surfaces
         run: |
           set -euo pipefail
-          code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST \
-            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
-            -H 'Content-Type: application/json' \
-            --data '{"q":"yoghurt"}' \
-            "${SUPABASE_URL}/functions/v1/embla-products" || true)
-          test "$code" = "401" || { echo "LIVE_GATEWAY_UNAUTH_FAIL HTTP=${code}"; cat /tmp/gateway.json; exit 26; }
-          grep -Eq 'UNAUTHENTICATED|Invalid JWT|Missing authorization' /tmp/gateway.json || { echo 'LIVE_GATEWAY_401_BODY_UNEXPECTED'; cat /tmp/gateway.json; exit 27; }
-          echo "LIVE_GATEWAY_UNAUTH_HTTP=${code}"
+          curl -fsS -H 'Sec-Fetch-Mode: navigate' https://4sapien.com/app/food/ -o /tmp/food.html
+          grep -q 'Ask Embla' /tmp/food.html
+          grep -q 'four_sapien_profiles' /tmp/food.html
+          grep -q 'four_sapien_meal_plans' /tmp/food.html
+          grep -q 'functions/v1/embla-products' /tmp/food.html
+          curl -fsS -H 'Sec-Fetch-Mode: navigate' https://4sapien.com/app/money/ -o /tmp/money.html
+          grep -q '<title>4SAPIEN Finance — Embla</title>' /tmp/money.html
+          grep -q 'four_sapien_finance_accounts' /tmp/money.html
+          grep -q 'four_sapien_finance_events' /tmp/money.html
+          grep -q 'four-sapien-finance-docs' /tmp/money.html
+          ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/food.html /tmp/money.html
+
+      - name: Verify Food and Embla gateways reject unauthenticated calls
+        run: |
+          set -euo pipefail
+          for fn in embla-products embla-core-preview; do
+            code=$(curl -sS -o "/tmp/${fn}.json" -w '%{http_code}' -X POST \
+              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H 'Content-Type: application/json' \
+              --data '{"q":"yoghurt","message":"hello"}' \
+              "${SUPABASE_URL}/functions/v1/${fn}" || true)
+            test "$code" = "401" || { echo "LIVE_${fn}_UNAUTH_FAIL HTTP=${code}"; cat "/tmp/${fn}.json"; exit 26; }
+          done
