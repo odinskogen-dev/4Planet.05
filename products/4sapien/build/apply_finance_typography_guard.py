@@ -58,6 +58,8 @@ for path in paths:
         raise SystemExit(f'Final Finance type guard duplicated: {path}')
     if s.count('</head>') != 1:
         raise SystemExit(f'Finance final type guard head mismatch: {path}')
+    # The previous half-circle glyph reads like a stray letter on iOS. Use a clear moon.
+    s = s.replace('◐', '☾')
     s = s.replace('</head>', final_style + '\n</head>', 1)
     for marker in (
         'four-sapien-finance-final-type-guard',
@@ -65,9 +67,10 @@ for path in paths:
         'font-family:"DM Sans"',
         'font-family:"Fragment Mono"',
         'padding-bottom:calc(150px + env(safe-area-inset-bottom))',
+        '☾',
     ):
         if marker not in s:
             raise SystemExit(f'Finance final visual marker missing {marker!r}: {path}')
     path.write_text(s, encoding='utf-8')
 
-print('4SAPIEN Finance final typography + mobile nav clearance guard applied')
+print('4SAPIEN Finance final typography + mobile nav clearance + clear theme icon applied')
