@@ -22,6 +22,12 @@ function isPartnersHost() {
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
 }
 
+function isFourBrandsHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "4brands.org" || host === "www.4brands.org";
+}
+
 function isFourBrandPath() {
   if (typeof window === "undefined") return false;
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -72,6 +78,7 @@ function StandardApp() {
 }
 
 export default function App() {
+  if (isFourBrandsHost()) return <FourBrand />;
   if (isPartnersHost()) return isFourBrandPath() ? <FourBrand /> : <PartnersHub />;
 
   return (
