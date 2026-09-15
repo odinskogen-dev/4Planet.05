@@ -35,7 +35,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "${STRIPE_LIVE_SECRET_KEY}" != ''
           echo "::add-mask::$STRIPE_LIVE_SECRET_KEY"
           code=$(curl -sS -o "$RUNNER_TEMP/stripe.json" -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_LIVE_SECRET_KEY:")
           echo "STRIPE_HTTP=$code"
@@ -65,7 +64,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo 'ODIN ASSETS'
-          for f in public/market/odin/*.jpg; do identify -format '%f %wx%h\n' "$f"; done
-          echo 'AMALIE ASSETS'
-          for f in public/market/amalie/*.jpg; do identify -format '%f %wx%h\n' "$f"; done
+          python - <<'PY'
+          from pathlib import Path
+          def jpeg_size(path):
+              data = Path(path).read_bytes()
+              if data[:2] != b'\xff\xd8': raise ValueError('not jpeg')
+              i = 2
+              while i < len(data)-9:
+                  if data[i] != 0xff:
+                      i += 1; continue
+                  marker = data[i+1]; i += 2
+                  if marker in (0xd8,0xd9): continue
+                  if i+2 > len(data): break
+                  n = int.from_bytes(data[i:i+2], 'big')
+                  if marker in range(0xc0,0xc4):
+                      h = int.from_bytes(data[i+3:i+5], 'big'); w = int.from_bytes(data[i+5:i+7], 'big')
+                      return w,h
+                  i += n
+              raise ValueError('size marker not found')
+          for group in ('odin','amalie'):
+              print(group.upper())
+              for p in sorted(Path('public/market',group).glob('*.jpg')):
+                  w,h=jpeg_size(p); print(f'{p.name} {w}x{h}')
+          PY
