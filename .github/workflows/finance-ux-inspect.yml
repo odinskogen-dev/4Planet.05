@@ -22,32 +22,26 @@ jobs:
           rm -rf /tmp/finance-site
           mkdir -p /tmp/finance-site
           python products/4sapien/build/apply_finance_route.py /tmp/finance-site/index.html
-      - name: Inspect current UX seams
+      - name: Inspect active Finance layer
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
-          p=Path('/tmp/finance-site/app/money/index.html')
-          s=p.read_text()
+          s=Path('/tmp/finance-site/app/money/index.html').read_text()
           print('SIZE', len(s))
-          for term in ['Oversikt','Frihet','Legg til','Hendelser','AAP','Utleid','MAT','Likviditet','likviditet','gjeld','eiendeler','konto','category','recurring']:
-              print('\n=== TERM:', term, '===')
-              found=False
-              for m in list(re.finditer(re.escape(term), s, re.I))[:6]:
-                  found=True
-                  a=max(0,m.start()-900); b=min(len(s),m.end()+1400)
-                  print(s[a:b].replace('\n',' ')[:2600])
-                  print('\n---')
-              if not found: print('NOT FOUND')
-          print('\n=== BUTTONS ===')
-          for x in re.findall(r'<button[^>]*>(.*?)</button>', s, re.S|re.I)[:120]:
-              t=re.sub('<[^>]+>',' ',x); t=re.sub(r'\s+',' ',t).strip()
-              if t: print(t[:220])
-          print('\n=== INPUTS ===')
-          for x in re.findall(r'<input[^>]{0,500}>', s, re.I)[:120]: print(x)
-          print('\n=== REACT COMPONENT/FUNCTION HINTS ===')
-          names=[]
-          for pat in [r'function\s+([A-Za-z_$][\w$]{2,})\s*\(', r'const\s+([A-Za-z_$][\w$]{2,})\s*=\s*\(']:
-              names += re.findall(pat,s)
-          print('\n'.join(dict.fromkeys(names)))
+          for label, pat in [
+            ('AXE STYLE', r'<style id="axe-finance-style">.*?</style>'),
+            ('MONEY FN', r'function money\([^}]+\}'),
+            ('LIQUID FN', r'function liquid\([^}]+\}'),
+            ('ASSETS FN', r'function assets\([^}]+\}'),
+            ('DEBT FN', r'function debt\([^}]+\}'),
+            ('REG FN', r'function reg\([^}]+\}'),
+            ('PROJECTED FN', r'function projected\(.*?function months'),
+            ('MONTHS FN', r'function months\(.*?function q\('),
+            ('BIND FN', r'function bind\(.*?function guess'),
+            ('OVERVIEW FN', r'function overview\(.*?function opts'),
+          ]:
+            print('\n===', label, '===')
+            m=re.search(pat,s,re.S)
+            print((m.group(0) if m else 'NOT FOUND')[:12000])
           PY
