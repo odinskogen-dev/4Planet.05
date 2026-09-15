@@ -26,7 +26,6 @@ jobs:
           rm -rf /tmp/finance-e2e-site
           mkdir -p /tmp/finance-e2e-site
           python products/4sapien/build/apply_finance_route.py /tmp/finance-e2e-site/index.html
-          python products/4sapien/build/apply_finance_typography_guard.py /tmp/finance-e2e-site
           python - <<'PY'
           from pathlib import Path
           import re
