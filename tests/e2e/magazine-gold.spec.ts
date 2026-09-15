@@ -16,28 +16,19 @@ async function expectLoadedImages(page: import("@playwright/test").Page) {
 }
 
 test.describe("4PLANET MAGAZINE Gold surface", () => {
-  test("homepage is a premium editorial front door", async ({ page }, testInfo) => {
-    await page.goto("/magazine", { waitUntil: "networkidle" });
-
-    await expect(page).toHaveTitle(/4PLANET MAGAZINE/i);
-    await expect(page.getByRole("heading", { level: 1, name: "WHAT HOLDS" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /The story is the front door/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Start with one thing worth knowing/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /The conclusion is not for sale/i })).toBeAttached();
-    const sections = page.getByRole("navigation", { name: "Magazine sections" });
-    await expect(sections).toBeVisible();
-    for (const section of ["LIFE", "PLANET", "HUMAN", "SOLUTIONS", "PEOPLE", "CULTURE"]) {
-      await expect(sections.getByRole("link", { name: section, exact: true })).toBeVisible();
-    }
-
-    expect(await page.locator("h1").count()).toBe(1);
-    await expectNoHorizontalOverflow(page);
-    await expectLoadedImages(page);
-
-    await page.screenshot({
-      path: `artifacts/product-proof/magazine-home-${testInfo.project.name}.png`,
-      fullPage: false,
+  test("4PLANET entry hands off to the canonical independent Magazine front door", async ({ page }) => {
+    await page.route("https://4planetmagazine.com/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<!doctype html><html><head><title>4PLANET MAGAZINE</title></head><body><main><h1>4PLANET MAGAZINE</h1></main></body></html>",
+      });
     });
+
+    await page.goto("/magazine", { waitUntil: "networkidle" });
+    await expect(page).toHaveURL("https://4planetmagazine.com/");
+    await expect(page).toHaveTitle(/4PLANET MAGAZINE/i);
+    await expect(page.getByRole("heading", { level: 1, name: "4PLANET MAGAZINE" })).toBeVisible();
   });
 
   test("article works as a complete first-touch side door", async ({ page }, testInfo) => {
@@ -78,13 +69,13 @@ test.describe("4PLANET MAGAZINE Gold surface", () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test("reduced-motion mode preserves the reading experience", async ({ page }) => {
+  test("reduced-motion mode preserves the internal article reading experience", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/magazine", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { level: 1, name: "WHAT HOLDS" })).toBeVisible();
+    await page.goto("/magazine/wh4les-migratory-intelligence", { waitUntil: "networkidle" });
 
-    const heroTransition = await page.locator(".mag-hero-media").evaluate((element) => getComputedStyle(element).transitionDuration);
-    expect(heroTransition.split(",").every((value) => value.trim() === "0s")).toBeTruthy();
+    await expect(page.getByRole("heading", { level: 1, name: /WH4LES: the intelligence that travels through whole oceans/i })).toBeVisible();
+    await expect(page.getByText("ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL")).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    await expectLoadedImages(page);
   });
 });

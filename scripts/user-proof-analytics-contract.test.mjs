@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const shared = read("src/analytics/ProductAnalytics.ts");
 const analytics = read("src/analytics/Analytics.tsx");
+const posthog = read("src/analytics/PostHogSink.ts");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
@@ -20,6 +21,7 @@ const requiredEvents = [
 
 const requiredAnalyticsHosts = [
   "4planet.org",
+  "test.4planet.org",
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
@@ -62,7 +64,18 @@ test("GA4 remains gated by explicit consent and a real measurement id", () => {
   assert.match(analytics, /allow_ad_personalization_signals: false/);
 });
 
-test("analytics is fail-closed to the approved live-domain set", () => {
+test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
+  assert.match(analytics, /capturePostHog\(name, shared\)/);
+  assert.match(analytics, /capturePostHog\(\"\$pageview\", pageProperties\)/);
+  assert.match(posthog, /VITE_POSTHOG_PROJECT_KEY/);
+  assert.match(posthog, /VITE_POSTHOG_HOST/);
+  assert.match(posthog, /if \(!apiKey/);
+  assert.match(posthog, /\$process_person_profile: false/);
+  assert.match(posthog, /\/i\/v0\/e\//);
+  assert.doesNotMatch(posthog, /phc_[A-Za-z0-9]+/);
+});
+
+test("analytics is fail-closed to the approved product and test-domain set", () => {
   for (const host of requiredAnalyticsHosts) assert.ok(analytics.includes(`\"${host}\"`), `analytics host missing: ${host}`);
   assert.match(analytics, /\.pages\.dev/);
   assert.match(analytics, /localhost/);

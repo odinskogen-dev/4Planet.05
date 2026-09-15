@@ -25,6 +25,7 @@ import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CulturePlay } from "@/pages/v5/Culture";
+import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
 
@@ -41,12 +42,17 @@ const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => (
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 const EmblaFoodChoice = lazy(() => import("@/pages/sapien/EmblaFoodChoice"));
+const GoldTemplateSystemIndex = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldTemplateSystemIndex })));
+const GoldObjectProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldObjectProofPage })));
+const GoldStoryProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldStoryProofPage })));
+const SandboxGoldRoutes = lazy(() => import("@/pages/labs/SandboxGoldRoutes"));
 
 const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
 const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 const toImpact = <Navigate to="/impact" replace />;
+const toMarket = <Navigate to="/market" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
 const toHome = <Navigate to="/" replace />;
@@ -65,6 +71,10 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs/gold" element={<Suspense fallback={LabFallback}><GoldTemplateSystemIndex /></Suspense>} />
+      <Route path="/labs/gold/object/:slug" element={<Suspense fallback={LabFallback}><GoldObjectProofPage /></Suspense>} />
+      <Route path="/labs/gold/story/:slug" element={<Suspense fallback={LabFallback}><GoldStoryProofPage /></Suspense>} />
+      <Route path="/sandbox/gold/*" element={<Suspense fallback={LabFallback}><SandboxGoldRoutes /></Suspense>} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />
       <Route path="/os/labs" element={<LabsOverview />} />
@@ -77,10 +87,11 @@ export function AppRoutes() {
       <Route path="/missions/4ntarctica" element={<Navigate to="/missions/rewild-marine" replace />} />
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
-      <Route path="/missions/4telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/missions/4telier" element={toMarket} />
+      <Route path="/missions/4rt" element={toMarket} />
       <Route path="/missions/m4gazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/missions/4film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
-      <Route path="/culture/telier" element={<Navigate to="/missions/4rt" replace />} />
+      <Route path="/culture/telier" element={toMarket} />
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
@@ -136,14 +147,18 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/play" element={<CulturePlay />} />
+      <Route path="/market" element={<MarketHome />} />
+      <Route path="/cre4tor" element={<OdinCreatorPage />} />
+      <Route path="/cre4tor/odin" element={<OdinCreatorPage />} />
+      <Route path="/creator/odin" element={<OdinCreatorPage />} />
       <Route path="/os/*" element={<LabsOverview />} />
       <Route path="/m/:slug" element={<MtoMission />} />
       <Route path="/m/:slug/support" element={toImpact} />
       <Route path="/m/:slug/campaign" element={toImpact} />
-      <Route path="/marketplace" element={toImpact} />
-      <Route path="/store" element={toImpact} />
-      <Route path="/cart" element={toImpact} />
-      <Route path="/checkout" element={toImpact} />
+      <Route path="/marketplace" element={toMarket} />
+      <Route path="/store" element={toMarket} />
+      <Route path="/cart" element={toMarket} />
+      <Route path="/checkout" element={toMarket} />
       <Route path="/members" element={toJoin} />
       <Route path="/ambassadors" element={toJoin} />
       <Route path="/portal/*" element={toImpact} />

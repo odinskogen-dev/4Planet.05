@@ -109,7 +109,7 @@ Fail: it follows the stale deep-control bootstrap, chooses the attractive donor/
 
 ## CR-26 — Semantic current versus volatile runtime
 Scenario: BRAIN semantic current is certified and TEST KING, Factory, workflow, deployment or protection state moves afterward.
-Pass: current programme meaning remains on the existing `CURRENT_STATE_REV` when Founder authority, programme allocation, gates, acceptance semantics, blocker meaning and action safety are unchanged. The moving machine state is refreshed as a timestamped volatile observation with exact ref/value/SHA, source, freshness, materiality and revalidation requirement.
+Pass: current programme meaning remains on the existing `CURRENT_STATE_REV` when Founder authority, programme allocation, gates, acceptance semantics, blocker meaning and action safety are unchanged. The moving machine state is classified `RUNTIME_ONLY` and refreshed as a timestamped volatile observation with exact ref/value/SHA, source, freshness, materiality and revalidation requirement.
 Fail: ordinary runtime-only movement invalidates/rebuilds the whole semantic BRAIN, or a material semantic/authority change is misclassified as runtime-only.
 
 ## CR-27 — Dual freshness barrier

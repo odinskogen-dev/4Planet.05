@@ -1,4 +1,4 @@
-name: SAFE LIVE MapLibre Security Remediation
+name: SAFE HEIR MapLibre Security Remediation
 
 on:
   push:
@@ -10,29 +10,22 @@ permissions:
   contents: write
 
 concurrency:
-  group: safe-live-maplibre-security-remediation-frozen
+  group: safe-heir-maplibre-security-remediation
   cancel-in-progress: false
 
 env:
-  TARGET_BRANCH: release/safe-live-premium-final-02d-60428c6
-  TARGET_BASE_SHA: 60428c6897a0216073a467e4bf4280877751d590
+  TARGET_BRANCH: king/test
 
 jobs:
   remediate:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout frozen release candidate
+      - name: Checkout exact HEIR trigger
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TARGET_BRANCH }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
-
-      - name: Assert frozen base
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$TARGET_BASE_SHA"
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -51,19 +44,18 @@ jobs:
           npm run test:smoke
           npm run assets:verify
 
-      - name: Commit frozen security remediation only
+      - name: Commit HEIR security remediation only
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin "$TARGET_BRANCH" --no-tags
-          test "$(git rev-parse origin/$TARGET_BRANCH)" = "$TARGET_BASE_SHA" || { echo 'Frozen release branch moved; refusing write'; exit 3; }
+          test "$(git rev-parse origin/$TARGET_BRANCH)" = "$GITHUB_SHA" || { echo 'HEIR moved after trigger; refusing stale write'; exit 3; }
           git config user.name '4PLANET Release Control'
           git config user.email 'actions@users.noreply.github.com'
-          git rm .github/workflows/safe-live-maplibre-security-remediation.yml
           git add package.json package-lock.json
           changed="$(git diff --cached --name-only)"
           printf '%s\n' "$changed"
-          test "$changed" = $'.github/workflows/safe-live-maplibre-security-remediation.yml\npackage-lock.json\npackage.json'
+          test "$changed" = $'package-lock.json\npackage.json'
           git diff --cached --check
           git commit -m 'fix(security): update MapLibre past critical sanitizer advisory'
           git push origin "HEAD:$TARGET_BRANCH"
