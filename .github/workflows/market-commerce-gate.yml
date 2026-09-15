@@ -7,8 +7,9 @@ on:
       - 'src/market/**'
       - 'src/components/market/**'
       - 'src/styles/market-first-products.css'
-      - 'functions/_lib/marketCommerce.ts'
+      - 'functions/_lib/**'
       - 'functions/api/market-*.ts'
+      - 'workers/4planetmarket-commerce.ts'
       - 'scripts/market-commerce-contract.test.mjs'
       - '.github/workflows/market-commerce-gate.yml'
   pull_request:
@@ -16,8 +17,9 @@ on:
       - 'src/market/**'
       - 'src/components/market/**'
       - 'src/styles/market-first-products.css'
-      - 'functions/_lib/marketCommerce.ts'
+      - 'functions/_lib/**'
       - 'functions/api/market-*.ts'
+      - 'workers/4planetmarket-commerce.ts'
       - 'scripts/market-commerce-contract.test.mjs'
 permissions:
   contents: read
@@ -39,6 +41,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Production build
         run: npm run build
+      - name: Compile isolated Market Worker
+        run: npx --yes wrangler@latest deploy workers/4planetmarket-commerce.ts --name 4planetmarket-prototype --compatibility-date 2026-09-15 --dry-run --outdir /tmp/4market-worker
       - name: Start preview
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/market-commerce-preview.log 2>&1 &
