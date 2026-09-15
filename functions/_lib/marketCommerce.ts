@@ -12,6 +12,7 @@ export interface MarketCommerceEnv {
   MARKET_LIVE_RELEASE_APPROVED?: string;
   MARKET_LIVE_CANARY_ENABLED?: string;
   MARKET_LIVE_CANARY_TOKEN?: string;
+  MARKET_CANARY_PRICE_NOK?: string;
   MARKET_PHOTO_SAMPLE_APPROVED?: string;
   MARKET_ART_SAMPLE_APPROVED?: string;
   STRIPE_TEST_SECRET_KEY?: string;
@@ -29,6 +30,13 @@ export interface MarketCommerceEnv {
 
 const bool = (value?: string) => value === "true";
 
+function canaryPrice(value?: string) {
+  if (!value) return null;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 3 || parsed > 10000) return null;
+  return parsed;
+}
+
 export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
   const mode: MarketCommerceMode = env.MARKET_COMMERCE_ENV === "LIVE" ? "LIVE" : "TEST";
   const isLive = mode === "LIVE";
@@ -41,6 +49,7 @@ export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
     : env.PRODIGI_SANDBOX_API_KEY ?? env.PRODIGI_TEST_API_KEY)?.trim();
   const callbackToken = env.MARKET_PRODIGI_CALLBACK_TOKEN?.trim();
   const canaryToken = env.MARKET_LIVE_CANARY_TOKEN?.trim();
+  const canaryPriceNok = canaryPrice(env.MARKET_CANARY_PRICE_NOK);
   const checkoutFlag = bool(isLive ? env.MARKET_STRIPE_LIVE_ENABLED : env.MARKET_STRIPE_TEST_ENABLED);
   const fulfilmentFlag = bool(isLive ? env.MARKET_FULFILMENT_LIVE_ENABLED : env.MARKET_FULFILMENT_TEST_ENABLED);
   const releaseApproved = !isLive || bool(env.MARKET_LIVE_RELEASE_APPROVED);
@@ -61,6 +70,7 @@ export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
     prodigiKey,
     callbackToken,
     canaryToken,
+    canaryPriceNok,
     prodigiBaseUrl: isLive ? "https://api.prodigi.com" : "https://api.sandbox.prodigi.com",
     checkoutFlag,
     fulfilmentFlag,
