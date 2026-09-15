@@ -7,6 +7,7 @@ on:
       - .github/workflows/fourbrand-runtime-audit.yml
       - src/App.tsx
       - src/pages/partners/FourBrand.tsx
+      - src/pages/partners/FourBrandsLive.tsx
       - src/styles/fourbrand.css
       - functions/api/brand-analysis.ts
   workflow_dispatch:
@@ -40,7 +41,7 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Attach 4brands.org to existing 4PLANET Pages deployment
+      - name: Confirm 4brands.org remains attached to existing 4PLANET Pages deployment
         shell: bash
         run: |
           set -euo pipefail
@@ -62,55 +63,16 @@ jobs:
           [ -n "$zid4b" ] || { echo '4brands.org zone is not active/visible to token'; exit 1; }
 
           for host in 4brands.org www.4brands.org; do
-            echo "=== attach ${host} ==="
             domains=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/domains" "${auth[@]}")
-            if jq -e --arg host "$host" 'any(.result[]?; .name == $host)' <<<"$domains" >/dev/null; then
-              echo "${host} already attached to Pages"
-            else
-              code=$(curl -sS -o /tmp/pages-domain.json -w '%{http_code}' -X POST \
-                "${api}/accounts/${account_id}/pages/projects/4planet-05/domains" \
-                "${auth[@]}" --data "$(jq -nc --arg name "$host" '{name:$name}')")
-              cat /tmp/pages-domain.json | jq '{success,errors,result:{name:(.result.name // null),status:(.result.status // null)}}' || true
-              if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-                echo "Pages domain attach returned HTTP ${code}"
-                exit 1
-              fi
-            fi
+            jq -e --arg host "$host" 'any(.result[]?; .name == $host)' <<<"$domains" >/dev/null \
+              || { echo "${host} is no longer attached to 4planet-05"; exit 1; }
 
             records=$(curl -fsS "${api}/zones/${zid4b}/dns_records?name=${host}&per_page=100" "${auth[@]}")
-            matching=$(jq -r --arg target "$target" '.result[]? | select(.type == "CNAME" and .content == $target) | .id' <<<"$records" | head -n1)
-            if [ -z "$matching" ]; then
-              replace_id=$(jq -r '.result[]? | select(.type == "A" or .type == "AAAA" or .type == "CNAME") | .id' <<<"$records" | head -n1)
-              payload=$(jq -nc --arg name "$host" --arg content "$target" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')
-              if [ -n "$replace_id" ]; then
-                echo "Replacing existing web DNS record for ${host}"
-                curl -fsS -X PUT "${api}/zones/${zid4b}/dns_records/${replace_id}" "${auth[@]}" --data "$payload" \
-                  | jq '{success,errors,result:{type:(.result.type // null),name:(.result.name // null),content:(.result.content // null),proxied:(.result.proxied // null)}}'
-              else
-                echo "Creating web DNS record for ${host}"
-                curl -fsS -X POST "${api}/zones/${zid4b}/dns_records" "${auth[@]}" --data "$payload" \
-                  | jq '{success,errors,result:{type:(.result.type // null),name:(.result.name // null),content:(.result.content // null),proxied:(.result.proxied // null)}}'
-              fi
-
-              records=$(curl -fsS "${api}/zones/${zid4b}/dns_records?name=${host}&per_page=100" "${auth[@]}")
-              jq -r '.result[]? | select(.type == "A" or .type == "AAAA" or .type == "CNAME") | .id' <<<"$records" \
-                | tail -n +2 \
-                | while read -r extra_id; do
-                    [ -n "$extra_id" ] || continue
-                    curl -fsS -X DELETE "${api}/zones/${zid4b}/dns_records/${extra_id}" "${auth[@]}" >/dev/null || true
-                  done
-            fi
+            jq -e --arg target "$target" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"$records" >/dev/null \
+              || { echo "${host} DNS no longer points to ${target}"; exit 1; }
           done
 
-          echo '=== 4brands.org DNS ==='
-          curl -fsS "${api}/zones/${zid4b}/dns_records?per_page=100" "${auth[@]}" \
-            | jq '{success, result: [.result[]? | select(.name == "4brands.org" or .name == "www.4brands.org") | {type,name,content,proxied}]}'
-
-          echo '=== 4brands.org Pages domains ==='
-          curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/domains" "${auth[@]}" \
-            | jq '{success, result: [.result[]? | select(.name == "4brands.org" or .name == "www.4brands.org") | {name,status,verification_data}]}'
-
-      - name: Read exact 4BRAND Cloudflare state
+      - name: Read exact 4BRANDS Cloudflare production state
         shell: bash
         run: |
           set -euo pipefail
@@ -118,44 +80,35 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
 
           zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
-          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
           account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
-          [ -n "$zid" ] && [ -n "$account_id" ] || { echo '4planet.org Cloudflare zone/account unavailable'; exit 1; }
+          [ -n "$account_id" ] || { echo '4planet.org Cloudflare account unavailable'; exit 1; }
 
-          echo '=== partners.4planet.org DNS ==='
-          curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}" \
-            | jq '{success, result: [.result[]? | {type,name,content,proxied}]}'
+          project=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")
+          production_branch=$(jq -r '.result.production_branch // empty' <<<"$project")
+          [ -n "$production_branch" ] || { echo 'production branch unavailable'; exit 1; }
+          echo "production_branch=${production_branch}"
 
-          echo '=== Pages projects containing partners.4planet.org ==='
-          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
-          jq '{result: [.result[]? | select(any(.domains[]?; . == "partners.4planet.org")) | {name,production_branch,domains}]}' <<<"$projects"
+          deps=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments" "${auth[@]}")
+          jq -e '.success == true' <<<"$deps" >/dev/null
+          echo '=== newest production deployments ==='
+          jq --arg branch "$production_branch" '{result: [.result[]? | select(.deployment_trigger.metadata.branch == $branch) | {id,url,environment,created_on,status:(.latest_stage.status // ""),commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}][0:8]}' <<<"$deps"
 
-          echo '=== 4planet-05 deployments sourced from king/test ==='
-          deps=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
-          jq '{result: [.result[]? | select(.deployment_trigger.metadata.branch == "king/test") | {id,url,environment,created_on,status:(.latest_stage.status // ""),commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}][0:8]}' <<<"$deps"
+          newest_commit=$(jq -r --arg branch "$production_branch" '[.result[]? | select(.deployment_trigger.metadata.branch == $branch and .environment == "production")][0].deployment_trigger.metadata.commit_hash // empty' <<<"$deps")
+          newest_status=$(jq -r --arg branch "$production_branch" '[.result[]? | select(.deployment_trigger.metadata.branch == $branch and .environment == "production")][0].latest_stage.status // empty' <<<"$deps")
+          echo "CLOUDFLARE_PRODUCTION_COMMIT=${newest_commit}"
+          echo "CLOUDFLARE_PRODUCTION_STATUS=${newest_status}"
+          [ -n "$newest_commit" ] || { echo 'No production deployment commit found'; exit 1; }
 
-          echo '=== existing partners runtime ==='
-          set +e
-          curl -sS -L --max-time 20 -D /tmp/headers.txt -o /tmp/body.html -w 'HTTP=%{http_code}\nFINAL=%{url_effective}\n' https://partners.4planet.org/4brand
-          rc=$?
-          set -e
-          echo "curl_exit=${rc}"
-          sed -n '1,30p' /tmp/headers.txt || true
-          if [ -f /tmp/body.html ]; then
-            echo "body_bytes=$(wc -c < /tmp/body.html | tr -d ' ')"
-            grep -Eo '4BRAND|Where better business|COMPANY INTELLIGENCE' /tmp/body.html | sort -u || true
-          fi
-
-      - name: Verify 4brands.org runtime
+      - name: Verify canonical 4planet.org/4brands runtime
         shell: bash
         run: |
           set -euo pipefail
           ok=0
           for attempt in $(seq 1 20); do
-            echo "4brands.org attempt ${attempt}/20"
-            code=$(curl -sS -L --max-time 20 -o /tmp/4brands.html -w '%{http_code}' https://4brands.org/ || true)
+            echo "4planet.org/4brands attempt ${attempt}/20"
+            code=$(curl -sS -L --max-time 20 -o /tmp/4planet-4brands.html -w '%{http_code}' https://4planet.org/4brands || true)
             bytes=0
-            [ -f /tmp/4brands.html ] && bytes=$(wc -c < /tmp/4brands.html | tr -d ' ')
+            [ -f /tmp/4planet-4brands.html ] && bytes=$(wc -c < /tmp/4planet-4brands.html | tr -d ' ')
             echo "HTTP=${code} bytes=${bytes}"
             if [ "$code" = "200" ] && [ "$bytes" -gt 500 ]; then
               ok=1
@@ -163,19 +116,47 @@ jobs:
             fi
             sleep 15
           done
-          [ "$ok" = "1" ] || { echo '4brands.org not HTTP 200 within provisioning window'; exit 1; }
-          grep -Eo '4BRAND|Where better business|COMPANY INTELLIGENCE' /tmp/4brands.html | sort -u || true
+          [ "$ok" = "1" ] || { echo 'canonical /4brands not HTTP 200 within provisioning window'; exit 1; }
 
-      - name: Verify TOMRA API proof on 4brands.org
+      - name: Verify 4brands.org runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -L --max-time 20 -o /tmp/4brands.html -w '%{http_code}' https://4brands.org/ || true)
+          bytes=0
+          [ -f /tmp/4brands.html ] && bytes=$(wc -c < /tmp/4brands.html | tr -d ' ')
+          echo "HTTP=${code} bytes=${bytes}"
+          [ "$code" = "200" ] && [ "$bytes" -gt 500 ] || exit 1
+
+      - name: Verify TOMRA API proof on canonical 4planet.org
         shell: bash
         run: |
           set -euo pipefail
           code=$(curl -sS --max-time 30 -o /tmp/tomra.json -w '%{http_code}' \
             -H 'content-type: application/json' \
             --data '{"company":"TOMRA"}' \
-            https://4brands.org/api/brand-analysis || true)
+            https://4planet.org/api/brand-analysis || true)
           echo "HTTP=${code}"
           if [ -f /tmp/tomra.json ]; then
             jq '{ok, engine:(.analysis.engine // null), company:(.analysis.company.name // null), status:(.analysis.analysisStatus // null), opportunities:(.analysis.opportunities | length? // 0), evidence:(.analysis.evidence | length? // 0), error, detail}' /tmp/tomra.json 2>/dev/null || head -c 500 /tmp/tomra.json
           fi
           [ "$code" = "200" ] || exit 1
+          jq -e '.analysis.company.name == "TOMRA" and (.analysis.opportunities | length) > 0 and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
+
+      - name: Probe arbitrary-company analysis honestly
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 60 -o /tmp/arbitrary.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"company":"IKEA"}' \
+            https://4planet.org/api/brand-analysis || true)
+          echo "ARBITRARY_COMPANY_HTTP=${code}"
+          if [ -f /tmp/arbitrary.json ]; then
+            jq '{ok, company:(.analysis.company.name // null), status:(.analysis.analysisStatus // null), sources:(.analysis.evidence | length? // 0), error, detail}' /tmp/arbitrary.json 2>/dev/null || head -c 800 /tmp/arbitrary.json
+          fi
+          if [ "$code" = "200" ]; then
+            echo 'ARBITRARY_COMPANY_STATE=LIVE_RESEARCH_AVAILABLE'
+          else
+            echo 'ARBITRARY_COMPANY_STATE=PARTIAL_OR_RUNTIME_KEY_UNAVAILABLE'
+          fi
