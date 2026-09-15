@@ -22,7 +22,6 @@ function isPartnersHost() {
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
 }
 
-// Canonical public host for the 4BRAND company intelligence surface.
 function isFourBrandsHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
@@ -32,7 +31,7 @@ function isFourBrandsHost() {
 function isFourBrandPath() {
   if (typeof window === "undefined") return false;
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  return path === "/4brand" || path.startsWith("/4brand/");
+  return path === "/4brand" || path.startsWith("/4brand/") || path === "/4brands" || path.startsWith("/4brands/");
 }
 
 function isCreatorHost() {
@@ -79,8 +78,8 @@ function StandardApp() {
 }
 
 export default function App() {
-  if (isFourBrandsHost()) return <FourBrand />;
-  if (isPartnersHost()) return isFourBrandPath() ? <FourBrand /> : <PartnersHub />;
+  if (isFourBrandsHost() || isFourBrandPath()) return <FourBrand />;
+  if (isPartnersHost()) return <PartnersHub />;
 
   return (
     <BrowserRouter>
