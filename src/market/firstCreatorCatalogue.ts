@@ -3,7 +3,7 @@ export type MarketCommerceCandidate = {
   printSize: string;
   podSku: string;
   podSizing: "fitPrintArea";
-  shippingMethod: "Standard";
+  shippingMethod: "standard";
   shippingCountry: "NO";
   sampleState: "REQUIRED";
 };
@@ -26,7 +26,7 @@ const photoCommerce = (): MarketCommerceCandidate => ({
   printSize: "8 × 12 IN",
   podSku: "GLOBAL-FAP-8X12",
   podSizing: "fitPrintArea",
-  shippingMethod: "Standard",
+  shippingMethod: "standard",
   shippingCountry: "NO",
   sampleState: "REQUIRED",
 });
@@ -36,7 +36,7 @@ const artCommerce = (): MarketCommerceCandidate => ({
   printSize: "6 × 8 IN",
   podSku: "GLOBAL-FAP-6X8",
   podSizing: "fitPrintArea",
-  shippingMethod: "Standard",
+  shippingMethod: "standard",
   shippingCountry: "NO",
   sampleState: "REQUIRED",
 });
