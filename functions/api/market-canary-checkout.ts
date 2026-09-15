@@ -47,7 +47,7 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
     sessionId: stripe.id,
     url: stripe.url,
     productId: product.id,
-    amountNok: product.commerce.candidatePriceNok,
+    amountNok: runtime.canaryPriceNok ?? product.commerce.candidatePriceNok,
     warning: "This checkout captures a real payment and, after payment, creates a real Prodigi fulfilment order.",
   });
 };
