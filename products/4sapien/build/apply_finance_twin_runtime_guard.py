@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
 site = Path(sys.argv[1])
 paths = [site/'app'/'money'/'index.html', site/'finance.html', site/'finance'/'index.html']
 
-runtime = r'''<!-- FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1 -->
+runtime = r'''<!-- FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1 -->
 <script id="four-sapien-finance-twin-runtime">
 (function(){
   'use strict';
@@ -54,8 +54,22 @@ runtime = r'''<!-- FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1 -->
     await readTwin(new Date().getFullYear());
     return out;
   }
+  async function restoreEvent(id){
+    const out=await saveEvent(id,{state:'active'});
+    return out;
+  }
   async function saveAccount(id,patch){
     const out=await rpc('four_sapien_finance_save_account',{p_account_id:id||null,p_patch:patch||{}});
+    await readTwin(new Date().getFullYear());
+    return out;
+  }
+  async function softDeleteAccount(id){
+    const out=await rpc('four_sapien_finance_soft_delete_account',{p_account_id:id});
+    await readTwin(new Date().getFullYear());
+    return out;
+  }
+  async function restoreAccount(id){
+    const out=await rpc('four_sapien_finance_restore_account',{p_account_id:id});
     await readTwin(new Date().getFullYear());
     return out;
   }
@@ -64,16 +78,14 @@ runtime = r'''<!-- FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1 -->
   }
   async function setFoodUntilPaydayPermission(state){
     return await rpc('four_sapien_set_permission',{
-      p_consumer_world:'food',p_provider_world:'finance',p_capability:'plan_food_until_payday',p_state:state==='allowed'?'allowed':'denied'
+      p_consumer_world:'food',p_provider_world:'finance',p_capability:'plan_food_until_payday',p_state:state==='allowed'?'allowed':state==='revoked'?'revoked':'denied'
     });
   }
   function truthGuard(twin){
     if(!twin || twin.state!=='AVAILABLE') return;
     const freedom=twin.freedom_months||{};
     const liquidity=twin.liquidity||{};
-    if(freedom.state==='MODELLED' && liquidity.state==='AVAILABLE') return;
-    // Historical Finance donor can render `99+ mnd` from an unknown/zero-like baseline.
-    // Fail closed visually until Claude replaces this with native Twin rendering.
+    if(freedom.state==='MODELLED' && liquidity.state==='AVAILABLE' && liquidity.amount!=null) return;
     const nodes=document.querySelectorAll('body *');
     nodes.forEach(function(el){
       if(el.children.length) return;
@@ -81,13 +93,13 @@ runtime = r'''<!-- FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1 -->
       if(/^99\+\s*mnd$/i.test(t)){
         el.textContent='Ukjent';
         el.setAttribute('data-truth','UNKNOWN');
-        el.setAttribute('title', freedom.state||'UNKNOWN');
+        el.setAttribute('title',freedom.state||liquidity.state||'UNKNOWN');
       }
     });
   }
   window.FourSapienFinanceRuntime={
-    version:'FINANCE_TWIN_RUNTIME_V1',readTwin,saveEvent,batchSave,softDeleteEvent,saveAccount,
-    foodUntilPaydayContext,setFoodUntilPaydayPermission,session
+    version:'FINANCE_TWIN_RUNTIME_V1_1',readTwin,saveEvent,batchSave,softDeleteEvent,restoreEvent,
+    saveAccount,softDeleteAccount,restoreAccount,foodUntilPaydayContext,setFoodUntilPaydayPermission,session
   };
   async function hydrate(){
     try{
@@ -110,7 +122,7 @@ for path in paths:
     if not path.exists():
         raise SystemExit(f'Finance Twin runtime target missing: {path}')
     s=path.read_text(encoding='utf-8')
-    if 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1' in s:
+    if 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' in s:
         raise SystemExit(f'Finance Twin runtime duplicated: {path}')
     if s.count('</body>') != 1:
         raise SystemExit(f'Finance Twin runtime body anchor mismatch: {path}')
@@ -121,6 +133,8 @@ for path in paths:
         'four_sapien_finance_batch_save_events',
         'four_sapien_finance_soft_delete_event',
         'four_sapien_finance_save_account',
+        'four_sapien_finance_soft_delete_account',
+        'four_sapien_finance_restore_account',
         'four_sapien_plan_food_until_payday_context',
         'FourSapienFinanceRuntime',
     ):
@@ -128,4 +142,4 @@ for path in paths:
             raise SystemExit(f'Finance Twin runtime marker missing {marker}: {path}')
     path.write_text(s,encoding='utf-8')
 
-print('4SAPIEN Finance Twin runtime guard injected: canonical RPCs + UNKNOWN fail-closed')
+print('4SAPIEN Finance Twin runtime v1.1 injected: canonical RPCs + reversible writes + UNKNOWN fail-closed')
