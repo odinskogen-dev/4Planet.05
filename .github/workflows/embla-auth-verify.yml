@@ -1,0 +1,33 @@
+name: 4SAPIEN Human Gold auth verify
+
+on:
+  push:
+    branches: [build/embla-core-20260914]
+    paths:
+      - '.github/workflows/embla-auth-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+env:
+  PROJECT_REF: ghvdzetmplqkdtfqiror
+  PREVIEW_URL: https://four-sapien-embla-megasprint.odin-skogen.workers.dev/
+
+jobs:
+  verify-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Supabase management token and redirect allowlist
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] || { echo 'SUPABASE_ACCESS_TOKEN_MISSING'; exit 31; }
+          endpoint="https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth"
+          code=$(curl -sS -o /tmp/auth.json -w '%{http_code}' -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" "$endpoint" || true)
+          [ "$code" = 200 ] || { echo "AUTH_CONFIG_GET_HTTP_${code}"; exit 32; }
+          jq -e --arg wanted "$PREVIEW_URL" '(.uri_allow_list // "")|split(",")|map(gsub("^ +| +$";""))|index($wanted)!=null' /tmp/auth.json >/dev/null || { echo 'PREVIEW_REDIRECT_NOT_ALLOWLISTED'; exit 33; }
+          echo 'HUMAN_GOLD_AUTH_VERIFY_PASS'
