@@ -1,0 +1,52 @@
+name: TEMP Stripe read-only diagnostic
+on:
+  push:
+    branches:
+      - ops/4planetmarket-domain-20260821
+    paths:
+      - '.github/workflows/stripe-readonly-diagnostic.yml'
+permissions:
+  contents: read
+jobs:
+  stripe-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      STRIPE_LIVE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+      STRIPE_RESTRICTED_KEY: ${{ secrets.STRIPE_RESTRICTED_KEY }}
+    steps:
+      - name: Resolve available Stripe key without exposing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY=''
+          SOURCE=''
+          for name in STRIPE_SECRET_KEY STRIPE_API_KEY STRIPE_LIVE_SECRET_KEY STRIPE_RESTRICTED_KEY; do
+            value="${!name:-}"
+            if [ -n "$value" ]; then KEY="$value"; SOURCE="$name"; break; fi
+          done
+          if [ -z "$KEY" ]; then
+            echo 'STRIPE_SECRET_PRESENT=false'
+            exit 2
+          fi
+          echo "::add-mask::$KEY"
+          case "$KEY" in
+            sk_live_*|rk_live_*) MODE='live' ;;
+            sk_test_*|rk_test_*) MODE='test' ;;
+            *) MODE='unknown' ;;
+          esac
+          echo "STRIPE_SECRET_PRESENT=true"
+          echo "STRIPE_SECRET_SOURCE=$SOURCE"
+          echo "STRIPE_KEY_MODE=$MODE"
+          echo "STRIPE_KEY=$KEY" >> "$GITHUB_ENV"
+      - name: Verify Stripe account read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$RUNNER_TEMP/stripe-account.json"
+          code=$(curl -sS -o "$response" -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_KEY:")
+          echo "STRIPE_ACCOUNT_HTTP=$code"
+          test "$code" = '200'
+          jq -r '"STRIPE_ACCOUNT_ID=" + (.id // "unknown"), "STRIPE_COUNTRY=" + (.country // "unknown"), "STRIPE_CURRENCY=" + (.default_currency // "unknown"), "STRIPE_CHARGES_ENABLED=" + ((.charges_enabled // false)|tostring), "STRIPE_PAYOUTS_ENABLED=" + ((.payouts_enabled // false)|tostring), "STRIPE_DETAILS_SUBMITTED=" + ((.details_submitted // false)|tostring)' "$response"
