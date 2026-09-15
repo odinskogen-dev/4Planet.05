@@ -68,7 +68,7 @@ jobs:
           set -euo pipefail
           nohup npm run preview -- --host 127.0.0.1 --port 4173 > gold-preview-local.log 2>&1 &
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4173/labs/gold >/dev/null; then exit 0; fi
+            if curl --fail --silent http://127.0.0.1:4173/sandbox/gold >/dev/null; then exit 0; fi
             sleep 1
           done
           cat gold-preview-local.log
@@ -115,27 +115,22 @@ jobs:
             --commit-hash="$EXACT_SHA" \
             --commit-message="Gold Template System 01 controlled TEST preview" | tee gold-cloudflare-deploy.log
 
-      - name: Resolve immutable TEST preview URL by exact SHA
+      - name: Resolve immutable TEST preview URL from deploy receipt
         id: preview
         shell: bash
         run: |
           set -euo pipefail
-          API="https://api.cloudflare.com/client/v4"
-          AUTH=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          FOUND=""
-          for attempt in $(seq 1 30); do
-            DEPLOYMENTS=$(curl -fsS "${API}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${AUTH[@]}")
-            FOUND=$(jq -r --arg sha "$EXACT_SHA" '[.result[]? | select(.deployment_trigger.metadata.commit_hash == $sha and .environment == "preview")][0].url // empty' <<<"$DEPLOYMENTS")
-            [ -n "$FOUND" ] && break
-            sleep 3
-          done
-          [ -n "$FOUND" ] || { echo "Exact-head preview deployment not found."; exit 1; }
+          FOUND=$(grep -Eo 'https://[a-zA-Z0-9-]+\.4planet-05\.pages\.dev' gold-cloudflare-deploy.log | head -n1 || true)
+          [ -n "$FOUND" ] || { echo "Immutable preview URL missing from Wrangler deployment receipt."; cat gold-cloudflare-deploy.log; exit 1; }
+          case "$FOUND" in
+            https://4planet.org*|https://4planetmagazine.com*) echo "Refusing LIVE target"; exit 2 ;;
+          esac
           echo "url=$FOUND" >> "$GITHUB_OUTPUT"
           printf '{"exact_sha":"%s","preview_url":"%s","authority":"CONTROLLED_TEST_ONLY"}\n' "$EXACT_SHA" "$FOUND" > gold-preview.json
           echo "GOLD_PREVIEW_URL=$FOUND" >> "$GITHUB_ENV"
           echo "Exact TEST preview: $FOUND"
 
-      - name: Prove seven deployed browser surfaces
+      - name: Prove eleven deployed browser surfaces
         env:
           BASE_URL: ${{ steps.preview.outputs.url }}
         run: npx playwright test tests/e2e/gold-template-system.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
