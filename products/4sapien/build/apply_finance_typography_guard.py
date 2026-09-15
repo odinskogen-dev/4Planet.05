@@ -72,3 +72,11 @@ for path in paths:
     path.write_text(s, encoding='utf-8')
 
 print('4SAPIEN Finance final typography + mobile nav clearance + clear theme icon applied')
+
+# Runtime seam comes last so it sees the final DOM and can fail closed on truth-state issues
+# without redesigning Claude/Finance UI.
+finance_twin = Path(__file__).resolve().with_name('apply_finance_twin_runtime_guard.py')
+if not finance_twin.exists():
+    raise SystemExit('Finance Twin runtime guard missing')
+subprocess.run([sys.executable, str(finance_twin), str(site)], check=True)
+print('4SAPIEN canonical Finance chain: Finance Twin runtime applied')
