@@ -137,3 +137,11 @@ jobs:
           sample_code=$(curl -sS -o /tmp/sample.html -w '%{http_code}' "https://4planetmarket.com/sample/a14?token=invalid" || true)
           test "$sample_code" = 404
           echo 'PASS — authenticated founder sample route active; public checkout remains fail-closed.'
+      - name: Prove real A14 LIVE checkout session
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=$(jq -n --arg token "$MARKET_LIVE_CANARY_TOKEN" '{productId:"market:amalie:a14",token:$token,attemptId:"founderA14PhysicalSample01"}')
+          response=$(curl -fsS -X POST https://4planetmarket.com/api/market-canary-checkout -H 'content-type: application/json' --data "$request")
+          jq -e '.ok==true and .environment=="LIVE" and .canary==true and .productId=="market:amalie:a14" and .amountNok==3 and (.sessionId|startswith("cs_live_")) and (.url|startswith("https://checkout.stripe.com/"))' <<<"$response" >/dev/null
+          echo 'PASS — real Stripe LIVE A14 checkout session created at NOK 3; no payment captured.'
