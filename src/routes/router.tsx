@@ -47,14 +47,28 @@ const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", backgrou
 const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 
+function canonicalHost() {
+  if (typeof window === "undefined") return "";
+  return window.location.hostname.toLowerCase().replace(/^www\./, "");
+}
+
 function isAtlasHost() {
-  if (typeof window === "undefined") return false;
-  return window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
+  return canonicalHost() === "4planetatlas.com";
+}
+
+function isSpeciesHost() {
+  return canonicalHost() === "4species.com";
 }
 
 function RootHome() {
   if (isAtlasHost()) return <Suspense fallback={WorldFallback}><PublicWorld /></Suspense>;
+  if (isSpeciesHost()) return <SpeciesIndex />;
   return <Home />;
+}
+
+function SpeciesCleanProfile() {
+  if (!isSpeciesHost()) return <NotFound />;
+  return <SpeciesRoute curatedElement={<SpeciesProfilePage />} />;
 }
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
@@ -156,6 +170,7 @@ export function AppRoutes() {
       <Route path="/s4piens" element={<Navigate to="/domains/s4piens" replace />} />
       <Route path="/4culture" element={<Navigate to="/domains/4culture" replace />} />
       <Route path="/system" element={toHome} />
+      <Route path="/:slug" element={<SpeciesCleanProfile />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
