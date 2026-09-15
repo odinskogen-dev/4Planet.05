@@ -37,7 +37,6 @@ def vals(text):
 donor_fonts = vals(donor)
 experience_fonts = vals(experience)
 
-# Inherited or variable-driven typography is always donor-controlled.
 def normalized(value):
     return value.strip().lower().replace('"', "'")
 
@@ -54,5 +53,12 @@ for value in sorted(experience_fonts):
 print('CLAUDE_FINANCE_FONT_FAMILIES=' + ' | '.join(sorted(donor_fonts)))
 print('AXE_EXPERIENCE_FONT_FAMILIES=' + (' | '.join(sorted(experience_fonts)) if experience_fonts else 'NONE_EXPLICIT'))
 if foreign:
+    for value in foreign:
+        for match in font_re.finditer(experience):
+            if re.sub(r'\s+', ' ', match.group(1).strip()) != value:
+                continue
+            start=max(0,match.start()-160); end=min(len(experience),match.end()+160)
+            context=re.sub(r'\s+',' ',experience[start:end])
+            print('FOREIGN_FONT_CONTEXT=' + context)
     raise SystemExit('Finance experience introduces non-Claude font-family values: ' + ' | '.join(foreign))
 print('FINANCE_TYPOGRAPHY_PROVENANCE=PASS')
