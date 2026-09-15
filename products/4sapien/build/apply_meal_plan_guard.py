@@ -21,15 +21,11 @@ def regex_once(pattern, replacement, label):
         raise SystemExit(f"4SAPIEN meal-plan regex mismatch: {label}")
     s = s2
 
-
-# Stable Monday key for the current local week.
 old_helper = '''async function receiptSignedUrl(path){if(!path)return null;const {data,error}=await SB.storage.from(FOUR_SAPIEN_RECEIPTS).createSignedUrl(path,3600);return error?null:data?.signedUrl||null;}'''
 new_helper = old_helper + '''
 function weekStartISO(){const d=new Date();const mondayOffset=(d.getDay()+6)%7;d.setHours(12,0,0,0);d.setDate(d.getDate()-mondayOffset);return d.toISOString().slice(0,10);}'''
 replace_once(old_helper, new_helper, "week key helper")
 
-
-# Meals becomes controlled by the App-level database-backed weekly plan.
 new_meals = '''function Meals({addMany,budget,setBudget,selectedMeals,setSelectedMeals}){const[show,setShow]=useState(null);const sel=useMemo(()=>new Set(selectedMeals||[]),[selectedMeals]);
  const toggle=(i)=>{const key=MEALS[i].n;const n=new Set(sel);n.has(key)?n.delete(key):n.add(key);setSelectedMeals([...n]);};
  const planIng=useMemo(()=>{const seen=new Set(),out=[];[...sel].forEach((key)=>{const meal=MEALS.find((m)=>m.n===key);if(!meal)return;meal.ing.forEach((g)=>{const k=g.toLowerCase();if(!seen.has(k)){seen.add(k);out.push(g);}});});return out;},[selectedMeals]);
@@ -56,26 +52,10 @@ new_meals = '''function Meals({addMany,budget,setBudget,selectedMeals,setSelecte
  </div>);}'''
 regex_once(r'function Meals\(\{addMany,budget,setBudget\}\).*?(?=\nfunction Economy\()', new_meals + "\n", "controlled weekly meals")
 
+replace_once('const[profile,setProfile]=useState(emptyProfile());const[tab,setTab]=useState("hjem");const[list,setList]=useState([]);const[shops,setShops]=useState([]);','const[profile,setProfile]=useState(emptyProfile());const[tab,setTab]=useState("hjem");const[list,setList]=useState([]);const[shops,setShops]=useState([]);const[mealPlan,setMealPlan]=useState([]);',"meal plan state")
+replace_once('const store=profile.store;const avoid=profile.avoid;','const store=profile.store;const avoid=profile.avoid;const currentWeek=weekStartISO();',"current week binding")
+replace_once('setProfile(emptyProfile());setList([]);setShops([]);','setProfile(emptyProfile());setList([]);setShops([]);setMealPlan([]);',"logout meal reset")
 
-# App-level persistent plan state.
-replace_once(
-    'const[profile,setProfile]=useState(emptyProfile());const[tab,setTab]=useState("hjem");const[list,setList]=useState([]);const[shops,setShops]=useState([]);',
-    'const[profile,setProfile]=useState(emptyProfile());const[tab,setTab]=useState("hjem");const[list,setList]=useState([]);const[shops,setShops]=useState([]);const[mealPlan,setMealPlan]=useState([]);',
-    "meal plan state",
-)
-replace_once(
-    'const store=profile.store;const avoid=profile.avoid;',
-    'const store=profile.store;const avoid=profile.avoid;const currentWeek=weekStartISO();',
-    "current week binding",
-)
-replace_once(
-    'setProfile(emptyProfile());setList([]);setShops([]);',
-    'setProfile(emptyProfile());setList([]);setShops([]);setMealPlan([]);',
-    "logout meal reset",
-)
-
-
-# Meal-plan read is secondary: it may report partial sync, but can never demote profile identity.
 old_queries = '''const[p,l,sh]=await Promise.all([SB.from("four_sapien_profiles").select("*").eq("user_id",user.id).maybeSingle(),SB.from("four_sapien_list_items").select("*").eq("user_id",user.id).order("created_at"),SB.from("four_sapien_shops").select("*").eq("user_id",user.id).order("purchased_on",{ascending:false})]);'''
 new_queries = '''const[p,l,sh,mp]=await Promise.all([SB.from("four_sapien_profiles").select("*").eq("user_id",user.id).maybeSingle(),SB.from("four_sapien_list_items").select("*").eq("user_id",user.id).order("created_at"),SB.from("four_sapien_shops").select("*").eq("user_id",user.id).order("purchased_on",{ascending:false}),SB.from("four_sapien_meal_plans").select("meal_names").eq("user_id",user.id).eq("week_start",currentWeek).maybeSingle()]);'''
 replace_once(old_queries, new_queries, "meal plan hydration query")
@@ -84,31 +64,20 @@ old_tail = '''if(sh.error){partial=true;cloudLog("SHOPS_HYDRATE_FAILED");setShop
 new_tail = '''if(sh.error){partial=true;cloudLog("SHOPS_HYDRATE_FAILED");setShops([]);}else{const mapped=[];for(const r of(sh.data||[])){let photo=null;try{photo=await receiptSignedUrl(r.receipt_path);}catch(e){partial=true;cloudLog("RECEIPT_URL_FAILED");}mapped.push({id:r.id,store:r.store,amount:r.amount,date:r.purchased_on,photo});}setShops(mapped);}if(mp.error){partial=true;cloudLog("MEAL_PLAN_HYDRATE_FAILED");setMealPlan([]);}else{setMealPlan(Array.isArray(mp.data?.meal_names)?mp.data.meal_names:[]);}setSaveState(partial?"DELVIS SYNK":"LAGRET");'''
 replace_once(old_tail, new_tail, "meal plan hydration result")
 
-
-# Save plan immediately under the same auth user and weekly key.
 old_setters = '''const setStore=(v)=>persistProfile({...profile,store:v});const setBudget=(b)=>persistProfile({...profile,budget:b});'''
 new_setters = '''const setStore=(v)=>persistProfile({...profile,store:v});const setBudget=(b)=>persistProfile({...profile,budget:b});
  const persistMealPlan=useCallback(async(next)=>{setMealPlan(next);if(!user)return;setSaveState("LAGRER");const{error}=await SB.from("four_sapien_meal_plans").upsert({user_id:user.id,week_start:currentWeek,meal_names:next,updated_at:new Date().toISOString()},{onConflict:"user_id,week_start"});setSaveState(error?"SYNC-FEIL":"LAGRET");if(error)cloudLog("MEAL_PLAN_SAVE_FAILED");},[user?.id,currentWeek]);'''
 replace_once(old_setters, new_setters, "meal plan save")
+replace_once('<Meals addMany={addMany} budget={profile.budget} setBudget={setBudget}/>','<Meals addMany={addMany} budget={profile.budget} setBudget={setBudget} selectedMeals={mealPlan} setSelectedMeals={persistMealPlan}/>',"meal plan component binding")
 
-
-replace_once(
-    '<Meals addMany={addMany} budget={profile.budget} setBudget={setBudget}/>',
-    '<Meals addMany={addMany} budget={profile.budget} setBudget={setBudget} selectedMeals={mealPlan} setSelectedMeals={persistMealPlan}/>',
-    "meal plan component binding",
-)
-
-for marker in [
-    'four_sapien_meal_plans',
-    'MEAL_PLAN_HYDRATE_FAILED',
-    'MEAL_PLAN_SAVE_FAILED',
-    'Valgene lagres til 4SAPIEN-profilen din for denne uken.',
-    'selectedMeals={mealPlan}',
-]:
+for marker in ['four_sapien_meal_plans','MEAL_PLAN_HYDRATE_FAILED','MEAL_PLAN_SAVE_FAILED','Valgene lagres til 4SAPIEN-profilen din for denne uken.','selectedMeals={mealPlan}']:
     if marker not in s:
         raise SystemExit(f"4SAPIEN meal-plan invariant missing: {marker}")
 
 p.write_text(s)
 auth_callback_guard = Path(__file__).resolve().with_name('apply_auth_callback_guard.py')
 subprocess.run([sys.executable, str(auth_callback_guard), str(p)], check=True)
-print("4SAPIEN weekly meal-plan persistence guard applied + auth callback guard")
+food_money_guard = Path(__file__).resolve().with_name('apply_food_money_guard.py')
+if food_money_guard.exists():
+    subprocess.run([sys.executable, str(food_money_guard), str(p)], check=True)
+print("4SAPIEN weekly meal-plan persistence guard applied + auth callback + FOOD × MONEY guard")
