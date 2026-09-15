@@ -26,6 +26,20 @@ try:
     experience = lzma.decompress(base64.b64decode(experience_b64)).decode('utf-8')
 except Exception as exc:
     raise SystemExit(f'Finance experience decode failed: {exc}') from exc
+# AXE_FINANCE_UX_V3 — bounded refinement of the injected experience layer only.
+# Preserve the complete Claude Finance donor and Supabase data model unchanged.
+experience = experience.replace('<!-- AXE_FINANCE_EXPERIENCE_V2 -->', '<!-- AXE_FINANCE_EXPERIENCE_V2 --><!-- AXE_FINANCE_UX_V3 -->', 1)
+experience = experience.replace('.af{max-width:720px;', '.af{max-width:1080px;', 1)
+experience = experience.replace('Klikk direkte på feltene. Endringer lagres når du forlater feltet.', 'Klikk direkte på feltene. Enter lagrer · Esc avbryter. Dato, kategori og gjentakelse ligger på samme rad.', 1)
+old_bind = """function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;$('.an',r).onchange=e=>up(AT,id,{name:e.target.value.trim()||'Konto'});$('.ab',r).onchange=e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()})});$$('[data-e]').forEach(r=>{let id=r.dataset.e;$('.en',r).onchange=e=>up(ET,id,{name:e.target.value.trim()});$('.ea',r).onchange=e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))});$('.ed',r).onchange=e=>up(ET,id,{occurred_on:e.target.value});$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
+new_bind = """function editKey(el,save){if(!el)return;let original=el.value,cancel=false;el.onfocus=()=>{original=el.value;cancel=false};el.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();cancel=true;el.value=original;el.blur()}else if(e.key==='Enter'){e.preventDefault();el.blur()}};el.onchange=e=>{if(cancel){cancel=false;return}save(e)}}function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;editKey($('.an',r),e=>up(AT,id,{name:e.target.value.trim()||'Konto'}));editKey($('.ab',r),e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()}))});$$('[data-e]').forEach(r=>{let id=r.dataset.e;editKey($('.en',r),e=>up(ET,id,{name:e.target.value.trim()}));editKey($('.ea',r),e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))}));editKey($('.ed',r),e=>up(ET,id,{occurred_on:e.target.value}));$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
+if old_bind not in experience:
+    raise SystemExit('inline-edit bind seam missing')
+experience = experience.replace(old_bind, new_bind, 1)
+for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):
+    if marker not in experience:
+        raise SystemExit(f'UX V3 marker missing after patch: {marker}')
+
 for marker in ('AXE_FINANCE_EXPERIENCE_V2','Din økonomiske tvilling','Hurtigføring','Scan med Embla'):
     if marker not in experience:
         raise SystemExit(f'Finance experience QA marker missing: {marker}')
