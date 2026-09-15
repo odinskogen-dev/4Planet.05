@@ -33,7 +33,7 @@ jobs:
           code=$(curl -sS -o /tmp/stripe.json -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_LIVE_SECRET_KEY:")
           test "$code" = 200
           jq -e '.charges_enabled == true' /tmp/stripe.json >/dev/null
-          jq -r '"Stripe account " + .id + " · country=" + (.country // "unknown") + " · charges=" + (.charges_enabled|tostring) + " · payouts=" + (.payouts_enabled|tostring)' /tmp/stripe.json
+          jq -r '"Stripe LIVE verified · country=" + (.country // "unknown") + " · charges=" + (.charges_enabled|tostring) + " · payouts=" + (.payouts_enabled|tostring)' /tmp/stripe.json
       - name: Verify exact Prodigi launch SKU candidates + Norway support
         shell: bash
         run: |
@@ -47,16 +47,17 @@ jobs:
             jq -r '"  " + .product.sku + " · " + .product.description' "/tmp/$sku.json"
             jq -r '[.product.variants[]? | select(.shipsTo | index("NO")) | .printAreaSizes.default] | first | "  recommended px: " + ((.horizontalResolution // 0)|tostring) + "x" + ((.verticalResolution // 0)|tostring)' "/tmp/$sku.json"
           done
-      - name: Quote Standard shipping to Norway in NOK
+      - name: Quote standard shipping to Norway in NOK
         shell: bash
         run: |
           set -euo pipefail
           quote(){
             local sku="$1"
-            payload=$(jq -n --arg sku "$sku" '{shippingMethod:"Standard",destinationCountryCode:"NO",currencyCode:"NOK",items:[{sku:$sku,copies:1,attributes:{},assets:[{printArea:"default"}]}]}')
+            payload=$(jq -n --arg sku "$sku" '{shippingMethod:"standard",destinationCountryCode:"NO",currencyCode:"NOK",items:[{sku:$sku,copies:1,attributes:{},assets:[{printArea:"default"}]}]}')
             code=$(curl -sS -o "/tmp/quote-$sku.json" -w '%{http_code}' -X POST https://api.prodigi.com/v4.0/quotes -H "X-API-Key: $PRODIGI_LIVE_API_KEY" -H 'Content-Type: application/json' --data "$payload")
-            test "$code" = 200
-            jq -e '(.outcome|ascii_downcase) == "created" or (.outcome|ascii_downcase) == "createdwithissues"' "/tmp/quote-$sku.json" >/dev/null
+            echo "$sku quote -> HTTP $code"
+            if [ "$code" != 200 ]; then cat "/tmp/quote-$sku.json"; exit 1; fi
+            jq -e '(.outcome|ascii_downcase) == "created" or (.outcome|ascii_downcase) == "createdwithissues" or (.outcome|ascii_downcase) == "ok"' "/tmp/quote-$sku.json" >/dev/null
             jq -r --arg sku "$sku" '(.quotes[] | select((.shipmentMethod|ascii_downcase)=="standard") | .costSummary) as $c | $sku + " · item " + $c.items.amount + " " + $c.items.currency + " · shipping " + $c.shipping.amount + " " + $c.shipping.currency' "/tmp/quote-$sku.json"
           }
           quote GLOBAL-FAP-8X12
