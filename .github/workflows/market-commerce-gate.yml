@@ -1,0 +1,72 @@
+name: 4MARKET Commerce Gate
+on:
+  push:
+    branches:
+      - axe/market-commerce-pod-multisprint-20260915
+    paths:
+      - 'src/market/**'
+      - 'src/components/market/**'
+      - 'src/styles/market-first-products.css'
+      - 'functions/_lib/marketCommerce.ts'
+      - 'functions/api/market-*.ts'
+      - 'scripts/market-commerce-contract.test.mjs'
+      - '.github/workflows/market-commerce-gate.yml'
+  pull_request:
+    paths:
+      - 'src/market/**'
+      - 'src/components/market/**'
+      - 'src/styles/market-first-products.css'
+      - 'functions/_lib/marketCommerce.ts'
+      - 'functions/api/market-*.ts'
+      - 'scripts/market-commerce-contract.test.mjs'
+permissions:
+  contents: read
+jobs:
+  commerce-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Commerce safety contract
+        run: node scripts/market-commerce-contract.test.mjs
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Start preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/market-commerce-preview.log 2>&1 &
+          echo $! > /tmp/market-commerce-preview.pid
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/market-commerce-preview.log
+          exit 1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser release-gate acceptance
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({ headless: true });
+          for (const viewport of [{width:1440,height:1000},{width:390,height:844}]) {
+            const page = await browser.newPage({ viewport });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.waitForSelector('.mkt-first-product');
+            if (await page.locator('.mkt-first-product').count() !== 11) throw new Error('Expected 11 Market products');
+            const text = (await page.locator('.mkt-first-products').innerText()).toLowerCase();
+            for (const token of ['release gated', 'launch price candidate', 'odin oddekalv', 'amalie marie myrtvedt', '1,290', '890']) {
+              if (!text.includes(token)) throw new Error(`Missing commerce token: ${token}`);
+            }
+            if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Buy buttons must remain closed without runtime release authority');
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+            if (overflow > 2) throw new Error(`Horizontal overflow ${overflow}px at ${viewport.width}`);
+            await page.close();
+          }
+          await browser.close();
+          console.log('PASS — gated commerce UI is responsive and cannot buy without runtime release authority.');
+          NODE
