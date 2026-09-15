@@ -35,11 +35,11 @@ jobs:
             "4482f621.4planet-05.pages.dev"
           )
           : > /tmp/deployments.jsonl
-          for page in 1 2 3 4 5 6 7 8; do
-            j="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=${page}&per_page=100" "${auth[@]}")"
+          for page in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            j="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=${page}&per_page=25" "${auth[@]}")"
             jq -c '.result[]?' <<<"$j" >> /tmp/deployments.jsonl
             count="$(jq '.result | length' <<<"$j")"
-            [[ "$count" -lt 100 ]] && break
+            [[ "$count" -lt 25 ]] && break
           done
 
           {
@@ -68,7 +68,7 @@ jobs:
             echo
             echo "## 4BRAND / partners.4planet.org"
             echo
-            dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}")"
+            dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=50" "${auth[@]}")"
             dns_text="$(jq -r '[.result[]? | (.type + " " + (.content // "") + " proxied=" + ((.proxied // false)|tostring))] | join("; ")' <<<"$dns")"
             [[ -n "$dns_text" ]] || dns_text="NO DNS RECORD"
             echo "- DNS: ${dns_text}"
