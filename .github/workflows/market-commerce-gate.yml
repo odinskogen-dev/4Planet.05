@@ -11,6 +11,7 @@ on:
       - 'functions/api/market-*.ts'
       - 'workers/4planetmarket-commerce.ts'
       - 'scripts/market-commerce-contract.test.mjs'
+      - 'scripts/market-commerce-integration.test.ts'
       - '.github/workflows/market-commerce-gate.yml'
   pull_request:
     paths:
@@ -21,6 +22,7 @@ on:
       - 'functions/api/market-*.ts'
       - 'workers/4planetmarket-commerce.ts'
       - 'scripts/market-commerce-contract.test.mjs'
+      - 'scripts/market-commerce-integration.test.ts'
 permissions:
   contents: read
 jobs:
@@ -37,6 +39,8 @@ jobs:
         run: npm ci
       - name: Commerce safety contract
         run: node scripts/market-commerce-contract.test.mjs
+      - name: Simulated full-loop Judge
+        run: npx --yes tsx@latest scripts/market-commerce-integration.test.ts
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Production build
@@ -67,6 +71,8 @@ jobs:
               if (!text.includes(token)) throw new Error(`Missing commerce token: ${token}`);
             }
             if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Buy buttons must remain closed without runtime release authority');
+            const broken = await page.locator('.mkt-first-product img').evaluateAll(imgs => imgs.filter(i => !(i instanceof HTMLImageElement) || i.naturalWidth === 0).length);
+            if (broken) throw new Error(`Broken product images: ${broken}`);
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
             if (overflow > 2) throw new Error(`Horizontal overflow ${overflow}px at ${viewport.width}`);
             await page.close();
