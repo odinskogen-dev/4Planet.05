@@ -1,0 +1,34 @@
+name: TEMP Market runtime binding audit
+on:
+  push:
+    branches:
+      - ops/4planetmarket-domain-20260821
+    paths:
+      - '.github/workflows/market-runtime-bindings-temp.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Read Cloudflare binding names only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl -fsS "$api/zones?name=4planetmarket.com&status=active" "${auth[@]}")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          project=$(curl -fsS "$api/accounts/$account/pages/projects/4planet-05" "${auth[@]}")
+          echo 'PAGES_PRODUCTION_BINDINGS'
+          jq -r '.result.deployment_configs.production.env_vars // {} | to_entries[] | "\(.key) type=\(.value.type) value=" + (if .value.type == "plain_text" then (.value.value // "") else "[secret]" end)' <<<"$project" | sort
+          echo 'PAGES_PREVIEW_BINDINGS'
+          jq -r '.result.deployment_configs.preview.env_vars // {} | to_entries[] | "\(.key) type=\(.value.type) value=" + (if .value.type == "plain_text" then (.value.value // "") else "[secret]" end)' <<<"$project" | sort
+          settings=$(curl -fsS "$api/accounts/$account/workers/scripts/4planetmarket-prototype/settings" "${auth[@]}" || true)
+          echo 'MARKET_WORKER_BINDINGS'
+          if jq -e '.result.bindings' >/dev/null 2>&1 <<<"$settings"; then jq -r '.result.bindings[]? | "\(.name) type=\(.type)"' <<<"$settings" | sort; else echo 'none/read-unavailable'; fi
