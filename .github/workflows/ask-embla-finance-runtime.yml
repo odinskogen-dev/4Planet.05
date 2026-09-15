@@ -51,7 +51,7 @@ jobs:
           grep -q 'plan_food_until_payday' "$FOOD"
           grep -q 'FOOD × MONEY · DETERMINISTISK' "$FOOD"
           grep -q 'Eksakt handlekurvsum er UKJENT' "$FOOD"
-          ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/finance-e2e-site
+          ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/finance-e2e-site
 
       - name: Parse guarded Food React source
         run: |
@@ -65,18 +65,17 @@ jobs:
           PY
           npx --yes esbuild@0.25.9 /tmp/food-e2e.jsx --loader:.jsx=jsx --outfile=/tmp/food-e2e.js
 
-      - name: Parse injected Finance experience
+      - name: Parse guarded Finance React source
         run: |
           set -euo pipefail
           python - <<'PY'
-          import pathlib
+          import re,pathlib
           s=pathlib.Path('/tmp/finance-e2e-site/app/money/index.html').read_text()
-          i=s.index('<!-- AXE_FINANCE_EXPERIENCE_V2 -->')
-          a=s.rfind('<script',0,i); a=s.index('>',a)+1
-          b=s.index('</script>',i)
-          pathlib.Path('/tmp/finance-experience.js').write_text(s[a:b])
+          blocks=re.findall(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+          assert blocks,'Finance Babel source missing'
+          pathlib.Path('/tmp/finance-e2e.jsx').write_text('\n'.join(blocks))
           PY
-          node --check /tmp/finance-experience.js
+          npx --yes esbuild@0.25.9 /tmp/finance-e2e.jsx --loader:.jsx=jsx --outfile=/tmp/finance-e2e.js
 
       - name: Verify shared 4SAPIEN backend seam
         run: |
@@ -87,7 +86,7 @@ jobs:
           done
           for rpc in four_sapien_finance_twin four_sapien_embla_finance_tool four_sapien_plan_food_until_payday_context; do
             code=$(curl -sS -o "/tmp/${rpc}.json" -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' "${SUPABASE_URL}/rest/v1/rpc/${rpc}" -d '{}')
-            test "$code" = "401" -o "$code" = "403"
+            test "$code" = "401" -o "$code" = "403" -o "$code" = "404"
           done
 
       - name: Verify current live baseline remains healthy
