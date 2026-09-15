@@ -134,6 +134,23 @@ jobs:
           jq -e --arg wanted "$HUMAN_GOLD_PREVIEW_URL" '(.uri_allow_list // "")|split(",")|map(gsub("^ +| +$";""))|index($wanted)!=null' /tmp/auth.json >/dev/null || { echo 'PREVIEW_REDIRECT_NOT_ALLOWLISTED'; exit 33; }
           echo 'HUMAN_GOLD_AUTH_VERIFY_PASS'
 
+      - name: Ensure Embla model runtime secret
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          npx --yes supabase@latest secrets list --project-ref ghvdzetmplqkdtfqiror > /tmp/secrets.txt
+          if grep -Eq '(^|[[:space:]])OPENAI_API_KEY([[:space:]]|$)' /tmp/secrets.txt; then
+            echo 'SUPABASE_OPENAI_SECRET_PRESENT'
+            exit 0
+          fi
+          [ -n "${OPENAI_API_KEY:-}" ] || { echo 'OPENAI_KEY_MISSING_BOTH_GITHUB_AND_SUPABASE'; exit 42; }
+          npx --yes supabase@latest secrets set --project-ref ghvdzetmplqkdtfqiror OPENAI_API_KEY="$OPENAI_API_KEY" >/dev/null
+          npx --yes supabase@latest secrets list --project-ref ghvdzetmplqkdtfqiror > /tmp/secrets-after.txt
+          grep -Eq '(^|[[:space:]])OPENAI_API_KEY([[:space:]]|$)' /tmp/secrets-after.txt || { echo 'OPENAI_SECRET_SET_VERIFY_FAILED'; exit 43; }
+          echo 'SUPABASE_OPENAI_SECRET_REPAIRED'
+
       - name: Resolve Cloudflare credentials
         id: cf
         env:
