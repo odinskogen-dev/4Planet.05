@@ -48,7 +48,7 @@ const session = {
     asset_path: "/market/odin/reinebringen-vista.jpg",
     shipping_method: "Standard",
     fulfilment_state: "AWAITING_PAYMENT",
-  },
+  } as Record<string, string>,
   customer_details: {
     email: "test@example.com",
     name: "Test Customer",
@@ -83,6 +83,13 @@ const prodigiOrder = {
   }],
 };
 
+function applyStripeMetadata(form: URLSearchParams) {
+  for (const [key, value] of form.entries()) {
+    const match = key.match(/^metadata\[(.+)\]$/);
+    if (match?.[1]) session.metadata[match[1]] = value;
+  }
+}
+
 const originalFetch = globalThis.fetch;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
@@ -96,8 +103,10 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     return Response.json(session);
   }
   if (url === `https://api.stripe.com/v1/checkout/sessions/${sessionId}` && method === "POST") {
-    stripeMetadataWrites.push(new URLSearchParams(String(init?.body ?? "")));
-    return Response.json({ id: sessionId, object: "checkout.session" });
+    const form = new URLSearchParams(String(init?.body ?? ""));
+    stripeMetadataWrites.push(form);
+    applyStripeMetadata(form);
+    return Response.json({ id: sessionId, object: "checkout.session", metadata: session.metadata });
   }
   if (url === "https://api.sandbox.prodigi.com/v4.0/orders" && method === "POST") {
     prodigiCreateCount += 1;
