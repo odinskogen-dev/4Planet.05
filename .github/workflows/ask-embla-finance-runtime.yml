@@ -24,8 +24,8 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf /tmp/finance-e2e-site
-          mkdir -p /tmp/finance-e2e-site/app/food
-          touch /tmp/finance-e2e-site/index.html
+          mkdir -p /tmp/finance-e2e-site/app/food /tmp/finance-e2e-site/app
+          python products/4sapien/build/apply_front_v2_release.py products/4sapien/source/claude-front-20260915-v2.html /tmp/finance-e2e-site/index.html
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > /tmp/finance-e2e-site/app/food/index.html
           python products/4sapien/build/apply_provider_guard.py /tmp/finance-e2e-site/app/food/index.html
           python products/4sapien/build/apply_meal_plan_guard.py /tmp/finance-e2e-site/app/food/index.html
