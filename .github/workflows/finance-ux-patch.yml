@@ -1,0 +1,74 @@
+name: 4SAPIEN Finance UX patch
+
+on:
+  push:
+    branches: [finance-ux-20260915]
+    paths:
+      - '.github/workflows/finance-ux-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Finance experience without touching Claude donor
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('products/4sapien/build/apply_finance_route.py')
+          s = p.read_text()
+          if 'AXE_FINANCE_UX_V3' in s:
+              raise SystemExit('UX V3 patch already present')
+
+          anchor = "for marker in ('AXE_FINANCE_EXPERIENCE_V2','Din økonomiske tvilling','Hurtigføring','Scan med Embla'):\n"
+          if anchor not in s:
+              raise SystemExit('experience marker anchor missing')
+
+          patch = r'''# AXE_FINANCE_UX_V3 — bounded refinement of the injected experience layer only.
+          # Preserve the complete Claude Finance donor and Supabase data model unchanged.
+          experience = experience.replace('<!-- AXE_FINANCE_EXPERIENCE_V2 -->', '<!-- AXE_FINANCE_EXPERIENCE_V2 --><!-- AXE_FINANCE_UX_V3 -->', 1)
+          experience = experience.replace('.af{max-width:720px;', '.af{max-width:1080px;', 1)
+          experience = experience.replace('Klikk direkte på feltene. Endringer lagres når du forlater feltet.', 'Klikk direkte på feltene. Enter lagrer · Esc avbryter. Dato, kategori og gjentakelse ligger på samme rad.', 1)
+          old_bind = """function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;$('.an',r).onchange=e=>up(AT,id,{name:e.target.value.trim()||'Konto'});$('.ab',r).onchange=e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()})});$$('[data-e]').forEach(r=>{let id=r.dataset.e;$('.en',r).onchange=e=>up(ET,id,{name:e.target.value.trim()});$('.ea',r).onchange=e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))});$('.ed',r).onchange=e=>up(ET,id,{occurred_on:e.target.value});$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
+          new_bind = """function editKey(el,save){if(!el)return;let original=el.value,cancel=false;el.onfocus=()=>{original=el.value;cancel=false};el.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();cancel=true;el.value=original;el.blur()}else if(e.key==='Enter'){e.preventDefault();el.blur()}};el.onchange=e=>{if(cancel){cancel=false;return}save(e)}}function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;editKey($('.an',r),e=>up(AT,id,{name:e.target.value.trim()||'Konto'}));editKey($('.ab',r),e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()}))});$$('[data-e]').forEach(r=>{let id=r.dataset.e;editKey($('.en',r),e=>up(ET,id,{name:e.target.value.trim()}));editKey($('.ea',r),e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))}));editKey($('.ed',r),e=>up(ET,id,{occurred_on:e.target.value}));$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
+          if old_bind not in experience:
+              raise SystemExit('inline-edit bind seam missing')
+          experience = experience.replace(old_bind, new_bind, 1)
+          for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):
+              if marker not in experience:
+                  raise SystemExit(f'UX V3 marker missing after patch: {marker}')
+          '''
+          s = s.replace(anchor, patch + '\n' + anchor, 1)
+          p.write_text(s)
+          PY
+
+          rm -rf /tmp/finance-v3
+          mkdir -p /tmp/finance-v3
+          python products/4sapien/build/apply_finance_route.py /tmp/finance-v3/index.html
+          MONEY=/tmp/finance-v3/app/money/index.html
+          grep -q 'AXE_FINANCE_UX_V3' "$MONEY"
+          grep -q 'max-width:1080px' "$MONEY"
+          grep -q 'Enter lagrer · Esc avbryter' "$MONEY"
+          grep -q 'function editKey' "$MONEY"
+          grep -q 'Likvid runway' "$MONEY"
+          grep -q "return'Lønn'" "$MONEY"
+          grep -q "return'Bolig'" "$MONEY"
+          grep -q "return'Gjeld'" "$MONEY"
+          ! grep -qi 'service_role\|sb_secret_\|SUPABASE_SERVICE_ROLE\|CLOUDFLARE_API_TOKEN' "$MONEY"
+
+      - name: Commit bounded source change
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add products/4sapien/build/apply_finance_route.py
+          git diff --cached --quiet && { echo 'No patch delta'; exit 1; }
+          git commit -m 'refine(4sapien finance): desktop canvas and inline edit keys'
+          git push origin HEAD:finance-ux-20260915
