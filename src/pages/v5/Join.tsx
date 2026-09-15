@@ -37,6 +37,9 @@ export default function Join() {
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 680, lineHeight: 1.55 }}>
           Create a free 4PLANET ID for your personal profile and saved participation. The public planet remains open to everyone — we only ask you to sign in when it creates personal value.
         </p>
+        <p style={{ fontSize: 13.5, color: T.faint, marginTop: 12, maxWidth: 680, lineHeight: 1.55 }}>
+          Participation has dedicated paths for people, partners, brands and funders.
+        </p>
 
         <div style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <button
