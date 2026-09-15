@@ -1,4 +1,4 @@
-name: 4SAPIEN Finance runtime verification
+name: 4SAPIEN One Product Finance runtime verification
 
 on:
   push:
@@ -34,31 +34,24 @@ jobs:
             test "$code" = "200"
           done
 
-      - name: Verify Ask Embla root remains intact
+      - name: Verify public front remains separate from private worlds
         run: |
           set -euo pipefail
-          for base in \
-            https://four-sapien-embla.odin-skogen.workers.dev \
-            https://4sapien.com; do
-            curl -fsSL --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' \
-              "${base}/" -o /tmp/root.html
-            grep -q 'Ask Embla' /tmp/root.html
-            grep -q 'four_sapien_meal_plans' /tmp/root.html
-            grep -q 'functions/v1/embla-products' /tmp/root.html
-            grep -q '4SAPIEN YELLOW TEST 02' /tmp/root.html
+          for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
+            curl -fsSL --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' "${base}/" -o /tmp/root.html
+            grep -q 'See your life clearly.' /tmp/root.html
+            grep -q 'illustrative demo' /tmp/root.html
+            grep -q '/app/food/' /tmp/root.html
+            grep -q '/app/money/' /tmp/root.html
           done
 
       - name: Verify Finance route on Worker and 4sapien.com
         run: |
           set -euo pipefail
-          for base in \
-            https://four-sapien-embla.odin-skogen.workers.dev \
-            https://4sapien.com; do
-            for path in /finance /finance/; do
+          for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
+            for path in /app/money/ /finance /finance/; do
               body="/tmp/finance-$(echo "$base$path" | tr -cs 'A-Za-z0-9' '_').html"
-              status=$(curl -sS -L --retry 3 --retry-delay 2 \
-                -H 'Sec-Fetch-Mode: navigate' \
-                -o "$body" -w '%{http_code}' "${base}${path}")
+              status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}${path}")
               test "$status" = "200"
               grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
               grep -q '4SAPIEN by 4PLANET' "$body"
