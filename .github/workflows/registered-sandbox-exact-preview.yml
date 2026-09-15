@@ -1,0 +1,81 @@
+name: FOUR STATE Registered Sandbox Exact Preview
+
+on:
+  push:
+    branches:
+      - work/atlas-zero-loss-gold-convergence-01
+      - recovery/testking-magazine
+
+permissions:
+  contents: read
+
+concurrency:
+  group: four-state-sandbox-preview-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-exact-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXACT_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact registered sandbox head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXACT_SHA }}
+          fetch-depth: 0
+
+      - name: Verify exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXACT_SHA"
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Resolve Cloudflare TEST credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo "No Cloudflare token available."; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Deploy exact registered sandbox to existing TEST Pages project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist \
+            --project-name=4planet-05 \
+            --branch="$GITHUB_REF_NAME" \
+            --commit-hash="$EXACT_SHA" \
+            --commit-message="Four-State registered sandbox exact preview"
+
+      - name: Record invariant
+        run: |
+          echo "Registered sandbox exact head deployed: $GITHUB_REF_NAME@$EXACT_SHA"
+          echo "No production LIVE authority."
