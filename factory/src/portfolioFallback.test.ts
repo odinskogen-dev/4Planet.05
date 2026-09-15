@@ -10,6 +10,7 @@ import {
 
 const TEST_SHA = "ce532830640817f83c11923bdfb4c394f222baad";
 const FACTORY_SHA = "8b203ae4c383d3663571719d47309664322ef780";
+// Activation marker is intentionally attached only after current HEIR was re-read unchanged.
 const CURRENT_ATLAS_STATE_URL = "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18";
 
 test("fallback queue spends blocked-receiver capacity on current ATLAS proof before older proof lanes", () => {
