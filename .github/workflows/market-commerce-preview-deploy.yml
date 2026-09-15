@@ -11,6 +11,8 @@ on:
       - 'functions/_lib/**'
       - 'functions/api/market-*.ts'
       - 'workers/4planetmarket-commerce.ts'
+      - 'scripts/market-commerce-contract.test.mjs'
+      - 'scripts/market-commerce-integration.test.ts'
 permissions:
   contents: read
 jobs:
@@ -30,10 +32,11 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}"
-      - name: Install and build exact candidate
+      - name: Install and Judge exact candidate
         run: |
           npm ci
           node scripts/market-commerce-contract.test.mjs
+          npx --yes tsx@latest scripts/market-commerce-integration.test.ts
           npx tsc --noEmit
           npm run build
       - name: Resolve Cloudflare account
@@ -56,7 +59,8 @@ jobs:
             --project-name 4planet-05 \
             --branch axe-market-commerce-pod-20260915 \
             --commit-hash "$GITHUB_SHA" \
-            --commit-message "4MARKET commerce candidate $GITHUB_SHA" | tee /tmp/pages-deploy.log
+            --commit-message "4MARKET commerce candidate $GITHUB_SHA" \
+            --commit-dirty=true | tee /tmp/pages-deploy.log
       - name: Resolve immutable deployment URL
         id: deployment
         env:
@@ -70,6 +74,18 @@ jobs:
           test -n "$url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Immutable preview: $url"
+      - name: Verify preview API stays fail-closed
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -fsS "$PREVIEW_URL/api/market-commerce-status")
+          jq . <<<"$status"
+          jq -e '.ok==true and .publicCheckoutEnabled==false and .checkoutInfrastructureReady==false' <<<"$status" >/dev/null
+          code=$(curl -sS -o /tmp/checkout.json -w '%{http_code}' -X POST "$PREVIEW_URL/api/market-checkout" -H 'content-type: application/json' -H "origin: $PREVIEW_URL" --data '{"productId":"market:odin:reinebringen-vista","attemptId":"previewjudge001"}')
+          test "$code" = 503
+          jq -e '.ok==false' /tmp/checkout.json >/dev/null
       - name: Browser verify preview desktop + mobile
         env:
           PREVIEW_URL: ${{ steps.deployment.outputs.url }}
@@ -91,8 +107,12 @@ jobs:
               if (!text.includes(token)) throw new Error(`Missing token ${token}`);
             }
             if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Public buy button unexpectedly open');
-            const broken = await page.locator('.mkt-first-product img').evaluateAll(imgs => imgs.filter(i => !(i instanceof HTMLImageElement) || i.naturalWidth === 0).length);
-            if (broken) throw new Error(`Broken product images: ${broken}`);
+            const srcs = await page.locator('.mkt-first-product img').evaluateAll(imgs => imgs.map(i => i.getAttribute('src')).filter(Boolean));
+            if (srcs.length !== 11) throw new Error(`Expected 11 product image sources, got ${srcs.length}`);
+            for (const src of srcs) {
+              const response = await page.context().request.get(new URL(src, base).href);
+              if (!response.ok()) throw new Error(`Broken product asset ${src}: ${response.status()}`);
+            }
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
             if (overflow > 2) throw new Error(`Horizontal overflow ${overflow}px`);
             await page.close();
@@ -109,7 +129,8 @@ jobs:
             echo ''
             echo "- Source: \`$GITHUB_SHA\`"
             echo "- Immutable preview: $PREVIEW_URL"
-            echo '- Contract/typecheck/build: PASS'
-            echo '- Desktop/mobile catalogue QA: PASS'
+            echo '- Contract + simulated full-loop Judge + typecheck + build: PASS'
+            echo '- Desktop/mobile + all 11 product assets: PASS'
+            echo '- Deployed API fail-closed proof: PASS'
             echo '- Public checkout: CLOSED by release gate'
           } >> "$GITHUB_STEP_SUMMARY"
