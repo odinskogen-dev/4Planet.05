@@ -2,6 +2,7 @@ import type { ProjectProjection, WorkPackage } from "./contracts";
 
 const SHA40 = /^[0-9a-f]{40}$/i;
 
+export const PORTFOLIO_CURRENT_CORE_AUTHORITY = "FOUNDER_ORDER:FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01";
 export const PORTFOLIO_FALLBACK_AUTHORITY = "FOUNDER_ORDER:4PLANET_FACTORY_PRODUCTION_RAMP_03";
 export const PORTFOLIO_FALLBACK_CONTROL = "ISSUE_273:GIGA_IMMUNITY_EXECUTION_CONTROL";
 export const PORTFOLIO_FALLBACK_LEASE = "CONCURRENCY_LAW_GIGA01:LANE_D:OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER";
@@ -26,6 +27,76 @@ function project(
   authorityRefs: string[],
 ): ProjectProjection {
   return { id, name, northStar, user, goal, current, gold, gap, priority, authorityRefs };
+}
+
+function atlasCurrentStatePackage(input: {
+  id: string;
+  projectId: string;
+  exactTestSha: string;
+  exactFactorySha: string;
+  createdAt: string;
+}): WorkPackage {
+  const targetUrl = "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18";
+  return {
+    id: input.id,
+    projectId: input.projectId,
+    title: "ATLAS current post-LIVE state — mobile 390",
+    section: "CODE_QA",
+    priority: "P0",
+    goalLink: "FACTORY_ACTIVE_01 — current product proof",
+    gapClosed: "Collect fresh rendered evidence for the exact ATLAS state used by the current 4PLANET home embed before spending fallback capacity on older proof lanes.",
+    deliverables: [
+      "Cloudflare Browser Rendering screenshot/Markdown/accessibility evidence for the exact current ATLAS state",
+      "390x844 viewport evidence with bounded snapshot fingerprint",
+      "Explicit limitation that automated rendering is not Human Gold visual judgement",
+    ],
+    dependencies: [],
+    writeScopes: [],
+    definitionOfDone: [
+      "Exact current TEST KING and Factory build are bound to the work package",
+      "Browser execution is HTTPS and allowlisted to 4planet.org",
+      "The exact ATLAS layer/state URL renders successfully at 390x844",
+      "Snapshot evidence and fingerprint are persisted",
+      "No LIVE, HEIR, Canon, outreach, spend or external-release mutation occurs",
+    ],
+    requiredEvidence: ["browser snapshot PASS", "viewport 390x844", "snapshot-sha256"],
+    execution: {
+      kind: "BROWSER_QA",
+      targetUrl,
+      allowedHosts: ["4planet.org"],
+      viewport: { width: 390, height: 844, deviceScaleFactor: 1 },
+    },
+    run: {
+      runId: `portfolio-current-atlas-${input.id}`,
+      attemptId: "01",
+      idempotencyKey: `portfolio-current-atlas:${input.id}:${input.exactTestSha}:${input.exactFactorySha}`,
+      inputStateHash: `factory=${input.exactFactorySha};test=${input.exactTestSha};target=${targetUrl};viewport=390x844`,
+      expectedBaseSha: input.exactTestSha,
+      workerId: "portfolio-current-atlas-browser-qa",
+      createdAt: input.createdAt,
+    },
+    resourceBudget: {
+      maxAttempts: 1,
+      maxCorrectionAttempts: 0,
+      maxModelCalls: 0,
+      maxExternalRequests: 1,
+      maxGithubCalls: 0,
+      maxBrowserCalls: 1,
+      maxQueueRetries: 3,
+    },
+    learningQuestion: "Can the Factory continuously spend blocked-receiver fallback capacity on fresh current-product evidence instead of stale legacy fallback work?",
+    createdAt: input.createdAt,
+    estimatedValue: 10,
+    criticalPath: 10,
+    dependencyUnlock: 9,
+    proofValue: 10,
+    cashValue: 2,
+    learningValue: 10,
+    risk: 1,
+    founderBurden: 0,
+    concurrencyCost: 0,
+    status: "READY",
+  };
 }
 
 function sourcePackage(input: {
@@ -175,6 +246,19 @@ export function createPortfolioFallbackQueue(
   const testKey = key(exactTestSha);
   const factoryKey = key(exactFactorySha);
 
+  const currentCore = project(
+    "FACTORY_CURRENT_CORE_PROOF",
+    "Current CORE product proof",
+    "Spend blocked-receiver Factory capacity on fresh evidence from the product users see now.",
+    "A normal public 4PLANET visitor",
+    "Keep current MAIN/ATLAS/SPECIES/LIVING SYSTEMS/IMPACT product state observable and evidence-backed while mutation lanes are occupied.",
+    "ATLAS is live and integrated into the current 4PLANET home experience; receiver mutation may still be unavailable to Factory.",
+    "Current-product evidence is produced first, bounded to exact HEIR/Factory identity, before older fallback proof lanes consume capacity.",
+    "Verify the exact ATLAS state used by the post-LIVE home embed at mobile 390 now.",
+    "P0",
+    [PORTFOLIO_CURRENT_CORE_AUTHORITY, "FACTORY_ACTIVE_01"],
+  );
+
   const oslofjord = project(
     "PLANET_GOLD_01_OSLOFJORD",
     "PLANET Gold 01 — Oslofjord Human Gold",
@@ -202,6 +286,13 @@ export function createPortfolioFallbackQueue(
   );
 
   const packages = [
+    atlasCurrentStatePackage({
+      id: `portfolio-current-atlas-mobile-390-${testKey}-${factoryKey}`,
+      projectId: currentCore.id,
+      exactTestSha,
+      exactFactorySha,
+      createdAt,
+    }),
     oslofjordReviewPackage({
       id: `portfolio-oslofjord-human-gold-review-${testKey}-${factoryKey}`,
       projectId: oslofjord.id,
@@ -235,7 +326,7 @@ export function createPortfolioFallbackQueue(
     }),
   ];
 
-  return { projects: [oslofjord, gbr], packages };
+  return { projects: [currentCore, oslofjord, gbr], packages };
 }
 
 function record(value: unknown): Record<string, unknown> | undefined {
