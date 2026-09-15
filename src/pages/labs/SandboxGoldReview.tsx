@@ -7,6 +7,7 @@ import { ACTOR_GOLD_PROFILES } from "@/content/actorGold";
 import { ActorProfilePage } from "@/pages/v5/ActorGold";
 import { GoldRefinedObject, GoldRefinedStory, GoldRefinementBar } from "@/pages/labs/GoldTemplateRefinement02";
 import "@/styles/gold-template-refinement-02.css";
+import "@/styles/gold-review-index.css";
 import "@/styles/actor-gold-refinement.css";
 
 const TEST_ROBOTS = "noindex,nofollow,noarchive,nosnippet";
