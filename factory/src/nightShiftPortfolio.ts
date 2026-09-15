@@ -109,6 +109,7 @@ export function createNightShiftPortfolio(
   };
 
   const defs = [
+    ["atlas-home-embed-state-mobile-390", "ATLAS post-LIVE home-embed state mobile 390", "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18", 390, 844],
     ["core-main-desktop", "4PLANET MAIN desktop", "https://4planet.org/", 1440, 1000],
     ["core-main-mobile-390", "4PLANET MAIN mobile 390", "https://4planet.org/", 390, 844],
     ["atlas-desktop", "ATLAS desktop", "https://4planet.org/atlas", 1440, 1000],
