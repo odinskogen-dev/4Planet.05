@@ -10,6 +10,7 @@ import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
 import FourBrand from "@/pages/partners/FourBrand";
+import FourBrandsLive from "@/pages/partners/FourBrandsLive";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
@@ -21,6 +22,18 @@ function isFourBrandsHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
   return host === "4brands.org" || host === "www.4brands.org";
+}
+
+function isFourBrandsPath() {
+  if (typeof window === "undefined") return false;
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return path === "/4brands" || path.startsWith("/4brands/");
+}
+
+function isLegacyFourBrandPath() {
+  if (typeof window === "undefined") return false;
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return path === "/4brand" || path.startsWith("/4brand/");
 }
 
 function AtlasProductSwitcher() {
@@ -35,7 +48,8 @@ function AtlasProductSwitcher() {
 }
 
 export default function App() {
-  if (isFourBrandsHost()) return <FourBrand />;
+  if (isFourBrandsHost() || isFourBrandsPath()) return <FourBrandsLive />;
+  if (isLegacyFourBrandPath()) return <FourBrand />;
 
   return (
     <BrowserRouter>
