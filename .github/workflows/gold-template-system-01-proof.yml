@@ -1,0 +1,164 @@
+name: Gold Template System 01 Proof
+
+on:
+  push:
+    branches:
+      - work/gold-template-system-01
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gold-template-system-01-proof
+  cancel-in-progress: true
+
+jobs:
+  certify-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXACT_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXACT_SHA }}
+          fetch-depth: 0
+
+      - name: Verify exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXACT_SHA"
+          echo "$EXACT_SHA" > exact-sha.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Gold authority contract
+        run: node scripts/gold-policy-check.mjs --mode=quality-contract
+
+      - name: Gold Template contracts
+        run: npm run test:gold-templates
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Install exact Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start exact-head local preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > gold-preview-local.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/labs/gold >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat gold-preview-local.log
+          exit 1
+
+      - name: Browser proof — local exact head
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/gold-template-system.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+
+      - name: Resolve Cloudflare TEST credentials
+        id: cloudflare
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo "No Cloudflare token available; TEST preview cannot be deployed."; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          ZONE=$(curl -fsS "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json")
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$ZONE")
+          [ -n "$ACCOUNT_ID" ] || { echo "Could not resolve Cloudflare account id."; exit 2; }
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+
+      - name: Deploy exact head to Cloudflare Pages TEST preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist \
+            --project-name=4planet-05 \
+            --branch="$GITHUB_REF_NAME" \
+            --commit-hash="$EXACT_SHA" \
+            --commit-message="Gold Template System 01 controlled TEST preview" | tee gold-cloudflare-deploy.log
+
+      - name: Resolve immutable TEST preview URL by exact SHA
+        id: preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4"
+          AUTH=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          FOUND=""
+          for attempt in $(seq 1 30); do
+            DEPLOYMENTS=$(curl -fsS "${API}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${AUTH[@]}")
+            FOUND=$(jq -r --arg sha "$EXACT_SHA" '[.result[]? | select(.deployment_trigger.metadata.commit_hash == $sha and .environment == "preview")][0].url // empty' <<<"$DEPLOYMENTS")
+            [ -n "$FOUND" ] && break
+            sleep 3
+          done
+          [ -n "$FOUND" ] || { echo "Exact-head preview deployment not found."; exit 1; }
+          echo "url=$FOUND" >> "$GITHUB_OUTPUT"
+          printf '{"exact_sha":"%s","preview_url":"%s","authority":"CONTROLLED_TEST_ONLY"}\n' "$EXACT_SHA" "$FOUND" > gold-preview.json
+          echo "GOLD_PREVIEW_URL=$FOUND" >> "$GITHUB_ENV"
+          echo "Exact TEST preview: $FOUND"
+
+      - name: Prove seven deployed browser surfaces
+        env:
+          BASE_URL: ${{ steps.preview.outputs.url }}
+        run: npx playwright test tests/e2e/gold-template-system.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+
+      - name: Assert LIVE domains were not deployment targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GOLD_PREVIEW_URL" != "https://4planet.org"
+          test "$GOLD_PREVIEW_URL" != "https://4planetmagazine.com"
+          echo "CONTROLLED TEST preview only. No LIVE domain release performed."
+
+      - name: Upload immutable Gold proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-template-system-01-proof-${{ env.EXACT_SHA }}
+          path: |
+            exact-sha.txt
+            gold-preview.json
+            gold-cloudflare-deploy.log
+            gold-preview-local.log
+            artifacts/product-proof/gold-*.png
+            artifacts/atlas-gold
+          if-no-files-found: warn
+          retention-days: 30
