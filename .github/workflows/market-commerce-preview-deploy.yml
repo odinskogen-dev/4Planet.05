@@ -74,18 +74,22 @@ jobs:
           test -n "$url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Immutable preview: $url"
-      - name: Verify preview API stays fail-closed
+      - name: Verify immutable static candidate
         env:
           PREVIEW_URL: ${{ steps.deployment.outputs.url }}
         shell: bash
         run: |
           set -euo pipefail
-          status=$(curl -fsS "$PREVIEW_URL/api/market-commerce-status")
-          jq . <<<"$status"
-          jq -e '.ok==true and .publicCheckoutEnabled==false and .checkoutInfrastructureReady==false' <<<"$status" >/dev/null
-          code=$(curl -sS -o /tmp/checkout.json -w '%{http_code}' -X POST "$PREVIEW_URL/api/market-checkout" -H 'content-type: application/json' -H "origin: $PREVIEW_URL" --data '{"productId":"market:odin:reinebringen-vista","attemptId":"previewjudge001"}')
-          test "$code" = 503
-          jq -e '.ok==false' /tmp/checkout.json >/dev/null
+          for path in /market /market/odin/reinebringen-vista.jpg /market/amalie/a01-dense-animals-green-leaves.jpg; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "$PREVIEW_URL$path?qa=$attempt" || true)
+              echo "$path attempt $attempt -> $code"
+              if [ "$code" = 200 ]; then ok=1; break; fi
+              sleep 3
+            done
+            test "$ok" = 1
+          done
       - name: Browser verify preview desktop + mobile
         env:
           PREVIEW_URL: ${{ steps.deployment.outputs.url }}
@@ -131,6 +135,6 @@ jobs:
             echo "- Immutable preview: $PREVIEW_URL"
             echo '- Contract + simulated full-loop Judge + typecheck + build: PASS'
             echo '- Desktop/mobile + all 11 product assets: PASS'
-            echo '- Deployed API fail-closed proof: PASS'
-            echo '- Public checkout: CLOSED by release gate'
+            echo '- Public BUY controls: CLOSED until isolated Worker release gates pass'
+            echo '- Commerce API: intentionally isolated to 4planetmarket-prototype Worker, not shared Pages preview'
           } >> "$GITHUB_STEP_SUMMARY"
