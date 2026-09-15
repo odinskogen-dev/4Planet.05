@@ -18,7 +18,7 @@ for (const surface of surfaces) {
       if (message.type() === "error" && !message.text().includes("Failed to load resource")) fatal.push(`console:${message.text()}`);
     });
 
-    const response = await page.goto(surface.path, { waitUntil: "networkidle" });
+    const response = await page.goto(surface.path, { waitUntil: "domcontentloaded" });
     expect(response?.status(), `${surface.path} must return HTTP 200`).toBe(200);
 
     await expect(page.getByText("CONTROLLED TEST", { exact: true }).first()).toBeVisible();
@@ -34,7 +34,7 @@ for (const surface of surfaces) {
 }
 
 test("Gold index exposes exactly the seven representative review paths", async ({ page }) => {
-  await page.goto("/labs/gold", { waitUntil: "networkidle" });
+  await page.goto("/labs/gold", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Two reusable forms/i })).toBeVisible();
   for (const surface of surfaces) await expect(page.locator(`a[href='${surface.path}']`)).toHaveCount(1);
 });
