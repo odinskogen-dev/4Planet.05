@@ -1,0 +1,115 @@
+name: 4MARKET Commerce Preview Deploy
+on:
+  push:
+    branches:
+      - axe/market-commerce-pod-multisprint-20260915
+    paths:
+      - '.github/workflows/market-commerce-preview-deploy.yml'
+      - 'src/market/**'
+      - 'src/components/market/**'
+      - 'src/styles/market-first-products.css'
+      - 'functions/_lib/**'
+      - 'functions/api/market-*.ts'
+      - 'workers/4planetmarket-commerce.ts'
+permissions:
+  contents: read
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Require Cloudflare deploy access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+      - name: Install and build exact candidate
+        run: |
+          npm ci
+          node scripts/market-commerce-contract.test.mjs
+          npx tsc --noEmit
+          npm run build
+      - name: Resolve Cloudflare account
+        id: cf
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl -fsS "$api/zones?name=4planetmarket.com&status=active" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          echo "account_id=$account" >> "$GITHUB_OUTPUT"
+      - name: Deploy Cloudflare Pages branch preview
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name 4planet-05 \
+            --branch axe-market-commerce-pod-20260915 \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "4MARKET commerce candidate $GITHUB_SHA" | tee /tmp/pages-deploy.log
+      - name: Resolve immutable deployment URL
+        id: deployment
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          deployments=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-05/deployments" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json')
+          url=$(jq -r --arg sha "$GITHUB_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash==$sha) | .url' <<<"$deployments" | head -n1)
+          test -n "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Immutable preview: $url"
+      - name: Browser verify preview desktop + mobile
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium >/dev/null
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const base = process.env.PREVIEW_URL;
+          const browser = await chromium.launch({ headless: true });
+          for (const viewport of [{width:1440,height:1000},{width:390,height:844}]) {
+            const page = await browser.newPage({ viewport });
+            await page.goto(`${base}/market`, { waitUntil: 'networkidle' });
+            await page.waitForSelector('.mkt-first-product');
+            if (await page.locator('.mkt-first-product').count() !== 11) throw new Error('Expected 11 Market products');
+            const text = (await page.locator('.mkt-first-products').innerText()).toLowerCase();
+            for (const token of ['release gated', 'launch price candidate', 'odin oddekalv', 'amalie marie myrtvedt']) {
+              if (!text.includes(token)) throw new Error(`Missing token ${token}`);
+            }
+            if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Public buy button unexpectedly open');
+            const broken = await page.locator('.mkt-first-product img').evaluateAll(imgs => imgs.filter(i => !(i instanceof HTMLImageElement) || i.naturalWidth === 0).length);
+            if (broken) throw new Error(`Broken product images: ${broken}`);
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+            if (overflow > 2) throw new Error(`Horizontal overflow ${overflow}px`);
+            await page.close();
+          }
+          await browser.close();
+          console.log(`PASS ${base}`);
+          NODE
+      - name: Publish proof summary
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.url }}
+        run: |
+          {
+            echo '## 4MARKET commerce candidate'
+            echo ''
+            echo "- Source: \`$GITHUB_SHA\`"
+            echo "- Immutable preview: $PREVIEW_URL"
+            echo '- Contract/typecheck/build: PASS'
+            echo '- Desktop/mobile catalogue QA: PASS'
+            echo '- Public checkout: CLOSED by release gate'
+          } >> "$GITHUB_STEP_SUMMARY"
