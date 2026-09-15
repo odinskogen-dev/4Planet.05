@@ -37,7 +37,7 @@ check("truth:decision-delivery", combined.includes("DECISION ≠ DELIVERY ≠ EC
 check("species:orca-donor-only", files.core.includes("ORCA is used only as a capability donor") && files.core.includes("No Orca copy or species-specific claims are reused"), "Blue Whale uses ORCA capability, not Orca truth");
 check("actor:development", /publicationState:\s*"DEVELOPMENT"/.test(files.actor), "Actor proof is not promoted to public/live state");
 check("actor:rights", /documentaryRightsState:\s*"NOT_REQUIRED"/.test(files.actor), "Actor Gold does not depend on unverified documentary media rights");
-check("media:designed", files.review.includes("no third-party media rights required") && files.core.includes("Designed in-system visual"), "Gold proof media is in-system designed rather than scraped imagery");
+check("media:designed", files.review.includes("Designed in-system visual") && files.review.includes("no third-party media rights required"), "Rendered Gold review surfaces explicitly identify in-system designed, rights-safe media");
 check("proof:no-fake-outcome", files.completion.includes("No delivery, survival, habitat recovery, biodiversity gain or causal outcome is claimed"), "Proof template refuses an unsupported success claim");
 check("signal:temporal", files.completion.includes("proposal is final, funded, implemented or ecologically effective") && files.completion.includes("Proposal ≠ adopted measure"), "Signal object does not become outcome truth");
 
