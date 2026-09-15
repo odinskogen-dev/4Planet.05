@@ -26,6 +26,7 @@ import { About } from "@/pages/v5/About";
 import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CultureFilm, CulturePlay } from "@/pages/v5/Culture";
 import Privacy from "@/pages/v5/Privacy";
+import { MarketHome, MarketProductPage } from "@/pages/market/MarketHome";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -47,13 +48,22 @@ const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", backgrou
 const LabFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#f4f1eb" }} />);
 const ActorFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#080b10" }} />);
 
+function publicHost() {
+  if (typeof window === "undefined") return "";
+  return window.location.hostname.toLowerCase().replace(/^www\./, "");
+}
+
 function isAtlasHost() {
-  if (typeof window === "undefined") return false;
-  return window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
+  return publicHost() === "4planetatlas.com";
+}
+
+function isMarketHost() {
+  return publicHost() === "4planetmarket.com";
 }
 
 function RootHome() {
   if (isAtlasHost()) return <Suspense fallback={WorldFallback}><PublicWorld /></Suspense>;
+  if (isMarketHost()) return <MarketHome />;
   return <Home />;
 }
 const toImpact = <Navigate to="/impact" replace />;
@@ -100,6 +110,8 @@ export function AppRoutes() {
       <Route path="/4sapien/food/choose" element={<Suspense fallback={MagazineFallback}><EmblaFoodChoice /></Suspense>} />
       <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/food/pick" element={<PickPrototype />} />
+      <Route path="/market" element={<MarketHome />} />
+      <Route path="/market/:slug" element={<MarketProductPage />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
