@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>4SAPIEN — See your life clearly.</title>
+<meta name="description" content="4SAPIEN turns the noise of food, money and everyday choices into one honest picture — sources shown, the unknown left honest. Embla reads it. You decide."/>
+<link rel="canonical" href="https://4sapien.com/"/>
+<meta property="og:type" content="website"/><meta property="og:site_name" content="4SAPIEN"/>
+<meta property="og:title" content="4SAPIEN — See your life clearly."/>
+<meta property="og:description" content="Food, money and the choices in between — read honestly, with the sources shown. Embla reads. You decide."/>
+<meta property="og:url" content="https://4sapien.com/"/>
+<meta name="theme-color" content="#FFFFFF"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+ :root{
+  --paper:#FFFFFF;--ink:#0A0A0A;--blue:#2E2EFF;--green:#3AE86F;--orange:#FF4D22;--pink:#FF5ACD;
+  --soft:#57514A;--faint:#8C867C;--line:rgba(10,10,10,.09);--line2:rgba(10,10,10,.15);
+  --band:#F7F6F2;--fill:#F5F3EF;
+  --accent:var(--blue);--headline:var(--ink);--onAccent:#FFFFFF;
+  --disp:'Instrument Sans',sans-serif;--body:'DM Sans',sans-serif;--mono:'Fragment Mono',monospace;
+  --t-xs:.78rem;--t-s:.94rem;--t-b:1.0625rem;--t-m:1.32rem;--t-l:1.62rem;
+  --t-xl:clamp(1.9rem,3.6vw,2.7rem);--t-hero:clamp(2.7rem,7.4vw,5.4rem);
+  --s1:8px;--s2:16px;--s3:24px;--s4:40px;--s5:64px;--s6:96px;--s7:128px;--pad:clamp(64px,10vw,128px);
+ }
+ html[data-theme="dark"]{
+  --paper:#000000;--ink:#FFFFFF;--soft:#B9B4AC;--faint:#7E7A72;
+  --line:rgba(255,255,255,.13);--line2:rgba(255,255,255,.22);--band:#000000;--fill:#0B0B0B;
+  --accent:var(--green);--headline:var(--green);--onAccent:#000000;
+ }
+ *{box-sizing:border-box;margin:0;padding:0}
+ html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;text-rendering:optimizeLegibility}
+ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:var(--t-b);line-height:1.55;letter-spacing:-.005em;transition:background .4s ease,color .4s ease}
+ a{color:inherit;text-decoration:none}
+ .wrap{max-width:1120px;margin:0 auto;padding:0 clamp(20px,4vw,32px)}
+ h1,h2,h3{font-family:var(--disp);font-weight:700;letter-spacing:-.032em;line-height:1.02;color:var(--headline)}
+ .mono{font-family:var(--mono);letter-spacing:.08em}
+ .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+ .reveal.in{opacity:1;transform:none}
+ .btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--body);font-weight:500;font-size:var(--t-s);padding:14px 24px;border-radius:13px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--ink);transition:transform .14s ease,background .14s ease,border-color .14s}
+ .btn:hover{background:rgba(128,128,128,.09);border-color:var(--accent)} .btn:active{transform:scale(.985)}
+ .btn.pri{background:var(--accent);color:var(--onAccent);border-color:var(--accent)} .btn.pri:hover{filter:brightness(1.06)}
+ .btn.big{padding:16px 28px;font-size:var(--t-b)}
+ header.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--paper) 80%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+ .top .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+ .mark{font-family:var(--disp);font-weight:700;font-size:1.25rem;letter-spacing:-.02em;line-height:1;color:var(--ink)}
+ .mark b{color:var(--accent)} .mark small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--faint);margin-top:3px;font-weight:400}
+ .top .right{display:flex;align-items:center;gap:var(--s3)} .top .login{font-weight:500;font-size:var(--t-s);color:var(--soft)}
+ .themebtn{width:34px;height:34px;border-radius:99px;border:1px solid var(--line2);background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:border-color .2s} .themebtn:hover{border-color:var(--accent)}
+ /* hero */
+ .hero{padding:clamp(60px,9vw,112px) 0 clamp(48px,7vw,88px);position:relative;overflow:hidden}
+ .hero .grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(32px,5vw,64px);align-items:center;position:relative;z-index:1}
+ .hero h1{font-size:var(--t-hero);max-width:11ch}
+ .hero .sub{font-size:clamp(1.06rem,1.55vw,1.24rem);color:var(--soft);margin:var(--s3) 0 var(--s4);max-width:34ch;line-height:1.5}
+ .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+ .hero .lawline{margin-top:var(--s3);font-family:var(--mono);font-size:var(--t-xs);letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+ /* living Embla stage */
+ .stage{position:relative;justify-self:stretch;border:1px solid var(--line2);border-radius:22px;background:var(--paper);padding:22px 22px 20px 26px;min-height:300px;display:flex;flex-direction:column;box-shadow:0 50px 90px -50px rgba(10,10,10,.34);overflow:hidden}
+ .stage::before{content:"";position:absolute;left:0;top:22px;bottom:22px;width:3px;border-radius:3px;background:var(--srail,var(--accent));transition:background .4s}
+ .stage .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+ .stage .id{font-family:var(--disp);font-weight:700;font-size:1rem;color:var(--ink);display:flex;align-items:center;gap:9px}
+ .pulse{width:8px;height:8px;border-radius:99px;background:var(--srail,var(--accent));box-shadow:0 0 0 0 var(--srail,var(--accent));animation:pulse 2s infinite}
+ @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--srail,var(--accent)) 45%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+ .stage .id span{color:var(--faint);font-weight:500;font-size:.8rem}
+ .steps{display:flex;gap:6px} .steps i{width:6px;height:6px;border-radius:99px;background:var(--line2);transition:background .3s,width .3s} .steps i.on{background:var(--srail,var(--accent));width:16px}
+ .qline{font-size:1.08rem;color:var(--ink);min-height:1.6em;font-weight:500}
+ .caret{display:inline-block;width:2px;height:1.05em;background:var(--srail,var(--accent));margin-left:2px;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+ @keyframes blink{50%{opacity:0}}
+ .answer{margin-top:16px;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease;flex:1}
+ .answer.show{opacity:1;transform:none}
+ .answer .ah{font-family:var(--disp);font-weight:700;font-size:1.55rem;line-height:1.1;letter-spacing:-.025em;color:var(--ink)}
+ .answer .ab{color:var(--soft);font-size:.98rem;margin-top:8px;line-height:1.5}
+ .answer .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+ .answer .c{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;border:1px solid var(--line2);border-radius:6px;padding:3px 8px;color:var(--ink)}
+ .answer .c.b{color:var(--srail,var(--accent));border-color:color-mix(in srgb,var(--srail,var(--accent)) 42%,var(--line2))} .answer .c.f{color:var(--faint)}
+ .answer .note{font-size:.82rem;color:var(--faint);margin-top:12px}
+ /* sections */
+ section.band{padding:var(--pad) 0;border-top:1px solid var(--line)}
+ section.fill{background:var(--band)}
+ .eyebrow{font-family:var(--mono);font-size:var(--t-xs);letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:var(--s3);display:inline-flex;align-items:center;gap:8px}
+ .eyebrow::before{content:"";width:20px;height:2px;background:var(--accent);border-radius:2px}
+ h2{font-size:var(--t-xl);max-width:15ch;letter-spacing:-.032em}
+ .lead{font-size:clamp(1.02rem,1.5vw,1.18rem);color:var(--soft);max-width:48ch;margin-top:var(--s3);line-height:1.5}
+ .tchips{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--s4)}
+ .tchips span{font-family:var(--mono);font-size:12px;border:1px solid var(--line2);border-radius:7px;padding:6px 12px}
+ .tchips .src{color:var(--ink)} .tchips .mod{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line2))} .tchips .unk{color:var(--faint)}
+ .howg{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2) var(--s5);margin-top:var(--s4);max-width:640px}
+ .howg div{border-top:1px solid var(--line);padding-top:var(--s2);font-size:.98rem;color:var(--soft)}
+ .howg b{color:var(--ink);font-weight:600}
+ /* worlds */
+ .worlds{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-top:var(--s5)}
+ .world{position:relative;border:1px solid var(--line2);border-radius:20px;padding:clamp(22px,3vw,30px);display:flex;flex-direction:column;min-height:210px;overflow:hidden;transition:border-color .25s,transform .25s}
+ .world:hover{border-color:color-mix(in srgb,var(--wc) 55%,var(--line2));transform:translateY(-2px)}
+ .world::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--wc)}
+ .world .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
+ .world .k::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--wc)}
+ .world h3{font-size:var(--t-l);margin:var(--s2) 0 var(--s1);letter-spacing:-.025em;color:var(--ink)}
+ .world p{color:var(--soft);font-size:.98rem;flex:1;line-height:1.5}
+ .world a{margin-top:var(--s3);font-weight:600;color:var(--wc);font-size:var(--t-s)} .world a::after{content:" →"}
+ .world.food{--wc:var(--green)} .world.money{--wc:var(--orange)} html[data-theme="dark"] .world.money{--wc:#FF6A47}
+ /* cross-world hero band: plan my food until payday */
+ .cross{position:relative;border:1px solid var(--line2);border-radius:24px;padding:clamp(26px,4vw,44px);margin-top:var(--s5);overflow:hidden}
+ .cross::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--green),var(--orange))}
+ .cross .lbl{font-family:var(--mono);font-size:var(--t-xs);letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+ .cross h3{font-size:clamp(1.5rem,3vw,2.1rem);letter-spacing:-.03em;margin:var(--s2) 0 var(--s3);color:var(--headline);max-width:20ch}
+ .flow{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--s2)}
+ .flow .st{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+ .flow .st b{color:var(--ink);font-weight:600} .flow .arw{color:var(--faint);align-self:center}
+ .cross .fine{margin-top:var(--s3);font-size:.86rem;color:var(--faint);max-width:52ch;line-height:1.5}
+ /* planetary */
+ .planet{text-align:center;padding:clamp(80px,12vw,150px) 0}
+ .planet p{font-family:var(--disp);font-weight:500;font-size:clamp(1.5rem,3.4vw,2.4rem);letter-spacing:-.03em;line-height:1.18;max-width:20ch;margin:0 auto;color:var(--headline)}
+ .planet .by{font-family:var(--mono);font-size:var(--t-xs);letter-spacing:.16em;color:var(--faint);margin-top:var(--s4);text-transform:uppercase} .planet .by b{color:var(--accent)}
+ .final{text-align:center;padding:clamp(72px,11vw,136px) 0}
+ .final h2{font-size:clamp(2.1rem,5vw,3.4rem);max-width:none;margin:0 auto} .final .cta-row{justify-content:center;margin-top:var(--s4)}
+ footer{border-top:1px solid var(--line);padding:var(--s4) 0;color:var(--faint);font-size:var(--t-s)}
+ footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px} footer nav a{margin-left:24px;color:var(--soft)}
+ /* app home */
+ #app{display:none} #app.on{display:block}
+ .apphome{min-height:100vh;padding:var(--s4) 0 var(--s6)}
+ .apptop{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s5)}
+ .apptop .r{display:flex;gap:14px;align-items:center}
+ .apptop .u{width:40px;height:40px;border-radius:99px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;cursor:pointer;color:var(--ink)}
+ .greet{font-size:clamp(1.9rem,4.6vw,2.8rem);margin-bottom:var(--s1);letter-spacing:-.032em}
+ .greet + p{color:var(--soft);margin-bottom:var(--s4);font-size:1.08rem}
+ .composer{display:flex;gap:10px;align-items:center;border:1.5px solid var(--accent);border-radius:16px;padding:8px 8px 8px 20px;margin-bottom:var(--s2)}
+ .composer input{flex:1;border:none;outline:none;font-family:var(--body);font-size:1.08rem;background:transparent;color:var(--ink)}
+ .composer button{border:none;background:var(--accent);color:var(--onAccent);border-radius:12px;width:46px;height:46px;font-size:19px;cursor:pointer}
+ .chipsrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--s5)}
+ .chipsrow button{font-family:var(--body);font-size:var(--t-s);color:var(--soft);border:1px solid var(--line2);background:transparent;border-radius:99px;padding:8px 14px;cursor:pointer;transition:border-color .2s,color .2s}
+ .chipsrow button:hover{border-color:var(--accent);color:var(--ink)}
+ /* TODAY cards: minimal, whitespace-led, honest empty states */
+ .today{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+ .tcard{position:relative;border:1px solid var(--line2);border-radius:18px;padding:20px 22px;overflow:hidden;min-height:132px;display:flex;flex-direction:column}
+ .tcard.w::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wc,var(--accent))}
+ .tcard .th{display:flex;align-items:center;justify-content:space-between}
+ .tcard .th .t{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+ .tcard .big{font-family:var(--disp);font-weight:700;font-size:1.7rem;letter-spacing:-.02em;color:var(--ink);margin-top:10px}
+ .tcard .em{margin-top:auto;font-size:.9rem;color:var(--soft);line-height:1.45}
+ .tcard .empty{margin-top:12px;font-size:.92rem;color:var(--faint);line-height:1.45}
+ .tcard .add{margin-top:12px;font-weight:600;font-size:var(--t-s);color:var(--accent);cursor:pointer}
+ .demoflag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--faint);border:1px solid var(--line2);border-radius:5px;padding:2px 6px}
+ .full{grid-column:1/-1}
+ @media(max-width:800px){.hero .grid{grid-template-columns:1fr}.hero h1{max-width:none}.stage{grid-row:1;margin-bottom:var(--s2)}.worlds,.howg,.today{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+ <a href="#" class="mark" onclick="closeApp();return false">4SAPIEN<small>BY 4PLANET</small></a>
+ <div class="right"><button class="themebtn" id="tbtn" aria-label="Toggle dark mode" onclick="toggleTheme()">◐</button><a href="#" class="login" onclick="openApp();return false">Log in</a></div>
+</div></header>
+
+<main id="home">
+ <section class="hero"><div class="wrap"><div class="grid">
+  <div class="reveal in">
+   <h1>See your life clearly.</h1>
+   <p class="sub">Food, money and the choices in between — read honestly, with the sources shown and nothing dressed up. Embla does the reading. You decide.</p>
+   <div class="cta-row"><a href="#" class="btn pri big" onclick="openApp();return false">Get started</a><a href="#" class="btn big" onclick="openApp();return false">Log in</a></div>
+   <div class="lawline">Facts, not advice.</div>
+  </div>
+  <div class="stage" id="stage" aria-hidden="true">
+   <div class="head"><div class="id"><span class="pulse"></span>Embla<span id="mode">· asking</span></div><div class="steps"><i class="on"></i><i></i><i></i></div></div>
+   <div class="qline"><span id="q"></span><span class="caret"></span></div>
+   <div class="answer" id="ans"><div class="ah" id="ah"></div><div class="ab" id="ab"></div><div class="chips" id="ac"></div><div class="note" id="an"></div></div>
+  </div>
+ </div></div></section>
+
+ <section class="band"><div class="wrap">
+  <div class="eyebrow reveal">Embla</div>
+  <h2 class="reveal">She won't tell you what to buy.</h2>
+  <p class="lead reveal">Embla organises the facts, shows where they come from, and marks what's uncertain. Then she stops — because the decision is yours. That restraint is the whole point.</p>
+  <div class="tchips reveal"><span class="src">SOURCE</span><span class="mod">MODELLED</span><span class="unk">UNKNOWN</span></div>
+  <div class="howg reveal">
+   <div><b>What's known</b> — with the source you can check.</div>
+   <div><b>What's uncertain</b> — shown, never hidden.</div>
+   <div><b>What's modelled</b> — labelled, never dressed up as fact.</div>
+   <div><b>The trade-offs</b> — so the choice stays yours.</div>
+  </div>
+ </div></section>
+
+ <section class="band fill"><div class="wrap">
+  <div class="eyebrow reveal">Two worlds, one you</div>
+  <h2 class="reveal">Your whole life. One place.</h2>
+  <div class="worlds">
+   <div class="world food reveal"><div class="k">Food</div><h3>Choose well.</h3><p>Understand what you eat and buy — the evidence, your budget, your priorities. And the living world behind the product.</p><a href="#" onclick="openApp();return false">Open Food</a></div>
+   <div class="world money reveal"><div class="k">Money</div><h3>Know where you stand.</h3><p>See what you truly have, what's coming, and the trade-off behind every choice — before it costs you.</p><a href="#" onclick="openApp();return false">Open Money</a></div>
+  </div>
+  <!-- cross-world hero: the thing separate apps can't do -->
+  <div class="cross reveal">
+   <div class="lbl">Food × Money · together</div>
+   <h3>“Plan my food until payday.”</h3>
+   <div class="flow">
+    <span class="st"><b>Understand</b> what you have</span><span class="arw">→</span>
+    <span class="st"><b>Ask</b> Embla</span><span class="arw">→</span>
+    <span class="st"><b>Capture</b> what's missing</span><span class="arw">→</span>
+    <span class="st"><b>Decide</b> with cost + trade-offs</span><span class="arw">→</span>
+    <span class="st"><b>Act</b> — you create the list</span>
+   </div>
+   <p class="fine">One question that needs both worlds: your available money and your food. Embla shows the options, the expected cost and what's only assumed — then you choose. Nothing is bought, and no list is made, until you say so.</p>
+  </div>
+ </div></section>
+
+ <section class="planet"><div class="wrap">
+  <p class="reveal">Your life is your own. The world it touches is shared.</p>
+  <div class="by reveal">4SAPIEN &nbsp;·&nbsp; <b>BY 4PLANET</b></div>
+ </div></section>
+
+ <section class="band fill"><div class="wrap">
+  <div class="eyebrow reveal">Privacy</div>
+  <h2 class="reveal">Your life is not the product.</h2>
+  <p class="lead reveal">Your data powers your 4SAPIEN and nothing else. What's sensitive stays yours. We claim only what we can prove.</p>
+ </div></section>
+
+ <section class="final"><div class="wrap">
+  <h2 class="reveal">See clearly.</h2>
+  <div class="cta-row reveal"><a href="#" class="btn pri big" onclick="openApp();return false">Get started</a><a href="#" class="btn big" onclick="openApp();return false">Log in</a></div>
+ </div></section>
+
+ <footer><div class="wrap"><div class="mono">4SAPIEN · BY 4PLANET</div><nav><a href="#" onclick="return false">Method</a><a href="#" onclick="return false">Privacy</a></nav></div></footer>
+</main>
+
+<!-- /app — TODAY / UNDERSTAND home (donor; GPT wires real data + routes) -->
+<section id="app"><div class="wrap apphome">
+ <div class="apptop"><a href="#" class="mark" onclick="closeApp();return false">4SAPIEN<small>BY 4PLANET</small></a>
+  <div class="r"><button class="themebtn" aria-label="Toggle dark mode" onclick="toggleTheme()">◐</button><div class="u" title="Log out" onclick="closeApp()">Ut</div></div></div>
+ <h2 class="greet">Today.</h2>
+ <p>What's worth understanding right now.</p>
+ <div class="composer"><input placeholder="Ask Embla about food or money…" aria-label="Ask Embla"/><button aria-label="Send">→</button></div>
+ <div class="chipsrow"><button onclick="return false">Plan my food until payday</button><button onclick="return false">What do I have until payday?</button><button onclick="return false">Compare two products</button></div>
+ <div class="today">
+  <div class="tcard w money" style="--wc:var(--orange)"><div class="th"><span class="t">Money · available</span><span class="demoflag">SET UP</span></div><div class="empty">Add an account and Embla shows what you truly have — never a guessed zero.</div><div class="add" onclick="return false">Add an account →</div></div>
+  <div class="tcard w" style="--wc:var(--accent)"><div class="th"><span class="t">Embla noticed</span></div><div class="em">When your money and food are connected, Embla points out what needs attention here — before it costs you.</div></div>
+  <div class="tcard w food" style="--wc:var(--green)"><div class="th"><span class="t">Food · this week</span><span class="demoflag">SET UP</span></div><div class="empty">Scan a receipt or plan a meal, and your food world begins here.</div><div class="add" onclick="return false">Open Food →</div></div>
+  <div class="tcard w money" style="--wc:var(--orange)"><div class="th"><span class="t">Next 30 days</span><span class="demoflag">SET UP</span></div><div class="empty">Add a bill with a due date and Embla warns you in good time.</div><div class="add" onclick="return false">Add a bill →</div></div>
+ </div>
+</div></section>
+
+<script>
+ var root=document.documentElement,tb=document.getElementById('tbtn'),tm=document.querySelector('meta[name=theme-color]');
+ function applyTheme(t){root.setAttribute('data-theme',t);document.querySelectorAll('.themebtn').forEach(function(b){b.textContent=t==='dark'?'☀':'◐';});tm.setAttribute('content',t==='dark'?'#000000':'#FFFFFF');}
+ function toggleTheme(){applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark');}
+ (function(){var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;applyTheme(m?'dark':'light');})();
+ function openApp(){document.getElementById('home').style.display='none';document.getElementById('app').classList.add('on');window.scrollTo(0,0);}
+ function closeApp(){document.getElementById('app').classList.remove('on');document.getElementById('home').style.display='block';window.scrollTo(0,0);}
+ /* scroll reveal */
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14});
+ document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+ /* Living Embla — the world colour shifts with the domain of the question */
+ var scenes=[
+  {q:"What do I actually have until payday?",rail:"var(--orange)",ah:"24 300 kr available.",ab:"14 200 kr in bills before then. You're covered — 10 100 kr to spare.",chips:[["SOURCE",""]],note:"Illustrative. Variable spending is modelled, not fact."},
+  {q:"Which yoghurt fits me — protein, price, planet?",rail:"var(--green)",ah:"Skyr has the most protein of the three.",ab:"Price isn't known here. Planet is a category reference, not exact.",chips:[["SOURCE",""],["UNKNOWN","f"]],note:"Illustrative. You set what matters most."},
+  {q:"Just tell me what to buy.",rail:"var(--accent)",ah:"I won't decide for you.",ab:"Here's what's known, what's uncertain, and the trade-off. You choose.",chips:[["FACTS, NOT ADVICE","b"]],note:""}
+ ];
+ var stage=document.getElementById('stage'),Q=document.getElementById('q'),ANS=document.getElementById('ans'),AH=document.getElementById('ah'),AB=document.getElementById('ab'),AC=document.getElementById('ac'),AN=document.getElementById('an'),STEPS=document.querySelectorAll('.steps i');
+ var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+ function render(s){AH.textContent=s.ah;AB.textContent=s.ab;AN.textContent=s.note;AC.innerHTML='';s.chips.forEach(function(c){var e=document.createElement('span');e.className='c '+c[1];e.textContent=c[0];AC.appendChild(e);});}
+ async function run(){var i=0;while(true){var s=scenes[i];stage.style.setProperty('--srail',s.rail);STEPS.forEach(function(d,n){d.className=n===i?'on':'';});ANS.classList.remove('show');Q.textContent='';for(var k=0;k<s.q.length;k++){Q.textContent+=s.q[k];await sleep(34);}await sleep(650);render(s);ANS.classList.add('show');await sleep(3300);ANS.classList.remove('show');await sleep(520);i=(i+1)%scenes.length;}}
+ if(reduce){var s0=scenes[0];stage.style.setProperty('--srail',s0.rail);Q.textContent=s0.q;render(s0);ANS.classList.add('show');}else{run();}
+</script>
+</body>
+</html>
