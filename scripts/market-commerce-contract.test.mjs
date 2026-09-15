@@ -20,6 +20,8 @@ assert(count(catalog, /creator: "Amalie Marie Myrtvedt"/g) === 6, "Expected six 
 assert(catalog.includes('candidatePriceNok: 1290'), "Photo candidate price missing");
 assert(catalog.includes('candidatePriceNok: 890'), "Art candidate price missing");
 assert(catalog.includes('GLOBAL-FAP-8X12'), "Photo POD SKU candidate missing");
+assert(catalog.includes('GLOBAL-FAP-8X8'), "Square photo POD SKU candidate missing");
+assert(catalog.includes('GLOBAL-FAP-9X12'), "4:3 photo POD SKU candidate missing");
 assert(catalog.includes('GLOBAL-FAP-6X8'), "Art POD SKU candidate missing");
 assert(catalog.includes('sampleState: "REQUIRED"'), "Physical sample gate missing");
 assert(!catalog.includes('state: "FOR SALE"'), "Catalogue must not claim public sale before release");
@@ -28,7 +30,7 @@ assert(checkout.includes('productCanCheckout'), "Public checkout must use releas
 assert(checkout.includes('createMarketCheckoutSession'), "Public checkout must use canonical session builder");
 assert(checkoutBuilder.includes('shipping_address_collection[allowed_countries][0]'), "Checkout must collect shipping address");
 assert(checkoutBuilder.includes('"NO"'), "Initial shipping boundary must be Norway");
-assert(checkoutBuilder.includes('consent_collection[terms_of_service]'), "Checkout must require terms consent");
+assert(!checkoutBuilder.includes('consent_collection[terms_of_service]'), "Checkout must not depend on an unverified Stripe Dashboard ToS URL");
 assert(checkoutBuilder.includes('4market_stripe_prodigi_v1'), "Checkout integration metadata missing");
 assert(checkoutBuilder.includes('market_canary'), "Checkout must distinguish private canary from public sale");
 
