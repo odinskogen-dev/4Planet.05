@@ -116,38 +116,69 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 20); do
-            code=$(curl -sS -o "$RUNNER_TEMP/status.json" -w '%{http_code}' "https://4planetmarket.com/api/market-commerce-status?stage=$CANDIDATE_SHA&attempt=$attempt" || true)
-            if [ "$code" = 200 ] && jq -e '.environment=="LIVE" and .publicCheckoutEnabled==false and .checkoutInfrastructureReady==false' "$RUNNER_TEMP/status.json" >/dev/null 2>&1; then
+          matched=0
+          for attempt in $(seq 1 24); do
+            headers="$RUNNER_TEMP/status-$attempt.headers"
+            code=$(curl -sS -D "$headers" -o "$RUNNER_TEMP/status.json" -w '%{http_code}' "https://4planetmarket.com/api/market-commerce-status?stage=$CANDIDATE_SHA&attempt=$attempt" || true)
+            marker=$(grep -i '^x-4planet-market:' "$headers" | tr -d '\r' || true)
+            echo "status attempt $attempt -> $code · $marker"
+            if [ "$code" = 200 ] && echo "$marker" | grep -q "$MARKET_MARKER" && jq -e '.environment=="LIVE" and .publicCheckoutEnabled==false and .checkoutInfrastructureReady==false' "$RUNNER_TEMP/status.json" >/dev/null 2>&1; then
+              matched=1
               break
             fi
             sleep 4
           done
-          jq -e '.environment=="LIVE" and .publicCheckoutEnabled==false and .checkoutInfrastructureReady==false' "$RUNNER_TEMP/status.json" >/dev/null
-          checkout_code=$(curl -sS -o "$RUNNER_TEMP/checkout.json" -w '%{http_code}' -X POST https://4planetmarket.com/api/market-checkout -H 'content-type: application/json' -H 'origin: https://4planetmarket.com' --data '{"productId":"market:odin:reinebringen-vista","attemptId":"closedstage001"}')
-          test "$checkout_code" = 503
+          test "$matched" = 1
+          cat "$RUNNER_TEMP/status.json"
+
+          closed=0
+          for attempt in $(seq 1 12); do
+            checkout_code=$(curl -sS -o "$RUNNER_TEMP/checkout.json" -w '%{http_code}' -X POST "https://4planetmarket.com/api/market-checkout?stage=$CANDIDATE_SHA&attempt=$attempt" -H 'content-type: application/json' -H 'origin: https://4planetmarket.com' --data '{"productId":"market:odin:reinebringen-vista","attemptId":"closedstage001"}' || true)
+            echo "checkout attempt $attempt -> $checkout_code · $(cat "$RUNNER_TEMP/checkout.json" 2>/dev/null || true)"
+            if [ "$checkout_code" = 503 ] && jq -e '.ok==false and .error=="market_product_not_released"' "$RUNNER_TEMP/checkout.json" >/dev/null 2>&1; then
+              closed=1
+              break
+            fi
+            sleep 3
+          done
+          test "$closed" = 1
+
           npx playwright install --with-deps chromium >/dev/null
-          node --input-type=module <<'NODE'
+          MARKET_MARKER="$MARKET_MARKER" CANDIDATE_SHA="$CANDIDATE_SHA" node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
           const browser = await chromium.launch({headless:true});
           for (const viewport of [{width:1440,height:1000},{width:390,height:844}]) {
-            const page = await browser.newPage({viewport});
-            const response = await page.goto('https://4planetmarket.com/?commerce_stage=0061d27', {waitUntil:'networkidle', timeout:60000});
-            const headers = response?.headers() ?? {};
-            if (headers['x-4planet-market'] !== '4market-commerce-closed-0061d27') throw new Error('Wrong Market Worker marker');
-            await page.waitForSelector('.mkt-first-product');
-            if (await page.locator('.mkt-first-product').count() !== 11) throw new Error('Expected 11 products');
-            if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Public BUY unexpectedly enabled');
-            const text=(await page.locator('.mkt-first-products').innerText()).toLowerCase();
-            for (const token of ['release gated','launch price candidate','odin oddekalv','amalie marie myrtvedt']) if(!text.includes(token)) throw new Error(`Missing ${token}`);
-            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-            if(overflow>2) throw new Error(`overflow ${overflow}`);
-            await page.close();
+            let verified=false;
+            let last='';
+            for (let attempt=1; attempt<=12; attempt++) {
+              const page=await browser.newPage({viewport});
+              const response=await page.goto(`https://4planetmarket.com/?commerce_stage=${process.env.CANDIDATE_SHA}&attempt=${attempt}&w=${viewport.width}`, {waitUntil:'domcontentloaded', timeout:60000});
+              const headers=response?.headers() ?? {};
+              last=`marker=${headers['x-4planet-market'] ?? ''} url=${page.url()}`;
+              console.log(`browser ${viewport.width} attempt ${attempt}: ${last}`);
+              if (headers['x-4planet-market'] !== process.env.MARKET_MARKER) {
+                await page.close();
+                await new Promise(r=>setTimeout(r,4000));
+                continue;
+              }
+              await page.waitForSelector('.mkt-first-product',{timeout:30000});
+              if (await page.locator('.mkt-first-product').count() !== 11) throw new Error('Expected 11 products');
+              if (await page.getByText('BUY PRINT →').count() !== 0) throw new Error('Public BUY unexpectedly enabled');
+              const text=(await page.locator('.mkt-first-products').innerText()).toLowerCase();
+              for (const token of ['release gated','launch price candidate','odin oddekalv','amalie marie myrtvedt']) if(!text.includes(token)) throw new Error(`Missing ${token}`);
+              const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+              if(overflow>2) throw new Error(`overflow ${overflow}`);
+              await page.close();
+              verified=true;
+              break;
+            }
+            if(!verified) throw new Error(`Exact Worker never reached ${viewport.width}px browser edge: ${last}`);
           }
           await browser.close();
           NODE
+
           other=$(curl -sSI https://4planet.org/ | tr -d '\r' | grep -i '^x-4planet-market:' || true)
-          test -z "$other"
+          if [ -n "$other" ]; then echo "Unexpected Market header on 4planet.org: $other"; exit 1; fi
           touch "$RUNNER_TEMP/live-verified"
 
       - name: Automatic rollback on any post-deploy failure
@@ -156,6 +187,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ ! -f "$RUNNER_TEMP/market-mutated" ] || [ -f "$RUNNER_TEMP/live-verified" ]; then exit 0; fi
+          echo 'Validation failed after deploy — restoring previous accepted Market Worker.'
           cat > "$RUNNER_TEMP/rollback.mjs" <<EOF
           const UPSTREAM = "$ROLLBACK_UPSTREAM";
           const MARKER = "$ROLLBACK_MARKER";
