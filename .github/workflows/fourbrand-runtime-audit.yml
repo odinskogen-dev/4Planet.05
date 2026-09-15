@@ -1,0 +1,86 @@
+name: 4BRAND Runtime Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/fourbrand-runtime-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Read exact 4BRAND Cloudflare state
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$zid" ] && [ -n "$account_id" ] || { echo '4planet.org Cloudflare zone/account unavailable'; exit 1; }
+
+          echo '=== partners.4planet.org DNS ==='
+          curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}" \
+            | jq '{success, result: [.result[]? | {type,name,content,proxied}]}'
+
+          echo '=== Pages projects containing partners.4planet.org ==='
+          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+          jq '{result: [.result[]? | select(any(.domains[]?; . == "partners.4planet.org")) | {name,production_branch,domains}]}' <<<"$projects"
+
+          echo '=== 4planet-05 deployments sourced from king/test ==='
+          deps=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
+          jq '{result: [.result[]? | select(.deployment_trigger.metadata.branch == "king/test") | {id,url,environment,created_on,status:(.latest_stage.status // ""),commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}][0:8]}' <<<"$deps"
+
+          echo '=== HTTP runtime ==='
+          set +e
+          curl -sS -L --max-time 20 -D /tmp/headers.txt -o /tmp/body.html -w 'HTTP=%{http_code}\nFINAL=%{url_effective}\n' https://partners.4planet.org/4brand
+          rc=$?
+          set -e
+          echo "curl_exit=${rc}"
+          sed -n '1,30p' /tmp/headers.txt || true
+          if [ -f /tmp/body.html ]; then
+            echo "body_bytes=$(wc -c < /tmp/body.html | tr -d ' ')"
+            grep -Eo '4BRAND|Find where company value and planetary value meet|RUN VALUE MAP' /tmp/body.html | sort -u || true
+          fi
+
+      - name: Verify TOMRA API proof if route is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 30 -o /tmp/tomra.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"company":"TOMRA"}' \
+            https://partners.4planet.org/api/brand-analysis || true)
+          echo "HTTP=${code}"
+          if [ -f /tmp/tomra.json ]; then
+            jq '{ok, engine:(.analysis.engine // null), company:(.analysis.company.name // null), status:(.analysis.analysisStatus // null), opportunities:(.analysis.opportunities | length? // 0), evidence:(.analysis.evidence | length? // 0), error, detail}' /tmp/tomra.json 2>/dev/null || head -c 500 /tmp/tomra.json
+          fi
