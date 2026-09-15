@@ -45,6 +45,7 @@ const EmblaFoodChoice = lazy(() => import("@/pages/sapien/EmblaFoodChoice"));
 const GoldTemplateSystemIndex = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldTemplateSystemIndex })));
 const GoldObjectProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldObjectProofPage })));
 const GoldStoryProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldStoryProofPage })));
+const SandboxGoldRoutes = lazy(() => import("@/pages/labs/SandboxGoldRoutes"));
 
 const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
@@ -73,6 +74,7 @@ export function AppRoutes() {
       <Route path="/labs/gold" element={<Suspense fallback={LabFallback}><GoldTemplateSystemIndex /></Suspense>} />
       <Route path="/labs/gold/object/:slug" element={<Suspense fallback={LabFallback}><GoldObjectProofPage /></Suspense>} />
       <Route path="/labs/gold/story/:slug" element={<Suspense fallback={LabFallback}><GoldStoryProofPage /></Suspense>} />
+      <Route path="/sandbox/gold/*" element={<Suspense fallback={LabFallback}><SandboxGoldRoutes /></Suspense>} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />
       <Route path="/os/labs" element={<LabsOverview />} />
