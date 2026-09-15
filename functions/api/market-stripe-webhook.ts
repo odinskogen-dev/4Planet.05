@@ -34,11 +34,7 @@ type StripeSession = {
   collected_information?: { shipping_details?: ShippingDetails | null } | null;
 };
 type StripeEvent = { id?: string; type?: string; livemode?: boolean; data?: { object?: StripeSession } };
-type ProdigiOrder = {
-  id?: string;
-  merchantReference?: string;
-  status?: { stage?: string; issues?: unknown[] };
-};
+type ProdigiOrder = { id?: string; merchantReference?: string; status?: { stage?: string; issues?: unknown[] } };
 type ProdigiCreate = { outcome?: string; order?: ProdigiOrder };
 
 function shippingFromSession(session: StripeSession) {
@@ -85,8 +81,7 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
     return json({ ok: true, received: true, action: "ignored" });
   }
 
-  const eventSession = event.data?.object;
-  const sessionId = eventSession?.id ?? "";
+  const sessionId = event.data?.object?.id ?? "";
   const expectedPrefix = runtime.isLive ? "cs_live_" : "cs_test_";
   if (!sessionId.startsWith(expectedPrefix)) return json({ ok: false, error: "invalid_market_session" }, 400);
 
@@ -100,9 +95,14 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
   const amountOk = session.amount_total === product.commerce.candidatePriceNok * 100 && session.currency?.toLowerCase() === "nok";
   if (!amountOk) return json({ ok: false, error: "market_amount_mismatch" }, 503);
 
-  if (!runtime.fulfilmentInfrastructureReady || !runtime.prodigiConfigured) {
-    return json({ ok: false, error: "prodigi_fulfilment_not_ready" }, 503);
+  const isCanary = session.metadata?.market_canary === "true";
+  const fulfilmentAllowed = isCanary
+    ? runtime.canaryEnabled && runtime.providerFulfilmentReady
+    : runtime.fulfilmentInfrastructureReady;
+  if (!fulfilmentAllowed || !runtime.prodigiConfigured) {
+    return json({ ok: false, error: isCanary ? "live_canary_fulfilment_not_ready" : "prodigi_fulfilment_not_ready" }, 503);
   }
+
   const recipient = orderRecipient(session);
   if (!recipient) return json({ ok: false, error: "norwegian_shipping_address_missing" }, 503);
   const callbackUrl = prodigiCallbackUrl(env);
@@ -126,6 +126,7 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
       stripeSessionId: sessionId,
       marketProductId: product.id,
       marketEnvironment: runtime.mode,
+      marketCanary: isCanary,
     },
   });
   const prodigi = prodigiResult.payload as ProdigiCreate | null;
@@ -146,6 +147,7 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
   return json({
     ok: true,
     received: true,
+    canary: isCanary,
     paymentState: "PAID",
     fulfilmentState: prodigi?.order?.status?.stage ?? "ORDER_CREATED",
     prodigiOrderId,
