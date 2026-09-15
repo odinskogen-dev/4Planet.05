@@ -1,0 +1,109 @@
+name: AXE live SPECIES + ATLAS repair
+
+on:
+  push:
+    branches:
+      - release/one-interface-sprint2-6bbfebb
+    paths:
+      - .github/workflows/axe-live-species-atlas-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: release/one-interface-sprint2-6bbfebb
+
+      - name: Patch only canonical live source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          router = Path('src/routes/router.tsx')
+          s = router.read_text()
+          old = '''function isAtlasHost() {
+            if (typeof window === "undefined") return false;
+            return window.location.hostname.toLowerCase().replace(/^www\\./, "") === "4planetatlas.com";
+          }
+
+          function RootHome() {
+            if (isAtlasHost()) return <Suspense fallback={WorldFallback}><PublicWorld /></Suspense>;
+            return <Home />;
+          }
+          '''
+          new = '''function canonicalHost() {
+            if (typeof window === "undefined") return "";
+            return window.location.hostname.toLowerCase().replace(/^www\\./, "");
+          }
+
+          function isAtlasHost() {
+            return canonicalHost() === "4planetatlas.com";
+          }
+
+          function isSpeciesHost() {
+            return canonicalHost() === "4species.com";
+          }
+
+          function RootHome() {
+            if (isAtlasHost()) return <Suspense fallback={WorldFallback}><PublicWorld /></Suspense>;
+            if (isSpeciesHost()) return <SpeciesIndex />;
+            return <Home />;
+          }
+
+          function SpeciesCleanProfile() {
+            if (!isSpeciesHost()) return <NotFound />;
+            return <SpeciesRoute curatedElement={<SpeciesProfilePage />} />;
+          }
+          '''
+          if old not in s:
+            raise SystemExit('router host block anchor missing')
+          s = s.replace(old, new, 1)
+          anchor = '      <Route path="/404" element={<NotFound />} />\n'
+          if anchor not in s:
+            raise SystemExit('router 404 anchor missing')
+          if '<Route path="/:slug" element={<SpeciesCleanProfile />} />' not in s:
+            s = s.replace(anchor, '      <Route path="/:slug" element={<SpeciesCleanProfile />} />\n' + anchor, 1)
+          router.write_text(s)
+
+          headers = Path('public/_headers')
+          h = headers.read_text()
+          old_anc = "frame-ancestors 'self' https://4planet.org https://www.4planet.org https://4planetmagazine.com https://www.4planetmagazine.com"
+          new_anc = old_anc + " https://4species.com https://www.4species.com"
+          if old_anc not in h:
+            raise SystemExit('CSP frame-ancestors anchor missing')
+          h = h.replace(old_anc, new_anc)
+          headers.write_text(h)
+          PY
+
+          grep -q 'canonicalHost() === "4species.com"' src/routes/router.tsx
+          grep -q 'path="/:slug" element={<SpeciesCleanProfile />}' src/routes/router.tsx
+          grep -q 'https://4species.com https://www.4species.com' public/_headers
+
+      - name: Build and typecheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Commit repair to the one production branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/routes/router.tsx public/_headers
+          if git diff --cached --quiet; then
+            echo 'Repair already present.'
+            exit 0
+          fi
+          git commit -m 'fix(live): route 4species to SPECIES and harden ATLAS embed'
+          git push origin HEAD:release/one-interface-sprint2-6bbfebb
