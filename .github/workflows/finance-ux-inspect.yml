@@ -1,4 +1,4 @@
-name: 4SAPIEN Finance UX inspect
+name: 4SAPIEN Finance typography restore
 
 on:
   push:
@@ -8,33 +8,57 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  restore:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Materialize Finance and inspect Claude typography
+        with:
+          fetch-depth: 0
+      - name: Patch production Finance typography only
         run: |
           set -euo pipefail
-          rm -rf /tmp/finance-site
-          mkdir -p /tmp/finance-site
-          python products/4sapien/build/apply_finance_route.py /tmp/finance-site/index.html
+          git fetch origin build/ask-embla-live-20260909
+          git checkout -B build/ask-embla-live-20260909 origin/build/ask-embla-live-20260909
           python - <<'PY'
           from pathlib import Path
-          import re
-          s=Path('/tmp/finance-site/app/money/index.html').read_text()
-          print('=== FONT LINKS / IMPORTS ===')
-          for m in re.findall(r'<link[^>]+>|@import[^;]+;',s,re.I):
-              if 'font' in m.lower() or 'google' in m.lower(): print(m)
-          print('=== T TOKENS ===')
-          for pat in [r'const\s+T\s*=\s*\{.*?\};', r'let\s+T\s*=\s*\{.*?\};', r'var\s+T\s*=\s*\{.*?\};']:
-              for m in re.finditer(pat,s,re.S): print(m.group(0)[:5000])
-          print('=== FONT FAMILIES ===')
-          vals=[]
-          for m in re.finditer(r'font(?:-family|Family)?\s*[:=]\s*[^;,}\n]{1,180}',s,re.I):
-              x=m.group(0).strip()
-              if x not in vals: vals.append(x)
-          for x in vals[:120]: print(x)
+          p=Path('products/4sapien/build/apply_finance_route.py')
+          s=p.read_text()
+          if 'AXE_FINANCE_FONT_RESTORE_V1' in s:
+              raise SystemExit('Typography restore already present')
+          anchor="for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):\n"
+          if anchor not in s:
+              raise SystemExit('V3 anchor missing')
+          patch=r'''# AXE_FINANCE_FONT_RESTORE_V1 — restore Claude's original sans-serif typography tokens.
+          # Claude donor tokens: display=Instrument Sans, body=DM Sans, mono=Fragment Mono.
+          font_restore = '<style id="axe-finance-font-restore">#axeFin,#axeFin input,#axeFin select,#axeFin button{font-family:"DM Sans",sans-serif!important}#axeFin h1,#axeFin .big{font-family:"Instrument Sans",sans-serif!important}#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:"Fragment Mono",monospace!important}</style>'
+          experience = experience.replace('</style>', '</style>'+font_restore, 1)
+          if 'axe-finance-font-restore' not in experience:
+              raise SystemExit('Typography restore injection failed')
+          '''
+          s=s.replace(anchor,patch+'\n'+anchor,1)
+          p.write_text(s)
           PY
+
+          rm -rf /tmp/finance-font-fix
+          mkdir -p /tmp/finance-font-fix
+          python products/4sapien/build/apply_finance_route.py /tmp/finance-font-fix/index.html
+          MONEY=/tmp/finance-font-fix/app/money/index.html
+          grep -q 'axe-finance-font-restore' "$MONEY"
+          grep -q 'font-family:"DM Sans",sans-serif!important' "$MONEY"
+          grep -q 'font-family:"Instrument Sans",sans-serif!important' "$MONEY"
+          grep -q 'font-family:"Fragment Mono",monospace!important' "$MONEY"
+          grep -q 'AXE_FINANCE_UX_V3' "$MONEY"
+          grep -q 'Din økonomiske tvilling · 2026' "$MONEY"
+          ! grep -qi 'service_role\|sb_secret_\|SUPABASE_SERVICE_ROLE\|CLOUDFLARE_API_TOKEN' "$MONEY"
+
+      - name: Commit typography-only production fix
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add products/4sapien/build/apply_finance_route.py
+          git commit -m 'fix(4sapien finance): restore Claude sans typography'
+          git push origin HEAD:build/ask-embla-live-20260909
