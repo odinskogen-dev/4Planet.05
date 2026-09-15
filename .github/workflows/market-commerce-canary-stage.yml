@@ -6,6 +6,7 @@ on:
       - axe/market-commerce-pod-multisprint-20260915
     paths:
       - '.github/workflows/market-commerce-canary-stage.yml'
+      - 'workers/4planetmarket-commerce.ts'
 permissions:
   contents: read
 concurrency:
@@ -21,6 +22,7 @@ jobs:
       PRODIGI_LIVE_API_KEY: ${{ secrets.PRODIGI_LIVE_API_KEY }}
       MARKET_UPSTREAM: https://f9588c18.4planet-05.pages.dev
       MARKET_CANARY_PRICE_NOK: '3'
+      MARKET_FOUNDER_SAMPLE_TOKEN_SHA256: 'e0ef053ea165dcc37692ec259d6a5b5a1b0d4a65647083a17285622af5a924c4'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -102,6 +104,7 @@ jobs:
           MARKET_LIVE_RELEASE_APPROVED = "false"
           MARKET_LIVE_CANARY_ENABLED = "true"
           MARKET_CANARY_PRICE_NOK = "$MARKET_CANARY_PRICE_NOK"
+          MARKET_FOUNDER_SAMPLE_TOKEN_SHA256 = "$MARKET_FOUNDER_SAMPLE_TOKEN_SHA256"
           MARKET_PHOTO_SAMPLE_APPROVED = "false"
           MARKET_ART_SAMPLE_APPROVED = "false"
           [[routes]]
@@ -131,4 +134,6 @@ jobs:
           test "$ready" = 1
           public_code=$(curl -sS -o /tmp/public.json -w '%{http_code}' -X POST https://4planetmarket.com/api/market-checkout -H 'content-type: application/json' -H 'origin: https://4planetmarket.com' --data '{"productId":"market:amalie:a14","attemptId":"publicmuststayclosed"}' || true)
           test "$public_code" = 503
-          echo 'PASS — private LIVE canary infrastructure active; public checkout remains fail-closed.'
+          sample_code=$(curl -sS -o /tmp/sample.html -w '%{http_code}' "https://4planetmarket.com/sample/a14?token=invalid" || true)
+          test "$sample_code" = 404
+          echo 'PASS — authenticated founder sample route active; public checkout remains fail-closed.'
