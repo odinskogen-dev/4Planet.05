@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { expect, test } from '@playwright/test';
 import { searchPlaces } from '@/planet/places';
 import { searchSystems } from '@/planet/livingSystems';
 import { authorityOf, sourceKeyOf, typeOf } from '@/planet/ids';
@@ -9,8 +9,8 @@ import { authorityOf, sourceKeyOf, typeOf } from '@/planet/ids';
  * This deliberately tests only canonical local entity classes. Live GBIF taxa
  * remain connector-backed and must not be represented as locally complete.
  */
-describe('ATLAS-04 typed universal search — Proof 01B', () => {
-  it('returns canonical PLACE results with stable identity/source semantics', () => {
+test.describe('ATLAS-04 typed universal search — Proof 01B', () => {
+  test('returns canonical PLACE results with stable identity/source semantics', () => {
     const hit = searchPlaces('Oslo')[0];
     expect(hit).toBeTruthy();
     expect(hit.id).toBeTruthy();
@@ -19,7 +19,7 @@ describe('ATLAS-04 typed universal search — Proof 01B', () => {
     expect(authorityOf(hit.id)).toBeTruthy();
   });
 
-  it('returns canonical LIVING_SYSTEM results without collapsing their type', () => {
+  test('returns canonical LIVING_SYSTEM results without collapsing their type', () => {
     const candidates = ['forest', 'ocean', 'reef', 'fjord', 'river', 'wetland'];
     const hit = candidates.flatMap((q) => searchSystems(q))[0];
     expect(hit).toBeTruthy();
@@ -29,7 +29,7 @@ describe('ATLAS-04 typed universal search — Proof 01B', () => {
     expect(authorityOf(hit.id)).toBeTruthy();
   });
 
-  it('does not fabricate local coverage for unsupported queries', () => {
+  test('does not fabricate local coverage for unsupported queries', () => {
     const impossible = '__4planet_proof01b_unsupported_entity__';
     expect(searchPlaces(impossible)).toEqual([]);
     expect(searchSystems(impossible)).toEqual([]);
