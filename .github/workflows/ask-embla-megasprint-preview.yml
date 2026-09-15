@@ -2,7 +2,7 @@ name: 4SAPIEN FOOD megasprint preview gate
 
 on:
   push:
-    branches: [build/4sapien-food-megasprint-20260910]
+    branches: [build/4sapien-food-megasprint-20260910, build/embla-core-20260914]
     paths:
       - 'products/4sapien/**'
       - '.github/workflows/ask-embla-megasprint-preview.yml'
@@ -10,10 +10,12 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 env:
   SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
   SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+  HUMAN_GOLD_PREVIEW_URL: https://four-sapien-embla-megasprint.odin-skogen.workers.dev/
 
 jobs:
   quality-preview:
@@ -33,14 +35,43 @@ jobs:
           python products/4sapien/build/apply_product_gateway_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_yellow_theme_guard.py products/4sapien/site/index.html
           python products/4sapien/build/apply_theme_switch_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_embla_core_guard.py products/4sapien/site/index.html
+          python products/4sapien/build/apply_human_gold_preview_guard.py products/4sapien/site/index.html
 
-      - name: Syntax + zero-loss + theme QA
+      - name: Human Gold source probe
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('products/4sapien/site/index.html').read_text()
+          print('HUMAN_GOLD_SOURCE_PROBE')
+          for term in ['Ask Embla','function App','function Home','function HumanGoldEmbla','embla-core-preview','four_sapien_embla_memories','four_sapien_set_permission','HUMAN GOLD PREVIEW','SPØR EMBLA']:
+              print('\n###',term)
+              hits=list(re.finditer(re.escape(term),s,re.I))[:6]
+              print('hits',len(hits))
+              for h in hits:
+                  a=max(0,h.start()-700); b=min(len(s),h.end()+1400)
+                  print(s[a:b].replace('\n',' ')[:2200])
+          PY
+
+      - name: Syntax + zero-loss + Human Gold QA
         run: |
           set -euo pipefail
           SITE=products/4sapien/site/index.html
           grep -q 'Ask Embla' "$SITE"
           grep -q '4SAPIEN by 4PLANET' "$SITE"
           grep -q 'functions/v1/embla-products' "$SITE"
+          grep -q 'functions/v1/embla-core-preview' "$SITE"
+          grep -q 'EMBLA HUMAN GOLD 02' "$SITE"
+          grep -q 'FACTS, NOT ADVICE' "$SITE"
+          grep -q 'four_sapien_embla_memories' "$SITE"
+          grep -q 'four_sapien_embla_messages' "$SITE"
+          grep -q 'four_sapien_confirm_memory' "$SITE"
+          grep -q 'four_sapien_delete_memory' "$SITE"
+          grep -q 'four_sapien_supersede_memory' "$SITE"
+          grep -q 'four_sapien_set_permission' "$SITE"
+          grep -q 'read_budget_context' "$SITE"
           grep -q 'four_sapien_profiles' "$SITE"
           grep -q '4SAPIEN YELLOW TEST 02' "$SITE"
           grep -q '4SAPIEN LIGHT DARK 01' "$SITE"
@@ -51,6 +82,11 @@ jobs:
           grep -q '#FFFF00' "$SITE"
           grep -q '#000000' "$SITE"
           grep -q '#111111' "$SITE"
+          grep -q 'HUMAN GOLD PREVIEW' "$SITE"
+          grep -q 'SPØR EMBLA ↑' "$SITE"
+          grep -q 'emailRedirectTo:window.location.origin+"/"' "$SITE"
+          grep -q 'redirectTo:window.location.origin+"/"' "$SITE"
+          grep -q 'id="human-gold-embla"' "$SITE"
           ! grep -q 'world.openfoodfacts.org' "$SITE"
           ! grep -q 'cgi/search.pl' "$SITE"
           ! grep -q 'S4PIENS' "$SITE"
@@ -74,11 +110,46 @@ jobs:
           set -euo pipefail
           for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache; do
             code=$(curl -sS -o /tmp/db.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
-            [ "$code" = 200 ] || { echo "$table HTTP $code"; exit 5; }
+            [ "$code" = 200 ] || { echo "$table expected schema-readable HTTP 200, got $code"; exit 5; }
+          done
+          for table in four_sapien_embla_memories four_sapien_embla_messages four_sapien_permissions; do
+            code=$(curl -sS -o /tmp/private.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            case "$code" in 401|403) ;; *) echo "$table expected anonymous denial, got HTTP $code"; cat /tmp/private.json; exit 5;; esac
           done
           code=$(curl -sS -o /tmp/gateway.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"q":"skinke"}' "${SUPABASE_URL}/functions/v1/embla-products" || true)
           [ "$code" = 401 ] || { echo "gateway boundary HTTP $code"; cat /tmp/gateway.json; exit 6; }
-          curl -fsS -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/auth/v1/settings" | jq -e '(.external.email == true)' >/dev/null
+          core_code=$(curl -sS -o /tmp/core.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"message":"health check"}' "${SUPABASE_URL}/functions/v1/embla-core-preview" || true)
+          [ "$core_code" = 401 ] || { echo "embla core auth boundary HTTP $core_code"; cat /tmp/core.json; exit 7; }
+          curl -fsS -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/auth/v1/settings" | jq -e '(.external.google == true)' >/dev/null
+
+      - name: Verify Supabase preview auth allowlist
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] || { echo 'SUPABASE_ACCESS_TOKEN_MISSING'; exit 31; }
+          endpoint='https://api.supabase.com/v1/projects/ghvdzetmplqkdtfqiror/config/auth'
+          code=$(curl -sS -o /tmp/auth.json -w '%{http_code}' -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" "$endpoint" || true)
+          [ "$code" = 200 ] || { echo "AUTH_CONFIG_GET_HTTP_${code}"; exit 32; }
+          jq -e --arg wanted "$HUMAN_GOLD_PREVIEW_URL" '(.uri_allow_list // "")|split(",")|map(gsub("^ +| +$";""))|index($wanted)!=null' /tmp/auth.json >/dev/null || { echo 'PREVIEW_REDIRECT_NOT_ALLOWLISTED'; exit 33; }
+          echo 'HUMAN_GOLD_AUTH_VERIFY_PASS'
+
+      - name: Ensure Embla model runtime secret
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          npx --yes supabase@latest secrets list --project-ref ghvdzetmplqkdtfqiror > /tmp/secrets.txt
+          if grep -Eq '(^|[[:space:]])OPENAI_API_KEY([[:space:]]|$)' /tmp/secrets.txt; then
+            echo 'SUPABASE_OPENAI_SECRET_PRESENT'
+            exit 0
+          fi
+          [ -n "${OPENAI_API_KEY:-}" ] || { echo 'OPENAI_KEY_MISSING_BOTH_GITHUB_AND_SUPABASE'; exit 42; }
+          npx --yes supabase@latest secrets set --project-ref ghvdzetmplqkdtfqiror OPENAI_API_KEY="$OPENAI_API_KEY" >/dev/null
+          npx --yes supabase@latest secrets list --project-ref ghvdzetmplqkdtfqiror > /tmp/secrets-after.txt
+          grep -Eq '(^|[[:space:]])OPENAI_API_KEY([[:space:]]|$)' /tmp/secrets-after.txt || { echo 'OPENAI_SECRET_SET_VERIFY_FAILED'; exit 43; }
+          echo 'SUPABASE_OPENAI_SECRET_REPAIRED'
 
       - name: Resolve Cloudflare credentials
         id: cf
@@ -110,18 +181,44 @@ jobs:
           url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler.log | tail -n1)
           [ -n "$url" ] || exit 10
           echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "::notice title=4SAPIEN Human Gold Preview::$url"
+          ready=0
           for i in 1 2 3 4 5; do
-            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q '4SAPIEN LIGHT DARK 01' /tmp/site.html; then exit 0; fi
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url" -o /tmp/site.html && grep -q 'HUMAN GOLD PREVIEW' /tmp/site.html && grep -q 'SPØR EMBLA ↑' /tmp/site.html; then ready=1; break; fi
             sleep 2
           done
-          exit 11
+          [ "$ready" = 1 ] || exit 11
+          headers=$(curl -sS -D - -o /tmp/cors-body -X OPTIONS -H "Origin: $url" -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: authorization,apikey,content-type' "${SUPABASE_URL}/functions/v1/embla-core-preview" | tr -d '\r')
+          grep -Fqi "access-control-allow-origin: $url" <<<"$headers" || { echo "Embla Core CORS does not allow isolated preview origin"; echo "$headers"; exit 12; }
+
+      - name: Publish founder-preview commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+        run: |
+          set -euo pipefail
+          payload=$(jq -n --arg state success --arg target_url "$PREVIEW_URL" --arg description "Founder-testable isolated Human Gold preview" --arg context "4SAPIEN Human Gold Preview" '{state:$state,target_url:$target_url,description:$description,context:$context}')
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -d "$payload" >/dev/null
 
       - name: Summary
         if: always()
         run: |
-          echo '## 4SAPIEN FOOD megasprint preview' >> "$GITHUB_STEP_SUMMARY"
+          echo '## 4SAPIEN Embla Human Gold preview' >> "$GITHUB_STEP_SUMMARY"
           echo '- Production custom domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
           echo '- Claude source: preserved' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Preview frontend requests OAuth return to its own origin' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Supabase Auth redirect allowlist: verified via Management API' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Founder-visible Human Gold badge + Ask Embla jump: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Canonical Embla Core seam: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Memory + Food/Finance permission controls: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Private Core tables: anonymous access denied' >> "$GITHUB_STEP_SUMMARY"
           echo '- Search Intelligence 02 candidate tests: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Embla Core unauthenticated boundary: gated at 401' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Isolated preview → Embla Core CORS: gated' >> "$GITHUB_STEP_SUMMARY"
           echo '- Light = Yellow 02; Dark = black/yellow' >> "$GITHUB_STEP_SUMMARY"
           echo "- Preview: ${{ steps.preview.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
