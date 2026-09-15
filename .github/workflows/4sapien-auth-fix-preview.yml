@@ -38,6 +38,7 @@ jobs:
           python products/4sapien/build/apply_meal_plan_guard.py "$FOOD"
           python products/4sapien/build/apply_product_gateway_guard.py "$FOOD"
           python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
+          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
 
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
@@ -64,7 +65,9 @@ jobs:
       - name: Claude Finance typography provenance
         run: |
           set -euo pipefail
-          python products/4sapien/build/audit_finance_typography.py products/4sapien/build/apply_finance_route.py | tee /tmp/font-audit.txt
+          python products/4sapien/build/audit_finance_typography.py \
+            products/4sapien/build/apply_finance_route.py \
+            products/4sapien/site/app/money/index.html | tee /tmp/font-audit.txt
           grep -q 'FINANCE_TYPOGRAPHY_PROVENANCE=PASS' /tmp/font-audit.txt
 
       - name: Zero-loss syntax and route QA
