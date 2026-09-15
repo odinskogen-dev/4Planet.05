@@ -42,6 +42,9 @@ const ActorsIndex = lazy(() => import("@/pages/v5/ActorGold").then((module) => (
 const ActorProfile = lazy(() => import("@/pages/v5/ActorGold").then((module) => ({ default: module.ActorProfilePage })));
 const FindYourWayToHelp = lazy(() => import("@/pages/v5/Participation").then((module) => ({ default: module.FindYourWayToHelp })));
 const EmblaFoodChoice = lazy(() => import("@/pages/sapien/EmblaFoodChoice"));
+const GoldTemplateSystemIndex = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldTemplateSystemIndex })));
+const GoldObjectProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldObjectProofPage })));
+const GoldStoryProofPage = lazy(() => import("@/pages/labs/GoldTemplateSystem").then((module) => ({ default: module.GoldStoryProofPage })));
 
 const WorldFallback = (<div style={{ position: "fixed", inset: 0, background: "#080808" }} />);
 const MagazineFallback = (<div aria-hidden style={{ minHeight: "100vh", background: "#fff" }} />);
@@ -67,6 +70,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/labs" element={<LabsOverview />} />
+      <Route path="/labs/gold" element={<Suspense fallback={LabFallback}><GoldTemplateSystemIndex /></Suspense>} />
+      <Route path="/labs/gold/object/:slug" element={<Suspense fallback={LabFallback}><GoldObjectProofPage /></Suspense>} />
+      <Route path="/labs/gold/story/:slug" element={<Suspense fallback={LabFallback}><GoldStoryProofPage /></Suspense>} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
       <Route path="/os" element={<LabsOverview />} />
       <Route path="/os/labs" element={<LabsOverview />} />
