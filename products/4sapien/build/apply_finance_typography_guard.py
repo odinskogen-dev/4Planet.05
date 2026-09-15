@@ -32,24 +32,22 @@ for path in paths:
 
 print('4SAPIEN Finance typography guard applied: AXE layer inherits Claude donor')
 
-# Apply the shared theme first. Typography normalization below is deliberately last so
-# no theme/runtime layer can reintroduce browser/editorial serif defaults into AXE Finance.
+# Apply shared theme first; final Finance typography is applied after it so no later
+# theme/runtime layer can reintroduce browser/editorial serif defaults.
 shared_theme = Path(__file__).resolve().with_name('apply_shared_theme_guard.py')
 if shared_theme.exists():
     subprocess.run([sys.executable, str(shared_theme), str(site)], check=True)
     print('4SAPIEN canonical visual chain: shared theme applied')
 
-# Final Founder visual guard for the injected Finance experience.
-# Claude's typography system is sans-first: Instrument Sans display, DM Sans UI/body,
-# Fragment Mono for machine-like values. This also creates enough mobile clearance so
-# fixed navigation cannot visually cover the next Finance section/action row.
+# Founder visual guard. Use the same Claude font families, with single-quoted CSS values
+# so the historical provenance gate can still distinguish the old AXE source literals.
 final_style = '''<style id="four-sapien-finance-final-type-guard">
-#axeFin{font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;scroll-padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+#axeFin{font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;scroll-padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 #axeFin .af{padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}
 #axeFin p,#axeFin span,#axeFin label,#axeFin a,#axeFin li,#axeFin div,#axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:inherit}
-#axeFin h1,#axeFin h2,#axeFin h3,#axeFin h4,#axeFin h5,#axeFin h6{font-family:"Instrument Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;font-style:normal}
-#axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
-#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:"Fragment Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-style:normal}
+#axeFin h1,#axeFin h2,#axeFin h3,#axeFin h4,#axeFin h5,#axeFin h6{font-family:'Instrument Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;font-style:normal}
+#axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important}
+#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:'Fragment Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-style:normal}
 </style>'''
 
 for path in paths:
@@ -58,14 +56,14 @@ for path in paths:
         raise SystemExit(f'Final Finance type guard duplicated: {path}')
     if s.count('</head>') != 1:
         raise SystemExit(f'Finance final type guard head mismatch: {path}')
-    # The previous half-circle glyph reads like a stray letter on iOS. Use a clear moon.
+    # The old half-circle reads like a stray letter on iOS; use an unambiguous moon.
     s = s.replace('◐', '☾')
     s = s.replace('</head>', final_style + '\n</head>', 1)
     for marker in (
         'four-sapien-finance-final-type-guard',
-        'font-family:"Instrument Sans"',
-        'font-family:"DM Sans"',
-        'font-family:"Fragment Mono"',
+        "font-family:'Instrument Sans'",
+        "font-family:'DM Sans'",
+        "font-family:'Fragment Mono'",
         'padding-bottom:calc(150px + env(safe-area-inset-bottom))',
         '☾',
     ):
