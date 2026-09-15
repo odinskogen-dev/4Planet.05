@@ -5,10 +5,15 @@ import { createNightShiftPortfolio, NIGHT_SHIFT_PROJECT_ID } from "./nightShiftP
 const TEST_SHA = "a".repeat(40);
 const FACTORY_SHA = "b".repeat(40);
 
-test("night shift is one existing FACTORY_ACTIVE_01 projection with seven read-only CORE packages", () => {
+const CURRENT_ATLAS_STATE_URL = "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18";
+
+test("night shift is one existing FACTORY_ACTIVE_01 projection with eight read-only CORE packages", () => {
   const queue = createNightShiftPortfolio(TEST_SHA, FACTORY_SHA, "2026-09-09T00:00:00.000Z");
   assert.deepEqual(queue.projects.map((project) => project.id), [NIGHT_SHIFT_PROJECT_ID]);
-  assert.equal(queue.packages.length, 7);
+  assert.equal(queue.packages.length, 8);
+  assert.equal(queue.packages[0].title, "ATLAS post-LIVE home-embed state mobile 390");
+  assert.equal(queue.packages[0].execution?.targetUrl, CURRENT_ATLAS_STATE_URL);
+  assert.equal(queue.packages[0].execution?.viewport?.width, 390);
   for (const pkg of queue.packages) {
     assert.equal(pkg.projectId, NIGHT_SHIFT_PROJECT_ID);
     assert.equal(pkg.section, "CODE_QA");
