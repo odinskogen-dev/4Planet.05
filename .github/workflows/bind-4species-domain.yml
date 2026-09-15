@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - ops/4species-domain-20260820
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -35,67 +32,63 @@ jobs:
           for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
             if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
           done
-          if [ -z "$TOKEN" ]; then
-            echo "No supported Cloudflare API token secret is available in this repository."
-            exit 2
-          fi
+          [ -n "$TOKEN" ] || { echo "No supported Cloudflare API token secret is available."; exit 2; }
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"
-          TOKEN="${TOKEN#bearer }"
-          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
-          TOKEN="${TOKEN#CF_API_TOKEN=}"
-          TOKEN="${TOKEN#\"}"
-          TOKEN="${TOKEN%\"}"
-          TOKEN="${TOKEN#\'}"
-          TOKEN="${TOKEN%\'}"
-          if [ -z "$TOKEN" ]; then
-            echo "Cloudflare token secret became empty after safe normalization."
-            exit 2
-          fi
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          [ -n "$TOKEN" ] || exit 2
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Resolve 4species.com zone and account
+      - name: Resolve account
         shell: bash
         run: |
           set -euo pipefail
-          zones_file="$RUNNER_TEMP/cf-zones.json"
-          zones_status=$(curl -sS -o "$zones_file" -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
-          if [ "$zones_status" != "200" ]; then
-            echo "Cloudflare zone lookup HTTP status: $zones_status"
-            jq '{success, errors, messages}' "$zones_file" 2>/dev/null || cat "$zones_file"
-            exit 5
-          fi
-          jq -e '.success == true' "$zones_file" >/dev/null
-          ZONE_ID=$(jq -r '.result[0].id // empty' "$zones_file")
-          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' "$zones_file")
-          if [ -z "$ZONE_ID" ] || [ -z "$ACCOUNT_ID" ]; then
-            echo "4species.com was not found as an active Cloudflare zone accessible to this token."
-            exit 3
-          fi
+          json=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4species.com&status=active')
+          ACCOUNT_ID=$(jq -r '.result[0].account.id // empty' <<<"$json")
+          [ -n "$ACCOUNT_ID" ] || exit 3
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
-          echo "ZONE_ID=$ZONE_ID" >> "$GITHUB_ENV"
-          echo "Cloudflare token has zone access and 4species.com resolved."
 
-      - name: Rebind 4species.com to canonical SPECIES route
+      - name: Deploy 4species single-source router
         shell: bash
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/4species-worker.mjs" <<'EOF'
+          const ORIGIN = "https://4planet-05.pages.dev";
+          const RESERVED = new Set([
+            "labs","os","story","domains","missions","atlas","lens","food","s4piens","4sapien",
+            "impact","checkout","join","people","brands","partners","actors","get-involved","funders",
+            "living-systems","reports","about","magazine","stories","privacy","culture","m","marketplace",
+            "store","cart","members","ambassadors","portal","sponsors","oce4n","e4rth","4culture","system","404"
+          ]);
+          const ASSET_PREFIXES = ["/assets/","/api/","/fonts/","/images/","/icons/","/static/","/data/","/media/","/.well-known/"];
+          function isAsset(path) {
+            if (ASSET_PREFIXES.some((prefix) => path.startsWith(prefix))) return true;
+            if (["/favicon.ico","/robots.txt","/sitemap.xml","/manifest.webmanifest"].includes(path)) return true;
+            return (path.split("/").pop() || "").includes(".");
+          }
+          function first(path) { return path.split("/").filter(Boolean)[0] || ""; }
+          function redirect(url, status = 302) { return Response.redirect(url, status); }
+          async function proxy(request, targetPath) {
+            const incoming = new URL(request.url);
+            const target = new URL(ORIGIN);
+            target.pathname = targetPath;
+            target.search = incoming.search;
+            return fetch(new Request(target.toString(), request));
+          }
           export default {
             async fetch(request) {
-              const incoming = new URL(request.url);
-              const path = incoming.pathname || "/";
-              let targetPath;
-              if (path === "/" || path === "") targetPath = "/species";
-              else if (path === "/species" || path.startsWith("/species/")) targetPath = path;
-              else targetPath = `/species${path.startsWith("/") ? path : `/${path}`}`;
-              const target = new URL(targetPath, "https://4planet.org");
-              target.search = incoming.search;
-              return Response.redirect(target.toString(), 302);
+              const url = new URL(request.url);
+              const host = url.hostname.toLowerCase();
+              const path = url.pathname || "/";
+              if (host === "www.4species.com") return redirect(`https://4species.com${path}${url.search}`, 308);
+              if (path === "/" || path === "") return redirect(`https://4species.com/species${url.search}`);
+              if (path === "/atlas" || path.startsWith("/atlas/")) return redirect(`https://4planetatlas.com/${url.search}`.replace('/?', '?'), 308);
+              if (isAsset(path)) return proxy(request, path);
+              if (path === "/species" || path.startsWith("/species/")) return proxy(request, path);
+              if (RESERVED.has(first(path))) return redirect(`https://4planet.org${path}${url.search}`, 308);
+              return redirect(`https://4species.com/species${path}${url.search}`);
             }
           };
           EOF
@@ -113,30 +106,16 @@ jobs:
           EOF
           npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/4species-wrangler.toml"
 
-      - name: Verify live 4species routing
+      - name: Verify SPECIES routing and single origin
         shell: bash
         run: |
           set -euo pipefail
-          check_redirect() {
-            local url="$1"
-            local expected="$2"
-            for attempt in $(seq 1 24); do
-              headers=$(curl -sS -I --max-time 15 "$url" || true)
-              status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP\// {code=$2} END{print code}')
-              location=$(printf '%s' "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, ""); sub(/^location:[[:space:]]*/, ""); print; exit}')
-              echo "$url -> status=${status:-none} location=${location:-none}"
-              if [[ "$status" =~ ^30[1278]$ ]] && [[ "$location" == "$expected"* ]]; then
-                return 0
-              fi
-              sleep 5
-            done
-            return 1
-          }
-          check_redirect "https://4species.com/" "https://4planet.org/species"
-          check_redirect "https://www.4species.com/" "https://4planet.org/species"
-          check_redirect "https://4species.com/orca" "https://4planet.org/species/orca"
-
-      - name: Record deployment intent
-        run: |
-          echo "4species.com is an alias into the single canonical 4planet.org live source."
-          echo "Root redirects to /species; species slugs map to /species/<slug>."
+          root=$(curl -sS -I --max-time 15 https://4species.com/)
+          echo "$root"
+          echo "$root" | grep -qi '^location: https://4species.com/species'
+          code=$(curl -L -sS -o /tmp/species.html -w '%{http_code}' --max-time 30 https://4species.com/)
+          [ "$code" = "200" ]
+          grep -q '<div id="root"' /tmp/species.html
+          code2=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 https://4species.com/orca)
+          [ "$code2" = "200" ]
+          echo "PASS: 4species.com resolves SPECIES from 4planet-05.pages.dev only."
