@@ -22,26 +22,13 @@ jobs:
           rm -rf /tmp/finance-site
           mkdir -p /tmp/finance-site
           python products/4sapien/build/apply_finance_route.py /tmp/finance-site/index.html
-      - name: Inspect active Finance layer
+      - name: Inspect active Finance shell
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           s=Path('/tmp/finance-site/app/money/index.html').read_text()
-          print('SIZE', len(s))
-          for label, pat in [
-            ('AXE STYLE', r'<style id="axe-finance-style">.*?</style>'),
-            ('MONEY FN', r'function money\([^}]+\}'),
-            ('LIQUID FN', r'function liquid\([^}]+\}'),
-            ('ASSETS FN', r'function assets\([^}]+\}'),
-            ('DEBT FN', r'function debt\([^}]+\}'),
-            ('REG FN', r'function reg\([^}]+\}'),
-            ('PROJECTED FN', r'function projected\(.*?function months'),
-            ('MONTHS FN', r'function months\(.*?function q\('),
-            ('BIND FN', r'function bind\(.*?function guess'),
-            ('OVERVIEW FN', r'function overview\(.*?function opts'),
-          ]:
-            print('\n===', label, '===')
-            m=re.search(pat,s,re.S)
-            print((m.group(0) if m else 'NOT FOUND')[:12000])
+          for term in ['AXE_FINANCE_EXPERIENCE_V2','id="axeFin"','function months()']:
+            i=s.find(term)
+            print('\n===',term,'===')
+            print(s[max(0,i-3500):i+10000] if i>=0 else 'NOT FOUND')
           PY
