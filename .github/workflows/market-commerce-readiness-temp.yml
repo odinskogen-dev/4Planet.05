@@ -1,0 +1,71 @@
+name: TEMP Market commerce readiness
+on:
+  push:
+    branches:
+      - axe/market-commerce-pod-multisprint-20260915
+    paths:
+      - '.github/workflows/market-commerce-readiness-temp.yml'
+permissions:
+  contents: read
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      STRIPE_LIVE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET_LIVE: ${{ secrets.STRIPE_WEBHOOK_SECRET_LIVE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PRODIGI_API_KEY: ${{ secrets.PRODIGI_API_KEY }}
+      PRODIGI_LIVE_API_KEY: ${{ secrets.PRODIGI_LIVE_API_KEY }}
+      PRODIGI_SANDBOX_API_KEY: ${{ secrets.PRODIGI_SANDBOX_API_KEY }}
+      PRODIGI_TEST_API_KEY: ${{ secrets.PRODIGI_TEST_API_KEY }}
+      PWINTY_API_KEY: ${{ secrets.PWINTY_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret presence — names only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in STRIPE_LIVE_SECRET_KEY STRIPE_WEBHOOK_SECRET_LIVE SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY PRODIGI_API_KEY PRODIGI_LIVE_API_KEY PRODIGI_SANDBOX_API_KEY PRODIGI_TEST_API_KEY PWINTY_API_KEY; do
+            if [ -n "${!key:-}" ]; then echo "PRESENT $key"; else echo "MISSING $key"; fi
+          done
+      - name: Stripe read-only account probe
+        if: env.STRIPE_LIVE_SECRET_KEY != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${STRIPE_LIVE_SECRET_KEY}" != ''
+          echo "::add-mask::$STRIPE_LIVE_SECRET_KEY"
+          code=$(curl -sS -o "$RUNNER_TEMP/stripe.json" -w '%{http_code}' https://api.stripe.com/v1/account -u "$STRIPE_LIVE_SECRET_KEY:")
+          echo "STRIPE_HTTP=$code"
+          test "$code" = '200'
+          jq -r '"STRIPE_ACCOUNT=" + (.id // "unknown"), "STRIPE_COUNTRY=" + (.country // "unknown"), "STRIPE_CHARGES_ENABLED=" + ((.charges_enabled // false)|tostring), "STRIPE_PAYOUTS_ENABLED=" + ((.payouts_enabled // false)|tostring)' "$RUNNER_TEMP/stripe.json"
+      - name: Resolve Prodigi key and probe product read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY=''; SOURCE=''; BASE=''
+          for name in PRODIGI_LIVE_API_KEY PRODIGI_API_KEY PRODIGI_SANDBOX_API_KEY PRODIGI_TEST_API_KEY PWINTY_API_KEY; do
+            value="${!name:-}"
+            if [ -n "$value" ]; then KEY="$value"; SOURCE="$name"; break; fi
+          done
+          if [ -z "$KEY" ]; then echo 'PRODIGI_PRESENT=false'; exit 0; fi
+          echo "::add-mask::$KEY"
+          case "$SOURCE" in
+            PRODIGI_SANDBOX_API_KEY|PRODIGI_TEST_API_KEY) BASE='https://api.sandbox.prodigi.com' ;;
+            *) BASE='https://api.prodigi.com' ;;
+          esac
+          code=$(curl -sS -o "$RUNNER_TEMP/prodigi.json" -w '%{http_code}' "$BASE/v4.0/products/GLOBAL-FAP-16X24" -H "X-API-Key: $KEY")
+          echo "PRODIGI_PRESENT=true"
+          echo "PRODIGI_SOURCE=$SOURCE"
+          echo "PRODIGI_HTTP=$code"
+          if [ "$code" = '200' ]; then jq -r '"PRODIGI_SKU=" + (.product.sku // "unknown"), "PRODIGI_DESCRIPTION=" + (.product.description // "unknown")' "$RUNNER_TEMP/prodigi.json"; fi
+      - name: Print asset dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'ODIN ASSETS'
+          for f in public/market/odin/*.jpg; do identify -format '%f %wx%h\n' "$f"; done
+          echo 'AMALIE ASSETS'
+          for f in public/market/amalie/*.jpg; do identify -format '%f %wx%h\n' "$f"; done
