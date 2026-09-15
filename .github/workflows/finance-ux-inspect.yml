@@ -1,0 +1,53 @@
+name: 4SAPIEN Finance UX inspect
+
+on:
+  push:
+    branches: [finance-ux-20260915]
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/finance-ux-inspect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize Finance
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/finance-site
+          mkdir -p /tmp/finance-site
+          python products/4sapien/build/apply_finance_route.py /tmp/finance-site/index.html
+      - name: Inspect current UX seams
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/finance-site/app/money/index.html')
+          s=p.read_text()
+          print('SIZE', len(s))
+          for term in ['Oversikt','Frihet','Legg til','Hendelser','AAP','Utleid','MAT','Likviditet','likviditet','gjeld','eiendeler','konto','category','recurring']:
+              print('\n=== TERM:', term, '===')
+              found=False
+              for m in list(re.finditer(re.escape(term), s, re.I))[:6]:
+                  found=True
+                  a=max(0,m.start()-900); b=min(len(s),m.end()+1400)
+                  print(s[a:b].replace('\n',' ')[:2600])
+                  print('\n---')
+              if not found: print('NOT FOUND')
+          print('\n=== BUTTONS ===')
+          for x in re.findall(r'<button[^>]*>(.*?)</button>', s, re.S|re.I)[:120]:
+              t=re.sub('<[^>]+>',' ',x); t=re.sub(r'\s+',' ',t).strip()
+              if t: print(t[:220])
+          print('\n=== INPUTS ===')
+          for x in re.findall(r'<input[^>]{0,500}>', s, re.I)[:120]: print(x)
+          print('\n=== REACT COMPONENT/FUNCTION HINTS ===')
+          names=[]
+          for pat in [r'function\s+([A-Za-z_$][\w$]{2,})\s*\(', r'const\s+([A-Za-z_$][\w$]{2,})\s*=\s*\(']:
+              names += re.findall(pat,s)
+          print('\n'.join(dict.fromkeys(names)))
+          PY
