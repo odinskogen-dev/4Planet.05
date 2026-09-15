@@ -31,19 +31,20 @@ jobs:
           rm -rf "$SITE"
           mkdir -p "${SITE}/app/food" "${SITE}/app"
 
-          # Founder-selected latest Claude public front.
-          cp products/4sapien/source/claude-front-20260915.html "${SITE}/index.html"
+          # Latest Claude public front v2, integrated without shipping its local demo app.
+          python products/4sapien/build/apply_front_v2_release.py \
+            products/4sapien/source/claude-front-20260915-v2.html \
+            "${SITE}/index.html"
 
-          # Preserve the full existing Claude Food / Ask Embla product and its proven runtime guards.
+          # Preserve the full existing Claude Food / Ask Embla product and proven runtime guards.
           cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > "$FOOD"
           python products/4sapien/build/apply_provider_guard.py "$FOOD"
           python products/4sapien/build/apply_meal_plan_guard.py "$FOOD"
           python products/4sapien/build/apply_product_gateway_guard.py "$FOOD"
 
-          # Materialize the full Claude Finance donor against the shared Supabase runtime.
+          # Preserve the full Claude Finance donor against the shared Supabase runtime.
           python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
 
-          # Shared Cloudflare headers + compatibility redirect into the authenticated product.
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
           cat > "${SITE}/app/index.html" <<'HTML'
@@ -57,18 +58,25 @@ jobs:
           FOOD=products/4sapien/site/app/food/index.html
           MONEY=products/4sapien/site/app/money/index.html
 
-          # Public front: latest Claude front, real routes, honest demo/privacy treatment.
+          # Public front v2.
           grep -q '<title>4SAPIEN — See your life clearly.</title>' "$ROOT"
           grep -q 'See your life clearly.' "$ROOT"
+          grep -q 'Food × Money · together' "$ROOT"
+          grep -q 'Plan my food until payday.' "$ROOT"
           grep -q 'illustrative demo' "$ROOT"
           grep -q '/app/food/' "$ROOT"
           grep -q '/app/money/' "$ROOT"
           grep -q '#2E2EFF' "$ROOT"
-          grep -q '#0A0A0A' "$ROOT"
+          grep -q '#3AE86F' "$ROOT"
+          grep -q '#FF4D22' "$ROOT"
+          grep -q '#FF5ACD' "$ROOT"
           grep -q 'Your data is used to provide your 4SAPIEN experience.' "$ROOT"
+          grep -q 'id="method"' "$ROOT"
+          grep -q 'id="privacy"' "$ROOT"
           ! grep -q 'function openApp' "$ROOT"
+          ! grep -q 'id="app"' "$ROOT"
 
-          # Food / Ask Embla: preserve proven product state and shared Auth/data seams.
+          # Food / Ask Embla.
           grep -q 'Ask Embla' "$FOOD"
           grep -q '4SAPIEN by 4PLANET' "$FOOD"
           grep -q 'four_sapien_profiles' "$FOOD"
@@ -86,7 +94,7 @@ jobs:
           ! grep -q 'world.openfoodfacts.org' "$FOOD"
           ! grep -q 'cgi/search.pl' "$FOOD"
 
-          # Money: full Claude donor, persistent shared runtime, canonical One Product route.
+          # Money.
           grep -q '<title>4SAPIEN Finance — Embla</title>' "$MONEY"
           grep -q '4SAPIEN by 4PLANET' "$MONEY"
           grep -q 'four_sapien_finance_accounts' "$MONEY"
@@ -95,10 +103,8 @@ jobs:
           grep -q 'ghvdzetmplqkdtfqiror.supabase.co' "$MONEY"
           grep -q 'sb.auth.getSession()' "$MONEY"
 
-          # Never ship privileged server credentials in any browser surface.
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
 
-          # Syntax-check the existing React/Babel Food surface.
           python - <<'PY'
           import re, pathlib
           s=pathlib.Path('products/4sapien/site/app/food/index.html').read_text()
@@ -178,7 +184,7 @@ jobs:
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
             root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'See your life clearly.' /tmp/root.html && grep -q 'illustrative demo' /tmp/root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Food × Money · together' /tmp/root.html && grep -q 'illustrative demo' /tmp/root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'four_sapien_finance_accounts' /tmp/money.html && grep -q 'four_sapien_finance_events' /tmp/money.html && money_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
@@ -213,7 +219,7 @@ jobs:
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
             root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'See your life clearly.' /tmp/prod-root.html && grep -q 'illustrative demo' /tmp/prod-root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Food × Money · together' /tmp/prod-root.html && grep -q 'illustrative demo' /tmp/prod-root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'four_sapien_finance_accounts' /tmp/prod-money.html && grep -q 'four_sapien_finance_events' /tmp/prod-money.html && money_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
@@ -227,7 +233,8 @@ jobs:
         run: |
           {
             echo '## 4SAPIEN One Product production gate'
-            echo '- Latest Claude public front: PASS'
+            echo '- Claude public front v2: PASS'
+            echo '- Food × Money cross-world proposition: PASS'
             echo '- Full Food / Ask Embla donor preserved: PASS'
             echo '- Full Finance donor at /app/money/: PASS'
             echo '- Browser-secret scan: PASS'
