@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 import sys
 
 if len(sys.argv) != 2:
@@ -30,3 +31,10 @@ for path in paths:
     path.write_text(s, encoding='utf-8')
 
 print('4SAPIEN Finance typography guard applied: AXE layer inherits Claude donor')
+
+# This is the final visual normalization point in the canonical One Product build.
+# Apply the single shared theme only after Claude Finance typography has been restored.
+shared_theme = Path(__file__).resolve().with_name('apply_shared_theme_guard.py')
+if shared_theme.exists():
+    subprocess.run([sys.executable, str(shared_theme), str(site)], check=True)
+    print('4SAPIEN canonical visual chain: shared theme applied')
