@@ -5,6 +5,7 @@ import { createNightShiftPortfolio, NIGHT_SHIFT_PROJECT_ID } from "./nightShiftP
 const TEST_SHA = "a".repeat(40);
 const FACTORY_SHA = "b".repeat(40);
 
+// Current high-value first package: prove the exact post-LIVE ATLAS state used by the home embed.
 const CURRENT_ATLAS_STATE_URL = "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18";
 
 test("night shift is one existing FACTORY_ACTIVE_01 projection with eight read-only CORE packages", () => {
