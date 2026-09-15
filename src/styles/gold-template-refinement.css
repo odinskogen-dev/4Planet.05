@@ -1,0 +1,417 @@
+/* 4PLANET Gold Template Refinement 02
+   Founder review only. Shared truth grammar, distinct object compositions.
+   Brand OS: white / black primary surfaces, 4PLANET Blue #2E2EFF,
+   Brand Red #FF4D22, Earth Green #3AE86F.
+*/
+
+.gold-sandbox-frame {
+  --4p-paper: #ffffff;
+  --4p-ink: #0a0a0a;
+  --4p-blue: #2e2eff;
+  --4p-red: #ff4d22;
+  --4p-green: #3ae86f;
+  --4p-line: rgba(10, 10, 10, 0.16);
+  --4p-line-strong: rgba(10, 10, 10, 0.34);
+  --4p-muted: #5d5d5d;
+  --4p-soft: #f7f7f5;
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  min-height: 100vh;
+  font-family: "DM Sans", Arial, sans-serif;
+}
+
+html[data-gold-theme="dark"] .gold-sandbox-frame {
+  --4p-paper: #0a0a0a;
+  --4p-ink: #ffffff;
+  --4p-line: rgba(255, 255, 255, 0.18);
+  --4p-line-strong: rgba(255, 255, 255, 0.38);
+  --4p-muted: #a9a9a9;
+  --4p-soft: #111111;
+}
+
+.gold-sandbox-frame .gold-index,
+.gold-sandbox-frame .gold-object,
+.gold-sandbox-frame .gold-story {
+  --gold-paper: var(--4p-paper);
+  --gold-ink: var(--4p-ink);
+  --gold-line: var(--4p-line);
+  --gold-muted: var(--4p-muted);
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  font-family: "DM Sans", Arial, sans-serif;
+}
+
+.gold-sandbox-frame .gold-theme-toggle {
+  position: fixed;
+  z-index: 1200;
+  top: 108px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--4p-line-strong);
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  font: 500 9px/1 "Fragment Mono", ui-monospace, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.gold-sandbox-frame .gold-theme-toggle::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: inset 4px 0 0 var(--4p-paper);
+}
+
+.gold-sandbox-frame .gold-theme-toggle:hover { transform: translateY(-1px); }
+.gold-sandbox-frame .gold-theme-toggle:focus-visible { outline: 2px solid var(--4p-blue); outline-offset: 3px; }
+
+/* Canonical typography: Instrument Sans / DM Sans / Fragment Mono only. */
+.gold-sandbox-frame .gold-index h1,
+.gold-sandbox-frame .gold-index h2,
+.gold-sandbox-frame .gold-index h3,
+.gold-sandbox-frame .gold-object h1,
+.gold-sandbox-frame .gold-object h2,
+.gold-sandbox-frame .gold-object h3,
+.gold-sandbox-frame .gold-story h1,
+.gold-sandbox-frame .gold-story h2,
+.gold-sandbox-frame .gold-story h3,
+.gold-sandbox-frame .actor-gold h1,
+.gold-sandbox-frame .actor-gold h2,
+.gold-sandbox-frame .actor-gold h3 {
+  font-family: "Instrument Sans", "DM Sans", Arial, sans-serif;
+  font-weight: 400;
+}
+
+.gold-sandbox-frame .gold-object-sci,
+.gold-sandbox-frame .gold-story-dek,
+.gold-sandbox-frame .gold-story-section p:not(.gold-kicker),
+.gold-sandbox-frame .gold-story-section .gold-story-lead {
+  font-family: "DM Sans", Arial, sans-serif !important;
+  font-style: normal;
+}
+
+.gold-sandbox-frame .gold-object-sci { letter-spacing: -.02em; }
+.gold-sandbox-frame .gold-story-dek,
+.gold-sandbox-frame .gold-story-section p:not(.gold-kicker) { color: var(--4p-ink); }
+
+/* Remove the warm-grey prototype surface everywhere. */
+.gold-sandbox-frame .gold-index-hero,
+.gold-sandbox-frame .gold-index-contract,
+.gold-sandbox-frame .gold-index-proof,
+.gold-sandbox-frame .gold-object-hero,
+.gold-sandbox-frame .gold-facts,
+.gold-sandbox-frame .gold-object-story,
+.gold-sandbox-frame .gold-relationships,
+.gold-sandbox-frame .gold-sources,
+.gold-sandbox-frame .gold-next,
+.gold-sandbox-frame .gold-story-head,
+.gold-sandbox-frame .gold-story-body,
+.gold-sandbox-frame .gold-story-grammar,
+.gold-sandbox-frame .gold-story-numbers {
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+}
+
+.gold-sandbox-frame .gold-donor-note {
+  background: var(--4p-soft);
+  color: var(--4p-ink);
+}
+.gold-sandbox-frame .gold-donor-note p { color: var(--4p-muted); }
+
+.gold-sandbox-frame .gold-index-hero > p:last-child,
+.gold-sandbox-frame .gold-index-links p,
+.gold-sandbox-frame .gold-standfirst,
+.gold-sandbox-frame .gold-facts article > small,
+.gold-sandbox-frame .gold-source-row p,
+.gold-sandbox-frame .gold-source-row small,
+.gold-sandbox-frame .gold-source-row time,
+.gold-sandbox-frame .gold-story-head__identity span,
+.gold-sandbox-frame .gold-story-byline,
+.gold-sandbox-frame .gold-story-numbers small {
+  color: var(--4p-muted);
+}
+
+/* One shared object frame, but not one generic page. */
+.gold-sandbox-frame .gold-object-hero {
+  min-height: min(900px, 86svh);
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+  border-bottom: 1px solid var(--4p-line);
+}
+
+.gold-sandbox-frame .gold-object-hero__copy {
+  padding: clamp(64px, 8vw, 124px) clamp(24px, 6vw, 92px);
+}
+
+.gold-sandbox-frame .gold-object-hero h1 {
+  max-width: 900px;
+  font-size: clamp(64px, 9vw, 148px);
+  line-height: .84;
+  letter-spacing: -.065em;
+}
+
+.gold-sandbox-frame .gold-standfirst {
+  max-width: 720px;
+  font-size: clamp(18px, 1.65vw, 23px);
+  line-height: 1.5;
+}
+
+.gold-sandbox-frame .gold-object-state {
+  max-width: 720px;
+  padding-top: 18px;
+  border-top: 1px solid var(--4p-line);
+}
+
+.gold-sandbox-frame .gold-object-visual {
+  min-height: 620px;
+  border-left: 1px solid var(--4p-line);
+  background: #0a0a0a;
+}
+
+.gold-sandbox-frame .gold-object-visual__grid {
+  opacity: .12;
+  background-size: 12.5% 12.5%;
+}
+
+.gold-sandbox-frame .gold-object-visual--ocean,
+.gold-sandbox-frame .gold-object-visual--fjord,
+.gold-sandbox-frame .gold-object-visual--meadow {
+  background: #0a0a0a;
+}
+
+.gold-sandbox-frame .gold-whale-line { border-top-color: #71dcff; filter: none; }
+.gold-sandbox-frame .gold-fjord-shore { background: #ffffff; opacity: .08; }
+.gold-sandbox-frame .gold-fjord-water {
+  inset: 8% 22%;
+  background: var(--4p-blue);
+  opacity: .35;
+  clip-path: polygon(38% 0, 78% 0, 66% 19%, 83% 35%, 63% 50%, 78% 68%, 55% 100%, 33% 100%, 44% 77%, 29% 60%, 43% 42%, 31% 24%);
+}
+.gold-sandbox-frame .gold-meadow span { background: var(--4p-green); opacity: .74; }
+
+.gold-sandbox-frame .gold-facts {
+  border-bottom: 1px solid var(--4p-line);
+}
+.gold-sandbox-frame .gold-facts article {
+  min-height: 185px;
+  border-color: var(--4p-line);
+  background: var(--4p-paper);
+}
+.gold-sandbox-frame .gold-facts article > strong { font-weight: 400; }
+
+.gold-sandbox-frame .gold-object-story {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.gold-sandbox-frame .gold-object-section { border-color: var(--4p-line); }
+.gold-sandbox-frame .gold-object-section h2 { font-weight: 400; }
+.gold-sandbox-frame .gold-object-section__body > p:not(.gold-kicker) { color: var(--4p-ink); }
+
+.gold-sandbox-frame .gold-relationships,
+.gold-sandbox-frame .gold-sources,
+.gold-sandbox-frame .gold-next { border-color: var(--4p-line); }
+.gold-sandbox-frame .gold-relationship-list,
+.gold-sandbox-frame .gold-source-list,
+.gold-sandbox-frame .gold-next-list,
+.gold-sandbox-frame .gold-relationship-row,
+.gold-sandbox-frame .gold-source-row,
+.gold-sandbox-frame .gold-next-list a { border-color: var(--4p-line); }
+
+.gold-sandbox-frame .gold-truth {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+.gold-sandbox-frame .gold-truth > p { color: rgba(255,255,255,.78); }
+.gold-sandbox-frame .gold-truth .gold-kicker { color: var(--4p-green); }
+
+/* Kind accents are canonical 4PLANET colours, not invented one-off colours. */
+.gold-sandbox-kind--species .gold-object,
+.gold-sandbox-kind--place .gold-object,
+.gold-sandbox-kind--living-system .gold-object { --gold-accent: var(--4p-blue) !important; }
+.gold-sandbox-kind--solution .gold-object { --gold-accent: var(--4p-green) !important; }
+.gold-sandbox-kind--signal .gold-object { --gold-accent: var(--4p-red) !important; }
+.gold-sandbox-kind--proof .gold-object { --gold-accent: var(--4p-green) !important; }
+
+/* SPECIES — field guide + scale. Large identity, compact evidence ledger. */
+.gold-sandbox-kind--species .gold-object-hero { grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr); }
+.gold-sandbox-kind--species .gold-object-hero h1 { font-size: clamp(76px, 11vw, 176px); }
+.gold-sandbox-kind--species .gold-facts { grid-template-columns: repeat(2, 1fr); }
+.gold-sandbox-kind--species .gold-facts article { min-height: 210px; }
+.gold-sandbox-kind--species .gold-facts article:nth-child(3n) { border-right: 1px solid var(--4p-line); }
+.gold-sandbox-kind--species .gold-facts article:nth-child(2n) { border-right: 0; }
+.gold-sandbox-kind--species .gold-facts article > strong { font-size: clamp(34px, 4.8vw, 74px); }
+
+/* PLACE — map first. The spatial field carries more visual weight than the copy. */
+.gold-sandbox-kind--place .gold-object-hero { grid-template-columns: minmax(360px, .78fr) minmax(0, 1.22fr); }
+.gold-sandbox-kind--place .gold-object-visual { min-height: 760px; }
+.gold-sandbox-kind--place .gold-object-hero h1 { font-size: clamp(70px, 9.5vw, 154px); }
+.gold-sandbox-kind--place .gold-facts { grid-template-columns: repeat(3, 1fr); }
+
+/* LIVING SYSTEM — dependencies become the composition. */
+.gold-sandbox-kind--living-system .gold-object-hero {
+  grid-template-columns: 1fr;
+  min-height: auto;
+}
+.gold-sandbox-kind--living-system .gold-object-hero__copy {
+  min-height: 70svh;
+  max-width: 1500px;
+}
+.gold-sandbox-kind--living-system .gold-object-visual {
+  min-height: 48svh;
+  border-left: 0;
+  border-top: 1px solid var(--4p-line);
+}
+.gold-sandbox-kind--living-system .gold-object-story {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: none;
+  padding: 0;
+}
+.gold-sandbox-kind--living-system .gold-object-section {
+  display: block;
+  padding: clamp(54px, 6vw, 90px) clamp(26px, 4vw, 64px);
+  border-right: 1px solid var(--4p-line);
+}
+.gold-sandbox-kind--living-system .gold-object-section:last-child { border-right: 0; }
+.gold-sandbox-kind--living-system .gold-object-section__index { margin-bottom: 72px; }
+.gold-sandbox-kind--living-system .gold-object-section h2 { font-size: clamp(36px, 4.4vw, 68px); }
+.gold-sandbox-kind--living-system .gold-relationships { background: #0a0a0a; color: #ffffff; }
+.gold-sandbox-kind--living-system .gold-relationship-list,
+.gold-sandbox-kind--living-system .gold-relationship-row { border-color: rgba(255,255,255,.2); }
+.gold-sandbox-kind--living-system .gold-relationship-list__number,
+.gold-sandbox-kind--living-system .gold-relationship-list__identity,
+.gold-sandbox-kind--living-system .gold-relationship-row small { color: rgba(255,255,255,.62); }
+
+/* SOLUTION — method before marketing. Modular intervention steps. */
+.gold-sandbox-kind--solution .gold-object-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+.gold-sandbox-kind--solution .gold-object-hero__copy { border-top: 8px solid var(--4p-green); }
+.gold-sandbox-kind--solution .gold-object-story {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: none;
+  padding: 0;
+}
+.gold-sandbox-kind--solution .gold-object-section {
+  display: block;
+  padding: clamp(54px, 6vw, 90px) clamp(26px, 4vw, 64px);
+  border-right: 1px solid var(--4p-line);
+}
+.gold-sandbox-kind--solution .gold-object-section:last-child { border-right: 0; }
+.gold-sandbox-kind--solution .gold-object-section__index { margin-bottom: 64px; color: var(--4p-green); }
+.gold-sandbox-kind--solution .gold-callout { border-top-color: var(--4p-green); }
+
+/* SIGNAL — event/timeline object. Fast, dated, and deliberately not outcome-shaped. */
+.gold-sandbox-kind--signal .gold-object-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+.gold-sandbox-kind--signal .gold-object-hero__copy { grid-column: 2; grid-row: 1; border-top: 8px solid var(--4p-red); }
+.gold-sandbox-kind--signal .gold-object-visual { grid-column: 1; grid-row: 1; border-left: 0; border-right: 1px solid var(--4p-line); }
+.gold-sandbox-kind--signal .gold-facts article > strong { font-size: clamp(30px, 3.8vw, 58px); }
+.gold-sandbox-kind--signal .gold-object-section__index { color: var(--4p-red); }
+
+/* PROOF — evidence register. High contrast, low theatre. */
+.gold-sandbox-kind--proof .gold-object-hero { background: #0a0a0a; color: #ffffff; }
+.gold-sandbox-kind--proof .gold-object-hero__copy { border-top: 8px solid var(--4p-green); }
+.gold-sandbox-kind--proof .gold-object-hero .gold-back,
+.gold-sandbox-kind--proof .gold-object-hero .gold-standfirst,
+.gold-sandbox-kind--proof .gold-object-hero .gold-object-state { color: rgba(255,255,255,.78); }
+.gold-sandbox-kind--proof .gold-object-hero h1 { color: #ffffff; }
+.gold-sandbox-kind--proof .gold-facts { grid-template-columns: repeat(2, 1fr); }
+.gold-sandbox-kind--proof .gold-facts article:nth-child(3n) { border-right: 1px solid var(--4p-line); }
+.gold-sandbox-kind--proof .gold-facts article:nth-child(2n) { border-right: 0; }
+.gold-sandbox-kind--proof .gold-object-section__index { color: var(--4p-green); }
+
+/* MAGAZINE: keep each editorial job distinct, but remove the brown paper and serif drift. */
+.gold-sandbox-kind--magazine-news .gold-story { --gold-accent: var(--4p-red) !important; }
+.gold-sandbox-kind--magazine-explainer .gold-story,
+.gold-sandbox-kind--magazine-feature .gold-story,
+.gold-sandbox-kind--magazine-visual-story .gold-story { --gold-accent: var(--4p-blue) !important; }
+.gold-sandbox-frame .gold-story-head { min-height: 72svh; display: flex; flex-direction: column; justify-content: flex-end; }
+.gold-sandbox-frame .gold-story h1 { font-weight: 400; }
+.gold-sandbox-frame .gold-story-dek { max-width: 900px; }
+.gold-sandbox-frame .gold-story-section p:not(.gold-kicker) { line-height: 1.68; }
+
+/* ACTOR stays a specialised profile engine, but converges visually with the same Brand OS. */
+.gold-sandbox-kind--actor .actor-gold {
+  --actor-ink: var(--4p-ink);
+  --actor-paper: var(--4p-paper);
+  --actor-white: var(--4p-paper);
+  --actor-blue: var(--4p-blue);
+  --actor-signal: #71dcff;
+  --actor-green: var(--4p-green);
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  font-family: "DM Sans", Arial, sans-serif;
+}
+.gold-sandbox-kind--actor .actor-gold-nav {
+  color: var(--4p-ink);
+  border-bottom: 1px solid var(--4p-line);
+}
+.gold-sandbox-kind--actor .actor-gold-hero {
+  min-height: 78svh;
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  border-top: 8px solid var(--4p-blue);
+  border-bottom: 1px solid var(--4p-line);
+}
+.gold-sandbox-kind--actor .actor-gold-hero h1 { font-weight: 400; }
+.gold-sandbox-kind--actor .actor-gold-visual-wrap { background: var(--4p-paper); }
+.gold-sandbox-kind--actor .actor-gold-section-light,
+.gold-sandbox-kind--actor .actor-gold-section-paper { background: var(--4p-paper); color: var(--4p-ink); }
+.gold-sandbox-kind--actor .actor-gold-section-blue,
+.gold-sandbox-kind--actor .actor-gold-section-dark { background: var(--4p-ink); color: var(--4p-paper); }
+.gold-sandbox-kind--actor .actor-gold-section-action {
+  background: var(--4p-paper);
+  color: var(--4p-ink);
+  border-top: 8px solid var(--4p-green);
+}
+.gold-sandbox-kind--actor .actor-gold-trust { background: var(--4p-paper); color: var(--4p-ink); border-color: var(--4p-line); }
+.gold-sandbox-kind--actor .actor-gold-trust > div { border-color: var(--4p-line); }
+.gold-sandbox-kind--actor .actor-gold-engine-note { background: var(--4p-ink); color: var(--4p-paper); }
+
+@media (max-width: 900px) {
+  .gold-sandbox-frame .gold-theme-toggle { top: auto; right: 14px; bottom: 14px; }
+  .gold-sandbox-frame .gold-object-hero,
+  .gold-sandbox-kind--species .gold-object-hero,
+  .gold-sandbox-kind--place .gold-object-hero,
+  .gold-sandbox-kind--solution .gold-object-hero,
+  .gold-sandbox-kind--signal .gold-object-hero { grid-template-columns: 1fr; min-height: auto; }
+  .gold-sandbox-kind--signal .gold-object-hero__copy,
+  .gold-sandbox-kind--signal .gold-object-visual { grid-column: 1; }
+  .gold-sandbox-kind--signal .gold-object-hero__copy { grid-row: 1; }
+  .gold-sandbox-kind--signal .gold-object-visual { grid-row: 2; border-right: 0; }
+  .gold-sandbox-frame .gold-object-visual { min-height: 56svh; border-left: 0; border-top: 1px solid var(--4p-line); }
+  .gold-sandbox-kind--living-system .gold-object-story,
+  .gold-sandbox-kind--solution .gold-object-story { grid-template-columns: 1fr; }
+  .gold-sandbox-kind--living-system .gold-object-section,
+  .gold-sandbox-kind--solution .gold-object-section { border-right: 0; }
+  .gold-sandbox-kind--species .gold-facts,
+  .gold-sandbox-kind--proof .gold-facts { grid-template-columns: 1fr; }
+  .gold-sandbox-kind--species .gold-facts article,
+  .gold-sandbox-kind--proof .gold-facts article { border-right: 0 !important; }
+}
+
+@media (max-width: 680px) {
+  .gold-sandbox-frame .gold-object-hero__copy { padding: 58px 20px 48px; }
+  .gold-sandbox-frame .gold-object-hero h1,
+  .gold-sandbox-kind--species .gold-object-hero h1,
+  .gold-sandbox-kind--place .gold-object-hero h1 { font-size: clamp(54px, 17vw, 88px); line-height: .86; }
+  .gold-sandbox-frame .gold-standfirst { font-size: 17px; }
+  .gold-sandbox-frame .gold-facts { grid-template-columns: 1fr; }
+  .gold-sandbox-frame .gold-facts article { border-right: 0 !important; min-height: 150px; }
+  .gold-sandbox-frame .gold-object-section { grid-template-columns: 1fr; gap: 24px; padding-top: 58px; padding-bottom: 58px; }
+  .gold-sandbox-frame .gold-object-section__index { font-size: 28px; margin-bottom: 22px; }
+  .gold-sandbox-frame .gold-object-section h2 { font-size: clamp(38px, 12vw, 58px); }
+  .gold-sandbox-frame .gold-test-bar { padding-right: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gold-sandbox-frame *,
+  .gold-sandbox-frame *::before,
+  .gold-sandbox-frame *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
