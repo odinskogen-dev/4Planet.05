@@ -1,6 +1,11 @@
 name: 4MARKET Provider Preflight
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - axe/market-commerce-pod-multisprint-20260915
+    paths:
+      - '.github/workflows/market-provider-preflight.yml'
 permissions:
   contents: read
 jobs:
