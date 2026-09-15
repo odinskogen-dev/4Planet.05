@@ -5,6 +5,10 @@ on:
     branches: [king/test]
     paths:
       - .github/workflows/cloudflare-origin-map.yml
+      - src/pages/partners/FourBrand.tsx
+      - src/styles/fourbrand.css
+      - src/App.tsx
+      - functions/api/brand-analysis.ts
   workflow_dispatch:
 
 permissions:
@@ -14,10 +18,11 @@ permissions:
 jobs:
   map:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Resolve origins
+      - name: Resolve origins and prove 4BRAND runtime
         shell: bash
         run: |
           set -euo pipefail
@@ -28,81 +33,100 @@ jobs:
           account_id="$(jq -r '.result[0].account.id // empty' <<<"$zone")"
           [[ -n "$account_id" && -n "$zid" ]] || { echo "No account/zone id"; exit 1; }
 
-          needles=(
-            "build-s4piens-universe-domai.4planet-05.pages.dev"
-            "recovery-testking-magazine.4planet-05.pages.dev"
-            "b8a8f6c1.4planet-05.pages.dev"
-            "4482f621.4planet-05.pages.dev"
-          )
-          : > /tmp/deployments.jsonl
-          for page in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            j="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=${page}&per_page=25" "${auth[@]}")"
-            jq -c '.result[]?' <<<"$j" >> /tmp/deployments.jsonl
-            count="$(jq '.result | length' <<<"$j")"
-            [[ "$count" -lt 25 ]] && break
+          dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=50" "${auth[@]}")"
+          projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
+          partner_project="$(jq -r '[.result[]? | select(any(.domains[]?; . == "partners.4planet.org"))][0].name // empty' <<<"$projects")"
+          partner_branch="$(jq -r --arg p "$partner_project" '.result[]? | select(.name == $p) | .production_branch // empty' <<<"$projects")"
+          [[ -n "$partner_project" ]] || { echo "No Pages project owns partners.4planet.org"; exit 1; }
+
+          partner_deploys="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${partner_project}/deployments?page=1&per_page=25" "${auth[@]}")"
+          latest_king="$(jq -c '[.result[]? | select(.deployment_trigger.metadata.branch == "king/test")][0] // {}' <<<"$partner_deploys")"
+          latest_commit="$(jq -r '.deployment_trigger.metadata.commit_hash // empty' <<<"$latest_king")"
+          latest_status="$(jq -r '.latest_stage.status // empty' <<<"$latest_king")"
+          latest_url="$(jq -r '.url // empty' <<<"$latest_king")"
+          latest_created="$(jq -r '.created_on // empty' <<<"$latest_king")"
+
+          # The Pages Git integration and this audit can race. Wait until the dedicated
+          # Partners production project has consumed this exact HEIR commit.
+          for attempt in {1..40}; do
+            if [[ "$latest_commit" == "$GITHUB_SHA" && "$latest_status" == "success" ]]; then
+              break
+            fi
+            sleep 5
+            partner_deploys="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${partner_project}/deployments?page=1&per_page=25" "${auth[@]}")"
+            latest_king="$(jq -c '[.result[]? | select(.deployment_trigger.metadata.branch == "king/test")][0] // {}' <<<"$partner_deploys")"
+            latest_commit="$(jq -r '.deployment_trigger.metadata.commit_hash // empty' <<<"$latest_king")"
+            latest_status="$(jq -r '.latest_stage.status // empty' <<<"$latest_king")"
+            latest_url="$(jq -r '.url // empty' <<<"$latest_king")"
+            latest_created="$(jq -r '.created_on // empty' <<<"$latest_king")"
           done
 
+          : > /tmp/tomra.json
+          tomra_code="000"
+          for attempt in {1..20}; do
+            tomra_code="$(curl -sS --max-time 30 -o /tmp/tomra.json -w '%{http_code}' \
+              -H 'content-type: application/json' \
+              --data '{"company":"TOMRA"}' \
+              https://partners.4planet.org/api/brand-analysis || true)"
+            if [[ "$tomra_code" == "200" ]] && jq -e '.ok == true and .analysis.company.name == "TOMRA" and (.analysis.opportunities | length) >= 10' /tmp/tomra.json >/dev/null 2>&1; then
+              break
+            fi
+            sleep 3
+          done
+
+          page_code="$(curl -sS -L --max-time 20 -o /tmp/partner-body.html -w '%{http_code}' https://partners.4planet.org/4brand || true)"
+          dns_text="$(jq -r '[.result[]? | (.type + " " + (.content // "") + " proxied=" + ((.proxied // false)|tostring))] | join("; ")' <<<"$dns")"
+          tomra_ok="$(jq -r '.ok // false' /tmp/tomra.json 2>/dev/null || echo false)"
+          tomra_engine="$(jq -r '.analysis.engine // empty' /tmp/tomra.json 2>/dev/null || true)"
+          tomra_company="$(jq -r '.analysis.company.name // empty' /tmp/tomra.json 2>/dev/null || true)"
+          tomra_state="$(jq -r '.analysis.analysisStatus // empty' /tmp/tomra.json 2>/dev/null || true)"
+          tomra_opps="$(jq -r '.analysis.opportunities | length? // 0' /tmp/tomra.json 2>/dev/null || echo 0)"
+          tomra_evidence="$(jq -r '.analysis.evidence | length? // 0' /tmp/tomra.json 2>/dev/null || echo 0)"
+          tomra_error="$(jq -r '.detail // .error // empty' /tmp/tomra.json 2>/dev/null || true)"
+
           {
-            echo "# Live origin → source mapping"
+            echo "# 4BRAND live runtime proof"
             echo
             echo "Audit source: \`${GITHUB_SHA}\`"
             echo
-            echo "## Known product origins"
+            echo "## Domain / Pages ownership"
+            echo "- DNS: ${dns_text:-NO DNS RECORD}"
+            echo "- Pages project: ${partner_project}"
+            echo "- Production branch: ${partner_branch}"
             echo
-            echo "| Origin | Branch | Commit | Environment | Status | Deployment URL |"
-            echo "|---|---|---|---|---|---|"
-            for needle in "${needles[@]}"; do
-              row="$(jq -sc --arg n "$needle" '[.[] | select((.url // "" | contains($n)) or any(.aliases[]?; contains($n)))] | first // empty' /tmp/deployments.jsonl)"
-              if [[ -z "$row" ]]; then
-                echo "| \`${needle}\` | not found | | | | |"
-                continue
-              fi
-              branch="$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")"
-              commit="$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")"
-              env="$(jq -r '.environment // ""' <<<"$row")"
-              status="$(jq -r '.latest_stage.status // ""' <<<"$row")"
-              url="$(jq -r '.url // ""' <<<"$row")"
-              echo "| \`${needle}\` | \`${branch}\` | \`${commit:0:12}\` | ${env} | ${status} | ${url} |"
-            done
-
-            echo
-            echo "## 4BRAND / partners.4planet.org"
-            echo
-            dns="$(curl -fsS "${api}/zones/${zid}/dns_records?name=partners.4planet.org&per_page=50" "${auth[@]}")"
-            dns_text="$(jq -r '[.result[]? | (.type + " " + (.content // "") + " proxied=" + ((.proxied // false)|tostring))] | join("; ")' <<<"$dns")"
-            [[ -n "$dns_text" ]] || dns_text="NO DNS RECORD"
-            echo "- DNS: ${dns_text}"
-
-            projects="$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")"
-            partner_projects="$(jq -r '[.result[]? | select(any(.domains[]?; . == "partners.4planet.org")) | (.name + " production_branch=" + (.production_branch // ""))] | join("; ")' <<<"$projects")"
-            [[ -n "$partner_projects" ]] || partner_projects="NO PAGES CUSTOM DOMAIN"
-            echo "- Pages binding: ${partner_projects}"
-
-            echo
-            echo "### Recent king/test Pages deployments"
-            echo
-            echo "| Commit | Environment | Status | URL | Created |"
-            echo "|---|---|---|---|---|"
-            jq -sc '[.[] | select(.deployment_trigger.metadata.branch == "king/test")][0:8][] | [(.deployment_trigger.metadata.commit_hash // ""), (.environment // ""), (.latest_stage.status // ""), (.url // ""), (.created_on // "")] | @tsv' /tmp/deployments.jsonl | while IFS=$'\t' read -r commit env status url created; do
-              echo "| \`${commit:0:12}\` | ${env} | ${status} | ${url} | ${created} |"
-            done
-
-            echo
-            echo "### HTTP readback"
-            code="$(curl -sS -L --max-time 20 -o /tmp/partner-body.html -w '%{http_code}' https://partners.4planet.org/4brand || true)"
-            echo "- https://partners.4planet.org/4brand → HTTP ${code}"
-            if [[ -s /tmp/partner-body.html ]]; then
-              if grep -q 'Find where company value and planetary value meet' /tmp/partner-body.html; then
-                echo "- 4BRAND marker: PRESENT"
-              else
-                echo "- 4BRAND marker: NOT PRESENT"
-              fi
+            echo "## Latest Partners production deployment"
+            echo "- Commit: \`${latest_commit}\`"
+            echo "- Status: ${latest_status:-UNKNOWN}"
+            echo "- URL: ${latest_url:-UNKNOWN}"
+            echo "- Created: ${latest_created:-UNKNOWN}"
+            if [[ "$latest_commit" == "$GITHUB_SHA" && "$latest_status" == "success" ]]; then
+              echo "- Exact HEIR deployment: VERIFIED"
+            else
+              echo "- Exact HEIR deployment: NOT YET VERIFIED"
             fi
-
             echo
-            echo '> READ-ONLY AUDIT. No DNS, Worker, Pages project, deployment or domain was mutated.'
+            echo "## Public surface"
+            echo "- https://partners.4planet.org/4brand → HTTP ${page_code}"
+            echo
+            echo "## TOMRA analysis API"
+            echo "- HTTP: ${tomra_code}"
+            echo "- ok: ${tomra_ok}"
+            echo "- engine: ${tomra_engine:-NONE}"
+            echo "- company: ${tomra_company:-NONE}"
+            echo "- analysis status: ${tomra_state:-NONE}"
+            echo "- opportunities: ${tomra_opps}"
+            echo "- evidence records: ${tomra_evidence}"
+            [[ -z "$tomra_error" ]] || echo "- error: ${tomra_error}"
+            echo
+            echo '> AUDIT ONLY. No DNS, Worker, Pages project, deployment or domain was mutated by this workflow.'
           } > /tmp/origin-map.md
           cat /tmp/origin-map.md
+
+          [[ "$page_code" == "200" ]] || exit 11
+          [[ "$tomra_code" == "200" ]] || exit 12
+          [[ "$tomra_ok" == "true" ]] || exit 13
+          [[ "$tomra_company" == "TOMRA" ]] || exit 14
+          [[ "$tomra_opps" -ge 10 ]] || exit 15
 
       - name: Report
         if: always()
@@ -112,5 +136,5 @@ jobs:
           if [[ -f /tmp/origin-map.md ]]; then
             gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/origin-map.md
           else
-            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Origin map failed before report generation."
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "4BRAND runtime proof failed before report generation."
           fi
