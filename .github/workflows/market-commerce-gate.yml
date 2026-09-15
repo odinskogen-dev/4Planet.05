@@ -47,7 +47,7 @@ jobs:
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/market-commerce-preview.log 2>&1 &
           echo $! > /tmp/market-commerce-preview.pid
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/market >/dev/null && exit 0; sleep 1; done
           cat /tmp/market-commerce-preview.log
           exit 1
       - name: Install Chromium
@@ -59,7 +59,7 @@ jobs:
           const browser = await chromium.launch({ headless: true });
           for (const viewport of [{width:1440,height:1000},{width:390,height:844}]) {
             const page = await browser.newPage({ viewport });
-            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.goto('http://127.0.0.1:4173/market', { waitUntil: 'networkidle' });
             await page.waitForSelector('.mkt-first-product');
             if (await page.locator('.mkt-first-product').count() !== 11) throw new Error('Expected 11 Market products');
             const text = (await page.locator('.mkt-first-products').innerText()).toLowerCase();
