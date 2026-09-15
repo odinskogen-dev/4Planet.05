@@ -22,6 +22,7 @@ function isPartnersHost() {
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
 }
 
+// Canonical public host for the 4BRAND company intelligence surface.
 function isFourBrandsHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
