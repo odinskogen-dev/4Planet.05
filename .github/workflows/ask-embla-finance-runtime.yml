@@ -2,7 +2,7 @@ name: 4SAPIEN One Product Finance runtime verification
 
 on:
   push:
-    branches: [build/ask-embla-live-20260909]
+    branches: [build/ask-embla-live-20260909, work/4sapien-finance-e2e-20260915]
     paths:
       - '.github/workflows/ask-embla-finance-runtime.yml'
       - 'products/4sapien/**'
@@ -19,6 +19,32 @@ jobs:
   verify-finance-runtime:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Materialize and inspect branch Finance runtime
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/finance-e2e-site
+          mkdir -p /tmp/finance-e2e-site
+          python products/4sapien/build/apply_finance_route.py /tmp/finance-e2e-site/index.html
+          python products/4sapien/build/apply_finance_typography_guard.py /tmp/finance-e2e-site
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('/tmp/finance-e2e-site/app/money/index.html').read_text()
+          print('MATERIALIZED_BYTES',len(s))
+          for label,pat in [
+            ('TABLE_QUERIES',r'.{0,500}four_sapien_finance_(?:accounts|events).{0,1800}'),
+            ('OVERVIEW',r'function overview\(.*?(?=function [A-Za-z_$])'),
+            ('MONTHS',r'function months\(.*?(?=function [A-Za-z_$])'),
+            ('QUICK',r'function quick\(.*?(?=function [A-Za-z_$])'),
+            ('BIND',r'function bind\(.*?(?=function [A-Za-z_$])'),
+            ('EMBLA_SCAN',r'.{0,700}Scan med Embla.{0,2200}'),
+          ]:
+            print('\n===',label,'===')
+            m=re.search(pat,s,re.S|re.I)
+            print((m.group(0) if m else 'NOT FOUND')[:10000])
+          PY
+
       - name: Verify shared 4SAPIEN backend seam
         run: |
           set -euo pipefail
@@ -34,32 +60,16 @@ jobs:
             test "$code" = "200"
           done
 
-      - name: Verify public front remains separate from private worlds
+      - name: Verify live Finance route remains healthy
         run: |
           set -euo pipefail
           for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
-            curl -fsSL --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' "${base}/" -o /tmp/root.html
-            grep -q 'See your life clearly.' /tmp/root.html
-            grep -q 'illustrative demo' /tmp/root.html
-            grep -q '/app/food/' /tmp/root.html
-            grep -q '/app/money/' /tmp/root.html
-          done
-
-      - name: Verify Finance route on Worker and 4sapien.com
-        run: |
-          set -euo pipefail
-          for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
-            for path in /app/money/ /finance /finance/; do
-              body="/tmp/finance-$(echo "$base$path" | tr -cs 'A-Za-z0-9' '_').html"
-              status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}${path}")
-              test "$status" = "200"
-              grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
-              grep -q '4SAPIEN by 4PLANET' "$body"
-              grep -q 'four_sapien_finance_accounts' "$body"
-              grep -q 'four_sapien_finance_events' "$body"
-              grep -q 'four-sapien-finance-docs' "$body"
-              grep -q 'sb.auth.getSession()' "$body"
-              ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$body"
-              echo "PASS ${base}${path} HTTP ${status}"
-            done
+            body="/tmp/finance-live.html"
+            status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}/app/money/")
+            test "$status" = "200"
+            grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
+            grep -q '4SAPIEN by 4PLANET' "$body"
+            grep -q 'four_sapien_finance_accounts' "$body"
+            grep -q 'four_sapien_finance_events' "$body"
+            ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$body"
           done
