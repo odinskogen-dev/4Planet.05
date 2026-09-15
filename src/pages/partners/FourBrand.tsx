@@ -45,39 +45,62 @@ type Analysis = {
   unknowns: string[];
 };
 
-const TRUTH_CLASSES: TruthClass[] = ["FACT", "CALCULATION", "ESTIMATE", "ASSUMPTION", "INTERPRETATION", "UNKNOWN"];
-
-function TruthBadge({ value }: { value: TruthClass }) {
-  return <span className={`fourbrand-truth fourbrand-truth--${value.toLowerCase()}`}>{value}</span>;
+function TruthMark({ value }: { value: TruthClass }) {
+  return <span className="fb-truth">{value}</span>;
 }
 
-function StatementList({ items }: { items: Statement[] }) {
-  return <div className="fourbrand-statement-list">{items.map((item) => (
-    <article className="fourbrand-statement" key={`${item.title}-${item.detail}`}>
-      <div className="fourbrand-statement__meta"><TruthBadge value={item.truthClass} /><span>{item.confidence} CONFIDENCE</span></div>
-      <h3>{item.title}</h3><p>{item.detail}</p>
-    </article>
-  ))}</div>;
+function Disclosure({ title, meta, children }: { title: string; meta?: string; children: React.ReactNode }) {
+  return (
+    <details className="fb-disclosure">
+      <summary>
+        <span>{title}</span>
+        {meta && <small>{meta}</small>}
+        <i aria-hidden="true">+</i>
+      </summary>
+      <div className="fb-disclosure__body">{children}</div>
+    </details>
+  );
 }
 
-function OpportunityTable({ items, compact = false }: { items: Opportunity[]; compact?: boolean }) {
-  return <div className={`fourbrand-opportunities${compact ? " fourbrand-opportunities--compact" : ""}`}>{items.map((item) => (
-    <article className="fourbrand-opportunity" key={`${item.rank}-${item.title}`}>
-      <div className="fourbrand-opportunity__rank">{String(item.rank).padStart(2, "0")}</div>
-      <div className="fourbrand-opportunity__body">
-        <div className="fourbrand-opportunity__topline">
+function StatementRows({ items }: { items: Statement[] }) {
+  return (
+    <div className="fb-statement-rows">
+      {items.map((item) => (
+        <article key={`${item.title}-${item.detail}`}>
+          <div>
+            <h4>{item.title}</h4>
+            <p>{item.detail}</p>
+          </div>
+          <span>{item.confidence}</span>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function OpportunityRow({ item, primary = false }: { item: Opportunity; primary?: boolean }) {
+  return (
+    <article className={`fb-opportunity${primary ? " fb-opportunity--primary" : ""}`}>
+      <div className="fb-opportunity__rank">{String(item.rank).padStart(2, "0")}</div>
+      <div className="fb-opportunity__main">
+        <div className="fb-opportunity__heading">
           <h3>{item.title}</h3>
-          <div className="fourbrand-statement__meta"><TruthBadge value={item.truthClass} /><span>{item.confidence}</span></div>
+          <div className="fb-opportunity__meta"><TruthMark value={item.truthClass} /><span>{item.confidence}</span></div>
         </div>
-        <div className="fourbrand-opportunity__grid">
-          <div><span>ECONOMIC LOGIC</span><p>{item.economicLogic}</p></div>
-          <div><span>VALUE</span><p>{item.estimatedValue}</p></div>
-          <div><span>PLANET INTERSECTION</span><p>{item.planetaryLogic}</p></div>
-          <div><span>PLANETARY DELTA</span><p>{item.planetaryDelta}</p></div>
+        <div className="fb-opportunity__signal">
+          <p><span>VALUE</span>{item.estimatedValue}</p>
+          <p><span>PLANET</span>{item.planetaryLogic}</p>
         </div>
+        <details className="fb-opportunity__detail">
+          <summary>Why this matters</summary>
+          <div>
+            <p><span>ECONOMIC LOGIC</span>{item.economicLogic}</p>
+            <p><span>MEASUREMENT</span>{item.planetaryDelta}</p>
+          </div>
+        </details>
       </div>
     </article>
-  ))}</div>;
+  );
 }
 
 export default function FourBrand() {
@@ -87,12 +110,15 @@ export default function FourBrand() {
   const [error, setError] = useState<string | null>(null);
 
   const sourceCount = useMemo(() => analysis?.evidence.length ?? 0, [analysis]);
+  const leadMetrics = useMemo(() => analysis?.economicBaseline.slice(0, 4) ?? [], [analysis]);
 
   async function runAnalysis(event?: FormEvent) {
     event?.preventDefault();
     const query = company.trim();
     if (query.length < 2) return;
-    setLoading(true); setError(null); setAnalysis(null);
+    setLoading(true);
+    setError(null);
+    setAnalysis(null);
     try {
       const response = await fetch("/api/brand-analysis", {
         method: "POST",
@@ -104,71 +130,172 @@ export default function FourBrand() {
       setAnalysis(payload.analysis);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Analysis engine unavailable");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return <main className="fourbrand-shell">
-    <header className="fourbrand-hero">
-      <a className="fourbrand-kicker" href="/companies">4PLANET PARTNERS / 4BRAND</a>
-      <h1>Find where company value and planetary value meet.</h1>
-      <p className="fourbrand-hero__lede">4BRAND analyses a company from public financial, commercial and planetary evidence, then ranks the highest-value opportunities where better business and a living planet can reinforce each other.</p>
-      <form className="fourbrand-search" onSubmit={runAnalysis}>
-        <label htmlFor="fourbrand-company">COMPANY</label>
-        <div className="fourbrand-search__row">
-          <input id="fourbrand-company" value={company} onChange={(event) => setCompany(event.target.value)} placeholder="TOMRA, IKEA, Mowi, Maersk…" autoComplete="organization" maxLength={120} />
-          <button type="submit" disabled={loading || company.trim().length < 2}>{loading ? "ANALYSING…" : "RUN VALUE MAP"}</button>
+  return (
+    <main className="fb-shell">
+      <nav className="fb-nav" aria-label="4BRAND">
+        <a href="/" className="fb-wordmark">4PLANET<span>_</span></a>
+        <div className="fb-nav__context">PARTNERS / 4BRAND</div>
+        <a href="/companies" className="fb-nav__link">COMPANIES</a>
+      </nav>
+
+      {!analysis && (
+        <section className="fb-entry">
+          <div className="fb-entry__copy">
+            <p className="fb-eyebrow">COMPANY INTELLIGENCE</p>
+            <h1>Where better business<br />meets a living planet.</h1>
+            <p className="fb-intro">Enter a company. 4BRAND reads the public evidence, understands the economics and finds the few opportunities worth looking at.</p>
+          </div>
+
+          <form className="fb-search" onSubmit={runAnalysis}>
+            <label htmlFor="fb-company">Company</label>
+            <div className="fb-search__control">
+              <input
+                id="fb-company"
+                value={company}
+                onChange={(event) => setCompany(event.target.value)}
+                placeholder="Company name"
+                autoComplete="organization"
+                maxLength={120}
+                autoFocus
+              />
+              <button type="submit" disabled={loading || company.trim().length < 2} aria-label="Run company analysis">
+                {loading ? <span className="fb-spinner" aria-hidden="true" /> : <span aria-hidden="true">→</span>}
+              </button>
+            </div>
+            <div className="fb-search__foot">
+              <span>PUBLIC DATA</span><span>FINANCIAL FIRST</span><span>SOURCE-AWARE</span>
+            </div>
+          </form>
+
+          {loading && <div className="fb-loading" role="status"><span /><p>Reading the company. Building the value map.</p></div>}
+          {error && <div className="fb-error" role="status"><p>{error}</p><button type="button" onClick={() => { setCompany("TOMRA"); setError(null); }}>Use TOMRA proof</button></div>}
+
+          <div className="fb-entry__note">
+            <span>4BRAND / 01</span>
+            <p>Facts stay facts. Estimates stay estimates. Nothing is called impact until it is measured.</p>
+          </div>
+        </section>
+      )}
+
+      {analysis && (
+        <div className="fb-result">
+          <header className="fb-company">
+            <div className="fb-company__topline">
+              <button type="button" className="fb-back" onClick={() => { setAnalysis(null); setError(null); }}>← New analysis</button>
+              <span>{analysis.analysisStatus.replaceAll("_", " ")} · {sourceCount} SOURCES</span>
+            </div>
+            <div className="fb-company__title">
+              <div>
+                <p className="fb-eyebrow">4BRAND VALUE MAP</p>
+                <h1>{analysis.company.name}</h1>
+              </div>
+              <p>{analysis.company.description}</p>
+            </div>
+            <div className="fb-company__identity">
+              <span>{analysis.company.legalName || "Legal entity unresolved"}</span>
+              <span>{analysis.company.ticker || "Private / ticker unresolved"}</span>
+              <span>{analysis.company.sector || "Sector unresolved"}</span>
+              <span>{analysis.company.geography || "Geography unresolved"}</span>
+            </div>
+          </header>
+
+          <section className="fb-metrics" aria-label="Economic baseline">
+            {leadMetrics.map((metric) => (
+              <article key={`${metric.label}-${metric.period}`}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.period}</small>
+              </article>
+            ))}
+          </section>
+
+          <section className="fb-priority">
+            <div className="fb-section-head">
+              <p className="fb-eyebrow">THE SIGNAL</p>
+              <h2>Three things that matter.</h2>
+              <p>Highest-priority hypotheses where economic value and planetary value appear to reinforce each other.</p>
+            </div>
+            <div className="fb-priority__list">
+              {analysis.alignedTop3.map((item) => <OpportunityRow key={`${item.rank}-${item.title}`} item={item} primary />)}
+            </div>
+          </section>
+
+          <section className="fb-next">
+            <div>
+              <p className="fb-eyebrow">FIRST TEST</p>
+              <h2>{analysis.nextExperiment.title}</h2>
+            </div>
+            <div className="fb-next__body">
+              <p>{analysis.nextExperiment.hypothesis}</p>
+              <dl>
+                <div><dt>Method</dt><dd>{analysis.nextExperiment.method}</dd></div>
+                <div><dt>Success</dt><dd>{analysis.nextExperiment.successMetric}</dd></div>
+                <div><dt>Business measure</dt><dd>{analysis.nextExperiment.economicMeasurement}</dd></div>
+                <div><dt>Planet measure</dt><dd>{analysis.nextExperiment.planetaryMeasurement}</dd></div>
+              </dl>
+            </div>
+          </section>
+
+          <section className="fb-depth">
+            <div className="fb-section-head fb-section-head--compact">
+              <p className="fb-eyebrow">GO DEEPER</p>
+              <h2>Open only what you need.</h2>
+            </div>
+
+            <Disclosure title="Economic baseline" meta={`${analysis.economicBaseline.length} metrics`}>
+              <div className="fb-metric-table">
+                {analysis.economicBaseline.map((metric) => (
+                  <div key={`${metric.label}-${metric.period}`}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.period}</small><TruthMark value={metric.truthClass} /></div>
+                ))}
+              </div>
+            </Disclosure>
+
+            <Disclosure title="How the company creates value" meta={`${analysis.businessModel.length + analysis.valueDrivers.length} signals`}>
+              <div className="fb-two-up"><div><h3>Business model</h3><StatementRows items={analysis.businessModel} /></div><div><h3>Value drivers</h3><StatementRows items={analysis.valueDrivers} /></div></div>
+            </Disclosure>
+
+            <Disclosure title="Where value leaks" meta={`${analysis.valueLeakage.length} constraints`}>
+              <StatementRows items={analysis.valueLeakage} />
+            </Disclosure>
+
+            <Disclosure title="All opportunities" meta={`${analysis.opportunities.length} hypotheses`}>
+              <div className="fb-all-opportunities">{analysis.opportunities.map((item) => <OpportunityRow key={`${item.rank}-${item.title}`} item={item} />)}</div>
+            </Disclosure>
+
+            <Disclosure title="Solutions and actors" meta={`${analysis.solutions.length} paths`}>
+              <StatementRows items={analysis.solutions} />
+            </Disclosure>
+
+            <Disclosure title="Evidence, assumptions and unknowns" meta={`${sourceCount} sources`}>
+              <div className="fb-evidence">
+                <div className="fb-evidence__sources">
+                  {analysis.evidence.map((source) => (
+                    <a key={source.id} href={source.url} target="_blank" rel="noreferrer">
+                      <span>{source.publisher} · {source.checkedAt}</span>
+                      <strong>{source.title}</strong>
+                      <p>{source.note}</p>
+                    </a>
+                  ))}
+                </div>
+                <div className="fb-evidence__limits">
+                  <div><h3>Assumptions</h3><ul>{analysis.assumptions.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                  <div><h3>Unknowns</h3><ul>{analysis.unknowns.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                </div>
+              </div>
+            </Disclosure>
+          </section>
+
+          <footer className="fb-footer">
+            <span>4BRAND / UNIVERSAL ACTOR VALUE ENGINE</span>
+            <p>{new Date(analysis.generatedAt).toLocaleDateString()} · Decision intelligence, not assurance.</p>
+          </footer>
         </div>
-      </form>
-      <div className="fourbrand-chain" aria-label="Analysis chain">
-        {["COMPANY","ECONOMIC BASELINE","VALUE DRIVERS","VALUE LEAKAGE","OPPORTUNITIES","PLANET INTERSECTION","SOLUTIONS","PRIORITISATION","INTERVENTION","RESULT","LEARNING"].map((step, index) => <span key={step}>{index ? "→ " : ""}{step}</span>)}
-      </div>
-    </header>
-
-    <section className="fourbrand-truthbar" aria-label="Truth classification">
-      <strong>TRUTH LAYER</strong><div>{TRUTH_CLASSES.map((item) => <TruthBadge key={item} value={item} />)}</div>
-      <p>Nothing is presented as realised financial or planetary impact until it has been measured.</p>
-    </section>
-
-    {error && <section className="fourbrand-error" role="status"><strong>ANALYSIS ENGINE PARTIAL</strong><p>{error}</p><p>TOMRA remains available as the first source-grounded proof case. Arbitrary-company research only runs when the server-side research runtime is available.</p></section>}
-    {!analysis && !loading && !error && <section className="fourbrand-empty"><span>4BRAND VALUE MAP / 01</span><h2>One company in. A structured value thesis out.</h2><p>The first source-grounded proof case is TOMRA. Enter a company name to run the engine.</p></section>}
-    {loading && <section className="fourbrand-loading" aria-live="polite"><span>RESEARCHING COMPANY</span><h2>Building economic baseline, value map and planet intersection.</h2><div className="fourbrand-progress"><i /></div></section>}
-
-    {analysis && <div className="fourbrand-report">
-      <section className="fourbrand-company-head">
-        <div><span>4BRAND VALUE MAP / {analysis.analysisStatus.replaceAll("_", " ")}</span><h2>{analysis.company.name}</h2><p>{analysis.company.description}</p></div>
-        <dl>
-          <div><dt>LEGAL</dt><dd>{analysis.company.legalName || "Not resolved"}</dd></div>
-          <div><dt>TICKER</dt><dd>{analysis.company.ticker || "—"}</dd></div>
-          <div><dt>SECTOR</dt><dd>{analysis.company.sector || "—"}</dd></div>
-          <div><dt>GEOGRAPHY</dt><dd>{analysis.company.geography || "—"}</dd></div>
-        </dl>
-      </section>
-      <section className="fourbrand-status-note"><TruthBadge value="INTERPRETATION" /><p>{analysis.statusNote}</p></section>
-
-      <section className="fourbrand-section"><div className="fourbrand-section__head"><span>01</span><h2>Economic baseline</h2></div>
-        <div className="fourbrand-metrics">{analysis.economicBaseline.map((metric) => <article key={`${metric.label}-${metric.period}`}><div><span>{metric.label}</span><TruthBadge value={metric.truthClass} /></div><strong>{metric.value}</strong><p>{metric.period}</p></article>)}</div>
-      </section>
-
-      <section className="fourbrand-two-col">
-        <div className="fourbrand-section"><div className="fourbrand-section__head"><span>02</span><h2>How value is created</h2></div><StatementList items={analysis.businessModel} /></div>
-        <div className="fourbrand-section"><div className="fourbrand-section__head"><span>03</span><h2>Value drivers</h2></div><StatementList items={analysis.valueDrivers} /></div>
-      </section>
-
-      <section className="fourbrand-section"><div className="fourbrand-section__head"><span>04</span><h2>Value leakage / constraints</h2></div><StatementList items={analysis.valueLeakage} /></section>
-
-      <section className="fourbrand-section fourbrand-section--black"><div className="fourbrand-section__head"><span>05</span><h2>Top 3 aligned opportunities</h2></div><p className="fourbrand-section__intro">Highest-priority hypotheses where economic upside and planetary improvement appear directionally aligned.</p><OpportunityTable items={analysis.alignedTop3} compact /></section>
-      <section className="fourbrand-section"><div className="fourbrand-section__head"><span>06</span><h2>Full opportunity map</h2></div><OpportunityTable items={analysis.opportunities} /></section>
-
-      <section className="fourbrand-two-col">
-        <div className="fourbrand-section"><div className="fourbrand-section__head"><span>07</span><h2>Solutions / actors</h2></div><StatementList items={analysis.solutions} /></div>
-        <div className="fourbrand-section fourbrand-experiment"><div className="fourbrand-section__head"><span>08</span><h2>First experiment</h2></div><TruthBadge value={analysis.nextExperiment.truthClass} /><h3>{analysis.nextExperiment.title}</h3><dl>
-          <div><dt>HYPOTHESIS</dt><dd>{analysis.nextExperiment.hypothesis}</dd></div><div><dt>METHOD</dt><dd>{analysis.nextExperiment.method}</dd></div><div><dt>SUCCESS</dt><dd>{analysis.nextExperiment.successMetric}</dd></div><div><dt>ECONOMIC MEASURE</dt><dd>{analysis.nextExperiment.economicMeasurement}</dd></div><div><dt>PLANETARY MEASURE</dt><dd>{analysis.nextExperiment.planetaryMeasurement}</dd></div>
-        </dl></div>
-      </section>
-
-      <section className="fourbrand-section fourbrand-evidence"><div className="fourbrand-section__head"><span>09</span><h2>Evidence</h2></div><div className="fourbrand-evidence__grid">{analysis.evidence.map((source) => <a key={source.id} href={source.url} target="_blank" rel="noreferrer"><span>{source.id} / {source.publisher}</span><strong>{source.title}</strong><p>{source.note}</p><small>CHECKED {source.checkedAt}</small></a>)}</div></section>
-      <section className="fourbrand-two-col fourbrand-last-grid"><div><span>ASSUMPTIONS</span><ul>{analysis.assumptions.map((item) => <li key={item}>{item}</li>)}</ul></div><div><span>UNKNOWNS</span><ul>{analysis.unknowns.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
-      <footer className="fourbrand-footer"><span>4BRAND / UNIVERSAL ACTOR VALUE ENGINE</span><p>Generated {new Date(analysis.generatedAt).toLocaleString()} · {sourceCount} evidence records · decision intelligence, not assurance.</p></footer>
-    </div>}
-  </main>;
+      )}
+    </main>
+  );
 }
