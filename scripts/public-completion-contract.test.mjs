@@ -15,7 +15,7 @@ test("participation routes and global menu expose all four ways to take part", (
   assert.match(router, /path="\/join" element={<Join \/>}/);
   assert.match(router, /path="\/people" element={<People \/>}/);
   assert.match(join, /WAYS TO TAKE PART NOW/);
-  assert.match(join, /people, partners, brands and funders/);
+  assert.match(join, /Create a free 4PLANET ID/);
   for (const label of ["4PEOPLE", "4BRANDS", "4PARTNERS", "4FUNDERS"]) assert.match(shell, new RegExp(label));
   for (const route of ["/people", "/brands", "/partners", "/funders"]) assert.match(shell, new RegExp(route.replace("/", "\\/")));
   assert.doesNotMatch(bridge, /DesktopTakePart|completion-takepart-menu/);
