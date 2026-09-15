@@ -44,6 +44,7 @@ jobs:
 
           # Preserve the full Claude Finance donor against the shared Supabase runtime.
           python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
+          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
 
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
@@ -73,6 +74,10 @@ jobs:
           grep -q 'Your data is used to provide your 4SAPIEN experience.' "$ROOT"
           grep -q 'id="method"' "$ROOT"
           grep -q 'id="privacy"' "$ROOT"
+          grep -q 'id="account-link"' "$ROOT"
+          grep -q 'id="four-sapien-front-auth"' "$ROOT"
+          grep -q "window.location.replace('/app/food/'+hash)" "$ROOT"
+          grep -q "link.textContent='4PLANET ID ✓'" "$ROOT"
           ! grep -q 'function openApp' "$ROOT"
           ! grep -q 'id="app"' "$ROOT"
 
@@ -91,6 +96,11 @@ jobs:
           grep -q 'RATE_LIMITED' "$FOOD"
           grep -q 'DELVIS DATADEKNING' "$FOOD"
           grep -q 'price:p.embla_price' "$FOOD"
+          grep -q 'emailRedirectTo:"https://4sapien.com/app/food/"' "$FOOD"
+          grep -q 'redirectTo:"https://4sapien.com/app/food/"' "$FOOD"
+          grep -q '4PLANET ID · INNLOGGET' "$FOOD"
+          ! grep -q 'emailRedirectTo:"https://4sapien.com/"' "$FOOD"
+          ! grep -q 'redirectTo:"https://4sapien.com/"' "$FOOD"
           ! grep -q 'world.openfoodfacts.org' "$FOOD"
           ! grep -q 'cgi/search.pl' "$FOOD"
 
@@ -102,6 +112,8 @@ jobs:
           grep -q 'four-sapien-finance-docs' "$MONEY"
           grep -q 'ghvdzetmplqkdtfqiror.supabase.co' "$MONEY"
           grep -q 'sb.auth.getSession()' "$MONEY"
+          python products/4sapien/build/audit_finance_typography.py \
+            products/4sapien/build/apply_finance_route.py "$MONEY"
 
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
 
@@ -184,9 +196,9 @@ jobs:
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
             root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Food × Money · together' /tmp/root.html && grep -q 'illustrative demo' /tmp/root.html && root_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && food_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'four_sapien_finance_accounts' /tmp/money.html && grep -q 'four_sapien_finance_events' /tmp/money.html && money_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Food × Money · together' /tmp/root.html && grep -q 'illustrative demo' /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && grep -q 'https://4sapien.com/app/food/' /tmp/food.html && food_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'four_sapien_finance_accounts' /tmp/money.html && grep -q 'four_sapien_finance_events' /tmp/money.html && ! grep -q 'font-family:"DM Sans",system-ui' /tmp/money.html && money_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
             sleep 2
           done
@@ -219,9 +231,9 @@ jobs:
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
             root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Food × Money · together' /tmp/prod-root.html && grep -q 'illustrative demo' /tmp/prod-root.html && root_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && food_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'four_sapien_finance_accounts' /tmp/prod-money.html && grep -q 'four_sapien_finance_events' /tmp/prod-money.html && money_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Food × Money · together' /tmp/prod-root.html && grep -q 'illustrative demo' /tmp/prod-root.html && grep -q 'four-sapien-front-auth' /tmp/prod-root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && grep -q 'https://4sapien.com/app/food/' /tmp/prod-food.html && food_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'four_sapien_finance_accounts' /tmp/prod-money.html && grep -q 'four_sapien_finance_events' /tmp/prod-money.html && ! grep -q 'font-family:"DM Sans",system-ui' /tmp/prod-money.html && money_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
             sleep 3
           done
@@ -237,6 +249,8 @@ jobs:
             echo '- Food × Money cross-world proposition: PASS'
             echo '- Full Food / Ask Embla donor preserved: PASS'
             echo '- Full Finance donor at /app/money/: PASS'
+            echo '- Auth callback + signed-in state: PASS'
+            echo '- Claude Finance typography inheritance: PASS'
             echo '- Browser-secret scan: PASS'
             echo "- Database gate: ${{ steps.db.outputs.ready }}"
             echo "- Food + Embla auth boundary: ${{ steps.gateway.outputs.ready }}"

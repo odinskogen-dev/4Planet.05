@@ -1,0 +1,169 @@
+name: 4SAPIEN auth fix preview
+
+on:
+  push:
+    branches: [fix/4sapien-auth-callback-20260915]
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/4sapien-auth-fix-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize exact current One Product state
+        run: |
+          set -euo pipefail
+          SITE=products/4sapien/site
+          FOOD=${SITE}/app/food/index.html
+          rm -rf "$SITE"
+          mkdir -p "${SITE}/app/food" "${SITE}/app"
+
+          python products/4sapien/build/apply_front_v2_release.py \
+            products/4sapien/source/claude-front-20260915-v2.html \
+            "${SITE}/index.html"
+
+          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > "$FOOD"
+          python products/4sapien/build/apply_provider_guard.py "$FOOD"
+          python products/4sapien/build/apply_meal_plan_guard.py "$FOOD"
+          python products/4sapien/build/apply_product_gateway_guard.py "$FOOD"
+          python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
+          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
+
+          cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
+          cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
+          cat > "${SITE}/app/index.html" <<'HTML'
+          <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/app/food/"><title>4SAPIEN</title></head><body><a href="/app/food/">Open 4SAPIEN</a></body></html>
+          HTML
+
+      - name: Auth callback and signed-in UX QA
+        run: |
+          set -euo pipefail
+          ROOT=products/4sapien/site/index.html
+          FOOD=products/4sapien/site/app/food/index.html
+          grep -q 'id="account-link"' "$ROOT"
+          grep -q 'id="four-sapien-front-auth"' "$ROOT"
+          grep -q "window.location.replace('/app/food/'+hash)" "$ROOT"
+          grep -q "link.textContent='4PLANET ID ✓'" "$ROOT"
+          grep -q 'emailRedirectTo:"https://4sapien.com/app/food/"' "$FOOD"
+          grep -q 'redirectTo:"https://4sapien.com/app/food/"' "$FOOD"
+          ! grep -q 'emailRedirectTo:"https://4sapien.com/"' "$FOOD"
+          ! grep -q 'redirectTo:"https://4sapien.com/"' "$FOOD"
+          grep -q '4PLANET ID · INNLOGGET' "$FOOD"
+          grep -q 'aria-label={tab==="meg"?"Lukk profil":"4PLANET ID – innlogget"}' "$FOOD"
+
+      - name: Claude Finance typography provenance
+        run: |
+          set -euo pipefail
+          python products/4sapien/build/audit_finance_typography.py \
+            products/4sapien/build/apply_finance_route.py \
+            products/4sapien/site/app/money/index.html | tee /tmp/font-audit.txt
+          grep -q 'FINANCE_TYPOGRAPHY_PROVENANCE=PASS' /tmp/font-audit.txt
+
+      - name: Zero-loss syntax and route QA
+        run: |
+          set -euo pipefail
+          ROOT=products/4sapien/site/index.html
+          FOOD=products/4sapien/site/app/food/index.html
+          MONEY=products/4sapien/site/app/money/index.html
+          grep -q 'Food × Money · together' "$ROOT"
+          grep -q '/app/food/' "$ROOT"
+          grep -q '/app/money/' "$ROOT"
+          grep -q 'four_sapien_meal_plans' "$FOOD"
+          grep -q 'functions/v1/embla-products' "$FOOD"
+          grep -q '<title>4SAPIEN Finance — Embla</title>' "$MONEY"
+          grep -q 'AXE_FINANCE_EXPERIENCE_V2' "$MONEY"
+          grep -q 'AXE_FINANCE_UX_V3' "$MONEY"
+          grep -q 'four_sapien_finance_accounts' "$MONEY"
+          grep -q 'four_sapien_finance_events' "$MONEY"
+          ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
+          python - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('products/4sapien/site/app/food/index.html').read_text()
+          m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+          assert m, 'Babel/React source block missing'
+          pathlib.Path('/tmp/food.jsx').write_text(m.group(1))
+          PY
+          npx --yes esbuild@0.25.9 /tmp/food.jsx --loader:.jsx=jsx --outfile=/tmp/food-check.js
+
+      - name: Verify production redirect allowlist
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "${SUPABASE_ACCESS_TOKEN:-}" ] || exit 31
+          curl -fsS -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            'https://api.supabase.com/v1/projects/ghvdzetmplqkdtfqiror/config/auth' > /tmp/auth.json
+          jq -r '.uri_allow_list // ""' /tmp/auth.json
+          jq -e '(.uri_allow_list // "") | split(",") | map(gsub("^ +| +$";"")) | any(. == "https://4sapien.com/app/food/" or . == "https://4sapien.com/**" or . == "https://4sapien.com/*")' /tmp/auth.json >/dev/null
+
+      - name: Verify public runtime boundaries
+        run: |
+          set -euo pipefail
+          for table in four_sapien_profiles four_sapien_meal_plans four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget; do
+            code=$(curl -sS -o /tmp/db.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0" || true)
+            [ "$code" = 200 ] || exit 5
+          done
+          for fn in embla-products embla-core-preview; do
+            code=$(curl -sS -o /tmp/fn.json -w '%{http_code}' -X POST -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" -H 'Content-Type: application/json' --data '{"message":"hello","q":"yoghurt"}' "${SUPABASE_URL}/functions/v1/${fn}" || true)
+            [ "$code" = 401 ] || exit 6
+          done
+
+      - name: Resolve Cloudflare preview authority
+        id: cf
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          [ -n "$token" ] || exit 8
+          root=$(curl -fsS -H "Authorization: Bearer ${token}" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account" ] || exit 9
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+          echo "account=$account" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy isolated auth candidate only
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -euo pipefail
+          cd products/4sapien
+          npx --yes wrangler@4 deploy --config wrangler.jsonc --name four-sapien-auth-fix 2>&1 | tee /tmp/wrangler.log
+          url=$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/wrangler.log | tail -n1)
+          [ -n "$url" ] || exit 10
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          for i in 1 2 3 4 5; do
+            root_ok=0; food_ok=0; money_ok=0
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'https://4sapien.com/app/food/' /tmp/food.html && food_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'AXE_FINANCE_UX_V3' /tmp/money.html && money_ok=1 || true
+            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
+            sleep 2
+          done
+          exit 11
+
+      - name: Summary
+        if: always()
+        run: |
+          echo '## 4SAPIEN auth + typography candidate' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Production domain: UNTOUCHED' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Auth callback -> /app/food/: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Public signed-in indicator: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Claude Finance typography provenance: gated' >> "$GITHUB_STEP_SUMMARY"
+          echo "- Preview: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

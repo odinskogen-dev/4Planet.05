@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 if len(sys.argv) != 3:
@@ -111,4 +112,6 @@ for forbidden in ('function openApp', 'function closeApp', 'id="app"'):
         raise SystemExit(f'Front v2 QA forbidden demo marker: {forbidden}')
 
 target.write_text(html, encoding='utf-8')
-print('4SAPIEN Claude front v2 integrated for production')
+front_auth_guard = Path(__file__).resolve().with_name('apply_front_auth_guard.py')
+subprocess.run([sys.executable, str(front_auth_guard), str(target)], check=True)
+print('4SAPIEN Claude front v2 integrated for production + auth state guard')
