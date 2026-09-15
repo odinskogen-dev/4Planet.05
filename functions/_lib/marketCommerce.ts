@@ -10,6 +10,8 @@ export interface MarketCommerceEnv {
   MARKET_FULFILMENT_TEST_ENABLED?: string;
   MARKET_FULFILMENT_LIVE_ENABLED?: string;
   MARKET_LIVE_RELEASE_APPROVED?: string;
+  MARKET_LIVE_CANARY_ENABLED?: string;
+  MARKET_LIVE_CANARY_TOKEN?: string;
   MARKET_PHOTO_SAMPLE_APPROVED?: string;
   MARKET_ART_SAMPLE_APPROVED?: string;
   STRIPE_TEST_SECRET_KEY?: string;
@@ -38,6 +40,7 @@ export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
     ? env.PRODIGI_LIVE_API_KEY ?? env.PRODIGI_API_KEY
     : env.PRODIGI_SANDBOX_API_KEY ?? env.PRODIGI_TEST_API_KEY)?.trim();
   const callbackToken = env.MARKET_PRODIGI_CALLBACK_TOKEN?.trim();
+  const canaryToken = env.MARKET_LIVE_CANARY_TOKEN?.trim();
   const checkoutFlag = bool(isLive ? env.MARKET_STRIPE_LIVE_ENABLED : env.MARKET_STRIPE_TEST_ENABLED);
   const fulfilmentFlag = bool(isLive ? env.MARKET_FULFILMENT_LIVE_ENABLED : env.MARKET_FULFILMENT_TEST_ENABLED);
   const releaseApproved = !isLive || bool(env.MARKET_LIVE_RELEASE_APPROVED);
@@ -46,6 +49,8 @@ export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
   const webhookConfigured = Boolean(stripeWebhookSecret?.startsWith("whsec_"));
   const prodigiConfigured = Boolean(prodigiKey && prodigiKey.length >= 16);
   const callbackConfigured = Boolean(callbackToken && callbackToken.length >= 24);
+  const canaryEnabled = isLive && bool(env.MARKET_LIVE_CANARY_ENABLED) && Boolean(canaryToken && canaryToken.length >= 24);
+  const providerFulfilmentReady = fulfilmentFlag && prodigiConfigured && callbackConfigured;
 
   return {
     mode,
@@ -55,16 +60,19 @@ export function resolveMarketCommerceRuntime(env: MarketCommerceEnv) {
     stripeWebhookSecret,
     prodigiKey,
     callbackToken,
+    canaryToken,
     prodigiBaseUrl: isLive ? "https://api.prodigi.com" : "https://api.sandbox.prodigi.com",
     checkoutFlag,
     fulfilmentFlag,
     releaseApproved,
+    canaryEnabled,
     stripeConfigured,
     webhookConfigured,
     prodigiConfigured,
     callbackConfigured,
+    providerFulfilmentReady,
     checkoutInfrastructureReady: checkoutFlag && releaseApproved && stripeConfigured,
-    fulfilmentInfrastructureReady: fulfilmentFlag && releaseApproved && prodigiConfigured && callbackConfigured,
+    fulfilmentInfrastructureReady: providerFulfilmentReady && releaseApproved,
   } as const;
 }
 
@@ -103,6 +111,11 @@ export function productCanCheckout(product: FirstMarketProduct, env: MarketComme
   if (!runtime.checkoutInfrastructureReady) return false;
   if (!runtime.isLive) return true;
   return runtime.fulfilmentInfrastructureReady && runtime.webhookConfigured && productSampleApproved(product, env);
+}
+
+export function productCanCanary(product: FirstMarketProduct, env: MarketCommerceEnv) {
+  const runtime = resolveMarketCommerceRuntime(env);
+  return runtime.isLive && runtime.canaryEnabled && runtime.stripeConfigured && runtime.webhookConfigured && runtime.providerFulfilmentReady && Boolean(product.commerce.podSku);
 }
 
 export function releasedMarketProductIds(env: MarketCommerceEnv) {
