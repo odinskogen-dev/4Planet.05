@@ -47,12 +47,15 @@ for marker in forbidden:
     if marker.lower() in low:
         raise SystemExit(f'Finance route QA forbidden marker: {marker}')
 
-# Cloudflare Static Assets resolves extensionless /finance through finance.html.
-# Keep /finance/ as an explicit directory index too, so both canonical spellings
-# serve the same artifact without changing the existing Ask Embla root.
+# Canonical One Product route.
+money_dir = site_dir / 'app' / 'money'
+money_dir.mkdir(parents=True, exist_ok=True)
+(money_dir / 'index.html').write_text(html, encoding='utf-8')
+
+# Preserve legacy /finance and /finance/ links during convergence.
 (site_dir / 'finance.html').write_text(html, encoding='utf-8')
 finance_dir = site_dir / 'finance'
 finance_dir.mkdir(parents=True, exist_ok=True)
 (finance_dir / 'index.html').write_text(html, encoding='utf-8')
 
-print('4SAPIEN Finance route materialized: /finance + /finance/')
+print('4SAPIEN Finance routes materialized: /app/money/ + legacy /finance + /finance/')
