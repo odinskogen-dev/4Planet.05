@@ -47,6 +47,9 @@ jobs:
       - name: Gold Template contracts
         run: npm run test:gold-templates
 
+      - name: Independent structural Judge
+        run: node scripts/gold-template-system-judge.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -153,6 +156,7 @@ jobs:
             gold-preview.json
             gold-cloudflare-deploy.log
             gold-preview-local.log
+            artifacts/gold-template-judge.json
             artifacts/product-proof/gold-*.png
             artifacts/atlas-gold
           if-no-files-found: warn
