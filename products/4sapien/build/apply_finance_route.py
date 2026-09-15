@@ -36,13 +36,6 @@ new_bind = """function editKey(el,save){if(!el)return;let original=el.value,canc
 if old_bind not in experience:
     raise SystemExit('inline-edit bind seam missing')
 experience = experience.replace(old_bind, new_bind, 1)
-# AXE_FINANCE_FONT_RESTORE_V1 — restore Claude's original sans-serif typography tokens.
-# Claude donor tokens: display=Instrument Sans, body=DM Sans, mono=Fragment Mono.
-font_restore = '<style id="axe-finance-font-restore">#axeFin,#axeFin input,#axeFin select,#axeFin button{font-family:"DM Sans",sans-serif!important}#axeFin h1,#axeFin .big{font-family:"Instrument Sans",sans-serif!important}#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:"Fragment Mono",monospace!important}</style>'
-experience = experience.replace('</style>', '</style>'+font_restore, 1)
-if 'axe-finance-font-restore' not in experience:
-    raise SystemExit('Typography restore injection failed')
-
 for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):
     if marker not in experience:
         raise SystemExit(f'UX V3 marker missing after patch: {marker}')
