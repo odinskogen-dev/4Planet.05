@@ -92,10 +92,16 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
 
   const product = requireMarketProduct(session.metadata?.market_product_id);
   if (!product) return json({ ok: false, error: "unknown_market_product" }, 503);
-  const amountOk = session.amount_total === product.commerce.candidatePriceNok * 100 && session.currency?.toLowerCase() === "nok";
+  const isCanary = session.metadata?.market_canary === "true";
+  const expectedPriceNok = isCanary && runtime.canaryPriceNok
+    ? runtime.canaryPriceNok
+    : product.commerce.candidatePriceNok;
+  const metadataPriceNok = Number(session.metadata?.market_price_nok ?? NaN);
+  const amountOk = session.amount_total === expectedPriceNok * 100
+    && metadataPriceNok === expectedPriceNok
+    && session.currency?.toLowerCase() === "nok";
   if (!amountOk) return json({ ok: false, error: "market_amount_mismatch" }, 503);
 
-  const isCanary = session.metadata?.market_canary === "true";
   const fulfilmentAllowed = isCanary
     ? runtime.canaryEnabled && runtime.providerFulfilmentReady
     : runtime.fulfilmentInfrastructureReady;
@@ -108,20 +114,24 @@ export const onRequestPost = async (ctx: { request: Request; env: MarketCommerce
   const callbackUrl = prodigiCallbackUrl(env);
   if (!callbackUrl) return json({ ok: false, error: "prodigi_callback_not_ready" }, 503);
 
+  const item: Record<string, unknown> = {
+    merchantReference: product.id,
+    sku: product.commerce.podSku,
+    copies: 1,
+    sizing: product.commerce.podSizing,
+    assets: [{ printArea: "default", url: productAssetUrl(product, env) }],
+  };
+  if (!isCanary) {
+    item.recipientCost = { amount: product.commerce.candidatePriceNok.toFixed(2), currency: "NOK" };
+  }
+
   const prodigiResult = await prodigiPost(runtime, "/v4.0/orders", {
     merchantReference: sessionId,
     idempotencyKey: `4market-${sessionId}`,
-    shippingMethod: product.commerce.shippingMethod,
+    shippingMethod: product.commerce.shippingMethod.toLowerCase(),
     callbackUrl,
     recipient,
-    items: [{
-      merchantReference: product.id,
-      sku: product.commerce.podSku,
-      copies: 1,
-      sizing: product.commerce.podSizing,
-      recipientCost: { amount: product.commerce.candidatePriceNok.toFixed(2), currency: "NOK" },
-      assets: [{ printArea: "default", url: productAssetUrl(product, env) }],
-    }],
+    items: [item],
     metadata: {
       stripeSessionId: sessionId,
       marketProductId: product.id,
