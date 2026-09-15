@@ -46,13 +46,28 @@ function frame(target, product, state, sha) {
   return page(\`<iframe src="\${src}" title="\${esc(product)} \${esc(state)}"></iframe><a class="badge" href="/_control" target="_top">\${esc(state)} · \${esc(product)} · \${esc(String(sha).slice(0,8))}</a>\`, \`\${product} \${state}\`);
 }
 
+async function proxyHeir(request, url, path) {
+  const target = new URL(path + url.search, CONFIG.heir.origin);
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+  const init = { method: request.method, headers, redirect: "manual" };
+  if (request.method !== "GET" && request.method !== "HEAD") init.body = request.body;
+  const upstream = await fetch(new Request(target.toString(), init));
+  const outHeaders = new Headers(upstream.headers);
+  outHeaders.set("cache-control", "no-store");
+  outHeaders.set("x-robots-tag", "noindex, nofollow");
+  outHeaders.set("x-4planet-control-plane", "four-state-v1");
+  outHeaders.set("x-4planet-review-source", \`heir-\${String(CONFIG.heir.sha).slice(0,12)}\`);
+  return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
+}
+
 function dashboard() {
   const cards = Object.entries(CONFIG.products).map(([name,p]) => {
     const heirUrl = p.heir.review_path;
     const sandbox = p.sandbox ? \`<a href="\${esc(p.sandbox.review_path)}">SANDBOX <span class="mono">\${esc(CONFIG.sandboxes[name]?.sha?.slice(0,8) || "UNRESOLVED")}</span></a>\` : '<span class="muted">SANDBOX — none registered</span>';
     return \`<section class="card"><div class="state">\${esc(name)}</div><h2>\${esc(name)}</h2><div class="mono">HEIR \${esc(CONFIG.heir.sha.slice(0,12))}</div><div class="links"><a href="\${esc(p.live.url)}" target="_blank" rel="noreferrer">LIVE ↗</a><a href="\${esc(heirUrl)}">HEIR</a>\${sandbox}</div></section>\`;
   }).join('');
-  return page(\`<header><div><strong>4PLANET_ PRODUCT CONTROL</strong><div class="mono">LIVE / HEIR / SANDBOX / ARCHIVED</div></div><div class="mono">HEIR \${esc(CONFIG.heir.sha)}</div></header><main><p>Human-visible authority surface. Branch recency is not product authority.</p><div class="grid">\${cards}</div><p class="mono">Generated \${esc(CONFIG.generatedAt)} · <a href="https://archive.4planet.org/">OPEN ARCHIVE ↗</a></p></main>\`, "4PLANET PRODUCT CONTROL");
+  return page(\`<header><div><strong>4PLANET_ PRODUCT CONTROL</strong><div class="mono">LIVE / HEIR / SANDBOX / ARCHIVED</div></div><div class="mono">HEIR \${esc(CONFIG.heir.sha)}</div></header><main><p>Human-visible authority surface. Branch recency is not product authority.</p><div class="grid">\${cards}</div><p class="mono">Generated \${esc(CONFIG.generatedAt)} · <a href="/sandbox/gold">GOLD TEMPLATE FOUNDER REVIEW →</a> · <a href="https://archive.4planet.org/">OPEN ARCHIVE ↗</a></p></main>\`, "4PLANET PRODUCT CONTROL");
 }
 
 function archive() {
@@ -61,6 +76,7 @@ function archive() {
 }
 
 function normalise(pathname) { if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0,-1); return pathname || '/'; }
+function isGoldAsset(path) { return path.startsWith('/assets/') || /\.(?:css|js|mjs|png|jpe?g|webp|avif|svg|woff2?|ico|json|webmanifest)$/i.test(path); }
 
 export default { async fetch(request) {
   const url = new URL(request.url);
@@ -68,6 +84,12 @@ export default { async fetch(request) {
   if (url.hostname !== CONFIG.reviewHost) return new Response("Unknown control host", {status:404});
   const path = normalise(url.pathname);
   if (path === '/_control') return dashboard();
+
+  // Founder-approved review namespace: direct, read-only HEIR projection at a stable test.4planet.org URL.
+  // Static assets are proxied from the same exact HEIR origin so the SPA remains visually intact.
+  if (path === '/sandbox/gold' || path.startsWith('/sandbox/gold/') || isGoldAsset(path)) {
+    return proxyHeir(request, url, path);
+  }
 
   for (const [product,p] of Object.entries(CONFIG.products)) {
     if (p.sandbox && path === normalise(p.sandbox.review_path)) {
