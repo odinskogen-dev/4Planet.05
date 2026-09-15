@@ -1,0 +1,355 @@
+/**
+ * GET /api/inaturalist
+ *
+ * Bounded, read-only bridge to the supported iNaturalist API.
+ * Public occurrence records remain observations, never range/abundance/live tracking.
+ * Public coordinates are passed through exactly as supplied; obscured/private
+ * locations are never reconstructed or sharpened.
+ *
+ * Taxon resolution accepts either an explicit iNaturalist taxonId or an exact
+ * scientific-name query (`q`). Query resolution is fail-closed: fuzzy provider
+ * matches are never silently promoted to taxon identity.
+ */
+
+const BASE = "https://api.inaturalist.org/v1";
+
+// Bounded resilience for provider identity only. This is not a taxonomy store.
+// Each entry must be independently verified against the named provider and keyed
+// by the exact scientific name. It exists because iNaturalist name-resolution
+// requests are currently rate-limited from Cloudflare egress while ID-based
+// observation requests may remain healthy. Unknown/fuzzy names never use this map.
+const VERIFIED_PROVIDER_TAXA: Record<string, {
+  id: number;
+  name: string;
+  preferredCommonName: string | null;
+  rank: string | null;
+  verifiedAt: string;
+  providerIdentityUrl: string;
+}> = {
+  "orcinus orca": {
+    id: 41521,
+    name: "Orcinus orca",
+    preferredCommonName: "Orca",
+    rank: "species",
+    verifiedAt: "2026-09-08",
+    providerIdentityUrl: "https://www.inaturalist.org/taxa/41521-Orcinus-orca",
+  },
+};
+
+const json = (body: unknown, status = 200, maxAge = 300) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json",
+      "cache-control": status === 200 ? `public, max-age=${maxAge}` : "no-store",
+      "access-control-allow-origin": "*",
+      "x-4planet-atlas-source": "inaturalist",
+    },
+  });
+
+const clampInt = (value: string | null, fallback: number, min: number, max: number) => {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= min ? Math.min(n, max) : fallback;
+};
+
+const finiteCoord = (value: string | null, min: number, max: number) => {
+  if (value == null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
+};
+
+const safeDate = (value: string | null) => value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+const safeQuality = (value: string | null) => value && ["research", "needs_id", "casual"].includes(value) ? value : null;
+const safeQuery = (value: string | null) => {
+  const q = String(value || "").trim().replace(/\s+/g, " ");
+  return q.length >= 3 && q.length <= 160 ? q : "";
+};
+
+function normaliseLicence(value: unknown) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  const map: Record<string, string> = {
+    cc0: "CC0",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+  };
+  return map[raw] || (raw ? raw.toUpperCase() : "UNSPECIFIED");
+}
+
+function commercialWebStatus(licence: string) {
+  if (licence === "CC0" || licence === "CC BY") return "AUTO_ACCEPTABLE";
+  if (licence === "CC BY-SA") return "CONDITIONAL_SHARE_ALIKE";
+  if (licence.includes("NC") || licence.includes("ND") || licence === "UNSPECIFIED") return "WITHHOLD_MEDIA";
+  return "REVIEW_REQUIRED";
+}
+
+const providerUnavailableReason = (status: number) => status === 429 ? "RATE_LIMITED" : "PROVIDER_UNAVAILABLE";
+
+const unavailablePayload = ({
+  reason,
+  upstreamStatus = null,
+  query = null,
+  resolvedTaxon = null,
+  identityResolved = false,
+}: {
+  reason: string;
+  upstreamStatus?: number | null;
+  query?: unknown;
+  resolvedTaxon?: unknown;
+  identityResolved?: boolean;
+}) => ({
+  ok: false,
+  source: "inaturalist",
+  availability: "unavailable",
+  reason,
+  upstreamStatus,
+  retryable: true,
+  resolvedTaxon,
+  query,
+  semantics: identityResolved
+    ? "SOURCE_UNAVAILABLE_NOT_ZERO"
+    : "SOURCE_UNAVAILABLE_NO_EXACT_IDENTITY_NOT_ZERO",
+  limitations: [
+    "Provider unavailability is not evidence of zero observations, absence, population decline or range change.",
+    "Occurrences, when available, are reported observations, not range, abundance, population trend or live tracking.",
+    "No fuzzy or guessed taxon identity is promoted while source resolution is unavailable.",
+  ],
+});
+
+async function resolveExactTaxon(query: string) {
+  const want = query.toLocaleLowerCase("en");
+  const verified = VERIFIED_PROVIDER_TAXA[want];
+  if (verified) {
+    return {
+      ok: true as const,
+      taxon: {
+        id: verified.id,
+        name: verified.name,
+        preferredCommonName: verified.preferredCommonName,
+        rank: verified.rank,
+        identityBasis: "VERIFIED_PROVIDER_IDENTITY_PIN",
+        verifiedAt: verified.verifiedAt,
+        providerIdentityUrl: verified.providerIdentityUrl,
+      },
+    };
+  }
+
+  const qs = new URLSearchParams({
+    taxon_name: query,
+    per_page: "5",
+    page: "1",
+    order_by: "observed_on",
+    order: "desc",
+  });
+  const url = `${BASE}/observations?${qs.toString()}`;
+  const response = await fetch(url, {
+    headers: {
+      accept: "application/json",
+      "user-agent": "4PLANET-ATLAS/1.0 (+https://4planet.org)",
+    },
+    cf: { cacheTtl: 86400 } as RequestInit["cf"],
+  });
+  if (!response.ok) {
+    return { ok: false as const, error: `TAXON_UPSTREAM_${response.status}`, upstreamStatus: response.status };
+  }
+  const data = await response.json() as any;
+  if (!Array.isArray(data?.results)) return { ok: false as const, error: "TAXON_CONTRACT_MISMATCH", upstreamStatus: null };
+
+  const exactRow = data.results.find((row: any) => String(row?.taxon?.name || "").trim().toLocaleLowerCase("en") === want);
+  const exact = exactRow?.taxon;
+  if (!exact?.id) return { ok: false as const, error: "TAXON_NOT_EXACTLY_RESOLVED", upstreamStatus: null };
+
+  return {
+    ok: true as const,
+    taxon: {
+      id: Number(exact.id),
+      name: String(exact.name || query),
+      preferredCommonName: exact.preferred_common_name ?? null,
+      rank: exact.rank ?? null,
+      identityBasis: "PROVIDER_EXACT_NAME_RESOLUTION",
+      verifiedAt: null,
+      providerIdentityUrl: exact.id ? `https://www.inaturalist.org/taxa/${exact.id}` : null,
+    },
+  };
+}
+
+export const onRequestGet = async ({ request }: { request: Request }) => {
+  const incoming = new URL(request.url);
+  let taxonId = clampInt(incoming.searchParams.get("taxonId"), 0, 1, Number.MAX_SAFE_INTEGER);
+  const query = safeQuery(incoming.searchParams.get("q"));
+  if (!taxonId && !query) return json({ ok: false, error: "TAXON_ID_OR_EXACT_QUERY_REQUIRED" }, 400, 60);
+
+  const perPage = clampInt(incoming.searchParams.get("perPage"), 40, 1, 100);
+  const page = clampInt(incoming.searchParams.get("page"), 1, 1, 100);
+  const quality = safeQuality(incoming.searchParams.get("quality")) || "research";
+  const d1 = safeDate(incoming.searchParams.get("d1"));
+  const d2 = safeDate(incoming.searchParams.get("d2"));
+
+  const swlat = finiteCoord(incoming.searchParams.get("swlat"), -90, 90);
+  const swlng = finiteCoord(incoming.searchParams.get("swlng"), -180, 180);
+  const nelat = finiteCoord(incoming.searchParams.get("nelat"), -90, 90);
+  const nelng = finiteCoord(incoming.searchParams.get("nelng"), -180, 180);
+  const bboxProvided = [swlat, swlng, nelat, nelng].some((v) => v != null);
+  if (bboxProvided && [swlat, swlng, nelat, nelng].some((v) => v == null)) return json({ ok: false, error: "INCOMPLETE_BBOX" }, 400, 60);
+  if (bboxProvided && (!(swlat! < nelat!) || !(swlng! < nelng!))) return json({ ok: false, error: "INVALID_BBOX" }, 400, 60);
+
+  let resolvedTaxon: {
+    id: number;
+    name: string;
+    preferredCommonName: string | null;
+    rank: string | null;
+    identityBasis?: string;
+    verifiedAt?: string | null;
+    providerIdentityUrl?: string | null;
+  } | null = null;
+
+  const queryShape = () => ({
+    input: query || null,
+    taxonId,
+    page,
+    perPage,
+    quality,
+    d1,
+    d2,
+    bbox: bboxProvided ? { swlat, swlng, nelat, nelng } : null,
+  });
+
+  if (!taxonId && query) {
+    try {
+      const resolved = await resolveExactTaxon(query);
+      if (!resolved.ok) {
+        if (resolved.upstreamStatus) {
+          return json(unavailablePayload({
+            reason: providerUnavailableReason(resolved.upstreamStatus),
+            upstreamStatus: resolved.upstreamStatus,
+            query: { input: query },
+            identityResolved: false,
+          }), 503, 60);
+        }
+        const status = resolved.error === "TAXON_NOT_EXACTLY_RESOLVED" ? 404 : 502;
+        return json({ ok: false, source: "inaturalist", error: resolved.error, query, semantics: "NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED" }, status, 60);
+      }
+      resolvedTaxon = resolved.taxon;
+      taxonId = resolved.taxon.id;
+    } catch {
+      return json(unavailablePayload({ reason: "TAXON_RESOLUTION_FAILURE", query: { input: query }, identityResolved: false }), 503, 60);
+    }
+  }
+
+  const qs = new URLSearchParams({
+    taxon_id: String(taxonId),
+    geo: "true",
+    quality_grade: quality,
+    per_page: String(perPage),
+    page: String(page),
+    order_by: "observed_on",
+    order: "desc",
+  });
+  if (d1) qs.set("d1", d1);
+  if (d2) qs.set("d2", d2);
+  if (bboxProvided) {
+    qs.set("swlat", String(swlat));
+    qs.set("swlng", String(swlng));
+    qs.set("nelat", String(nelat));
+    qs.set("nelng", String(nelng));
+  }
+
+  const upstream = `${BASE}/observations?${qs.toString()}`;
+  try {
+    const response = await fetch(upstream, {
+      headers: { accept: "application/json", "user-agent": "4PLANET-ATLAS/1.0 (+https://4planet.org)" },
+      cf: { cacheTtl: 300 } as RequestInit["cf"],
+    });
+    if (!response.ok) {
+      return json(unavailablePayload({
+        reason: providerUnavailableReason(response.status),
+        upstreamStatus: response.status,
+        query: queryShape(),
+        resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+        identityResolved: Boolean(resolvedTaxon || taxonId),
+      }), 503, 60);
+    }
+
+    const data = await response.json() as any;
+    if (!Array.isArray(data?.results)) {
+      return json(unavailablePayload({
+        reason: "PROVIDER_CONTRACT_MISMATCH",
+        query: queryShape(),
+        resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+        identityResolved: Boolean(resolvedTaxon || taxonId),
+      }), 503, 60);
+    }
+
+    const records = data.results.map((row: any) => {
+      const publicCoords = Array.isArray(row?.geojson?.coordinates) && row.geojson.coordinates.length >= 2
+        ? { longitude: Number(row.geojson.coordinates[0]), latitude: Number(row.geojson.coordinates[1]) }
+        : null;
+      const observationLicence = normaliseLicence(row?.license_code);
+      const photos = Array.isArray(row?.photos) ? row.photos.map((photo: any) => {
+        const licence = normaliseLicence(photo?.license_code);
+        return {
+          id: photo?.id ? String(photo.id) : null,
+          attribution: photo?.attribution ?? null,
+          licence,
+          commercialWebStatus: commercialWebStatus(licence),
+          url: photo?.url ?? null,
+          originalDimensions: photo?.original_dimensions ?? null,
+        };
+      }) : [];
+
+      const taxonGeoprivacy = row?.taxon_geoprivacy ?? row?.taxon?.geoprivacy ?? row?.taxon?.conservation_status?.geoprivacy ?? null;
+      return {
+        id: row?.id ? String(row.id) : null,
+        sourceUrl: row?.uri ?? (row?.id ? `https://www.inaturalist.org/observations/${row.id}` : null),
+        taxon: row?.taxon ? { id: row.taxon.id ?? null, name: row.taxon.name ?? null, preferredCommonName: row.taxon.preferred_common_name ?? null } : null,
+        observedAt: row?.observed_on_string ?? row?.observed_on ?? null,
+        createdAt: row?.created_at ?? null,
+        qualityGrade: row?.quality_grade ?? null,
+        geoprivacy: row?.geoprivacy ?? null,
+        taxonGeoprivacy,
+        positionalAccuracyM: row?.positional_accuracy ?? null,
+        publicCoordinates: publicCoords && Number.isFinite(publicCoords.latitude) && Number.isFinite(publicCoords.longitude) ? publicCoords : null,
+        observer: row?.user ? { id: row.user.id ?? null, login: row.user.login ?? null } : null,
+        observationLicence,
+        photos,
+      };
+    });
+
+    return json({
+      ok: true,
+      source: "inaturalist",
+      availability: "available",
+      api: "https://api.inaturalist.org/v1",
+      retrievedAt: new Date().toISOString(),
+      resolvedTaxon: resolvedTaxon || { id: taxonId, name: null, preferredCommonName: null, rank: null },
+      query: queryShape(),
+      totalResults: Number(data?.total_results ?? records.length),
+      records,
+      semantics: records.length ? "PUBLIC_OCCURRENCE_RECORDS_RETURNED" : "NO_OBSERVATIONS_RETURNED_FOR_QUERY",
+      limitations: [
+        "Occurrences are reported observations, not range, abundance, population trend or live tracking.",
+        "Only public coordinates supplied by iNaturalist are returned; obscured/private locations are never reconstructed.",
+        "Observation licence and photo licence are distinct; media reuse requires the photo-specific licence check.",
+        "Scientific-name query identity is exact-match only; verified provider identity pins may be used when provider name-resolution is rate-limited, and fuzzy names are never promoted.",
+      ],
+    }, 200, 300);
+  } catch {
+    return json(unavailablePayload({
+      reason: "NETWORK_FAILURE",
+      query: queryShape(),
+      resolvedTaxon: resolvedTaxon || (taxonId ? { id: taxonId, name: null, preferredCommonName: null, rank: null } : null),
+      identityResolved: Boolean(resolvedTaxon || taxonId),
+    }), 503, 60);
+  }
+};
+
+export const onRequestOptions = () => new Response(null, {
+  headers: {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET, OPTIONS",
+    "access-control-max-age": "86400",
+  },
+});

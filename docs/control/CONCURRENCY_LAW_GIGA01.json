@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "max_material_lanes": 5,
+  "lane_requirements": ["exact_desired_state","owner","receiver","write_scope","acceptance_test","proof_metric","rollback","stop_condition"],
+  "duplicate_rule": "No new lane if the same material objective is already active on a valid receiver.",
+  "unknown_receiver_rule": "FAIL_CLOSED",
+  "current_lanes": [
+    {"id":"A","objective":"PLANET_GOLD_01_OSLOFJORD","owner":"PRODUCT_MAKER_PLUS_INDEPENDENT_JUDGE","receiver":"king/test","write_scope":"existing Planet/Oslofjord product and truth surfaces only","proof_metric":"first-time-user comprehension plus exact source-safe mobile/desktop evidence","rollback":"revert bounded commits","stop_condition":"authority/source/Gold regression"},
+    {"id":"B","objective":"EMBLA_REAL_DECISION_01","owner":"EXISTING_EMBLA_PRODUCT_LINE","receiver":"MUST_RESOLVE_EXISTING_REGISTERED_RECEIVER_BEFORE_MUTATION","write_scope":"no mutation until receiver resolved","proof_metric":"measured real decision improvement","rollback":"revert bounded receiver commits","stop_condition":"synthetic success or duplicate Embla/FOOD line"},
+    {"id":"C","objective":"ACTION_ECONOMIC_PROOF_01","owner":"PROGRAMME_CONTROL","receiver":"control artifacts until exact existing product receiver required","write_scope":"internal conversion proof only; no outreach","proof_metric":"complete bounded need-to-proof chain","rollback":"revert internal artifact","stop_condition":"external release/payment/legal commitment"},
+    {"id":"D","objective":"OSLOFJORD_TO_GREAT_BARRIER_REEF_TRANSFER","owner":"TRANSFER_EVALUATOR","receiver":"NO_NEW_PRODUCT_LINE","write_scope":"measurement/spec/test only until Oslofjord primitives stable","proof_metric":"reuse ratio and cycle-time delta","rollback":"discard transfer experiment","stop_condition":"world-2 starts from scratch or creates competing architecture"},
+    {"id":"E","objective":"FACTORY_SUPERBRAIN_PRODUCTION_PROOF","owner":"EXISTING_FACTORY_AUTHORITY","receiver":"factory/symphony-runtime-v01","write_scope":"Factory source/tests/workflows inside existing authority","proof_metric":"accepted work, cycle time, reuse, regressions, Founder burden","rollback":"revert Factory bounded commit","stop_condition":"new Factory lineage or authority violation"}
+  ]
+}

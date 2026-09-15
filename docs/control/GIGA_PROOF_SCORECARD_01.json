@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "programme": "GIGA-IMMUNITY-01",
+  "proofs": {
+    "PLANET": {
+      "objective": "Oslofjord Human Gold 01 makes a real place understandable through authoritative geography, life, pressures, relationships, sources and action context.",
+      "accepted_only_if": ["inspectable_url", "exact_sha", "mobile_390x844", "desktop", "source_provenance", "no_invented_precision", "independent_human_quality_judgement"],
+      "status": "IN_PROGRESS"
+    },
+    "HUMAN": {
+      "objective": "Embla Real Decision 01 measurably improves one real FOOD choice.",
+      "metrics": ["elapsed_decision_time", "candidate_reduction", "evidence_usefulness", "confidence_before_after", "money_difference_if_relevant", "explicit_user_judgement"],
+      "status": "READY_AFTER_REGISTERED_RECEIVER_AND_REAL_USER_INPUT"
+    },
+    "ACTION_ECONOMICS": {
+      "objective": "One bounded need-to-capital-to-delivery-to-proof chain without collapsing done/outcome/verified impact.",
+      "accepted_only_if": ["exact_problem", "actor_class", "exact_ask", "deliverable", "cost_corridor", "diligence", "proof_of_done", "outcome_measurement_boundary", "legal_professional_gates"],
+      "status": "IN_PROGRESS"
+    },
+    "COMPOUNDING_FACTORY": {
+      "objective": "Prove lower cycle time and founder burden plus measurable reuse on real work; then test Oslofjord primitives on Great Barrier Reef.",
+      "metrics": ["work_packages_attempted", "accepted", "rejected", "corrected", "mean_cycle_time", "retries", "regression_escapes", "duplicates_prevented", "founder_interventions", "founder_minutes", "reuse_ratio", "cost_if_observable"],
+      "status": "IN_PROGRESS"
+    }
+  },
+  "non_metrics": ["commit_count", "document_count", "agent_count", "raw_task_completion_count"]
+}

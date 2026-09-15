@@ -65,13 +65,13 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("COR4L is being developed as a mission world for reef intelligence, restoration pathways and cultural communication that makes reef systems both emotionally and scientifically legible."),
     ],
   },
-  "pl4stic": {
+  "cle4n": {
     scene: [
       "Plastic does not disappear when it leaves our hands.",
       "It moves through rivers, coastlines, fisheries, beaches, stomachs, currents and food webs.",
       "Marine plastic is not only a waste problem.",
       "It is a systems problem: production, consumption, leakage, cleanup and recovery.",
-      "PL4STIC is being developed to make marine waste recovery easier to understand, support and follow.",
+      "CLE4N_ is being developed to make marine waste recovery easier to understand, support and follow.",
     ],
     article: [
       L("Plastic does not disappear when it leaves our hands. It moves — through rivers, coastlines, fisheries, beaches, stomachs, currents and food webs — long after the moment it was thrown away."),
@@ -85,23 +85,23 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("A measurable pathway designed to support one kilogram of marine waste recovery — but only after an approved delivery partner, a measurement method, an evidence standard and a reporting model are confirmed. Until each of those is in place, the pathway stays closed to public support. The honesty is the point."),
     ],
   },
-  "4ntarctica": {
+  "rewild-marine": {
     scene: [
-      "At the bottom of the world, ice, ocean and atmosphere move as one system.",
-      "What happens there does not stay there.",
-      "Changes in polar waters affect climate, sea level, marine life and weather patterns far beyond Antarctica itself.",
-      "The continent can feel distant from everyday life. Its systems are not.",
-      "4NTARCTICA is being developed to make polar change easier to understand, document and follow.",
+      "Beneath the surface, whole habitats have quietly thinned out.",
+      "Seagrass meadows, kelp forests and shellfish beds once ran along these coasts.",
+      "Where they return, life returns with them — fish, birds, clearer water.",
+      "Coastal recovery is some of the most achievable marine restoration there is.",
+      "RE:WILD_ Marine is being developed to make that recovery easier to understand, support and follow.",
     ],
     article: [
-      L("At the bottom of the world, ice, ocean and atmosphere move as one system. Antarctica and the Southern Ocean are not remote background landscapes — they are major working parts of Earth's climate and ocean machinery."),
-      P("The continent can feel distant from everyday life. Its systems are not. Sea ice, krill, penguins, seals, whales and the great Southern Ocean currents are tied directly into the wider ocean and the global climate."),
+      L("Marine rewilding is the long work of returning function to degraded coastal and shallow-sea systems. Seagrass meadows, kelp forests and shellfish and oyster beds are the living infrastructure of the coast — nurseries, filters and carbon stores all at once."),
+      P("Much of this habitat has been lost or simplified through physical damage, pollution, nutrient loading, warming and the removal of key species. What remains is often fragmented, but it can recover when the pressure is eased and the structure is rebuilt."),
       S("The pressure"),
-      P("Polar marine systems are under pressure from warming, sea-ice change, fishing pressure, pollution and the cumulative effects of global emissions produced far away."),
-      Q("What happens in polar systems does not stay at the poles."),
+      P("Nutrient loading and pollution, physical damage to the seabed, warming water and the loss of habitat-building species all reduce what coastal seas can hold and support."),
+      Q("Recovered coastal habitat rebuilds the food webs and carbon stores ocean life depends on."),
       S("What can help"),
-      P("Stronger protection. Better science communication. Precautionary management. Support for credible research and conservation partners — and public understanding of how deeply the poles and the rest of the planet are connected."),
-      P("4NTARCTICA is being developed as a mission world for Antarctic intelligence, protection pathways and cultural attention around the ecosystems that help regulate the planetary system as a whole."),
+      P("Protecting and reconnecting coastal habitat. Restoring seagrass and kelp. Rebuilding shellfish and oyster beds. Reducing nutrient and pollution pressure — and monitoring recovery over time with credible partners."),
+      P("RE:WILD_ Marine is being developed as a pathway to support restoration of degraded coastal and marine habitat through approved local models. 4PLANET is not currently delivering marine restoration itself."),
     ],
   },
 
@@ -164,7 +164,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("SPECIES is being developed as a mission world that connects species intelligence, field protection pathways, public education and cultural storytelling — making ecological roles, biodiversity loss and the routes to protection easier to understand, support and follow."),
     ],
   },
-  "rewild": {
+  "rewild-land": {
     scene: [
       "Land can recover when pressure is reduced and life is given room to return.",
       "Water finds new paths. Soils rebuild. Plants spread. Insects return. Birds follow. Larger systems begin to reconnect.",
@@ -201,12 +201,12 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("FOOD is being developed as a mission world for food-system intelligence, practical partnerships and cultural communication around the systems that feed people and shape landscapes — editorial about food systems, not lifestyle photography of them."),
     ],
   },
-  "en3rgy": {
+  "en4rgy": {
     scene: [
       "Energy powers nearly every system we live inside.",
       "How we heat, move, build, produce and connect shapes the pressure placed on land, water, climate and communities.",
       "Energy is often invisible until its consequences become impossible to ignore.",
-      "EN3RGY is being developed to make the transition toward cleaner, more resilient energy systems easier to understand and follow.",
+      "EN4RGY is being developed to make the transition toward cleaner, more resilient energy systems easier to understand and follow.",
     ],
     article: [
       L("Energy is not only a technical sector. It is the infrastructure behind homes, transport, industry, food, communication and public life — invisible until its consequences become impossible to ignore."),
@@ -216,7 +216,7 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       Q("The goal is to make complex system choices more legible — without reducing them to slogans."),
       S("What can help"),
       P("Efficiency and demand reduction. Clean generation and better grids. Responsible material use. Accessible public understanding, and transition models that actually account for people and ecosystems together."),
-      P("EN3RGY is being developed as a mission world for energy intelligence and public explanation — infrastructure, grids, materials and system choices made legible rather than loud."),
+      P("EN4RGY is being developed as a mission world for energy intelligence and public explanation — infrastructure, grids, materials and system choices made legible rather than loud."),
     ],
   },
   "circular-city": {
@@ -289,18 +289,19 @@ export const MISSION_NARRATIVE: Record<string, MissionNarrative> = {
       P("4FILM is being developed as a documentary pathway for the whales, forests, species, field partners and ecological restoration that shape the work of 4Planet."),
     ],
   },
-  "4telier": {
+  "4rt": {
     scene: [
-      "Culture needs places where ideas become objects, images, spaces and interventions.",
-      "4TELIER is being developed as a studio for visual work that makes ecological attention tangible — through design, art, print, objects and public expression.",
+      "A print on a wall can hold attention longer than a headline ever will.",
+      "4RT_ is Prints for Planet: limited editions where the split between artist, production and 4PLANET is stated plainly.",
+      "Each edition routes a defined contribution toward a mission or a verified Impact pathway — and nothing more is claimed.",
     ],
     article: [
-      L("Art and design can make ecological questions inhabitable — not as decoration, but as objects, spaces and images that carry attention into daily life and refuse to be thrown away."),
-      P("Ecological communication becomes abstract or disposable when it has no physical or aesthetic form people actually want to keep close. Objects, exhibitions, editions and design systems can create durable cultural memory — and route that attention back toward mission work."),
+      L("4RT_ is Prints for Planet: art, photography and illustration released as limited editions, where the money behind each print is honest about who is paid and what, if anything, reaches the ground."),
+      P("Ecological attention fades when it has no lasting form. A print can hold it — but only if the edition is transparent. Each 4RT_ edition states an artist share, a production share and a 4PLANET share, and its rights and edition state are shown, not implied."),
       Q("Objects people want to keep become attention that lasts."),
       S("What can help"),
-      P("Limited editions and exhibitions. Design collaborations. Objects with clear impact routing, and visual work that deepens ecological meaning rather than trivialising it."),
-      P("4TELIER is being developed as a cultural studio and exhibition pathway connecting art, design, objects and mission storytelling through shared 4Planet infrastructure."),
+      P("Limited editions with a stated split, clear rights and a defined mission or verified Impact-pathway contribution. Visual work that deepens ecological meaning rather than trivialising it."),
+      P("4RT_ is being developed as a cultural studio and print pathway connecting artists, editions and mission storytelling through shared 4Planet infrastructure. There is no active store, no completed sales and no transferred Impact funds yet."),
     ],
   },
   "m4gazine": {

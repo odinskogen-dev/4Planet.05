@@ -1,0 +1,25 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "files":[
+    "GIGA_IMMUNITY_01_CONTROL.json",
+    "ERROR_TO_IMMUNITY_REGISTER_GIGA01.json",
+    "AUTONOMY_BUDGET_GIGA01.json",
+    "CONCURRENCY_LAW_GIGA01.json",
+    "MAKER_NOT_JUDGE_GIGA01.json",
+    "PROOF_FIRST_PRIORITY_GIGA01.json",
+    "GIGA_PROOF_SCORECARD_01.json",
+    "DAILY_AUTONOMOUS_CONTROL_LOOP_01.md",
+    "NEXT_DESIRED_STATE_GIGA01.json",
+    "FOUNDER_BURDEN_METRICS_01.json",
+    "NIGHT_CLOSE_TEMPLATE_GIGA01.json",
+    "MORNING_BOOT_TEMPLATE_GIGA01.json",
+    "GIGA01_STOP_CONDITIONS.json",
+    "GIGA01_LANE_ACCEPTANCE.json",
+    "GIGA01_NO_PROGRESS_THEATRE.json",
+    "GIGA01_WRITEBACK_READBACK_LAW.json",
+    "GIGA01_HARDENING_POLICY.md",
+    "GIGA01_EXECUTION_BOUNDARY.json"
+  ],
+  "authority":"control pack only; does not override Locked Canon or Founder Decisions",
+  "issue_anchor":"#273"
+}

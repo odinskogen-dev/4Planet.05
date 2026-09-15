@@ -61,7 +61,8 @@ export type DataStatus =
   | "NO_COVERAGE" // no source in the system covers this question
   | "SOURCE_UNAVAILABLE" // we asked, the source failed
   | "SEEDED" // 4PLANET prototype content. NOT source data. NOT verified.
-  | "PLANNED"; // connector designed, not wired
+  | "PLANNED" // connector designed, not wired
+  | "BUNDLED"; // a real source record shipped as a historical snapshot. NOT LIVE, NOT current position.
 
 /** Brief §31: never silently collapse source data and 4PLANET interpretation. */
 export type Interpretation =
@@ -84,6 +85,13 @@ export interface Provenance {
   occurredAt?: string; // when the thing happened in the world
   sourcePublishedAt?: string; // when the source published it
   checkedAt: string; // when 4PLANET last asked
+  /**
+   * How this record reached the UI. "LIVE" = fetched from the source this
+   * session. "BUNDLED_SNAPSHOT" = shipped with the app as a checked historical
+   * snapshot (NOT live, NOT current position). Absent ⇒ treated as live.
+   * A BUNDLED_SNAPSHOT record must never display a LIVE status badge.
+   */
+  delivery?: "LIVE" | "BUNDLED_SNAPSHOT";
 }
 
 /** A section of a context panel, with its own honest status. */
@@ -153,6 +161,14 @@ export interface Occurrence {
   eventDate?: string;
   sourceRecordId?: string;
   sourceUrl?: string;
+  /** Source-carried media — shown ONLY when both mediaUrl and mediaLicence exist. */
+  mediaUrl?: string;
+  mediaLicence?: string;
+  mediaAttribution?: string;
+  /** GBIF taxonKey when known, to route into the SPECIES catalogue. */
+  taxonKey?: number;
+  /** Coordinate uncertainty in metres when the source supplies it. */
+  coordinateUncertaintyM?: number;
 }
 
 /* ── PLACE ───────────────────────────────────────────────────────────────── */

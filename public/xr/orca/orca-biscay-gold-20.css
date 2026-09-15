@@ -1,0 +1,36 @@
+/* ORCA BAY OF BISCAY GOLD 20 — ecosystem context card inside the existing Journey engine. */
+.biscay-gold-card{position:absolute;left:4.5%;bottom:12%;z-index:18;width:min(470px,43vw);padding:15px;border:1px solid rgba(141,232,255,.18);background:linear-gradient(145deg,rgba(2,18,30,.88),rgba(2,10,17,.68));box-shadow:0 22px 80px rgba(0,0,0,.42),0 0 48px rgba(86,216,255,.06),inset 0 0 0 1px rgba(247,253,255,.018);opacity:0;transform:translate3d(-14px,12px,0);pointer-events:none;transition:opacity .55s ease,transform .65s cubic-bezier(.2,.7,.2,1);backdrop-filter:blur(12px)}
+.nature-browser[data-light-lens="true"] .biscay-gold-card[data-visible="true"]{opacity:1;transform:none;pointer-events:auto}
+.biscay-gold-card__header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.biscay-gold-card__kicker{display:block;font:650 5.8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.17em;text-transform:uppercase;color:rgba(141,232,255,.68)}
+.biscay-gold-card h2{margin:7px 0 0;color:#f7fdff;font:400 clamp(24px,2.4vw,38px)/.95 Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:-.06em}
+.biscay-gold-card__header p{margin:6px 0 0;color:rgba(223,248,255,.48);font:600 5.8px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+.biscay-gold-card__toggle{flex:none;border:1px solid rgba(141,232,255,.24);background:rgba(141,232,255,.04);color:rgba(247,253,255,.82);padding:8px 9px;font:650 5.4px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;cursor:pointer}
+.biscay-gold-card__toggle:hover,.biscay-gold-card__toggle:focus-visible{border-color:rgba(247,253,255,.7);background:rgba(141,232,255,.09);outline:none}
+.biscay-gold-card__status{margin-top:13px;padding-top:10px;border-top:1px solid rgba(141,232,255,.11);color:rgba(223,248,255,.42);font:600 5.2px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.11em;text-transform:uppercase}
+.biscay-gold-card__body{display:grid;grid-template-columns:1.08fr .92fr;gap:13px;max-height:0;overflow:hidden;opacity:0;transition:max-height .55s ease,opacity .4s ease,margin-top .4s ease;margin-top:0}
+.biscay-gold-card[data-expanded="true"] .biscay-gold-card__body{max-height:430px;opacity:1;margin-top:13px}
+.biscay-gold-card__map{min-height:215px;border:1px solid rgba(141,232,255,.11);background:radial-gradient(circle at 48% 54%,rgba(86,216,255,.06),transparent 52%),rgba(1,10,17,.46);overflow:hidden}
+.biscay-gold-map{width:100%;height:100%;display:block}
+.biscay-gold-map text{fill:rgba(223,248,255,.46);font:600 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+.biscay-gold-map .biscay-map-title{fill:rgba(247,253,255,.82);font-size:8px}
+.biscay-gold-map .biscay-map-note{fill:rgba(141,232,255,.42);font-size:5px}
+.biscay-coast{fill:none;stroke:rgba(247,253,255,.42);stroke-width:1.1}
+.biscay-coast--west{stroke:rgba(247,253,255,.18)}
+.biscay-shelf{fill:none;stroke:rgba(141,232,255,.18);stroke-width:1;stroke-dasharray:3 5}
+.biscay-route{fill:none;stroke:rgba(141,232,255,.78);stroke-width:1.25;stroke-dasharray:5 5;filter:url(#biscayGlow)}
+.biscay-node{fill:#f7fdff;stroke:rgba(86,216,255,.9);stroke-width:2;filter:url(#biscayGlow)}
+.biscay-gold-card__context{display:flex;flex-direction:column;min-width:0}
+.biscay-gold-card__habitats{display:flex;flex-wrap:wrap;gap:5px}
+.biscay-gold-card__habitats span{border:1px solid rgba(141,232,255,.10);padding:5px 6px;color:rgba(223,248,255,.44);font:600 4.8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.biscay-gold-card__species{display:grid;gap:5px;margin-top:9px}
+.biscay-gold-card__species article{padding:6px 0;border-top:1px solid rgba(141,232,255,.08)}
+.biscay-gold-card__species strong,.biscay-gold-card__species em{display:block}
+.biscay-gold-card__species strong{color:rgba(247,253,255,.76);font:650 5.4px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em}
+.biscay-gold-card__species em{margin-top:2px;color:rgba(141,232,255,.40);font:italic 400 9px/1.2 Georgia,serif}
+.biscay-gold-card__sources{display:flex;gap:8px;margin-top:9px}
+.biscay-gold-card__sources a{color:rgba(141,232,255,.62);font:600 5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em;text-decoration:none;border-bottom:1px solid rgba(141,232,255,.20);padding-bottom:2px}
+.biscay-gold-card__boundary{margin:auto 0 0;padding-top:9px;color:rgba(223,248,255,.32);font:600 4.8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase}
+@media(max-width:900px){.biscay-gold-card{width:min(430px,50vw);left:3%;bottom:13%}}
+@media(max-width:760px){.biscay-gold-card{left:10px;right:10px;bottom:258px;width:auto;padding:11px}.biscay-gold-card h2{font-size:22px}.biscay-gold-card__toggle{padding:7px}.biscay-gold-card__body{grid-template-columns:1fr}.biscay-gold-card__map{min-height:145px}.biscay-gold-card[data-expanded="true"] .biscay-gold-card__body{max-height:520px}.biscay-gold-card__species{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:reduce){.biscay-gold-card,.biscay-gold-card__body{transition:none!important}.biscay-route{filter:none}}

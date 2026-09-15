@@ -234,6 +234,27 @@ export const LAYERS = [
         size: Math.max(3, (f.properties.mag || 1) * 1.6),
         html: `<b>M ${esc(f.properties.mag)}</b><br><span class="lat">${esc(f.properties.place || "")}</span>` }));
     } },
+  { id: "emissions", dom: "S4PIENS", group: "SIGNALS", kind: "point", domain: ["PLANET", "S4PIENS", "E4RTH"],
+    label: "CLIM4TE TRACE", color: C.orange, src: "Climate TRACE", r: 4,
+    note: "Facility-level greenhouse-gas emissions from Climate TRACE \\u2014 power plants, oil & gas and other energy/industrial assets, located and sized by CO\\u2082e. These are modelled/measured source assets, not live plumes. Larger circles mean higher reported emissions.",
+    legend: { ramp: "linear-gradient(90deg,#FF7D50,#FF5023,#842810)", lo: "LOWER", hi: "HIGHER CO\\u2082e", sub: "Climate TRACE asset emissions" },
+    load: async () => {
+      // Energy-relevant sectors first; proxied via /api/climate-trace (CORS-safe).
+      const sectors = "electricity-generation,oil-and-gas-production-and-transport,oil-and-gas-refining,coal-mining";
+      const r = await fetch(`/api/climate-trace?sectors=${encodeURIComponent(sectors)}&limit=1200`);
+      const d = await r.json();
+      if (!d || !d.ok || !Array.isArray(d.assets)) throw new Error("climate-trace unavailable");
+      // Size by emissions on a gentle log scale so a few giants don't drown the rest.
+      const vals = d.assets.map((a) => a.co2e).filter((v) => Number.isFinite(v) && v > 0);
+      const max = vals.length ? Math.max(...vals) : 1;
+      return d.assets.map((a) => {
+        const frac = a.co2e > 0 ? Math.log10(a.co2e + 1) / Math.log10(max + 1) : 0;
+        const sectorLabel = String(a.sector || "asset").replace(/-/g, " ").toUpperCase();
+        const tonnes = Number.isFinite(a.co2e) ? `${Math.round(a.co2e).toLocaleString()} t CO\\u2082e${a.year ? ` (${a.year})` : ""}` : "CO\\u2082e NOT REPORTED";
+        return { lon: a.lon, lat: a.lat, size: 3 + frac * 7,
+          html: `<b>${esc(a.name || sectorLabel)}</b><br><span class="lat">${esc(sectorLabel)} ${DOT} ${esc(tonnes)}</span>` };
+      });
+    } },
   { id: "iss", dom: "PLANET", group: "SIGNALS", kind: "live", domain: ["PLANET", "S4PIENS"], every: 5000,
     label: "ISS_ TRACKER", color: C.white, src: "wheretheiss.at", r: 6,
     note: "Live position of the International Space Station, refreshed every 5 seconds. Planetary perspective — not ecological data.",

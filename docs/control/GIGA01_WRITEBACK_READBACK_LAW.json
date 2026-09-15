@@ -1,0 +1,7 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "law":"No material state change is considered programmatically closed until writeback is followed by readback from the authoritative surface.",
+  "required_for":["authority_change","candidate_state","accepted_delivery","rejection","blocker","failure_immunity","autonomy_level","proof_status","next_desired_state"],
+  "chat_memory":"supportive_only",
+  "silent_supersession":"forbidden"
+}

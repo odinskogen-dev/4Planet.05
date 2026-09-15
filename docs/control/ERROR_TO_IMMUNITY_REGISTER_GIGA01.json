@@ -1,0 +1,100 @@
+{
+  "version": "1.1",
+  "programme": "GIGA-IMMUNITY-01",
+  "close_rule": "CLOSED only when physically impossible within authority model or fail-closed before canonical value can be harmed.",
+  "failure_classes": [
+    {
+      "id": "IMM-001",
+      "class": "LEADING_CANDIDATE_AUTHORITY_LOSS",
+      "incidents": ["ATLAS leading-candidate confusion", "Magazine leading-candidate regression"],
+      "root_cause": "branch/deploy/recency could be mistaken for product authority",
+      "containment": "LIVE/HEIR/SANDBOX/ARCHIVE four-state model and registered receiver law",
+      "permanent_hardening_required": ["physical branch/ruleset enforcement", "unknown-ref fail-closed", "transactional sandbox registry", "stale-receiver gate"],
+      "regression": "unauthorised historical/product ref write must be rejected before closure",
+      "state": "OPEN_PHYSICAL_ENFORCEMENT"
+    },
+    {
+      "id": "IMM-002",
+      "class": "GOLD_VALUE_LOSS",
+      "incidents": ["Oslofjord canonical Norwegian alias redirect was lost during Embla router convergence; exact-head Browser Product Proof detected the regression before Founder promotion and e33549ea6476a5c8e63936a673f9ac44bf573daf restored it on the same HEIR"],
+      "root_cause": "unique human/product value or compatibility behaviour can be dropped during otherwise valid product/router transfer when preservation identity is incomplete",
+      "containment": "MUST-NOT-LOSE register plus immutable donor history plus exact-head browser regression gates",
+      "permanent_hardening_required": ["exact SHA/URL/screenshots", "human value statement", "behaviour/data/source assertions", "canonical redirect matrix as MUST-NOT-LOSE behaviour", "regression tests", "donor disposition before cleanup"],
+      "regression": "replacement cannot promote while known superior donor value remains undispositioned; registered canonical aliases must resolve to canonical product routes on desktop and mobile",
+      "state": "ACTIVE_HARDENING__OSLOFJORD_ALIAS_RESTORED__EXACT_HEAD_PASS_REQUIRED"
+    },
+    {
+      "id": "IMM-003",
+      "class": "STALE_CONTEXT_OR_RECEIVER",
+      "incidents": ["A bounded Oslofjord alias/immunity correction commit prepared from HEIR 3eeaed6872b531d05cc81ec030d26d891fb25676 was rejected by GitHub as non-fast-forward after HEIR advanced; no stale mutation reached king/test"],
+      "root_cause": "moving HEIR and long-lived workers/branches can diverge from current authority",
+      "containment": "fresh rehydrate plus exact ancestry/readback before mutation and non-force ref updates",
+      "permanent_hardening_required": ["morning boot reconciliation", "pre-write stale check", "post-write readback", "automatic fail-closed on HEIR advance", "never force stale correction onto HEIR"],
+      "regression": "stale registered sandbox or prepared HEIR commit must be stopped before material product mutation",
+      "state": "ACTIVE_HARDENING__NON_FAST_FORWARD_FAIL_CLOSED_PROVEN"
+    },
+    {
+      "id": "IMM-004",
+      "class": "DUPLICATE_OR_PARALLEL_WORK",
+      "root_cause": "workers could create candidate/work-package lines without proving current receiver and duplicate absence",
+      "containment": "max one sandbox/product and bounded receiver requirement",
+      "permanent_hardening_required": ["duplicate objective check", "receiver proof before dispatch", "no candidate by recency", "max five material lanes"],
+      "regression": "second material line for same objective must fail closed",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-005",
+      "class": "AGENT_OVERCLAIM_OR_MAKER_AS_JUDGE",
+      "root_cause": "agent-reported implementation/quality could be mistaken for acceptance",
+      "containment": "maker not judge; deterministic gates; independent evaluation; Founder judgement for Human Gold",
+      "permanent_hardening_required": ["status vocabulary enforcement", "exact-artifact evidence", "independent verdict required for promotion"],
+      "regression": "self-authored ACCEPTED/LOCKED/PRODUCTION claim cannot change authority",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-006",
+      "class": "WRITEBACK_OR_MEMORY_FAILURE",
+      "root_cause": "chat/agent result could diverge from canonical programme record",
+      "containment": "writeback plus readback and deterministic bootstrap",
+      "permanent_hardening_required": ["night close state", "morning boot rehydrate", "desired-vs-actual reconciliation", "fresh-session reconstruction tests"],
+      "regression": "next fresh control session must recover exact current authority and unresolved blockers",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-007",
+      "class": "SOURCE_TRUTH_SEMANTIC_COLLAPSE",
+      "root_cause": "observation/signal/interpretation/action/outcome/impact states can be collapsed in UI or agent reasoning",
+      "containment": "shared truth axes and fail-closed source contracts",
+      "permanent_hardening_required": ["source failure is not zero", "query area is not place membership", "observation is not population/live position", "done is not outcome", "outcome is not verified impact"],
+      "regression": "cross-world source-contract transfer tests",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-008",
+      "class": "ACTIVITY_THEATRE",
+      "root_cause": "commit/agent/document/task volume can substitute for real accepted value",
+      "containment": "GIGA-EV proof-first scorecard",
+      "permanent_hardening_required": ["accepted Human Gold throughput", "proof delta", "reuse", "economic signal", "cycle time", "Founder burden"],
+      "regression": "night close cannot report raw activity as material progress without proof linkage",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-009",
+      "class": "PREMATURE_AUTOMATION",
+      "root_cause": "automation can scale unclear or unnecessary workflows",
+      "containment": "QUESTION/DELETE/SIMPLIFY before ACCELERATE/AUTOMATE",
+      "permanent_hardening_required": ["simplify-before-automate evidence", "measured before/after", "rollback", "learning contract"],
+      "regression": "Factory work package rejected when simplify evidence is missing",
+      "state": "ACTIVE_HARDENING"
+    },
+    {
+      "id": "IMM-010",
+      "class": "FOUNDER_INTEGRATION_OVERLOAD",
+      "root_cause": "Founder becomes memory, scheduler, reviewer and handoff bus",
+      "containment": "daily autonomous control loop and autonomy budget",
+      "permanent_hardening_required": ["precomputed next cycle", "automatic safe dispatch", "Founder-only one-way doors", "Founder minutes measurement"],
+      "regression": "routine reversible work must not require Founder redispatch after clean night close",
+      "state": "ACTIVE_HARDENING"
+    }
+  ]
+}

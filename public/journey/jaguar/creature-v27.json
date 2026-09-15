@@ -1,0 +1,11 @@
+{
+  "version":"jaguar-testking-27",
+  "journeyId":"jaguar-amazonia",
+  "assetId":"4P-JAG-3D-EARROD-01",
+  "entityId":"taxon:gbif:5219426",
+  "species":{"commonName":"Jaguar","scientificName":"Panthera onca"},
+  "actor":{"preferred":{"id":"ear-rodriguez-jaguar","creator":"Ear.Rodriguez","sourcePage":"https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492","licence":"CC BY 4.0","rightsState":"VERIFIED","masterState":"SECURED_IN_4PLANET_ASSET_BANK","originalMasterSha256":"8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13","originalMasterBytes":7198456,"originalAnimations":1,"originalAnimationDurationSeconds":14.667,"runtimePath":"/assets/species/jaguar/jaguar-ear-rodriguez-runtime.glb.gz","runtimeState":"BLOCKED_INVALID_BINARY","runtimeProfile":"QUARANTINED_DONOR_NOT_PUBLIC_RUNTIME","runtimeSha256Uncompressed":"d6a0634e3ec96cfaaf6c6dc53fcf064dfc54583f9edac2110d6ea81ddcfc6bd1","runtimeBytesUncompressed":1227572,"runtimeMotion":"NOT_ACTIVE","truthBoundary":"The stored browser derivative is structurally invalid/truncated and is quarantined. It must not be loaded or represented as active 3D. The untouched animated original master remains a separate controlled asset candidate and requires complete byte ingest plus loader/render proof before public runtime use."},"fallback":{"id":"controlled-jaguar-species-media","runtimePath":"/assets/species/jaguar/SP-005.jpg","status":"ACTIVE_FAIL_CLOSED_UNTIL_VALID_3D"}},
+  "environment":{"strategy":"TEST_KING_PHYSICAL_JUNGLE_ROOM","far":"/assets/missions/am4zonia/hero.jpg","mid":"/assets/missions/am4zonia/detail-01.jpg","ground":"STATIC_PRESENTATION_CONTEXT","contactShadow":"STATIC_PRESENTATION_CONTEXT","fog":"BOUNDED_CSS_ATMOSPHERE"},
+  "interactions":[],
+  "truthBoundary":"IMMERSIVE LEARNING REPRESENTATION · CONTROLLED SPECIES MEDIA · NOT A LIVE HABITAT · NOT A LIVE ANIMAL · NOT LIVE TRACKING · 3D RUNTIME DEFERRED UNTIL VERIFIED"
+}

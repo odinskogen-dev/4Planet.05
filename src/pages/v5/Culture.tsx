@@ -87,5 +87,5 @@ function CulturePage({ code, title, body }: { code: string; title: string; body:
 }
 
 export const CultureFilm = () => <CulturePage code="4FILM_" title="Films that make the stakes visible." body="Films and moving-image projects that bring the living world — and what threatens it — into clear view." />;
-export const CultureTelier = () => <CulturePage code="4TELIER_" title="Art and visual worlds for ecological attention." body="Art, exhibitions and visual worlds that hold attention on the systems we depend on." />;
+export const CultureTelier = () => <CulturePage code="4RT_" title="Prints for Planet — art and visual worlds for ecological attention." body="Art, photography, illustration and design prints that hold attention on the systems we depend on and route support back to missions." />;
 export const CulturePlay = () => <CulturePage code="4PLAY_" title="Music and sound that carry the work further." body="Music, sound and cultural releases that move the work beyond the page and screen." />;

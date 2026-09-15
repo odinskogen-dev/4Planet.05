@@ -51,39 +51,115 @@ export interface TaxonHit {
   kingdom?: string;
 }
 
+type TaxonQueryAlias = { scientificName: string; commonName: string };
+
+/*
+ * Search aliases are query-expansion only. They do not create taxon identity.
+ * GBIF still resolves the canonical key and accepted scientific name. These few
+ * high-intent public terms prevent the most important 4PLANET journeys from
+ * depending on whether a provider happened to include one English vernacular
+ * name in a particular autocomplete payload.
+ */
+const TAXON_QUERY_ALIASES: Record<string, TaxonQueryAlias> = {
+  orca: { scientificName: "Orcinus orca", commonName: "Orca" },
+  "killer whale": { scientificName: "Orcinus orca", commonName: "Killer Whale" },
+  "humpback": { scientificName: "Megaptera novaeangliae", commonName: "Humpback Whale" },
+  "humpback whale": { scientificName: "Megaptera novaeangliae", commonName: "Humpback Whale" },
+  jaguar: { scientificName: "Panthera onca", commonName: "Jaguar" },
+  "sperm whale": { scientificName: "Physeter macrocephalus", commonName: "Sperm Whale" },
+  "fin whale": { scientificName: "Balaenoptera physalus", commonName: "Fin Whale" },
+  "blue whale": { scientificName: "Balaenoptera musculus", commonName: "Blue Whale" },
+};
+
+const normaliseTaxonQuery = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+
+export function expandTaxonQuery(q: string): { raw: string; search: string; preferredCommonName?: string } {
+  const raw = q.trim();
+  const alias = TAXON_QUERY_ALIASES[normaliseTaxonQuery(raw)];
+  return {
+    raw,
+    search: alias?.scientificName ?? raw,
+    preferredCommonName: alias?.commonName,
+  };
+}
+
+const taxonSearchCache = new Map<string, { at: number; result: Result<TaxonHit[]> }>();
+const TAXON_SEARCH_CACHE_MS = 5 * 60 * 1000;
+
 /**
- * Species suggest. Preserved wholesale from V36 (Atlas.tsx `suggest`), including
- * its hard-won ranking fix — a single unfiltered GBIF query buries "orca" under
- * ants and foraminifera, so we run one query across all life and one biased to
- * vertebrates and merge. That comment in V36 was earned. It stays.
+ * Species suggest. The original V36 insight remains: one broad GBIF query can
+ * bury the animal a normal person means. This version keeps the broad +
+ * vertebrate merge, adds canonical query expansion for high-intent journeys,
+ * and caches short-lived results so reopening the same species does not feel
+ * like a fresh network round trip every time.
  */
 export const searchTaxa = async (q: string): Promise<Result<TaxonHit[]>> => {
-  const text = q.trim();
-  if (text.length < 3) return { ok: true, data: [] };
-  const t = text.toLowerCase();
-  const url = (extra: string) =>
+  const expanded = expandTaxonQuery(q);
+  if (expanded.raw.length < 3) return { ok: true, data: [] };
+
+  const cacheKey = normaliseTaxonQuery(expanded.raw);
+  const cached = taxonSearchCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < TAXON_SEARCH_CACHE_MS) return cached.result;
+
+  const rawLower = expanded.raw.toLowerCase();
+  const searchLower = expanded.search.toLowerCase();
+  const url = (query: string, extra = "") =>
     `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(
-      text,
+      query,
     )}&rank=SPECIES&status=ACCEPTED${extra}&limit=20`;
 
-  const [all, vert] = await Promise.all([getJson(url("")), getJson(url("&highertaxonKey=44"))]);
-  if (!all.ok && !vert.ok) return { ok: false, error: "GBIF unreachable" };
-
-  const rows = [
-    ...(vert.ok ? vert.data.results ?? [] : []),
-    ...(all.ok ? all.data.results ?? [] : []),
+  const requests: Array<Promise<Result<any>>> = [
+    getJson(url(expanded.raw)),
+    getJson(url(expanded.search, "&highertaxonKey=44")),
   ];
+  if (normaliseTaxonQuery(expanded.search) !== cacheKey) requests.push(getJson(url(expanded.search)));
+  if (expanded.preferredCommonName) {
+    requests.push(getJson(`https://api.gbif.org/v1/species/match?name=${encodeURIComponent(expanded.search)}&strict=true`));
+  }
+
+  const responses = await Promise.all(requests);
+  const successful = responses.filter((result): result is { ok: true; data: any } => result.ok);
+  if (!successful.length) return { ok: false, error: "GBIF unreachable" };
+
+  const rows: any[] = [];
+  for (const result of successful) {
+    if (Array.isArray(result.data?.results)) rows.push(...result.data.results);
+    else if (result.data?.usageKey && result.data?.scientificName) {
+      rows.unshift({
+        ...result.data,
+        key: result.data.usageKey,
+        vernacularNames: expanded.preferredCommonName
+          ? [{ language: "eng", vernacularName: expanded.preferredCommonName }]
+          : [],
+      });
+    }
+  }
+
   const seen = new Set<number>();
+  const aliasScientific = expanded.preferredCommonName ? searchLower : "";
   const hits = rows
     .filter((h: any) => h.key && h.scientificName && !seen.has(h.key) && seen.add(h.key))
     .map((h: any) => {
+      const sci = String(h.scientificName).toLowerCase();
       const vn = (h.vernacularNames ?? []).find(
         (v: any) => v.language === "eng" && v.vernacularName,
       );
-      const commonName = vn ? titleCase(vn.vernacularName) : undefined;
-      const c = (commonName ?? "").toLowerCase();
-      const sci = String(h.scientificName).toLowerCase();
-      const score = c.startsWith(t) ? 0 : c.includes(t) ? 1 : sci.startsWith(t) ? 2 : sci.includes(t) ? 3 : 4;
+      const providerCommon = vn ? titleCase(vn.vernacularName) : undefined;
+      const preferredCommon = aliasScientific && sci === aliasScientific ? expanded.preferredCommonName : undefined;
+      const commonName = preferredCommon ?? providerCommon;
+      const common = (commonName ?? "").toLowerCase();
+
+      let score = 50;
+      if (aliasScientific && sci === aliasScientific) score = -20;
+      else if (common === rawLower) score = -12;
+      else if (sci === rawLower) score = -10;
+      else if (common.startsWith(rawLower)) score = 0;
+      else if (common.includes(rawLower)) score = 2;
+      else if (sci.startsWith(rawLower)) score = 4;
+      else if (sci.includes(rawLower)) score = 6;
+      else if (sci.startsWith(searchLower)) score = 8;
+      else if (sci.includes(searchLower)) score = 10;
+
       return {
         hit: {
           id: taxonId(h.key),
@@ -96,11 +172,13 @@ export const searchTaxa = async (q: string): Promise<Result<TaxonHit[]>> => {
         score,
       };
     })
-    .sort((a, b) => a.score - b.score)
+    .sort((a, b) => a.score - b.score || a.hit.scientificName.localeCompare(b.hit.scientificName))
     .slice(0, 7)
     .map((x) => x.hit);
 
-  return { ok: true, data: hits };
+  const result: Result<TaxonHit[]> = { ok: true, data: hits };
+  taxonSearchCache.set(cacheKey, { at: Date.now(), result });
+  return result;
 };
 
 export const taxonVernacular = async (gbifKey: number | string): Promise<string | undefined> => {
@@ -112,13 +190,25 @@ export const taxonVernacular = async (gbifKey: number | string): Promise<string 
 
 const toOccurrence = (o: any): Occurrence | null => {
   if (typeof o.decimalLatitude !== "number" || typeof o.decimalLongitude !== "number") return null;
+  // Only accept a media image when the record also carries a licence, so the
+  // observation panel never shows an image without rights (ORCA-05, §13E).
+  const media = Array.isArray(o.media)
+    ? o.media.find((m: any) => m?.type === "StillImage" && m?.identifier && (m?.license || m?.rights))
+    : undefined;
   return {
     lat: o.decimalLatitude,
     lng: o.decimalLongitude,
     scientificName: o.scientificName ?? o.species ?? "Unidentified",
+    commonName: o.vernacularName || undefined,
     eventDate: o.eventDate ? String(o.eventDate).slice(0, 10) : undefined,
     sourceRecordId: o.key ? String(o.key) : undefined,
     sourceUrl: o.key ? `https://www.gbif.org/occurrence/${o.key}` : undefined,
+    taxonKey: typeof o.taxonKey === "number" ? o.taxonKey : undefined,
+    coordinateUncertaintyM:
+      typeof o.coordinateUncertaintyInMeters === "number" ? o.coordinateUncertaintyInMeters : undefined,
+    mediaUrl: media?.identifier,
+    mediaLicence: media?.license || media?.rights,
+    mediaAttribution: media?.rightsHolder || media?.creator || "GBIF contributor",
   };
 };
 

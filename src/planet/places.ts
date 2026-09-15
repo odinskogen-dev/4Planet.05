@@ -17,9 +17,9 @@
    policy we have not assessed (Brief §35: an API existing is not permission).
    A place with no system context is a pin, and a pin is not intelligence.
 
-   Fourteen real places, each with a declared kind, a bbox and a system link, is
-   a better proof of PLACE than a million pins. Widen this list, or swap it for a
-   geocoder + entity-resolution layer, once Codex owns the Place contract.
+   A small set of real places, each with a declared kind, a bbox and a system
+   link, is a better proof of PLACE than a million pins. Widen this list, or swap
+   it for a geocoder + entity-resolution layer, once Codex owns the Place contract.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import type { Place } from "./types";
@@ -42,6 +42,21 @@ export const PLACES: Place[] = [
     pressureIds: [pressureId("warming-water"), pressureId("habitat-loss")],
   },
   {
+    id: placeId("norway"),
+    name: "Norway",
+    kind: "COUNTRY",
+    lat: 64.5,
+    lng: 11.0,
+    bbox: [4.0, 57.5, 31.5, 71.5],
+    zoom: 3.8,
+    geometryKind: "BOUNDING_BOX",
+    altNames: ["Norge"],
+    blurb:
+      "A country-scale entry into connected coastal, marine and terrestrial context. The box is a navigation extent, not a political or ecological boundary dataset.",
+    livingSystemIds: [systemId("coastal-sea"), systemId("pollination")],
+    pressureIds: [pressureId("warming-water"), pressureId("habitat-loss")],
+  },
+  {
     id: placeId("norwegian-sea"),
     name: "Norwegian Sea",
     kind: "MARINE_AREA",
@@ -52,6 +67,21 @@ export const PLACES: Place[] = [
     geometryKind: "BOUNDING_BOX",
     blurb:
       "A deep marine basin between Norway, Iceland and Svalbard. A migration corridor for large cetaceans and one of the most productive cold-water systems on the planet.",
+    livingSystemIds: [systemId("coastal-sea")],
+    pressureIds: [pressureId("warming-water"), pressureId("overexploitation")],
+  },
+  {
+    id: placeId("bay-of-biscay"),
+    name: "Bay of Biscay",
+    kind: "MARINE_AREA",
+    lat: 46.0,
+    lng: -5.0,
+    bbox: [-10.5, 43.0, 0.0, 49.5],
+    zoom: 4.7,
+    geometryKind: "BOUNDING_BOX",
+    altNames: ["Biscay", "Bay of Biscay pilot area"],
+    blurb:
+      "A broad Atlantic marine area used by 4PLANET for the ORCA monitoring proof. This navigation extent is not an Orca migration track or a survey-line geometry.",
     livingSystemIds: [systemId("coastal-sea")],
     pressureIds: [pressureId("warming-water"), pressureId("overexploitation")],
   },
@@ -81,6 +111,21 @@ export const PLACES: Place[] = [
     pressureIds: [pressureId("habitat-loss"), pressureId("pesticide-pressure")],
   },
   {
+    id: placeId("oslofjord"),
+    name: "Oslofjord",
+    kind: "MARINE_AREA",
+    lat: 59.45,
+    lng: 10.55,
+    bbox: [9.9, 58.8, 11.1, 60.0],
+    zoom: 6.3,
+    geometryKind: "BOUNDING_BOX",
+    altNames: ["Oslo Fjord", "The Oslofjord"],
+    blurb:
+      "A fjord-scale entry into marine observations, pressures and connected human activity. This is a navigation extent, not a complete ecological condition assessment.",
+    livingSystemIds: [systemId("coastal-sea")],
+    pressureIds: [pressureId("warming-water"), pressureId("habitat-loss")],
+  },
+  {
     id: placeId("amazon"),
     name: "Amazon Basin",
     kind: "FOREST",
@@ -89,6 +134,7 @@ export const PLACES: Place[] = [
     bbox: [-79, -18, -44, 6],
     zoom: 3.4,
     geometryKind: "BOUNDING_BOX",
+    altNames: ["Amazon", "Amazonia", "Amazon Rainforest"],
     blurb:
       "The largest continuous rainforest on Earth, and a machine that moves water through the atmosphere at continental scale.",
     livingSystemIds: [systemId("tropical-forest")],
@@ -220,13 +266,13 @@ export const searchPlaces = (q: string): Place[] => {
   return PLACES.map((p) => {
     const names = [p.name, ...(p.altNames ?? [])].map(norm);
     const best = names.reduce(
-      (s, n) => Math.min(s, n.startsWith(t) ? 0 : n.includes(t) ? 1 : 9),
+      (s, n) => Math.min(s, n === t ? -1 : n.startsWith(t) ? 0 : n.includes(t) ? 1 : 9),
       9,
     );
     return { p, score: best };
   })
     .filter((x) => x.score < 9)
-    .sort((a, b) => a.score - b.score)
+    .sort((a, b) => a.score - b.score || a.p.name.localeCompare(b.p.name))
     .map((x) => x.p);
 };
 

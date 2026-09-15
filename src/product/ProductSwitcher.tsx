@@ -1,0 +1,186 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { contextHref, type ProductKey } from "@/product/ProductNav";
+
+/**
+ * Product-family switcher for ONE INTERFACE.
+ * Quiet, discoverable, accessible and context-retaining.
+ * Fixed family order: 4PLANET umbrella + ATLAS + SPECIES + LIVING SYSTEMS + IMPACT.
+ * The typographic trigger is the default GOLD grammar because it reduces app-launcher
+ * icon noise while preserving the explicit family list inside the panel.
+ */
+
+type Product = { key: ProductKey; label: string; descriptor: string; path: string; index: number };
+
+const PRODUCTS: Product[] = [
+  { key: "4PLANET", label: "4PLANET", descriptor: "The public universe", path: "/", index: 0 },
+  { key: "ATLAS", label: "ATLAS", descriptor: "Explore the living planet", path: "/atlas", index: 1 },
+  { key: "SPECIES", label: "SPECIES", descriptor: "Meet life on Earth", path: "/species", index: 2 },
+  { key: "LIVING SYSTEMS", label: "LIVING SYSTEMS", descriptor: "Understand the relationships", path: "/living-systems", index: 3 },
+  { key: "IMPACT", label: "IMPACT", descriptor: "Join credible action", path: "/impact", index: 4 },
+];
+
+function activeProduct(pathname: string): ProductKey {
+  if (pathname.startsWith("/atlas")) return "ATLAS";
+  if (pathname.startsWith("/species")) return "SPECIES";
+  if (pathname.startsWith("/living-systems")) return "LIVING SYSTEMS";
+  if (pathname.startsWith("/impact")) return "IMPACT";
+  return "4PLANET";
+}
+
+/**
+ * Variant A is retained as a reversible donor/reference treatment.
+ * Variant B is the restrained typographic GOLD default.
+ */
+type SwitcherVariant = "A" | "B";
+
+function FamilyMark({ activeIndex, dark, accent = "#2E2EFF", size = 20 }: { activeIndex: number; dark?: boolean; accent?: string; size?: number }) {
+  const idle = dark ? "rgba(255,255,255,.5)" : "rgba(8,8,8,.4)";
+  const r = Math.max(2, Math.round(size * 0.1));
+  const n = 5;
+  const pts = Array.from({ length: n }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    return { x: 50 + 32 * Math.cos(a), y: 50 + 32 * Math.sin(a) };
+  });
+  const ring = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
+  return (
+    <svg aria-hidden width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
+      <path d={ring} fill="none" stroke={idle} strokeWidth={2.5} strokeOpacity={0.45} strokeLinejoin="round" />
+      {pts.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={i === activeIndex ? r * 1.5 : r}
+          fill={i === activeIndex ? accent : idle} />
+      ))}
+    </svg>
+  );
+}
+
+function TypeMark({ activeLabel, dark, accent = "#2E2EFF" }: { activeLabel: string; dark?: boolean; accent?: string }) {
+  const fg = dark ? "#fff" : "#080808";
+  const muted = dark ? "rgba(255,255,255,.7)" : "rgba(8,8,8,.6)";
+
+  // On the 4PLANET umbrella shell the wordmark is already immediately beside
+  // this trigger. Repeating “4PLANET” a second time creates false hierarchy and
+  // launcher noise, so the control names its job instead. Product pages keep the
+  // compact 4·PRODUCT orientation mark because there is no adjacent umbrella name.
+  if (activeLabel === "4PLANET") {
+    return (
+      <span aria-hidden style={{ fontSize: 10.5, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".13em", color: muted, lineHeight: 1 }}>
+        PRODUCTS
+      </span>
+    );
+  }
+
+  return (
+    <span aria-hidden style={{ display: "inline-flex", alignItems: "baseline", gap: 3, fontFamily: "'Instrument Sans','DM Sans',sans-serif", fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1 }}>
+      <span style={{ fontSize: 17, color: fg }}>4</span>
+      <span style={{ width: 4, height: 4, borderRadius: "50%", background: accent, alignSelf: "center" }} />
+      <span style={{ fontSize: 11, fontFamily: "'Fragment Mono',monospace", letterSpacing: ".1em", color: muted }}>{activeLabel}</span>
+    </span>
+  );
+}
+
+export function ProductSwitcher({ dark = false, accent = "#2E2EFF", variant = "B" }: { dark?: boolean; accent?: string; variant?: SwitcherVariant }) {
+  const location = useLocation();
+  const active = activeProduct(location.pathname);
+  const activeIdx = PRODUCTS.find((p) => p.key === active)!.index;
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setOpen(false); }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!open) return;
+    const firstLink = panelRef.current?.querySelector<HTMLElement>("a[href]");
+    firstLink?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); setOpen(false); triggerRef.current?.focus(); return; }
+      if (e.key === "Tab" && panelRef.current) {
+        const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>('a[href],button:not([disabled])'));
+        if (items.length === 0) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const close = useCallback(() => { setOpen(false); triggerRef.current?.focus(); }, []);
+
+  const fg = dark ? "#fff" : "#080808";
+  const panelBg = dark ? "#0A0F26" : "#fff";
+  const panelLine = dark ? "rgba(255,255,255,.22)" : "rgba(8,8,8,.16)";
+  const descColor = dark ? "rgba(255,255,255,.66)" : "rgba(8,8,8,.62)";
+
+  return (
+    <div style={{ position: "relative", display: "inline-flex" }}>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls="product-switcher-panel"
+        aria-label={`Switch product, current product ${active}`}
+        className="product-switcher__trigger"
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: variant === "B" ? "flex-start" : "center", minWidth: 44, height: 44,
+          background: "transparent", border: "none", cursor: "pointer", padding: 0, color: fg }}
+      >
+        {variant === "B"
+          ? <TypeMark activeLabel={active} dark={dark} accent={accent} />
+          : <FamilyMark activeIndex={activeIdx} dark={dark} accent={accent} />}
+      </button>
+
+      {open && (
+        <>
+          <div onClick={close} aria-hidden
+            style={{ position: "fixed", inset: 0, zIndex: 60, background: dark ? "rgba(0,0,0,.42)" : "rgba(8,8,8,.28)" }} />
+          <div
+            ref={panelRef}
+            id="product-switcher-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Switch product"
+            className="product-switcher__panel"
+            style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 61, width: 340, maxWidth: "calc(100vw - 32px)",
+              background: panelBg, border: `1px solid ${panelLine}`,
+              boxShadow: dark ? "0 24px 60px rgba(0,0,0,.5)" : "0 24px 60px rgba(8,8,8,.18)" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${panelLine}` }}>
+              <span style={{ fontFamily: "var(--font-mono, 'Fragment Mono', monospace)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: descColor }}>Switch product</span>
+              <button onClick={close} aria-label="Close product switcher"
+                style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, background: "none", border: "none", cursor: "pointer", color: descColor }}>ESC ✕</button>
+            </div>
+            {PRODUCTS.map((p) => {
+              const isActive = p.key === active;
+              return (
+                <Link
+                  key={p.key}
+                  to={contextHref(p.path, location.search)}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                  style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 18px", textDecoration: "none",
+                    color: fg, borderBottom: p.index < 4 ? `1px solid ${panelLine}` : "none",
+                    background: isActive ? (dark ? "rgba(255,255,255,.06)" : "rgba(8,8,8,.03)") : "transparent" }}
+                >
+                  <span style={{ fontFamily: "'Fragment Mono', monospace", fontSize: 11, color: descColor, width: 22, flex: "none" }}>0{p.index + 1}</span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: "block", fontFamily: "'Instrument Sans', 'DM Sans', sans-serif", fontWeight: 600, fontSize: 18, letterSpacing: "-.01em", color: isActive ? accent : fg }}>{p.label}</span>
+                    <span style={{ display: "block", fontSize: 13, color: descColor, marginTop: 2 }}>{p.descriptor}</span>
+                  </span>
+                  <span aria-hidden style={{ width: 7, height: 7, borderRadius: "50%", flex: "none",
+                    background: isActive ? accent : "transparent", border: isActive ? "none" : `1px solid ${panelLine}` }} />
+                </Link>
+              );
+            })}
+            <div style={{ padding: "12px 18px", fontFamily: "'Fragment Mono', monospace", fontSize: 10.5, letterSpacing: ".04em", color: descColor }}>
+              PUBLIC PREVIEW · <Link to="/about#system" onClick={() => setOpen(false)} style={{ color: accent, textDecoration: "none" }}>limitations &amp; sources</Link>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

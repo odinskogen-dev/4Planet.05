@@ -1,0 +1,152 @@
+name: Cloudflare Pages Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-pages-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Audit exact LIVE routing and origins read-only
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo 'no Cloudflare account id'; exit 1; }
+
+          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+          jq -e '.success == true' <<<"$projects" >/dev/null
+          all_deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
+          jq -e '.success == true' <<<"$all_deployments" >/dev/null
+          custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
+
+          {
+            echo '# Cloudflare exact LIVE routing — release closure read-only audit'
+            echo
+            echo "Audit source HEIR: \`${GITHUB_SHA}\`"
+            echo "Account: \`${account_id}\`"
+            echo
+            echo '## Zone / apex DNS'
+            echo
+            echo '| Domain | Zone | Apex DNS | Worker routes |'
+            echo '|---|---|---|---|'
+            for domain in 4planet.org s4piens.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
+              zone=$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")
+              zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+              zstatus=$(jq -r '.result[0].status // "missing"' <<<"$zone")
+              if [ -z "$zid" ]; then
+                echo "| ${domain} | missing | | |"
+                continue
+              fi
+              dns=$(curl -fsS "${api}/zones/${zid}/dns_records?name=${domain}&per_page=100" "${auth[@]}")
+              records=$(jq -r '[.result[]? | select(.type != "MX" and .type != "TXT") | (.type + " " + (.content // ""))] | join("; ")' <<<"$dns")
+              routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+              route_text=$(jq -r '[.result[]? | (.pattern + " → " + (.script // "<none>"))] | join("; ")' <<<"$routes")
+              echo "| ${domain} | ${zstatus} | ${records:-none} | ${route_text:-none} |"
+            done
+
+            echo
+            echo '## Pages projects touching canonical domains'
+            echo
+            echo '| Project | Production branch | Domains |'
+            echo '|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+              echo "| \`${name}\` | \`${branch}\` | ${domains} |"
+            done
+
+            echo
+            echo '## Current Pages production deployments by matching project'
+            echo
+            echo '| Project | Commit | Branch | Status | Created | Immutable URL |'
+            echo '|---|---|---|---|---|---|'
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | .name' <<<"$projects" | while IFS= read -r project; do
+              dep=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=3" "${auth[@]}")
+              jq -r --arg p "$project" '.result[]? | [$p, (.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"$dep" | while IFS=$'\t' read -r p commit branch status created url; do
+                echo "| \`${p}\` | \`${commit}\` | \`${branch}\` | ${status} | ${created} | ${url} |"
+              done
+            done
+
+            echo
+            echo '## Worker custom domains → exact Pages origins'
+            echo
+            echo '| Hostname | Service | Pages origin(s) in Worker | Origin source commit / branch / environment |'
+            echo '|---|---|---|---|'
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service; do
+              tmp=$(mktemp)
+              if curl -fsS "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" > "$tmp"; then
+                origins=$(grep -Eo '[a-zA-Z0-9-]+\.4planet-05\.pages\.dev' "$tmp" | sort -u | paste -sd ', ' - || true)
+              else
+                origins='SCRIPT_FETCH_FAILED'
+              fi
+              [ -n "$origins" ] || origins='NO_PAGES_ORIGIN_LITERAL_FOUND'
+              source='UNRESOLVED'
+              if [[ "$origins" != 'SCRIPT_FETCH_FAILED' && "$origins" != 'NO_PAGES_ORIGIN_LITERAL_FOUND' ]]; then
+                source=''
+                while IFS= read -r origin; do
+                  [ -n "$origin" ] || continue
+                  url="https://${origin}"
+                  row=$(jq -c --arg u "$url" '.result[]? | select(.url==$u)' <<<"$all_deployments" | head -n1)
+                  if [ -n "$row" ]; then
+                    commit=$(jq -r '.deployment_trigger.metadata.commit_hash // ""' <<<"$row")
+                    branch=$(jq -r '.deployment_trigger.metadata.branch // ""' <<<"$row")
+                    environment=$(jq -r '.environment // ""' <<<"$row")
+                    source+="${origin}: ${commit} / ${branch} / ${environment}; "
+                  else
+                    source+="${origin}: DEPLOYMENT_NOT_FOUND_IN_FIRST_100; "
+                  fi
+                done < <(tr ',' '\n' <<<"$origins" | sed 's/^ *//;s/ *$//')
+              fi
+              echo "| ${hostname} | \`${service}\` | ${origins} | ${source} |"
+              rm -f "$tmp"
+            done
+
+            echo
+            echo '> READ-ONLY AUDIT. No DNS, Worker, Pages project, deployment or public domain was mutated.'
+          } > /tmp/cf-report.md
+          cat /tmp/cf-report.md
+
+      - name: Report to existing analytics/control issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ -f /tmp/cf-report.md ]]; then
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body-file /tmp/cf-report.md
+          else
+            gh issue comment 173 --repo "${GITHUB_REPOSITORY}" --body "Cloudflare exact LIVE routing audit failed before report generation on \`${GITHUB_SHA}\`."
+          fi

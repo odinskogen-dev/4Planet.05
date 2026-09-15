@@ -1,0 +1,65 @@
+name: Cloudflare Web Analytics Bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-web-analytics.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/cloudflare-web-analytics.yml
+
+permissions:
+  contents: read
+
+jobs:
+  enable-web-analytics:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Verify secret exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "CLOUDFLARE_API_TOKEN is not configured"; exit 1; }
+
+      - name: Enable Web Analytics on verified live HTML domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          domains=(4planet.org 4planetmagazine.com s4piens.com cre4tors.com 4planetmarket.com)
+
+          for domain in "${domains[@]}"; do
+            echo "--- ${domain}"
+            zone_json="$(curl -fsS "${api}/zones?name=${domain}&status=active" "${auth[@]}")"
+            zone_id="$(jq -r '.result[0].id // empty' <<<"${zone_json}")"
+            account_id="$(jq -r '.result[0].account.id // empty' <<<"${zone_json}")"
+            if [[ -z "${zone_id}" || -z "${account_id}" ]]; then
+              echo "Active zone/account not resolved for ${domain}; fail closed."
+              exit 1
+            fi
+
+            list_json="$(curl -fsS "${api}/accounts/${account_id}/rum/site_info/list?per_page=100" "${auth[@]}")"
+            existing="$(jq -r --arg d "${domain}" '.result[]? | select((.ruleset.zone_name // "") == $d or (.rules[]?.host // "") == $d) | .site_tag' <<<"${list_json}" | head -n1)"
+            if [[ -n "${existing}" ]]; then
+              echo "Web Analytics already configured for ${domain}."
+              continue
+            fi
+
+            payload="$(jq -nc --arg zone "${zone_id}" --arg host "${domain}" '{zone_tag:$zone,host:$host,auto_install:true}')"
+            create_json="$(curl -fsS -X POST "${api}/accounts/${account_id}/rum/site_info" "${auth[@]}" --data "${payload}")"
+            ok="$(jq -r '.success // false' <<<"${create_json}")"
+            if [[ "${ok}" != "true" ]]; then
+              echo "Cloudflare rejected Web Analytics setup for ${domain}."
+              jq '{success,errors}' <<<"${create_json}"
+              exit 1
+            fi
+            echo "Web Analytics created for ${domain}; auto-install requested."
+          done
+
+          echo "4species.com remains outside the canonical five-domain measurement set unless explicitly promoted later."

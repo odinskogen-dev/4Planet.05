@@ -1,0 +1,143 @@
+/* ORCA LUME ROOM 21 — dark marine intelligence-room layer.
+   Presentation only. Existing Journey evidence and truth boundaries remain authoritative. */
+
+.nature-browser{
+  --orca-room-yaw:0deg;
+  --orca-room-pitch:0deg;
+}
+
+.orca-lume-room21{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  perspective:900px;
+  transform-style:preserve-3d;
+  transition:opacity .65s ease;
+}
+
+.nature-browser[data-light-lens="true"] .orca-lume-room21{opacity:1}
+
+.orca-lume-room21__back,
+.orca-lume-room21__floor,
+.orca-lume-room21__side,
+.orca-lume-room21__volume,
+.orca-lume-room21__depth{
+  position:absolute;
+  transform-style:preserve-3d;
+}
+
+.orca-lume-room21__back{
+  left:12%;
+  right:12%;
+  top:7%;
+  height:62%;
+  transform:rotateY(var(--orca-room-yaw)) rotateX(var(--orca-room-pitch)) translateZ(-120px);
+  transform-origin:center center;
+  background-image:
+    linear-gradient(rgba(141,232,255,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(141,232,255,.08) 1px,transparent 1px),
+    radial-gradient(ellipse at 50% 52%,rgba(86,216,255,.07),rgba(2,13,22,.22) 48%,rgba(1,5,10,.82) 84%);
+  background-size:54px 54px,54px 54px,100% 100%;
+  border:1px solid rgba(141,232,255,.12);
+  box-shadow:inset 0 0 110px rgba(0,0,0,.64),0 0 80px rgba(86,216,255,.035);
+}
+
+.orca-lume-room21__floor{
+  left:4%;
+  right:4%;
+  bottom:-5%;
+  height:46%;
+  transform-origin:center bottom;
+  transform:rotateX(68deg) rotateZ(var(--orca-room-yaw)) translateZ(-34px);
+  background-image:
+    linear-gradient(rgba(141,232,255,.12) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(141,232,255,.12) 1px,transparent 1px),
+    radial-gradient(ellipse at 50% 18%,rgba(86,216,255,.12),rgba(1,8,14,.62) 55%,rgba(0,3,7,.95) 88%);
+  background-size:46px 46px,46px 46px,100% 100%;
+  border-top:1px solid rgba(223,248,255,.18);
+  box-shadow:0 -12px 50px rgba(86,216,255,.05),inset 0 28px 70px rgba(0,0,0,.62);
+}
+
+.orca-lume-room21__side{
+  top:9%;
+  bottom:18%;
+  width:26%;
+  background-image:
+    linear-gradient(rgba(141,232,255,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(141,232,255,.07) 1px,transparent 1px),
+    linear-gradient(180deg,rgba(3,22,35,.12),rgba(0,5,10,.72));
+  background-size:48px 48px,48px 48px,100% 100%;
+  opacity:.68;
+}
+.orca-lume-room21__side--left{
+  left:-10%;
+  transform-origin:right center;
+  transform:rotateY(64deg) translateZ(-32px);
+  border-right:1px solid rgba(141,232,255,.12);
+}
+.orca-lume-room21__side--right{
+  right:-10%;
+  transform-origin:left center;
+  transform:rotateY(-64deg) translateZ(-32px);
+  border-left:1px solid rgba(141,232,255,.12);
+}
+
+.orca-lume-room21__volume{
+  inset:0;
+  background:
+    radial-gradient(ellipse at 56% 36%,rgba(223,248,255,.10),transparent 18%),
+    linear-gradient(112deg,transparent 24%,rgba(141,232,255,.025) 35%,rgba(223,248,255,.08) 48%,transparent 61%),
+    linear-gradient(75deg,transparent 36%,rgba(86,216,255,.04) 48%,transparent 60%),
+    radial-gradient(ellipse at 50% 70%,rgba(86,216,255,.07),transparent 38%);
+  filter:blur(.2px);
+  mix-blend-mode:screen;
+}
+
+.orca-lume-room21__depth{
+  inset:0;
+}
+.orca-lume-room21__depth i{
+  position:absolute;
+  left:calc(12% + var(--i,0) * 16%);
+  top:calc(20% + var(--i,0) * 7%);
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:rgba(223,248,255,.65);
+  box-shadow:0 0 12px rgba(141,232,255,.45);
+}
+.orca-lume-room21__depth i:nth-child(1){--i:0;opacity:.34}
+.orca-lume-room21__depth i:nth-child(2){--i:1;opacity:.52}
+.orca-lume-room21__depth i:nth-child(3){--i:2;opacity:.70}
+.orca-lume-room21__depth i:nth-child(4){--i:3;opacity:.48}
+.orca-lume-room21__depth i:nth-child(5){--i:4;opacity:.30}
+
+.nature-browser[data-light-lens="true"] .light-lens-layer{
+  isolation:isolate;
+  background:radial-gradient(ellipse at 56% 48%,rgba(14,61,82,.12),rgba(0,5,10,.52) 54%,rgba(0,3,7,.92) 100%);
+}
+.nature-browser[data-light-lens="true"] .light-lens-projection,
+.nature-browser[data-light-lens="true"] .light-lens-caption,
+.nature-browser[data-light-lens="true"] .light-lens-relationship,
+.nature-browser[data-light-lens="true"] .orca-lume-intel,
+.nature-browser[data-light-lens="true"] .orca-lume-rail{
+  z-index:2;
+}
+
+@media(max-width:760px){
+  .orca-lume-room21{perspective:650px}
+  .orca-lume-room21__back{left:6%;right:6%;top:10%;height:55%;background-size:38px 38px,38px 38px,100% 100%}
+  .orca-lume-room21__floor{left:-8%;right:-8%;bottom:-7%;height:42%;background-size:34px 34px,34px 34px,100% 100%;transform:rotateX(72deg) translateZ(-24px)}
+  .orca-lume-room21__side{width:34%;top:12%;bottom:21%;background-size:36px 36px,36px 36px,100% 100%;opacity:.5}
+  .orca-lume-room21__volume{background:radial-gradient(ellipse at 56% 42%,rgba(223,248,255,.07),transparent 20%),linear-gradient(110deg,transparent 35%,rgba(141,232,255,.035) 48%,transparent 60%)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .orca-lume-room21{transition:none!important}
+  .orca-lume-room21__back,
+  .orca-lume-room21__floor,
+  .orca-lume-room21__side{transform:none!important}
+}

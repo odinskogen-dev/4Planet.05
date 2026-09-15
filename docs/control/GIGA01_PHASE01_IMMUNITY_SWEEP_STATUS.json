@@ -1,0 +1,10 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "sweep_complete_for_known_classes":true,
+  "known_failure_classes":10,
+  "register":"ERROR_TO_IMMUNITY_REGISTER_GIGA01.json",
+  "closed":[],
+  "open_physical":["IMM-001_LEADING_CANDIDATE_AUTHORITY_LOSS"],
+  "active_hardening":["IMM-002_GOLD_VALUE_LOSS","IMM-003_STALE_CONTEXT_OR_RECEIVER","IMM-004_DUPLICATE_OR_PARALLEL_WORK","IMM-005_AGENT_OVERCLAIM_OR_MAKER_AS_JUDGE","IMM-006_WRITEBACK_OR_MEMORY_FAILURE","IMM-007_SOURCE_TRUTH_SEMANTIC_COLLAPSE","IMM-008_ACTIVITY_THEATRE","IMM-009_PREMATURE_AUTOMATION","IMM-010_FOUNDER_INTEGRATION_OVERLOAD"],
+  "truth_boundary":"No failure class is claimed cured merely because the register exists. Closure requires physical prevention or fail-closed proof plus regression."
+}

@@ -44,7 +44,7 @@ export function About() {
         </div>
         <div style={{ marginTop: 32, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Button to="/domains" arrow>Enter Domains</Button>
-          <Button to="/people">Join 4Planet</Button>
+          <Button to="/join">Join 4Planet</Button>
         </div>
       </Section>
     </PublicShell>
