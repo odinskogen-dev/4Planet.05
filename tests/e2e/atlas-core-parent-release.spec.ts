@@ -94,19 +94,17 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(settled.lng - target.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(settled.lat - target.lat)).toBeLessThanOrEqual(0.05);
 
-  // Prove user ownership with an actual browser input, not application code.
-  // The wheel event is delivered by Playwright through the browser input stack,
-  // which crosses ATLAS' real user-release boundary and changes the live camera.
-  const canvas = page.locator("canvas.maplibregl-canvas");
-  const box = await canvas.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
-  await page.mouse.wheel(0, -700);
-  await page.waitForFunction(() => {
+  // Prove user ownership with an actual browser click on ATLAS' visible map control.
+  // Mobile projects emulate touch-capable devices, where synthetic mouse-wheel input can
+  // be ignored; the zoom control is a real user-facing input and crosses the same
+  // MapLibre user-release boundary deterministically.
+  const zoomIn = page.locator(".maplibregl-ctrl-zoom-in");
+  await expect(zoomIn).toBeVisible();
+  await zoomIn.click();
+  await page.waitForFunction((baselineZoom) => {
     const map = (window as any).__4planet_map;
-    return map && !map.isMoving() && !map.isZooming() && !map.isEasing();
-  }, undefined, { timeout: 8_000 }).catch(() => {});
-  await page.waitForTimeout(400);
+    return map && Math.abs(map.getZoom() - Number(baselineZoom)) > 0.1 && !map.isMoving() && !map.isZooming() && !map.isEasing();
+  }, target.zoom, { timeout: 8_000 });
 
   const userOwned = await page.evaluate(() => {
     const map = (window as any).__4planet_map;
