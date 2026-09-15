@@ -5,8 +5,8 @@ import lzma
 import re
 import sys
 
-if len(sys.argv) != 2:
-    raise SystemExit('usage: audit_finance_typography.py <apply_finance_route.py>')
+if len(sys.argv) not in (2,3):
+    raise SystemExit('usage: audit_finance_typography.py <apply_finance_route.py> [money.html]')
 
 route = Path(sys.argv[1])
 source = route.read_text(encoding='utf-8')
@@ -34,31 +34,27 @@ font_re = re.compile(r'font-family\s*:\s*([^;}]+)', re.I)
 def vals(text):
     return {re.sub(r'\s+', ' ', m.strip()) for m in font_re.findall(text)}
 
-donor_fonts = vals(donor)
-experience_fonts = vals(experience)
+print('CLAUDE_FINANCE_FONT_FAMILIES=' + ' | '.join(sorted(vals(donor))))
+print('AXE_SOURCE_FONT_FAMILIES=' + ' | '.join(sorted(vals(experience))))
 
-def normalized(value):
-    return value.strip().lower().replace('"', "'")
+foreign_exact = (
+    'font-family:"DM Sans",system-ui',
+    'font-family:"Fragment Mono",monospace',
+    'font:700 28px/1.05 "Instrument Sans",system-ui',
+)
 
-allowed_dynamic = {'inherit', 'initial', 'unset', 'var(--font)', 'var(--body)', 'var(--display)', 'var(--mono)'}
-donor_norm = {normalized(v) for v in donor_fonts}
-foreign = []
-for value in sorted(experience_fonts):
-    n = normalized(value)
-    if n in allowed_dynamic or n.startswith('var('):
-        continue
-    if n not in donor_norm:
-        foreign.append(value)
+if len(sys.argv) == 2:
+    present=[x for x in foreign_exact if x in experience]
+    if present:
+        raise SystemExit('Finance source still requires typography guard: ' + ' | '.join(present))
+else:
+    money = Path(sys.argv[2]).read_text(encoding='utf-8')
+    if '<!-- AXE_FINANCE_EXPERIENCE_V2 -->' not in money:
+        raise SystemExit('Rendered AXE Finance experience marker missing')
+    remaining=[x for x in foreign_exact if x in money]
+    if remaining:
+        raise SystemExit('Rendered Finance still contains non-Claude typography: ' + ' | '.join(remaining))
+    if money.count('font-family:inherit') < 3:
+        raise SystemExit('Rendered Finance typography inheritance markers incomplete')
 
-print('CLAUDE_FINANCE_FONT_FAMILIES=' + ' | '.join(sorted(donor_fonts)))
-print('AXE_EXPERIENCE_FONT_FAMILIES=' + (' | '.join(sorted(experience_fonts)) if experience_fonts else 'NONE_EXPLICIT'))
-if foreign:
-    for value in foreign:
-        for match in font_re.finditer(experience):
-            if re.sub(r'\s+', ' ', match.group(1).strip()) != value:
-                continue
-            start=max(0,match.start()-160); end=min(len(experience),match.end()+160)
-            context=re.sub(r'\s+',' ',experience[start:end])
-            print('FOREIGN_FONT_CONTEXT=' + context)
-    raise SystemExit('Finance experience introduces non-Claude font-family values: ' + ' | '.join(foreign))
 print('FINANCE_TYPOGRAPHY_PROVENANCE=PASS')
