@@ -11,10 +11,13 @@ export async function createMarketCheckoutSession(args: {
   canary?: boolean;
 }) {
   const { runtime, product, origin, attemptId, canary = false } = args;
+  const checkoutPriceNok = canary && runtime.canaryPriceNok
+    ? runtime.canaryPriceNok
+    : product.commerce.candidatePriceNok;
   const form = new URLSearchParams();
   form.set("mode", "payment");
   form.set("line_items[0][price_data][currency]", "nok");
-  form.set("line_items[0][price_data][unit_amount]", String(product.commerce.candidatePriceNok * 100));
+  form.set("line_items[0][price_data][unit_amount]", String(checkoutPriceNok * 100));
   form.set("line_items[0][price_data][product_data][name]", `${product.title} — ${product.creator}`);
   form.set("line_items[0][price_data][product_data][description]", `${product.productType} · ${product.commerce.printSize} · Enhanced Matte Art Paper · standard shipping in Norway included.`);
   form.set("line_items[0][quantity]", "1");
@@ -38,7 +41,8 @@ export async function createMarketCheckoutSession(args: {
     market_integration: "4market_stripe_prodigi_v1",
     market_environment: runtime.mode,
     market_canary: canary ? "true" : "false",
-    market_price_nok: String(product.commerce.candidatePriceNok),
+    market_price_nok: String(checkoutPriceNok),
+    public_candidate_price_nok: String(product.commerce.candidatePriceNok),
     prodigi_sku: product.commerce.podSku,
     prodigi_sizing: product.commerce.podSizing,
     print_size: product.commerce.printSize,
