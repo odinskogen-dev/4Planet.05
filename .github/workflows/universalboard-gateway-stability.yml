@@ -1,0 +1,81 @@
+name: Universal Board gateway stability
+
+on:
+  push:
+    branches:
+      - ops/test-lifeos-dns-20260916
+    paths:
+      - '.github/workflows/universalboard-gateway-stability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ZONE_NAME: 4planet.org
+      GATEWAY_WORKER: 4planet-test-path-gateway
+    steps:
+      - name: Publish stable viewport gateway
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZONE_JSON="$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
+          ACCOUNT_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].account.id')"
+          test -n "$ACCOUNT_ID"
+
+          cat >/tmp/gateway.mjs <<'JS'
+          const mounts = {
+            '/universalboard': 'https://life-os-canvas-6g481v.v2.appdeploy.ai/'
+          };
+
+          function projectShell(origin) {
+            const safeOrigin = JSON.stringify(origin);
+            return `<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+            <meta name="robots" content="noindex,nofollow">
+            <title>Universal Board — 4PLANET TEST</title>
+            <style>
+              html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff}
+              body{position:fixed;inset:0}
+              iframe{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#fff;overflow:hidden}
+            </style>
+          </head>
+          <body>
+            <iframe title="Universal Board" src=${safeOrigin} loading="eager" scrolling="no" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </body>
+          </html>`;
+          }
+
+          export default {
+            async fetch(request) {
+              const url = new URL(request.url);
+              for (const [mount, origin] of Object.entries(mounts)) {
+                if (url.pathname === mount) return Response.redirect(`${url.origin}${mount}/`, 302);
+                if (url.pathname.startsWith(`${mount}/`)) {
+                  return new Response(projectShell(origin), {
+                    headers: {
+                      'content-type': 'text/html; charset=UTF-8',
+                      'cache-control': 'no-store',
+                      'x-robots-tag': 'noindex, nofollow'
+                    }
+                  });
+                }
+              }
+              return fetch(request);
+            }
+          };
+          JS
+
+          TODAY="$(date -u +%F)"
+          curl -fsS -X PUT -H "Authorization: Bearer $CF_TOKEN" \
+            -F "metadata={\"main_module\":\"gateway.mjs\",\"compatibility_date\":\"${TODAY}\"};type=application/json" \
+            -F 'gateway.mjs=@/tmp/gateway.mjs;type=application/javascript+module' \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts/${GATEWAY_WORKER}" >/dev/null
+
+          echo 'Universal Board gateway viewport stabilised.'
