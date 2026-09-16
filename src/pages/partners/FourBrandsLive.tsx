@@ -1,261 +1,238 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import {
+  buildEconomicTwin,
+  CSV_TEMPLATE,
+  demoEconomicRows,
+  parseEconomicCsv,
+  type Confidence,
+  type EconomicRow,
+  type EconomicTwin,
+  type Opportunity,
+  type TruthClass,
+} from "@/product/fourbrands/economicEngine";
 import "@/styles/fourbrands-twin.css";
 
-type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
-type Confidence = "HIGH" | "MEDIUM" | "LOW";
-type ViewId = "home" | "company" | "finance" | "revenue" | "products" | "market" | "marketing" | "operations" | "people" | "brand" | "risk" | "planet" | "opportunities" | "decisions" | "interventions" | "results" | "learning" | "evidence" | "inbox";
-type Metric = { label: string; value: string; period: string; truthClass: TruthClass; sourceIds: string[] };
-type Statement = { title: string; detail: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
-type Opportunity = { rank: number; title: string; economicLogic: string; estimatedValue: string; planetaryLogic: string; planetaryDelta: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
-type Evidence = { id: string; title: string; publisher: string; url: string; checkedAt: string; note: string };
-type Analysis = {
-  engine: string;
-  company: { name: string; legalName: string; ticker: string; sector: string; geography: string; description: string };
+type PublicMetric = { label: string; value: string; period: string; truthClass: TruthClass; sourceIds: string[] };
+type PublicEvidence = { id: string; title: string; publisher: string; url: string; checkedAt: string; note: string };
+type PublicOpportunity = { rank: number; title: string; economicLogic: string; estimatedValue: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
+type PublicAnalysis = {
+  company: { name: string; legalName?: string; ticker?: string; sector?: string; geography?: string; description?: string };
   generatedAt: string;
-  analysisStatus: "LIVE_RESEARCH" | "SEEDED_PROOF" | "PARTIAL";
+  analysisStatus: string;
   statusNote: string;
-  economicBaseline: Metric[];
-  businessModel: Statement[];
-  valueDrivers: Statement[];
-  valueLeakage: Statement[];
-  opportunities: Opportunity[];
-  alignedTop3: Opportunity[];
-  solutions: Statement[];
-  nextExperiment: { title: string; hypothesis: string; method: string; successMetric: string; economicMeasurement: string; planetaryMeasurement: string; truthClass: TruthClass };
-  evidence: Evidence[];
+  economicBaseline: PublicMetric[];
+  opportunities: PublicOpportunity[];
+  evidence: PublicEvidence[];
   assumptions: string[];
   unknowns: string[];
 };
-type TwinInput = {
-  objective: string; revenue: string; margin: string; cash: string; customers: string; operations: string; people: string;
-  brand: string; primaryRisk: string; planet: string; selectedOpportunity: string; intervention: string; decisionState: string;
-  measuredResult: string; notes: string; files: string[];
-};
+type MainView = "overview" | "money" | "value" | "decisions";
+type MoneyView = "twin" | "cash" | "profit" | "drivers";
+type DecisionState = "OPPORTUNITY" | "REVIEWED" | "CHOSEN" | "BASELINE LOCKED" | "INTERVENTION STARTED" | "MEASURED" | "ATTRIBUTION REVIEWED" | "REALISED / NOT REALISED" | "LEARNING";
+type Attribution = "IDENTIFIED" | "DIRECT / RECONCILED" | "OBSERVED" | "COMPARATIVE" | "QUASI-EXPERIMENTAL" | "CONTROLLED EXPERIMENT";
 
-const EMPTY_TWIN: TwinInput = {
-  objective:"",revenue:"",margin:"",cash:"",customers:"",operations:"",people:"",brand:"",primaryRisk:"",planet:"",
-  selectedOpportunity:"",intervention:"",decisionState:"OPPORTUNITY",measuredResult:"",notes:"",files:[]
-};
-const DECISION_STATES = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","VALUE ATTRIBUTION REVIEWED","REALISED","NOT REALISED","LEARNING"];
-const LOAD_STEPS = ["Finding company","Resolving identity","Finding official records","Reading website","Finding financial evidence","Mapping products","Mapping people","Mapping market","Mapping planet intersections","Building Company Twin"];
-const PRIMARY_NAV: {id:ViewId;label:string}[] = [
-  {id:"home",label:"Home"},{id:"company",label:"Company"},{id:"finance",label:"Finance"},{id:"opportunities",label:"Opportunities"},
-  {id:"decisions",label:"Decisions"},{id:"evidence",label:"Evidence"},{id:"inbox",label:"Inbox"}
-];
-const COMPANY_MODULES: {id:ViewId;label:string;hint:string}[] = [
-  {id:"company",label:"Company",hint:"Identity + business model"},{id:"finance",label:"Finance",hint:"Economic spine"},{id:"revenue",label:"Revenue",hint:"How money enters"},
-  {id:"products",label:"Products",hint:"What is sold"},{id:"market",label:"Customers / Market",hint:"Who chooses and why"},{id:"marketing",label:"Marketing",hint:"Attention → demand"},
-  {id:"operations",label:"Operations",hint:"Delivery + constraints"},{id:"people",label:"People",hint:"Capacity + ownership"},{id:"brand",label:"Brand / Web",hint:"Promise + projection"},
-  {id:"risk",label:"Risk",hint:"What can destroy value"},{id:"planet",label:"Planet",hint:"Dependencies + intersections"},{id:"opportunities",label:"Opportunities",hint:"Available value"},
-  {id:"decisions",label:"Decisions",hint:"Human choice"},{id:"interventions",label:"Interventions",hint:"Bounded action"},{id:"results",label:"Results",hint:"Measured change"},
-  {id:"learning",label:"Learning",hint:"Organisational memory"},{id:"evidence",label:"Sources / Evidence",hint:"Provenance + truth"},{id:"inbox",label:"Company Inbox",hint:"What to learn next"}
-];
+const DECISION_STATES: DecisionState[] = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","ATTRIBUTION REVIEWED","REALISED / NOT REALISED","LEARNING"];
+const ATTRIBUTION: Attribution[] = ["IDENTIFIED","DIRECT / RECONCILED","OBSERVED","COMPARATIVE","QUASI-EXPERIMENTAL","CONTROLLED EXPERIMENT"];
+const NAV: { id: MainView; label: string }[] = [{id:"overview",label:"Overview"},{id:"money",label:"Money"},{id:"value",label:"Value"},{id:"decisions",label:"Decisions"}];
+const LOAD_STEPS = ["Resolve company","Find official evidence","Read public economics","Map value drivers","Build public company model"];
 
-const FOURPLANET_PROOF: Analysis = {
-  engine:"4BRANDS COMPANY TWIN FOUNDATION 01",
-  company:{
-    name:"4PLANET",legalName:"",ticker:"",sector:"Living planet intelligence / ecological action technology",geography:"Norway / global ambition",
-    description:"4PLANET is building living-planet intelligence and action products. Public evidence can describe the product world, but the company economics and operating state remain largely private."
-  },
-  generatedAt:new Date().toISOString(),analysisStatus:"PARTIAL",
-  statusNote:"Sparse public-data case. This Twin deliberately leaves private company economics, customers, operations and results unresolved until the company supplies them.",
-  economicBaseline:[
-    {label:"Revenue",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
-    {label:"Margin",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
-    {label:"Operating cash",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
-    {label:"Employees",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]}
-  ],
-  businessModel:[
-    {title:"Living planet intelligence",detail:"Public product positioning indicates a system that connects ecological understanding, action and proof.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
-    {title:"Multiple product surfaces",detail:"Public product surfaces indicate different ways to explore people, species, places and action while sharing a wider 4PLANET identity.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
-  ],
-  valueDrivers:[
-    {title:"Shared intelligence infrastructure",detail:"If multiple products reuse the same underlying truth and actor infrastructure, marginal product-building cost may fall as reuse grows.",truthClass:"ASSUMPTION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
-    {title:"Proof of useful outcomes",detail:"Commercial value should increase when product usage can be connected to measurable decisions and outcomes.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
-  ],
-  valueLeakage:[
-    {title:"Economic baseline missing",detail:"Public sources do not provide a decision-grade revenue, margin, cash or cost baseline.",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]},
-    {title:"Customer evidence incomplete",detail:"Public evidence alone cannot resolve paying customer cohorts, retention, pipeline or willingness to pay.",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]}
-  ],
-  opportunities:[
-    {rank:1,title:"Complete the economic baseline",economicLogic:"Without revenue, cost, margin and cash truth, value priorities cannot be ranked defensibly.",estimatedValue:"UNKNOWN until company finance data is supplied.",planetaryLogic:"Neutral enabling step.",planetaryDelta:"UNKNOWN",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]},
-    {rank:2,title:"Prove one repeatable paid value loop",economicLogic:"A bounded paid use case can convert product architecture into commercial evidence and reusable learning.",estimatedValue:"ASSUMPTION: value depends on buyer, price, cost and repeatability.",planetaryLogic:"Alignment exists only if the paid loop creates a measured ecological outcome or better decision.",planetaryDelta:"UNKNOWN until a bounded intervention is measured.",truthClass:"ASSUMPTION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
-    {rank:3,title:"Measure reuse across product surfaces",economicLogic:"Shared infrastructure becomes economically meaningful when reuse measurably reduces marginal build or operating cost.",estimatedValue:"UNKNOWN until engineering and delivery baselines exist.",planetaryLogic:"Shared infrastructure can reduce duplicated resource use, but the material effect is not yet measured.",planetaryDelta:"UNKNOWN",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
-    {rank:4,title:"Connect public attention to conversion",economicLogic:"Public product surfaces only become a business driver if attention connects to activation, retention, payment or funded action.",estimatedValue:"UNKNOWN until funnel data is connected.",planetaryLogic:"Action conversion may create planetary value if resulting actions are verified.",planetaryDelta:"UNKNOWN",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
-  ],
-  alignedTop3:[],solutions:[
-    {title:"Company-provided finance state",detail:"Add revenue, costs, margin, cash and obligations as company truth before ranking financial opportunities.",truthClass:"INTERPRETATION",confidence:"HIGH",sourceIds:["4P-WEB"]},
-    {title:"Connect product and conversion evidence",detail:"Add usage, funnel, commerce and outcome data to connect product activity to economic and planetary results.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
-  ],
-  nextExperiment:{title:"Complete the Twin",hypothesis:"A small amount of company-provided truth will materially improve decision quality.",method:"Add finance, customer and operating baseline, then rerank opportunities.",successMetric:"Higher Twin completeness with fewer high-impact unknowns.",economicMeasurement:"Rankable economic opportunities with explicit baseline.",planetaryMeasurement:"Only attach planetary delta where mechanism and measurement exist.",truthClass:"ASSUMPTION"},
-  evidence:[{id:"4P-WEB",title:"4PLANET public product world",publisher:"4PLANET",url:"https://4planet.org",checkedAt:"2026-09-16",note:"Public product source only. Internal BRAIN and private company economics are not exposed to this public-first Twin."}],
-  assumptions:["Public product architecture may support multiple future revenue models; none is treated as proven here."],
-  unknowns:["Verified legal entity behind the 4PLANET product brand","Revenue, costs, margin and cash","Paying customer cohorts and retention","Internal operating capacity and constraints","Measured economic and planetary results"]
-};
-FOURPLANET_PROOF.alignedTop3 = FOURPLANET_PROOF.opportunities.slice(0,3);
+const money = (value: number, currency = "EUR") => new Intl.NumberFormat("en-GB", { style:"currency", currency, maximumFractionDigits:0 }).format(value || 0);
+const pct = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+const pp = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}pp`;
+const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-const slug = (value:string) => value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "company";
-const normalise = (value:string) => value.toLowerCase().replace(/[^a-z0-9]/g,"");
-const truthClassName = (value:TruthClass) => `fbt-truth fbt-truth--${value.toLowerCase()}`;
-const confidenceClass = (value:Confidence) => `fbt-status__dot fbt-status__dot--${value.toLowerCase()}`;
-
-function TruthPill({value}:{value:TruthClass}){return <span className={truthClassName(value)}>{value}</span>}
-function EmptyState({title,text,action}:{title:string;text:string;action?:()=>void}){
-  return <div className="fbt-empty"><span className="fbt-empty__dot"/><strong>{title}</strong><p>{text}</p>{action&&<button className="fbt-button fbt-button--soft" onClick={action}>Add company data</button>}</div>
+function routeView(): MainView {
+  if (typeof window === "undefined") return "overview";
+  const path = window.location.pathname.replace(/\/+$/, "");
+  if (path.endsWith("/money")) return "money";
+  if (path.endsWith("/value")) return "value";
+  if (path.endsWith("/decisions")) return "decisions";
+  return "overview";
 }
-function StatementStack({items,empty,onComplete}:{items:Statement[];empty:string;onComplete:()=>void}){
-  if(!items.length)return <EmptyState title="Not known yet" text={empty} action={onComplete}/>;
-  return <div className="fbt-statement-stack">{items.map((item)=><article key={`${item.title}-${item.detail}`}>
-    <h3>{item.title}</h3><p>{item.detail}</p><div className="fbt-statement-meta"><TruthPill value={item.truthClass}/><span className="fbt-status"><i className={confidenceClass(item.confidence)}/>{item.confidence}</span></div>
-  </article>)}</div>
+function setCanonicalView(view: MainView) {
+  if (typeof window === "undefined") return;
+  const host = window.location.hostname.toLowerCase().replace(/^www\./, "");
+  if (host !== "4brands.org") return;
+  const path = view === "overview" ? "/" : `/${view}`;
+  window.history.replaceState({}, "", path);
 }
-function TwinField({label,value,placeholder,onChange}:{label:string;value:string;placeholder:string;onChange:(value:string)=>void}){
-  return <label className="fbt-field"><span>{label}</span><input value={value} placeholder={placeholder} onChange={(e)=>onChange(e.target.value)}/></label>
+function ensureCanonical(view: MainView) {
+  if (typeof document === "undefined") return;
+  document.title = "4BRANDS — Company Control System";
+  let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.appendChild(link); }
+  link.href = `https://4brands.org${view === "overview" ? "/" : `/${view}`}`;
 }
-function Surface({title,meta,children}:{title:string;meta?:string;children:ReactNode}){
-  return <section className="fbt-surface"><div className="fbt-surface-head"><span>{title}</span>{meta&&<small>{meta}</small>}</div>{children}</section>
+function truthClass(value: TruthClass) { return `fb-truth fb-truth--${value.toLowerCase()}`; }
+function Truth({ value }: { value: TruthClass }) { return <span className={truthClass(value)}>{value}</span>; }
+function ConfidenceTag({ value }: { value: Confidence }) { return <span className={`fb-confidence fb-confidence--${value.toLowerCase()}`}><i/>{value}</span>; }
+function Delta({ value, unit = "currency", currency = "EUR" }: { value: number; unit?: "currency" | "pp"; currency?: string }) {
+  const positive = value >= 0;
+  return <span className={`fb-delta ${positive ? "is-positive" : "is-negative"}`}>{unit === "pp" ? pp(value) : `${positive?"+":"−"}${money(Math.abs(value),currency)}`}</span>;
 }
 
-export default function FourBrandLive(){
-  const [query,setQuery]=useState("TOMRA");
-  const [analysis,setAnalysis]=useState<Analysis|null>(null);
-  const [twin,setTwin]=useState<TwinInput>(EMPTY_TWIN);
-  const [view,setView]=useState<ViewId>("home");
-  const [loading,setLoading]=useState(false);
-  const [loadingStep,setLoadingStep]=useState(0);
-  const [error,setError]=useState("");
-  const [activeOpportunity,setActiveOpportunity]=useState(0);
-  const [modulesOpen,setModulesOpen]=useState(false);
-  const [completeOpen,setCompleteOpen]=useState(false);
-  const [mobileNavOpen,setMobileNavOpen]=useState(false);
-  const [saved,setSaved]=useState(false);
+export default function FourBrandLive() {
+  const [query,setQuery] = useState("TOMRA");
+  const [analysis,setAnalysis] = useState<PublicAnalysis|null>(null);
+  const [loading,setLoading] = useState(false);
+  const [loadingStep,setLoadingStep] = useState(0);
+  const [error,setError] = useState("");
+  const [view,setView] = useState<MainView>(routeView);
+  const [moneyView,setMoneyView] = useState<MoneyView>("twin");
+  const [rows,setRows] = useState<EconomicRow[]>([]);
+  const [confirmedCash,setConfirmedCash] = useState<number|undefined>();
+  const [dataLabel,setDataLabel] = useState("");
+  const [importOpen,setImportOpen] = useState(false);
+  const [importError,setImportError] = useState("");
+  const [cashInput,setCashInput] = useState("");
+  const [activeOpportunity,setActiveOpportunity] = useState(0);
+  const [selectedOpportunity,setSelectedOpportunity] = useState<Opportunity|null>(null);
+  const [decisionState,setDecisionState] = useState<DecisionState>("OPPORTUNITY");
+  const [attribution,setAttribution] = useState<Attribution>("IDENTIFIED");
+  const [baseline,setBaseline] = useState("");
+  const [intervention,setIntervention] = useState("");
+  const [measuredResult,setMeasuredResult] = useState("");
+  const [askOpen,setAskOpen] = useState(false);
+  const [question,setQuestion] = useState("");
+  const [answer,setAnswer] = useState("");
 
-  useEffect(()=>{
-    if(!analysis)return;
-    try{
-      const raw=localStorage.getItem(`4brands:twin:${slug(analysis.company.name)}`);
-      setTwin(raw?{...EMPTY_TWIN,...JSON.parse(raw)}:EMPTY_TWIN);
-    }catch{setTwin(EMPTY_TWIN)}
-  },[analysis?.company.name]);
+  const twin = useMemo<EconomicTwin|null>(() => rows.length ? buildEconomicTwin(rows, confirmedCash) : null,[rows,confirmedCash]);
+  const topOpportunity = twin?.opportunities[activeOpportunity] || twin?.opportunities[0] || null;
 
-  const opportunity=analysis?.opportunities[activeOpportunity]||analysis?.opportunities[0];
-  const leadMetrics=analysis?.economicBaseline.slice(0,4)||[];
-  const completeness=useMemo(()=>{
-    if(!analysis)return 0;
-    const publicKnown=analysis.economicBaseline.filter(m=>m.truthClass!=="UNKNOWN"&&m.value!=="UNKNOWN").length+analysis.evidence.length+(analysis.company.legalName?1:0);
-    const privateKnown=Object.entries(twin).filter(([key,value])=>key!=="files"&&typeof value==="string"&&value.trim()).length;
-    return Math.min(96,10+publicKnown*6+privateKnown*3+(twin.files.length?3:0));
-  },[analysis,twin]);
-  const inboxCount=(analysis?.unknowns.length||0)+(analysis?.assumptions.length||0)+twin.files.length;
+  useEffect(()=>{ ensureCanonical(view); setCanonicalView(view); },[view]);
+  useEffect(()=>{ setActiveOpportunity(0); },[twin?.opportunities.length]);
 
-  async function runAnalysis(event?:FormEvent,forced?:string){
+  async function runAnalysis(event?: FormEvent, forced?: string) {
     event?.preventDefault();
     const company=(forced||query).trim();
     if(company.length<2)return;
-    setQuery(company);setLoading(true);setLoadingStep(0);setError("");setAnalysis(null);setView("home");setActiveOpportunity(0);
-    const timer=window.setInterval(()=>setLoadingStep(current=>Math.min(current+1,LOAD_STEPS.length-1)),440);
+    setQuery(company); setLoading(true); setLoadingStep(0); setError(""); setAnalysis(null); setRows([]); setDataLabel("");
+    const timer=window.setInterval(()=>setLoadingStep(step=>Math.min(step+1,LOAD_STEPS.length-1)),420);
     try{
-      if(["4planet","fourplanet"].includes(normalise(company))){
-        await new Promise(resolve=>window.setTimeout(resolve,1900));
-        setAnalysis({...FOURPLANET_PROOF,generatedAt:new Date().toISOString()});
-      }else{
-        const response=await fetch("/api/brand-analysis",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({company})});
-        const payload=await response.json() as {analysis?:Analysis;error?:string;detail?:string};
-        if(!response.ok||!payload.analysis)throw new Error(payload.detail||payload.error||"Company research is unavailable.");
-        setAnalysis(payload.analysis);
-      }
-    }catch(cause){setError(cause instanceof Error?cause.message:"Company research is unavailable.")}
-    finally{window.clearInterval(timer);setLoading(false);setLoadingStep(LOAD_STEPS.length-1)}
+      const response=await fetch(`${import.meta.env.BASE_URL}api/brand-analysis`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({company})});
+      const payload=await response.json() as {analysis?:PublicAnalysis;error?:string;detail?:string};
+      if(!response.ok||!payload.analysis)throw new Error(payload.detail||payload.error||"Public company research is unavailable.");
+      setAnalysis(payload.analysis);
+    } catch(cause) { setError(cause instanceof Error ? cause.message : "Public company research is unavailable."); }
+    finally { window.clearInterval(timer); setLoading(false); setLoadingStep(LOAD_STEPS.length-1); }
   }
-  function reset(){setAnalysis(null);setView("home");setError("");setMobileNavOpen(false)}
-  function changeView(next:ViewId){setView(next);setModulesOpen(false);setMobileNavOpen(false)}
-  function patchTwin<K extends keyof TwinInput>(key:K,value:TwinInput[K]){setTwin(current=>({...current,[key]:value}));setSaved(false)}
-  function saveTwin(){if(!analysis)return;localStorage.setItem(`4brands:twin:${slug(analysis.company.name)}`,JSON.stringify(twin));setSaved(true);window.setTimeout(()=>setSaved(false),1400)}
+
+  function loadDemo() {
+    const demo=demoEconomicRows();
+    setRows(demo.rows); setConfirmedCash(demo.confirmedCash); setCashInput(String(demo.confirmedCash));
+    setDataLabel("SYNTHETIC DEMO FINANCE · SESSION ONLY"); setImportOpen(false); setImportError(""); setView("overview");
+  }
+
+  async function importFile(file?: File|null) {
+    if(!file)return;
+    if(!/\.csv$/i.test(file.name)){setImportError("Use a CSV file for this first financial truth-path.");return;}
+    try{
+      const text=await file.text();
+      const parsed=parseEconomicCsv(text,file.name);
+      if(!parsed.length)throw new Error("No usable economic rows were found.");
+      const cash=cashInput.trim()===""?undefined:Number(cashInput.replace(/[^0-9.\-]/g,""));
+      setRows(parsed); setConfirmedCash(Number.isFinite(cash as number)?cash:undefined); setDataLabel(`${file.name.toUpperCase()} · LOCAL SESSION ONLY`); setImportOpen(false); setImportError(""); setView("overview");
+    }catch(cause){setImportError(cause instanceof Error?cause.message:"The CSV could not be read.");}
+  }
+
+  function navigate(next:MainView){setView(next);setAskOpen(false);}
+  function chooseOpportunity(item:Opportunity){setSelectedOpportunity(item);setDecisionState("REVIEWED");setBaseline("");setIntervention(item.intervention);setMeasuredResult("");navigate("decisions");}
+  function lockBaseline(){
+    if(!twin||!selectedOpportunity)return;
+    setBaseline(`${new Date().toISOString().slice(0,10)} · Revenue ${money(twin.currentPeriod.revenue,twin.currency)} · Gross margin ${twin.currentPeriod.grossMargin.toFixed(1)}% · Cash ${money(twin.cash,twin.currency)} · Opportunity range ${money(selectedOpportunity.valueLow,twin.currency)}–${money(selectedOpportunity.valueHigh,twin.currency)}`);
+    setDecisionState("BASELINE LOCKED");
+  }
+  function advanceDecision(){const index=DECISION_STATES.indexOf(decisionState);if(index<DECISION_STATES.length-1)setDecisionState(DECISION_STATES[index+1]);}
+
+  function ask4Brands(event:FormEvent){
+    event.preventDefault(); if(!twin||!question.trim())return;
+    const q=normalise(question);
+    let response="";
+    if(q.includes("margin")||q.includes("profit")) response=`Gross margin is ${twin.currentPeriod.grossMargin.toFixed(1)}%, ${pp(twin.grossMarginDeltaPp)} versus the previous 30 days. The recorded driver tree attributes ${pp(twin.marginDrivers[0]?.value||0)} to direct-cost intensity; the remainder stays explicitly unexplained until deeper price/mix evidence is available.`;
+    else if(q.includes("cash")||q.includes("runway")) { const low=[...twin.cash13Week].sort((a,b)=>a.endingCash-b.endingCash)[0]; response=`Current ${twin.cashIsConfirmed?"confirmed":"recorded"} cash is ${money(twin.cash,twin.currency)}. The 13-week schedule reaches a low of ${money(low?.endingCash||0,twin.currency)} in ${low?.label||"the forecast"}. This is an estimate based only on dated imported AR, AP and renewals.`; }
+    else if(q.includes("customer")) { const best=twin.profitByCustomer[0]; response=best?`${best.key} has the strongest recorded direct contribution at ${money(best.contribution,twin.currency)} (${best.contributionMargin.toFixed(1)}%). Allocated overhead is not included, so this is contribution economics, not full customer profitability.`:"Customer economics cannot be resolved from the current import."; }
+    else if(q.includes("evidence")||q.includes("strongest")) { const strong=twin.opportunities.find(item=>item.confidence==="HIGH")||twin.opportunities[0]; response=strong?`${strong.title} currently has the strongest evidence among detected opportunities. Confidence: ${strong.confidence}. It uses ${strong.rowIds.length} exact imported row(s). Open the opportunity to inspect calculation, assumptions and falsifier.`:"No opportunity currently has enough evidence."; }
+    else { const top=twin.opportunities[0]; response=top?`The largest detected value range right now is ${money(top.valueLow,twin.currency)}–${money(top.valueHigh,twin.currency)}: ${top.title}. This is ${top.truthClass.toLowerCase()}, not realised value. Review the evidence before choosing an intervention.`:`The Twin has not found a decision-grade value opportunity in the current rows.`; }
+    setAnswer(response);
+  }
 
   if(!analysis){
-    return <main className="fbt-app fbt-entry">
-      <section className="fbt-entry-shell">
-        <nav className="fbt-entry-nav"><a className="fbt-brand" href="https://4planet.org">4BRANDS<span>_</span></a><a href="https://4planet.org">by 4PLANET</a></nav>
-        <div className="fbt-entry__copy">
-          <div><p className="fbt-kicker">COMPANY CONTROL SYSTEM / PUBLIC BETA</p><h1>See your whole company.</h1><p>Type a company name. 4BRANDS builds the best public Company Twin it can, shows what is known, what is missing, and where value may be hiding.</p></div>
-          <form className="fbt-search-card" onSubmit={runAnalysis}>
-            <label htmlFor="fbt-company">Enter your company</label>
-            <div className="fbt-search-row"><input id="fbt-company" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Company name" autoComplete="organization" autoFocus maxLength={120}/><button className="fbt-button fbt-button--primary fbt-button--round" type="submit" disabled={loading||query.trim().length<2} aria-label="Build Company Twin">→</button></div>
-            <div className="fbt-search-meta"><span>PUBLIC EVIDENCE</span><span>TRUTH-AWARE</span><span>FINANCE FIRST</span></div>
-            <div className="fbt-quick"><button type="button" onClick={()=>runAnalysis(undefined,"TOMRA")}>Try TOMRA <small>rich public data</small></button><button type="button" onClick={()=>runAnalysis(undefined,"4PLANET")}>Try 4PLANET <small>sparse public data</small></button></div>
-          </form>
-        </div>
-        <footer className="fbt-entry-footer"><span>ONE COMPANY → ONE STATE → ONE INTERFACE</span><p>Facts remain facts. Estimates remain estimates. Private company truth is added only when the company provides it.</p></footer>
+    return <main className="fb-app fb-front">
+      <nav className="fb-front-nav"><a className="fb-logo" href="/">4BRANDS<span>_</span></a><a href="https://4planet.org">BY 4PLANET</a></nav>
+      <section className="fb-front-main">
+        <div className="fb-front-copy"><p className="fb-kicker">COMPANY CONTROL SYSTEM</p><h1>MAKE YOUR<br/>COMPANY BETTER</h1><p>Know where your company makes, loses and can create value.</p></div>
+        <form className="fb-company-search" onSubmit={runAnalysis}>
+          <label htmlFor="company">Enter company name or website</label>
+          <div><input id="company" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Company name or website" autoFocus/><button type="submit" aria-label="Build public company model" disabled={loading||query.trim().length<2}>→</button></div>
+          <p>PUBLIC MODEL FIRST · PRIVATE DATA ONLY WHEN YOU ADD IT</p>
+          <button className="fb-demo-link" type="button" onClick={()=>runAnalysis(undefined,"TOMRA")}>Try TOMRA public model</button>
+        </form>
       </section>
-      {loading&&<div className="fbt-build" role="status"><div className="fbt-build__card"><div className="fbt-build__top"><span>BUILDING COMPANY TWIN</span><strong>{Math.round(((loadingStep+1)/LOAD_STEPS.length)*100)}%</strong></div><h2>{query}</h2><div className="fbt-build__progress"><i style={{width:`${((loadingStep+1)/LOAD_STEPS.length)*100}%`}}/></div><div className="fbt-build__steps">{LOAD_STEPS.map((step,index)=><span key={step} className={index<=loadingStep?"is-done":""}>{index<loadingStep?"✓":index===loadingStep?"•":"○"} {step}</span>)}</div></div></div>}
-      {error&&<div className="fbt-toast fbt-toast--error"><div><strong>Research paused</strong><span>{error}</span></div><button onClick={()=>{setError("");setQuery("TOMRA")}}>Use TOMRA proof</button></div>}
+      <footer className="fb-front-footer"><span>DATA → ECONOMIC TWIN → FIND VALUE → DECIDE → MEASURE</span><span>Truth classes and source evidence stay inspectable.</span></footer>
+      {loading&&<div className="fb-loading"><div><span>BUILDING PUBLIC COMPANY MODEL</span><strong>{query}</strong><i><b style={{width:`${((loadingStep+1)/LOAD_STEPS.length)*100}%`}}/></i>{LOAD_STEPS.map((step,index)=><p className={index<=loadingStep?"is-active":""} key={step}>{index<loadingStep?"✓":"·"} {step}</p>)}</div></div>}
+      {error&&<div className="fb-toast"><strong>Research paused</strong><span>{error}</span><button onClick={()=>setError("")}>Close</button></div>}
     </main>
   }
 
-  return <main className="fbt-app">
-    <header className="fbt-topbar">
-      <div className="fbt-topbar__left"><button className="fbt-mobile-menu" onClick={()=>setMobileNavOpen(v=>!v)} aria-label="Open navigation">☰</button><button className="fbt-brand fbt-brand--button" onClick={reset}>4BRANDS<span>_</span></button><span className="fbt-byline">BY 4PLANET</span></div>
-      <button className="fbt-company-switch" onClick={reset}><span className="fbt-company-dot"/><strong>{analysis.company.name}</strong><small>Switch company</small></button>
-      <div className="fbt-topbar__actions"><button className="fbt-icon-button" onClick={()=>changeView("inbox")}>Inbox <span>{inboxCount}</span></button><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Complete Twin</button></div>
-    </header>
-    <div className="fbt-frame">
-      <aside className={`fbt-sidebar${mobileNavOpen?" is-open":""}`}>
-        <nav>{PRIMARY_NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>changeView(item.id)}><span>{item.label}</span>{item.id==="inbox"&&<small>{inboxCount}</small>}</button>)}</nav>
-        <div className="fbt-sidebar__bottom"><div className="fbt-completeness"><span>Twin completeness</span><strong>{completeness}%</strong></div><i><b style={{width:`${completeness}%`}}/></i><button className="fbt-button fbt-button--soft" onClick={()=>setModulesOpen(true)}>Explore company</button></div>
-      </aside>
-      <section className="fbt-workspace">
-        <div className="fbt-contextbar"><span>{analysis.analysisStatus.replaceAll("_"," ")} · {analysis.evidence.length} SOURCES</span><button onClick={()=>setModulesOpen(true)}>Whole company ↗</button></div>
+  if(!twin){
+    return <main className="fb-app fb-public">
+      <header className="fb-public-head"><button className="fb-logo fb-logo-button" onClick={()=>setAnalysis(null)}>4BRANDS<span>_</span></button><span>PUBLIC COMPANY MODEL</span><button onClick={()=>setAnalysis(null)}>Switch company</button></header>
+      <section className="fb-public-hero"><div><p className="fb-kicker">{analysis.analysisStatus.replaceAll("_"," ")}</p><h1>{analysis.company.name}</h1><p>{analysis.company.description||analysis.statusNote}</p></div><div className="fb-public-status"><span>PUBLIC SOURCES</span><strong>{analysis.evidence.length}</strong><small>{analysis.unknowns.length} important unknowns remain</small></div></section>
+      <section className="fb-public-grid">
+        <article><span>WHAT 4BRANDS CAN ALREADY SEE</span><div className="fb-public-metrics">{analysis.economicBaseline.slice(0,4).map(metric=><div key={`${metric.label}-${metric.period}`}><small>{metric.label}</small><strong>{metric.value}</strong><Truth value={metric.truthClass}/></div>)}</div></article>
+        <article className="fb-build-card"><p className="fb-kicker">NEXT STEP</p><h2>Build your Company Twin.</h2><p>Public data can frame the company. Your economic truth is what turns 4BRANDS into a control system.</p><button className="fb-primary" onClick={()=>setImportOpen(true)}>Add financial data</button><button className="fb-secondary" onClick={loadDemo}>Explore with synthetic demo finance</button><small>Demo finance is synthetic and never presented as {analysis.company.name} truth.</small></article>
+      </section>
+      <section className="fb-public-bottom"><div><span>PUBLIC VALUE HYPOTHESES</span>{analysis.opportunities.slice(0,3).map(item=><article key={item.rank}><b>{String(item.rank).padStart(2,"0")}</b><div><strong>{item.title}</strong><p>{item.economicLogic}</p></div><Truth value={item.truthClass}/></article>)}</div><aside><span>EVIDENCE</span>{analysis.evidence.slice(0,5).map(source=><a key={source.id} href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong><small>{source.publisher} · {source.checkedAt}</small></a>)}</aside></section>
+      <ImportPanel open={importOpen} onClose={()=>setImportOpen(false)} cashInput={cashInput} setCashInput={setCashInput} importError={importError} onFile={importFile} onDemo={loadDemo}/>
+    </main>
+  }
 
-        {view==="home"&&<div className="fbt-view fbt-home">
-          <div className="fbt-view-head fbt-view-head--home"><div><p className="fbt-kicker">COMPANY HOME</p><h1>{analysis.company.name}</h1><p>{analysis.company.description}</p></div></div>
-          <div className="fbt-metric-rail">{leadMetrics.map(metric=><article className="fbt-metric" key={`${metric.label}-${metric.period}`}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.period}</small></article>)}</div>
-          <div className="fbt-home-grid">
-            <article className="fbt-hero-card"><div className="fbt-card-label"><span>WHAT MATTERS NOW</span>{opportunity&&<TruthPill value={opportunity.truthClass}/>}</div><h2>{opportunity?.title||"Complete the Twin to find the next move."}</h2><p>{opportunity?.economicLogic||analysis.statusNote}</p><div className="fbt-card-actions"><button className="fbt-button fbt-button--light" onClick={()=>changeView("opportunities")}>Open opportunity</button><button className="fbt-text-button" onClick={()=>changeView("evidence")}>See evidence →</button></div></article>
-            <article className="fbt-state-card"><div className="fbt-card-label"><span>COMPANY STATE</span><small>{new Date(analysis.generatedAt).toLocaleDateString()}</small></div><div className="fbt-state-score"><strong>{completeness}%</strong><span>of the current Twin has usable signal</span></div><div className="fbt-state-row"><span>Known sources</span><strong>{analysis.evidence.length}</strong></div><div className="fbt-state-row"><span>Open unknowns</span><strong>{analysis.unknowns.length}</strong></div><div className="fbt-state-row"><span>Company files</span><strong>{twin.files.length}</strong></div><button className="fbt-button fbt-button--soft fbt-button--full" onClick={()=>setCompleteOpen(true)}>Improve the Twin</button></article>
-          </div>
-        </div>}
-
-        {view==="company"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">COMPANY</p><h1>The company, in one place.</h1><p>{analysis.statusNote}</p></div><button className="fbt-button fbt-button--soft" onClick={()=>setCompleteOpen(true)}>Add company truth</button></div><div className="fbt-company-card"><div className="fbt-identity"><span>IDENTITY</span><h2>{analysis.company.legalName||analysis.company.name}</h2><p>{analysis.company.sector||"Sector unresolved"}</p><div><small>{analysis.company.geography||"Geography unresolved"}</small>{analysis.company.ticker&&<small>{analysis.company.ticker}</small>}</div></div><div className="fbt-company-columns"><section><span>HOW IT CREATES VALUE</span><StatementStack items={analysis.businessModel} empty="Add product and revenue model data." onComplete={()=>setCompleteOpen(true)}/></section><section><span>WHAT DRIVES VALUE</span><StatementStack items={analysis.valueDrivers} empty="Drivers need more evidence." onComplete={()=>setCompleteOpen(true)}/></section></div></div></div>}
-
-        {view==="finance"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">FINANCE / ECONOMIC SPINE</p><h1>Know the economic state.</h1><p>Public financial evidence first. Company-provided truth completes the operating baseline.</p></div><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Add finance data</button></div><div className="fbt-finance-layout"><section className="fbt-surface fbt-finance-table"><div className="fbt-surface-head"><span>ECONOMIC BASELINE</span><small>{analysis.economicBaseline.length} metrics</small></div>{analysis.economicBaseline.map(metric=><div className="fbt-finance-row" key={`${metric.label}-${metric.period}`}><div><strong>{metric.label}</strong><small>{metric.period}</small></div><b>{metric.value}</b><TruthPill value={metric.truthClass}/></div>)}</section><aside className="fbt-surface fbt-finance-side"><div className="fbt-surface-head"><span>VALUE LEAKAGE</span><small>{analysis.valueLeakage.length} signals</small></div><StatementStack items={analysis.valueLeakage} empty="No defensible leakage signal yet." onComplete={()=>setCompleteOpen(true)}/></aside></div></div>}
-
-        {view==="opportunities"&&<div className="fbt-view fbt-view--flush"><div className="fbt-view-head fbt-view-head--compact"><div><p className="fbt-kicker">OPPORTUNITIES</p><h1>Where is the largest available value?</h1></div><span className="fbt-head-note">Hypotheses are not realised value.</span></div><div className="fbt-opportunity-layout"><div className="fbt-opportunity-list">{analysis.opportunities.map((item,index)=><button key={`${item.rank}-${item.title}`} className={index===activeOpportunity?"is-active":""} onClick={()=>setActiveOpportunity(index)}><span>{String(item.rank).padStart(2,"0")}</span><strong>{item.title}</strong><TruthPill value={item.truthClass}/></button>)}</div>{opportunity?<article className="fbt-opportunity-detail"><div className="fbt-card-label"><span>OPPORTUNITY {String(opportunity.rank).padStart(2,"0")}</span><div><TruthPill value={opportunity.truthClass}/></div></div><h2>{opportunity.title}</h2><section><span>AVAILABLE VALUE</span><p>{opportunity.estimatedValue}</p></section><section><span>WHY IT MAY MATTER</span><p>{opportunity.economicLogic}</p></section><section><span>PLANET INTERSECTION</span><p>{opportunity.planetaryLogic}</p><small>{opportunity.planetaryDelta}</small></section><div className="fbt-card-actions"><button className="fbt-button fbt-button--primary" onClick={()=>{patchTwin("selectedOpportunity",opportunity.title);changeView("decisions")}}>Take to decision</button><button className="fbt-text-button" onClick={()=>changeView("evidence")}>Inspect evidence →</button></div></article>:<EmptyState title="No ranked opportunity yet" text="Complete the Twin to create a defensible opportunity set." action={()=>setCompleteOpen(true)}/>}</div></div>}
-
-        {view==="decisions"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">DECISIONS / VALUE LEDGER</p><h1>Make the choice explicit.</h1><p>An opportunity only becomes value after a human decision, bounded intervention and measured result.</p></div><button className="fbt-button fbt-button--soft" onClick={saveTwin}>{saved?"Saved":"Save decision"}</button></div><div className="fbt-decision-grid"><label className="fbt-input-card"><span>SELECTED OPPORTUNITY</span><textarea rows={3} value={twin.selectedOpportunity} onChange={e=>patchTwin("selectedOpportunity",e.target.value)} placeholder="Choose an opportunity"/></label><label className="fbt-input-card"><span>DECISION STATE</span><select value={twin.decisionState} onChange={e=>patchTwin("decisionState",e.target.value)}>{DECISION_STATES.map(state=><option key={state}>{state}</option>)}</select></label><label className="fbt-input-card fbt-input-card--wide"><span>INTERVENTION</span><textarea rows={3} value={twin.intervention} onChange={e=>patchTwin("intervention",e.target.value)} placeholder="What will actually change?"/></label><label className="fbt-input-card fbt-input-card--wide"><span>MEASURED RESULT</span><textarea rows={3} value={twin.measuredResult} onChange={e=>patchTwin("measuredResult",e.target.value)} placeholder="No result yet — measurement remains open"/></label></div></div>}
-
-        {view==="evidence"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">SOURCES / FACTS / PROVENANCE</p><h1>Know why the Twin believes something.</h1><p>Public evidence, calculations and interpretations remain visibly different.</p></div></div><div className="fbt-evidence-layout"><section className="fbt-surface"><div className="fbt-surface-head"><span>SOURCES</span><small>{analysis.evidence.length}</small></div><div className="fbt-source-list">{analysis.evidence.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.id}><div><span>{source.publisher}</span><small>{source.checkedAt}</small></div><strong>{source.title}</strong><p>{source.note}</p><i>↗</i></a>)}</div></section><aside className="fbt-surface fbt-truth-guide"><div className="fbt-surface-head"><span>TRUTH CLASSES</span><small>Never collapse these</small></div>{(["FACT","CALCULATION","ESTIMATE","ASSUMPTION","INTERPRETATION","UNKNOWN"] as TruthClass[]).map(truth=><div key={truth}><TruthPill value={truth}/><p>{truth==="FACT"?"Directly supported by a source.":truth==="CALCULATION"?"Derived from stated inputs.":truth==="UNKNOWN"?"The Twin does not know yet.":"A bounded model output, not a fact."}</p></div>)}</aside></div></div>}
-
-        {view==="inbox"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">COMPANY INBOX</p><h1>What should the Twin learn next?</h1><p>New information stays reviewable. Nothing silently overwrites company truth.</p></div><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Add information</button></div><div className="fbt-inbox-grid"><Surface title="MISSING INFORMATION" meta={String(analysis.unknowns.length)}>{analysis.unknowns.map(item=><div className="fbt-inbox-row" key={item}><span className="fbt-inbox-icon">?</span><p>{item}</p><small>REVIEW</small></div>)}</Surface><Surface title="ASSUMPTIONS TO CONFIRM" meta={String(analysis.assumptions.length)}>{analysis.assumptions.map(item=><div className="fbt-inbox-row" key={item}><span className="fbt-inbox-icon">≈</span><p>{item}</p><small>CONFIRM</small></div>)}</Surface></div>{twin.files.length>0&&<div className="fbt-files"><span>LOCAL FILE INTAKE</span>{twin.files.map(file=><b key={file}>{file}</b>)}</div>}</div>}
-
-        {["revenue","products","market","marketing","operations","people","brand","risk","planet","interventions","results","learning"].includes(view)&&<ModuleView view={view} analysis={analysis} twin={twin} onComplete={()=>setCompleteOpen(true)} onNavigate={changeView}/>}      
+  return <main className="fb-app fb-product">
+    <header className="fb-topbar"><button className="fb-logo fb-logo-button" onClick={()=>{setRows([]);setDataLabel("")}}>4BRANDS<span>_</span></button><button className="fb-company-chip" onClick={()=>{setRows([]);setDataLabel("")}}><i/><strong>{analysis.company.name}</strong><small>Company Twin</small></button><div className="fb-top-actions"><span className="fb-session">{dataLabel}</span><button className="fb-ask" onClick={()=>setAskOpen(value=>!value)}>Ask 4BRANDS</button><button className="fb-add" onClick={()=>setImportOpen(true)}>+ Data</button></div></header>
+    <div className="fb-shell">
+      <aside className="fb-nav"><nav>{NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>navigate(item.id)}>{item.label}</button>)}</nav><div><span>SESSION MODE</span><p>Imported company data stays in this browser session. No server write.</p></div></aside>
+      <section className="fb-workspace">
+        {view==="overview"&&<Overview twin={twin} opportunity={twin.opportunities[0]} onOpportunity={()=>navigate("value")} onMoney={()=>navigate("money")} onDecision={()=>twin.opportunities[0]&&chooseOpportunity(twin.opportunities[0])}/>} 
+        {view==="money"&&<Money twin={twin} mode={moneyView} setMode={setMoneyView}/>} 
+        {view==="value"&&<ValueFinder twin={twin} active={activeOpportunity} setActive={setActiveOpportunity} onChoose={chooseOpportunity}/>} 
+        {view==="decisions"&&<Decisions twin={twin} selected={selectedOpportunity} state={decisionState} setState={setDecisionState} attribution={attribution} setAttribution={setAttribution} baseline={baseline} lockBaseline={lockBaseline} intervention={intervention} setIntervention={setIntervention} result={measuredResult} setResult={setMeasuredResult} advance={advanceDecision} onFind={()=>navigate("value")}/>} 
       </section>
     </div>
-
-    {modulesOpen&&<div className="fbt-overlay" onMouseDown={()=>setModulesOpen(false)}><section className="fbt-module-sheet" onMouseDown={e=>e.stopPropagation()}><div className="fbt-sheet-head"><div><span>THE WHOLE COMPANY</span><h2>One Twin. Controlled depth.</h2></div><button onClick={()=>setModulesOpen(false)} aria-label="Close">×</button></div><div className="fbt-module-grid">{COMPANY_MODULES.map(module=><button key={module.id} onClick={()=>changeView(module.id)} className={view===module.id?"is-active":""}><span>{module.label}</span><small>{module.hint}</small><i>→</i></button>)}</div></section></div>}
-
-    {completeOpen&&<div className="fbt-overlay fbt-overlay--drawer" onMouseDown={()=>setCompleteOpen(false)}><aside className="fbt-drawer" onMouseDown={e=>e.stopPropagation()}><div className="fbt-sheet-head"><div><span>COMPLETE YOUR TWIN</span><h2>Add company truth.</h2></div><button onClick={()=>setCompleteOpen(false)} aria-label="Close">×</button></div><p className="fbt-drawer__intro">Prototype intake: these fields are stored only in this browser. They are company-provided working state, not verified public facts.</p><div className="fbt-form-grid">
-      <TwinField label="Primary objective" value={twin.objective} onChange={v=>patchTwin("objective",v)} placeholder="What must improve?"/><TwinField label="Annual revenue" value={twin.revenue} onChange={v=>patchTwin("revenue",v)} placeholder="Company-provided baseline"/><TwinField label="Margin" value={twin.margin} onChange={v=>patchTwin("margin",v)} placeholder="Gross / contribution / EBITA"/><TwinField label="Cash / conversion" value={twin.cash} onChange={v=>patchTwin("cash",v)} placeholder="Working capital / runway / OCF"/><TwinField label="Customers / market" value={twin.customers} onChange={v=>patchTwin("customers",v)} placeholder="Who pays and why?"/><TwinField label="Operations" value={twin.operations} onChange={v=>patchTwin("operations",v)} placeholder="Capacity, delivery, constraints"/><TwinField label="People" value={twin.people} onChange={v=>patchTwin("people",v)} placeholder="Team / roles / capacity"/><TwinField label="Brand / web" value={twin.brand} onChange={v=>patchTwin("brand",v)} placeholder="Promise / channels / conversion"/><TwinField label="Primary risk" value={twin.primaryRisk} onChange={v=>patchTwin("primaryRisk",v)} placeholder="What could materially break value?"/><TwinField label="Planet intersection" value={twin.planet} onChange={v=>patchTwin("planet",v)} placeholder="Only where a real mechanism exists"/>
-    </div><label className="fbt-file-input"><span>DOCUMENT / CSV / EXCEL INTAKE</span><strong>{twin.files.length?`${twin.files.length} file${twin.files.length===1?"":"s"} staged locally`:"Choose files"}</strong><small>File ingestion is not connected to a server yet; only filenames are kept in this prototype.</small><input type="file" multiple accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.txt" onChange={e=>patchTwin("files",Array.from(e.target.files||[]).map(file=>file.name))}/></label><label className="fbt-notes"><span>INTERNAL CONTEXT / UNKNOWN</span><textarea rows={4} value={twin.notes} onChange={e=>patchTwin("notes",e.target.value)} placeholder="What can public data not know?"/></label><div className="fbt-drawer__actions"><span>LOCAL PROTOTYPE · NO SERVER WRITE · NOT ASSURANCE</span><button className="fbt-button fbt-button--primary" onClick={()=>{saveTwin();setCompleteOpen(false)}}>{saved?"Saved":"Save Company State"}</button></div></aside></div>}
-  </main>
+    <nav className="fb-mobile-nav">{NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>navigate(item.id)}>{item.label}</button>)}</nav>
+    {askOpen&&<aside className="fb-ask-panel"><div><span>ASK 4BRANDS</span><button onClick={()=>setAskOpen(false)}>×</button></div><h2>Ask the Twin.</h2><form onSubmit={ask4Brands}><input value={question} onChange={event=>setQuestion(event.target.value)} placeholder="Why did our margin decline?" autoFocus/><button type="submit">→</button></form>{answer&&<article><p>{answer}</p><small>Grounded only in this session’s Economic Twin. Inspect Money / Value for calculation and evidence.</small></article>}<div className="fb-question-chips">{["Why did our margin decline?","What threatens cash?","Where are we losing money?","Which opportunity has strongest evidence?"].map(item=><button key={item} onClick={()=>setQuestion(item)}>{item}</button>)}</div></aside>}
+    <ImportPanel open={importOpen} onClose={()=>setImportOpen(false)} cashInput={cashInput} setCashInput={setCashInput} importError={importError} onFile={importFile} onDemo={loadDemo}/>
+  </main>;
 }
 
-function ModuleView({view,analysis,twin,onComplete,onNavigate}:{view:ViewId;analysis:Analysis;twin:TwinInput;onComplete:()=>void;onNavigate:(view:ViewId)=>void}){
-  const employeeItems:Statement[]=analysis.economicBaseline.filter(m=>m.label.toLowerCase().includes("employee")).map(m=>({title:m.label,detail:`${m.value} · ${m.period}`,truthClass:m.truthClass,confidence:"HIGH",sourceIds:m.sourceIds}));
-  const configs:Partial<Record<ViewId,{kicker:string;title:string;intro:string;items:Statement[];privateValue?:string;privateLabel?:string}>>={
-    revenue:{kicker:"REVENUE",title:"How does money enter the company?",intro:"Connect product, customer, price, channel and margin.",items:analysis.valueDrivers,privateValue:twin.revenue,privateLabel:"Company revenue baseline"},
-    products:{kicker:"PRODUCTS",title:"What does the company actually sell?",intro:"Products connect to customers, economics, delivery constraints and outcomes.",items:analysis.businessModel},
-    market:{kicker:"CUSTOMERS / MARKET",title:"Who chooses the company — and why?",intro:"Public signals describe a market. Company truth resolves segments, retention and willingness to pay.",items:analysis.valueDrivers,privateValue:twin.customers,privateLabel:"Company-provided customer truth"},
-    marketing:{kicker:"MARKETING",title:"Turn attention into measurable demand.",intro:"No marketing claim becomes truth until channel, spend, traffic, conversion and revenue connect.",items:[],privateValue:twin.brand,privateLabel:"Company-provided marketing signal"},
-    operations:{kicker:"OPERATIONS",title:"Where does delivery create or lose value?",intro:"Constraints, capacity, quality, inventory and service become one operating view.",items:analysis.valueLeakage,privateValue:twin.operations,privateLabel:"Company-provided operating state"},
-    people:{kicker:"PEOPLE",title:"Know the capacity behind the company.",intro:"Roles, ownership, capacity and bottlenecks deepen public headcount.",items:employeeItems,privateValue:twin.people,privateLabel:"Company-provided people state"},
-    brand:{kicker:"BRAND / WEB",title:"One promise. One projection of company truth.",intro:"Brand and website project the same Company State rather than creating another truth system.",items:analysis.businessModel,privateValue:twin.brand,privateLabel:"Company-provided brand state"},
-    risk:{kicker:"RISK",title:"See what could destroy value.",intro:"Tie risk to evidence, exposure and decisions.",items:analysis.valueLeakage,privateValue:twin.primaryRisk,privateLabel:"Primary company risk"},
-    planet:{kicker:"PLANET",title:"Find where better business and a better planet are the same decision.",intro:"Planetary value needs a real mechanism, baseline and measured delta.",items:analysis.opportunities.slice(0,4).map(o=>({title:o.title,detail:o.planetaryLogic,truthClass:o.truthClass,confidence:o.confidence,sourceIds:o.sourceIds})),privateValue:twin.planet,privateLabel:"Company-provided planet intersection"},
-    interventions:{kicker:"INTERVENTIONS",title:"Turn a decision into bounded work.",intro:"Define what changes, ownership, baseline, cost, time and measurement.",items:analysis.solutions,privateValue:twin.intervention,privateLabel:"Chosen intervention"},
-    results:{kicker:"RESULTS",title:"Only measured change counts.",intro:"Estimated value and realised value remain separate.",items:[],privateValue:twin.measuredResult,privateLabel:"Measured result"},
-    learning:{kicker:"LEARNING",title:"Make the company smarter after every decision.",intro:"Evidence, decision, intervention and result become organisational memory.",items:analysis.solutions,privateValue:twin.notes,privateLabel:"Working learning / context"}
-  };
-  const config=configs[view]||configs.operations!;
-  return <div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">{config.kicker}</p><h1>{config.title}</h1><p>{config.intro}</p></div><button className="fbt-button fbt-button--soft" onClick={onComplete}>Add company data</button></div><div className="fbt-module-layout"><Surface title="WHAT WE KNOW" meta={`${config.items.length} public signals`}><StatementStack items={config.items} empty="Public evidence is not strong enough to fill this view yet." onComplete={onComplete}/></Surface><aside className="fbt-surface fbt-private-state"><div className="fbt-surface-head"><span>COMPANY STATE</span><small>PRIVATE / LOCAL PROTOTYPE</small></div>{config.privateValue?.trim()?<div className="fbt-private-value"><span>{config.privateLabel}</span><strong>{config.privateValue}</strong><button className="fbt-text-button" onClick={onComplete}>Edit →</button></div>:<EmptyState title="Company truth missing" text="Public evidence cannot answer this reliably. Add internal information to deepen the same Twin." action={onComplete}/>}<button className="fbt-link-card" onClick={()=>onNavigate("evidence")}><span>Inspect provenance</span><strong>Sources + truth classes →</strong></button></aside></div></div>
+function Overview({twin,opportunity,onOpportunity,onMoney,onDecision}:{twin:EconomicTwin;opportunity?:Opportunity;onOpportunity:()=>void;onMoney:()=>void;onDecision:()=>void}){
+  const low=[...twin.cash13Week].sort((a,b)=>a.endingCash-b.endingCash)[0];
+  return <div className="fb-view">
+    <div className="fb-view-title"><div><p className="fb-kicker">OVERVIEW</p><h1>What matters now.</h1></div><div className="fb-fresh"><span>{twin.rowCount} economic rows</span><small>{twin.sourceNames.join(" · ")}</small></div></div>
+    <div className="fb-state-strip"><Metric label="Revenue · recorded" value={money(twin.revenue,twin.currency)} meta={`${twin.customers} customers`} /><Metric label={twin.cashIsConfirmed?"Cash · confirmed":"Cash · recorded movement"} value={money(twin.cash,twin.currency)} meta={twin.cashIsConfirmed?"User-confirmed input":"Opening balance not supplied"}/><Metric label="Gross margin" value={`${twin.grossMargin.toFixed(1)}%`} meta={`${pp(twin.grossMarginDeltaPp)} vs prior 30d`} tone={twin.grossMarginDeltaPp<0?"bad":"good"}/><Metric label="Overdue AR" value={money(twin.overdueAr,twin.currency)} meta={`${money(twin.ar,twin.currency)} total AR`} tone={twin.overdueAr>0?"warn":undefined}/></div>
+    <div className="fb-overview-grid">
+      <article className="fb-primary-insight"><div><span>PRIMARY INSIGHT</span>{opportunity&&<ConfidenceTag value={opportunity.confidence}/>}</div>{opportunity?<><h2>{money(opportunity.valueLow,twin.currency)}–{money(opportunity.valueHigh,twin.currency)}</h2><h3>{opportunity.title}</h3><p>{opportunity.why}</p><div className="fb-insight-actions"><button onClick={onOpportunity}>Review opportunity</button><button onClick={onDecision}>Take to decision →</button></div></>:<><h2>No ranked value yet.</h2><p>The current rows do not trigger a bounded detector. Add more economic truth.</p></>}</article>
+      <article className="fb-change-card"><span>WHAT CHANGED?</span><div><small>Revenue · last 30 days</small><strong>{money(twin.currentPeriod.revenue,twin.currency)}</strong><Delta value={twin.revenueDelta} currency={twin.currency}/></div><div><small>Gross margin</small><strong>{twin.currentPeriod.grossMargin.toFixed(1)}%</strong><Delta value={twin.grossMarginDeltaPp} unit="pp"/></div><button onClick={onMoney}>Why did this change? →</button></article>
+      <article className="fb-cash-card"><span>13-WEEK CASH</span><div><small>Lowest projected point</small><strong className={(low?.endingCash||0)<0?"is-risk":""}>{money(low?.endingCash||0,twin.currency)}</strong><p>{low?.label} · estimated from dated AR / AP / renewals</p></div><button onClick={onMoney}>Open cash view →</button></article>
+    </div>
+    <section className="fb-five"><article><span>HOW ARE WE DOING?</span><strong>{twin.grossMarginDeltaPp<0?"Margin pressure":"Stable / improving margin"}</strong><p>{pp(twin.grossMarginDeltaPp)} versus prior 30 days.</p></article><article><span>WHERE IS VALUE LEAKING?</span><strong>{opportunity?.detector||"No detector fired"}</strong><p>{opportunity?.eyebrow||"Add more data for stronger detection."}</p></article><article><span>WHAT NEEDS A DECISION?</span><strong>{opportunity?.title||"No open decision"}</strong><p>{opportunity?`${opportunity.confidence} confidence · ${opportunity.timeToValue}`:"Value Finder has no ranked opportunity."}</p></article></section>
+  </div>;
 }
+
+function Metric({label,value,meta,tone}:{label:string;value:string;meta:string;tone?:"good"|"bad"|"warn"}){return <article className={`fb-metric${tone?` is-${tone}`:""}`}><span>{label}</span><strong>{value}</strong><small>{meta}</small></article>}
+
+function Money({twin,mode,setMode}:{twin:EconomicTwin;mode:MoneyView;setMode:(mode:MoneyView)=>void}){
+  return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">MONEY</p><h1>Know the economic state.</h1></div><Truth value="CALCULATION"/></div><div className="fb-subnav">{(["twin","cash","profit","drivers"] as MoneyView[]).map(item=><button key={item} className={mode===item?"is-active":""} onClick={()=>setMode(item)}>{item==="twin"?"Economic Twin":item==="cash"?"Cash":item==="profit"?"Profit":"Driver Tree"}</button>)}</div>
+    {mode==="twin"&&<EconomicTwinView twin={twin}/>} {mode==="cash"&&<CashView twin={twin}/>} {mode==="profit"&&<ProfitView twin={twin}/>} {mode==="drivers"&&<DriverView twin={twin}/>} </div>;
+}
+function EconomicTwinView({twin}:{twin:EconomicTwin}){return <div className="fb-money-grid"><section className="fb-surface"><div className="fb-surface-head"><span>ECONOMIC TWIN</span><small>Accounting/payment/commercial rows stay distinct</small></div>{[{l:"Recorded revenue",v:money(twin.revenue,twin.currency),t:"Invoices"},{l:twin.cashIsConfirmed?"Current cash":"Recorded cash movement",v:money(twin.cash,twin.currency),t:twin.cashIsConfirmed?"User-confirmed":"Not a bank balance"},{l:"Recorded direct + operating cost",v:money(twin.costs,twin.currency),t:"Imported costs"},{l:"Gross profit",v:money(twin.grossProfit,twin.currency),t:"Revenue − direct cost"},{l:"Gross margin",v:`${twin.grossMargin.toFixed(1)}%`,t:"Calculated"},{l:"Accounts receivable",v:money(twin.ar,twin.currency),t:`${money(twin.overdueAr,twin.currency)} overdue`},{l:"Accounts payable",v:money(twin.ap,twin.currency),t:`${money(twin.overdueAp,twin.currency)} overdue`}].map(item=><div className="fb-economic-row" key={item.l}><span>{item.l}</span><strong>{item.v}</strong><small>{item.t}</small></div>)}</section><section className="fb-surface"><div className="fb-surface-head"><span>MODEL COVERAGE</span><small>What this session can resolve</small></div><div className="fb-coverage"><div><strong>{twin.customers}</strong><span>Customers</span></div><div><strong>{twin.products}</strong><span>Products / plans</span></div><div><strong>{twin.channels}</strong><span>Channels</span></div><div><strong>{twin.sourceNames.length}</strong><span>Sources</span></div></div><div className="fb-truth-note"><strong>Revenue ≠ invoice ≠ payment ≠ cash.</strong><p>4BRANDS reconciles what the file actually contains. Missing opening cash, credit notes, allocations or external settlements stay unknown.</p></div></section></div>}
+function CashView({twin}:{twin:EconomicTwin}){const min=Math.min(...twin.cash13Week.map(item=>item.endingCash));const max=Math.max(...twin.cash13Week.map(item=>Math.abs(item.endingCash)),1);return <div className="fb-cash-layout"><section className="fb-surface"><div className="fb-surface-head"><span>13-WEEK CASH VIEW</span><small>ESTIMATE · due-date schedule</small></div><div className="fb-cash-chart">{twin.cash13Week.map(week=><div key={week.week}><span>{week.label}</span><i className={week.endingCash<0?"is-negative":""} style={{height:`${Math.max(8,Math.abs(week.endingCash)/max*150)}px`}}/><strong>{money(week.endingCash,twin.currency)}</strong></div>)}</div></section><aside className="fb-surface fb-cash-facts"><div className="fb-surface-head"><span>CASH CONTROL</span></div><Metric label="Current cash" value={money(twin.cash,twin.currency)} meta={twin.cashIsConfirmed?"Confirmed input":"Recorded movement only"}/><Metric label="Outstanding AR" value={money(twin.ar,twin.currency)} meta={`${money(twin.overdueAr,twin.currency)} overdue`}/><Metric label="Outstanding AP" value={money(twin.ap,twin.currency)} meta={`${money(twin.overdueAp,twin.currency)} overdue`}/><Metric label="Lowest projected cash" value={money(min,twin.currency)} meta="13-week schedule" tone={min<0?"bad":undefined}/></aside></div>}
+function ProfitView({twin}:{twin:EconomicTwin}){return <div className="fb-profit-layout">{[["CUSTOMER",twin.profitByCustomer],["PRODUCT / PLAN",twin.profitByProduct],["CHANNEL",twin.profitByChannel]] .map(([title,lines])=><section className="fb-surface" key={title as string}><div className="fb-surface-head"><span>{title as string}</span><small>Direct contribution · no allocated overhead</small></div>{(lines as EconomicTwin["profitByCustomer"]).slice(0,8).map(line=><div className="fb-profit-row" key={line.key}><strong>{line.key}</strong><span>{money(line.revenue,twin.currency)} revenue</span><b className={line.contribution<0?"is-negative":""}>{money(line.contribution,twin.currency)} · {line.contributionMargin.toFixed(1)}%</b></div>)}</section>)}</div>}
+function DriverView({twin}:{twin:EconomicTwin}){return <div className="fb-driver-layout"><section className="fb-surface"><div className="fb-surface-head"><span>REVENUE DRIVER TREE</span><small>Must reconcile to {money(twin.revenueDelta,twin.currency)}</small></div><div className="fb-driver-root"><span>REVENUE CHANGE</span><strong>{money(twin.revenueDelta,twin.currency)}</strong></div>{twin.revenueDrivers.map(node=><div className="fb-driver-row" key={node.label}><div><strong>{node.label}</strong><p>{node.detail}</p></div><Delta value={node.value} currency={twin.currency}/></div>)}</section><section className="fb-surface"><div className="fb-surface-head"><span>GROSS-MARGIN WHY</span><small>{pp(twin.grossMarginDeltaPp)} total change</small></div><div className="fb-driver-root"><span>GROSS MARGIN CHANGE</span><strong>{pp(twin.grossMarginDeltaPp)}</strong></div>{twin.marginDrivers.map(node=><div className="fb-driver-row" key={node.label}><div><strong>{node.label}</strong><p>{node.detail}</p></div><Delta value={node.value} unit="pp"/></div>)}</section></div>}
+
+function ValueFinder({twin,active,setActive,onChoose}:{twin:EconomicTwin;active:number;setActive:(index:number)=>void;onChoose:(item:Opportunity)=>void}){const item=twin.opportunities[active]||twin.opportunities[0];return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">VALUE FINDER</p><h1>Where is value leaking?</h1><p>Detectors only surface bounded findings supported by the imported data. Identified value is not realised value.</p></div><div className="fb-found"><strong>{twin.opportunities.length}</strong><span>detectors fired</span></div></div>{item?<div className="fb-value-layout"><div className="fb-opportunity-list">{twin.opportunities.map((op,index)=><button key={op.id} className={index===active?"is-active":""} onClick={()=>setActive(index)}><div><span>{op.detector}</span><strong>{op.title}</strong></div><b>{money(op.valueLow,twin.currency)}–{money(op.valueHigh,twin.currency)}</b><ConfidenceTag value={op.confidence}/></button>)}</div><OpportunityDetail item={item} twin={twin} onChoose={()=>onChoose(item)}/></div>:<div className="fb-empty"><h2>No bounded opportunity detected.</h2><p>Add richer financial rows or inspect Money to see what the Twin can currently resolve.</p></div>}</div>}
+function OpportunityDetail({item,twin,onChoose}:{item:Opportunity;twin:EconomicTwin;onChoose:()=>void}){return <article className="fb-opportunity-detail"><div className="fb-opportunity-top"><span>{item.eyebrow}</span><div><Truth value={item.truthClass}/><ConfidenceTag value={item.confidence}/></div></div><h2>{money(item.valueLow,twin.currency)}–{money(item.valueHigh,twin.currency)}</h2><h3>{item.title}</h3><p>{item.why}</p><button className="fb-primary" onClick={onChoose}>Take to decision</button><div className="fb-progressive"><details open><summary>Why?</summary><p>{item.why}</p><p><b>Time to value:</b> {item.timeToValue}</p></details><details><summary>Calculation</summary><p>{item.calculation}</p><ul>{item.exactData.map(value=><li key={value}>{value}</li>)}</ul></details><details><summary>Evidence / exact rows</summary><ul>{item.evidence.map(value=><li key={value}>{value}</li>)}</ul><small>{item.rowIds.length} underlying row IDs retained in session.</small></details><details><summary>Assumptions + falsifier</summary><ul>{item.assumptions.map(value=><li key={value}>{value}</li>)}</ul><p><b>Falsifier:</b> {item.falsifier}</p></details><details><summary>Possible intervention</summary><p>{item.intervention}</p></details></div></article>}
+
+function Decisions({twin,selected,state,setState,attribution,setAttribution,baseline,lockBaseline,intervention,setIntervention,result,setResult,advance,onFind}:{twin:EconomicTwin;selected:Opportunity|null;state:DecisionState;setState:(v:DecisionState)=>void;attribution:Attribution;setAttribution:(v:Attribution)=>void;baseline:string;lockBaseline:()=>void;intervention:string;setIntervention:(v:string)=>void;result:string;setResult:(v:string)=>void;advance:()=>void;onFind:()=>void}){if(!selected)return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">DECISIONS</p><h1>Nothing becomes value by itself.</h1><p>Choose a bounded opportunity, lock a baseline, run an intervention and measure what actually happened.</p></div></div><div className="fb-empty fb-empty-large"><span>OPPORTUNITY → DECISION → INTERVENTION → RESULT → LEARNING</span><h2>No opportunity selected.</h2><button className="fb-primary" onClick={onFind}>Open Value Finder</button></div></div>;
+ const index=DECISION_STATES.indexOf(state);return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">DECISION + VALUE LEDGER</p><h1>Make the choice explicit.</h1></div><Truth value={selected.truthClass}/></div><div className="fb-ledger"><section className="fb-decision-main"><div className="fb-ledger-op"><span>SELECTED OPPORTUNITY</span><h2>{selected.title}</h2><strong>{money(selected.valueLow,twin.currency)}–{money(selected.valueHigh,twin.currency)}</strong><p>Identified range · not approved, attributable or realised value.</p></div><label><span>INTERVENTION</span><textarea value={intervention} onChange={e=>setIntervention(e.target.value)} rows={4}/></label><label><span>MEASURED RESULT</span><textarea value={result} onChange={e=>setResult(e.target.value)} rows={4} placeholder="Enter measured result only after the intervention has run."/></label>{baseline?<div className="fb-baseline"><span>LOCKED BASELINE</span><p>{baseline}</p></div>:<button className="fb-primary" onClick={lockBaseline}>Lock baseline</button>}</section><aside className="fb-decision-side"><span>WORKFLOW STATE</span><div className="fb-state-machine">{DECISION_STATES.map((item,i)=><button key={item} className={i===index?"is-current":i<index?"is-done":""} onClick={()=>setState(item)}><i/>{item}</button>)}</div><span>ATTRIBUTION STRENGTH</span><select value={attribution} onChange={e=>setAttribution(e.target.value as Attribution)}>{ATTRIBUTION.map(item=><option key={item}>{item}</option>)}</select><p>Workflow progress and attribution strength are separate. A later result does not prove the intervention caused it.</p><button className="fb-secondary" onClick={advance} disabled={index>=DECISION_STATES.length-1}>Advance state →</button></aside></div></div>}
+
+function ImportPanel({open,onClose,cashInput,setCashInput,importError,onFile,onDemo}:{open:boolean;onClose:()=>void;cashInput:string;setCashInput:(v:string)=>void;importError:string;onFile:(file?:File|null)=>void;onDemo:()=>void}){if(!open)return null;return <div className="fb-modal"><section><div className="fb-modal-head"><div><p className="fb-kicker">BUILD YOUR COMPANY TWIN</p><h2>Add economic truth.</h2></div><button onClick={onClose}>×</button></div><div className="fb-security"><strong>LOCAL SESSION MODE</strong><p>Your CSV is parsed in the browser for this session. 4BRANDS does not persist the imported company rows in this prototype. Do not treat this as a production tenant vault.</p></div><label className="fb-cash-input"><span>Current cash / bank balance <small>optional but improves the 13-week view</small></span><input value={cashInput} onChange={e=>setCashInput(e.target.value)} inputMode="decimal" placeholder="e.g. 125000"/></label><label className="fb-file-drop"><input type="file" accept=".csv,text/csv" onChange={event=>onFile(event.target.files?.[0])}/><strong>Choose financial CSV</strong><span>Invoices, payments, costs, usage, software seats or renewals.</span></label>{importError&&<p className="fb-import-error">{importError}</p>}<div className="fb-import-actions"><button className="fb-secondary" onClick={onDemo}>Use synthetic demo finance</button><a href={`data:text/csv;charset=utf-8,${encodeURIComponent(CSV_TEMPLATE)}`} download="4brands-economic-template.csv">Download CSV template</a></div><details className="fb-schema"><summary>Accepted first-build fields</summary><p>date, kind/type, amount, currency, status, customer, product/SKU/plan, channel, vendor, category, invoice_id, payment_id, due_date, quantity, unit_price, direct_cost/COGS, discount_pct, billed, seats_purchased, seats_used, renewal_date, description.</p></details></section></div>}
