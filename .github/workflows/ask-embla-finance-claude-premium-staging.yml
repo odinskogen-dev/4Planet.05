@@ -42,12 +42,12 @@ jobs:
           MONEY=/tmp/4sapien-premium-site/app/money/index.html
           FOOD=/tmp/4sapien-premium-site/app/food/index.html
           for marker in '<title>4SAPIEN Finance — Embla</title>' '4SAPIEN by 4PLANET' four_sapien_finance_accounts four_sapien_finance_events four-sapien-finance-docs 'sb.auth.getSession()' AXE_FINANCE_EXPERIENCE_V2 'Din økonomiske tvilling' Hurtigføring FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1 FourSapienFinanceRuntime four-sapien-finance-claude-premium-v1; do
-            grep -q "$marker" "$MONEY"
+            grep -q -- "$marker" "$MONEY"
           done
           for marker in '#2E2EFF' '#3AE86F' '#FF4D22' 'grid-template-columns:1fr 1fr' 'clamp(2rem,6vw,3rem)' '--onAccent:#000000'; do
-            grep -q "$marker" "$MONEY"
+            grep -q -- "$marker" "$MONEY"
           done
-          ! grep -q '#7A7AFF' "$MONEY"
+          ! grep -q -- '#7A7AFF' "$MONEY"
           grep -q 'Ask Embla' "$FOOD"
           grep -q 'four_sapien_meal_plans' "$FOOD"
           grep -q 'functions/v1/embla-products' "$FOOD"
