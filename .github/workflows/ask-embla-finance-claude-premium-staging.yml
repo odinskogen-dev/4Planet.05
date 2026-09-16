@@ -1,0 +1,81 @@
+name: 4SAPIEN Claude Finance premium staging gate
+
+on:
+  push:
+    branches: [work/4sapien-claude-finance-merge-20260916]
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/ask-embla-finance-claude-premium-staging.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+
+jobs:
+  verify-premium-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize exact production chain
+        run: |
+          set -euo pipefail
+          SITE=/tmp/4sapien-premium-site
+          FOOD=${SITE}/app/food/index.html
+          rm -rf "$SITE"
+          mkdir -p "${SITE}/app/food" "${SITE}/app"
+          python products/4sapien/build/apply_front_v2_release.py products/4sapien/source/claude-front-20260915-v2.html "${SITE}/index.html"
+          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > "$FOOD"
+          python products/4sapien/build/apply_provider_guard.py "$FOOD"
+          python products/4sapien/build/apply_meal_plan_guard.py "$FOOD"
+          python products/4sapien/build/apply_product_gateway_guard.py "$FOOD"
+          python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
+          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
+
+      - name: Verify zero-loss Finance merge
+        run: |
+          set -euo pipefail
+          MONEY=/tmp/4sapien-premium-site/app/money/index.html
+          FOOD=/tmp/4sapien-premium-site/app/food/index.html
+          for marker in '<title>4SAPIEN Finance — Embla</title>' '4SAPIEN by 4PLANET' four_sapien_finance_accounts four_sapien_finance_events four-sapien-finance-docs 'sb.auth.getSession()' AXE_FINANCE_EXPERIENCE_V2 'Din økonomiske tvilling' Hurtigføring FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1 FourSapienFinanceRuntime four-sapien-finance-claude-premium-v1; do
+            grep -q "$marker" "$MONEY"
+          done
+          for marker in '#2E2EFF' '#3AE86F' '#FF4D22' 'grid-template-columns:1fr 1fr' 'clamp(2rem,6vw,3rem)' '--onAccent:#000000'; do
+            grep -q "$marker" "$MONEY"
+          done
+          ! grep -q '#7A7AFF' "$MONEY"
+          grep -q 'Ask Embla' "$FOOD"
+          grep -q 'four_sapien_meal_plans' "$FOOD"
+          grep -q 'functions/v1/embla-products' "$FOOD"
+          ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' /tmp/4sapien-premium-site
+
+      - name: Parse React sources
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re,pathlib
+          for src,out in [('/tmp/4sapien-premium-site/app/food/index.html','/tmp/food.jsx'),('/tmp/4sapien-premium-site/app/money/index.html','/tmp/money.jsx')]:
+              s=pathlib.Path(src).read_text()
+              blocks=re.findall(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+              assert blocks, src
+              pathlib.Path(out).write_text('\n'.join(blocks))
+          PY
+          npx --yes esbuild@0.25.9 /tmp/food.jsx --loader:.jsx=jsx --outfile=/tmp/food.js
+          npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money.js
+
+      - name: Verify backend seam and current live baseline
+        run: |
+          set -euo pipefail
+          for object in four_sapien_finance_accounts four_sapien_finance_events four_sapien_embla_tool_calls; do
+            code=$(curl -sS -o "/tmp/${object}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${object}?select=*&limit=0")
+            test "$code" = "200"
+          done
+          for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
+            status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o /tmp/live-money.html -w '%{http_code}' "${base}/app/money/")
+            test "$status" = "200"
+            grep -q '<title>4SAPIEN Finance — Embla</title>' /tmp/live-money.html
+          done
