@@ -48,7 +48,10 @@ test("4BRANDS public model → economic twin → value → decision", async ({ p
 
   await page.getByRole("button", { name: "Explore with synthetic demo finance" }).click();
   await expect(page.getByRole("heading", { name: "What matters now." })).toBeVisible();
-  await expect(page.getByText("SYNTHETIC DEMO FINANCE · SESSION ONLY", { exact: true })).toBeVisible();
+  const mobile = (page.viewportSize()?.width || 1000) <= 760;
+  const truthStatus = mobile ? page.locator(".fb-mobile-session") : page.locator(".fb-session");
+  await expect(truthStatus).toHaveText("SYNTHETIC DEMO FINANCE · SESSION ONLY");
+  await expect(truthStatus).toBeVisible();
   await shot(page, "03-overview", testInfo.project.name);
 
   await nav(page, "Money");
