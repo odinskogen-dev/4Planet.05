@@ -33,21 +33,56 @@ jobs:
             exit 2
           fi
 
-          api() {
-            curl --fail-with-body --silent --show-error \
+          api_get() {
+            local url="$1"
+            local body code
+            body="$(mktemp)"
+            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' \
               -H "Authorization: Bearer $TOKEN" \
               -H 'Content-Type: application/json' \
-              "$@"
+              "$url")"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "Cloudflare GET failed with HTTP $code" >&2
+              jq '{success,errors,messages}' "$body" >&2 || cat "$body" >&2
+              rm -f "$body"
+              return 1
+            fi
+            cat "$body"
+            rm -f "$body"
           }
 
-          ZONE_JSON="$(api "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}&status=active")"
+          api_write() {
+            local method="$1" url="$2" payload="$3"
+            local body code
+            body="$(mktemp)"
+            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' \
+              -X "$method" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H 'Content-Type: application/json' \
+              --data "$payload" \
+              "$url")"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "Cloudflare $method failed with HTTP $code" >&2
+              jq '{success,errors,messages}' "$body" >&2 || cat "$body" >&2
+              rm -f "$body"
+              return 1
+            fi
+            cat "$body"
+            rm -f "$body"
+          }
+
+          VERIFY_TOKEN="$(api_get 'https://api.cloudflare.com/client/v4/user/tokens/verify')"
+          printf '%s' "$VERIFY_TOKEN" | jq -e '.success == true' >/dev/null
+
+          ZONE_JSON="$(api_get "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
           ZONE_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].id // empty')"
           if [ -z "$ZONE_ID" ]; then
             echo 'Cloudflare zone 4planet.org was not found or token lacks zone access.' >&2
+            printf '%s' "$ZONE_JSON" | jq '{success,errors,messages,result_count:(.result|length)}' >&2
             exit 3
           fi
 
-          RECORD_JSON="$(api "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
+          RECORD_JSON="$(api_get "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
           RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
           CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
           CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
@@ -56,15 +91,15 @@ jobs:
           PAYLOAD="$(jq -nc --arg type CNAME --arg name "$RECORD_NAME" --arg content "$RECORD_TARGET" '{type:$type,name:$name,content:$content,ttl:1,proxied:false}')"
 
           if [ -z "$RECORD_ID" ]; then
-            api -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" --data "$PAYLOAD" >/tmp/cf-result.json
+            api_write POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
             echo 'Created test.4planet.org CNAME.'
           elif [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; then
             echo 'test.4planet.org already points to the expected target.'
           else
-            api -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" --data "$PAYLOAD" >/tmp/cf-result.json
+            api_write PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
             echo 'Updated test.4planet.org CNAME.'
           fi
 
-          VERIFY_JSON="$(api "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
+          VERIFY_JSON="$(api_get "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
           printf '%s' "$VERIFY_JSON" | jq -e --arg target "$RECORD_TARGET" '.success == true and .result[0].type == "CNAME" and .result[0].content == $target and .result[0].proxied == false' >/dev/null
           echo 'Cloudflare API verification passed.'
