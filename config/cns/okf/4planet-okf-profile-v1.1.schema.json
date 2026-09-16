@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://4planet.org/schemas/brain/okf-profile-v1.1.json",
+  "title": "4PLANET OKF PRODUCER PROFILE v1.1",
+  "description": "A strict 4PLANET producer profile over Open Knowledge Format v0.2. Standard OKF fields remain top-level. brain.* is a 4PLANET extension namespace and does not redefine upstream OKF semantics.",
+  "type": "object",
+  "required": ["type", "title", "status", "brain"],
+  "properties": {
+    "type": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "resource": {"type": "string", "minLength": 1},
+    "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "status": {"enum": ["draft", "stable", "deprecated"]},
+    "stale_after": {"type": ["string", "null"], "format": "date-time"},
+    "generated": {
+      "type": ["object", "null"],
+      "required": ["by"],
+      "properties": {
+        "by": {"type": "string", "minLength": 1},
+        "at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "verified": {
+      "oneOf": [
+        {"$ref": "#/$defs/verificationEvent"},
+        {"type": "array", "items": {"$ref": "#/$defs/verificationEvent"}}
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["resource"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "resource": {"type": "string", "minLength": 1},
+          "title": {"type": "string"},
+          "author": {"type": "string"},
+          "usage_count": {"type": "integer", "minimum": 0},
+          "last_modified": {"type": "string", "format": "date-time"},
+          "usage_window": {"$ref": "#/$defs/usageWindow"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "usage_window": {"$ref": "#/$defs/usageWindow"},
+    "brain": {
+      "type": "object",
+      "required": [
+        "knowledge_id",
+        "schema_version",
+        "authority",
+        "authority_level",
+        "canon_state",
+        "review_status",
+        "evidence_strength",
+        "interpretation_status",
+        "provenance_state",
+        "writeback_state",
+        "sensitivity",
+        "lifecycle_state",
+        "freshness_state",
+        "trust_domain",
+        "migration_status",
+        "last_validated"
+      ],
+      "properties": {
+        "knowledge_id": {"type": "string", "pattern": "^kp:[A-Za-z0-9][A-Za-z0-9._:/-]*$"},
+        "schema_version": {"const": "4planet-okf-1.1"},
+        "producer_profile": {"const": "4PLANET_OKF_1.1"},
+        "upstream_okf": {"const": "0.2"},
+        "authority": {"type": "string", "minLength": 1},
+        "authority_level": {"enum": ["FOUNDER", "LOCKED_CANON", "WORKING_CANON", "PROGRAMME_CONTROL", "DOMAIN_AUTHORITY", "SOURCE_EVIDENCE", "GENERATED_VIEW", "HISTORICAL", "NONE"]},
+        "canon_state": {"enum": ["LOCKED_CANON", "WORKING_CANON", "FOUNDER_DECISION", "NON_CANON", "SUPERSEDED", "HISTORICAL"]},
+        "current_state_rev": {"type": ["string", "null"]},
+        "effective_at": {"type": ["string", "null"], "format": "date-time"},
+        "supersedes": {"type": "array", "items": {"type": "string"}, "default": []},
+        "superseded_by": {"type": "array", "items": {"type": "string"}, "default": []},
+        "review_status": {"enum": ["UNREVIEWED", "REVIEWED", "SOURCE_CHECKED", "GPT_VERIFIED", "EXTERNAL_VERIFIED", "FOUNDER_APPROVED", "DISPUTED", "NOT_APPLICABLE"]},
+        "evidence_strength": {"enum": ["UNAVAILABLE", "WEAK", "MODERATE", "STRONG", "INDEPENDENTLY_CORROBORATED", "NOT_APPLICABLE"]},
+        "interpretation_status": {"enum": ["RAW_SOURCE", "SOURCE_REPORTED", "NORMALISED_RECORD", "OBSERVATION_DERIVED", "MODEL_OUTPUT", "INTERPRETED", "GENERATED_SUMMARY", "PROPOSAL", "RUNTIME_OBSERVATION", "NOT_APPLICABLE"]},
+        "provenance_state": {"enum": ["COMPLETE", "PARTIAL", "MISSING", "NOT_APPLICABLE"]},
+        "writeback_state": {"enum": ["WRITEBACK_COMPLETE", "WRITEBACK_PENDING", "READBACK_VERIFIED", "HISTORICAL", "NOT_APPLICABLE"]},
+        "sensitivity": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "PRIVATE_BOUNDARY", "RESTRICTED"]},
+        "lifecycle_state": {"enum": ["CURRENT", "ACTIVE", "DRAFT", "HISTORICAL", "SUPERSEDED", "ARCHIVED", "GENERATED_VIEW", "RUNTIME_ONLY"]},
+        "freshness_state": {"enum": ["NOT_CHECKED", "CURRENT", "STALE", "NO_COVERAGE", "SOURCE_UNAVAILABLE", "NOT_APPLICABLE"]},
+        "trust_domain": {"enum": ["ODIN_PRIVATE", "4PLANET_INTERNAL", "ACTOR_PRIVATE", "PLANET_SHARED", "PUBLIC"]},
+        "workspace_id": {"type": ["string", "null"]},
+        "actor_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "project": {"type": ["string", "null"]},
+        "domain": {"type": ["string", "null"]},
+        "product": {"type": ["string", "null"]},
+        "owner": {"type": ["string", "null"]},
+        "source_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "related_entities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "related_decisions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "related_claims": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "related_tasks": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "last_validated": {"type": "string", "format": "date-time"},
+        "migration_status": {"enum": ["MIGRATED", "UNCHANGED_BY_DESIGN", "SUPERSEDED_WITH_LINK", "NON_KNOWLEDGE_EXCLUDED_WITH_REASON", "BLOCKED_WITH_EXACT_REASON"]},
+        "migration_note": {"type": "string"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"trust_domain": {"const": "ACTOR_PRIVATE"}}, "required": ["trust_domain"]},
+          "then": {"required": ["workspace_id"]}
+        }
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "verificationEvent": {
+      "type": "object",
+      "required": ["by", "at"],
+      "properties": {
+        "by": {"type": "string", "minLength": 1},
+        "at": {"type": "string", "format": "date-time"},
+        "scope": {"type": "string"},
+        "evidence": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "usageWindow": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {"type": "string", "format": "date-time"},
+        "to": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
