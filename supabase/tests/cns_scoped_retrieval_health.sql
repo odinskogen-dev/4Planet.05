@@ -108,6 +108,8 @@ begin
 end $$;
 
 -- Shared claim cannot use private evidence directly.
+-- This fixture intentionally remains in the open transaction and is removed by the final ROLLBACK;
+-- truth-core rows are immutable and must never be test-cleaned with DELETE.
 insert into cns.claims(
   claim_id,subject_type,subject_id,predicate,value,authority,state,claim_kind,knowledge_state,trust_domain_id,provenance_state
 ) values(
@@ -125,7 +127,6 @@ begin
     if sqlerrm not like '%CNS_PRIVATE_EVIDENCE_CANNOT_DIRECTLY_ESTABLISH_SHARED_CLAIM%' then raise; end if;
   end;
 end $$;
-delete from cns.claims where claim_id='test:retrieval:shared-illegal';
 
 -- Actor context compiler uses the same scoped candidate set and is derived/expiring.
 select cns.commit_actor_state(
@@ -150,15 +151,28 @@ begin
   if has_table_privilege('authenticated','cns.actor_context_snapshots','SELECT') then raise exception 'AUTH_RAW_CONTEXT_READ_PRIVILEGE'; end if;
 end $$;
 
--- No P0/P1 foundation violation should be created by the legal fixture.
+-- The intentionally illegal unlinked shared claim above should be caught by health,
+-- proving that the doctor sees missing evidence rather than allowing silent promotion.
 do $$
 begin
+  if not exists(
+    select 1 from cns.v_superbrain_foundation_violations
+    where rule_id='FACTUAL_CLAIM_WITHOUT_EVIDENCE'
+      and object_id='test:retrieval:shared-illegal'
+      and severity='P0'
+  ) then
+    raise exception 'DOCTOR_DID_NOT_DETECT_UNSUPPORTED_SHARED_CLAIM';
+  end if;
+
   if exists(
     select 1 from cns.v_superbrain_foundation_violations
-    where severity in ('P0','P1') and object_id like 'test:retrieval:%'
+    where severity in ('P0','P1')
+      and object_id like 'test:retrieval:%'
+      and object_id<>'test:retrieval:shared-illegal'
   ) then
-    raise exception 'FOUNDATION_HEALTH_VIOLATION: %',
-      (select jsonb_agg(to_jsonb(v)) from cns.v_superbrain_foundation_violations v where severity in ('P0','P1') and object_id like 'test:retrieval:%');
+    raise exception 'UNEXPECTED_FOUNDATION_HEALTH_VIOLATION: %',
+      (select jsonb_agg(to_jsonb(v)) from cns.v_superbrain_foundation_violations v
+       where severity in ('P0','P1') and object_id like 'test:retrieval:%' and object_id<>'test:retrieval:shared-illegal');
   end if;
 end $$;
 
