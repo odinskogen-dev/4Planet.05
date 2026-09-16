@@ -10,7 +10,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
-import FourBrandsEconomic from "@/pages/partners/FourBrandsEconomic";
+import FourBrandsEconomicV2 from "@/pages/partners/FourBrandsEconomicV2";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
@@ -80,7 +80,7 @@ function AtlasProductSwitcher() {
 
 export default function App() {
   if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
-  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsEconomic />;
+  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsEconomicV2 />;
 
   return (
     <BrowserRouter>
