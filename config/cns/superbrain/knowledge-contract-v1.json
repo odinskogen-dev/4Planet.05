@@ -1,0 +1,120 @@
+{
+  "contract": "4PLANET_SUPERBRAIN_KNOWLEDGE",
+  "version": "1.0.0",
+  "status": "ACTIVE_NOT_COMPLETE",
+  "upstream_format": {
+    "name": "Open Knowledge Format",
+    "version": "0.2",
+    "role": "portable document/concept interchange",
+    "rules": {
+      "okf_type_required_for_non_reserved_markdown": true,
+      "sources_are_provenance_signals_not_credibility_score": true,
+      "generated_and_verified_are_separate": true,
+      "status_values": ["draft", "stable", "deprecated"],
+      "stale_after_is_absolute_iso8601_instant": true,
+      "unknown_additional_frontmatter_keys_allowed": true,
+      "per_claim_body_attribution_uses_source_id_footnotes": true
+    }
+  },
+  "producer_profile": {
+    "name": "4PLANET OKF PRODUCER PROFILE",
+    "profile_version": "1.1",
+    "extension_namespace": "brain",
+    "note": "brain.* is a 4PLANET producer extension. It is not claimed to be part of upstream OKF.",
+    "required_4planet_axes": [
+      "authority_level",
+      "canon_state",
+      "review_status",
+      "evidence_strength",
+      "interpretation_status",
+      "provenance_state",
+      "lifecycle_state",
+      "freshness_state",
+      "trust_domain",
+      "writeback_state"
+    ],
+    "axes_must_remain_separate": true,
+    "opaque_confidence_may_replace_axes": false
+  },
+  "canonical_primitives": {
+    "SOURCE": {"store": ["cns.source_registry", "cns.source_revisions", "cns.source_records"], "immutable_leaf_records": true},
+    "DOCUMENT": {"store": ["cns.knowledge_documents"], "original_payload_preserved": true},
+    "ENTITY": {"store": ["cns.entities", "cns.entity_aliases"]},
+    "CLAIM": {"store": ["cns.claims", "cns.claim_assessments"], "atomic_where_practical": true},
+    "EVIDENCE": {"store": ["cns.evidence", "cns.claim_evidence"]},
+    "OBSERVATION": {"store": ["cns.observations"]},
+    "EVENT": {"store": ["cns.events", "cns.event_workspace_scope"], "immutable": true},
+    "STATE": {"store": ["cns.actor_current_state", "cns.project_current_state"], "projection_not_history": true},
+    "DECISION": {"store": ["cns.decisions"]},
+    "OUTCOME": {"store": ["cns.outcomes"]},
+    "LEARNING": {"store": ["cns.learnings"]}
+  },
+  "lineage": {
+    "factual_claim_minimum_path": ["CLAIM", "CLAIM_EVIDENCE", "EVIDENCE", "SOURCE", "ORIGINAL"],
+    "document_path": ["DOCUMENT", "SOURCE", "SOURCE_REVISION_OR_RECORD", "ORIGINAL_RESOURCE"],
+    "generated_interpretation_is_source_truth": false,
+    "embedding_is_source_truth": false,
+    "missing_provenance_policy": "FAIL_CLOSED_FOR_TRUTH_PROMOTION"
+  },
+  "claim_kinds": [
+    "SOURCE_FACT",
+    "SOURCE_CLAIM",
+    "OBSERVATION_DERIVED",
+    "ESTIMATE",
+    "MODEL_OUTPUT",
+    "INFERENCE",
+    "INTERPRETATION",
+    "HYPOTHESIS",
+    "PREDICTION",
+    "OPINION",
+    "FOUNDER_DECISION",
+    "POLICY",
+    "PROPOSAL",
+    "GENERATED_SUMMARY",
+    "UNKNOWN"
+  ],
+  "claim_assessment": {
+    "stored_scalar_confidence_is_authoritative": false,
+    "legacy_scalar_confidence": "READ_COMPATIBILITY_ONLY",
+    "components": [
+      "SOURCE_QUALITY",
+      "DIRECTNESS",
+      "CORROBORATION",
+      "RECENCY",
+      "METHODOLOGICAL_STRENGTH",
+      "CONSISTENCY"
+    ],
+    "component_scale": {"min": 0, "max": 100},
+    "assessment_requires": ["assessor", "assessed_at", "basis"],
+    "derived_score": "consumer/projection may derive; never substitutes for truth axes or raw evidence"
+  },
+  "truth_axes": {
+    "review_status": "Was it reviewed/checked and by whom?",
+    "evidence_strength": "How strong is the supporting evidence?",
+    "interpretation_status": "What transformation/interpretation produced it?",
+    "knowledge_state": ["KNOWN", "UNKNOWN", "INSUFFICIENT_EVIDENCE", "CONFLICTED"],
+    "lifecycle": ["CURRENT", "ACTIVE", "DRAFT", "HISTORICAL", "SUPERSEDED", "ARCHIVED", "GENERATED_VIEW", "RUNTIME_ONLY"],
+    "freshness": ["NOT_CHECKED", "CURRENT", "STALE", "NO_COVERAGE", "SOURCE_UNAVAILABLE"]
+  },
+  "scope": {
+    "all_durable_knowledge_must_have_trust_domain": true,
+    "actor_private_objects_must_have_workspace_scope": true,
+    "private_to_shared_automatic_promotion": false,
+    "retrieval_must_filter_scope_before_semantic_ranking": true
+  },
+  "document_ingest": {
+    "stable_provider_identity_required": true,
+    "drive_identity": "kp:gdrive:<file_id>",
+    "original_resource_never_overwritten": true,
+    "content_or_revision_readback_required": true,
+    "native_docs": "embedded OKF only after reversible content-safe gate; registry/sidecar otherwise",
+    "sheets_slides_pdf_binary": "registry/sidecar metadata; original remains source object"
+  },
+  "write_law": {
+    "generated_output_self_promotes": false,
+    "claim_without_source_can_be_current_fact": false,
+    "current_state_overwrites_history": false,
+    "writeback_requires_event_and_readback": true,
+    "authority_metadata_may_self_promote": false
+  }
+}
