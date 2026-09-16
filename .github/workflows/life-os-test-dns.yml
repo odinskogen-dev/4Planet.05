@@ -25,7 +25,7 @@ jobs:
       RECORD_NAME: test.4planet.org
       RECORD_TARGET: proxy-v2.appdeploy.ai
     steps:
-      - name: Release managed test domain and point it to Life OS
+      - name: Detach Worker custom domain and point test to Life OS
         shell: bash
         run: |
           set -euo pipefail
@@ -47,7 +47,6 @@ jobs:
               AUTH_MODE='bearer'; TOKEN="$candidate"; ZONE_JSON="$(cat "$body")"; rm -f "$body"; break
             fi
             rm -f "$body"
-
             body="$(mktemp)"
             code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
             if [ "$code" -ge 200 ] && [ "$code" -lt 300 ] && jq -e '.success == true and (.result|length) > 0' "$body" >/dev/null 2>&1; then
@@ -56,10 +55,8 @@ jobs:
             rm -f "$body"
           done
 
-          if [ -z "$AUTH_MODE" ] || [ -z "$TOKEN" ]; then
-            echo 'No stored Cloudflare credential could authenticate to zone 4planet.org.' >&2
-            exit 2
-          fi
+          test -n "$AUTH_MODE"
+          test -n "$TOKEN"
           echo "Cloudflare authentication succeeded using ${AUTH_MODE}."
 
           headers=()
@@ -79,7 +76,7 @@ jobs:
               code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' "$url")"
             fi
             if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-              echo "Cloudflare ${method} failed with HTTP ${code}" >&2
+              echo "Cloudflare ${method} ${url} failed with HTTP ${code}" >&2
               jq '{success,errors,messages}' "$body" >&2 || cat "$body" >&2
               rm -f "$body"
               return 1
@@ -102,37 +99,27 @@ jobs:
           CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
           CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
           CURRENT_PROXIED="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].proxied // false')"
+          READ_ONLY="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].meta.read_only // false')"
+          ORIGIN_WORKER_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].meta.origin_worker_id // empty')"
 
-          if [ -n "$RECORD_ID" ]; then
-            echo 'Current test.4planet.org record:'
-            printf '%s' "$RECORD_JSON" | jq '.result[0] | {name,type,content,proxied,proxiable,ttl,meta,comment,tags}'
-          fi
-
-          if [ -n "$RECORD_ID" ] && ! { [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; }; then
-            echo 'Existing test record differs. Checking Cloudflare Pages ownership.'
-            PROJECTS_JSON="$(cf_request GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects?per_page=100" || true)"
-            OWNER_PROJECT=''
-            if [ -n "$PROJECTS_JSON" ] && printf '%s' "$PROJECTS_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
-              while IFS= read -r project; do
-                [ -n "$project" ] || continue
-                DOMAINS_JSON="$(cf_request GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${project}/domains" || true)"
-                if [ -n "$DOMAINS_JSON" ] && printf '%s' "$DOMAINS_JSON" | jq -e --arg name "$RECORD_NAME" 'any(.result[]?; .name == $name)' >/dev/null 2>&1; then
-                  OWNER_PROJECT="$project"
-                  break
-                fi
-              done < <(printf '%s' "$PROJECTS_JSON" | jq -r '.result[].name')
+          if [ "$READ_ONLY" = 'true' ] && [ -n "$ORIGIN_WORKER_ID" ]; then
+            echo 'test.4planet.org is owned by a Worker Custom Domain. Locating binding.'
+            WORKER_DOMAINS="$(cf_request GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains")"
+            DOMAIN_ID="$(printf '%s' "$WORKER_DOMAINS" | jq -r --arg h "$RECORD_NAME" '.result[]? | select(.hostname == $h) | .id' | head -n1)"
+            SERVICE="$(printf '%s' "$WORKER_DOMAINS" | jq -r --arg h "$RECORD_NAME" '.result[]? | select(.hostname == $h) | .service' | head -n1)"
+            if [ -z "$DOMAIN_ID" ]; then
+              echo 'Worker Custom Domain binding was not returned by the API.' >&2
+              exit 4
             fi
+            echo "Detaching exact Worker custom domain from service: ${SERVICE:-unknown}."
+            cf_request DELETE "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains/${DOMAIN_ID}" >/dev/null
 
-            if [ -n "$OWNER_PROJECT" ]; then
-              echo "Releasing test.4planet.org from Cloudflare Pages project: ${OWNER_PROJECT}"
-              cf_request DELETE "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${OWNER_PROJECT}/domains/${RECORD_NAME}" >/dev/null
-              for attempt in $(seq 1 15); do
-                sleep 2
-                RECORD_JSON="$(list_record)"
-                RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
-                [ -z "$RECORD_ID" ] && break
-              done
-            fi
+            for attempt in $(seq 1 20); do
+              sleep 2
+              RECORD_JSON="$(list_record)"
+              RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
+              [ -z "$RECORD_ID" ] && break
+            done
           fi
 
           RECORD_JSON="$(list_record)"
@@ -146,7 +133,7 @@ jobs:
             cf_request POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
             echo 'Created test.4planet.org CNAME.'
           elif [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; then
-            echo 'test.4planet.org already points to the expected target.'
+            echo 'test.4planet.org already points to expected AppDeploy target.'
           else
             cf_request PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
             echo 'Updated test.4planet.org CNAME.'
@@ -154,4 +141,4 @@ jobs:
 
           VERIFY_JSON="$(list_record)"
           printf '%s' "$VERIFY_JSON" | jq -e --arg target "$RECORD_TARGET" '.success == true and .result[0].type == "CNAME" and .result[0].content == $target and .result[0].proxied == false' >/dev/null
-          echo 'Cloudflare API verification passed.'
+          echo 'Cloudflare DNS verification passed.'
