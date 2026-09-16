@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { extractFlatControlFields, splitFrontmatter, sha256, TERMINAL_MIGRATION_STATES } from './okf-lib.mjs';
+import { extractFlatControlFields, splitFrontmatter, sha256, TERMINAL_MIGRATION_STATES, SCHEMA_VERSION, PRODUCER_PROFILE, UPSTREAM_OKF } from './okf-lib.mjs';
 
 const [inventoryPath, sourceRoot, ledgerPathArg] = process.argv.slice(2);
 if (!inventoryPath || !sourceRoot) {
@@ -38,7 +38,12 @@ for (const row of rows) {
   else knowledgeIds.set(row.knowledge_id, row.provider_id);
 }
 
-const required = ['type','title','status','knowledge_id','schema_version','authority','authority_level','canon_state','review_status','evidence_strength','interpretation_status','provenance_state','writeback_state','sensitivity','lifecycle_state','migration_status','last_validated'];
+const required = [
+  'type','title','status','knowledge_id','schema_version','producer_profile','upstream_okf',
+  'authority','authority_level','canon_state','review_status','evidence_strength',
+  'interpretation_status','provenance_state','writeback_state','sensitivity','lifecycle_state',
+  'freshness_state','trust_domain','migration_status','last_validated'
+];
 for (const doc of documents) {
   const provider = doc.provider_id || doc.drive_id || doc.path;
   const row = byProvider.get(provider);
@@ -51,8 +56,11 @@ for (const doc of documents) {
     if (!split.hasFrontmatter) { failures.push({ code: 'MISSING_FRONTMATTER', id: provider, path: doc.path }); continue; }
     const fields = extractFlatControlFields(split.frontmatter);
     for (const key of required) if (!fields[key]) failures.push({ code: 'REQUIRED_FIELD_MISSING', id: provider, path: doc.path, field: key });
-    if (fields.schema_version && fields.schema_version !== '4planet-okf-1.0') failures.push({ code: 'UNKNOWN_SCHEMA_VERSION', id: provider, value: fields.schema_version });
+    if (fields.schema_version && fields.schema_version !== SCHEMA_VERSION) failures.push({ code: 'UNKNOWN_SCHEMA_VERSION', id: provider, value: fields.schema_version });
+    if (fields.producer_profile && fields.producer_profile !== PRODUCER_PROFILE) failures.push({ code: 'UNKNOWN_PRODUCER_PROFILE', id: provider, value: fields.producer_profile });
+    if (fields.upstream_okf && fields.upstream_okf !== UPSTREAM_OKF) failures.push({ code: 'UNKNOWN_UPSTREAM_OKF', id: provider, value: fields.upstream_okf });
     if (fields.knowledge_id && row.knowledge_id && fields.knowledge_id !== row.knowledge_id) failures.push({ code: 'ID_LEDGER_MISMATCH', id: provider, metadata: fields.knowledge_id, ledger: row.knowledge_id });
+    if (fields.trust_domain === 'ACTOR_PRIVATE' && (!fields.workspace_id || fields.workspace_id === 'null')) failures.push({ code: 'ACTOR_PRIVATE_WORKSPACE_MISSING', id: provider, path: doc.path });
     if (row.body_sha256 && sha256(split.body) !== row.body_sha256) failures.push({ code: 'BODY_CORRUPTION', id: provider, path: doc.path });
   }
   if (row.status !== 'MIGRATED' && row.status !== 'DRY_RUN_MIGRATABLE' && !TERMINAL_MIGRATION_STATES.has(row.status)) {
@@ -79,14 +87,20 @@ function visit(id, active = new Set(), done = new Set()) {
 for (const id of supersedes.keys()) visit(id);
 
 const terminalRows = rows.filter(r => TERMINAL_MIGRATION_STATES.has(r.status) || r.status === 'MIGRATED').length;
+const schemaFailureCodes = new Set([
+  'MISSING_FRONTMATTER','REQUIRED_FIELD_MISSING','UNKNOWN_SCHEMA_VERSION','UNKNOWN_PRODUCER_PROFILE',
+  'UNKNOWN_UPSTREAM_OKF','ID_LEDGER_MISMATCH','ACTOR_PRIVATE_WORKSPACE_MISSING'
+]);
 const report = {
-  schema_version: '4planet-okf-1.0',
+  schema_version: SCHEMA_VERSION,
+  producer_profile: PRODUCER_PROFILE,
+  upstream_okf: UPSTREAM_OKF,
   source_count: documents.length,
   ledger_count: rows.length,
   terminal_rows: terminalRows,
   unaccounted: failures.filter(f => f.code === 'UNACCOUNTED_DOCUMENT').length,
   duplicate_ids: failures.filter(f => f.code === 'DUPLICATE_KNOWLEDGE_ID').length,
-  schema_failures: failures.filter(f => ['MISSING_FRONTMATTER','REQUIRED_FIELD_MISSING','UNKNOWN_SCHEMA_VERSION','ID_LEDGER_MISMATCH'].includes(f.code)).length,
+  schema_failures: failures.filter(f => schemaFailureCodes.has(f.code)).length,
   body_corruption: failures.filter(f => f.code === 'BODY_CORRUPTION').length,
   failures,
   warnings,
