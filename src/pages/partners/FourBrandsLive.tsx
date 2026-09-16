@@ -1,285 +1,261 @@
-import { useEffect, useState } from "react";
-import FourBrand from "@/pages/partners/FourBrand";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import "@/styles/fourbrands-twin.css";
 
-type DecisionState =
-  | "OPPORTUNITY"
-  | "REVIEWED"
-  | "CHOSEN"
-  | "BASELINE LOCKED"
-  | "INTERVENTION STARTED"
-  | "MEASURED"
-  | "VALUE ATTRIBUTION REVIEWED"
-  | "REALISED"
-  | "NOT REALISED"
-  | "LEARNING";
-
-type TwinState = {
-  company: string;
-  objective: string;
-  revenue: string;
-  margin: string;
-  cash: string;
-  growth: string;
-  customers: string;
-  operations: string;
-  brandSignal: string;
-  risk: string;
-  constraint: string;
-  planetIntersection: string;
-  opportunity: string;
-  intervention: string;
-  estimatedValue: string;
-  approvedValue: string;
-  investedAmount: string;
-  measuredValue: string;
-  realisedValue: string;
-  notes: string;
-  decisionState: DecisionState;
+type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
+type Confidence = "HIGH" | "MEDIUM" | "LOW";
+type ViewId = "home" | "company" | "finance" | "revenue" | "products" | "market" | "marketing" | "operations" | "people" | "brand" | "risk" | "planet" | "opportunities" | "decisions" | "interventions" | "results" | "learning" | "evidence" | "inbox";
+type Metric = { label: string; value: string; period: string; truthClass: TruthClass; sourceIds: string[] };
+type Statement = { title: string; detail: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
+type Opportunity = { rank: number; title: string; economicLogic: string; estimatedValue: string; planetaryLogic: string; planetaryDelta: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
+type Evidence = { id: string; title: string; publisher: string; url: string; checkedAt: string; note: string };
+type Analysis = {
+  engine: string;
+  company: { name: string; legalName: string; ticker: string; sector: string; geography: string; description: string };
+  generatedAt: string;
+  analysisStatus: "LIVE_RESEARCH" | "SEEDED_PROOF" | "PARTIAL";
+  statusNote: string;
+  economicBaseline: Metric[];
+  businessModel: Statement[];
+  valueDrivers: Statement[];
+  valueLeakage: Statement[];
+  opportunities: Opportunity[];
+  alignedTop3: Opportunity[];
+  solutions: Statement[];
+  nextExperiment: { title: string; hypothesis: string; method: string; successMetric: string; economicMeasurement: string; planetaryMeasurement: string; truthClass: TruthClass };
+  evidence: Evidence[];
+  assumptions: string[];
+  unknowns: string[];
+};
+type TwinInput = {
+  objective: string; revenue: string; margin: string; cash: string; customers: string; operations: string; people: string;
+  brand: string; primaryRisk: string; planet: string; selectedOpportunity: string; intervention: string; decisionState: string;
+  measuredResult: string; notes: string; files: string[];
 };
 
-const INITIAL: TwinState = {
-  company: "",
-  objective: "",
-  revenue: "",
-  margin: "",
-  cash: "",
-  growth: "",
-  customers: "",
-  operations: "",
-  brandSignal: "",
-  risk: "",
-  constraint: "",
-  planetIntersection: "",
-  opportunity: "",
-  intervention: "",
-  estimatedValue: "",
-  approvedValue: "",
-  investedAmount: "",
-  measuredValue: "",
-  realisedValue: "",
-  notes: "",
-  decisionState: "OPPORTUNITY",
+const EMPTY_TWIN: TwinInput = {
+  objective:"",revenue:"",margin:"",cash:"",customers:"",operations:"",people:"",brand:"",primaryRisk:"",planet:"",
+  selectedOpportunity:"",intervention:"",decisionState:"OPPORTUNITY",measuredResult:"",notes:"",files:[]
 };
-
-const DECISION_STATES: DecisionState[] = [
-  "OPPORTUNITY",
-  "REVIEWED",
-  "CHOSEN",
-  "BASELINE LOCKED",
-  "INTERVENTION STARTED",
-  "MEASURED",
-  "VALUE ATTRIBUTION REVIEWED",
-  "REALISED",
-  "NOT REALISED",
-  "LEARNING",
+const DECISION_STATES = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","VALUE ATTRIBUTION REVIEWED","REALISED","NOT REALISED","LEARNING"];
+const LOAD_STEPS = ["Finding company","Resolving identity","Finding official records","Reading website","Finding financial evidence","Mapping products","Mapping people","Mapping market","Mapping planet intersections","Building Company Twin"];
+const PRIMARY_NAV: {id:ViewId;label:string}[] = [
+  {id:"home",label:"Home"},{id:"company",label:"Company"},{id:"finance",label:"Finance"},{id:"opportunities",label:"Opportunities"},
+  {id:"decisions",label:"Decisions"},{id:"evidence",label:"Evidence"},{id:"inbox",label:"Inbox"}
+];
+const COMPANY_MODULES: {id:ViewId;label:string;hint:string}[] = [
+  {id:"company",label:"Company",hint:"Identity + business model"},{id:"finance",label:"Finance",hint:"Economic spine"},{id:"revenue",label:"Revenue",hint:"How money enters"},
+  {id:"products",label:"Products",hint:"What is sold"},{id:"market",label:"Customers / Market",hint:"Who chooses and why"},{id:"marketing",label:"Marketing",hint:"Attention → demand"},
+  {id:"operations",label:"Operations",hint:"Delivery + constraints"},{id:"people",label:"People",hint:"Capacity + ownership"},{id:"brand",label:"Brand / Web",hint:"Promise + projection"},
+  {id:"risk",label:"Risk",hint:"What can destroy value"},{id:"planet",label:"Planet",hint:"Dependencies + intersections"},{id:"opportunities",label:"Opportunities",hint:"Available value"},
+  {id:"decisions",label:"Decisions",hint:"Human choice"},{id:"interventions",label:"Interventions",hint:"Bounded action"},{id:"results",label:"Results",hint:"Measured change"},
+  {id:"learning",label:"Learning",hint:"Organisational memory"},{id:"evidence",label:"Sources / Evidence",hint:"Provenance + truth"},{id:"inbox",label:"Company Inbox",hint:"What to learn next"}
 ];
 
-const STORAGE_KEY = "4brand:company-twin:local-beta-02";
-const LEGACY_STORAGE_KEY = "4brands:company-twin:local-beta-01";
+const FOURPLANET_PROOF: Analysis = {
+  engine:"4BRANDS COMPANY TWIN FOUNDATION 01",
+  company:{
+    name:"4PLANET",legalName:"",ticker:"",sector:"Living planet intelligence / ecological action technology",geography:"Norway / global ambition",
+    description:"4PLANET is building living-planet intelligence and action products. Public evidence can describe the product world, but the company economics and operating state remain largely private."
+  },
+  generatedAt:new Date().toISOString(),analysisStatus:"PARTIAL",
+  statusNote:"Sparse public-data case. This Twin deliberately leaves private company economics, customers, operations and results unresolved until the company supplies them.",
+  economicBaseline:[
+    {label:"Revenue",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
+    {label:"Margin",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
+    {label:"Operating cash",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]},
+    {label:"Employees",value:"UNKNOWN",period:"Current",truthClass:"UNKNOWN",sourceIds:["4P-WEB"]}
+  ],
+  businessModel:[
+    {title:"Living planet intelligence",detail:"Public product positioning indicates a system that connects ecological understanding, action and proof.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
+    {title:"Multiple product surfaces",detail:"Public product surfaces indicate different ways to explore people, species, places and action while sharing a wider 4PLANET identity.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
+  ],
+  valueDrivers:[
+    {title:"Shared intelligence infrastructure",detail:"If multiple products reuse the same underlying truth and actor infrastructure, marginal product-building cost may fall as reuse grows.",truthClass:"ASSUMPTION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
+    {title:"Proof of useful outcomes",detail:"Commercial value should increase when product usage can be connected to measurable decisions and outcomes.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
+  ],
+  valueLeakage:[
+    {title:"Economic baseline missing",detail:"Public sources do not provide a decision-grade revenue, margin, cash or cost baseline.",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]},
+    {title:"Customer evidence incomplete",detail:"Public evidence alone cannot resolve paying customer cohorts, retention, pipeline or willingness to pay.",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]}
+  ],
+  opportunities:[
+    {rank:1,title:"Complete the economic baseline",economicLogic:"Without revenue, cost, margin and cash truth, value priorities cannot be ranked defensibly.",estimatedValue:"UNKNOWN until company finance data is supplied.",planetaryLogic:"Neutral enabling step.",planetaryDelta:"UNKNOWN",truthClass:"UNKNOWN",confidence:"HIGH",sourceIds:["4P-WEB"]},
+    {rank:2,title:"Prove one repeatable paid value loop",economicLogic:"A bounded paid use case can convert product architecture into commercial evidence and reusable learning.",estimatedValue:"ASSUMPTION: value depends on buyer, price, cost and repeatability.",planetaryLogic:"Alignment exists only if the paid loop creates a measured ecological outcome or better decision.",planetaryDelta:"UNKNOWN until a bounded intervention is measured.",truthClass:"ASSUMPTION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
+    {rank:3,title:"Measure reuse across product surfaces",economicLogic:"Shared infrastructure becomes economically meaningful when reuse measurably reduces marginal build or operating cost.",estimatedValue:"UNKNOWN until engineering and delivery baselines exist.",planetaryLogic:"Shared infrastructure can reduce duplicated resource use, but the material effect is not yet measured.",planetaryDelta:"UNKNOWN",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]},
+    {rank:4,title:"Connect public attention to conversion",economicLogic:"Public product surfaces only become a business driver if attention connects to activation, retention, payment or funded action.",estimatedValue:"UNKNOWN until funnel data is connected.",planetaryLogic:"Action conversion may create planetary value if resulting actions are verified.",planetaryDelta:"UNKNOWN",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
+  ],
+  alignedTop3:[],solutions:[
+    {title:"Company-provided finance state",detail:"Add revenue, costs, margin, cash and obligations as company truth before ranking financial opportunities.",truthClass:"INTERPRETATION",confidence:"HIGH",sourceIds:["4P-WEB"]},
+    {title:"Connect product and conversion evidence",detail:"Add usage, funnel, commerce and outcome data to connect product activity to economic and planetary results.",truthClass:"INTERPRETATION",confidence:"MEDIUM",sourceIds:["4P-WEB"]}
+  ],
+  nextExperiment:{title:"Complete the Twin",hypothesis:"A small amount of company-provided truth will materially improve decision quality.",method:"Add finance, customer and operating baseline, then rerank opportunities.",successMetric:"Higher Twin completeness with fewer high-impact unknowns.",economicMeasurement:"Rankable economic opportunities with explicit baseline.",planetaryMeasurement:"Only attach planetary delta where mechanism and measurement exist.",truthClass:"ASSUMPTION"},
+  evidence:[{id:"4P-WEB",title:"4PLANET public product world",publisher:"4PLANET",url:"https://4planet.org",checkedAt:"2026-09-16",note:"Public product source only. Internal BRAIN and private company economics are not exposed to this public-first Twin."}],
+  assumptions:["Public product architecture may support multiple future revenue models; none is treated as proven here."],
+  unknowns:["Verified legal entity behind the 4PLANET product brand","Revenue, costs, margin and cash","Paying customer cohorts and retention","Internal operating capacity and constraints","Measured economic and planetary results"]
+};
+FOURPLANET_PROOF.alignedTop3 = FOURPLANET_PROOF.opportunities.slice(0,3);
 
-function Field({ label, value, placeholder, onChange, wide = false }: { label: string; value: string; placeholder: string; onChange: (value: string) => void; wide?: boolean }) {
-  return (
-    <label className={`fbl-field${wide ? " fbl-field--wide" : ""}`}>
-      <span>{label}</span>
-      <input value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
+const slug = (value:string) => value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "company";
+const normalise = (value:string) => value.toLowerCase().replace(/[^a-z0-9]/g,"");
+const truthClassName = (value:TruthClass) => `fbt-truth fbt-truth--${value.toLowerCase()}`;
+const confidenceClass = (value:Confidence) => `fbt-status__dot fbt-status__dot--${value.toLowerCase()}`;
+
+function TruthPill({value}:{value:TruthClass}){return <span className={truthClassName(value)}>{value}</span>}
+function EmptyState({title,text,action}:{title:string;text:string;action?:()=>void}){
+  return <div className="fbt-empty"><span className="fbt-empty__dot"/><strong>{title}</strong><p>{text}</p>{action&&<button className="fbt-button fbt-button--soft" onClick={action}>Add company data</button>}</div>
+}
+function StatementStack({items,empty,onComplete}:{items:Statement[];empty:string;onComplete:()=>void}){
+  if(!items.length)return <EmptyState title="Not known yet" text={empty} action={onComplete}/>;
+  return <div className="fbt-statement-stack">{items.map((item)=><article key={`${item.title}-${item.detail}`}>
+    <h3>{item.title}</h3><p>{item.detail}</p><div className="fbt-statement-meta"><TruthPill value={item.truthClass}/><span className="fbt-status"><i className={confidenceClass(item.confidence)}/>{item.confidence}</span></div>
+  </article>)}</div>
+}
+function TwinField({label,value,placeholder,onChange}:{label:string;value:string;placeholder:string;onChange:(value:string)=>void}){
+  return <label className="fbt-field"><span>{label}</span><input value={value} placeholder={placeholder} onChange={(e)=>onChange(e.target.value)}/></label>
+}
+function Surface({title,meta,children}:{title:string;meta?:string;children:ReactNode}){
+  return <section className="fbt-surface"><div className="fbt-surface-head"><span>{title}</span>{meta&&<small>{meta}</small>}</div>{children}</section>
 }
 
-function Board({ code, title, children }: { code: string; title: string; children: React.ReactNode }) {
-  return (
-    <article className="fbl-board">
-      <span>{code}</span>
-      <h3>{title}</h3>
-      <div>{children}</div>
-    </article>
-  );
-}
+export default function FourBrandLive(){
+  const [query,setQuery]=useState("TOMRA");
+  const [analysis,setAnalysis]=useState<Analysis|null>(null);
+  const [twin,setTwin]=useState<TwinInput>(EMPTY_TWIN);
+  const [view,setView]=useState<ViewId>("home");
+  const [loading,setLoading]=useState(false);
+  const [loadingStep,setLoadingStep]=useState(0);
+  const [error,setError]=useState("");
+  const [activeOpportunity,setActiveOpportunity]=useState(0);
+  const [modulesOpen,setModulesOpen]=useState(false);
+  const [completeOpen,setCompleteOpen]=useState(false);
+  const [mobileNavOpen,setMobileNavOpen]=useState(false);
+  const [saved,setSaved]=useState(false);
 
-function show(value: string, fallback = "UNKNOWN — add company data") {
-  return value.trim() || fallback;
-}
+  useEffect(()=>{
+    if(!analysis)return;
+    try{
+      const raw=localStorage.getItem(`4brands:twin:${slug(analysis.company.name)}`);
+      setTwin(raw?{...EMPTY_TWIN,...JSON.parse(raw)}:EMPTY_TWIN);
+    }catch{setTwin(EMPTY_TWIN)}
+  },[analysis?.company.name]);
 
-export default function FourBrandLive() {
-  const [twin, setTwin] = useState<TwinState>(INITIAL);
-  const [saved, setSaved] = useState(false);
+  const opportunity=analysis?.opportunities[activeOpportunity]||analysis?.opportunities[0];
+  const leadMetrics=analysis?.economicBaseline.slice(0,4)||[];
+  const completeness=useMemo(()=>{
+    if(!analysis)return 0;
+    const publicKnown=analysis.economicBaseline.filter(m=>m.truthClass!=="UNKNOWN"&&m.value!=="UNKNOWN").length+analysis.evidence.length+(analysis.company.legalName?1:0);
+    const privateKnown=Object.entries(twin).filter(([key,value])=>key!=="files"&&typeof value==="string"&&value.trim()).length;
+    return Math.min(96,10+publicKnown*6+privateKnown*3+(twin.files.length?3:0));
+  },[analysis,twin]);
+  const inboxCount=(analysis?.unknowns.length||0)+(analysis?.assumptions.length||0)+twin.files.length;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY) || window.localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (raw) setTwin({ ...INITIAL, ...JSON.parse(raw) });
-    } catch {
-      setTwin(INITIAL);
-    }
-  }, []);
-
-  function patch(field: keyof TwinState, value: string) {
-    setTwin((current) => ({ ...current, [field]: value }));
-    setSaved(false);
+  async function runAnalysis(event?:FormEvent,forced?:string){
+    event?.preventDefault();
+    const company=(forced||query).trim();
+    if(company.length<2)return;
+    setQuery(company);setLoading(true);setLoadingStep(0);setError("");setAnalysis(null);setView("home");setActiveOpportunity(0);
+    const timer=window.setInterval(()=>setLoadingStep(current=>Math.min(current+1,LOAD_STEPS.length-1)),440);
+    try{
+      if(["4planet","fourplanet"].includes(normalise(company))){
+        await new Promise(resolve=>window.setTimeout(resolve,1900));
+        setAnalysis({...FOURPLANET_PROOF,generatedAt:new Date().toISOString()});
+      }else{
+        const response=await fetch("/api/brand-analysis",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({company})});
+        const payload=await response.json() as {analysis?:Analysis;error?:string;detail?:string};
+        if(!response.ok||!payload.analysis)throw new Error(payload.detail||payload.error||"Company research is unavailable.");
+        setAnalysis(payload.analysis);
+      }
+    }catch(cause){setError(cause instanceof Error?cause.message:"Company research is unavailable.")}
+    finally{window.clearInterval(timer);setLoading(false);setLoadingStep(LOAD_STEPS.length-1)}
   }
+  function reset(){setAnalysis(null);setView("home");setError("");setMobileNavOpen(false)}
+  function changeView(next:ViewId){setView(next);setModulesOpen(false);setMobileNavOpen(false)}
+  function patchTwin<K extends keyof TwinInput>(key:K,value:TwinInput[K]){setTwin(current=>({...current,[key]:value}));setSaved(false)}
+  function saveTwin(){if(!analysis)return;localStorage.setItem(`4brands:twin:${slug(analysis.company.name)}`,JSON.stringify(twin));setSaved(true);window.setTimeout(()=>setSaved(false),1400)}
 
-  function save() {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(twin));
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1800);
-  }
-
-  return (
-    <>
-      <FourBrand />
-
-      <a className="fbl-jump" href="#company-twin">BUILD YOUR TWIN</a>
-
-      <section className="fbl-shell" id="company-twin" aria-label="4BRAND Company Operating Twin">
-        <style>{`
-          .fbl-shell{background:#f4f4ef;color:#0a0a0a;padding:clamp(74px,9vw,140px) clamp(22px,6vw,96px);border-top:1px solid #0a0a0a;font-family:"Instrument Sans",system-ui,sans-serif}
-          .fbl-jump{position:fixed;right:18px;bottom:18px;z-index:120;text-decoration:none;background:#0a0a0a;color:#fff;border:1px solid #fff;padding:12px 15px;font:9px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.07em}
-          .fbl-kicker{font:9px/1.2 "Fragment Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#656565;margin:0 0 16px}
-          .fbl-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,520px);gap:36px clamp(48px,8vw,130px);align-items:end;margin-bottom:50px}
-          .fbl-head h2{font-size:clamp(46px,7vw,96px);line-height:.92;letter-spacing:-.06em;font-weight:500;margin:0;max-width:1000px}
-          .fbl-head__copy>p:not(.fbl-kicker){font-size:16px;line-height:1.55;color:#484848;margin:0 0 18px}
-          .fbl-badges{display:flex;gap:8px;flex-wrap:wrap}.fbl-badges span{border:1px solid #c7c7c0;background:#fff;padding:7px 8px;font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#606060}
-          .fbl-law{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #cfcfc8;border-bottom:0;background:#fff}.fbl-law div{padding:16px;border-right:1px solid #cfcfc8}.fbl-law div:last-child{border-right:0}.fbl-law span{display:block;font:8px/1.2 "Fragment Mono",ui-monospace,monospace;color:#777;letter-spacing:.06em;margin-bottom:8px}.fbl-law strong{font-size:13px;font-weight:500}
-          .fbl-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:1px solid #cfcfc8;border-top:1px solid #0a0a0a;background:#fff}.fbl-field{min-height:118px;padding:18px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-field--wide{grid-column:span 2}.fbl-field span{display:block;font:9px/1.2 "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#696969;margin-bottom:13px}.fbl-field input{width:100%;box-sizing:border-box;border:0;border-bottom:1px solid #aaa;background:transparent;padding:8px 0 10px;outline:none;font:500 18px/1.25 "Instrument Sans",system-ui,sans-serif;color:#0a0a0a}.fbl-field input:focus{border-color:#2e2eff}
-          .fbl-notes{grid-column:1/-1;padding:18px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-notes span{display:block;font:9px/1.2 "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#696969;margin-bottom:13px}.fbl-notes textarea{width:100%;box-sizing:border-box;border:0;border-bottom:1px solid #aaa;background:transparent;padding:8px 0 10px;outline:none;resize:vertical;font:500 18px/1.35 "Instrument Sans",system-ui,sans-serif}
-          .fbl-actions{display:flex;justify-content:space-between;gap:24px;align-items:center;margin:17px 0 64px}.fbl-actions p{margin:0;font:9px/1.45 "Fragment Mono",ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:#666}.fbl-actions button{border:1px solid #0a0a0a;background:#0a0a0a;color:white;padding:13px 18px;font:9px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.fbl-actions button:hover{background:#2e2eff;border-color:#2e2eff}
-          .fbl-board-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin:0 0 18px}.fbl-board-head h3{font-size:clamp(34px,4vw,58px);line-height:1;letter-spacing:-.05em;font-weight:500;margin:0}.fbl-board-head p{max-width:560px;font-size:13px;line-height:1.5;color:#666;margin:0}
-          .fbl-boards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:1px solid #cfcfc8;border-top:1px solid #0a0a0a;background:#fff}.fbl-board{padding:20px;min-height:240px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-board>span{font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.07em;color:#777}.fbl-board h3{font-size:23px;line-height:1.05;letter-spacing:-.035em;font-weight:500;margin:16px 0 24px}.fbl-board p{border-top:1px solid #deded8;margin:0;padding:10px 0;font-size:12px;line-height:1.45;color:#444}.fbl-board p strong{display:block;font-size:13px;font-weight:500;color:#111;margin-bottom:3px}
-          .fbl-ledger{margin-top:70px;background:#fff;border-top:1px solid #0a0a0a;padding:0 22px 22px}.fbl-ledger__head{display:grid;grid-template-columns:1fr minmax(280px,520px);gap:36px;padding:30px 0}.fbl-ledger h3{font-size:clamp(34px,4vw,58px);line-height:1;letter-spacing:-.05em;font-weight:500;margin:0}.fbl-ledger__head p{font-size:13px;line-height:1.55;color:#555;margin:0}.fbl-ledger__row{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,310px);gap:20px;align-items:center;border-top:1px solid #d8d8d2;padding:20px 0}.fbl-ledger__row strong{display:block;font-size:17px;font-weight:500;margin-bottom:5px}.fbl-ledger__row span{font:9px/1.4 "Fragment Mono",ui-monospace,monospace;color:#777;text-transform:uppercase}.fbl-ledger select{width:100%;border:1px solid #bdbdb7;background:#fff;padding:11px;font:9px/1.2 "Fragment Mono",ui-monospace,monospace;color:#111}.fbl-value-grid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #d8d8d2;border-left:1px solid #d8d8d2}.fbl-value-grid div{padding:15px;border-right:1px solid #d8d8d2;border-bottom:1px solid #d8d8d2}.fbl-value-grid span{display:block;font:8px/1.3 "Fragment Mono",ui-monospace,monospace;color:#777;text-transform:uppercase;margin-bottom:8px}.fbl-value-grid strong{font-size:14px;font-weight:500;overflow-wrap:anywhere}
-          .fbl-studio{margin-top:70px;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:50px;border-top:1px solid #0a0a0a;padding-top:34px}.fbl-studio h3{font-size:clamp(36px,5vw,68px);line-height:.96;letter-spacing:-.055em;font-weight:500;margin:8px 0 22px}.fbl-studio__copy>p:not(.fbl-kicker){font-size:14px;line-height:1.55;color:#555;max-width:540px}.fbl-preview{background:#0a0a0a;color:#fff;min-height:390px;padding:clamp(28px,5vw,62px);display:flex;flex-direction:column;justify-content:space-between}.fbl-preview>span{font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#aaa}.fbl-preview h4{font-size:clamp(42px,5vw,76px);line-height:.92;letter-spacing:-.06em;font-weight:500;margin:0 0 18px}.fbl-preview p{font-size:15px;line-height:1.5;color:#d3d3d3;max-width:680px;margin:0}.fbl-preview footer{border-top:1px solid #393939;padding-top:16px;font:9px/1.4 "Fragment Mono",ui-monospace,monospace;color:#aaa;text-transform:uppercase;letter-spacing:.05em}
-          @media(max-width:1100px){.fbl-head{grid-template-columns:1fr}.fbl-form{grid-template-columns:repeat(2,1fr)}.fbl-field--wide{grid-column:span 2}.fbl-boards{grid-template-columns:repeat(2,1fr)}.fbl-law{grid-template-columns:repeat(2,1fr)}.fbl-law div:nth-child(2){border-right:0}.fbl-studio{grid-template-columns:1fr}.fbl-value-grid{grid-template-columns:repeat(3,1fr)}}
-          @media(max-width:720px){.fbl-shell{padding-left:18px;padding-right:18px}.fbl-form,.fbl-boards,.fbl-law,.fbl-ledger__head,.fbl-value-grid{grid-template-columns:1fr}.fbl-field--wide{grid-column:auto}.fbl-law div{border-right:0;border-bottom:1px solid #cfcfc8}.fbl-board{min-height:auto}.fbl-board-head{align-items:flex-start;flex-direction:column}.fbl-actions{align-items:flex-start;flex-direction:column}.fbl-ledger__row{grid-template-columns:1fr}.fbl-preview{min-height:340px}.fbl-jump{right:12px;bottom:12px}}
-        `}</style>
-
-        <div className="fbl-head">
-          <div>
-            <p className="fbl-kicker">4BRAND / COMPANY OPERATING TWIN / BETA</p>
-            <h2>One company. One living model.</h2>
-          </div>
-          <div className="fbl-head__copy">
-            <p>The public Value Map is the outside view. Add the minimum internal truth here to turn that view into a working company twin: economic state, customers, operations, risks, opportunities, decisions and measured results.</p>
-            <div className="fbl-badges"><span>LOCAL PROTOTYPE</span><span>THIS DEVICE ONLY</span><span>NO SERVER WRITE</span><span>NOT ASSURANCE</span></div>
-          </div>
+  if(!analysis){
+    return <main className="fbt-app fbt-entry">
+      <section className="fbt-entry-shell">
+        <nav className="fbt-entry-nav"><a className="fbt-brand" href="https://4planet.org">4BRANDS<span>_</span></a><a href="https://4planet.org">by 4PLANET</a></nav>
+        <div className="fbt-entry__copy">
+          <div><p className="fbt-kicker">COMPANY CONTROL SYSTEM / PUBLIC BETA</p><h1>See your whole company.</h1><p>Type a company name. 4BRANDS builds the best public Company Twin it can, shows what is known, what is missing, and where value may be hiding.</p></div>
+          <form className="fbt-search-card" onSubmit={runAnalysis}>
+            <label htmlFor="fbt-company">Enter your company</label>
+            <div className="fbt-search-row"><input id="fbt-company" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Company name" autoComplete="organization" autoFocus maxLength={120}/><button className="fbt-button fbt-button--primary fbt-button--round" type="submit" disabled={loading||query.trim().length<2} aria-label="Build Company Twin">→</button></div>
+            <div className="fbt-search-meta"><span>PUBLIC EVIDENCE</span><span>TRUTH-AWARE</span><span>FINANCE FIRST</span></div>
+            <div className="fbt-quick"><button type="button" onClick={()=>runAnalysis(undefined,"TOMRA")}>Try TOMRA <small>rich public data</small></button><button type="button" onClick={()=>runAnalysis(undefined,"4PLANET")}>Try 4PLANET <small>sparse public data</small></button></div>
+          </form>
         </div>
-
-        <div className="fbl-law" aria-label="Twin truth boundary">
-          <div><span>01 / PUBLIC EVIDENCE</span><strong>Source-grounded outside view</strong></div>
-          <div><span>02 / INTERNAL INPUT</span><strong>Company-provided working truth</strong></div>
-          <div><span>03 / DECISION</span><strong>Human-chosen action stays explicit</strong></div>
-          <div><span>04 / RESULT</span><strong>Realised value requires measurement</strong></div>
-        </div>
-
-        <div className="fbl-form">
-          <Field label="Company" value={twin.company} placeholder="Company name" onChange={(value) => patch("company", value)} />
-          <Field label="Primary objective" value={twin.objective} placeholder="What must improve?" onChange={(value) => patch("objective", value)} wide />
-          <Field label="Annual revenue" value={twin.revenue} placeholder="Internal baseline" onChange={(value) => patch("revenue", value)} />
-          <Field label="Gross / contribution margin" value={twin.margin} placeholder="Internal baseline" onChange={(value) => patch("margin", value)} />
-          <Field label="Operating cash / conversion" value={twin.cash} placeholder="Internal baseline" onChange={(value) => patch("cash", value)} />
-          <Field label="Customer / revenue growth" value={twin.growth} placeholder="Internal baseline" onChange={(value) => patch("growth", value)} />
-          <Field label="Customers" value={twin.customers} placeholder="Who creates the economic pull?" onChange={(value) => patch("customers", value)} />
-          <Field label="Operations" value={twin.operations} placeholder="What must run well?" onChange={(value) => patch("operations", value)} />
-          <Field label="Brand / communication signal" value={twin.brandSignal} placeholder="What must the market understand?" onChange={(value) => patch("brandSignal", value)} />
-          <Field label="Primary risk" value={twin.risk} placeholder="What can destroy or delay value?" onChange={(value) => patch("risk", value)} />
-          <Field label="Primary operating constraint" value={twin.constraint} placeholder="Where is value leaking?" onChange={(value) => patch("constraint", value)} wide />
-          <Field label="Planet intersection" value={twin.planetIntersection} placeholder="Only where a real mechanism exists" onChange={(value) => patch("planetIntersection", value)} />
-          <Field label="Priority opportunity" value={twin.opportunity} placeholder="What should be tested next?" onChange={(value) => patch("opportunity", value)} wide />
-          <Field label="Intervention" value={twin.intervention} placeholder="What will actually change?" onChange={(value) => patch("intervention", value)} wide />
-          <Field label="Estimated value" value={twin.estimatedValue} placeholder="Hypothesis, not realised" onChange={(value) => patch("estimatedValue", value)} />
-          <Field label="Approved value" value={twin.approvedValue} placeholder="Approved decision case" onChange={(value) => patch("approvedValue", value)} />
-          <Field label="Invested amount" value={twin.investedAmount} placeholder="Actual resources committed" onChange={(value) => patch("investedAmount", value)} />
-          <Field label="Measured value" value={twin.measuredValue} placeholder="Observed result" onChange={(value) => patch("measuredValue", value)} />
-          <Field label="Realised value" value={twin.realisedValue} placeholder="Attribution-reviewed value" onChange={(value) => patch("realisedValue", value)} />
-          <label className="fbl-notes"><span>Internal context / unknowns</span><textarea rows={2} value={twin.notes} placeholder="What can public data not know?" onChange={(event) => patch("notes", event.target.value)} /></label>
-        </div>
-
-        <div className="fbl-actions">
-          <p>Private local working state. Inputs are not published and are never promoted to verified public facts automatically.</p>
-          <button type="button" onClick={save}>{saved ? "SAVED LOCALLY" : "SAVE TWIN STATE"}</button>
-        </div>
-
-        <div className="fbl-board-head">
-          <h3>Company Board</h3>
-          <p>A single operating view of the company. Unknown stays unknown until public evidence or company-provided data resolves it.</p>
-        </div>
-
-        <div className="fbl-boards" aria-label="Company Operating Twin boards">
-          <Board code="01 / FINANCE" title="Economic spine">
-            <p><strong>Revenue</strong>{show(twin.revenue)}</p>
-            <p><strong>Margin</strong>{show(twin.margin)}</p>
-            <p><strong>Cash</strong>{show(twin.cash)}</p>
-          </Board>
-          <Board code="02 / GROWTH" title="Value drivers">
-            <p><strong>Objective</strong>{show(twin.objective)}</p>
-            <p><strong>Growth</strong>{show(twin.growth)}</p>
-          </Board>
-          <Board code="03 / CUSTOMERS" title="Economic pull">
-            <p><strong>Customers</strong>{show(twin.customers)}</p>
-            <p><strong>Growth signal</strong>{show(twin.growth)}</p>
-          </Board>
-          <Board code="04 / OPERATIONS" title="Value delivery">
-            <p><strong>Operating system</strong>{show(twin.operations)}</p>
-            <p><strong>Primary constraint</strong>{show(twin.constraint)}</p>
-          </Board>
-          <Board code="05 / BRAND" title="Market meaning">
-            <p><strong>Communication signal</strong>{show(twin.brandSignal)}</p>
-            <p><strong>Truth status</strong>LOCAL INPUT — not public fact</p>
-          </Board>
-          <Board code="06 / RISK" title="Value at risk">
-            <p><strong>Primary risk</strong>{show(twin.risk)}</p>
-            <p><strong>Unknowns</strong>{show(twin.notes, "UNKNOWN — define material unknowns")}</p>
-          </Board>
-          <Board code="07 / PLANET" title="Real intersection">
-            <p><strong>Mechanism</strong>{show(twin.planetIntersection, "UNKNOWN — no planetary claim")}</p>
-            <p><strong>Impact status</strong>UNMEASURED until evidence exists</p>
-          </Board>
-          <Board code="08 / OPPORTUNITIES" title="Next value">
-            <p><strong>Priority</strong>{show(twin.opportunity)}</p>
-            <p><strong>Estimated value</strong>{show(twin.estimatedValue, "UNKNOWN — no estimate")}</p>
-          </Board>
-          <Board code="09 / DECISIONS" title="Human choice">
-            <p><strong>Intervention</strong>{show(twin.intervention, "No intervention chosen")}</p>
-            <p><strong>State</strong>{twin.decisionState}</p>
-          </Board>
-        </div>
-
-        <div className="fbl-ledger">
-          <div className="fbl-ledger__head">
-            <h3>Decision + Value Ledger</h3>
-            <p>Estimated value, approved decision case, invested resources, measured result and attribution-reviewed realised value are separate states. None is silently promoted into another.</p>
-          </div>
-          <div className="fbl-ledger__row">
-            <div><strong>{show(twin.opportunity, "No opportunity selected")}</strong><span>LOCAL WORKING OBJECT · VALUE NOT REALISED BY DEFAULT</span></div>
-            <select value={twin.decisionState} aria-label="Decision state" onChange={(event) => patch("decisionState", event.target.value as DecisionState)}>
-              {DECISION_STATES.map((state) => <option value={state} key={state}>{state}</option>)}
-            </select>
-          </div>
-          <div className="fbl-value-grid" aria-label="Value states">
-            <div><span>Estimated</span><strong>{show(twin.estimatedValue, "UNKNOWN")}</strong></div>
-            <div><span>Approved</span><strong>{show(twin.approvedValue, "NOT APPROVED")}</strong></div>
-            <div><span>Invested</span><strong>{show(twin.investedAmount, "NONE RECORDED")}</strong></div>
-            <div><span>Measured</span><strong>{show(twin.measuredValue, "NOT MEASURED")}</strong></div>
-            <div><span>Realised</span><strong>{show(twin.realisedValue, "NOT REALISED")}</strong></div>
-          </div>
-        </div>
-
-        <div className="fbl-studio">
-          <div className="fbl-studio__copy">
-            <p className="fbl-kicker">WEBSITE STUDIO / PREVIEW</p>
-            <h3>Twin → public projection.</h3>
-            <p>A company website can become a controlled projection of approved Twin truth instead of a competing truth store. Nothing in this beta publishes automatically.</p>
-          </div>
-          <div className="fbl-preview">
-            <span>PREVIEW ONLY · NOT PUBLISHED</span>
-            <div>
-              <h4>{show(twin.company, "Your company")}</h4>
-              <p>{show(twin.objective, "Company objective will appear here after it is supplied and approved.")}</p>
-            </div>
-            <footer>{show(twin.brandSignal, show(twin.opportunity, "No approved public projection"))}</footer>
-          </div>
-        </div>
+        <footer className="fbt-entry-footer"><span>ONE COMPANY → ONE STATE → ONE INTERFACE</span><p>Facts remain facts. Estimates remain estimates. Private company truth is added only when the company provides it.</p></footer>
       </section>
-    </>
-  );
+      {loading&&<div className="fbt-build" role="status"><div className="fbt-build__card"><div className="fbt-build__top"><span>BUILDING COMPANY TWIN</span><strong>{Math.round(((loadingStep+1)/LOAD_STEPS.length)*100)}%</strong></div><h2>{query}</h2><div className="fbt-build__progress"><i style={{width:`${((loadingStep+1)/LOAD_STEPS.length)*100}%`}}/></div><div className="fbt-build__steps">{LOAD_STEPS.map((step,index)=><span key={step} className={index<=loadingStep?"is-done":""}>{index<loadingStep?"✓":index===loadingStep?"•":"○"} {step}</span>)}</div></div></div>}
+      {error&&<div className="fbt-toast fbt-toast--error"><div><strong>Research paused</strong><span>{error}</span></div><button onClick={()=>{setError("");setQuery("TOMRA")}}>Use TOMRA proof</button></div>}
+    </main>
+  }
+
+  return <main className="fbt-app">
+    <header className="fbt-topbar">
+      <div className="fbt-topbar__left"><button className="fbt-mobile-menu" onClick={()=>setMobileNavOpen(v=>!v)} aria-label="Open navigation">☰</button><button className="fbt-brand fbt-brand--button" onClick={reset}>4BRANDS<span>_</span></button><span className="fbt-byline">BY 4PLANET</span></div>
+      <button className="fbt-company-switch" onClick={reset}><span className="fbt-company-dot"/><strong>{analysis.company.name}</strong><small>Switch company</small></button>
+      <div className="fbt-topbar__actions"><button className="fbt-icon-button" onClick={()=>changeView("inbox")}>Inbox <span>{inboxCount}</span></button><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Complete Twin</button></div>
+    </header>
+    <div className="fbt-frame">
+      <aside className={`fbt-sidebar${mobileNavOpen?" is-open":""}`}>
+        <nav>{PRIMARY_NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>changeView(item.id)}><span>{item.label}</span>{item.id==="inbox"&&<small>{inboxCount}</small>}</button>)}</nav>
+        <div className="fbt-sidebar__bottom"><div className="fbt-completeness"><span>Twin completeness</span><strong>{completeness}%</strong></div><i><b style={{width:`${completeness}%`}}/></i><button className="fbt-button fbt-button--soft" onClick={()=>setModulesOpen(true)}>Explore company</button></div>
+      </aside>
+      <section className="fbt-workspace">
+        <div className="fbt-contextbar"><span>{analysis.analysisStatus.replaceAll("_"," ")} · {analysis.evidence.length} SOURCES</span><button onClick={()=>setModulesOpen(true)}>Whole company ↗</button></div>
+
+        {view==="home"&&<div className="fbt-view fbt-home">
+          <div className="fbt-view-head fbt-view-head--home"><div><p className="fbt-kicker">COMPANY HOME</p><h1>{analysis.company.name}</h1><p>{analysis.company.description}</p></div></div>
+          <div className="fbt-metric-rail">{leadMetrics.map(metric=><article className="fbt-metric" key={`${metric.label}-${metric.period}`}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.period}</small></article>)}</div>
+          <div className="fbt-home-grid">
+            <article className="fbt-hero-card"><div className="fbt-card-label"><span>WHAT MATTERS NOW</span>{opportunity&&<TruthPill value={opportunity.truthClass}/>}</div><h2>{opportunity?.title||"Complete the Twin to find the next move."}</h2><p>{opportunity?.economicLogic||analysis.statusNote}</p><div className="fbt-card-actions"><button className="fbt-button fbt-button--light" onClick={()=>changeView("opportunities")}>Open opportunity</button><button className="fbt-text-button" onClick={()=>changeView("evidence")}>See evidence →</button></div></article>
+            <article className="fbt-state-card"><div className="fbt-card-label"><span>COMPANY STATE</span><small>{new Date(analysis.generatedAt).toLocaleDateString()}</small></div><div className="fbt-state-score"><strong>{completeness}%</strong><span>of the current Twin has usable signal</span></div><div className="fbt-state-row"><span>Known sources</span><strong>{analysis.evidence.length}</strong></div><div className="fbt-state-row"><span>Open unknowns</span><strong>{analysis.unknowns.length}</strong></div><div className="fbt-state-row"><span>Company files</span><strong>{twin.files.length}</strong></div><button className="fbt-button fbt-button--soft fbt-button--full" onClick={()=>setCompleteOpen(true)}>Improve the Twin</button></article>
+          </div>
+        </div>}
+
+        {view==="company"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">COMPANY</p><h1>The company, in one place.</h1><p>{analysis.statusNote}</p></div><button className="fbt-button fbt-button--soft" onClick={()=>setCompleteOpen(true)}>Add company truth</button></div><div className="fbt-company-card"><div className="fbt-identity"><span>IDENTITY</span><h2>{analysis.company.legalName||analysis.company.name}</h2><p>{analysis.company.sector||"Sector unresolved"}</p><div><small>{analysis.company.geography||"Geography unresolved"}</small>{analysis.company.ticker&&<small>{analysis.company.ticker}</small>}</div></div><div className="fbt-company-columns"><section><span>HOW IT CREATES VALUE</span><StatementStack items={analysis.businessModel} empty="Add product and revenue model data." onComplete={()=>setCompleteOpen(true)}/></section><section><span>WHAT DRIVES VALUE</span><StatementStack items={analysis.valueDrivers} empty="Drivers need more evidence." onComplete={()=>setCompleteOpen(true)}/></section></div></div></div>}
+
+        {view==="finance"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">FINANCE / ECONOMIC SPINE</p><h1>Know the economic state.</h1><p>Public financial evidence first. Company-provided truth completes the operating baseline.</p></div><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Add finance data</button></div><div className="fbt-finance-layout"><section className="fbt-surface fbt-finance-table"><div className="fbt-surface-head"><span>ECONOMIC BASELINE</span><small>{analysis.economicBaseline.length} metrics</small></div>{analysis.economicBaseline.map(metric=><div className="fbt-finance-row" key={`${metric.label}-${metric.period}`}><div><strong>{metric.label}</strong><small>{metric.period}</small></div><b>{metric.value}</b><TruthPill value={metric.truthClass}/></div>)}</section><aside className="fbt-surface fbt-finance-side"><div className="fbt-surface-head"><span>VALUE LEAKAGE</span><small>{analysis.valueLeakage.length} signals</small></div><StatementStack items={analysis.valueLeakage} empty="No defensible leakage signal yet." onComplete={()=>setCompleteOpen(true)}/></aside></div></div>}
+
+        {view==="opportunities"&&<div className="fbt-view fbt-view--flush"><div className="fbt-view-head fbt-view-head--compact"><div><p className="fbt-kicker">OPPORTUNITIES</p><h1>Where is the largest available value?</h1></div><span className="fbt-head-note">Hypotheses are not realised value.</span></div><div className="fbt-opportunity-layout"><div className="fbt-opportunity-list">{analysis.opportunities.map((item,index)=><button key={`${item.rank}-${item.title}`} className={index===activeOpportunity?"is-active":""} onClick={()=>setActiveOpportunity(index)}><span>{String(item.rank).padStart(2,"0")}</span><strong>{item.title}</strong><TruthPill value={item.truthClass}/></button>)}</div>{opportunity?<article className="fbt-opportunity-detail"><div className="fbt-card-label"><span>OPPORTUNITY {String(opportunity.rank).padStart(2,"0")}</span><div><TruthPill value={opportunity.truthClass}/></div></div><h2>{opportunity.title}</h2><section><span>AVAILABLE VALUE</span><p>{opportunity.estimatedValue}</p></section><section><span>WHY IT MAY MATTER</span><p>{opportunity.economicLogic}</p></section><section><span>PLANET INTERSECTION</span><p>{opportunity.planetaryLogic}</p><small>{opportunity.planetaryDelta}</small></section><div className="fbt-card-actions"><button className="fbt-button fbt-button--primary" onClick={()=>{patchTwin("selectedOpportunity",opportunity.title);changeView("decisions")}}>Take to decision</button><button className="fbt-text-button" onClick={()=>changeView("evidence")}>Inspect evidence →</button></div></article>:<EmptyState title="No ranked opportunity yet" text="Complete the Twin to create a defensible opportunity set." action={()=>setCompleteOpen(true)}/>}</div></div>}
+
+        {view==="decisions"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">DECISIONS / VALUE LEDGER</p><h1>Make the choice explicit.</h1><p>An opportunity only becomes value after a human decision, bounded intervention and measured result.</p></div><button className="fbt-button fbt-button--soft" onClick={saveTwin}>{saved?"Saved":"Save decision"}</button></div><div className="fbt-decision-grid"><label className="fbt-input-card"><span>SELECTED OPPORTUNITY</span><textarea rows={3} value={twin.selectedOpportunity} onChange={e=>patchTwin("selectedOpportunity",e.target.value)} placeholder="Choose an opportunity"/></label><label className="fbt-input-card"><span>DECISION STATE</span><select value={twin.decisionState} onChange={e=>patchTwin("decisionState",e.target.value)}>{DECISION_STATES.map(state=><option key={state}>{state}</option>)}</select></label><label className="fbt-input-card fbt-input-card--wide"><span>INTERVENTION</span><textarea rows={3} value={twin.intervention} onChange={e=>patchTwin("intervention",e.target.value)} placeholder="What will actually change?"/></label><label className="fbt-input-card fbt-input-card--wide"><span>MEASURED RESULT</span><textarea rows={3} value={twin.measuredResult} onChange={e=>patchTwin("measuredResult",e.target.value)} placeholder="No result yet — measurement remains open"/></label></div></div>}
+
+        {view==="evidence"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">SOURCES / FACTS / PROVENANCE</p><h1>Know why the Twin believes something.</h1><p>Public evidence, calculations and interpretations remain visibly different.</p></div></div><div className="fbt-evidence-layout"><section className="fbt-surface"><div className="fbt-surface-head"><span>SOURCES</span><small>{analysis.evidence.length}</small></div><div className="fbt-source-list">{analysis.evidence.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.id}><div><span>{source.publisher}</span><small>{source.checkedAt}</small></div><strong>{source.title}</strong><p>{source.note}</p><i>↗</i></a>)}</div></section><aside className="fbt-surface fbt-truth-guide"><div className="fbt-surface-head"><span>TRUTH CLASSES</span><small>Never collapse these</small></div>{(["FACT","CALCULATION","ESTIMATE","ASSUMPTION","INTERPRETATION","UNKNOWN"] as TruthClass[]).map(truth=><div key={truth}><TruthPill value={truth}/><p>{truth==="FACT"?"Directly supported by a source.":truth==="CALCULATION"?"Derived from stated inputs.":truth==="UNKNOWN"?"The Twin does not know yet.":"A bounded model output, not a fact."}</p></div>)}</aside></div></div>}
+
+        {view==="inbox"&&<div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">COMPANY INBOX</p><h1>What should the Twin learn next?</h1><p>New information stays reviewable. Nothing silently overwrites company truth.</p></div><button className="fbt-button fbt-button--primary" onClick={()=>setCompleteOpen(true)}>Add information</button></div><div className="fbt-inbox-grid"><Surface title="MISSING INFORMATION" meta={String(analysis.unknowns.length)}>{analysis.unknowns.map(item=><div className="fbt-inbox-row" key={item}><span className="fbt-inbox-icon">?</span><p>{item}</p><small>REVIEW</small></div>)}</Surface><Surface title="ASSUMPTIONS TO CONFIRM" meta={String(analysis.assumptions.length)}>{analysis.assumptions.map(item=><div className="fbt-inbox-row" key={item}><span className="fbt-inbox-icon">≈</span><p>{item}</p><small>CONFIRM</small></div>)}</Surface></div>{twin.files.length>0&&<div className="fbt-files"><span>LOCAL FILE INTAKE</span>{twin.files.map(file=><b key={file}>{file}</b>)}</div>}</div>}
+
+        {["revenue","products","market","marketing","operations","people","brand","risk","planet","interventions","results","learning"].includes(view)&&<ModuleView view={view} analysis={analysis} twin={twin} onComplete={()=>setCompleteOpen(true)} onNavigate={changeView}/>}      
+      </section>
+    </div>
+
+    {modulesOpen&&<div className="fbt-overlay" onMouseDown={()=>setModulesOpen(false)}><section className="fbt-module-sheet" onMouseDown={e=>e.stopPropagation()}><div className="fbt-sheet-head"><div><span>THE WHOLE COMPANY</span><h2>One Twin. Controlled depth.</h2></div><button onClick={()=>setModulesOpen(false)} aria-label="Close">×</button></div><div className="fbt-module-grid">{COMPANY_MODULES.map(module=><button key={module.id} onClick={()=>changeView(module.id)} className={view===module.id?"is-active":""}><span>{module.label}</span><small>{module.hint}</small><i>→</i></button>)}</div></section></div>}
+
+    {completeOpen&&<div className="fbt-overlay fbt-overlay--drawer" onMouseDown={()=>setCompleteOpen(false)}><aside className="fbt-drawer" onMouseDown={e=>e.stopPropagation()}><div className="fbt-sheet-head"><div><span>COMPLETE YOUR TWIN</span><h2>Add company truth.</h2></div><button onClick={()=>setCompleteOpen(false)} aria-label="Close">×</button></div><p className="fbt-drawer__intro">Prototype intake: these fields are stored only in this browser. They are company-provided working state, not verified public facts.</p><div className="fbt-form-grid">
+      <TwinField label="Primary objective" value={twin.objective} onChange={v=>patchTwin("objective",v)} placeholder="What must improve?"/><TwinField label="Annual revenue" value={twin.revenue} onChange={v=>patchTwin("revenue",v)} placeholder="Company-provided baseline"/><TwinField label="Margin" value={twin.margin} onChange={v=>patchTwin("margin",v)} placeholder="Gross / contribution / EBITA"/><TwinField label="Cash / conversion" value={twin.cash} onChange={v=>patchTwin("cash",v)} placeholder="Working capital / runway / OCF"/><TwinField label="Customers / market" value={twin.customers} onChange={v=>patchTwin("customers",v)} placeholder="Who pays and why?"/><TwinField label="Operations" value={twin.operations} onChange={v=>patchTwin("operations",v)} placeholder="Capacity, delivery, constraints"/><TwinField label="People" value={twin.people} onChange={v=>patchTwin("people",v)} placeholder="Team / roles / capacity"/><TwinField label="Brand / web" value={twin.brand} onChange={v=>patchTwin("brand",v)} placeholder="Promise / channels / conversion"/><TwinField label="Primary risk" value={twin.primaryRisk} onChange={v=>patchTwin("primaryRisk",v)} placeholder="What could materially break value?"/><TwinField label="Planet intersection" value={twin.planet} onChange={v=>patchTwin("planet",v)} placeholder="Only where a real mechanism exists"/>
+    </div><label className="fbt-file-input"><span>DOCUMENT / CSV / EXCEL INTAKE</span><strong>{twin.files.length?`${twin.files.length} file${twin.files.length===1?"":"s"} staged locally`:"Choose files"}</strong><small>File ingestion is not connected to a server yet; only filenames are kept in this prototype.</small><input type="file" multiple accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.txt" onChange={e=>patchTwin("files",Array.from(e.target.files||[]).map(file=>file.name))}/></label><label className="fbt-notes"><span>INTERNAL CONTEXT / UNKNOWN</span><textarea rows={4} value={twin.notes} onChange={e=>patchTwin("notes",e.target.value)} placeholder="What can public data not know?"/></label><div className="fbt-drawer__actions"><span>LOCAL PROTOTYPE · NO SERVER WRITE · NOT ASSURANCE</span><button className="fbt-button fbt-button--primary" onClick={()=>{saveTwin();setCompleteOpen(false)}}>{saved?"Saved":"Save Company State"}</button></div></aside></div>}
+  </main>
+}
+
+function ModuleView({view,analysis,twin,onComplete,onNavigate}:{view:ViewId;analysis:Analysis;twin:TwinInput;onComplete:()=>void;onNavigate:(view:ViewId)=>void}){
+  const employeeItems:Statement[]=analysis.economicBaseline.filter(m=>m.label.toLowerCase().includes("employee")).map(m=>({title:m.label,detail:`${m.value} · ${m.period}`,truthClass:m.truthClass,confidence:"HIGH",sourceIds:m.sourceIds}));
+  const configs:Partial<Record<ViewId,{kicker:string;title:string;intro:string;items:Statement[];privateValue?:string;privateLabel?:string}>>={
+    revenue:{kicker:"REVENUE",title:"How does money enter the company?",intro:"Connect product, customer, price, channel and margin.",items:analysis.valueDrivers,privateValue:twin.revenue,privateLabel:"Company revenue baseline"},
+    products:{kicker:"PRODUCTS",title:"What does the company actually sell?",intro:"Products connect to customers, economics, delivery constraints and outcomes.",items:analysis.businessModel},
+    market:{kicker:"CUSTOMERS / MARKET",title:"Who chooses the company — and why?",intro:"Public signals describe a market. Company truth resolves segments, retention and willingness to pay.",items:analysis.valueDrivers,privateValue:twin.customers,privateLabel:"Company-provided customer truth"},
+    marketing:{kicker:"MARKETING",title:"Turn attention into measurable demand.",intro:"No marketing claim becomes truth until channel, spend, traffic, conversion and revenue connect.",items:[],privateValue:twin.brand,privateLabel:"Company-provided marketing signal"},
+    operations:{kicker:"OPERATIONS",title:"Where does delivery create or lose value?",intro:"Constraints, capacity, quality, inventory and service become one operating view.",items:analysis.valueLeakage,privateValue:twin.operations,privateLabel:"Company-provided operating state"},
+    people:{kicker:"PEOPLE",title:"Know the capacity behind the company.",intro:"Roles, ownership, capacity and bottlenecks deepen public headcount.",items:employeeItems,privateValue:twin.people,privateLabel:"Company-provided people state"},
+    brand:{kicker:"BRAND / WEB",title:"One promise. One projection of company truth.",intro:"Brand and website project the same Company State rather than creating another truth system.",items:analysis.businessModel,privateValue:twin.brand,privateLabel:"Company-provided brand state"},
+    risk:{kicker:"RISK",title:"See what could destroy value.",intro:"Tie risk to evidence, exposure and decisions.",items:analysis.valueLeakage,privateValue:twin.primaryRisk,privateLabel:"Primary company risk"},
+    planet:{kicker:"PLANET",title:"Find where better business and a better planet are the same decision.",intro:"Planetary value needs a real mechanism, baseline and measured delta.",items:analysis.opportunities.slice(0,4).map(o=>({title:o.title,detail:o.planetaryLogic,truthClass:o.truthClass,confidence:o.confidence,sourceIds:o.sourceIds})),privateValue:twin.planet,privateLabel:"Company-provided planet intersection"},
+    interventions:{kicker:"INTERVENTIONS",title:"Turn a decision into bounded work.",intro:"Define what changes, ownership, baseline, cost, time and measurement.",items:analysis.solutions,privateValue:twin.intervention,privateLabel:"Chosen intervention"},
+    results:{kicker:"RESULTS",title:"Only measured change counts.",intro:"Estimated value and realised value remain separate.",items:[],privateValue:twin.measuredResult,privateLabel:"Measured result"},
+    learning:{kicker:"LEARNING",title:"Make the company smarter after every decision.",intro:"Evidence, decision, intervention and result become organisational memory.",items:analysis.solutions,privateValue:twin.notes,privateLabel:"Working learning / context"}
+  };
+  const config=configs[view]||configs.operations!;
+  return <div className="fbt-view"><div className="fbt-view-head"><div><p className="fbt-kicker">{config.kicker}</p><h1>{config.title}</h1><p>{config.intro}</p></div><button className="fbt-button fbt-button--soft" onClick={onComplete}>Add company data</button></div><div className="fbt-module-layout"><Surface title="WHAT WE KNOW" meta={`${config.items.length} public signals`}><StatementStack items={config.items} empty="Public evidence is not strong enough to fill this view yet." onComplete={onComplete}/></Surface><aside className="fbt-surface fbt-private-state"><div className="fbt-surface-head"><span>COMPANY STATE</span><small>PRIVATE / LOCAL PROTOTYPE</small></div>{config.privateValue?.trim()?<div className="fbt-private-value"><span>{config.privateLabel}</span><strong>{config.privateValue}</strong><button className="fbt-text-button" onClick={onComplete}>Edit →</button></div>:<EmptyState title="Company truth missing" text="Public evidence cannot answer this reliably. Add internal information to deepen the same Twin." action={onComplete}/>}<button className="fbt-link-card" onClick={()=>onNavigate("evidence")}><span>Inspect provenance</span><strong>Sources + truth classes →</strong></button></aside></div></div>
 }
