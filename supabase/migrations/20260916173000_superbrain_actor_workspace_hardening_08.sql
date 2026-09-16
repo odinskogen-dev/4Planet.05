@@ -65,7 +65,7 @@ create index if not exists cns_event_workspace_scope_actor_idx
   on cns.event_workspace_scope(actor_id,event_id desc);
 
 -- ---------------------------------------------------------------------------
--- Rebuild state writeback with explicit write permission + scope edge.
+-- Rebuild state writeback with explicit read/access then write permission.
 -- No silent product-local current-state mutation.
 -- ---------------------------------------------------------------------------
 create or replace function cns.commit_actor_state(
@@ -112,7 +112,10 @@ begin
 
   if p_writer_type='USER' then
     if p_identity_id is null
-       or not cns.identity_has_workspace_permission(p_identity_id,p_workspace_id,'write') then
+       or not cns.identity_has_workspace_access(p_identity_id,p_workspace_id) then
+      raise exception 'CNS_WORKSPACE_ACCESS_DENIED';
+    end if;
+    if not cns.identity_has_workspace_permission(p_identity_id,p_workspace_id,'write') then
       raise exception 'CNS_WORKSPACE_WRITE_DENIED';
     end if;
   end if;
@@ -221,8 +224,9 @@ insert into cns.system_meta(key,value)
 values(
   'superbrain_actor_workspace_hardening_v1',
   jsonb_build_object(
-    'version','1.0.0',
+    'version','1.0.1',
     'status','ACTIVE_NOT_COMPLETE',
+    'read_access_required_before_write',true,
     'write_permission_required',true,
     'event_workspace_scope_indexed',true,
     'integrity_view','cns.v_actor_kernel_violations',
