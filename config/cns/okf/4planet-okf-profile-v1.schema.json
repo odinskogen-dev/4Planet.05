@@ -65,7 +65,7 @@
         "last_validated"
       ],
       "properties": {
-        "knowledge_id": {"type": "string", "pattern": "^kp:[a-z0-9][a-z0-9._:/-]*$"},
+        "knowledge_id": {"type": "string", "pattern": "^kp:[A-Za-z0-9][A-Za-z0-9._:/-]*$"},
         "schema_version": {"const": "4planet-okf-1.0"},
         "authority": {"type": "string", "minLength": 1},
         "authority_level": {"enum": ["FOUNDER", "LOCKED_CANON", "WORKING_CANON", "PROGRAMME_CONTROL", "DOMAIN_AUTHORITY", "SOURCE_EVIDENCE", "GENERATED_VIEW", "HISTORICAL", "NONE"]},
