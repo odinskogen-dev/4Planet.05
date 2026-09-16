@@ -6,10 +6,13 @@ on:
     paths:
       - src/App.tsx
       - src/pages/partners/FourBrandsEconomic.tsx
+      - src/pages/partners/FourBrandsEconomicV2.tsx
       - src/product/fourbrands/economicEngine.ts
+      - src/product/fourbrands/companyMoney.ts
       - src/styles/fourbrands-twin.css
-      - src/styles/fourbrands-mobile-truth.css
+      - src/styles/fourbrands-money-os.css
       - functions/api/brand-analysis.ts
+      - public/_redirects
       - vite.config.ts
       - package.json
       - package-lock.json
@@ -171,7 +174,7 @@ jobs:
           printf '%s\n' "$CANONICAL_URL" > fourbrands-live-url.txt
           printf '%s\n' "$GITHUB_SHA" > fourbrands-live-sha.txt
 
-      - name: Browser-certify canonical desktop + iPhone
+      - name: Browser-certify canonical Company Money OS on desktop + iPhone
         shell: bash
         run: |
           set -euo pipefail
@@ -188,14 +191,20 @@ jobs:
             if (!canonical?.startsWith('https://4brands.org/')) throw new Error(`bad canonical ${canonical}`);
             await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
             await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
-            await page.getByRole('button', { name: 'Explore with synthetic demo finance' }).click();
+            await page.getByRole('button', { name: 'Explore synthetic demo' }).click();
             await page.getByRole('heading', { name: 'What matters now.' }).waitFor({ timeout: 15000 });
             const truth = viewport.width <= 760 ? page.locator('.fb-mobile-session') : page.locator('.fb-session');
             await truth.waitFor({ state: 'visible', timeout: 10000 });
             if ((await truth.textContent())?.trim() !== 'SYNTHETIC DEMO FINANCE · SESSION ONLY') throw new Error('demo truth label missing');
             const root = viewport.width <= 760 ? page.locator('.fb-mobile-nav') : page.locator('.fb-nav');
             await root.getByRole('button', { name: 'Money', exact: true }).click();
-            await page.getByRole('heading', { name: 'Know the economic state.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('heading', { name: 'Your company economy, alive.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Year', exact: true }).click();
+            await page.getByText('MONEY CALENDAR', { exact: false }).first().waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Balance', exact: true }).click();
+            await page.getByText('Total cash', { exact: true }).waitFor({ timeout: 10000 });
+            await page.getByText('Total assets', { exact: true }).waitFor({ timeout: 10000 });
+            await page.getByText('Total debt', { exact: true }).waitFor({ timeout: 10000 });
             await root.getByRole('button', { name: 'Value', exact: true }).click();
             await page.getByRole('heading', { name: 'Where is value leaking?' }).waitFor({ timeout: 10000 });
             await page.getByRole('button', { name: 'Take to decision' }).click();
