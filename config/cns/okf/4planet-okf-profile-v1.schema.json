@@ -62,6 +62,7 @@
         "writeback_state",
         "sensitivity",
         "lifecycle_state",
+        "migration_status",
         "last_validated"
       ],
       "properties": {
