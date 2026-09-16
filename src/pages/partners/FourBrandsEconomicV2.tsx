@@ -130,7 +130,7 @@ export default function FourBrandsEconomicV2(){
   function saveManual(payload:{mode:AddMode;name:string;amount:number;kind:MoneyEntryKind;status:MoneyEntryStatus;date:string;recurrence:MoneyRecurrence;counterparty:string;category:string;accountType:MoneyAccountType}){
     const currency=twin.currency||"EUR";const id=uid();const source="Company-confirmed manual input · session only";
     if(payload.mode==="account"){setAccounts(current=>[...current,{id,name:payload.name||"Account",type:payload.accountType,balance:payload.amount,currency,updatedAt:today(),source}]);}
-    else if(payload.mode==="asset"||payload.mode==="debt"){setBalanceItems(current=>[...current,{id,kind:payload.mode,name:payload.name||payload.mode,category:payload.category||"Manual",amount:payload.amount,currency,updatedAt:today(),source}]);}
+    else if(payload.mode==="asset"||payload.mode==="debt"){const balanceKind: "asset"|"debt"=payload.mode;setBalanceItems(current=>[...current,{id,kind:balanceKind,name:payload.name||balanceKind,category:payload.category||"Manual",amount:payload.amount,currency,updatedAt:today(),source}]);}
     else {const entry:MoneyEntry={id,kind:payload.kind,status:payload.status,date:payload.date||today(),amount:payload.amount,currency,description:payload.name||payload.kind.replaceAll("_"," "),counterparty:payload.counterparty,recurrence:payload.recurrence,source};setManualEntries(current=>[...current,entry]);const economic=moneyEntryToEconomicRows(entry);if(economic.length)setRows(current=>[...current,...economic]);}
     setDataLabel("COMPANY-CONFIRMED MANUAL INPUT · SESSION ONLY");setAddOpen(false);setView("money");
   }
