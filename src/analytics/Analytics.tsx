@@ -152,6 +152,9 @@ export function Analytics() {
     if (!allowedHost || !id || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
 
+    // Deliberately exclude query strings and fragments from analytics. OAuth
+    // callbacks and other routes can carry credentials or personal data there.
+    const safePageLocation = `${window.location.origin}${location.pathname}`;
     const pageProperties = {
       page_title: document.title,
       page_path: location.pathname,
@@ -161,11 +164,11 @@ export function Analytics() {
 
     window.gtag?.("event", "page_view", {
       ...pageProperties,
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
+      page_location: safePageLocation,
+      page_path: location.pathname,
     });
     capturePostHog("$pageview", pageProperties);
-  }, [allowedHost, consent, id, location.pathname, location.search]);
+  }, [allowedHost, consent, id, location.pathname]);
 
   if (!allowedHost || !id || consent !== null) return null;
 
