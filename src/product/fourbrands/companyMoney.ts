@@ -2,7 +2,7 @@ import type { EconomicRow, EconomicTwin } from "./economicEngine";
 
 export type MoneyAccountType = "operating" | "savings" | "tax" | "cash" | "other";
 export type MoneyEntryKind = "income" | "expense" | "tax" | "debt_service" | "investment" | "other_in" | "other_out";
-export type MoneyEntryStatus = "actual" | "planned";
+export type MoneyEntryStatus = "actual" | "planned" | "forecast" | "scenario";
 export type MoneyRecurrence = "none" | "monthly" | "quarterly" | "annual";
 
 export type MoneyAccount = {
@@ -58,8 +58,13 @@ export type MonthSummary = {
   actualOut: number;
   plannedIn: number;
   plannedOut: number;
+  forecastIn: number;
+  forecastOut: number;
+  scenarioIn: number;
+  scenarioOut: number;
   publicCharges: number;
   net: number;
+  scenarioNet: number;
   projectedClosingCash: number | null;
   events: CalendarEvent[];
 };
@@ -74,6 +79,7 @@ export type CompanyMoneySnapshot = {
   annualInflow: number;
   annualOutflow: number;
   annualNet: number;
+  annualScenarioNet: number;
   annualPublicCharges: number;
   next30Inflow: number;
   next30Outflow: number;
@@ -169,26 +175,27 @@ export function buildCompanyMoneySnapshot(input: {
   let projected = totalCash;
   const months: MonthSummary[] = MONTHS.map((month,monthIndex) => {
     const monthEvents = events.filter(event=>new Date(`${event.date}T12:00:00`).getMonth()===monthIndex);
-    const actualIn = monthEvents.filter(event=>event.status==="actual"&&event.direction==="in").reduce((sum,event)=>sum+event.amount,0);
-    const actualOut = monthEvents.filter(event=>event.status==="actual"&&event.direction==="out").reduce((sum,event)=>sum+event.amount,0);
-    const plannedIn = monthEvents.filter(event=>event.status==="planned"&&event.direction==="in").reduce((sum,event)=>sum+event.amount,0);
-    const plannedOut = monthEvents.filter(event=>event.status==="planned"&&event.direction==="out").reduce((sum,event)=>sum+event.amount,0);
+    const total = (status: MoneyEntryStatus, direction: "in"|"out") => monthEvents.filter(event=>event.status===status&&event.direction===direction).reduce((sum,event)=>sum+event.amount,0);
+    const actualIn=total("actual","in"), actualOut=total("actual","out"), plannedIn=total("planned","in"), plannedOut=total("planned","out"), forecastIn=total("forecast","in"), forecastOut=total("forecast","out"), scenarioIn=total("scenario","in"), scenarioOut=total("scenario","out");
     const publicCharges = monthEvents.filter(event=>event.publicCharge).reduce((sum,event)=>sum+event.amount,0);
-    const net = actualIn + plannedIn - actualOut - plannedOut;
+    const net = actualIn + plannedIn + forecastIn - actualOut - plannedOut - forecastOut;
+    const scenarioNet = net + scenarioIn - scenarioOut;
     let projectedClosingCash: number | null = null;
     if (year > currentYear || monthIndex >= currentMonth) {
-      const futureEvents = monthEvents.filter(event => year !== currentYear || monthIndex > currentMonth || dateValue(event.date) >= Date.now() - DAY);
+      const futureEvents = monthEvents.filter(event => event.status !== "scenario" && (year !== currentYear || monthIndex > currentMonth || dateValue(event.date) >= Date.now() - DAY));
       projected += futureEvents.reduce((sum,event)=>sum+(event.direction==="in"?event.amount:-event.amount),0);
       projectedClosingCash = round(projected);
     }
-    return {month,monthIndex,actualIn:round(actualIn),actualOut:round(actualOut),plannedIn:round(plannedIn),plannedOut:round(plannedOut),publicCharges:round(publicCharges),net:round(net),projectedClosingCash,events:monthEvents};
+    return {month,monthIndex,actualIn:round(actualIn),actualOut:round(actualOut),plannedIn:round(plannedIn),plannedOut:round(plannedOut),forecastIn:round(forecastIn),forecastOut:round(forecastOut),scenarioIn:round(scenarioIn),scenarioOut:round(scenarioOut),publicCharges:round(publicCharges),net:round(net),scenarioNet:round(scenarioNet),projectedClosingCash,events:monthEvents};
   });
   const next30End = Date.now() + 30 * DAY;
-  const next30 = events.filter(event=>dateValue(event.date)>=Date.now()-DAY && dateValue(event.date)<=next30End);
-  const annualInflow = events.filter(event=>event.direction==="in").reduce((sum,event)=>sum+event.amount,0);
-  const annualOutflow = events.filter(event=>event.direction==="out").reduce((sum,event)=>sum+event.amount,0);
+  const baseEvents = events.filter(event=>event.status!=="scenario");
+  const next30 = baseEvents.filter(event=>dateValue(event.date)>=Date.now()-DAY && dateValue(event.date)<=next30End);
+  const annualInflow = baseEvents.filter(event=>event.direction==="in").reduce((sum,event)=>sum+event.amount,0);
+  const annualOutflow = baseEvents.filter(event=>event.direction==="out").reduce((sum,event)=>sum+event.amount,0);
+  const scenarioDelta = events.filter(event=>event.status==="scenario").reduce((sum,event)=>sum+(event.direction==="in"?event.amount:-event.amount),0);
   return {
-    year,currency,totalCash:round(totalCash),totalAssets:round(totalAssets),totalDebt:round(totalDebt),netAssets:round(totalCash+totalAssets-totalDebt),annualInflow:round(annualInflow),annualOutflow:round(annualOutflow),annualNet:round(annualInflow-annualOutflow),annualPublicCharges:round(events.filter(event=>event.publicCharge).reduce((sum,event)=>sum+event.amount,0)),next30Inflow:round(next30.filter(event=>event.direction==="in").reduce((sum,event)=>sum+event.amount,0)),next30Outflow:round(next30.filter(event=>event.direction==="out").reduce((sum,event)=>sum+event.amount,0)),next30PublicCharges:round(next30.filter(event=>event.publicCharge).reduce((sum,event)=>sum+event.amount,0)),months,events
+    year,currency,totalCash:round(totalCash),totalAssets:round(totalAssets),totalDebt:round(totalDebt),netAssets:round(totalCash+totalAssets-totalDebt),annualInflow:round(annualInflow),annualOutflow:round(annualOutflow),annualNet:round(annualInflow-annualOutflow),annualScenarioNet:round(annualInflow-annualOutflow+scenarioDelta),annualPublicCharges:round(events.filter(event=>event.publicCharge).reduce((sum,event)=>sum+event.amount,0)),next30Inflow:round(next30.filter(event=>event.direction==="in").reduce((sum,event)=>sum+event.amount,0)),next30Outflow:round(next30.filter(event=>event.direction==="out").reduce((sum,event)=>sum+event.amount,0)),next30PublicCharges:round(next30.filter(event=>event.publicCharge).reduce((sum,event)=>sum+event.amount,0)),months,events
   };
 }
 
@@ -221,6 +228,8 @@ export function demoCompanyMoney(currency = "EUR") {
     {id:"rent",kind:"expense",status:"planned",date:d(0,1),amount:5500,currency,description:"Office / workspace",counterparty:"Landlord",recurrence:"monthly",source:"Synthetic demo finance data"},
     {id:"vat",kind:"tax",status:"planned",date:d(1,10),amount:9000,currency,description:"VAT / public charge",counterparty:"Tax authority",recurrence:"quarterly",source:"Synthetic demo finance data"},
     {id:"loan",kind:"debt_service",status:"planned",date:d(0,15),amount:3500,currency,description:"Loan payment",counterparty:"Bank",recurrence:"monthly",source:"Synthetic demo finance data"},
+    {id:"forecast-growth",kind:"income",status:"forecast",date:d(Math.min(11,today.getMonth()+1),20),amount:14000,currency,description:"Forecast pipeline",counterparty:"Uncommitted pipeline",recurrence:"none",source:"Synthetic demo forecast"},
+    {id:"scenario-hire",kind:"expense",status:"scenario",date:d(Math.min(11,today.getMonth()+2),25),amount:8000,currency,description:"Scenario · additional hire",counterparty:"Scenario",recurrence:"monthly",source:"Synthetic demo scenario"},
   ];
   return {accounts,balanceItems,manualEntries};
 }
