@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { metadataFromInventory, migrateText, sha256, stableKnowledgeId } from './okf-lib.mjs';
+import { metadataFromInventory, migrateText, sha256, stableKnowledgeId, SCHEMA_VERSION, PRODUCER_PROFILE, UPSTREAM_OKF } from './okf-lib.mjs';
 
 function usage() {
   console.error('Usage: node scripts/cns/okf-migrate.mjs <inventory.json> <source-root> [--write]');
@@ -66,8 +66,18 @@ for (const record of inventory.documents) {
 }
 
 const counts = ledger.reduce((acc, row) => { acc[row.status] = (acc[row.status] || 0) + 1; return acc; }, {});
-const output = { schema_version: '4planet-okf-1.0', write, source_count: inventory.documents.length, ledger_count: ledger.length, counts, unaccounted: inventory.documents.length - ledger.length, ledger };
+const output = {
+  schema_version: SCHEMA_VERSION,
+  producer_profile: PRODUCER_PROFILE,
+  upstream_okf: UPSTREAM_OKF,
+  write,
+  source_count: inventory.documents.length,
+  ledger_count: ledger.length,
+  counts,
+  unaccounted: inventory.documents.length - ledger.length,
+  ledger
+};
 const outPath = `${inventoryPath.replace(/\.json$/i, '')}.migration-ledger.json`;
 fs.writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
-console.log(JSON.stringify({ outPath, source_count: output.source_count, ledger_count: output.ledger_count, unaccounted: output.unaccounted, counts }, null, 2));
+console.log(JSON.stringify({ outPath, schema_version: output.schema_version, producer_profile: output.producer_profile, source_count: output.source_count, ledger_count: output.ledger_count, unaccounted: output.unaccounted, counts }, null, 2));
 if (output.unaccounted !== 0) process.exitCode = 1;
