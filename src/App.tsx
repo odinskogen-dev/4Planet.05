@@ -11,6 +11,7 @@ import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
 import FourBrandsEconomicV2 from "@/pages/partners/FourBrandsEconomicV2";
+import FourBrandsPremium02 from "@/pages/partners/FourBrandsPremium02";
 import FourBrandsClaimBridge from "@/pages/partners/FourBrandsClaimBridge";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
@@ -70,12 +71,21 @@ function CanonicalFourBrandsRedirect() {
   );
 }
 
-function FourBrandsWithIdentity() {
+function FourBrandsCurrent() {
   return (
     <FourPlanetIdentityProvider>
       <div className="public-header__actions fourbrands-id-slot" aria-label="4PLANET Identity" />
       <FourBrandsEconomicV2 />
       <FourBrandsClaimBridge />
+    </FourPlanetIdentityProvider>
+  );
+}
+
+function FourBrandsSandboxPremium() {
+  return (
+    <FourPlanetIdentityProvider>
+      <div className="public-header__actions fourbrands-id-slot" aria-label="4PLANET Identity" />
+      <FourBrandsPremium02 />
     </FourPlanetIdentityProvider>
   );
 }
@@ -93,7 +103,8 @@ function AtlasProductSwitcher() {
 
 export default function App() {
   if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
-  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsWithIdentity />;
+  if (isFourBrandsSandbox()) return <FourBrandsSandboxPremium />;
+  if (isFourBrandsHost()) return <FourBrandsCurrent />;
 
   return (
     <BrowserRouter>
