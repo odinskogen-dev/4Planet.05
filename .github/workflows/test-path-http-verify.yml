@@ -1,0 +1,39 @@
+name: 4PLANET test path HTTP verify
+
+on:
+  push:
+    branches:
+      - ops/test-lifeos-dns-20260916
+    paths:
+      - '.github/workflows/test-path-http-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify root shell and Universal Board mount
+        shell: bash
+        run: |
+          set -euo pipefail
+          root_code=''
+          board_code=''
+          for attempt in $(seq 1 12); do
+            root_code="$(curl -L -sS --max-time 20 -o /tmp/root.html -w '%{http_code}' https://test.4planet.org/ || true)"
+            board_code="$(curl -L -sS --max-time 20 -o /tmp/board.html -w '%{http_code}' https://test.4planet.org/universalboard/ || true)"
+            if [ "$root_code" = '200' ] && [ "$board_code" = '200' ]; then
+              break
+            fi
+            sleep 5
+          done
+          echo "root=$root_code board=$board_code"
+          test "$root_code" = '200'
+          test "$board_code" = '200'
+          grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' /tmp/board.html
+          if grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' /tmp/root.html; then
+            echo 'Root incorrectly contains Universal Board mount.' >&2
+            exit 2
+          fi
+          echo 'HTTP verification passed: root shell separate, /universalboard mounted.'
