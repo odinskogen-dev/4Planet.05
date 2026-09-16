@@ -18,6 +18,7 @@ import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
 import "@/styles/identity-polish.css";
 import "@/styles/fourbrands-mobile-truth.css";
+import "@/styles/fourbrands-premium02.css";
 
 // Canonical public product authority: https://4brands.org
 const FOURBRANDS_SANDBOX = "/sandbox/4brands-company-twin";
@@ -67,6 +68,15 @@ function CanonicalFourBrandsRedirect() {
   );
 }
 
+function FourBrandsWithIdentity() {
+  return (
+    <FourPlanetIdentityProvider>
+      <div className="public-header__actions fourbrands-id-slot" aria-label="4PLANET Identity" />
+      <FourBrandsEconomicV2 />
+    </FourPlanetIdentityProvider>
+  );
+}
+
 function AtlasProductSwitcher() {
   const { pathname } = useLocation();
   const atlasHost = typeof window !== "undefined" && window.location.hostname.toLowerCase().replace(/^www\./, "") === "4planetatlas.com";
@@ -80,7 +90,7 @@ function AtlasProductSwitcher() {
 
 export default function App() {
   if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
-  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsEconomicV2 />;
+  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsWithIdentity />;
 
   return (
     <BrowserRouter>
