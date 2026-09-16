@@ -1,0 +1,272 @@
+name: 4BRANDS Sandbox Deploy
+
+on:
+  push:
+    branches: [axe/4brands-company-twin-foundation-01]
+    paths:
+      - src/App.tsx
+      - src/pages/partners/FourBrandsLive.tsx
+      - src/styles/fourbrands-twin.css
+      - src/styles/fourbrands-twin-round2.css
+      - functions/api/brand-analysis.ts
+      - vite.config.ts
+      - tests/e2e/fourbrands-company-twin.spec.ts
+      - .github/workflows/fourbrands-sandbox-deploy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourbrands-company-twin-sandbox
+  cancel-in-progress: true
+
+env:
+  SANDBOX_PATH: /sandbox/4brands-company-twin
+  SANDBOX_URL: https://test.4planet.org/sandbox/4brands-company-twin
+  PAGES_PROJECT: 4planet-05
+  PAGES_BRANCH: sandbox-4brands-company-twin
+  ROUTER_WORKER: 4planet-sandbox-4brands-company-twin
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Make shared analysis endpoint sandbox-relative
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/pages/partners/FourBrandsLive.tsx')
+          text = path.read_text()
+          old = 'fetch("/api/brand-analysis",'
+          new = 'fetch(`${import.meta.env.BASE_URL}api/brand-analysis`,'
+          if old in text:
+              text = text.replace(old, new, 1)
+              path.write_text(text)
+          elif new not in text:
+              raise SystemExit('brand-analysis fetch contract not found')
+          PY
+
+      - name: Typecheck exact sandbox candidate
+        run: npm run typecheck
+
+      - name: Run canonical prebuild gates
+        run: npm run prebuild
+
+      - name: Build path-scoped sandbox
+        env:
+          VITE_BASE_PATH: /sandbox/4brands-company-twin/
+          VITE_BUILD_SHA: ${{ github.sha }}
+        run: npx vite build
+
+      - name: Verify sandbox asset base
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '/sandbox/4brands-company-twin/assets/' dist/index.html
+          printf '%s\n' "${GITHUB_SHA}" > sandbox-build-sha.txt
+
+      - name: Resolve Cloudflare authority
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=''
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'Missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/zones?name=4planet.org&status=active" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$zone_id" ] && [ -n "$account_id" ] || { echo '4planet.org Cloudflare authority unavailable'; exit 1; }
+          echo "CLOUDFLARE_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy exact build to existing 4PLANET Pages project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.128.0 pages deploy dist \
+            --project-name "$PAGES_PROJECT" \
+            --branch "$PAGES_BRANCH" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "4BRANDS Company Twin sandbox ${GITHUB_SHA}" | tee pages-deploy.log
+
+      - name: Resolve exact Pages preview
+        id: preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          preview=''
+          deployment_id=''
+          for attempt in $(seq 1 30); do
+            deps=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments" "${auth[@]}")
+            preview=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "$PAGES_BRANCH" '[.result[]? | select(.deployment_trigger.metadata.commit_hash == $sha and .deployment_trigger.metadata.branch == $branch)][0].url // empty' <<<"$deps")
+            deployment_id=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "$PAGES_BRANCH" '[.result[]? | select(.deployment_trigger.metadata.commit_hash == $sha and .deployment_trigger.metadata.branch == $branch)][0].id // empty' <<<"$deps")
+            [ -n "$preview" ] && break
+            sleep 4
+          done
+          [ -n "$preview" ] || { echo 'Exact Pages preview not found'; cat pages-deploy.log; exit 1; }
+          preview="${preview%/}"
+          echo "preview_url=$preview" >> "$GITHUB_OUTPUT"
+          echo "deployment_id=$deployment_id" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$preview" > pages-preview-url.txt
+          echo "Exact preview: $preview"
+
+      - name: Ensure test.4planet.org is proxied without replacing its origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          records=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/zones/${CLOUDFLARE_ZONE_ID}/dns_records?name=test.4planet.org&per_page=100" "${auth[@]}")
+          record_id=$(jq -r '.result[0].id // empty' <<<"$records")
+          if [ -z "$record_id" ]; then
+            project=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}" "${auth[@]}")
+            target=$(jq -r '.result.subdomain // "4planet-05.pages.dev"' <<<"$project")
+            payload=$(jq -nc --arg target "$target" '{type:"CNAME",name:"test",content:$target,ttl:1,proxied:true}')
+            created=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS -X POST "$api/zones/${CLOUDFLARE_ZONE_ID}/dns_records" "${auth[@]}" --data "$payload")
+            jq -e '.success == true' <<<"$created" >/dev/null
+            echo "Created proxied test.4planet.org DNS entry."
+          else
+            proxied=$(jq -r '.result[0].proxied // false' <<<"$records")
+            [ "$proxied" = 'true' ] || { echo 'Existing test.4planet.org is not proxied; refusing to replace its origin automatically.'; exit 1; }
+            echo "Existing proxied test.4planet.org preserved."
+          fi
+
+      - name: Deploy path-only sandbox router
+        env:
+          PREVIEW_ORIGIN: ${{ steps.preview.outputs.preview_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .sandbox-router
+          cat > .sandbox-router/index.mjs <<EOF
+          const PREFIX = "${SANDBOX_PATH}";
+          const PREVIEW = "${PREVIEW_ORIGIN}";
+          const SHARED_ANALYSIS = "https://4planet.org/api/brand-analysis";
+
+          export default {
+            async fetch(request) {
+              const incoming = new URL(request.url);
+              if (!incoming.pathname.startsWith(PREFIX)) return new Response("Not found", { status: 404 });
+              let suffix = incoming.pathname.slice(PREFIX.length) || "/";
+              if (!suffix.startsWith("/")) suffix = "/" + suffix;
+              const target = new URL(suffix === "/api/brand-analysis" ? SHARED_ANALYSIS : PREVIEW);
+              if (suffix !== "/api/brand-analysis") target.pathname = suffix;
+              target.search = incoming.search;
+              const headers = new Headers(request.headers);
+              headers.delete("host");
+              const proxied = new Request(target.toString(), { method: request.method, headers, body: ["GET","HEAD"].includes(request.method) ? undefined : request.body, redirect: "follow" });
+              const response = await fetch(proxied);
+              const out = new Response(response.body, response);
+              out.headers.set("x-4planet-sandbox", "4brands-company-twin");
+              out.headers.set("x-4planet-build-sha", "${GITHUB_SHA}");
+              return out;
+            }
+          };
+          EOF
+          cat > .sandbox-router/wrangler.jsonc <<EOF
+          {
+            "name": "${ROUTER_WORKER}",
+            "main": "index.mjs",
+            "compatibility_date": "2026-09-16",
+            "routes": [
+              { "pattern": "test.4planet.org/sandbox/4brands-company-twin*", "zone_name": "4planet.org" }
+            ]
+          }
+          EOF
+          (cd .sandbox-router && npx wrangler@4.128.0 deploy --config wrangler.jsonc) | tee router-deploy.log
+
+      - name: Verify live HTTP + assets + shared TOMRA proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 40); do
+            code=$(curl -sS -L --max-time 25 -o /tmp/sandbox.html -w '%{http_code}' "$SANDBOX_URL" || true)
+            bytes=0
+            [ -f /tmp/sandbox.html ] && bytes=$(wc -c < /tmp/sandbox.html | tr -d ' ')
+            header=$(curl -sSI --max-time 20 "$SANDBOX_URL" | tr -d '\r' | grep -i '^x-4planet-sandbox:' || true)
+            echo "attempt=$attempt HTTP=$code bytes=$bytes router=${header:-missing}"
+            if [ "$code" = '200' ] && [ "$bytes" -gt 500 ] && grep -q '/sandbox/4brands-company-twin/assets/' /tmp/sandbox.html && [ -n "$header" ]; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          [ "$ok" = '1' ] || { echo 'Sandbox HTML not verified'; exit 1; }
+
+          api_code=$(curl -sS --max-time 45 -o /tmp/tomra.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"company":"TOMRA"}' \
+            "$SANDBOX_URL/api/brand-analysis" || true)
+          echo "TOMRA_HTTP=$api_code"
+          [ "$api_code" = '200' ] || { cat /tmp/tomra.json || true; exit 1; }
+          jq -e '.analysis.company.name == "TOMRA" and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
+
+      - name: Browser-certify desktop + iPhone live sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          SANDBOX_URL="$SANDBOX_URL" node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const url = process.env.SANDBOX_URL;
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const browser = await chromium.launch();
+            const page = await browser.newPage({ viewport });
+            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+            await page.getByRole('heading', { name: 'See your whole company.' }).waitFor({ timeout: 15000 });
+            await page.getByRole('button', { name: /Try 4PLANET/i }).click();
+            await page.getByRole('heading', { name: '4PLANET' }).waitFor({ timeout: 15000 });
+            await browser.close();
+          }
+          NODE
+          printf '%s\n' "$SANDBOX_URL" > sandbox-live-url.txt
+
+      - name: Upload immutable sandbox evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fourbrands-sandbox-${{ github.sha }}
+          path: |
+            sandbox-build-sha.txt
+            sandbox-live-url.txt
+            pages-preview-url.txt
+            pages-deploy.log
+            router-deploy.log
+          if-no-files-found: ignore
+          retention-days: 30
