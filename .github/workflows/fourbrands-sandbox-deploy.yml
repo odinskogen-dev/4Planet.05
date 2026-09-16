@@ -6,6 +6,7 @@ on:
     paths:
       - src/App.tsx
       - src/pages/partners/FourBrandsLive.tsx
+      - src/product/fourbrands/economicEngine.ts
       - src/styles/fourbrands-twin.css
       - src/styles/fourbrands-twin-round2.css
       - functions/api/brand-analysis.ts
@@ -47,22 +48,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Make shared analysis endpoint sandbox-relative
+      - name: Verify shared analysis endpoint is base-aware
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('src/pages/partners/FourBrandsLive.tsx')
-          text = path.read_text()
-          old = 'fetch("/api/brand-analysis",'
-          new = 'fetch(`${import.meta.env.BASE_URL}api/brand-analysis`,'
-          if old in text:
-              text = text.replace(old, new, 1)
-              path.write_text(text)
-          elif new not in text:
-              raise SystemExit('brand-analysis fetch contract not found')
-          PY
+          grep -Fq 'fetch(`${import.meta.env.BASE_URL}api/brand-analysis`' src/pages/partners/FourBrandsLive.tsx
 
       - name: Typecheck exact sandbox candidate
         run: npm run typecheck
@@ -120,7 +110,7 @@ jobs:
             --project-name "$PAGES_PROJECT" \
             --branch "$PAGES_BRANCH" \
             --commit-hash "$GITHUB_SHA" \
-            --commit-message "4BRANDS Company Twin sandbox ${GITHUB_SHA}" | tee pages-deploy.log
+            --commit-message "4BRANDS Economic Twin sandbox ${GITHUB_SHA}" | tee pages-deploy.log
 
       - name: Resolve exact Pages preview
         id: preview
@@ -237,7 +227,7 @@ jobs:
           [ "$api_code" = '200' ] || { cat /tmp/tomra.json || true; exit 1; }
           jq -e '.analysis.company.name == "TOMRA" and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
 
-      - name: Browser-certify desktop + iPhone live sandbox
+      - name: Browser-certify Economic Twin + Value Finder on desktop + iPhone
         shell: bash
         run: |
           set -euo pipefail
@@ -249,9 +239,22 @@ jobs:
             const browser = await chromium.launch();
             const page = await browser.newPage({ viewport });
             await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-            await page.getByRole('heading', { name: 'See your whole company.' }).waitFor({ timeout: 15000 });
-            await page.getByRole('button', { name: /Try 4PLANET/i }).click();
-            await page.getByRole('heading', { name: '4PLANET' }).waitFor({ timeout: 15000 });
+            await page.getByRole('heading', { name: 'MAKE YOUR COMPANY BETTER' }).waitFor({ timeout: 15000 });
+            await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
+            await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
+            await page.getByRole('button', { name: 'Explore with synthetic demo finance' }).click();
+            await page.getByRole('heading', { name: 'What matters now.' }).waitFor({ timeout: 15000 });
+            const root = viewport.width <= 760 ? page.locator('.fb-mobile-nav') : page.locator('.fb-nav');
+            await root.getByRole('button', { name: 'Money', exact: true }).click();
+            await page.getByRole('heading', { name: 'Know the economic state.' }).waitFor({ timeout: 10000 });
+            await root.getByRole('button', { name: 'Value', exact: true }).click();
+            await page.getByRole('heading', { name: 'Where is value leaking?' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Take to decision' }).click();
+            await page.getByRole('heading', { name: 'Make the choice explicit.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Lock baseline' }).click();
+            await page.getByText('LOCKED BASELINE', { exact: true }).waitFor({ timeout: 10000 });
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+            if (overflow > 2) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}px`);
             await browser.close();
           }
           NODE
