@@ -22,6 +22,7 @@ import "@/styles/fourbrands-mobile-truth.css";
 import "@/styles/fourbrands-premium02.css";
 
 // Canonical public product authority: https://4brands.org
+// Premium Foundation 02 remains sandbox-only until explicit founder release.
 const FOURBRANDS_SANDBOX = "/sandbox/4brands-company-twin";
 
 function normalisedPath() {
