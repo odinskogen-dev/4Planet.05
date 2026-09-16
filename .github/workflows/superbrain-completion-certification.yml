@@ -97,6 +97,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916203000_superbrain_knowledge_contract_09.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916210000_superbrain_scoped_retrieval_health_10.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916213000_superbrain_runtime_enforcement_health_11.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916214000_superbrain_runtime_search_path_fix_12.sql
 
       - name: Verify original Planet convergence
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_planet_convergence.sql
