@@ -25,43 +25,42 @@ function normalisedPath() {
   return window.location.pathname.replace(/\/+$/, "") || "/";
 }
 
-function isFourBrandHost() {
+function hostIs(...hosts: string[]) {
   if (typeof window === "undefined") return false;
-  const host = window.location.hostname.toLowerCase();
-  return host === "4brand.org" || host === "www.4brand.org";
+  return hosts.includes(window.location.hostname.toLowerCase());
 }
 
-function isLegacyFourBrandsHost() {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname.toLowerCase();
-  return host === "4brands.org" || host === "www.4brands.org";
+function isFourBrandsHost() {
+  return hostIs("4brands.org", "www.4brands.org");
 }
 
-function isFourBrandPath() {
+function isLegacyFourBrandHost() {
+  return hostIs("4brand.org", "www.4brand.org");
+}
+
+function isFourBrandsSandbox() {
   const path = normalisedPath();
-  return path === "/4brand" || path.startsWith("/4brand/") || path === FOURBRANDS_SANDBOX || path.startsWith(`${FOURBRANDS_SANDBOX}/`);
+  return path === FOURBRANDS_SANDBOX || path.startsWith(`${FOURBRANDS_SANDBOX}/`);
 }
 
 function isLegacyFourBrandsPath() {
   const path = normalisedPath();
-  return path === "/4brands" || path.startsWith("/4brands/");
+  return path === "/4brand" || path.startsWith("/4brand/") || path === "/4brands" || path.startsWith("/4brands/");
 }
 
-function LegacyFourBrandsRedirect({ toStandalone = false }: { toStandalone?: boolean }) {
+function CanonicalFourBrandsRedirect() {
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const path = normalisedPath().replace(/^\/4brands(?=\/|$)/, "/4brand");
-    const destination = `${path}${window.location.search}${window.location.hash}`;
-    if (toStandalone) {
-      window.location.replace(`https://4brand.org${destination === "/" ? "" : destination}`);
-      return;
-    }
-    window.location.replace(destination);
-  }, [toStandalone]);
+    let path = normalisedPath();
+    path = path.replace(/^\/4brands?(?=\/|$)/, "") || "/";
+    const allowed = ["/", "/overview", "/money", "/value", "/decisions"];
+    if (!allowed.includes(path)) path = "/";
+    window.location.replace(`https://4brands.org${path === "/" ? "/" : path}${window.location.search}${window.location.hash}`);
+  }, []);
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f4ef", color: "#111", fontFamily: "system-ui, sans-serif" }}>
-      <a href={toStandalone ? "https://4brand.org" : "/4brand"} style={{ color: "inherit" }}>Continue to 4BRAND</a>
+    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f5f5f2", color: "#111", fontFamily: "system-ui, sans-serif" }}>
+      <a href="https://4brands.org" style={{ color: "inherit" }}>Continue to 4BRANDS</a>
     </main>
   );
 }
@@ -78,9 +77,8 @@ function AtlasProductSwitcher() {
 }
 
 export default function App() {
-  if (isLegacyFourBrandsHost()) return <LegacyFourBrandsRedirect toStandalone />;
-  if (isLegacyFourBrandsPath()) return <LegacyFourBrandsRedirect />;
-  if (isFourBrandHost() || isFourBrandPath()) return <FourBrandLive />;
+  if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
+  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandLive />;
 
   return (
     <BrowserRouter>
