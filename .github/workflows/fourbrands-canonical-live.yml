@@ -161,36 +161,45 @@ jobs:
           set -euo pipefail
           ok=0
           for attempt in $(seq 1 40); do
-            code=$(curl -sS -L --max-time 25 -o /tmp/live.html -w '%{http_code}' "$CANONICAL_URL/" || true)
+            code=$(curl -sS -L --max-time 25 -o /tmp/live.html -w '%{http_code}' "$CANONICAL_URL/?release=$GITHUB_SHA&attempt=$attempt" || true)
             bytes=0; [ -f /tmp/live.html ] && bytes=$(wc -c < /tmp/live.html | tr -d ' ')
             echo "attempt=$attempt HTTP=$code bytes=$bytes"
             if [ "$code" = '200' ] && [ "$bytes" -gt 500 ]; then ok=1; break; fi
             sleep 5
           done
           [ "$ok" = '1' ] || { echo 'Canonical 4brands.org did not activate'; exit 1; }
-          api_code=$(curl -sS --max-time 45 -o /tmp/tomra.json -w '%{http_code}' -H 'content-type: application/json' --data '{"company":"TOMRA"}' "$CANONICAL_URL/api/brand-analysis" || true)
+          api_code=$(curl -sS --max-time 45 -o /tmp/tomra.json -w '%{http_code}' -H 'content-type: application/json' --data '{"company":"TOMRA"}' "$CANONICAL_URL/api/brand-analysis?release=$GITHUB_SHA" || true)
           [ "$api_code" = '200' ] || { echo "TOMRA API HTTP=$api_code"; cat /tmp/tomra.json || true; exit 1; }
           jq -e '.analysis.company.name == "TOMRA" and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
           printf '%s\n' "$CANONICAL_URL" > fourbrands-live-url.txt
           printf '%s\n' "$GITHUB_SHA" > fourbrands-live-sha.txt
 
-      - name: Browser-certify canonical Company Money OS on desktop + iPhone
+      - name: Browser-certify exact canonical Company Money OS on desktop + iPhone
         shell: bash
         run: |
           set -euo pipefail
           npx playwright install --with-deps chromium
-          CANONICAL_URL="$CANONICAL_URL" node --input-type=module <<'NODE'
+          CANONICAL_URL="$CANONICAL_URL" GITHUB_SHA="$GITHUB_SHA" node --input-type=module <<'NODE'
           import { chromium } from '@playwright/test';
           const url = process.env.CANONICAL_URL;
+          const sha = process.env.GITHUB_SHA;
           for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
             const browser = await chromium.launch();
             const page = await browser.newPage({ viewport });
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-            await page.getByRole('heading', { name: 'MAKE YOUR COMPANY BETTER' }).waitFor({ timeout: 15000 });
+            let ready = false;
+            for (let attempt = 1; attempt <= 18; attempt += 1) {
+              try {
+                await page.goto(`${url}/?release=${sha}&attempt=${attempt}`, { waitUntil: 'networkidle', timeout: 60000 });
+                await page.getByRole('heading', { name: 'MAKE YOUR COMPANY BETTER' }).waitFor({ timeout: 10000 });
+                await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
+                await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
+                if (await page.getByRole('button', { name: 'Explore synthetic demo' }).count()) { ready = true; break; }
+              } catch {}
+              await page.waitForTimeout(5000);
+            }
+            if (!ready) throw new Error(`exact Company Money OS did not propagate at ${viewport.width}px`);
             const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
             if (!canonical?.startsWith('https://4brands.org/')) throw new Error(`bad canonical ${canonical}`);
-            await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
-            await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
             await page.getByRole('button', { name: 'Explore synthetic demo' }).click();
             await page.getByRole('heading', { name: 'What matters now.' }).waitFor({ timeout: 15000 });
             const truth = viewport.width <= 760 ? page.locator('.fb-mobile-session') : page.locator('.fb-session');
@@ -201,6 +210,7 @@ jobs:
             await page.getByRole('heading', { name: 'Your company economy, alive.' }).waitFor({ timeout: 10000 });
             await page.getByRole('button', { name: 'Year', exact: true }).click();
             await page.getByText('MONEY CALENDAR', { exact: false }).first().waitFor({ timeout: 10000 });
+            await page.getByText('Public charges', { exact: true }).first().waitFor({ timeout: 10000 });
             await page.getByRole('button', { name: 'Balance', exact: true }).click();
             await page.getByText('Total cash', { exact: true }).waitFor({ timeout: 10000 });
             await page.getByText('Total assets', { exact: true }).waitFor({ timeout: 10000 });
@@ -222,7 +232,7 @@ jobs:
         run: |
           set -euo pipefail
           for path in money value decisions; do
-            code=$(curl -sS -L --max-time 25 -o /dev/null -w '%{http_code}' "$CANONICAL_URL/$path" || true)
+            code=$(curl -sS -L --max-time 25 -o /dev/null -w '%{http_code}' "$CANONICAL_URL/$path?release=$GITHUB_SHA" || true)
             [ "$code" = '200' ] || { echo "$path deep link HTTP=$code"; exit 1; }
           done
           legacy=$(curl -sS -L --max-time 25 -o /dev/null -w '%{url_effective}' https://4planet.org/4brands || true)
