@@ -70,12 +70,17 @@ jobs:
       - name: Verify backend seam and current live baseline
         run: |
           set -euo pipefail
-          for object in four_sapien_finance_accounts four_sapien_finance_events four_sapien_embla_tool_calls; do
+          for object in four_sapien_finance_accounts four_sapien_finance_events; do
             code=$(curl -sS -o "/tmp/${object}.json" -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/${object}?select=*&limit=0")
+            echo "${object}: HTTP ${code}"
             test "$code" = "200"
           done
+          code=$(curl -sS -o /tmp/four_sapien_embla_tool_calls.json -w '%{http_code}' -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" "${SUPABASE_URL}/rest/v1/four_sapien_embla_tool_calls?select=*&limit=0")
+          echo "four_sapien_embla_tool_calls anon boundary: HTTP ${code}"
+          test "$code" = "401" -o "$code" = "403"
           for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
             status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o /tmp/live-money.html -w '%{http_code}' "${base}/app/money/")
+            echo "${base}/app/money/: HTTP ${status}"
             test "$status" = "200"
             grep -q '<title>4SAPIEN Finance — Embla</title>' /tmp/live-money.html
           done
