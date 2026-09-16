@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
 
-export const SCHEMA_VERSION = '4planet-okf-1.0';
+export const SCHEMA_VERSION = '4planet-okf-1.1';
+export const PRODUCER_PROFILE = '4PLANET_OKF_1.1';
+export const UPSTREAM_OKF = '0.2';
 export const TERMINAL_MIGRATION_STATES = new Set([
   'MIGRATED',
   'UNCHANGED_BY_DESIGN',
@@ -12,6 +14,7 @@ export const TERMINAL_MIGRATION_STATES = new Set([
 export function stableKnowledgeId(record) {
   if (record.knowledge_id) return record.knowledge_id;
   if (record.drive_id) return `kp:gdrive:${record.drive_id}`;
+  if (record.provider === 'GOOGLE_DRIVE' && record.provider_id) return `kp:gdrive:${record.provider_id}`;
   if (record.github_repo && record.path) return `kp:github:${record.github_repo}:${record.path}`;
   const basis = JSON.stringify([record.storage || '', record.provider_id || '', record.path || '', record.title || '']);
   return `kp:derived:${crypto.createHash('sha256').update(basis).digest('hex').slice(0, 24)}`;
@@ -122,8 +125,16 @@ export function migrateText(text, metadata, { replaceExisting = false } = {}) {
   };
 }
 
+function normalizeOkfSources(sources = []) {
+  if (!Array.isArray(sources)) return [];
+  return sources
+    .filter(source => source && typeof source === 'object' && typeof source.resource === 'string' && source.resource.trim())
+    .map(source => ({ ...source, resource: source.resource.trim() }));
+}
+
 export function metadataFromInventory(record, now = new Date().toISOString()) {
-  return {
+  const trustDomain = record.trust_domain || (record.sensitivity === 'PRIVATE_BOUNDARY' ? 'ODIN_PRIVATE' : '4PLANET_INTERNAL');
+  const metadata = {
     type: record.document_class || 'Knowledge Article',
     title: record.title,
     description: record.description || '',
@@ -131,10 +142,12 @@ export function metadataFromInventory(record, now = new Date().toISOString()) {
     stale_after: record.stale_after ?? null,
     generated: record.generated || null,
     verified: record.verified || [],
-    sources: record.sources || [],
+    sources: normalizeOkfSources(record.sources),
     brain: {
       knowledge_id: stableKnowledgeId(record),
       schema_version: SCHEMA_VERSION,
+      producer_profile: PRODUCER_PROFILE,
+      upstream_okf: UPSTREAM_OKF,
       authority: record.authority || 'UNCLASSIFIED_FAIL_CLOSED',
       authority_level: record.authority_level || 'NONE',
       canon_state: record.canon_state || 'NON_CANON',
@@ -149,6 +162,10 @@ export function metadataFromInventory(record, now = new Date().toISOString()) {
       writeback_state: record.writeback_state || 'WRITEBACK_PENDING',
       sensitivity: record.sensitivity || 'INTERNAL',
       lifecycle_state: record.lifecycle_state || 'DRAFT',
+      freshness_state: record.freshness_state || 'NOT_CHECKED',
+      trust_domain: trustDomain,
+      workspace_id: record.workspace_id ?? null,
+      actor_ids: record.actor_ids || [],
       project: record.project ?? null,
       domain: record.domain ?? null,
       product: record.product ?? null,
@@ -163,6 +180,10 @@ export function metadataFromInventory(record, now = new Date().toISOString()) {
       migration_note: record.migration_note || ''
     }
   };
+  if (record.resource) metadata.resource = record.resource;
+  if (record.tags) metadata.tags = record.tags;
+  if (record.usage_window) metadata.usage_window = record.usage_window;
+  return metadata;
 }
 
 export function extractFlatControlFields(frontmatter) {
@@ -176,6 +197,8 @@ export function extractFlatControlFields(frontmatter) {
     status: get('status'),
     knowledge_id: get('knowledge_id'),
     schema_version: get('schema_version'),
+    producer_profile: get('producer_profile'),
+    upstream_okf: get('upstream_okf'),
     authority: get('authority'),
     authority_level: get('authority_level'),
     canon_state: get('canon_state'),
@@ -186,6 +209,9 @@ export function extractFlatControlFields(frontmatter) {
     writeback_state: get('writeback_state'),
     sensitivity: get('sensitivity'),
     lifecycle_state: get('lifecycle_state'),
+    freshness_state: get('freshness_state'),
+    trust_domain: get('trust_domain'),
+    workspace_id: get('workspace_id'),
     migration_status: get('migration_status'),
     last_validated: get('last_validated')
   };
