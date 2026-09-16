@@ -1,0 +1,76 @@
+name: 4BRANDS Company Twin Proof
+
+on:
+  pull_request:
+    branches:
+      - release/one-interface-sprint2-6bbfebb
+    paths:
+      - "src/pages/partners/FourBrandsLive.tsx"
+      - "src/styles/fourbrands-twin.css"
+      - "functions/api/brand-analysis.ts"
+      - "tests/e2e/fourbrands-company-twin.spec.ts"
+      - ".github/workflows/fourbrands-company-twin-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourbrands-company-twin-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start exact-head preview
+        shell: bash
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4brands-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/4brands >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/4brands-preview.log || true
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Judge desktop + iPhone-sized product
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/fourbrands-company-twin.spec.ts --project=desktop-1440 --project=mobile-390
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fourbrands-company-twin-proof
+          path: |
+            artifacts/4brands-proof
+            artifacts/atlas-gold/playwright-report
+            artifacts/atlas-gold/test-results
+          if-no-files-found: warn
+          retention-days: 14
