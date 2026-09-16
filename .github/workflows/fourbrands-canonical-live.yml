@@ -1,0 +1,232 @@
+name: 4BRANDS Canonical Live
+
+on:
+  push:
+    branches: [release/one-interface-sprint2-6bbfebb]
+    paths:
+      - src/App.tsx
+      - src/pages/partners/FourBrandsEconomic.tsx
+      - src/product/fourbrands/economicEngine.ts
+      - src/styles/fourbrands-twin.css
+      - src/styles/fourbrands-mobile-truth.css
+      - functions/api/brand-analysis.ts
+      - vite.config.ts
+      - package.json
+      - package-lock.json
+      - .github/workflows/fourbrands-canonical-live.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourbrands-canonical-live
+  cancel-in-progress: true
+
+env:
+  CANONICAL_URL: https://4brands.org
+  PAGES_PROJECT: 4planet-05
+  RELEASE_BRANCH: release/one-interface-sprint2-6bbfebb
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Exact-head typecheck
+        run: npm run typecheck
+
+      - name: Canonical prebuild gates
+        run: npm run prebuild
+
+      - name: Production build
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
+        run: npx vite build
+
+      - name: Resolve existing Cloudflare authority
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=''
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'Missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          api='https://api.cloudflare.com/client/v4'
+          fourplanet=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/zones?name=4planet.org&status=active" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$fourplanet")
+          [ -n "$account_id" ] || { echo 'Existing 4PLANET Cloudflare account unavailable'; exit 1; }
+          project=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/accounts/${account_id}/pages/projects/${PAGES_PROJECT}" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          jq -e '.success == true and .result.name == "4planet-05"' <<<"$project" >/dev/null
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          target=$(jq -r '.result.subdomain // "4planet-05.pages.dev"' <<<"$project")
+          echo "PAGES_TARGET=$target" >> "$GITHUB_ENV"
+
+          brands=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/zones?name=4brands.org&status=active" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          brands_zone=$(jq -r '.result[0].id // empty' <<<"$brands")
+          [ -n "$brands_zone" ] || { echo '4brands.org is not an active zone in the approved Cloudflare account'; exit 1; }
+          echo "FOURBRANDS_ZONE_ID=$brands_zone" >> "$GITHUB_ENV"
+
+      - name: Deploy exact release to existing 4PLANET Pages project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4.128.0 pages deploy dist \
+            --project-name "$PAGES_PROJECT" \
+            --branch "$RELEASE_BRANCH" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "4BRANDS canonical live ${GITHUB_SHA}" | tee fourbrands-pages-live.log
+
+      - name: Attach canonical domains to existing Pages project
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          domains=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains" "${auth[@]}")
+          for domain in 4brands.org www.4brands.org; do
+            exists=$(jq -r --arg domain "$domain" '[.result[]? | select(.name == $domain)] | length' <<<"$domains")
+            if [ "$exists" = '0' ]; then
+              response=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS -X POST "$api/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/domains" "${auth[@]}" --data "{\"name\":\"$domain\"}")
+              jq -e '.success == true' <<<"$response" >/dev/null
+              echo "Attached $domain to existing Pages project."
+            else
+              echo "$domain already attached to existing Pages project."
+            fi
+          done
+
+      - name: Ensure canonical DNS points only to approved Pages runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          ensure_cname() {
+            local fqdn="$1"
+            local name="$2"
+            records=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS "$api/zones/${FOURBRANDS_ZONE_ID}/dns_records?name=${fqdn}&per_page=100" "${auth[@]}")
+            count=$(jq -r '.result | length' <<<"$records")
+            if [ "$count" = '0' ]; then
+              payload=$(jq -nc --arg name "$name" --arg target "$PAGES_TARGET" '{type:"CNAME",name:$name,content:$target,ttl:1,proxied:true}')
+              created=$(curl --retry 5 --retry-all-errors --retry-delay 2 -fsS -X POST "$api/zones/${FOURBRANDS_ZONE_ID}/dns_records" "${auth[@]}" --data "$payload")
+              jq -e '.success == true' <<<"$created" >/dev/null
+              echo "Created $fqdn → $PAGES_TARGET"
+              return
+            fi
+            matching=$(jq -r --arg target "$PAGES_TARGET" '[.result[]? | select(.type == "CNAME" and .content == $target and .proxied == true)] | length' <<<"$records")
+            if [ "$matching" != '0' ]; then
+              echo "$fqdn already points to approved Pages runtime."
+              return
+            fi
+            echo "Existing conflicting DNS for $fqdn; refusing destructive overwrite."
+            jq -r '.result[] | [.type,.name,.content,(.proxied|tostring)] | @tsv' <<<"$records"
+            exit 1
+          }
+          ensure_cname '4brands.org' '@'
+          ensure_cname 'www.4brands.org' 'www'
+
+      - name: Wait for canonical activation and verify HTTP + API
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 40); do
+            code=$(curl -sS -L --max-time 25 -o /tmp/live.html -w '%{http_code}' "$CANONICAL_URL/" || true)
+            bytes=0; [ -f /tmp/live.html ] && bytes=$(wc -c < /tmp/live.html | tr -d ' ')
+            echo "attempt=$attempt HTTP=$code bytes=$bytes"
+            if [ "$code" = '200' ] && [ "$bytes" -gt 500 ]; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" = '1' ] || { echo 'Canonical 4brands.org did not activate'; exit 1; }
+          api_code=$(curl -sS --max-time 45 -o /tmp/tomra.json -w '%{http_code}' -H 'content-type: application/json' --data '{"company":"TOMRA"}' "$CANONICAL_URL/api/brand-analysis" || true)
+          [ "$api_code" = '200' ] || { echo "TOMRA API HTTP=$api_code"; cat /tmp/tomra.json || true; exit 1; }
+          jq -e '.analysis.company.name == "TOMRA" and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
+          printf '%s\n' "$CANONICAL_URL" > fourbrands-live-url.txt
+          printf '%s\n' "$GITHUB_SHA" > fourbrands-live-sha.txt
+
+      - name: Browser-certify canonical desktop + iPhone
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          CANONICAL_URL="$CANONICAL_URL" node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const url = process.env.CANONICAL_URL;
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const browser = await chromium.launch();
+            const page = await browser.newPage({ viewport });
+            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+            await page.getByRole('heading', { name: 'MAKE YOUR COMPANY BETTER' }).waitFor({ timeout: 15000 });
+            const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+            if (!canonical?.startsWith('https://4brands.org/')) throw new Error(`bad canonical ${canonical}`);
+            await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
+            await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
+            await page.getByRole('button', { name: 'Explore with synthetic demo finance' }).click();
+            await page.getByRole('heading', { name: 'What matters now.' }).waitFor({ timeout: 15000 });
+            const truth = viewport.width <= 760 ? page.locator('.fb-mobile-session') : page.locator('.fb-session');
+            await truth.waitFor({ state: 'visible', timeout: 10000 });
+            if ((await truth.textContent())?.trim() !== 'SYNTHETIC DEMO FINANCE · SESSION ONLY') throw new Error('demo truth label missing');
+            const root = viewport.width <= 760 ? page.locator('.fb-mobile-nav') : page.locator('.fb-nav');
+            await root.getByRole('button', { name: 'Money', exact: true }).click();
+            await page.getByRole('heading', { name: 'Know the economic state.' }).waitFor({ timeout: 10000 });
+            await root.getByRole('button', { name: 'Value', exact: true }).click();
+            await page.getByRole('heading', { name: 'Where is value leaking?' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Take to decision' }).click();
+            await page.getByRole('heading', { name: 'Make the choice explicit.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Lock baseline' }).click();
+            await page.getByText('LOCKED BASELINE', { exact: true }).waitFor({ timeout: 10000 });
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+            if (overflow > 2) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}px`);
+            await browser.close();
+          }
+          NODE
+
+      - name: Verify canonical deep links and legacy 4PLANET route
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in money value decisions; do
+            code=$(curl -sS -L --max-time 25 -o /dev/null -w '%{http_code}' "$CANONICAL_URL/$path" || true)
+            [ "$code" = '200' ] || { echo "$path deep link HTTP=$code"; exit 1; }
+          done
+          legacy=$(curl -sS -L --max-time 25 -o /dev/null -w '%{url_effective}' https://4planet.org/4brands || true)
+          case "$legacy" in https://4brands.org* ) ;; * ) echo "Legacy route did not resolve canonical: $legacy"; exit 1;; esac
+
+      - name: Upload canonical evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fourbrands-canonical-${{ github.sha }}
+          path: |
+            fourbrands-live-url.txt
+            fourbrands-live-sha.txt
+            fourbrands-pages-live.log
+          if-no-files-found: ignore
+          retention-days: 30
