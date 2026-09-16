@@ -137,7 +137,7 @@ select cns.commit_actor_state(
 do $$
 declare sid uuid; ctx jsonb; ids text[];
 begin
-  sid := cns.compile_actor_context_v1('test:retrieval:id-a','test:retrieval:ws-a','test:retrieval:person-a','test retrieval',2,12000,900);
+  sid := cns.compile_actor_context_v1('test:retrieval:id-a','test:retrieval:ws-a','test:retrieval:person-a','test retrieval',2::smallint,12000,900);
   select compiled_context,candidate_claim_ids into ctx,ids from cns.actor_context_snapshots where actor_context_snapshot_id=sid;
   if ctx->>'retrieval_law' <> 'SCOPE_BEFORE_RELEVANCE' then raise exception 'RETRIEVAL_LAW_MISSING'; end if;
   if 'test:retrieval:claim-b'=any(ids) then raise exception 'CONTEXT_CONTAINS_CROSS_TENANT_CLAIM'; end if;
