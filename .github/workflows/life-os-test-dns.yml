@@ -1,0 +1,70 @@
+name: LIFE OS test DNS
+
+on:
+  push:
+    branches:
+      - ops/test-lifeos-dns-20260916
+    paths:
+      - '.github/workflows/life-os-test-dns.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  dns:
+    runs-on: ubuntu-latest
+    env:
+      CF_TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_TOKEN_2: ${{ secrets.CF_API_TOKEN }}
+      CF_TOKEN_3: ${{ secrets.CLOUDFLARE_TOKEN }}
+      ZONE_NAME: 4planet.org
+      RECORD_NAME: test.4planet.org
+      RECORD_TARGET: proxy-v2.appdeploy.ai
+    steps:
+      - name: Create or update isolated test DNS record
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN="${CF_TOKEN_1:-}"
+          if [ -z "$TOKEN" ]; then TOKEN="${CF_TOKEN_2:-}"; fi
+          if [ -z "$TOKEN" ]; then TOKEN="${CF_TOKEN_3:-}"; fi
+          if [ -z "$TOKEN" ]; then
+            echo 'No Cloudflare API token secret is available in this repository.' >&2
+            exit 2
+          fi
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              -H "Authorization: Bearer $TOKEN" \
+              -H 'Content-Type: application/json' \
+              "$@"
+          }
+
+          ZONE_JSON="$(api "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}&status=active")"
+          ZONE_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].id // empty')"
+          if [ -z "$ZONE_ID" ]; then
+            echo 'Cloudflare zone 4planet.org was not found or token lacks zone access.' >&2
+            exit 3
+          fi
+
+          RECORD_JSON="$(api "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
+          RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
+          CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
+          CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
+          CURRENT_PROXIED="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].proxied // false')"
+
+          PAYLOAD="$(jq -nc --arg type CNAME --arg name "$RECORD_NAME" --arg content "$RECORD_TARGET" '{type:$type,name:$name,content:$content,ttl:1,proxied:false}')"
+
+          if [ -z "$RECORD_ID" ]; then
+            api -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" --data "$PAYLOAD" >/tmp/cf-result.json
+            echo 'Created test.4planet.org CNAME.'
+          elif [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; then
+            echo 'test.4planet.org already points to the expected target.'
+          else
+            api -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" --data "$PAYLOAD" >/tmp/cf-result.json
+            echo 'Updated test.4planet.org CNAME.'
+          fi
+
+          VERIFY_JSON="$(api "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
+          printf '%s' "$VERIFY_JSON" | jq -e --arg target "$RECORD_TARGET" '.success == true and .result[0].type == "CNAME" and .result[0].content == $target and .result[0].proxied == false' >/dev/null
+          echo 'Cloudflare API verification passed.'
