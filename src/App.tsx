@@ -18,6 +18,8 @@ import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
 import "@/styles/identity-polish.css";
 
+const FOURBRANDS_SANDBOX = "/sandbox/4brands-company-twin";
+
 function normalisedPath() {
   if (typeof window === "undefined") return "/";
   return window.location.pathname.replace(/\/+$/, "") || "/";
@@ -37,7 +39,7 @@ function isLegacyFourBrandsHost() {
 
 function isFourBrandPath() {
   const path = normalisedPath();
-  return path === "/4brand" || path.startsWith("/4brand/");
+  return path === "/4brand" || path.startsWith("/4brand/") || path === FOURBRANDS_SANDBOX || path.startsWith(`${FOURBRANDS_SANDBOX}/`);
 }
 
 function isLegacyFourBrandsPath() {
