@@ -1,4 +1,4 @@
-name: LIFE OS test DNS
+name: 4PLANET test path gateway
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  dns:
+  publish:
     runs-on: ubuntu-latest
     env:
       CF_TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -22,10 +22,12 @@ jobs:
       CF_EMAIL_1: ${{ secrets.CLOUDFLARE_EMAIL }}
       CF_EMAIL_2: ${{ secrets.CF_API_EMAIL }}
       ZONE_NAME: 4planet.org
-      RECORD_NAME: test.4planet.org
-      RECORD_TARGET: proxy-v2.appdeploy.ai
+      HOSTNAME: test.4planet.org
+      ROOT_SERVICE: 4planet-four-state-control-v1
+      GATEWAY_WORKER: 4planet-test-path-gateway
+      UNIVERSALBOARD_ORIGIN: https://life-os-canvas-6g481v.v2.appdeploy.ai/
     steps:
-      - name: Detach Worker custom domain and point test to Life OS
+      - name: Restore test root and add project path gateway
         shell: bash
         run: |
           set -euo pipefail
@@ -38,26 +40,23 @@ jobs:
           AUTH_MODE=''
           TOKEN=''
           ZONE_JSON=''
-
           for candidate in "${TOKENS[@]}"; do
             [ -n "$candidate" ] || continue
             body="$(mktemp)"
-            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H "Authorization: Bearer $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
+            code="$(curl -sS -o "$body" -w '%{http_code}' -H "Authorization: Bearer $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
             if [ "$code" -ge 200 ] && [ "$code" -lt 300 ] && jq -e '.success == true and (.result|length) > 0' "$body" >/dev/null 2>&1; then
               AUTH_MODE='bearer'; TOKEN="$candidate"; ZONE_JSON="$(cat "$body")"; rm -f "$body"; break
             fi
             rm -f "$body"
             body="$(mktemp)"
-            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
+            code="$(curl -sS -o "$body" -w '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
             if [ "$code" -ge 200 ] && [ "$code" -lt 300 ] && jq -e '.success == true and (.result|length) > 0' "$body" >/dev/null 2>&1; then
               AUTH_MODE='global_key'; TOKEN="$candidate"; ZONE_JSON="$(cat "$body")"; rm -f "$body"; break
             fi
             rm -f "$body"
           done
-
           test -n "$AUTH_MODE"
           test -n "$TOKEN"
-          echo "Cloudflare authentication succeeded using ${AUTH_MODE}."
 
           headers=()
           if [ "$AUTH_MODE" = 'bearer' ]; then
@@ -66,17 +65,17 @@ jobs:
             headers=(-H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $TOKEN")
           fi
 
-          cf_request() {
+          cf_json() {
             local method="$1" url="$2" payload="${3:-}"
             local body code
             body="$(mktemp)"
             if [ -n "$payload" ]; then
-              code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' --data "$payload" "$url")"
+              code="$(curl -sS -o "$body" -w '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' --data "$payload" "$url")"
             else
-              code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' "$url")"
+              code="$(curl -sS -o "$body" -w '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' "$url")"
             fi
             if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-              echo "Cloudflare ${method} ${url} failed with HTTP ${code}" >&2
+              echo "Cloudflare ${method} failed with HTTP ${code}: ${url}" >&2
               jq '{success,errors,messages}' "$body" >&2 || cat "$body" >&2
               rm -f "$body"
               return 1
@@ -85,60 +84,104 @@ jobs:
             rm -f "$body"
           }
 
-          ZONE_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].id // empty')"
-          ACCOUNT_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].account.id // empty')"
-          test -n "$ZONE_ID"
-          test -n "$ACCOUNT_ID"
+          ZONE_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].id')"
+          ACCOUNT_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].account.id')"
 
-          list_record() {
-            cf_request GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=100" | jq --arg name "$RECORD_NAME" '{success,errors,messages,result:[.result[] | select(.name == $name)]}'
+          # Remove the temporary ordinary CNAME that made the Life OS app own test.4planet.org.
+          RECORDS="$(cf_json GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=100")"
+          while IFS=$'\t' read -r rid readonly; do
+            [ -n "$rid" ] || continue
+            if [ "$readonly" != 'true' ]; then
+              cf_json DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${rid}" >/dev/null
+              echo 'Removed temporary test.4planet.org DNS record.'
+            fi
+          done < <(printf '%s' "$RECORDS" | jq -r --arg h "$HOSTNAME" '.result[] | select(.name==$h) | [.id, (.meta.read_only // false)] | @tsv')
+
+          # Ensure the original test shell Worker owns the hostname again.
+          DOMAINS="$(cf_json GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains")"
+          CURRENT_DOMAIN_ID="$(printf '%s' "$DOMAINS" | jq -r --arg h "$HOSTNAME" '.result[]? | select(.hostname==$h) | .id' | head -n1)"
+          CURRENT_SERVICE="$(printf '%s' "$DOMAINS" | jq -r --arg h "$HOSTNAME" '.result[]? | select(.hostname==$h) | .service' | head -n1)"
+          if [ -n "$CURRENT_DOMAIN_ID" ] && [ "$CURRENT_SERVICE" != "$ROOT_SERVICE" ]; then
+            cf_json DELETE "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains/${CURRENT_DOMAIN_ID}" >/dev/null
+          fi
+          if [ "$CURRENT_SERVICE" != "$ROOT_SERVICE" ]; then
+            PAYLOAD="$(jq -nc --arg hostname "$HOSTNAME" --arg service "$ROOT_SERVICE" --arg zone_id "$ZONE_ID" --arg zone_name "$ZONE_NAME" '{hostname:$hostname,service:$service,zone_id:$zone_id,zone_name:$zone_name}')"
+            cf_json PUT "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains" "$PAYLOAD" >/dev/null
+            echo 'Restored original test root Worker custom domain.'
+          else
+            echo 'Original test root Worker custom domain already active.'
+          fi
+
+          cat >/tmp/gateway.mjs <<'JS'
+          const mounts = {
+            '/universalboard': 'https://life-os-canvas-6g481v.v2.appdeploy.ai/'
+          };
+
+          function projectShell(origin) {
+            const safeOrigin = JSON.stringify(origin);
+            return `<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <meta name="robots" content="noindex,nofollow">
+            <title>4PLANET TEST</title>
+            <style>html,body,iframe{margin:0;width:100%;height:100%;border:0;background:#fff}body{overflow:hidden}iframe{display:block}</style>
+          </head>
+          <body>
+            <iframe src=${safeOrigin} allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </body>
+          </html>`;
           }
 
-          RECORD_JSON="$(list_record)"
-          RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
-          CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
-          CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
-          CURRENT_PROXIED="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].proxied // false')"
-          READ_ONLY="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].meta.read_only // false')"
-          ORIGIN_WORKER_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].meta.origin_worker_id // empty')"
+          export default {
+            async fetch(request) {
+              const url = new URL(request.url);
+              for (const [mount, origin] of Object.entries(mounts)) {
+                if (url.pathname === mount) {
+                  return Response.redirect(`${url.origin}${mount}/`, 302);
+                }
+                if (url.pathname.startsWith(`${mount}/`)) {
+                  return new Response(projectShell(origin), {
+                    headers: {
+                      'content-type': 'text/html; charset=UTF-8',
+                      'cache-control': 'no-store',
+                      'x-robots-tag': 'noindex, nofollow'
+                    }
+                  });
+                }
+              }
+              return fetch(request);
+            }
+          };
+          JS
 
-          if [ "$READ_ONLY" = 'true' ] && [ -n "$ORIGIN_WORKER_ID" ]; then
-            echo 'test.4planet.org is owned by a Worker Custom Domain. Locating binding.'
-            WORKER_DOMAINS="$(cf_request GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains")"
-            DOMAIN_ID="$(printf '%s' "$WORKER_DOMAINS" | jq -r --arg h "$RECORD_NAME" '.result[]? | select(.hostname == $h) | .id' | head -n1)"
-            SERVICE="$(printf '%s' "$WORKER_DOMAINS" | jq -r --arg h "$RECORD_NAME" '.result[]? | select(.hostname == $h) | .service' | head -n1)"
-            if [ -z "$DOMAIN_ID" ]; then
-              echo 'Worker Custom Domain binding was not returned by the API.' >&2
-              exit 4
-            fi
-            echo "Detaching exact Worker custom domain from service: ${SERVICE:-unknown}."
-            cf_request DELETE "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains/${DOMAIN_ID}" >/dev/null
+          TODAY="$(date -u +%F)"
+          UPLOAD_BODY="$(mktemp)"
+          UPLOAD_CODE="$(curl -sS -o "$UPLOAD_BODY" -w '%{http_code}' -X PUT "${headers[@]}" \
+            -F "metadata={\"main_module\":\"gateway.mjs\",\"compatibility_date\":\"${TODAY}\"};type=application/json" \
+            -F 'gateway.mjs=@/tmp/gateway.mjs;type=application/javascript+module' \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts/${GATEWAY_WORKER}")"
+          if [ "$UPLOAD_CODE" -lt 200 ] || [ "$UPLOAD_CODE" -ge 300 ]; then
+            echo "Worker upload failed with HTTP ${UPLOAD_CODE}" >&2
+            jq '{success,errors,messages}' "$UPLOAD_BODY" >&2 || cat "$UPLOAD_BODY" >&2
+            exit 5
+          fi
+          rm -f "$UPLOAD_BODY"
+          echo 'Published test path gateway Worker.'
 
-            for attempt in $(seq 1 20); do
-              sleep 2
-              RECORD_JSON="$(list_record)"
-              RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
-              [ -z "$RECORD_ID" ] && break
-            done
+          ROUTES="$(cf_json GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes")"
+          ROUTE_ID="$(printf '%s' "$ROUTES" | jq -r --arg pattern "${HOSTNAME}/*" '.result[]? | select(.pattern==$pattern) | .id' | head -n1)"
+          ROUTE_SCRIPT="$(printf '%s' "$ROUTES" | jq -r --arg pattern "${HOSTNAME}/*" '.result[]? | select(.pattern==$pattern) | (.script // "")' | head -n1)"
+          ROUTE_PAYLOAD="$(jq -nc --arg pattern "${HOSTNAME}/*" --arg script "$GATEWAY_WORKER" '{pattern:$pattern,script:$script}')"
+          if [ -z "$ROUTE_ID" ]; then
+            cf_json POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" "$ROUTE_PAYLOAD" >/dev/null
+          elif [ "$ROUTE_SCRIPT" != "$GATEWAY_WORKER" ]; then
+            cf_json PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes/${ROUTE_ID}" "$ROUTE_PAYLOAD" >/dev/null
           fi
 
-          RECORD_JSON="$(list_record)"
-          RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
-          CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
-          CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
-          CURRENT_PROXIED="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].proxied // false')"
-          PAYLOAD="$(jq -nc --arg name "$RECORD_NAME" --arg content "$RECORD_TARGET" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:false}')"
-
-          if [ -z "$RECORD_ID" ]; then
-            cf_request POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
-            echo 'Created test.4planet.org CNAME.'
-          elif [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; then
-            echo 'test.4planet.org already points to expected AppDeploy target.'
-          else
-            cf_request PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
-            echo 'Updated test.4planet.org CNAME.'
-          fi
-
-          VERIFY_JSON="$(list_record)"
-          printf '%s' "$VERIFY_JSON" | jq -e --arg target "$RECORD_TARGET" '.success == true and .result[0].type == "CNAME" and .result[0].content == $target and .result[0].proxied == false' >/dev/null
-          echo 'Cloudflare DNS verification passed.'
+          VERIFY_DOMAINS="$(cf_json GET "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains")"
+          printf '%s' "$VERIFY_DOMAINS" | jq -e --arg h "$HOSTNAME" --arg s "$ROOT_SERVICE" 'any(.result[]; .hostname==$h and .service==$s)' >/dev/null
+          VERIFY_ROUTES="$(cf_json GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes")"
+          printf '%s' "$VERIFY_ROUTES" | jq -e --arg p "${HOSTNAME}/*" --arg s "$GATEWAY_WORKER" 'any(.result[]; .pattern==$p and .script==$s)' >/dev/null
+          echo 'Verified: test root restored; path gateway active; /universalboard mounted.'
