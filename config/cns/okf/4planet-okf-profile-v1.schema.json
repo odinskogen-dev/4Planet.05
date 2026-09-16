@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://4planet.org/schemas/brain/okf-profile-v1.json",
+  "title": "4PLANET OKF PROFILE v1.0",
+  "description": "Document control-plane metadata for the existing 4PLANET BRAIN. This profile extends OKF-compatible frontmatter without creating a new truth or authority system.",
+  "type": "object",
+  "required": ["type", "title", "status", "brain"],
+  "properties": {
+    "type": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "status": {"enum": ["draft", "stable", "deprecated"]},
+    "stale_after": {"type": ["string", "null"], "format": "date-time"},
+    "generated": {
+      "type": ["object", "null"],
+      "properties": {
+        "by": {"type": "string"},
+        "at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "verified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["by", "at"],
+        "properties": {
+          "by": {"type": "string"},
+          "at": {"type": "string", "format": "date-time"},
+          "scope": {"type": "string"},
+          "evidence": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {"type": "string"},
+          "resource": {"type": "string"},
+          "revision": {"type": "string"},
+          "hash": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "brain": {
+      "type": "object",
+      "required": [
+        "knowledge_id",
+        "schema_version",
+        "authority",
+        "authority_level",
+        "canon_state",
+        "review_status",
+        "evidence_strength",
+        "interpretation_status",
+        "provenance_state",
+        "writeback_state",
+        "sensitivity",
+        "lifecycle_state",
+        "last_validated"
+      ],
+      "properties": {
+        "knowledge_id": {"type": "string", "pattern": "^kp:[a-z0-9][a-z0-9._:/-]*$"},
+        "schema_version": {"const": "4planet-okf-1.0"},
+        "authority": {"type": "string", "minLength": 1},
+        "authority_level": {"enum": ["FOUNDER", "LOCKED_CANON", "WORKING_CANON", "PROGRAMME_CONTROL", "DOMAIN_AUTHORITY", "SOURCE_EVIDENCE", "GENERATED_VIEW", "HISTORICAL", "NONE"]},
+        "canon_state": {"enum": ["LOCKED_CANON", "WORKING_CANON", "FOUNDER_DECISION", "NON_CANON", "SUPERSEDED", "HISTORICAL"]},
+        "current_state_rev": {"type": ["string", "null"]},
+        "effective_at": {"type": ["string", "null"], "format": "date-time"},
+        "supersedes": {"type": "array", "items": {"type": "string"}, "default": []},
+        "superseded_by": {"type": "array", "items": {"type": "string"}, "default": []},
+        "review_status": {"enum": ["UNREVIEWED", "REVIEWED", "SOURCE_CHECKED", "GPT_VERIFIED", "EXTERNAL_VERIFIED", "FOUNDER_APPROVED", "DISPUTED", "NOT_APPLICABLE"]},
+        "evidence_strength": {"enum": ["UNAVAILABLE", "WEAK", "MODERATE", "STRONG", "INDEPENDENTLY_CORROBORATED", "NOT_APPLICABLE"]},
+        "interpretation_status": {"enum": ["RAW_SOURCE", "SOURCE_REPORTED", "NORMALISED_RECORD", "INTERPRETED", "GENERATED_SUMMARY", "PROPOSAL", "RUNTIME_OBSERVATION", "NOT_APPLICABLE"]},
+        "provenance_state": {"enum": ["COMPLETE", "PARTIAL", "MISSING", "NOT_APPLICABLE"]},
+        "writeback_state": {"enum": ["WRITEBACK_COMPLETE", "WRITEBACK_PENDING", "READBACK_VERIFIED", "HISTORICAL", "NOT_APPLICABLE"]},
+        "sensitivity": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "PRIVATE_BOUNDARY", "RESTRICTED"]},
+        "lifecycle_state": {"enum": ["CURRENT", "ACTIVE", "DRAFT", "HISTORICAL", "SUPERSEDED", "ARCHIVED", "GENERATED_VIEW", "RUNTIME_ONLY"]},
+        "project": {"type": ["string", "null"]},
+        "domain": {"type": ["string", "null"]},
+        "product": {"type": ["string", "null"]},
+        "owner": {"type": ["string", "null"]},
+        "source_ids": {"type": "array", "items": {"type": "string"}},
+        "related_entities": {"type": "array", "items": {"type": "string"}},
+        "related_decisions": {"type": "array", "items": {"type": "string"}},
+        "related_claims": {"type": "array", "items": {"type": "string"}},
+        "related_tasks": {"type": "array", "items": {"type": "string"}},
+        "last_validated": {"type": "string", "format": "date-time"},
+        "migration_status": {"enum": ["MIGRATED", "UNCHANGED_BY_DESIGN", "SUPERSEDED_WITH_LINK", "NON_KNOWLEDGE_EXCLUDED_WITH_REASON", "BLOCKED_WITH_EXACT_REASON"]},
+        "migration_note": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
