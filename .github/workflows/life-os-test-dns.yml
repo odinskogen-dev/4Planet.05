@@ -42,31 +42,16 @@ jobs:
           for candidate in "${TOKENS[@]}"; do
             [ -n "$candidate" ] || continue
             body="$(mktemp)"
-            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' \
-              -H "Authorization: Bearer $candidate" \
-              -H 'Content-Type: application/json' \
-              "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
+            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H "Authorization: Bearer $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
             if [ "$code" -ge 200 ] && [ "$code" -lt 300 ] && jq -e '.success == true and (.result|length) > 0' "$body" >/dev/null 2>&1; then
-              AUTH_MODE='bearer'
-              TOKEN="$candidate"
-              ZONE_JSON="$(cat "$body")"
-              rm -f "$body"
-              break
+              AUTH_MODE='bearer'; TOKEN="$candidate"; ZONE_JSON="$(cat "$body")"; rm -f "$body"; break
             fi
             rm -f "$body"
 
             body="$(mktemp)"
-            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' \
-              -H "X-Auth-Email: $EMAIL" \
-              -H "X-Auth-Key: $candidate" \
-              -H 'Content-Type: application/json' \
-              "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
+            code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $candidate" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}")"
             if [ "$code" -ge 200 ] && [ "$code" -lt 300 ] && jq -e '.success == true and (.result|length) > 0' "$body" >/dev/null 2>&1; then
-              AUTH_MODE='global_key'
-              TOKEN="$candidate"
-              ZONE_JSON="$(cat "$body")"
-              rm -f "$body"
-              break
+              AUTH_MODE='global_key'; TOKEN="$candidate"; ZONE_JSON="$(cat "$body")"; rm -f "$body"; break
             fi
             rm -f "$body"
           done
@@ -77,46 +62,37 @@ jobs:
           fi
           echo "Cloudflare authentication succeeded using ${AUTH_MODE}."
 
-          cf_get() {
-            local url="$1"
-            if [ "$AUTH_MODE" = 'bearer' ]; then
-              curl --fail-with-body --silent --show-error \
-                -H "Authorization: Bearer $TOKEN" \
-                -H 'Content-Type: application/json' \
-                "$url"
-            else
-              curl --fail-with-body --silent --show-error \
-                -H "X-Auth-Email: $EMAIL" \
-                -H "X-Auth-Key: $TOKEN" \
-                -H 'Content-Type: application/json' \
-                "$url"
-            fi
-          }
+          headers=()
+          if [ "$AUTH_MODE" = 'bearer' ]; then
+            headers=(-H "Authorization: Bearer $TOKEN")
+          else
+            headers=(-H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $TOKEN")
+          fi
 
-          cf_write() {
-            local method="$1" url="$2" payload="$3"
-            if [ "$AUTH_MODE" = 'bearer' ]; then
-              curl --fail-with-body --silent --show-error \
-                -X "$method" \
-                -H "Authorization: Bearer $TOKEN" \
-                -H 'Content-Type: application/json' \
-                --data "$payload" \
-                "$url"
+          cf_request() {
+            local method="$1" url="$2" payload="${3:-}"
+            local body code
+            body="$(mktemp)"
+            if [ -n "$payload" ]; then
+              code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' --data "$payload" "$url")"
             else
-              curl --fail-with-body --silent --show-error \
-                -X "$method" \
-                -H "X-Auth-Email: $EMAIL" \
-                -H "X-Auth-Key: $TOKEN" \
-                -H 'Content-Type: application/json' \
-                --data "$payload" \
-                "$url"
+              code="$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -X "$method" "${headers[@]}" -H 'Content-Type: application/json' "$url")"
             fi
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              echo "Cloudflare ${method} ${url} failed with HTTP ${code}" >&2
+              jq '{success,errors,messages}' "$body" >&2 || cat "$body" >&2
+              rm -f "$body"
+              return 1
+            fi
+            cat "$body"
+            rm -f "$body"
           }
 
           ZONE_ID="$(printf '%s' "$ZONE_JSON" | jq -r '.result[0].id // empty')"
           test -n "$ZONE_ID"
 
-          RECORD_JSON="$(cf_get "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
+          RECORDS_JSON="$(cf_request GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=100")"
+          RECORD_JSON="$(printf '%s' "$RECORDS_JSON" | jq --arg name "$RECORD_NAME" '{success,errors,messages,result:[.result[] | select(.name == $name)]}')"
           RECORD_ID="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].id // empty')"
           CURRENT_TYPE="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].type // empty')"
           CURRENT_CONTENT="$(printf '%s' "$RECORD_JSON" | jq -r '.result[0].content // empty')"
@@ -125,15 +101,15 @@ jobs:
           PAYLOAD="$(jq -nc --arg name "$RECORD_NAME" --arg content "$RECORD_TARGET" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:false}')"
 
           if [ -z "$RECORD_ID" ]; then
-            cf_write POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
+            cf_request POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
             echo 'Created test.4planet.org CNAME.'
           elif [ "$CURRENT_TYPE" = 'CNAME' ] && [ "$CURRENT_CONTENT" = "$RECORD_TARGET" ] && [ "$CURRENT_PROXIED" = 'false' ]; then
             echo 'test.4planet.org already points to the expected target.'
           else
-            cf_write PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
+            cf_request PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
             echo 'Updated test.4planet.org CNAME.'
           fi
 
-          VERIFY_JSON="$(cf_get "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}")"
-          printf '%s' "$VERIFY_JSON" | jq -e --arg target "$RECORD_TARGET" '.success == true and .result[0].type == "CNAME" and .result[0].content == $target and .result[0].proxied == false' >/dev/null
+          VERIFY_ALL="$(cf_request GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?per_page=100")"
+          printf '%s' "$VERIFY_ALL" | jq -e --arg name "$RECORD_NAME" --arg target "$RECORD_TARGET" '.success == true and any(.result[]; .name == $name and .type == "CNAME" and .content == $target and .proxied == false)' >/dev/null
           echo 'Cloudflare API verification passed.'
