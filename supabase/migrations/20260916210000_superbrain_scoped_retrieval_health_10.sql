@@ -232,7 +232,7 @@ begin
     'retrieval_law','SCOPE_BEFORE_RELEVANCE'
   );
   if length(v_body::text)>p_token_budget*6 then raise exception 'CNS_CONTEXT_BUDGET_EXCEEDED: deterministic compiler refuses silent truncation'; end if;
-  v_fp := encode(digest(v_body::text,'sha256'),'hex');
+  v_fp := encode(extensions.digest(v_body::text,'sha256'),'hex');
   insert into cns.actor_context_snapshots(identity_id,workspace_id,actor_id,intent,requested_depth,token_budget,compiled_context,candidate_claim_ids,fingerprint,expires_at)
   values(p_identity_id,p_workspace_id,p_actor_id,p_intent,p_depth,p_token_budget,v_body,v_claim_ids,v_fp,clock_timestamp()+make_interval(secs=>p_ttl_seconds))
   returning actor_context_snapshot_id into v_id;
