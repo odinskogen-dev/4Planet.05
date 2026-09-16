@@ -17,6 +17,7 @@ import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
 import "@/styles/identity-polish.css";
+import "@/styles/fourbrands-mobile-truth.css";
 
 const FOURBRANDS_SANDBOX = "/sandbox/4brands-company-twin";
 
