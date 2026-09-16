@@ -6,9 +6,12 @@ on:
     paths:
       - src/App.tsx
       - src/pages/partners/FourBrandsLive.tsx
+      - src/pages/partners/FourBrandsEconomicV2.tsx
       - src/product/fourbrands/economicEngine.ts
+      - src/product/fourbrands/companyMoney.ts
       - src/styles/fourbrands-twin.css
       - src/styles/fourbrands-twin-round2.css
+      - src/styles/fourbrands-money-os.css
       - functions/api/brand-analysis.ts
       - vite.config.ts
       - tests/e2e/fourbrands-company-twin.spec.ts
@@ -52,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq 'fetch(`${import.meta.env.BASE_URL}api/brand-analysis`' src/pages/partners/FourBrandsLive.tsx
+          grep -Fq 'fetch(`${import.meta.env.BASE_URL}api/brand-analysis`' src/pages/partners/FourBrandsEconomicV2.tsx
 
       - name: Typecheck exact sandbox candidate
         run: npm run typecheck
@@ -110,7 +113,7 @@ jobs:
             --project-name "$PAGES_PROJECT" \
             --branch "$PAGES_BRANCH" \
             --commit-hash "$GITHUB_SHA" \
-            --commit-message "4BRANDS Economic Twin sandbox ${GITHUB_SHA}" | tee pages-deploy.log
+            --commit-message "4BRANDS Company Money OS sandbox ${GITHUB_SHA}" | tee pages-deploy.log
 
       - name: Resolve exact Pages preview
         id: preview
@@ -227,26 +230,39 @@ jobs:
           [ "$api_code" = '200' ] || { cat /tmp/tomra.json || true; exit 1; }
           jq -e '.analysis.company.name == "TOMRA" and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
 
-      - name: Browser-certify Economic Twin + Value Finder on desktop + iPhone
+      - name: Browser-certify Company Money OS + Value Finder on desktop + iPhone
         shell: bash
         run: |
           set -euo pipefail
           npx playwright install --with-deps chromium
+          mkdir -p fourbrands-money-proof
           SANDBOX_URL="$SANDBOX_URL" node --input-type=module <<'NODE'
           import { chromium } from '@playwright/test';
           const url = process.env.SANDBOX_URL;
-          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+          for (const viewport of [{width:1440,height:900,label:'desktop'},{width:390,height:844,label:'iphone'}]) {
             const browser = await chromium.launch();
             const page = await browser.newPage({ viewport });
             await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
             await page.getByRole('heading', { name: 'MAKE YOUR COMPANY BETTER' }).waitFor({ timeout: 15000 });
             await page.getByRole('button', { name: 'Try TOMRA public model' }).click();
             await page.getByRole('heading', { name: 'TOMRA' }).waitFor({ timeout: 30000 });
-            await page.getByRole('button', { name: 'Explore with synthetic demo finance' }).click();
+            await page.getByRole('button', { name: 'Explore synthetic demo' }).click();
             await page.getByRole('heading', { name: 'What matters now.' }).waitFor({ timeout: 15000 });
+            await page.screenshot({path:`fourbrands-money-proof/${viewport.label}-overview.png`,fullPage:true});
+            const truth = viewport.width <= 760 ? page.locator('.fb-mobile-session') : page.locator('.fb-session');
+            await truth.waitFor({state:'visible',timeout:10000});
+            if ((await truth.textContent())?.trim() !== 'SYNTHETIC DEMO FINANCE · SESSION ONLY') throw new Error('demo truth label missing');
             const root = viewport.width <= 760 ? page.locator('.fb-mobile-nav') : page.locator('.fb-nav');
             await root.getByRole('button', { name: 'Money', exact: true }).click();
-            await page.getByRole('heading', { name: 'Know the economic state.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('heading', { name: 'Your company economy, alive.' }).waitFor({ timeout: 10000 });
+            await page.getByRole('button', { name: 'Year', exact: true }).click();
+            await page.getByText('MONEY CALENDAR', { exact: false }).first().waitFor({timeout:10000});
+            await page.getByText('PUBLIC', { exact: false }).first().waitFor({timeout:10000});
+            await page.screenshot({path:`fourbrands-money-proof/${viewport.label}-year.png`,fullPage:true});
+            await page.getByRole('button', { name: 'Balance', exact: true }).click();
+            await page.getByText('Total cash', { exact: true }).waitFor({timeout:10000});
+            await page.getByText('Total assets', { exact: true }).waitFor({timeout:10000});
+            await page.getByText('Total debt', { exact: true }).waitFor({timeout:10000});
             await root.getByRole('button', { name: 'Value', exact: true }).click();
             await page.getByRole('heading', { name: 'Where is value leaking?' }).waitFor({ timeout: 10000 });
             await page.getByRole('button', { name: 'Take to decision' }).click();
@@ -271,5 +287,6 @@ jobs:
             pages-preview-url.txt
             pages-deploy.log
             router-deploy.log
+            fourbrands-money-proof/
           if-no-files-found: ignore
           retention-days: 30
