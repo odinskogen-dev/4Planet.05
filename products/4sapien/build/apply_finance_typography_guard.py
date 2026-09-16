@@ -80,3 +80,11 @@ if not finance_twin.exists():
     raise SystemExit('Finance Twin runtime guard missing')
 subprocess.run([sys.executable, str(finance_twin), str(site)], check=True)
 print('4SAPIEN canonical Finance chain: Finance Twin runtime applied')
+
+# Claude's 2026-09-16 handback is a visible-only delta. Apply it after the newer shared
+# theme + canonical Finance runtime so no stale handoff code can replace current logic.
+claude_premium = Path(__file__).resolve().with_name('apply_finance_claude_premium_guard.py')
+if not claude_premium.exists():
+    raise SystemExit('Claude Finance premium guard missing')
+subprocess.run([sys.executable, str(claude_premium), str(site)], check=True)
+print('4SAPIEN canonical Finance chain: Claude premium visible layer applied')
