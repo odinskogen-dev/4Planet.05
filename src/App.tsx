@@ -19,6 +19,7 @@ import "@/styles/premium-completion.css";
 import "@/styles/identity-polish.css";
 import "@/styles/fourbrands-mobile-truth.css";
 
+// Canonical public product authority: https://4brands.org
 const FOURBRANDS_SANDBOX = "/sandbox/4brands-company-twin";
 
 function normalisedPath() {
