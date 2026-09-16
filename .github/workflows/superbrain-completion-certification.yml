@@ -45,6 +45,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify OKF v1.1 migration invariants
+        run: npm run brain:okf:test
+
       - name: Bootstrap Supabase-like roles and extension schemas
         run: |
           psql -v ON_ERROR_STOP=1 <<'SQL'
