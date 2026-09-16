@@ -10,7 +10,17 @@ async function shot(page: import("@playwright/test").Page, name: string, project
 }
 
 async function nav(page: import("@playwright/test").Page, label: string) {
-  await page.getByRole("button", { name: label, exact: true }).click();
+  const mobile = (page.viewportSize()?.width || 1000) <= 760;
+  if (mobile && ["Home", "Finance", "Opportunities", "Evidence"].includes(label)) {
+    await page.locator(".fbt-mobile-dock").getByRole("button", { name: label, exact: true }).click();
+    return;
+  }
+  if (mobile) {
+    await page.locator(".fbt-mobile-dock").getByRole("button", { name: "More", exact: true }).click();
+    await page.locator(".fbt-sidebar").getByRole("button", { name: label, exact: true }).click();
+    return;
+  }
+  await page.locator(".fbt-sidebar").getByRole("button", { name: label, exact: true }).click();
 }
 
 test("4BRANDS first touch → sparse Company Twin → controlled depth", async ({ page }, testInfo) => {
