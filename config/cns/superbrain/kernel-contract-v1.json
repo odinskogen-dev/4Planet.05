@@ -1,0 +1,111 @@
+{
+  "contract": "4PLANET_SUPERBRAIN_KERNEL",
+  "version": "1.0.0",
+  "status": "ACTIVE_NOT_COMPLETE",
+  "founder_decision_date": "2026-09-16",
+  "laws": {
+    "one_superbrain": true,
+    "one_knowledge_protocol": true,
+    "one_actor_kernel": true,
+    "separate_trust_domains": true,
+    "fail_closed_access": true,
+    "parallel_truth_stores_forbidden": true,
+    "generated_output_may_self_promote": false,
+    "delivery_requires_persisted_readback": true,
+    "maker_must_differ_from_judge": true
+  },
+  "identity_model": {
+    "entry": "4PLANET_ID",
+    "chain": ["IDENTITY", "WORKSPACE_MEMBERSHIP", "ACTOR", "ACTOR_TWIN", "MODULE_OR_SURFACE"],
+    "one_identity_may_join_multiple_workspaces": true
+  },
+  "actor_model": {
+    "registry_extensible_without_new_brain": true,
+    "initial_types": [
+      {"type": "PERSON", "surface": "4SAPIEN"},
+      {"type": "COMPANY", "surface": "4BRANDS"},
+      {"type": "FOUNDATION", "surface": "4NGO"},
+      {"type": "NONPROFIT", "surface": "4NGO"},
+      {"type": "GOVERNMENT", "surface": "4GOV"},
+      {"type": "RESEARCH_ORGANISATION", "surface": null},
+      {"type": "SPV", "surface": "4BRANDS"}
+    ],
+    "dogfood": {
+      "odin": "PERSON",
+      "rule": "Odin uses the same Person Twin contract as any future 4SAPIEN user. 4PLANET organisations use their real actor types and relationships."
+    }
+  },
+  "data_roles": ["KNOWLEDGE", "ACTOR_STATE", "ACTOR_HISTORY", "RAW_DATA"],
+  "universal_primitives": [
+    "IDENTITY", "WORKSPACE", "ACTOR", "ENTITY", "RELATIONSHIP",
+    "SOURCE", "DOCUMENT", "CLAIM", "EVIDENCE", "OBSERVATION", "EVENT",
+    "METRIC", "STATE", "OBJECTIVE", "CONSTRAINT", "OPPORTUNITY",
+    "DECISION", "INTERVENTION", "OUTCOME", "LEARNING"
+  ],
+  "actor_value_loop": [
+    "ACTOR", "OBJECTIVE", "BASELINE", "CONSTRAINT", "OPPORTUNITY",
+    "DECISION", "INTERVENTION", "MEASUREMENT", "OUTCOME", "LEARNING", "UPDATED_STATE"
+  ],
+  "trust_domains": [
+    "ODIN_PRIVATE", "4PLANET_INTERNAL", "ACTOR_PRIVATE", "PLANET_SHARED", "PUBLIC"
+  ],
+  "knowledge_contract": {
+    "durable_object_requires": ["STABLE_ID", "TYPE", "DOMAIN", "AUTHORITY", "PROVENANCE", "LIFECYCLE", "TIME"],
+    "factual_claim_lineage": ["CLAIM", "EVIDENCE", "SOURCE", "ORIGINAL"],
+    "truth_axes_must_remain_separate": ["REVIEW_STATUS", "EVIDENCE_STRENGTH", "INTERPRETATION_STATUS"],
+    "claim_confidence": {
+      "scope": "CLAIM_LEVEL_WHERE_POSSIBLE",
+      "opaque_single_score_forbidden": true,
+      "candidate_components": ["SOURCE_QUALITY", "DIRECTNESS", "CORROBORATION", "RECENCY", "METHODOLOGICAL_STRENGTH", "CONSISTENCY"]
+    },
+    "embedding_is_truth": false
+  },
+  "state_contract": {
+    "history_is_preserved": true,
+    "current_state_is_projection": true,
+    "flow": ["EVENTS_OBSERVATIONS_MEASUREMENTS_DECISIONS_OUTCOMES", "CURRENT_STATE"],
+    "product_local_durable_state_forbidden": true,
+    "writeback_to_shared_kernel_required": true
+  },
+  "storage_roles": {
+    "google_drive": "HUMAN_AUTHORING_CANONICAL_DOCUMENTS_SOURCE_ARCHIVE",
+    "postgres_supabase": "CANONICAL_STRUCTURED_MACHINE_STATE",
+    "object_storage": "RAW_AND_LARGE_SOURCE_OBJECTS",
+    "vector_or_search": "DERIVED_RETRIEVAL_ONLY",
+    "graph_projection": "OPTIONAL_DERIVED_READ_MODEL_ONLY"
+  },
+  "llm_contract": {
+    "resolve_before_retrieval": ["IDENTITY", "WORKSPACE", "ACCESS"],
+    "retrieval_order": ["ACCESS", "ENTITY", "TIME", "CURRENT_STATE", "AUTHORITY", "EVIDENCE", "CONFIDENCE", "RELEVANCE"],
+    "must_distinguish": ["SOURCE_EVIDENCE", "CLAIM", "DERIVED_STATE", "GENERATED_INTERPRETATION"],
+    "durable_write_requires_approved_writeback": true,
+    "fail_closed_on": ["AUTHORITY", "PROVENANCE", "PRIVACY", "CONFLICTING_CURRENT_STATE"]
+  },
+  "private_to_shared_firewall": {
+    "automatic_promotion_forbidden": true,
+    "promotion_pipeline": ["LEGAL_BASIS_OR_CONSENT", "DE_IDENTIFICATION", "AGGREGATION", "QUALITY_GATE", "EXPLICIT_SHARED_PROMOTION"]
+  },
+  "drive_migration": {
+    "replace_blindly": false,
+    "preserve_original_content": true,
+    "preserve_history": true,
+    "preserve_authority": true,
+    "zero_omission_required": true,
+    "sequence": [
+      "RECURSIVE_CENSUS", "STABLE_ID_AND_CLASSIFICATION", "REVISION_BACKUP",
+      "OKF_CONTROL", "SOURCE_ENTITY_CLAIM_EXTRACTION", "ACTOR_LINKING",
+      "LINEAGE_VALIDATION", "STRUCTURED_CURRENT_STATE", "RETRIEVAL_CUTOVER"
+    ]
+  },
+  "completion_gates": [
+    "G01_KNOWLEDGE_CONTRACT",
+    "G02_ACTOR_KERNEL",
+    "G03_STORAGE_ARCHITECTURE",
+    "G04_INGEST_WRITEBACK",
+    "G05_RETRIEVAL",
+    "G06_4SAPIEN_DOGFOOD",
+    "G07_4PLANET_ORGANISATION_DOGFOOD",
+    "G08_PLANETBRAIN",
+    "G09_AUTONOMOUS_MAINTENANCE"
+  ]
+}
