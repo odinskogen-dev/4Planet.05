@@ -90,11 +90,12 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903112500_superbrain_cutover_hydration_gate_05.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903114000_superbrain_pgcrypto_runtime_path_06.sql
 
-      - name: Apply universal Actor and Knowledge kernel
+      - name: Apply universal Actor, Knowledge and Retrieval kernel
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916170000_superbrain_actor_workspace_kernel_07.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916173000_superbrain_actor_workspace_hardening_08.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916203000_superbrain_knowledge_contract_09.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916210000_superbrain_scoped_retrieval_health_10.sql
 
       - name: Verify original Planet convergence
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_planet_convergence.sql
@@ -105,11 +106,12 @@ jobs:
       - name: Verify Supabase crypto runtime parity
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_supabase_runtime_parity.sql
 
-      - name: Verify Actor and knowledge contracts
+      - name: Verify Actor, knowledge, retrieval and health contracts
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_actor_workspace_kernel.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_actor_workspace_hardening.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_knowledge_contract.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_scoped_retrieval_health.sql
 
       - name: Verify cutover remains fail-closed before complete BRAIN hydration
         run: |
