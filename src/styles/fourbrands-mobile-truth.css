@@ -1,0 +1,2 @@
+.fb-mobile-session{display:none}
+@media(max-width:760px){.fb-mobile-session{display:block;margin:-8px 0 16px;padding:8px 10px;border:1px solid rgba(10,10,11,.1);border-radius:999px;background:#fff;font:600 7px/1.2 "Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.055em;color:#686863;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
