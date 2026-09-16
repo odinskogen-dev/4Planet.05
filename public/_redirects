@@ -1,6 +1,6 @@
-/4brands  https://4brands.org/  301
-/4brands/*  https://4brands.org/:splat  301
-/4brand  https://4brands.org/  301
+/4brand  https://4brands.org  301
 /4brand/*  https://4brands.org/:splat  301
+/4brands  https://4brands.org  301
+/4brands/*  https://4brands.org/:splat  301
 /api/*  /api/:splat  200
 /*  /index.html  200
