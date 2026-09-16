@@ -12,7 +12,7 @@ export const TERMINAL_MIGRATION_STATES = new Set([
 export function stableKnowledgeId(record) {
   if (record.knowledge_id) return record.knowledge_id;
   if (record.drive_id) return `kp:gdrive:${record.drive_id}`;
-  if (record.github_repo && record.path) return `kp:github:${record.github_repo}:${record.path}`.toLowerCase();
+  if (record.github_repo && record.path) return `kp:github:${record.github_repo}:${record.path}`;
   const basis = JSON.stringify([record.storage || '', record.provider_id || '', record.path || '', record.title || '']);
   return `kp:derived:${crypto.createHash('sha256').update(basis).digest('hex').slice(0, 24)}`;
 }
@@ -58,15 +58,21 @@ function yamlLines(value, indent = 0) {
         if (!entries.length) { lines.push(`${pad}- {}`); continue; }
         const [firstKey, firstVal] = entries[0];
         if (firstVal && typeof firstVal === 'object') {
-          lines.push(`${pad}- ${firstKey}:`);
-          lines.push(...yamlLines(firstVal, indent + 4));
+          if (Array.isArray(firstVal) && !firstVal.length) lines.push(`${pad}- ${firstKey}: []`);
+          else {
+            lines.push(`${pad}- ${firstKey}:`);
+            lines.push(...yamlLines(firstVal, indent + 4));
+          }
         } else {
           lines.push(`${pad}- ${firstKey}: ${scalar(firstVal)}`);
         }
         for (const [k, v] of entries.slice(1)) {
           if (v && typeof v === 'object') {
-            lines.push(`${pad}  ${k}:`);
-            lines.push(...yamlLines(v, indent + 4));
+            if (Array.isArray(v) && !v.length) lines.push(`${pad}  ${k}: []`);
+            else {
+              lines.push(`${pad}  ${k}:`);
+              lines.push(...yamlLines(v, indent + 4));
+            }
           } else {
             lines.push(`${pad}  ${k}: ${scalar(v)}`);
           }
@@ -81,8 +87,11 @@ function yamlLines(value, indent = 0) {
     const lines = [];
     for (const [k, v] of Object.entries(value)) {
       if (v && typeof v === 'object') {
-        lines.push(`${pad}${k}:`);
-        lines.push(...yamlLines(v, indent + 2));
+        if (Array.isArray(v) && !v.length) lines.push(`${pad}${k}: []`);
+        else {
+          lines.push(`${pad}${k}:`);
+          lines.push(...yamlLines(v, indent + 2));
+        }
       } else {
         lines.push(`${pad}${k}: ${scalar(v)}`);
       }
@@ -102,7 +111,7 @@ export function migrateText(text, metadata, { replaceExisting = false } = {}) {
   if (split.hasFrontmatter && !replaceExisting) {
     return { changed: false, reason: 'EXISTING_FRONTMATTER_REQUIRES_MERGE_REVIEW', output: text, bodyHashBefore: sha256(split.body), bodyHashAfter: sha256(split.body) };
   }
-  const body = split.hasFrontmatter ? split.body : split.body;
+  const body = split.body;
   const output = `${split.bom}${renderFrontmatter(metadata, newline)}${body}`;
   return {
     changed: output !== text,
