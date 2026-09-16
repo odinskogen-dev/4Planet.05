@@ -3,6 +3,7 @@ name: SUPERBRAIN Completion Certification
 on:
   pull_request:
     paths:
+      - 'config/cns/superbrain/**'
       - 'supabase/migrations/20260824*_cns_*.sql'
       - 'supabase/migrations/20260826*_cns_*.sql'
       - 'supabase/migrations/*superbrain*.sql'
@@ -84,6 +85,9 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903112500_superbrain_cutover_hydration_gate_05.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903114000_superbrain_pgcrypto_runtime_path_06.sql
 
+      - name: Apply universal Actor / 4PLANET ID kernel
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260916170000_superbrain_actor_workspace_kernel_07.sql
+
       - name: Verify original Planet convergence
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_planet_convergence.sql
 
@@ -92,6 +96,9 @@ jobs:
 
       - name: Verify Supabase crypto runtime parity
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_supabase_runtime_parity.sql
+
+      - name: Verify Actor / workspace isolation and shared-kernel writeback
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_actor_workspace_kernel.sql
 
       - name: Verify cutover remains fail-closed before complete BRAIN hydration
         run: |
