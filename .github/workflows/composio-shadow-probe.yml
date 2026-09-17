@@ -53,9 +53,27 @@ jobs:
           CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-composio-probe-control-token")"
           echo "::add-mask::$CONTROL_TOKEN"
 
-          PRIVATE_STATUS="$(curl --silent --show-error --fail-with-body \
-            -H "x-factory-control: $CONTROL_TOKEN" \
-            "$BASE_URL/__factory/capabilities/private")"
+          PRIVATE_STATUS=""
+          AUTH_READY=false
+          for attempt in $(seq 1 20); do
+            HTTP_STATUS="$(curl --silent --show-error \
+              -o "$RUNNER_TEMP/private-status.json" \
+              -w '%{http_code}' \
+              -H "x-factory-control: $CONTROL_TOKEN" \
+              "$BASE_URL/__factory/capabilities/private" || true)"
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+              PRIVATE_STATUS="$(cat "$RUNNER_TEMP/private-status.json")"
+              AUTH_READY=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [[ "$AUTH_READY" != "true" ]]; then
+            echo "Factory control auth did not converge after secret rotation."
+            exit 1
+          fi
+
           echo "$PRIVATE_STATUS" | jq -e '.readiness.composio == "CONFIGURED"' >/dev/null
 
           HTTP_STATUS="$(curl --silent --show-error \
