@@ -29,13 +29,22 @@ jobs:
               && grep -q 'Build My Brain' /tmp/brain.html \
               && grep -q 'Ask My Brain' /tmp/brain.html \
               && grep -q 'functions/v1/brain-profile' /tmp/brain.html \
-              && grep -q 'four_brands_memories' /tmp/brain.html; then
+              && grep -q 'four_brands_memories' /tmp/brain.html \
+              && grep -q '/brain/brain-profile-runtime-v2.js' /tmp/brain.html; then
               ok=1
               break
             fi
             sleep 2
           done
           test "$ok" = 1
+
+      - name: Verify Brain correction runtime live
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://4sapien.com/brain/brain-profile-runtime-v2.js' -o /tmp/brain-v2.js
+          grep -q "action:'correct'" /tmp/brain-v2.js
+          grep -q "action:'remove'" /tmp/brain-v2.js
+          grep -q 'history preserved' /tmp/brain-v2.js
 
       - name: Verify Brain Profile auth boundary
         run: |
