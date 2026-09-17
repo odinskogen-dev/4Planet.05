@@ -1,6 +1,6 @@
 import type { ProjectProjection, WorkPackage } from "./contracts";
 
-// Finite deploy-triggered SHADOW run only. This module installs no cron or standing scheduler.
+// Finite deploy-triggered SHADOW run plus Founder-approved recurring SAFE daily lanes.
 const SHA40 = /^[0-9a-f]{40}$/i;
 export const NIGHT_SHIFT_PROJECT_ID = "FACTORY_ACTIVE_01";
 export const NIGHT_SHIFT_AUTHORITY = "FOUNDER_ORDER:FACTORY_CLOUD_WORKERS_NIGHT_SHIFT_01";
@@ -87,6 +87,83 @@ function browserPackage(input: {
   };
 }
 
+function researchPackage(input: {
+  slug: string;
+  title: string;
+  section: "CAPITAL" | "RESEARCH_DATA";
+  query: string;
+  exactTestSha: string;
+  exactFactorySha: string;
+  createdAt: string;
+}): WorkPackage {
+  const testKey = key(input.exactTestSha);
+  const factoryKey = key(input.exactFactorySha);
+  return {
+    id: `night-${input.slug}-${testKey}-${factoryKey}`,
+    projectId: NIGHT_SHIFT_PROJECT_ID,
+    title: input.title,
+    section: input.section,
+    priority: "P0",
+    goalLink: "MAXIMUM_AUTONOMOUS_PRODUCTION_01 — safe autonomous discovery",
+    gapClosed: `Collect fresh ${input.section} discovery evidence without outreach, spend, Canon promotion or external mutation.`,
+    deliverables: [
+      "Bounded Exa discovery result set",
+      "Source/provenance candidates for independent evaluation",
+      "Explicit uncertainty and Founder-release boundary",
+    ],
+    dependencies: [],
+    writeScopes: [],
+    definitionOfDone: [
+      "Task Contract V1 and context hash are bound before dispatch",
+      "Exa execution is read-only and bounded",
+      "Candidate sources and payload fingerprint are persisted",
+      "Independent evaluator runs before accepted material progress",
+      "No outreach, application, spend, LIVE/HEIR/Canon mutation or self-approval occurs",
+    ],
+    requiredEvidence: ["TASK_CONTRACT_V1", "exa search PASS", "source", "terminal authority reread"],
+    execution: {
+      kind: "EXA_SEARCH",
+      targetUrl: "https://api.exa.ai/search",
+      allowedHosts: ["api.exa.ai"],
+      query: input.query,
+      limit: 6,
+    },
+    run: {
+      runId: `factory-night-shift-${input.slug}`,
+      attemptId: "01",
+      idempotencyKey: `factory-night:${input.slug}:${input.exactTestSha}:${input.exactFactorySha}`,
+      inputStateHash: `factory=${input.exactFactorySha};test=${input.exactTestSha};exa=${input.query}`,
+      expectedBaseSha: input.exactTestSha,
+      workerId: `factory-cloudflare-night-${input.section.toLowerCase()}`,
+      createdAt: input.createdAt,
+    },
+    resourceBudget: {
+      maxAttempts: 1,
+      maxCorrectionAttempts: 0,
+      maxModelCalls: 0,
+      maxTokens: 0,
+      maxModelCostUsd: 0,
+      maxExternalRequests: 1,
+      maxGithubCalls: 0,
+      maxBrowserCalls: 0,
+      maxWallClockMinutes: 5,
+      maxQueueRetries: 3,
+    },
+    learningQuestion: `Can Factory autonomously discover fresh high-value ${input.section} candidates with zero Founder minutes while preserving release and truth gates?`,
+    createdAt: input.createdAt,
+    estimatedValue: 10,
+    criticalPath: 9,
+    dependencyUnlock: 9,
+    proofValue: 9,
+    cashValue: input.section === "CAPITAL" ? 10 : 4,
+    learningValue: 10,
+    risk: 1,
+    founderBurden: 0,
+    concurrencyCost: 0,
+    status: "READY",
+  };
+}
+
 export function createNightShiftPortfolio(
   exactTestSha: string,
   exactFactorySha: string,
@@ -104,7 +181,7 @@ export function createNightShiftPortfolio(
     gold: "A finite, independently readable SHADOW QLoop produces evidence, failures and learning without self-promoting activity into truth.",
     gap: "Run bounded current CORE checks and prove fail-closed context/authority behaviour.",
     priority: "P0",
-    authorityRefs: [NIGHT_SHIFT_AUTHORITY, "FOUNDER_AMENDMENT_M", "CSR-2026-09-08-05", "FACTORY_ACTIVE_01"],
+    authorityRefs: [NIGHT_SHIFT_AUTHORITY, "FOUNDER_AMENDMENT_M", "CSR-2026-09-08-05", "FACTORY_ACTIVE_01", "FOUNDER_ORDER:MAXIMUM_AUTONOMOUS_PRODUCTION_01"],
     lastMaterialProgressAt: createdAt,
   };
 
@@ -122,5 +199,39 @@ export function createNightShiftPortfolio(
   const packages = defs.map(([slug, title, targetUrl, width, height]) => browserPackage({
     slug, title, targetUrl, viewport: { width, height }, exactTestSha, exactFactorySha, createdAt,
   }));
+
+  // Founder-approved MAXIMUM_AUTONOMOUS_PRODUCTION_01: one fresh, bounded
+  // PRODUCT / CAPITAL / INTELLIGENCE cycle per UTC day. Stable legacy Night
+  // Shift proof packages remain intact; date-scoped ids make the new work recur
+  // without creating a second scheduler, queue or truth store.
+  const day = createdAt.slice(0, 10).replaceAll("-", "");
+  packages.push(browserPackage({
+    slug: `product-daily-atlas-mobile-${day}`,
+    title: `PRODUCT daily live verification ${day}`,
+    targetUrl: "https://4planet.org/atlas",
+    viewport: { width: 390, height: 844 },
+    exactTestSha,
+    exactFactorySha,
+    createdAt,
+  }));
+  packages.push(researchPackage({
+    slug: `capital-daily-opportunity-discovery-${day}`,
+    title: `CAPITAL daily non-dilutive opportunity discovery ${day}`,
+    section: "CAPITAL",
+    query: "open 2026 non-dilutive grants foundations biodiversity nature climate environmental technology Europe Norway funding application deadline",
+    exactTestSha,
+    exactFactorySha,
+    createdAt,
+  }));
+  packages.push(researchPackage({
+    slug: `intelligence-daily-living-planet-${day}`,
+    title: `INTELLIGENCE daily living-planet discovery ${day}`,
+    section: "RESEARCH_DATA",
+    query: "latest 2026 biodiversity nature climate ecological restoration conservation technology scientific research solutions",
+    exactTestSha,
+    exactFactorySha,
+    createdAt,
+  }));
+
   return { projects: [project], packages };
 }

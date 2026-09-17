@@ -26,6 +26,7 @@ export function scoreWorkPackage(pkg: WorkPackage, project: ProjectProjection, n
   if (pkg.status !== "READY") return Number.NEGATIVE_INFINITY;
   if (pkg.priority === "PARKED" || pkg.priority === "INCUBATING") return Number.NEGATIVE_INFINITY;
   if (pkg.dependencies.length > 0 || project.blockedReason) return Number.NEGATIVE_INFINITY;
+  if (pkg.founderGate || project.founderGate) return Number.NEGATIVE_INFINITY;
 
   const priorityBase = pkg.priority === "P0" ? 60 : pkg.priority === "P1" ? 35 : pkg.priority === "P2" ? 20 : 0;
 

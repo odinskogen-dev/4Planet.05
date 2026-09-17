@@ -1,4 +1,5 @@
 import type { Outcome, WorkPackage } from "./contracts";
+import { runResearchSearch } from "./capabilityExpansion";
 
 // Source pages are frequently substantially larger than the small machine-readable
 // endpoints used by the first canary. Keep the read bounded, but large enough to
@@ -210,10 +211,51 @@ async function sourceCheck(pkg: WorkPackage): Promise<Outcome> {
   });
 }
 
+async function exaSearch(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome> {
+  const execution = pkg.execution;
+  if (!execution || execution.kind !== "EXA_SEARCH") throw new Error("EXA_SEARCH execution spec required");
+  validateExecutionTarget(execution.targetUrl, execution.allowedHosts);
+  const query = execution.query?.trim() ?? "";
+  if (query.length < 3 || query.length > 500) throw new Error("EXA_SEARCH query is outside bounded limits");
+  const limit = Math.max(1, Math.min(8, Math.floor(execution.limit ?? 5)));
+
+  const result = await runResearchSearch(env, "exa", query, limit);
+  const record = typeof result.data === "object" && result.data !== null && !Array.isArray(result.data)
+    ? result.data as Record<string, unknown>
+    : {};
+  const rows = Array.isArray(record.results) ? record.results : [];
+  const urls = rows
+    .map((row) => typeof row === "object" && row !== null && !Array.isArray(row) ? (row as Record<string, unknown>).url : undefined)
+    .filter((url): url is string => typeof url === "string" && /^https:\/\//i.test(url))
+    .slice(0, 5);
+  const bytes = new TextEncoder().encode(JSON.stringify(result.data ?? null));
+  const hash = await sha256(bytes);
+  const sectionEvidence = pkg.section === "CAPITAL"
+    ? "eligibility/routing discovery inputs collected; eligibility itself remains unverified"
+    : "source/provenance discovery inputs collected; claim correctness remains unverified";
+
+  return baseOutcome(pkg, {
+    status: "ACCEPTED",
+    evidence: [
+      "exa search PASS",
+      "source https://api.exa.ai/search",
+      `query ${query}`,
+      `results ${rows.length}`,
+      `payload-sha256 ${hash}`,
+      sectionEvidence,
+      ...urls.map((url) => `source ${url}`),
+    ],
+    materialDelta: `Verified live Exa discovery for ${pkg.section} and collected ${rows.length} bounded source candidates without external mutation.`,
+    actual: `Exa returned ${rows.length} bounded result rows for the approved read-only query.`,
+    limitation: "Discovery results are candidate evidence only. They do not prove eligibility, factual claims, fit, ranking, outreach readiness or Founder release.",
+  });
+}
+
 /** Returns undefined when no real bound adapter exists for the package. */
 export async function executeReadOnlyPackage(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome | undefined> {
   if (!pkg.execution) return undefined;
   if (pkg.execution.kind === "BROWSER_QA") return browserQa(env, pkg);
   if (pkg.execution.kind === "HTTP_SOURCE_CHECK") return sourceCheck(pkg);
+  if (pkg.execution.kind === "EXA_SEARCH") return exaSearch(env, pkg);
   return undefined;
 }

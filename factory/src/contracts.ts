@@ -28,7 +28,7 @@ export interface ProductionLineContext {
   role: ProductionLineRole;
 }
 
-export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK";
+export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK" | "EXA_SEARCH";
 
 /**
  * Bounded runtime instruction. This is deliberately small: the first safe
@@ -44,6 +44,10 @@ export interface ExecutionSpec {
     height: number;
     deviceScaleFactor?: number;
   };
+  /** Read-only discovery query used only when kind=EXA_SEARCH. */
+  query?: string;
+  /** Bounded result count for read-only discovery. */
+  limit?: number;
 }
 
 export interface ResourceBudget {
