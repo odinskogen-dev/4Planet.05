@@ -71,7 +71,6 @@ export interface CapabilityRuntimeEnv extends Cloudflare.Env {
   EXA_API_KEY?: string;
   TAVILY_API_KEY?: string;
   FIRECRAWL_API_KEY?: string;
-  FACTORY_AI_GATEWAY_ID?: string;
 }
 
 interface AiGatewayBinding {
