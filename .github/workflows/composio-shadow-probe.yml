@@ -75,17 +75,30 @@ jobs:
           fi
 
           echo "$PRIVATE_STATUS" | jq -e '.readiness.composio == "CONFIGURED"' >/dev/null
+          echo "Composio secret binding: CONFIGURED"
 
-          HTTP_STATUS="$(curl --silent --show-error \
-            -o "$RUNNER_TEMP/composio-session-probe.json" \
-            -w '%{http_code}' \
-            -X POST \
-            -H "x-factory-control: $CONTROL_TOKEN" \
-            -H "content-type: application/json" \
-            --data '{"toolkits":["github"]}' \
-            "$BASE_URL/__factory/capabilities/composio/session")"
+          SESSION_READY=false
+          HTTP_STATUS="000"
+          for attempt in $(seq 1 20); do
+            HTTP_STATUS="$(curl --silent --show-error \
+              -o "$RUNNER_TEMP/composio-session-probe.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "x-factory-control: $CONTROL_TOKEN" \
+              -H "content-type: application/json" \
+              --data '{"toolkits":["github"]}' \
+              "$BASE_URL/__factory/capabilities/composio/session" || true)"
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+              SESSION_READY=true
+              break
+            fi
+            if [[ "$HTTP_STATUS" != "401" ]]; then
+              break
+            fi
+            sleep 2
+          done
 
-          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+          if [[ "$SESSION_READY" != "true" ]]; then
             echo "Composio probe failed with HTTP $HTTP_STATUS"
             jq -c '{ok,error}' "$RUNNER_TEMP/composio-session-probe.json" 2>/dev/null || true
             exit 1
