@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   probe:
@@ -18,52 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: factory/symphony-runtime-v01
-
-      - name: Apply current Composio v3.1 request schema
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('factory/src/capabilityExpansion.ts')
-          text = p.read_text()
-          old = '''        toolkits: { enabled: toolkits },
-        tags: { enabled: ["readOnlyHint"] },
-        manage_connections: {
-          enabled: true,
-          enable_wait_for_connections: false,
-          enable_connection_removal: false,
-        },
-        search: { enable: true },
-        execute: { enable_multi_execute: false },
-        workbench: { enable: false, proxy_execution_enabled: false },
-        multi_account: {
-          enable: false,
-          max_accounts_per_toolkit: 1,
-          require_explicit_selection: false,
-        },'''
-          new = '''        toolkits: { enable: toolkits },
-        tags: { enable: ["readOnlyHint"] },
-        manage_connections: {
-          enable: true,
-          enable_wait_for_connections: false,
-          enable_connection_removal: false,
-        },
-        search: { enable: true },
-        execute: { enable_multi_execute: false },
-        workbench: { enable: false, enable_proxy_execution: false },'''
-          if old not in text:
-              raise SystemExit('Expected Composio session block not found; refusing blind edit')
-          p.write_text(text.replace(old, new, 1))
-          PY
-          git diff --check
-          git diff -- factory/src/capabilityExpansion.ts
-          git config user.name "4PLANET Factory"
-          git config user.email "odin.skogen@gmail.com"
-          git add factory/src/capabilityExpansion.ts
-          git commit -m "fix(factory): align Composio session schema with v3.1"
-          git push origin HEAD:factory/symphony-runtime-v01
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-node@v4
         with:
