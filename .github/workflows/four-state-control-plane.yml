@@ -74,7 +74,7 @@ jobs:
           : > artifacts/four-state/deployments.jsonl
           inventory_meta="artifacts/four-state/deployment-inventory.json"
           page=1
-          max_pages=200
+          max_pages=500
           complete=0
           total_pages=""
           total_count=""
