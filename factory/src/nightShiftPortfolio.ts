@@ -200,10 +200,6 @@ export function createNightShiftPortfolio(
     slug, title, targetUrl, viewport: { width, height }, exactTestSha, exactFactorySha, createdAt,
   }));
 
-  // Founder-approved MAXIMUM_AUTONOMOUS_PRODUCTION_01: one fresh, bounded
-  // PRODUCT / CAPITAL / INTELLIGENCE cycle per UTC day. Stable legacy Night
-  // Shift proof packages remain intact; date-scoped ids make the new work recur
-  // without creating a second scheduler, queue or truth store.
   const day = createdAt.slice(0, 10).replaceAll("-", "");
   packages.push(browserPackage({
     slug: `product-daily-atlas-mobile-${day}`,
@@ -235,3 +231,5 @@ export function createNightShiftPortfolio(
 
   return { projects: [project], packages };
 }
+
+// SAFE_AUTONOMY_RUNTIME_V01
