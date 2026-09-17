@@ -223,21 +223,16 @@ export async function createComposioReadOnlySession(env: CapabilityRuntimeEnv, r
       headers: composioHeaders(env),
       body: JSON.stringify({
         user_id: COMPOSIO_USER_ID,
-        toolkits: { enabled: toolkits },
-        tags: { enabled: ["readOnlyHint"] },
+        toolkits: { enable: toolkits },
+        tags: { enable: ["readOnlyHint"] },
         manage_connections: {
-          enabled: true,
+          enable: true,
           enable_wait_for_connections: false,
           enable_connection_removal: false,
         },
         search: { enable: true },
         execute: { enable_multi_execute: false },
-        workbench: { enable: false, proxy_execution_enabled: false },
-        multi_account: {
-          enable: false,
-          max_accounts_per_toolkit: 1,
-          require_explicit_selection: false,
-        },
+        workbench: { enable: false, enable_proxy_execution: false },
       }),
     },
   );
