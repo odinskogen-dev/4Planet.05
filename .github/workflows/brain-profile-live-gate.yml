@@ -1,0 +1,57 @@
+name: 4SAPIEN Brain Profiles live gate
+
+on:
+  push:
+    branches: [build/ask-embla-live-20260909]
+    paths:
+      - 'products/4sapien/**'
+      - '.github/workflows/brain-profile-live-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+
+jobs:
+  verify-brain-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Brain Profile live route
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in 1 2 3 4 5 6; do
+            if curl -fsS -H 'Sec-Fetch-Mode: navigate' 'https://4sapien.com/brain/' -o /tmp/brain.html \
+              && grep -q '<title>4SAPIEN Brain — Your AI that knows you</title>' /tmp/brain.html \
+              && grep -q 'Build My Brain' /tmp/brain.html \
+              && grep -q 'Ask My Brain' /tmp/brain.html \
+              && grep -q 'functions/v1/brain-profile' /tmp/brain.html \
+              && grep -q 'four_brands_memories' /tmp/brain.html; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ok" = 1
+
+      - name: Verify Brain Profile auth boundary
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/brain-api.json -w '%{http_code}' \
+            -X POST \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H 'Content-Type: application/json' \
+            --data '{"action":"ask","tenant_type":"person","question":"hello"}' \
+            "${SUPABASE_URL}/functions/v1/brain-profile" || true)
+          test "$code" = "401"
+
+      - name: Verify production security headers
+        run: |
+          set -euo pipefail
+          headers=$(curl -fsSI 'https://4sapien.com/brain/')
+          grep -qi '^x-content-type-options: nosniff' <<<"$headers"
+          grep -qi '^content-security-policy:' <<<"$headers"
+          grep -qi "object-src 'none'" <<<"$headers"
