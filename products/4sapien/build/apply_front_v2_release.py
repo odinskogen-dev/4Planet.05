@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
@@ -40,10 +41,18 @@ html = html.replace(
     1,
 )
 
-# World navigation: Today stays on the root shell. Food and Money enter the
-# existing live products; their internals are never replaced by donor placeholders.
+# Brain Profiles is a product surface over the existing tenant Brain. Keep Food,
+# Money and Brain as same-origin worlds without replacing their proven runtimes.
+old_worlds = "var WORLDS=[['today','I dag','◒','var(--embla)'],['food','Mat','🌿','var(--food)'],['money','Penger','◑','var(--money)']];"
+new_worlds = "var WORLDS=[['today','I dag','◒','var(--embla)'],['food','Mat','🌿','var(--food)'],['money','Penger','◑','var(--money)'],['brain','Brain','◇','var(--embla)']];"
+if html.count(old_worlds) != 1:
+    raise SystemExit(f'Unified shell worlds anchor mismatch ({html.count(old_worlds)})')
+html = html.replace(old_worlds, new_worlds, 1)
+
+# World navigation: Today stays on the root shell. Food, Money and Brain enter
+# the existing same-origin production surfaces.
 old_go = "function go(w){cur=w;document.getElementById('emblaIn').placeholder='Spør Embla om '+(w==='food'?'mat':w==='money'?'penger':'livet ditt')+'…';document.getElementById('view').innerHTML=screen();renderWorlds();window.scrollTo(0,0);}"
-new_go = "function go(w){if(w==='food'){window.location.href='/app/food/';return;}if(w==='money'){window.location.href='/app/money/';return;}cur='today';document.getElementById('emblaIn').placeholder='Spør Embla om livet ditt…';document.getElementById('view').innerHTML=screen();renderWorlds();window.scrollTo(0,0);}"
+new_go = "function go(w){if(w==='food'){window.location.href='/app/food/';return;}if(w==='money'){window.location.href='/app/money/';return;}if(w==='brain'){window.location.href='/brain/';return;}cur='today';document.getElementById('emblaIn').placeholder='Spør Embla om livet ditt…';document.getElementById('view').innerHTML=screen();renderWorlds();window.scrollTo(0,0);}"
 if html.count(old_go) != 1:
     raise SystemExit(f'Unified shell route function mismatch ({html.count(old_go)})')
 html = html.replace(old_go, new_go, 1)
@@ -98,8 +107,8 @@ html = html.replace('</body>', compat + '</body>', 1)
 # Production invariants for the new root.
 for marker in (
     'Se livet ditt klart.',
-    'I dag', 'Mat', 'Penger',
-    '/app/food/', '/app/money/',
+    'I dag', 'Mat', 'Penger', 'Brain',
+    '/app/food/', '/app/money/', '/brain/',
     'functions/v1/embla-core-preview',
     '4sapien_embla_conversation',
     '#2E2EFF', '#3AE86F', '#FF4D22',
@@ -118,4 +127,18 @@ target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(html, encoding='utf-8')
 front_auth_guard = Path(__file__).resolve().with_name('apply_front_auth_guard.py')
 subprocess.run([sys.executable, str(front_auth_guard), str(target)], check=True)
-print('4SAPIEN Claude unified shell integrated for production + real routes + Embla + auth state')
+
+# Materialize the premium Brain Profile surface into the same immutable release
+# directory. The source is versioned; production site remains generated.
+brain_source = Path(__file__).resolve().parents[1] / 'source' / 'brain-profile.html'
+if not brain_source.exists():
+    raise SystemExit('Brain Profile source missing')
+brain_target = target.parent / 'brain' / 'index.html'
+brain_target.parent.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(brain_source, brain_target)
+brain_html = brain_target.read_text(encoding='utf-8')
+for marker in ('4SAPIEN Brain', 'functions/v1/brain-profile', 'four_brands_memories', 'Build My Brain', 'Ask My Brain'):
+    if marker not in brain_html:
+        raise SystemExit(f'Brain Profile production QA missing marker: {marker}')
+
+print('4SAPIEN Claude unified shell integrated for production + real routes + Embla + Brain Profiles + auth state')
