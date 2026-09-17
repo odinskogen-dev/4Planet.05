@@ -16,16 +16,23 @@ def inject(s,label):
         s=s.replace('</head>','<script src="/4sapien-theme.js"></script>\n</head>',1)
     return s
 
-# Public front: keep Claude's exact palette and existing button; only centralise state/persistence.
-s=inject(root.read_text(),'front')
-pat=re.compile(r" var root=document\.documentElement,tb=document\.getElementById\('tbtn'\),tm=document\.querySelector\('meta\[name=theme-color\]'\);\n function applyTheme\(t\)\{.*?\}\n function toggleTheme\(\)\{.*?\}\n \(function\(\)\{var m=.*?\}\)\(\);",re.S)
-rep=""" var root=document.documentElement,tb=document.getElementById('tbtn'),tm=document.querySelector('meta[name=theme-color]');
+# Public front: the current Claude unified shell already contains the canonical
+# FourSapienTheme contract. Older fronts are migrated through the legacy adapter.
+raw=root.read_text()
+modern=('window.FourSapienTheme={key:KEY,get,set,toggle,subscribe,paint}' in raw and
+        'var T=window.FourSapienTheme' in raw)
+if modern:
+    s=raw
+else:
+    s=inject(raw,'front')
+    pat=re.compile(r" var root=document\.documentElement,tb=document\.getElementById\('tbtn'\),tm=document\.querySelector\('meta\[name=theme-color\]'\);\n function applyTheme\(t\)\{.*?\}\n function toggleTheme\(\)\{.*?\}\n \(function\(\)\{var m=.*?\}\)\(\);",re.S)
+    rep=""" var root=document.documentElement,tb=document.getElementById('tbtn'),tm=document.querySelector('meta[name=theme-color]');
  function syncFrontTheme(t){root.setAttribute('data-theme',t);document.querySelectorAll('.themebtn').forEach(function(b){b.textContent=t==='dark'?'☀':'◐';b.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');});if(tm)tm.setAttribute('content',t==='dark'?'#000000':'#FFFFFF');}
  function applyTheme(t){window.FourSapienTheme.set(t);}
  function toggleTheme(){window.FourSapienTheme.toggle();}
  syncFrontTheme(window.FourSapienTheme.get());window.FourSapienTheme.subscribe(syncFrontTheme);"""
-s,n=pat.subn(rep,s,1)
-if n!=1: raise SystemExit(f'front theme runtime mismatch: {n}')
+    s,n=pat.subn(rep,s,1)
+    if n!=1: raise SystemExit(f'front theme runtime mismatch: {n}')
 root.write_text(s)
 
 FONT="display:\"'Instrument Sans',sans-serif\",body:\"'DM Sans',sans-serif\",mono:\"'Fragment Mono',monospace\""
