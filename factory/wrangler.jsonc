@@ -4,6 +4,9 @@
   "main": "src/capabilityRuntimeEntrypoint.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "FACTORY_AI_GATEWAY_ID": "4planet-factory"
+  },
   "observability": {
     "enabled": true,
     "logs": {
