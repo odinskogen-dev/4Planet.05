@@ -131,14 +131,28 @@ subprocess.run([sys.executable, str(front_auth_guard), str(target)], check=True)
 # Materialize the premium Brain Profile surface into the same immutable release
 # directory. The source is versioned; production site remains generated.
 brain_source = Path(__file__).resolve().parents[1] / 'source' / 'brain-profile.html'
+brain_runtime_source = Path(__file__).resolve().parents[1] / 'source' / 'brain-profile-runtime-v2.js'
 if not brain_source.exists():
     raise SystemExit('Brain Profile source missing')
-brain_target = target.parent / 'brain' / 'index.html'
-brain_target.parent.mkdir(parents=True, exist_ok=True)
+if not brain_runtime_source.exists():
+    raise SystemExit('Brain Profile runtime v2 source missing')
+brain_dir = target.parent / 'brain'
+brain_target = brain_dir / 'index.html'
+brain_runtime_target = brain_dir / 'brain-profile-runtime-v2.js'
+brain_dir.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(brain_source, brain_target)
+shutil.copyfile(brain_runtime_source, brain_runtime_target)
 brain_html = brain_target.read_text(encoding='utf-8')
-for marker in ('4SAPIEN Brain', 'functions/v1/brain-profile', 'four_brands_memories', 'Build My Brain', 'Ask My Brain'):
+if brain_html.count('</body>') != 1:
+    raise SystemExit('Brain Profile body anchor mismatch')
+brain_html = brain_html.replace('</body>', '<script src="/brain/brain-profile-runtime-v2.js"></script>\n</body>', 1)
+brain_target.write_text(brain_html, encoding='utf-8')
+for marker in ('4SAPIEN Brain', 'functions/v1/brain-profile', 'four_brands_memories', 'Build My Brain', 'Ask My Brain', 'brain-profile-runtime-v2.js'):
     if marker not in brain_html:
         raise SystemExit(f'Brain Profile production QA missing marker: {marker}')
+runtime_js = brain_runtime_target.read_text(encoding='utf-8')
+for marker in ("action:'correct'", "action:'remove'", 'history preserved'):
+    if marker not in runtime_js:
+        raise SystemExit(f'Brain Profile runtime v2 QA missing marker: {marker}')
 
-print('4SAPIEN Claude unified shell integrated for production + real routes + Embla + Brain Profiles + auth state')
+print('4SAPIEN Claude unified shell integrated for production + real routes + Embla + Brain Profiles v2 + auth state')
