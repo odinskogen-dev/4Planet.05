@@ -1,0 +1,92 @@
+name: Exa SHADOW Connectivity Probe
+
+on:
+  push:
+    branches:
+      - "factory/symphony-runtime-v01"
+    paths:
+      - ".github/workflows/exa-shadow-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: production-factory-shadow
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: factory/package.json
+
+      - name: Install Factory dependencies
+        working-directory: factory
+        run: npm install --ignore-scripts
+
+      - name: Bind Exa secret and exact Factory code
+        working-directory: factory
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${EXA_API_KEY:-}" ]]; then
+            echo "EXA_API_KEY is missing from production-factory-shadow environment."
+            exit 1
+          fi
+
+          CONTROL_TOKEN="$(openssl rand -hex 32)"
+          echo "::add-mask::$CONTROL_TOKEN"
+          echo "::add-mask::$EXA_API_KEY"
+          umask 077
+          printf '%s' "$CONTROL_TOKEN" > "$RUNNER_TEMP/4planet-exa-probe-control-token"
+
+          printf '%s' "$EXA_API_KEY" | npx wrangler secret put EXA_API_KEY
+          printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
+          npx wrangler deploy
+          printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
+
+      - name: Prove Exa through deployed Factory capability rail
+        env:
+          BASE_URL: https://4planet-production-factory-v01-shadow.odin-skogen.workers.dev
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-exa-probe-control-token")"
+          echo "::add-mask::$CONTROL_TOKEN"
+
+          READY=false
+          for attempt in $(seq 1 30); do
+            HTTP_STATUS="$(curl --silent --show-error \
+              -o "$RUNNER_TEMP/exa-probe.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "x-factory-control: $CONTROL_TOKEN" \
+              -H "content-type: application/json" \
+              --data '{"provider":"exa","query":"Cloudflare official documentation","limit":2}' \
+              "$BASE_URL/__factory/capabilities/research" || true)"
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+              READY=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [[ "$READY" != "true" ]]; then
+            echo "Exa probe failed with HTTP ${HTTP_STATUS:-000}"
+            jq -c '{ok,error}' "$RUNNER_TEMP/exa-probe.json" 2>/dev/null || true
+            exit 1
+          fi
+
+          jq -e '.ok == true and .provider == "exa" and .data != null' "$RUNNER_TEMP/exa-probe.json" >/dev/null
+          jq -c '{ok,provider,query,limit}' "$RUNNER_TEMP/exa-probe.json"
+          echo "EXA_CONNECTIVITY_PROBE=PASS"
