@@ -64,6 +64,14 @@ test("GA4 remains gated by explicit consent and a real measurement id", () => {
   assert.match(analytics, /allow_ad_personalization_signals: false/);
 });
 
+test("analytics page telemetry strips query strings and fragments", () => {
+  assert.doesNotMatch(analytics, /page_location:\s*window\.location\.href/);
+  assert.doesNotMatch(analytics, /page_path:\s*`\$\{location\.pathname\}\$\{location\.search\}`/);
+  assert.match(analytics, /safePageLocation = `\$\{window\.location\.origin\}\$\{location\.pathname\}`/);
+  assert.match(analytics, /page_location:\s*safePageLocation/);
+  assert.match(analytics, /page_path:\s*location\.pathname/);
+});
+
 test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
   assert.match(analytics, /capturePostHog\(name, shared\)/);
   assert.match(analytics, /capturePostHog\(\"\$pageview\", pageProperties\)/);

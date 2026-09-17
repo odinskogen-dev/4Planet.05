@@ -1,0 +1,162 @@
+name: 4BRAND Runtime Audit
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/fourbrand-runtime-audit.yml
+      - src/App.tsx
+      - src/pages/partners/FourBrand.tsx
+      - src/pages/partners/FourBrandsLive.tsx
+      - src/styles/fourbrand.css
+      - functions/api/brand-analysis.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Confirm 4brands.org remains attached to existing 4PLANET Pages deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+
+          zone4p=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone4p")
+          [ -n "$account_id" ] || { echo 'Cloudflare account unavailable'; exit 1; }
+
+          project=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")
+          jq -e '.success == true' <<<"$project" >/dev/null
+          target=$(jq -r '.result.subdomain // "4planet-05.pages.dev"' <<<"$project")
+          production_branch=$(jq -r '.result.production_branch // ""' <<<"$project")
+          echo "Pages target=${target} production_branch=${production_branch}"
+
+          zone4b=$(curl -fsS "${api}/zones?name=4brands.org&status=active" "${auth[@]}")
+          zid4b=$(jq -r '.result[0].id // empty' <<<"$zone4b")
+          [ -n "$zid4b" ] || { echo '4brands.org zone is not active/visible to token'; exit 1; }
+
+          for host in 4brands.org www.4brands.org; do
+            domains=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/domains" "${auth[@]}")
+            jq -e --arg host "$host" 'any(.result[]?; .name == $host)' <<<"$domains" >/dev/null \
+              || { echo "${host} is no longer attached to 4planet-05"; exit 1; }
+
+            records=$(curl -fsS "${api}/zones/${zid4b}/dns_records?name=${host}&per_page=100" "${auth[@]}")
+            jq -e --arg target "$target" 'any(.result[]?; .type == "CNAME" and .content == $target)' <<<"$records" >/dev/null \
+              || { echo "${host} DNS no longer points to ${target}"; exit 1; }
+          done
+
+      - name: Read exact 4BRANDS Cloudflare production state
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account_id" ] || { echo '4planet.org Cloudflare account unavailable'; exit 1; }
+
+          project=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")
+          production_branch=$(jq -r '.result.production_branch // empty' <<<"$project")
+          [ -n "$production_branch" ] || { echo 'production branch unavailable'; exit 1; }
+          echo "production_branch=${production_branch}"
+
+          deps=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments" "${auth[@]}")
+          jq -e '.success == true' <<<"$deps" >/dev/null
+          echo '=== newest production deployments ==='
+          jq --arg branch "$production_branch" '{result: [.result[]? | select(.deployment_trigger.metadata.branch == $branch) | {id,url,environment,created_on,status:(.latest_stage.status // ""),commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}][0:8]}' <<<"$deps"
+
+          newest_commit=$(jq -r --arg branch "$production_branch" '[.result[]? | select(.deployment_trigger.metadata.branch == $branch and .environment == "production")][0].deployment_trigger.metadata.commit_hash // empty' <<<"$deps")
+          newest_status=$(jq -r --arg branch "$production_branch" '[.result[]? | select(.deployment_trigger.metadata.branch == $branch and .environment == "production")][0].latest_stage.status // empty' <<<"$deps")
+          echo "CLOUDFLARE_PRODUCTION_COMMIT=${newest_commit}"
+          echo "CLOUDFLARE_PRODUCTION_STATUS=${newest_status}"
+          [ -n "$newest_commit" ] || { echo 'No production deployment commit found'; exit 1; }
+
+      - name: Verify canonical 4planet.org/4brands runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 20); do
+            echo "4planet.org/4brands attempt ${attempt}/20"
+            code=$(curl -sS -L --max-time 20 -o /tmp/4planet-4brands.html -w '%{http_code}' https://4planet.org/4brands || true)
+            bytes=0
+            [ -f /tmp/4planet-4brands.html ] && bytes=$(wc -c < /tmp/4planet-4brands.html | tr -d ' ')
+            echo "HTTP=${code} bytes=${bytes}"
+            if [ "$code" = "200" ] && [ "$bytes" -gt 500 ]; then
+              ok=1
+              break
+            fi
+            sleep 15
+          done
+          [ "$ok" = "1" ] || { echo 'canonical /4brands not HTTP 200 within provisioning window'; exit 1; }
+
+      - name: Verify 4brands.org runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -L --max-time 20 -o /tmp/4brands.html -w '%{http_code}' https://4brands.org/ || true)
+          bytes=0
+          [ -f /tmp/4brands.html ] && bytes=$(wc -c < /tmp/4brands.html | tr -d ' ')
+          echo "HTTP=${code} bytes=${bytes}"
+          [ "$code" = "200" ] && [ "$bytes" -gt 500 ] || exit 1
+
+      - name: Verify TOMRA API proof on canonical 4planet.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 30 -o /tmp/tomra.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"company":"TOMRA"}' \
+            https://4planet.org/api/brand-analysis || true)
+          echo "HTTP=${code}"
+          if [ -f /tmp/tomra.json ]; then
+            jq '{ok, engine:(.analysis.engine // null), company:(.analysis.company.name // null), status:(.analysis.analysisStatus // null), opportunities:(.analysis.opportunities | length? // 0), evidence:(.analysis.evidence | length? // 0), error, detail}' /tmp/tomra.json 2>/dev/null || head -c 500 /tmp/tomra.json
+          fi
+          [ "$code" = "200" ] || exit 1
+          jq -e '.analysis.company.name == "TOMRA" and (.analysis.opportunities | length) > 0 and (.analysis.evidence | length) > 0' /tmp/tomra.json >/dev/null
+
+      - name: Probe arbitrary-company analysis honestly
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --max-time 60 -o /tmp/arbitrary.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"company":"IKEA"}' \
+            https://4planet.org/api/brand-analysis || true)
+          echo "ARBITRARY_COMPANY_HTTP=${code}"
+          if [ -f /tmp/arbitrary.json ]; then
+            jq '{ok, company:(.analysis.company.name // null), status:(.analysis.analysisStatus // null), sources:(.analysis.evidence | length? // 0), error, detail}' /tmp/arbitrary.json 2>/dev/null || head -c 800 /tmp/arbitrary.json
+          fi
+          if [ "$code" = "200" ]; then
+            echo 'ARBITRARY_COMPANY_STATE=LIVE_RESEARCH_AVAILABLE'
+          else
+            echo 'ARBITRARY_COMPANY_STATE=PARTIAL_OR_RUNTIME_KEY_UNAVAILABLE'
+          fi

@@ -8,6 +8,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import PartnersHub from "@/pages/partners/PartnersHub";
+import FourBrand from "@/pages/partners/FourBrand";
 import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
@@ -19,6 +20,18 @@ function isPartnersHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
+}
+
+function isFourBrandsHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "4brands.org" || host === "www.4brands.org";
+}
+
+function isFourBrandPath() {
+  if (typeof window === "undefined") return false;
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return path === "/4brand" || path.startsWith("/4brand/") || path === "/4brands" || path.startsWith("/4brands/");
 }
 
 function isCreatorHost() {
@@ -65,6 +78,7 @@ function StandardApp() {
 }
 
 export default function App() {
+  if (isFourBrandsHost() || isFourBrandPath()) return <FourBrand />;
   if (isPartnersHost()) return <PartnersHub />;
 
   return (
