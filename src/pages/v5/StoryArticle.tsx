@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { MagazineSeo } from "@/components/MagazineSeo";
+import { StorySources } from "@/components/StorySources";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMagazineEntry, trackMagazineSecondObject, trackMagazineShare } from "@/analytics/MagazineAnalytics";
 import { Section } from "@/components/ui";
@@ -134,7 +135,10 @@ export function StoryArticle() {
               <Link to="/magazine" className="mono link">4PLANET MAGAZINE</Link>
               <span className="mono">{template?.label ?? s.franchise.replace(/_/g, " ")} · {mode.label} · {s.readMins} MIN</span>
             </div>
-            <h1 style={display}>{s.title}</h1>
+            <h1 style={display}>
+              {s.title}
+              {s.gold ? <span className="mag-gold-mark">GOLD STORY 01</span> : null}
+            </h1>
             <p className="mag-article-dek">{s.dek}</p>
             <div className="mag-byline-row">
               <div>
@@ -158,6 +162,8 @@ export function StoryArticle() {
             <Editorial blocks={s.blocks} />
           </div>
         </Section>
+
+        <StorySources sources={s.sources ?? []} />
 
         <section className="mag-how-we-know" aria-labelledby="how-we-know-title">
           <div className="mag-how-we-know-inner">
