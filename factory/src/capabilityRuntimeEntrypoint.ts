@@ -20,6 +20,7 @@ export * from "./portfolioRuntimeEntrypoint";
 
 interface CapabilityControlEnv extends CapabilityRuntimeEnv {
   FACTORY_CONTROL_TOKEN?: string;
+  FACTORY_BUILD_SHA?: string;
 }
 
 interface RuntimeDelegate {
