@@ -7,6 +7,7 @@ const shared = read("src/analytics/ProductAnalytics.ts");
 const analytics = read("src/analytics/Analytics.tsx");
 const posthog = read("src/analytics/PostHogSink.ts");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
+const market = read("src/pages/v5/CreatorMarket.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -116,6 +117,19 @@ test("canonical discovery routes remain generated and crawlable", () => {
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);
+});
+
+test("4MARKET HEIR exposes the five verified live Fourthwall products without claiming purchase", () => {
+  for (const slug of [
+    "summit-at-sunset-fine-art-print",
+    "northern-harbour-fine-art-print",
+    "purple-shore-fine-art-print",
+    "bergen-reflections-fine-art-print",
+    "bergen-blue-hour-fine-art-print",
+  ]) assert.ok(market.includes(slug), `missing live product ${slug}`);
+  assert.match(market, /market_product_open/);
+  assert.match(market, /Product availability, price and fulfilment are owned by the live Fourthwall offer/);
+  assert.match(market, /does not treat a product click as a purchase or delivery record/);
 });
 
 test("flagship journey entries physically exist and retain a return path", () => {
