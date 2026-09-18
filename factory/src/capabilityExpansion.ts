@@ -6,7 +6,7 @@ const COMPOSIO_BASE_URL = "https://backend.composio.dev/api/v3.1";
 const COMPOSIO_USER_ID = "4planet-factory";
 const MAX_EXTERNAL_RESPONSE_BYTES = 1_000_000;
 const MAX_RESEARCH_RESULTS = 8;
-const DEFAULT_OPENAI_AGENT_MODEL = "gpt-6-astra";
+const DEFAULT_OPENAI_RESPONSES_MODEL = "openai/gpt-5.6-terra";
 const DEFAULT_LANGFUSE_BASE_URL = "https://cloud.langfuse.com";
 
 const COMPOSIO_TOOLKITS = new Set(["github", "gmail", "googledrive"]);
@@ -65,6 +65,7 @@ export interface CapabilityRuntimeEnv extends Cloudflare.Env {
   COMPOSIO_API_KEY?: string;
   OPENAI_API_KEY?: string;
   OPENAI_AGENTS_MODEL?: string;
+  OPENAI_RESPONSES_MODEL?: string;
   LANGFUSE_PUBLIC_KEY?: string;
   LANGFUSE_SECRET_KEY?: string;
   LANGFUSE_BASE_URL?: string;
@@ -100,14 +101,14 @@ export function publicCapabilityManifest() {
     },
     integrations: {
       composio: "BOUND_OPTIONAL_SECRET",
-      openaiAgents: "BOUND_OPTIONAL_SECRET_FOUNDER_RELEASE",
+      openaiResponses: "BOUND_AI_GATEWAY_FOUNDER_RELEASE",
       langfuse: "BOUND_OPTIONAL_SECRET",
       aiGateway: "BOUND_EXISTING_AI",
       research: ["exa", "tavily", "firecrawl"],
     },
     safety: {
       composio: "READ_ONLY_SESSION_AND_LOCAL_TOOL_POLICY",
-      openaiAgents: "NO_TOOLS_NO_SANDBOX_AUTORUN; FOUNDER_RELEASE_REQUIRED",
+      openaiResponses: "NO_TOOLS_NO_SANDBOX_AUTORUN; FOUNDER_RELEASE_REQUIRED; CLOUDFLARE_UNIFIED_BILLING",
       research: "READ_ONLY; NEVER_AUTORUN_WITHOUT_KEY",
       scheduledWake: "EXISTING_SHADOW_CANARY_AND_NIGHT_SHIFT_ONLY",
     },
@@ -119,7 +120,8 @@ export function privateCapabilityStatus(env: CapabilityRuntimeEnv) {
     ...publicCapabilityManifest(),
     readiness: {
       composio: configured(secret(env, "COMPOSIO_API_KEY")),
-      openaiAgents: configured(secret(env, "OPENAI_API_KEY")),
+      openaiResponses: (env as CapabilityRuntimeEnv & { AI?: AiGatewayBinding }).AI?.run ? "CONFIGURED_GATEWAY" : "BLOCKED_AI_BINDING",
+      directOpenAiKey: configured(secret(env, "OPENAI_API_KEY")),
       langfuse: secret(env, "LANGFUSE_PUBLIC_KEY") && secret(env, "LANGFUSE_SECRET_KEY")
         ? "CONFIGURED"
         : "BLOCKED_SECRET",
@@ -331,36 +333,28 @@ export async function runResearchSearch(
 }
 
 export async function createOpenAIAgentSession(env: CapabilityRuntimeEnv, inputText: string) {
-  const apiKey = secret(env, "OPENAI_API_KEY");
-  if (!apiKey) throw new Error("OPENAI_API_KEY_MISSING");
+  // Compatibility function name retained for the existing capability route.
+  // Execution now uses OpenAI Responses through the existing Cloudflare AI
+  // binding + 4PLANET AI Gateway, eliminating the brittle direct OpenAI key
+  // and obsolete /v1/agents/sessions path.
+  const ai = (env as CapabilityRuntimeEnv & { AI?: AiGatewayBinding }).AI;
+  if (!ai?.run) throw new Error("CLOUDFLARE_AI_BINDING_MISSING");
   const input = inputText.trim();
-  if (input.length < 3 || input.length > 12_000) throw new Error("OPENAI_AGENT_INPUT_INVALID");
-  const model = secret(env, "OPENAI_AGENTS_MODEL") || DEFAULT_OPENAI_AGENT_MODEL;
-  const data = await jsonRequest("OPENAI_AGENTS", "https://api.openai.com/v1/agents/sessions", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      environment: { type: "none" },
-      agent: {
-        model,
-        instructions: "You are a bounded specialist worker inside 4PLANET Factory. Produce evidence and analysis only. Do not release externally, spend money, mutate production, promote Canon, or judge your own work.",
-        multi_agent: { enabled: true, max_concurrent_subagents: 3 },
-      },
+  if (input.length < 3 || input.length > 12_000) throw new Error("OPENAI_RESPONSES_INPUT_INVALID");
+  const model = secret(env, "OPENAI_RESPONSES_MODEL") || DEFAULT_OPENAI_RESPONSES_MODEL;
+  if (!model.startsWith("openai/")) throw new Error("OPENAI_RESPONSES_MODEL_INVALID");
+  const gatewayId = secret(env, "FACTORY_AI_GATEWAY_ID") || "4planet-factory";
+  const data = await ai.run(
+    model,
+    {
       input,
-      metadata: {
-        system: "4PLANET_FACTORY",
-        role: "SPECIALIST_MAKER",
-        judge: "SEPARATE_REQUIRED",
-        release: "FOUNDER_GATED",
-      },
-    }),
-  });
-  return { provider: "OPENAI", model, session: data };
+      instructions: "You are a bounded specialist maker inside 4PLANET Factory. Produce evidence and analysis only. Never release externally, spend money, mutate LIVE/production, promote Canon, or judge your own work.",
+      max_output_tokens: 1_200,
+    },
+    { gateway: { id: gatewayId } },
+  );
+  return { provider: "OPENAI", api: "RESPONSES", model, gatewayId, response: data };
 }
-
 export async function runAiGatewayProbe(env: CapabilityRuntimeEnv) {
   const ai = (env as CapabilityRuntimeEnv & { AI?: AiGatewayBinding }).AI;
   if (!ai?.run) throw new Error("CLOUDFLARE_AI_BINDING_MISSING");
