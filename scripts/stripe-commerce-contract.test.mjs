@@ -145,6 +145,15 @@ test("checkout confirmation is server-verified and truthful receipt UI exists", 
   assert.match(source.router, /path="\/checkout\/lab"/);
 });
 
+test("purchase analytics is emitted only after server-verified LIVE confirmation", () => {
+  assert.match(source.client, /payload\.confirmed/);
+  assert.match(source.client, /payload\.environment === "LIVE"/);
+  assert.match(source.client, /trackEvent\("purchase"/);
+  assert.match(source.client, /transaction_id:\s*payload\.sessionId/);
+  assert.match(source.client, /value:\s*payload\.amountMinor/);
+  assert.match(source.client, /currency:\s*payload\.currency/);
+});
+
 test("TEST lab exposes all public checkout families without exposing B2B invoice auth", () => {
   assert.match(source.lab, /SUPPORT 4PLANET/);
   assert.match(source.lab, /BECOME A FOUNDING PATRON/);
