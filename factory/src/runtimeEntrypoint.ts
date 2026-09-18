@@ -97,15 +97,20 @@ async function requireExactHeadActivationGates(env: RuntimeEnv, buildSha: string
   );
   if (!response.ok) throw new Error(`EXACT_HEAD_GATE_LOOKUP_FAILED:${response.status}`);
   const body = await response.json() as {
-    workflow_runs?: Array<{ name?: string; head_sha?: string; status?: string; conclusion?: string | null }>;
+    workflow_runs?: Array<{ name?: string; head_sha?: string; event?: string; status?: string; conclusion?: string | null }>;
   };
   const runs = Array.isArray(body.workflow_runs) ? body.workflow_runs : [];
   for (const requiredName of REQUIRED_ACTIVATION_WORKFLOWS) {
-    const run = runs.find((candidate) => candidate.name === requiredName && candidate.head_sha?.toLowerCase() === buildSha);
-    if (!run) throw new Error(`EXACT_HEAD_GATE_MISSING:${requiredName}`);
-    if (run.status !== "completed" || run.conclusion !== "success") {
-      throw new Error(`EXACT_HEAD_GATE_NOT_GREEN:${requiredName}:${run.status ?? "UNKNOWN"}:${run.conclusion ?? "NONE"}`);
-    }
+    const pushRuns = runs.filter(
+      (candidate) => candidate.name === requiredName
+        && candidate.head_sha?.toLowerCase() === buildSha
+        && candidate.event === "push",
+    );
+    const green = pushRuns.find((candidate) => candidate.status === "completed" && candidate.conclusion === "success");
+    if (green) continue;
+    const run = pushRuns[0];
+    if (!run) throw new Error(`EXACT_HEAD_GATE_MISSING:${requiredName}:PUSH`);
+    throw new Error(`EXACT_HEAD_GATE_NOT_GREEN:${requiredName}:${run.status ?? "UNKNOWN"}:${run.conclusion ?? "NONE"}`);
   }
 }
 
