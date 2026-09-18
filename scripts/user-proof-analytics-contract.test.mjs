@@ -25,6 +25,9 @@ const requiredAnalyticsHosts = [
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
+  "4brands.org",
+  "cre4tor.com",
+  "cre4tor.4planet.org",
   "cre4tors.com",
   "4planetmarket.com",
 ];
@@ -33,8 +36,18 @@ const requiredRoutes = [
   "/",
   "/atlas",
   "/species",
+  "/species/orca",
+  "/4sapien",
+  "/4sapien/food",
+  "/4sapien/finance",
+  "/4brands",
   "/living-systems",
+  "/living-systems/oslofjord",
+  "/living-systems/great-barrier-reef",
   "/impact",
+  "/impact/actions/bay-of-biscay-survey",
+  "/market",
+  "/cre4tor/odin",
   "/missions",
   "/magazine",
   "/join",
@@ -88,6 +101,14 @@ test("analytics is fail-closed to the approved product and test-domain set", () 
   assert.match(analytics, /\.pages\.dev/);
   assert.match(analytics, /localhost/);
   assert.match(analytics, /isAnalyticsHostAllowed/);
+});
+
+test("product attribution covers person, company, commerce and creator surfaces", () => {
+  for (const token of ["4sapien", "4brands", "market", "creator"]) {
+    assert.ok(shared.includes(`"${token}"`), `ProductArea missing: ${token}`);
+    assert.ok(routeAnalytics.includes(`"${token}"`), `route classifier missing: ${token}`);
+    assert.ok(analytics.includes(`"${token}"`), `page classifier missing: ${token}`);
+  }
 });
 
 test("canonical discovery routes remain generated and crawlable", () => {
