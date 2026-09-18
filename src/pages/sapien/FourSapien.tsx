@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
+import { trackEvent } from "@/analytics/Analytics";
+import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import "./embla-02.css";
 
 type EmblaMode = "LIST" | "ASK";
@@ -30,11 +32,20 @@ export function FourSapienHome() {
     event.preventDefault();
     setAnalysed(true);
     setSaved(false);
+    trackEvent("activation", {
+      product_area: "4sapien",
+      activation_kind: "shopping_list_analysis",
+      evidence_ready_items: summary.supported,
+      unsupported_items: summary.unsupported,
+    });
+    trackMeaningfulUse("4sapien", "journey_progress", "shopping_list_analysis");
   };
 
   const runEmbla = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmittedPrompt(prompt);
+    trackEvent("activation", { product_area: "4sapien", activation_kind: "ask_embla" });
+    trackMeaningfulUse("4sapien", "journey_progress", "ask_embla");
   };
 
   const saveList = () => {
@@ -42,6 +53,7 @@ export function FourSapienHome() {
       window.localStorage.setItem("4planet.embla.shopping-list.v1", JSON.stringify({ shoppingList, store, budget, savedAt: new Date().toISOString() }));
     }
     setSaved(true);
+    trackEvent("decision_saved", { product_area: "4sapien", decision_kind: "shopping_list" });
   };
 
   return (
