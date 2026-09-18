@@ -53,7 +53,9 @@ jobs:
           BRAIN=$SITE/brain/index.html
           for marker in 'Se livet ditt klart.' 'functions/v1/embla-core-preview' 'credit_balance_exhausted' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$ROOT"; done
           for marker in 'fs-food-main' 'knownStores' 'preferredStore' 'fs-meal-cta' 'MAT · EMBLA' 'FourSapienTheme.subscribe'; do grep -Fq "$marker" "$FOOD"; done
-          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'fs-finance-year' 'fs-finance-attn-grid'; do grep -Fq "$marker" "$MONEY"; done
+          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$MONEY"; done
+          grep -Fq 'fs-finance-year' "$SITE/4sapien-live-hardening.js"
+          grep -Fq 'fs-finance-attn-grid' "$SITE/4sapien-live-hardening.js"
           for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' 'functions/v1/brain-profile'; do grep -Fq "$marker" "$BRAIN"; done
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
           node --check "$SITE/4sapien-live-hardening.js"
