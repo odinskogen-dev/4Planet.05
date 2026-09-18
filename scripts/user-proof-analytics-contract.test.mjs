@@ -8,6 +8,8 @@ const analytics = read("src/analytics/Analytics.tsx");
 const posthog = read("src/analytics/PostHogSink.ts");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
 const market = read("src/pages/v5/CreatorMarket.tsx");
+const sapien = read("src/pages/sapien/FourSapien.tsx");
+const fourbrands = read("src/pages/partners/FourBrand.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -117,6 +119,22 @@ test("canonical discovery routes remain generated and crawlable", () => {
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);
+});
+
+test("4SAPIEN and 4BRANDS value actions are measurable without sending user/company free text", () => {
+  assert.match(sapien, /trackEvent\("activation"/);
+  assert.match(sapien, /activation_kind: "shopping_list_analysis"/);
+  assert.match(sapien, /activation_kind: "ask_embla"/);
+  assert.match(sapien, /trackEvent\("decision_saved"/);
+  assert.doesNotMatch(sapien, /trackEvent\([^\n]*prompt/);
+  assert.doesNotMatch(sapien, /trackEvent\([^\n]*shoppingList/);
+
+  assert.match(fourbrands, /trackEvent\("company_analysis"/);
+  assert.match(fourbrands, /analysis_status:/);
+  assert.match(fourbrands, /source_count:/);
+  assert.match(fourbrands, /opportunity_count:/);
+  assert.match(fourbrands, /trackEvent\("company_twin_saved"/);
+  assert.doesNotMatch(fourbrands, /trackEvent\([^\n]*company,/);
 });
 
 test("4MARKET HEIR exposes the five verified live Fourthwall products without claiming purchase", () => {
