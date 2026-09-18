@@ -18,6 +18,7 @@ const staticRoutes = [
   "/living-systems",
   "/atlas",
   "/species",
+  "/species/orca",
   "/impact",
   "/actors",
   "/brands",
