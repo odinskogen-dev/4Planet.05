@@ -68,6 +68,14 @@ async function cacheWrite(key: string, kind: string, payload: unknown, state: st
     signal: timeout(4000),
   }).catch(() => null);
 }
+async function logProductEvent(userId: string, eventType: string, payload: Record<string, unknown>) {
+  await fetch(`${SUPABASE_URL}/rest/v1/four_sapien_embla_events`, {
+    method: "POST",
+    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ user_id: userId, event_type: eventType, world: "food", source: "embla-products-v5", payload }),
+    signal: timeout(4000),
+  }).catch(() => null);
+}
 
 function isFresh(row: any) { return row?.expires_at && new Date(row.expires_at).getTime() > Date.now(); }
 function sourceError(status: number) { if (status === 429) return "RATE_LIMITED"; return "SOURCE_DOWN"; }
@@ -299,14 +307,24 @@ Deno.serve(async (req: Request) => {
     const kind = isEan ? "ean" : "search";
     const key = await cacheKey(kind, raw);
     const cached = await cacheRead(key).catch(() => null);
-    if (cached && isFresh(cached)) return json({ ok: true, ...cached.payload, cache: "hit", kassalappConfigured: !!KASSALAPP_KEY });
+    if (cached && isFresh(cached)) {
+      const resultCount = Array.isArray(cached?.payload?.products) ? cached.payload.products.length : 0;
+      await logProductEvent(String(user.id),"food_product_search_completed",{kind,state:cached?.payload?.state||"OK",result_count:resultCount,cache:"hit"});
+      return json({ ok: true, ...cached.payload, cache: "hit", kassalappConfigured: !!KASSALAPP_KEY });
+    }
     try {
       const out = isEan ? await buildEan(raw) : await buildSearch(raw);
       const payload = { ...out, query: raw, kind, ranking: "intent-first-v2" };
       await cacheWrite(key, kind, payload, out.state, isEan ? 43200 : 21600);
+      await logProductEvent(String(user.id),"food_product_search_completed",{kind,state:out.state,result_count:Array.isArray(out.products)?out.products.length:0,cache:"miss",sources:out.sources||{}});
       return json({ ok: true, ...payload, cache: "miss", kassalappConfigured: !!KASSALAPP_KEY });
     } catch (e: any) {
-      if (cached?.payload) return json({ ok: true, ...cached.payload, state: "PARTIAL", stale: true, cache: "stale", kassalappConfigured: !!KASSALAPP_KEY });
+      if (cached?.payload) {
+        const resultCount = Array.isArray(cached?.payload?.products) ? cached.payload.products.length : 0;
+        await logProductEvent(String(user.id),"food_product_search_completed",{kind,state:"PARTIAL",result_count:resultCount,cache:"stale"});
+        return json({ ok: true, ...cached.payload, state: "PARTIAL", stale: true, cache: "stale", kassalappConfigured: !!KASSALAPP_KEY });
+      }
+      await logProductEvent(String(user.id),"food_product_search_failed",{kind,state:e?.code||"SOURCE_DOWN",cache:"miss",sources:e?.sources||{}});
       return json({ ok: false, state: e?.code || "SOURCE_DOWN", products: [], sources: e?.sources || {}, kassalappConfigured: !!KASSALAPP_KEY }, e?.code === "RATE_LIMITED" ? 429 : 503);
     }
   } catch { return json({ ok: false, state: "SOURCE_DOWN", products: [] }, 500); }
