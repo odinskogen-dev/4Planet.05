@@ -71,7 +71,11 @@ money.write_text(s)
 
 # BRAIN — make home identity explicit and preserve direct context even when model credit is unavailable.
 s=brain.read_text()
-s=once(s,'<header class="top"><div class="brand">4SAPIEN<small>BRAIN · BY 4PLANET</small></div><a class="back" href="/">← 4SAPIEN</a></header>', '<header class="top"><a class="brand fs-home-link" href="/">4SAPIEN<small>BRAIN · BY 4PLANET</small></a><div style="display:flex;align-items:center;gap:12px"><span id="brainIdentity" class="fs-id-name">4PLANET ID</span><a class="back" href="/">← Hjem</a></div></header>', 'Brain shell')
+if '/4sapien-design.css' not in s:
+    s=once(s,'</head>','<link rel="stylesheet" href="/4sapien-design.css">\n<script src="/4sapien-theme.js"></script>\n</head>','Brain shared theme')
+if '<body class="w-embla">' not in s:
+    s=once(s,'<body>','<body class="w-embla">','Brain world class')
+s=once(s,'<header class="top"><div class="brand">4SAPIEN<small>BRAIN · BY 4PLANET</small></div><a class="back" href="/">← 4SAPIEN</a></header>', '<header class="top"><a class="brand fs-home-link" href="/">4SAPIEN<small>BRAIN · BY 4PLANET</small></a><div style="display:flex;align-items:center;gap:10px"><span id="brainIdentity" class="fs-id-name">4PLANET ID</span><button id="brainTheme" class="fs-theme-btn" aria-label="Bytt tema" onclick="window.FourSapienTheme&&window.FourSapienTheme.toggle()">◐</button><a class="back" href="/">← Hjem</a></div></header>', 'Brain shell')
 s=once(s,"async function init(){const r=await sb.auth.getSession();session=r.data.session;user=session?.user||null;if(!user){document.getElementById('authbox').hidden=false;return}document.getElementById('chooser').hidden=false;", "async function init(){const r=await sb.auth.getSession();session=r.data.session;user=session?.user||null;if(!user){document.getElementById('authbox').hidden=false;return}const bi=document.getElementById('brainIdentity');if(bi){const dn=user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'4PLANET ID';bi.textContent=String(dn).trim().split(/\\s+/)[0]+' · ID ✓';bi.title=user?.email||'4PLANET ID';}document.getElementById('chooser').hidden=false;", 'Brain identity')
 s=once(s,"if(!r.ok)throw new Error(d?.state||d?.error_code||'REQUEST_FAILED');", "if(!r.ok)throw new Error(d?.error_code||d?.state||'REQUEST_FAILED');", 'Brain error detail')
 old="async function ingest(){const input=document.getElementById('contextInput');const text=input.value.trim();if(!text)return toast('Add some context first');const btn=document.getElementById('ingestBtn');btn.disabled=true;btn.textContent='Structuring…';try{const d=await api({action:'ingest',tenant_type:tenantType,company_id:companyId,text,source_label:document.getElementById('fileName').dataset.source||'Direct context'});input.value='';document.getElementById('fileName').dataset.source='';document.getElementById('fileName').textContent='TXT · MD · CSV · JSON';await loadData();openTab('brain');toast(`${d.count} Brain object${d.count===1?'':'s'} added`)}catch(e){toast(String(e.message||e))}finally{btn.disabled=false;btn.textContent='Structure into Brain'}}"
@@ -84,7 +88,7 @@ for p, markers in {
  root:['4sapien-live-hardening.js','credit_balance_exhausted'],
  food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA'],
  money:['fs-money-main','PENGER · EMBLA','4sapien-live-hardening.js'],
- brain:['persistDirectContextFallback','MODEL_PENDING','brainIdentity'],
+ brain:['persistDirectContextFallback','MODEL_PENDING','brainIdentity','brainTheme','/4sapien-theme.js','w-embla'],
 }.items():
     q=p.read_text()
     for m in markers:
