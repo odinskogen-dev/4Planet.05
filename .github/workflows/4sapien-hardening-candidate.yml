@@ -61,12 +61,15 @@ jobs:
           grep -Fq 'fs-finance-attn-grid' "$SITE/4sapien-live-hardening.js"
           for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' 'functions/v1/brain-profile' 'REQUEST_TIMEOUT' 'AbortController'; do grep -Fq "$marker" "$BRAIN"; done
           for marker in 'updateNote' 'note_updated' 'surface_viewed' 'home_hydrated' 'finance_opened'; do grep -Fq "$marker" "$SITE/4sapien-live-hardening.js"; done
+          grep -Fq 'embla_turn_failed' products/4sapien/supabase/functions/embla-core-preview/index.ts
+          grep -Fq 'food_product_search_completed' products/4sapien/supabase/functions/embla-products/index.ts
+          grep -Fq 'brain_request_failed' products/4sapien/supabase/functions/brain-profile/index.ts
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
           node --check "$SITE/4sapien-live-hardening.js"
           python -m py_compile products/4sapien/build/apply_live_hardening_guard.py
-          deno check products/4sapien/supabase/functions/brain-profile/index.ts
-          deno check products/4sapien/supabase/functions/embla-core-preview/index.ts
-          deno check products/4sapien/supabase/functions/embla-products/index.ts
+          deno check --node-modules-dir=auto products/4sapien/supabase/functions/brain-profile/index.ts
+          deno check --node-modules-dir=auto products/4sapien/supabase/functions/embla-core-preview/index.ts
+          deno check --node-modules-dir=auto products/4sapien/supabase/functions/embla-products/index.ts
           python - <<'PY'
           import re, pathlib
           for src,out in [
