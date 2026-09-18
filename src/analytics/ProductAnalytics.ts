@@ -1,6 +1,6 @@
 import { trackEvent } from "@/analytics/Analytics";
 
-export type ProductArea = "4planet" | "magazine" | "atlas" | "species" | "living_systems" | "impact" | "missions" | "domains";
+export type ProductArea = "4planet" | "4sapien" | "4brands" | "market" | "creator" | "magazine" | "atlas" | "species" | "living_systems" | "impact" | "missions" | "domains";
 export type MeaningfulUseKind =
   | "search"
   | "record_open"
