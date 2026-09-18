@@ -11,6 +11,9 @@ const DEFAULT_ANALYTICS_DOMAINS = [
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
+  "4brands.org",
+  "cre4tor.com",
+  "cre4tor.4planet.org",
   "cre4tors.com",
   "4planetmarket.com",
 ] as const;
@@ -52,7 +55,12 @@ function readConsent(): ConsentState {
   return value === "granted" || value === "denied" ? value : null;
 }
 
-function productArea(pathname: string): string {
+function productArea(pathname: string, hostname: string): string {
+  const host = canonicalHost(hostname);
+  if (host === "4brands.org" || pathname.startsWith("/4brand")) return "4brands";
+  if (host === "s4piens.com" || pathname.startsWith("/4sapien") || pathname.startsWith("/s4piens/")) return "4sapien";
+  if (host === "4planetmarket.com" || pathname === "/market" || pathname.startsWith("/market/")) return "market";
+  if (host === "cre4tor.com" || host === "cre4tor.4planet.org" || pathname.startsWith("/cre4tor") || pathname.startsWith("/creator/")) return "creator";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
@@ -158,7 +166,7 @@ export function Analytics() {
     const pageProperties = {
       page_title: document.title,
       page_path: location.pathname,
-      content_group: productArea(location.pathname),
+      content_group: productArea(location.pathname, window.location.hostname),
       site_host: canonicalHost(window.location.hostname),
     };
 
