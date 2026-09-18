@@ -38,7 +38,11 @@ async function runSandboxFactoryCheck(env: CapabilityControlEnv, reason: "PROBE"
   const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
   if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
   const day = new Date().toISOString().slice(0, 10);
-  const runId = `sandbox-factory-${reason.toLowerCase()}-${day}-${buildSha.slice(0, 12)}`;
+  // Each real execution attempt gets its own budgeted identity. A transient
+  // container rollout failure must be retryable, but every retry still consumes
+  // the same 25h/month hard-cap ledger.
+  const attemptSuffix = crypto.randomUUID().replaceAll("-", "").slice(0, 8);
+  const runId = `sandbox-factory-${reason.toLowerCase()}-${day}-${buildSha.slice(0, 12)}-${attemptSuffix}`;
   const getByName: any = getAgentByName;
   const factory: any = await getByName((env as any).PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
   const reservation = await factory.reserveSandboxRun(runId, 20);
