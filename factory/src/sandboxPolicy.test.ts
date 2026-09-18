@@ -8,9 +8,19 @@ const approved: SandboxPolicy = {
   paidCapabilityFounderApproved: true,
 };
 
-test("Sandbox remains fail-closed until explicit Founder cost approval", () => {
-  assert.deepEqual(sandboxDecision(DEFAULT_SANDBOX_POLICY, { command: "npm ci" }), { allowed: false, reason: "SANDBOX_DISABLED" });
-  assert.deepEqual(sandboxDecision({ ...DEFAULT_SANDBOX_POLICY, enabled: true }, { command: "npm ci" }), { allowed: false, reason: "FOUNDER_COST_APPROVAL_REQUIRED" });
+test("Founder-approved Sandbox policy is bounded to the 25h monthly envelope", () => {
+  assert.equal(DEFAULT_SANDBOX_POLICY.enabled, true);
+  assert.equal(DEFAULT_SANDBOX_POLICY.paidCapabilityFounderApproved, true);
+  assert.equal(DEFAULT_SANDBOX_POLICY.maxMinutes, 20);
+  assert.equal(DEFAULT_SANDBOX_POLICY.monthlyHardCapMinutes, 1500);
+  assert.deepEqual(sandboxDecision(DEFAULT_SANDBOX_POLICY, { command: "npm ci" }), { allowed: true, reason: "BOUNDED_ZERO_TRUST_EXECUTION" });
+  assert.deepEqual(productionSandboxReady(DEFAULT_SANDBOX_POLICY), { ready: true, missing: [] });
+});
+
+test("Sandbox still fails closed if Founder approval is absent", () => {
+  const disabled = { ...DEFAULT_SANDBOX_POLICY, enabled: false, paidCapabilityFounderApproved: false };
+  assert.deepEqual(sandboxDecision(disabled, { command: "npm ci" }), { allowed: false, reason: "SANDBOX_DISABLED" });
+  assert.deepEqual(sandboxDecision({ ...DEFAULT_SANDBOX_POLICY, paidCapabilityFounderApproved: false }, { command: "npm ci" }), { allowed: false, reason: "FOUNDER_COST_APPROVAL_REQUIRED" });
 });
 
 test("unapproved egress and commands are blocked", () => {
