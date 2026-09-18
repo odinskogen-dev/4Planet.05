@@ -46,10 +46,11 @@ jobs:
       - name: Build and zero-loss QA
         run: |
           set -euo pipefail
-          ROOT=products/4sapien/site/index.html
-          FOOD=products/4sapien/site/app/food/index.html
-          MONEY=products/4sapien/site/app/money/index.html
-          BRAIN=products/4sapien/site/brain/index.html
+          SITE=products/4sapien/site
+          ROOT=$SITE/index.html
+          FOOD=$SITE/app/food/index.html
+          MONEY=$SITE/app/money/index.html
+          BRAIN=$SITE/brain/index.html
           for marker in 'Se livet ditt klart.' 'functions/v1/embla-core-preview' 'credit_balance_exhausted' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$ROOT"; done
           for marker in 'fs-food-main' 'knownStores' 'preferredStore' 'fs-meal-cta' 'MAT · EMBLA' 'FourSapienTheme.subscribe'; do grep -Fq "$marker" "$FOOD"; done
           for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'fs-finance-year' 'fs-finance-attn-grid'; do grep -Fq "$marker" "$MONEY"; done
