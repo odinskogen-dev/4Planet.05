@@ -55,7 +55,7 @@ Existing Product Surface Registry, Four-State authority, `king/test` HEIR, exist
 - 4BRANDS measures evidence-backed company-analysis and twin-save classes without company-name/free-text telemetry.
 - Stripe emits GA4 `purchase` only after server-verified LIVE confirmation; TEST confirmation stays non-purchase.
 - 4MARKET HEIR exposes the five already-public Fourthwall fine-art offers and links to their real fulfilment path; click remains non-purchase truth.
-- Existing 4BRANDS Company Brain work may extend the same company actor/context model only; it may not create a second brain or truth store.
+- Existing 4BRANDS Company Brain work may extend the same company actor/context model only; it may not create a second brain or truth store.\n- 4BRAND authenticated persistence now routes through the existing `4Planet_ OS` Company Brain contracts: workspace membership + RLS + canonical memories/metrics/opportunities/decisions/interventions/results/learning. Browser `localStorage` is recovery-only before sign-in and is never canonical authenticated state.\n- New Company Brain transport is an adapter only: no service-role credential is exposed to the browser, company writes require authenticated membership, and TEST/HEIR remains the only product mutation state.\n- Company Value Report and compounding metrics are derived from the same canonical objects; estimated value remains distinct from measured/attributed/realised value.
 
 ## CURRENT JUDGE BLOCKERS
 - High-severity dependency gate remains RED while MapLibre GL <=6.4.0 is present; current audit reports critical GHSA-jrc7-96c5-q579 and requires a breaking-version remediation with ATLAS regression proof.
@@ -72,7 +72,7 @@ The builder may not self-certify. Independent product-authority policy, Gold pol
 4. Existing canonical discovery routes are generated without indexing internal TEST-only surfaces.
 5. LIVE `purchase` can only follow server-verified LIVE payment confirmation.
 6. 4MARKET uses verified existing public products and does not claim click/purchase/delivery equivalence.
-7. Company Brain reuses existing OS/BRAIN authority and tenant boundaries rather than creating a parallel truth store.
+7. Company Brain reuses existing OS/BRAIN authority and tenant boundaries rather than creating a parallel truth store; authenticated save/readback must pass through membership + RLS and local browser recovery must not become canonical.\n8. Company Brain server write/readback contracts preserve provenance and separate company-provided facts, public evidence, decisions, measured results and learning.\n9. Company Value Report is generated from canonical Company Brain objects rather than a parallel report store.
 8. Typecheck, build, smoke/contracts, lint/assets and relevant browser tests pass on exact head.
 9. Dependency/security gate is GREEN before any production promotion.
 10. Production LIVE is untouched until explicit Founder release.
