@@ -20,10 +20,11 @@ test("READY recovery remains fail-closed and bounded to exact build plus allowli
   assert.match(runtimeSource, /FACTORY_QUEUE\.sendBatch/);
 });
 
-test("bounded ACTIVE boot proves Factory-specific exact-head CI before candidate/capacity preflight can dispatch worker compute", () => {
+test("bounded ACTIVE boot proves Factory-specific exact-head push CI before candidate/capacity preflight can dispatch worker compute", () => {
   assert.match(runtimeSource, /const REQUIRED_ACTIVATION_WORKFLOWS = \[\s*"Production Factory Shadow CI",\s*\] as const;/);
   assert.doesNotMatch(runtimeSource, /"ONE INTERFACE Convergence Gate"/);
-  assert.match(runtimeSource, /run\.status !== "completed" \|\| run\.conclusion !== "success"/);
+  assert.match(runtimeSource, /candidate\.event === "push"/);
+  assert.match(runtimeSource, /candidate\.status === "completed" && candidate\.conclusion === "success"/);
 
   const receiverIndex = runtimeSource.indexOf('requireCurrentReceiver(baseSha, currentTestSha, "ACTIVATION_PREFLIGHT")');
   const gateIndex = runtimeSource.indexOf("await requireExactHeadActivationGates(env, buildSha)");
