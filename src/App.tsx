@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -50,6 +51,16 @@ function AtlasProductSwitcher() {
   );
 }
 
+function MeasuredStandalone({ children }: { children: ReactNode }) {
+  return (
+    <BrowserRouter>
+      <Analytics />
+      <ProductRouteAnalytics />
+      {children}
+    </BrowserRouter>
+  );
+}
+
 function StandardApp() {
   return (
     <>
@@ -78,12 +89,13 @@ function StandardApp() {
 }
 
 export default function App() {
-  if (isFourBrandsHost() || isFourBrandPath()) return <FourBrand />;
-  if (isPartnersHost()) return <PartnersHub />;
+  if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
+  if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;
+  if (isCreatorHost()) return <MeasuredStandalone><OdinCreatorPage /></MeasuredStandalone>;
 
   return (
     <BrowserRouter>
-      {isCreatorHost() ? <OdinCreatorPage /> : <StandardApp />}
+      <StandardApp />
     </BrowserRouter>
   );
 }
