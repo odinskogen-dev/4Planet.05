@@ -1,4 +1,4 @@
-name: Inspect Frontier Gateway
+name: Verify Frontier Gateway
 
 on:
   push:
@@ -10,46 +10,41 @@ permissions:
   contents: read
 
 jobs:
-  inspect:
+  verify:
     runs-on: ubuntu-latest
-    env:
-      CF_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CF_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
     steps:
-      - name: Inspect current test gateway
+      - name: External HTTP readback
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${CF_KEY:-}" ]; then
-            echo "CLOUDFLARE_API_TOKEN missing"
-            exit 1
-          fi
-          EMAIL="${CF_EMAIL:-odin.skogen@gmail.com}"
-          request() {
-            local url="$1"
-            local out="$2"
-            local code
-            code=$(curl -sS -o "$out" -w '%{http_code}' -H "Authorization: Bearer $CF_KEY" "$url" || true)
-            if [ "$code" = "400" ] || [ "$code" = "401" ] || [ "$code" = "403" ]; then
-              code=$(curl -sS -o "$out" -w '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $CF_KEY" "$url" || true)
+          FRONTIER=https://test.4planet.org/frontier
+          LEGACY=https://test.4planet.org/universalboard
+          ROOT=https://test.4planet.org/
+
+          for attempt in 1 2 3 4 5 6; do
+            rm -f frontier.h frontier.b legacy.h root.b
+            curl -sS --connect-timeout 10 --max-time 30 -D frontier.h -o frontier.b "$FRONTIER" || true
+            curl -sS --connect-timeout 10 --max-time 30 -D legacy.h -o /dev/null "$LEGACY" || true
+            curl -sS --connect-timeout 10 --max-time 30 -o root.b "$ROOT" || true
+
+            FSTATUS=$(head -1 frontier.h | tr -d '\r' || true)
+            LSTATUS=$(head -1 legacy.h | tr -d '\r' || true)
+            LOCATION=$(grep -i '^location:' legacy.h | tr -d '\r' || true)
+            echo "attempt=$attempt"
+            echo "frontier_status=$FSTATUS"
+            echo "legacy_status=$LSTATUS"
+            echo "legacy_location=$LOCATION"
+
+            if grep -Eq '^HTTP/[^ ]+ 200' frontier.h               && grep -q '4PLANET FRONTIER' frontier.b               && grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' frontier.b               && grep -Eq '^HTTP/[^ ]+ 308' legacy.h               && grep -qi '^location: https://test.4planet.org/frontier' legacy.h               && grep -q '4PLANET_ PRODUCT CONTROL' root.b               && ! grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' root.b; then
+              echo "FRONTIER_EXTERNAL_READBACK=PASS"
+              exit 0
             fi
-            echo "$code"
-          }
-          ZCODE=$(request "https://api.cloudflare.com/client/v4/zones?name=4planet.org" zone.json)
-          echo "zone_http=$ZCODE"
-          python - <<'PY'
-          import json
-          z=json.load(open('zone.json'))
-          if not z.get('success') or not z.get('result'):
-              raise SystemExit('zone lookup failed: '+str(z.get('errors')))
-          zone=z['result'][0]
-          print('zone_id='+zone['id'])
-          print('account_id='+zone['account']['id'])
-          open('ids.env','w').write('ZONE_ID='+zone['id']+'\nACCOUNT_ID='+zone['account']['id']+'\n')
-          PY
-          . ids.env
-          WCODE=$(request "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts/4planet-four-state-control-v1" worker.txt)
-          echo "worker_http=$WCODE"
-          echo "----- WORKER START -----"
-          sed -n '1,260p' worker.txt
-          echo "----- WORKER END -----"
+            sleep 3
+          done
+
+          echo "FRONTIER_EXTERNAL_READBACK=FAIL"
+          echo "--- frontier headers ---"; cat frontier.h || true
+          echo "--- frontier body ---"; head -c 800 frontier.b || true
+          echo "--- legacy headers ---"; cat legacy.h || true
+          echo "--- root body ---"; head -c 800 root.b || true
+          exit 1
