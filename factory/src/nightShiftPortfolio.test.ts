@@ -8,14 +8,16 @@ const FACTORY_SHA = "b".repeat(40);
 // Current high-value first package: prove the exact post-LIVE ATLAS state used by the home embed.
 const CURRENT_ATLAS_STATE_URL = "https://4planet.org/atlas?l=bluemarble,fires,biodiv&z=1.65&c=5,18";
 
-test("night shift is one existing FACTORY_ACTIVE_01 projection with eight read-only CORE packages", () => {
+test("night shift is one existing FACTORY_ACTIVE_01 projection with CORE plus recurring PRODUCT CAPITAL INTELLIGENCE SAFE packages", () => {
   const queue = createNightShiftPortfolio(TEST_SHA, FACTORY_SHA, "2026-09-09T00:00:00.000Z");
   assert.deepEqual(queue.projects.map((project) => project.id), [NIGHT_SHIFT_PROJECT_ID]);
-  assert.equal(queue.packages.length, 8);
-  assert.equal(queue.packages[0].title, "ATLAS post-LIVE home-embed state mobile 390");
-  assert.equal(queue.packages[0].execution?.targetUrl, CURRENT_ATLAS_STATE_URL);
-  assert.equal(queue.packages[0].execution?.viewport?.width, 390);
-  for (const pkg of queue.packages) {
+  assert.equal(queue.packages.length, 11);
+
+  const core = queue.packages.slice(0, 8);
+  assert.equal(core[0].title, "ATLAS post-LIVE home-embed state mobile 390");
+  assert.equal(core[0].execution?.targetUrl, CURRENT_ATLAS_STATE_URL);
+  assert.equal(core[0].execution?.viewport?.width, 390);
+  for (const pkg of core) {
     assert.equal(pkg.projectId, NIGHT_SHIFT_PROJECT_ID);
     assert.equal(pkg.section, "CODE_QA");
     assert.deepEqual(pkg.writeScopes, []);
@@ -23,6 +25,29 @@ test("night shift is one existing FACTORY_ACTIVE_01 projection with eight read-o
     assert.equal(pkg.execution?.allowedHosts[0], "4planet.org");
     assert.equal(pkg.resourceBudget?.maxModelCalls, 0);
     assert.equal(pkg.resourceBudget?.maxBrowserCalls, 1);
+    assert.equal(pkg.resourceBudget?.maxAttempts, 1);
+    assert.equal(pkg.run?.expectedBaseSha, TEST_SHA);
+  }
+
+  const [product, capital, intelligence] = queue.packages.slice(8);
+  assert.equal(product.section, "CODE_QA");
+  assert.equal(product.execution?.kind, "BROWSER_QA");
+  assert.deepEqual(product.writeScopes, []);
+
+  assert.equal(capital.section, "CAPITAL");
+  assert.equal(capital.execution?.kind, "EXA_SEARCH");
+  assert.equal(capital.execution?.targetUrl, "https://api.exa.ai/search");
+  assert.deepEqual(capital.writeScopes, []);
+  assert.equal(capital.resourceBudget?.maxModelCalls, 0);
+
+  assert.equal(intelligence.section, "RESEARCH_DATA");
+  assert.equal(intelligence.execution?.kind, "EXA_SEARCH");
+  assert.equal(intelligence.execution?.targetUrl, "https://api.exa.ai/search");
+  assert.deepEqual(intelligence.writeScopes, []);
+  assert.equal(intelligence.resourceBudget?.maxModelCalls, 0);
+
+  for (const pkg of queue.packages) {
+    assert.equal(pkg.projectId, NIGHT_SHIFT_PROJECT_ID);
     assert.equal(pkg.resourceBudget?.maxAttempts, 1);
     assert.equal(pkg.run?.expectedBaseSha, TEST_SHA);
   }
