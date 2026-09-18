@@ -1,90 +1,57 @@
 from pathlib import Path
-import subprocess
-import sys
+import re, subprocess, sys
 
 if len(sys.argv) != 2:
     raise SystemExit('usage: apply_finance_typography_guard.py <site-dir>')
+site=Path(sys.argv[1])
+paths=[site/'app'/'money'/'index.html',site/'finance.html',site/'finance'/'index.html']
 
-site = Path(sys.argv[1])
-paths = [site/'app'/'money'/'index.html', site/'finance.html', site/'finance'/'index.html']
+bridge=r'''<script id="four-sapien-finance-theme-bridge">
+(function(){
+  function icon(mode){return mode==='dark'?'☀':'◐'}
+  function mount(){
+    if(!window.FourSapienTheme)return;
+    var b=document.getElementById('afTheme');
+    if(!b){b=document.createElement('button');b.id='afTheme';b.setAttribute('aria-label','Bytt tema');b.style.cssText='position:fixed;top:22px;right:20px;z-index:60;width:34px;height:34px;border-radius:99px;border:1px solid var(--line2);background:var(--paper);color:var(--ink);cursor:pointer;font-size:14px;line-height:1';document.body.appendChild(b)}
+    function paint(mode){b.textContent=icon(mode);b.title=mode==='dark'?'Lys modus':'Mørk modus'}
+    b.onclick=function(){window.FourSapienTheme.toggle()};
+    paint(window.FourSapienTheme.get());window.FourSapienTheme.subscribe(paint);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+})();
+</script>'''
 
-replacements = (
-    ('font-family:"DM Sans",system-ui', 'font-family:inherit'),
-    ('font-family:"Fragment Mono",monospace', 'font-family:inherit'),
-    ('font:700 28px/1.05 "Instrument Sans",system-ui', 'font-weight:700;font-size:28px;line-height:1.05;font-family:inherit'),
-)
-
-for path in paths:
-    if not path.exists():
-        raise SystemExit(f'Finance typography target missing: {path}')
-    s = path.read_text(encoding='utf-8')
-    if '<!-- AXE_FINANCE_EXPERIENCE_V2 -->' not in s:
-        raise SystemExit(f'AXE Finance experience marker missing: {path}')
-    for old, new in replacements:
-        count = s.count(old)
-        if count != 1:
-            raise SystemExit(f'Finance typography anchor mismatch {old!r}: {count} in {path}')
-        s = s.replace(old, new, 1)
-    for forbidden in ('font-family:"DM Sans",system-ui','font-family:"Fragment Mono",monospace','font:700 28px/1.05 "Instrument Sans",system-ui'):
-        if forbidden in s:
-            raise SystemExit(f'Foreign Finance typography remains: {forbidden}')
-    path.write_text(s, encoding='utf-8')
-
-print('4SAPIEN Finance typography guard applied: AXE layer inherits Claude donor')
-
-# Apply shared theme first; final Finance typography is applied after it so no later
-# theme/runtime layer can reintroduce browser/editorial serif defaults.
-shared_theme = Path(__file__).resolve().with_name('apply_shared_theme_guard.py')
-if shared_theme.exists():
-    subprocess.run([sys.executable, str(shared_theme), str(site)], check=True)
-    print('4SAPIEN canonical visual chain: shared theme applied')
-
-# Founder visual guard. Use the same Claude font families, with single-quoted CSS values
-# so the historical provenance gate can still distinguish the old AXE source literals.
-final_style = '''<style id="four-sapien-finance-final-type-guard">
+final_style=r'''<style id="four-sapien-finance-unified-type-guard">
 #axeFin{font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;scroll-padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 #axeFin .af{padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}
-#axeFin p,#axeFin span,#axeFin label,#axeFin a,#axeFin li,#axeFin div,#axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:inherit}
 #axeFin h1,#axeFin h2,#axeFin h3,#axeFin h4,#axeFin h5,#axeFin h6{font-family:'Instrument Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;font-style:normal}
 #axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important}
 #axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:'Fragment Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-style:normal}
 </style>'''
 
-for path in paths:
-    s = path.read_text(encoding='utf-8')
-    if 'four-sapien-finance-final-type-guard' in s:
-        raise SystemExit(f'Final Finance type guard duplicated: {path}')
-    if s.count('</head>') != 1:
-        raise SystemExit(f'Finance final type guard head mismatch: {path}')
-    # The old half-circle reads like a stray letter on iOS; use an unambiguous moon.
-    s = s.replace('◐', '☾')
-    s = s.replace('</head>', final_style + '\n</head>', 1)
-    for marker in (
-        'four-sapien-finance-final-type-guard',
-        "font-family:'Instrument Sans'",
-        "font-family:'DM Sans'",
-        "font-family:'Fragment Mono'",
-        'padding-bottom:calc(150px + env(safe-area-inset-bottom))',
-        '☾',
-    ):
-        if marker not in s:
-            raise SystemExit(f'Finance final visual marker missing {marker!r}: {path}')
-    path.write_text(s, encoding='utf-8')
+legacy=re.compile(r"<script>\(function\(\)\{var r=document\.documentElement;function set\(t\)\{.*?window\.__toggleTheme=.*?</script>",re.S)
+for p in paths:
+    if not p.exists(): raise SystemExit(f'Finance unified target missing: {p}')
+    s=p.read_text(encoding='utf-8')
+    for m in ('AXE_FINANCE_EXPERIENCE_V2','AXE_FINANCE_UX_V3','CLAUDE_UNIFIED_REDESIGN_20260917','Instrument Sans','DM Sans','Fragment Mono'):
+        if m not in s: raise SystemExit(f'Finance unified prerequisite missing {m}: {p}')
+    if '/4sapien-theme.js' not in s:
+        if s.count('</head>')!=1: raise SystemExit(f'Finance unified head mismatch: {p}')
+        s=s.replace('</head>','<script src="/4sapien-theme.js"></script>\n</head>',1)
+    s,n=legacy.subn('',s,count=1)
+    if n not in (0,1): raise SystemExit(f'Finance legacy theme runtime duplicate: {p}')
+    if 'window.__toggleTheme' in s: raise SystemExit(f'Finance second theme runtime remains: {p}')
+    if 'four-sapien-finance-theme-bridge' not in s:
+        if s.count('</body>')!=1: raise SystemExit(f'Finance body mismatch: {p}')
+        s=s.replace('</body>',bridge+'\n</body>',1)
+    if 'four-sapien-finance-unified-type-guard' not in s:
+        if s.count('</head>')!=1: raise SystemExit(f'Finance type head mismatch: {p}')
+        s=s.replace('</head>',final_style+'\n</head>',1)
+    if 'font-family:serif' in s.lower(): raise SystemExit(f'Serif regression in Finance: {p}')
+    p.write_text(s,encoding='utf-8')
 
-print('4SAPIEN Finance final typography + mobile nav clearance + clear theme icon applied')
-
-# Runtime seam comes last so it sees the final DOM and can fail closed on truth-state issues
-# without redesigning Claude/Finance UI.
-finance_twin = Path(__file__).resolve().with_name('apply_finance_twin_runtime_guard.py')
-if not finance_twin.exists():
-    raise SystemExit('Finance Twin runtime guard missing')
-subprocess.run([sys.executable, str(finance_twin), str(site)], check=True)
-print('4SAPIEN canonical Finance chain: Finance Twin runtime applied')
-
-# Claude's 2026-09-16 handback is a visible-only delta. Apply it after the newer shared
-# theme + canonical Finance runtime so no stale handoff code can replace current logic.
-claude_premium = Path(__file__).resolve().with_name('apply_finance_claude_premium_guard.py')
-if not claude_premium.exists():
-    raise SystemExit('Claude Finance premium guard missing')
-subprocess.run([sys.executable, str(claude_premium), str(site)], check=True)
-print('4SAPIEN canonical Finance chain: Claude premium visible layer applied')
+# Runtime comes after Claude's visible layer; no older visual premium guard is applied.
+finance_twin=Path(__file__).resolve().with_name('apply_finance_twin_runtime_guard.py')
+if not finance_twin.exists(): raise SystemExit('Finance Twin runtime guard missing')
+subprocess.run([sys.executable,str(finance_twin),str(site)],check=True)
+print('4SAPIEN Finance unified typography/theme guard applied + canonical Finance Twin runtime')
