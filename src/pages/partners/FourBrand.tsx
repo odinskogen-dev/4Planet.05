@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand.css";
+import { trackEvent } from "@/analytics/Analytics";
+import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
 type Confidence = "HIGH" | "MEDIUM" | "LOW";
@@ -188,6 +190,13 @@ export default function FourBrand() {
       const payload = await response.json() as { analysis?: Analysis; error?: string; detail?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.detail || payload.error || "Analysis engine unavailable");
       setAnalysis(payload.analysis);
+      trackEvent("company_analysis", {
+        product_area: "4brands",
+        analysis_status: payload.analysis.analysisStatus,
+        source_count: payload.analysis.evidence.length,
+        opportunity_count: payload.analysis.opportunities.length,
+      });
+      trackMeaningfulUse("4brands", "record_open", "company_value_map");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Analysis engine unavailable");
     } finally {
@@ -200,6 +209,10 @@ export default function FourBrand() {
     window.localStorage.setItem(storageKey("twin", companyKey), JSON.stringify(twin));
     window.localStorage.setItem(storageKey("ledger", companyKey), JSON.stringify(ledger));
     setSaveState("SAVED");
+    trackEvent("company_twin_saved", {
+      product_area: "4brands",
+      decision_states: Object.keys(ledger).length,
+    });
     window.setTimeout(() => setSaveState("IDLE"), 1800);
   }
 
