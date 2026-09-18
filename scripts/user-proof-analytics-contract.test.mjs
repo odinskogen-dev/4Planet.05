@@ -104,7 +104,7 @@ test("analytics is fail-closed to the approved product and test-domain set", () 
 });
 
 test("product attribution covers person, company, commerce and creator surfaces", () => {
-  for (const token of ["4sapien", "4brands", "market", "creator"]) {
+  for (const token of ["4sapien", "s4piens", "4brands", "market", "creator"]) {
     assert.ok(shared.includes(`"${token}"`), `ProductArea missing: ${token}`);
     assert.ok(routeAnalytics.includes(`"${token}"`), `route classifier missing: ${token}`);
     assert.ok(analytics.includes(`"${token}"`), `page classifier missing: ${token}`);
