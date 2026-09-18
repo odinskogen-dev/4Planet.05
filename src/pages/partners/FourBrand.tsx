@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand.css";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
+import CompanyBrainControls from "@/pages/partners/CompanyBrainControls";
+import type { CompanyBrainSnapshot } from "@/product/FourBrandBrainClient";
 
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
 type Confidence = "HIGH" | "MEDIUM" | "LOW";
@@ -77,6 +79,37 @@ const DECISION_STATES: DecisionState[] = [
 
 function storageKey(kind: "twin" | "ledger", companyName: string) {
   return `4brands:${kind}:${companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
+function hydrateTwinFromCompanyBrain(snapshot: CompanyBrainSnapshot): TwinState {
+  const memories = snapshot.memories || [];
+  const metrics = snapshot.metrics || [];
+  const memory = (title: string) => String(memories.find((item) => item.title === title)?.content || "");
+  const metric = (key: string) => String(metrics.find((item) => item.metric_key === key)?.text_value || "");
+  return {
+    ...EMPTY_TWIN,
+    objective: memory("Primary company objective"),
+    primaryConstraint: memory("Primary operating constraint"),
+    notes: memory("Company internal context"),
+    annualRevenue: metric("annual_revenue"),
+    grossMargin: metric("gross_or_contribution_margin"),
+    operatingCash: metric("operating_cash_or_conversion"),
+    customerGrowth: metric("customer_or_revenue_growth"),
+  };
+}
+
+function hydrateLedgerFromCompanyBrain(snapshot: CompanyBrainSnapshot): LedgerState {
+  const ranks = new Map<string, string>();
+  for (const item of snapshot.opportunities || []) {
+    const detector = String(item.detector_key || "");
+    if (detector.startsWith("public_value_map:")) ranks.set(String(item.id), detector.split(":")[1]);
+  }
+  const next: LedgerState = {};
+  for (const decision of snapshot.decisions || []) {
+    const rank = ranks.get(String(decision.opportunity_id || ""));
+    if (rank) next[rank] = String(decision.state || "OPPORTUNITY") as DecisionState;
+  }
+  return next;
 }
 
 function TruthMark({ value }: { value: TruthClass }) {
@@ -181,6 +214,7 @@ export default function FourBrand() {
     setLoading(true);
     setError(null);
     setAnalysis(null);
+    trackEvent("company_analysis_started", { product_area: "4brand" });
     try {
       const response = await fetch("/api/brand-analysis", {
         method: "POST",
@@ -190,6 +224,9 @@ export default function FourBrand() {
       const payload = await response.json() as { analysis?: Analysis; error?: string; detail?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.detail || payload.error || "Analysis engine unavailable");
       setAnalysis(payload.analysis);
+      trackEvent("company_analysis_completed", { product_area: "4brand", analysis_status: payload.analysis.analysisStatus, source_count: payload.analysis.evidence.length });
+      trackEvent("company_opened", { product_area: "4brand", analysis_status: payload.analysis.analysisStatus });
+      if (payload.analysis.opportunities.length > 0) trackEvent("economic_value_found", { product_area: "4brand", opportunity_count: payload.analysis.opportunities.length });
       trackEvent("company_analysis", {
         product_area: "4brands",
         analysis_status: payload.analysis.analysisStatus,
@@ -216,9 +253,17 @@ export default function FourBrand() {
     window.setTimeout(() => setSaveState("IDLE"), 1800);
   }
 
+  function applyCompanyBrainSnapshot(snapshot: CompanyBrainSnapshot) {
+    setTwin(hydrateTwinFromCompanyBrain(snapshot));
+    setLedger(hydrateLedgerFromCompanyBrain(snapshot));
+    setSaveState("SAVED");
+    trackEvent("brain_context_retrieved", { product_area: "4brand" });
+  }
+
   function setDecision(rank: number, state: DecisionState) {
     setLedger((current) => ({ ...current, [String(rank)]: state }));
     setSaveState("IDLE");
+    if (state !== "OPPORTUNITY") trackEvent("decision_created", { product_area: "4brand", decision_state: state });
   }
 
   return (
@@ -388,9 +433,9 @@ export default function FourBrand() {
               <div>
                 <p className="fb-eyebrow">BUILD YOUR TWIN / BETA</p>
                 <h2>One living model of the company.</h2>
-                <div className="fb-twin__status"><span>LOCAL PROTOTYPE</span><span>THIS DEVICE ONLY</span><span>NO SERVER WRITE</span></div>
+                <div className="fb-twin__status"><span>COMPANY BRAIN</span><span>SERVER PERSISTENCE WHEN SIGNED IN</span><span>LOCAL RECOVERY BEFORE SIGN-IN</span></div>
               </div>
-              <p>Public evidence is only the outside view. Add a minimum internal baseline to turn the public Value Map into a working Company Operating Twin. This prototype stores the inputs locally in this browser; it does not publish them or treat them as verified public facts.</p>
+              <p>Public evidence is only the outside view. Add a minimum internal baseline to turn the public Value Map into a working Company Operating Twin. Authenticated company state is persisted in the existing 4Planet_ OS under workspace membership and RLS; local browser state remains recovery-only.</p>
             </div>
 
             <div className="fb-twin-form">
@@ -402,7 +447,15 @@ export default function FourBrand() {
               <div className="fb-twin-field"><label htmlFor="twin-constraint">Primary operating constraint</label><input id="twin-constraint" value={twin.primaryConstraint} onChange={(e) => { setTwin({ ...twin, primaryConstraint: e.target.value }); setSaveState("IDLE"); }} placeholder="What is currently limiting value?" /></div>
               <div className="fb-twin-field fb-twin-field--wide"><label htmlFor="twin-notes">Internal context / unknowns</label><textarea id="twin-notes" rows={2} value={twin.notes} onChange={(e) => { setTwin({ ...twin, notes: e.target.value }); setSaveState("IDLE"); }} placeholder="What public data cannot know about this company?" /></div>
             </div>
-            <div className="fb-twin-actions"><p>Private local working state. Not assurance. Not synced across devices.</p><button type="button" onClick={saveTwin}>{saveState === "SAVED" ? "SAVED LOCALLY" : "SAVE TWIN STATE"}</button></div>
+            <CompanyBrainControls
+              companyName={analysis.company.name}
+              legalName={analysis.company.legalName}
+              twin={twin}
+              ledger={ledger}
+              analysis={analysis}
+              onSnapshot={applyCompanyBrainSnapshot}
+              onLocalRecovery={saveTwin}
+            />
 
             <div className="fb-twin-boards" aria-label="Company operating twin boards">
               <Board label="01 / FINANCE" title="Economic spine">
@@ -510,7 +563,7 @@ export default function FourBrand() {
 
           <footer className="fb-footer">
             <span>4BRANDS / UNIVERSAL ACTOR VALUE ENGINE</span>
-            <p>{new Date(analysis.generatedAt).toLocaleDateString()} · Decision intelligence, not assurance. Internal Twin data remains local to this browser.</p>
+            <p>{new Date(analysis.generatedAt).toLocaleDateString()} · Decision intelligence, not assurance. Authenticated Company Brain state is private workspace data; local browser state is recovery-only.</p>
           </footer>
         </div>
       )}
