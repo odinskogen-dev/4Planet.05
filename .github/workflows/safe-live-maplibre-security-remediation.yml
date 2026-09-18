@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm install --save-exact maplibre-gl@6.8.0
+          npm install --save-exact maplibre-gl@6.10.0
           npm audit --audit-level=high
           npm run typecheck
           npm run build
