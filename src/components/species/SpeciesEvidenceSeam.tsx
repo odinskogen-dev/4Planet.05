@@ -103,6 +103,8 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
             return (
               <details key={record.id} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${color}`, padding: "0 16px" }}>
                 <summary style={{ cursor: "pointer", listStyle: "none", padding: "16px 0", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ ...mono, fontSize: 10, letterSpacing: ".12em", color: T.dim }}>OPEN EVIDENCE</span>
+                  <span style={{ ...mono, color }}>{record.evidenceState}</span>
                   <span>
                     <strong style={{ fontFamily: T.display, fontSize: 18, fontWeight: 600 }}>{record.label}</strong>
                     <span style={{ ...mono, display: "block", marginTop: 5, color: T.dim }}>{record.purpose} · {record.sourceFamily}</span>
