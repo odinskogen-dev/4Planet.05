@@ -119,9 +119,11 @@ jobs:
             grep -Fq "$marker" "$MONEY"
           done
           ! grep -q 'window.__toggleTheme' "$MONEY"
-          for marker in 'fs-money-main' 'PENGER · EMBLA' '/4sapien-live-hardening.js' 'fs-finance-year' 'fs-finance-attn-grid'; do
+          for marker in 'fs-money-main' 'PENGER · EMBLA' '/4sapien-live-hardening.js'; do
             grep -Fq "$marker" "$MONEY"
           done
+          grep -Fq 'fs-finance-year' products/4sapien/site/4sapien-live-hardening.js
+          grep -Fq 'fs-finance-attn-grid' products/4sapien/site/4sapien-live-hardening.js
           python products/4sapien/build/audit_finance_typography.py \
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
