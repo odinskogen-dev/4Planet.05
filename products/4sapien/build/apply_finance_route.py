@@ -1,63 +1,74 @@
 from pathlib import Path
-import base64
-import lzma
 import sys
 
-if len(sys.argv) != 2:
-    raise SystemExit('usage: apply_finance_route.py <site/index.html>')
+if len(sys.argv) != 4:
+    raise SystemExit('usage: apply_finance_route.py <site/index.html> <finance-donor.html> <finance-experience.html>')
 
 target = Path(sys.argv[1]).resolve()
 site_dir = target.parent
-product_dir = Path(__file__).resolve().parent.parent
-source_dir = product_dir / 'source'
-parts = [source_dir / f'finance-part-{i:02d}.b64' for i in range(4)]
-for source in parts:
+donor = Path(sys.argv[2]).resolve()
+experience_source = Path(sys.argv[3]).resolve()
+for source in (donor, experience_source):
     if not source.exists():
-        raise SystemExit(f'Finance source missing: {source}')
-try:
-    encoded = ''.join(source.read_text(encoding='ascii') for source in parts)
-    html = lzma.decompress(base64.b64decode(encoded)).decode('utf-8')
-except Exception as exc:
-    raise SystemExit(f'Finance source decode failed: {exc}') from exc
+        raise SystemExit(f'Finance unified source missing: {source}')
 
-# Founder-approved Finance experience layer, compressed to keep production source atomic.
-experience_b64 = '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'
-try:
-    experience = lzma.decompress(base64.b64decode(experience_b64)).decode('utf-8')
-except Exception as exc:
-    raise SystemExit(f'Finance experience decode failed: {exc}') from exc
-# AXE_FINANCE_UX_V3 — bounded refinement of the injected experience layer only.
-# Preserve the complete Claude Finance donor and Supabase data model unchanged.
-experience = experience.replace('<!-- AXE_FINANCE_EXPERIENCE_V2 -->', '<!-- AXE_FINANCE_EXPERIENCE_V2 --><!-- AXE_FINANCE_UX_V3 -->', 1)
+html = donor.read_text(encoding='utf-8')
+experience = experience_source.read_text(encoding='utf-8')
+
+# Claude unified redesign keeps the known AXE seam. Preserve the existing V3
+# interaction refinement (wide desktop canvas + Enter/Esc direct editing) while
+# taking Claude's new visible layer as the source of truth.
+if experience.count('<!-- AXE_FINANCE_EXPERIENCE_V2 -->') != 1:
+    raise SystemExit('Finance unified experience marker mismatch')
+experience = experience.replace(
+    '<!-- AXE_FINANCE_EXPERIENCE_V2 -->',
+    '<!-- AXE_FINANCE_EXPERIENCE_V2 --><!-- AXE_FINANCE_UX_V3 --><!-- CLAUDE_UNIFIED_REDESIGN_20260917 -->',
+    1,
+)
+if '.af{max-width:720px;' not in experience:
+    raise SystemExit('Finance V3 width seam missing')
 experience = experience.replace('.af{max-width:720px;', '.af{max-width:1080px;', 1)
-experience = experience.replace('Klikk direkte på feltene. Endringer lagres når du forlater feltet.', 'Klikk direkte på feltene. Enter lagrer · Esc avbryter. Dato, kategori og gjentakelse ligger på samme rad.', 1)
+experience = experience.replace(
+    'Klikk direkte på feltene. Endringer lagres når du forlater feltet.',
+    'Klikk direkte på feltene. Enter lagrer · Esc avbryter. Dato, kategori og gjentakelse ligger på samme rad.',
+    1,
+)
 old_bind = """function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;$('.an',r).onchange=e=>up(AT,id,{name:e.target.value.trim()||'Konto'});$('.ab',r).onchange=e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()})});$$('[data-e]').forEach(r=>{let id=r.dataset.e;$('.en',r).onchange=e=>up(ET,id,{name:e.target.value.trim()});$('.ea',r).onchange=e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))});$('.ed',r).onchange=e=>up(ET,id,{occurred_on:e.target.value});$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
 new_bind = """function editKey(el,save){if(!el)return;let original=el.value,cancel=false;el.onfocus=()=>{original=el.value;cancel=false};el.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();cancel=true;el.value=original;el.blur()}else if(e.key==='Enter'){e.preventDefault();el.blur()}};el.onchange=e=>{if(cancel){cancel=false;return}save(e)}}function bind(){$('#afQuick')?.addEventListener('click',quick);$('#afScan')?.addEventListener('click',()=>{let b=$$('#root button').find(x=>x.textContent.includes('Scan med Embla'));b?.click()});$$('[data-m]').forEach(x=>x.onclick=()=>{S.m=+x.dataset.m;render()});$$('[data-a]').forEach(r=>{let id=r.dataset.a;editKey($('.an',r),e=>up(AT,id,{name:e.target.value.trim()||'Konto'}));editKey($('.ab',r),e=>up(AT,id,{balance:Math.round(+e.target.value||0),as_of:today()}))});$$('[data-e]').forEach(r=>{let id=r.dataset.e;editKey($('.en',r),e=>up(ET,id,{name:e.target.value.trim()}));editKey($('.ea',r),e=>up(ET,id,{amount:Math.abs(Math.round(+e.target.value||0))}));editKey($('.ed',r),e=>up(ET,id,{occurred_on:e.target.value}));$('.ec',r).onchange=e=>up(ET,id,{category:e.target.value});$('.er',r).onchange=e=>up(ET,id,{recurring:e.target.value});$('.del',r).onclick=()=>del(id)})}function guess"""
 if old_bind not in experience:
-    raise SystemExit('inline-edit bind seam missing')
+    raise SystemExit('Finance V3 inline-edit bind seam missing')
 experience = experience.replace(old_bind, new_bind, 1)
-for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):
-    if marker not in experience:
-        raise SystemExit(f'UX V3 marker missing after patch: {marker}')
 
-for marker in ('AXE_FINANCE_EXPERIENCE_V2','Din økonomiske tvilling','Hurtigføring','Scan med Embla'):
+for marker in (
+    'AXE_FINANCE_EXPERIENCE_V2', 'AXE_FINANCE_UX_V3', 'CLAUDE_UNIFIED_REDESIGN_20260917',
+    'max-width:1080px', 'function editKey(', 'Din økonomiske tvilling', 'Hurtigføring',
+    '#FF4D22', '#FF6A47', 'Instrument Sans', 'DM Sans', 'Fragment Mono',
+):
     if marker not in experience:
-        raise SystemExit(f'Finance experience QA marker missing: {marker}')
-if '</body>' not in html:
-    raise SystemExit('Finance route QA missing </body> insertion point')
+        raise SystemExit(f'Finance unified experience QA missing marker: {marker}')
+
+if html.count('</body>') != 1:
+    raise SystemExit('Finance unified donor body insertion point mismatch')
 html = html.replace('</body>', experience + '\n</body>', 1)
-required = ('<title>4SAPIEN Finance — Embla</title>','4SAPIEN by 4PLANET','four_sapien_finance_accounts','four_sapien_finance_events','four-sapien-finance-docs','ghvdzetmplqkdtfqiror.supabase.co','sb.auth.getSession()','AXE_FINANCE_EXPERIENCE_V2','Din økonomiske tvilling','Hurtigføring')
+
+required = (
+    '<title>4SAPIEN Finance — Embla</title>', '4SAPIEN by 4PLANET',
+    'four_sapien_finance_accounts', 'four_sapien_finance_events', 'four-sapien-finance-docs',
+    'ghvdzetmplqkdtfqiror.supabase.co', 'sb.auth.getSession()',
+    'AXE_FINANCE_EXPERIENCE_V2', 'CLAUDE_UNIFIED_REDESIGN_20260917',
+)
 for marker in required:
     if marker not in html:
-        raise SystemExit(f'Finance route QA missing marker: {marker}')
+        raise SystemExit(f'Finance unified route QA missing marker: {marker}')
 for marker in ('service_role','sb_secret_','SUPABASE_SERVICE_ROLE','CLOUDFLARE_API_TOKEN','KASSALAPP_API_KEY','KASSALAPP_TOKEN'):
     if marker.lower() in html.lower():
-        raise SystemExit(f'Finance route QA forbidden marker: {marker}')
+        raise SystemExit(f'Finance unified route QA forbidden marker: {marker}')
+
 money_dir = site_dir / 'app' / 'money'
 money_dir.mkdir(parents=True, exist_ok=True)
-(money_dir / 'index.html').write_text(html, encoding='utf-8')
-(site_dir / 'finance.html').write_text(html, encoding='utf-8')
+for p in (money_dir/'index.html', site_dir/'finance.html'):
+    p.write_text(html, encoding='utf-8')
 finance_dir = site_dir / 'finance'
 finance_dir.mkdir(parents=True, exist_ok=True)
-(finance_dir / 'index.html').write_text(html, encoding='utf-8')
-print('4SAPIEN Finance routes materialized: /app/money/ + legacy /finance + /finance/ + AXE experience v2')
+(finance_dir/'index.html').write_text(html, encoding='utf-8')
+print('4SAPIEN Finance unified redesign materialized: /app/money/ + legacy routes + AXE V3 seam')
