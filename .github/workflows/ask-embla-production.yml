@@ -57,6 +57,10 @@ jobs:
           python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
           python products/4sapien/build/apply_unified_design_guard.py "$SITE"
 
+          cp products/4sapien/source/4sapien-live-hardening.css "${SITE}/4sapien-live-hardening.css"
+          cp products/4sapien/source/4sapien-live-hardening.js "${SITE}/4sapien-live-hardening.js"
+          python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
+
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
           cat > "${SITE}/app/index.html" <<'HTML'
@@ -84,10 +88,12 @@ jobs:
           grep -q 'w-embla' "$ROOT"
           ! grep -q 'verdenen monteres her' "$ROOT"
           ! grep -q '(I det ekte produktet svarer Embla-runtimen her' "$ROOT"
+          grep -Fq '/4sapien-live-hardening.js' "$ROOT"
+          grep -Fq 'credit_balance_exhausted' "$ROOT"
 
           # Food / Ask Embla — Claude merged real runtime.
           for marker in \
-            'Ask Embla' '4SAPIEN by 4PLANET' 'four_sapien_profiles' \
+            'Ask Embla' 'MAT · EMBLA · BY 4PLANET' 'four_sapien_profiles' \
             'four_sapien_list_items' 'four_sapien_shops' 'four_sapien_meal_plans' \
             'four-sapien-receipts' 'googleEnabled' 'MEAL_PLAN_HYDRATE_FAILED' \
             'MEAL_PLAN_SAVE_FAILED' 'functions/v1/embla-products' 'RATE_LIMITED' \
@@ -98,10 +104,13 @@ jobs:
           grep -q 'emailRedirectTo:"https://4sapien.com/app/food/"' "$FOOD"
           grep -q 'redirectTo:"https://4sapien.com/app/food/"' "$FOOD"
           ! grep -Eqi 'world.openfoodfacts.org|cgi/search.pl|offSearch\(|offBarcode\(' "$FOOD"
+          for marker in 'fs-food-main' 'knownStores' 'preferredStore' 'fs-meal-cta' 'MAT · EMBLA' '/4sapien-live-hardening.js'; do
+            grep -Fq "$marker" "$FOOD"
+          done
 
           # Money — Claude unified redesign + canonical V3/runtime.
           for marker in \
-            '<title>4SAPIEN Finance — Embla</title>' '4SAPIEN by 4PLANET' \
+            '<title>4SAPIEN Finance — Embla</title>' 'PENGER · EMBLA · BY 4PLANET' \
             'four_sapien_finance_accounts' 'four_sapien_finance_events' 'four-sapien-finance-docs' \
             'ghvdzetmplqkdtfqiror.supabase.co' 'sb.auth.getSession()' \
             'AXE_FINANCE_EXPERIENCE_V2' 'AXE_FINANCE_UX_V3' 'CLAUDE_UNIFIED_REDESIGN_20260917' \
@@ -110,6 +119,9 @@ jobs:
             grep -Fq "$marker" "$MONEY"
           done
           ! grep -q 'window.__toggleTheme' "$MONEY"
+          for marker in 'fs-money-main' 'PENGER · EMBLA' '/4sapien-live-hardening.js' 'fs-finance-year' 'fs-finance-attn-grid'; do
+            grep -Fq "$marker" "$MONEY"
+          done
           python products/4sapien/build/audit_finance_typography.py \
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
@@ -126,6 +138,12 @@ jobs:
           PY
           npx --yes esbuild@0.25.9 /tmp/food.jsx --loader:.jsx=jsx --outfile=/tmp/food-check.js
           npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
+          node --check products/4sapien/site/4sapien-live-hardening.js
+          python -m py_compile products/4sapien/build/apply_live_hardening_guard.py
+          BRAIN=products/4sapien/site/brain/index.html
+          for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' '/4sapien-live-hardening.js'; do
+            grep -Fq "$marker" "$BRAIN"
+          done
 
       - name: Verify Supabase database gate
         id: db
@@ -200,7 +218,7 @@ jobs:
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Se livet ditt klart.' /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && grep -q 'w-food' /tmp/food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/money.html && grep -q 'w-money' /tmp/money.html && money_ok=1 || true
-            curl -fsS "$url/4sapien-design.css" -o /tmp/design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/design.css && css_ok=1 || true
+            curl -fsS "$url/4sapien-design.css" -o /tmp/design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/design.css && curl -fsS "$url/4sapien-live-hardening.js" -o /tmp/hardening.js && grep -q 'fs-finance-year' /tmp/hardening.js && css_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
             sleep 2
           done
@@ -236,7 +254,7 @@ jobs:
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Se livet ditt klart.' /tmp/prod-root.html && grep -q 'four-sapien-front-auth' /tmp/prod-root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && grep -q 'w-food' /tmp/prod-food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/prod-money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/prod-money.html && grep -q 'w-money' /tmp/prod-money.html && money_ok=1 || true
-            curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-design.css" -o /tmp/prod-design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/prod-design.css && css_ok=1 || true
+            curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-design.css" -o /tmp/prod-design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/prod-design.css && curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-live-hardening.js" -o /tmp/prod-hardening.js && grep -q 'fs-finance-year' /tmp/prod-hardening.js && css_ok=1 || true
             if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
             sleep 3
           done
