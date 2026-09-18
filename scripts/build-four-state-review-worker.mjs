@@ -84,17 +84,6 @@ export default { async fetch(request) {
   if (url.hostname !== CONFIG.reviewHost) return new Response("Unknown control host", {status:404});
   const path = normalise(url.pathname);
 
-  // AXE_FRONTIER_GATEWAY_V3 — canonical private Frontier mount.
-  if (path === '/universalboard' || path.startsWith('/universalboard/')) {
-    const suffix = path.slice('/universalboard'.length);
-    const target = new URL('/frontier' + suffix + url.search, url.origin);
-    return new Response(null, {status:308, headers:{location:target.toString(),'cache-control':'no-store'}});
-  }
-  if (path === '/frontier' || path.startsWith('/frontier/')) {
-    const frontierOrigin = 'https://life-os-canvas-6g481v.v2.appdeploy.ai/';
-    return page('<iframe src="' + esc(frontierOrigin) + '" title="4PLANET FRONTIER"></iframe>', '4PLANET FRONTIER');
-  }
-
   if (path === '/_control') return dashboard();
 
   // Founder-approved review namespace: direct, read-only HEIR projection at a stable test.4planet.org URL.
