@@ -1,0 +1,104 @@
+name: SUPERBRAIN Completion Certification
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260824*_cns_*.sql'
+      - 'supabase/migrations/20260826*_cns_*.sql'
+      - 'supabase/migrations/*superbrain*.sql'
+      - 'supabase/tests/cns_*.sql'
+      - 'supabase/ops/*superbrain*.sql'
+      - 'supabase/ops/*giga_goals*.sql'
+      - '.github/workflows/superbrain-completion-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-supabase-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bootstrap Supabase-like roles and extension schemas
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF; END $$;
+          DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF; END $$;
+          DROP EXTENSION IF EXISTS postgis CASCADE;
+          CREATE SCHEMA IF NOT EXISTS gis;
+          CREATE EXTENSION postgis WITH SCHEMA gis;
+          CREATE SCHEMA IF NOT EXISTS extensions;
+          CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+          SQL
+
+      - name: Apply canonical CNS base
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824025500_cns_kernel_02_total.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824030500_cns_kernel_02_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824031500_cns_kernel_02_cycle_fix.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824092000_cns_context_compiler_integer_compat.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824183500_cns_github_live_sync.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824190000_cns_acceptance_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260824193000_cns_change_trials.sql
+
+      - name: Replay recovered SUPERBRAIN history
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071803_cns_truth_provenance_recovery.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071851_cns_control_of_control.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826071927_cns_failure_memory.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072023_cns_authority_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072057_cns_authority_replay_guard.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072138_cns_narrow_context.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260826072215_cns_evaluator_integrity.sql
+
+      - name: Apply Planet Brain and completion hardening
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903101500_superbrain_planet_convergence_01.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903103000_superbrain_public_boundary_hardening_02.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903104000_superbrain_security_function_hardening_03.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903111000_superbrain_sensitive_nature_fail_closed_04.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903112500_superbrain_cutover_hydration_gate_05.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260903114000_superbrain_pgcrypto_runtime_path_06.sql
+
+      - name: Verify original Planet convergence
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_planet_convergence.sql
+
+      - name: Red-team sensitive nature public boundary
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_sensitive_nature_public_boundary.sql
+
+      - name: Verify Supabase crypto runtime parity
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/cns_supabase_runtime_parity.sql
+
+      - name: Verify cutover remains fail-closed before complete BRAIN hydration
+        run: |
+          psql -Atqc "select coalesce((select (value->>'verified')::boolean from cns.system_meta where key='brain_hydration_complete'),false)=false" | grep -qx t
+          psql -Atqc "select hydration_green=false and cutover_authorized=false from cns.v_cutover_readiness" | grep -qx t
+
+      - name: Verify private CNS and one-way public cache privileges
+        run: |
+          psql -Atqc "select not has_schema_privilege('anon','cns','USAGE') and not has_schema_privilege('authenticated','cns','USAGE')" | grep -qx t
+          psql -Atqc "select not has_table_privilege('service_role','public.superbrain_public_v1','INSERT') and not has_table_privilege('service_role','public.superbrain_public_v1','UPDATE') and not has_table_privilege('service_role','public.superbrain_public_v1','DELETE') and not has_table_privilege('service_role','public.superbrain_public_v1','TRUNCATE')" | grep -qx t
