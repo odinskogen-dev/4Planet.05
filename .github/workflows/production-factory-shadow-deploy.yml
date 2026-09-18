@@ -247,7 +247,7 @@ jobs:
           FACTORY_PASS=false
           for attempt in $(seq 1 90); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
-            FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
+            FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI" and .event=="push")][0].conclusion // "pending"')"
             echo "Exact-head Factory evidence: ShadowCI=$FACTORY"
             if [[ "$FACTORY" != "pending" && "$FACTORY" != "success" ]]; then
               echo "Required exact-head Factory CI concluded non-success: $FACTORY"
