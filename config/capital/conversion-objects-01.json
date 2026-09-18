@@ -1,0 +1,73 @@
+{
+  "version": "01",
+  "date": "2026-09-02",
+  "authority": "INTERNAL_FOUNDER_RELEASE_ONLY",
+  "law": "CONVERT_DO_NOT_EXPAND",
+  "currency": "NOK",
+  "objects": [
+    {
+      "id": "CAP-ORCA-BAY-01",
+      "name": "ORCA / Bay Intelligence Pilot",
+      "status": "PROOF_BUILDING",
+      "working_budget_min": 250000,
+      "working_budget_max": 600000,
+      "minimum_viable_price_hypothesis": 250000,
+      "price_gate": "FULL_COST_AND_DELIVERY_OWNERSHIP_REQUIRED",
+      "proof": ["PR#224 ORCA Human Gold candidate", "PR#235 Bay ecosystem receiver", "PR#222 whale Gold Story", "Actor Gold ORCA seam"],
+      "claims_limits": ["pilot corridor != Orca migration track", "observation != population/trend", "effort travels with observation", "action != ecological outcome"],
+      "release_blockers": ["Founder Human Gold judgement", "data/rights/source package", "survey economics only from authoritative source", "delivery/legal/IP terms", "full-cost budget"]
+    },
+    {
+      "id": "CAP-ATLAS-S2D-01",
+      "name": "ATLAS Signal-to-Decision Pilot",
+      "status": "TECH_PROOF_AVAILABLE_USER_PROOF_REQUIRED",
+      "working_budget_min": 350000,
+      "working_budget_max": 750000,
+      "minimum_viable_price_hypothesis": 350000,
+      "price_gate": "REAL_USER_DATA_SCOPE_AND_FULL_COST_REQUIRED",
+      "proof": ["PR#223 merged to TEST KING", "EMODnet/time/search/mobile convergence", "current ecosystem consumers"],
+      "claims_limits": ["map signal != causality", "data presence != decision correctness", "prototype != production adoption"],
+      "release_blockers": ["named user/problem owner", "exact decision job", "data licensing", "30-90 day acceptance criteria", "full-cost budget", "contract/procurement route"]
+    },
+    {
+      "id": "CAP-OSLOFJORD-01",
+      "name": "Oslofjord Public Intelligence Pilot",
+      "status": "TRANSFER_CANDIDATE_SOURCE_AND_USER_PROOF_REQUIRED",
+      "working_budget_min": 350000,
+      "working_budget_max": 750000,
+      "minimum_viable_price_hypothesis": 350000,
+      "price_gate": "FULL_COST_DATA_AND_USER_SCOPE_REQUIRED",
+      "proof": ["PR#235 Oslofjord transfer case", "canonical ATLAS handoff", "shared Bay/Amazonia ecosystem grammar"],
+      "claims_limits": ["transfer candidate != Gold", "not a complete condition assessment", "monitoring station != ecological boundary", "action != outcome"],
+      "release_blockers": ["first geographic/problem slice", "exact dated authoritative sources", "user problem confirmation", "Human Quality review", "full-cost budget", "applicant/procurement route"]
+    },
+    {
+      "id": "CAP-FOUNDING-CORE-01",
+      "name": "Founding Build Core",
+      "status": "ARCHITECTURE_PROOF_FINANCIAL_AND_LEGAL_READINESS_BLOCKED",
+      "working_budget_min": 1500000,
+      "working_budget_max": 5000000,
+      "minimum_viable_price_hypothesis": 1500000,
+      "price_gate": "12_MONTH_FULL_COST_GOVERNANCE_LEGAL_IP_READINESS_REQUIRED",
+      "proof": ["ATLAS in TEST KING", "bounded ORCA/Ecosystem/Embla/Actor/Magazine/Proof Hub candidates", "Factory Shadow controls", "CNS certification lineage"],
+      "claims_limits": ["architecture proof != production readiness", "capital ask != forecast", "sponsor/grant/gift/investment instruments stay separate"],
+      "release_blockers": ["12-month budget/cash profile", "contracting/applicant entity", "IP chain of title", "accounting/tax/state-aid controls", "minimum price/runway logic", "master one-pager/current proof links"]
+    }
+  ],
+  "shared_release_contract": [
+    "problem",
+    "current_proof",
+    "bounded_deliverables",
+    "acceptance_criteria",
+    "counterparty_value",
+    "full_cost_budget",
+    "minimum_viable_price",
+    "evidence_and_claims_boundary",
+    "dependencies",
+    "legal_entity_readiness",
+    "verified_capital_fit",
+    "current_proof_links",
+    "explicit_release_status"
+  ],
+  "external_action": "FORBIDDEN_UNTIL_ACTION_SPECIFIC_FOUNDER_RELEASE"
+}
