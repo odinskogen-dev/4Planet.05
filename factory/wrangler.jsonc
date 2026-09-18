@@ -1,0 +1,98 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "4planet-production-factory-v01-shadow",
+  "main": "src/capabilityRuntimeEntrypoint.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "FACTORY_AI_GATEWAY_ID": "4planet-factory",
+    "SANDBOX_TRANSPORT": "rpc",
+    "COMMAND_TIMEOUT_MS": "1200000"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  },
+  "triggers": {
+    "crons": [
+      "0 * * * *"
+    ]
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "browser": {
+    "binding": "BROWSER",
+    "remote": true
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "PRODUCTION_FACTORY",
+        "class_name": "ProductionFactoryAgent"
+      },
+      {
+        "name": "SANDBOX",
+        "class_name": "Sandbox"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "name": "4planet-work-package-workflow-shadow",
+      "binding": "WORK_PACKAGE_WORKFLOW",
+      "class_name": "WorkPackageWorkflow"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "FACTORY_QUEUE",
+        "queue": "4planet-production-factory-v01-shadow"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "4planet-production-factory-v01-shadow",
+        "max_batch_size": 1,
+        "max_batch_timeout": 3,
+        "max_retries": 6,
+        "retry_delay": 20,
+        "dead_letter_queue": "4planet-production-factory-v01-shadow-dlq",
+        "max_concurrency": 1
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "ProductionFactoryAgent"
+      ]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": [
+        "Sandbox"
+      ]
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./Dockerfile",
+      "instance_type": "lite",
+      "max_instances": 1,
+      "name": "factory-sandbox"
+    }
+  ]
+}

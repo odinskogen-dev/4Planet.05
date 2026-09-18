@@ -1,0 +1,31 @@
+{
+  "authority": "FOUNDER_ORDER:MAXIMUM_AUTONOMOUS_PRODUCTION_01",
+  "status": "APPROVED_FOR_BOUNDED_ACTIVE_BOOT",
+  "scope": [
+    "SAFE_RESEARCH_ANALYSIS_DISCOVERY",
+    "REVERSIBLE_TEST_BRANCH_CODE",
+    "TESTS_BUILDS_PREVIEWS_QA",
+    "INTERNAL_WBS_LEARNING_WRITEBACK",
+    "AUTOMATIC_RETRIES_AND_RECOVERY"
+  ],
+  "founder_release_required": [
+    "EXTERNAL_SEND",
+    "APPLICATION_SUBMISSION",
+    "PAYMENT_OR_SPEND",
+    "CONTRACT_OR_SIGNATURE",
+    "REPUTATIONAL_PUBLICATION",
+    "IRREVERSIBLE_PRODUCTION_CHANGE"
+  ],
+  "forbidden": [
+    "SECURITY_BYPASS",
+    "SELF_APPROVAL",
+    "MAKER_EQUALS_JUDGE",
+    "SECRET_IN_SOURCE",
+    "UNAUTHORISED_IRREVERSIBLE_ACTION"
+  ],
+  "requested_loops": ["PRODUCT", "CAPITAL", "INTELLIGENCE"],
+  "requested_wake": "CONTINUOUS_EVENT_DRIVEN_PLUS_HOURLY_BASELINE",
+  "requested_night_shift": true,
+  "source": "FOUNDER_CHAT_ORDER_2026-09-17",
+  "note": "Activation receipt only. Existing BRAIN, Programme Control, Atomic WBS, Factory and Conductor remain canonical; this file creates no parallel control system."
+}

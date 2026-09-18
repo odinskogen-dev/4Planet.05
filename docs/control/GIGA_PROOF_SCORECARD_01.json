@@ -1,27 +1,134 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "programme": "GIGA-IMMUNITY-01",
   "proofs": {
     "PLANET": {
       "objective": "Oslofjord Human Gold 01 makes a real place understandable through authoritative geography, life, pressures, relationships, sources and action context.",
-      "accepted_only_if": ["inspectable_url", "exact_sha", "mobile_390x844", "desktop", "source_provenance", "no_invented_precision", "independent_human_quality_judgement"],
+      "accepted_only_if": [
+        "inspectable_url",
+        "exact_sha",
+        "mobile_390x844",
+        "desktop",
+        "source_provenance",
+        "no_invented_precision",
+        "independent_human_quality_judgement"
+      ],
       "status": "IN_PROGRESS"
     },
     "HUMAN": {
       "objective": "Embla Real Decision 01 measurably improves one real FOOD choice.",
-      "metrics": ["elapsed_decision_time", "candidate_reduction", "evidence_usefulness", "confidence_before_after", "money_difference_if_relevant", "explicit_user_judgement"],
-      "status": "READY_AFTER_REGISTERED_RECEIVER_AND_REAL_USER_INPUT"
+      "metrics": [
+        "elapsed_decision_time",
+        "candidate_reduction",
+        "evidence_usefulness",
+        "confidence_before_after",
+        "money_difference_if_relevant",
+        "explicit_user_judgement"
+      ],
+      "status": "READY_FOR_REAL_HUMAN_INPUT",
+      "current_exact_heir_observed": "fdd770f4d12729cfbb92d48e583d566f548fb6ce",
+      "current_evidence": "Exact HEIR contains real-decision instrumentation and an explicit anti-synthetic-success gate. Repeat Human Utility remains PENDING until a real participant completes and the evidence is audited."
     },
     "ACTION_ECONOMICS": {
       "objective": "One bounded need-to-capital-to-delivery-to-proof chain without collapsing done/outcome/verified impact.",
-      "accepted_only_if": ["exact_problem", "actor_class", "exact_ask", "deliverable", "cost_corridor", "diligence", "proof_of_done", "outcome_measurement_boundary", "legal_professional_gates"],
+      "accepted_only_if": [
+        "exact_problem",
+        "actor_class",
+        "exact_ask",
+        "deliverable",
+        "cost_corridor",
+        "diligence",
+        "proof_of_done",
+        "outcome_measurement_boundary",
+        "legal_professional_gates"
+      ],
       "status": "IN_PROGRESS"
     },
     "COMPOUNDING_FACTORY": {
       "objective": "Prove lower cycle time and founder burden plus measurable reuse on real work; then test Oslofjord primitives on Great Barrier Reef.",
-      "metrics": ["work_packages_attempted", "accepted", "rejected", "corrected", "mean_cycle_time", "retries", "regression_escapes", "duplicates_prevented", "founder_interventions", "founder_minutes", "reuse_ratio", "cost_if_observable"],
-      "status": "IN_PROGRESS"
+      "metrics": [
+        "work_packages_attempted",
+        "accepted",
+        "rejected",
+        "corrected",
+        "mean_cycle_time",
+        "retries",
+        "regression_escapes",
+        "duplicates_prevented",
+        "stale_state_corrections",
+        "founder_interventions",
+        "founder_minutes",
+        "redispatch_requests",
+        "context_reconstruction_requests",
+        "technical_microdecisions_escalated",
+        "safe_work_completed_without_founder",
+        "reuse_ratio",
+        "cost_if_observable"
+      ],
+      "status": "FIRST_VERIFIED_CONTROL_CYCLE_RECORDED"
     }
   },
-  "non_metrics": ["commit_count", "document_count", "agent_count", "raw_task_completion_count"]
+  "latest_verified_cycle": {
+    "cycle_id": "VVC-2026-09-05-01",
+    "trigger": "Founder issued AXE EXECUTE — VERIFIED VALUE COMPOUNDER",
+    "method": "REHYDRATE -> CHOOSE -> VERIFY -> STOP_ON_ABNORMALITY -> PARK_HUMAN_GATE -> CONTINUE -> WRITEBACK -> READBACK",
+    "selected_primary_proof": "EMBLA_REAL_DECISION_01",
+    "selection_reason": "Highest near-term proof delta because it directly tests whether source-backed 4PLANET intelligence changes one real human FOOD decision while also exercising HEIR, QA, anti-synthetic-success and programme-recovery controls.",
+    "rehydration": {
+      "status": "PASS",
+      "founder_context_reconstruction_requests": 0,
+      "founder_redispatch_requests": 0,
+      "fresh_heir_observed": "fdd770f4d12729cfbb92d48e583d566f548fb6ce",
+      "factory_authority_observed": "factory/symphony-runtime-v01@736a1cd1fb6f232915739ceefce79bd5547fe755"
+    },
+    "abnormalities": [
+      {
+        "class": "UNPROTECTED_HEIR_PLUS_AUTOMATION_DIRECT_PUSH_BYPASS",
+        "state": "CONTAINED_NOT_CLOSED",
+        "action": "No direct product mutation performed; physical closure remains issue #266/admin-tooling gate."
+      },
+      {
+        "class": "STALE_RUNTIME_STATE",
+        "state": "CORRECTED_BY_READBACK",
+        "action": "Fresh branch readback superseded earlier observed Factory SHA before conclusion."
+      }
+    ],
+    "primary_proof_state": {
+      "build": "PRESENT_ON_EXACT_HEIR",
+      "anti_synthetic_success": "PASS",
+      "real_human_input": "PENDING_HUMAN_GATE",
+      "repeat_human_utility": "NOT_PROVEN",
+      "economic_signal": "NOT_OBSERVED"
+    },
+    "founder_burden_observed": {
+      "programme_memory_reconstruction_by_founder": 0,
+      "technical_microdecisions_escalated": 0,
+      "additional_routing_required_from_founder": 0,
+      "safe_control_work_completed_without_founder": [
+        "canonical rehydration",
+        "fresh HEIR/runtime reconciliation",
+        "physical-authority abnormality containment",
+        "highest-value proof selection",
+        "exact Embla proof-gate verification",
+        "Factory authority readback",
+        "scorecard writeback"
+      ]
+    },
+    "proof_delta": "The system independently recovered current state, selected the real-human Embla proof, detected and contained a physical-authority risk, refused synthetic success, isolated the irreducible HUMAN gate, continued autonomously, and recorded the cycle on existing Factory authority without asking Odin to programme-manage it.",
+    "not_claimed": [
+      "Embla improved a real human decision",
+      "Repeat Human Utility achieved",
+      "Human Gold achieved",
+      "physical HEIR protection closed",
+      "economic demand proven",
+      "Factory autonomy promoted beyond current Autonomy Budget"
+    ],
+    "next_machine_work": "After the HUMAN gate is parked, continue on the highest-value safe machine-executable proof: current Factory production economics and measured transfer only where authority and existing receiver constraints permit."
+  },
+  "non_metrics": [
+    "commit_count",
+    "document_count",
+    "agent_count",
+    "raw_task_completion_count"
+  ]
 }
