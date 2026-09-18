@@ -45,7 +45,8 @@ async function runSandboxFactoryCheck(env: CapabilityControlEnv, reason: "PROBE"
   const runId = `sandbox-factory-${reason.toLowerCase()}-${day}-${buildSha.slice(0, 12)}-${attemptSuffix}`;
   const getByName: any = getAgentByName;
   const factory: any = await getByName((env as any).PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
-  const reservation = await factory.reserveSandboxRun(runId, 20);
+  const requestedMinutes = reason === "PROBE" ? 5 : 20;
+  const reservation = await factory.reserveSandboxRun(runId, requestedMinutes);
   if (!reservation?.allowed) return { ok: false, runId, reservation, skipped: true };
 
   const binding = (env as any).SANDBOX;
@@ -54,14 +55,22 @@ async function runSandboxFactoryCheck(env: CapabilityControlEnv, reason: "PROBE"
   const started = Date.now();
   let finalised = false;
   try {
-    const command = [
-      "rm -rf /workspace/4planet",
-      `git clone --filter=blob:none ${FACTORY_REPOSITORY} /workspace/4planet`,
-      `cd /workspace/4planet && git checkout --detach ${buildSha}`,
-      "cd /workspace/4planet/factory && npm install --ignore-scripts",
-      "cd /workspace/4planet/factory && npm run typecheck",
-      "cd /workspace/4planet/factory && npm test",
-    ].join(" && ");
+    const command = reason === "PROBE"
+      ? [
+          "node --version",
+          "git --version",
+          "mkdir -p /workspace/4planet-sandbox-proof",
+          `printf '%s\\n' ${buildSha} > /workspace/4planet-sandbox-proof/factory-build-sha`,
+          "test -s /workspace/4planet-sandbox-proof/factory-build-sha",
+        ].join(" && ")
+      : [
+          "rm -rf /workspace/4planet",
+          `git clone --filter=blob:none ${FACTORY_REPOSITORY} /workspace/4planet`,
+          `cd /workspace/4planet && git checkout --detach ${buildSha}`,
+          "cd /workspace/4planet/factory && npm install --ignore-scripts",
+          "cd /workspace/4planet/factory && npm run typecheck",
+          "cd /workspace/4planet/factory && npm test",
+        ].join(" && ");
     const result = await sandbox.exec(command, { timeout: 18 * 60 * 1000 });
     const usedMinutes = Math.max(1, Math.min(20, Math.ceil((Date.now() - started) / 60_000)));
     await factory.finalizeSandboxRun(runId, usedMinutes, result.success ? "COMPLETED" : "FAILED");
