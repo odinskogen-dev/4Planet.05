@@ -105,11 +105,11 @@ async function offBarcode(ean: string) {
   return { ...d.product, code: ean };
 }
 
-async function offBulk(eans: string[]) {
+async function offBulk(eans: string[]): Promise<Map<string, any>> {
   if (!eans.length) return new Map<string, any>();
   const codes = eans.slice(0, 40).join(",");
   const d = await offJson(`${OFF_BASE}/api/v2/search?code=${encodeURIComponent(codes)}&page_size=40&fields=${encodeURIComponent(OFF_FIELDS)}`);
-  return new Map((d?.products || []).filter((p: any) => p?.code).map((p: any) => [String(p.code), p]));
+  return new Map<string, any>((d?.products || []).filter((p: any) => p?.code).map((p: any) => [String(p.code), p] as [string, any]));
 }
 
 async function kassJson(path: string) {
