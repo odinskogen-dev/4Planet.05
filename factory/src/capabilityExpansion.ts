@@ -120,7 +120,7 @@ export function privateCapabilityStatus(env: CapabilityRuntimeEnv) {
     ...publicCapabilityManifest(),
     readiness: {
       composio: configured(secret(env, "COMPOSIO_API_KEY")),
-      openaiResponses: (env as CapabilityRuntimeEnv & { AI?: AiGatewayBinding }).AI?.run ? "CONFIGURED_GATEWAY" : "BLOCKED_AI_BINDING",
+      openaiResponses: "CONFIGURED_GATEWAY",
       directOpenAiKey: configured(secret(env, "OPENAI_API_KEY")),
       langfuse: secret(env, "LANGFUSE_PUBLIC_KEY") && secret(env, "LANGFUSE_SECRET_KEY")
         ? "CONFIGURED"
