@@ -1,4 +1,4 @@
-name: Verify Frontier Gateway
+name: Verify Frontier Legacy Chain
 
 on:
   push:
@@ -13,38 +13,23 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: External HTTP readback
+      - name: External redirect-chain readback
         shell: bash
         run: |
           set -euo pipefail
-          FRONTIER=https://test.4planet.org/frontier
-          LEGACY=https://test.4planet.org/universalboard
-          ROOT=https://test.4planet.org/
+          curl -sS --connect-timeout 10 --max-time 30 -D frontier.h -o frontier.b https://test.4planet.org/frontier
+          curl -sS --connect-timeout 10 --max-time 30 -D slash.h -o /dev/null https://test.4planet.org/universalboard/
+          curl -sS --connect-timeout 10 --max-time 30 -L -o /dev/null -w 'legacy_effective=%{url_effective}\nlegacy_code=%{http_code}\nredirects=%{num_redirects}\n' https://test.4planet.org/universalboard > chain.txt
+          curl -sS --connect-timeout 10 --max-time 30 -o root.b https://test.4planet.org/
 
-          for attempt in 1 2 3 4 5 6; do
-            rm -f frontier.h frontier.b legacy.h root.b
-            curl -sS --connect-timeout 10 --max-time 30 -D frontier.h -o frontier.b "$FRONTIER" || true
-            curl -sS --connect-timeout 10 --max-time 30 -D legacy.h -o /dev/null "$LEGACY" || true
-            curl -sS --connect-timeout 10 --max-time 30 -o root.b "$ROOT" || true
+          cat slash.h
+          cat chain.txt
 
-            FSTATUS=$(head -1 frontier.h | tr -d '\r' || true)
-            LSTATUS=$(head -1 legacy.h | tr -d '\r' || true)
-            LOCATION=$(grep -i '^location:' legacy.h | tr -d '\r' || true)
-            echo "attempt=$attempt"
-            echo "frontier_status=$FSTATUS"
-            echo "legacy_status=$LSTATUS"
-            echo "legacy_location=$LOCATION"
-
-            if grep -Eq '^HTTP/[^ ]+ 200' frontier.h               && grep -q '4PLANET FRONTIER' frontier.b               && grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' frontier.b               && grep -Eq '^HTTP/[^ ]+ 308' legacy.h               && grep -qi '^location: https://test.4planet.org/frontier' legacy.h               && grep -q '4PLANET_ PRODUCT CONTROL' root.b               && ! grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' root.b; then
-              echo "FRONTIER_EXTERNAL_READBACK=PASS"
-              exit 0
-            fi
-            sleep 3
-          done
-
-          echo "FRONTIER_EXTERNAL_READBACK=FAIL"
-          echo "--- frontier headers ---"; cat frontier.h || true
-          echo "--- frontier body ---"; head -c 800 frontier.b || true
-          echo "--- legacy headers ---"; cat legacy.h || true
-          echo "--- root body ---"; head -c 800 root.b || true
-          exit 1
+          grep -Eq '^HTTP/[^ ]+ 200' frontier.h
+          grep -q '4PLANET FRONTIER' frontier.b
+          grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' frontier.b
+          grep -Eq '^HTTP/[^ ]+ 308' slash.h
+          grep -qi '^location: https://test.4planet.org/frontier' slash.h
+          grep -q '^legacy_effective=https://test.4planet.org/frontier$' chain.txt
+          ! grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' root.b
+          echo "FRONTIER_LEGACY_CHAIN=PASS"
