@@ -78,11 +78,14 @@ jobs:
       - name: Verify backend seams without writes
         run: |
           set -euo pipefail
-          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget four_sapien_embla_memories; do
+          for table in four_sapien_profiles four_sapien_list_items four_sapien_shops four_sapien_meal_plans four_sapien_product_cache four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget; do
             code=$(curl -sS -o "/tmp/$table.json" -w '%{http_code}' -H "apikey: $SUPABASE_PUBLISHABLE_KEY" "$SUPABASE_URL/rest/v1/$table?select=*&limit=0")
             echo "$table HTTP $code"
             test "$code" = "200"
           done
+          memory_code=$(curl -sS -o /tmp/four_sapien_embla_memories.json -w '%{http_code}' -H "apikey: $SUPABASE_PUBLISHABLE_KEY" "$SUPABASE_URL/rest/v1/four_sapien_embla_memories?select=*&limit=0" || true)
+          echo "four_sapien_embla_memories anonymous HTTP $memory_code"
+          test "$memory_code" = "401" || test "$memory_code" = "403"
           for fn in embla-products embla-core-preview brain-profile; do
             code=$(curl -sS -o "/tmp/$fn.json" -w '%{http_code}' -X POST -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H 'Content-Type: application/json' --data '{"q":"yoghurt","message":"hello","action":"ask","question":"hello"}' "$SUPABASE_URL/functions/v1/$fn" || true)
             echo "$fn unauthenticated HTTP $code"
