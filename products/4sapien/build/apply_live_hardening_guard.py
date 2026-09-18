@@ -25,6 +25,10 @@ s=root.read_text()
 old="if(!r.ok||!data||!data.answer){showEmbla(q,'Embla kunne ikke svare akkurat nå. Ingen data er gjettet eller erstattet.',false);return;}"
 new="if(!r.ok||!data||!data.answer){var ec=String((data&&data.error_code)||(data&&data.state)||'');var msg=ec.indexOf('credit_balance_exhausted')>=0?'Embla er midlertidig utilgjengelig fordi modellkontoen mangler API-kreditt. Dine data er ikke endret, og ingenting er gjettet.':'Embla kunne ikke svare akkurat nå. Ingen data er gjettet eller erstattet.';showEmbla(q,msg,false);return;}"
 s=once(s,old,new,'root Embla truth error')
+old_fetch="var r=await fetch('https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/embla-core-preview',{method:'POST',headers:{apikey:'sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE',Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message:q,conversation_id:emblaConversation,world:cur})});"
+new_fetch="var ctl=new AbortController(),tm=setTimeout(function(){ctl.abort();},55000);var r;try{r=await fetch('https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/embla-core-preview',{method:'POST',headers:{apikey:'sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE',Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message:q,conversation_id:emblaConversation,world:cur}),signal:ctl.signal});}finally{clearTimeout(tm);}"
+s=once(s,old_fetch,new_fetch,'root Embla timeout')
+s=once(s,"}catch(_e){showEmbla(q,'Embla kunne ikke nås akkurat nå. Prøv igjen.',false);}", "}catch(_e){var msg=_e&&_e.name==='AbortError'?'Embla brukte for lang tid og forespørselen ble avsluttet trygt. Prøv igjen.':'Embla kunne ikke nås akkurat nå. Prøv igjen.';showEmbla(q,msg,false);}", 'root Embla recovery')
 s=assets(s,'root')
 root.write_text(s)
 
@@ -85,7 +89,7 @@ s=assets(s,'brain')
 brain.write_text(s)
 
 for p, markers in {
- root:['4sapien-live-hardening.js','credit_balance_exhausted'],
+ root:['4sapien-live-hardening.js','credit_balance_exhausted','AbortController','55000'],
  food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA'],
  money:['fs-money-main','PENGER · EMBLA','4sapien-live-hardening.js'],
  brain:['persistDirectContextFallback','MODEL_PENDING','brainIdentity','brainTheme','/4sapien-theme.js','w-embla'],
