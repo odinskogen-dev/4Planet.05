@@ -27,6 +27,7 @@ test("capability manifest preserves existing governance boundaries", () => {
   const manifest = publicCapabilityManifest();
   assert.equal(manifest.architecture.makerJudgeSeparation, "PRESERVED");
   assert.equal(manifest.architecture.founderRelease, "PRESERVED");
-  assert.match(manifest.safety.openaiAgents, /FOUNDER_RELEASE_REQUIRED/);
+  assert.match(manifest.safety.openaiResponses, /FOUNDER_RELEASE_REQUIRED/);
+  assert.equal(manifest.integrations.openaiResponses, "BOUND_AI_GATEWAY_FOUNDER_RELEASE");
   assert.equal(manifest.safety.composio, "READ_ONLY_SESSION_AND_LOCAL_TOOL_POLICY");
 });
