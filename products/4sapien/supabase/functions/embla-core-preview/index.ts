@@ -51,6 +51,9 @@ async function logTool(token,userId,conversationId,toolName,status,started,resul
   const summary={state:result?.state||(Array.isArray(result)?"AVAILABLE":"OK"),count:Array.isArray(result)?result.length:(typeof result?.count==="number"?result.count:undefined)};
   await dbInsert(token,"four_sapien_embla_tool_calls",{user_id:userId,conversation_id:conversationId,tool_name:toolName,arguments_redacted:{},result_summary:summary,status,error_code:errorCode,completed_at:new Date().toISOString(),latency_ms:Date.now()-started}).catch(()=>null);
 }
+async function logEvent(ctx,eventType,payload={}){
+  await dbInsert(ctx.token,"four_sapien_embla_events",{user_id:ctx.userId,event_type:eventType,world:"core",source:"embla-core-preview",payload:{conversation_id:ctx.conversationId,...payload}}).catch(()=>null);
+}
 async function brainProfileIngest(ctx,text,mode="auto",sourceLabel="Embla conversation"){
   try{
     const r=await fetch(`${SUPABASE_URL}/functions/v1/brain-profile`,{method:"POST",headers:{apikey:ANON_KEY,Authorization:`Bearer ${ctx.token}`,"Content-Type":"application/json"},body:JSON.stringify({action:"ingest",tenant_type:"person",text:safeText(text,12000),source_label:sourceLabel,learning_mode:mode,source_message_id:ctx.sourceMessageId||null}),signal:timeout(35000)});
@@ -176,13 +179,14 @@ Deno.serve(async(req)=>{
     const userMessage=await dbInsert(user.token,"four_sapien_embla_messages",{conversation_id:conversationId,user_id:user.id,role:"user",content:message,truth_state:"user_input",evidence:[]});
     const history=await dbGet(user.token,`four_sapien_embla_messages?conversation_id=eq.${encodeURIComponent(conversationId)}&role=in.(user,assistant)&select=role,content&order=created_at.asc&limit=24`);
     const ctx={token:user.token,userId:user.id,conversationId,sourceMessageId:userMessage?.id||null,originalMessage:message};
-    let run; try{run=await runEmbla(ctx,history);}catch(e){const code=e instanceof Error?e.message:"MODEL_ERROR";const state=code==="MODEL_UNCONFIGURED"||code==="MODEL_PROVIDER_UNCONFIGURED"?"MODEL_UNCONFIGURED":"MODEL_ERROR";return json(req,{ok:false,state,conversation_id:conversationId,model_provider:MODEL_PROVIDER,model:MODEL,error_code:code.slice(0,180)},state==="MODEL_UNCONFIGURED"?503:502);}
+    await logEvent(ctx,"embla_turn_started",{provider:MODEL_PROVIDER,model:MODEL});
+    let run; try{run=await runEmbla(ctx,history);}catch(e){const code=e instanceof Error?e.message:"MODEL_ERROR";const state=code==="MODEL_UNCONFIGURED"||code==="MODEL_PROVIDER_UNCONFIGURED"?"MODEL_UNCONFIGURED":"MODEL_ERROR";await logEvent(ctx,"embla_turn_failed",{stage:"model_or_tool_loop",provider:MODEL_PROVIDER,model:MODEL,error_code:code.slice(0,160),retryable:!(code.includes("credit_balance_exhausted")||code==="MODEL_UNCONFIGURED")});return json(req,{ok:false,state,conversation_id:conversationId,model_provider:MODEL_PROVIDER,model:MODEL,error_code:code.slice(0,180)},state==="MODEL_UNCONFIGURED"?503:502);}
     const answer=run.text||"Jeg mangler nok grunnlag til å svare sikkert.";
     const assistantMessage=await dbInsert(user.token,"four_sapien_embla_messages",{conversation_id:conversationId,user_id:user.id,role:"assistant",content:answer,truth_state:null,evidence:{model_provider:MODEL_PROVIDER,model:MODEL,tools:run.toolNames,brain_context_count:run.brainContextCount}});
     let learning={state:"SKIPPED",count:0};
     if(!isExplicitRemember(message)&&!run.toolNames.includes("propose_memory_write")) learning=await brainProfileIngest(ctx,message,"auto","Embla conversation");
     else if(isExplicitRemember(message)&&!run.toolNames.includes("propose_memory_write")) learning=await brainProfileIngest(ctx,message,"confirmed","Embla explicit memory request");
     await dbInsert(user.token,"four_sapien_embla_events",{user_id:user.id,event_type:"embla_turn_completed",world:"core",source:"embla-core-preview",payload:{conversation_id:conversationId,message_id:assistantMessage?.id||null,tool_count:run.toolNames.length,provider_state:"stateless",brain_context_count:run.brainContextCount,brain_learning_state:learning.state,brain_learning_count:learning.count}}).catch(()=>null);
-    return json(req,{ok:true,state:"COMPLETE",conversation_id:conversationId,message_id:assistantMessage?.id||null,answer,model:{provider:MODEL_PROVIDER,id:MODEL},tools_used:run.toolNames,brain:{context_count:run.brainContextCount,learning_state:learning.state,learning_count:learning.count},streaming:false,provider_state:"stateless",runtime:"EMBLA_CORE_PREVIEW_V07_BRAIN_COMPOUNDING"});
+    return json(req,{ok:true,state:"COMPLETE",conversation_id:conversationId,message_id:assistantMessage?.id||null,answer,model:{provider:MODEL_PROVIDER,id:MODEL},tools_used:run.toolNames,brain:{context_count:run.brainContextCount,learning_state:learning.state,learning_count:learning.count},streaming:false,provider_state:"stateless",runtime:"EMBLA_CORE_PREVIEW_V08_OBSERVABLE"});
   }catch(e){const code=e instanceof Error?e.message:"INTERNAL_ERROR";return json(req,{ok:false,state:"INTERNAL_ERROR",error_code:code.slice(0,180)},500);}
 });
