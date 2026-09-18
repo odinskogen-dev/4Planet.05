@@ -125,7 +125,17 @@ export async function getStripeCheckoutStatus(sessionId: string): Promise<Stripe
     const reason = payload && "error" in payload && payload.error ? payload.error : "checkout_status_unavailable";
     throw new Error(reason);
   }
-  if (payload.confirmed && payload.productKey) commerceAnalytics("checkout_confirmed", payload.productKey, payload.environment);
+  if (payload.confirmed && payload.productKey) {
+    commerceAnalytics("checkout_confirmed", payload.productKey, payload.environment);
+    if (payload.environment === "LIVE") {
+      trackEvent("purchase", {
+        transaction_id: payload.sessionId,
+        value: payload.amountMinor == null ? 0 : payload.amountMinor / 100,
+        currency: payload.currency?.toUpperCase() || "UNKNOWN",
+        product_key: payload.productKey.slice(0, 100),
+      });
+    }
+  }
   return payload;
 }
 
