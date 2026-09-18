@@ -3,7 +3,16 @@ import { useLocation } from "react-router-dom";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse, trackProductEntry, type ProductArea } from "@/analytics/ProductAnalytics";
 
-function classifyProduct(pathname: string): ProductArea {
+function canonicalHost(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/^www\./, "");
+}
+
+function classifyProduct(pathname: string, hostname: string): ProductArea {
+  const host = canonicalHost(hostname);
+  if (host === "4brands.org" || pathname.startsWith("/4brand")) return "4brands";
+  if (host === "s4piens.com" || pathname.startsWith("/4sapien") || pathname.startsWith("/s4piens/")) return "4sapien";
+  if (host === "4planetmarket.com" || pathname === "/market" || pathname.startsWith("/market/")) return "market";
+  if (host === "cre4tor.com" || host === "cre4tor.4planet.org" || pathname.startsWith("/cre4tor") || pathname.startsWith("/creator/")) return "creator";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
@@ -36,7 +45,7 @@ export function ProductRouteAnalytics() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const product = classifyProduct(pathname);
+    const product = classifyProduct(pathname, window.location.hostname);
     const routeKey = `4p:entry:${pathname}`;
     if (!window.sessionStorage.getItem(routeKey)) {
       trackProductEntry(product, pathname, entryKind());
