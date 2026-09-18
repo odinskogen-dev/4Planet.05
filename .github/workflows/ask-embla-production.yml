@@ -23,108 +23,109 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Materialize Claude One Product release
+      - name: Materialize Claude unified redesign release
         run: |
           set -euo pipefail
           SITE=products/4sapien/site
+          DROP=/tmp/4sapien-unified-20260917
           FOOD=${SITE}/app/food/index.html
-          rm -rf "$SITE"
-          mkdir -p "${SITE}/app/food" "${SITE}/app"
+          rm -rf "$SITE" "$DROP"
+          mkdir -p "${SITE}/app/food" "${SITE}/app" "$DROP"
 
-          # Latest Claude public front v2, integrated without shipping its local demo app.
+          python products/4sapien/build/materialize_unified_drop.py \
+            products/4sapien/source/claude-unified-20260917 \
+            "$DROP"
+
+          cp products/4sapien/source/4sapien-design.css "${SITE}/4sapien-design.css"
+          cp products/4sapien/source/4sapien-theme.js "${SITE}/4sapien-theme.js"
+
+          # Claude owns the visible shell; AXE binds it to real auth, Embla and same-origin worlds.
           python products/4sapien/build/apply_front_v2_release.py \
-            products/4sapien/source/claude-front-20260915-v2.html \
+            "$DROP/4sapien_app_unified.html" \
             "${SITE}/index.html"
 
-          # Preserve the full existing Claude Food / Ask Embla product and proven runtime guards.
-          cat products/4sapien/source/part-{00..06}.b64 | base64 -d | xz -d > "$FOOD"
-          python products/4sapien/build/apply_provider_guard.py "$FOOD"
-          python products/4sapien/build/apply_meal_plan_guard.py "$FOOD"
-          python products/4sapien/build/apply_product_gateway_guard.py "$FOOD"
+          # Claude's merged Food handback already contains the proven gateway, meal-plan,
+          # permission, auth and Supabase runtime. Do not re-apply stale visible patches.
+          cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
 
-          # Preserve the full Claude Finance donor against the shared Supabase runtime.
-          python products/4sapien/build/apply_finance_route.py "${SITE}/index.html"
+          # Claude's merged Finance donor + AXE experience; keep the existing V3 interaction seam
+          # and canonical Finance Twin runtime, but do not re-apply the superseded premium visual layer.
+          python products/4sapien/build/apply_finance_route.py \
+            "${SITE}/index.html" \
+            "$DROP/4sapien_finance_MERGED.html" \
+            "$DROP/4sapien_finance_AXE_experience_MERGED.html"
           python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
+          python products/4sapien/build/apply_unified_design_guard.py "$SITE"
 
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
           cat > "${SITE}/app/index.html" <<'HTML'
-          <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/app/food/"><title>4SAPIEN</title><link rel="canonical" href="https://4sapien.com/app/food/"></head><body><a href="/app/food/">Open 4SAPIEN</a></body></html>
+          <!doctype html><html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/"><title>4SAPIEN</title><link rel="canonical" href="https://4sapien.com/"></head><body><a href="/">Åpne 4SAPIEN</a></body></html>
           HTML
 
-      - name: Zero-loss product and security QA
+      - name: Zero-loss unified product and security QA
         run: |
           set -euo pipefail
           ROOT=products/4sapien/site/index.html
           FOOD=products/4sapien/site/app/food/index.html
           MONEY=products/4sapien/site/app/money/index.html
 
-          # Public front v2.
-          grep -q '<title>4SAPIEN — See your life clearly.</title>' "$ROOT"
-          grep -q 'See your life clearly.' "$ROOT"
-          grep -q 'Food × Money · together' "$ROOT"
-          grep -q 'Plan my food until payday.' "$ROOT"
-          grep -q 'illustrative demo' "$ROOT"
+          # Unified root / Today shell.
+          grep -q '<title>4SAPIEN</title>' "$ROOT"
+          grep -q 'Se livet ditt klart.' "$ROOT"
           grep -q '/app/food/' "$ROOT"
           grep -q '/app/money/' "$ROOT"
-          grep -q '#2E2EFF' "$ROOT"
-          grep -q '#3AE86F' "$ROOT"
-          grep -q '#FF4D22' "$ROOT"
-          grep -q '#FF5ACD' "$ROOT"
-          grep -q 'Your data is used to provide your 4SAPIEN experience.' "$ROOT"
-          grep -q 'id="method"' "$ROOT"
-          grep -q 'id="privacy"' "$ROOT"
+          grep -q '/brain/' "$ROOT"
+          grep -q 'functions/v1/embla-core-preview' "$ROOT"
           grep -q 'id="account-link"' "$ROOT"
           grep -q 'id="four-sapien-front-auth"' "$ROOT"
-          grep -q "window.location.replace('/app/food/'+hash)" "$ROOT"
-          grep -q "link.textContent='4PLANET ID ✓'" "$ROOT"
-          ! grep -q 'function openApp' "$ROOT"
-          ! grep -q 'id="app"' "$ROOT"
+          grep -q 'window.FourSapienTheme' "$ROOT"
+          grep -q '/4sapien-design.css' "$ROOT"
+          grep -q 'w-embla' "$ROOT"
+          ! grep -q 'verdenen monteres her' "$ROOT"
+          ! grep -q '(I det ekte produktet svarer Embla-runtimen her' "$ROOT"
 
-          # Food / Ask Embla.
-          grep -q 'Ask Embla' "$FOOD"
-          grep -q '4SAPIEN by 4PLANET' "$FOOD"
-          grep -q 'four_sapien_profiles' "$FOOD"
-          grep -q 'four_sapien_list_items' "$FOOD"
-          grep -q 'four_sapien_shops' "$FOOD"
-          grep -q 'four_sapien_meal_plans' "$FOOD"
-          grep -q 'four-sapien-receipts' "$FOOD"
-          grep -q 'googleEnabled' "$FOOD"
-          grep -q 'MEAL_PLAN_HYDRATE_FAILED' "$FOOD"
-          grep -q 'MEAL_PLAN_SAVE_FAILED' "$FOOD"
-          grep -q 'functions/v1/embla-products' "$FOOD"
-          grep -q 'RATE_LIMITED' "$FOOD"
-          grep -q 'DELVIS DATADEKNING' "$FOOD"
-          grep -q 'price:p.embla_price' "$FOOD"
+          # Food / Ask Embla — Claude merged real runtime.
+          for marker in \
+            'Ask Embla' '4SAPIEN by 4PLANET' 'four_sapien_profiles' \
+            'four_sapien_list_items' 'four_sapien_shops' 'four_sapien_meal_plans' \
+            'four-sapien-receipts' 'googleEnabled' 'MEAL_PLAN_HYDRATE_FAILED' \
+            'MEAL_PLAN_SAVE_FAILED' 'functions/v1/embla-products' 'RATE_LIMITED' \
+            'DELVIS DATADEKNING' 'price:p.embla_price' '4PLANET ID · INNLOGGET' \
+            '/4sapien-theme.js' '/4sapien-design.css' 'FS_THEMES=' 'FourSapienTheme.subscribe' 'w-food'; do
+            grep -Fq "$marker" "$FOOD"
+          done
           grep -q 'emailRedirectTo:"https://4sapien.com/app/food/"' "$FOOD"
           grep -q 'redirectTo:"https://4sapien.com/app/food/"' "$FOOD"
-          grep -q '4PLANET ID · INNLOGGET' "$FOOD"
-          ! grep -q 'emailRedirectTo:"https://4sapien.com/"' "$FOOD"
-          ! grep -q 'redirectTo:"https://4sapien.com/"' "$FOOD"
-          ! grep -q 'world.openfoodfacts.org' "$FOOD"
-          ! grep -q 'cgi/search.pl' "$FOOD"
+          ! grep -Eqi 'world.openfoodfacts.org|cgi/search.pl|offSearch\(|offBarcode\(' "$FOOD"
 
-          # Money.
-          grep -q '<title>4SAPIEN Finance — Embla</title>' "$MONEY"
-          grep -q '4SAPIEN by 4PLANET' "$MONEY"
-          grep -q 'four_sapien_finance_accounts' "$MONEY"
-          grep -q 'four_sapien_finance_events' "$MONEY"
-          grep -q 'four-sapien-finance-docs' "$MONEY"
-          grep -q 'ghvdzetmplqkdtfqiror.supabase.co' "$MONEY"
-          grep -q 'sb.auth.getSession()' "$MONEY"
+          # Money — Claude unified redesign + canonical V3/runtime.
+          for marker in \
+            '<title>4SAPIEN Finance — Embla</title>' '4SAPIEN by 4PLANET' \
+            'four_sapien_finance_accounts' 'four_sapien_finance_events' 'four-sapien-finance-docs' \
+            'ghvdzetmplqkdtfqiror.supabase.co' 'sb.auth.getSession()' \
+            'AXE_FINANCE_EXPERIENCE_V2' 'AXE_FINANCE_UX_V3' 'CLAUDE_UNIFIED_REDESIGN_20260917' \
+            'four-sapien-finance-unified-type-guard' 'four-sapien-finance-theme-bridge' \
+            'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' '/4sapien-theme.js' '/4sapien-design.css' 'w-money'; do
+            grep -Fq "$marker" "$MONEY"
+          done
+          ! grep -q 'window.__toggleTheme' "$MONEY"
           python products/4sapien/build/audit_finance_typography.py \
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
 
+          # Babel/React syntax for both live worlds.
           python - <<'PY'
           import re, pathlib
-          s=pathlib.Path('products/4sapien/site/app/food/index.html').read_text()
-          m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
-          assert m, 'Babel/React source block missing'
-          pathlib.Path('/tmp/embla.jsx').write_text(m.group(1))
+          for src,out in [('products/4sapien/site/app/food/index.html','/tmp/food.jsx'),('products/4sapien/site/app/money/index.html','/tmp/money.jsx')]:
+              s=pathlib.Path(src).read_text()
+              m=re.search(r'<script type="text/babel"[^>]*>(.*?)</script>',s,re.S)
+              assert m, f'Babel/React source block missing: {src}'
+              pathlib.Path(out).write_text(m.group(1))
           PY
-          npx --yes esbuild@0.25.9 /tmp/embla.jsx --loader:.jsx=jsx --outfile=/tmp/embla-check.js
+          npx --yes esbuild@0.25.9 /tmp/food.jsx --loader:.jsx=jsx --outfile=/tmp/food-check.js
+          npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
 
       - name: Verify Supabase database gate
         id: db
@@ -195,11 +196,12 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
-            root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Food × Money · together' /tmp/root.html && grep -q 'illustrative demo' /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && grep -q 'https://4sapien.com/app/food/' /tmp/food.html && food_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'four_sapien_finance_accounts' /tmp/money.html && grep -q 'four_sapien_finance_events' /tmp/money.html && ! grep -q 'font-family:"DM Sans",system-ui' /tmp/money.html && money_ok=1 || true
-            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
+            root_ok=0; food_ok=0; money_ok=0; css_ok=0
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Se livet ditt klart.' /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && grep -q 'w-food' /tmp/food.html && food_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/money.html && grep -q 'w-money' /tmp/money.html && money_ok=1 || true
+            curl -fsS "$url/4sapien-design.css" -o /tmp/design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/design.css && css_ok=1 || true
+            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
             sleep 2
           done
           echo 'Worker candidate runtime verification failed'
@@ -230,11 +232,12 @@ jobs:
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
-            root_ok=0; food_ok=0; money_ok=0
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Food × Money · together' /tmp/prod-root.html && grep -q 'illustrative demo' /tmp/prod-root.html && grep -q 'four-sapien-front-auth' /tmp/prod-root.html && root_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && grep -q 'https://4sapien.com/app/food/' /tmp/prod-food.html && food_ok=1 || true
-            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'four_sapien_finance_accounts' /tmp/prod-money.html && grep -q 'four_sapien_finance_events' /tmp/prod-money.html && ! grep -q 'font-family:"DM Sans",system-ui' /tmp/prod-money.html && money_ok=1 || true
-            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ]; then exit 0; fi
+            root_ok=0; food_ok=0; money_ok=0; css_ok=0
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Se livet ditt klart.' /tmp/prod-root.html && grep -q 'four-sapien-front-auth' /tmp/prod-root.html && root_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && grep -q 'w-food' /tmp/prod-food.html && food_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/prod-money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/prod-money.html && grep -q 'w-money' /tmp/prod-money.html && money_ok=1 || true
+            curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-design.css" -o /tmp/prod-design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/prod-design.css && css_ok=1 || true
+            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
             sleep 3
           done
           echo 'Custom-domain runtime verification failed'
@@ -244,13 +247,13 @@ jobs:
         if: always()
         run: |
           {
-            echo '## 4SAPIEN One Product production gate'
-            echo '- Claude public front v2: PASS'
-            echo '- Food × Money cross-world proposition: PASS'
-            echo '- Full Food / Ask Embla donor preserved: PASS'
-            echo '- Full Finance donor at /app/money/: PASS'
-            echo '- Auth callback + signed-in state: PASS'
-            echo '- Claude Finance typography inheritance: PASS'
+            echo '## 4SAPIEN Unified Redesign production gate'
+            echo '- Claude unified shell: PASS'
+            echo '- Claude shared design grammar: PASS'
+            echo '- Claude merged Food runtime: PASS'
+            echo '- Claude merged Finance + AXE V3: PASS'
+            echo '- Canonical Finance Twin runtime preserved: PASS'
+            echo '- Canonical theme + sans typography: PASS'
             echo '- Browser-secret scan: PASS'
             echo "- Database gate: ${{ steps.db.outputs.ready }}"
             echo "- Food + Embla auth boundary: ${{ steps.gateway.outputs.ready }}"

@@ -22,44 +22,30 @@ jobs:
       - name: Verify shared 4SAPIEN backend seam
         run: |
           set -euo pipefail
-          for table in \
-            four_sapien_finance_accounts \
-            four_sapien_finance_events \
-            four_sapien_finance_budget \
-            four_sapien_finance_import_batches \
-            four_sapien_finance_reconciliations; do
-            code=$(curl -sS -o "/tmp/${table}.json" -w '%{http_code}' \
-              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
-              "${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0")
+          for table in four_sapien_finance_accounts four_sapien_finance_events four_sapien_finance_budget four_sapien_finance_import_batches four_sapien_finance_reconciliations; do
+            code=$(curl -sS -o "/tmp/$table.json" -w '%{http_code}' -H "apikey: $SUPABASE_PUBLISHABLE_KEY" "$SUPABASE_URL/rest/v1/$table?select=*&limit=0")
             test "$code" = "200"
           done
 
-      - name: Verify public front remains separate from private worlds
+      - name: Verify unified shell and Finance on Worker and 4sapien.com
         run: |
           set -euo pipefail
           for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
-            curl -fsSL --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' "${base}/" -o /tmp/root.html
-            grep -q 'See your life clearly.' /tmp/root.html
-            grep -q 'illustrative demo' /tmp/root.html
-            grep -q '/app/food/' /tmp/root.html
-            grep -q '/app/money/' /tmp/root.html
-          done
-
-      - name: Verify Finance route on Worker and 4sapien.com
-        run: |
-          set -euo pipefail
-          for base in https://four-sapien-embla.odin-skogen.workers.dev https://4sapien.com; do
+            curl -fsSL --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' "$base/" -o /tmp/root.html
+            grep -Fq 'Se livet ditt klart.' /tmp/root.html
+            grep -Fq 'functions/v1/embla-core-preview' /tmp/root.html
+            grep -Fq '/app/food/' /tmp/root.html
+            grep -Fq '/app/money/' /tmp/root.html
+            ! grep -Fq 'verdenen monteres her' /tmp/root.html
             for path in /app/money/ /finance /finance/; do
               body="/tmp/finance-$(echo "$base$path" | tr -cs 'A-Za-z0-9' '_').html"
-              status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "${base}${path}")
+              status=$(curl -sS -L --retry 3 --retry-delay 2 -H 'Sec-Fetch-Mode: navigate' -o "$body" -w '%{http_code}' "$base$path")
               test "$status" = "200"
-              grep -q '<title>4SAPIEN Finance — Embla</title>' "$body"
-              grep -q '4SAPIEN by 4PLANET' "$body"
-              grep -q 'four_sapien_finance_accounts' "$body"
-              grep -q 'four_sapien_finance_events' "$body"
-              grep -q 'four-sapien-finance-docs' "$body"
-              grep -q 'sb.auth.getSession()' "$body"
+              for marker in '<title>4SAPIEN Finance — Embla</title>' 'four_sapien_finance_accounts' 'four_sapien_finance_events' 'four-sapien-finance-docs' 'sb.auth.getSession()' 'CLAUDE_UNIFIED_REDESIGN_20260917' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'four-sapien-finance-unified-type-guard' 'w-money'; do
+                grep -Fq "$marker" "$body"
+              done
+              ! grep -Fq 'window.__toggleTheme' "$body"
               ! grep -Eqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$body"
-              echo "PASS ${base}${path} HTTP ${status}"
+              echo "PASS $base$path HTTP $status"
             done
           done
