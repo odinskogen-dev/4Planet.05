@@ -60,7 +60,7 @@ jobs:
           grep -Fq 'fs-finance-year' "$SITE/4sapien-live-hardening.js"
           grep -Fq 'fs-finance-attn-grid' "$SITE/4sapien-live-hardening.js"
           for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' 'functions/v1/brain-profile' 'REQUEST_TIMEOUT' 'AbortController'; do grep -Fq "$marker" "$BRAIN"; done
-          for marker in 'updateNote' 'note_updated' 'surface_viewed' 'home_hydrated' 'finance_opened' 'globalAppNav'; do grep -Fq "$marker" "$SITE/4sapien-live-hardening.js"; done
+          for marker in 'updateNote' 'note_updated' 'surface_viewed' 'home_hydrated' 'finance_opened' 'finance_twin_viewed' 'globalAppNav'; do grep -Fq "$marker" "$SITE/4sapien-live-hardening.js"; done
           grep -Fq '.fs-global-appnav' "$SITE/4sapien-live-hardening.css"
           grep -Fq 'bottom:clamp(120px,14vh,170px)' "$SITE/4sapien-live-hardening.css"
           grep -Fq 'embla_turn_failed' products/4sapien/supabase/functions/embla-core-preview/index.ts
