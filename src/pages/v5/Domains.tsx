@@ -20,7 +20,7 @@ const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, l
 // one documentary image per domain (never the hero) — from a mission in that world
 const SECOND_IMG: Record<DomainKey, ImageKey> = { "OCE4N_": "wh4lesHero", "E4RTH_": "e4rthField", "S4PIENS_": "en3rgyHero", "4CULTURE_": "filmHero" };
 // canonical mission order per domain (4CULTURE order is locked)
-const MISSION_ORDER: Partial<Record<DomainKey, string[]>> = { "4CULTURE_": ["4play", "4film", "4telier", "m4gazine"] };
+const MISSION_ORDER: Partial<Record<DomainKey, string[]>> = { "4CULTURE_": ["4play", "4film", "4rt", "m4gazine"] };
 function orderedMissions(dk: DomainKey) {
   const ms = content.getMissionsByDomain(dk);
   const ord = MISSION_ORDER[dk];
@@ -172,7 +172,7 @@ export function DomainWorld() {
             <div style={{ ...mono(acc), marginBottom: 20 }}>PARTICIPATE</div>
             <h2 style={{ ...display, color: "#fff", fontSize: "clamp(26px,3.6vw,50px)", lineHeight: 1.02, maxWidth: 760 }}>Follow {strip(dk)} as its Missions, evidence and pathways open.</h2>
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
-              <Button to="/people" primary accent={acc} arrow>JOIN 4PLANET</Button>
+              <Button to="/join" primary accent={acc} arrow>JOIN 4PLANET</Button>
               <Button to="/partners" onDark accent="#fff">EXPLORE PARTNERSHIP</Button>
             </div>
           </Reveal>

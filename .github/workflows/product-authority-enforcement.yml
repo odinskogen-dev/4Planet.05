@@ -1,0 +1,173 @@
+name: FOUR STATE Product Authority Gate
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: product-authority-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authority:
+    name: Fail-closed product authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact candidate or HEIR for scheduled audit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'king/test' || github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Fetch current HEIR
+        run: git fetch --no-tags origin king/test
+
+      - name: Validate registry and current mutation authority
+        env:
+          AUTHORITY_BASE_REF: ${{ github.base_ref }}
+        run: node scripts/product-authority-gate.mjs | tee product-authority-result.txt
+
+      - name: Inventory remote refs under absolute write-authority law
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/product-authority
+          node <<'NODE'
+          const fs = require('fs');
+          const registry = JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const sandboxes = new Map();
+          for (const [product, item] of Object.entries(registry.products || {})) {
+            if (item.sandbox?.branch) sandboxes.set(item.sandbox.branch, product);
+          }
+          fs.writeFileSync('artifacts/product-authority/registered-sandboxes.json', JSON.stringify(Object.fromEntries(sandboxes), null, 2));
+          NODE
+          : > artifacts/product-authority/branches.jsonl
+          page=1
+          while :; do
+            payload="$(gh api "repos/${GITHUB_REPOSITORY}/branches?per_page=100&page=${page}")"
+            count="$(jq 'length' <<<"$payload")"
+            jq -c '.[] | {branch:.name, sha:.commit.sha}' <<<"$payload" >> artifacts/product-authority/branches.jsonl
+            [ "$count" -lt 100 ] && break
+            page=$((page+1))
+          done
+          node <<'NODE'
+          const fs = require('fs');
+          const raw = fs.readFileSync('artifacts/product-authority/branches.jsonl','utf8').trim();
+          const rows = raw ? raw.split('\n').filter(Boolean).map(JSON.parse) : [];
+          const registered = JSON.parse(fs.readFileSync('artifacts/product-authority/registered-sandboxes.json','utf8'));
+          const classified = rows.map((row) => {
+            let role = 'QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY';
+            let productWriteAuthority = false;
+            if (row.branch === 'king/test') {
+              role = 'HEIR';
+              productWriteAuthority = true;
+            } else if (registered[row.branch]) {
+              role = `SANDBOX:${registered[row.branch]}`;
+              productWriteAuthority = true;
+            } else if (row.branch.startsWith('control/') || row.branch.startsWith('ops/') || row.branch.startsWith('docs/')) {
+              role = 'SYSTEM_CONTROL_ZERO_PRODUCT_AUTHORITY';
+            } else if (row.branch.startsWith('factory/')) {
+              role = 'FACTORY_SEPARATE_ZERO_PRODUCT_AUTHORITY';
+            }
+            return {...row, role, productWriteAuthority};
+          });
+          const counts = classified.reduce((acc, row) => (acc[row.role] = (acc[row.role] || 0) + 1, acc), {});
+          fs.writeFileSync('artifacts/product-authority/branch-authority-inventory.json', JSON.stringify({
+            generatedAt:new Date().toISOString(),
+            law:'ONLY_HEIR_OR_REGISTERED_SANDBOX_HAVE_PRODUCT_WRITE_AUTHORITY',
+            archiveLaw:'ARCHIVED_AND_QUARANTINE_ARE_READ_ONLY_DONORS',
+            total:classified.length,
+            counts,
+            branches:classified
+          }, null, 2));
+          console.log(`remote branches inventoried=${classified.length}`);
+          console.log(counts);
+          NODE
+
+      - name: Open PR authority inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" > artifacts/product-authority/open-pr-pages.jsonl
+          node <<'NODE'
+          const fs = require('fs');
+          const raw = fs.readFileSync('artifacts/product-authority/open-pr-pages.jsonl','utf8').trim();
+          const arrays = raw ? raw.split('\n').filter(Boolean).map(JSON.parse) : [];
+          const prs = arrays.flat();
+          const registry = JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const registered = new Map();
+          for (const [product, item] of Object.entries(registry.products || {})) if (item.sandbox?.branch) registered.set(item.sandbox.branch, product);
+          const inventory = prs.map(pr => ({
+            number: pr.number,
+            title: pr.title,
+            draft: pr.draft,
+            base: pr.base.ref,
+            head: pr.head.ref,
+            headSha: pr.head.sha,
+            authority: pr.head.ref === 'king/test'
+              ? 'HEIR_CONTROL'
+              : registered.has(pr.head.ref)
+                ? `REGISTERED_SANDBOX:${registered.get(pr.head.ref)}`
+                : pr.head.ref.startsWith('control/') || pr.head.ref.startsWith('ops/') || pr.head.ref.startsWith('docs/') || pr.head.ref.startsWith('factory/')
+                  ? 'SYSTEM_SUPPORT_ZERO_PRODUCT_AUTHORITY'
+                  : 'QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_ZERO_AUTHORITY'
+          }));
+          fs.writeFileSync('artifacts/product-authority/open-pr-authority-inventory.json', JSON.stringify({generatedAt:new Date().toISOString(), total:inventory.length, pullRequests:inventory}, null, 2));
+          console.log(`open PRs inventoried=${inventory.length}`);
+          NODE
+
+      - name: Repository physical-enforcement gap check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}" > artifacts/product-authority/repository.json
+          gh api "repos/${GITHUB_REPOSITORY}/branches/king/test" > artifacts/product-authority/king-test-branch.json
+          node <<'NODE'
+          const fs = require('fs');
+          const repo = JSON.parse(fs.readFileSync('artifacts/product-authority/repository.json','utf8'));
+          const branch = JSON.parse(fs.readFileSync('artifacts/product-authority/king-test-branch.json','utf8'));
+          const report = {
+            defaultBranch: repo.default_branch,
+            deleteBranchOnMerge: repo.delete_branch_on_merge,
+            kingTestProtected: Boolean(branch.protected),
+            productWriteLaw: 'ONLY_HEIR_OR_REGISTERED_SANDBOX',
+            archiveLaw: 'READ_ONLY_DONOR',
+            desired: {
+              defaultBranch:'king/test or an explicitly non-stale control default',
+              deleteBranchOnMerge:true,
+              kingTestProtected:true,
+              repositoryRuleset:'physically reject unauthorised product writes and protected/archive ref mutation'
+            },
+            physicalGuarantee: branch.protected && repo.default_branch === 'king/test'
+              ? 'ADMIN_LAYER_PARTIALLY_VERIFIED_RULESET_STILL_REQUIRED'
+              : 'P0_ADMIN_HARDENING_GAP_NO_100_PERCENT_PUSH_PREVENTION_CLAIM'
+          };
+          fs.writeFileSync('artifacts/product-authority/repository-hardening-gap.json', JSON.stringify(report, null, 2));
+          console.log(report);
+          NODE
+
+      - name: Upload authority evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-product-authority
+          path: |
+            product-authority-result.txt
+            artifacts/product-authority
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,143 @@
+/* SPECIES source-first-read v01
+   Founder-visible fix: keep identity/life dominant and move provenance detail out
+   of the hero plane on compact screens. Source/right records remain in data and
+   the evidence/source sections below the first read. */
+.sp-hero__media > div[style*="max-width: 320px"] {
+  max-width: min(280px, calc(100% - 32px)) !important;
+  padding: 6px 9px !important;
+  font-size: 8px !important;
+  line-height: 1.35 !important;
+  opacity: .82;
+}
+
+/* Attribution must never become a second headline over the animal. The underlying
+   media record remains intact; this only reduces the presentation layer. */
+.sp-hero__media > div[style*="bottom: 34px"] {
+  max-width: min(280px, calc(100% - 28px)) !important;
+  padding: 4px 7px !important;
+  font-size: 7px !important;
+  line-height: 1.3 !important;
+  letter-spacing: .08em !important;
+  opacity: .68;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .sp-hero {
+    min-height: auto;
+    display: block;
+  }
+
+  .sp-hero__media {
+    min-height: 0;
+    height: clamp(360px, 58svh, 620px);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sp-hero__media img {
+    object-position: 50% 42%;
+  }
+
+  .sp-hero__body {
+    padding: 28px clamp(20px, 5vw, 42px) 42px;
+  }
+
+  .sp-hero__name {
+    margin-top: 12px;
+    font-size: clamp(46px, 13vw, 72px);
+    line-height: .92;
+  }
+
+  .sp-hero__sci {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .sp-hero__intro {
+    margin-top: 18px;
+    max-width: 38ch;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .sp-facts {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 620px) {
+  /* Detailed operational/licensing limitations and long attribution strings are
+     evidence, not the hero story. Keep the animal unobstructed on compact screens. */
+  .sp-hero__media > div[style*="max-width: 320px"],
+  .sp-hero__media > div[style*="bottom: 34px"] {
+    display: none !important;
+  }
+
+  .sp-hero__media {
+    height: 56svh;
+    min-height: 340px;
+    max-height: 540px;
+  }
+
+  .sp-hero__media figcaption {
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    font-size: 8.5px;
+    letter-spacing: .09em;
+  }
+
+  .sp-hero__body {
+    padding: 24px 18px 36px;
+  }
+
+  .sp-hero__eyebrow {
+    font-size: 9px;
+    letter-spacing: .13em;
+  }
+
+  .sp-hero__name {
+    font-size: clamp(44px, 15vw, 62px);
+  }
+
+  .sp-hero__intro {
+    font-size: 15px;
+  }
+
+  .sp-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sp-fact {
+    padding: 13px 12px;
+  }
+
+  .sp-fact__k {
+    font-size: 8px;
+  }
+
+  .sp-fact__v {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+
+  .sp-fact__note {
+    display: none;
+  }
+
+  .sp-hero__actions {
+    margin-top: 22px;
+  }
+}
+
+@media (max-width: 390px) {
+  .sp-hero__media {
+    height: 52svh;
+    min-height: 320px;
+  }
+
+  .sp-facts {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,69 @@
+name: Partners Cloudflare Preflight
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/partners-cloudflare-preflight.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo 'PREFLIGHT_FAIL: missing Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: Audit partners.4planet.org release path read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          jq -e '.success == true' <<<"$zone" >/dev/null
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$zone_id" ] && [ -n "$account_id" ] || { echo 'PREFLIGHT_FAIL: zone/account unresolved'; exit 3; }
+          echo "PREFLIGHT_ZONE=4planet.org"
+          echo "PREFLIGHT_ACCOUNT_RESOLVED=yes"
+          record=$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=partners.4planet.org&per_page=100" "${auth[@]}")
+          echo '--- existing partners DNS ---'
+          jq -r '.result[]? | [.type,.name,.content,(.proxied|tostring)] | @tsv' <<<"$record" || true
+          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+          jq -e '.success == true' <<<"$projects" >/dev/null
+          echo '--- matching Pages projects ---'
+          jq -r '.result[]? | select(.name=="4planet-partners" or .name=="4planet-05") | [.name,(.production_branch // ""),([.domains[]?] | join(","))] | @tsv' <<<"$projects"
+          for project in 4planet-partners 4planet-05; do
+            if jq -e --arg p "$project" '.result[]? | select(.name==$p)' <<<"$projects" >/dev/null; then
+              echo "--- ${project} production deployments ---"
+              dep=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=5" "${auth[@]}")
+              jq -r '.result[]? | [(.deployment_trigger.metadata.commit_hash // ""),(.deployment_trigger.metadata.branch // ""),(.latest_stage.status // ""),(.url // "")] | @tsv' <<<"$dep"
+              echo "--- ${project} custom domains ---"
+              dom=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/domains" "${auth[@]}" || echo '{"result":[]}')
+              jq -r '.result[]? | [.name,(.status // "")] | @tsv' <<<"$dom" || true
+            fi
+          done
+          echo 'PREFLIGHT_READ_ONLY=PASS'

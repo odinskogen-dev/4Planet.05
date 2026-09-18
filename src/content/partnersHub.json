@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "version": "PARTNERS-GOLD-01",
+    "updated": "2026-09-09",
+    "title": "4PLANET — For a Living Planet",
+    "description": "A source-aware public system for exploring how species, places, ecological relationships, action and evidence connect.",
+    "canonicalHost": "partners.4planet.org"
+  },
+  "hero": {
+    "eyebrow": "4PLANET / PARTNERS",
+    "headline": "The living world is connected. Our systems for understanding and acting on it are not.",
+    "body": "4PLANET is building a source-aware public system that connects species, places, ecological relationships and evidence — so the living world is easier to explore, understand and act for credibly.",
+    "primaryCta": "Understand the system",
+    "secondaryCta": "See what exists"
+  },
+  "problem": {
+    "label": "THE PROBLEM",
+    "headline": "More information does not automatically create more understanding.",
+    "body": "Environmental knowledge already exists across research, public databases, satellites, sensors, governments, conservation organisations and communities. The difficult part is seeing how the pieces depend on one another, what is changing, who can act, and what evidence exists after action is taken. Fragmentation makes those relationships harder to inspect.",
+    "insight": "Life works through relationships. 4PLANET treats those relationships — not isolated indicators — as the organising unit."
+  },
+  "hypothesis": {
+    "label": "THE HYPOTHESIS",
+    "headline": "Connect evidence around relationships, then keep action connected to proof.",
+    "body": "If ecological evidence is organised around relationships rather than isolated facts; if uncertainty and provenance remain visible; and if action stays linked to the actors who can actually deliver it and the evidence that follows, then understanding can become more useful without collapsing complexity into false certainty.",
+    "status": "This is a working system hypothesis. It is being tested through products, cases and real external use — not presented as a proven global outcome."
+  },
+  "system": [
+    {"id":"reality","index":"01","title":"REALITY / LIFE","question":"What is actually happening?","body":"Species, places, ecological functions, human systems and change exist before the interface."},
+    {"id":"signals","index":"02","title":"SIGNALS & SOURCES","question":"What can we observe?","body":"Research, public datasets, maps, monitoring, field evidence and other attributable sources."},
+    {"id":"understanding","index":"03","title":"UNDERSTANDING","question":"How does it connect?","body":"Relationships, dependencies, pressures, evidence scope and uncertainty are organised into something a person can follow."},
+    {"id":"decision","index":"04","title":"DECISION & ROLE","question":"What matters here, and who can act?","body":"The interface connects a problem to choices, competent actors and the limits of what is currently known."},
+    {"id":"action","index":"05","title":"ACTION","question":"What can actually be done?","body":"Qualified organisations, institutions, communities and companies retain delivery authority for the work they control."},
+    {"id":"proof","index":"06","title":"PROOF","question":"What happened after action?","body":"Funding, activity, delivery, outcome and verified impact remain different states rather than being collapsed into one claim."},
+    {"id":"learning","index":"07","title":"LEARNING","question":"What should change next?","body":"Evidence from use and delivery feeds back into better intelligence, better decisions and better next actions."}
+  ],
+  "products": [
+    {"slug":"atlas","name":"ATLAS","question":"Where is it happening?","summary":"A spatial interface for exploring the living planet in place — connecting geography to ecological context rather than treating a map as the answer.","state":"LIVE CORE PRODUCT","href":"https://4planet.org/atlas"},
+    {"slug":"species","name":"SPECIES","question":"What is this living thing, and how is it connected?","summary":"A source-aware way into a species: identity, place, dependencies, functions, pressures and the wider living system around it.","state":"LIVE CORE PRODUCT","href":"https://4planet.org/species"},
+    {"slug":"living-systems","name":"LIVING SYSTEMS","question":"What holds this place or system together?","summary":"Relationship-first ecological intelligence that connects dependencies, functions, pressures, interventions, evidence and uncertainty.","state":"LIVE CORE PRODUCT","href":"https://4planet.org/living-systems"},
+    {"slug":"impact","name":"IMPACT","question":"What can be done — and what can actually be proven afterwards?","summary":"The action and evidence seam: connecting bounded needs to competent actors, resources, delivery and proof without treating activity or money as impact.","state":"LIVE CORE PRODUCT / PROOF DISCIPLINE EVOLVING","href":"https://4planet.org/impact"}
+  ],
+  "developing": [
+    {"name":"S4PIENS / EMBLA","question":"How can living-planet intelligence help a person make a better decision?","summary":"Human-system interfaces are being developed around decisions such as food choice. They are not presented here as equally mature core products.","href":"https://4planet.org/4sapien"},
+    {"name":"4PLANET MAGAZINE / 4CULTURE_","question":"How does understanding travel through culture?","summary":"Editorial and cultural interfaces extend the system into stories, images and public attention while preserving source and corrections discipline.","href":"https://4planet.org/magazine"}
+  ],
+  "proofCases": [
+    {"slug":"orca","index":"01","name":"ORCA / BAY OF BISCAY","domain":"OCE4N_","state":"PRODUCT + METHOD PROOF","headline":"From one animal to the system around it.","body":"A working journey connects an orca to place, ecological relationships and source-aware context around the Bay of Biscay. It demonstrates product and method capability. Partner decision value, delivery and ecological outcomes remain separate proof questions.","href":"https://4planet.org/species/orca","boundary":"No ecological outcome or formal partner endorsement is inferred from the existence of the journey."},
+    {"slug":"bunnejorden","index":"02","name":"BUNNEFJORDEN / OSLOFJORD","domain":"OCE4N_","state":"FOUNDER-REVIEW REFERENCE CELL","headline":"Intervention, mechanism and measured state change — kept attributable.","body":"A bounded reference cell uses authoritative bathymetry, monitoring and a documented wastewater-outfall intervention to make system change inspectable. NIVA reports an 82% reduction in the area of anoxic bottom water immediately before deep-water renewal after the outfall was lowered. 4PLANET keeps that result scoped to the measured oxygen condition rather than calling it whole-fjord restoration.","href":"https://4planet.org/living-systems/oslofjord","boundary":"The reported oxygen-state change is not evidence of restored biodiversity or verified whole-ecosystem impact."},
+    {"slug":"amazonia","index":"03","name":"AMAZONIA","domain":"E4RTH_","state":"ECOSYSTEM TRANSFER PROOF","headline":"Can the same relationship structure survive a radically different place?","body":"Amazonia is used to test whether shared ecosystem structure can transfer across scale and geography without inventing a new truth model for every place. The purpose is reuse and inspectability, not a claim that 4PLANET has field authority in the Amazon.","href":"https://4planet.org/missions/am4zonia","boundary":"Public product context is distinct from local scientific, community and field authority."},
+    {"slug":"food","index":"04","name":"FOOD / CHOICE","domain":"S4PIENS_","state":"TECHNICAL + SEMANTIC PROOF / USER PROOF OPEN","headline":"Move from planetary relationships to one human decision.","body":"The FOOD proof explores how source-aware system intelligence can become useful at the point of choice. Current technical and semantic work is evidence of product capability; observed-user and expert validation remain separate open proof gates.","href":"https://4planet.org/4sapien/food","boundary":"No product-market fit, behaviour change or environmental outcome is claimed from the current prototype."}
+  ],
+  "partnerships": [
+    {"slug":"company","name":"COMPANIES","why":"Turn a real nature, data, product or decision problem into a bounded proof rather than a generic sustainability story.","brings":"4PLANET can bring source-aware product, relationship intelligence, interface design and an explicit proof boundary.","partner":"The company brings the real decision problem, relevant access/data, a decision owner and — for a paid pilot — an explicit commercial route.","example":"A small, time-bounded pilot around one place, asset, material flow or decision with agreed acceptance criteria.","boundary":"No endorsement, positive environmental story or bespoke agency retainer is assumed."},
+    {"slug":"foundation","name":"FOUNDATIONS & PHILANTHROPY","why":"Fund reusable public-interest intelligence, evidence methods or bounded proof where commercial markets underprovide it.","brings":"4PLANET can provide a public product layer, source/evidence architecture, transparent learning and reusable outputs.","partner":"The funder brings restricted or flexible capital appropriate to the object and may help connect qualified programme expertise.","example":"A bounded public-interest proof with explicit learning, source integrity and continue/revise/stop criteria.","boundary":"Funding does not buy scientific certainty, editorial control or stronger impact claims than evidence supports."},
+    {"slug":"science","name":"SCIENCE & DATA","why":"Make complex ecological knowledge more inspectable and useful without substituting interface design for scientific authority.","brings":"4PLANET can connect source provenance, relationship structures, spatial/product interfaces and public legibility.","partner":"Research and data organisations retain method, source and scientific authority for what they actually establish.","example":"External challenge of a relationship model, a source-linked case, or a data-to-decision method.","boundary":"4PLANET context and inference must remain distinguishable from source evidence and expert judgement."},
+    {"slug":"field","name":"FIELD & DELIVERY","why":"Connect public understanding and resources to organisations that can actually implement work in place.","brings":"4PLANET can make the need, delivery role, funding object and resulting evidence easier to follow.","partner":"Qualified field organisations retain delivery, beneficiary/community and intervention authority.","example":"A place-specific action object with a named delivery owner and a Proof Passport after work is done.","boundary":"4PLANET does not claim another organisation's field result as its own."},
+    {"slug":"public","name":"PUBLIC SECTOR","why":"Translate fragmented ecological evidence into clearer public decisions, responsibilities and learning.","brings":"4PLANET can provide inspectable decision interfaces and bounded public-intelligence proofs.","partner":"Public bodies retain statutory responsibility, procurement authority and place-based decision ownership.","example":"A bounded public-service or place decision proof with explicit source and acceptance criteria.","boundary":"No procurement, mandate or public-sector relationship is implied by this page."},
+    {"slug":"culture","name":"CULTURE & MEDIA","why":"Help living-system understanding travel through culture without reducing nature to campaign decoration.","brings":"4PLANET can combine documentary/editorial craft with source, correction and evidence discipline.","partner":"Cultural partners bring audience, craft, context or distribution under clear editorial and rights boundaries.","example":"A source-backed story, exhibition, film or public experience connected to deeper living-planet intelligence.","boundary":"Editorial independence and image/media rights remain explicit."}
+  ],
+  "capital": [
+    {"name":"FOUNDING BUILD","for":"Core institutional and product capacity","enables":"A bounded proof phase: stronger public product, deep cases, external challenge, evidence discipline and operating capacity.","proof":"Outputs, source integrity, external review and a hard scale/narrow/stop decision.","route":"Route-specific philanthropy, foundation or catalytic support."},
+    {"name":"PRODUCT & R&D","for":"Genuine technical uncertainty and reusable capability","enables":"Provenance, uncertainty, relationship methods, spatial/product infrastructure or decision-useful interfaces where real R&D questions exist.","proof":"Benchmarks, technical validation, product evidence and reusable methods.","route":"Company-eligible public R&D, research collaboration or other appropriate non-dilutive instruments."},
+    {"name":"PUBLIC-INTEREST INTELLIGENCE","for":"Open or broadly useful ecological understanding","enables":"Source-linked cases, public interfaces, methods and participation that are difficult to fund through a direct buyer alone.","proof":"Public outputs, source coverage, usefulness tests, partner-backed cases and explicit limitations.","route":"Foundation, philanthropy, public-interest or cultural funding."},
+    {"name":"COMPANY PAID PILOT","for":"One real buyer problem","enables":"A small bounded proof with a named decision owner, deliverable, timeline and acceptance criteria.","proof":"Use, decision value, acceptance, reuse and a go/iterate/stop commercial decision.","route":"Commercial pilot, commissioned intelligence or funded proof-of-concept. Payment must be explicit before it is called paid."},
+    {"name":"SCIENCE & DATA PARTNERSHIP","for":"Evidence, methods and source depth","enables":"Scientific challenge, data integration, validation or a jointly useful public method.","proof":"Attributable sources, method review, reproducibility where relevant and clear authority boundaries.","route":"Research, data, public R&D or in-kind/resource collaboration where terms fit."},
+    {"name":"CULTURE & COMMUNICATION","for":"Public understanding without evidence dilution","enables":"Editorial, documentary and cultural work connected to deeper ecological intelligence.","proof":"Published outputs, source/correction discipline, audience usefulness and rights-clean reuse.","route":"Cultural grants, editorial partnerships or commissioned work under independence boundaries."}
+  ],
+  "trust": {
+    "intro":"4PLANET is designed to make uncertainty and attribution more visible, not to make every environmental claim look certain.",
+    "states":[
+      {"name":"SOURCE","body":"What an attributable source directly establishes."},
+      {"name":"4PLANET CONTEXT","body":"How 4PLANET organises or interprets source material for the interface."},
+      {"name":"PARTNER REPORT","body":"What a delivery or expert organisation reports under its own authority."},
+      {"name":"ASSESSED OUTCOME","body":"An outcome that has been assessed against an explicit method, scope and evidence base."},
+      {"name":"VERIFIED OUTCOME","body":"A stronger state reserved for evidence that meets the applicable verification standard."}
+    ],
+    "flags":["UNKNOWN","UNCERTAIN","CONTESTED","CORRECTED","SUPERSEDED"],
+    "invariants":[
+      "PLANNED ≠ FUNDED",
+      "FUNDED ≠ DELIVERED",
+      "DELIVERED ≠ VERIFIED OUTCOME",
+      "ASSOCIATION ≠ PARTNERSHIP",
+      "PROTOTYPE ≠ PRODUCT-MARKET FIT",
+      "DATA ≠ UNDERSTANDING",
+      "MONEY ≠ IMPACT"
+    ]
+  },
+  "roadmap": [
+    {"name":"CURRENT","body":"Make the strongest public product surfaces coherent, source-aware and inspectable."},
+    {"name":"NEXT PROOF","body":"Close bounded cases with real external users, experts or delivery actors where the proof question is explicit."},
+    {"name":"NEXT CAPABILITY","body":"Build only the reusable product, data and evidence primitives those proofs reveal as necessary."},
+    {"name":"NEXT EXTERNAL VALIDATION","body":"Measure comprehension, decision usefulness, technical validity and delivery evidence without converting activity into impact claims."},
+    {"name":"NEXT ECONOMIC SIGNAL","body":"Earn a real paid, funded or otherwise valued external outcome tied to a bounded object."},
+    {"name":"SCALE CONDITION","body":"Scale what transfers. Narrow or stop what does not prove useful."}
+  ],
+  "founder": {
+    "name":"Odin Oddekalv",
+    "headline":"Founder-led, but designed to move authority towards evidence and qualified people.",
+    "body":"4PLANET was founded by Odin Oddekalv, a Norwegian entrepreneur, strategist and visual documentarian with long experience spanning environmental work, communications and venture building. Founder experience is context — not a substitute for scientific, community or field authority.",
+    "principle":"Sources remain attributable. Qualified actors retain the authority for science and delivery they actually control. Outcomes should never be claimed more strongly than the evidence permits."
+  },
+  "briefs": [
+    {"slug":"overview","name":"4PLANET OVERVIEW","audience":"General partner / first read","purpose":"A one-page mental model of the problem, hypothesis, system, four core products, proof discipline and partnership invitation."},
+    {"slug":"partner","name":"PARTNER BRIEF","audience":"Strategic partners","purpose":"A compact explanation of the system, proof cases, ways to work together, boundaries and next-step architecture."},
+    {"slug":"capital","name":"CAPITAL / FUNDER BRIEF","audience":"Foundations, philanthropy and catalytic capital","purpose":"Why capital is routed to bounded objects, what different capital types enable, how proof works and what 4PLANET refuses to overclaim."},
+    {"slug":"company","name":"COMPANY PILOT BRIEF","audience":"Commercial and innovation buyers","purpose":"How a real decision problem can become a small paid or funded pilot with explicit deliverables, acceptance criteria and reuse."},
+    {"slug":"foundation","name":"FOUNDATION BRIEF","audience":"Programme officers and foundations","purpose":"Public-interest thesis, restricted-funding logic, evidence boundaries, institutional learning and reusable public value."},
+    {"slug":"science","name":"SCIENCE & DATA BRIEF","audience":"Research and data organisations","purpose":"Source authority, methods, relationship intelligence, external challenge, data integration and the boundary between evidence and interface context."}
+  ]
+}

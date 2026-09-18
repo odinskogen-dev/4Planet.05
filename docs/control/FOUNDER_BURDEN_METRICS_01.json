@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "programme": "GIGA-IMMUNITY-01",
+  "purpose": "Measure whether the operating system removes Odin as memory, scheduler and integration bus without removing Founder judgement from one-way doors.",
+  "per_cycle": [
+    "founder_intervention_count",
+    "founder_minutes_estimated_or_measured",
+    "redispatch_requests",
+    "context_reconstruction_requests",
+    "technical_microdecisions_escalated",
+    "irreversible_decisions_escalated",
+    "visual_human_gold_judgements",
+    "safe_work_completed_without_founder"
+  ],
+  "success_direction": {
+    "founder_intervention_count": "DOWN",
+    "founder_minutes": "DOWN",
+    "redispatch_requests": "TOWARD_ZERO",
+    "context_reconstruction_requests": "TOWARD_ZERO",
+    "technical_microdecisions_escalated": "TOWARD_ZERO",
+    "irreversible_decisions_escalated": "PRESERVE_WHEN_REQUIRED",
+    "visual_human_gold_judgements": "PRESERVE_WHEN_REQUIRED",
+    "safe_work_completed_without_founder": "UP"
+  },
+  "anti_metric": "Do not reduce Founder burden by silently taking Founder/one-way-door authority."
+}

@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "programme": "GIGA-2800-REALITY-PROOF",
+  "effective_date": "2026-09-05",
+  "scenario_boundary": "GIGA 2800 is an extreme long-term infrastructure/category-standard hypothesis, not current valuation, forecast, capital ask or revenue claim.",
+  "allowed_states": [
+    "UNPROVEN",
+    "EARLY_SIGNAL",
+    "PROTOTYPE_PROOF",
+    "REAL_WORLD_PROOF",
+    "REPEATED_PROOF",
+    "STRONG_EVIDENCE"
+  ],
+  "promotion_rule": "No premise may be upgraded without an inspectable evidence pointer. Agent output, technical PASS or activity volume cannot substitute for the premise-specific evidence.",
+  "current_product_authority": {
+    "heir_branch": "king/test",
+    "baseline_sha_before_reality_proof_mutation": "80446464d94b6fed4541072296d756f978f99fd5",
+    "live_branch": "release/live-king-20260901",
+    "live_sha": "f839ffe641e1fc29f40e79a20545a99e9974ceef",
+    "physical_heir_protection": "OPEN_IMM_001"
+  },
+  "premises": [
+    {
+      "id": 1,
+      "name": "Category Standard",
+      "state": "UNPROVEN",
+      "claim": "Third parties choose 4PLANET identities, contracts, APIs, proof grammar or interfaces because they are more useful than fragmented alternatives.",
+      "evidence": [],
+      "limitations": "No third-party dependency or standard adoption has been proven.",
+      "falsifier": "Relevant external actors consistently prefer their existing fragmented systems or 4PLANET contracts fail interoperability/usefulness tests.",
+      "next_strongest_experiment": "After internal repeatability, expose one stable bounded contract to an authorised third-party pilot and measure actual use/reuse."
+    },
+    {
+      "id": 2,
+      "name": "Global Trusted Intelligence",
+      "state": "PROTOTYPE_PROOF",
+      "claim": "Shared Planet Engine truth/provenance can support inspectable multi-source intelligence without collapsing evidence states.",
+      "evidence": [
+        "HEIR 80446464d94b6fed4541072296d756f978f99fd5",
+        "Browser Product Proof run 33926002221 SUCCESS",
+        "Living Learning Loop run 33926002254 SUCCESS",
+        "ATLAS Zero Loss run 33926002238 SUCCESS"
+      ],
+      "limitations": "Current evidence proves controlled product/source behaviour, not global coverage, institutional decision quality or scientific authority.",
+      "falsifier": "Material source-state collapse, repeated unsupported claims, inability to transfer source contracts across materially different cases or real users cannot use the intelligence for decisions.",
+      "next_strongest_experiment": "Complete one independently useful Planet Proof and a materially different transfer case with measured reuse and source-quality preservation."
+    },
+    {
+      "id": 3,
+      "name": "Repeat Human Utility",
+      "state": "UNPROVEN",
+      "claim": "Embla/4SAPIEN repeatedly improves real human decisions enough that people voluntarily return.",
+      "evidence": [
+        "Embla decision-first prototype on HEIR 80446464d94b6fed4541072296d756f978f99fd5",
+        "Existing local Human Proof instrument /labs/food-user-test"
+      ],
+      "limitations": "No real participant decision record has yet established human value; automated and fixture tests do not count.",
+      "falsifier": "Real participants do not gain useful decision clarity/value, cannot understand refusals/UNKNOWN, or do not want to use the system again.",
+      "next_strongest_experiment": "Run PROOF-H01 with an actual participant, real FOOD decision and real product; capture decision effect, usefulness, trust, comprehension, UNKNOWN clarity and repeat intent."
+    },
+    {
+      "id": 4,
+      "name": "Institutional Utility",
+      "state": "UNPROVEN",
+      "claim": "Companies, governments, researchers, field actors or funders receive measurable operational/decision value from 4PLANET.",
+      "evidence": [
+        "ORCA relationship and active technical/product dialogue exist, but no institutional utility outcome has been accepted as proof"
+      ],
+      "limitations": "Relationship, interest or dialogue is not institutional value proof.",
+      "falsifier": "Institutions cannot identify a decision/job made materially better or refuse to adopt/pay/use after bounded pilots.",
+      "next_strongest_experiment": "Convert one existing ORCA/Planet/Action case into a bounded institutional job with an observable before/after outcome."
+    },
+    {
+      "id": 5,
+      "name": "Action / Allocation Throughput",
+      "state": "EARLY_SIGNAL",
+      "claim": "4PLANET can connect a legitimate need to expert action, suitable capital, delivery proof and learning without collapsing states.",
+      "evidence": [
+        "Gmail message 1a06d1e2ac3b87dc: ORCA confirms 10-12 Portsmouth-Santander surveys and 40-48 survey days in 2026",
+        "Gmail message 1a03347c8595d248: ORCA identifies reportable delivery metrics; sponsorship figures explicitly placeholders",
+        "Prepared unsent ORCA clarification draft underlying message 1a06e884af72c9bb"
+      ],
+      "limitations": "Current actual funding terms, exact funded quantity, commitment, payment and completed funded delivery remain unresolved. Survey delivery is not ecological outcome.",
+      "falsifier": "No defensible funding unit can be defined, no suitable capital path emerges, or delivery/proof cannot be independently inspected.",
+      "next_strongest_experiment": "Founder-released clarification to ORCA, then bind current terms to one exact Action Contract and qualified capital path."
+    },
+    {
+      "id": 6,
+      "name": "Proof Moat",
+      "state": "PROTOTYPE_PROOF",
+      "claim": "4PLANET truth/provenance/state discipline makes claims more inspectable and safer than vague delivery/impact reporting.",
+      "evidence": [
+        "Gold contract on HEIR separates UNKNOWN and unsupported rankings",
+        "Error-to-Immunity register IMM-002 records browser-detected Oslofjord alias loss and forward restoration",
+        "State law preserves RECOMMENDED != CHOSEN != EXECUTED != DELIVERED != OUTCOME != VERIFIED IMPACT"
+      ],
+      "limitations": "Internal control quality is not yet market trust or a defensible external moat.",
+      "falsifier": "External users do not value the provenance/state distinction, or controls repeatedly allow unsupported claims into accepted outputs.",
+      "next_strongest_experiment": "Use one real Action Contract and one real human decision record to test whether proof-state visibility materially improves trust/decision quality."
+    },
+    {
+      "id": 7,
+      "name": "Compounding Infrastructure",
+      "state": "EARLY_SIGNAL",
+      "claim": "New capabilities and learnings improve multiple worlds and make the next accepted proof cheaper/faster without proportional regression cost.",
+      "evidence": [
+        "Embla transfer reused existing FOOD/PICK truth infrastructure rather than restarting",
+        "Oslofjord alias failure produced a reusable preservation rule and Error-to-Immunity record",
+        "Shared exact-SHA gates validate multiple product surfaces on one HEIR"
+      ],
+      "limitations": "Reuse exists, but transfer cost reduction has not yet been quantified against a comparable second proof.",
+      "falsifier": "Proof 02 requires roughly the same bespoke effort as Proof 01 or shared primitives create equal/greater regression cost.",
+      "next_strongest_experiment": "Measure reference-to-transfer cost and reuse on one materially different Planet/System proof."
+    },
+    {
+      "id": 8,
+      "name": "AI-native Foundry Economics",
+      "state": "EARLY_SIGNAL",
+      "claim": "Factory/SUPERBRAIN can reduce time, founder burden and marginal production cost while maintaining or improving quality/reliability.",
+      "evidence": [
+        "Current AXE execution rehydrated authority, reconciled stale donor value, used deterministic CI falsifiers and propagated one regression into immunity",
+        "Exact-SHA HEIR 80446464d94b6fed4541072296d756f978f99fd5 passed all major product falsifiers before the next mutation"
+      ],
+      "limitations": "No robust before/after cost baseline or repeated production economics is established.",
+      "falsifier": "Automation increases errors, correction cycles or Founder intervention faster than accepted proof throughput improves.",
+      "next_strongest_experiment": "Record time-to-proof, first-pass rate, correction cycles, reused primitives and Founder actions for this Reality Proof mutation and compare against the next transfer."
+    },
+    {
+      "id": 9,
+      "name": "Global Replication",
+      "state": "EARLY_SIGNAL",
+      "claim": "Shared architecture can transfer across species, places and human systems with materially less work than the first case.",
+      "evidence": [
+        "Oslofjord Planet Proof infrastructure exists on HEIR",
+        "Great Barrier Reef is seeded as a materially different transfer pack; Amazonia remains another transfer class"
+      ],
+      "limitations": "Seeded transfer is not measured replication and no accepted transfer ratio is established.",
+      "falsifier": "Materially different cases require bespoke rebuilds or lose truth/quality when reused.",
+      "next_strongest_experiment": "Complete one materially different transfer and quantify new vs reused primitives, sources, tests, defects, time and Founder burden."
+    },
+    {
+      "id": 10,
+      "name": "Durable Economic Capture",
+      "state": "UNPROVEN",
+      "claim": "4PLANET can retain a defensible share of the value it creates through repeatable products/contracts/intelligence/platform economics without damaging trust or mission.",
+      "evidence": [
+        "ORCA has discussed sponsorship structure, but stated presented amounts were placeholders",
+        "Human Proof instrument records payment intent as research signal only"
+      ],
+      "limitations": "No current proposal, commitment, contract/award, revenue or cash from the GIGA proof loops is established.",
+      "falsifier": "Users/institutions value the system but will not pay/fund, capture mechanisms damage trust, or economics require disproportionate founder/service labour.",
+      "next_strongest_experiment": "Generate one bounded source-backed economic proposition from accepted proof and advance it through TARGET -> INTEREST -> PROPOSAL -> COMMITMENT -> CONTRACT/AWARD -> CASH without collapsing states."
+    }
+  ]
+}

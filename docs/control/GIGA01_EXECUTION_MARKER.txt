@@ -1,0 +1,3 @@
+ACTIVE
+Founder order received and control/immunity execution materialised on current HEIR.
+See GitHub issue #273 and GIGA01 control pack.
