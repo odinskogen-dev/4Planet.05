@@ -58,9 +58,10 @@ function readConsent(): ConsentState {
 function productArea(pathname: string, hostname: string): string {
   const host = canonicalHost(hostname);
   if (host === "4brands.org" || pathname.startsWith("/4brand")) return "4brands";
-  if (host === "s4piens.com" || pathname.startsWith("/4sapien") || pathname.startsWith("/s4piens/")) return "4sapien";
+  if (pathname.startsWith("/4sapien")) return "4sapien";
+  if (host === "s4piens.com" || pathname === "/domains/s4piens" || pathname.startsWith("/s4piens/")) return "s4piens";
   if (host === "4planetmarket.com" || pathname === "/market" || pathname.startsWith("/market/")) return "market";
-  if (host === "cre4tor.com" || host === "cre4tor.4planet.org" || pathname.startsWith("/cre4tor") || pathname.startsWith("/creator/")) return "creator";
+  if (host === "cre4tor.com" || host === "cre4tors.com" || host === "cre4tor.4planet.org" || pathname.startsWith("/cre4tor") || pathname.startsWith("/creator/")) return "creator";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
