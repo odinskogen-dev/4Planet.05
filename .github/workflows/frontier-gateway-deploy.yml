@@ -1,0 +1,120 @@
+name: Deploy Frontier Gateway Route
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/frontier-gateway-deploy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CF_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+      APP_ORIGIN: https://life-os-canvas-6g481v.v2.appdeploy.ai/
+      FRONTIER_VERSION: "1789755076897"
+    steps:
+      - name: Patch only Frontier routes into current control worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "${CF_KEY:-}" ] || { echo "Cloudflare credential missing"; exit 1; }
+          EMAIL="${CF_EMAIL:-odin.skogen@gmail.com}"
+          cf_get() {
+            local url="$1" out="$2" code
+            code=$(curl -sS -o "$out" -w '%{http_code}' -H "Authorization: Bearer $CF_KEY" "$url" || true)
+            if [ "$code" = "400" ] || [ "$code" = "401" ] || [ "$code" = "403" ]; then
+              code=$(curl -sS -o "$out" -w '%{http_code}' -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $CF_KEY" "$url")
+            fi
+            [ "$code" = "200" ] || { echo "Cloudflare GET failed HTTP $code"; cat "$out"; exit 1; }
+          }
+          cf_put_module() {
+            local url="$1" file="$2" out="$3" code
+            code=$(curl -sS -o "$out" -w '%{http_code}' -X PUT               -H "Authorization: Bearer $CF_KEY"               -F 'metadata={"main_module":"four-state-worker.js"};type=application/json'               -F "four-state-worker.js=@$file;type=application/javascript+module"               "$url" || true)
+            if [ "$code" = "400" ] || [ "$code" = "401" ] || [ "$code" = "403" ]; then
+              code=$(curl -sS -o "$out" -w '%{http_code}' -X PUT                 -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $CF_KEY"                 -F 'metadata={"main_module":"four-state-worker.js"};type=application/json'                 -F "four-state-worker.js=@$file;type=application/javascript+module"                 "$url")
+            fi
+            echo "upload_http=$code"
+            python - "$out" <<'PY'
+          import json,sys
+          p=sys.argv[1]
+          data=json.load(open(p))
+          if not data.get("success"):
+              raise SystemExit("Cloudflare upload failed: "+str(data.get("errors")))
+          print("worker_upload_success=true")
+          PY
+          }
+          cf_get "https://api.cloudflare.com/client/v4/zones?name=4planet.org" zone.json
+          python - <<'PY'
+          import json
+          z=json.load(open("zone.json"))["result"][0]
+          open("ids.env","w").write("ACCOUNT_ID="+z["account"]["id"]+"\n")
+          PY
+          . ids.env
+          SCRIPT_URL="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts/4planet-four-state-control-v1"
+          cf_get "$SCRIPT_URL" worker.multipart
+          python - <<'PY'
+          from pathlib import Path
+          import re, os
+          raw=Path("worker.multipart").read_text(errors="replace")
+          m=re.search(r'Content-Disposition:\s*form-data;\s*name="four-state-worker\.js"\s*\r?\n(?:Content-Type:[^\n]*\r?\n)?\r?\n([\s\S]*?)\r?\n--[0-9a-f-]+(?:--)?\s*$', raw)
+          if not m:
+              raise SystemExit("Could not extract current worker module safely")
+          src=m.group(1)
+          marker="AXE_FRONTIER_GATEWAY_V2"
+          origin=os.environ["APP_ORIGIN"]
+          route=(
+              "\n  // "+marker+" — isolated Frontier mount; preserve every existing control-plane route.\n"
+              "  if (url.hostname === CONFIG.reviewHost) {\n"
+              "    const frontierPath = normalise(url.pathname);\n"
+              "    if (frontierPath === \"/universalboard\" || frontierPath.startsWith(\"/universalboard/\")) {\n"
+              "      const suffix = frontierPath.slice(\"/universalboard\".length);\n"
+              "      const target = new URL(\"/frontier\" + suffix + url.search, url.origin);\n"
+              "      return new Response(null, { status: 308, headers: { location: target.toString(), \"cache-control\": \"no-store\" } });\n"
+              "    }\n"
+              "    if (frontierPath === \"/frontier\" || frontierPath.startsWith(\"/frontier/\")) {\n"
+              "      const frontierOrigin = "+repr(origin)+";\n"
+              "      return page(\"<iframe src=\\\"\" + esc(frontierOrigin) + \"\\\" title=\\\"4PLANET FRONTIER\\\"></iframe>\", \"4PLANET FRONTIER\");\n"
+              "    }\n"
+              "  }\n"
+          )
+          anchor='  const url = new URL(request.url);\n'
+          if marker in src:
+              src=re.sub(r'\n  // AXE_FRONTIER_GATEWAY_V2[\s\S]*?\n  if \(url\.hostname === CONFIG\.archiveHost\)', route+'  if (url.hostname === CONFIG.archiveHost)', src, count=1)
+          else:
+              if anchor not in src: raise SystemExit("Worker fetch anchor missing")
+              src=src.replace(anchor,anchor+route,1)
+          Path("patched.js").write_text(src)
+          print("frontier_patch_present="+str(marker in src).lower())
+          PY
+          cf_put_module "$SCRIPT_URL" patched.js upload.json
+
+      - name: Verify external routes and root isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            U_HEADERS=$(mktemp)
+            F_HEADERS=$(mktemp)
+            F_BODY=$(mktemp)
+            R_BODY=$(mktemp)
+            curl -sS -D "$U_HEADERS" -o /dev/null https://test.4planet.org/universalboard || true
+            curl -sS -D "$F_HEADERS" -o "$F_BODY" https://test.4planet.org/frontier || true
+            curl -sS -o "$R_BODY" https://test.4planet.org/ || true
+            if grep -Eq '^HTTP/[^ ]+ 308' "$U_HEADERS"               && grep -qi '^location: https://test.4planet.org/frontier' "$U_HEADERS"               && grep -q '4PLANET FRONTIER' "$F_BODY"               && grep -q "$APP_ORIGIN" "$F_BODY"               && ! grep -q "$APP_ORIGIN" "$R_BODY"; then
+              echo "frontier_gateway_verified=true"
+              echo "universalboard_redirect=308"
+              echo "frontier_http=$(head -1 "$F_HEADERS" | tr -d '\r')"
+              exit 0
+            fi
+            echo "verification attempt $attempt not converged yet"
+            sleep 3
+          done
+          echo "Gateway verification failed"
+          echo "--- universalboard headers ---"; cat "$U_HEADERS"
+          echo "--- frontier body ---"; head -c 600 "$F_BODY"
+          exit 1
