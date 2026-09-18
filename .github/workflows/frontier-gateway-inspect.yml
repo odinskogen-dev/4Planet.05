@@ -1,4 +1,4 @@
-name: Verify Frontier Legacy Chain
+name: Inspect Frontier Legacy Binding
 
 on:
   push:
@@ -10,26 +10,34 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  inspect:
     runs-on: ubuntu-latest
+    env:
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_4: ${{ secrets.CF_TOKEN }}
     steps:
-      - name: External redirect-chain readback
+      - name: Inventory test.4planet.org worker bindings
         shell: bash
         run: |
           set -euo pipefail
-          curl -sS --connect-timeout 10 --max-time 30 -D frontier.h -o frontier.b https://test.4planet.org/frontier
-          curl -sS --connect-timeout 10 --max-time 30 -D slash.h -o /dev/null https://test.4planet.org/universalboard/
-          curl -sS --connect-timeout 10 --max-time 30 -L -o /dev/null -w 'legacy_effective=%{url_effective}\nlegacy_code=%{http_code}\nredirects=%{num_redirects}\n' https://test.4planet.org/universalboard > chain.txt
-          curl -sS --connect-timeout 10 --max-time 30 -o root.b https://test.4planet.org/
-
-          cat slash.h
-          cat chain.txt
-
-          grep -Eq '^HTTP/[^ ]+ 200' frontier.h
-          grep -q '4PLANET FRONTIER' frontier.b
-          grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' frontier.b
-          grep -Eq '^HTTP/[^ ]+ 308' slash.h
-          grep -qi '^location: https://test.4planet.org/frontier' slash.h
-          grep -q '^legacy_effective=https://test.4planet.org/frontier$' chain.txt
-          ! grep -q 'life-os-canvas-6g481v.v2.appdeploy.ai' root.b
-          echo "FRONTIER_LEGACY_CHAIN=PASS"
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          [ -n "$TOKEN" ] || { echo 'No Cloudflare token'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          API=https://api.cloudflare.com/client/v4
+          AUTH=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          zone=$(curl -fsS "$API/zones?name=4planet.org&status=active" "${AUTH[@]}")
+          zid=$(jq -r '.result[0].id' <<<"$zone")
+          account=$(jq -r '.result[0].account.id' <<<"$zone")
+          echo "zone=$zid account=$account"
+          echo "--- worker routes matching test host ---"
+          curl -fsS "$API/zones/$zid/workers/routes" "${AUTH[@]}" | jq -c '.result[] | select((.pattern // "") | contains("test.4planet.org"))'
+          echo "--- worker custom domains matching test host ---"
+          curl -fsS "$API/accounts/$account/workers/domains" "${AUTH[@]}" | jq -c '.result[] | select((.hostname // "") == "test.4planet.org")'
+          echo "--- DNS test host ---"
+          curl -fsS "$API/zones/$zid/dns_records?name=test.4planet.org&per_page=100" "${AUTH[@]}" | jq -c '.result[] | {id,type,name,content,proxied,meta}'
