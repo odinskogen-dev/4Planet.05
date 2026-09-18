@@ -5,7 +5,7 @@
 .fs-id-name{font-family:var(--body,'DM Sans',sans-serif);font-weight:600;white-space:nowrap}
 .fs-id-sub{font-family:var(--mono,'Fragment Mono',monospace);font-size:9px;letter-spacing:.08em;color:var(--faint)}
 .fs-service-state{margin-top:10px;font:11px var(--mono,'Fragment Mono',monospace);color:var(--faint)}
-@media(min-width:900px){body.w-embla main.content{padding-bottom:210px}body.w-embla .emblabar{bottom:clamp(54px,8vh,96px)}}
+@media(min-width:900px){body.w-embla main.content{padding-bottom:250px}body.w-embla .emblabar{bottom:clamp(120px,14vh,170px)}}
 @media(min-width:820px){
  body.w-food #root>div>div:first-child{max-width:1180px!important;padding-left:clamp(28px,4vw,64px)!important;padding-right:clamp(28px,4vw,64px)!important}
  body.w-food #root>div>nav>div{max-width:1180px!important;padding-left:clamp(18px,3vw,38px);padding-right:clamp(18px,3vw,38px)}
@@ -38,3 +38,9 @@ html[data-theme="dark"] body.w-embla .askbox{background:var(--panel)!important}
 .fs-note-actions{display:flex;gap:10px;align-items:center}
 .fs-note-edit{width:100%;min-height:86px;resize:vertical;border:1px solid var(--line2);border-radius:12px;background:var(--fill,var(--paper));color:var(--ink);padding:10px 11px;outline:none;font:14px/1.5 var(--body,'DM Sans',sans-serif)}
 .fs-note-edit:focus{border-color:var(--embla)}
+
+.fs-global-appnav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:85;display:flex;align-items:center;gap:22px;font:12px var(--body,'DM Sans',sans-serif);white-space:nowrap}
+.fs-global-appnav a{color:var(--faint);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;transition:.16s}
+.fs-global-appnav a:hover{color:var(--ink)}
+.fs-global-appnav a.active{color:var(--ink);border-bottom-color:var(--wc,var(--embla,#2e2eff))}
+@media(max-width:899px){.fs-global-appnav{display:none}}
