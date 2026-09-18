@@ -55,14 +55,36 @@ jobs:
           CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-sandbox-probe-control-token")"
           echo "::add-mask::$CONTROL_TOKEN"
 
-          HTTP_STATUS="$(curl --silent --show-error             -o "$RUNNER_TEMP/sandbox-probe.json"             -w '%{http_code}'             -X POST             -H "x-factory-control: $CONTROL_TOKEN"             -H "content-type: application/json"             "$BASE_URL/__factory/capabilities/sandbox/probe")"
+          # A newly deployed Container can report "runtime updating" briefly.
+          # Retry safely; each runtime attempt is separately budgeted under 25h.
+          sleep 45
+          READY=false
+          for attempt in $(seq 1 6); do
+            HTTP_STATUS="$(curl --silent --show-error \
+              -o "$RUNNER_TEMP/sandbox-probe.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "x-factory-control: $CONTROL_TOKEN" \
+              -H "content-type: application/json" \
+              "$BASE_URL/__factory/capabilities/sandbox/probe" || true)"
 
-          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
-            echo "Sandbox probe failed with HTTP $HTTP_STATUS"
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]] \
+              && jq -e '.ok == true and .usedMinutes <= 20 and .reservation.monthlyHardCapMinutes == 1500' \
+                "$RUNNER_TEMP/sandbox-probe.json" >/dev/null 2>&1; then
+              READY=true
+              break
+            fi
+
+            echo "Sandbox probe not ready yet ($attempt/6), HTTP ${HTTP_STATUS:-000}."
             jq -c '{ok,error,runId,reservation,skipped}' "$RUNNER_TEMP/sandbox-probe.json" 2>/dev/null || true
+            sleep 30
+          done
+
+          if [[ "$READY" != "true" ]]; then
+            echo "Sandbox probe did not become ready in bounded retry window."
             exit 1
           fi
 
-          jq -e '.ok == true and .usedMinutes <= 20 and .reservation.monthlyHardCapMinutes == 1500'             "$RUNNER_TEMP/sandbox-probe.json" >/dev/null
-          jq -c '{ok,runId,usedMinutes,exitCode,reservation:{monthlyHardCapMinutes:.reservation.monthlyHardCapMinutes,reservedMinutes:.reservation.reservedMinutes}}'             "$RUNNER_TEMP/sandbox-probe.json"
+          jq -c '{ok,runId,usedMinutes,exitCode,reservation:{monthlyHardCapMinutes:.reservation.monthlyHardCapMinutes,reservedMinutes:.reservation.reservedMinutes}}' \
+            "$RUNNER_TEMP/sandbox-probe.json"
           echo "SANDBOX_CONNECTIVITY_PROBE=PASS"
