@@ -9,21 +9,23 @@ export interface SandboxPolicy {
   allowedCommands: string[];
   dependencyMutation: "LOCKFILE_ONLY" | "ALLOWLIST_REVIEW_REQUIRED";
   maxMinutes: number;
+  monthlyHardCapMinutes: number;
   paidCapabilityFounderApproved: boolean;
 }
 
 export const DEFAULT_SANDBOX_POLICY: SandboxPolicy = Object.freeze({
-  enabled: false,
+  enabled: true,
   provider: "CLOUDFLARE_SANDBOX",
   transport: "RPC",
-  internetEnabled: false,
+  internetEnabled: true,
   allowedHosts: ["registry.npmjs.org", "api.github.com"],
   secretsInsideSandbox: [],
   trustedOutboundCredentialInjection: true,
   allowedCommands: ["npm ci", "npm run typecheck", "npm run build", "npm test", "npm run test:smoke"],
   dependencyMutation: "LOCKFILE_ONLY",
   maxMinutes: 20,
-  paidCapabilityFounderApproved: false,
+  monthlyHardCapMinutes: 1500,
+  paidCapabilityFounderApproved: true,
 });
 
 export interface SandboxRequest {
@@ -67,5 +69,6 @@ export function productionSandboxReady(policy: SandboxPolicy): { ready: boolean;
   if (!policy.trustedOutboundCredentialInjection) missing.push("TRUSTED_OUTBOUND_HANDLER");
   if (policy.allowedHosts.length === 0) missing.push("EGRESS_ALLOWLIST");
   if (policy.maxMinutes <= 0) missing.push("SANDBOX_TIME_BUDGET");
+  if (policy.monthlyHardCapMinutes !== 1500) missing.push("SANDBOX_MONTHLY_HARD_CAP_25H");
   return { ready: missing.length === 0, missing };
 }

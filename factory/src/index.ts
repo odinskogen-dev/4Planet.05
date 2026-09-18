@@ -131,11 +131,119 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         bound_at TEXT NOT NULL
       )
     `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS sandbox_runs (
+        run_id TEXT PRIMARY KEY,
+        utc_month TEXT NOT NULL,
+        reserved_minutes INTEGER NOT NULL,
+        used_minutes INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        finished_at TEXT
+      )
+    `;
 
     if (!this.state.hourlyScheduleId) {
       const { id } = await this.schedule("0 * * * *", "runHour", {});
       this.setState({ ...this.state, hourlyScheduleId: id });
     }
+  }
+
+  @callable()
+  reserveSandboxRun(runId: string, requestedMinutes: number) {
+    const cleanRunId = runId?.trim() ?? "";
+    if (!/^[a-zA-Z0-9._:-]{8,180}$/.test(cleanRunId)) throw new Error("SANDBOX_RUN_ID_INVALID");
+    if (!Number.isInteger(requestedMinutes) || requestedMinutes < 1 || requestedMinutes > 20) {
+      throw new Error("SANDBOX_JOB_BUDGET_INVALID");
+    }
+    const nowIso = new Date().toISOString();
+    const utcMonth = nowIso.slice(0, 7);
+    const existing = this.sql<{ run_id: string; utc_month: string; reserved_minutes: number; used_minutes: number; status: string }>`
+      SELECT run_id, utc_month, reserved_minutes, used_minutes, status
+      FROM sandbox_runs WHERE run_id = ${cleanRunId}
+    `[0];
+    if (existing) {
+      return {
+        allowed: existing.status === "ACTIVE",
+        idempotent: true,
+        runId: existing.run_id,
+        utcMonth: existing.utc_month,
+        reservedMinutes: Number(existing.reserved_minutes),
+        usedMinutes: Number(existing.used_minutes),
+        status: existing.status,
+        monthlyHardCapMinutes: 1500,
+      };
+    }
+    const usage = this.sql<{ committed: number }>`
+      SELECT COALESCE(SUM(CASE WHEN status = 'ACTIVE' THEN reserved_minutes ELSE used_minutes END), 0) AS committed
+      FROM sandbox_runs WHERE utc_month = ${utcMonth}
+    `[0];
+    const committed = Number(usage?.committed ?? 0);
+    if (committed + requestedMinutes > 1500) {
+      return {
+        allowed: false,
+        idempotent: false,
+        runId: cleanRunId,
+        utcMonth,
+        committedMinutes: committed,
+        requestedMinutes,
+        monthlyHardCapMinutes: 1500,
+        reason: "SANDBOX_25H_MONTHLY_HARD_CAP",
+      };
+    }
+    this.sql`
+      INSERT INTO sandbox_runs (run_id, utc_month, reserved_minutes, used_minutes, status, created_at)
+      VALUES (${cleanRunId}, ${utcMonth}, ${requestedMinutes}, 0, 'ACTIVE', ${nowIso})
+    `;
+    return {
+      allowed: true,
+      idempotent: false,
+      runId: cleanRunId,
+      utcMonth,
+      committedMinutes: committed + requestedMinutes,
+      reservedMinutes: requestedMinutes,
+      monthlyHardCapMinutes: 1500,
+    };
+  }
+
+  @callable()
+  finalizeSandboxRun(runId: string, usedMinutes: number, status: "COMPLETED" | "FAILED") {
+    const cleanRunId = runId?.trim() ?? "";
+    const row = this.sql<{ reserved_minutes: number; status: string }>`
+      SELECT reserved_minutes, status FROM sandbox_runs WHERE run_id = ${cleanRunId}
+    `[0];
+    if (!row) throw new Error("SANDBOX_RUN_UNKNOWN");
+    if (row.status !== "ACTIVE") return { runId: cleanRunId, status: row.status, idempotent: true };
+    const boundedUsed = Math.max(1, Math.min(Number(row.reserved_minutes), Math.ceil(usedMinutes)));
+    const finishedAt = new Date().toISOString();
+    this.sql`
+      UPDATE sandbox_runs
+      SET used_minutes = ${boundedUsed}, status = ${status}, finished_at = ${finishedAt}
+      WHERE run_id = ${cleanRunId}
+    `;
+    return { runId: cleanRunId, status, usedMinutes: boundedUsed, finishedAt };
+  }
+
+  @callable()
+  getSandboxBudgetStatus() {
+    const utcMonth = new Date().toISOString().slice(0, 7);
+    const usage = this.sql<{ committed: number; used: number; runs: number }>`
+      SELECT
+        COALESCE(SUM(CASE WHEN status = 'ACTIVE' THEN reserved_minutes ELSE used_minutes END), 0) AS committed,
+        COALESCE(SUM(used_minutes), 0) AS used,
+        COUNT(*) AS runs
+      FROM sandbox_runs WHERE utc_month = ${utcMonth}
+    `[0];
+    return {
+      utcMonth,
+      committedMinutes: Number(usage?.committed ?? 0),
+      usedMinutes: Number(usage?.used ?? 0),
+      runs: Number(usage?.runs ?? 0),
+      monthlyHardCapMinutes: 1500,
+      remainingMinutes: Math.max(0, 1500 - Number(usage?.committed ?? 0)),
+      maxJobMinutes: 20,
+      maxConcurrentSandboxes: 1,
+    };
   }
 
   @callable()

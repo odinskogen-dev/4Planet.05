@@ -3,9 +3,13 @@
   "name": "4planet-production-factory-v01-shadow",
   "main": "src/capabilityRuntimeEntrypoint.ts",
   "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "vars": {
-    "FACTORY_AI_GATEWAY_ID": "4planet-factory"
+    "FACTORY_AI_GATEWAY_ID": "4planet-factory",
+    "SANDBOX_TRANSPORT": "rpc",
+    "COMMAND_TIMEOUT_MS": "1200000"
   },
   "observability": {
     "enabled": true,
@@ -19,7 +23,9 @@
     }
   },
   "triggers": {
-    "crons": ["0 * * * *"]
+    "crons": [
+      "0 * * * *"
+    ]
   },
   "ai": {
     "binding": "AI"
@@ -33,6 +39,10 @@
       {
         "name": "PRODUCTION_FACTORY",
         "class_name": "ProductionFactoryAgent"
+      },
+      {
+        "name": "SANDBOX",
+        "class_name": "Sandbox"
       }
     ]
   },
@@ -65,7 +75,23 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["ProductionFactoryAgent"]
+      "new_sqlite_classes": [
+        "ProductionFactoryAgent"
+      ]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": [
+        "Sandbox"
+      ]
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./Dockerfile",
+      "instance_type": "lite",
+      "max_instances": 1
     }
   ]
 }

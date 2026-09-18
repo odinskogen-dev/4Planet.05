@@ -1,3 +1,6 @@
+import { getSandbox } from "@cloudflare/sandbox";
+import { getAgentByName } from "agents";
+export { Sandbox } from "@cloudflare/sandbox";
 import portfolioRuntime from "./portfolioRuntimeEntrypoint";
 import {
   type CapabilityRuntimeEnv,
@@ -26,6 +29,56 @@ interface RuntimeDelegate {
 
 const baseRuntime = portfolioRuntime as RuntimeDelegate;
 const MAX_CONTROL_BODY_BYTES = 64_000;
+const FACTORY_AGENT_NAME = "shadow-primary";
+const FACTORY_REPOSITORY = "https://github.com/odinskogen-dev/4Planet.05";
+const SHA40 = /^[0-9a-f]{40}$/i;
+
+async function runSandboxFactoryCheck(env: CapabilityControlEnv, reason: "PROBE" | "DAILY") {
+  const buildSha = env.FACTORY_BUILD_SHA?.trim().toLowerCase() ?? "";
+  if (!SHA40.test(buildSha)) throw new Error("FACTORY_BUILD_SHA_MISSING_OR_INVALID");
+  const day = new Date().toISOString().slice(0, 10);
+  const runId = `sandbox-factory-${reason.toLowerCase()}-${day}-${buildSha.slice(0, 12)}`;
+  const getByName: any = getAgentByName;
+  const factory: any = await getByName((env as any).PRODUCTION_FACTORY, FACTORY_AGENT_NAME);
+  const reservation = await factory.reserveSandboxRun(runId, 20);
+  if (!reservation?.allowed) return { ok: false, runId, reservation, skipped: true };
+
+  const binding = (env as any).SANDBOX;
+  if (!binding) throw new Error("CLOUDFLARE_SANDBOX_BINDING_MISSING");
+  const sandbox = getSandbox(binding, runId);
+  const started = Date.now();
+  let finalised = false;
+  try {
+    const command = [
+      "rm -rf /workspace/4planet",
+      `git clone --filter=blob:none ${FACTORY_REPOSITORY} /workspace/4planet`,
+      `cd /workspace/4planet && git checkout --detach ${buildSha}`,
+      "cd /workspace/4planet/factory && npm install --ignore-scripts",
+      "cd /workspace/4planet/factory && npm run typecheck",
+      "cd /workspace/4planet/factory && npm test",
+    ].join(" && ");
+    const result = await sandbox.exec(command, { timeout: 18 * 60 * 1000 });
+    const usedMinutes = Math.max(1, Math.min(20, Math.ceil((Date.now() - started) / 60_000)));
+    await factory.finalizeSandboxRun(runId, usedMinutes, result.success ? "COMPLETED" : "FAILED");
+    finalised = true;
+    return {
+      ok: result.success,
+      runId,
+      buildSha,
+      usedMinutes,
+      exitCode: result.exitCode,
+      stdout: result.stdout?.slice(-8_000) ?? "",
+      stderr: result.stderr?.slice(-8_000) ?? "",
+      reservation,
+    };
+  } catch (error) {
+    const usedMinutes = Math.max(1, Math.min(20, Math.ceil((Date.now() - started) / 60_000)));
+    if (!finalised) await factory.finalizeSandboxRun(runId, usedMinutes, "FAILED").catch(() => undefined);
+    throw error;
+  } finally {
+    await sandbox.destroy().catch(() => undefined);
+  }
+}
 
 function authorised(request: Request, env: CapabilityControlEnv): boolean {
   const expected = env.FACTORY_CONTROL_TOKEN?.trim();
@@ -141,6 +194,11 @@ async function capabilityFetch(request: Request, env: CapabilityControlEnv): Pro
       return Response.json({ ok: true, ...result });
     }
 
+    if (request.method === "POST" && url.pathname === "/__factory/capabilities/sandbox/probe") {
+      const result = await runSandboxFactoryCheck(env, "PROBE");
+      return Response.json(result, { status: result.ok ? 200 : 409 });
+    }
+
     if (request.method === "POST" && url.pathname === "/__factory/capabilities/ai-gateway/probe") {
       if (!founderReleased(request)) return releaseFailure();
       const result = await runAiGatewayProbe(env);
@@ -175,10 +233,18 @@ async function scheduledWake(
     });
     const response = await baseRuntime.fetch(request, env, ctx);
     const body = await response.text();
+    const scheduledDate = new Date(controller.scheduledTime);
+    const sandboxDaily = scheduledDate.getUTCHours() === 2
+      ? await runSandboxFactoryCheck(env, "DAILY").catch((error) => ({
+          ok: false,
+          error: error instanceof Error ? error.message : "SANDBOX_DAILY_CHECK_FAILED",
+        }))
+      : null;
     const output = {
       ok: response.ok,
       status: response.status,
       body: body.slice(0, 4_000),
+      sandboxDaily,
     };
     console.log("FACTORY_SCHEDULED_WAKE", JSON.stringify({ cron: controller.cron, startedAt, ...output }));
     await emitLangfuseSpan(env, {
