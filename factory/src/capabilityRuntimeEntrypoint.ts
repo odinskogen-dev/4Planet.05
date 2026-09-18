@@ -186,15 +186,18 @@ async function capabilityFetch(request: Request, env: CapabilityControlEnv): Pro
       return Response.json({ ok: true, ...result });
     }
 
-    if (request.method === "POST" && url.pathname === "/__factory/capabilities/openai-agent") {
+    if (
+      request.method === "POST"
+      && (url.pathname === "/__factory/capabilities/openai-agent" || url.pathname === "/__factory/capabilities/openai-responses")
+    ) {
       if (!founderReleased(request)) return releaseFailure();
       const body = await boundedJsonBody(request);
-      if (typeof body.input !== "string") throw new Error("OPENAI_AGENT_INPUT_INVALID");
+      if (typeof body.input !== "string") throw new Error("OPENAI_RESPONSES_INPUT_INVALID");
       const result = await createOpenAIAgentSession(env, body.input);
       await emitLangfuseSpan(env, {
-        name: "4planet.factory.openai_agent_session",
+        name: "4planet.factory.openai_responses",
         input: { role: "SPECIALIST_MAKER", input: body.input.slice(0, 2_000) },
-        output: { created: true, judge: "SEPARATE_REQUIRED" },
+        output: { executed: true, api: "RESPONSES", judge: "SEPARATE_REQUIRED" },
       }).catch(() => undefined);
       return Response.json({ ok: true, ...result });
     }
