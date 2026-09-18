@@ -34,3 +34,7 @@ html[data-theme="dark"] body.w-embla .sheet,
 html[data-theme="dark"] body.w-embla .type,
 html[data-theme="dark"] body.w-embla .composer,
 html[data-theme="dark"] body.w-embla .askbox{background:var(--panel)!important}
+
+.fs-note-actions{display:flex;gap:10px;align-items:center}
+.fs-note-edit{width:100%;min-height:86px;resize:vertical;border:1px solid var(--line2);border-radius:12px;background:var(--fill,var(--paper));color:var(--ink);padding:10px 11px;outline:none;font:14px/1.5 var(--body,'DM Sans',sans-serif)}
+.fs-note-edit:focus{border-color:var(--embla)}
