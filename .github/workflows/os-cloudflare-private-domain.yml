@@ -1,0 +1,86 @@
+name: 4PLANET OS — isolated locked hostname via existing Cloudflare token
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-cloudflare-private-domain.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: os-private-domain
+  cancel-in-progress: false
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    env:
+      CF_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate fail-closed Worker, exact hostname and absence of existing OS ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ops/os-private-domain-gate/src/index.js
+          grep -Fq '"pattern": "os.4planet.org"' ops/os-private-domain-gate/wrangler.jsonc
+          grep -Fq '"custom_domain": true' ops/os-private-domain-gate/wrangler.jsonc
+          grep -Fq '"X-4Planet-OS": "LOCKED_NOT_RELEASED"' ops/os-private-domain-gate/src/index.js
+          ! grep -Eiq 'SUPABASE_SERVICE_ROLE|GOOGLE_SERVICE_ACCOUNT|BRAIN_SECRET|Authorization: Bearer|fetch\(' ops/os-private-domain-gate/src/index.js
+          [[ -n "$CF_FACTORY" ]] && [[ -n "$CF_PRIMARY" ]]
+          account="${CF_ACCOUNT:-d53c17b06219066a0325eec01c21729e}"
+          echo "::add-mask::$CF_FACTORY"
+          echo "::add-mask::$CF_PRIMARY"
+          zone="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_PRIMARY" "https://api.cloudflare.com/client/v4/zones?name=4planet.org" | jq -r '.result[0].id // empty')"
+          [[ -n "$zone" ]]
+          dns="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_PRIMARY" "https://api.cloudflare.com/client/v4/zones/$zone/dns_records?name=os.4planet.org")"
+          existing_dns="$(jq -r '.result|length' <<< "$dns")"
+          [[ "$existing_dns" == 0 ]] || { echo 'Existing OS DNS detected: no overwrite'; exit 4; }
+          domains="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_FACTORY" "https://api.cloudflare.com/client/v4/accounts/$account/workers/domains")"
+          owners="$(jq -r '[.result[]? | select(.hostname=="os.4planet.org" and .service!="4planet-private-os-gate")] | length' <<< "$domains")"
+          [[ "$owners" == 0 ]] || { echo 'Other OS domain owner detected: no takeover'; exit 5; }
+          page="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_FACTORY" "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/4planet-05")"
+          jq -e '([.result.domains[]?]|index("os.4planet.org"))==null' <<< "$page" >/dev/null || { echo 'OS already owned by Pages, no takeover'; exit 6; }
+          echo "Exact OS hostname unclaimed, existing LABS Pages unchanged, no private source data in Worker."
+      - name: Create OS-only Worker Custom Domain, which provisions DNS and TLS automatically
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          workingDirectory: ops/os-private-domain-gate
+          wranglerVersion: '4.41.0'
+          command: deploy --config wrangler.jsonc
+      - name: Check exact domain and fail-closed runtime, preserve a pending TLS issuance
+        shell: bash
+        run: |
+          set -euo pipefail
+          account="${CF_ACCOUNT:-d53c17b06219066a0325eec01c21729e}"
+          domains="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_FACTORY" "https://api.cloudflare.com/client/v4/accounts/$account/workers/domains")"
+          jq -e '.result[]? | select(.hostname=="os.4planet.org" and .service=="4planet-private-os-gate")' <<< "$domains" >/dev/null || { echo 'OS Worker custom domain not registered'; exit 7; }
+          echo "OS custom domain ownership registered on Cloudflare."
+          live=0
+          for attempt in $(seq 1 18); do
+            status="$(curl -sS --connect-timeout 8 --max-time 22 -o /tmp/os-gate-landing -w '%{http_code}' https://os.4planet.org/ 2>/dev/null || true)"
+            health="$(curl -sS --connect-timeout 8 --max-time 22 -o /tmp/os-gate-health -w '%{http_code}' https://os.4planet.org/_status 2>/dev/null || true)"
+            if [[ "$status" == 423 && "$health" == 200 ]] && jq -e '.release=="LOCKED" and .founderAccessVerified==false and .brainSyncVerified==false' /tmp/os-gate-health >/dev/null; then live=1; break; fi
+            echo "OS locked DNS/TLS propagation: attempt $attempt; HTTP ${status:-000}, health ${health:-000}"
+            sleep 7
+          done
+          if [[ "$live" != 1 ]]; then
+            echo "PENDING: exact OS custom domain registered but external DNS/TLS/runtime not yet verified; no private data is served by this Worker."
+            exit 8
+          fi
+          for host in labs.4planet.org 4planet.org s4piens.com 4brands.org; do
+            http="$(curl -sSL --connect-timeout 8 --max-time 30 -o /dev/null -w '%{http_code}' "https://$host/" 2>/dev/null || true)"
+            [[ "$http" == 200 ]] || { echo "Other host $host HTTP ${http:-000}: isolate and investigate"; exit 9; }
+          done
+          echo "PASS: os.4planet.org custom domain + HTTPS live but LOCKED. No Founder login/BRAIN release claim. LABS and three other production host roots HTTP 200."
+      - name: Record exact result with canonical private OS blocker
+        if: always()
+        shell: bash
+        run: |
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "OS-only Cloudflare domain provisioning: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID . Target os.4planet.org; Worker 4planet-private-os-gate, fail-closed no BRAIN. Only completed SUCCESS means exact custom domain HTTPS+locked runtime verified; a failed job may leave DNS/TLS provisioning pending. Cloudflare Access remains a distinct identity release gate (403), as does scheduled Drive-BRAIN sync. Canonical OS issue: https://github.com/odinskogen-dev/4Planet-OSv3/issues/6 . Existing labs.4planet.org and public production must remain untouched."
