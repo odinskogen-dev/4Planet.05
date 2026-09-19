@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
           npm ci
           npm install 'maplibre-gl@^6.10.0' --save
-          npm audit fix
+          npm audit fix || test "$?" -eq 1
           npm ci
           npm audit --audit-level=high
       - name: Verify the upgraded candidate before writing to source
@@ -63,4 +63,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "LABS security dependency closure attempt from `$GITHUB_SHA` — job: `$GITHUB_JOB`; final step conclusion is in this [workflow run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Only validated package manifests may be committed; no 4PLANET production/Factory mutation."
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "LABS dependency QA attempt: $GITHUB_SHA / $GITHUB_JOB. Workflow: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID . Only validated manifests may be committed; no public production or Factory mutation."
