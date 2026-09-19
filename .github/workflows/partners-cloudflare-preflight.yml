@@ -78,4 +78,12 @@ jobs:
               echo "PARTNERS_$target-$name=$state"
             done
           done
+          echo '--- existing primary website intake configuration (names only) ---'
+          primary=$(curl -fsS "$api/accounts/$account_id/pages/projects/4planet-05" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          for target in production preview; do
+            for name in LEAD_WEBHOOK_URL LEAD_WEBHOOK_SECRET SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY; do
+              state=$(jq -r --arg target "$target" --arg name "$name" 'if (.result.deployment_configs[$target].env_vars // {} | has($name)) then "configured" else "absent" end' <<<"$primary")
+              echo "PRIMARY_$target-$name=$state"
+            done
+          done
           echo 'PREFLIGHT_READ_ONLY=PASS'
