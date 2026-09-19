@@ -410,3 +410,6 @@ a:hover .ph-arrow { transform: translate(2px,-2px); }
  .partners-hub .ph-hero-quick { gap:10px 18px; font-size:.79rem; }
  .partners-hub .ph-hero h1 { font-size:clamp(2.95rem,12vw,4.8rem); }
 }
+
+.partners-hub .pd-channel-notice { max-width:760px; padding:22px 26px; border-left:3px solid var(--blue); background:var(--paper); font-size:1.1rem; line-height:1.4; margin-bottom:30px; }
+.partners-hub .pd-form .pd-honeypot { position:absolute!important; width:1px!important; height:1px!important; left:-10000px!important; overflow:hidden!important; opacity:0; pointer-events:none; }
