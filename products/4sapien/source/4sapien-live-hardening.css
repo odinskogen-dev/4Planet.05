@@ -44,3 +44,126 @@ html[data-theme="dark"] body.w-embla .askbox{background:var(--panel)!important}
 .fs-global-appnav a:hover{color:var(--ink)}
 .fs-global-appnav a.active{color:var(--ink);border-bottom-color:var(--wc,var(--embla,#2e2eff))}
 @media(max-width:899px){.fs-global-appnav{display:none}}
+
+
+/* 4SAPIEN CLAUDE PREMIUM MOBILE CLOSURE 20260919
+   One calm shell, readable mobile Finance, no duplicate chrome.
+   Visual-only; canonical Supabase, Finance Twin, Food and Brain are unchanged. */
+@media(max-width:700px){
+  body.w-embla header.shell{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto auto;
+    height:auto!important;min-height:0;
+    padding:13px 18px 0!important;
+    gap:8px 10px;align-items:center;
+    overflow:visible;
+  }
+  body.w-embla header.shell>div:first-child{display:contents!important}
+  body.w-embla header.shell .brand{
+    grid-column:1;grid-row:1;min-width:0;
+    font-size:19px;letter-spacing:-.025em
+  }
+  body.w-embla header.shell .brand small{display:none!important}
+  body.w-embla header.shell .hr{
+    grid-column:2;grid-row:1;display:flex;gap:7px;
+    justify-content:flex-end;min-width:0
+  }
+  body.w-embla header.shell .hr .ib{
+    min-width:33px;height:34px;flex-shrink:0;padding:0 8px;
+    font-size:11px;white-space:nowrap
+  }
+  body.w-embla header.shell .hr #account-link{
+    max-width:106px;overflow:hidden;text-overflow:ellipsis
+  }
+  body.w-embla header.shell .worlds{
+    grid-column:1/-1;grid-row:2;
+    display:flex!important;justify-content:space-between;
+    width:100%;min-width:0;gap:8px;overflow:visible
+  }
+  body.w-embla header.shell .worlds button{
+    flex:0 1 auto;white-space:nowrap;min-width:0;
+    padding:9px 0 12px;margin:0!important;font-size:13px;
+    line-height:1.25;letter-spacing:0
+  }
+  body.w-embla header.shell .worlds button.on::after{
+    left:0;right:0;bottom:0
+  }
+  body.w-embla main.content{
+    padding:28px 18px calc(150px + env(safe-area-inset-bottom))!important;
+  }
+  body.w-embla .emblabar{
+    bottom:0!important;
+    padding:0 14px calc(13px + env(safe-area-inset-bottom))!important
+  }
+  body.w-embla .emblabar .in{min-width:0}
+  body.w-embla .emblabar input{min-width:0;font-size:15px}
+  body.w-embla .emblabar .send{width:42px;height:42px}
+  body.w-money .fs-money-main>header{
+    display:grid!important;grid-template-columns:minmax(0,1fr);
+    gap:12px;margin-bottom:15px!important;
+    align-items:start!important
+  }
+  body.w-money .fs-money-main>header>div:first-child{min-width:0}
+  body.w-money .fs-money-main>header>div:nth-child(2){
+    display:flex!important;align-items:center;gap:8px!important;
+    justify-content:space-between;min-width:0;
+    flex-wrap:nowrap!important
+  }
+  body.w-money .fs-money-main>header [data-fs-identity]{
+    max-width:120px;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;
+    font-size:11px!important;padding:8px 10px!important
+  }
+  body.w-money .fs-money-main>header button[aria-label="Logg ut"]{display:none!important}
+  body.w-money .fs-money-main>header button[aria-label^="Bytt til"]{
+    width:36px;height:36px;flex-shrink:0
+  }
+  body.w-money .fs-money-main>header .btn{
+    min-width:0;flex-shrink:0;white-space:nowrap;
+    padding:10px 13px
+  }
+  body.w-money #axeFin{
+    top:128px!important;
+    bottom:calc(66px + env(safe-area-inset-bottom))!important;
+    left:0!important;right:0!important
+  }
+  body.w-money #axeFin .af{width:100%;min-width:0;padding:14px 16px calc(110px + env(safe-area-inset-bottom))!important}
+  body.w-money #axeFin .bar{flex-wrap:wrap;align-items:center;gap:12px}
+  body.w-money #axeFin .bar>.btn{max-width:100%;white-space:normal}
+  body.w-money #axeFin .head{display:none}
+  body.w-money #axeFin .ledger{overflow-x:visible}
+  body.w-money #axeFin .erow{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(85px,110px);
+    min-width:0!important;gap:6px 10px;
+    padding:13px 0;border-bottom:1px solid var(--ln)
+  }
+  body.w-money #axeFin .erow .en{grid-column:1;grid-row:1}
+  body.w-money #axeFin .erow .ea{grid-column:2;grid-row:1;text-align:right}
+  body.w-money #axeFin .erow .ed{grid-column:1;grid-row:2;min-width:0}
+  body.w-money #axeFin .erow .ec{grid-column:2;grid-row:2}
+  body.w-money #axeFin .erow .er{grid-column:1;grid-row:3}
+  body.w-money #axeFin .erow .del{grid-column:2;grid-row:3;justify-self:end}
+  body.w-money #axeFin .erow input,
+  body.w-money #axeFin .erow select{
+    min-width:0;width:100%;font-size:14px;padding:8px 6px
+  }
+  body.w-money #axeFin .erow .ea{font-size:17px}
+  body.w-money #axeFin .detail{grid-template-columns:1fr 1fr}
+  body.w-money #axeFin .liqs{grid-template-columns:1fr 1fr;gap:9px}
+  body.w-money #axeFin .liqs>div{min-width:0;padding:13px}
+  body.w-money #axeFin .liqs .big{
+    font-size:clamp(23px,6.5vw,34px)!important;overflow-wrap:anywhere
+  }
+  body.w-money #axeFin #afTheme{display:none!important}
+}
+@media(max-width:360px){
+ body.w-embla header.shell{padding-left:13px!important;padding-right:13px!important}
+ body.w-embla header.shell .worlds button{font-size:12px}
+ body.w-money #axeFin{top:133px!important}
+ body.w-money #axeFin .af{padding-left:12px!important;padding-right:12px!important}
+}
+/* Keep logout functional in existing account/auth layer, but not a competing main header control. */
+@media(min-width:701px){
+ body.w-money .fs-money-main>header button[aria-label="Logg ut"]{display:none!important}
+}
