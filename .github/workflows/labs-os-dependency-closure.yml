@@ -2,7 +2,7 @@ name: LABS OS — bounded security dependency closure
 on:
   push:
     branches: [labs/overview-v1]
-    paths: [.github/workflows/labs-os-dependency-closure.yml, src/components/species/SpeciesAtlasWindow.tsx]
+    paths: [.github/workflows/labs-os-dependency-closure.yml, src/components/species/SpeciesAtlasWindow.tsx, src/earth/World.tsx]
   workflow_dispatch:
 permissions:
   contents: write
