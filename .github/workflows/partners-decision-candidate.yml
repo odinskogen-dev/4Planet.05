@@ -8,6 +8,7 @@ on:
       - src/pages/partners/**
       - src/content/partnersHub.json
       - src/styles/partners-hub.css
+      - scripts/check-partners-hub.mjs
       - scripts/partners-decision-smoke.mjs
       - .github/workflows/partners-decision-candidate.yml
   workflow_dispatch:
