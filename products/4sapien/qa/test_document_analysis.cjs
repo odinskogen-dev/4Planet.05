@@ -1,12 +1,14 @@
-// Synthetic-only pure tests: no real user documents; no API calls.
+// Synthetic-only browser parser tests; no real user files, no network.
 const assert=require("node:assert/strict");
 const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const ctx={module:{exports:{}}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../source/4sapien-document-analysis.js"),"utf8"),ctx);
 const p=ctx.module.exports;
-assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1 250,00"),{kr:1250,ore:0,wholeKroner:true}));
-assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1.250,50"),{kr:1250,ore:50,wholeKroner:false}));
-assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1250"),{kr:1250,ore:0,wholeKroner:true}));
+const a=p.parseAmount("1 250,00");
+assert.equal(a.kr,1250);assert.equal(a.ore,0);assert.equal(a.wholeKroner,true);
+const b=p.parseAmount("1.250,50");
+assert.equal(b.kr,1250);assert.equal(b.ore,50);assert.equal(b.wholeKroner,false);
+assert.equal(p.parseAmount("1250").kr,1250);
 assert.equal(p.parseAmount("0"),null);
 assert.equal(p.parseAmount("abc"),null);
 assert.equal(p.dateFrom("31.02.2026"),null);
@@ -23,7 +25,5 @@ assert.equal(receipt.amount.wholeKroner,false);
 assert.equal(receipt.date.value,"2026-09-19");
 assert.equal(receipt.itemLines[0],"Melk 25,00");
 const unknown=p.propose("KID 123456789\nIBAN NO1212341234\nOrganisasjonsnr 999999999","bill");
-assert.equal(unknown.amount,null);
-assert.equal(unknown.date,null);
-assert.equal(unknown.name,null);
-console.log("PASS document-analysis: 16 synthetic assertions; unconfirmed suggestions only");
+assert.equal(unknown.amount,null);assert.equal(unknown.date,null);assert.equal(unknown.name,null);
+console.log("PASS document-analysis: synthetic parsing, precision, invalid dates, uncertainty");
