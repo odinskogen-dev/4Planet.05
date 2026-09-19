@@ -6,13 +6,21 @@ site=Path(sys.argv[1])
 source=Path(__file__).resolve().parent.parent/"source"
 money=site/"app"/"money"/"index.html"
 brain=site/"brain"/"index.html"
-for p in (money,brain,source/"4sapien-documents.html",source/"4sapien-documents.js",source/"4sapien-document-analysis.js"):
+for p in (money,brain,source/"4sapien-documents.html",source/"4sapien-documents.js",source/"4sapien-document-analysis.js",source/"4sapien-import.html",source/"4sapien-import.js",source/"4sapien-csv.js"):
     if not p.exists(): raise SystemExit(f"DOCUMENT_INTAKE_MISSING: {p}")
 page=site/"app"/"money"/"documents"/"index.html"
 page.parent.mkdir(parents=True,exist_ok=True)
 page.write_text((source/"4sapien-documents.html").read_text(encoding="utf-8"),encoding="utf-8")
 (site/"4sapien-documents.js").write_text((source/"4sapien-documents.js").read_text(encoding="utf-8"),encoding="utf-8")
 (site/"4sapien-document-analysis.js").write_text((source/"4sapien-document-analysis.js").read_text(encoding="utf-8"),encoding="utf-8")
+csvpage=site/"app"/"money"/"import"/"index.html"
+csvpage.parent.mkdir(parents=True,exist_ok=True)
+csvpage.write_text((source/"4sapien-import.html").read_text(encoding="utf-8"),encoding="utf-8")
+(site/"4sapien-import.js").write_text((source/"4sapien-import.js").read_text(encoding="utf-8"),encoding="utf-8")
+(site/"4sapien-csv.js").write_text((source/"4sapien-csv.js").read_text(encoding="utf-8"),encoding="utf-8")
+if not ('four_sapien_finance_confirm_csv_import' in (site/"4sapien-import.js").read_text() and '/4sapien-csv.js' in csvpage.read_text()):
+    raise SystemExit("CSV_IMPORT_LINK_CONTRACT_MISSING")
+
 if not ("/4sapien-documents.js" in page.read_text() and "four_sapien_finance_confirm_document" in (site/"4sapien-documents.js").read_text()):
     raise SystemExit("DOCUMENT_INTAKE_LINK_CONTRACT_MISSING")
 anchor='<Btn kind="blue" size={13.5} onClick={()=>setAdd({})}><Icon name="plus" size={16}/>Legg til</Btn></div></header>'
@@ -79,4 +87,4 @@ async function exportPersonalBrain(){
 if text.count("</body>")!=1: raise SystemExit("BRAIN_EXPORT_BODY_MISMATCH")
 text=text.replace("</body>",script+"</body>",1)
 brain.write_text(text,encoding="utf-8")
-print("4SAPIEN DOCUMENT INTAKE PASS: private image/PDF upload, canonical Finance link, opt-in Brain context and personal export")
+print("4SAPIEN DOCUMENT+CSV INTAKE PASS: reviewed PDF/image, local OCR, safe CSV, canonical Finance and Personal Brain export")
