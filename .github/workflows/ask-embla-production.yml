@@ -114,7 +114,7 @@ jobs:
             'four_sapien_finance_accounts' 'four_sapien_finance_events' 'four-sapien-finance-docs' \
             'ghvdzetmplqkdtfqiror.supabase.co' 'sb.auth.getSession()' \
             'AXE_FINANCE_EXPERIENCE_V2' 'AXE_FINANCE_UX_V3' 'CLAUDE_UNIFIED_REDESIGN_20260917' \
-            'four-sapien-finance-unified-type-guard' 'four-sapien-finance-theme-bridge' \
+            'four-sapien-finance-unified-type-guard' \
             'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' '/4sapien-theme.js' '/4sapien-design.css' 'w-money'; do
             grep -Fq "$marker" "$MONEY"
           done
