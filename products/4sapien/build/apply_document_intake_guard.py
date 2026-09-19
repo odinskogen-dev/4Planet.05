@@ -6,12 +6,13 @@ site=Path(sys.argv[1])
 source=Path(__file__).resolve().parent.parent/"source"
 money=site/"app"/"money"/"index.html"
 brain=site/"brain"/"index.html"
-for p in (money,brain,source/"4sapien-documents.html",source/"4sapien-documents.js"):
+for p in (money,brain,source/"4sapien-documents.html",source/"4sapien-documents.js",source/"4sapien-document-analysis.js"):
     if not p.exists(): raise SystemExit(f"DOCUMENT_INTAKE_MISSING: {p}")
 page=site/"app"/"money"/"documents"/"index.html"
 page.parent.mkdir(parents=True,exist_ok=True)
 page.write_text((source/"4sapien-documents.html").read_text(encoding="utf-8"),encoding="utf-8")
 (site/"4sapien-documents.js").write_text((source/"4sapien-documents.js").read_text(encoding="utf-8"),encoding="utf-8")
+(site/"4sapien-document-analysis.js").write_text((source/"4sapien-document-analysis.js").read_text(encoding="utf-8"),encoding="utf-8")
 if not ("/4sapien-documents.js" in page.read_text() and "four_sapien_finance_confirm_document" in (site/"4sapien-documents.js").read_text()):
     raise SystemExit("DOCUMENT_INTAKE_LINK_CONTRACT_MISSING")
 anchor='<Btn kind="blue" size={13.5} onClick={()=>setAdd({})}><Icon name="plus" size={16}/>Legg til</Btn></div></header>'
