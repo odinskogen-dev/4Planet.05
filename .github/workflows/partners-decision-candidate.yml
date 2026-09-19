@@ -1,0 +1,50 @@
+name: Partners Decision Candidate QA
+
+on:
+  push:
+    branches:
+      - build/partners-decision-system-20260919
+    paths:
+      - src/pages/partners/**
+      - src/content/partnersHub.json
+      - src/styles/partners-hub.css
+      - scripts/partners-decision-smoke.mjs
+      - .github/workflows/partners-decision-candidate.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Existing Partners truth and privacy contract
+        run: node scripts/check-partners-hub.mjs
+      - name: TypeScript
+        run: npx tsc -b
+      - name: Build isolated Partners artifact
+        run: PARTNERS_BUILD=1 npx vite build
+      - name: Verify isolated module graph
+        run: |
+          test -s dist/partners-module-graph.txt
+          grep -q 'ISOLATION=PASS' dist/partners-module-graph.txt
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser route, mobile and intake tests
+        run: node scripts/partners-decision-smoke.mjs
+      - name: Candidate evidence
+        if: always()
+        run: |
+          echo "PARTNERS_CANDIDATE_SHA=$GITHUB_SHA"
+          echo "PARTNERS_CANDIDATE_ONLY=no production deployment"
