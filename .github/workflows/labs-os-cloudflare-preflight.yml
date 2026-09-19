@@ -66,7 +66,7 @@ jobs:
             deploy_status='n/a'
             if [[ "$pages_status" == 200 ]]; then
               found_pages=1
-              deploy_status="$(probe "${label}-deploys" "/accounts/$account/pages/projects/4planet-05/deployments?env=preview&page=1&per_page=100" "$token")"
+              deploy_status="$(probe "${label}-deploys" "/accounts/$account/pages/projects/4planet-05/deployments?page=1&per_page=25" "$token")"
             fi
             printf '| %s | %s | %s | %s | %s | %s | %s |\n' "$label" "$v" "$zone_status" "$dns_status" "$pages_status" "$deploy_status" "$worker_status" >> "$report"
             if [[ "$dns_status" == 200 ]]; then
@@ -86,6 +86,11 @@ jobs:
             fi
           done
           printf '\nSUMMARY: usable API token observed=%s; Pages readable=%s. No Cloudflare mutation.\n' "$found_valid" "$found_pages" >> "$report"
+          printf '\n## Live host probes (read only)\n\n' >> "$report"
+          for url in 'https://labs.4planet.org/' 'https://labs.4planet.org/labs' 'https://labs-overview-v1.4planet-05.pages.dev/labs' 'https://labs-overview-v1.4planet-05.pages.dev/product-build.txt'; do
+            http="$(curl -LsS --connect-timeout 7 --max-time 20 -o /dev/null -w '%{http_code}' "$url" 2>/dev/null || true)"
+            printf -- '- %s → HTTP %s\n' "$url" "${http:-000}" >> "$report"
+          done
           cat "$report"
       - name: Attach verification to existing LABS task
         if: always()
