@@ -58,8 +58,7 @@ select
     event_type = 'food_product_search_completed'
     and coalesce(nullif(payload->>'result_count','')::integer,0) > 0
   ) as food_value,
-  bool_or(event_type in ('finance_opened','finance_twin_viewed','finance_document_confirmed',
-      'finance_document_confirmed')) as finance_used
+  bool_or(event_type in ('finance_opened','finance_twin_viewed','finance_document_confirmed')) as finance_used
 from public.four_sapien_embla_events
 group by user_id, occurred_at::date;
 
