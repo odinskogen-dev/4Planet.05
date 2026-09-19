@@ -1,0 +1,66 @@
+name: LABS OS — bounded security dependency closure
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/labs-os-dependency-closure.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: labs-os-dependency-closure
+  cancel-in-progress: false
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Update only LABS branch dependencies to remove high and critical advisories
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm install 'maplibre-gl@^6.10.0' --save
+          npm audit fix
+          npm ci
+          npm audit --audit-level=high
+      - name: Verify the upgraded candidate before writing to source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npm run test:smoke
+          npm run lint
+          npm run assets:verify
+          npm run build
+      - name: Commit only validated dependency manifest and lockfile to SAME LABS branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin labs/overview-v1
+          current="$(git rev-parse origin/labs/overview-v1)"
+          if [[ "$current" != "$GITHUB_SHA" ]]; then
+            echo "LABS branch moved during QA; fail closed without branch overwrite."
+            exit 4
+          fi
+          git add -- package.json package-lock.json
+          git diff --cached --check
+          if git diff --cached --quiet; then echo "Dependencies already current"; exit 0; fi
+          git config user.name '4PLANET LABS QA'
+          git config user.email 'actions@users.noreply.github.com'
+          git commit -m 'fix(labs): close critical and high dependency advisories'
+          git push origin HEAD:labs/overview-v1
+      - name: Record QA result to canonical LABS work task
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "LABS security dependency closure attempt from `$GITHUB_SHA` — job: `$GITHUB_JOB`; final step conclusion is in this [workflow run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Only validated package manifests may be committed; no 4PLANET production/Factory mutation."
