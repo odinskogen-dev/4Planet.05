@@ -63,8 +63,18 @@ jobs:
           set -euo pipefail
           target='13fd59158c876b69d6601d27121334301fc25fa0'
           for p in / /labs /4planet /4planet/product /4planet/product/one-interface; do
-            headers="$(curl -fsSIL --max-time 35 "https://labs.4planet.org$p" | tr -d '\r')"
-            grep -Fiq "x-labs-source-commit: $target" <<< "$headers" || { echo "WRONG LIVE SOURCE: $p"; exit 4; }
+            passed=0
+            for attempt in $(seq 1 18); do
+              headers="$(curl -sSIL --max-time 35 "https://labs.4planet.org$p" | tr -d '\r' || true)"
+              if grep -Fiq "x-labs-source-commit: $target" <<< "$headers"; then passed=1; break; fi
+              echo "Cloudflare LABS route not at exact source on $p (attempt $attempt); checking propagation."
+              sleep 5
+            done
+            if [[ "$passed" != 1 ]]; then
+              echo "WRONG LIVE SOURCE: $p (route propagation exhausted)"
+              printf '%s\n' "$headers" | grep -Ei '^(HTTP/|server:|location:|x-|cf-)' | head -n 18 || true
+              exit 4
+            fi
             grep -Fiq 'x-robots-tag: noindex' <<< "$headers" || { echo "NOINDEX MISSING: $p"; exit 5; }
             echo "LABS verified host-only: $p"
           done
