@@ -110,16 +110,26 @@ export function EnquirePage() {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
-  useEffect(() => { document.title = "Partner enquiry — 4PLANET"; signal("intake_started"); }, []);
+  const [channel, setChannel] = useState<"CHECKING" | "AVAILABLE" | "UNAVAILABLE">("CHECKING");
+  const [companyHp, setCompanyHp] = useState("");
+  useEffect(() => {
+    document.title = "Partner enquiry — 4PLANET"; signal("intake_started");
+    let active = true;
+    fetch("/api/leads", { method: "GET", cache: "no-store" })
+      .then(async (res) => { if (!res.ok) throw new Error("Intake unavailable"); return res.json() as Promise<{ acceptingEnquiries?: boolean }>; })
+      .then((result) => { if (active) setChannel(result.acceptingEnquiries ? "AVAILABLE" : "UNAVAILABLE"); })
+      .catch(() => { if (active) setChannel("UNAVAILABLE"); });
+    return () => { active = false; };
+  }, []);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || !consent) return;
+    if (busy || !consent || channel !== "AVAILABLE") return;
     setBusy(true); setFeedback("");
     try {
       const response = await fetch("/api/leads", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          type: "4partners", name, email, organisation, company_hp: "",
+          type: "4partners", name, email, organisation, company_hp: companyHp,
           role, workArea: opportunity, interest: message, message,
           consent: true, sourceRoute: "/enquire", interests: [role, opportunity].filter(Boolean),
         }),
@@ -139,7 +149,11 @@ export function EnquirePage() {
   }
   return <main className="pd-page">
     <header className="pd-hero"><Meta label="STRUCTURED PARTNER ENQUIRY" /><h1>Bring a specific question.</h1><p>Tell us your role, the relevant object and what you would like to examine. This is an expression of interest, not a contract or approval to publish your organisation as a partner.</p></header>
-    <section className="pd-form-wrap"><form className="pd-form" onSubmit={submit}>
+    <section className="pd-form-wrap">
+    {channel === "UNAVAILABLE" ? <p className="pd-channel-notice" role="status">The enquiry channel is not yet collecting submissions. No information will be sent or stored here.</p> : null}
+    {channel === "CHECKING" ? <p className="pd-channel-notice" role="status">Checking whether the enquiry channel is available…</p> : null}
+    <form className="pd-form" onSubmit={submit}>
+      <label className="pd-honeypot" aria-hidden="true">Leave blank <input tabIndex={-1} autoComplete="off" value={companyHp} onChange={(e) => setCompanyHp(e.target.value)} /></label>
       <label>Your role <select value={role} onChange={(e) => setRole(e.target.value)} required><option value="">Choose a role</option>{roles.map((item) => <option value={item.slug} key={item.slug}>{item.name}</option>)}</select></label>
       <label>Relevant opportunity <select value={opportunity} onChange={(e) => setOpportunity(e.target.value)}><option value="">General enquiry</option>{opportunities.map((item) => <option value={item.slug} key={item.slug}>{item.name}</option>)}</select></label>
       <label>Your name <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoComplete="name" required /></label>
@@ -147,7 +161,7 @@ export function EnquirePage() {
       <label>Organisation <input value={organisation} onChange={(e) => setOrganisation(e.target.value)} maxLength={160} autoComplete="organization" /></label>
       <label>The question or potential contribution <textarea value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1200} rows={5} required /></label>
       <label className="pd-consent"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} required /><span>I agree that 4PLANET may use these details to consider and respond to this enquiry. Do not include confidential or sensitive data.</span></label>
-      <button type="submit" disabled={busy || !consent}>{busy ? "Submitting…" : "Submit enquiry"}</button>
+      <button type="submit" disabled={busy || !consent || channel !== "AVAILABLE"}>{channel !== "AVAILABLE" ? "Enquiries not available" : busy ? "Submitting…" : "Submit enquiry"}</button>
       <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p>
       <p className="pd-small">No subscription or commitment is created. If the intake integration is unavailable, the form will explicitly say that no receipt is confirmed.</p>
     </form></section>
