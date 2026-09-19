@@ -229,14 +229,15 @@ function HomePage() {
           <h1>{hub.hero.headline}</h1>
           <p className="ph-hero-body">{hub.hero.body}</p>
           <div className="ph-actions">
-            <a className="ph-button ph-button-primary" href="#system">{hub.hero.primaryCta}</a>
-            <a className="ph-button" href="#products">{hub.hero.secondaryCta}</a>
+            <a className="ph-button ph-button-primary" href="#role">{hub.hero.primaryCta}</a>
+            <a className="ph-button" href="/portfolio">{hub.hero.secondaryCta}</a>
           </div>
+          <nav className="ph-hero-quick" aria-label="Choose your partner route"><a href="/for/company">Company ↗</a><a href="/for/foundation">Foundation ↗</a><a href="/for/science">Science ↗</a><a href="/for">All routes ↗</a></nav>
         </div>
         <PlanetImage imageKey="heroEarth" className="ph-hero-image" />
       </section>
 
-      <section className="pd-entry" aria-labelledby="pd-entry-title">
+      <section className="pd-entry" id="role" aria-labelledby="pd-entry-title">
         <div><span className="pd-meta">FIND YOUR ROLE</span><h2 id="pd-entry-title">What could we build together?</h2><p>One shared evidence system, different real-world needs. Choose your perspective to see relevant value, proof and the limits of what is currently available.</p></div>
         <div className="pd-entry-links"><a href="/for/company">Company or brand ↗</a><a href="/for/foundation">Foundation or funder ↗</a><a href="/for/science">Science and data ↗</a><a href="/for">All eight routes ↗</a><a href="/portfolio">Explore the full portfolio ↗</a></div>
       </section>
