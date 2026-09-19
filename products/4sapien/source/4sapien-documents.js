@@ -3,15 +3,13 @@
    Canonical Finance Twin remains the sole calculation engine. */
 (()=>{
 "use strict";
-const URL="https://ghvdzetmplqkdtfqiror.supabase.co";
+const SUPABASE_URL="https://ghvdzetmplqkdtfqiror.supabase.co";
 const KEY="sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE";
 const BUCKET="four-sapien-finance-docs";
 const $=id=>document.getElementById(id);
-const client=window.supabase?.createClient?.(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const client=window.supabase?.createClient?.(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let account=null,selectedFile=null,sha=null,pendingBrain=null,pendingFile=null,previewUrl=null,busy=false;
 function status(message,isError=false){const el=$("docStatus");el.textContent=message;el.setAttribute("role",isError?"alert":"status");}
-function resetPreview(){if(previewUrl){URL.revokeObjectURL?.(previewUrl);previewUrl=null;}}
-// Explicitly reference the global URL constructor: the constant URL above is the API URL.
 function freePreview(){if(previewUrl){window.URL.revokeObjectURL(previewUrl);previewUrl=null;}}
 function short(v){return String(v||"").trim().split(/\s+/)[0].slice(0,24)}
 function userName(u){return short(u?.user_metadata?.full_name||u?.user_metadata?.name||u?.email?.split("@")[0]||"4PLANET ID")}
@@ -173,7 +171,7 @@ async function confirm(e){
     const path=account.id+"/"+hash+"/"+safeName(record.file.name);
     status("Lagrer originalen i privat dokumentlager…");
     const up=await client.storage.from(BUCKET).upload(path,record.file,{
-      contentType:record.file.type,cacheControl:"private, max-age=0",upsert:false
+      contentType:record.file.type,cacheControl:"0",upsert:false
     });
     if(up.error)throw up.error;
     uploadedPath=path;
