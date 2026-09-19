@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "4planet-private-os-gate",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-19",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "os.4planet.org",
+      "custom_domain": true
+    }
+  ]
+}
