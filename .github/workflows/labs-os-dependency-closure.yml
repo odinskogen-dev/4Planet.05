@@ -38,8 +38,8 @@ jobs:
           npm run typecheck
           npm run test:smoke
           npm run lint
-          npm run assets:verify
           npm run build
+          npm run assets:verify
       - name: Commit only validated dependency manifest and lockfile to SAME LABS branch
         shell: bash
         run: |
