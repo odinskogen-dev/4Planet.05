@@ -7,6 +7,7 @@ on:
     paths:
       - src/pages/partners/**
       - src/content/partnersHub.json
+      - vite.config.ts
       - src/styles/partners-hub.css
       - scripts/check-partners-hub.mjs
       - scripts/partners-decision-smoke.mjs
