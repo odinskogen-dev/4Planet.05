@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { taxonOccurrences } from "@/planet/connectors";
 import type { Occurrence } from "@/planet/types";
@@ -117,12 +117,28 @@ export function SpeciesAtlasWindow({
           if (!coordinates) return;
           const date = String(feature?.properties?.date ?? "DATE NOT PROVIDED");
           const url = String(feature?.properties?.sourceUrl ?? "");
-          const body = url
-            ? `<div style="font:12px/1.45 system-ui;color:#080808"><strong>REPORTED OCCURRENCE</strong><br>${date}<br><a href="${url}" target="_blank" rel="noreferrer">OPEN GBIF RECORD ↗</a></div>`
-            : `<div style="font:12px/1.45 system-ui;color:#080808"><strong>REPORTED OCCURRENCE</strong><br>${date}</div>`;
+          const popup = document.createElement("div");
+          popup.style.cssText = "font:12px/1.45 system-ui;color:#080808";
+          const heading = document.createElement("strong");
+          heading.textContent = "REPORTED OCCURRENCE";
+          popup.append(heading, document.createElement("br"), document.createTextNode(date));
+          if (url) {
+            try {
+              const recordUrl = new URL(url);
+              if (recordUrl.protocol === "https:" && recordUrl.hostname === "www.gbif.org") {
+                popup.append(document.createElement("br"));
+                const anchor = document.createElement("a");
+                anchor.href = recordUrl.href;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+                anchor.textContent = "OPEN GBIF RECORD ↗";
+                popup.append(anchor);
+              }
+            } catch { /* Untrusted source URL is not shown. */ }
+          }
           new maplibregl.Popup({ closeButton: true, maxWidth: "260px" })
             .setLngLat(coordinates as [number, number])
-            .setHTML(body)
+            .setDOMContent(popup)
             .addTo(map!);
         });
         map.on("mouseenter", "species-occurrences", () => { if (map) map.getCanvas().style.cursor = "pointer"; });
