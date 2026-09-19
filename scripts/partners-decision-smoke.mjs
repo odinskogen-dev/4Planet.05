@@ -44,7 +44,25 @@ try {
     await page.close();
     console.log("PARTNERS_ROUTES=PASS viewport=" + viewport.width + " count=" + routes.length);
   }
+  const unavailablePage = await browser.newPage();
+  await unavailablePage.route("**/api/leads", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: false }) });
+  });
+  await unavailablePage.goto(base + "/enquire");
+  await unavailablePage.getByText("The enquiry channel is not yet collecting submissions.", { exact: false }).waitFor();
+  if (await unavailablePage.getByRole("button", { name: "Enquiries not available" }).isEnabled()) throw Error("unconfigured channel must disable submission");
+  await unavailablePage.close();
   const page = await browser.newPage();
+  await page.route("**/api/leads", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: true }) });
+      return;
+    }
+    const data = route.request().postDataJSON();
+    if (data.type !== "4partners" || data.role !== "company" || data.workArea !== "brands-proof" || data.consent !== true)
+      throw Error("intake mapping failed");
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: false, reason: "not_configured" }) });
+  });
   await page.goto(base + "/enquire?role=company&opportunity=brands-proof");
   if (await page.locator("select").first().inputValue() !== "company") throw Error("role query hydration failed");
   if (await page.locator("select").nth(1).inputValue() !== "brands-proof") throw Error("opportunity query hydration failed");
@@ -54,12 +72,6 @@ try {
     await page.locator("textarea").fill("QA non-sensitive enquiry");
     await page.locator('input[type="checkbox"]').check();
   }
-  await page.route("**/api/leads", async (route) => {
-    const data = route.request().postDataJSON();
-    if (data.type !== "4partners" || data.role !== "company" || data.workArea !== "brands-proof" || data.consent !== true)
-      throw Error("intake mapping failed");
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: false, reason: "not_configured" }) });
-  });
   await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your information has not been stored or forwarded.").waitFor();
@@ -68,7 +80,7 @@ try {
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: true }) }));
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your enquiry was received by the configured 4PLANET intake.", { exact: false }).waitFor();
-  console.log("PARTNERS_INTAKE_MAPPING_AND_FAIL_CLOSED=PASS");
+  console.log("PARTNERS_INTAKE_AVAILABILITY_MAPPING_AND_FAIL_CLOSED=PASS");
   await page.close();
 } finally {
   await browser?.close();
