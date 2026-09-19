@@ -70,7 +70,7 @@ h1{font:600 clamp(29px,4vw,45px) var(--disp);letter-spacing:-.045em;line-height:
 <main class="doc-wrap">
 <div class="doc-ey">Penger · Dokumenter · Faktisk, ikke antatt</div>
 <h1>Fra dokument til oversikt.</h1>
-<p class="doc-lead">Legg inn en regning eller kvittering. Originalen lagres privat; du bekrefter beløp og dato før Finance endres. PDF-tekst leses lokalt når nettleseren støtter det. Bilder trenger foreløpig din manuelle gjennomgang – ingen falsk OCR eller automatisk betaling.</p>
+<p class="doc-lead">Legg inn en regning eller kvittering. Originalen lagres privat; du bekrefter beløp og dato før Finance endres. PDF-tekst leses lokalt når nettleseren støtter det. Bilder kan du lese med valgfri lokal OCR. Både OCR og PDF-forslag krever manuell kontroll; ingen automatisk betaling.</p>
 <div class="doc-grid">
 <section class="doc-card" aria-labelledby="docHeading">
 <h2 id="docHeading">Nytt dokument</h2>
@@ -79,6 +79,13 @@ h1{font:600 clamp(29px,4vw,45px) var(--disp);letter-spacing:-.045em;line-height:
 <div class="doc-field"><label for="docKind">DOKUMENTTYPE</label><select id="docKind" required><option value="bill">Regning · skal betales</option><option value="receipt">Kvittering · allerede betalt</option></select></div>
 <label class="doc-upload" for="docFile"><strong>Velg bilde eller PDF</strong><span class="doc-note" style="display:block;margin-top:5px">JPEG · PNG · WEBP · PDF · inntil 10 MB</span><input id="docFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></label>
 <div id="docPreview" class="doc-meta" aria-live="polite">Ingen dokument valgt</div>
+<div id="docOcrWrap" hidden class="doc-actions"><button class="doc-secondary" type="button" id="docOcr">Les bildet lokalt (OCR) · valgfritt</button><span class="doc-note">Ingen betaling eller ekstern AI. Kan ta litt tid på mobil. Resultatet er alltid ubekreftet.</span></div>
+<div id="docSuggestions" hidden class="doc-card" style="margin-top:14px;padding:14px;border-color:var(--line2)" aria-live="polite">
+<strong>Forslag fra dokumenttekst — ikke verifisert</strong>
+<p class="doc-note">Trykk «Bruk forslag» for hvert felt du ønsker. Kontroller deretter originalen og bekreft selv.</p>
+<div id="docSuggestionList" class="doc-actions"></div>
+<div id="docItemLines" class="doc-note"></div>
+</div>
 <div class="doc-field"><label for="docName">HVA GJELDER DET? · BRUKERBEKREFTET</label><input id="docName" maxlength="180" required placeholder="F.eks. Strømregning september"></div>
 <div class="doc-line">
 <div class="doc-field"><label for="docAmount">BELØP I HELE KRONER</label><input id="docAmount" type="number" min="1" max="1000000000" step="1" required placeholder="1250"></div>
@@ -96,11 +103,12 @@ h1{font:600 clamp(29px,4vw,45px) var(--disp);letter-spacing:-.045em;line-height:
 <h2>Dokumenterte hendelser</h2>
 <p class="doc-note">Kun dine dokumenter. Åpne originalen via en kortvarig, privat lenke.</p>
 <ul class="doc-list" id="docList"><li class="doc-empty">Laster…</li></ul>
-<div class="doc-decision"><strong>Ukjent ≠ null.</strong> OCR er ikke aktiv for bilder. Et dokument uten bekreftede felt føres aldri automatisk inn i økonomien. Samme fil kan ikke gi to aktive Finance-hendelser.</div>
+<div class="doc-decision"><strong>Ukjent ≠ null.</strong> OCR er valgfri og ikke verifisert. Et dokument uten bekreftede felt føres aldri automatisk inn i økonomien. Samme fil kan ikke gi to aktive Finance-hendelser.</div>
 <div id="docBrainRetry" class="doc-status" aria-live="polite"></div>
 </aside>
 </div>
 </main>
+<script src="/4sapien-document-analysis.js" defer></script>
 <script src="/4sapien-documents.js" defer></script>
 </body>
 </html>
