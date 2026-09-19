@@ -60,6 +60,7 @@ jobs:
           cp products/4sapien/source/4sapien-live-hardening.css "${SITE}/4sapien-live-hardening.css"
           cp products/4sapien/source/4sapien-live-hardening.js "${SITE}/4sapien-live-hardening.js"
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
+          python products/4sapien/build/apply_document_intake_guard.py "$SITE"
 
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
@@ -124,6 +125,7 @@ jobs:
           done
           grep -Fq 'fs-finance-year' products/4sapien/site/4sapien-live-hardening.js
           grep -Fq 'fs-finance-attn-grid' products/4sapien/site/4sapien-live-hardening.js
+          grep -Fq 'four_sapien_finance_confirm_document' products/4sapien/site/4sapien-documents.js
           python products/4sapien/build/audit_finance_typography.py \
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
@@ -141,6 +143,15 @@ jobs:
           npx --yes esbuild@0.25.9 /tmp/food.jsx --loader:.jsx=jsx --outfile=/tmp/food-check.js
           npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
           node --check products/4sapien/site/4sapien-live-hardening.js
+          node --check products/4sapien/site/4sapien-documents.js
+          python -m py_compile products/4sapien/build/apply_document_intake_guard.py
+          for marker in 'four_sapien_finance_confirm_document' 'four-sapien-finance-docs'; do
+            grep -Fq "$marker" products/4sapien/site/4sapien-documents.js
+          done
+          for route in products/4sapien/site/app/money/documents/index.html products/4sapien/site/app/money/index.html products/4sapien/site/finance.html products/4sapien/site/finance/index.html; do
+            grep -Fq '/app/money/documents/' "$route" || grep -Fq '/4sapien-documents.js' "$route"
+          done
+          grep -Fq 'exportPersonalBrain' products/4sapien/site/brain/index.html
           python -m py_compile products/4sapien/build/apply_live_hardening_guard.py
           BRAIN=products/4sapien/site/brain/index.html
           for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' '/4sapien-live-hardening.js'; do
