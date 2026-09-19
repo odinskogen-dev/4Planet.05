@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import hub from "@/content/partnersHub.json";
 import { img } from "@/content/imageRegistry";
 import "@/styles/partners-hub.css";
+import { PortfolioPage, OpportunitiesPage, ActorPage, FourBrandsPitch, RestrictedRoom, EnquirePage } from "@/pages/partners/PartnerDecision";
 
-type PageKey = "home" | "system" | "proof" | "partnerships" | "capital" | "trust" | "founder" | "brief" | "for";
+type PageKey = "home" | "system" | "proof" | "partnerships" | "capital" | "trust" | "founder" | "brief" | "for" | "portfolio" | "opportunities" | "fourbrand" | "enquire" | "dataroom" | "workspace";
 
 const BASE = "";
 const MAIN_SITE = "https://4planet.org";
 
 const nav = [
+  ["Portfolio", "/portfolio"],
+  ["Opportunities", "/opportunities"],
   ["System", "/system"],
   ["Proof", "/proof"],
   ["Partnerships", "/partnerships"],
@@ -27,6 +30,14 @@ const pdfs: Record<string, string> = {
 
 function resolvePage(pathname: string): { page: PageKey; slug?: string } {
   const path = pathname.replace(/\/+$/, "") || "/";
+  if (path === "/portfolio") return { page: "portfolio" };
+  if (path === "/opportunities") return { page: "opportunities" };
+  if (path.startsWith("/opportunities/")) return { page: "opportunities", slug: path.split("/")[2] };
+  if (path === "/4brand" || path === "/4brands") return { page: "fourbrand" };
+  if (path === "/enquire") return { page: "enquire" };
+  if (path === "/dataroom") return { page: "dataroom" };
+  if (path === "/workspace") return { page: "workspace" };
+  if (path === "/for") return { page: "for" };
   if (path === "/system") return { page: "system" };
   if (path === "/proof" || path === "/projects") return { page: "proof" };
   if (path === "/partnerships") return { page: "partnerships" };
@@ -99,6 +110,7 @@ function SiteFooter() {
       <div className="ph-footer-links">
         <a href="/trust">Evidence & trust</a>
         <a href="/briefs/overview">Briefs</a>
+        <a href="/enquire">Partner enquiry</a>
         <a href={MAIN_SITE}>Explore 4PLANET <Arrow /></a>
       </div>
     </footer>
@@ -222,6 +234,11 @@ function HomePage() {
           </div>
         </div>
         <PlanetImage imageKey="heroEarth" className="ph-hero-image" />
+      </section>
+
+      <section className="pd-entry" aria-labelledby="pd-entry-title">
+        <div><span className="pd-meta">FIND YOUR ROLE</span><h2 id="pd-entry-title">What could we build together?</h2><p>One shared evidence system, different real-world needs. Choose your perspective to see relevant value, proof and the limits of what is currently available.</p></div>
+        <div className="pd-entry-links"><a href="/for/company">Company or brand ↗</a><a href="/for/foundation">Foundation or funder ↗</a><a href="/for/science">Science and data ↗</a><a href="/for">All eight routes ↗</a><a href="/portfolio">Explore the full portfolio ↗</a></div>
       </section>
 
       <section className="ph-panel ph-panel-ink">
@@ -438,6 +455,12 @@ export default function PartnersHub() {
     <div className="partners-hub">
       <SiteHeader />
       {route.page === "home" ? <HomePage /> : null}
+      {route.page === "portfolio" ? <PortfolioPage /> : null}
+      {route.page === "opportunities" ? <OpportunitiesPage slug={route.slug} /> : null}
+      {route.page === "fourbrand" ? <FourBrandsPitch /> : null}
+      {route.page === "enquire" ? <EnquirePage /> : null}
+      {route.page === "dataroom" ? <RestrictedRoom kind="dataroom" /> : null}
+      {route.page === "workspace" ? <RestrictedRoom kind="workspace" /> : null}
       {route.page === "system" ? <SystemPage /> : null}
       {route.page === "proof" ? <ProofPage /> : null}
       {route.page === "partnerships" ? <PartnershipsPage /> : null}
@@ -445,7 +468,7 @@ export default function PartnersHub() {
       {route.page === "trust" ? <TrustPage /> : null}
       {route.page === "founder" ? <FounderPage /> : null}
       {route.page === "brief" ? <BriefPage slug={route.slug} /> : null}
-      {route.page === "for" ? <ForPage slug={route.slug} /> : null}
+      {route.page === "for" ? <ActorPage slug={route.slug} /> : null}
       <SiteFooter />
     </div>
   );
