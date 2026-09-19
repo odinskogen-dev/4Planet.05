@@ -393,3 +393,20 @@ a:hover .ph-arrow { transform: translate(2px,-2px); }
  .partners-hub .pd-dark { background:white; color:black; }
  .partners-hub .pd-detail, .partners-hub .pd-scale-list { break-inside:avoid; }
 }
+
+/* Clear partner choices in the first viewport and a collapsible navigation before it crowds. */
+.partners-hub .ph-hero-quick { display:flex; flex-wrap:wrap; gap:12px 25px; margin-top:4px; font-size:.85rem; font-weight:600; }
+.partners-hub .ph-hero-quick a { border-bottom:1px solid rgba(255,255,255,.65); padding-bottom:5px; }
+.partners-hub .ph-hero-quick a:hover { color:var(--paper); border-bottom-color:var(--paper); }
+.partners-hub .pd-entry { scroll-margin-top:75px; }
+@media (max-width:1200px) {
+ .partners-hub .ph-menu { display:block; }
+ .partners-hub .ph-nav { display:none; position:fixed; inset:66px 0 auto; background:var(--paper); color:var(--ink); padding:20px var(--pad) 35px; border-bottom:1px solid var(--hair); flex-direction:column; align-items:flex-start; gap:0; max-height:calc(100svh - 66px); overflow-y:auto; }
+ .partners-hub .ph-nav.is-open { display:flex; }
+ .partners-hub .ph-nav a { width:100%; padding:12px 0; border-bottom:1px solid var(--hair); }
+}
+@media (max-width:560px) {
+ .partners-hub .ph-hero-copy { gap:22px; min-height:0; }
+ .partners-hub .ph-hero-quick { gap:10px 18px; font-size:.79rem; }
+ .partners-hub .ph-hero h1 { font-size:clamp(2.95rem,12vw,4.8rem); }
+}
