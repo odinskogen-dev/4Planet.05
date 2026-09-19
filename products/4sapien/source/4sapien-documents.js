@@ -8,7 +8,7 @@ const KEY="sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE";
 const BUCKET="four-sapien-finance-docs";
 const $=id=>document.getElementById(id);
 const client=window.supabase?.createClient?.(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let account=null,selectedFile=null,sha=null,pendingBrain=null,pendingFile=null,previewUrl=null,busy=false;
+let account=null,selectedFile=null,sha=null,pendingBrain=null,pendingFile=null,previewUrl=null,busy=false,ocrBusy=false;
 function status(message,isError=false){const el=$("docStatus");el.textContent=message;el.setAttribute("role",isError?"alert":"status");}
 function freePreview(){if(previewUrl){window.URL.revokeObjectURL(previewUrl);previewUrl=null;}}
 function short(v){return String(v||"").trim().split(/\s+/)[0].slice(0,24)}
@@ -60,9 +60,67 @@ async function fileHash(file){
   const digest=await crypto.subtle.digest("SHA-256",bytes);
   return Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,"0")).join("");
 }
+function showSuggestions(text){
+  const wrap=$("docSuggestions"),buttons=$("docSuggestionList"),items=$("docItemLines");
+  wrap.hidden=true;buttons.textContent="";items.textContent="";
+  const parsed=window.FourSapienDocumentAnalysis?.propose?.(text,$("docKind").value);
+  if(!parsed||(!parsed.amount&&!parsed.date&&!parsed.name&&!parsed.itemLines.length))return;
+  const choice=(label,value,field)=>{
+    const b=document.createElement("button");b.type="button";b.className="doc-secondary";
+    b.textContent=label+": "+String(value)+" · Bruk forslag";
+    b.onclick=()=>{ $(field).value=String(value);b.textContent=label+" lagt i feltet · kontroller originalen";b.disabled=true; };
+    buttons.appendChild(b);
+  };
+  if(parsed.amount){
+    if(parsed.amount.wholeKroner)choice("Beløp",parsed.amount.kr+" kr","docAmount");
+    else {const note=document.createElement("span");note.className="doc-note";note.textContent="Beløp med øre krever manuell kontroll; ingen avrunding er gjort.";buttons.appendChild(note);}
+  }
+  if(parsed.date)choice($("docKind").value==="bill"?"Forfall":"Dato",parsed.date.value,"docDate");
+  if(parsed.name)choice("Avsender / butikk",parsed.name.value,"docName");
+  if(parsed.itemLines.length){
+    const title=document.createElement("strong");title.textContent="Mulige varelinjer · IKKE registrert i Food:";
+    items.appendChild(title);
+    const ul=document.createElement("ul");
+    for(const line of parsed.itemLines){const li=document.createElement("li");li.textContent=line;ul.appendChild(li);}
+    items.appendChild(ul);
+  }
+  wrap.hidden=false;
+}
+function loadOcrLib(){
+  if(window.Tesseract?.createWorker)return Promise.resolve(window.Tesseract);
+  return new Promise((resolve,reject)=>{
+    const script=document.createElement("script");
+    script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    script.referrerPolicy="no-referrer";
+    script.onload=()=>window.Tesseract?.createWorker?resolve(window.Tesseract):reject(new Error("OCR_RUNTIME_UNAVAILABLE"));
+    script.onerror=()=>reject(new Error("OCR_RUNTIME_UNAVAILABLE"));
+    document.head.appendChild(script);
+  });
+}
+async function runLocalOcr(){
+  if(ocrBusy||!selectedFile||!selectedFile.type.startsWith("image/"))return;
+  const file=selectedFile,button=$("docOcr");
+  ocrBusy=true;button.disabled=true;button.textContent="Leser bildet lokalt…";
+  let worker=null;
+  try{
+    status("Laster lokal OCR-motor. Ikke en AI-skyopplasting. Vent mens bildet leses på enheten.");
+    const T=await loadOcrLib();
+    worker=await T.createWorker("nor+eng",1);
+    const output=await worker.recognize(file);
+    if(selectedFile!==file)return;
+    const text=String(output?.data?.text||"").slice(0,12000);
+    $("docExtractWrap").hidden=false;$("docExtract").value=text;
+    showSuggestions(text);
+    status(text?"Bilde lest lokalt. OCR kan ta feil. Kontroller originalen og trykk på forslag du ønsker å bruke.":"OCR fant ingen tekst. Fyll inn dokumentopplysninger selv.");
+  }catch(e){if(selectedFile===file)status("OCR kunne ikke fullføres på denne enheten. Fyll inn manuelt; dokumentet kan fortsatt lagres.",true)}
+  finally{if(worker)await worker.terminate().catch(()=>{});ocrBusy=false;button.disabled=false;button.textContent="Les bildet lokalt (OCR) · valgfritt";}
+}
+
 async function fileChanged(){
   freePreview();selectedFile=null;sha=null;
   $("docExtractWrap").hidden=true;$("docExtract").value="";
+  $("docSuggestions").hidden=true;$("docSuggestionList").textContent="";
+  $("docOcrWrap").hidden=true;
   const f=$("docFile").files?.[0];
   const el=$("docPreview");el.textContent="";
   if(!f){el.textContent="Ingen dokument valgt";return;}
@@ -76,7 +134,8 @@ async function fileChanged(){
     previewUrl=window.URL.createObjectURL(f);
     const img=document.createElement("img");img.src=previewUrl;img.alt="Forhåndsvisning av ditt dokument";
     img.className="doc-preview";el.appendChild(img);
-    status("Bilde mottatt. Automatisk tekstlesing er ikke aktiv. Kontroller originalen og fyll inn beløp og dato selv.");
+    $("docOcrWrap").hidden=false;
+    status("Bilde mottatt. Du kan prøve valgfri lokal OCR, eller fylle inn alle felt selv.");
     return;
   }
   $("docExtractWrap").hidden=false;
@@ -85,6 +144,7 @@ async function fileChanged(){
     const text=await readPdf(f);
     if(selectedFile!==f)return;
     $("docExtract").value=text;
+    showSuggestions(text);
     status(text?"PDF-tekst hentet lokalt. Kontroller originalen og alle feltene før lagring.":"PDF mangler uttrekkbar tekst. Fyll inn opplysningene manuelt.");
   }catch(e){
     if(selectedFile!==f)return;
@@ -207,6 +267,7 @@ async function confirm(e){
     await refreshDocuments();
     $("docForm").reset();freePreview();selectedFile=null;sha=null;
     $("docExtractWrap").hidden=true;$("docExtract").value="";
+    $("docSuggestions").hidden=true;$("docOcrWrap").hidden=true;
     $("docPreview").textContent="Ingen dokument valgt";
   }catch(error){
     await recordEvent("finance_document_failed",{stage:saved?"brain_or_refresh":"storage_or_confirmation",error_code:"DOCUMENT_OPERATION_FAILED"});
@@ -255,10 +316,14 @@ function init(){
   $("docTheme").onclick=()=>window.FourSapienTheme?.toggle?.();
   $("docKind").onchange=kindChanged;
   $("docFile").onchange=fileChanged;
+  $("docOcr").onclick=runLocalOcr;
+  $("docExtract").addEventListener("input",()=>showSuggestions($("docExtract").value));
+  $("docKind").addEventListener("change",()=>showSuggestions($("docExtract").value));
   $("docForm").onsubmit=confirm;
   $("docForm").onreset=()=>setTimeout(()=>{
     freePreview();selectedFile=null;sha=null;
     $("docExtractWrap").hidden=true;$("docExtract").value="";
+    $("docSuggestions").hidden=true;$("docOcrWrap").hidden=true;
     $("docPreview").textContent="Ingen dokument valgt";kindChanged();
   },0);
   kindChanged();
