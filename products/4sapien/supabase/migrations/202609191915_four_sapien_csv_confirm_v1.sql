@@ -46,55 +46,7 @@ begin
     if coalesce(v_row->>'row_index','') !~ '^[0-9]{1,6}$'
       then raise exception 'INVALID_CSV_ROW_INDEX'; end if;
     v_index:=(v_row->>'row_index')::integer;
-    if coalesce(v_row->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}
-      then raise exception 'INVALID_CSV_DATE'; end if;
-    begin v_date:=(v_row->>'date')::date; exception when others then raise exception 'INVALID_CSV_DATE'; end;
-    if to_char(v_date,'YYYY-MM-DD')<>(v_row->>'date') then raise exception 'INVALID_CSV_DATE';end if;
-    v_fingerprint:=p_sha256||':'||v_index::text;
-    select e.id into v_existing from public.four_sapien_finance_events e
-      where e.user_id=v_uid and e.state<>'deleted'
-        and e.meta->>'csv_import_fingerprint'=v_fingerprint limit 1;
-    if v_existing is not null then
-      v_duplicates:=v_duplicates+1;
-      v_list:=v_list||jsonb_build_array(jsonb_build_object('row_index',v_index,'state','DUPLICATE'));
-      continue;
-    end if;
-    -- Fail closed on potential overlap with manual receipts, bills and older imports.
-    if exists(
-      select 1 from public.four_sapien_finance_events e
-      where e.user_id=v_uid and e.state<>'deleted'
-        and e.type in (v_kind,case when v_kind='spend' then 'bill' else 'income' end)
-        and abs(e.amount)=v_amt
-        and e.occurred_on between v_date-1 and v_date+1
-        and lower(trim(e.name))=lower(v_name)
-    ) then
-      v_review:=v_review+1;
-      v_list:=v_list||jsonb_build_array(jsonb_build_object('row_index',v_index,'state','POSSIBLE_EXISTING'));
-      continue;
-    end if;
-    v_saved:=public.four_sapien_finance_save_event(null,jsonb_build_object(
-      'type',v_kind,'name',v_name,'amount',v_amt,'currency','NOK',
-      'occurred_on',v_date,'recurring','once','state','active',
-      'source','import','truth','user_confirmed',
-      'meta',jsonb_build_object('confirmed',true,'csv_import_fingerprint',v_fingerprint,
-        'csv_import_sha256',p_sha256,'csv_row_index',v_index,
-        'bank_origin','USER_REVIEWED_CSV','category_review',true)
-    ));
-    v_created:=v_created+1;
-    v_list:=v_list||jsonb_build_array(jsonb_build_object('row_index',v_index,'state','SAVED','id',v_saved->>'id'));
-  end loop;
-  insert into public.four_sapien_finance_import_batches(user_id,filename,rows,matched,duplicates,status,meta)
-  values(v_uid,p_filename,jsonb_array_length(p_rows),v_review,v_duplicates,'review',
-    jsonb_build_object('csv_sha256',p_sha256,'source','user_reviewed_csv','inserted',v_created,
-      'review_required',v_review,'no_auto_reconciliation',true)) returning id into v_batch;
-  return jsonb_build_object('state','REVIEWED','batch_id',v_batch,
-    'inserted',v_created,'duplicates',v_duplicates,'review_required',v_review,'results',v_list);
-end;
-$function$;
-
-revoke all on function public.four_sapien_finance_confirm_csv_import(text,text,jsonb) from public,anon;
-grant execute on function public.four_sapien_finance_confirm_csv_import(text,text,jsonb) to authenticated,service_role;
-
+    if coalesce(v_row->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
       then raise exception 'INVALID_CSV_DATE'; end if;
     begin v_date:=(v_row->>'date')::date; exception when others then raise exception 'INVALID_CSV_DATE'; end;
     if to_char(v_date,'YYYY-MM-DD')<>(v_row->>'date') then raise exception 'INVALID_CSV_DATE';end if;
