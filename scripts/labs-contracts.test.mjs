@@ -178,3 +178,17 @@ test("private Founder finance/health/legal truth is not projected into current L
   assert.doesNotMatch(publicProjection, /AAP/i);
   assert.doesNotMatch(publicProjection, /Nordnet/i);
 });
+
+test("LABS canonical host stays isolated and Atlas occurrence popup uses safe DOM", () => {
+  const router = fs.readFileSync("src/routes/router.tsx", "utf8");
+  const world = fs.readFileSync("src/earth/World.tsx", "utf8");
+  const species = fs.readFileSync("src/components/species/SpeciesAtlasWindow.tsx", "utf8");
+  assert.ok(router.includes('labs.4planet.org'));
+  assert.ok(router.includes('return isLabsHost() ? <LabsV4 /> : <Home />;'));
+  assert.ok(router.includes('<Route path="*" element={isLabsHost() ? <LabsV4 /> : <NotFound />} />'));
+  assert.ok(world.includes('import * as maplibregl from "maplibre-gl";'));
+  assert.ok(species.includes('import * as maplibregl from "maplibre-gl";'));
+  assert.ok(species.includes('.setDOMContent(popup)'));
+  assert.ok(species.includes('recordUrl.hostname === "www.gbif.org"'));
+  assert.ok(!species.includes('.setHTML('), "untrusted GBIF content must not become HTML");
+});
