@@ -79,6 +79,12 @@ jobs:
           node --check "$SITE/4sapien-documents.js"
           node --check "$SITE/4sapien-document-analysis.js"
           node products/4sapien/qa/test_document_analysis.cjs
+          node --check "$SITE/4sapien-csv.js"
+          node --check "$SITE/4sapien-import.js"
+          node products/4sapien/qa/test_csv_import.cjs
+          grep -Fq 'four_sapien_finance_confirm_csv_import' "$SITE/4sapien-import.js"
+          grep -Fq '/4sapien-csv.js' "$SITE/app/money/import/index.html"
+          grep -Fq '/app/money/import/' "$SITE/app/money/documents/index.html"
           grep -Fq '/4sapien-document-analysis.js' "$SITE/app/money/documents/index.html"
           grep -Fq 'docOcr' "$SITE/4sapien-documents.js"
           grep -Fq 'showSuggestions' "$SITE/4sapien-documents.js"
