@@ -35,6 +35,14 @@ root.write_text(s)
 # FOOD — preserve broad discovery, fix dark mode, identity/home, desktop width, CTA layout.
 s=food.read_text()
 s=once(s,'dark:{paper:"#000000",ink:"var(--paper)",blue:"#7A7AFF",red:"#FF6A47",green:"#3AE86F",grey:"#6B6B6B",soft:"#C7C2BA",faint:"#8C877F",line:"rgba(255,255,255,0.13)",line2:"rgba(255,255,255,0.22)",blueWash:"rgba(122,122,255,0.12)",redWash:"rgba(255,106,71,0.12)",fill:"#0B0B0B"}', 'dark:{paper:"var(--paper)",ink:"var(--ink)",blue:"var(--wc)",red:"#FF6A47",green:"#3AE86F",grey:"#6B6B6B",soft:"var(--soft)",faint:"var(--faint)",line:"var(--line)",line2:"var(--line2)",blueWash:"rgba(58,232,111,0.10)",redWash:"rgba(255,106,71,0.12)",fill:"var(--fill)"}', 'Food dark theme')
+# A cancelled product request must never leave Food in permanent loading state.
+# Ignore superseded requests, but show explicit retry for the active timed-out search.
+s=once(s,'catch(e){clearTimeout(to);if(e&&e.name!=="AbortError"){setSourceState(e.code||"SOURCE_DOWN");setSt("error");}}},[q]);',
+         'catch(e){clearTimeout(to);if(ab.current!==c)return;setSourceState(e?.name==="AbortError"?"TIMEOUT":e?.code||"SOURCE_DOWN");setSt("error");}finally{if(ab.current===c)ab.current=null}},[q]);',
+         'Food bounded search recovery')
+s=once(s,'sourceState==="AUTH_REQUIRED"?"Innloggingen må fornyes.":"En produktkilde svarer ikke akkurat nå."',
+         'sourceState==="AUTH_REQUIRED"?"Innloggingen må fornyes.":sourceState==="TIMEOUT"?"Søket brukte for lang tid. Prøv igjen.":"En produktkilde svarer ikke akkurat nå."',
+         'Food explicit timeout state')
 s=once(s,'function ProductRow({p,onOpen,onAdd,added,avoid}){', 'function knownStores(p){return [...new Set([...(p?.prices||[]).map(x=>x?.store),...(p?.embla_prices||[]).map(x=>x?.store),p?.priceStore,p?.embla_store].filter(Boolean).map(x=>String(x).trim()))]}function storeMatch(p,store){if(!store)return false;const q=String(store).toLocaleLowerCase("nb-NO");return knownStores(p).some(x=>x.toLocaleLowerCase("nb-NO").includes(q)||q.includes(x.toLocaleLowerCase("nb-NO")))}function ProductRow({p,onOpen,onAdd,added,avoid}){', 'Food store helper')
 old='([p.brand,p.qty].filter(Boolean).join(" · ")||p.catLabel)'
 new='(([p.brand,p.qty].filter(Boolean).join(" · ")||p.catLabel)+(knownStores(p).length?" · Kjent hos "+knownStores(p).join(" · "):""))'
@@ -94,7 +102,7 @@ brain.write_text(s)
 
 for p, markers in {
  root:['4sapien-live-hardening.js','credit_balance_exhausted','AbortController','55000'],
- food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA'],
+ food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA','TIMEOUT'],
  money:['fs-money-main','PENGER · EMBLA','4sapien-live-hardening.js'],
  brain:['persistDirectContextFallback','MODEL_PENDING','brainIdentity','brainTheme','/4sapien-theme.js','w-embla','REQUEST_TIMEOUT','AbortController'],
 }.items():
