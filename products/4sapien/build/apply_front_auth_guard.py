@@ -45,7 +45,7 @@ script = r'''<script id="four-sapien-front-auth">
       if(!r.ok){link.textContent='Inn';return;}
       var user=await r.json();if(!user||!user.id)return;
       var raw=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'4PLANET ID';
-      var short=String(raw).trim().split(/\\s+/)[0].slice(0,24);
+      var short=String(raw).trim().split(/\s+/)[0].slice(0,24);
       link.textContent=short+' · ID ✓';
       link.setAttribute('aria-label',String(raw)+' · 4PLANET ID – innlogget');
       link.setAttribute('title',String(raw)+(user.email?' · '+user.email:''));
