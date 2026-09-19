@@ -209,6 +209,7 @@ async function confirm(e){
     $("docExtractWrap").hidden=true;$("docExtract").value="";
     $("docPreview").textContent="Ingen dokument valgt";
   }catch(error){
+    await recordEvent("finance_document_failed",{stage:saved?"brain_or_refresh":"storage_or_confirmation",error_code:"DOCUMENT_OPERATION_FAILED"});
     // A network error after RPC could hide a successful commit: never delete the uploaded original.
     status("Kunne ikke bekrefte hele operasjonen: "+errText(error)+
       (uploadedPath&&!saved?" Originalen kan være lagret privat. Sjekk listen før du prøver igjen.":""),true);
@@ -261,7 +262,7 @@ function init(){
     $("docPreview").textContent="Ingen dokument valgt";kindChanged();
   },0);
   kindChanged();
-  identify().then(refreshDocuments).catch(e=>{
+  identify().then(async()=>{await recordEvent("document_intake_opened",{surface:"money_docs"});await refreshDocuments()}).catch(e=>{
     status("Logg inn via 4SAPIEN for å bruke private dokumenter: "+errText(e),true);
     $("docList").textContent="Logg inn for å vise dine dokumenter.";
   });
