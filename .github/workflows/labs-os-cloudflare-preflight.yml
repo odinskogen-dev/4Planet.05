@@ -28,6 +28,7 @@ jobs:
           if [[ -n "${ACCOUNT_FALLBACK:-}" ]]; then account="$ACCOUNT_FALLBACK"; fi
           report='/tmp/labs-cf-preflight.md'
           printf '# LABS OS — Cloudflare preflight\n\nExact GitHub SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
+          trap 'rc=$?; printf "\\nRead-only audit exit code: %s\\n" "$rc" >> "$report"' EXIT
           token=''
           selected=''
           for choice in PRIMARY FACTORY; do
@@ -44,7 +45,7 @@ jobs:
             cat "$report"
             exit 2
           fi
-          echo '::add-mask::'\"$token"
+          echo "::add-mask::$token"
           printf 'Cloudflare API token: verified via existing GitHub secret (%s).\n\n' "$selected" >> "$report"
           auth=(-H "Authorization: Bearer $token")
           zone="$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones?name=4planet.org")"
