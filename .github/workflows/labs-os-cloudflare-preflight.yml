@@ -1,0 +1,83 @@
+name: LABS OS — Cloudflare preflight (read only)
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/labs-os-cloudflare-preflight.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: labs-os-cloudflare-preflight
+  cancel-in-progress: true
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TOKEN_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      ACCOUNT_FALLBACK: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+    steps:
+      - name: Cloudflare credential and canonical LABS routing audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          account='d53c17b06219066a0325eec01c21729e'
+          if [[ -n "${ACCOUNT_FALLBACK:-}" ]]; then account="$ACCOUNT_FALLBACK"; fi
+          report='/tmp/labs-cf-preflight.md'
+          printf '# LABS OS — Cloudflare preflight\n\nExact GitHub SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
+          token=''
+          selected=''
+          for choice in PRIMARY FACTORY; do
+            candidate=''
+            [[ "$choice" == PRIMARY ]] && candidate="$TOKEN_PRIMARY"
+            [[ "$choice" == FACTORY ]] && candidate="$TOKEN_FACTORY"
+            [[ -n "$candidate" ]] || continue
+            candidate="${candidate#Bearer }"
+            verify="$(curl -sS --max-time 20 -H "Authorization: Bearer $candidate" "$api/user/tokens/verify" || true)"
+            if [[ "$(jq -r '.success // false' <<<"$verify" 2>/dev/null)" == 'true' ]]; then token="$candidate"; selected="$choice"; break; fi
+          done
+          if [[ -z "$token" ]]; then
+            printf 'BLOCKED: no configured Cloudflare token passed verification. No Cloudflare mutation performed.\n' >> "$report"
+            cat "$report"
+            exit 2
+          fi
+          echo '::add-mask::'\"$token"
+          printf 'Cloudflare API token: verified via existing GitHub secret (%s).\n\n' "$selected" >> "$report"
+          auth=(-H "Authorization: Bearer $token")
+          zone="$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones?name=4planet.org")"
+          zone_id="$(jq -r '.result[0].id // empty' <<<"$zone")"
+          if [[ -z "$zone_id" ]]; then
+            echo 'BLOCKED: 4planet.org zone is not visible to this token.' >> "$report"
+            cat "$report"
+            exit 3
+          fi
+          printf 'Cloudflare zone: 4planet.org; state: %s.\n\n' "$(jq -r '.result[0].status' <<<"$zone")" >> "$report"
+          dns="$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones/$zone_id/dns_records?name=labs.4planet.org")"
+          printf '## Exact LABS DNS\n\n' >> "$report"
+          jq -r 'if (.result|length)==0 then "- NO EXACT RECORD" else .result[] | "- " + .type + " " + .name + " → " + (.content // "") + " proxied=" + (.proxied|tostring) end' <<<"$dns" >> "$report"
+          printf '\n## Existing Worker routes for LABS\n\n' >> "$report"
+          routes="$(curl -sS --max-time 20 "${auth[@]}" "$api/zones/$zone_id/workers/routes" || true)"
+          jq -r '.result[]? | select(.pattern|contains("labs.4planet.org")) | "- " + .pattern + " → " + (.script // "<none>")' <<<"$routes" >> "$report" || true
+          domains="$(curl -sS --max-time 20 "${auth[@]}" "$api/accounts/$account/workers/domains" || true)"
+          jq -r '.result[]? | select(.hostname=="labs.4planet.org") | "- WORKER CUSTOM DOMAIN: " + .hostname + " → " + (.service // "")' <<<"$domains" >> "$report" || true
+          printf '\n## Pages project\n\n' >> "$report"
+          page="$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05")"
+          jq -r '"- Name: " + (.result.name // "UNKNOWN") + "\n- Production branch: " + (.result.production_branch // "UNKNOWN") + "\n- Domains: " + ([.result.domains[]?]|join(", "))' <<<"$page" >> "$report"
+          printf '\n## LABS candidate deployments\n\n' >> "$report"
+          deployments="$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05/deployments?env=preview&page=1&per_page=100")"
+          jq -r '[.result[]? | select(.deployment_trigger.metadata.branch == "labs/overview-v1")] | .[:4][] | "- SHA " + (.deployment_trigger.metadata.commit_hash // "UNKNOWN") + " | " + (.latest_stage.status // "UNKNOWN") + " | " + (.url // "NO_URL")' <<<"$deployments" >> "$report"
+          cat "$report"
+      - name: Report to LABS OS existing task
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -f /tmp/labs-cf-preflight.md ]]; then
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body-file /tmp/labs-cf-preflight.md
+          else
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "Cloudflare read-only preflight failed before its report; inspect this exact workflow run. No Cloudflare mutation."
+          fi
