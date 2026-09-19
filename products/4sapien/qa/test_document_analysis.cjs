@@ -1,9 +1,12 @@
 // Synthetic-only pure tests: no real user documents; no API calls.
 const assert=require("node:assert/strict");
-const p=require("../source/4sapien-document-analysis.js");
-assert.deepEqual(p.parseAmount("1 250,00"),{kr:1250,ore:0,wholeKroner:true});
-assert.deepEqual(p.parseAmount("1.250,50"),{kr:1250,ore:50,wholeKroner:false});
-assert.deepEqual(p.parseAmount("1250"),{kr:1250,ore:0,wholeKroner:true});
+const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
+const ctx={module:{exports:{}}};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../source/4sapien-document-analysis.js"),"utf8"),ctx);
+const p=ctx.module.exports;
+assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1 250,00"),{kr:1250,ore:0,wholeKroner:true}));
+assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1.250,50"),{kr:1250,ore:50,wholeKroner:false}));
+assert.deepEqual(JSON.parse(JSON.stringify(p.parseAmount("1250"),{kr:1250,ore:0,wholeKroner:true}));
 assert.equal(p.parseAmount("0"),null);
 assert.equal(p.parseAmount("abc"),null);
 assert.equal(p.dateFrom("31.02.2026"),null);
