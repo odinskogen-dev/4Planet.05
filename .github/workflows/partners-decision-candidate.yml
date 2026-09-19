@@ -99,6 +99,9 @@ jobs:
           done
           curl -LsSI "$URL/" | grep -qi '^x-robots-tag:.*noindex' || exit 6
           curl -LsS "$URL/" | grep -qi '<meta name="robots" content="noindex' || exit 7
+          capability=$(curl -fsS "$URL/api/leads")
+          jq -e '.ok==true and .acceptingEnquiries==false' <<<"$capability" >/dev/null || { echo "PARTNERS_INTAKE_CAPABILITY_MISMATCH"; exit 8; }
+          echo "PARTNERS_HOSTED_INTAKE_UNCONFIGURED_FAIL_CLOSED=PASS"
           echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
       - name: Candidate evidence
         if: always()
