@@ -72,7 +72,7 @@ function showSuggestions(text){
     buttons.appendChild(b);
   };
   if(parsed.amount){
-    if(parsed.amount.wholeKroner)choice("Beløp",parsed.amount.kr+" kr","docAmount");
+    if(parsed.amount.wholeKroner)choice("Beløp",parsed.amount.kr,"docAmount");
     else {const note=document.createElement("span");note.className="doc-note";note.textContent="Beløp med øre krever manuell kontroll; ingen avrunding er gjort.";buttons.appendChild(note);}
   }
   if(parsed.date)choice($("docKind").value==="bill"?"Forfall":"Dato",parsed.date.value,"docDate");
