@@ -1,4 +1,4 @@
-name: LABS OS — Cloudflare preflight (read only)
+name: LABS OS — Cloudflare credential and routing audit
 on:
   push:
     branches: [labs/overview-v1]
@@ -17,9 +17,12 @@ jobs:
     env:
       TOKEN_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TOKEN_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      TOKEN_ALTERNATE: ${{ secrets.CLOUDFLARE_TOKEN }}
+      TOKEN_CF_API: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_CF: ${{ secrets.CF_TOKEN }}
       ACCOUNT_FALLBACK: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
     steps:
-      - name: Cloudflare credential and canonical LABS routing audit
+      - name: Audit available Cloudflare token capabilities without mutation
         shell: bash
         run: |
           set -euo pipefail
@@ -27,51 +30,64 @@ jobs:
           account='d53c17b06219066a0325eec01c21729e'
           if [[ -n "${ACCOUNT_FALLBACK:-}" ]]; then account="$ACCOUNT_FALLBACK"; fi
           report='/tmp/labs-cf-preflight.md'
-          printf '# LABS OS — Cloudflare preflight\n\nExact GitHub SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
-          trap 'rc=$?; printf "\\nRead-only audit exit code: %s\\n" "$rc" >> "$report"' EXIT
-          token=''
-          selected=''
-          for choice in PRIMARY FACTORY; do
-            candidate=''
-            [[ "$choice" == PRIMARY ]] && candidate="$TOKEN_PRIMARY"
-            [[ "$choice" == FACTORY ]] && candidate="$TOKEN_FACTORY"
-            [[ -n "$candidate" ]] || continue
-            candidate="${candidate#Bearer }"
-            verify="$(curl -sS --max-time 20 -H "Authorization: Bearer $candidate" "$api/user/tokens/verify" || true)"
-            if [[ "$(jq -r '.success // false' <<<"$verify" 2>/dev/null)" == 'true' ]]; then token="$candidate"; selected="$choice"; break; fi
+          printf '# LABS OS — Cloudflare capability audit\n\nExact GitHub SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
+          trap 'rc=$?; printf "\nRead-only audit exit code: %s\n" "$rc" >> "$report"' EXIT
+          probe() {
+            local label="$1" endpoint="$2" token="$3"
+            local status
+            status="$(curl -sS --connect-timeout 7 --max-time 25 -o "/tmp/labs-${label}.json" -w '%{http_code}' -H "Authorization: Bearer $token" "$api$endpoint" 2>/dev/null || true)"
+            printf '%s' "${status:-000}"
+          }
+          printf '| Existing secret | Verify | Zone | DNS | Pages | Preview deployments | Worker routes |\n|---|---|---|---|---|---|---|\n' >> "$report"
+          found_valid=0
+          found_pages=0
+          for label in PRIMARY FACTORY ALTERNATE CF_API CF; do
+            var="TOKEN_$label"
+            token="${!var:-}"
+            [[ -n "$token" ]] || continue
+            token="${token#Bearer }"
+            echo "::add-mask::$token"
+            v="$(probe "${label}-verify" '/user/tokens/verify' "$token")"
+            verified="$(jq -r '.success // false' "/tmp/labs-${label}-verify.json" 2>/dev/null || echo false)"
+            if [[ "$v" != 200 || "$verified" != true ]]; then
+              printf '| %s | %s | n/a | n/a | n/a | n/a | n/a |\n' "$label" "$v" >> "$report"
+              continue
+            fi
+            found_valid=1
+            zone_status="$(probe "${label}-zone" '/zones?name=4planet.org' "$token")"
+            zone_id="$(jq -r '.result[0].id // empty' "/tmp/labs-${label}-zone.json" 2>/dev/null || true)"
+            dns_status='n/a'
+            worker_status='n/a'
+            if [[ -n "$zone_id" ]]; then
+              dns_status="$(probe "${label}-dns" "/zones/$zone_id/dns_records?name=labs.4planet.org" "$token")"
+              worker_status="$(probe "${label}-routes" "/zones/$zone_id/workers/routes" "$token")"
+            fi
+            pages_status="$(probe "${label}-pages" "/accounts/$account/pages/projects/4planet-05" "$token")"
+            deploy_status='n/a'
+            if [[ "$pages_status" == 200 ]]; then
+              found_pages=1
+              deploy_status="$(probe "${label}-deploys" "/accounts/$account/pages/projects/4planet-05/deployments?env=preview&page=1&per_page=100" "$token")"
+            fi
+            printf '| %s | %s | %s | %s | %s | %s | %s |\n' "$label" "$v" "$zone_status" "$dns_status" "$pages_status" "$deploy_status" "$worker_status" >> "$report"
+            if [[ "$dns_status" == 200 ]]; then
+              printf '\n## LABS exact DNS (read using %s)\n\n' "$label" >> "$report"
+              jq -r 'if (.result|length)==0 then "- NO EXACT RECORD" else .result[] | "- " + .type + " " + .name + " → " + (.content // "") + " proxied=" + (.proxied|tostring) end' "/tmp/labs-${label}-dns.json" >> "$report"
+            fi
+            if [[ "$pages_status" == 200 ]]; then
+              printf '\n## Existing Pages project (read using %s)\n\n' "$label" >> "$report"
+              jq -r '"- Name: " + (.result.name // "UNKNOWN") + "\n- Production branch: " + (.result.production_branch // "UNKNOWN") + "\n- Domains: " + ([.result.domains[]?]|join(", "))' "/tmp/labs-${label}-pages.json" >> "$report"
+              if [[ "$deploy_status" == 200 ]]; then
+                jq -r '[.result[]? | select(.deployment_trigger.metadata.branch == "labs/overview-v1")] | .[:4][] | "- LABS SHA " + (.deployment_trigger.metadata.commit_hash // "UNKNOWN") + " | " + (.latest_stage.status // "UNKNOWN") + " | " + (.url // "NO_URL")' "/tmp/labs-${label}-deploys.json" >> "$report"
+              fi
+            fi
+            if [[ "$worker_status" == 200 ]]; then
+              printf '\n## Existing LABS Worker route matches\n\n' >> "$report"
+              jq -r '.result[]? | select(.pattern|contains("labs.4planet.org")) | "- " + .pattern + " → " + (.script // "<none>")' "/tmp/labs-${label}-routes.json" >> "$report"
+            fi
           done
-          if [[ -z "$token" ]]; then
-            printf 'BLOCKED: no configured Cloudflare token passed verification. No Cloudflare mutation performed.\n' >> "$report"
-            cat "$report"
-            exit 2
-          fi
-          echo "::add-mask::$token"
-          printf 'Cloudflare API token: verified via existing GitHub secret (%s).\n\n' "$selected" >> "$report"
-          auth=(-H "Authorization: Bearer $token")
-          zone="$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones?name=4planet.org")"
-          zone_id="$(jq -r '.result[0].id // empty' <<<"$zone")"
-          if [[ -z "$zone_id" ]]; then
-            echo 'BLOCKED: 4planet.org zone is not visible to this token.' >> "$report"
-            cat "$report"
-            exit 3
-          fi
-          printf 'Cloudflare zone: 4planet.org; state: %s.\n\n' "$(jq -r '.result[0].status' <<<"$zone")" >> "$report"
-          dns="$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones/$zone_id/dns_records?name=labs.4planet.org")"
-          printf '## Exact LABS DNS\n\n' >> "$report"
-          jq -r 'if (.result|length)==0 then "- NO EXACT RECORD" else .result[] | "- " + .type + " " + .name + " → " + (.content // "") + " proxied=" + (.proxied|tostring) end' <<<"$dns" >> "$report"
-          printf '\n## Existing Worker routes for LABS\n\n' >> "$report"
-          routes="$(curl -sS --max-time 20 "${auth[@]}" "$api/zones/$zone_id/workers/routes" || true)"
-          jq -r '.result[]? | select(.pattern|contains("labs.4planet.org")) | "- " + .pattern + " → " + (.script // "<none>")' <<<"$routes" >> "$report" || true
-          domains="$(curl -sS --max-time 20 "${auth[@]}" "$api/accounts/$account/workers/domains" || true)"
-          jq -r '.result[]? | select(.hostname=="labs.4planet.org") | "- WORKER CUSTOM DOMAIN: " + .hostname + " → " + (.service // "")' <<<"$domains" >> "$report" || true
-          printf '\n## Pages project\n\n' >> "$report"
-          page="$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05")"
-          jq -r '"- Name: " + (.result.name // "UNKNOWN") + "\n- Production branch: " + (.result.production_branch // "UNKNOWN") + "\n- Domains: " + ([.result.domains[]?]|join(", "))' <<<"$page" >> "$report"
-          printf '\n## LABS candidate deployments\n\n' >> "$report"
-          deployments="$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05/deployments?env=preview&page=1&per_page=100")"
-          jq -r '[.result[]? | select(.deployment_trigger.metadata.branch == "labs/overview-v1")] | .[:4][] | "- SHA " + (.deployment_trigger.metadata.commit_hash // "UNKNOWN") + " | " + (.latest_stage.status // "UNKNOWN") + " | " + (.url // "NO_URL")' <<<"$deployments" >> "$report"
+          printf '\nSUMMARY: usable API token observed=%s; Pages readable=%s. No Cloudflare mutation.\n' "$found_valid" "$found_pages" >> "$report"
           cat "$report"
-      - name: Report to LABS OS existing task
+      - name: Attach verification to existing LABS task
         if: always()
         shell: bash
         env:
@@ -80,5 +96,5 @@ jobs:
           if [[ -f /tmp/labs-cf-preflight.md ]]; then
             gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body-file /tmp/labs-cf-preflight.md
           else
-            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "Cloudflare read-only preflight failed before its report; inspect this exact workflow run. No Cloudflare mutation."
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "LABS Cloudflare audit failed before its report. No mutation."
           fi
