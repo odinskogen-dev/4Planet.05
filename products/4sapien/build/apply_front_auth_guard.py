@@ -33,23 +33,24 @@ script = r'''<script id="four-sapien-front-auth">
     }catch(_e){}
     return null;
   }
-  function markSignedIn(){
+  async function markSignedIn(){
     var link=document.getElementById('account-link');
-    if(!link) return;
-    var token=tokenFromStorage();
-    if(!token){ link.textContent='Inn'; return; }
-    fetch('https://ghvdzetmplqkdtfqiror.supabase.co/auth/v1/user',{
-      headers:{
-        apikey:'sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE',
-        Authorization:'Bearer '+token
-      }
-    }).then(function(r){return r.ok?r.json():null}).then(function(user){
-      if(!user||!user.id) return;
-      link.textContent='ID ✓';
-      link.setAttribute('aria-label','4PLANET ID – innlogget');
-      link.setAttribute('title',user.email||'4PLANET ID');
+    if(!link)return;
+    try{
+      var token=window.FourSapienSessionToken?await window.FourSapienSessionToken():tokenFromStorage();
+      if(!token){link.textContent='Inn';return;}
+      var r=await fetch('https://ghvdzetmplqkdtfqiror.supabase.co/auth/v1/user',{
+        headers:{apikey:'sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE',Authorization:'Bearer '+token}
+      });
+      if(!r.ok){link.textContent='Inn';return;}
+      var user=await r.json();if(!user||!user.id)return;
+      var raw=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||'4PLANET ID';
+      var short=String(raw).trim().split(/\\s+/)[0].slice(0,24);
+      link.textContent=short+' · ID ✓';
+      link.setAttribute('aria-label',String(raw)+' · 4PLANET ID – innlogget');
+      link.setAttribute('title',String(raw)+(user.email?' · '+user.email:''));
       link.setAttribute('data-signed-in','1');
-    }).catch(function(){});
+    }catch(_e){link.textContent='Inn';}
   }
   // Legacy production gate compatibility: link.textContent='4PLANET ID ✓'
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',markSignedIn,{once:true});
