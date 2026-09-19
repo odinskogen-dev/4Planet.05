@@ -89,7 +89,7 @@ jobs:
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
-          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=40")
+          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=20")
           URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch=="partners-decision-candidate")][0].url // empty' <<<"$deps")
           [ -n "$URL" ] || { echo "PARTNERS_PREVIEW_FAIL=no exact SHA deployment"; exit 4; }
           echo "PARTNERS_CANDIDATE_PREVIEW=$URL"
