@@ -26,6 +26,14 @@ const WorldFallback = (
   <div style={{ position: "fixed", inset: 0, background: "#080808" }} />
 );
 
+function isLabsHost() {
+  return typeof window !== "undefined" && window.location.hostname.toLowerCase() === "labs.4planet.org";
+}
+
+function RootHome() {
+  return isLabsHost() ? <LabsV4 /> : <Home />;
+}
+
 const toImpact = <Navigate to="/impact" replace />;
 const toJoin = <Navigate to="/join" replace />;
 const toBrands = <Navigate to="/brands" replace />;
@@ -38,7 +46,7 @@ function RedirectRecord() { const { recordId } = useParams(); return <Navigate t
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<RootHome />} />
       <Route path="/labs" element={<LabsV4 />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
       <Route path="/domains" element={<DomainsIndex />} />
@@ -79,8 +87,8 @@ export function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/culture/film" element={<CultureFilm />} />
       <Route path="/culture/play" element={<CulturePlay />} />
-      <Route path="/os" element={toAbout} />
-      <Route path="/os/*" element={toAbout} />
+      <Route path="/os" element={isLabsHost() ? <Navigate to="/" replace /> : toAbout} />
+      <Route path="/os/*" element={isLabsHost() ? <Navigate to="/" replace /> : toAbout} />
       <Route path="/m/:slug" element={<MtoMission />} />
       <Route path="/m/:slug/support" element={toImpact} />
       <Route path="/m/:slug/campaign" element={toImpact} />
@@ -99,7 +107,7 @@ export function AppRoutes() {
       <Route path="/magazine" element={toHome} />
       <Route path="/system" element={toHome} />
       <Route path="/404" element={<NotFound />} />
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={isLabsHost() ? <LabsV4 /> : <NotFound />} />
     </Routes>
   );
 }
