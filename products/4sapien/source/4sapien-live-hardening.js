@@ -4,21 +4,31 @@ const URL='https://ghvdzetmplqkdtfqiror.supabase.co';
 const KEY='sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE';
 const isRoot=()=>document.body.classList.contains('w-embla')&&location.pathname==='/';
 const isMoney=()=>document.body.classList.contains('w-money');
+let rootClient=null;
 function token(){try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(!/^sb-.*-auth-token$/.test(k))continue;const raw=localStorage.getItem(k);if(!raw)continue;const o=JSON.parse(raw);const t=o?.access_token||o?.currentSession?.access_token;if(t)return t;}}catch(e){}return null}
+async function freshToken(){
+  if(!isRoot())return token();
+  if(!rootClient&&window.supabase?.createClient)rootClient=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  if(!rootClient)return token();
+  const out=await rootClient.auth.getSession();
+  if(out.error)throw new Error('AUTH_SESSION_REFRESH_FAILED');
+  return out.data?.session?.access_token||null;
+}
+window.FourSapienSessionToken=freshToken;
 function headers(t,extra){return Object.assign({apikey:KEY,Authorization:'Bearer '+t,'Content-Type':'application/json'},extra||{})}
-async function api(path,opts){const t=token();if(!t)throw new Error('UNAUTHENTICATED');const r=await fetch(URL+path,Object.assign({},opts||{},{headers:headers(t,opts?.headers)}));const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.code||d?.state||('HTTP_'+r.status));return d}
+async function api(path,opts){const t=await freshToken();if(!t)throw new Error('UNAUTHENTICATED');const r=await fetch(URL+path,Object.assign({},opts||{},{headers:headers(t,opts?.headers)}));const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.code||d?.state||('HTTP_'+r.status));return d}
 function firstName(user){const raw=user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'4PLANET ID';return String(raw).trim().split(/\s+/)[0].slice(0,24)}
 function kr(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Math.round(Number(v)).toLocaleString('no-NO')+' kr':'UKJENT'}
 function escHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;')}
 let cachedUser=null;
-async function user(){if(cachedUser)return cachedUser;try{cachedUser=await api('/auth/v1/user');return cachedUser}catch(e){return null}}
+async function user(){if(cachedUser)return cachedUser;try{if(isRoot()&&rootClient){const r=await rootClient.auth.getUser();if(r.data?.user){cachedUser=r.data.user;return cachedUser}}cachedUser=await api('/auth/v1/user');return cachedUser}catch(e){return null}}
 async function emitEvent(eventType,worldName,payload){try{const u=await user();if(!u)return;await api('/rest/v1/four_sapien_embla_events',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({user_id:u.id,event_type:String(eventType).slice(0,80),world:worldName||'core',source:'4sapien-live-hardening',payload:payload||{}})})}catch(e){}}
 function oncePerSession(key,fn){try{const k='4sapien_evt_'+key;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');fn()}catch(e){fn()}}
 window.FourSapienProductEvent=(type,worldName,payload)=>emitEvent(type,worldName,payload);
 async function identity(){const u=await user();if(!u)return;const n=firstName(u);document.querySelectorAll('[data-fs-identity]').forEach(el=>{el.textContent=n+' · ID ✓';el.title=u.email||'4PLANET ID'});const root=document.getElementById('account-link');if(root){root.textContent=n+' · ID ✓';root.title=u.email||'4PLANET ID';}}
 
 function cardByKey(key){return [...document.querySelectorAll('#view .card')].find(c=>(c.querySelector('.k')?.textContent||'').toLowerCase().includes(key.toLowerCase()))}
-async function hydrateRoot(){if(!isRoot())return;await identity();const t=token();if(!t)return;let financeState='UNKNOWN',foodState='UNKNOWN';
+async function hydrateRoot(){if(!isRoot())return;await identity();const t=await freshToken().catch(()=>null);if(!t)return;let financeState='UNKNOWN',foodState='UNKNOWN';
  try{const twin=await api('/rest/v1/rpc/four_sapien_finance_twin',{method:'POST',body:JSON.stringify({p_year:new Date().getFullYear()})});const c=cardByKey('Penger');if(c&&twin?.state==='AVAILABLE'){financeState='AVAILABLE';const flag=c.querySelector('.flag');if(flag)flag.textContent=twin?.liquidity?.amount==null?'DELVIS':'LIVE';const e=c.querySelector('.empty');if(e){const liq=twin?.liquidity?.amount;const nw=twin?.net_worth?.amount;e.textContent=(liq==null?'Likviditet UKJENT':kr(liq)+' tilgjengelig')+(nw==null?'':' · '+kr(nw)+' netto formue');}}}catch(e){const c=cardByKey('Penger');if(c){const flag=c.querySelector('.flag');if(flag)flag.textContent='UKJENT';const el=c.querySelector('.empty');if(el)el.textContent='Økonomidata kunne ikke hentes akkurat nå. Prøv igjen.';}}
  try{const today=new Date(),d=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()));const day=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-day);const wk=d.toISOString().slice(0,10);const [mp,li]=await Promise.all([api('/rest/v1/four_sapien_meal_plans?select=meal_names&week_start=eq.'+wk+'&limit=1'),api('/rest/v1/four_sapien_list_items?select=id&limit=100')]);const meals=Array.isArray(mp?.[0]?.meal_names)?mp[0].meal_names.length:0;const items=Array.isArray(li)?li.length:0;const c=cardByKey('Mat');if(c){foodState='AVAILABLE';const flag=c.querySelector('.flag');if(flag)flag.textContent=(meals||items)?'LIVE':'SETT OPP';const e=c.querySelector('.empty');if(e&& (meals||items))e.textContent=(meals?meals+' middager planlagt':'Ingen middager planlagt')+(items?' · '+items+' varer på handlelisten':'');}}catch(e){const c=cardByKey('Mat');if(c){const flag=c.querySelector('.flag');if(flag)flag.textContent='UKJENT';const el=c.querySelector('.empty');if(el)el.textContent='Matdata kunne ikke hentes akkurat nå. Prøv igjen.';}}
  const notesOk=await renderNotes();oncePerSession('home_hydrated',()=>emitEvent('home_hydrated','core',{finance:financeState,food:foodState,notes:notesOk?'AVAILABLE':'UNKNOWN'}));}
