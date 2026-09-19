@@ -45,9 +45,10 @@ for p in paths:
     s,n=legacy.subn('',s,count=1)
     if n not in (0,1): raise SystemExit(f'Finance legacy theme runtime duplicate: {p}')
     if 'window.__toggleTheme' in s: raise SystemExit(f'Finance second theme runtime remains: {p}')
-    if 'four-sapien-finance-theme-bridge' not in s:
-        if s.count('</body>')!=1: raise SystemExit(f'Finance body mismatch: {p}')
-        s=s.replace('</body>',bridge+'\n</body>',1)
+    # The React Finance shell already has the canonical theme-toggle.
+    # Never inject the obsolete fixed afTheme: it covered Claude's add button on iPhone.
+    if 'four-sapien-finance-theme-bridge' in s:
+        raise SystemExit(f'Second Finance theme-toggle present: {p}')
     if 'four-sapien-finance-unified-type-guard' not in s:
         if s.count('</head>')!=1: raise SystemExit(f'Finance type head mismatch: {p}')
         s=s.replace('</head>',final_style+'\n</head>',1)
