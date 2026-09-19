@@ -28,7 +28,9 @@ final_style=r'''<style id="four-sapien-finance-unified-type-guard">
 @media(min-width:1000px){#axeFin .af{max-width:1280px}}
 #axeFin h1,#axeFin h2,#axeFin h3,#axeFin h4,#axeFin h5,#axeFin h6{font-family:'Instrument Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;font-style:normal}
 #axeFin button,#axeFin input,#axeFin select,#axeFin textarea{font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important}
-#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:'Fragment Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-style:normal}
+#axeFin .mono,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:'Fragment Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-style:normal}
+/* Premium large-number typography: mono remains limited to small metadata. */
+#axeFin .big,#axeFin .val{font-family:'Instrument Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;letter-spacing:-.025em;font-style:normal}
 </style>'''
 
 legacy=re.compile(r"<script>\(function\(\)\{var r=document\.documentElement;function set\(t\)\{.*?window\.__toggleTheme=.*?</script>",re.S)
