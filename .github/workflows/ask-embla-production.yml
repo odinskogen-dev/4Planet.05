@@ -227,12 +227,13 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           [ -n "$url" ] || { echo 'Worker URL not resolved'; exit 11; }
           for i in 1 2 3 4 5; do
-            root_ok=0; food_ok=0; money_ok=0; css_ok=0
+            root_ok=0; food_ok=0; money_ok=0; css_ok=0; docs_ok=0
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/" -o /tmp/root.html && grep -q 'Se livet ditt klart.' /tmp/root.html && grep -q 'four-sapien-front-auth' /tmp/root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/food/" -o /tmp/food.html && grep -q 'four_sapien_meal_plans' /tmp/food.html && grep -q 'functions/v1/embla-products' /tmp/food.html && grep -q 'w-food' /tmp/food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/" -o /tmp/money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/money.html && grep -q 'w-money' /tmp/money.html && money_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "$url/app/money/documents/" -o /tmp/docs.html && grep -Fq 'Bekreft og lagre' /tmp/docs.html && curl -fsS "$url/4sapien-documents.js" -o /tmp/docs.js && grep -Fq 'four_sapien_finance_confirm_document' /tmp/docs.js && docs_ok=1 || true
             curl -fsS "$url/4sapien-design.css" -o /tmp/design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/design.css && curl -fsS "$url/4sapien-live-hardening.js" -o /tmp/hardening.js && grep -q 'fs-finance-year' /tmp/hardening.js && grep -q 'globalAppNav' /tmp/hardening.js && grep -q 'note_updated' /tmp/hardening.js && css_ok=1 || true
-            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
+            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ] && [ "$docs_ok" = 1 ]; then exit 0; fi
             sleep 2
           done
           echo 'Worker candidate runtime verification failed'
@@ -263,12 +264,13 @@ jobs:
           test "$(jq -r '.success' /tmp/domain.json)" = true
           echo 'deployed=1' >> "$GITHUB_OUTPUT"
           for i in 1 2 3 4 5 6 7 8; do
-            root_ok=0; food_ok=0; money_ok=0; css_ok=0
+            root_ok=0; food_ok=0; money_ok=0; css_ok=0; docs_ok=0
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/" -o /tmp/prod-root.html && grep -q 'Se livet ditt klart.' /tmp/prod-root.html && grep -q 'four-sapien-front-auth' /tmp/prod-root.html && root_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/food/" -o /tmp/prod-food.html && grep -q 'four_sapien_meal_plans' /tmp/prod-food.html && grep -q 'functions/v1/embla-products' /tmp/prod-food.html && grep -q 'w-food' /tmp/prod-food.html && food_ok=1 || true
             curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/" -o /tmp/prod-money.html && grep -q 'CLAUDE_UNIFIED_REDESIGN_20260917' /tmp/prod-money.html && grep -q 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/prod-money.html && grep -q 'w-money' /tmp/prod-money.html && money_ok=1 || true
+            curl -fsS -H 'Sec-Fetch-Mode: navigate' "https://${CUSTOM_DOMAIN}/app/money/documents/" -o /tmp/prod-docs.html && grep -Fq 'Bekreft og lagre' /tmp/prod-docs.html && curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-documents.js" -o /tmp/prod-docs.js && grep -Fq 'four_sapien_finance_confirm_document' /tmp/prod-docs.js && docs_ok=1 || true
             curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-design.css" -o /tmp/prod-design.css && grep -q '4SAPIEN DESIGN SYSTEM' /tmp/prod-design.css && curl -fsS "https://${CUSTOM_DOMAIN}/4sapien-live-hardening.js" -o /tmp/prod-hardening.js && grep -q 'fs-finance-year' /tmp/prod-hardening.js && grep -q 'globalAppNav' /tmp/prod-hardening.js && grep -q 'note_updated' /tmp/prod-hardening.js && css_ok=1 || true
-            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ]; then exit 0; fi
+            if [ "$root_ok" = 1 ] && [ "$food_ok" = 1 ] && [ "$money_ok" = 1 ] && [ "$css_ok" = 1 ] && [ "$docs_ok" = 1 ]; then exit 0; fi
             sleep 3
           done
           echo 'Custom-domain runtime verification failed'
