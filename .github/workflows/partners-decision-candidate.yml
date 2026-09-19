@@ -45,6 +45,61 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser route, mobile and intake tests
         run: node scripts/partners-decision-smoke.mjs
+
+      - name: Prepare preview noindex controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("dist/index.html")
+          s=p.read_text()
+          old='<meta name="robots" content="index,follow,max-image-preview:large" />'
+          new='<meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />'
+          if old not in s and new not in s:
+              raise SystemExit("PARTNERS_PREVIEW_NO_INDEX_META_MISSING")
+          p.write_text(s.replace(old,new))
+          Path("dist/_headers").write_text("/*\n  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet\n  X-Content-Type-Options: nosniff\n")
+          Path("dist/_redirects").write_text("/* /index.html 200\n")
+          Path("dist/robots.txt").write_text("User-agent: *\nDisallow: /\n")
+          PY
+      - name: Resolve existing GitHub Actions Cloudflare token for preview
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo "PARTNERS_PREVIEW_BLOCKED=Cloudflare token unavailable"; exit 2; }
+          TOKEN=$(printf "%s" "$TOKEN" | tr -d '\r\n' | sed -e 's/^Bearer //' -e 's/^bearer //' -e 's/^CLOUDFLARE_API_TOKEN=//' -e 's/^CF_API_TOKEN=//' -e 's/^"//' -e 's/"$//')
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zone=$(curl -fsS -H "Authorization: Bearer $TOKEN" "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Deploy existing Partners project to non-production preview
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=partners-decision-candidate --commit-hash="$GITHUB_SHA" --commit-dirty=false
+      - name: Verify exact hosted preview and server-side intake route
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=40")
+          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch=="partners-decision-candidate")][0].url // empty' <<<"$deps")
+          [ -n "$URL" ] || { echo "PARTNERS_PREVIEW_FAIL=no exact SHA deployment"; exit 4; }
+          echo "PARTNERS_CANDIDATE_PREVIEW=$URL"
+          for route in / /portfolio /4brand /opportunities /opportunities/brands-proof /for/company /for/science /enquire /dataroom /workspace; do
+            code=$(curl -LsS -o /tmp/partners-candidate-body -w '%{http_code}' "$URL$route")
+            [ "$code" = "200" ] || { echo "PARTNERS_PREVIEW_FAIL=$route:$code"; exit 5; }
+          done
+          curl -LsSI "$URL/" | grep -qi '^x-robots-tag:.*noindex' || exit 6
+          curl -LsS "$URL/" | grep -qi '<meta name="robots" content="noindex' || exit 7
+          echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
       - name: Candidate evidence
         if: always()
         run: |
