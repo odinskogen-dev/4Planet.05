@@ -1,0 +1,26 @@
+// Synthetic-only pure tests: no real user documents; no API calls.
+const assert=require("node:assert/strict");
+const p=require("../source/4sapien-document-analysis.js");
+assert.deepEqual(p.parseAmount("1 250,00"),{kr:1250,ore:0,wholeKroner:true});
+assert.deepEqual(p.parseAmount("1.250,50"),{kr:1250,ore:50,wholeKroner:false});
+assert.deepEqual(p.parseAmount("1250"),{kr:1250,ore:0,wholeKroner:true});
+assert.equal(p.parseAmount("0"),null);
+assert.equal(p.parseAmount("abc"),null);
+assert.equal(p.dateFrom("31.02.2026"),null);
+assert.equal(p.dateFrom("29.02.2024"),"2024-02-29");
+assert.equal(p.dateFrom("2026-09-30"),"2026-09-30");
+const bill=p.propose("Faktura\nLeverandør: Eksempel Energi AS\nKID 123456789\nBeløp å betale kr 1 250,00\nForfallsdato: 30.09.2026","bill");
+assert.equal(bill.name.value,"Eksempel Energi AS");
+assert.equal(bill.amount.kr,1250);
+assert.equal(bill.amount.wholeKroner,true);
+assert.equal(bill.date.value,"2026-09-30");
+const receipt=p.propose("Butikk: Eksempel Mat AS\nKjøpsdato 19.09.2026\nMelk 25,00\nSum inkl. mva 325,50","receipt");
+assert.equal(receipt.amount.kr,325);
+assert.equal(receipt.amount.wholeKroner,false);
+assert.equal(receipt.date.value,"2026-09-19");
+assert.equal(receipt.itemLines[0],"Melk 25,00");
+const unknown=p.propose("KID 123456789\nIBAN NO1212341234\nOrganisasjonsnr 999999999","bill");
+assert.equal(unknown.amount,null);
+assert.equal(unknown.date,null);
+assert.equal(unknown.name,null);
+console.log("PASS document-analysis: 16 synthetic assertions; unconfirmed suggestions only");
