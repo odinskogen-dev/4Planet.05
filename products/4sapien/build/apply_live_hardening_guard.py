@@ -29,6 +29,11 @@ old_fetch="var r=await fetch('https://ghvdzetmplqkdtfqiror.supabase.co/functions
 new_fetch="var ctl=new AbortController(),tm=setTimeout(function(){ctl.abort();},55000);var r;try{r=await fetch('https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/embla-core-preview',{method:'POST',headers:{apikey:'sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE',Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message:q,conversation_id:emblaConversation,world:cur}),signal:ctl.signal});}finally{clearTimeout(tm);}"
 s=once(s,old_fetch,new_fetch,'root Embla timeout')
 s=once(s,"}catch(_e){showEmbla(q,'Embla kunne ikke nås akkurat nå. Prøv igjen.',false);}", "}catch(_e){var msg=_e&&_e.name==='AbortError'?'Embla brukte for lang tid og forespørselen ble avsluttet trygt. Prøv igjen.':'Embla kunne ikke nås akkurat nå. Prøv igjen.';showEmbla(q,msg,false);}", 'root Embla recovery')
+# Root uses the same refreshable Supabase Auth client as the live worlds,
+# rather than reading an expired access token from localStorage.
+s=once(s,'var token=authToken();','var token=await window.FourSapienSessionToken();','root Embla refreshed token')
+if 'cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js' not in s:
+    s=once(s,'</head>','<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js"></script>\n</head>','root Supabase auth client')
 s=assets(s,'root')
 root.write_text(s)
 
