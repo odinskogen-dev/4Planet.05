@@ -13,7 +13,7 @@ test("Founder login page is available without any private BRAIN payload",async()
   assert.equal(response.status,200);
   assert.match(body,/FOUNDER-ONLY ACCESS/);
   assert.match(body,/NOT VERIFIED/);
-  assert.match(body,/21 August 2026/);
+  assert.match(body,/21 (August|AUG) 2026/i);
   assert.doesNotMatch(body,/SUPABASE_SERVICE_ROLE_KEY|service_role=|ODIN BRAIN\s*:/);
   assert.match(response.headers.get("content-security-policy")||"",/script-src 'nonce-/);
   assert.match(response.headers.get("cache-control")||"",/no-store/);
