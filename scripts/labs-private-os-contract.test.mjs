@@ -45,9 +45,11 @@ test("Existing LABS origin is still immutable and OS intercept precedes public p
 test("Founder browser inline JavaScript is syntactically valid and real source data is never embedded in public HTML",async()=>{
   const response=await handlePrivateOS(...request("/os"));
   const body=await response.text();
-  const script=body.match(/<script nonce="[a-f0-9]+">([\\s\\S]*?)<\\/script>/);
-  assert.ok(script,"private Founder login script missing");
-  assert.doesNotThrow(()=>new Script(script[1],{filename:"founder-os-inline.js"}));
+  const open=body.indexOf("<script nonce=");
+  const start=body.indexOf(">",open)+1;
+  const end=body.indexOf("</script>",start);
+  assert.ok(open>=0&&start>0&&end>start,"private Founder login script missing");
+  assert.doesNotThrow(()=>new Script(body.slice(start,end),{filename:"founder-os-inline.js"}));
   assert.ok(body.includes("/os/api/brain"));
   assert.ok(body.includes("PROJECTS + WBS + SOURCE LIBRARY"));
   assert.doesNotMatch(body,/sb_secret_|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_SERVICE_ACCOUNT_JSON/);
