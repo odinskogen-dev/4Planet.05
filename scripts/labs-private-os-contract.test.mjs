@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { Script } from "node:vm";
 import { handlePrivateOS } from "../ops/labs-domain-adapter/src/founder-os.js";
 
 function request(path, options={}) {
@@ -39,4 +40,15 @@ test("Existing LABS origin is still immutable and OS intercept precedes public p
   assert.ok(source.includes("return handlePrivateOS(request, incoming)"));
   assert.ok(source.indexOf("return handlePrivateOS(request, incoming)")<source.indexOf('const upstream = new URL(IMMUTABLE_ORIGIN)'));
   assert.ok(source.includes('outbound.set("X-Labs-Source-Commit", SOURCE_SHA)'));
+});
+
+test("Founder browser inline JavaScript is syntactically valid and real source data is never embedded in public HTML",async()=>{
+  const response=await handlePrivateOS(...request("/os"));
+  const body=await response.text();
+  const script=body.match(/<script nonce="[a-f0-9]+">([\\s\\S]*?)<\\/script>/);
+  assert.ok(script,"private Founder login script missing");
+  assert.doesNotThrow(()=>new Script(script[1],{filename:"founder-os-inline.js"}));
+  assert.ok(body.includes("/os/api/brain"));
+  assert.ok(body.includes("PROJECTS + WBS + SOURCE LIBRARY"));
+  assert.doesNotMatch(body,/sb_secret_|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_SERVICE_ACCOUNT_JSON/);
 });
