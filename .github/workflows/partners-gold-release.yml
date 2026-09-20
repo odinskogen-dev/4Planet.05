@@ -10,6 +10,7 @@ on:
       - src/routes/router.tsx
       - scripts/check-partners-hub.mjs
       - scripts/render-partner-briefs.mjs
+      - scripts/render-partner-briefs-v2.mjs
       - scripts/validate-partners-live.mjs
       - .github/workflows/partners-gold-release.yml
   workflow_dispatch:
