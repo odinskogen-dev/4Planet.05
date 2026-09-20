@@ -1,5 +1,8 @@
 name: 4PLANET OS — scheduled Brain source sync
 on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/os-brain-scheduled.yml]
   workflow_dispatch:
   schedule:
     - cron: '17 */6 * * *'
