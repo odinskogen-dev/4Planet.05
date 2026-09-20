@@ -181,8 +181,13 @@ async function main(){
    console.log("Persisted source-bound private batch "+(Math.floor(i/50)+1)+"/"+Math.ceil(ordered.length/50));
   }
   const accepted=await ingest("finish",{expected:ordered.length,inventoryHash:manifest});
-  console.log("SYNC_COMMITTED count="+accepted+" inventory_sha256="+manifest+
-   " last_success=SERVER_COMPLETION_TIME; project readback must independently verify.");
+  const readback=await ingest("status");
+  if(!readback || readback.runKey!==runKey || readback.state!=="success" ||
+     readback.expectedCount!==ordered.length || readback.observedCount!==ordered.length ||
+     readback.inventoryHash!==manifest || readback.isLatestSuccess!==true || !readback.completedAt)
+    throw Error("SOURCE_TO_PRIVATE_BRAIN_READBACK_MISMATCH");
+  console.log("SYNC_COMMITTED_AND_READBACK_VERIFIED count="+accepted+" inventory_sha256="+manifest+
+   " last_success="+readback.completedAt+" source_sha="+sourceRevision);
  }catch(e){
   try{await ingest("fail",{code:safeError(e).replace(/[^A-Z0-9_]/gi,"_")});}catch{}
   throw e;
