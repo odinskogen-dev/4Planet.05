@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import hub from "@/content/partnersHub.json";
 import { img } from "@/content/imageRegistry";
 import "@/styles/partners-hub.css";
@@ -10,8 +10,7 @@ const BASE = "";
 const MAIN_SITE = "https://4planet.org";
 
 const nav = [
-  ["The platform", "/portfolio"],
-  ["Partner with us", "/for"],
+  ["Platform", "/portfolio"],
   ["Opportunities", "/opportunities"],
   ["Proof", "/proof"],
   ["About", "/system"],
@@ -82,17 +81,30 @@ function Arrow() {
 
 function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const pathname = typeof window === "undefined" ? "/" : window.location.pathname;
+  useEffect(() => {
+    if (!open) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        menuButton.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
   return (
     <header className="ph-header">
       <a className="ph-brand" href="/" aria-label="4PLANET Partners home">
         <span>4PLANET_</span><small>PARTNERS</small>
       </a>
-      <button className="ph-menu" type="button" aria-controls="partners-primary-navigation" aria-expanded={open} aria-label={open ? "Close navigation" : "Open navigation"} onClick={() => setOpen(!open)}>
+      <button ref={menuButton} className="ph-menu" type="button" aria-controls="partners-primary-navigation" aria-expanded={open} aria-label={open ? "Close navigation" : "Open navigation"} onClick={() => setOpen(!open)}>
         {open ? "CLOSE" : "MENU"}
       </button>
       <nav id="partners-primary-navigation" className={open ? "ph-nav is-open" : "ph-nav"} aria-label="Partners navigation">
-        {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
-        <a className="ph-nav-main" href={MAIN_SITE}>4planet.org <Arrow /></a>
+        {nav.map(([label, href]) => <a key={href} href={href} aria-current={pathname === href || pathname.startsWith(href + "/") ? "page" : undefined} onClick={() => setOpen(false)}>{label}</a>)}
+        <a className="ph-nav-cta" href="/for" aria-current={pathname === "/for" || pathname.startsWith("/for/") ? "page" : undefined} onClick={() => setOpen(false)}>Partner with us <Arrow /></a>
       </nav>
     </header>
   );
@@ -245,7 +257,7 @@ function HomePage() {
           <p>Follow the work that matters to you. More detail is one click away.</p>
         </div>
         <div className="ph-short-grid">
-          <a href="/portfolio" className="ph-short-card"><span className="ph-short-index">01 / PLANET</span><h3>4PLANET</h3><p>Explore places, species, relationships and credible action.</p><strong>Explore living systems</strong></a>
+          <a href="https://4planet.org/" className="ph-short-card"><span className="ph-short-index">01 / PLANET</span><h3>4PLANET</h3><p>Explore places, species, relationships and credible action.</p><strong>Explore living systems</strong></a>
           <a href="https://4sapien.com" className="ph-short-card"><span className="ph-short-index">02 / PERSON</span><h3>4SAPIEN</h3><p>Make personal decisions with context and evidence. Facts, not advice.</p><strong>Explore personal intelligence</strong></a>
           <a href="https://4brands.org" className="ph-short-card"><span className="ph-short-index">03 / COMPANY</span><h3>4BRANDS</h3><p>Connect business objectives, better decisions and measurable value.</p><strong>Explore company intelligence</strong></a>
         </div>
@@ -387,7 +399,9 @@ export default function PartnersHub() {
   const route = useMemo(() => resolvePage(typeof window === "undefined" ? "/" : window.location.pathname), []);
   return (
     <div className="partners-hub">
+      <a className="ph-skip-link" href="#partners-main">Skip to content</a>
       <SiteHeader />
+      <div id="partners-main" tabIndex={-1}>
       {route.page === "home" ? <HomePage /> : null}
       {route.page === "portfolio" ? <PortfolioPage /> : null}
       {route.page === "opportunities" ? <OpportunitiesPage slug={route.slug} /> : null}
@@ -404,6 +418,7 @@ export default function PartnersHub() {
       {route.page === "founder" ? <FounderPage /> : null}
       {route.page === "brief" ? <BriefPage slug={route.slug} /> : null}
       {route.page === "for" ? <ActorPage slug={route.slug} /> : null}
+      </div>
       <SiteFooter />
     </div>
   );
