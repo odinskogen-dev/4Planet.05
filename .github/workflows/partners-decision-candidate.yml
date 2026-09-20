@@ -81,28 +81,6 @@ jobs:
           account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
           [ -n "$account" ] || exit 3
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
-      - name: Deploy existing Partners project to non-production preview
-        run: |
-          set -euo pipefail
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=partners-decision-candidate --commit-hash="$GITHUB_SHA" --commit-dirty=false
-      - name: Verify exact hosted preview and server-side intake route
-        run: |
-          set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=20")
-          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch=="partners-decision-candidate")][0].url // empty' <<<"$deps")
-          [ -n "$URL" ] || { echo "PARTNERS_PREVIEW_FAIL=no exact SHA deployment"; exit 4; }
-          echo "PARTNERS_CANDIDATE_PREVIEW=$URL"
-          for route in / /portfolio /4brand /opportunities /opportunities/brands-proof /for/company /for/science /enquire /dataroom /workspace; do
-            code=$(curl -LsS -o /tmp/partners-candidate-body -w '%{http_code}' "$URL$route")
-            [ "$code" = "200" ] || { echo "PARTNERS_PREVIEW_FAIL=$route:$code"; exit 5; }
-          done
-          curl -LsSI "$URL/" | grep -qi '^x-robots-tag:.*noindex' || exit 6
-          curl -LsS "$URL/" | grep -qi '<meta name="robots" content="noindex' || exit 7
-          capability=$(curl -fsS "$URL/api/leads")
-          jq -e '.ok==true and .acceptingEnquiries==false' <<<"$capability" >/dev/null || { echo "PARTNERS_INTAKE_CAPABILITY_MISMATCH"; exit 8; }
-          echo "PARTNERS_HOSTED_INTAKE_UNCONFIGURED_FAIL_CLOSED=PASS"
-          echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
       - name: Inspect existing authorised runtime integration secret names only
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -121,6 +99,38 @@ jobs:
               echo "PARTNERS_EXISTING_SECRET_$name=absent"
             fi
           done
+      - name: Deploy existing Partners project to non-production preview
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=partners-decision-candidate --commit-hash="$GITHUB_SHA" --commit-dirty=false
+      - name: Verify exact hosted preview and server-side intake route
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=20")
+          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch=="partners-decision-candidate")][0].url // empty' <<<"$deps")
+          [ -n "$URL" ] || { echo "PARTNERS_PREVIEW_FAIL=no exact SHA deployment"; exit 4; }
+          echo "PARTNERS_CANDIDATE_PREVIEW=$URL"
+          for route in / /portfolio /4brand /opportunities /opportunities/brands-proof /for/company /for/science /enquire /dataroom /workspace; do
+            code=$(curl -LsS -o /tmp/partners-candidate-body -w '%{http_code}' "$URL$route")
+            [ "$code" = "200" ] || { echo "PARTNERS_PREVIEW_FAIL=$route:$code"; exit 5; }
+          done
+          curl -LsSI "$URL/" | grep -qi '^x-robots-tag:.*noindex' || exit 6
+          curl -LsS "$URL/" | grep -qi '<meta name="robots" content="noindex' || exit 7
+          capability=""
+          ready=false
+          for attempt in $(seq 1 25); do
+            code=$(curl -LsS -o /tmp/partners-intake-capability -w '%{http_code}' "$URL/api/leads" || true)
+            if [ "$code" = "200" ] && jq -e '.ok==true and .acceptingEnquiries==false' /tmp/partners-intake-capability >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            echo "PARTNERS_INTAKE_EDGE_PENDING HTTP=$code attempt=$attempt"
+            sleep 2
+          done
+          [ "$ready" = true ] || { echo "PARTNERS_INTAKE_CAPABILITY_MISMATCH"; exit 8; }
+          echo "PARTNERS_HOSTED_INTAKE_UNCONFIGURED_FAIL_CLOSED=PASS"
+          echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
       - name: Candidate evidence
         if: always()
         run: |
