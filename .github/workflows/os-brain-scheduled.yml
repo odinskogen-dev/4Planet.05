@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  issues: write
 concurrency:
   group: os-brain-sync-scheduled
   cancel-in-progress: false
@@ -27,5 +28,12 @@ jobs:
           node --check scripts/os-brain-sync.mjs
           python3 -m py_compile scripts/os-xlsx-rows.py
           node scripts/os-brain-sync.mjs
+
+      - name: Report genuine scheduled sync blocker to existing OS issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 6 --repo odinskogen-dev/4Planet-OSv3 --body "OS automatic BRAIN sync FAILED: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT . Latest previously successful BRAIN version remains retained; OS should mark stale if >12h. No secret values are included."
 
 # QA trigger: prove actual 4PLANET Drive document revision OS-SYNC-READBACK-PROOF-2026-09-20-01.
