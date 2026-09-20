@@ -12,7 +12,7 @@ const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest
 const AUDIENCE="4planet-os-brain-ingest";
 const runKey=`${process.env.GITHUB_RUN_ID||"0"}-${process.env.GITHUB_RUN_ATTEMPT||"1"}`;
 const sourceRevision=process.env.OS_SOURCE_SHA||process.env.GITHUB_SHA||"unknown";
-const PRIVATE=/(^|\/)(ODIN BRAIN|ODIN PRIVATE|PRIVATE ROOT|PERSONAL BRAIN|PERSONLIG|TENANT BRAINS?|PRIVATE PERSON|SECRETS?|CREDENTIALS?)(?=\/|$|[ _—–:-])/i;
+const PRIVATE=/odin brain|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials/i;
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
 function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s]+/g,"[REDACTED]").slice(0,180):"UNKNOWN";}
