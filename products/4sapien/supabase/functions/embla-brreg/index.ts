@@ -39,7 +39,7 @@ async function loggedIn(req:Request){
 }
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")
-  return response(req,{state:"OPTIONS"},204);
+  return new Response(null,{status:204,headers:cors(req)});
  if(req.method!=="POST")return response(req,{ok:false,state:"METHOD_NOT_ALLOWED"},405);
  if(req.headers.get("Origin")&&!allowed(req.headers.get("Origin")||""))
   return response(req,{ok:false,state:"ORIGIN_NOT_ALLOWED"},403);
