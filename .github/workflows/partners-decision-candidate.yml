@@ -1,0 +1,138 @@
+name: Partners Decision Candidate QA
+
+on:
+  push:
+    branches:
+      - build/partners-decision-system-20260919
+    paths:
+      - src/pages/partners/**
+      - src/content/partnersHub.json
+      - vite.config.ts
+      - src/styles/partners-hub.css
+      - scripts/check-partners-hub.mjs
+      - scripts/partners-decision-smoke.mjs
+      - .github/workflows/partners-decision-candidate.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install exact dependencies
+        run: npm ci
+      - name: Existing Partners truth and privacy contract
+        run: node scripts/check-partners-hub.mjs
+      - name: TypeScript
+        run: npx tsc -b
+      - name: Build isolated Partners artifact
+        run: PARTNERS_BUILD=1 npx vite build
+      - name: Verify isolated module graph
+        run: |
+          test -s dist/partners-module-graph.txt
+          grep -q 'ISOLATION=PASS' dist/partners-module-graph.txt
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser route, mobile and intake tests
+        run: node scripts/partners-decision-smoke.mjs
+
+      - name: Prepare preview noindex controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("dist/index.html")
+          s=p.read_text()
+          old='<meta name="robots" content="index,follow,max-image-preview:large" />'
+          new='<meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />'
+          if old not in s and new not in s:
+              raise SystemExit("PARTNERS_PREVIEW_NO_INDEX_META_MISSING")
+          p.write_text(s.replace(old,new))
+          Path("dist/_headers").write_text("/*\n  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\n  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests\n")
+          Path("dist/_redirects").write_text("/* /index.html 200\n")
+          Path("dist/robots.txt").write_text("User-agent: *\nDisallow: /\n")
+          PY
+      - name: Resolve existing GitHub Actions Cloudflare token for preview
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo "PARTNERS_PREVIEW_BLOCKED=Cloudflare token unavailable"; exit 2; }
+          TOKEN=$(printf "%s" "$TOKEN" | tr -d '\r\n' | sed -e 's/^Bearer //' -e 's/^bearer //' -e 's/^CLOUDFLARE_API_TOKEN=//' -e 's/^CF_API_TOKEN=//' -e 's/^"//' -e 's/"$//')
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zone=$(curl -fsS -H "Authorization: Bearer $TOKEN" "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Inspect existing authorised runtime integration secret names only
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LEAD_WEBHOOK_URL: ${{ secrets.LEAD_WEBHOOK_URL }}
+          CRM_WEBHOOK_URL: ${{ secrets.CRM_WEBHOOK_URL }}
+          GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          for name in GOOGLE_SERVICE_ACCOUNT_JSON GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON GOOGLE_OAUTH_REFRESH_TOKEN SUPABASE_SERVICE_ROLE_KEY LEAD_WEBHOOK_URL CRM_WEBHOOK_URL GOOGLE_SHEETS_WEBHOOK_URL; do
+            if [ -n "$(printenv "$name")" ]; then
+              echo "PARTNERS_EXISTING_SECRET_$name=present"
+            else
+              echo "PARTNERS_EXISTING_SECRET_$name=absent"
+            fi
+          done
+      - name: Deploy existing Partners project to non-production preview
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-partners --branch=partners-decision-candidate --commit-hash="$GITHUB_SHA" --commit-dirty=false
+      - name: Verify exact hosted preview and server-side intake route
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          deps=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-partners/deployments?page=1&per_page=20")
+          URL=$(jq -r --arg sha "$GITHUB_SHA" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch=="partners-decision-candidate")][0].url // empty' <<<"$deps")
+          [ -n "$URL" ] || { echo "PARTNERS_PREVIEW_FAIL=no exact SHA deployment"; exit 4; }
+          echo "PARTNERS_CANDIDATE_PREVIEW=$URL"
+          for route in / /portfolio /4brand /opportunities /opportunities/brands-proof /for/company /for/science /enquire /dataroom /workspace; do
+            code=$(curl -LsS -o /tmp/partners-candidate-body -w '%{http_code}' "$URL$route")
+            [ "$code" = "200" ] || { echo "PARTNERS_PREVIEW_FAIL=$route:$code"; exit 5; }
+          done
+          curl -LsSI "$URL/" | grep -qi '^x-robots-tag:.*noindex' || exit 6
+          curl -LsS "$URL/" | grep -qi '<meta name="robots" content="noindex' || exit 7
+          capability=""
+          ready=false
+          for attempt in $(seq 1 25); do
+            code=$(curl -LsS -o /tmp/partners-intake-capability -w '%{http_code}' "$URL/api/leads" || true)
+            if [ "$code" = "200" ] && jq -e '.ok==true and .acceptingEnquiries==false' /tmp/partners-intake-capability >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            echo "PARTNERS_INTAKE_EDGE_PENDING HTTP=$code attempt=$attempt"
+            sleep 2
+          done
+          [ "$ready" = true ] || { echo "PARTNERS_INTAKE_CAPABILITY_MISMATCH"; exit 8; }
+          echo "PARTNERS_HOSTED_INTAKE_UNCONFIGURED_FAIL_CLOSED=PASS"
+          echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
+      - name: Candidate evidence
+        if: always()
+        run: |
+          echo "PARTNERS_CANDIDATE_SHA=$GITHUB_SHA"
+          echo "PARTNERS_CANDIDATE_ONLY=no production deployment"
