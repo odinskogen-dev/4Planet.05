@@ -7,7 +7,7 @@ const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccou
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
 const AUDIENCE="4planet-os-brain-ingest";
 const runKey=`${process.env.GITHUB_RUN_ID||"0"}-${process.env.GITHUB_RUN_ATTEMPT||"1"}`;
-const sourceRevision=process.env.GITHUB_SHA||"unknown";
+const sourceRevision=process.env.OS_SOURCE_SHA||process.env.GITHUB_SHA||"unknown";
 const PRIVATE=/(^|\/)(ODIN BRAIN|ODIN PRIVATE|PRIVATE ROOT|PERSONAL BRAIN|PERSONLIG|TENANT BRAINS?|PRIVATE PERSON|SECRETS?|CREDENTIALS?)(\/|$)/i;
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
