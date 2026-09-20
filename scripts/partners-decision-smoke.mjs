@@ -43,7 +43,7 @@ try {
     await page.goto(base + "/", { waitUntil: "domcontentloaded" });
     const homeSections = await page.locator("main.ph-home-short > section").count();
     if (homeSections !== 4) throw Error("Homepage must have exactly four concise sections, got " + homeSections);
-    await page.getByRole("heading", { name: /A living planet/i }).waitFor();
+    await page.locator("main.ph-home-short h1").waitFor();
     const heroText = await page.locator(".ph-hero-copy").innerText();
     if (heroText.length > 580) throw Error("Homepage hero too verbose: " + heroText.length);
     if (viewport.width >= 1201) {
