@@ -103,6 +103,24 @@ jobs:
           jq -e '.ok==true and .acceptingEnquiries==false' <<<"$capability" >/dev/null || { echo "PARTNERS_INTAKE_CAPABILITY_MISMATCH"; exit 8; }
           echo "PARTNERS_HOSTED_INTAKE_UNCONFIGURED_FAIL_CLOSED=PASS"
           echo "PARTNERS_EXACT_PREVIEW_AND_NOINDEX=PASS"
+      - name: Inspect existing authorised runtime integration secret names only
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LEAD_WEBHOOK_URL: ${{ secrets.LEAD_WEBHOOK_URL }}
+          CRM_WEBHOOK_URL: ${{ secrets.CRM_WEBHOOK_URL }}
+          GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          for name in GOOGLE_SERVICE_ACCOUNT_JSON GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON GOOGLE_OAUTH_REFRESH_TOKEN SUPABASE_SERVICE_ROLE_KEY LEAD_WEBHOOK_URL CRM_WEBHOOK_URL GOOGLE_SHEETS_WEBHOOK_URL; do
+            if [ -n "$(printenv "$name")" ]; then
+              echo "PARTNERS_EXISTING_SECRET_$name=present"
+            else
+              echo "PARTNERS_EXISTING_SECRET_$name=absent"
+            fi
+          done
       - name: Candidate evidence
         if: always()
         run: |
