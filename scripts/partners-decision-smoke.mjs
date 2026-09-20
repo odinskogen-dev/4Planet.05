@@ -40,6 +40,26 @@ try {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (overflow > 2) throw Error(route + " horizontal overflow " + overflow + "px at " + viewport.width);
     }
+    await page.goto(base + "/", { waitUntil: "domcontentloaded" });
+    const homeSections = await page.locator("main.ph-home-short > section").count();
+    if (homeSections !== 4) throw Error("Homepage must have exactly four concise sections, got " + homeSections);
+    await page.getByRole("heading", { name: /A living planet/i }).waitFor();
+    const heroText = await page.locator(".ph-hero-copy").innerText();
+    if (heroText.length > 580) throw Error("Homepage hero too verbose: " + heroText.length);
+    if (viewport.width >= 1201) {
+      const navigation = page.getByRole("navigation", { name: "Partners navigation" });
+      if (!(await navigation.isVisible())) throw Error("Desktop navigation is hidden");
+      if (await page.getByRole("button", { name: "Open navigation" }).isVisible()) throw Error("Desktop hamburger must be hidden");
+    } else {
+      await page.getByRole("button", { name: "Open navigation" }).click();
+      const navigation = page.getByRole("navigation", { name: "Partners navigation" });
+      if (!(await navigation.isVisible())) throw Error("Mobile navigation did not open");
+      await page.getByRole("button", { name: "Close navigation" }).click();
+      if (await navigation.isVisible()) throw Error("Mobile navigation did not close");
+    }
+    const internalLinks = await page.locator('main.ph-home-short a[href^="/"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+    if (!internalLinks.includes("/for") || !internalLinks.includes("/portfolio") || !internalLinks.includes("/proof")) throw Error("Core decision navigation missing");
+    console.log("PARTNERS_HOME_UX=PASS viewport=" + viewport.width + " sections=4");
     if (errors.length) throw Error("React browser errors: " + errors.join(" | "));
     await page.close();
     console.log("PARTNERS_ROUTES=PASS viewport=" + viewport.width + " count=" + routes.length);
