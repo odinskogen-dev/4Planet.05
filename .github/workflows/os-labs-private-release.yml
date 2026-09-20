@@ -58,6 +58,10 @@ jobs:
           invalid="$(curl -sS --connect-timeout 8 --max-time 20 -H 'Authorization: Bearer not.a.valid.token' -o /tmp/edge-invalid -w '%{http_code}' https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/private-os-read || true)"
           [[ "$anon" == 401 ]] && [[ "$invalid" == 401 ]] || { echo "Edge negative access tests FAIL: anonymous $anon invalid $invalid"; exit 14; }
           echo "Private BRAIN Edge anonymous + forged-token denial PASS."
+          oauth_url='https://ghvdzetmplqkdtfqiror.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Flabs.4planet.org%2Fos'
+          oauth_status="$(curl -sS --connect-timeout 7 --max-time 25 -D /tmp/os-google-headers -o /tmp/os-google-body -w '%{http_code}' "$oauth_url" || true)"
+          [[ "$oauth_status" == 302 || "$oauth_status" == 303 ]] && grep -Eqi '^location: https://accounts.google.com/' /tmp/os-google-headers || { echo "GOOGLE_OAUTH_START_FAILED HTTP $oauth_status"; exit 27; }
+          echo "GOOGLE OAUTH provider available: secure 302 to accounts.google.com; no credentials or OAuth URL logged."
       - name: Deploy unchanged LABS host route with additional /os handler through existing Factory token
         id: deploy
         uses: cloudflare/wrangler-action@v3
