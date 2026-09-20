@@ -139,3 +139,5 @@ jobs:
         shell: bash
         run: |
           gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "PRIVATE LABS /os controlled release run https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID source SHA $GITHUB_SHA . Only SUCCESS proves login shell/anonymous denial, desktop/mobile and other domains; not Founder sign-in, full Drive BRAIN hydration or scheduled auto-sync. os.4planet.org remains locked. See https://github.com/odinskogen-dev/4Planet-OSv3/issues/6 ."
+
+# OS live-source UI verification refresh after successful 4PLANET Drive projection readback.
