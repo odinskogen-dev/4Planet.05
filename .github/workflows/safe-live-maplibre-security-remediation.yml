@@ -5,6 +5,7 @@ on:
     branches: [king/test]
     paths:
       - .github/workflows/safe-live-maplibre-security-remediation.yml
+      - src/earth/World.tsx
 
 permissions:
   contents: write
