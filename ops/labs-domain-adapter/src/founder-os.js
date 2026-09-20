@@ -45,11 +45,11 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <section><div class="eyebrow">PRIVATE OPERATING SYSTEM · FOUNDER COMMAND</div><h1 class="title">LIVING<br><em>SYSTEMS.</em><br>OPERATIONS.</h1><p class="lede">One control view for project work, BRAIN evidence, proof and Founder decisions. BRAIN remains the authority. Unverified progress is never promoted.</p></section>
 <section id="login" class="login"><div class="eyebrow">FOUNDER-ONLY ACCESS</div><h2>Sign in to your private OS.</h2><p class="note">Use the verified OS-Supabase account. No private BRAIN data is included in this page or any public LABS asset.</p><form id="sign-in"><label for="email">YOUR SUPABASE ACCOUNT EMAIL</label><input id="email" type="email" autocomplete="email" required><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password"><div class="actions"><button class="primary" type="submit">SIGN IN</button><button type="button" id="magic">EMAIL LOGIN LINK</button></div><p id="login-message" role="status" class="note">Private data is unavailable until server-side Founder authorization passes.</p></form></section>
 <section id="workspace" class="hide">
-<div class="banner" id="truth-banner">LIVE AUTHENTICATED BRAIN SOURCE · The full Drive project portfolio is NOT hydrated. Existing LABS project data is a dated historical snapshot and is clearly separated below. Automatic Drive synchronization is NOT verified.</div>
+<div class="banner" id="truth-banner">AUTHENTICATED BRAIN READ · SOURCE FRESHNESS AND LAST SUCCESSFUL AUTOMATIC SYNC ARE SHOWN BELOW. DRIVE SOURCE INVENTORY IS NOT EQUIVALENT TO VERIFIED PROJECT STATUS. HISTORIC LABS SNAPSHOT IS SEPARATE.</div>
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
-<div class="actions"><button id="tab-brain" class="active" type="button">REAL BRAIN</button><button id="tab-portfolio" type="button">LABS PORTFOLIO · SNAPSHOT</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
+<div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECT HOMES + WBS</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
-<div id="portfolio" class="hide"><div class="panel"><h3>Existing LABS project experience</h3><p>The embedded LABS portfolio is public-safe and dated 21 August 2026. Use its Project Homes for historical orientation; current status remains UNKNOWN until canonical Programme Control and WBS sync is verified.</p></div><iframe class="portfolio" src="/" title="4PLANET LABS public-safe historic project portfolio" loading="lazy"></iframe></div>
+<div id="portfolio" class="hide"><div class="panel"><h3>Current source-bound portfolio</h3><p>Showing the most recent successfully committed Google Drive source projection. Titles without extracted content are inventory only — not verified current state. Source dates, completeness and stale/error flags remain visible.</p><label for="project-search">SEARCH PROJECTS, SOURCES & WBS</label><input id="project-search" type="search" placeholder="Search all available project sources"><p id="project-count" class="small">SOURCE SYNC NOT VERIFIED</p></div><div id="project-list"></div><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
 <footer>4PLANET_ · PRIVATE OS · SOURCE-BOUND · UNKNOWN ≠ VERIFIED · NO ODIN BRAIN DATA</footer></div>
 <script>
@@ -78,6 +78,37 @@ async function read(){
  if(!r.ok)throw Error("SOURCE_UNAVAILABLE_"+r.status);
  return r.json();
 }
+function projectCard(x){
+ var box=document.createElement("article");box.className="panel";
+ var kicker=document.createElement("div");kicker.className="eyebrow";
+ kicker.textContent=text(x.objectType)+" · "+(x.content?"SOURCE CONTENT":"INVENTORY ONLY");
+ var h=document.createElement("h3");h.textContent=text(x.title);
+ var p=document.createElement("p");
+ p.textContent=x.content?String(x.content).slice(0,4500):"Current detail UNKNOWN — metadata only. Open original source for authoritative context.";
+ var details=document.createElement("details");var summary=document.createElement("summary");
+ summary.textContent=x.content&&String(x.content).length>4500?"READ REMAINING SOURCE CONTENT":"SOURCE PROVENANCE";
+ details.appendChild(summary);
+ if(x.content&&String(x.content).length>4500){var rest=document.createElement("p");rest.textContent=String(x.content).slice(4500);details.appendChild(rest)}
+ var provenance=document.createElement("div");provenance.className="source";
+ provenance.textContent="SOURCE UPDATED: "+shortTime(x.sourceModifiedAt)+" · FOLDER: "+text(x.folder)+" · SHA256: "+text(x.sourceHash);
+ details.appendChild(provenance);
+ if(x.uri&&/^https:\/\/docs\.google\.com\/|^https:\/\/drive\.google\.com\//.test(x.uri)){
+ var a=document.createElement("a");a.href=x.uri;a.target="_blank";a.rel="noopener noreferrer";
+ a.textContent="OPEN ORIGINAL SOURCE ↗";details.appendChild(a);
+ }
+ box.append(kicker,h,p,details);return box;
+}
+var latestProjectSources=[];
+function renderProjects(){
+ var search=el("project-search").value.trim().toLocaleLowerCase();
+ var filtered=latestProjectSources.filter(function(x){
+ return !search||[x.title,x.content,x.objectType,x.folder].some(v=>String(v||"").toLocaleLowerCase().includes(search));
+ });
+ el("project-count").textContent=filtered.length+" OF "+latestProjectSources.length+" SOURCE-BOUND PROJECT/WBS RECORDS";
+ var list=el("project-list");list.replaceChildren();
+ filtered.slice(0,200).forEach(function(x){list.appendChild(projectCard(x))});
+ if(filtered.length>200){var p=document.createElement("p");p.textContent="Showing first 200 matches; refine search.";list.appendChild(p)}
+}
 function sourceCard(x){
  var box=document.createElement("article");box.className="panel";
  var kicker=document.createElement("div");kicker.className="eyebrow";kicker.textContent=text(x.objectType)+" · "+text(x.reviewStatus);
@@ -96,8 +127,13 @@ async function boot(){
  el("object-count").textContent=String(data.sourceCount||0);
  el("source-update").textContent=shortTime(data.lastSourceUpdate);
  el("sync").textContent=data.lastSuccessfulAutomatedSync?shortTime(data.lastSuccessfulAutomatedSync):"NOT VERIFIED";
- el("checked-at").textContent="CHECKED: "+shortTime(data.checkedAt)+" · "+text(data.source);
- el("summary").textContent=data.portfolioHydrated?"Current BRAIN source read.":"Current 4PLANET BRAIN records are readable; full Drive project and WBS hydration remains incomplete. No project status is claimed current.";
+ el("checked-at").textContent="CHECKED: "+shortTime(data.checkedAt)+" · "+text(data.source)+" · SOURCE REVISION: "+text(data.sourceRevision);
+ el("truth-banner").textContent=data.lastSuccessfulAutomatedSync
+ ? ("LAST SUCCESSFUL DRIVE SYNC "+shortTime(data.lastSuccessfulAutomatedSync)+" · "+text(data.syncStatus)+(data.lastError?" · PREVIOUS ERROR: "+data.lastError:"")+" · UNREAD SOURCES REMAIN UNKNOWN; HISTORICAL LABS SEPARATE.")
+ : "GOOGLE DRIVE AUTOMATIC SYNC NOT YET VERIFIED. ALL HISTORICAL LABS STATUS IS STALE.";
+ el("summary").textContent=data.portfolioHydrated?"Source-bound Drive BRAIN extraction available; authority remains in original files.":"Full Drive project/WBS hydration not verified. No project status is claimed current.";
+ latestProjectSources=Array.isArray(data.projects)?data.projects:[];
+ renderProjects();
  var list=el("knowledge");list.replaceChildren();
  (data.knowledge||[]).forEach(function(row){list.appendChild(sourceCard(row))});
  if(!data.knowledge||!data.knowledge.length)el("summary").textContent="No authorised 4PLANET BRAIN objects are currently projected. UNKNOWN.";
@@ -121,6 +157,7 @@ el("magic").addEventListener("click",async function(){
  status(r.ok?"If this account is eligible, check your email for a login link. The link must return to /os.":"Unable to send the login link. Sign in with your existing account password.");
  }catch{status("Login-link request failed.")}
 });
+el("project-search").addEventListener("input",renderProjects);
 el("refresh").addEventListener("click",boot);
 el("logout").addEventListener("click",function(){forget();el("workspace").classList.add("hide");el("logout").classList.add("hide");el("login").classList.remove("hide");status("Signed out.");});
 el("tab-brain").addEventListener("click",function(){el("brain").classList.remove("hide");el("portfolio").classList.add("hide");el("tab-brain").classList.add("active");el("tab-portfolio").classList.remove("active")});
