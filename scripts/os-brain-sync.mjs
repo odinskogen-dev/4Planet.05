@@ -2,6 +2,10 @@
 // Read-only organizational Drive -> rebuildable projection in existing BRAIN.
 // No ODIN BRAIN, no raw source edits, no Github/Cloudflare publishing of data.
 import {createHash,createPrivateKey,sign} from "node:crypto";
+import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {execFileSync} from "node:child_process";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
