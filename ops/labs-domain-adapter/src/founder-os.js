@@ -47,7 +47,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <section id="workspace" class="hide">
 <div class="banner" id="truth-banner">AUTHENTICATED BRAIN READ · SOURCE FRESHNESS AND LAST SUCCESSFUL AUTOMATIC SYNC ARE SHOWN BELOW. DRIVE SOURCE INVENTORY IS NOT EQUIVALENT TO VERIFIED PROJECT STATUS. HISTORIC LABS SNAPSHOT IS SEPARATE.</div>
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
-<div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECT HOMES + WBS</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
+<div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECTS + WBS + SOURCE LIBRARY</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
 <div id="portfolio" class="hide"><div class="panel"><h3>Current source-bound portfolio</h3><p>Showing the most recent successfully committed Google Drive source projection. Titles without extracted content are inventory only — not verified current state. Source dates, completeness and stale/error flags remain visible.</p><label for="project-search">SEARCH PROJECTS, SOURCES & WBS</label><input id="project-search" type="search" placeholder="Search all available project sources"><p id="project-count" class="small">SOURCE SYNC NOT VERIFIED</p></div><div id="project-list"></div><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
@@ -104,7 +104,7 @@ function renderProjects(){
  var filtered=latestProjectSources.filter(function(x){
  return !search||[x.title,x.content,x.objectType,x.folder].some(v=>String(v||"").toLocaleLowerCase().includes(search));
  });
- el("project-count").textContent=filtered.length+" OF "+latestProjectSources.length+" SOURCE-BOUND PROJECT/WBS RECORDS";
+ el("project-count").textContent=filtered.length+" OF "+latestProjectSources.length+" SOURCE-BOUND PROJECT/WBS + ORGANISATIONAL INVENTORY RECORDS";
  var list=el("project-list");list.replaceChildren();
  filtered.slice(0,200).forEach(function(x){list.appendChild(projectCard(x))});
  if(filtered.length>200){var p=document.createElement("p");p.textContent="Showing first 200 matches; refine search.";list.appendChild(p)}
@@ -132,7 +132,10 @@ async function boot(){
  ? ("LAST SUCCESSFUL DRIVE SYNC "+shortTime(data.lastSuccessfulAutomatedSync)+" · "+text(data.syncStatus)+(data.lastError?" · PREVIOUS ERROR: "+data.lastError:"")+" · UNREAD SOURCES REMAIN UNKNOWN; HISTORICAL LABS SEPARATE.")
  : "GOOGLE DRIVE AUTOMATIC SYNC NOT YET VERIFIED. ALL HISTORICAL LABS STATUS IS STALE.";
  el("summary").textContent=data.portfolioHydrated?"Source-bound Drive BRAIN extraction available; authority remains in original files.":"Full Drive project/WBS hydration not verified. No project status is claimed current.";
- latestProjectSources=Array.isArray(data.projects)?data.projects:[];
+ var hydrated=Array.isArray(data.projects)?data.projects:[];
+ var hydratedIds=new Set(hydrated.map(function(x){return x.id}));
+ var inventory=Array.isArray(data.sources)?data.sources.filter(function(x){return !hydratedIds.has(x.id)}):[];
+ latestProjectSources=hydrated.concat(inventory);
  renderProjects();
  var list=el("knowledge");list.replaceChildren();
  (data.knowledge||[]).forEach(function(row){list.appendChild(sourceCard(row))});
