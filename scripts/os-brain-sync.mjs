@@ -138,26 +138,31 @@ async function main(){
    }catch(e){denied++;console.log("Source text skipped; reason="+safeError(e).replace(/\d{12,}/g,"[ID]"));}
   } else if(f.mimeType==="application/vnd.google-apps.spreadsheet" && sheetTabs<opts.maxTabs){
    try{
-    const sheet=await(await get("https://sheets.googleapis.com/v4/spreadsheets/"+f.id+
-      "?fields=spreadsheetId,sheets(properties(title,sheetId,gridProperties(rowCount,columnCount)))",driveHeaders)).json();
-    const tabs=(sheet.sheets||[]).slice(0,Math.min(8,opts.maxTabs-sheetTabs));
-    for(const s of tabs){
-     const pr=s.properties,rows=Math.min(650,pr.gridProperties?.rowCount||650),
-       cols=Math.min(22,pr.gridProperties?.columnCount||22);
-     if(!pr.title||rows<1||cols<1)continue;
-     const col=String.fromCharCode(64+cols);
-     const range="'"+pr.title.replaceAll("'","''")+"'!A1:"+col+rows;
-     const v=await(await get("https://sheets.googleapis.com/v4/spreadsheets/"+f.id+
-      "/values/"+encodeURIComponent(range)+"?valueRenderOption=FORMATTED_VALUE",driveHeaders)).json();
-     const values=v.values||[]; if(!values.length)continue;
-     const text=values.map((r,i)=>String(i+1)+": "+r.map(x=>String(x).replace(/[\r\n]+/g," ")).join(" | ")).join("\n");
-     records.push({
-      source_id:f.id+"_"+pr.sheetId,title:(f.name+" — "+pr.title).slice(0,600),
-      mime_type:f.mimeType,source_url:uri(f),parent_path:f.path.slice(0,2990),
-      source_modified_at:f.modifiedTime||null,source_hash:sha(text),object_type:classification(f),
-      content:text.slice(0,80000),
-      metadata:{rootId:ROOT,domain:"4planet",tenant:null,sourceFileId:f.id,sheetId:pr.sheetId,tab:pr.title,readDepth:"SHEET_ROWS",rowsRead:values.length,truncated:text.length>80000}
-     });sheetTabs++;readCount++;
+    // Drive export works with the existing Drive reader, even when Sheets API is disabled.
+    const response=await get("https://www.googleapis.com/drive/v3/files/"+f.id+
+      "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+    const bytes=Buffer.from(await response.arrayBuffer());
+    if(bytes.length>10500000)throw Error("DRIVE_SHEET_EXPORT_TOO_LARGE");
+    const directory=mkdtempSync(join(tmpdir(),"4planet-os-sheets-"));
+    let tabs;
+    try{
+      const file=join(directory,"source.xlsx");writeFileSync(file,bytes,{mode:0o600});
+      tabs=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
+        encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
+      }));
+    }finally{rmSync(directory,{recursive:true,force:true});}
+    for(const s of tabs.slice(0,opts.maxTabs-sheetTabs)){
+      const values=(s.rows||[]).slice(0,900);
+      if(!values.length)continue;
+      const valueText=values.map((r,i)=>String(i+1)+": "+r.map(x=>String(x).replace(/[\r\n]+/g," ")).join(" | ")).join("\n");
+      records.push({
+       source_id:f.id+"_"+s.sheetId,title:(f.name+" — "+s.name).slice(0,600),
+       mime_type:f.mimeType,source_url:uri(f),parent_path:f.path.slice(0,2990),
+       source_modified_at:f.modifiedTime||null,source_hash:sha(valueText),object_type:classification(f),
+       content:valueText.slice(0,80000),
+       metadata:{rootId:ROOT,domain:"4planet",tenant:null,sourceFileId:f.id,sheetId:s.sheetId,
+        tab:s.name,readDepth:"SHEET_ROWS",rowsRead:values.length,truncated:valueText.length>80000}
+      });sheetTabs++;readCount++;
     }
    }catch(e){denied++;console.log("Structured sheet skipped; reason="+safeError(e).replace(/\d{12,}/g,"[ID]"));}
   }
