@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - build/partners-decision-system-20260919
+      - build/partners-live-ux-iteration-20260921
     paths:
       - src/pages/partners/**
       - src/content/partnersHub.json
