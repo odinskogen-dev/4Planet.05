@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import hub from "@/content/partnersHub.json";
 import { img } from "@/content/imageRegistry";
 import "@/styles/partners-hub.css";
-import { PortfolioPage, OpportunitiesPage, ActorPage, FourBrandsPitch, RestrictedRoom, EnquirePage } from "@/pages/partners/PartnerDecision";
+import { PortfolioPage, OpportunitiesPage, ActorPage, FourBrandsPitch, RestrictedRoom, EnquirePage, PartnerPrivacyPage } from "@/pages/partners/PartnerDecision";
 
-type PageKey = "home" | "system" | "proof" | "partnerships" | "capital" | "trust" | "founder" | "brief" | "for" | "portfolio" | "opportunities" | "fourbrand" | "enquire" | "dataroom" | "workspace";
+type PageKey = "home" | "system" | "proof" | "partnerships" | "capital" | "trust" | "founder" | "brief" | "for" | "portfolio" | "opportunities" | "fourbrand" | "enquire" | "dataroom" | "workspace" | "privacy";
 
 const BASE = "";
 const MAIN_SITE = "https://4planet.org";
@@ -35,6 +35,7 @@ function resolvePage(pathname: string): { page: PageKey; slug?: string } {
   if (path.startsWith("/opportunities/")) return { page: "opportunities", slug: path.split("/")[2] };
   if (path === "/4brand" || path === "/4brands") return { page: "fourbrand" };
   if (path === "/enquire") return { page: "enquire" };
+  if (path === "/privacy") return { page: "privacy" };
   if (path === "/dataroom") return { page: "dataroom" };
   if (path === "/workspace") return { page: "workspace" };
   if (path === "/for") return { page: "for" };
@@ -460,6 +461,7 @@ export default function PartnersHub() {
       {route.page === "opportunities" ? <OpportunitiesPage slug={route.slug} /> : null}
       {route.page === "fourbrand" ? <FourBrandsPitch /> : null}
       {route.page === "enquire" ? <EnquirePage /> : null}
+      {route.page === "privacy" ? <PartnerPrivacyPage /> : null}
       {route.page === "dataroom" ? <RestrictedRoom kind="dataroom" /> : null}
       {route.page === "workspace" ? <RestrictedRoom kind="workspace" /> : null}
       {route.page === "system" ? <SystemPage /> : null}
