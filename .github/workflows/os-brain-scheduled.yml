@@ -25,4 +25,5 @@ jobs:
       - name: Synchronize controlled 4PLANET Drive sources
         run: |
           node --check scripts/os-brain-sync.mjs
+          python3 -m py_compile scripts/os-xlsx-rows.py
           node scripts/os-brain-sync.mjs
