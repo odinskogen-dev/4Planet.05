@@ -43,7 +43,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 </style></head><body><div class="shell">
 <header class="top"><div class="wordmark">4PLANET<b>_</b> <span class="tag">LABS / OS</span></div><div class="topright"><a href="/" class="small">LABS ↗</a><span class="small">PRIVATE · FOUNDER</span><button id="logout" class="hide">LOG OUT</button></div></header>
 <section><div class="eyebrow">PRIVATE OPERATING SYSTEM · FOUNDER COMMAND</div><h1 class="title">LIVING<br><em>SYSTEMS.</em><br>OPERATIONS.</h1><p class="lede">One control view for project work, BRAIN evidence, proof and Founder decisions. BRAIN remains the authority. Unverified progress is never promoted.</p></section>
-<section id="login" class="login"><div class="eyebrow">FOUNDER-ONLY ACCESS</div><h2>Sign in to your private OS.</h2><p class="note">Use the verified OS-Supabase account. No private BRAIN data is included in this page or any public LABS asset.</p><form id="sign-in"><label for="email">YOUR SUPABASE ACCOUNT EMAIL</label><input id="email" type="email" autocomplete="email" required><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password"><div class="actions"><button class="primary" type="submit">SIGN IN</button><button type="button" id="magic">EMAIL LOGIN LINK</button></div><p id="login-message" role="status" class="note">Private data is unavailable until server-side Founder authorization passes.</p></form></section>
+<section id="login" class="login"><div class="eyebrow">FOUNDER-ONLY ACCESS</div><h2>Sign in to your private OS.</h2><p class="note">Continue with the personal Google account already authorised for your 4PLANET OS. This is not the Google Cloud service account, and no separate OS password is required.</p><div class="actions"><button class="primary" id="google" type="button">CONTINUE WITH GOOGLE</button></div><details><summary class="small">OTHER SIGN-IN METHODS</summary><form id="sign-in"><label for="email">YOUR PERSONAL ACCOUNT EMAIL</label><input id="email" type="email" autocomplete="email" required><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password"><div class="actions"><button class="primary" type="submit">SIGN IN</button><button type="button" id="magic">EMAIL LOGIN LINK</button></div><p id="login-message" role="status" class="note">Use your own Google account, not the Google Cloud service-account email. Founder access is verified server-side.</p></form></details><p id="google-status" role="status" class="note">Your private project data is never included on this public sign-in page.</p></section>
 <section id="workspace" class="hide">
 <div class="banner" id="truth-banner">AUTHENTICATED BRAIN READ · SOURCE FRESHNESS AND LAST SUCCESSFUL AUTOMATIC SYNC ARE SHOWN BELOW. DRIVE SOURCE INVENTORY IS NOT EQUIVALENT TO VERIFIED PROJECT STATUS. HISTORIC LABS SNAPSHOT IS SEPARATE.</div>
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
@@ -152,6 +152,11 @@ el("sign-in").addEventListener("submit",async function(event){
  save(j.access_token,j.refresh_token,j.expires_in);el("password").value="";await boot();
  }catch(e){status("Sign-in was not accepted. Confirm the correct account or request an email link.");}
 });
+el("google").addEventListener("click",function(){
+ el("google-status").textContent="Opening secure Google sign-in. Select your existing personal 4PLANET account.";
+ var redirect="https://labs.4planet.org/os";
+ location.assign(url+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(redirect));
+});
 el("magic").addEventListener("click",async function(){
  var email=el("email").value.trim();if(!email){status("Enter your verified account email first.");return;}
  status("Requesting your email login link.");
@@ -167,6 +172,7 @@ el("tab-brain").addEventListener("click",function(){el("brain").classList.remove
 el("tab-portfolio").addEventListener("click",function(){el("brain").classList.add("hide");el("portfolio").classList.remove("hide");el("tab-brain").classList.remove("active");el("tab-portfolio").classList.add("active")});
 try{
  var params=new URLSearchParams(location.hash.slice(1));
+ if(params.has("error")){el("google-status").textContent="Google sign-in did not complete. "+String(params.get("error_description")||"Please try again.");history.replaceState(null,"",location.pathname);};
  if(params.has("access_token")){save(params.get("access_token"),params.get("refresh_token"),params.get("expires_in"));history.replaceState(null,"",location.pathname);};
  var saved=JSON.parse(sessionStorage.getItem("fourplanet_os_session")||"null");
  if(!token&&saved&&saved.token){token=saved.token;refreshToken=saved.refreshToken;expiresAt=saved.expiresAt||0;}
