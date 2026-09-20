@@ -27,6 +27,19 @@ jobs:
           node --check ops/labs-domain-adapter/src/index.js
           node --check ops/labs-domain-adapter/src/founder-os.js
           node --test scripts/labs-private-os-contract.test.mjs
+          node <<'NODE'
+          const fs=require('node:fs'), cp=require('node:child_process');
+          const file=fs.readFileSync('.github/workflows/os-labs-private-release.yml','utf8');
+          const start=file.indexOf('      - name: External route, private denial, source pin, other hosts');
+          const stop=file.indexOf('      - name: Remote desktop + mobile Founder login browser QA',start);
+          if(start<0||stop<0)throw Error('Missing live verifier script');
+          const block=file.slice(start,stop).split('\\n');
+          const at=block.findIndex(x=>x.trim()==='run: |');
+          const script=block.slice(at+1).map(x=>x.replace(/^ {10}/,'')).join('\\n');
+          const result=cp.spawnSync('bash',['-n'],{input:script,encoding:'utf8'});
+          if(result.status!==0)throw Error('OS remote-verifier syntax: '+result.stderr);
+          console.log('Remote release bash -n PASS');
+          NODE
           grep -Fq '13fd59158c876b69d6601d27121334301fc25fa0' ops/labs-domain-adapter/src/index.js
           grep -Fq 'labs.4planet.org/*' ops/labs-domain-adapter/wrangler.jsonc
           test -n "$CF_FACTORY"
@@ -76,7 +89,7 @@ jobs:
             echo "PUBLIC LABS unchanged $path"
           done
           locked="$(curl -sS --connect-timeout 8 --max-time 25 -o /tmp/locked-os -w '%{http_code}' https://os.4planet.org/ || true)"
-          [[ "$locked" == 423 ]] || {echo "OTHER OS HOST REGRESSION $locked";exit 24; }
+          [[ "$locked" == 423 ]] || { echo "OTHER OS HOST REGRESSION $locked";exit 24; }
           for host in 4planet.org s4piens.com 4brands.org;do
             code="$(curl -sSL --connect-timeout 7 --max-time 22 -o /dev/null -w '%{http_code}' "https://$host/" || true)"
             [[ "$code" == 200 ]] || { echo "$host REGRESSION HTTP $code";exit 25; }
