@@ -57,7 +57,7 @@ jobs:
           if old not in s and new not in s:
               raise SystemExit("PARTNERS_PREVIEW_NO_INDEX_META_MISSING")
           p.write_text(s.replace(old,new))
-          Path("dist/_headers").write_text("/*\n  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet\n  X-Content-Type-Options: nosniff\n")
+          Path("dist/_headers").write_text("/*\n  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\n  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests\n")
           Path("dist/_redirects").write_text("/* /index.html 200\n")
           Path("dist/robots.txt").write_text("User-agent: *\nDisallow: /\n")
           PY
