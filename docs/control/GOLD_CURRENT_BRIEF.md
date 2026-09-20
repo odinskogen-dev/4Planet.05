@@ -94,3 +94,7 @@ Existing 4SAPIEN/Embla route, `king/test` HEIR, Product Surface Registry, Financ
 
 ## MAKER ≠ JUDGE
 The builder may prove deterministic calculations, security shape and browser behaviour, but may not self-certify Human Gold or release to LIVE. Founder review and separate production authority remain required.
+
+## BOUNDED SECURITY REPAIR — VERIFIED VALUE CLOSURE 03
+- ATLAS `src/earth/World.tsx` uses a MapLibre named namespace import in preparation for patched MapLibre 6.10.0 ESM; this is compatibility only, not new ATLAS capability.
+- SAFE HEIR workflow must run npm audit, typecheck, build, smoke and assets on exact HEIR before committing package/lock; security remains RED until independent tests pass. No LIVE promotion or inflated product proof.
