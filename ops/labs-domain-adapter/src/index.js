@@ -1,3 +1,5 @@
+import { handlePrivateOS } from "./founder-os.js";
+
 // LABS host-only deployment adapter. BRAIN and private tenant data are NOT served here.
 // Source is pinned to the exact QA-approved, public-safe LABS preview.
 const SOURCE_SHA = "13fd59158c876b69d6601d27121334301fc25fa0";
@@ -9,6 +11,12 @@ export default {
     const incoming = new URL(request.url);
     if (incoming.hostname !== CANONICAL_HOST) {
       return new Response("Host not served by LABS adapter.", { status: 421 });
+    }
+    // The private OS lives on this same LABS host. Its server-side Founder ACL
+    // executes before any BRAIN data is returned; the public LABS origin below
+    // never receives cookies, Authorization headers or private response bodies.
+    if (incoming.pathname === "/os" || incoming.pathname.startsWith("/os/")) {
+      return handlePrivateOS(request, incoming);
     }
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new Response("Method not allowed.", { status: 405, headers: { Allow: "GET, HEAD", "Cache-Control": "no-store" } });
