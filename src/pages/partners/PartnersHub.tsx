@@ -116,7 +116,7 @@ function SiteFooter() {
       <div className="ph-footer-mark">4PLANET_</div>
       <div className="ph-footer-copy">
         <p>For a Living Planet.</p>
-        <p className="ph-small">Current public explanation · {hub.meta.updated} · Direct-link partner surface · NOINDEX</p>
+        <p className="ph-small">Current public explanation · Updated {hub.meta.updated}</p>
       </div>
       <div className="ph-footer-links">
         <a href="/trust">Evidence & trust</a>
