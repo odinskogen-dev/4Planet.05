@@ -44,6 +44,12 @@ try {
     const homeSections = await page.locator("main.ph-home-short > section").count();
     if (homeSections !== 4) throw Error("Homepage must have exactly four concise sections, got " + homeSections);
     await page.locator("main.ph-home-short h1").waitFor();
+    await page.keyboard.press("Tab");
+    const skipText = await page.evaluate(() => document.activeElement?.textContent?.trim() || "");
+    if (skipText !== "Skip to content") throw Error("Keyboard bypass of primary navigation missing");
+    await page.keyboard.press("Enter");
+    const focusTarget = await page.evaluate(() => document.activeElement?.id || "");
+    if (focusTarget !== "partners-main") throw Error("Skip link did not land on content");
     const heroText = await page.locator(".ph-hero-copy").innerText();
     if (heroText.length > 580) throw Error("Homepage hero too verbose: " + heroText.length);
     if (viewport.width >= 1201) {
@@ -54,6 +60,10 @@ try {
       await page.getByRole("button", { name: "Open navigation" }).click();
       const navigation = page.getByRole("navigation", { name: "Partners navigation" });
       if (!(await navigation.isVisible())) throw Error("Mobile navigation did not open");
+      await page.keyboard.press("Escape");
+      if (await navigation.isVisible()) throw Error("Escape must close mobile navigation");
+      if (!(await page.getByRole("button", { name: "Open navigation" }).isFocused())) throw Error("Escape must restore menu focus");
+      await page.getByRole("button", { name: "Open navigation" }).click();
       await page.getByRole("button", { name: "Close navigation" }).click();
       if (await navigation.isVisible()) throw Error("Mobile navigation did not close");
     }
