@@ -1,0 +1,124 @@
+name: 4PLANET LABS private OS — isolated authenticated route release
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-labs-private-release.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: labs-private-os-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    env:
+      CF_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pre-deployment security and source controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ops/labs-domain-adapter/src/index.js
+          node --check ops/labs-domain-adapter/src/founder-os.js
+          node --test scripts/labs-private-os-contract.test.mjs
+          grep -Fq '13fd59158c876b69d6601d27121334301fc25fa0' ops/labs-domain-adapter/src/index.js
+          grep -Fq 'labs.4planet.org/*' ops/labs-domain-adapter/wrangler.jsonc
+          test -n "$CF_FACTORY"
+          api=https://api.cloudflare.com/client/v4
+          account="${CF_ACCOUNT:-d53c17b06219066a0325eec01c21729e}"
+          zone="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_FACTORY" "$api/zones?name=4planet.org" | jq -r '.result[0].id // empty')"
+          test -n "$zone"
+          existing="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CF_FACTORY" "$api/zones/$zone/workers/routes")"
+          jq -e '.result[] | select(.pattern=="labs.4planet.org/*" and .script=="4planet-labs-os-domain-adapter")' <<<"$existing" >/dev/null
+          echo "EXACT LABS host-only route confirmed; no other domain route is touched."
+          anon="$(curl -sS --connect-timeout 8 --max-time 20 -o /tmp/edge-anon -w '%{http_code}' https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/private-os-read || true)"
+          invalid="$(curl -sS --connect-timeout 8 --max-time 20 -H 'Authorization: Bearer not.a.valid.token' -o /tmp/edge-invalid -w '%{http_code}' https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/private-os-read || true)"
+          [[ "$anon" == 401 ]] && [[ "$invalid" == 401 ]] || { echo "Edge negative access tests FAIL: anonymous $anon invalid $invalid"; exit 14; }
+          echo "Private BRAIN Edge anonymous + forged-token denial PASS."
+      - name: Deploy unchanged LABS host route with additional /os handler through existing Factory token
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          workingDirectory: ops/labs-domain-adapter
+          wranglerVersion: '4.41.0'
+          command: deploy --config wrangler.jsonc
+      - name: External route, private denial, source pin, other hosts
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 18); do
+            status="$(curl -sS --connect-timeout 7 --max-time 22 -D /tmp/labs-os-headers -o /tmp/labs-os-page -w '%{http_code}' https://labs.4planet.org/os 2>/dev/null || true)"
+            anon="$(curl -sS --connect-timeout 7 --max-time 22 -o /tmp/labs-os-anon -w '%{http_code}' https://labs.4planet.org/os/api/brain 2>/dev/null || true)"
+            health="$(curl -sS --connect-timeout 7 --max-time 22 -o /tmp/labs-os-health -w '%{http_code}' https://labs.4planet.org/os/_status 2>/dev/null || true)"
+            if [[ "$status" == 200 && "$anon" == 401 && "$health" == 200 ]] && grep -Fq 'FOUNDER-ONLY ACCESS' /tmp/labs-os-page && jq -e '.release=="PARTIAL" and .fullDrivePortfolioHydrated==false and .automaticDriveSyncVerified==false' /tmp/labs-os-health >/dev/null; then success=1;break;fi
+            echo "Route propagation attempt $attempt (login $status anonymous $anon health $health)"
+            sleep 5
+          done
+          [[ "$success" == 1 ]] || { echo 'LIVE OS ROUTE QA FAILED'; exit 21; }
+          grep -Fiq 'cache-control: private, no-store' /tmp/labs-os-headers
+          grep -Fiq "script-src 'nonce-" /tmp/labs-os-headers
+          echo "PRIVATE LABS /os LOGIN PASS · ANONYMOUS PRIVATE BRAIN 401 · PARTIAL-STATUS TRUTH PASS"
+          bad="$(curl -sS --connect-timeout 8 --max-time 20 -H 'Authorization: Bearer invalid.token.value' -o /tmp/labs-os-forged -w '%{http_code}' https://labs.4planet.org/os/api/brain 2>/dev/null || true)"
+          [[ "$bad" == 401 ]] || { echo "FORGED JWT LEAK: $bad";exit 23;}
+          for path in / /labs /4planet /4planet/product; do
+            headers="$(curl -sSIL --connect-timeout 8 --max-time 25 "https://labs.4planet.org$path" | tr -d '\r' || true)"
+            grep -Fiq 'x-labs-source-commit: 13fd59158c876b69d6601d27121334301fc25fa0' <<<"$headers" || { echo "PUBLIC LABS REGRESSION $path"; exit 22; }
+            echo "PUBLIC LABS unchanged $path"
+          done
+          locked="$(curl -sS --connect-timeout 8 --max-time 25 -o /tmp/locked-os -w '%{http_code}' https://os.4planet.org/ || true)"
+          [[ "$locked" == 423 ]] || {echo "OTHER OS HOST REGRESSION $locked";exit 24;}
+          for host in 4planet.org s4piens.com 4brands.org;do
+            code="$(curl -sSL --connect-timeout 7 --max-time 22 -o /dev/null -w '%{http_code}' "https://$host/" || true)"
+            [[ "$code" == 200 ]] || { echo "$host REGRESSION HTTP $code";exit 25; }
+          done
+          echo "LABS/OS path isolation and 4PLANET public domains PASS. No user login or full Drive sync claim."
+      - name: Remote desktop + mobile Founder login browser QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install chromium --with-deps
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch({headless:true});
+          try {
+            for(const width of [1440,390]){
+              const page=await browser.newPage({viewport:{width,height:850}});
+              const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+              const r=await page.goto('https://labs.4planet.org/os',{waitUntil:'domcontentloaded',timeout:35000});
+              if(r?.status()!==200)throw Error('OS login status '+r?.status());
+              await page.getByText('Sign in to your private OS.').first().waitFor({timeout:20000});
+              if(await page.getByText('BRAIN Federation Architecture v1.0').count())throw Error('Private source leaked to unauthenticated HTML');
+              if(errors.length)throw Error('JS page error '+errors.slice(0,2).join(' | '));
+              console.log('LABS private OS Founder login mobile/desktop SAFE PASS at '+width+'px');
+              await page.close();
+            }
+          } finally {await browser.close()}
+          NODE
+      - name: Roll back only LABS Worker script to last externally approved public-safe adapter on release QA failure
+        if: failure() && steps.deploy.outcome == 'success'
+        shell: bash
+        run: |
+          set +e
+          git show 346dc333daa8b03cd237c4eeaa60b304acbff436:ops/labs-domain-adapter/src/index.js > ops/labs-domain-adapter/src/index.js
+          cd ops/labs-domain-adapter
+          npx --yes wrangler@4.41.0 deploy --config wrangler.jsonc
+          echo "LABS Worker restored to pinned public-safe pre-/os adapter. os.4planet.org separate lock preserved."
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      - name: Record exact result in existing LABS OS task
+        if: always()
+        shell: bash
+        run: |
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "PRIVATE LABS /os controlled release run https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID source SHA $GITHUB_SHA . Only SUCCESS proves login shell/anonymous denial, desktop/mobile and other domains; not Founder sign-in, full Drive BRAIN hydration or scheduled auto-sync. os.4planet.org remains locked. See https://github.com/odinskogen-dev/4Planet-OSv3/issues/6 ."
