@@ -23,7 +23,7 @@ try {
 
   await desktop.goto(`${base}/`, { waitUntil: "networkidle", timeout: 30000 });
   const thesis = await desktop.locator("body").innerText();
-  if (!thesis.includes("The living world is connected.")) throw new Error("PARTNERS_LIVE_FAIL rendered homepage thesis missing");
+  if (!thesis.includes("A living planet.")) throw new Error("PARTNERS_LIVE_FAIL rendered homepage thesis missing");
 
   const robots = await desktop.locator('meta[name="robots"]').getAttribute("content");
   if (!robots?.toLowerCase().includes("noindex")) throw new Error(`PARTNERS_LIVE_FAIL rendered meta robots=${robots}`);
