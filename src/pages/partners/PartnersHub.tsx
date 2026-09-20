@@ -108,6 +108,8 @@ function SiteFooter() {
       </div>
       <div className="ph-footer-links">
         <a href="/trust">Evidence & trust</a>
+        <a href="/capital">Capital</a>
+        <a href="/founder">Founder</a>
         <a href="/briefs/overview">Briefs</a>
         <a href="/enquire">Partner enquiry</a>
         <a href={MAIN_SITE}>Explore 4PLANET <Arrow /></a>
