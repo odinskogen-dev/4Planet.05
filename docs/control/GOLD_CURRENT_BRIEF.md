@@ -36,6 +36,9 @@ The next action is one of: add account, add holding, update current price, inspe
 ## P4 DEPTH
 Deep evidence includes per-record source and as-of time, portfolio formula inputs, consent expiry, rate-limit state, sync receipts and explicit gaps. Provider credentials and bank link references stay server-side outside browser-readable tables.
 
+## WHAT CAN BE REMOVED
+Remove the old finance placeholder, fake-connected states, zero-as-unknown arithmetic, silent cross-currency totals and any market-data integration without production-use rights. Preserve the existing `GOLD-TEMPLATE-REFINEMENT-02` human hierarchy, provenance, privacy boundaries and Founder release gate.
+
 ## TRUTH BOUNDARY
 - Manual values are user-entered facts, not bank-verified facts.
 - Current holding price is a manual quote until a licensed provider is configured.
@@ -71,6 +74,7 @@ Existing 4SAPIEN/Embla route, `king/test` HEIR, Product Surface Registry, Financ
 
 ## OUT OF SCOPE / FOUNDER GATES
 - No mutation or release to `4sapien.com`.
+- `ENIG LIVE` remains the separate explicit production-release command; this change does not contain it.
 - No provider signup, commercial agreement, credential creation or bank consent.
 - No production database migration or Edge Function deployment.
 - No payment, transfer, order, trade execution, NAV workflow or personalised financial recommendation.
