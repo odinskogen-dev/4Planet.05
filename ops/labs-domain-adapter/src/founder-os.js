@@ -92,7 +92,7 @@ function projectCard(x){
  var provenance=document.createElement("div");provenance.className="source";
  provenance.textContent="SOURCE UPDATED: "+shortTime(x.sourceModifiedAt)+" · FOLDER: "+text(x.folder)+" · SHA256: "+text(x.sourceHash);
  details.appendChild(provenance);
- if(x.uri&&/^https:\/\/docs\.google\.com\/|^https:\/\/drive\.google\.com\//.test(x.uri)){
+ if(x.uri&&(x.uri.startsWith("https://docs.google.com/")||x.uri.startsWith("https://drive.google.com/"))){
  var a=document.createElement("a");a.href=x.uri;a.target="_blank";a.rel="noopener noreferrer";
  a.textContent="OPEN ORIGINAL SOURCE ↗";details.appendChild(a);
  }
