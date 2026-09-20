@@ -33,9 +33,9 @@ jobs:
           const start=file.indexOf('      - name: External route, private denial, source pin, other hosts');
           const stop=file.indexOf('      - name: Remote desktop + mobile Founder login browser QA',start);
           if(start<0||stop<0)throw Error('Missing live verifier script');
-          const block=file.slice(start,stop).split('\\n');
+          const block=file.slice(start,stop).split('\n');
           const at=block.findIndex(x=>x.trim()==='run: |');
-          const script=block.slice(at+1).map(x=>x.replace(/^ {10}/,'')).join('\\n');
+          const script=block.slice(at+1).map(x=>x.replace(/^ {10}/,'')).join('\n');
           const result=cp.spawnSync('bash',['-n'],{input:script,encoding:'utf8'});
           if(result.status!==0)throw Error('OS remote-verifier syntax: '+result.stderr);
           console.log('Remote release bash -n PASS');
