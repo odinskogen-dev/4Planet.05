@@ -10,13 +10,11 @@ const BASE = "";
 const MAIN_SITE = "https://4planet.org";
 
 const nav = [
-  ["Portfolio", "/portfolio"],
+  ["The platform", "/portfolio"],
+  ["Partner with us", "/for"],
   ["Opportunities", "/opportunities"],
-  ["System", "/system"],
   ["Proof", "/proof"],
-  ["Partnerships", "/partnerships"],
-  ["Capital", "/capital"],
-  ["Trust", "/trust"],
+  ["About", "/system"],
 ] as const;
 
 const pdfs: Record<string, string> = {
@@ -89,10 +87,10 @@ function SiteHeader() {
       <a className="ph-brand" href="/" aria-label="4PLANET Partners home">
         <span>4PLANET_</span><small>PARTNERS</small>
       </a>
-      <button className="ph-menu" type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button className="ph-menu" type="button" aria-controls="partners-primary-navigation" aria-expanded={open} aria-label={open ? "Close navigation" : "Open navigation"} onClick={() => setOpen(!open)}>
         {open ? "CLOSE" : "MENU"}
       </button>
-      <nav className={open ? "ph-nav is-open" : "ph-nav"} aria-label="Partners navigation">
+      <nav id="partners-primary-navigation" className={open ? "ph-nav is-open" : "ph-nav"} aria-label="Partners navigation">
         {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
         <a className="ph-nav-main" href={MAIN_SITE}>4planet.org <Arrow /></a>
       </nav>
@@ -223,119 +221,51 @@ function TrustStrip() {
 function HomePage() {
   useDocumentMeta();
   return (
-    <>
-      <section className="ph-hero">
+    <main className="ph-home-short">
+      <section className="ph-hero ph-hero-compact" aria-labelledby="ph-home-heading">
         <div className="ph-hero-copy">
-          <p className="ph-eyebrow">{hub.hero.eyebrow}</p>
-          <h1>{hub.hero.headline}</h1>
-          <p className="ph-hero-body">{hub.hero.body}</p>
+          <p className="ph-eyebrow">4PLANET / FOR A LIVING PLANET</p>
+          <h1 id="ph-home-heading">A living planet.<br />A connected way forward.</h1>
+          <p className="ph-hero-body">Ecological knowledge is fragmented. 4PLANET connects evidence, relationships and the people who can act — from understanding to decisions, action and transparent proof.</p>
           <div className="ph-actions">
-            <a className="ph-button ph-button-primary" href="#role">{hub.hero.primaryCta}</a>
-            <a className="ph-button" href="/portfolio">{hub.hero.secondaryCta}</a>
+            <a className="ph-button ph-button-primary" href="/for">Find your role</a>
+            <a className="ph-button" href="/portfolio">Explore the platform</a>
           </div>
-          <nav className="ph-hero-quick" aria-label="Choose your partner route"><a href="/for/company">Company ↗</a><a href="/for/foundation">Foundation ↗</a><a href="/for/science">Science ↗</a><a href="/for">All routes ↗</a></nav>
+          <p className="ph-hero-footnote">Source-aware intelligence. Human judgement. Measurable outcomes.</p>
         </div>
         <PlanetImage imageKey="heroEarth" className="ph-hero-image" />
       </section>
 
-      <section className="pd-entry" id="role" aria-labelledby="pd-entry-title">
-        <div><span className="pd-meta">FIND YOUR ROLE</span><h2 id="pd-entry-title">What could we build together?</h2><p>One shared evidence system, different real-world needs. Choose your perspective to see relevant value, proof and the limits of what is currently available.</p></div>
-        <div className="pd-entry-links"><a href="/for/company">Company or brand ↗</a><a href="/for/foundation">Foundation or funder ↗</a><a href="/for/science">Science and data ↗</a><a href="/for">All eight routes ↗</a><a href="/portfolio">Explore the full portfolio ↗</a></div>
+      <section className="ph-short-pathways" aria-labelledby="ph-short-pathways">
+        <div className="ph-short-intro">
+          <p className="ph-eyebrow">ONE SYSTEM / THREE SCALES</p>
+          <h2 id="ph-short-pathways">Discover where you fit.</h2>
+          <p>Follow the work that matters to you. More detail is one click away.</p>
+        </div>
+        <div className="ph-short-grid">
+          <a href="/portfolio" className="ph-short-card"><span className="ph-short-index">01 / PLANET</span><h3>4PLANET</h3><p>Explore places, species, relationships and credible action.</p><strong>Explore living systems</strong></a>
+          <a href="https://4sapien.com" className="ph-short-card"><span className="ph-short-index">02 / PERSON</span><h3>4SAPIEN</h3><p>Make personal decisions with context and evidence. Facts, not advice.</p><strong>Explore personal intelligence</strong></a>
+          <a href="https://4brands.org" className="ph-short-card"><span className="ph-short-index">03 / COMPANY</span><h3>4BRANDS</h3><p>Connect business objectives, better decisions and measurable value.</p><strong>Explore company intelligence</strong></a>
+        </div>
       </section>
 
-      <section className="ph-panel ph-panel-ink">
-        <SectionTitle index="01" label={hub.problem.label} title={hub.problem.headline} intro={hub.problem.body} />
-        <blockquote>{hub.problem.insight}</blockquote>
-      </section>
-
-      <section className="ph-panel ph-hypothesis">
+      <section className="ph-short-partner" aria-labelledby="ph-short-partner-heading">
         <div>
-          <p className="ph-eyebrow">{hub.hypothesis.label}</p>
-          <h2>{hub.hypothesis.headline}</h2>
+          <p className="ph-eyebrow">WORK WITH 4PLANET</p>
+          <h2 id="ph-short-partner-heading">Bring one real problem. Build one useful result.</h2>
         </div>
-        <div>
-          <p className="ph-lead">{hub.hypothesis.body}</p>
-          <p className="ph-boundary">{hub.hypothesis.status}</p>
-        </div>
-      </section>
-
-      <section className="ph-panel" id="system">
-        <SectionTitle index="02" label="THE SYSTEM" title="From reality to learning — without losing the evidence in between." intro="The public interface is only one layer. The system is designed to preserve the chain from what is observed to what is understood, done and eventually proven." />
-        <SystemFlow compact />
-        <a className="ph-text-link ph-more" href="/system">Explore the full system <Arrow /></a>
-      </section>
-
-      <section className="ph-bleed-image">
-        <PlanetImage imageKey="whyImage" />
-        <div className="ph-bleed-caption">
-          <span>THE LIVING PLANET IS THE PROTAGONIST.</span>
-          <p>The interface should reveal relationships — not turn nature into a dashboard.</p>
+        <div className="ph-short-partner-copy">
+          <p>Data, funding, field capability, research or a company decision: a collaboration starts with a clear role, a bounded deliverable and evidence of what actually changed.</p>
+          <div className="ph-short-links"><a href="/for">Find your partner pathway</a><a href="/opportunities">Explore opportunities</a><a href="/proof">See current proof</a></div>
         </div>
       </section>
 
-      <section className="ph-panel" id="products">
-        <SectionTitle index="03" label="WHAT EXISTS" title="Four core public products. One connected logic." intro="Each product answers a different human question. Together they form a route from place and life to relationships, action and proof." />
-        <ProductRows />
+      <section className="ph-short-last">
+        <p className="ph-eyebrow">UNDERSTAND / ACT / PROVE</p>
+        <h2>For a living planet.</h2>
+        <a className="ph-button ph-button-primary" href="/briefs/overview">Read the 4PLANET brief</a>
       </section>
-
-      <section className="ph-panel ph-panel-blue" id="proof">
-        <SectionTitle index="04" label="PROOF" title="Build the system through bounded cases — then keep the limits visible." intro="4PLANET does not treat a polished prototype as proof of product-market fit, and it does not treat funding or delivery as ecological impact. The cases below test specific parts of the system." />
-        <ProofRows limit={3} />
-        <a className="ph-button ph-button-light" href="/proof">See all current proof cases</a>
-      </section>
-
-      <section className="ph-panel">
-        <SectionTitle index="05" label="WHY NOW" title="The evidence is growing. The coordination problem is still hard." />
-        <div className="ph-three">
-          <div><span>01</span><h3>Ecological pressure</h3><p>Living systems are changing while many decisions still treat climate, biodiversity, food, materials and place as separate problems.</p></div>
-          <div><span>02</span><h3>Information abundance</h3><p>Public data, research, monitoring and spatial signals are expanding. The challenge is making relationships, scope and uncertainty usable.</p></div>
-          <div><span>03</span><h3>New interface capacity</h3><p>Software and AI can lower the cost of organising complex knowledge — but only if source authority, uncertainty and human judgement remain inspectable.</p></div>
-        </div>
-      </section>
-
-      <section className="ph-panel ph-partner-intro">
-        <SectionTitle index="06" label="PARTNER WITH 4PLANET" title="Bring a real problem, capability, place or resource. Build one thing that can be inspected." intro="The strongest collaborations begin with a bounded object and an explicit role — not a logo wall or a generic sustainability promise." />
-        <div className="ph-route-links">
-          {hub.partnerships.map((route) => <a href={`/partnerships#${route.slug}`} key={route.slug}><span>{route.name}</span><Arrow /></a>)}
-        </div>
-      </section>
-
-      <section className="ph-panel ph-capital-intro">
-        <div>
-          <p className="ph-eyebrow">CAPITAL</p>
-          <h2>Capital should unlock a real object — not inflate the story.</h2>
-        </div>
-        <div>
-          <p className="ph-lead">4PLANET uses different capital routes for different needs: public-interest proof, R&D, scientific validation, cultural work and bounded company pilots. Amounts and terms stay route-specific.</p>
-          <a className="ph-text-link" href="/capital">See the capital architecture <Arrow /></a>
-        </div>
-      </section>
-
-      <section className="ph-panel ph-panel-ink">
-        <SectionTitle index="07" label="TRUST" title="Proof should become more specific as a claim becomes stronger." intro={hub.trust.intro} />
-        <TrustStrip />
-        <a className="ph-button ph-button-light" href="/trust">How 4PLANET handles evidence</a>
-      </section>
-
-      <section className="ph-founder-tease">
-        <PlanetImage imageKey="earthrise" />
-        <div>
-          <p className="ph-eyebrow">FOUNDER / ORIGIN</p>
-          <h2>{hub.founder.headline}</h2>
-          <p>{hub.founder.body}</p>
-          <a className="ph-text-link" href="/founder">Founder and authority model <Arrow /></a>
-        </div>
-      </section>
-
-      <section className="ph-final">
-        <p className="ph-eyebrow">ONE SYSTEM / MANY CONTROLLED DEPTHS</p>
-        <h2>Understand the living system. Find the right role. Follow what happens next.</h2>
-        <div className="ph-actions">
-          <a className="ph-button ph-button-primary" href="/partnerships">Explore partnership routes</a>
-          <a className="ph-button" href="/briefs/overview">Open the master brief</a>
-        </div>
-      </section>
-    </>
+    </main>
   );
 }
 
