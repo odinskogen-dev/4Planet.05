@@ -1,15 +1,15 @@
 {
   "meta": {
     "version": "PARTNERS-GOLD-01",
-    "updated": "2026-09-19",
+    "updated": "2026-09-20",
     "title": "4PLANET Partners — Decision Intelligence for a Living Planet",
-    "description": "Discover 4PLANET, 4SAPIEN and 4BRANDS. Explore source-aware product proof, bounded partner opportunities and role-specific collaboration routes.",
+    "description": "4PLANET connects ecological evidence and the people who can act. Explore the planetary, personal and company intelligence system, evidence and partner pathways.",
     "canonicalHost": "partners.4planet.org"
   },
   "hero": {
     "eyebrow": "4PLANET / PARTNERS",
-    "headline": "The living world is connected. Our systems for understanding and acting on it are not.",
-    "body": "4PLANET builds decision intelligence for a living planet — across planetary systems, companies and individual lives. One shared evidence and memory infrastructure connects understanding to decisions, action and measurable learning. Explore what exists, what is developing and which bounded collaborations may be relevant.",
+    "headline": "A living planet. A connected way forward.",
+    "body": "Ecological knowledge is fragmented. 4PLANET connects evidence, relationships and the people who can act — from understanding to decisions, action and transparent proof.",
     "primaryCta": "Find your role",
     "secondaryCta": "Explore the portfolio"
   },
