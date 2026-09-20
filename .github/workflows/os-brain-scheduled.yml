@@ -5,7 +5,7 @@ on:
     paths: [.github/workflows/os-brain-scheduled.yml]
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '17 */6 * * *'
 permissions:
   contents: read
   id-token: write
@@ -38,4 +38,4 @@ jobs:
 
 # QA trigger: prove actual 4PLANET Drive document revision OS-SYNC-READBACK-PROOF-2026-09-20-01.
 
-# Temporary 5-minute scheduled QA to prove real clock-triggered recovery; restore 6-hour cadence after observing schedule event.
+# Six-hour production cadence restored. A genuine schedule-event run remains a distinct pending proof gate.
