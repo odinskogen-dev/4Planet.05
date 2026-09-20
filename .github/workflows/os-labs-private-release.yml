@@ -69,14 +69,14 @@ jobs:
           grep -Fiq "script-src 'nonce-" /tmp/labs-os-headers
           echo "PRIVATE LABS /os LOGIN PASS · ANONYMOUS PRIVATE BRAIN 401 · PARTIAL-STATUS TRUTH PASS"
           bad="$(curl -sS --connect-timeout 8 --max-time 20 -H 'Authorization: Bearer invalid.token.value' -o /tmp/labs-os-forged -w '%{http_code}' https://labs.4planet.org/os/api/brain 2>/dev/null || true)"
-          [[ "$bad" == 401 ]] || { echo "FORGED JWT LEAK: $bad";exit 23;}
+          [[ "$bad" == 401 ]] || { echo "FORGED JWT LEAK: $bad";exit 23; }
           for path in / /labs /4planet /4planet/product; do
             headers="$(curl -sSIL --connect-timeout 8 --max-time 25 "https://labs.4planet.org$path" | tr -d '\r' || true)"
             grep -Fiq 'x-labs-source-commit: 13fd59158c876b69d6601d27121334301fc25fa0' <<<"$headers" || { echo "PUBLIC LABS REGRESSION $path"; exit 22; }
             echo "PUBLIC LABS unchanged $path"
           done
           locked="$(curl -sS --connect-timeout 8 --max-time 25 -o /tmp/locked-os -w '%{http_code}' https://os.4planet.org/ || true)"
-          [[ "$locked" == 423 ]] || {echo "OTHER OS HOST REGRESSION $locked";exit 24;}
+          [[ "$locked" == 423 ]] || {echo "OTHER OS HOST REGRESSION $locked";exit 24; }
           for host in 4planet.org s4piens.com 4brands.org;do
             code="$(curl -sSL --connect-timeout 7 --max-time 22 -o /dev/null -w '%{http_code}' "https://$host/" || true)"
             [[ "$code" == 200 ]] || { echo "$host REGRESSION HTTP $code";exit 25; }
@@ -109,8 +109,12 @@ jobs:
         if: failure() && steps.deploy.outcome == 'success'
         shell: bash
         run: |
-          set +e
-          git show 346dc333daa8b03cd237c4eeaa60b304acbff436:ops/labs-domain-adapter/src/index.js > ops/labs-domain-adapter/src/index.js
+          set -euo pipefail
+          baseline=71dc91bf2c6fc04499ee4ee244a5c7720533d608
+          git fetch --no-tags --depth=1 origin "$baseline"
+          git show "$baseline:ops/labs-domain-adapter/src/index.js" > /tmp/labs-adapter-rollback.js
+          node --check /tmp/labs-adapter-rollback.js
+          cp /tmp/labs-adapter-rollback.js ops/labs-domain-adapter/src/index.js
           cd ops/labs-domain-adapter
           npx --yes wrangler@4.41.0 deploy --config wrangler.jsonc
           echo "LABS Worker restored to pinned public-safe pre-/os adapter. os.4planet.org separate lock preserved."
