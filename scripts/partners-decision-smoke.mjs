@@ -20,7 +20,7 @@ const routes = [
   "/for/field", "/for/public", "/for/culture", "/for/active",
   "/opportunities/founding-build", "/opportunities/sapien-proof",
   "/opportunities/brands-proof", "/opportunities/science-data",
-  "/opportunities/plastic-proof", "/dataroom", "/workspace",
+  "/opportunities/plastic-proof", "/dataroom", "/workspace", "/privacy",
   "/system", "/proof", "/partnerships", "/capital", "/trust", "/founder",
 ];
 let browser;
