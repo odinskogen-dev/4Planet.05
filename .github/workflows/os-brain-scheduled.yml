@@ -27,3 +27,5 @@ jobs:
           node --check scripts/os-brain-sync.mjs
           python3 -m py_compile scripts/os-xlsx-rows.py
           node scripts/os-brain-sync.mjs
+
+# QA trigger: prove actual 4PLANET Drive document revision OS-SYNC-READBACK-PROOF-2026-09-20-01.
