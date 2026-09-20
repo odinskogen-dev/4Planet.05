@@ -41,7 +41,7 @@ function dateFrom(str){
 function propose(raw,kind){
   const text=String(raw||"").slice(0,12000);
   const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const out={amount:null,date:null,name:null,itemLines:[],warnings:[],source:"LOCAL_TEXT_ONLY"};
+  const out={amount:null,date:null,name:null,kid:null,account:null,claimStage:null,itemLines:[],warnings:[],source:"LOCAL_TEXT_ONLY"};
   const amountLine=/(?:^|\b)(?:beløp\s*(?:å\s*betale)?|å\s*betale|totalt?\s*å\s*betale|til\s*betaling|total(?:t|beløp)?|sum\s*å\s*betale|sum\s*inkl\.?\s*mva)\s*[:\-]?\s*(?:kr\.?|nok)?\s*([0-9][0-9 \u00a0.,]{0,22})\b/i;
   for(const line of lines){
     const m=line.match(amountLine);
@@ -58,6 +58,15 @@ function propose(raw,kind){
   for(const line of lines){const m=line.match(pattern);if(m){const d=dateFrom(m[1]);if(d){out.date={value:d,source:line.slice(0,140)};break}}}
   const name=/(?:leverandør|utsteder|butikk|selger|fra)\s*[:\-]\s*(.{3,100})/i;
   for(const line of lines){const m=line.match(name);if(m){const v=m[1].trim();if(v&&!/^(?:kr|nok|\d)/i.test(v)){out.name={value:v.slice(0,180),source:line.slice(0,140)};break}}}
+  // KID is a syntactic, unverified extraction, not a validated payment reference.
+  const kidRe=/(?:kid(?:[-\s]?nr\.?)?|kundeid(?:entifikasjon)?)\s*[:\-]?\s*([0-9][0-9 \u00a0]{1,26}[0-9])/i;
+  for(const line of lines){const m=line.match(kidRe);if(m){const v=m[1].replace(/[\s\u00a0]/g,"");if(/^\d{2,25}$/.test(v)){out.kid={value:v,source:line.slice(0,140)};break}}}
+  // Norwegian account number is unverified; never use it to make a payment.
+  const accRe=/(?:kontonr\.?|kontonummer|til\s*konto|account\s*no\.?)\s*[:\-]?\s*(\d{4}[ .\u00a0]?\d{2}[ .\u00a0]?\d{5})/i;
+  for(const line of lines){const m=line.match(accRe);if(m){const v=m[1].replace(/[\s.\u00a0]/g,"");if(/^\d{11}$/.test(v)){out.account={value:v,source:line.slice(0,140)};break}}}
+  // Document label only: keywords do not verify legal stage or any right.
+  const stageRe=[["inkassovarsel",/inkassovarsel|varsel\s*om\s*inkasso/i],["betalingsoppfordring",/betalingsoppfordring|inkassokrav|inkassosak|inkassobyr\u00e5/i],["purring",/purring|betalingsp\u00e5minnelse|purregebyr/i],["faktura",/faktura|ordrebekreftelse/i]];
+  for(const sp of stageRe){if(sp[1].test(text)){out.claimStage={value:sp[0],source:"tekst"};break}}
   for(const line of lines){
     if(out.itemLines.length>=15)break;
     if(/\b(?:kontonr|kid|iban|mva|sum|total|beløp|forfall|organisasjonsnr)\b/i.test(line))continue;
