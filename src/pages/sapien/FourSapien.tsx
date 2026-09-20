@@ -4,15 +4,10 @@ import { Link } from "react-router-dom";
 import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
+import { FinanceWorkspace } from "../../finance/FinanceWorkspace";
 import "./embla-02.css";
 
 type EmblaMode = "LIST" | "ASK";
-
-const financeModules = [
-  { title: "MONEY MAP", text: "One honest picture of income, fixed costs, debt, assets, goals and recurring commitments. Manual-first; connected accounts later." },
-  { title: "CHOICE COST", text: "Turn everyday decisions into 1, 5 and 10-year consequences: cash, total cost, risk and opportunity cost." },
-  { title: "INVESTMENT INTELLIGENCE", text: "Fundamentals, valuation ranges, scenarios, company evidence and uncertainty. Analysis and comparison — not BUY / SELL instructions." },
-];
 
 export function FourSapienHome() {
   const [mode, setMode] = useState<EmblaMode>("LIST");
@@ -181,12 +176,5 @@ export function FourSapienHome() {
 }
 
 export function FourFinanceHome() {
-  return (
-    <main className="embla-finance">
-      <header className="embla-finance__header"><Link to="/4sapien">← EMBLA</Link><span>4FINANCE / PROOF 00</span></header>
-      <section className="embla-finance__hero"><p>EMBLA / MONEY INTELLIGENCE</p><h1>Understand money.<br />Choose with it.</h1><span>4FINANCE is the financial lens inside 4SAPIEN. The same Choice Engine links money to the rest of your life.</span></section>
-      <section className="embla-finance__modules">{financeModules.map((module, index) => <article key={module.title}><span>0{index + 1}</span><h2>{module.title}</h2><p>{module.text}</p></article>)}</section>
-      <section className="embla-finance__boundary"><p>TRUTH BY DESIGN</p><h2>Evidence and scenarios. Not a magic BUY button.</h2><span>Connected accounts and evidence-complete investment comparison are not active in this proof. Missing financial context remains UNKNOWN.</span></section>
-    </main>
-  );
+  return <FinanceWorkspace />;
 }

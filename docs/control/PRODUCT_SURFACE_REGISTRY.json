@@ -154,7 +154,11 @@
       "sandbox": null
     },
     "4SAPIEN": {
-      "live": {"url": null, "identity_state": "UNRELEASED"},
+      "live": {
+        "url": "https://4sapien.com/",
+        "source_sha": "5065e44331f5a11954632dabdb5936b22f7bd0cf",
+        "identity_state": "LIVE_DOMAIN_BROWSER_VERIFIED_2026_09_20_SOURCE_SHA_FROM_RELEASE_HANDOFF"
+      },
       "heir": {"review_path": "/4sapien", "origin_path": "/4sapien"},
       "sandbox": null
     },

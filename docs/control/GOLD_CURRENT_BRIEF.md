@@ -2,77 +2,91 @@
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
-**CHANGE ID:** PORTFOLIO-PRECISION-IMPROVEMENT-01-2026-09-18  
-**STATUS:** HEIR / TEST-ONLY / PORTFOLIO PRECISION + COMPANY BRAIN + MEASUREMENT / NO PRODUCTION LIVE RELEASE  
-**BASE AUTHORITY:** `king/test` / sole HEIR integration line  
-**LIVE IDENTITY:** production LIVE remains unchanged and outside this TEST release  
-**FOUNDER DIRECTION:** improve existing 4PLANET projects precisely; prefer shared fixes, measurable user/company/commerce proof, discovery, truth and reliability; no new architecture or product family.
+**CHANGE ID:** 4SAPIEN-CORE-FINANCE-01-2026-09-20
+
+**STATUS:** HEIR / TEST-ONLY / PERSONAL ECONOMY CORE / NO PRODUCTION LIVE RELEASE
+
+**BASE AUTHORITY:** `king/test` / sole HEIR integration line
+
+**LIVE IDENTITY:** `https://4sapien.com/` remains unchanged; LIVE promotion is outside this change
+
+**FOUNDER DIRECTION:** make personal economy useful in practice first; add legal/provider-ready bank connectivity and manual portfolio value without widening into a generic Life OS.
 
 ## USER ARRIVES BECAUSE
-A person, company, buyer, funder or explorer has a concrete job: make a better personal choice, understand a company and its value levers, explore a species/place/system, inspect proof, or buy an existing product. The interface must deliver that job before exposing internal architecture.
+A person wants one honest view of the money they can use, what they owe, and what their manually entered investments are worth now.
 
 ## ONE THING TO UNDERSTAND
-This change makes existing surfaces more measurable and more connected without creating a parallel system. 4SAPIEN remains the singular-person layer; S4PIENS remains the human-systems layer; 4BRANDS remains the company layer; 4MARKET remains the commerce surface; all reuse existing truth, evidence and product authority.
+4SAPIEN can calculate a useful personal money picture immediately from user-entered facts. Bank data is shown as connected only after an authorised account-information provider and explicit user consent exist. Four bank refreshes per day is a target constrained by the bank/provider, never a universal guarantee.
 
 ## PRIMARY ACTION
-Close one real value action per active surface: 4SAPIEN activation/decision, 4BRANDS evidence-backed company analysis/twin save, SPECIES/ATLAS discovery and exploration, 4MARKET live-product open and verified purchase, and IMPACT proof progression.
+Add or update an account or holding and immediately see recorded liquidity, debt, portfolio cost, current market value and unrealised change.
 
 ## SECONDARY DEPTH
-Sources, provenance, uncertainty, company evidence, finance context, delivery/proof boundaries and further exploration remain available through controlled depth. Measurement may record bounded event classes and counts, but never user free text, prompts, shopping-list content, private company notes or precise location.
+Show source, as-of time, missing values, currency boundaries, bank consent/sync state, last successful sync, next eligible sync and provider limits. Manual current prices remain clearly manual until a licensed market-data source is configured.
 
 ## P1 DOMINANT
-The dominant layer is the user's real object and task: the decision, company, species/place/system, proof state or live product. Existing canonical visual language and product hierarchy remain authoritative.
+The dominant layer is the user's recorded economy: liquid accounts, debt and holdings. Empty states lead directly to a useful first entry.
 
 ## P2 ORIENTATION
-Orientation must state which product surface the user is in and the relevant truth/status boundary. Analytics attribution must distinguish 4SAPIEN, S4PIENS, 4BRANDS, MARKET, CREATOR, ATLAS, SPECIES, LIVING SYSTEMS and IMPACT instead of collapsing them into generic 4PLANET.
+The surface says whether data is MANUAL, CONNECTED, STALE, PARTIAL or UNKNOWN. It never presents a provider-ready seam as an active bank connection.
 
 ## P3 ACTION / NEXT
-After value is delivered, expose the next useful action: save a bounded decision, inspect evidence, continue exploration, build company context, open a real product, or progress a proof state. No fake conversion or outcome language.
+The next action is one of: add account, add holding, update current price, inspect sync status or remove local TEST data. No trade execution or personalised BUY / SELL instruction exists.
 
 ## P4 DEPTH
-Deep evidence includes source records, checked-at state, FACT/CALCULATION/ESTIMATE/ASSUMPTION/INTERPRETATION/UNKNOWN boundaries, decision states, payment state, delivery state, proof state and unresolved gaps.
-
-## WHAT CAN BE REMOVED
-Remove generic placeholder product states where verified existing product inventory already exists; remove measurement blind spots; remove false product attribution; remove duplicate/parallel execution branches; remove feature work that does not move a real proof. Do not remove provenance, uncertainty, privacy boundaries or human review.
+Deep evidence includes per-record source and as-of time, portfolio formula inputs, consent expiry, rate-limit state, sync receipts and explicit gaps. Provider credentials and bank link references stay server-side outside browser-readable tables.
 
 ## TRUTH BOUNDARY
-Traffic is not external-user proof. A product click is not a purchase. Payment is not delivery. Delivery is not ecological outcome. A public-company value hypothesis is not realised value. TEST events must never become LIVE purchase truth. Unknown stays unknown. Production LIVE remains Founder-gated.
+- Manual values are user-entered facts, not bank-verified facts.
+- Current holding price is a manual quote until a licensed provider is configured.
+- Different currencies are never silently added together without an FX rate.
+- Unknown is never coerced to zero.
+- Four bank syncs per day is an adaptive target; provider/bank limits may allow fewer.
+- Portfolio monitoring is factual arithmetic, not investment advice or trade execution.
+- Yahoo/yfinance is not introduced as a commercial production dependency.
+
+## PRIVACY AND SECURITY
+- Authenticated canonical finance rows remain owner-scoped under RLS.
+- Anonymous users receive no canonical finance-table privileges.
+- Provider credentials and provider connection references are never exposed to the browser.
+- The HEIR proof may use clearly labelled device-local storage only; it is not canonical authenticated state and can be cleared by the user.
+- Analytics must never receive balances, holdings, tickers, quantities, prices, bank names or free text.
 
 ## MOBILE-FIRST RISK
-All changed public surfaces must remain usable at 390/430 widths. Product grids, evidence rows, forms, company-value cards and creator/market links must not assume desktop. Existing browser gates remain authoritative.
+Account and holding forms, summary cards, tables and sync state must remain complete at 390/430 widths with no horizontal overflow or hidden truth labels.
 
 ## HUMAN SUCCESS
-A first-time user can perform one useful action and understand the result and truth boundary without learning internal 4PLANET terminology. A returning user or company can continue from meaningful state. Measurement can distinguish the product/action without collecting the user's free-text content.
+Within two minutes, a first-time user can enter one liquid account and one holding, understand the resulting totals, update a price, reload without losing TEST state, and explain which values are manual versus bank/provider verified.
 
 ## WHAT MUST BE REUSED
-Existing Product Surface Registry, Four-State authority, `king/test` HEIR, existing Analytics/ProductAnalytics spine, GA4 consent gate, existing Supabase/Brain federation, Company Brain client, Stripe server verification, existing Fourthwall inventory, Premium Template/Factory controls, Cloudflare exact-SHA deployment and current source/proof contracts. No new KING, HEIR, BRAIN, CRM, database, analytics stack or product family.
+Existing 4SAPIEN/Embla route, `king/test` HEIR, Product Surface Registry, Finance Twin truth rules, canonical `4Planet_ OS` Supabase project, owner RLS pattern, Cloudflare exact-SHA review surface and existing privacy-safe analytics spine. No new BRAIN, product, database, auth system or branch.
 
 ## CURRENT BOUNDED DELTAS
-- Shared analytics attribution extended to 4SAPIEN / S4PIENS / 4BRANDS / MARKET / CREATOR with host-aware classification.
-- Standalone 4BRANDS/creator surfaces use the existing consented analytics spine.
-- Existing product/proof routes added to sitemap generation, including Orca, 4SAPIEN, 4BRANDS, bounded Living Systems/Impact and MARKET/creator routes.
-- 4SAPIEN measures bounded activation, meaningful use and saved-decision classes without free text.
-- 4BRANDS measures evidence-backed company-analysis and twin-save classes without company-name/free-text telemetry.
-- Stripe emits GA4 `purchase` only after server-verified LIVE confirmation; TEST confirmation stays non-purchase.
-- 4MARKET HEIR exposes the five already-public Fourthwall fine-art offers and links to their real fulfilment path; click remains non-purchase truth.
-- Existing 4BRANDS Company Brain work may extend the same company actor/context model only; it may not create a second brain or truth store.\n- 4BRAND authenticated persistence now routes through the existing `4Planet_ OS` Company Brain contracts: workspace membership + RLS + canonical memories/metrics/opportunities/decisions/interventions/results/learning. Browser `localStorage` is recovery-only before sign-in and is never canonical authenticated state.\n- New Company Brain transport is an adapter only: no service-role credential is exposed to the browser, company writes require authenticated membership, and TEST/HEIR remains the only product mutation state.\n- Company Value Report and compounding metrics are derived from the same canonical objects; estimated value remains distinct from measured/attributed/realised value.\n- HEIR now exposes explicit user-triggered Company Brain LOAD/READBACK, canonical Company Value Report export, and compounding object counts. These controls do not create external customer proof or realised-value claims.
+- Replace the `/4sapien/finance` placeholder with a working TEST-only manual economy and portfolio surface.
+- Add deterministic finance arithmetic and adaptive bank-sync scheduling contracts.
+- Add an additive Supabase migration for owner-scoped holdings, quotes, public connection status and private provider references.
+- Record a provider boundary compatible with an authorised PSD2 account-information provider; do not activate credentials or consent externally.
+- Correct the stale 4SAPIEN LIVE registry fact without granting LIVE write authority.
+- Selectively adopt finance truth conventions from the read-only 4SAPIEN production donor; do not wholesale-merge it.
 
-## CURRENT JUDGE BLOCKERS
-- High-severity dependency gate remains RED while MapLibre GL <=6.4.0 is present; current audit reports critical GHSA-jrc7-96c5-q579 and requires a breaking-version remediation with ATLAS regression proof.
-- React Router advisories remain moderate dependency debt.
-- Production promotion is prohibited until exact-head tests, dependency/security gates, product authority, Human/Gold review and separate Founder LIVE authority pass.
-
-## MAKER ≠ JUDGE
-The builder may not self-certify. Independent product-authority policy, Gold policy, typecheck, production build, smoke/contracts, dependency audit, asset control, browser tests and relevant product-specific gates decide technical acceptance. Founder judgement/release remains separate.
+## OUT OF SCOPE / FOUNDER GATES
+- No mutation or release to `4sapien.com`.
+- No provider signup, commercial agreement, credential creation or bank consent.
+- No production database migration or Edge Function deployment.
+- No payment, transfer, order, trade execution, NAV workflow or personalised financial recommendation.
+- No automated Yahoo Finance dependency.
 
 ## ACCEPTANCE
-1. `king/test` remains the sole HEIR and no ad-hoc branch becomes a second authority.
-2. Product attribution distinguishes singular 4SAPIEN from plural S4PIENS and covers 4BRANDS/MARKET/CREATOR.
-3. Analytics remains consent-gated and excludes free text, query strings, precise location and private company/user content.
-4. Existing canonical discovery routes are generated without indexing internal TEST-only surfaces.
-5. LIVE `purchase` can only follow server-verified LIVE payment confirmation.
-6. 4MARKET uses verified existing public products and does not claim click/purchase/delivery equivalence.
-7. Company Brain reuses existing OS/BRAIN authority and tenant boundaries rather than creating a parallel truth store; authenticated save/readback must pass through membership + RLS and local browser recovery must not become canonical.\n8. Company Brain server write/readback contracts preserve provenance and separate company-provided facts, public evidence, decisions, measured results and learning.\n9. Company Value Report is generated from canonical Company Brain objects rather than a parallel report store.
-8. Typecheck, build, smoke/contracts, lint/assets and relevant browser tests pass on exact head.
-9. Dependency/security gate is GREEN before any production promotion.
-10. Production LIVE is untouched until explicit Founder release.
+1. `king/test` remains the sole write-authorised HEIR; LIVE remains unchanged.
+2. Manual accounts and holdings persist on the device in HEIR TEST and can be deliberately cleared.
+3. Liquidity, debt, cost basis, market value and unrealised change are deterministic and currency-safe.
+4. Bank status explicitly says NOT CONNECTED until an authorised provider is configured and consented.
+5. The bank scheduler respects consent and provider rate limits while targeting at most four successful refreshes per day.
+6. Database objects are owner-scoped, explicitly granted, indexed and separated from provider secrets.
+7. No sensitive finance values or identifiers are emitted to analytics.
+8. Typecheck, build, finance contracts, product-authority gate and relevant 390/430/desktop browser tests pass on the exact HEIR head.
+9. A working Founder-visible HEIR URL exists before delivery is called complete.
+10. Production release remains a separate explicit Founder decision.
+
+## MAKER ≠ JUDGE
+The builder may prove deterministic calculations, security shape and browser behaviour, but may not self-certify Human Gold or release to LIVE. Founder review and separate production authority remain required.

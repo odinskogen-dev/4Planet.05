@@ -41,15 +41,33 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test("4FINANCE remains analysis, not personalised trading advice", async ({ page }) => {
+  test("4FINANCE records a manual economy and preserves truth boundaries", async ({ page }) => {
     await page.goto("/4sapien/finance");
+    await page.evaluate(() => window.localStorage.removeItem("4planet.4sapien.finance.manual.v1"));
+    await page.reload();
     await expect(page).toHaveURL(/\/4sapien\/finance$/);
 
-    await expect(page.getByRole("heading", { name: /Understand money/i })).toBeVisible();
-    await expect(page.getByText(/MONEY MAP/i)).toBeVisible();
-    await expect(page.getByText(/CHOICE COST/i)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "INVESTMENT INTELLIGENCE", exact: true })).toBeVisible();
-    await expect(page.getByText(/not BUY \/ SELL instructions/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Din økonomi/i })).toBeVisible();
+    await expect(page.getByText("IKKE KOBLET", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Fire per døgn er et adaptivt mål/i)).toBeVisible();
+
+    await page.getByLabel("Kontonavn").fill("Brukskonto");
+    await page.getByLabel("Kontosaldo").fill("25000");
+    await page.getByRole("button", { name: "Lagre konto" }).click();
+    await expect(page.getByText("Brukskonto", { exact: true })).toBeVisible();
+
+    await page.getByLabel("Ticker").fill("EQNR.OL");
+    await page.getByLabel("Aksjenavn").fill("Equinor");
+    await page.getByLabel("Antall aksjer").fill("10");
+    await page.getByLabel("Gjennomsnittlig kjøpspris").fill("100");
+    await page.getByLabel("Dagens aksjepris").fill("120");
+    await page.getByRole("button", { name: "Legg til beholdning" }).click();
+    await expect(page.getByText(/EQNR\.OL · NOK · MANUELL PRIS/i)).toBeVisible();
+    await expect(page.getByText(/Verdi og urealisert endring er matematikk/i)).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText("Brukskonto", { exact: true })).toBeVisible();
+    await expect(page.getByText("Equinor", { exact: true })).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
   });
