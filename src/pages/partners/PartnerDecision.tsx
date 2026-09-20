@@ -89,7 +89,7 @@ export function FourBrandsPitch() {
     <section className="pd-scale-list">
       {["Actor & objective", "Economic baseline & constraints", "Decision-grade Value Map", "Bounded intervention", "Economic and planetary measurement", "Institutional memory & learning"].map((item, i) => <article key={item}><span className="pd-number">0{i + 1}</span><div><h2>{item}</h2><p>{i === 2 ? "Opportunities are hypotheses until company-specific inputs support them." : "Evidence, uncertainty, ownership and stage remain inspectable."}</p></div></article>)}
     </section>
-    <section className="pd-dark"><Meta label="DESIGN-PARTNER PROOF" /><h2>One company. One decision. One measurable experiment.</h2><p>A published Value Map is not realised savings, a customer endorsement or verified planetary benefit. Real value requires a baseline, owner, intervention and observed result.</p><a className="pd-light-link" href="/opportunities/brands-proof">Explore the bounded object ↗</a></section>
+    <section className="pd-dark"><Meta label="DESIGN-PARTNER PROOF" /><h2>One company. One decision. One measurable experiment.</h2><p>A published Value Map is not realised savings, a customer endorsement or verified planetary benefit. Real value requires a baseline, owner, intervention and observed result.</p><a className="pd-light-link" href="https://4brands.org/" rel="noopener noreferrer">Explore the existing 4BRANDS product ↗</a><br /><a className="pd-light-link" href="/opportunities/brands-proof">Examine a bounded design-partner object ↗</a></section>
   </main>;
 }
 
@@ -150,6 +150,7 @@ export function EnquirePage() {
   return <main className="pd-page">
     <header className="pd-hero"><Meta label="STRUCTURED PARTNER ENQUIRY" /><h1>Bring a specific question.</h1><p>Tell us your role, the relevant object and what you would like to examine. This is an expression of interest, not a contract or approval to publish your organisation as a partner.</p></header>
     <section className="pd-form-wrap">
+    <p className="pd-small">How your details are handled: <a href="/privacy">Partner privacy and intake notice ↗</a></p>
     {channel === "UNAVAILABLE" ? <p className="pd-channel-notice" role="status">The enquiry channel is not yet collecting submissions. No information will be sent or stored here.</p> : null}
     {channel === "CHECKING" ? <p className="pd-channel-notice" role="status">Checking whether the enquiry channel is available…</p> : null}
     <form className="pd-form" onSubmit={submit}>
@@ -165,5 +166,22 @@ export function EnquirePage() {
       <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p>
       <p className="pd-small">No subscription or commitment is created. If the intake integration is unavailable, the form will explicitly say that no receipt is confirmed.</p>
     </form></section>
+  </main>;
+}
+
+
+/** Public privacy information is not a substitute for the canonical legal privacy policy. */
+export function PartnerPrivacyPage() {
+  useEffect(() => { document.title = "Privacy and partner enquiries — 4PLANET"; }, []);
+  return <main className="pd-page">
+    <header className="pd-hero"><Meta label="PARTNER PRIVACY / CONTROLS" /><h1>Information stays within its authorised purpose.</h1><p>Understand what this partner interface currently does and does not collect. Do not submit confidential, medical, financial-account or other sensitive information through public forms.</p></header>
+    <section className="pd-detail">
+      <div><h2>Public pages</h2><p>The public partner presentation is link-shareable and marked noindex. Noindex does not restrict who can open a link. Private documents are not published here.</p></div>
+      <div><h2>Enquiries</h2><p>When the receiving integration is unavailable, the form is disabled and does not transmit the entered details. When configured, the form sends the name, work email, organisation, role, selected opportunity, message and consent record to 4PLANET's configured intake for considering and responding to the enquiry.</p></div>
+      <div><h2>Consent and analytics</h2><p>Submitting an enquiry is not consent to advertising or a public partnership announcement. This standalone Partners interface does not load the main product's optional analytics consent service. Operational logs may be processed by the hosting provider.</p></div>
+      <div><h2>Access and corrections</h2><p>Private diligence and partner materials require separate authenticated access and permission review. An interest submission does not create an account or an agreement. To request access to or correction of information, use a confirmed 4PLANET contact route outside the public form if the form is unavailable.</p></div>
+      <div className="pd-warning"><h2>Legal information</h2><p>This operational notice describes the current partner interface; it does not replace the organisation's applicable legal privacy notice or contractual data-processing terms. Do not assume confidential handling solely from the noindex setting.</p></div>
+      <a href="/enquire">Back to enquiry ↗</a>
+    </section>
   </main>;
 }
