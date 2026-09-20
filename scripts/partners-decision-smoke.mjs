@@ -62,7 +62,7 @@ try {
       if (!(await navigation.isVisible())) throw Error("Mobile navigation did not open");
       await page.keyboard.press("Escape");
       if (await navigation.isVisible()) throw Error("Escape must close mobile navigation");
-      if (!(await page.getByRole("button", { name: "Open navigation" }).isFocused())) throw Error("Escape must restore menu focus");
+      if (!(await page.getByRole("button", { name: "Open navigation" }).evaluate((button) => document.activeElement === button))) throw Error("Escape must restore menu focus");
       await page.getByRole("button", { name: "Open navigation" }).click();
       await page.getByRole("button", { name: "Close navigation" }).click();
       if (await navigation.isVisible()) throw Error("Mobile navigation did not close");
