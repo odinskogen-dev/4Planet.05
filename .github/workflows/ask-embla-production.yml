@@ -61,6 +61,7 @@ jobs:
           cp products/4sapien/source/4sapien-live-hardening.js "${SITE}/4sapien-live-hardening.js"
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
           python products/4sapien/build/apply_document_intake_guard.py "$SITE"
+          python products/4sapien/build/apply_finance_daniel_feedback_guard.py "$SITE"
 
           cp products/4sapien/cloudflare/_headers "${SITE}/_headers"
           cp products/4sapien/cloudflare/_redirects "${SITE}/_redirects"
@@ -144,6 +145,13 @@ jobs:
           npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
           node --check products/4sapien/site/4sapien-live-hardening.js
           node --check products/4sapien/site/4sapien-documents.js
+          python -m py_compile products/4sapien/build/apply_finance_daniel_feedback_guard.py
+          for target in products/4sapien/site/app/money/index.html products/4sapien/site/finance.html products/4sapien/site/finance/index.html; do
+            grep -Fq 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' "$target"
+            grep -Fq 'setAdd({type:window.__FOUR_SAPIEN_FINANCE_ADD_TYPE__||"spend"})' "$target"
+            grep -Fq "four-sapien-finance-record-changed" "$target"
+            grep -Fq "S.drill=c;window.__FOUR_SAPIEN_FINANCE_ADD_TYPE__" "$target"
+          done
           node --check products/4sapien/site/4sapien-document-analysis.js
           node products/4sapien/qa/test_document_analysis.cjs
           grep -Fq 'claimStage:null' products/4sapien/site/4sapien-document-analysis.js
