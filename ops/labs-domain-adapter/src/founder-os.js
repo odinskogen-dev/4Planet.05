@@ -120,6 +120,9 @@ function normalizedProjectCard(p){
  var outcome=document.createElement("p");outcome.textContent="RESULTAT: "+(p.outcome||"UKJENT");details.appendChild(outcome);
  var group=document.createElement("p");group.textContent="FORELDER: "+(p.parent||"UKJENT")+" · HISTORISK STATUS: "+(p.sourceReportedState||"UKJENT");
  details.appendChild(group);
+ var gold=document.createElement("p");gold.className="source";
+ gold.textContent="GOLD: "+(p.goldContract?.fieldsWithExplicitValues??"UKJENT")+"/"+(p.goldContract?.fieldCount??"UKJENT")+" KILDEFELT · 25-SEKSJONS GOLD-QA IKKE AUTOMATISK GODKJENT";
+ details.appendChild(gold);
  if(p.wbs?.length){
   var list=document.createElement("ol");
   p.wbs.forEach(function(w){
@@ -140,7 +143,7 @@ function normalizedProjectCard(p){
    var item=document.createElement("li"),strong=document.createElement("strong");
    strong.textContent=t.deliverable||t.id;
    var state=document.createElement("div");state.className="source";
-   state.textContent=t.id+" · "+(t.sourceReportedLifecycle||"UKJENT")+" · "+(t.sourceReportedProgrammeStatus||"UKJENT");
+   state.textContent=t.id+" · "+(t.sourceReportedLifecycle||"UKJENT")+" · "+(t.sourceReportedProgrammeStatus||"UKJENT")+" · WBS: "+(t.canonicalWbsIds?.join(", ")||("IKKE EKSAKT KOBLET ("+(t.wbsLinkStatus||"UKJENT")+")"));
    var next=document.createElement("div");next.textContent="NESTE KILDERAPPORTERTE GATE: "+(t.nextGate||"UKJENT");
    item.append(strong,state,next);list.appendChild(item);
   });tasks.appendChild(list);
