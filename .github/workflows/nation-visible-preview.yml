@@ -33,8 +33,15 @@ jobs:
           git fetch origin king/test --no-tags
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(git rev-parse origin/king/test)" = "$GITHUB_SHA" || exit 7
-          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=70")
-          jq -e '[.workflow_runs[] | select(.name=="4NATION Gold Candidate QA" and .conclusion=="success")] | length >= 1' <<<"$runs"
+          passed=0
+          for attempt in $(seq 1 90); do
+            runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=70")
+            outcome=$(jq -r '[.workflow_runs[] | select(.name=="4NATION Gold Candidate QA")][0].conclusion // "pending"' <<<"$runs")
+            if [ "$outcome" = success ]; then passed=1; break; fi
+            if [ "$outcome" != pending ]; then echo "EXACT_SHA_NATION_QA=$outcome"; exit 8; fi
+            sleep 8
+          done
+          [ "$passed" = 1 ] || { echo 'EXACT_SHA_QA_MISSING'; exit 9; }
       - name: Build same existing product for non-indexed visual review
         run: |
           npm ci
@@ -58,6 +65,7 @@ jobs:
           zones=$(curl -fsS "$api/zones?name=4nation.org" "${auth[@]}")
           account=$(jq -r '.result[0].account.id // empty' <<<"$zones")
           test -n "$account"
+          export CLOUDFLARE_ACCOUNT_ID="$account"
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
           projects=$(curl -fsS "$api/accounts/$account/pages/projects" "${auth[@]}")
           jq -e '.success == true' <<<"$projects" >/dev/null

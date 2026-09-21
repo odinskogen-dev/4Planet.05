@@ -11,6 +11,7 @@ on:
       - 'tests/e2e/4nation.spec.ts'
       - 'docs/control/GOLD_CURRENT_BRIEF.md'
       - '.github/workflows/nation-gold-candidate.yml'
+      - '.github/workflows/nation-visible-preview.yml'
   pull_request:
     branches: [king/test]
     paths:
