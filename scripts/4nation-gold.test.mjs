@@ -44,3 +44,10 @@ test('4nation host is isolated, and other public products retain routes', () => 
   assert.match(app,/if \(isPartnersHost\(\)/);
   assert.match(router,/path="\/4nation\/\*"/);
 });
+
+test('contextual ATLAS CSS parses real newline boundaries so the first-party map can have height', () => {
+  const css = read('src/earth/atlas-embed.css');
+  assert.doesNotMatch(css, /\\\\n/, 'literal backslash-n breaks selector parsing after CSS comment');
+  assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:none!important;display:block;min-height:/);
+  assert.match(css, /\.atlas-embed\{margin:32px/);
+});
