@@ -58,3 +58,23 @@ test("controlled unregistered products stay visible as gaps, not fake Project Ho
  assert.equal(gaps[0].metadata.projectionType,"registration_gap");
  assert.equal(JSON.parse(gaps[0].content).name,"4PLANET FRONTIER");
 });
+
+test("current Atomic observations attach by ID but cannot promote project to DONE",()=>{
+ const tabs=fixture();
+ const atomic={name:"Tasks",sheetId:"1693775649",rows:[
+  ["Task ID","Family","Concrete deliverable","Owner","Programme status","Lifecycle",
+   "Dependency","Definition of done","Required evidence","Next gate",
+   "Primary Project Home","WBS / Project Gate"],
+  ["STRAT-REAL-01","STRAT","Verify existing Gold project source","AXE","ACTIVE",
+   "QA_PENDING","","","Independent source readback","Gold judge",ID,"STRAT-1"]
+ ]};
+ const {records}=normaliseGoldProjectSheets(tabs,{modifiedTime:"2026-09-21T12:00:00Z"},root,
+  atomic,{modifiedTime:"2026-09-21T15:00:00Z"});
+ const p=JSON.parse(records[0].content);
+ assert.equal(p.atomicTaskCount,1);
+ assert.equal(p.atomicTasks[0].id,"STRAT-REAL-01");
+ assert.equal(p.atomicTasks[0].sourceReportedLifecycle,"QA_PENDING");
+ assert.equal(p.currentState,"NOT_RECONCILED_WITH_CURRENT_PROGRAMME");
+ assert.equal(records[0].metadata.currentStatus,"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION");
+ assert.match(p.source.atomic,/docs.google.com/);
+});
