@@ -8,7 +8,8 @@ from pathlib import Path
 S = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
 P = "{http://schemas.openxmlformats.org/package/2006/relationships}"
-def main(path):
+def main(path, row_limit=900):
+    if not 1 <= row_limit <= 3600: raise ValueError("XLSX_ROW_LIMIT_INVALID")
     if Path(path).stat().st_size > 10_500_000:
         raise ValueError("XLSX_EXPORT_OVER_10MB")
     with zipfile.ZipFile(path) as z:
@@ -33,7 +34,7 @@ def main(path):
             sheet = ET.fromstring(z.read(target))
             rows=[]
             for row in sheet.findall(".//"+S+"sheetData/"+S+"row"):
-                if len(rows) >= 900:break
+                if len(rows) >= row_limit:break
                 cells=[]
                 for cell in row.findall(S+"c"):
                     ref=cell.attrib.get("r","")
@@ -59,7 +60,7 @@ def main(path):
                 "sheetId":tab.attrib.get("sheetId","0"),"rows":rows})
         sys.stdout.write(json.dumps(result,ensure_ascii=False,separators=(",",":")))
 if __name__=="__main__":
-    try:main(sys.argv[1])
+    try:main(sys.argv[1], int(sys.argv[2]) if len(sys.argv)>2 else 900)
     except Exception as e:
         sys.stderr.write("SHEET_READ_FAILED_"+str(e).split(":")[0][:70])
         sys.exit(1)

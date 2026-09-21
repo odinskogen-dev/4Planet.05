@@ -6,6 +6,8 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
+import {CONTROL_ID,ATOMIC_ID,LATER_HOMES,normaliseGoldProjectSheets,normaliseLaterProjectHome} from "./os-project-normalizer.mjs";
+import {SOURCE_INVENTORY_ID,reconcileDocumentedInventory} from "./os-inventory-audit.mjs";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
@@ -109,6 +111,32 @@ async function main(){
  }
  if(!files.length)throw Error("KNOWLEDGE_OS_INVENTORY_EMPTY");
  console.log("Organizational Knowledge OS source inventory complete; folderCount="+queue.length+" fileCount="+files.length+" (filenames/content withheld).");
+ // Compare actual service-account traversal against the *existing* Source Inventory.
+ // Its legacy provider census is still OPEN: proof of this snapshot ≠ eternal
+ // provider-wide proof, and private ODIN BRAIN files must never be projected.
+ const inventorySource=files.find(f=>f.id===SOURCE_INVENTORY_ID);
+ if(!inventorySource)throw Error("SOURCE_INVENTORY_FILE_NOT_IN_ORGANISATIONAL_ROOT");
+ let inventoryAudit;
+ try{
+  const response=await get("https://www.googleapis.com/drive/v3/files/"+SOURCE_INVENTORY_ID+
+   "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+  const bytes=Buffer.from(await response.arrayBuffer());
+  if(bytes.length>10500000)throw Error("SOURCE_INVENTORY_EXPORT_TOO_LARGE");
+  const directory=mkdtempSync(join(tmpdir(),"4planet-inventory-audit-"));
+  try{
+   const file=join(directory,"inventory.xlsx");writeFileSync(file,bytes,{mode:0o600});
+   const sheets=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file,"3600"],{
+    encoding:"utf8",maxBuffer:24*1024*1024,timeout:50000,stdio:["ignore","pipe","pipe"]
+   }));
+   inventoryAudit=reconcileDocumentedInventory(sheets[0]?.rows||[],files);
+  }finally{rmSync(directory,{recursive:true,force:true});}
+ }catch(e){throw Error("SOURCE_INVENTORY_RECONCILIATION_FAILED_"+safeError(e));}
+ if(!inventoryAudit.safeToCommit)throw Error("SOURCE_INVENTORY_UNEXPLAINED_OMISSIONS");
+ console.log("SOURCE_INVENTORY_SNAPSHOT_RECONCILED org_files="+inventoryAudit.organisationalFilesPresent+
+  " expected_org="+inventoryAudit.expectedOrganisationalFiles+
+  " privacy_exclusions="+inventoryAudit.excludedPrivate+
+  " unexpected_missing="+inventoryAudit.unexplainedOmissions+
+  " unindexed="+inventoryAudit.newOrUnindexedFiles+" legacy_census=OPEN");
  const records=files.map(f=>({
   source_id:f.id,title:f.name.slice(0,600),mime_type:f.mimeType,source_url:uri(f),
   parent_path:f.path.slice(0,2990),source_modified_at:f.modifiedTime||null,
@@ -116,6 +144,16 @@ async function main(){
   object_type:"source_inventory",content:null,
   metadata:{rootId:ROOT,domain:"4planet",tenant:null,readDepth:"INVENTORY_ONLY",sourceFileId:f.id}
  }));
+ const auditContent=JSON.stringify(inventoryAudit);
+ records.push({source_id:"4planet_inventory_audit",title:"4PLANET BRAIN INVENTORY COVERAGE",
+  mime_type:"application/vnd.4planet.audit+json",
+  source_url:"https://docs.google.com/spreadsheets/d/"+SOURCE_INVENTORY_ID+"/edit",
+  parent_path:"01_ 4PLANET KNOWLEDGE OS / Source Inventory",
+  source_modified_at:inventorySource.modifiedTime||null,source_hash:sha(auditContent),
+  object_type:"source_document",content:auditContent,
+  metadata:{rootId:ROOT,domain:"4planet",tenant:null,
+   sourceFileId:SOURCE_INVENTORY_ID,projectionType:"inventory_audit",
+   readDepth:"RECONCILED_IDENTITIES_ONLY",legacyCensusOpen:true}});
  const sorted=[...files].filter(f=>rank(f)<9).sort((a,b)=>rank(a)-rank(b)||String(b.modifiedTime).localeCompare(String(a.modifiedTime)));
  let readCount=0,denied=0,sheetTabs=0;
  for(const f of sorted){
@@ -167,6 +205,72 @@ async function main(){
    }catch(e){denied++;console.log("Structured sheet skipped; reason="+safeError(e).replace(/\d{12,}/g,"[ID]"));}
   }
  }
+ // The same existing Drive reader materialises a project VIEW from the specific
+ // canonical Gold register. Generic filename ranking/maxTabs must not silently
+ // omit Gold Project Contract, Universal WBS or the Master Project Register.
+ const canonical=files.find(f=>f.id===CONTROL_ID);
+ if(!canonical)throw Error("CANONICAL_PROJECT_REGISTER_NOT_IN_DRIVE_INVENTORY");
+ let structured;
+ try {
+  const res=await get("https://www.googleapis.com/drive/v3/files/"+CONTROL_ID+
+   "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+  const bytes=Buffer.from(await res.arrayBuffer());
+  if(bytes.length>10500000)throw Error("CANONICAL_PROJECT_REGISTER_EXPORT_TOO_LARGE");
+  const directory=mkdtempSync(join(tmpdir(),"4planet-project-view-"));
+  try {
+   const file=join(directory,"canonical.xlsx");writeFileSync(file,bytes,{mode:0o600});
+   const tabs=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
+    encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
+   }));
+   // Current task-detail work is an evidence overlay, never new project truth.
+   // Read the exact existing Atomic Tasks sheet instead of relying on the
+   // global maxTabs quota, which can be exhausted by unrelated workbooks.
+   let atomicTab=null,atomicSource=files.find(x=>x.id===ATOMIC_ID);
+   if(atomicSource)try{
+    const atomicResp=await get("https://www.googleapis.com/drive/v3/files/"+ATOMIC_ID+
+      "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+    const atomicBytes=Buffer.from(await atomicResp.arrayBuffer());
+    if(atomicBytes.length>10500000)throw Error("ATOMIC_EXPORT_TOO_LARGE");
+    const dir=mkdtempSync(join(tmpdir(),"4planet-atomic-view-"));
+    try{
+     const file=join(dir,"atomic.xlsx");writeFileSync(file,atomicBytes,{mode:0o600});
+     const parsed=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
+      encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
+     }));
+     atomicTab=parsed.find(x=>x.name==="Tasks")||null;
+    }finally{rmSync(dir,{recursive:true,force:true});}
+   }catch(e){console.log("ATOMIC_WORK_OBSERVATION_OPEN "+safeError(e));}
+   if(!atomicTab)console.log("ATOMIC_TASKS_NOT_HYDRATED; PROJECT WORK STATUS UNKNOWN");
+   structured=normaliseGoldProjectSheets(tabs,canonical,ROOT,atomicTab,atomicSource);
+  }finally{rmSync(directory,{recursive:true,force:true});}
+ }catch(e){throw Error("CANONICAL_PROJECT_VIEW_BLOCKED_"+safeError(e));}
+ // A source file inventory row and its derived project rows are different
+ // depths of the same authority, not competing master data.
+ records.push(...structured.records,...structured.gaps);
+ console.log("PROJECT_REGISTRATION_GAPS_FROM_ORPHAN_CONTROL "+structured.gaps.length);
+ // The 4SAPIEN / 4BRAND Project Homes are already approved in BRAIN but are
+ // absent from the older 41-row Gold register. Keep their OWN source identity
+ // and a visible crosswalk gap; no duplicate authority, no synthetic status.
+ const later=[];
+ for(const spec of LATER_HOMES){
+  if(structured.records.some(x=>x.metadata.projectId===spec.id&&x.metadata.wbsCount>=spec.expected))continue;
+  const f=files.find(x=>x.id===spec.fileId);
+  if(!f){console.log("LATER_PROJECT_HOME_NOT_IN_RECURSIVE_INVENTORY "+spec.id);continue;}
+  try{
+   const res=await get("https://www.googleapis.com/drive/v3/files/"+spec.fileId+
+    "/export?"+new URLSearchParams({mimeType:"text/plain"}),driveHeaders);
+   const text=await res.text();
+   const derived=normaliseLaterProjectHome(spec,text,f,ROOT);
+   const existing=structured.records.findIndex(x=>x.metadata.projectId===spec.id);
+   if(existing>=0)structured.records.splice(existing,1);
+   later.push(derived);
+  }catch(e){console.log("LATER_PROJECT_HOME_PENDING "+spec.id+" "+safeError(e));}
+ }
+ records.push(...later);
+ console.log("PROJECT_VIEW_GOLD_CROSSWALK_GAPS "+(LATER_HOMES.length-later.length));
+ console.log("PROJECT_VIEW_DERIVED_FROM_GOLD projects="+structured.metrics.projects+
+  " wbs="+structured.metrics.wbs+" without_wbs="+structured.metrics.withoutWbs.length+
+  " current_status=UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION");
  // Never claim an un-read inventory title is equivalent to current project truth.
  const ordered=records.sort((a,b)=>a.source_id.localeCompare(b.source_id));
  const manifest=sha(ordered.map(x=>[x.source_id,x.source_hash,x.object_type].join(":")).join("\n"));
