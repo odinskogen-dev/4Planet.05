@@ -62,6 +62,20 @@ test('4NATION contextual ATLAS Embed opens the existing first-party map', async 
   await expect(map.locator('.nt-shell')).toHaveCount(0);
   const full = embed.getByRole('link', { name: /Open Oslofjord.*full ATLAS/i });
   await expect(full).toHaveAttribute('href', /\/atlas\?/);
+  const wasProductionNation = new URL(page.url()).hostname === '4nation.org';
   await full.click();
-  await expect(page).toHaveURL(/\/atlas\?/);
+  if (wasProductionNation) {
+    // The canonical full explorer on the public Nation host is 4planetatlas.com.
+    // Verify the *meaningful preserved case context*, not a stale path name.
+    await expect(page).toHaveURL(url =>
+      url.origin === 'https://4planetatlas.com' &&
+      url.searchParams.get('entity') === 'place:4p:oslofjord' &&
+      /^\\d+(?:\\.\\d+)?$/.test(url.searchParams.get('z') || '') &&
+      /^\\-?\\d+(?:\\.\\d+)?,\\-?\\d+(?:\\.\\d+)?$/.test(url.searchParams.get('c') || ''),
+      {timeout: 20_000});
+    await expect(page.locator('.maplibregl-canvas').first()).toBeVisible({timeout: 30_000});
+  } else {
+    // On isolated preview hosts, the existing same-origin /atlas path is kept.
+    await expect(page).toHaveURL(/\/atlas\?/);
+  }
 });
