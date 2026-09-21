@@ -24,7 +24,7 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit}a:hover{color:va
 .wordmark{font-size:20px;font-weight:900;letter-spacing:-.075em}.wordmark b{color:var(--acid)}
 .tag,.small,.eyebrow{font:11px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
 .tag{border:1px solid var(--line);padding:8px 11px}.topright{display:flex;gap:22px;align-items:center}
-.title{font-size:clamp(50px,9vw,132px);line-height:.88;letter-spacing:-.09em;margin:64px 0 30px;font-weight:750}
+.title{font-size:clamp(42px,6vw,86px);line-height:.96;letter-spacing:-.075em;margin:30px 0 18px;font-weight:750}
 .title em{font-style:normal;color:var(--acid)}.lede{font-size:clamp(15px,1.8vw,21px);color:var(--muted);line-height:1.55;max-width:820px}
 .banner{padding:17px 21px;border:1px solid #654d24;background:#241d0b;color:#ffdea0;line-height:1.55;margin:31px 0}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:32px 0}
@@ -38,7 +38,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 .panel h3{font-size:23px;letter-spacing:-.04em;margin:12px 0}.panel p{color:#bdc9b8;line-height:1.6;white-space:pre-wrap}
 .log{border-left:2px solid var(--acid);padding:8px 18px;margin:12px 0}.log strong{display:block;margin-bottom:5px}.log p{font-size:13px;color:var(--muted);margin:3px 0}
 .source{font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);word-wrap:break-word}.portfolio{width:100%;height:75vh;min-height:560px;border:1px solid var(--line);background:var(--card)}
-.os-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.os-project{border:1px solid var(--line);background:var(--card);padding:20px;min-width:0}.os-project h3{font-size:27px;margin:9px 0;letter-spacing:-.045em}.os-project p{color:var(--muted);line-height:1.5}.os-project summary{cursor:pointer;color:var(--acid);padding:10px 0}.os-project ol{padding-left:20px;line-height:1.6}.os-project li{margin:8px 0;border-bottom:1px solid var(--line);padding-bottom:8px}.os-project .source{padding:8px 0}.os-project .flag{color:var(--warn);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.hide{display:none!important}footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+.os-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.os-group{grid-column:1/-1;border-bottom:1px solid var(--line);padding:24px 2px 8px;font-size:16px;color:var(--acid);font-weight:700;letter-spacing:.08em}.os-project{border:1px solid var(--line);background:var(--card);padding:20px;min-width:0}.os-project h3{font-size:27px;margin:9px 0;letter-spacing:-.045em}.os-project p{color:var(--muted);line-height:1.5}.os-project summary{cursor:pointer;color:var(--acid);padding:10px 0}.os-project ol{padding-left:20px;line-height:1.6}.os-project li{margin:8px 0;border-bottom:1px solid var(--line);padding-bottom:8px}.os-project .source{padding:8px 0}.os-project .flag{color:var(--warn);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.hide{display:none!important}footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
 @media(max-width:740px){.os-projects{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.half{grid-template-columns:1fr}.title{margin-top:42px}.portfolio{height:64vh;min-height:440px}.topright{gap:12px}}
 </style></head><body><div class="shell">
 <header class="top"><div class="wordmark">4PLANET<b>_</b> <span class="tag">LABS / OS</span></div><div class="topright"><a href="/" class="small">LABS ↗</a><span class="small">PRIVATE · FOUNDER</span><button id="logout" class="hide">LOG OUT</button></div></header>
@@ -49,7 +49,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
 <div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECTS + WBS + SOURCE LIBRARY</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
-<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><div id="project-index" class="os-projects"></div><details class="panel"><summary>PROSJEKTER SOM MANGLER GOLD-KOBLING</summary><div id="project-gaps"></div></details><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
+<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><p id="portfolio-coverage" class="source">KONTROLLERER FULL KILDEDEKNING</p><div id="project-index" class="os-projects"></div><details class="panel"><summary>PROSJEKTER SOM MANGLER GOLD-KOBLING</summary><div id="project-gaps"></div></details><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
 <footer>4PLANET_ · PRIVATE OS · SOURCE-BOUND · UNKNOWN ≠ VERIFIED · NO ODIN BRAIN DATA</footer></div>
 <script>
@@ -165,7 +165,16 @@ function renderProjects(){
   ...(p.atomicTasks||[]).map(t=>t.id+" "+t.deliverable)].some(v=>String(v||"").toLocaleLowerCase().includes(search));
  });
  var list=el("project-index");list.replaceChildren();
- hits.forEach(function(p){list.appendChild(normalizedProjectCard(p))});
+ var order=["4SAPIEN","4BRAND","OCE4N_","E4RTH_","S4PIENS_","4CULTURE_",
+  "IMPACT / MARKET","ECONOMY / CAPITAL","4PLANET / SHARED","LABS / CREATIVE","CULTURE / PRODUCT"];
+ var groups=[...new Set(hits.map(p=>p.genre))].sort((a,b)=>
+  (order.indexOf(a)<0?999:order.indexOf(a))-(order.indexOf(b)<0?999:order.indexOf(b)));
+ groups.forEach(function(genre){
+  var heading=document.createElement("div");heading.className="os-group";
+  var items=hits.filter(p=>p.genre===genre).sort((a,b)=>a.name.localeCompare(b.name,"nb"));
+  heading.textContent=genre+" · "+items.length;list.appendChild(heading);
+  items.forEach(p=>list.appendChild(normalizedProjectCard(p)));
+ });
  if(!normalized.length){var note=document.createElement("p");note.textContent="STRUKTURERT PROSJEKTVISNING MANGLER I SISTE SYNK. Ingen historisk status er oppgradert til nåstatus.";list.appendChild(note)}
  el("project-count").textContent=hits.length+" / "+normalized.length+" PROSJEKTER · "+
  normalized.reduce((n,p)=>n+p.wbsCount,0)+" WBS-PAKKER · SISTE BEKREFTEDE KILDESYNK VISES OVER";
@@ -213,6 +222,16 @@ async function boot(){
  var hydratedIds=new Set(hydrated.map(function(x){return x.id}));
  var inventory=Array.isArray(data.sources)?data.sources.filter(function(x){return !hydratedIds.has(x.id)}):[];
  latestProjectSources=hydrated.concat(inventory);
+ var audit=latestProjectSources.find(x=>x.metadata?.projectionType==="inventory_audit");
+ var coverage=el("portfolio-coverage");
+ try{
+  var a=audit?JSON.parse(audit.content):null;
+  coverage.textContent=a&&a.safeToCommit?
+   ("DOKUMENTERT KILDEUNIVERS: "+a.organisationalFilesPresent+" ORGANISASJONSFILER · "+
+    a.excludedPrivate+" PRIVATE UNNTAK · "+a.unexplainedOmissions+
+    " UFORKLARTE MANGLER · HISTORISK KORPUSTELLING ÅPEN"):
+   "SAMMENLIGNING MOT SOURCE INVENTORY IKKE VERIFISERT I SISTE LIVE SYNK.";
+ }catch{coverage.textContent="KILDEDEKNING UKJENT – IKKE GODKJENT.";}
  renderProjects();
  var list=el("knowledge");list.replaceChildren();
  (data.knowledge||[]).forEach(function(row){list.appendChild(sourceCard(row))});
