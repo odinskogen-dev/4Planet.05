@@ -38,12 +38,26 @@ jobs:
             echo '4NATION_DOMAIN_MAPPING=UNVERIFIED / NO ACCESSIBLE ZONE'
             exit 0
           fi
-          dns=$(curl -fsS --retry 2 "${api}/zones/${zid}/dns_records?name=4nation.org&per_page=100" "${auth[@]}")
-          jq -e '.success == true' <<<"$dns" >/dev/null
-          www=$(curl -fsS --retry 2 "${api}/zones/${zid}/dns_records?name=www.4nation.org&per_page=100" "${auth[@]}")
-          jq -e '.success == true' <<<"$www" >/dev/null
-          projects=$(curl -fsS --retry 2 "${api}/accounts/${aid}/pages/projects?per_page=100" "${auth[@]}")
-          jq -e '.success == true' <<<"$projects" >/dev/null
+          get_optional() {
+            local stage="$1" url="$2" body http
+            body=$(mktemp)
+            http=$(curl -sS --retry 2 --max-time 15 -o "$body" -w '%{http_code}' "$url" "${auth[@]}" || true)
+            echo "4NATION_${stage}_HTTP=${http}" >&2
+            if [[ "$http" != "200" ]]; then
+              jq -r '.errors[]? | "CLOUDFLARE_ERROR_CODE="+(.code|tostring)+" / "+(.message//"unknown")' "$body" >&2 || true
+              rm -f "$body"
+              echo '{"success":false,"result":[]}'
+              return
+            fi
+            cat "$body"
+            rm -f "$body"
+          }
+          dns=$(get_optional ROOT_DNS "${api}/zones/${zid}/dns_records?name=4nation.org")
+          jq -e '.success == true' <<<"$dns" >/dev/null || echo '4NATION_ROOT_DNS=NOT_VERIFIED / API REJECTED'
+          www=$(get_optional WWW_DNS "${api}/zones/${zid}/dns_records?name=www.4nation.org")
+          jq -e '.success == true' <<<"$www" >/dev/null || echo '4NATION_WWW_DNS=NOT_VERIFIED / API REJECTED'
+          projects=$(get_optional PAGES "${api}/accounts/${aid}/pages/projects?per_page=100")
+          jq -e '.success == true' <<<"$projects" >/dev/null || echo '4NATION_PAGES=NOT_VERIFIED / API REJECTED'
           echo '4NATION_ROOT_DNS:'
           jq -r '.result[]? | [.type,.name,.content,((.proxied // false)|tostring)] | @tsv' <<<"$dns"
           echo '4NATION_WWW_DNS:'
