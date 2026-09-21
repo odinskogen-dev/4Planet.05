@@ -69,23 +69,37 @@ jobs:
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
           projects=$(curl -fsS "$api/accounts/$account/pages/projects" "${auth[@]}")
           jq -e '.success == true' <<<"$projects" >/dev/null
-          if ! jq -e '.result[]? | select(.name=="4planet-nation")' <<<"$projects" >/dev/null; then
-            npx --yes wrangler@4.128.0 pages project create 4planet-nation --production-branch king/test
-          fi
-      - name: Publish visual preview ONLY (no 4nation.org DNS writes)
+          # Project creation reached Cloudflare account limit 8000027.
+          # Reuse the existing 4PLANET Pages origin on an isolated non-production
+          # direct-upload branch. Never mutate its production branch or domains.
+          project=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].name // empty' <<<"$projects")
+          production=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].production_branch // empty' <<<"$projects")
+          test "$project" = "4planet-05" || { echo 'EXISTING_PAGES_ORIGIN_NOT_FOUND'; exit 12; }
+          test "$production" != "4nation-preview" || { echo 'PREVIEW_BRANCH_EQUALS_LIVE'; exit 13; }
+          echo "NATION_PREVIEW_PROJECT=$project" >> "$GITHUB_ENV"
+          echo 'NATION_PREVIEW_BRANCH=4nation-preview' >> "$GITHUB_ENV"
+          echo 'NATION_PREVIEW_REUSE=EXISTING_ORIGIN_NONPRODUCTION_BRANCH'
+      - name: Publish isolated preview ONLY (no production branch or DNS writes)
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-nation --branch king/test --commit-hash "$GITHUB_SHA" --commit-dirty=false
-          echo "VISUAL_PREVIEW=https://4planet-nation.pages.dev/"
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$NATION_PREVIEW_PROJECT" --branch "$NATION_PREVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          deploys=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$NATION_PREVIEW_PROJECT/deployments?page=1&per_page=30" "${auth[@]}")
+          url=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "$NATION_PREVIEW_BRANCH" '[.result[]? | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch==$branch and .latest_stage.status=="success")][0].url // empty' <<<"$deploys")
+          test -n "$url" || { echo 'EXACT_BRANCH_PREVIEW_UNVERIFIED'; exit 14; }
+          echo "NATION_PREVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "EXACT_NATION_PREVIEW=$url/4nation"
           echo "EXACT_SHA=$GITHUB_SHA"
-      - name: Check external preview
+      - name: Externally check exact host and noindex isolation
         run: |
           set -euo pipefail
           for attempt in $(seq 1 15); do
-            code=$(curl -L -sS -o /tmp/nation.html -w '%{http_code}' https://4planet-nation.pages.dev/ || true)
+            code=$(curl -L -sS -o /tmp/nation.html -w '%{http_code}' "$NATION_PREVIEW_URL/4nation" || true)
             [ "$code" = 200 ] && break
             sleep 3
           done
           test "$code" = 200
           grep -q 'noindex,nofollow' /tmp/nation.html
-          echo "FOUNDER_PREVIEW_VISIBLE=YES; ROOT_DOMAIN_UNCHANGED"
+          echo "EXACT_FOUNDER_PREVIEW=$NATION_PREVIEW_URL/4nation"
+          echo "FOUNDER_PREVIEW_VISIBLE=YES; LIVE_4NATION_DNS_UNCHANGED"
