@@ -20,9 +20,9 @@ const friendly={
 "LAB-CREATOR-01":"CRE4TORS","LAB-ENGINE-FOUNDRY-01":"ENGINE FOUNDRY",
 "IMP-MARKET-01":"4PLANET MARKET","SYS-LUME-PROJECT-01":"LUME PLANET",
 "SYS-LUME-NODE-01":"LUME NODE","SYS-PAI-01":"TREE OF LIFE / PLANETARY ACTION INTELLIGENCE",
-"SYS-P00-NATURE-XR":"NATURE XR"
+"SYS-P00-NATURE-XR":"NATURE XR","SYS-4SAPIEN-LIFE-01":"4SAPIEN","SYS-4BRANDS-01":"4BRAND"
 };
-const genre=id=>id.startsWith("OCE-")?"OCE4N_":id.startsWith("EAR-")?"E4RTH_":
+const genre=id=>id==="SYS-4SAPIEN-LIFE-01"?"4SAPIEN":id==="SYS-4BRANDS-01"?"4BRAND":id.startsWith("OCE-")?"OCE4N_":id.startsWith("EAR-")?"E4RTH_":
 id.startsWith("SAP-")?"S4PIENS_":id.startsWith("CUL-")?"4CULTURE_":
 id.startsWith("IMP-")?"IMPACT / MARKET":id.startsWith("LAB-")?"LABS / CREATIVE":
 id.startsWith("SYS-LUME")||id==="SYS-SONIC-01"?"CULTURE / PRODUCT":
