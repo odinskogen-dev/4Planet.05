@@ -130,19 +130,20 @@ jobs:
             }
           } finally {await browser.close()}
           NODE
-      - name: Roll back only LABS Worker script to last externally approved public-safe adapter on release QA failure
+      - name: Roll back LABS UI only to previously verified PRIVATE OS; preserve Founder login
         if: failure() && steps.deploy.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
-          baseline=71dc91bf2c6fc04499ee4ee244a5c7720533d608
+          baseline=00fca0bf7f53e18ddd1ee5be8b9c45770297b7b6
           git fetch --no-tags --depth=1 origin "$baseline"
-          git show "$baseline:ops/labs-domain-adapter/src/index.js" > /tmp/labs-adapter-rollback.js
-          node --check /tmp/labs-adapter-rollback.js
-          cp /tmp/labs-adapter-rollback.js ops/labs-domain-adapter/src/index.js
+          git show "$baseline:ops/labs-domain-adapter/src/index.js" > ops/labs-domain-adapter/src/index.js
+          git show "$baseline:ops/labs-domain-adapter/src/founder-os.js" > ops/labs-domain-adapter/src/founder-os.js
+          node --check ops/labs-domain-adapter/src/index.js
+          node --check ops/labs-domain-adapter/src/founder-os.js
           cd ops/labs-domain-adapter
           npx --yes wrangler@4.41.0 deploy --config wrangler.jsonc
-          echo "LABS Worker restored to pinned public-safe pre-/os adapter. os.4planet.org separate lock preserved."
+          echo "LABS private OS preserved on proven Founder-login source; public LABS unaffected. No rollback may remove /os."
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
