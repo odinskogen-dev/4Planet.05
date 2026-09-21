@@ -38,8 +38,8 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 .panel h3{font-size:23px;letter-spacing:-.04em;margin:12px 0}.panel p{color:#bdc9b8;line-height:1.6;white-space:pre-wrap}
 .log{border-left:2px solid var(--acid);padding:8px 18px;margin:12px 0}.log strong{display:block;margin-bottom:5px}.log p{font-size:13px;color:var(--muted);margin:3px 0}
 .source{font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);word-wrap:break-word}.portfolio{width:100%;height:75vh;min-height:560px;border:1px solid var(--line);background:var(--card)}
-.hide{display:none!important}footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
-@media(max-width:740px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.half{grid-template-columns:1fr}.title{margin-top:42px}.portfolio{height:64vh;min-height:440px}.topright{gap:12px}}
+.os-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.os-project{border:1px solid var(--line);background:var(--card);padding:20px;min-width:0}.os-project h3{font-size:27px;margin:9px 0;letter-spacing:-.045em}.os-project p{color:var(--muted);line-height:1.5}.os-project summary{cursor:pointer;color:var(--acid);padding:10px 0}.os-project ol{padding-left:20px;line-height:1.6}.os-project li{margin:8px 0;border-bottom:1px solid var(--line);padding-bottom:8px}.os-project .source{padding:8px 0}.os-project .flag{color:var(--warn);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.hide{display:none!important}footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+@media(max-width:740px){.os-projects{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.half{grid-template-columns:1fr}.title{margin-top:42px}.portfolio{height:64vh;min-height:440px}.topright{gap:12px}}
 </style></head><body><div class="shell">
 <header class="top"><div class="wordmark">4PLANET<b>_</b> <span class="tag">LABS / OS</span></div><div class="topright"><a href="/" class="small">LABS ↗</a><span class="small">PRIVATE · FOUNDER</span><button id="logout" class="hide">LOG OUT</button></div></header>
 <section><div class="eyebrow">PRIVATE OPERATING SYSTEM · FOUNDER COMMAND</div><h1 class="title">LIVING<br><em>SYSTEMS.</em><br>OPERATIONS.</h1><p class="lede">One control view for project work, BRAIN evidence, proof and Founder decisions. BRAIN remains the authority. Unverified progress is never promoted.</p></section>
@@ -49,7 +49,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
 <div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECTS + WBS + SOURCE LIBRARY</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
-<div id="portfolio" class="hide"><div class="panel"><h3>Current source-bound portfolio</h3><p>Showing the most recent successfully committed Google Drive source projection. Titles without extracted content are inventory only — not verified current state. Source dates, completeness and stale/error flags remain visible.</p><label for="project-search">SEARCH PROJECTS, SOURCES & WBS</label><input id="project-search" type="search" placeholder="Search all available project sources"><p id="project-count" class="small">SOURCE SYNC NOT VERIFIED</p></div><div id="project-list"></div><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
+<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><div id="project-index" class="os-projects"></div><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
 <footer>4PLANET_ · PRIVATE OS · SOURCE-BOUND · UNKNOWN ≠ VERIFIED · NO ODIN BRAIN DATA</footer></div>
 <script>
@@ -99,15 +99,62 @@ function projectCard(x){
  box.append(kicker,h,p,details);return box;
 }
 var latestProjectSources=[];
+function projectView(x){
+ try{
+  if(x.metadata?.projectionType!=="project"||!x.content)return null;
+  var p=JSON.parse(x.content);
+  return p.schema==="4PLANET_PROJECT_VIEW_01"&&p.id===x.metadata.projectId?p:null;
+ }catch{return null}
+}
+function normalizedProjectCard(p){
+ var article=document.createElement("article");article.className="os-project";
+ var kicker=document.createElement("div");kicker.className="eyebrow";
+ kicker.textContent=p.genre+" · "+p.kind.replaceAll("_"," ");
+ var title=document.createElement("h3");title.textContent=p.name;
+ var purpose=document.createElement("p");purpose.textContent=p.purpose||"Formål ikke dokumentert.";
+ var flag=document.createElement("p");flag.className="flag";
+ flag.textContent="NÅSTATUS IKKE AVSTEMT · "+p.wbsCount+" WBS-PAKKER";
+ article.append(kicker,title,purpose,flag);
+ var details=document.createElement("details"),summary=document.createElement("summary");
+ summary.textContent="PROSJEKT, WBS OG KILDER";details.appendChild(summary);
+ var outcome=document.createElement("p");outcome.textContent="RESULTAT: "+(p.outcome||"UKJENT");details.appendChild(outcome);
+ var group=document.createElement("p");group.textContent="FORELDER: "+(p.parent||"UKJENT")+" · HISTORISK STATUS: "+(p.sourceReportedState||"UKJENT");
+ details.appendChild(group);
+ if(p.wbs?.length){
+  var list=document.createElement("ol");
+  p.wbs.forEach(function(w){
+   var row=document.createElement("li"),strong=document.createElement("strong");
+   strong.textContent=w.workPackage||w.deliverable||w.id;
+   var body=document.createElement("div");body.textContent=w.completionCondition||"Ferdigkriterium ikke dokumentert.";
+   var state=document.createElement("div");state.className="source";
+   state.textContent="WBS "+w.id+" · KILDERAPPORTERT: "+(w.sourceReportedState||"UKJENT");
+   row.append(strong,body,state);list.appendChild(row);
+  });details.appendChild(list);
+ }else{var empty=document.createElement("p");empty.textContent="EGEN WBS: IKKE REGISTRERT / HISTORISK UNDER ANNET PROSJEKT.";details.appendChild(empty)}
+ var source=document.createElement("a");source.href=p.source.gold;source.target="_blank";source.rel="noopener noreferrer";
+ source.textContent="ÅPNE GOLD PROJECT CONTRACT ↗";details.appendChild(source);
+ var source2=document.createElement("a");source2.href=p.source.wbs;source2.target="_blank";source2.rel="noopener noreferrer";
+ source2.textContent=" · ÅPNE UNIVERSAL WBS ↗";details.appendChild(source2);
+ var stamp=document.createElement("p");stamp.className="source";
+ stamp.textContent="KILDE SIST ENDRET: "+shortTime(p.source.modifiedAt)+" · Prosjektstatus krever gjeldende Programme Control.";
+ details.appendChild(stamp);article.appendChild(details);return article;
+}
 function renderProjects(){
  var search=el("project-search").value.trim().toLocaleLowerCase();
- var filtered=latestProjectSources.filter(function(x){
- return !search||[x.title,x.content,x.objectType,x.folder].some(v=>String(v||"").toLocaleLowerCase().includes(search));
+ var normalized=latestProjectSources.map(projectView).filter(Boolean);
+ var hits=normalized.filter(function(p){
+ return !search||[p.name,p.sourceName,p.genre,p.parent,p.id,p.purpose,
+  ...(p.aliases||[]),...(p.wbs||[]).map(w=>w.workPackage+" "+w.id)].some(v=>String(v||"").toLocaleLowerCase().includes(search));
  });
- el("project-count").textContent=filtered.length+" OF "+latestProjectSources.length+" SOURCE-BOUND PROJECT/WBS + ORGANISATIONAL INVENTORY RECORDS";
- var list=el("project-list");list.replaceChildren();
- filtered.slice(0,200).forEach(function(x){list.appendChild(projectCard(x))});
- if(filtered.length>200){var p=document.createElement("p");p.textContent="Showing first 200 matches; refine search.";list.appendChild(p)}
+ var list=el("project-index");list.replaceChildren();
+ hits.forEach(function(p){list.appendChild(normalizedProjectCard(p))});
+ if(!normalized.length){var note=document.createElement("p");note.textContent="STRUKTURERT PROSJEKTVISNING MANGLER I SISTE SYNK. Ingen historisk status er oppgradert til nåstatus.";list.appendChild(note)}
+ el("project-count").textContent=hits.length+" / "+normalized.length+" PROSJEKTER · "+
+ normalized.reduce((n,p)=>n+p.wbsCount,0)+" WBS-PAKKER · SISTE BEKREFTEDE KILDESYNK VISES OVER";
+ var others=latestProjectSources.filter(x=>!projectView(x));
+ var library=el("project-list");library.replaceChildren();
+ others.filter(x=>!search||[x.title,x.objectType,x.folder].some(v=>String(v||"").toLocaleLowerCase().includes(search)))
+  .slice(0,100).forEach(x=>library.appendChild(projectCard(x)));
 }
 function sourceCard(x){
  var box=document.createElement("article");box.className="panel";
