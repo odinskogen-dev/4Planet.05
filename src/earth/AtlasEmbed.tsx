@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { atlasEmbedHref, atlasHrefForView, type AtlasView } from "./atlasViewContract";
+import { atlasEmbedHref, atlasHrefForView, atlasFullDestination, type AtlasView } from "./atlasViewContract";
 import "./atlas-embed.css";
 
 /** Context-specific face of the same first-party /atlas renderer. */
@@ -32,7 +31,7 @@ export function AtlasEmbed({ view }: { view: AtlasView }) {
       </div>
       <div className="atlas-embed__foot">
         <p>{view.description ?? "Explore geographic context from the existing shared ATLAS."}</p>
-        <Link to={full} aria-label={"Open " + view.title + " in full ATLAS"}>OPEN FULL ATLAS ↗</Link>
+        <a href={atlasFullDestination(full, typeof window === "undefined" ? "4planet.org" : window.location.hostname)} aria-label={"Open " + view.title + " in full ATLAS"}>OPEN FULL ATLAS ↗</a>
       </div>
       <p className="atlas-embed__limit">{view.limitation}</p>
     </section>

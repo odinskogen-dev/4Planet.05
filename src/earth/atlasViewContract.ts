@@ -56,3 +56,17 @@ export function atlasEmbedHref(view: AtlasView): string | null {
   query.set("embed", view.kind.toLowerCase());
   return "/atlas?" + query.toString();
 }
+
+
+/** On standalone product domains, plain /atlas is owned by that product's router.
+ * An embedded map stays first-party there, but the full explorer opens the
+ * canonical 4PLANET ATLAS with unchanged (public, reconstructable) query state.
+ */
+export function atlasFullDestination(fullHref: string, hostname: string): string {
+  if (!fullHref.startsWith("/atlas?") && fullHref !== "/atlas") return "/atlas";
+  const h = hostname.toLowerCase();
+  const sharedAtlasHost = h === "4planet.org" || h === "www.4planet.org" ||
+    h === "test.4planet.org" || h === "localhost" || h === "127.0.0.1" ||
+    h === "4planet-05.pages.dev" || h.endsWith(".4planet-05.pages.dev");
+  return sharedAtlasHost ? fullHref : "https://4planet.org" + fullHref;
+}

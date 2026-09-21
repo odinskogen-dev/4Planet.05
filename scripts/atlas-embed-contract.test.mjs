@@ -37,3 +37,12 @@ test("MapLibre v6 uses a self-contained Vite worker, never SPA HTML fallback", (
   assert.match(world, /maplibre-gl-worker\.mjs\?worker&url/);
   assert.match(world, /maplibregl\.setWorkerUrl\(maplibreWorkerUrl\)/);
 });
+
+test("Standalone product hosts route full Atlas to canonical 4PLANET, with query preserved", () => {
+  const view = source("src/earth/atlasViewContract.ts");
+  const embed = source("src/earth/AtlasEmbed.tsx");
+  assert.match(view, /export function atlasFullDestination/);
+  assert.match(view, /https:\/\/4planet\.org/);
+  assert.match(view, /4planet-05\.pages\.dev/);
+  assert.match(embed, /atlasFullDestination\(full/);
+});
