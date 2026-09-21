@@ -111,6 +111,8 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  }
  for(const p of byId.values()){
  const r=p.row,m=p.master,merged=/MERGE|CLOSED/i.test(safe(r[4])+" "+safe(m?.[5]));
+ if(![24,25,26,27,29,30].every(i=>safe(r[i])))throw Error("GOLD_PROJECT_GOAL_MISSING_"+p.id);
+ if(safe(r[24]).indexOf(p.id)!==0)throw Error("GOLD_PROJECT_GOAL_ID_MISMATCH_"+p.id);
  const classification=safe(m?.[2]);
  const entityType=p.id==="SYS-P00-01"?"programme":/SUBPROJECT|DONOR/.test(classification.toUpperCase())?"subproject":
   /PRODUCT/.test(classification.toUpperCase())?"product_project":
@@ -124,6 +126,11 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
   parent:safe(r[2]),domain:safe(r[3]),
   lifecycleFromSource:safe(m?.[5]),auditActionFromSource:safe(r[4]),
   priorityFromSource:safe(r[5]),purpose:safe(r[7]),outcome:safe(r[8]),
+  projectGoals:{projectId:p.id,goalId:safe(r[24]),why:safe(r[7]),northStar:safe(r[25]),
+   horizonGoal:safe(r[26]),successCriteria:safe(r[27]),currentGap:safe(r[28]),
+   nextGoalGate:safe(r[29]),sourceReview:safe(r[30]),goalContractStatus:safe(r[31]),
+   source:link(CONTROL_ID,gold.sheetId),
+   coverage:[24,25,26,27,29,30].every(i=>safe(r[i]))?"SOURCE_REPORTED_GOLD_GOALS__DOC_MAPPING_OPEN":"GOAL_FIELDS_OPEN"},
   scopeIn:safe(r[10]),scopeOut:safe(r[11]),sourceReportedState:safe(r[12]),
   currentState:"NOT_RECONCILED_WITH_CURRENT_PROGRAMME",
   nextGateFromSource:safe(r[19]),aliases:p.aliases.filter(Boolean),
