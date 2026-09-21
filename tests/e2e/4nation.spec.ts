@@ -62,20 +62,66 @@ test('4NATION contextual ATLAS Embed opens the existing first-party map', async 
   await expect(map.locator('.nt-shell')).toHaveCount(0);
   const full = embed.getByRole('link', { name: /Open Oslofjord.*full ATLAS/i });
   await expect(full).toHaveAttribute('href', /\/atlas\?/);
+  const intendedHref = new URL((await full.getAttribute('href'))!, page.url());
+  const expected = intendedHref.searchParams;
   const wasProductionNation = new URL(page.url()).hostname === '4nation.org';
   await full.click();
   if (wasProductionNation) {
-    // The canonical full explorer on the public Nation host is 4planetatlas.com.
-    // Verify the *meaningful preserved case context*, not a stale path name.
-    await expect(page).toHaveURL(url =>
-      url.origin === 'https://4planetatlas.com' &&
-      url.searchParams.get('entity') === 'place:4p:oslofjord' &&
-      /^\d+(?:\.\d+)?$/.test(url.searchParams.get('z') || '') &&
-      /^\-?\d+(?:\.\d+)?,\-?\d+(?:\.\d+)?$/.test(url.searchParams.get('c') || ''),
-      {timeout: 20_000});
-    await expect(page.locator('.maplibregl-canvas').first()).toBeVisible({timeout: 30_000});
+    await expect(page).toHaveURL(url => url.origin === 'https://4planetatlas.com', { timeout: 20_000 });
   } else {
-    // On isolated preview hosts, the existing same-origin /atlas path is kept.
-    await expect(page).toHaveURL(/\/atlas\?/);
+    await expect(page).toHaveURL(url => url.pathname === '/atlas', { timeout: 20_000 });
   }
+  await expect(page.locator('.maplibregl-canvas').first()).toBeVisible({ timeout: 30_000 });
+  // We must prove the real map has finished loading, not a fallback or momentary query.
+  await page.waitForFunction(() => Boolean((window as any).__4planet_map?.isStyleLoaded?.()), undefined, { timeout: 25_000 });
+  const settled = await page.evaluate(async () => {
+    const map = (window as any).__4planet_map;
+    await new Promise<void>((resolve) => {
+      if (!map.isMoving()) { resolve(); return; }
+      map.once('moveend', () => resolve());
+    });
+    // Observe after the delayed place/entity focus too, not at the transient first URL.
+    await new Promise<void>(resolve => setTimeout(resolve, 2100));
+    return { zoom: map.getZoom(), lng: map.getCenter().lng, lat: map.getCenter().lat };
+  });
+  const coords = (expected.get('c') || '').split(',').map(Number);
+  const zoom = Number(expected.get('z'));
+  expect(Number.isFinite(zoom) && coords.length === 2 && coords.every(Number.isFinite)).toBe(true);
+  expect(Math.abs(settled.zoom - zoom)).toBeLessThan(0.01);
+  expect(Math.abs(settled.lng - coords[0])).toBeLessThan(0.0001);
+  expect(Math.abs(settled.lat - coords[1])).toBeLessThan(0.0001);
+  const finalQuery = new URL(page.url()).searchParams;
+  expect(finalQuery.get('entity')).toBe(expected.get('entity'));
+  expect(finalQuery.get('l')).toBe(expected.get('l'));
+  expect(Math.abs(Number(finalQuery.get('z')) - zoom)).toBeLessThan(0.01);
+  const finalCoords = (finalQuery.get('c') || '').split(',').map(Number);
+  expect(finalCoords.length).toBe(2);
+  expect(Math.abs(finalCoords[0] - coords[0])).toBeLessThan(0.0001);
+  expect(Math.abs(finalCoords[1] - coords[1])).toBeLessThan(0.0001);
+});
+
+test('SPECIES Orca shows the shared contextual ATLAS without inventing live positions', async ({ page }) => {
+  test.skip(new URL(process.env.BASE_URL || 'http://127.0.0.1:4173').hostname === '4nation.org',
+    '4NATION standalone host does not own the SPECIES route; use the first-party shared preview');
+  await page.goto('/species/orca');
+  const embed = page.getByTestId('atlas-embed');
+  await expect(embed).toBeVisible();
+  await expect(embed).toContainText('Historical occurrence records are not live animal positions');
+  const iframe = embed.locator('iframe');
+  await expect(iframe).toHaveAttribute('src', /\/atlas\?.*embed=species/);
+  const inside = new URL((await iframe.getAttribute('src'))!, page.url());
+  const full = embed.getByRole('link', { name: /full ATLAS/i });
+  const fullTarget = new URL((await full.getAttribute('href'))!, page.url());
+  expect(inside.searchParams.get('entity')).toBe(fullTarget.searchParams.get('entity'));
+  expect(inside.searchParams.get('l')).toBe(fullTarget.searchParams.get('l'));
+  await iframe.scrollIntoViewIfNeeded();
+  const map = page.frameLocator('iframe[title^="Interactive ATLAS:"]');
+  await expect(map.locator('.maplibregl-canvas').first()).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => map.locator('body').evaluate(
+    () => Boolean((window as any).__4planet_map?.isStyleLoaded?.())),
+    {timeout: 25_000}).toBe(true);
+  await full.click();
+  await expect(page).toHaveURL(url => url.pathname === '/atlas' &&
+    url.searchParams.get('entity') === fullTarget.searchParams.get('entity'),
+    { timeout: 20_000 });
 });
