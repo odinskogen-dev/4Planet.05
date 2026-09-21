@@ -94,3 +94,20 @@ test("project semantic type and full Gold source fields preserve original string
  assert.equal(first.goldContract.fields["Project / Working name"],"Strategy, Goals & Project Operating System");
  assert.equal(first.goldContract.fieldCount,9);
 });
+
+test("a shared Atomic task with exact WBS on one of two projects is not a phantom orphan",()=>{
+ const tabs=fixture();
+ const atomic={name:"Tasks",sheetId:"1693775649",rows:[
+  ["Task ID","Family","Concrete deliverable","Owner","Programme status","Lifecycle",
+   "Dependency","Definition of done","Required evidence","Next gate",
+   "Primary Project Home","WBS / Project Gate"],
+  ["SHARED-01","QA","Source-bound test","AXE","ACTIVE","OPEN","","","Proof","Judge",
+   ID+" / SYS-P00-T01","WBS-0"]
+ ]};
+ const out=normaliseGoldProjectSheets(tabs,{},root,atomic,{});
+ assert.equal(out.metrics.atomicTasksWithoutExactWbs.length,0);
+ const first=JSON.parse(out.records.find(r=>r.metadata.projectId===ID).content);
+ const second=JSON.parse(out.records.find(r=>r.metadata.projectId==="SYS-P00-T01").content);
+ assert.equal(first.atomicTasks[0].wbsLinkStatus,"SOURCE_LITERAL_MATCH__EVIDENCE_OPEN");
+ assert.equal(second.atomicTasks[0].wbsLinkStatus,"RELATED_PROJECT_HAS_EXACT_WBS");
+});
