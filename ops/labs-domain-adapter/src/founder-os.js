@@ -49,7 +49,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
 <div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECTS + WBS + SOURCE LIBRARY</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
-<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><p id="portfolio-coverage" class="source">KONTROLLERER FULL KILDEDEKNING</p><div id="project-index" class="os-projects"></div><details class="panel"><summary>PROSJEKTER SOM MANGLER GOLD-KOBLING</summary><div id="project-gaps"></div></details><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
+<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><p id="portfolio-coverage" class="source">KONTROLLERER FULL KILDEDEKNING</p><p id="portfolio-economy" class="source">KONTROLLERER PROSJEKTØKONOMI OG MÅL</p><div id="project-index" class="os-projects"></div><details class="panel"><summary>PROSJEKTER SOM MANGLER GOLD-KOBLING</summary><div id="project-gaps"></div></details><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
 <footer>4PLANET_ · PRIVATE OS · SOURCE-BOUND · UNKNOWN ≠ VERIFIED · NO ODIN BRAIN DATA</footer></div>
 <script>
@@ -112,14 +112,55 @@ function normalizedProjectCard(p){
  kicker.textContent=p.genre+" · "+p.kind.replaceAll("_"," ");
  var title=document.createElement("h3");title.textContent=p.name;
  var purpose=document.createElement("p");purpose.textContent=p.purpose||"Formål ikke dokumentert.";
+ var north=document.createElement("p");north.textContent="MÅL / NORTH STAR: "+(p.projectGoals?.northStar||"KILDEKOBLING MANGLER");
+ var why=document.createElement("p");why.textContent="HVORFOR: "+(p.projectGoals?.why||"UKJENT");
+ var money=document.createElement("p");money.className="source";
+ money.textContent="BUDSJETT (MODEL): "+(p.projectEconomics?.completeProjectBudgetNok||"UKJENT")+
+  " · FAKTISK KOSTNAD: "+(p.projectEconomics?.actualSpendFromSource||"UKJENT")+
+  " · KAPITAL: "+(p.projectEconomics?.fundingStage||"IKKE AVSTEMT");
  var flag=document.createElement("p");flag.className="flag";
  flag.textContent="NÅSTATUS IKKE AVSTEMT · "+p.wbsCount+" WBS-PAKKER"+(p.goldPackStatus?" · GOLD-CROSSWALK MANGLER":"");
- article.append(kicker,title,purpose,flag);
+ article.append(kicker,title,purpose,north,why,money,flag);
  var details=document.createElement("details"),summary=document.createElement("summary");
  summary.textContent="PROSJEKT, WBS OG KILDER";details.appendChild(summary);
  var outcome=document.createElement("p");outcome.textContent="RESULTAT: "+(p.outcome||"UKJENT");details.appendChild(outcome);
  var group=document.createElement("p");group.textContent="FORELDER: "+(p.parent||"UKJENT")+" · HISTORISK STATUS: "+(p.sourceReportedState||"UKJENT");
  details.appendChild(group);
+ var gate=document.createElement("p");
+ gate.textContent="HORISONTMÅL: "+(p.projectGoals?.horizonGoal||"UKJENT")+
+  " · NESTE MÅLPORT: "+(p.projectGoals?.nextGoalGate||"UKJENT");
+ details.appendChild(gate);
+ var finances=document.createElement("details"),financeSummary=document.createElement("summary");
+ financeSummary.textContent="PRODUKT- OG PROSJEKTØKONOMI · CAPITAL · KILDER";
+ finances.appendChild(financeSummary);
+ var info=document.createElement("p"),econ=p.projectEconomics||{};
+ info.textContent="ENHET: "+(econ.unit||"UKJENT")+" · PRIS: "+(econ.unitPriceNok||"UKJENT")+
+  " · DIREKTE ENHETSKOST: "+(econ.directUnitCostNok||"UKJENT")+
+  " · VOLUM: "+(econ.volume||"UKJENT")+" · ENHETSBIDRAG: "+(econ.unitContributionNok||"UKJENT");
+ finances.appendChild(info);
+ var budget=document.createElement("p");
+ budget.textContent="PLANLAGT MIN / BASIS (HISTORISK SCENARIO): "+(econ.planningMinimumNok||"UKJENT")+
+  " / "+(econ.planningBaseNok||"UKJENT")+" · FULLSTENDIG PROSJEKTBUDSJETT: "+
+  (econ.completeProjectBudgetNok||"UKJENT")+" · FORDELINGSSTATUS: "+(econ.allocationStatus||"UKJENT");
+ finances.appendChild(budget);
+ var economicTruth=document.createElement("p");
+ economicTruth.textContent="FAKTISKE UTGIFTER: "+(econ.actualSpendFromSource||"UKJENT")+
+  " · FORPLIKTET: "+(econ.committedCostFromSource||"UKJENT")+
+  " · MOTTATT FINANSIERING (KILDERAPPORTERT): "+(econ.fundingReceivedFromSource||"UKJENT")+
+  " · NESTE KONTANTBEHOV: "+(econ.nextGateCashNeed||"UKJENT");
+ finances.appendChild(economicTruth);
+ var capital=document.createElement("p");
+ capital.textContent="CAPITAL: "+(econ.fundingRequirement||"UKJENT")+
+  " · "+(econ.fundingStage||"UKJENT")+
+  " · MATCHENDE RUTER: "+(econ.fundingObjectRoutes?.length??0)+
+  " · IKKE REGN SØKNADER ELLER ASK SOM PENGER.";
+ finances.appendChild(capital);
+ ["economics","funding","capital"].forEach(function(key){
+  var url=econ.source?.[key];if(!url)return;
+  var l=document.createElement("a");l.href=url;l.target="_blank";l.rel="noopener noreferrer";
+  l.textContent="ÅPNE "+key.toUpperCase()+" ↗ ";finances.appendChild(l);
+ });
+ details.appendChild(finances);
  var gold=document.createElement("p");gold.className="source";
  gold.textContent="GOLD: "+(p.goldContract?.fieldsWithExplicitValues??"UKJENT")+"/"+(p.goldContract?.fieldCount??"UKJENT")+" KILDEFELT · 25-SEKSJONS GOLD-QA IKKE AUTOMATISK GODKJENT";
  details.appendChild(gold);
@@ -168,6 +209,14 @@ function renderProjects(){
   ...(p.atomicTasks||[]).map(t=>t.id+" "+t.deliverable)].some(v=>String(v||"").toLocaleLowerCase().includes(search));
  });
  var list=el("project-index");list.replaceChildren();
+ var budgeted=normalized.filter(p=>p.projectEconomics?.completeProjectBudgetNok!=="UNKNOWN"&&
+  p.projectEconomics?.completeProjectBudgetNok!==undefined&&
+  /^\d+(?:\.\d+)?$/.test(p.projectEconomics.completeProjectBudgetNok)).length;
+ var withGoals=normalized.filter(p=>p.projectGoals?.northStar&&p.projectGoals?.goalId).length;
+ el("portfolio-economy").textContent="MÅL KILDEKOBLET: "+withGoals+"/"+normalized.length+
+  " · FULLSTENDIG TALLFESTET BUDSJETT: "+budgeted+"/"+normalized.length+
+  " · VERIFISERT TOTALBUDSJETT: "+(budgeted===normalized.length&&normalized.length>0?
+  "KREVER UAVHENGIG ADDITIVITET- OG REGNSKAPSKONTROLL":"UKJENT — IKKE SUMMER HISTORISKE SCENARIOER");
  var order=["4SAPIEN","4BRAND","OCE4N_","E4RTH_","S4PIENS_","4CULTURE_",
   "IMPACT / MARKET","ECONOMY / CAPITAL","4PLANET / SHARED","LABS / CREATIVE","CULTURE / PRODUCT"];
  var groups=[...new Set(hits.map(p=>p.genre))].sort((a,b)=>
