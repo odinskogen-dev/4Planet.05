@@ -49,7 +49,7 @@ label{font:12px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--mu
 <div class="grid"><div class="cell"><div class="small">FOUNDER ACCESS</div><strong id="access">VERIFYING</strong></div><div class="cell"><div class="small">BRAIN OBJECTS</div><strong id="object-count">UNKNOWN</strong></div><div class="cell"><div class="small">LAST SOURCE UPDATE</div><strong id="source-update">UNKNOWN</strong></div><div class="cell"><div class="small">AUTOMATED SYNC</div><strong id="sync">NOT VERIFIED</strong></div></div>
 <div class="actions"><button id="tab-brain" class="active" type="button">CURRENT BRAIN</button><button id="tab-portfolio" type="button">PROJECTS + WBS + SOURCE LIBRARY</button><button id="refresh" type="button">RECHECK SOURCE</button><a href="https://github.com/odinskogen-dev/4Planet-OSv3/issues/6" class="pill" target="_blank" rel="noopener noreferrer">OS EXECUTION ↗</a></div>
 <div id="brain"><div class="eyebrow">AUTHENTICATED SOURCE READ · NOT A SCHEDULED SYNCHRONIZATION</div><div class="panel"><h3>Operational information must have evidence.</h3><p id="summary">Loading verified 4PLANET-domain source objects.</p><div class="source" id="checked-at">CHECKED: UNKNOWN</div></div><div id="knowledge"></div></div>
-<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><div id="project-index" class="os-projects"></div><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
+<div id="portfolio" class="hide"><div class="panel"><h3>Alle prosjekter · BRAIN</h3><p>Felles prosjektmetode, WBS og kilder. Historisk registerstatus er IKKE dagens verifiserte fremdrift.</p><label for="project-search">SØK PROSJEKT, SJANGER ELLER WBS</label><input id="project-search" type="search" placeholder="SPECIES, 4SAPIEN, kapital …"><p id="project-count" class="small">KONTROLLERER KILDER</p></div><div id="project-index" class="os-projects"></div><details class="panel"><summary>PROSJEKTER SOM MANGLER GOLD-KOBLING</summary><div id="project-gaps"></div></details><details class="panel"><summary>KILDEBIBLIOTEK · FILINVENTAR · IKKE PROSJEKTSTATUS</summary><div id="project-list"></div></details><details class="panel"><summary>OPEN HISTORICAL LABS SNAPSHOT · 21 AUG 2026</summary><p>Public-safe archived orientation, not today's Programme Control.</p><iframe class="portfolio" src="/" title="Historical public-safe LABS portfolio" loading="lazy"></iframe></details></div>
 </section>
 <footer>4PLANET_ · PRIVATE OS · SOURCE-BOUND · UNKNOWN ≠ VERIFIED · NO ODIN BRAIN DATA</footer></div>
 <script>
@@ -151,7 +151,19 @@ function renderProjects(){
  if(!normalized.length){var note=document.createElement("p");note.textContent="STRUKTURERT PROSJEKTVISNING MANGLER I SISTE SYNK. Ingen historisk status er oppgradert til nåstatus.";list.appendChild(note)}
  el("project-count").textContent=hits.length+" / "+normalized.length+" PROSJEKTER · "+
  normalized.reduce((n,p)=>n+p.wbsCount,0)+" WBS-PAKKER · SISTE BEKREFTEDE KILDESYNK VISES OVER";
- var others=latestProjectSources.filter(x=>!projectView(x));
+ var gaps=latestProjectSources.filter(x=>x.metadata?.projectionType==="registration_gap");
+ var gapList=el("project-gaps");gapList.replaceChildren();
+ gaps.forEach(function(x){
+  try{
+   var p=JSON.parse(x.content),card=document.createElement("article");card.className="panel";
+   var h=document.createElement("h3");h.textContent=p.name;
+   var info=document.createElement("p");info.textContent=p.sourceReportedStatus+" · "+p.nextAction;
+   var source=document.createElement("a");source.href=p.source;source.target="_blank";source.rel="noopener noreferrer";
+   source.textContent="ÅPNE EXISTING BRAIN CONTROL ↗";card.append(h,info,source);gapList.appendChild(card);
+  }catch{}
+ });
+ el("project-count").textContent+=" · "+gaps.length+" ÅPNE REGISTRERINGSGAP";
+ var others=latestProjectSources.filter(x=>!projectView(x)&&x.metadata?.projectionType!=="registration_gap");
  var library=el("project-list");library.replaceChildren();
  others.filter(x=>!search||[x.title,x.objectType,x.folder].some(v=>String(v||"").toLocaleLowerCase().includes(search)))
   .slice(0,100).forEach(x=>library.appendChild(projectCard(x)));
