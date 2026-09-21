@@ -196,13 +196,17 @@ async function main(){
  // and a visible crosswalk gap; no duplicate authority, no synthetic status.
  const later=[];
  for(const spec of LATER_HOMES){
+  if(structured.records.some(x=>x.metadata.projectId===spec.id&&x.metadata.wbsCount>=spec.expected))continue;
   const f=files.find(x=>x.id===spec.fileId);
   if(!f){console.log("LATER_PROJECT_HOME_NOT_IN_RECURSIVE_INVENTORY "+spec.id);continue;}
   try{
    const res=await get("https://www.googleapis.com/drive/v3/files/"+spec.fileId+
     "/export?"+new URLSearchParams({mimeType:"text/plain"}),driveHeaders);
    const text=await res.text();
-   later.push(normaliseLaterProjectHome(spec,text,f,ROOT));
+   const derived=normaliseLaterProjectHome(spec,text,f,ROOT);
+   const existing=structured.records.findIndex(x=>x.metadata.projectId===spec.id);
+   if(existing>=0)structured.records.splice(existing,1);
+   later.push(derived);
   }catch(e){console.log("LATER_PROJECT_HOME_PENDING "+spec.id+" "+safeError(e));}
  }
  records.push(...later);
