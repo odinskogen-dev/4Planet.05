@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
-import NationPage from "@/pages/nation/NationPage";
 import LabsOverview from "@/pages/labs/LabsOverview";
 import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
@@ -31,6 +30,7 @@ import Privacy from "@/pages/v5/Privacy";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
+const NationPage = lazy(() => import("@/pages/nation/NationPage"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
 const FoodUserTest = lazy(() => import("../food/FoodUserTest"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
@@ -71,7 +71,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/4nation/*" element={<NationPage />} />
+      <Route path="/4nation/*" element={<Suspense fallback={LabFallback}><NationPage /></Suspense>} />
       <Route path="/labs" element={<LabsOverview />} />
       <Route path="/labs/gold" element={<Suspense fallback={LabFallback}><GoldTemplateSystemIndex /></Suspense>} />
       <Route path="/labs/gold/object/:slug" element={<Suspense fallback={LabFallback}><GoldObjectProofPage /></Suspense>} />
