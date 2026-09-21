@@ -19,3 +19,19 @@ test('4NATION citizen and institutional decision paths share official-source rec
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:window.innerWidth}));
   expect(width.scroll).toBeLessThanOrEqual(width.viewport+2);
 });
+
+test('4NATION deep link retains institution and economy lens across refresh', async ({ page }) => {
+  await page.goto('/4nation?view=institutions&lens=economy');
+  await expect(page.getByRole('button',{name:'For institutions'})).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('heading',{name:/Public money. Clear boundaries./i})).toBeVisible();
+  await page.getByRole('button',{name:/Outcomes/i}).click();
+  await expect(page).toHaveURL(/lens=outcomes/);
+  await page.reload();
+  await expect(page.getByRole('heading',{name:/Decided is not delivered./i})).toBeVisible();
+  await page.getByRole('button',{name:'Sources',exact:true}).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const dims = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
+  expect(dims.doc).toBeLessThanOrEqual(dims.win + 2);
+});

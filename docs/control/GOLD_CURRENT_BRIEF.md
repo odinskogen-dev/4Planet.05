@@ -111,3 +111,36 @@ The builder may prove deterministic calculations, security shape and browser beh
 - MOBILE / HUMAN GOLD: two comprehensible user journeys with six lenses, source drawer and responsive 390px desktop; runtime QA pending.
 - ACCEPTANCE: exact candidate commit, separate tests, independent source/UX/accessibility/security review and Founder release before 4nation.org. Do not merge this branch to main directly; reconcile via authorised `king/test` TEST KING path only after all gates.
 - Project Home: https://docs.google.com/document/d/1IAB_myJZ3pT0rx58QNBJmuCutxhGlWBKBuOjO__NuBo/edit
+
+
+## 4NATION WORLD-CLASS PRODUCT CONVERGENCE 02 — BOUNDED CHANGE / 21 SEPTEMBER 2026
+
+**AUTHORISATION:** Existing `king/test` sole HEIR; independent production release remains a separate Founder decision. No change to live domains, no duplicate BRAIN, no new registered sandbox.
+
+**USER ARRIVES BECAUSE:** People want to see a real public decision immediately; public-sector readers want inspectable evidence and material constraints without a six-app learning curve.
+
+**ONE THING TO UNDERSTAND:** The proposed Oslofjord 2026–2030 plan is *under consideration*; both audiences share one date-stamped official-source case.
+
+**PRIMARY ACTION:** Open the decision card directly from the first viewport, choose person/institution perspective, inspect the government record, follow the timeline or copy a deep link retaining the selected perspective and decision lens.
+
+**SECONDARY DEPTH:** Progressively navigate Atlas, source-grounded Brain summary (NOT live AI), Solutions, Economy and Outcomes. Sources are adjacent to claims; unknowns are explicit.
+
+**P1 DOMINANT:** Real Oslofjord decision is the first feature, not an abstract invented fjord illustration, giant manifesto or six equal app modules.
+
+**P2 ORIENTATION:** Ministry, jurisdiction, snapshot date, proposal vs adopted distinction, ordinary consultation deadline vs special local/regional deadline.
+
+**P3 ACTION / NEXT:** Explore public decisions / Explore decision intelligence / original proposal / copy case link, each advertised control actually functional.
+
+**P4 DEPTH:** Case timeline with original sources, separate grants versus plan costs, model versus measured outcomes, PLACE lineage to existing ATLAS.
+
+**WHAT CAN BE REMOVED:** Faux-geographical decorative hero; unsupported coordinates on home; redundant opening paragraphs, hidden and generic app-nav hierarchy; source-list-only access.
+
+**WHAT MUST BE REUSED:** Existing `src/planet/places.ts`, Brand typography/color variables and main app route/host seam, shared authority, existing Gold/test and dated decision case.
+
+**TRUTH BOUNDARY:** One dated, manually verified official decision candidate, no live feed, official partnership, policy recommendation, autonomous public action or proven ecological effect. Accessibility and rights checks remain independent QA.
+
+**MOBILE-FIRST RISK:** 390/430 widths must display both entry actions and visible real case; no clipped case actions, horizontal overflow or inaccessible drawer. Reduced-motion scroll respected.
+
+**HUMAN SUCCESS:** Within seconds a visitor understands 4NATION and notices the real Oslofjord issue; completes exact sourced status, authority, next step and original source in fewer clicks than initial large abstract hero. Two journeys share one case; no design success asserted until visually and human reviewed.
+
+**MAKER ≠ JUDGE / RELEASE:** Factual source check and scoped technical tests are necessary but not sufficient for production. Existing FOUR STATE Founder Review exact ATLAS sandbox evidence and baseline Oslofjord MAP READY failure are open. No direct domain change, auto-promotion or false live claim from this brief.
