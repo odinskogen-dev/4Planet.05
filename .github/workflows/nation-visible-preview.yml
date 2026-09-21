@@ -82,11 +82,10 @@ jobs:
       - name: Publish isolated preview ONLY (no production branch or DNS writes)
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$NATION_PREVIEW_PROJECT" --branch "$NATION_PREVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false
-          api=https://api.cloudflare.com/client/v4
-          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
-          deploys=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$NATION_PREVIEW_PROJECT/deployments?page=1&per_page=30" "${auth[@]}")
-          url=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "$NATION_PREVIEW_BRANCH" '[.result[]? | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch==$branch and .latest_stage.status=="success")][0].url // empty' <<<"$deploys")
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$NATION_PREVIEW_PROJECT" --branch "$NATION_PREVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/nation-wrangler-deploy.txt
+          # Wrangler is the deployment authority. Avoid Pages API pagination
+          # parameters: the account rejects this list request with HTTP 400.
+          url=$(grep -Eo 'https://[a-z0-9-]+\\.4planet-05\\.pages\\.dev' /tmp/nation-wrangler-deploy.txt | head -n1 || true)
           test -n "$url" || { echo 'EXACT_BRANCH_PREVIEW_UNVERIFIED'; exit 14; }
           echo "NATION_PREVIEW_URL=$url" >> "$GITHUB_ENV"
           echo "EXACT_NATION_PREVIEW=$url/4nation"
