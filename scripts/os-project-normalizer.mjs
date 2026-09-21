@@ -31,12 +31,14 @@ id==="SYS-P00-CAPITAL"||id==="SYS-P00-ECONOMY"?"ECONOMY / CAPITAL":
 "4PLANET / SHARED";
 const sheet=(tabs,pattern)=>tabs.find(t=>pattern.test(t.name??""));
 const recordsAfterHeader=(tab,first)=>{const rows=tab?.rows??[],idx=rows.findIndex(r=>r[0]===first);return idx<0?[]:rows.slice(idx+1).filter(r=>r[0]&&r[0]!=="RULE")};
+const header=(tab,key)=>tab?.rows?.find(r=>r[0]===key)||[];
+const missing=x=>!x||/^#(REF!|ERROR!|N\/A)/i.test(x)||/^(UNKNOWN|NEEDS DECISION|NEEDS EXTERNAL EVIDENCE|NOT RECONCILED)$/i.test(x);
 const safe=s=>String(s??"").trim();
 const link=(id,gid)=>"https://docs.google.com/spreadsheets/d/"+id+"/edit"+(gid?"#gid="+gid:"");
 export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomicSource=null){
  const gold=sheet(tabs,/GOLD PROJECT CONTRACT/i),wbs=sheet(tabs,/UNIVERSAL WBS/i),
  master=sheet(tabs,/MASTER PROJECT REGISTER/i),aliasSheet=sheet(tabs,/ORPHAN.*DUPLICATE/i);
- if(!gold||!wbs||!master)throw Error("CANONICAL_PROJECT_TABS_MISSING");
+ if(!gold||!wbs||!master||!aliasSheet)throw Error("CANONICAL_PROJECT_TABS_MISSING");
  const packs=recordsAfterHeader(gold,"Project ID"),tasks=recordsAfterHeader(wbs,"WBS ID"),
  masters=recordsAfterHeader(master,"Project ID"),aliases=recordsAfterHeader(aliasSheet,"Item / Alias");
  const byId=new Map();
@@ -64,10 +66,14 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
    atomicLink:safe(row[7]),dependency:safe(row[8]),sourceReportedState:safe(row[9]),
    nextAction:safe(row[10]),gate:safe(row[11]),evidence:safe(row[12])});
  }
- for(const row of masters){const p=byId.get(safe(row[0]));if(p)p.master=row}
+ const masterIds=new Set();
+ for(const row of masters){const id=safe(row[0]);if(masterIds.has(id))throw Error("DUPLICATE_MASTER_PROJECT_ID_"+id);
+  masterIds.add(id);const p=byId.get(id);if(!p)throw Error("MASTER_PROJECT_NOT_IN_GOLD_"+id);p.master=row}
+ for(const p of byId.values())if(!p.master)throw Error("GOLD_PROJECT_MISSING_MASTER_"+p.id);
  for(const row of aliases){const p=byId.get(safe(row[2]));if(p)p.aliases.push(safe(row[0]))}
  const out=[];
  const gaps=[];
+ const goldFields=header(gold,"Project ID");
  for(const row of aliases){
   if(!/CONTROLLED REGISTRATION GAP/i.test(safe(row[11])))continue;
   const name=safe(row[0]);if(!name)continue;
@@ -86,10 +92,17 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  }
  for(const p of byId.values()){
  const r=p.row,m=p.master,merged=/MERGE|CLOSED/i.test(safe(r[4])+" "+safe(m?.[5]));
+ const classification=safe(m?.[2]);
+ const entityType=p.id==="SYS-P00-01"?"programme":/SUBPROJECT|DONOR/.test(classification.toUpperCase())?"subproject":
+  /PRODUCT/.test(classification.toUpperCase())?"product_project":
+  /CONTINUOUS|OPERATION|PROCESS/.test(classification.toUpperCase())?"operations_project":"project";
+ const contractFields=Object.fromEntries(goldFields.map((field,i)=>[safe(field),safe(r[i])]).filter(([field])=>!!field));
+ const incompleteFields=Object.entries(contractFields).filter(([field,value])=>missing(value)).map(([field])=>field);
  const document={
   schema:"4PLANET_PROJECT_VIEW_01",id:p.id,name:friendly[p.id]||safe(r[1]),
-  sourceName:safe(r[1]),genre:genre(p.id),kind:p.id==="SYS-P00-01"?"programme":
-   merged?"historical_or_merged":"project",parent:safe(r[2]),domain:safe(r[3]),
+  sourceName:safe(r[1]),genre:genre(p.id),kind:merged?"historical_or_merged":entityType,
+  entityType,classificationFromSource:classification,mergedOrClosedFromSource:merged,
+  parent:safe(r[2]),domain:safe(r[3]),
   lifecycleFromSource:safe(m?.[5]),auditActionFromSource:safe(r[4]),
   priorityFromSource:safe(r[5]),purpose:safe(r[7]),outcome:safe(r[8]),
   scopeIn:safe(r[10]),scopeOut:safe(r[11]),sourceReportedState:safe(r[12]),
@@ -97,6 +110,10 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
   nextGateFromSource:safe(r[19]),aliases:p.aliases.filter(Boolean),
   wbs:p.wbs,wbsCount:p.wbs.length,
   atomicTasks:(p.atomic||[]).slice(-12),atomicTaskCount:(p.atomic||[]).length,
+  goldContract:{authority:"EXISTING_FOUNDER_CONTROL_PROJECT_PACKS",fields:contractFields,
+   incompleteFields,fieldsWithExplicitValues:Object.keys(contractFields).length-incompleteFields.length,
+   fieldCount:Object.keys(contractFields).length,
+   sectionsAreDistributedAcrossExistingGoldWbsEconomicsCapitalProofRoadmapLearning:true},
   source:{gold:link(CONTROL_ID,gold.sheetId),wbs:link(CONTROL_ID,wbs.sheetId),
    register:link(CONTROL_ID,master.sheetId),atomic:atomic?link(ATOMIC_ID,atomic.sheetId):null,
    atomicModifiedAt:atomicSource?.modifiedTime??null,modifiedAt:source.modifiedTime??null,
@@ -112,7 +129,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
   object_type:"project_pack",content,metadata:{
    rootId,domain:"4planet",tenant:null,readDepth:"DERIVED_FROM_CANONICAL_ROWS",
    projectionType:"project",projectId:p.id,kind:document.kind,
-   genre:document.genre,wbsCount:document.wbsCount,atomicTaskCount:document.atomicTaskCount,
+   genre:document.genre,entityType,wbsCount:document.wbsCount,atomicTaskCount:document.atomicTaskCount,
    sourceFileId:CONTROL_ID,sourceSheetIds:[gold.sheetId,wbs.sheetId,master.sheetId],
    currentStatus:"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION"}});
  }
