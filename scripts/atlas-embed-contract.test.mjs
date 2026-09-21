@@ -46,3 +46,11 @@ test("Standalone product hosts route full Atlas to canonical 4PLANET, with query
   assert.match(view, /4planet-05\.pages\.dev/);
   assert.match(embed, /atlasFullDestination\(full/);
 });
+
+test("Contextual embed overrides legacy strict size containment without touching old home globe", () => {
+  const component = source("src/earth/AtlasEmbed.tsx");
+  const css = source("src/earth/atlas-embed.css");
+  assert.match(component, /atlas-embed atlas-embed--contextual/);
+  assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:layout paint\}/);
+  assert.doesNotMatch(css, /\.atlas-embed\.atlas-embed--contextual\{contain:strict\}/);
+});

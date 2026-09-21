@@ -15,7 +15,7 @@ export function AtlasEmbed({ view }: { view: AtlasView }) {
     );
   }
   return (
-    <section className="atlas-embed" data-testid="atlas-embed" aria-label={view.title}>
+    <section className="atlas-embed atlas-embed--contextual" data-testid="atlas-embed" aria-label={view.title}>
       <header className="atlas-embed__head">
         <span>4PLANET ATLAS / {view.kind}</span>
         <strong>{view.title}</strong>
