@@ -4,17 +4,31 @@ import {normaliseGoldProjectSheets} from "./os-project-normalizer.mjs";
 const ID="SYS-P00-STRAT",root="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 function fixture(n=35){
  const ids=[ID,...Array.from({length:n-1},(_,i)=>"SYS-P00-T"+String(i+1).padStart(2,"0"))];
+ const goalFields=["Project ID","Project / Working name","Parent","Domain","Audit action","Priority",
+ "Primary goal","Purpose","Outcome / Definition of Done",
+ ...Array.from({length:15},(_,i)=>"Gold field "+i),
+ "Project Goal ID","Project North Star","Current Horizon Goal","Success / KR / Proof",
+ "Current Gap","Next Goal Gate","Goal Source / Version / Reviewed","Goal Contract Status"];
  const gold={name:"4PLANET_ GOLD PROJECT CONTRACT — PROJECT PACKS v3.0",sheetId:"12",rows:[
- ["Project ID","Project / Working name","Parent","Domain","Audit action","Priority","Primary goal","Purpose","Outcome / Definition of Done"],
- ...ids.map((id,i)=>[id,i?"Work "+i:"Strategy, Goals & Project Operating System",
- "SYS-P00-01","SHARED","KEEP","P1","", "Purpose "+i,"Outcome "+i])]};
+ goalFields,
+ ...ids.map((id,i)=>{const r=Array(32).fill("UNKNOWN");r.splice(0,9,id,i?"Work "+i:"Strategy, Goals & Project Operating System",
+ "SYS-P00-01","SHARED","KEEP","P1","", "Purpose "+i,"Outcome "+i);
+ r[24]=id+"-G01";r[25]="North Star "+i;r[26]="Horizon "+i;
+ r[27]="Proof "+i;r[28]="Gap "+i;r[29]="Gate "+i;
+ r[30]="SOURCE Gold fixture";r[31]="OPEN / SOURCE-REPORTED";return r;})]};
  const wbs={name:"4PLANET_ UNIVERSAL WBS — DELIVERY HIERARCHY v2.0",sheetId:"13",rows:[
  ["WBS ID","Level","Project ID","Major deliverable","Work package"],
  ...ids.map((id,i)=>["WBS-"+i,"L1",id,"Deliverable "+i,"Work "+i])]};
  const master={name:"4PLANET_ PROJECT OPERATING SYSTEM — MASTER PROJECT REGISTER v1.0",sheetId:"22",rows:[
  ["Project ID","Project","Classification","Parent","Domain","Lifecycle"],
  ...ids.map(id=>[id,"Project","PROJECT","P00","SHARED","ACTIVE"])]};
- return [gold,wbs,master,{name:"4PLANET_ ORPHAN + DUPLICATE CONTROL v1.0",sheetId:"32",rows:[["Item / Alias"]]}];
+ const economy={name:"4PLANET_ PROJECT ECONOMICS + TOTAL ECONOMIC CONTROL v2.0",
+ sheetId:"14",rows:[["Project ID"],...ids.map(id=>{const r=Array(44).fill("UNKNOWN");
+ r[0]=id;r[25]="UNKNOWN";r[34]="UNKNOWN";r[40]=id+"-G01";return r;})]};
+ const funding={name:"4PLANET_ PROJECT FUNDING MAP v1.0",sheetId:"26",
+ rows:[["Project ID"],...ids.map(id=>[id,"UNKNOWN"])]};
+ return [gold,wbs,master,{name:"4PLANET_ ORPHAN + DUPLICATE CONTROL v1.0",sheetId:"32",
+ rows:[["Item / Alias"]]},economy,funding];
 }
 test("canonical project/WBS projection preserves identities, source and UNKNOWN status",()=>{
  const {records,metrics}=normaliseGoldProjectSheets(fixture(),{modifiedTime:"2026-09-21T12:00:00Z"},root);
@@ -92,7 +106,7 @@ test("project semantic type and full Gold source fields preserve original string
  const first=JSON.parse(out.records[0].content);
  assert.equal(first.entityType,"product_project");
  assert.equal(first.goldContract.fields["Project / Working name"],"Strategy, Goals & Project Operating System");
- assert.equal(first.goldContract.fieldCount,9);
+ assert.equal(first.goldContract.fieldCount,32);
 });
 
 test("a shared Atomic task with exact WBS on one of two projects is not a phantom orphan",()=>{
@@ -110,4 +124,37 @@ test("a shared Atomic task with exact WBS on one of two projects is not a phanto
  const second=JSON.parse(out.records.find(r=>r.metadata.projectId==="SYS-P00-T01").content);
  assert.equal(first.atomicTasks[0].wbsLinkStatus,"SOURCE_LITERAL_MATCH__EVIDENCE_OPEN");
  assert.equal(second.atomicTasks[0].wbsLinkStatus,"RELATED_PROJECT_HAS_EXACT_WBS");
+});
+
+test("all canonical Project Homes expose source-bound why, North Star, horizon and budget link",()=>{
+ const out=normaliseGoldProjectSheets(fixture(),{},root);
+ assert.equal(out.metrics.economyMapped,35);
+ assert.equal(out.metrics.fundingMapped,35);
+ for(const item of out.records){const p=JSON.parse(item.content);
+  assert.equal(p.projectGoals.projectId,p.id);
+  assert.equal(p.projectGoals.goalId,p.projectEconomics.goalId);
+  assert.ok(p.projectGoals.why&&p.projectGoals.northStar&&p.projectGoals.nextGoalGate);
+  assert.equal(p.projectEconomics.completeProjectBudgetNok,"UNKNOWN");
+ }
+});
+test("unknown financial inputs cannot become a fabricated project budget or capital cash",()=>{
+ const out=normaliseGoldProjectSheets(fixture(),{},root);
+ assert.equal(out.metrics.incompleteNumericBudget,35);
+ const p=JSON.parse(out.records[0].content);
+ assert.equal(p.projectEconomics.actualCostsRequireAccountingProof,true);
+ assert.equal(p.projectEconomics.fundingPipelineIsNotCash,true);
+});
+test("missing Gold goal source fails closed",()=>{
+ const tabs=fixture();tabs[0].rows[1][25]="";
+ assert.throws(()=>normaliseGoldProjectSheets(tabs,{},root),/GOLD_PROJECT_GOAL_MISSING/);
+});
+test("budget goal mismatch fails closed",()=>{
+ const tabs=fixture();tabs[4].rows[1][40]="INCORRECT-G01";
+ assert.throws(()=>normaliseGoldProjectSheets(tabs,{},root),/ECONOMY_GOAL_ID_MISMATCH/);
+});
+test("a missing project economy or funding row never silently disappears",()=>{
+ const tabs=fixture();tabs[4].rows.splice(1,1);
+ assert.throws(()=>normaliseGoldProjectSheets(tabs,{},root),/GOLD_PROJECT_MISSING_ECONOMY/);
+ const other=fixture();other[5].rows.splice(1,1);
+ assert.throws(()=>normaliseGoldProjectSheets(other,{},root),/GOLD_PROJECT_MISSING_FUNDING/);
 });
