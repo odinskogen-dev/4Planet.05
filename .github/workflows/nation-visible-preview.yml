@@ -2,7 +2,14 @@ name: 4NATION Founder Visual Preview
 on:
   push:
     branches: [king/test]
-    paths: ['.github/workflows/nation-visible-preview.yml']
+    paths:
+      - '.github/workflows/nation-visible-preview.yml'
+      - 'src/App.tsx'
+      - 'src/pages/nation/**'
+      - 'src/earth/AtlasEmbed.tsx'
+      - 'src/earth/atlas-embed.css'
+      - 'src/planet/nationDecisionCase.ts'
+      - 'docs/control/GOLD_CURRENT_BRIEF.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -102,3 +109,10 @@ jobs:
           grep -q 'noindex,nofollow' /tmp/nation.html
           echo "EXACT_FOUNDER_PREVIEW=$NATION_PREVIEW_URL/4nation"
           echo "FOUNDER_PREVIEW_VISIBLE=YES; LIVE_4NATION_DNS_UNCHANGED"
+
+      - name: Browser proof on actual Cloudflare preview / desktop and iPhone widths
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          BASE_URL="$NATION_PREVIEW_URL" npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo "EXTERNAL_NATION_BROWSER_GOLD=PASS"
