@@ -21,7 +21,7 @@ test('political state and deadline are not promoted to enacted law', () => {
   assert.match(source,/Ordinary consultation closed 15 September 2026/);
   assert.match(source,/15 October 2026/);
   assert.doesNotMatch(source,/status: 'ADOPTED'|status: 'ENACTED'/);
-  assert.match(page,/not presented here as adopted law/);
+  assert.match(page,/Proposal, not an adopted plan/);
 });
 test('two user journeys share exactly one case with six integrated lenses', () => {
   assert.match(page,/type Audience = 'people' \| 'institutions'/);

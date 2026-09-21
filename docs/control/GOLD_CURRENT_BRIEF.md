@@ -144,3 +144,5 @@ The builder may prove deterministic calculations, security shape and browser beh
 **HUMAN SUCCESS:** Within seconds a visitor understands 4NATION and notices the real Oslofjord issue; completes exact sourced status, authority, next step and original source in fewer clicks than initial large abstract hero. Two journeys share one case; no design success asserted until visually and human reviewed.
 
 **MAKER ≠ JUDGE / RELEASE:** Factual source check and scoped technical tests are necessary but not sufficient for production. Existing FOUR STATE Founder Review exact ATLAS sandbox evidence and baseline Oslofjord MAP READY failure are open. No direct domain change, auto-promotion or false live claim from this brief.
+
+Gold QA repair, 21 Sep: Source-contract test updated to assert the clearer actual UI wording ‘Proposal, not an adopted plan.’ No weakening of underlying claim; official status remains UNDER CONSIDERATION. This fix and its Gold brief are in one bounded TEST KING commit. No live authority.
