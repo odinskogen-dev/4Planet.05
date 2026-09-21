@@ -6,7 +6,7 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
-import {CONTROL_ID,normaliseGoldProjectSheets} from "./os-project-normalizer.mjs";
+import {CONTROL_ID,LATER_HOMES,normaliseGoldProjectSheets,normaliseLaterProjectHome} from "./os-project-normalizer.mjs";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
@@ -191,6 +191,22 @@ async function main(){
  // A source file inventory row and its derived project rows are different
  // depths of the same authority, not competing master data.
  records.push(...structured.records);
+ // The 4SAPIEN / 4BRAND Project Homes are already approved in BRAIN but are
+ // absent from the older 41-row Gold register. Keep their OWN source identity
+ // and a visible crosswalk gap; no duplicate authority, no synthetic status.
+ const later=[];
+ for(const spec of LATER_HOMES){
+  const f=files.find(x=>x.id===spec.fileId);
+  if(!f){console.log("LATER_PROJECT_HOME_NOT_IN_RECURSIVE_INVENTORY "+spec.id);continue;}
+  try{
+   const res=await get("https://www.googleapis.com/drive/v3/files/"+spec.fileId+
+    "/export?"+new URLSearchParams({mimeType:"text/plain"}),driveHeaders);
+   const text=await res.text();
+   later.push(normaliseLaterProjectHome(spec,text,f,ROOT));
+  }catch(e){console.log("LATER_PROJECT_HOME_PENDING "+spec.id+" "+safeError(e));}
+ }
+ records.push(...later);
+ console.log("PROJECT_VIEW_GOLD_CROSSWALK_GAPS "+(LATER_HOMES.length-later.length));
  console.log("PROJECT_VIEW_DERIVED_FROM_GOLD projects="+structured.metrics.projects+
   " wbs="+structured.metrics.wbs+" without_wbs="+structured.metrics.withoutWbs.length+
   " current_status=UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION");
