@@ -51,3 +51,7 @@ test('contextual ATLAS CSS parses real newline boundaries so the first-party map
   assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:none!important;display:block;min-height:/);
   assert.match(css, /\.atlas-embed\{margin:32px/);
 });
+
+test('4NATION full Atlas exit is not captured by the standalone Nation homepage', () => {
+  assert.match(app,/isNationHost\(\) && window\.location\.pathname === "\/atlas"/);
+});

@@ -109,7 +109,7 @@ function isFirstPartyAtlasEmbedRoute() {
 
 export default function App() {
   // Standalone hosts must not recursively render their homepage inside /atlas iframes.
-  if (isFirstPartyAtlasEmbedRoute()) return <BrowserRouter><StandardApp /></BrowserRouter>;
+  if (isFirstPartyAtlasEmbedRoute() || (isNationHost() && window.location.pathname === "/atlas")) return <BrowserRouter><StandardApp /></BrowserRouter>;
   if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;

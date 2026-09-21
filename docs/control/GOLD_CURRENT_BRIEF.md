@@ -1,3 +1,7 @@
+4NATION 05 / FULL ATLAS EXIT ON CANONICAL HOST / 22 SEP 2026
+Parent e194a688879fdf9ae0d57ac09eeb882984302988. Cloudflare noindex preview exact e194a688879fdf9ae0d57ac09eeb882984302988 succeeded external HTTP/noindex on https://b4553b84.4planet-05.pages.dev/4nation in run 35664513886; site visibility is verified on a Pages preview, NOT on 4nation.org.
+Before an apex domain LIVE release, inspected src/App.tsx and caught that isNationHost() intercepted plain /atlas (only /atlas?embed=nation escaped to StandardApp). Add canonical-host full /atlas path guard before Nation homepage so OPEN FULL ATLAS preserves the shared Atlas on real 4nation.org, without changing other host behavior or camera/datamodel. Static source contract same commit. No separate map, no root domain DNS action, no inference of independent Human GOLD. New exact QA + review of updated preview required.
+---
 4NATION preview URL proof / exact candidate bb6de9bcf4a9dced346b41f0aa1bd41e7ac06237. Use bracket-literal dots in Wrangler immutable Pages URL regex; prevents a literal double-backslash parsing error in shell grep. All previous controls remain: same original build, exact QA, noindex, nonproduction branch, no apex/www DNS or production writes; external HTTP/noindex remains mandatory before any Founder preview success. No live or Founder acceptance asserted.
 ---
 4NATION VISUAL PREVIEW 05 — EXACT DEPLOY READBACK REPAIR / 22 SEP 2026
