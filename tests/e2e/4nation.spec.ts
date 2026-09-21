@@ -11,7 +11,7 @@ test('4NATION citizen and institutional decision paths share official-source rec
   await expect(page.getByText('NON-BINDING DECISION INTELLIGENCE')).toBeVisible();
   await page.getByRole('button',{name:/Nation Brain/i}).click();
   await expect(page.getByText('does not claim live conversational PLANETBRAIN',{exact:false})).toBeVisible();
-  await page.getByRole('button',{name:'Sources'}).click();
+  await page.getByRole('button',{name:'Sources',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('link',{name:'VIEW ORIGINAL ↗'}).first()).toHaveAttribute('href',/regjeringen\.no/);
   await page.getByRole('button',{name:/Close sources/i}).click();
