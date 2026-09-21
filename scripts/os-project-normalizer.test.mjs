@@ -50,7 +50,7 @@ test("controlled unregistered products stay visible as gaps, not fake Project Ho
  const gap=["4PLANET FRONTIER","CURRENT PRODUCT / PROJECT HOME CROSSWALK OPEN",
  "PARENT OPEN","ACTIVE","No Gold ID","TRUE","Recover source","https://docs.google.com/"];
  gap[11]="OPEN / CONTROLLED REGISTRATION GAP";
- tabs.push({name:"31_ORPHAN CONTROL",sheetId:"32",
+ tabs.push({name:"4PLANET_ ORPHAN + DUPLICATE CONTROL v1.0",sheetId:"32",
   rows:[["Item / Alias"],gap]});
  const {records,gaps,metrics}=normaliseGoldProjectSheets(tabs,{},root);
  assert.equal(metrics.projects,35);assert.equal(metrics.registrationGaps,1);
