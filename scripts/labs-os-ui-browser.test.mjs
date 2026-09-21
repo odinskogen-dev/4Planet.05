@@ -43,6 +43,7 @@ try{
   await page.locator("#overview-homes .project").first().click();
   await page.getByText("QA_PROJECT_PRIVATE_DETAIL_ONLY_AFTER_CLICK").first().waitFor({timeout:5000});
   if((await page.locator("#inspector a.source-link").count())!==1)throw Error("PROVENANCE_LINK_MISSING");
+  await page.locator("#close-inspector").click();
   await page.locator('[data-view="library"]').click();
   if((await page.locator("#library-list .project").count())!==3)throw Error("SOURCE_INVENTORY_COUNT");
   await page.locator("#library-search").fill("Inventory Only");
