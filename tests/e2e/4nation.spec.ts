@@ -44,6 +44,9 @@ test('4NATION contextual ATLAS Embed opens the existing first-party map', async 
   await expect(embed).toContainText('Navigation extent only.');
   const iframe = embed.locator('iframe');
   await expect(iframe).toHaveAttribute('src', /\/atlas\?.*embed=nation/);
+  // This is intentionally lazy below the first viewport. A real person scrolls
+  // to the map; programmatic DOM assertions alone do not trigger iframe loading.
+  await iframe.scrollIntoViewIfNeeded();
   const map = page.frameLocator('iframe[title^="Interactive ATLAS:"]');
   await expect(map.locator('.maplibregl-canvas, #atlas-fallback-title').first())
     .toBeVisible({ timeout: 30_000 });
