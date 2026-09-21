@@ -24,7 +24,7 @@ test('4NATION deep link retains institution and economy lens across refresh', as
   await page.goto('/4nation?view=institutions&lens=economy');
   await expect(page.getByRole('button',{name:'For institutions'})).toHaveAttribute('aria-pressed','true');
   await expect(page.getByRole('heading',{name:/Public money. Clear boundaries./i})).toBeVisible();
-  await page.getByRole('button',{name:/Outcomes/i}).click();
+  await page.getByRole('navigation',{name:'Explore decision layers'}).getByRole('button',{name:/Outcomes/i}).click();
   await expect(page).toHaveURL(/lens=outcomes/);
   await page.reload();
   await expect(page.getByRole('heading',{name:/Decided is not delivered./i})).toBeVisible();
@@ -40,6 +40,15 @@ test('4NATION deep link retains institution and economy lens across refresh', as
 test('4NATION contextual ATLAS Embed opens the existing first-party map', async ({ page }) => {
   await page.goto('/4nation?view=people&lens=atlas');
   const embed = page.getByTestId('atlas-embed');
+  // On failure expose the actual box/visibility; do not relax the acceptance assertion.
+  console.log('ATLAS_EMBED_LAYOUT', await embed.evaluate((node) => {
+    const css = getComputedStyle(node);
+    const rect = node.getBoundingClientRect();
+    const parent = node.parentElement ? getComputedStyle(node.parentElement) : null;
+    return { display: css.display, visibility: css.visibility, contain: css.contain,
+      height: rect.height, width: rect.width, parentDisplay: parent?.display,
+      parentVisibility: parent?.visibility };
+  }));
   await expect(embed).toBeVisible();
   await expect(embed).toContainText('Navigation extent only.');
   const iframe = embed.locator('iframe');

@@ -51,6 +51,6 @@ test("Contextual embed overrides legacy strict size containment without touching
   const component = source("src/earth/AtlasEmbed.tsx");
   const css = source("src/earth/atlas-embed.css");
   assert.match(component, /atlas-embed atlas-embed--contextual/);
-  assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:layout paint\}/);
+  assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:none!important;display:block;min-height:/);
   assert.doesNotMatch(css, /\.atlas-embed\.atlas-embed--contextual\{contain:strict\}/);
 });
