@@ -9,6 +9,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import PartnersHub from "@/pages/partners/PartnersHub";
+import NationPage from "@/pages/nation/NationPage";
 import FourBrand from "@/pages/partners/FourBrand";
 import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import "@/styles/global.css";
@@ -21,6 +22,12 @@ function isPartnersHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
   return host === "partners.4planet.org" || host === "4planet-partners.pages.dev" || host.endsWith(".4planet-partners.pages.dev");
+}
+
+function isNationHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "4nation.org" || host === "www.4nation.org";
 }
 
 function isFourBrandsHost() {
@@ -89,6 +96,7 @@ function StandardApp() {
 }
 
 export default function App() {
+  if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;
   if (isCreatorHost()) return <MeasuredStandalone><OdinCreatorPage /></MeasuredStandalone>;

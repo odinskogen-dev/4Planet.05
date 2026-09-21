@@ -98,3 +98,16 @@ The builder may prove deterministic calculations, security shape and browser beh
 ## BOUNDED SECURITY REPAIR — VERIFIED VALUE CLOSURE 03
 - ATLAS `src/earth/World.tsx` uses a MapLibre named namespace import in preparation for patched MapLibre 6.10.0 ESM; this is compatibility only, not new ATLAS capability.
 - SAFE HEIR workflow must run npm audit, typecheck, build, smoke and assets on exact HEIR before committing package/lock; security remains RED until independent tests pass. No LIVE promotion or inflated product proof.
+
+
+## BOUNDED PARALLEL 4NATION CANDIDATE — 21 SEPTEMBER 2026
+- This addendum records a separate, isolated `work/4nation-first-gold-prototype-01` candidate. It DOES NOT replace the current 4SAPIEN finance HEIR brief above, promote the 4NATION branch to TEST KING, or authorise live mutation. No parallel write authority is claimed.
+- USER ARRIVES BECAUSE: a citizen wants to know what is being considered in their place; an institutional analyst wants the factual decision context.
+- ONE THING TO UNDERSTAND: a sourced Oslofjord 2026–2030 proposal is still under consideration, not a final adopted plan; six integrated lenses share one official evidence projection.
+- PRIMARY ACTION: inspect one government hearing, its dates/status, original sources and human/ecological/financial constraints; switch between people and institutional views.
+- SECONDARY DEPTH: scientific models versus measured outcomes, a separate grant announcement versus complete costs, unknowns and original source links.
+- REUSE: existing PLANETBRAIN `src/planet/places.ts` Oslofjord place; `src/planet/decisionIntelligence.ts` donor as reference ONLY due unverified source states; Brand fonts/colors, `src/App.tsx` isolated host pattern and existing routes. No auth, DB, new BRAIN or paid service.
+- TRUTH: 21 September 2026 dated manually reviewed primary-source fixture; ordinary hearing deadline 15 September passed, local/regional extended deadline 15 October; no fake AI, live feed, policy winner or governmental endorsement.
+- MOBILE / HUMAN GOLD: two comprehensible user journeys with six lenses, source drawer and responsive 390px desktop; runtime QA pending.
+- ACCEPTANCE: exact candidate commit, separate tests, independent source/UX/accessibility/security review and Founder release before 4nation.org. Do not merge this branch to main directly; reconcile via authorised `king/test` TEST KING path only after all gates.
+- Project Home: https://docs.google.com/document/d/1IAB_myJZ3pT0rx58QNBJmuCutxhGlWBKBuOjO__NuBo/edit
