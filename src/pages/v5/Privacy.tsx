@@ -7,7 +7,7 @@ import { Reveal } from "@/components/Cinematic";
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.025em" };
 const h: React.CSSProperties = { fontFamily: T.mono, fontSize: 11.5, letterSpacing: ".14em", textTransform: "uppercase", color: T.blue };
 
-const CONTACT = "odin.skogen@gmail.com";
+const CONTACT = "privacy@4planet.org";
 
 const SECTIONS: [string, React.ReactNode][] = [
   ["What we collect", "When you register interest through a 4People, 4Brands, 4Partners or 4Funders form, we collect the details you enter — such as your name, email, organisation, role and the interest or message you provide. We do not collect payment details, and there is no account to create."],

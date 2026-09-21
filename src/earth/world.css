@@ -115,7 +115,7 @@
 
 /* ── SEARCH THE LIVING PLANET_ ──────────────────────────────────────────── */
 .search-wrap {
-  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
   z-index: 20; width: 460px; max-width: calc(100vw - 28px);
 }
 .search-line {
@@ -381,7 +381,7 @@
 
 /* ── mobile: context becomes a bottom sheet (V39.1 Scope 06) ────────────── */
 @media (max-width: 760px) {
-  .search-wrap { width: calc(100vw - 20px); top: 10px; }
+  .search-wrap { width: calc(100vw - 20px); top: 54px; }
   /* Resting console stays a small pill that never covers the map. */
   .atlas-panel { width: auto; max-width: 62vw; padding: 11px; top: 108px; left: 10px; max-height: 42vh; }
   .atlas-panel.rest { padding: 0; }

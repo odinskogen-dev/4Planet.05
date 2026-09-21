@@ -52,7 +52,7 @@ import {
 export const TAXA = {
   honeyBee: taxonId(1341976), // Apis mellifera
   bumbleBee: taxonId(1340278), // Bombus terrestris
-  humpback: taxonId(2440735), // Megaptera novaeangliae
+  humpback: taxonId(5220086), // Megaptera novaeangliae — accepted GBIF species key
   orca: taxonId(2440483), // Orcinus orca
   atlanticCod: taxonId(2291770), // Gadus morhua
 };
