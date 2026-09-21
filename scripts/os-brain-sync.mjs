@@ -6,6 +6,7 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
+import {CONTROL_ID,normaliseGoldProjectSheets} from "./os-project-normalizer.mjs";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
@@ -167,6 +168,32 @@ async function main(){
    }catch(e){denied++;console.log("Structured sheet skipped; reason="+safeError(e).replace(/\d{12,}/g,"[ID]"));}
   }
  }
+ // The same existing Drive reader materialises a project VIEW from the specific
+ // canonical Gold register. Generic filename ranking/maxTabs must not silently
+ // omit Gold Project Contract, Universal WBS or the Master Project Register.
+ const canonical=files.find(f=>f.id===CONTROL_ID);
+ if(!canonical)throw Error("CANONICAL_PROJECT_REGISTER_NOT_IN_DRIVE_INVENTORY");
+ let structured;
+ try {
+  const res=await get("https://www.googleapis.com/drive/v3/files/"+CONTROL_ID+
+   "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+  const bytes=Buffer.from(await res.arrayBuffer());
+  if(bytes.length>10500000)throw Error("CANONICAL_PROJECT_REGISTER_EXPORT_TOO_LARGE");
+  const directory=mkdtempSync(join(tmpdir(),"4planet-project-view-"));
+  try {
+   const file=join(directory,"canonical.xlsx");writeFileSync(file,bytes,{mode:0o600});
+   const tabs=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
+    encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
+   }));
+   structured=normaliseGoldProjectSheets(tabs,canonical,ROOT);
+  }finally{rmSync(directory,{recursive:true,force:true});}
+ }catch(e){throw Error("CANONICAL_PROJECT_VIEW_BLOCKED_"+safeError(e));}
+ // A source file inventory row and its derived project rows are different
+ // depths of the same authority, not competing master data.
+ records.push(...structured.records);
+ console.log("PROJECT_VIEW_DERIVED_FROM_GOLD projects="+structured.metrics.projects+
+  " wbs="+structured.metrics.wbs+" without_wbs="+structured.metrics.withoutWbs.length+
+  " current_status=UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION");
  // Never claim an un-read inventory title is equivalent to current project truth.
  const ordered=records.sort((a,b)=>a.source_id.localeCompare(b.source_id));
  const manifest=sha(ordered.map(x=>[x.source_id,x.source_hash,x.object_type].join(":")).join("\n"));
