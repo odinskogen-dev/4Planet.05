@@ -13,7 +13,7 @@ test("Founder login page is available without any private BRAIN payload",async()
   const body=await response.text();
   assert.equal(response.status,200);
   assert.match(body,/FOUNDER-ONLY ACCESS/);
-  assert.match(body,/NOT VERIFIED/);
+  assert.match(body,/NO UNVERIFIED STATUS CLAIMS/);
   assert.match(body,/21 (August|AUG) 2026/i);
   assert.doesNotMatch(body,/SUPABASE_SERVICE_ROLE_KEY|service_role=|ODIN BRAIN\s*:/);
   assert.match(response.headers.get("content-security-policy")||"",/script-src 'nonce-/);
@@ -51,6 +51,21 @@ test("Founder browser inline JavaScript is syntactically valid and real source d
   assert.ok(open>=0&&start>0&&end>start,"private Founder login script missing");
   assert.doesNotThrow(()=>new Script(body.slice(start,end),{filename:"founder-os-inline.js"}));
   assert.ok(body.includes("/os/api/brain"));
-  assert.ok(body.includes("PROJECTS + WBS + SOURCE LIBRARY"));
+  assert.ok(body.includes("PROJECT HOMES"));
+  assert.ok(body.includes("WBS + WORK"));
+  assert.ok(body.includes("SOURCE LIBRARY"));
+  assert.ok(body.includes("CONTINUE WITH GOOGLE"));
+  assert.ok(body.includes("LABS / INSPECTOR"));
+  assert.doesNotMatch(body,/4PLANET_ ATOMIC PROGRAMME REGISTER v1\.1/);
   assert.doesNotMatch(body,/sb_secret_|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_SERVICE_ACCOUNT_JSON/);
+});
+
+test("LABS style is a presentation-only change; server Founder authorization and source proxy remain identical",()=>{
+  const source=readFileSync(new URL("../ops/labs-domain-adapter/src/founder-os.js",import.meta.url),"utf8");
+  assert.ok(source.includes('import { html } from "./founder-ui.js"'));
+  assert.ok(source.includes('const response=await fetch(PRIVATE_FUNCTION,'));
+  assert.ok(source.includes('"Authorization":bearer,"apikey":SB_PUBLISHABLE'));
+  assert.ok(source.includes('path===BASE+"/api/brain"'));
+  assert.ok(source.includes('script-src \\'nonce-'));
+  assert.doesNotMatch(source,/os_projection_(start|batch|finish)|GOOGLE_SERVICE_ACCOUNT_JSON/);
 });
