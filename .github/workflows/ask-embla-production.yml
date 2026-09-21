@@ -144,6 +144,10 @@ jobs:
           npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
           node --check products/4sapien/site/4sapien-live-hardening.js
           node --check products/4sapien/site/4sapien-documents.js
+          grep -Fq 'KID, kontonummer og dokumenttype blir ennå ikke lagret' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.claimStage' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.kid' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.account' products/4sapien/site/4sapien-documents.js
           node --check products/4sapien/site/4sapien-document-analysis.js
           node products/4sapien/qa/test_document_analysis.cjs
           grep -Fq 'claimStage:null' products/4sapien/site/4sapien-document-analysis.js
