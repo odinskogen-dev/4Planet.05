@@ -44,3 +44,17 @@ test("empty WBS remains explicitly incomplete, not done",()=>{
  const {records}=normaliseGoldProjectSheets(tabs,{},root);
  assert.equal(JSON.parse(records[0].content).wbsCount,0);
 });
+
+test("controlled unregistered products stay visible as gaps, not fake Project Homes",()=>{
+ const tabs=fixture();
+ const gap=["4PLANET FRONTIER","CURRENT PRODUCT / PROJECT HOME CROSSWALK OPEN",
+ "PARENT OPEN","ACTIVE","No Gold ID","TRUE","Recover source","https://docs.google.com/"];
+ gap[11]="OPEN / CONTROLLED REGISTRATION GAP";
+ tabs.push({name:"31_ORPHAN CONTROL",sheetId:"32",
+  rows:[["Item / Alias"],gap]});
+ const {records,gaps,metrics}=normaliseGoldProjectSheets(tabs,{},root);
+ assert.equal(metrics.projects,35);assert.equal(metrics.registrationGaps,1);
+ assert.equal(records.length,35);assert.equal(gaps.length,1);
+ assert.equal(gaps[0].metadata.projectionType,"registration_gap");
+ assert.equal(JSON.parse(gaps[0].content).name,"4PLANET FRONTIER");
+});
