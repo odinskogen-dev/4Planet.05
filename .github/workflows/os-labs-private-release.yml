@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/os-labs-private-release.yml
       - ops/labs-domain-adapter/src/founder-os.js
+      - ops/labs-domain-adapter/src/founder-ui.js
       - ops/labs-domain-adapter/src/index.js
       - scripts/labs-private-os-contract.test.mjs
   workflow_dispatch:
@@ -30,6 +31,7 @@ jobs:
           set -euo pipefail
           node --check ops/labs-domain-adapter/src/index.js
           node --check ops/labs-domain-adapter/src/founder-os.js
+          node --check ops/labs-domain-adapter/src/founder-ui.js
           node --test scripts/labs-private-os-contract.test.mjs
           node <<'NODE'
           const fs=require('node:fs'), cp=require('node:child_process');
