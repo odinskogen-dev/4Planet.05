@@ -4,6 +4,9 @@ on:
     branches: [axe/one-project-system-os-closure-01]
     paths:
       - scripts/os-project-normalizer.mjs
+      - scripts/os-inventory-audit.mjs
+      - scripts/os-inventory-audit.test.mjs
+      - scripts/os-xlsx-rows.py
       - scripts/os-project-normalizer.test.mjs
       - scripts/os-project-view-contract.test.mjs
       - scripts/os-brain-sync.mjs
@@ -26,9 +29,12 @@ jobs:
         run: |
           node --check scripts/os-brain-sync.mjs
           node --check scripts/os-project-normalizer.mjs
+          node --check scripts/os-inventory-audit.mjs
+          python3 -m py_compile scripts/os-xlsx-rows.py
           node --check ops/labs-domain-adapter/src/founder-os.js
       - name: Existing private access and canonical project view contracts
         run: |
           node --test scripts/labs-private-os-contract.test.mjs
           node --test scripts/os-project-normalizer.test.mjs
+          node --test scripts/os-inventory-audit.test.mjs
           node --test scripts/os-project-view-contract.test.mjs
