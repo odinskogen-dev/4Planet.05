@@ -65,6 +65,7 @@ export default function NationPage() {
   }, []);
 
   const activeLens = lenses.find((item) => item.key === lens) || lenses[0];
+  const nextLens = lenses[lenses.findIndex((item) => item.key === lens) + 1];
 
   const showLens = (next: Lens) => {
     setLens(next);
@@ -146,6 +147,12 @@ export default function NationPage() {
           {lens==='economy' && <section className='nt-panel-body'><h3>Public money. Clear boundaries.</h3><div className='nt-economy'><small>SEPARATE FUNDING ANNOUNCEMENT / 2 SEPT 2026</small><strong>NOK 10 million</strong><p>Further nitrogen-removal planning support announced for 14 municipalities/intermunicipal recipients. This is neither the total cost of the proposed plan nor an award to 4NATION.</p><Source id='MDE-2026-GRANTS' label='OFFICIAL FUNDING ANNOUNCEMENT ↗'/></div><div className='nt-unknown-box'><SmallLabel>NOT ESTABLISHED</SmallLabel><p>Complete plan cost, local project investment, net savings and attributed financial returns are not established by this first source bundle.</p></div></section>}
           {lens==='outcomes' && <section className='nt-panel-body'><h3>Decided is not delivered.</h3><p>The 2021 plan is an existing public plan. The cited 2026 proposal and consultation do not demonstrate that its new measures were adopted, implemented or that the fjord recovered.</p><div className='nt-outcome-list'><span>2021 PLAN <strong>Previously published</strong></span><span>2026–2030 PROPOSAL <strong>Under consideration</strong></span><span>NEW MEASURES IMPLEMENTED <strong>Not established</strong></span><span>VERIFIED ECOLOGICAL OUTCOME <strong>Not established</strong></span></div><Source id='KLD-2021-PLAN' label='2021 PRIMARY SOURCE ↗'/><Source id='KLD-2026-HEARING' label='2026 CASE STATUS ↗'/></section>}
         </div>
+          <nav className='nt-journey-nav' aria-label='Continue exploring the Oslofjord decision'>
+            <span>{nextLens ? 'ONE CASE / EXPLORE THE NEXT QUESTION' : 'ONE CASE / RETURN TO THE ORIGINAL RECORD'}</span>
+            {nextLens
+              ? <button type='button' onClick={() => showLens(nextLens.key)}>NEXT — {nextLens.label.toUpperCase()} <span aria-hidden='true'>↗</span></button>
+              : <button type='button' onClick={() => setSourceOpen(true)}>EXPLORE THE ORIGINAL SOURCES <span aria-hidden='true'>↗</span></button>}
+          </nav>
       </div>
       <div className='nt-proof-note'><SmallLabel>TRUTH BEFORE CERTAINTY</SmallLabel><p>One verified public case, not an all-Norway feed. Primary sources, dated status and unknowns stay visible. This prototype does not make public decisions, represent any government or rank political options.</p><button type='button' onClick={()=>setSourceOpen(true)}>Inspect all sources ↗</button></div>
     </section>
