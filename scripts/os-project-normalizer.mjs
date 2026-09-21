@@ -37,10 +37,13 @@ const safe=s=>String(s??"").trim();
 const link=(id,gid)=>"https://docs.google.com/spreadsheets/d/"+id+"/edit"+(gid?"#gid="+gid:"");
 export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomicSource=null){
  const gold=sheet(tabs,/GOLD PROJECT CONTRACT/i),wbs=sheet(tabs,/UNIVERSAL WBS/i),
- master=sheet(tabs,/MASTER PROJECT REGISTER/i),aliasSheet=sheet(tabs,/ORPHAN.*DUPLICATE/i);
- if(!gold||!wbs||!master||!aliasSheet)throw Error("CANONICAL_PROJECT_TABS_MISSING");
+ master=sheet(tabs,/MASTER PROJECT REGISTER/i),aliasSheet=sheet(tabs,/ORPHAN.*DUPLICATE/i),
+ economy=sheet(tabs,/PROJECT ECONOMICS.*TOTAL ECONOMIC CONTROL/i),
+ funding=sheet(tabs,/PROJECT FUNDING MAP/i),capital=sheet(tabs,/CAPITAL ROUTING/i);
+ if(!gold||!wbs||!master||!aliasSheet||!economy||!funding)throw Error("CANONICAL_PROJECT_TABS_MISSING");
  const packs=recordsAfterHeader(gold,"Project ID"),tasks=recordsAfterHeader(wbs,"WBS ID"),
  masters=recordsAfterHeader(master,"Project ID"),aliases=recordsAfterHeader(aliasSheet,"Item / Alias");
+ const economicRows=recordsAfterHeader(economy,"Project ID"),fundingRows=recordsAfterHeader(funding,"Project ID");
  const byId=new Map();
  for(const row of packs){const id=safe(row[0]);if(!/^[A-Z0-9-]{6,75}$/.test(id))continue;
    if(byId.has(id))throw Error("DUPLICATE_GOLD_PROJECT_ID");
@@ -89,6 +92,25 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  for(const row of masters){const id=safe(row[0]);if(masterIds.has(id))throw Error("DUPLICATE_MASTER_PROJECT_ID_"+id);
   masterIds.add(id);const p=byId.get(id);if(!p)throw Error("MASTER_PROJECT_NOT_IN_GOLD_"+id);p.master=row}
  for(const p of byId.values())if(!p.master)throw Error("GOLD_PROJECT_MISSING_MASTER_"+p.id);
+ const econIds=new Set(),fundingIds=new Set();
+ for(const row of economicRows){const id=safe(row[0]);if(!byId.has(id))continue;
+  if(econIds.has(id))throw Error("DUPLICATE_PROJECT_ECONOMY_"+id);
+  econIds.add(id);byId.get(id).economy=row}
+ for(const row of fundingRows){const id=safe(row[0]);if(!byId.has(id))continue;
+  if(fundingIds.has(id))throw Error("DUPLICATE_PROJECT_FUNDING_"+id);
+  fundingIds.add(id);byId.get(id).funding=row}
+ for(const p of byId.values()){
+  if(!p.economy)throw Error("GOLD_PROJECT_MISSING_ECONOMY_"+p.id);
+  if(!p.funding)throw Error("GOLD_PROJECT_MISSING_FUNDING_"+p.id);
+ }
+ for(const row of recordsAfterHeader(capital,"Route ID")){
+  const project=safe(row[1]),matches=[...new Set(project.match(/[A-Z]{3}-[A-Z0-9-]+/g)||[])];
+  for(const id of matches){const p=byId.get(id);if(!p)continue;
+   (p.capitalRoutes??=[]).push({id:safe(row[0]),fundingObject:safe(row[3]),
+    capitalType:safe(row[4]),sourceReportedStatus:safe(row[11]),
+    sourceReportedMoneyTruth:safe(row[12]),releaseState:safe(row[17])});
+  }
+ }
  for(const row of aliases){const p=byId.get(safe(row[2]));if(p)p.aliases.push(safe(row[0]))}
  const out=[];
  const gaps=[];
@@ -112,6 +134,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  for(const p of byId.values()){
  const r=p.row,m=p.master,merged=/MERGE|CLOSED/i.test(safe(r[4])+" "+safe(m?.[5]));
  if(![24,25,26,27,29,30].every(i=>safe(r[i])))throw Error("GOLD_PROJECT_GOAL_MISSING_"+p.id);
+ if(safe(p.economy[40])!==safe(r[24]))throw Error("ECONOMY_GOAL_ID_MISMATCH_"+p.id);
  if(safe(r[24]).indexOf(p.id)!==0)throw Error("GOLD_PROJECT_GOAL_ID_MISMATCH_"+p.id);
  const classification=safe(m?.[2]);
  const entityType=p.id==="SYS-P00-01"?"programme":/SUBPROJECT|DONOR/.test(classification.toUpperCase())?"subproject":
@@ -136,6 +159,31 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
   nextGateFromSource:safe(r[19]),aliases:p.aliases.filter(Boolean),
   wbs:p.wbs,wbsCount:p.wbs.length,
   atomicTasks:(p.atomic||[]).slice(-12),atomicTaskCount:(p.atomic||[]).length,
+  projectEconomics:{
+   planningMinimumNok:safe(p.economy[2]),planningBaseNok:safe(p.economy[3]),
+   actualSpendFromSource:safe(p.economy[5]),committedCostFromSource:safe(p.economy[6]),
+   fundingReceivedFromSource:safe(p.economy[7]),awardedNotReceived:safe(p.economy[8]),
+   contractedFromSource:safe(p.economy[9]),pipelineFromSource:safe(p.economy[10]),
+   nextGateCashNeed:safe(p.economy[12]),originalAdditivity:safe(p.economy[14]),
+   scenario:safe(p.economy[22]),budgetRole:safe(p.economy[23]),
+   unit:safe(p.economy[24]),unitPriceNok:safe(p.economy[25]),
+   directUnitCostNok:safe(p.economy[26]),volume:safe(p.economy[27]),
+   modelledRevenueNok:safe(p.economy[28]),modelledDirectCostNok:safe(p.economy[29]),
+   unitContributionNok:safe(p.economy[30]),modelledVariableContributionNok:safe(p.economy[31]),
+   uniqueProjectCostNok:safe(p.economy[32]),sharedAllocatedCostNok:safe(p.economy[33]),
+   completeProjectBudgetNok:safe(p.economy[34]),
+   actualCostSource:safe(p.economy[35]),allocationStatus:safe(p.economy[36]),
+   financialProofState:safe(p.economy[39]),goalId:safe(p.economy[40]),
+   budgetToGoalGate:safe(p.economy[41]),
+   fundingRequirement:safe(p.funding[2]),fundingStage:safe(p.funding[3]),
+   fundingTruth:safe(p.funding[19]),fundingObjectRoutes:p.capitalRoutes||[],
+   source:{economics:link(CONTROL_ID,economy.sheetId),
+    funding:link(CONTROL_ID,funding.sheetId),
+    capital:capital?link(CONTROL_ID,capital.sheetId):null},
+   historicalAnchorScenarioIsNotAdditionalBudget:true,
+   actualCostsRequireAccountingProof:true,
+   fundingPipelineIsNotCash:true
+  },
   goldContract:{authority:"EXISTING_FOUNDER_CONTROL_PROJECT_PACKS",fields:contractFields,
    incompleteFields,fieldsWithExplicitValues:Object.keys(contractFields).length-incompleteFields.length,
    fieldCount:Object.keys(contractFields).length,
@@ -162,7 +210,9 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  return {records:out,gaps,metrics:{projects:out.length,registrationGaps:gaps.length,wbs:out.reduce((n,p)=>n+p.metadata.wbsCount,0),
   withoutWbs:out.filter(p=>!p.metadata.wbsCount).map(p=>p.metadata.projectId),
   atomicTasksWithoutExactWbs:[...unlinkedWorkPackages.entries()].map(([id,status])=>({id,status})),
-  goldRows:packs.length,masterRows:masters.length,aliasRows:aliases.length}};
+  goldRows:packs.length,masterRows:masters.length,aliasRows:aliases.length,
+  economyMapped:econIds.size,fundingMapped:fundingIds.size,
+  incompleteNumericBudget:out.filter(x=>safe(JSON.parse(x.content).projectEconomics.completeProjectBudgetNok)==="UNKNOWN").length}};
 }
 
 /* Two later Founder-approved Project Homes predate their Gold register crosswalk.
