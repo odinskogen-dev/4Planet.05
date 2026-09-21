@@ -72,7 +72,9 @@ jobs:
 
           mkdir -p artifacts/four-state
           : > artifacts/four-state/deployments.jsonl
-          for page in $(seq 1 20); do
+          # A registered exact-SHA preview can be older than the newest 500 deployments.
+          # Keep exact branch+SHA matching fail-closed; scan deeper rather than accepting an alias.
+          for page in $(seq 1 200); do
             out="$RUNNER_TEMP/pages-$page.json"
             curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
               "https://api.cloudflare.com/client/v4/accounts/$account_id/pages/projects/4planet-05/deployments?page=$page&per_page=25" > "$out"
@@ -82,6 +84,7 @@ jobs:
             [ "$count" -lt 25 ] && break
           done
           test -s artifacts/four-state/deployments.jsonl
+          echo "FOUR STATE: scanned $(wc -l < artifacts/four-state/deployments.jsonl) exact deployment candidates through page $page"
 
       - name: Resolve exact current HEIR/SANDBOX deployments
         shell: bash
