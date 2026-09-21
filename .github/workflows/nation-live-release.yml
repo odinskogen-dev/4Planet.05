@@ -1,9 +1,12 @@
 name: 4NATION Explicit Live Release
 on:
-  push:
-    branches: [king/test]
-    paths: ['.github/workflows/nation-live-release.yml']
+  # A code push is never founder authorisation to release a production domain.
   workflow_dispatch:
+    inputs:
+      founder_release:
+        description: 'Explicit founder production release approval (exact: enig send)'
+        type: string
+        required: true
 permissions:
   contents: read
   actions: read
@@ -12,6 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.founder_release == 'enig send' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
