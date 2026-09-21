@@ -113,7 +113,7 @@ function normalizedProjectCard(p){
  var title=document.createElement("h3");title.textContent=p.name;
  var purpose=document.createElement("p");purpose.textContent=p.purpose||"Formål ikke dokumentert.";
  var flag=document.createElement("p");flag.className="flag";
- flag.textContent="NÅSTATUS IKKE AVSTEMT · "+p.wbsCount+" WBS-PAKKER";
+ flag.textContent="NÅSTATUS IKKE AVSTEMT · "+p.wbsCount+" WBS-PAKKER"+(p.goldPackStatus?" · GOLD-CROSSWALK MANGLER":"");
  article.append(kicker,title,purpose,flag);
  var details=document.createElement("details"),summary=document.createElement("summary");
  summary.textContent="PROSJEKT, WBS OG KILDER";details.appendChild(summary);
@@ -132,7 +132,7 @@ function normalizedProjectCard(p){
   });details.appendChild(list);
  }else{var empty=document.createElement("p");empty.textContent="EGEN WBS: IKKE REGISTRERT / HISTORISK UNDER ANNET PROSJEKT.";details.appendChild(empty)}
  var source=document.createElement("a");source.href=p.source.gold;source.target="_blank";source.rel="noopener noreferrer";
- source.textContent="ÅPNE GOLD PROJECT CONTRACT ↗";details.appendChild(source);
+ source.textContent=p.goldPackStatus?"ÅPNE EKSISTERENDE PROJECT HOME ↗":"ÅPNE GOLD PROJECT CONTRACT ↗";details.appendChild(source);
  var source2=document.createElement("a");source2.href=p.source.wbs;source2.target="_blank";source2.rel="noopener noreferrer";
  source2.textContent=" · ÅPNE UNIVERSAL WBS ↗";details.appendChild(source2);
  var stamp=document.createElement("p");stamp.className="source";
