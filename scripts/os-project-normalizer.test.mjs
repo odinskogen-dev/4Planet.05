@@ -14,7 +14,7 @@ function fixture(n=35){
  const master={name:"4PLANET_ PROJECT OPERATING SYSTEM — MASTER PROJECT REGISTER v1.0",sheetId:"22",rows:[
  ["Project ID","Project","Classification","Parent","Domain","Lifecycle"],
  ...ids.map(id=>[id,"Project","PROJECT","P00","SHARED","ACTIVE"])]};
- return [gold,wbs,master];
+ return [gold,wbs,master,{name:"4PLANET_ ORPHAN + DUPLICATE CONTROL v1.0",sheetId:"32",rows:[["Item / Alias"]]}];
 }
 test("canonical project/WBS projection preserves identities, source and UNKNOWN status",()=>{
  const {records,metrics}=normaliseGoldProjectSheets(fixture(),{modifiedTime:"2026-09-21T12:00:00Z"},root);
@@ -50,8 +50,7 @@ test("controlled unregistered products stay visible as gaps, not fake Project Ho
  const gap=["4PLANET FRONTIER","CURRENT PRODUCT / PROJECT HOME CROSSWALK OPEN",
  "PARENT OPEN","ACTIVE","No Gold ID","TRUE","Recover source","https://docs.google.com/"];
  gap[11]="OPEN / CONTROLLED REGISTRATION GAP";
- tabs.push({name:"4PLANET_ ORPHAN + DUPLICATE CONTROL v1.0",sheetId:"32",
-  rows:[["Item / Alias"],gap]});
+ tabs[3].rows.push(gap);
  const {records,gaps,metrics}=normaliseGoldProjectSheets(tabs,{},root);
  assert.equal(metrics.projects,35);assert.equal(metrics.registrationGaps,1);
  assert.equal(records.length,35);assert.equal(gaps.length,1);
@@ -77,4 +76,21 @@ test("current Atomic observations attach by ID but cannot promote project to DON
  assert.equal(p.currentState,"NOT_RECONCILED_WITH_CURRENT_PROGRAMME");
  assert.equal(records[0].metadata.currentStatus,"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION");
  assert.match(p.source.atomic,/docs.google.com/);
+});
+
+test("Gold and master register identity sets must agree; no phantom or lost project",()=>{
+ const tabs=fixture();tabs[2].rows.splice(1,1);
+ assert.throws(()=>normaliseGoldProjectSheets(tabs,{},root),/GOLD_PROJECT_MISSING_MASTER/);
+});
+test("master-only historical row cannot silently become a new Gold project",()=>{
+ const tabs=fixture();tabs[2].rows.push(["SYS-P00-PHANTOM","Phantom"]);
+ assert.throws(()=>normaliseGoldProjectSheets(tabs,{},root),/MASTER_PROJECT_NOT_IN_GOLD/);
+});
+test("project semantic type and full Gold source fields preserve original strings",()=>{
+ const tabs=fixture();tabs[2].rows[1][2]="PRODUCT PROJECT";
+ const out=normaliseGoldProjectSheets(tabs,{},root);
+ const first=JSON.parse(out.records[0].content);
+ assert.equal(first.entityType,"product_project");
+ assert.equal(first.goldContract.fields["Project / Working name"],"Strategy, Goals & Project Operating System");
+ assert.equal(first.goldContract.fieldCount,9);
 });
