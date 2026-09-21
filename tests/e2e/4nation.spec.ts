@@ -70,8 +70,8 @@ test('4NATION contextual ATLAS Embed opens the existing first-party map', async 
     await expect(page).toHaveURL(url =>
       url.origin === 'https://4planetatlas.com' &&
       url.searchParams.get('entity') === 'place:4p:oslofjord' &&
-      /^\\d+(?:\\.\\d+)?$/.test(url.searchParams.get('z') || '') &&
-      /^\\-?\\d+(?:\\.\\d+)?,\\-?\\d+(?:\\.\\d+)?$/.test(url.searchParams.get('c') || ''),
+      /^\d+(?:\.\d+)?$/.test(url.searchParams.get('z') || '') &&
+      /^\-?\d+(?:\.\d+)?,\-?\d+(?:\.\d+)?$/.test(url.searchParams.get('c') || ''),
       {timeout: 20_000});
     await expect(page.locator('.maplibregl-canvas').first()).toBeVisible({timeout: 30_000});
   } else {
