@@ -31,3 +31,9 @@ test("NATION and SPECIES use existing identities and honest spatial context", ()
   assert.match(species, /entityId: profile.id/);
   assert.match(species, /Historical occurrence records are not live animal positions/);
 });
+
+test("MapLibre v6 uses a self-contained Vite worker, never SPA HTML fallback", () => {
+  const world = source("src/earth/World.tsx");
+  assert.match(world, /maplibre-gl-worker\.mjs\?worker&url/);
+  assert.match(world, /maplibregl\.setWorkerUrl\(maplibreWorkerUrl\)/);
+});
