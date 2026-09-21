@@ -131,6 +131,23 @@ function normalizedProjectCard(p){
    row.append(strong,body,state);list.appendChild(row);
   });details.appendChild(list);
  }else{var empty=document.createElement("p");empty.textContent="EGEN WBS: IKKE REGISTRERT / HISTORISK UNDER ANNET PROSJEKT.";details.appendChild(empty)}
+ if(p.atomicTasks?.length){
+  var tasks=document.createElement("details"),head=document.createElement("summary");
+  head.textContent="ATOMIC ARBEID · "+p.atomicTaskCount+" KILDEKOBLEDE OPPGAVER (SISTE 12 VISES)";
+  tasks.appendChild(head);
+  var list=document.createElement("ol");
+  p.atomicTasks.forEach(function(t){
+   var item=document.createElement("li"),strong=document.createElement("strong");
+   strong.textContent=t.deliverable||t.id;
+   var state=document.createElement("div");state.className="source";
+   state.textContent=t.id+" · "+(t.sourceReportedLifecycle||"UKJENT")+" · "+(t.sourceReportedProgrammeStatus||"UKJENT");
+   var next=document.createElement("div");next.textContent="NESTE KILDERAPPORTERTE GATE: "+(t.nextGate||"UKJENT");
+   item.append(strong,state,next);list.appendChild(item);
+  });tasks.appendChild(list);
+  var atomic=document.createElement("a");atomic.href=p.source.atomic;atomic.rel="noopener noreferrer";
+  atomic.target="_blank";atomic.textContent="ÅPNE ATOMIC TASKS ↗";tasks.appendChild(atomic);
+  details.appendChild(tasks);
+ }
  var source=document.createElement("a");source.href=p.source.gold;source.target="_blank";source.rel="noopener noreferrer";
  source.textContent=p.goldPackStatus?"ÅPNE EKSISTERENDE PROJECT HOME ↗":"ÅPNE GOLD PROJECT CONTRACT ↗";details.appendChild(source);
  var source2=document.createElement("a");source2.href=p.source.wbs;source2.target="_blank";source2.rel="noopener noreferrer";
@@ -144,7 +161,8 @@ function renderProjects(){
  var normalized=latestProjectSources.map(projectView).filter(Boolean);
  var hits=normalized.filter(function(p){
  return !search||[p.name,p.sourceName,p.genre,p.parent,p.id,p.purpose,
-  ...(p.aliases||[]),...(p.wbs||[]).map(w=>w.workPackage+" "+w.id)].some(v=>String(v||"").toLocaleLowerCase().includes(search));
+  ...(p.aliases||[]),...(p.wbs||[]).map(w=>w.workPackage+" "+w.id),
+  ...(p.atomicTasks||[]).map(t=>t.id+" "+t.deliverable)].some(v=>String(v||"").toLocaleLowerCase().includes(search));
  });
  var list=el("project-index");list.replaceChildren();
  hits.forEach(function(p){list.appendChild(normalizedProjectCard(p))});
