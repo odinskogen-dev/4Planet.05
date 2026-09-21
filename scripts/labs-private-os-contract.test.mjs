@@ -66,6 +66,6 @@ test("LABS style is a presentation-only change; server Founder authorization and
   assert.ok(source.includes('const response=await fetch(PRIVATE_FUNCTION,'));
   assert.ok(source.includes('"Authorization":bearer,"apikey":SB_PUBLISHABLE'));
   assert.ok(source.includes('path===BASE+"/api/brain"'));
-  assert.ok(source.includes('script-src \\'nonce-'));
+  assert.ok(source.includes("script-src "+String.fromCharCode(39)+"nonce-"));
   assert.doesNotMatch(source,/os_projection_(start|batch|finish)|GOOGLE_SERVICE_ACCOUNT_JSON/);
 });
