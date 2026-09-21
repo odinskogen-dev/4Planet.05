@@ -7,6 +7,7 @@ import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
 import {CONTROL_ID,ATOMIC_ID,LATER_HOMES,normaliseGoldProjectSheets,normaliseLaterProjectHome} from "./os-project-normalizer.mjs";
+import {SOURCE_INVENTORY_ID,reconcileDocumentedInventory} from "./os-inventory-audit.mjs";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
@@ -110,6 +111,32 @@ async function main(){
  }
  if(!files.length)throw Error("KNOWLEDGE_OS_INVENTORY_EMPTY");
  console.log("Organizational Knowledge OS source inventory complete; folderCount="+queue.length+" fileCount="+files.length+" (filenames/content withheld).");
+ // Compare actual service-account traversal against the *existing* Source Inventory.
+ // Its legacy provider census is still OPEN: proof of this snapshot ≠ eternal
+ // provider-wide proof, and private ODIN BRAIN files must never be projected.
+ const inventorySource=files.find(f=>f.id===SOURCE_INVENTORY_ID);
+ if(!inventorySource)throw Error("SOURCE_INVENTORY_FILE_NOT_IN_ORGANISATIONAL_ROOT");
+ let inventoryAudit;
+ try{
+  const response=await get("https://www.googleapis.com/drive/v3/files/"+SOURCE_INVENTORY_ID+
+   "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+  const bytes=Buffer.from(await response.arrayBuffer());
+  if(bytes.length>10500000)throw Error("SOURCE_INVENTORY_EXPORT_TOO_LARGE");
+  const directory=mkdtempSync(join(tmpdir(),"4planet-inventory-audit-"));
+  try{
+   const file=join(directory,"inventory.xlsx");writeFileSync(file,bytes,{mode:0o600});
+   const sheets=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file,"3600"],{
+    encoding:"utf8",maxBuffer:24*1024*1024,timeout:50000,stdio:["ignore","pipe","pipe"]
+   }));
+   inventoryAudit=reconcileDocumentedInventory(sheets[0]?.rows||[],files);
+  }finally{rmSync(directory,{recursive:true,force:true});}
+ }catch(e){throw Error("SOURCE_INVENTORY_RECONCILIATION_FAILED_"+safeError(e));}
+ if(!inventoryAudit.safeToCommit)throw Error("SOURCE_INVENTORY_UNEXPLAINED_OMISSIONS");
+ console.log("SOURCE_INVENTORY_SNAPSHOT_RECONCILED org_files="+inventoryAudit.organisationalFilesPresent+
+  " expected_org="+inventoryAudit.expectedOrganisationalFiles+
+  " privacy_exclusions="+inventoryAudit.excludedPrivate+
+  " unexpected_missing="+inventoryAudit.unexplainedOmissions+
+  " unindexed="+inventoryAudit.newOrUnindexedFiles+" legacy_census=OPEN");
  const records=files.map(f=>({
   source_id:f.id,title:f.name.slice(0,600),mime_type:f.mimeType,source_url:uri(f),
   parent_path:f.path.slice(0,2990),source_modified_at:f.modifiedTime||null,
@@ -117,6 +144,16 @@ async function main(){
   object_type:"source_inventory",content:null,
   metadata:{rootId:ROOT,domain:"4planet",tenant:null,readDepth:"INVENTORY_ONLY",sourceFileId:f.id}
  }));
+ const auditContent=JSON.stringify(inventoryAudit);
+ records.push({source_id:"4planet_inventory_audit",title:"4PLANET BRAIN INVENTORY COVERAGE",
+  mime_type:"application/vnd.4planet.audit+json",
+  source_url:"https://docs.google.com/spreadsheets/d/"+SOURCE_INVENTORY_ID+"/edit",
+  parent_path:"01_ 4PLANET KNOWLEDGE OS / Source Inventory",
+  source_modified_at:inventorySource.modifiedTime||null,source_hash:sha(auditContent),
+  object_type:"source_document",content:auditContent,
+  metadata:{rootId:ROOT,domain:"4planet",tenant:null,
+   sourceFileId:SOURCE_INVENTORY_ID,projectionType:"inventory_audit",
+   readDepth:"RECONCILED_IDENTITIES_ONLY",legacyCensusOpen:true}});
  const sorted=[...files].filter(f=>rank(f)<9).sort((a,b)=>rank(a)-rank(b)||String(b.modifiedTime).localeCompare(String(a.modifiedTime)));
  let readCount=0,denied=0,sheetTabs=0;
  for(const f of sorted){
