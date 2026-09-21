@@ -1,6 +1,16 @@
 name: 4NATION Gold Candidate QA
 
 on:
+  push:
+    branches: [king/test]
+    paths:
+      - 'src/pages/nation/**'
+      - 'src/planet/nationDecisionCase.ts'
+      - 'src/App.tsx'
+      - 'src/routes/router.tsx'
+      - 'tests/e2e/4nation.spec.ts'
+      - 'docs/control/GOLD_CURRENT_BRIEF.md'
+      - '.github/workflows/nation-gold-candidate.yml'
   pull_request:
     branches: [king/test]
     paths:
