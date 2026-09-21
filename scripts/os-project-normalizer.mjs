@@ -2,6 +2,7 @@
 // This is a materialised VIEW of existing Gold/Universal WBS/Project OS, not a new project registry.
 import {createHash} from "node:crypto";
 export const CONTROL_ID="18TGuqbFGqcHMLatBz_WqJUYujQKmBhXAeSNN0cXQreU";
+export const ATOMIC_ID="1r75rDNlwZk7ABJDk8zq-r9lMIWT7SAeYOmn0mmhDrr0";
 const hash=x=>createHash("sha256").update(x).digest("hex");
 const friendly={
 "SYS-P00-01":"4PLANET FOUNDING BUILD","SYS-P00-STRAT":"4PLANET STRATEGY","SYS-P00-PRODUCT":"ONE INTERFACE",
@@ -32,7 +33,7 @@ const sheet=(tabs,pattern)=>tabs.find(t=>pattern.test(t.name??""));
 const recordsAfterHeader=(tab,first)=>{const rows=tab?.rows??[],idx=rows.findIndex(r=>r[0]===first);return idx<0?[]:rows.slice(idx+1).filter(r=>r[0]&&r[0]!=="RULE")};
 const safe=s=>String(s??"").trim();
 const link=(id,gid)=>"https://docs.google.com/spreadsheets/d/"+id+"/edit"+(gid?"#gid="+gid:"");
-export function normaliseGoldProjectSheets(tabs,source,rootId){
+export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomicSource=null){
  const gold=sheet(tabs,/GOLD PROJECT CONTRACT/i),wbs=sheet(tabs,/UNIVERSAL WBS/i),
  master=sheet(tabs,/MASTER PROJECT REGISTER/i),aliasSheet=sheet(tabs,/ORPHAN.*DUPLICATE/i);
  if(!gold||!wbs||!master)throw Error("CANONICAL_PROJECT_TABS_MISSING");
@@ -44,6 +45,18 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
    byId.set(id,{id,row,wbs:[],master:null,aliases:[]});
  }
  if(byId.size<35)throw Error("GOLD_PORTFOLIO_INCOMPLETE");
+ // Atomic remains the task-detail truth. Attach source-scoped work observations
+ // to existing Project Homes; never infer project DONE or silently change priority.
+ const taskRows=recordsAfterHeader(atomic,"Task ID");
+ for(const row of taskRows){
+  const taskId=safe(row[0]);if(!taskId)continue;
+  const match=[...new Set((safe(row[10]).match(/[A-Z]{3}-[A-Z0-9-]+/g)||[]))];
+  for(const id of match){const p=byId.get(id);if(!p)continue;
+   (p.atomic??=[]).push({id:taskId,deliverable:safe(row[2]),owner:safe(row[3]),
+    sourceReportedProgrammeStatus:safe(row[4]),sourceReportedLifecycle:safe(row[5]),
+    requiredEvidence:safe(row[8]),nextGate:safe(row[9]),wbsLink:safe(row[11])});
+  }
+ }
  for(const row of tasks){const id=safe(row[2]);if(!id)continue;
   const p=byId.get(id);if(!p)throw Error("ORPHAN_WBS_"+id);
   p.wbs.push({id:safe(row[0]),level:safe(row[1]),deliverable:safe(row[3]),
@@ -83,8 +96,10 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
   currentState:"NOT_RECONCILED_WITH_CURRENT_PROGRAMME",
   nextGateFromSource:safe(r[19]),aliases:p.aliases.filter(Boolean),
   wbs:p.wbs,wbsCount:p.wbs.length,
+  atomicTasks:(p.atomic||[]).slice(-12),atomicTaskCount:(p.atomic||[]).length,
   source:{gold:link(CONTROL_ID,gold.sheetId),wbs:link(CONTROL_ID,wbs.sheetId),
-   register:link(CONTROL_ID,master.sheetId),modifiedAt:source.modifiedTime??null,
+   register:link(CONTROL_ID,master.sheetId),atomic:atomic?link(ATOMIC_ID,atomic.sheetId):null,
+   atomicModifiedAt:atomicSource?.modifiedTime??null,modifiedAt:source.modifiedTime??null,
    authority:"Drive Gold Project Contract + Universal WBS; Atomic is task detail",
    statusIsHistorical:true}
  };
@@ -97,7 +112,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
   object_type:"project_pack",content,metadata:{
    rootId,domain:"4planet",tenant:null,readDepth:"DERIVED_FROM_CANONICAL_ROWS",
    projectionType:"project",projectId:p.id,kind:document.kind,
-   genre:document.genre,wbsCount:document.wbsCount,
+   genre:document.genre,wbsCount:document.wbsCount,atomicTaskCount:document.atomicTaskCount,
    sourceFileId:CONTROL_ID,sourceSheetIds:[gold.sheetId,wbs.sheetId,master.sheetId],
    currentStatus:"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION"}});
  }
