@@ -54,6 +54,23 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
  for(const row of masters){const p=byId.get(safe(row[0]));if(p)p.master=row}
  for(const row of aliases){const p=byId.get(safe(row[2]));if(p)p.aliases.push(safe(row[0]))}
  const out=[];
+ const gaps=[];
+ for(const row of aliases){
+  if(!/CONTROLLED REGISTRATION GAP/i.test(safe(row[11])))continue;
+  const name=safe(row[0]);if(!name)continue;
+  const detail={schema:"4PLANET_PROJECT_REGISTRATION_GAP_01",name,kind:"registration_gap",
+   classification:safe(row[1]),parentCandidate:safe(row[2]),sourceReportedStatus:safe(row[3]),
+   reason:safe(row[4]),nextAction:safe(row[6]),evidence:safe(row[7]),
+   source:link(CONTROL_ID,aliasSheet?.sheetId),modifiedAt:source.modifiedTime??null};
+  const content=JSON.stringify(detail);
+  gaps.push({source_id:"project_gap_"+hash(name).slice(0,20),title:name,
+   mime_type:"application/vnd.4planet.project-view+json",source_url:detail.source,
+   parent_path:"01_ 4PLANET KNOWLEDGE OS / Founder Control / Orphan Control",
+   source_modified_at:source.modifiedTime??null,source_hash:hash(content),
+   object_type:"project_pack",content,metadata:{rootId,domain:"4planet",tenant:null,
+   projectionType:"registration_gap",readDepth:"DERIVED_FROM_CANONICAL_ROWS",
+   sourceFileId:CONTROL_ID,sourceSheetId:aliasSheet?.sheetId,currentStatus:"OPEN"}});
+ }
  for(const p of byId.values()){
  const r=p.row,m=p.master,merged=/MERGE|CLOSED/i.test(safe(r[4])+" "+safe(m?.[5]));
  const document={
@@ -84,7 +101,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
    sourceFileId:CONTROL_ID,sourceSheetIds:[gold.sheetId,wbs.sheetId,master.sheetId],
    currentStatus:"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION"}});
  }
- return {records:out,metrics:{projects:out.length,wbs:out.reduce((n,p)=>n+p.metadata.wbsCount,0),
+ return {records:out,gaps,metrics:{projects:out.length,registrationGaps:gaps.length,wbs:out.reduce((n,p)=>n+p.metadata.wbsCount,0),
   withoutWbs:out.filter(p=>!p.metadata.wbsCount).map(p=>p.metadata.projectId),
   goldRows:packs.length,masterRows:masters.length,aliasRows:aliases.length}};
 }
