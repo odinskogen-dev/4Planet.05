@@ -5,6 +5,7 @@ import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList 
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import { FinanceWorkspace } from "../../finance/FinanceWorkspace";
+import PantryChoice from "./PantryChoice";
 import "./embla-02.css";
 
 type EmblaMode = "LIST" | "ASK";
@@ -160,6 +161,8 @@ export function FourSapienHome() {
           ) : null}
         </section>
       )}
+
+      <PantryChoice />
 
       <section className="embla02__principle">
         <div>
