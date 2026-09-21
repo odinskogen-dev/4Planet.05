@@ -1,0 +1,69 @@
+name: 4NATION Gold Candidate QA
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - 'src/pages/nation/**'
+      - 'src/planet/nationDecisionCase.ts'
+      - 'src/App.tsx'
+      - 'src/routes/router.tsx'
+      - 'scripts/4nation-gold.test.mjs'
+      - 'tests/e2e/4nation.spec.ts'
+      - 'docs/control/GOLD_CURRENT_BRIEF.md'
+      - '.github/workflows/nation-gold-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-build-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install existing locked dependencies
+        run: npm ci
+      - name: Source and political-state contracts
+        run: node --test scripts/4nation-gold.test.mjs
+      - name: Typecheck existing product
+        run: npm run typecheck
+      - name: Build existing 4PLANET product
+        run: npm run build
+      - name: Run existing smoke tests
+        run: npm run test:smoke
+      - name: Lint existing product
+        run: npm run lint
+      - name: Install Chromium for bounded browser proof
+        run: npx playwright install --with-deps chromium
+      - name: Start Vite preview at local isolated route
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4nation-vite.log 2>&1 &
+          for attempt in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/4nation >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/4nation-vite.log
+          exit 1
+      - name: Desktop and mobile chromium proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+      - name: Publish test evidence, never production
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4nation-gold-candidate-evidence
+          path: |
+            artifacts/atlas-gold
+            /tmp/4nation-vite.log
+          if-no-files-found: warn
+          retention-days: 14
