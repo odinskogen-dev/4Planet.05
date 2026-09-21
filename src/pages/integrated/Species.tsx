@@ -19,6 +19,7 @@ import { contextHref } from "@/product/ProductNav";
 import { NotFound } from "@/pages/system";
 import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
 import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
+import { AtlasEmbed } from "@/earth/AtlasEmbed";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
@@ -348,6 +349,7 @@ export function SpeciesProfilePage() {
             </div>
           </div>
         )}
+        <AtlasEmbed view={{ kind: "SPECIES", title: profile.commonName + " — where recorded", entityId: profile.id, layers: ["bluemarble", "biodiv"], description: "Explore available source records for the same canonical taxon in full ATLAS.", limitation: "Historical occurrence records are not live animal positions, a verified distribution range, population abundance or a migration route." }} />
         <div className="tw" style={{ marginTop: 52 }}>
           <div style={panel}>
             <div style={{ ...mono, color: T.dim }}>TAXON IDENTITY</div>

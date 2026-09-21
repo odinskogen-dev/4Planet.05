@@ -8,6 +8,8 @@ import { Analytics } from "@/analytics/Analytics";
 import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
+import { AtlasEmbedRuntime } from "@/earth/AtlasEmbedRuntime";
+import { isAtlasEmbedKind } from "@/earth/atlasViewContract";
 import PartnersHub from "@/pages/partners/PartnersHub";
 import NationPage from "@/pages/nation/NationPage";
 import FourBrand from "@/pages/partners/FourBrand";
@@ -49,8 +51,8 @@ function isCreatorHost() {
 }
 
 function AtlasProductSwitcher() {
-  const { pathname } = useLocation();
-  if (!pathname.startsWith("/atlas")) return null;
+  const { pathname, search } = useLocation();
+  if (!pathname.startsWith("/atlas") || isAtlasEmbedKind(new URLSearchParams(search).get("embed"))) return null;
   return (
     <div className="atlas-product-switcher" style={{ position: "fixed", top: 14, left: 14, zIndex: 90 }}>
       <ProductSwitcher dark />
@@ -76,6 +78,7 @@ function StandardApp() {
       <Analytics />
       <ProductRouteAnalytics />
       <AtlasReturnCameraAuthority />
+      <AtlasEmbedRuntime />
       <AtlasProductSwitcher />
       <PublicCompletionBridge />
       <AppRoutes />
@@ -95,7 +98,15 @@ function StandardApp() {
   );
 }
 
+function isFirstPartyAtlasEmbedRoute() {
+  if (typeof window === "undefined") return false;
+  return window.location.pathname === "/atlas" &&
+    isAtlasEmbedKind(new URLSearchParams(window.location.search).get("embed"));
+}
+
 export default function App() {
+  // Standalone hosts must not recursively render their homepage inside /atlas iframes.
+  if (isFirstPartyAtlasEmbedRoute()) return <BrowserRouter><StandardApp /></BrowserRouter>;
   if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;

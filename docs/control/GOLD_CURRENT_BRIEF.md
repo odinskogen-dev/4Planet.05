@@ -1,3 +1,19 @@
+# CURRENT GOLD BRIEF — ATLAS SHARED ENGINE + EMBED 01
+CHANGE ID: ATLAS-SHARED-EMBED-2026-09-21
+STATUS: HEIR TEST CODE CANDIDATE / NOT GOLD / NO PUBLIC RELEASE
+BASE: king/test@e71f343af57f04a17a4468038b89e142794a083a; one controlled atomic commit. Existing ATLAS sandbox PR #263 remains separate and is not overwritten.
+FOUNDER LAW: ONE PLANET. MANY WAYS TO SEE IT. Standalone Atlas Explore plus purpose-specific AtlasEmbed reusing the same MapLibre/PLANETBRAIN engine.
+P1 DOMINANT: A person sees a focused interactive map inside an existing SPECIES profile or a dated 4NATION public decision, not the full ATLAS console.
+P2 ORIENTATION: Source, geometry and time caveats are adjacent. A PLACE navigation bbox is not an official catchment, a taxon occurrence is not a live animal/range, a proposal is not a decided outcome.
+P3 ACTION / NEXT: Open exact matching context in full ATLAS. On standalone product hosts /atlas?embed=... resolves to shared ATLAS rather than re-entering standalone product.
+P4 DEPTH: MapLibre data layers and ProductContext retain authority. NEWS/IMPACT/BRANDS/PERSONAL/SOLUTIONS are typed consumers without fabricated content/private URL projection; MAGAZINE requires sourced Story/Place relation before adding a public pin.
+WHAT CAN BE REMOVED: Coordinates-only pseudo-map in 4NATION and duplicate ATLAS chrome inside iframe. Never remove existing source/proof caveats, species Atlas links or editorial content.
+WHAT MUST BE REUSED: existing World/PublicWorld; productContext camera+record authority; planet places and taxon identities; first-party embed and resize donor selectively; no second map engine, backend, source registry, private tenant store or independent AtlasNews.
+MOBILE-FIRST RISK: WebKit zero-size embedded canvas, overlays intercepting touch pan, cross-host /atlas recursion. Only viewport resize recovery; full ATLAS exit remains available.
+HUMAN SUCCESS: Desktop/mobile user opens real 4NATION Oslofjord navigation view and SPECIES canonical taxon view in shared ATLAS; full ATLAS remains useful, no misleading geography or false live state.
+MAKER ≠ JUDGE: Exact SHA npm typecheck/build/smoke/browser, HEIR Pages readback, independent Gold and founder review before promotion. Inherited MAP READY defect stays open. No domain LIVE mutation, paid service, partner claim or external send. Capital APP-130 remains separate P0.
+--- PRIOR GOLD BRIEFS PRESERVED BELOW ---
+
 # CURRENT GOLD BRIEF
 
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
