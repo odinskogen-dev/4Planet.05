@@ -1,0 +1,34 @@
+name: 4PLANET OS project-view candidate QA
+on:
+  push:
+    branches: [axe/one-project-system-os-closure-01]
+    paths:
+      - scripts/os-project-normalizer.mjs
+      - scripts/os-project-normalizer.test.mjs
+      - scripts/os-project-view-contract.test.mjs
+      - scripts/os-brain-sync.mjs
+      - ops/labs-domain-adapter/src/founder-os.js
+      - .github/workflows/os-project-view-candidate-qa.yml
+  pull_request:
+    branches: [labs/overview-v1]
+permissions:
+  contents: read
+jobs:
+  candidate-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax / source integrity — NO DEPLOY
+        run: |
+          node --check scripts/os-brain-sync.mjs
+          node --check scripts/os-project-normalizer.mjs
+          node --check ops/labs-domain-adapter/src/founder-os.js
+      - name: Existing private access and canonical project view contracts
+        run: |
+          node --test scripts/labs-private-os-contract.test.mjs
+          node --test scripts/os-project-normalizer.test.mjs
+          node --test scripts/os-project-view-contract.test.mjs
