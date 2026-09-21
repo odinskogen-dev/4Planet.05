@@ -69,16 +69,22 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  const masterIds=new Set();
  // A task may have a valid project yet still lack a precise WBS package.
  // Preserve project-level/global QA exceptions; never invent an exact package.
- const unlinkedWorkPackages=new Map();
+ const unlinkedWorkPackages=new Map(),tasksWithAnyExactWbs=new Set();
  for(const p of byId.values())for(const t of p.atomic||[]){
   const raw=t.wbsLink||"";
   const tokens=new Set(raw.toUpperCase().split(/[^A-Z0-9-]+/).filter(Boolean));
-  const exact=p.wbs.filter(w=>tokens.has(w.id.toUpperCase())).map(w=>w.id);
-  t.canonicalWbsIds=exact;
-  t.wbsLinkStatus=exact.length?"SOURCE_LITERAL_MATCH__EVIDENCE_OPEN":
+  t.canonicalWbsIds=p.wbs.filter(w=>tokens.has(w.id.toUpperCase())).map(w=>w.id);
+  if(t.canonicalWbsIds.length)tasksWithAnyExactWbs.add(t.id);
+ }
+ // A task can intentionally serve two projects while its exact WBS package
+ // belongs to one. Do not turn that valid relationship into a false orphan.
+ for(const p of byId.values())for(const t of p.atomic||[]){
+  t.wbsLinkStatus=t.canonicalWbsIds.length?"SOURCE_LITERAL_MATCH__EVIDENCE_OPEN":
+   tasksWithAnyExactWbs.has(t.id)?"RELATED_PROJECT_HAS_EXACT_WBS":
    /^QUAL-GOLD-/.test(t.id)?"SHARED_QUALITY_OVERLAY__EXACT_WBS_EXCEPTION":
    "EXACT_WBS_LINK_OPEN";
-  if(!exact.length)unlinkedWorkPackages.set(t.id,t.wbsLinkStatus);
+  if(!tasksWithAnyExactWbs.has(t.id))
+   unlinkedWorkPackages.set(t.id,t.wbsLinkStatus);
  }
  for(const row of masters){const id=safe(row[0]);if(masterIds.has(id))throw Error("DUPLICATE_MASTER_PROJECT_ID_"+id);
   masterIds.add(id);const p=byId.get(id);if(!p)throw Error("MASTER_PROJECT_NOT_IN_GOLD_"+id);p.master=row}
