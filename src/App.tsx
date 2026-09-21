@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/routes/router";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -10,15 +10,18 @@ import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { AtlasEmbedRuntime } from "@/earth/AtlasEmbedRuntime";
 import { isAtlasEmbedKind } from "@/earth/atlasViewContract";
-import PartnersHub from "@/pages/partners/PartnersHub";
-import NationPage from "@/pages/nation/NationPage";
-import FourBrand from "@/pages/partners/FourBrand";
+
 import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
 import "@/styles/responsive-footer.css";
 import "@/styles/gold-human-craft.css";
 import "@/styles/premium-completion.css";
+
+// Standalone product hosts do not belong in the ATLAS/4PLANET entry bundle.
+const PartnersHub = lazy(() => import("@/pages/partners/PartnersHub"));
+const NationPage = lazy(() => import("@/pages/nation/NationPage"));
+const FourBrand = lazy(() => import("@/pages/partners/FourBrand"));
 
 function isPartnersHost() {
   if (typeof window === "undefined") return false;
@@ -65,7 +68,7 @@ function MeasuredStandalone({ children }: { children: ReactNode }) {
     <BrowserRouter>
       <Analytics />
       <ProductRouteAnalytics />
-      {children}
+      <Suspense fallback={<main role="status" style={{ padding: 24, minHeight: "100svh" }}>Loading product…</main>}>{children}</Suspense>
     </BrowserRouter>
   );
 }
