@@ -67,6 +67,19 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
    nextAction:safe(row[10]),gate:safe(row[11]),evidence:safe(row[12])});
  }
  const masterIds=new Set();
+ // A task may have a valid project yet still lack a precise WBS package.
+ // Preserve project-level/global QA exceptions; never invent an exact package.
+ const unlinkedWorkPackages=new Map();
+ for(const p of byId.values())for(const t of p.atomic||[]){
+  const raw=t.wbsLink||"";
+  const tokens=new Set(raw.toUpperCase().split(/[^A-Z0-9-]+/).filter(Boolean));
+  const exact=p.wbs.filter(w=>tokens.has(w.id.toUpperCase())).map(w=>w.id);
+  t.canonicalWbsIds=exact;
+  t.wbsLinkStatus=exact.length?"SOURCE_LITERAL_MATCH__EVIDENCE_OPEN":
+   /^QUAL-GOLD-/.test(t.id)?"SHARED_QUALITY_OVERLAY__EXACT_WBS_EXCEPTION":
+   "EXACT_WBS_LINK_OPEN";
+  if(!exact.length)unlinkedWorkPackages.set(t.id,t.wbsLinkStatus);
+ }
  for(const row of masters){const id=safe(row[0]);if(masterIds.has(id))throw Error("DUPLICATE_MASTER_PROJECT_ID_"+id);
   masterIds.add(id);const p=byId.get(id);if(!p)throw Error("MASTER_PROJECT_NOT_IN_GOLD_"+id);p.master=row}
  for(const p of byId.values())if(!p.master)throw Error("GOLD_PROJECT_MISSING_MASTER_"+p.id);
@@ -135,6 +148,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  }
  return {records:out,gaps,metrics:{projects:out.length,registrationGaps:gaps.length,wbs:out.reduce((n,p)=>n+p.metadata.wbsCount,0),
   withoutWbs:out.filter(p=>!p.metadata.wbsCount).map(p=>p.metadata.projectId),
+  atomicTasksWithoutExactWbs:[...unlinkedWorkPackages.entries()].map(([id,status])=>({id,status})),
   goldRows:packs.length,masterRows:masters.length,aliasRows:aliases.length}};
 }
 
