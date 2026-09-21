@@ -14,7 +14,7 @@ function freePreview(){if(previewUrl){window.URL.revokeObjectURL(previewUrl);pre
 function short(v){return String(v||"").trim().split(/\s+/)[0].slice(0,24)}
 function userName(u){return short(u?.user_metadata?.full_name||u?.user_metadata?.name||u?.email?.split("@")[0]||"4PLANET ID")}
 function formatDate(v){if(!v)return "UKJENT";return new Date(v+"T12:00:00").toLocaleDateString("nb-NO")}
-function formatNok(v){return Number.isFinite(Number(v))?Number(v).toLocaleString("nb-NO")+" kr":"UKJENT"}
+function formatNok(v){return v!=null&&v!==""&&Number.isFinite(Number(v))?Number(v).toLocaleString("nb-NO")+" kr":"UKJENT"}
 function errText(e){return String(e?.message||e?.code||e||"Ukjent feil").slice(0,230)}
 async function session(){
   if(!client)throw new Error("SUPABASE_CLIENT_UNAVAILABLE");
@@ -64,7 +64,7 @@ function showSuggestions(text){
   const wrap=$("docSuggestions"),buttons=$("docSuggestionList"),items=$("docItemLines");
   wrap.hidden=true;buttons.textContent="";items.textContent="";
   const parsed=window.FourSapienDocumentAnalysis?.propose?.(text,$("docKind").value);
-  if(!parsed||(!parsed.amount&&!parsed.date&&!parsed.name&&!parsed.itemLines.length))return;
+  if(!parsed||(!parsed.amount&&!parsed.date&&!parsed.name&&!parsed.kid&&!parsed.account&&!parsed.claimStage&&!parsed.itemLines.length))return;
   const choice=(label,value,field)=>{
     const b=document.createElement("button");b.type="button";b.className="doc-secondary";
     b.textContent=label+": "+String(value)+" · Bruk forslag";
@@ -77,6 +77,17 @@ function showSuggestions(text){
   }
   if(parsed.date)choice($("docKind").value==="bill"?"Forfall":"Dato",parsed.date.value,"docDate");
   if(parsed.name)choice("Avsender / butikk",parsed.name.value,"docName");
+  if($("docKind").value==="bill"&&(parsed.kid||parsed.account||parsed.claimStage)){
+    const caution=document.createElement("p");caution.className="doc-note";
+    caution.textContent="Kravsvakt · tekstsignaler fra dokumentet, IKKE validerte betalingsopplysninger eller juridisk vurdering. KID, kontonummer og dokumenttype blir ennå ikke lagret i Finance.";
+    buttons.appendChild(caution);
+    for(const [label,field] of [["Mulig KID","kid"],["Mulig kontonummer","account"],["Mulig dokumenttype","claimStage"]]){
+      const found=parsed[field];if(!found)continue;
+      const info=document.createElement("p");info.className="doc-note";
+      info.textContent=label+": "+found.value+" · UVERIFISERT · se originalen";
+      buttons.appendChild(info);
+    }
+  }
   if(parsed.itemLines.length){
     const title=document.createElement("strong");title.textContent="Mulige varelinjer · IKKE registrert i Food:";
     items.appendChild(title);
