@@ -6,7 +6,7 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
-import {CONTROL_ID,LATER_HOMES,normaliseGoldProjectSheets,normaliseLaterProjectHome} from "./os-project-normalizer.mjs";
+import {CONTROL_ID,ATOMIC_ID,LATER_HOMES,normaliseGoldProjectSheets,normaliseLaterProjectHome} from "./os-project-normalizer.mjs";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
@@ -185,7 +185,26 @@ async function main(){
    const tabs=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
     encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
    }));
-   structured=normaliseGoldProjectSheets(tabs,canonical,ROOT);
+   // Current task-detail work is an evidence overlay, never new project truth.
+   // Read the exact existing Atomic Tasks sheet instead of relying on the
+   // global maxTabs quota, which can be exhausted by unrelated workbooks.
+   let atomicTab=null,atomicSource=files.find(x=>x.id===ATOMIC_ID);
+   if(atomicSource)try{
+    const atomicResp=await get("https://www.googleapis.com/drive/v3/files/"+ATOMIC_ID+
+      "/export?"+new URLSearchParams({mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),driveHeaders);
+    const atomicBytes=Buffer.from(await atomicResp.arrayBuffer());
+    if(atomicBytes.length>10500000)throw Error("ATOMIC_EXPORT_TOO_LARGE");
+    const dir=mkdtempSync(join(tmpdir(),"4planet-atomic-view-"));
+    try{
+     const file=join(dir,"atomic.xlsx");writeFileSync(file,atomicBytes,{mode:0o600});
+     const parsed=JSON.parse(execFileSync("python3",["scripts/os-xlsx-rows.py",file],{
+      encoding:"utf8",maxBuffer:24*1024*1024,timeout:35000,stdio:["ignore","pipe","pipe"]
+     }));
+     atomicTab=parsed.find(x=>x.name==="Tasks")||null;
+    }finally{rmSync(dir,{recursive:true,force:true});}
+   }catch(e){console.log("ATOMIC_WORK_OBSERVATION_OPEN "+safeError(e));}
+   if(!atomicTab)console.log("ATOMIC_TASKS_NOT_HYDRATED; PROJECT WORK STATUS UNKNOWN");
+   structured=normaliseGoldProjectSheets(tabs,canonical,ROOT,atomicTab,atomicSource);
   }finally{rmSync(directory,{recursive:true,force:true});}
  }catch(e){throw Error("CANONICAL_PROJECT_VIEW_BLOCKED_"+safeError(e));}
  // A source file inventory row and its derived project rows are different
