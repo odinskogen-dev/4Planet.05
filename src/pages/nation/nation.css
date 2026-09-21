@@ -142,3 +142,5 @@
 .nt-journey-nav button:hover{background:var(--nt-blue);border-color:var(--nt-blue)}
 .nt-journey-nav button span{font-size:18px}
 @media(max-width:720px){.nt-journey-nav{padding:18px 16px 22px}.nt-journey-nav button{width:100%}}
+
+.nt-journey-nav button:focus-visible{outline:3px solid var(--nt-blue);outline-offset:4px}
