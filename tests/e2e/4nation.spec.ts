@@ -35,3 +35,21 @@ test('4NATION deep link retains institution and economy lens across refresh', as
   const dims = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
   expect(dims.doc).toBeLessThanOrEqual(dims.win + 2);
 });
+
+
+test('4NATION contextual ATLAS Embed opens the existing first-party map', async ({ page }) => {
+  await page.goto('/4nation?view=people&lens=atlas');
+  const embed = page.getByTestId('atlas-embed');
+  await expect(embed).toBeVisible();
+  await expect(embed).toContainText('Navigation extent only.');
+  const iframe = embed.locator('iframe');
+  await expect(iframe).toHaveAttribute('src', /\/atlas\?.*embed=nation/);
+  const map = page.frameLocator('iframe[title^="Interactive ATLAS:"]');
+  await expect(map.locator('.maplibregl-canvas, #atlas-fallback-title').first())
+    .toBeVisible({ timeout: 30_000 });
+  await expect(map.locator('.nt-shell')).toHaveCount(0);
+  const full = embed.getByRole('link', { name: /Open Oslofjord.*full ATLAS/i });
+  await expect(full).toHaveAttribute('href', /\/atlas\?/);
+  await full.click();
+  await expect(page).toHaveURL(/\/atlas\?/);
+});

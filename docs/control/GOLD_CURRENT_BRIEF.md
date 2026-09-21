@@ -1,3 +1,8 @@
+CURRENT CORRECTION — 21 SEP 2026 — PRODUCT AUTHORITY ERROR-TO-IMMUNITY
+Observed FOUR STATE Founder Review run 35659551649 FAIL for 7f5665a: two prior HEIR performance commits (89c103a, 7f5665a) changed product code without modifying this GOLD_CURRENT_BRIEF.md in the SAME commit. This is a real control-protocol defect, not a missing Cloudflare deploy. Preserve failed run and history; this correction does not retroactively mark earlier commits compliant.
+This SAME correction commit adds an actual 4NATION desktop/mobile iframe/browser path, declares exact AtlasEmbed scope and reiterates independent Gold/release gates. Future performance fixes must include this brief in the same code change. Source for recovery: https://github.com/odinskogen-dev/4Planet.05/actions/runs/35659551649 .
+--- PRIOR CURRENT BRIEF AND HISTORICAL RECORDS PRESERVED BELOW ---
+
 # CURRENT GOLD BRIEF — ATLAS SHARED ENGINE + EMBED 01
 CHANGE ID: ATLAS-SHARED-EMBED-2026-09-21
 STATUS: HEIR TEST CODE CANDIDATE / NOT GOLD / NO PUBLIC RELEASE
