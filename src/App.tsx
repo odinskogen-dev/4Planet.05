@@ -32,7 +32,7 @@ function isPartnersHost() {
 function isNationHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
-  return host === "4nation.org" || host === "www.4nation.org";
+  return host === "4nation.org" || host === "www.4nation.org" || host === "4planet-nation.pages.dev" || host.endsWith(".4planet-nation.pages.dev");
 }
 
 function isFourBrandsHost() {
