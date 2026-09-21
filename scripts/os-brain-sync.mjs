@@ -190,7 +190,8 @@ async function main(){
  }catch(e){throw Error("CANONICAL_PROJECT_VIEW_BLOCKED_"+safeError(e));}
  // A source file inventory row and its derived project rows are different
  // depths of the same authority, not competing master data.
- records.push(...structured.records);
+ records.push(...structured.records,...structured.gaps);
+ console.log("PROJECT_REGISTRATION_GAPS_FROM_ORPHAN_CONTROL "+structured.gaps.length);
  // The 4SAPIEN / 4BRAND Project Homes are already approved in BRAIN but are
  // absent from the older 41-row Gold register. Keep their OWN source identity
  // and a visible crosswalk gap; no duplicate authority, no synthetic status.
