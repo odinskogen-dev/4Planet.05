@@ -145,6 +145,10 @@ jobs:
           npx --yes esbuild@0.25.9 /tmp/money.jsx --loader:.jsx=jsx --outfile=/tmp/money-check.js
           node --check products/4sapien/site/4sapien-live-hardening.js
           node --check products/4sapien/site/4sapien-documents.js
+          grep -Fq 'KID, kontonummer og dokumenttype blir ennå ikke lagret' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.kid' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.account' products/4sapien/site/4sapien-documents.js
+          grep -Fq 'parsed.claimStage' products/4sapien/site/4sapien-documents.js
           python -m py_compile products/4sapien/build/apply_finance_daniel_feedback_guard.py
           for target in products/4sapien/site/app/money/index.html products/4sapien/site/finance.html products/4sapien/site/finance/index.html; do
             grep -Fq 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' "$target"
