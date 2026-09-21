@@ -135,7 +135,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  const r=p.row,m=p.master,merged=/MERGE|CLOSED/i.test(safe(r[4])+" "+safe(m?.[5]));
  if(![24,25,26,27,29,30].every(i=>safe(r[i])))throw Error("GOLD_PROJECT_GOAL_MISSING_"+p.id);
  if(safe(p.economy[40])!==safe(r[24]))throw Error("ECONOMY_GOAL_ID_MISMATCH_"+p.id);
- if(safe(r[24]).indexOf(p.id)!==0)throw Error("GOLD_PROJECT_GOAL_ID_MISMATCH_"+p.id);
+ if(!/^[A-Z0-9-]{6,75}$/.test(safe(r[24])))throw Error("GOLD_PROJECT_GOAL_ID_INVALID_"+p.id);
  const classification=safe(m?.[2]);
  const entityType=p.id==="SYS-P00-01"?"programme":/SUBPROJECT|DONOR/.test(classification.toUpperCase())?"subproject":
   /PRODUCT/.test(classification.toUpperCase())?"product_project":
