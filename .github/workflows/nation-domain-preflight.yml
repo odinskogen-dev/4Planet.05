@@ -64,4 +64,12 @@ jobs:
           jq -r '.result[]? | [.type,.name,.content,((.proxied // false)|tostring)] | @tsv' <<<"$www"
           echo '4NATION_PAGES_OWNER:'
           jq -r '.result[]? | select(any(.domains[]?; .=="4nation.org" or .=="www.4nation.org")) | [.name,.production_branch,(.domains|join(","))] | @tsv' <<<"$projects"
+          echo '4NATION_EXISTING_4PLANET_PAGES_ORIGIN:'
+          jq -r '.result[]? | select(.name=="4planet-05") | [.name, (.production_branch//""), ([.domains[]?]|join(","))] | @tsv' <<<"$projects"
+          workers=$(get_optional WORKER_DOMAINS "${api}/accounts/${aid}/workers/domains")
+          echo '4NATION_WORKER_DOMAIN_OWNER:'
+          jq -r '.result[]? | select(.hostname=="4nation.org" or .hostname=="www.4nation.org") | [.hostname, (.service//"")] | @tsv' <<<"$workers"
+          routes=$(get_optional WORKER_ROUTES "${api}/zones/${zid}/workers/routes")
+          echo '4NATION_WORKER_ROUTES:'
+          jq -r '.result[]? | select(.pattern | contains("4nation.org")) | [.pattern, (.script//"")] | @tsv' <<<"$routes"
           echo '4NATION_DOMAIN_PREFLIGHT=READ_ONLY_NO_DEPLOY'
