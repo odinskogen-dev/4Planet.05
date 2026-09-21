@@ -8,6 +8,7 @@ on:
       - ops/labs-domain-adapter/src/founder-ui.js
       - ops/labs-domain-adapter/src/index.js
       - scripts/labs-private-os-contract.test.mjs
+      - scripts/labs-os-ui-browser.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -111,6 +112,7 @@ jobs:
           set -euo pipefail
           npm ci
           npx playwright install chromium --with-deps
+          node scripts/labs-os-ui-browser.test.mjs
           node --input-type=module <<'NODE'
           import { chromium } from '@playwright/test';
           const browser=await chromium.launch({headless:true});
