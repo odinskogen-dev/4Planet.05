@@ -88,3 +88,49 @@ export function normaliseGoldProjectSheets(tabs,source,rootId){
   withoutWbs:out.filter(p=>!p.metadata.wbsCount).map(p=>p.metadata.projectId),
   goldRows:packs.length,masterRows:masters.length,aliasRows:aliases.length}};
 }
+
+/* Two later Founder-approved Project Homes predate their Gold register crosswalk.
+   Preserve them as provenance-backed OPEN REGISTRATION GAPS; do not invent Gold
+   Pack fields or promote the document's WBS labels to proven completion. */
+export const LATER_HOMES=[
+ {fileId:"1BKhUVxwIAUAW8S3nh91o0kU8SxXH6HrqZpvR4IVriSA",id:"SYS-4SAPIEN-LIFE-01",
+  name:"4SAPIEN",genre:"4SAPIEN",prefix:"LIFE",expected:10},
+ {fileId:"1oVkDHNkYbxxFcWTdFxztbXQOMl1UIdJKX9ewL3l0z8Y",id:"SYS-4BRANDS-01",
+  name:"4BRAND",genre:"4BRAND",prefix:"BRANDS",expected:15}
+];
+export function normaliseLaterProjectHome(spec,content,source,rootId){
+ if(typeof content!=="string"||!content.includes(spec.id))throw Error("LATER_HOME_ID_NOT_VERIFIED_"+spec.id);
+ const lines=content.split(/\r?\n/),escaped=spec.prefix.replace(/[^A-Z]/g,"");
+ const re=new RegExp("^("+escaped+"-\\d{1,2})\\s+[—–-]\\s+(.+)$");
+ const wbs=new Map();
+ for(const line of lines){const m=line.trim().match(re);if(m&&!wbs.has(m[1]))wbs.set(m[1],{
+  id:m[1],level:"L1",deliverable:m[2].trim(),workPackage:m[2].trim(),
+  completionCondition:"NOT EXTRACTED FROM DOCUMENT — OPEN SOURCE",
+  owner:"UNKNOWN",atomicLink:"SEE ATOMIC PROGRAMME REGISTER",
+  dependency:"UNKNOWN",sourceReportedState:"NOT_RECONCILED",
+  nextAction:"UNKNOWN",gate:"UNKNOWN",evidence:"UNKNOWN"
+ });}
+ if(wbs.size!==spec.expected)throw Error("LATER_HOME_WBS_HEADINGS_INCOMPLETE_"+spec.id);
+ const sourceUrl="https://docs.google.com/document/d/"+spec.fileId+"/edit";
+ const doc={schema:"4PLANET_PROJECT_VIEW_01",id:spec.id,name:spec.name,sourceName:source.name,
+  genre:spec.genre,kind:"project",parent:"4PLANET",domain:"PRODUCT",lifecycleFromSource:"UNKNOWN",
+  priorityFromSource:"NOT_RECONCILED",purpose:"SEE ORIGINAL PROJECT HOME",outcome:"SEE ORIGINAL PROJECT HOME",
+  currentState:"NOT_RECONCILED_WITH_CURRENT_PROGRAMME",
+  sourceReportedState:"LATER FOUNDER-APPROVED PROJECT HOME",
+  goldPackStatus:"NOT_YET_CROSSWALKED_TO_GOLD_REGISTER",
+  aliases:[],wbs:[...wbs.values()],wbsCount:wbs.size,
+  source:{gold:sourceUrl,wbs:sourceUrl,register:link(CONTROL_ID),
+   modifiedAt:source.modifiedTime??null,authority:"Existing approved Project Home, NOT a Gold register row",
+   statusIsHistorical:false}};
+ const payload=JSON.stringify(doc);
+ return {source_id:"project_"+spec.id,title:spec.name,
+  mime_type:"application/vnd.4planet.project-view+json",source_url:sourceUrl,
+  parent_path:"01_ 4PLANET KNOWLEDGE OS / Existing Project Home",
+  source_modified_at:source.modifiedTime??null,source_hash:hash(content),
+  object_type:"project_pack",content:payload,
+  metadata:{rootId,domain:"4planet",tenant:null,
+   readDepth:"DERIVED_FROM_EXISTING_PROJECT_HOME",projectionType:"project",
+   projectId:spec.id,kind:"project",genre:spec.genre,wbsCount:wbs.size,
+   sourceFileId:spec.fileId,currentStatus:"UNKNOWN_UNTIL_PROGRAMME_RECONCILIATION",
+   goldPackStatus:"NOT_YET_CROSSWALKED_TO_GOLD_REGISTER"}};
+}
