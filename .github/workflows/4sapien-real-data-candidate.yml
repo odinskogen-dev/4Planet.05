@@ -200,3 +200,86 @@ jobs:
             echo '- Personal Brain export + optional confirmed context: candidate PASS'
             echo '- No production deploy performed by this workflow.'
           } >> "$GITHUB_STEP_SUMMARY"
+      # QA-passed, nonproduction preview on EXISTING Pages branch, never LIVE/DNS.
+      - name: Prepare exact-SHA noindex 4SAPIEN review artifact
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os,pathlib
+          site=pathlib.Path('products/4sapien/site')
+          sha=os.environ['GITHUB_SHA']
+          for p in site.rglob('*.html'):
+              s=p.read_text()
+              if s.count('</head>')!=1: raise SystemExit(f'Missing <head> in {p}')
+              s=s.replace('</head>','<meta name="robots" content="noindex,nofollow,noarchive"><meta name="4planet-source-sha" content="'+sha+'"></head>',1)
+              p.write_text(s)
+          (site/'robots.txt').write_text('User-agent: *\nDisallow: /\n')
+          p=site/'_headers'
+          p.write_text(p.read_text()+'\n/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n')
+          for q in [site/'index.html',site/'app/food/index.html']:
+              if '4planet-source-sha' not in q.read_text(): raise SystemExit(f'Unstamped: {q}')
+          print('EXACT_NONPRODUCTION_SOURCE_STAMP',sha)
+          PY
+      - name: Keep downloadable, QA-passed Founder review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-sapien-review-${{ github.sha }}
+          path: products/4sapien/site
+          retention-days: 7
+      - name: Resolve EXISTING nonproduction Cloudflare Pages branch
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/king/test
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          account=''
+          for zone in 4sapien.com 4nation.org; do
+            zones=$(curl -fsS "$api/zones?name=$zone" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            account=$(jq -r '.result[0].account.id // empty' <<<"$zones")
+            test -z "$account" || break
+          done
+          test -n "$account"
+          projects=$(curl -fsS "$api/accounts/$account/pages/projects" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          project=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].name // empty' <<<"$projects")
+          production=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].production_branch // empty' <<<"$projects")
+          test "$project" = 4planet-05
+          test "$production" != 4sapien-first-return-review
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "FOOD_REVIEW_BRANCH=4sapien-first-return-review" >> "$GITHUB_ENV"
+      - name: Deploy ISOLATED review branch ONLY — no LIVE or DNS
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy products/4sapien/site --project-name 4planet-05 --branch "$FOOD_REVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/food-review-deploy.txt
+          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/food-review-deploy.txt | head -n1 || true)
+          test -n "$url"
+          echo "FOOD_REVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "EXACT_FOOD_REVIEW=$url/app/food/"
+          echo "LIVE_4SAPIEN_DNS=UNCHANGED"
+      - name: Verify HTTP review identity, noindex and shared pantry code
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            code=$(curl -L -sS -o /tmp/food-review.html -w '%{http_code}' "$FOOD_REVIEW_URL/app/food/" || true)
+            [ "$code" = 200 ] && break
+            sleep 3
+          done
+          test "$code" = 200
+          grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA\"" /tmp/food-review.html
+          grep -Fq 'noindex,nofollow,noarchive' /tmp/food-review.html
+          grep -Fq 'FoodPantryProof' /tmp/food-review.html
+          code=$(curl -L -sS -o /tmp/food-decision.js -w '%{http_code}' "$FOOD_REVIEW_URL/4sapien-pantry-decision.js")
+          test "$code" = 200
+          grep -Fq 'FourSapienPantryDecision' /tmp/food-decision.js
+          {
+            echo "### Exact QA-passed 4SAPIEN Founder review — NOT LIVE"
+            echo "- Source SHA: $GITHUB_SHA"
+            echo "- Review URL: $FOOD_REVIEW_URL/app/food/"
+            echo "- Existing Pages project: 4planet-05, isolated branch: $FOOD_REVIEW_BRANCH"
+            echo "- HTTP 200 + noindex + shared matcher: PASS"
+            echo "- Real authenticated second visit/two users/Human Gold: OPEN"
+            echo "- Production release, DNS, payment and outreach: NONE"
+          } >> "$GITHUB_STEP_SUMMARY"
