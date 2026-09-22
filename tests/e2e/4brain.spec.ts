@@ -37,15 +37,15 @@ test('device-local user Context Pack persists after refresh, corrects, exports a
  await page.getByLabel(/I have reviewed these words/).check();
  await page.getByRole('button',{name:/Approve and save on this device/}).click();
  await expect(page.getByText('SAVED ON THIS DEVICE')).toBeVisible();
- await expect(page.getByText('Plan a community garden')).toBeVisible();
+ await expect(page.getByText('Plan a community garden').first()).toBeVisible();
  await page.reload();
  await expect(page.getByText('SAVED ON THIS DEVICE')).toBeVisible();
- await expect(page.getByText('One afternoon per week')).toBeVisible();
+ await expect(page.getByText('One afternoon per week').first()).toBeVisible();
  await page.getByRole('button',{name:/Review or correct/}).click();
  await page.getByLabel('02 / One important constraint').fill('Two afternoons per month');
  await page.getByLabel(/I have reviewed these words/).check();
  await page.getByRole('button',{name:/Approve updated note/}).click();
- await expect(page.getByText('Two afternoons per month')).toBeVisible();
+ await expect(page.getByText('Two afternoons per month').first()).toBeVisible();
  const downloadPromise=page.waitForEvent('download');
  await page.getByRole('button',{name:'Export JSON'}).click();
  const d=await downloadPromise;expect(d.suggestedFilename()).toBe('4brain-my-local-context.json');
