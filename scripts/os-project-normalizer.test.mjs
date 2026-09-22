@@ -180,3 +180,18 @@ test("source-owned 4NATION ID and bounded NAT range resolve without synthetic pr
   Array.from({length:7},(_,i)=>"NAT-"+String(i+1).padStart(2,"0")));
  assert.equal(p.currentState,"NOT_RECONCILED_WITH_CURRENT_PROGRAMME");
 });
+
+test("4BRAIN is a distinct approved Product Home, not internal SYS-P00-BRAIN",()=>{
+ const tabs=fixture();const r=tabs[0].rows[1];
+ r[0]="4BRAIN";r[24]="4BRAIN-G01";r[25]="Owner-controlled useful repeat AI context";
+ tabs[2].rows[1][0]="4BRAIN";tabs[4].rows[1][0]="4BRAIN";
+ tabs[4].rows[1][40]="4BRAIN-G01";tabs[5].rows[1][0]="4BRAIN";
+ tabs[1].rows.splice(1,1, ...Array.from({length:26},(_,i)=>
+  ["BRN-"+String(i+1).padStart(2,"0"),"L1","4BRAIN","Real source package","Current proof OPEN"]));
+ const out=normaliseGoldProjectSheets(tabs,{},root);
+ const p=JSON.parse(out.records.find(x=>x.metadata.projectId==="4BRAIN").content);
+ assert.equal(p.genre,"4BRAIN");assert.equal(p.wbsCount,26);
+ assert.equal(p.projectGoals.goalId,"4BRAIN-G01");
+ assert.equal(p.currentState,"NOT_RECONCILED_WITH_CURRENT_PROGRAMME");
+ assert.equal(p.projectEconomics.completeProjectBudgetNok,"UNKNOWN");
+});
