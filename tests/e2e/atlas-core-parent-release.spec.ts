@@ -103,7 +103,7 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   await zoomIn.click();
   await page.waitForFunction((baselineZoom) => {
     const map = (window as any).__4planet_map;
-    return map && Math.abs(map.getZoom() - Number(baselineZoom)) > 0.1 && !map.isMoving() && !map.isZooming() && !map.isEasing();
+    return map && Math.abs(map.getZoom() - Number(baselineZoom)) > 0.1 && !map.isMoving() && !map.isZooming() && !(typeof map.isEasing === "function" && map.isEasing());
   }, target.zoom, { timeout: 8_000 });
 
   const userOwned = await page.evaluate(() => {
