@@ -253,7 +253,12 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 pages deploy products/4sapien/site --project-name 4planet-05 --branch "$FOOD_REVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/food-review-deploy.txt
+          # Run OUTSIDE repo root: root/functions is for other products and must NOT be bundled into this static 4SAPIEN preview.
+          review_dir=$(mktemp -d)
+          cp -a products/4sapien/site/. "$review_dir"/
+          test ! -d "$review_dir/functions"
+          cd "$review_dir"
+          npx --yes wrangler@4.128.0 pages deploy . --project-name 4planet-05 --branch "$FOOD_REVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/food-review-deploy.txt
           url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/food-review-deploy.txt | head -n1 || true)
           test -n "$url"
           echo "FOOD_REVIEW_URL=$url" >> "$GITHUB_ENV"
