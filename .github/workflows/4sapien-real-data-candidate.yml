@@ -288,3 +288,21 @@ jobs:
             echo "- Real authenticated second visit/two users/Human Gold: OPEN"
             echo "- Production release, DNS, payment and outreach: NONE"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test rendered FOOD review with SYNTHETIC backend only
+        env:
+          FOOD_REVIEW_URL: ${{ env.FOOD_REVIEW_URL }}
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          FOOD_REVIEW_URL="$FOOD_REVIEW_URL" npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+          echo "FOOD_SYNTHETIC_BROWSER_FIRST_RETURN=PASS (NOT REAL AUTH / NOT REAL SUPABASE)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve synthetic browser trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-sapien-synthetic-browser
+          path: artifacts/atlas-gold
+          retention-days: 7
+          if-no-files-found: ignore
