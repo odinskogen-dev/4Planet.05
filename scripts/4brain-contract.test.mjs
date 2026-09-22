@@ -9,7 +9,7 @@ test('consent-first personal tool truth labels and isolated storage scope',async
  const h=await (await worker.fetch(new Request('https://4brain.app/'))).text();
  for(const phrase of ['LOCAL-ONLY PROTOTYPE','Make your first Context Pack','studio-content','Nothing you type is sent to 4BRAIN','not encrypted account storage','Authenticated account memory'])assert.ok(h.toLowerCase().includes(phrase.toLowerCase()),phrase);
  const js=await (await worker.fetch(new Request('https://4brain.app/experience.js'))).text();
- for(const phrase of ['Approved and save','consent','localStorage.setItem','localStorage.removeItem','this browser','URL.createObjectURL','4brain-my-local-context.json','Ask what changed'])assert.ok(js.toLowerCase().includes(phrase.toLowerCase()),phrase);
+ for(const phrase of ['Approve and save','consent','localStorage.setItem','localStorage.removeItem','this browser','URL.createObjectURL','4brain-my-local-context.json','Ask what changed'])assert.ok(js.toLowerCase().includes(phrase.toLowerCase()),phrase);
  assert.ok(!js.includes('api.openai.com'));
  assert.ok(!js.includes('supabase.co'));
  assert.match((await worker.fetch(new Request('https://4brain.app/'))).headers.get('content-security-policy'),/connect-src 'none'/);
