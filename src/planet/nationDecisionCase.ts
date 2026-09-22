@@ -8,7 +8,7 @@ import { PLACES } from './places';
  * Project Home: https://docs.google.com/document/d/1IAB_myJZ3pT0rx58QNBJmuCutxhGlWBKBuOjO__NuBo/edit
  * Re-check these sources before any later change of legal/procedural status.
  */
-export const nationCaseAsOf = '21 September 2026';
+export const nationCaseAsOf = '22 September 2026';
 export const nationPlace = PLACES.find((place) => place.id === placeId('oslofjord'));
 
 export const nationSources = [

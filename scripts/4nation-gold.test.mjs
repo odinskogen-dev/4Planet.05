@@ -9,7 +9,7 @@ const app = read('src/App.tsx');
 const router = read('src/routes/router.tsx');
 
 test('4NATION source projection is explicit, dated and linked to existing PLACE', () => {
-  assert.match(source,/nationCaseAsOf = '21 September 2026'/);
+  assert.match(source,/nationCaseAsOf = '22 September 2026'/);
   assert.match(source,/PLACES\.find\(\(place\) => place\.id === placeId\('oslofjord'\)\)/);
   assert.match(source,/GOV-NOR-OSLOFJORD-PLAN-2026-HEARING/);
   assert.match(source,/id3166019/);
@@ -54,4 +54,12 @@ test('contextual ATLAS CSS parses real newline boundaries so the first-party map
 
 test('4NATION full Atlas exit is not captured by the standalone Nation homepage', () => {
   assert.match(app,/isNationHost\(\) && window\.location\.pathname === "\/atlas"/);
+});
+
+test('human-first Nation entry keeps one real case and one primary action', () => {
+ assert.match(page,/What is happening/);
+ assert.match(page,/THE DECISION/);
+ assert.match(page,/Explore public decisions/);
+ assert.doesNotMatch(page,/Explore decision intelligence/);
+ assert.doesNotMatch(page,/One decision\.<br\/>A clearer picture/);
 });

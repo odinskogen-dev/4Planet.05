@@ -69,7 +69,7 @@ export default function NationPage() {
 
   const showLens = (next: Lens) => {
     setLens(next);
-    document.getElementById('nt-workbench')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    document.getElementById('nt-decision-layers')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   };
 
   const selectAudience = (next: Audience) => {
@@ -92,27 +92,31 @@ export default function NationPage() {
 
     <section className='nt-hero' aria-labelledby='nt-heading'>
       <div className='nt-hero-copy'>
-        <SmallLabel>BETTER NATION / A 4PLANET PRODUCT</SmallLabel>
-        <h1 id='nt-heading'>Understand<br /><em>your nation.</em></h1>
-        <p>A living intelligence system for people, places and public decisions.</p>
-        <div className='nt-choice' role='group' aria-label='Choose your perspective'>
-          <button type='button' className='nt-primary' onClick={() => selectAudience('people')}>Explore public decisions <span aria-hidden='true'>↗</span></button>
-          <button type='button' className='nt-secondary' onClick={() => selectAudience('institutions')}>Explore decision intelligence <span aria-hidden='true'>↗</span></button>
-        </div>
-        <p className='nt-hero-trust'>A public-source prototype. One real case, with its evidence and limits in view.</p>
+        <SmallLabel>4NATION / BETTER NATION</SmallLabel>
+        <h1 id='nt-heading'>Understand <em>your nation.</em></h1>
+        <p>Public decisions, explained through the original evidence. Start with one real place and one case.</p>
+        <button className='nt-primary nt-hero-action' type='button' onClick={() => selectAudience('people')}>Explore public decisions <span aria-hidden='true'>↗</span></button>
+        <p className='nt-hero-trust'>An independent 4PLANET prototype · <button type='button' onClick={() => setSourceOpen(true)}>See the sources ↗</button></p>
       </div>
-      <article className='nt-featured' aria-label='Featured Oslofjord decision' >
-        <div className='nt-feature-top'><SmallLabel>FIRST DECISION / NORWAY</SmallLabel><span>01 / OSLOFJORD</span></div>
-        <div className='nt-feature-middle'><span className='nt-feature-status'>● PROPOSAL · UNDER CONSIDERATION</span><h2>The future of<br/><em>the Oslofjord.</em></h2><p>What is being considered in Norway’s proposed 2026–2030 action plan?</p></div>
-        <div className='nt-feature-bottom'><span><b>15 OCT 2026</b><small>Separate local / regional deadline</small></span><button type='button' onClick={() => selectAudience('people')}>OPEN THE DECISION <span aria-hidden='true'>↗</span></button></div>
-        <div className='nt-feature-source'>Official government case · checked {nationCaseAsOf} · <Source id='KLD-2026-HEARING' label='VIEW SOURCE ↗'/></div>
+      <article className='nt-featured' aria-labelledby='nt-feature-title'>
+        <div className='nt-feature-top'><SmallLabel>OSLOFJORD / NORWAY</SmallLabel><span className='nt-feature-status'>PROPOSAL · UNDER CONSIDERATION</span></div>
+        <div className='nt-feature-middle'>
+          <span className='nt-feature-eyebrow'>ONE PUBLIC DECISION · 2026–2030</span>
+          <h2 id='nt-feature-title'>What is happening<br/>to the <em>Oslofjord?</em></h2>
+          <p>Norway has proposed a new plan for the fjord. It is still being considered — not an adopted plan.</p>
+        </div>
+        <div className='nt-feature-facts' aria-label='The case at a glance'>
+          <div><span>THE ISSUE</span><strong>A fjord under pressure</strong></div>
+          <div><span>THE DECISION</span><strong>A proposed new plan</strong></div>
+          <div><span>WHAT IS NEXT</span><strong>15 October · local and regional deadline</strong></div>
+        </div>
+        <div className='nt-feature-source'>Official record · checked {nationCaseAsOf} · <Source id='KLD-2026-HEARING' label='VIEW SOURCE ↗'/></div>
       </article>
-      <div className='nt-hero-bottom'><span>BETTER UNDERSTANDING → INFORMED DECISIONS</span><span>PROTOTYPE / SOURCE SNAPSHOT {nationCaseAsOf.toUpperCase()}</span></div>
     </section>
 
     <section className='nt-workbench' id='nt-workbench' aria-labelledby='nt-work-heading'>
       <div className='nt-work-head'>
-        <div><SmallLabel>01 / DECISION INTELLIGENCE</SmallLabel><h2 id='nt-work-heading'>One decision.<br/>A clearer picture.</h2><p>Start with what is known. Explore what matters to you.</p></div>
+        <div><SmallLabel>THE OSLOFJORD / OFFICIAL CASE</SmallLabel><h2 id='nt-work-heading'>Understand the decision.</h2><p>Begin with the proposal. Explore the evidence, place, costs and outcomes when you need them.</p></div>
         <div className='nt-audiences' role='group' aria-label='Choose audience'><button type='button' aria-pressed={audience==='people'} onClick={()=>setAudience('people')}>For people</button><button type='button' aria-pressed={audience==='institutions'} onClick={()=>setAudience('institutions')}>For institutions</button></div>
       </div>
 
@@ -124,13 +128,13 @@ export default function NationPage() {
       <article className='nt-case'>
         <div className='nt-case-top'><SmallLabel>FEATURED PUBLIC DECISION / NORWAY</SmallLabel><span className='nt-badge'>UNDER CONSIDERATION · {nationCaseAsOf.toUpperCase()}</span></div>
         <h3>{nationDecision.title}<span> {nationDecision.period}</span></h3>
-        <p className='nt-case-deck'>{nationDecision.synopsis}</p>
+        <p className='nt-case-deck'>The official proposal is open for examination. The ministry still lists the new plan as under consideration. <Source id='KLD-2026-HEARING' label='OFFICIAL CASE ↗'/></p>
         <div className='nt-case-meta'><span>DECIDING BODY <strong>{nationDecision.issuer}</strong></span><span>GEOGRAPHY <strong>Oslofjord catchment</strong></span><span>NEXT DATED STEP <strong>15 October 2026 · local/regional submissions</strong></span></div>
         <div className='nt-case-note'><strong>Proposal, not an adopted plan.</strong> The ordinary consultation is closed; the ministry still lists the case under consideration. <Source id='KLD-2026-HEARING' label='CHECK OFFICIAL STATUS ↗'/></div><div className='nt-case-actions'><Source id='KLD-2026-PROPOSAL' label='READ THE ACTUAL PROPOSAL ↗'/><button type='button' onClick={shareCase}>{shareState==='copied'?'CASE LINK COPIED ✓':shareState==='error'?'COPY UNAVAILABLE — USE ADDRESS BAR':'COPY CASE LINK ↗'}</button></div>
       </article>
 
-      <div className='nt-decision-layout'>
-        <nav className='nt-lenses' aria-label='Explore decision layers'><div className='nt-lens-overline'>START WITH THE DECISION</div>{lenses.map((item,i)=><button type='button' key={item.key} className={[lens===item.key?'is-current':'',i===0?'nt-lens-primary':''].join(' ')} aria-current={lens===item.key?'true':undefined} onClick={()=>showLens(item.key)}><span>{String(i+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.description}</small></button>)}</nav>
+      <div className='nt-decision-layout' id='nt-decision-layers'>
+        <nav className='nt-lenses' aria-label='Explore decision layers'><div className='nt-lens-overline'>EXPLORE MORE</div>{lenses.map((item,i)=><button type='button' key={item.key} className={[lens===item.key?'is-current':'',i===0?'nt-lens-primary':''].join(' ')} aria-current={lens===item.key?'true':undefined} onClick={()=>showLens(item.key)}><span>{String(i+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.description}</small></button>)}</nav>
         <div className='nt-lens-panel' role='region' aria-live='polite' aria-label={activeLens.label}>
           <div className='nt-lens-head'><SmallLabel>{audience==='people'?'FOR PEOPLE':'FOR INSTITUTIONS'} / {activeLens.label.toUpperCase()}</SmallLabel><span>OFFICIAL SOURCE SNAPSHOT</span></div>
           {lens==='decisions' && <section className='nt-panel-body'>

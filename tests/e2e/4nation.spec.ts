@@ -125,3 +125,16 @@ test('SPECIES Orca shows the shared contextual ATLAS without inventing live posi
     url.searchParams.get('entity') === fullTarget.searchParams.get('entity'),
     { timeout: 20_000 });
 });
+
+test('the first mobile screen starts with a real case and one clear action', async ({page}) => {
+  await page.goto('/4nation');
+  const hero=page.locator('.nt-hero');
+  await expect(hero.getByRole('heading',{name:/Understand your nation/i})).toBeVisible();
+  await expect(hero.getByRole('heading',{name:/What is happening.*Oslofjord/i})).toBeVisible();
+  await expect(hero.getByText('PROPOSAL · UNDER CONSIDERATION')).toBeVisible();
+  await expect(hero.getByRole('button',{name:/Explore public decisions/i})).toHaveCount(1);
+  const visible=await hero.locator('#nt-feature-title').evaluate(node=>node.getBoundingClientRect().top < window.innerHeight);
+  expect(visible,'The actual Oslofjord case must appear on the first screen').toBe(true);
+  await hero.getByRole('button',{name:/Explore public decisions/i}).click();
+  await expect(page.getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
+});
