@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import * as maplibregl from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { planetProofBySlug, type PlanetProof, type ProofMapLayer, type ProofSection } from "@/planet/proofs/planetProofs";
 
@@ -25,6 +26,9 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
   useEffect(() => {
     if (!box.current) return;
     let alive = true;
+    // Reuse the exact self-contained worker already proven by the shared ATLAS.
+    // Otherwise the default .mjs worker URL may resolve to SPA HTML in preview.
+    maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const m = new maplibregl.Map({
       container: box.current,
       style: VECTOR_STYLE,

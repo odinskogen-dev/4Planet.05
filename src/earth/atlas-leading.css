@@ -185,6 +185,11 @@ body:has(.world.light) .atlas-product-identity-link {
   .world .maplibregl-ctrl-bottom-right {
     margin-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
   }
+  /* A source/Orca bottom sheet must never intercept actual map zoom controls.
+     Lift only the native controls above the sheet on mobile, not above its text. */
+  .world:has(.ctx) .maplibregl-ctrl-bottom-right {
+    bottom: calc(58vh + 22px);
+  }
   .world .ctx,
   .world .lens-panel {
     bottom: calc(26px + env(safe-area-inset-bottom, 0px));
