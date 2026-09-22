@@ -21,9 +21,9 @@ const friendly={
 "LAB-CREATOR-01":"CRE4TORS","LAB-ENGINE-FOUNDRY-01":"ENGINE FOUNDRY",
 "IMP-MARKET-01":"4PLANET MARKET","SYS-LUME-PROJECT-01":"LUME PLANET",
 "SYS-LUME-NODE-01":"LUME NODE","SYS-PAI-01":"TREE OF LIFE / PLANETARY ACTION INTELLIGENCE",
-"SYS-P00-NATURE-XR":"NATURE XR","SYS-4SAPIEN-LIFE-01":"4SAPIEN","SYS-4BRANDS-01":"4BRAND"
+"SYS-P00-NATURE-XR":"NATURE XR","SYS-4SAPIEN-LIFE-01":"4SAPIEN","SYS-4BRANDS-01":"4BRAND","4NATION":"4NATION"
 };
-const genre=id=>id==="SYS-4SAPIEN-LIFE-01"?"4SAPIEN":id==="SYS-4BRANDS-01"?"4BRAND":id.startsWith("OCE-")?"OCE4N_":id.startsWith("EAR-")?"E4RTH_":
+const genre=id=>id==="4NATION"?"4NATION":id==="SYS-4SAPIEN-LIFE-01"?"4SAPIEN":id==="SYS-4BRANDS-01"?"4BRAND":id.startsWith("OCE-")?"OCE4N_":id.startsWith("EAR-")?"E4RTH_":
 id.startsWith("SAP-")?"S4PIENS_":id.startsWith("CUL-")?"4CULTURE_":
 id.startsWith("IMP-")?"IMPACT / MARKET":id.startsWith("LAB-")?"LABS / CREATIVE":
 id.startsWith("SYS-LUME")||id==="SYS-SONIC-01"?"CULTURE / PRODUCT":
@@ -55,7 +55,10 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  const taskRows=recordsAfterHeader(atomic,"Task ID");
  for(const row of taskRows){
   const taskId=safe(row[0]);if(!taskId)continue;
-  const match=[...new Set((safe(row[10]).match(/[A-Z]{3}-[A-Z0-9-]+/g)||[]))];
+  // Resolve ONLY already registered Gold IDs, including source-owned "4NATION".
+  // Never infer a project from natural-language document titles or a generic path.
+  const projectText=safe(row[10]);
+  const match=[...byId.keys()].filter(id=>new RegExp("(^|[^A-Z0-9-])"+id+"(?=$|[^A-Z0-9-])").test(projectText));
   for(const id of match){const p=byId.get(id);if(!p)continue;
    (p.atomic??=[]).push({id:taskId,deliverable:safe(row[2]),owner:safe(row[3]),
     sourceReportedProgrammeStatus:safe(row[4]),sourceReportedLifecycle:safe(row[5]),
@@ -104,7 +107,8 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
   if(!p.funding)throw Error("GOLD_PROJECT_MISSING_FUNDING_"+p.id);
  }
  for(const row of recordsAfterHeader(capital,"Route ID")){
-  const project=safe(row[1]),matches=[...new Set(project.match(/[A-Z]{3}-[A-Z0-9-]+/g)||[])];
+  const project=safe(row[1]),matches=[...byId.keys()].filter(id=>
+   new RegExp("(^|[^A-Z0-9-])"+id+"(?=$|[^A-Z0-9-])").test(project));
   for(const id of matches){const p=byId.get(id);if(!p)continue;
    (p.capitalRoutes??=[]).push({id:safe(row[0]),fundingObject:safe(row[3]),
     capitalType:safe(row[4]),sourceReportedStatus:safe(row[11]),
