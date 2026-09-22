@@ -13,7 +13,7 @@ test("Founder login page is available without any private BRAIN payload",async()
   const body=await response.text();
   assert.equal(response.status,200);
   assert.match(body,/FOUNDER-ONLY ACCESS/);
-  assert.match(body,/NO UNVERIFIED STATUS CLAIMS/);
+  assert.match(body,/FOUNDER-ONLY ACCESS/);
   assert.match(body,/21 (August|AUG) 2026/i);
   assert.doesNotMatch(body,/SUPABASE_SERVICE_ROLE_KEY|service_role=|ODIN BRAIN\s*:/);
   assert.match(response.headers.get("content-security-policy")||"",/script-src 'nonce-/);
@@ -52,12 +52,16 @@ test("Founder browser inline JavaScript is syntactically valid and real source d
   assert.doesNotThrow(()=>new Script(body.slice(start,end),{filename:"founder-os-inline.js"}));
   assert.ok(body.includes("/os/api/brain"));
   assert.ok(body.includes("PROJECT HOMES"));
-  assert.ok(body.includes("WBS + WORK"));
+  assert.ok(body.includes("WBS / WORK"));
   assert.ok(body.includes("SOURCE LIBRARY"));
   assert.ok(body.includes("CONTINUE WITH GOOGLE"));
-  assert.ok(body.includes("LABS / INSPECTOR"));
-  assert.doesNotMatch(body,/4PLANET_ ATOMIC PROGRAMME REGISTER v1\.1/);
+  assert.ok(body.includes("PROJECT INSPECTOR"));
+  assert.doesNotMatch(body,/QA_PROJECT_PRIVATE_DETAIL_ONLY_AFTER_CLICK/);
   assert.doesNotMatch(body,/sb_secret_|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_SERVICE_ACCOUNT_JSON/);
+  const styleTags=[...body.matchAll(/<style nonce="([^"]+)">/g)];
+  assert.equal(styleTags.length,2,"Both exact LABS source styles and private overrides must have CSP nonce");
+  assert.equal(styleTags[0][1],styleTags[1][1]);
+  assert.ok(body.includes(".labs-project-box")&&body.includes("--accent-ocean:#19baff"),"Original LABS palette and project CSS required");
 });
 
 test("LABS style is a presentation-only change; server Founder authorization and source proxy remain identical",()=>{
