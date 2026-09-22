@@ -32,7 +32,105 @@ jobs:
           test "$GITHUB_REF_NAME" = 'work/4brain-experience-01'
           git fetch origin king/test --no-tags
           git diff --name-only origin/king/test...HEAD | tee /tmp/brain-diff
-          if grep -Ev '^ops/brain/4brain-public-worker[.]js$|^scripts/4brain-contract[.]test[.]mjs$|^scripts/4brain-preview-server[.]mjs$|^tests/e2e/4brain[.]spec[.]ts$|^[.]github/workflows/4brain-public-release[.]yml$' /tmp/brain-diff; then echo 'SCOPE_EXPANSION_HOLD'; exit 21; fi
+          if grep -Ev '^ops/brain/4brain-public-worker[.]js$|^scripts/4brain-contract[.]test[.]mjs$|^scripts/4brain-preview-server[.]mjs$|^tests/e2e/4brain[.]spec[.]ts$|^[.]github/workflows/4brain-public-release[.]yml$|^[.]github/workflows/4brain-candidate-qa[.]yml$|^[.]github/workflows/4brain-preview[.]yml; then echo 'SCOPE_EXPANSION_HOLD'; exit 21; fi
+          node --check ops/brain/4brain-public-worker.js
+          node --check scripts/4brain-preview-server.mjs
+      - name: Contract and public source privacy tests
+        run: node --test scripts/4brain-contract.test.mjs
+      - name: Real Chromium desktop and iPhone width browser QA
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          node scripts/4brain-preview-server.mjs > /tmp/4brain-server.log 2>&1 &
+          for attempt in $(seq 1 30); do curl -fsS http://127.0.0.1:8787/ -o /tmp/4brain-preview.html && break || sleep 1; done
+          test -s /tmp/4brain-preview.html
+          BASE_URL=http://127.0.0.1:8787 npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+  release:
+    needs: gold
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.founder_release == 'enig send' && needs.gold.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Cloudflare read-only exact 4brain.app ownership and collision preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'work/4brain-experience-01'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'NO_AUTHORISED_CLOUDFLARE_TOKEN'; exit 31; }
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          z=$(curl -fsS "$api/zones?name=4brain.app" "${auth[@]}")
+          jq -e '.success==true and (.result|length)==1 and .result[0].name=="4brain.app" and .result[0].status=="active"' <<<"$z" >/dev/null || { echo 'EXACT_ZONE_NOT_ACCESSIBLE_OR_INACTIVE'; exit 32; }
+          aid=$(jq -r '.result[0].account.id' <<<"$z")
+          zid=$(jq -r '.result[0].id' <<<"$z")
+          d=$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select((.hostname=="4brain.app" or .hostname=="www.4brain.app") and .service!="4planet-brain-public")]|length)==0' <<<"$d" >/dev/null || { echo 'EXISTING_WORKER_OWNER_HOLD'; exit 33; }
+          p=$(curl -fsS "$api/accounts/$aid/pages/projects" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(any(.domains[]?;.=="4brain.app" or .=="www.4brain.app"))]|length)==0' <<<"$p" >/dev/null || { echo 'PAGES_DOMAIN_COLLISION_HOLD'; exit 34; }
+          routes=$(curl -fsS "$api/zones/$zid/workers/routes" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(.pattern|contains("4brain.app"))]|length)==0' <<<"$routes" >/dev/null || { echo 'WORKER_ROUTE_COLLISION_HOLD'; exit 35; }
+          root=$(curl -fsS "$api/zones/$zid/dns_records?name=4brain.app" "${auth[@]}")
+          existing=$(jq -r '[.result[]? | select(.hostname=="4brain.app" and .service=="4planet-brain-public")] | length' <<<"$d")
+          if [ "$existing" = 0 ]; then
+            jq -e '.success==true and ([.result[]? | select(.type=="A" or .type=="AAAA" or .type=="CNAME")]|length)==0' <<<"$root" >/dev/null || { echo 'ROOT_DNS_COLLISION_HOLD'; exit 36; }
+          else
+            test "$existing" = 1 || { echo 'AMBIGUOUS_EXISTING_BRAIN_OWNER_HOLD'; exit 37; }
+            jq -e '.success==true and ([.result[]? | select((.type=="A" or .type=="AAAA" or .type=="CNAME") and .proxied!=true)] | length)==0' <<<"$root" >/dev/null || { echo 'UNPROXIED_EXISTING_DOMAIN_HOLD'; exit 38; }
+          fi
+          echo "CLOUDFLARE_ACCOUNT_ID=$aid" >> "$GITHUB_ENV"
+          echo "EXACT_4BRAIN_EXISTING_WORKER_OWNER=$existing / DOMAIN_ONLY / NO_OTHER_SERVICE_COLLISION"
+      - name: Deploy ONLY 4brain.app as a dedicated isolated Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > 4brain-release-wrangler.toml <<'WRANGLER'
+          name = "4planet-brain-public"
+          main = "ops/brain/4brain-public-worker.js"
+          compatibility_date = "2026-09-22"
+          workers_dev = false
+          [[routes]]
+          pattern = "4brain.app"
+          custom_domain = true
+          WRANGLER
+          npx --yes wrangler@4.128.0 deploy --config 4brain-release-wrangler.toml
+          echo "4BRAIN_DEPLOY_SOURCE_SHA=$GITHUB_SHA"
+      - name: Verify public HTTPS CSS JS truth and security
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 25); do
+            code=$(curl -LsS --max-time 20 -o /tmp/brain.html -w '%{http_code}' https://4brain.app/ || true)
+            [ "$code" = 200 ] && grep -q 'Your Intelligence. Yours to Keep.' /tmp/brain.html && break
+            sleep 5
+          done
+          test "$code" = 200
+          grep -q 'INTERACTIVE FICTIONAL DEMO' /tmp/brain.html
+          for asset in /site.css /experience.js; do
+            curl -fsS "https://4brain.app$asset" -o /tmp/brain-asset
+            test -s /tmp/brain-asset
+          done
+          curl -fsSI https://4brain.app/ | tr -d '\r' | grep -qi 'content-security-policy:'
+          echo '4BRAIN_PUBLIC_HTTPS_AND_CONTENT=PASS'
+      - name: External domain real Chromium proof
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          BASE_URL=https://4brain.app npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo "4BRAIN_REAL_DOMAIN_BROWSER_GOLD=PASS/$GITHUB_SHA"
+ /tmp/brain-diff; then echo 'SCOPE_EXPANSION_HOLD'; exit 21; fi
           node --check ops/brain/4brain-public-worker.js
           node --check scripts/4brain-preview-server.mjs
       - name: Contract and public source privacy tests
