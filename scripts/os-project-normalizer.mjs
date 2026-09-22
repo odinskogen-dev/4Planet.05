@@ -34,6 +34,19 @@ const recordsAfterHeader=(tab,first)=>{const rows=tab?.rows??[],idx=rows.findInd
 const header=(tab,key)=>tab?.rows?.find(r=>r[0]===key)||[];
 const missing=x=>!x||/^#(REF!|ERROR!|N\/A)/i.test(x)||/^(UNKNOWN|NEEDS DECISION|NEEDS EXTERNAL EVIDENCE|NOT RECONCILED)$/i.test(x);
 const safe=s=>String(s??"").trim();
+const linkedWbsIds=(raw,packages)=>{
+ const names=new Set(safe(raw).toUpperCase().split(/[^A-Z0-9-]+/).filter(Boolean));
+ const known=new Set(packages.map(w=>w.id.toUpperCase()));
+ for(const m of safe(raw).toUpperCase().matchAll(/\b([A-Z]+-)(\d{1,3})\.\.([A-Z]+-)?(\d{1,3})\b/g)){
+  const start=Number(m[2]),end=Number(m[4]),prefix=m[1],second=m[3]||prefix;
+  if(prefix!==second||end<start||end-start>40)continue;
+  for(let i=start;i<=end;i++){
+   const id=prefix+String(i).padStart(m[2].length,"0");
+   if(known.has(id))names.add(id);
+  }
+ }
+ return packages.filter(w=>names.has(w.id.toUpperCase())).map(w=>w.id);
+};
 const link=(id,gid)=>"https://docs.google.com/spreadsheets/d/"+id+"/edit"+(gid?"#gid="+gid:"");
 export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomicSource=null){
  const gold=sheet(tabs,/GOLD PROJECT CONTRACT/i),wbs=sheet(tabs,/UNIVERSAL WBS/i),
@@ -78,8 +91,7 @@ export function normaliseGoldProjectSheets(tabs,source,rootId,atomic=null,atomic
  const unlinkedWorkPackages=new Map(),tasksWithAnyExactWbs=new Set();
  for(const p of byId.values())for(const t of p.atomic||[]){
   const raw=t.wbsLink||"";
-  const tokens=new Set(raw.toUpperCase().split(/[^A-Z0-9-]+/).filter(Boolean));
-  t.canonicalWbsIds=p.wbs.filter(w=>tokens.has(w.id.toUpperCase())).map(w=>w.id);
+  t.canonicalWbsIds=linkedWbsIds(raw,p.wbs);
   if(t.canonicalWbsIds.length)tasksWithAnyExactWbs.add(t.id);
  }
  // A task can intentionally serve two projects while its exact WBS package
