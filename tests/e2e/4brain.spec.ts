@@ -1,0 +1,26 @@
+import { test, expect } from '@playwright/test';
+test('4BRAIN fictional first/second visit and correction remain visibly truthful',async({page})=>{
+await page.goto('/');
+await expect(page.getByRole('heading',{name:/Your intelligence/i})).toBeVisible();
+await expect(page.getByText(/No sign-in or personal information required/)).toBeVisible();
+await page.getByRole('link',{name:/Experience 4BRAIN/}).click();
+await page.getByLabel('Alex’s goal').selectOption('learn');
+await page.getByLabel('One constraint').selectOption('focus');
+await page.getByRole('button',{name:'Review proposed memory'}).click();
+await expect(page.getByText('Learn a new skill').last()).toBeVisible();
+await expect(page.getByText('PENDING APPROVAL')).toBeVisible();
+await page.getByRole('button',{name:'Approve this sample memory'}).click();
+await expect(page.getByText('Start with what matters')).toBeVisible();
+await expect(page.getByText(/Learn a new skill/i).last()).toBeVisible();
+await page.getByRole('button',{name:'Simulate a later visit'}).click();
+await expect(page.getByText(/simulated next visit/i).first()).toBeVisible();
+await expect(page.getByText(/Continue with learn a new skill/i)).toBeVisible();
+await page.getByRole('button',{name:'Correct or remove memory'}).click();
+await page.getByRole('button',{name:'Remove memory'}).click();
+await expect(page.getByText(/No approved context available/)).toBeVisible();
+await page.getByRole('button',{name:'Simulate a later visit'}).click();
+await expect(page.getByText(/No active memory/)).toBeVisible();
+await expect(page.locator('body')).not.toContainText('ODIN BRAIN —');
+const dim=await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1);
+expect(dim).toBe(true);
+});
