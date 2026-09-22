@@ -53,8 +53,12 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
   return {data:q.mode==="single"||q.mode==="maybeSingle"?rows[0]||null:rows,error:null};
  });
  await page.route("**/supabase.min.js",async route=>route.fulfill({status:200,contentType:"application/javascript",body:stub}));
+ page.on("pageerror",e=>console.log("SYNTHETIC_PAGE_ERROR",String(e.message).slice(0,350)));
+ page.on("console",m=>{if(m.type()==="error")console.log("SYNTHETIC_BROWSER_CONSOLE",m.text().slice(0,350));});
  await page.goto(BASE.replace(/\/$/,"")+"/app/food/",{waitUntil:"domcontentloaded"});
- await expect(page.getByText("Middager",{exact:true}).first()).toBeVisible({timeout:55000});
+ console.log("SYNTHETIC_BODY_FIRST", (await page.locator("body").innerText()).slice(0,1250));
+ console.log("SYNTHETIC_RUNTIME_STATE",await page.evaluate(()=>({sb:typeof window.supabase,matcher:typeof (window as any).FourSapienPantryDecision,body:document.body.children.length})));
+ await expect(page.getByText("Middager",{exact:true}).first()).toBeVisible({timeout:15000});
  await page.getByText("Middager",{exact:true}).first().click();
  const pantry=page.getByRole("region",{name:"Min mat — privat beholdning"});
  await expect(pantry).toBeVisible();
