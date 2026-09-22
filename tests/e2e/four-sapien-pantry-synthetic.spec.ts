@@ -58,6 +58,10 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await page.goto(BASE.replace(/\/$/,"")+"/app/food/",{waitUntil:"domcontentloaded"});
  console.log("SYNTHETIC_BODY_FIRST", (await page.locator("body").innerText()).slice(0,1250));
  console.log("SYNTHETIC_RUNTIME_STATE",await page.evaluate(()=>({sb:typeof window.supabase,matcher:typeof (window as any).FourSapienPantryDecision,body:document.body.children.length})));
+ console.log("SYNTHETIC_SCRIPTS",await page.evaluate(()=>Array.from(document.scripts).map(x=>({src:x.src,typ:x.type,inline:x.textContent?.length})).slice(-16)));
+ console.log("SYNTHETIC_ROOT",await page.evaluate(()=>Array.from(document.body.children).map(x=>({tag:x.tagName,id:x.id,html:x.outerHTML.slice(0,150)}))));
+ await page.waitForTimeout(2300);
+ console.log("SYNTHETIC_BODY_AFTER_WAIT",(await page.locator("body").innerText()).slice(0,1400));
  await expect(page.getByText("Middager",{exact:true}).first()).toBeVisible({timeout:15000});
  await page.getByText("Middager",{exact:true}).first().click();
  const pantry=page.getByRole("region",{name:"Min mat — privat beholdning"});
