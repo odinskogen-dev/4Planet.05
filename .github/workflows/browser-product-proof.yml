@@ -69,6 +69,17 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
+      # Independent, bounded 4SAPIEN Food browser receipt executes even if a later
+      # unrelated Planet/Atlas journey fails. Not authenticated second-visit proof.
+      - name: Run 4SAPIEN FOOD bounded first-visit proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/pantry-choice.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+
       - name: Run Oslofjord Planet Proof on Chromium desktop + mobile
         env:
           BASE_URL: http://127.0.0.1:4173
