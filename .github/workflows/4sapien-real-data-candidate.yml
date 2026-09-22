@@ -5,6 +5,7 @@ on:
     branches: [king/test]
     paths:
       - 'products/4sapien/**'
+      - 'tests/e2e/four-sapien-pantry-synthetic.spec.ts'
       - '.github/workflows/4sapien-real-data-candidate.yml'
       - '.github/workflows/ask-embla-production.yml'
   workflow_dispatch:
