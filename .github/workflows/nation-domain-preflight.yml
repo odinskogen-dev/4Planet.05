@@ -5,6 +5,7 @@ on:
     branches: [king/test]
     paths:
       - '.github/workflows/nation-domain-preflight.yml'
+      - '.github/workflows/nation-live-release.yml'
   workflow_dispatch:
 
 permissions:
