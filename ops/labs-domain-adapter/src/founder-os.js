@@ -44,6 +44,6 @@ export async function handlePrivateOS(request, incoming) {
   const headers=new Headers(noStore);
   headers.set("Content-Type","text/html; charset=utf-8");
   headers.set("Content-Security-Policy","default-src 'none'; script-src 'nonce-"+nonce+"'; style-src 'nonce-"+nonce+"'; connect-src 'self' "+SB_URL+"; frame-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
-  const safeHTML=html.replace("<style>","<style nonce=\""+nonce+"\">").replace("<script>","<script nonce=\""+nonce+"\">");
+  const safeHTML=html.replaceAll("<style>","<style nonce=\\\""+nonce+"\\\">").replace("<script>","<script nonce=\\\""+nonce+"\\\">");
   return new Response(request.method==="HEAD"?null:safeHTML,{status:200,headers});
 }
