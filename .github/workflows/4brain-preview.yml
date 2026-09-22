@@ -69,5 +69,7 @@ jobs:
           test "$code" = 200
           grep -q 'Make your first Context Pack' /tmp/brain-preview.html
           curl -fsSI "$PREVIEW_URL/" | tr -d '\r' | grep -qi 'x-robots-tag: noindex'
-          curl -fsS "$PREVIEW_URL/experience.js" | grep -q '4brain.public.local-context.v1'
+          curl -fsS "$PREVIEW_URL/experience.js" -o /tmp/brain-preview-app.js
+          grep -q '4brain.public.local-context.v1' /tmp/brain-preview-app.js
+          BASE_URL="$PREVIEW_URL" npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
           echo "PREVIEW_PASS=$PREVIEW_URL/ / $GITHUB_SHA / LIVE_4BRAIN_APP_NOT_CHANGED"
