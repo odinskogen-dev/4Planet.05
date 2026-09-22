@@ -62,8 +62,8 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  console.log("SYNTHETIC_ROOT",await page.evaluate(()=>Array.from(document.body.children).map(x=>({tag:x.tagName,id:x.id,html:x.outerHTML.slice(0,150)}))));
  await page.waitForTimeout(2300);
  console.log("SYNTHETIC_BODY_AFTER_WAIT",(await page.locator("body").innerText()).slice(0,1400));
- await expect(page.getByText("Middager",{exact:true}).first()).toBeVisible({timeout:15000});
- await page.getByText("Middager",{exact:true}).first().click();
+ await expect(page.getByText("Middag",{exact:true}).first()).toBeVisible({timeout:15000});
+ await page.getByText("Middag",{exact:true}).first().click();
  const pantry=page.getByRole("region",{name:"Min mat — privat beholdning"});
  await expect(pantry).toBeVisible();
  await expect(pantry.getByText(/Legg inn ingredienser/)).toBeVisible();
@@ -74,7 +74,7 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await pantry.getByRole("button",{name:/Bekreft og lagre/}).click();
  await expect(pantry.getByText("Lagring: SAVED",{exact:false})).toBeVisible();
  await page.reload({waitUntil:"domcontentloaded"});
- await page.getByText("Middager",{exact:true}).first().click();
+ await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Tilbake: 1 tidligere bekreftede ingredienser/)).toBeVisible();
  await expect(pantry.getByLabel("Ingrediens 1")).toHaveValue("Havregryn");
  await pantry.getByLabel("Mengde 1").fill("200");
@@ -82,16 +82,16 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await expect(pantry.getByText("Lagring: SAVED",{exact:false})).toBeVisible();
  await page.evaluate(()=>sessionStorage.setItem("qaUser","synthetic-user-b"));
  await page.reload({waitUntil:"domcontentloaded"});
- await page.getByText("Middager",{exact:true}).first().click();
+ await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Legg inn ingredienser/)).toBeVisible();
  await page.evaluate(()=>sessionStorage.setItem("qaUser","synthetic-user-a"));
  await page.reload({waitUntil:"domcontentloaded"});
- await page.getByText("Middager",{exact:true}).first().click();
+ await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByLabel("Mengde 1")).toHaveValue("200");
  await pantry.getByRole("button",{name:/Fjern min lagrede beholdning/}).click();
  await expect(pantry.getByText(/Lagring: REMOVED/)).toBeVisible();
  await page.reload({waitUntil:"domcontentloaded"});
- await page.getByText("Middager",{exact:true}).first().click();
+ await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Legg inn ingredienser/)).toBeVisible();
  // CI's in-memory mock is not a real Supabase authenticated session or RLS E2E.
 });
