@@ -158,3 +158,25 @@ test("a missing project economy or funding row never silently disappears",()=>{
  const other=fixture();other[5].rows.splice(1,1);
  assert.throws(()=>normaliseGoldProjectSheets(other,{},root),/GOLD_PROJECT_MISSING_FUNDING/);
 });
+
+test("source-owned 4NATION ID and bounded NAT range resolve without synthetic project identity",()=>{
+ const tabs=fixture();const r=tabs[0].rows[1];r[0]="4NATION";r[24]="4NATION-G01";
+ tabs[2].rows[1][0]="4NATION";tabs[4].rows[1][0]="4NATION";
+ tabs[4].rows[1][40]="4NATION-G01";tabs[5].rows[1][0]="4NATION";
+ tabs[1].rows.splice(1,1, ...Array.from({length:24},(_,i)=>
+  ["NAT-"+String(i+1).padStart(2,"0"),"L1","4NATION","Source case","Scope"]));
+ const a={name:"Tasks",sheetId:"1693775649",rows:[
+  ["Task ID","Family","Concrete deliverable","Owner","Programme status","Lifecycle",
+   "Dependency","Definition of done","Required evidence","Next gate",
+   "Primary Project Home","WBS / Project Gate"],
+  ["NAT-SRC-01","4NATION","Source evidence","AXE","SOURCE REPORTED","OPEN","","","SOURCE","REVIEW",
+   "4NATION — https://docs.google.com/document/d/source/edit","NAT-01..NAT-07 / G0–G1"]
+ ]};
+ const out=normaliseGoldProjectSheets(tabs,{},root,a,{});
+ const p=JSON.parse(out.records.find(x=>x.metadata.projectId==="4NATION").content);
+ assert.equal(p.genre,"4NATION");assert.equal(p.wbsCount,24);
+ assert.equal(p.atomicTaskCount,1);
+ assert.deepEqual(p.atomicTasks[0].canonicalWbsIds,
+  Array.from({length:7},(_,i)=>"NAT-"+String(i+1).padStart(2,"0")));
+ assert.equal(p.currentState,"NOT_RECONCILED_WITH_CURRENT_PROGRAMME");
+});
