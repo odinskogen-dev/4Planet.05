@@ -1,0 +1,47 @@
+name: 4BRAIN Candidate Quality — NO LIVE DEPLOY
+on:
+  push:
+    branches: [work/4brain-experience-01]
+    paths:
+      - '.github/workflows/4brain-candidate-qa.yml'
+      - 'ops/brain/4brain-public-worker.js'
+      - 'scripts/4brain-contract.test.mjs'
+      - 'scripts/4brain-preview-server.mjs'
+      - 'tests/e2e/4brain.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: 4brain-candidate-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Exact source and syntax
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --check ops/brain/4brain-public-worker.js
+          node --check scripts/4brain-preview-server.mjs
+      - name: Contract, privacy and false-claim regressions
+        run: node --test scripts/4brain-contract.test.mjs
+      - name: Local browser acceptance on desktop and mobile
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          node scripts/4brain-preview-server.mjs > /tmp/brain-preview.log 2>&1 &
+          for attempt in $(seq 1 30); do curl -fsS http://127.0.0.1:8787/ -o /tmp/4brain-preview.html && break || sleep 1; done
+          test -s /tmp/4brain-preview.html
+          BASE_URL=http://127.0.0.1:8787 npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo "4BRAIN_CANDIDATE_QA=PASS/$GITHUB_SHA / NO_LIVE_DEPLOY"
