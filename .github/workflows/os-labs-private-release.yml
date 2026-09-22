@@ -39,6 +39,7 @@ jobs:
       - name: Build private OS from exact current LABS source styles and source taxonomy
         run: |
           npm ci --ignore-scripts
+          npm install --no-save --ignore-scripts --no-audit esbuild@0.25.12
           node scripts/build-private-labs-assets.mjs
       - name: Pre-deployment security and source controls
         shell: bash
