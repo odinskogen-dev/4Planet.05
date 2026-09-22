@@ -90,7 +90,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/4brain-wrangler.toml <<'WRANGLER'
+          cat > 4brain-release-wrangler.toml <<'WRANGLER'
           name = "4planet-brain-public"
           main = "ops/brain/4brain-public-worker.js"
           compatibility_date = "2026-09-22"
@@ -99,7 +99,7 @@ jobs:
           pattern = "4brain.app"
           custom_domain = true
           WRANGLER
-          npx --yes wrangler@4.128.0 deploy --config /tmp/4brain-wrangler.toml
+          npx --yes wrangler@4.128.0 deploy --config 4brain-release-wrangler.toml
           echo "4BRAIN_DEPLOY_SOURCE_SHA=$GITHUB_SHA"
       - name: Verify public HTTPS CSS JS truth and security
         shell: bash
