@@ -177,6 +177,11 @@
       "heir": {"review_path": "/market", "origin_path": "/impact"},
       "sandbox": null
     },
+    "4BRANDS": {
+      "live": {"url": "https://4brands.org/", "identity_state": "READBACK_REQUIRED"},
+      "heir": {"review_path": "/4brands", "origin_path": "/4brands"},
+      "sandbox": null
+    },
     "ACTORS": {
       "live": {"url": "https://4planet.org/actors", "identity_state": "READBACK_REQUIRED"},
       "heir": {"review_path": "/actors", "origin_path": "/actors"},
