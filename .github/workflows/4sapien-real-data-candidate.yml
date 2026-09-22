@@ -44,6 +44,7 @@ jobs:
           cp products/4sapien/source/4sapien-live-hardening.js "$SITE/4sapien-live-hardening.js"
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
           python products/4sapien/build/apply_document_intake_guard.py "$SITE"
+          python products/4sapien/build/apply_pantry_first_return_guard.py "$SITE"
           cp products/4sapien/cloudflare/_headers "$SITE/_headers"
           cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
 
@@ -117,6 +118,11 @@ jobs:
           python -m py_compile products/4sapien/build/apply_document_intake_guard.py
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
           node --check "$SITE/4sapien-live-hardening.js"
+          node --check "$SITE/4sapien-pantry-decision.js"
+          grep -Fq '<FoodPantryProof user={user} avoid={avoid}/>' "$FOOD"
+          grep -Fq 'four_sapien_embla_memories' "$FOOD"
+          grep -Fq 'PRIVATE PERSON' "$FOOD" || grep -Fq 'Privat Person-minne' "$FOOD"
+          python -m py_compile products/4sapien/build/apply_pantry_first_return_guard.py
           python -m py_compile products/4sapien/build/apply_live_hardening_guard.py
           cat > /tmp/4sapien-deno.json <<'JSON'
           {
