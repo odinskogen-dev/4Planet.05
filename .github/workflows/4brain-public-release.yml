@@ -1,13 +1,12 @@
 name: 4BRAIN Explicit Founder Gold Public Release
 on:
-  push:
-    branches: [work/4brain-experience-01]
-    paths:
-      - '.github/workflows/4brain-public-release.yml'
-      - 'ops/brain/4brain-public-worker.js'
-      - 'scripts/4brain-contract.test.mjs'
-      - 'scripts/4brain-preview-server.mjs'
-      - 'tests/e2e/4brain.spec.ts'
+  # Future production publication requires a fresh, explicit founder release.
+  workflow_dispatch:
+    inputs:
+      founder_release:
+        description: 'Exact founder release approval: enig send'
+        type: string
+        required: true
 permissions:
   contents: read
 concurrency:
@@ -49,7 +48,7 @@ jobs:
           BASE_URL=http://127.0.0.1:8787 npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
   release:
     needs: gold
-    if: ${{ needs.gold.result == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.founder_release == 'enig send' && needs.gold.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
