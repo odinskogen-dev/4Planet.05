@@ -36,10 +36,10 @@ test('device-local user Context Pack persists after refresh, corrects, exports a
  await expect(page.getByText(/Review and tick/)).toBeVisible();
  await page.getByLabel(/I have reviewed these words/).check();
  await page.getByRole('button',{name:/Approve and save on this device/}).click();
- await expect(page.getByText('SAVED ON THIS DEVICE')).toBeVisible();
+ await expect(page.locator('#studio-status').getByText('SAVED ON THIS DEVICE')).toBeVisible();
  await expect(page.getByText('Plan a community garden').first()).toBeVisible();
  await page.reload();
- await expect(page.getByText('SAVED ON THIS DEVICE')).toBeVisible();
+ await expect(page.locator('#studio-status').getByText('SAVED ON THIS DEVICE')).toBeVisible();
  await expect(page.getByText('One afternoon per week').first()).toBeVisible();
  await page.getByRole('button',{name:/Review or correct/}).click();
  await page.getByLabel('02 / One important constraint').fill('Two afternoons per month');
@@ -50,9 +50,9 @@ test('device-local user Context Pack persists after refresh, corrects, exports a
  await page.getByRole('button',{name:'Export JSON'}).click();
  const d=await downloadPromise;expect(d.suggestedFilename()).toBe('4brain-my-local-context.json');
  await page.getByRole('button',{name:/Delete from this browser/}).click();
- await expect(page.getByText('NOT SAVED')).toBeVisible();
+ await expect(page.locator('#studio-status').getByText('NOT SAVED')).toBeVisible();
  await page.reload();
- await expect(page.getByText('NOT SAVED')).toBeVisible();
+ await expect(page.locator('#studio-status').getByText('NOT SAVED')).toBeVisible();
  await expect(page.getByText('Plan a community garden')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
