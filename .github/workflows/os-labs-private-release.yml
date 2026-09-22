@@ -6,6 +6,16 @@ on:
       - .github/workflows/os-labs-private-release.yml
       - ops/labs-domain-adapter/src/founder-os.js
       - ops/labs-domain-adapter/src/founder-ui.js
+      - scripts/build-private-labs-assets.mjs
+      - src/pages/labs/LabsOverviewCurrent.tsx
+      - src/pages/labs/labs.css
+      - src/pages/labs/labsGold.css
+      - src/pages/labs/labsV4.css
+      - src/pages/labs/labsV4Root.css
+      - src/pages/labs/labsMobileFix.css
+      - src/pages/labs/labsIndex.css
+      - src/pages/labs/labsProjectPulse.css
+      - src/pages/labs/labsCurrentProjection.ts
       - ops/labs-domain-adapter/src/index.js
       - scripts/labs-private-os-contract.test.mjs
       - scripts/labs-os-ui-browser.test.mjs
@@ -26,6 +36,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+      - name: Build private OS from exact current LABS source styles and source taxonomy
+        run: |
+          npm ci --ignore-scripts
+          node scripts/build-private-labs-assets.mjs
       - name: Pre-deployment security and source controls
         shell: bash
         run: |
@@ -110,7 +124,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm ci
           npx playwright install chromium --with-deps
           node scripts/labs-os-ui-browser.test.mjs
           node --input-type=module <<'NODE'
