@@ -57,7 +57,7 @@ try{
   await page.locator("#inspector-now").getByText("QA_PROJECT_PRIVATE_DETAIL_ONLY_AFTER_CLICK").waitFor({timeout:8000});
   if((await page.locator("#inspector a[href*='docs.google.com']").count())!==1)
    throw Error("ORIGINAL_PROVENANCE_LINK_MISSING");
-  await page.locator("#close-inspector").click({force:true});
+  if(await page.locator("#close-inspector").isVisible()) await page.locator("#close-inspector").click();
   await page.locator('[data-view="library"]').first().click();
   if((await page.locator("#library-list .os-entry").count())!==3)throw Error("SOURCE_INVENTORY_COUNT");
   await page.locator("#library-search").fill("Inventory Only");
