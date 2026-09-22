@@ -1,0 +1,75 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { Script } from "node:vm";
+import { handlePrivateOS } from "../ops/labs-domain-adapter/src/founder-os.js";
+
+function request(path, options={}) {
+  const url="https://labs.4planet.org"+path;
+  return [new Request(url, options),new URL(url)];
+}
+test("Founder login page is available without any private BRAIN payload",async()=>{
+  const response=await handlePrivateOS(...request("/os"));
+  const body=await response.text();
+  assert.equal(response.status,200);
+  assert.match(body,/FOUNDER-ONLY ACCESS/);
+  assert.match(body,/FOUNDER-ONLY ACCESS/);
+  assert.match(body,/The 21 August LABS structure/);
+  assert.doesNotMatch(body,/SUPABASE_SERVICE_ROLE_KEY|service_role=|ODIN BRAIN\s*:/);
+  assert.match(response.headers.get("content-security-policy")||"",/script-src 'nonce-/);
+  assert.match(response.headers.get("cache-control")||"",/no-store/);
+});
+test("Unauthenticated private source calls fail closed with zero source rows",async()=>{
+  const response=await handlePrivateOS(...request("/os/api/brain"));
+  assert.equal(response.status,401);
+  const obj=await response.json();
+  assert.equal(obj.error,"AUTH_REQUIRED");
+  assert.equal(JSON.stringify(obj).includes("knowledge"),false);
+});
+test("Private API rejects invalid verbs and public status cannot claim success",async()=>{
+  assert.equal((await handlePrivateOS(...request("/os/api/brain",{method:"POST"}))).status,405);
+  const status=await handlePrivateOS(...request("/os/_status"));
+  const json=await status.json();
+  assert.equal(json.release,"PARTIAL");
+  assert.equal(json.automaticDriveSyncVerified,false);
+  assert.equal(json.fullDrivePortfolioHydrated,false);
+});
+test("Existing LABS origin is still immutable and OS intercept precedes public proxy",()=>{
+  const source=readFileSync(new URL("../ops/labs-domain-adapter/src/index.js",import.meta.url),"utf8");
+  assert.ok(source.includes('13fd59158c876b69d6601d27121334301fc25fa0'));
+  assert.ok(source.includes("return handlePrivateOS(request, incoming)"));
+  assert.ok(source.indexOf("return handlePrivateOS(request, incoming)")<source.indexOf('const upstream = new URL(IMMUTABLE_ORIGIN)'));
+  assert.ok(source.includes('outbound.set("X-Labs-Source-Commit", SOURCE_SHA)'));
+});
+
+test("Founder browser inline JavaScript is syntactically valid and real source data is never embedded in public HTML",async()=>{
+  const response=await handlePrivateOS(...request("/os"));
+  const body=await response.text();
+  const open=body.indexOf("<script nonce=");
+  const start=body.indexOf(">",open)+1;
+  const end=body.indexOf("</script>",start);
+  assert.ok(open>=0&&start>0&&end>start,"private Founder login script missing");
+  assert.doesNotThrow(()=>new Script(body.slice(start,end),{filename:"founder-os-inline.js"}));
+  assert.ok(body.includes("/os/api/brain"));
+  assert.ok(body.includes("PROJECT HOMES"));
+  assert.ok(body.includes("WBS / WORK"));
+  assert.ok(body.includes("SOURCE LIBRARY"));
+  assert.ok(body.includes("CONTINUE WITH GOOGLE"));
+  assert.ok(body.includes("PROJECT INSPECTOR"));
+  assert.doesNotMatch(body,/QA_PROJECT_PRIVATE_DETAIL_ONLY_AFTER_CLICK/);
+  assert.doesNotMatch(body,/sb_secret_|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_SERVICE_ACCOUNT_JSON/);
+  const styleTags=[...body.matchAll(/<style nonce="([^"]+)">/g)];
+  assert.equal(styleTags.length,2,"Both exact LABS source styles and private overrides must have CSP nonce");
+  assert.equal(styleTags[0][1],styleTags[1][1]);
+  assert.ok(body.includes(".labs-project-box")&&body.includes("--accent-ocean:#19baff"),"Original LABS palette and project CSS required");
+});
+
+test("LABS style is a presentation-only change; server Founder authorization and source proxy remain identical",()=>{
+  const source=readFileSync(new URL("../ops/labs-domain-adapter/src/founder-os.js",import.meta.url),"utf8");
+  assert.ok(source.includes('import { html } from "./founder-ui.js"'));
+  assert.ok(source.includes('const response=await fetch(PRIVATE_FUNCTION,'));
+  assert.ok(source.includes('"Authorization":bearer,"apikey":SB_PUBLISHABLE'));
+  assert.ok(source.includes('path===BASE+"/api/brain"'));
+  assert.ok(source.includes("script-src "+String.fromCharCode(39)+"nonce-"));
+  assert.doesNotMatch(source,/os_projection_(start|batch|finish)|GOOGLE_SERVICE_ACCOUNT_JSON/);
+});

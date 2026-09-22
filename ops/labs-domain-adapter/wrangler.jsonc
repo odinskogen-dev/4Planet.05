@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "4planet-labs-os-domain-adapter",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-19",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "labs.4planet.org/*",
+      "zone_name": "4planet.org"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+name: LABS OS — immutable release inventory
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/labs-os-release-inventory.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+    steps:
+      - name: Verify exact candidate deployment and existing LABS origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=/tmp/labs-release-inventory.md
+          target='13fd59158c876b69d6601d27121334301fc25fa0'
+          printf '# LABS immutable release preflight\n\nApproved exact source SHA: `%s`\n\n' "$target" > "$report"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          account="${CLOUDFLARE_ACCOUNT_ID:-d53c17b06219066a0325eec01c21729e}"
+          found=''
+          for page in 1 2 3 4 5 6; do
+            json="$(curl -fsS --max-time 30 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05/deployments?page=$page&per_page=25")"
+            jq -e '.success==true' <<< "$json" >/dev/null
+            match="$(jq -c --arg sha "$target" '[.result[]? | select(.deployment_trigger.metadata.commit_hash == $sha)] | first // empty' <<<"$json")"
+            if [[ -n "$match" ]]; then found="$match"; break; fi
+            count="$(jq '.result|length' <<<"$json")"
+            [[ "$count" -lt 25 ]] && break
+          done
+          if [[ -z "$found" ]]; then
+            echo 'BLOCKED: exact target SHA deployment not located; no mutation.' >> "$report"
+            cat "$report"
+            exit 2
+          fi
+          url="$(jq -r '.url // empty' <<<"$found")"
+          stage="$(jq -r '.latest_stage.status // "UNKNOWN"' <<<"$found")"
+          env="$(jq -r '.environment // "UNKNOWN"' <<<"$found")"
+          printf 'Pages URL: %s\nStage status: %s\nEnvironment: %s\n\n' "$url" "$stage" "$env" >> "$report"
+          if [[ ! "$url" =~ ^https://[a-zA-Z0-9-]+\.4planet-05\.pages\.dev/?$ ]]; then
+            echo 'BLOCKED: unexpected Pages deployment URL format; no mutation.' >> "$report"
+            cat "$report"
+            exit 3
+          fi
+          if [[ "$stage" != success && "$stage" != active ]]; then
+            echo 'BLOCKED: exact target not successfully deployed; no mutation.' >> "$report"
+            cat "$report"
+            exit 4
+          fi
+          for path in / /labs /product-build.txt; do
+            candidate_http="$(curl -sSL --connect-timeout 8 --max-time 20 -o /tmp/labs-candidate-response -w '%{http_code}' "${url%/}$path" || true)"
+            live_http="$(curl -sSL --connect-timeout 8 --max-time 20 -o /tmp/labs-live-response -w '%{http_code}' "https://labs.4planet.org$path" || true)"
+            printf '%s: candidate HTTP %s; live HTTP %s\n' "$path" "$candidate_http" "$live_http" >> "$report"
+            if [[ "$path" == /product-build.txt && "$candidate_http" == 200 ]]; then
+              printf 'Candidate build marker:\n\n```\n' >> "$report"
+              head -n 12 /tmp/labs-candidate-response >> "$report"
+              printf '\n```\n' >> "$report"
+            fi
+            [[ "$candidate_http" == 200 ]] || { echo "BLOCKED: candidate $path not HTTP200." >> "$report"; cat "$report"; exit 5; }
+          done
+          printf '\nRead-only proof. No DNS, route, deployment or Factory mutation.\n' >> "$report"
+          cat "$report"
+      - name: Attach release inventory to existing LABS task
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ -f /tmp/labs-release-inventory.md ]]; then
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body-file /tmp/labs-release-inventory.md
+          else
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body 'LABS immutable release inventory failed before report. No mutation.'
+          fi
