@@ -47,6 +47,23 @@ jobs:
           cp products/4sapien/cloudflare/_headers "$SITE/_headers"
           cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
 
+      - name: Inspect existing FOOD auth hook without private data
+        run: |
+          python - <<'PY'
+          import pathlib,re
+          s=pathlib.Path('products/4sapien/site/app/food/index.html').read_text()
+          pats=['const SB','var SB','createClient(','getSession(','onAuthStateChange(','function App(','window.SB','window.FourSapien']
+          print('FOOD_AUTH_HOOK_DIAGNOSTIC')
+          for pat in pats:
+            matches=list(re.finditer(re.escape(pat),s))
+            print(pat, 'occurrences', len(matches))
+            for m in matches[:2]:
+              excerpt=s[max(0,m.start()-65):min(len(s),m.end()+105)].replace('\\n',' ')
+              excerpt=re.sub(r'sb_publishable_[A-Za-z0-9_-]+','[PUBLIC_KEY_REDACTED]',excerpt)
+              print('  ',excerpt[:190])
+          print('FOOD_HTML_LENGTH',len(s))
+          PY
+
       - name: Build and zero-loss QA
         run: |
           set -euo pipefail
