@@ -1,0 +1,73 @@
+name: 4BRAIN Nonproduction Visual Preview
+on:
+  push:
+    branches: [work/4brain-experience-01]
+    paths: ['.github/workflows/4brain-preview.yml','ops/brain/4brain-public-worker.js','tests/e2e/4brain.spec.ts']
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Source and local browser regression
+        run: |
+          set -euo pipefail
+          node --check ops/brain/4brain-public-worker.js
+          node --test scripts/4brain-contract.test.mjs
+          npm ci
+          npx playwright install --with-deps chromium
+          node scripts/4brain-preview-server.mjs >/tmp/4brain-local.log 2>&1 &
+          for n in $(seq 1 30); do curl -fsS http://127.0.0.1:8787/ -o /tmp/4brain-local.html && break || sleep 1; done
+          test -s /tmp/4brain-local.html
+          BASE_URL=http://127.0.0.1:8787 npx playwright test tests/e2e/4brain.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+      - name: Export only 4BRAIN public GET assets
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/brain-preview
+          node --input-type=module <<'NODE'
+          import worker from './ops/brain/4brain-public-worker.js';
+          import {writeFile} from 'node:fs/promises';
+          for(const [route,name] of [['/','index.html'],['/site.css','site.css'],['/experience.js','experience.js'],['/robots.txt','robots.txt']]){
+            let r=await worker.fetch(new Request('https://4brain.app'+route));
+            if(r.status!==200)throw Error('EXPORT_FAIL '+route);
+            await writeFile('/tmp/brain-preview/'+name,await r.text());
+          }
+          NODE
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Content-Security-Policy: default-src '\''none'\''; script-src '\''self'\''; style-src '\''self'\''; img-src '\''self'\''; connect-src '\''none'\''; form-action '\''none'\''; frame-ancestors '\''none'\''; base-uri '\''none'\''\n' > /tmp/brain-preview/_headers
+      - name: Assert existing Cloudflare project is not production target
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          zones=$(curl -fsS https://api.cloudflare.com/client/v4/zones?name=4brain.app -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          account=$(jq -r '.result[0].account.id // empty' <<< "$zones")
+          test -n "$account"
+          projects=$(curl -fsS https://api.cloudflare.com/client/v4/accounts/$account/pages/projects -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          jq -e '.success == true and ([.result[]? | select(.name=="4planet-05" and .production_branch!="4brain-preview")] | length)==1' <<< "$projects" >/dev/null
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Publish ONLY the noindex 4brain-preview branch
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy /tmp/brain-preview --project-name 4planet-05 --branch 4brain-preview --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/brain-preview-deploy.log
+          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/brain-preview-deploy.log | head -n1 || true)
+          test -n "$url"
+          echo "PREVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "EXACT_4BRAIN_PREVIEW=$url/"
+      - name: Real preview content and noindex readback
+        run: |
+          set -euo pipefail
+          code=$(curl -LsS --max-time 20 -o /tmp/brain-preview.html -w '%{http_code}' "$PREVIEW_URL/")
+          test "$code" = 200
+          grep -q 'Make your first Context Pack' /tmp/brain-preview.html
+          curl -fsSI "$PREVIEW_URL/" | tr -d '\r' | grep -qi 'x-robots-tag: noindex'
+          curl -fsS "$PREVIEW_URL/experience.js" | grep -q '4brain.public.local-context.v1'
+          echo "PREVIEW_PASS=$PREVIEW_URL/ / $GITHUB_SHA / LIVE_4BRAIN_APP_NOT_CHANGED"
