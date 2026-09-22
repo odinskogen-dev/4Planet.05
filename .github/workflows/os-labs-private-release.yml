@@ -136,7 +136,7 @@ jobs:
               const errors=[];page.on('pageerror',e=>errors.push(String(e)));
               const r=await page.goto('https://labs.4planet.org/os',{waitUntil:'domcontentloaded',timeout:35000});
               if(r?.status()!==200)throw Error('OS login status '+r?.status());
-              await page.getByText('Sign in to your private OS.').first().waitFor({timeout:20000});
+              await page.locator('#login #google').waitFor({timeout:20000});
               if(await page.getByText('BRAIN Federation Architecture v1.0').count())throw Error('Private source leaked to unauthenticated HTML');
               if(errors.length)throw Error('JS page error '+errors.slice(0,2).join(' | '));
               console.log('LABS private OS Founder login mobile/desktop SAFE PASS at '+width+'px');
