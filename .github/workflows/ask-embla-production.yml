@@ -335,9 +335,8 @@ jobs:
           echo "current=${current:-none}" >> "$GITHUB_OUTPUT"
 
       - name: Attach 4sapien.com after all gates pass
-        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: prod
-        if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909' && steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
           CF_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
