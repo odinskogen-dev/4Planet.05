@@ -2,7 +2,7 @@ name: 4SAPIEN One Product production gate
 
 on:
   push:
-    branches: [build/ask-embla-live-20260909]
+    branches: [build/ask-embla-live-20260909, work/4sapien-exposure-01-20260925]
     paths:
       - 'products/4sapien/**'
       - '.github/workflows/ask-embla-production.yml'
@@ -69,6 +69,59 @@ jobs:
           <!doctype html><html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/"><title>4SAPIEN</title><link rel="canonical" href="https://4sapien.com/"></head><body><a href="/">Åpne 4SAPIEN</a></body></html>
           HTML
 
+          # Exposure Engine 01: one useful, indexable FOOD-intent entry into the existing product.
+          python - <<'PY'
+          from pathlib import Path
+          site=Path("products/4sapien/site")
+          root=site/"index.html"
+          s=root.read_text()
+          meta='''<meta name="description" content="4SAPIEN hjelper deg forstå valg i hverdagen med kilder, synlig usikkerhet og fakta fremfor råd."><link rel="canonical" href="https://4sapien.com/"><meta property="og:title" content="4SAPIEN"><meta property="og:description" content="Se livet ditt klart. Fakta, kilder og synlig usikkerhet — du bestemmer."><meta property="og:url" content="https://4sapien.com/"><meta property="og:type" content="website">'''
+          if 'name="description"' not in s:
+              s=s.replace('</head>',meta+'</head>',1)
+              root.write_text(s)
+
+          p=site/"mat"/"hva-skal-vi-ha-til-middag"
+          p.mkdir(parents=True,exist_ok=True)
+          (p/"index.html").write_text(r'''<!doctype html>
+          <html lang="no"><head>
+          <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Hva skal vi ha til middag? | 4SAPIEN Mat</title>
+          <meta name="description" content="Start med det du allerede har. 4SAPIEN Mat hjelper deg strukturere middagsvalget etter tid, pris, preferanser og tilgjengelige ingredienser.">
+          <link rel="canonical" href="https://4sapien.com/mat/hva-skal-vi-ha-til-middag/">
+          <meta property="og:title" content="Hva skal vi ha til middag? | 4SAPIEN Mat">
+          <meta property="og:description" content="Start med det du allerede har, velg hva som betyr mest, og åpne 4SAPIEN Mat.">
+          <meta property="og:url" content="https://4sapien.com/mat/hva-skal-vi-ha-til-middag/"><meta property="og:type" content="website">
+          <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Hva skal vi ha til middag?","url":"https://4sapien.com/mat/hva-skal-vi-ha-til-middag/","isPartOf":{"@type":"WebSite","name":"4SAPIEN","url":"https://4sapien.com/"}}</script>
+          <style>
+          :root{font-family:Arial,sans-serif;color:#0a0a0a;background:#fff}*{box-sizing:border-box}body{margin:0}main{max-width:860px;margin:auto;padding:72px 24px 96px}.brand{font-weight:700;letter-spacing:-.03em}.ey{margin-top:72px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#666}h1{font-size:clamp(42px,8vw,78px);line-height:.96;letter-spacing:-.055em;margin:16px 0 20px}.lead{font-size:20px;line-height:1.55;max-width:660px;color:#444}.steps{display:grid;gap:12px;margin:42px 0}.step{border:1px solid #ddd;border-radius:16px;padding:20px}.step b{display:block;margin-bottom:6px}.cta{display:inline-block;margin-top:8px;padding:15px 22px;border-radius:12px;background:#0a0a0a;color:#fff;text-decoration:none;font-weight:650}.note{margin-top:22px;color:#666;font-size:14px;line-height:1.5}@media(prefers-color-scheme:dark){:root{color:#fff;background:#000}.lead,.note,.ey{color:#aaa}.step{border-color:#333}.cta{background:#3ae86f;color:#000}}
+          </style></head><body><main>
+          <div class="brand">4SAPIEN <span style="font-weight:400;color:#777">BY 4PLANET</span></div>
+          <div class="ey">MAT · ET KONKRET VALG</div>
+          <h1>Hva skal vi ha til middag?</h1>
+          <p class="lead">Ikke start med tusen oppskrifter. Start med situasjonen din: hva du allerede har, hva som betyr mest akkurat nå, og hva som faktisk er kjent.</p>
+          <div class="steps">
+            <div class="step"><b>1. Se hva du har.</b>Ingredienser hjemme kan være et bedre utgangspunkt enn enda en handleliste.</div>
+            <div class="step"><b>2. Velg kriteriene.</b>Tid, pris, preferanser og det du vil bruke opp kan trekke i ulike retninger.</div>
+            <div class="step"><b>3. Se alternativer og usikkerhet.</b>4SAPIEN Mat er bygget for å vise fakta og ukjente tydelig. Du tar valget.</div>
+          </div>
+          <a class="cta" data-exposure-id="food-dinner-intent-01" href="/app/food/?utm_source=4sapien&utm_medium=organic&utm_campaign=food_intent_01&utm_content=hva_skal_vi_ha_til_middag">Åpne 4SAPIEN Mat →</a>
+          <p class="note">4SAPIEN gir beslutningsstøtte, ikke personlige helse- eller ernæringsråd.</p>
+          </main></body></html>''')
+
+          (site/"robots.txt").write_text("""User-agent: *
+          Allow: /
+          Disallow: /brain/
+          Disallow: /app/money/
+          Sitemap: https://4sapien.com/sitemap.xml
+          """)
+          (site/"sitemap.xml").write_text("""<?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url><loc>https://4sapien.com/</loc></url>
+            <url><loc>https://4sapien.com/mat/hva-skal-vi-ha-til-middag/</loc></url>
+          </urlset>
+          """)
+          PY
+
       - name: Zero-loss unified product and security QA
         run: |
           set -euo pipefail
@@ -131,6 +184,11 @@ jobs:
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
+          grep -Fq 'data-exposure-id="food-dinner-intent-01"' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html
+          grep -Fq 'https://4sapien.com/mat/hva-skal-vi-ha-til-middag/' products/4sapien/site/sitemap.xml
+          grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml' products/4sapien/site/robots.txt
+          grep -Fq 'name="description"' "$ROOT"
+          ! grep -Rqi 'noindex' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html products/4sapien/site/robots.txt
 
           # Babel/React syntax for both live worlds.
           python - <<'PY'
@@ -215,6 +273,7 @@ jobs:
           echo "Auth provider state: email=${email}, google=${google}"
 
       - name: Resolve Cloudflare authority
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: cf
         env:
           CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -237,6 +296,7 @@ jobs:
           echo "zone=$zone" >> "$GITHUB_OUTPUT"
 
       - name: Deploy isolated Workers static-assets candidate
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
@@ -262,6 +322,7 @@ jobs:
           exit 11
 
       - name: Fail closed on conflicting 4sapien.com Worker authority
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: domaincheck
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
@@ -274,6 +335,7 @@ jobs:
           echo "current=${current:-none}" >> "$GITHUB_OUTPUT"
 
       - name: Attach 4sapien.com after all gates pass
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: prod
         if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
         env:
