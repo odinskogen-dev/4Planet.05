@@ -102,6 +102,21 @@ const onKeyActivate = (fn) => (e) => {
    and science stay separate. On load failure the map falls back to raster. */
 const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
+/* V40 follow-up: planetary imagery (Blue Marble etc.) has a native tile ceiling.
+   Beyond that MapLibre overzooms — stretched pixels that bury the street-level
+   vector basemap. Fade the raster out over one zoom level past its maxzoom so
+   roads/labels appear cleanly when the user goes local. Slider opacity is the
+   peak; the expression never invents coverage the source does not have. */
+const rasterOpacityByZoom = (base, maxz) => {
+  const peak = typeof base === "number" ? base : 1;
+  if (typeof maxz !== "number" || !Number.isFinite(maxz)) return peak;
+  return [
+    "interpolate", ["linear"], ["zoom"],
+    maxz, peak,
+    maxz + 1, 0,
+  ];
+};
+
 /* Watch items are two classes. These helpers read either without collapsing them. */
 const watchItemId = (w) =>
   w.itemClass === "OBSERVATION" ? w.observation.id : w.signal.id;
@@ -299,7 +314,11 @@ function WorldInner() {
       const s = { type: "raster", tiles: [l.tiles(satOffset)], tileSize: 256, attribution: l.attr };
       if (!l.wms) s.maxzoom = l.maxzoom;
       m.addSource(l.id, s);
-      m.addLayer({ id: l.id, type: "raster", source: l.id, paint: { "raster-opacity": opacity[l.id] ?? l.opacity } }, rasterBefore(l.id));
+      const peak = opacity[l.id] ?? l.opacity;
+      m.addLayer({
+        id: l.id, type: "raster", source: l.id,
+        paint: { "raster-opacity": rasterOpacityByZoom(peak, l.maxzoom) },
+      }, rasterBefore(l.id));
       setStatus((st) => ({ ...st, [l.id]: "ON" }));
       return;
     }
@@ -798,7 +817,9 @@ function WorldInner() {
   const setOpa = (l, v) => {
     setOpacity((s) => ({ ...s, [l.id]: v }));
     const m = map.current;
-    if (m && m.getLayer(l.id)) m.setPaintProperty(l.id, "raster-opacity", v);
+    if (m && m.getLayer(l.id)) {
+      m.setPaintProperty(l.id, "raster-opacity", rasterOpacityByZoom(v, l.maxzoom));
+    }
   };
 
   const setDate = (off) => {

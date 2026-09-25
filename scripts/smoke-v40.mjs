@@ -47,6 +47,16 @@ test("V40 P0 — street-level vector basemap wired (OpenFreeMap)", () => {
   assert.ok(js.includes("openfreemap.org"), "vector basemap style referenced");
 });
 
+test("V40 follow-up — imagery fades past native maxzoom so streets show", () => {
+  // MapLibre expression must ship in the bundle. Without it, default Blue Marble
+  // overzooms and buries the vector basemap at Place / street zoom.
+  assert.ok(
+    js.includes('["interpolate",["linear"],["zoom"]') ||
+      js.includes('["interpolate", ["linear"], ["zoom"]'),
+    "zoom-based raster opacity interpolate expression present",
+  );
+});
+
 test("V40 truth-axis — no generic CONFIDENCE HIGH/MED/LOW public rendering", () => {
   assert.ok(!/CONFIDENCE (HIGH|MEDIUM|LOW)/.test(js), "no generic confidence badge in bundle");
   assert.ok(js.includes("NOT YET ASSESSED"), "canonical axis fallback present");
