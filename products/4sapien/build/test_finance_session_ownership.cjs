@@ -12,8 +12,8 @@ function harness(html){
   return{state,pending,event:(s)=>handler(s?'SIGNED_IN':'SIGNED_OUT',s?{user:{id:s}}:null),init:s=>initialResolve({data:{session:s?{user:{id:s}}:null}}),cleanup:()=>cleanup(),resolve:(offset,id)=>{pending[offset].resolve({data:[{id}]});pending[offset+1].resolve({data:[{id}]});}};
 }
 (async()=>{for(const path of ['app/money/index.html','finance.html','finance/index.html']){
-  let html=fs.readFileSync(site+'/'+path,'utf8');
-  for(const [a,b]of [['old_load','new_load'],['old_auth_effect','new_auth_effect']]){if(html.includes(val(a))){assert.equal(html.split(val(a)).length,2);html=html.replace(val(a),val(b));}else{assert.equal(html.split(val(b)).length,2);}}
+  const html=fs.readFileSync(site+'/'+path,'utf8');
+  for(const [a,b]of [['old_load','new_load'],['old_auth_effect','new_auth_effect']]){assert.equal(html.includes(val(a)),false,path+': stale generated source');assert.equal(html.split(val(b)).length,2,path+': expected exact generated guard');}
   let h=harness(html);h.init(null);await tick();assert.equal(h.pending.length,0);
   h.event('A');h.resolve(0,'A');await tick();assert.equal(h.state.a[0].id,'A');
   h=harness(html);h.init(null);await tick();h.event('A');h.event(null);h.resolve(0,'A');await tick();assert.equal(h.state.a.length,0);assert.equal(h.state.e.length,0);assert.equal(h.state.session,null);
