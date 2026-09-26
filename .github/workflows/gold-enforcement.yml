@@ -1,0 +1,84 @@
+name: GOLD / WORLD CLASS Enforcement
+
+on:
+  push:
+    branches:
+      - king/test
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: gold-enforcement-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate with lineage
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Assert exact candidate
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          echo "expected=$EXPECTED_SHA"
+          echo "actual=$actual"
+          test "$actual" = "$EXPECTED_SHA"
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Resolve policy mode
+        id: mode
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          mode="quality-contract"
+          if [ "$EVENT" = "push" ] && [ "$REF_NAME" = "king/test" ]; then mode="king-push"; fi
+          if [ "$EVENT" = "push" ] && [ "$REF_NAME" = "main" ]; then mode="main-push"; fi
+          if [ "$EVENT" = "pull_request" ]; then mode="pr-main"; fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "GOLD mode=$mode"
+
+      - name: Enforce canonical GOLD / TEST-LIVE policy
+        env:
+          GOLD_HEAD_REF: ${{ github.head_ref }}
+          GOLD_BASE_REF: origin/main
+          GOLD_PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: node scripts/gold-policy-check.mjs --mode=${{ steps.mode.outputs.mode }}
+
+      - name: Record enforcement evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/gold-enforcement
+          git rev-parse HEAD > artifacts/gold-enforcement/exact-sha.txt
+          printf '%s\n' "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" > artifacts/gold-enforcement/branch.txt
+          printf '%s\n' "${{ steps.mode.outputs.mode }}" > artifacts/gold-enforcement/mode.txt
+
+      - name: Upload enforcement evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-enforcement-evidence
+          path: artifacts/gold-enforcement
+          if-no-files-found: error
+          retention-days: 30

@@ -102,7 +102,7 @@ export function PathwayPage() {
 
         <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
           {mission && <Button to={"/missions/" + mission.slug}>VIEW {mission.name} MISSION</Button>}
-          <Button to="/join" primary arrow>JOIN 4PLANET_</Button>
+          <Button to="/join" primary arrow>JOIN 4PLANET</Button>
         </div>
       </Section>
     </PublicShell>

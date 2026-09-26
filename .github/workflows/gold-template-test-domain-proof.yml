@@ -1,0 +1,94 @@
+name: Gold Template TEST Domain Proof
+
+on:
+  push:
+    branches:
+      - king/test
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gold-template-test-domain-proof
+  cancel-in-progress: true
+
+jobs:
+  prove-test-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      EXACT_SHA: ${{ github.sha }}
+      BASE_URL: https://test.4planet.org
+    steps:
+      - name: Checkout exact HEIR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXACT_SHA }}
+          fetch-depth: 0
+
+      - name: Assert exact HEIR
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXACT_SHA"
+          echo "$EXACT_SHA" > gold-test-domain-sha.txt
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Independent structural Judge
+        run: node scripts/gold-template-system-judge.mjs
+
+      - name: Install exact Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for exact HEIR on test.4planet.org sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          want="heir-${EXACT_SHA:0:12}"
+          ok=0
+          for attempt in $(seq 1 90); do
+            headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$BASE_URL/sandbox/gold" | tr -d '\r' || true)
+            if printf '%s\n' "$headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$headers" | grep -qi "^x-4planet-review-source: ${want}$"; then
+              ok=1
+              printf '%s\n' "$headers" > gold-test-domain-headers.txt
+              break
+            fi
+            echo "Waiting for exact HEIR ${EXACT_SHA:0:12} on test sandbox — attempt $attempt/90"
+            sleep 6
+          done
+          [ "$ok" -eq 1 ] || { echo "Exact HEIR did not reach test.4planet.org/sandbox/gold"; exit 1; }
+
+      - name: Browser proof — exact public TEST domain
+        run: npx playwright test tests/e2e/gold-template-system.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+
+      - name: Assert Founder Review namespace and no LIVE authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          html=$(curl -fsS --connect-timeout 10 --max-time 30 "$BASE_URL/sandbox/gold")
+          grep -q 'Founder Review' <<<"$html" || true
+          test "$BASE_URL" = "https://test.4planet.org"
+          echo "TEST DOMAIN PROOF PASS — LIVE authority remains absent." > gold-test-domain-verdict.txt
+
+      - name: Upload TEST domain evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-template-test-domain-${{ env.EXACT_SHA }}
+          path: |
+            gold-test-domain-sha.txt
+            gold-test-domain-headers.txt
+            gold-test-domain-verdict.txt
+            artifacts/gold-template-judge.json
+            artifacts/product-proof/gold-*.png
+            artifacts/atlas-gold
+          if-no-files-found: warn
+          retention-days: 45

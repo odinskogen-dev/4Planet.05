@@ -1,0 +1,39 @@
+name: 4NATION Real Domain Browser Proof
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - '.github/workflows/nation-live-browser-proof.yml'
+      - 'tests/e2e/4nation.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-read-only-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Inspect exact public host without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -LsS --max-time 18 -o /tmp/4nation-live -w '%{http_code}' https://4nation.org/)
+          test "$code" = 200
+          curl -LsSI --max-time 18 https://4nation.org/ | grep -qi 'x-4nation-sha: 4a13f9d118066cd6765c3399ebff46a7d3298609'
+          grep -q 'index,follow,max-image-preview:large' /tmp/4nation-live
+          echo 'LIVE_HOST_HTTPS_EXACT_ARTIFACT=PASS'
+      - name: Browser check root, scoped journeys and full canonical ATLAS
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          BASE_URL=https://4nation.org npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo 'LIVE_4NATION_9_OF_9=PASS'

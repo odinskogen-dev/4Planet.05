@@ -1,0 +1,19 @@
+{
+  "programme":"GIGA-IMMUNITY-01",
+  "classification":{
+    "locked_canon":"CURRENT_BY_EXISTING_KNOWLEDGE_OS__NOT_MUTATED",
+    "founder_decisions":"CURRENT_BY_EXISTING_DECISION_LOG__FOUNDER_RELEASE_BOUNDARIES_PRESERVED",
+    "giga_2800_model":"CURRENT_WORKING_STRATEGY__EXTREME_INFRASTRUCTURE_TAIL__PROOF_FIRST",
+    "programme_control":"CURRENT__GIGA01_CONTROL_PACK_ADDED",
+    "brain":"CURRENT_LEGACY_AUTHORITY__CNS_SHADOW",
+    "factory":"CURRENT_EXISTING_AUTHORITY__BOUNDED_ACTIVE_BOOT",
+    "heir":"CURRENT__king/test",
+    "physical_heir_protection":"BLOCKED_OPEN_P0",
+    "oslofjord_truth_foundation":"CURRENT__HEIR",
+    "atlas_sandbox":"ACTIVE_BUT_MUST_REMAIN_CURRENT_TO_HEIR",
+    "magazine_sandbox":"ACTIVE_REGISTERED_HISTORY_RECONCILIATION_REQUIRED",
+    "external_send":"BLOCKED_BY_FOUNDER_RELEASE",
+    "brain_cutover":"BLOCKED_BY_PARITY_RECOVERY_OPERATIONAL_SUPERIORITY"
+  },
+  "rule":"Re-run live readback before every material mutation; this record is not a permanent substitute for live authority."
+}

@@ -1,0 +1,5 @@
+{
+  "reversible_internal_allowed":["analysis","tests","controls","registries","writebacks","bounded_code_on_legal_receiver","regression_additions","non_destructive_sync","proof_artifacts"],
+  "requires_founder_or_professional_gate":["live_release","canon_lock_or_cutover","destructive_cleanup","external_communication","payment","legal_commitment","financial_commitment","brain_cutover","human_gold_final_visual_acceptance"],
+  "external_send":"HOLD_UNTIL_EXPLICIT_FOUNDER_RELEASE"
+}

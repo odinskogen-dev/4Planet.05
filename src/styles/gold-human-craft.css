@@ -1,0 +1,21 @@
+/*
+ * GOLD / WORLD CLASS — bounded human-craft corrections.
+ *
+ * Keep this file small and evidence-led. It is not a second design system.
+ * Rules move into their owning component stylesheet only after the correction
+ * proves reusable and the old rule can be removed without regression.
+ */
+
+/*
+ * ATLAS search/menu overlays sit inside .search-wrap, whose empty margins are
+ * deliberately pointer-transparent so the map below remains usable. The real
+ * result/menu surfaces must opt back into pointer input; otherwise they can be
+ * visibly present while the MapLibre canvas receives the click.
+ *
+ * Browser Product Proof 32580988941 exposed this exact failure on the Oslo
+ * search result. This is a product fix, not a forced-click test workaround.
+ */
+.world .search-wrap > .results,
+.world .search-wrap > .site-menu {
+  pointer-events: auto;
+}

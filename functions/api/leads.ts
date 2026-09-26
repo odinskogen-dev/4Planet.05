@@ -80,5 +80,6 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
 // Any non-POST method → 405
 export const onRequest = async (ctx: { request: Request; env: Env }): Promise<Response> => {
   if (ctx.request.method === "POST") return onRequestPost(ctx);
+  if (ctx.request.method === "GET") return json({ ok: true, acceptingEnquiries: Boolean(ctx.env.LEAD_WEBHOOK_URL) });
   return json({ ok: false, error: "method_not_allowed" }, 405);
 };

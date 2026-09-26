@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "authority": "Founder JUDGE",
+  "captureRoot": "artifacts/product-proof",
+  "rule": "CANDIDATE evidence never becomes APPROVED by inference. APPROVED requires exact SHA-256 image hash and founderDecisionRef.",
+  "screens": [
+    {
+      "id": "home-desktop",
+      "file": "01-4planet-desktop.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    },
+    {
+      "id": "orca-source-desktop",
+      "file": "02-orca-source-proof-desktop.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    },
+    {
+      "id": "atlas-context-desktop",
+      "file": "03-atlas-context-desktop.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    },
+    {
+      "id": "home-mobile-390",
+      "file": "04-4planet-mobile.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    },
+    {
+      "id": "orca-source-mobile-390",
+      "file": "05-orca-source-proof-mobile.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    },
+    {
+      "id": "orca-footer-mobile",
+      "file": "05b-orca-footer-mobile.png",
+      "state": "CANDIDATE",
+      "expectedSha256": null,
+      "founderDecisionRef": null
+    }
+  ]
+}

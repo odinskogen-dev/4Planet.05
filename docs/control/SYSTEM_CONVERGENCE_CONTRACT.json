@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "status": "DERIVED_WORKING_CONTROL_NOT_AUTHORITY",
+  "purpose": "Machine-test the Founder-approved SpaceX-algorithm + GBrain-class convergence rules without creating a second BRAIN, Factory, programme register, TEST KING or truth authority.",
+  "authority": {
+    "inherits": [
+      "00_ READ FIRST",
+      "01_ PROJECT LEAD CURRENT",
+      "02_ ACTIVE TASKS",
+      "SYSTEM — MANDATORY OPERATING RULES & WRITEBACK PROTOCOL",
+      "4PLANET_ GIGA STRATEGY + INTELLECTUAL CAPITAL CONSTITUTION",
+      "docs/control/PROJECT_CANDIDATE_AUTHORITY.json",
+      "docs/control/CODE_LINEAGE_REGISTER.md",
+      "docs/control/LIVE_PROMOTION_MANIFEST.json"
+    ],
+    "createsNewAuthority": false,
+    "brainAuthorityUntilCutover": "Drive BRAIN / Knowledge OS",
+    "testHeir": "king/test",
+    "livePromotion": "FOUNDER_GATED"
+  },
+  "operatingArchitecture": [
+    "ONE PLANET",
+    "ONE BRAIN",
+    "ONE TRUTH SPINE",
+    "ONE FACTORY",
+    "ONE TEST KING",
+    "MANY WORLDS"
+  ],
+  "executionAlgorithm": [
+    "QUESTION REQUIREMENTS",
+    "DELETE",
+    "SIMPLIFY / OPTIMISE",
+    "ACCELERATE CYCLE TIME",
+    "AUTOMATE",
+    "PROVE",
+    "LEARN"
+  ],
+  "wholeSystemDisposition": {
+    "strategy_giga": "KEEP",
+    "portfolio": "SIMPLIFY_BOUND_WIP",
+    "brain_knowledge_os": "KEEP_AUTHORITY",
+    "superbrain_cns": "INTEGRATE_BEHIND_PARITY_CUTOVER_GATE",
+    "factory": "KEEP_AND_SIMPLIFY_PREFLIGHT",
+    "agent_system": "SIMPLIFY_MERGE_OVERLAP",
+    "programme_control": "SIMPLIFY_TO_CURRENT_FRONT_DOOR_PLUS_HISTORY",
+    "atomic_register": "KEEP_HISTORY_AND_CURRENT_PROJECTION_NOT_DAILY_FRONT_DOOR",
+    "git_candidate_model": "SIMPLIFY_TO_LIVE_HEIR_WORK_ARCHIVE",
+    "product_architecture": "KEEP_SHARED_PRIMITIVES_DELETE_DUPLICATE_SEAMS",
+    "sources_claims_evidence": "KEEP_AND_STRENGTHEN_PROVENANCE",
+    "quality_evaluation": "KEEP_PLUS_CONTROL_OF_CONTROL",
+    "documents_context": "MERGE_DUPLICATE_CURRENT_VIEWS_PRESERVE_HISTORY",
+    "capital_partner": "KEEP_VERIFIED_PROOF_FIRST_NO_NOISE_EXPANSION",
+    "editorial_content": "KEEP_SHARED_TRUTH_AND_BRAND_PRIMITIVES",
+    "founder_interface": "SIMPLIFY_TO_DIRECTION_JUDGEMENT_RELEASE_HUMAN_RELATIONSHIPS"
+  },
+  "candidateModel": {
+    "live": "FOUNDER_GATED",
+    "heir": "king/test",
+    "heirCount": 1,
+    "work": "BOUNDED_NON_AUTHORITY",
+    "archiveDonor": "PRESERVE_LINEAGE_NON_AUTHORITY",
+    "newestWins": false,
+    "thirdKingAllowed": false,
+    "branchDeletionBeforeZeroLossDisposition": false,
+    "branchProtection": "EXTERNAL_PLATFORM_CONTROL_REQUIRED_NOT_PROVEN_BY_THIS_CONTRACT"
+  },
+  "brainSemanticInterface": [
+    "RECALL",
+    "ENTITY",
+    "CONTEXT PACK",
+    "DELTA",
+    "SYNTHESIZE",
+    "REMEMBER / WRITEBACK",
+    "SUPERSEDE / FORGET"
+  ],
+  "brainBench": {
+    "status": "SPECIFIED_RUNTIME_BENCHMARK_REQUIRED",
+    "sourceIsolationMaxViolations": 0,
+    "cutoverRequires": [
+      "MEASURABLE_SUPERIORITY",
+      "SECURITY_PROOF",
+      "PROVENANCE_PROOF",
+      "RECOVERY_PROOF",
+      "FOUNDER_APPROVED_CUTOVER"
+    ],
+    "cases": [
+      {"id":"BB-01","name":"KNOW_TO_ASK","pass":"Agent retrieves required authority without Founder repetition."},
+      {"id":"BB-02","name":"RETRIEVAL_PRECISION_RECALL","pass":"Required authoritative items are retrieved with irrelevant/stale load measured."},
+      {"id":"BB-03","name":"AUTHORITY_CORRECTNESS","pass":"Higher authority and explicit supersession beat recency or naming."},
+      {"id":"BB-04","name":"CURRENT_VS_STALE","pass":"Stale current surfaces are detected and fail closed."},
+      {"id":"BB-05","name":"CRITICAL_MEMORY_OMISSION","pass":"Material missing upstream context blocks promotion and triggers recovery."},
+      {"id":"BB-06","name":"ENTITY_RESOLUTION","pass":"Canonical entity identity resolves without duplicate truth creation."},
+      {"id":"BB-07","name":"CONTRADICTION_GAP_UNKNOWN","pass":"Contradictions and unknowns are surfaced, not silently harmonised."},
+      {"id":"BB-08","name":"PROVENANCE_WRITEBACK","pass":"Accepted material change writes to correct authority and exact readback matches."},
+      {"id":"BB-09","name":"CROSS_SESSION_AGENT_CONTINUITY","pass":"Fresh authorised worker reconstructs the same committed state from canon."},
+      {"id":"BB-10","name":"SOURCE_ISOLATION","pass":"Zero cross-boundary information violations."},
+      {"id":"BB-11","name":"CONTEXT_COST_LATENCY","pass":"Context pack plus delta preserves correctness with measured lower load than full rehydration where safe."},
+      {"id":"BB-12","name":"RECOVERY_REPLAY","pass":"System can restore/reconstruct accepted state from authoritative history and evidence."}
+    ]
+  },
+  "factoryPreflight": {
+    "rejectCode": "AUTOMATION_REJECTED — PROCESS NOT SIMPLIFIED",
+    "gates": [
+      "REQUIREMENT_OWNER_REASON_VERIFIED",
+      "DELETION_ATTEMPTED",
+      "SIMPLIFICATION_ATTEMPTED",
+      "EXISTING_PRIMITIVE_REUSE_ASSESSED",
+      "CYCLE_TIME_BASELINE_MEASURED",
+      "MINIMAL_FEEDBACK_LOOP_IDENTIFIED",
+      "AUTOMATION_JUSTIFIED",
+      "PROOF_METRIC_DEFINED",
+      "ROLLBACK_DEFINED",
+      "LEARNING_WRITEBACK_DEFINED"
+    ]
+  },
+  "errorToImmunity": {
+    "sequence": [
+      "INCIDENT",
+      "ROOT CAUSE",
+      "FAILURE CLASS",
+      "CONTAINMENT",
+      "HARDEN",
+      "REGRESSION",
+      "PROPAGATE",
+      "WRITEBACK + READBACK",
+      "IMMUNITY STATE"
+    ],
+    "recurrenceClasses": [
+      "ADD_BEFORE_DELETE",
+      "AUTOMATE_BEFORE_SIMPLIFY",
+      "COMPETING_BRAIN",
+      "DUPLICATE_FACTORY",
+      "UNCONTROLLED_BRANCH_LEADER",
+      "THIRD_KING",
+      "STALE_STATE_SELECTION",
+      "CRITICAL_MEMORY_OMISSION",
+      "UNSUPPORTED_WRITEBACK",
+      "SOURCE_ISOLATION_BREACH",
+      "MEMORY_ONLY_STRATEGIC_RECOVERY",
+      "ACTIVITY_AS_PROGRESS"
+    ]
+  },
+  "measurement": {
+    "primary": [
+      "AUTHORITATIVE_TRUTH_SURFACES",
+      "COMPETING_CANDIDATES",
+      "MATERIAL_PROCESS_STEPS",
+      "AGENT_HANDOFFS",
+      "CONTEXT_TOKEN_BURDEN",
+      "RETRIEVAL_ACCURACY",
+      "STALE_STATE_ERRORS",
+      "CONTINUITY_ACCURACY",
+      "WRITEBACK_PROVENANCE_ACCURACY",
+      "SOURCE_ISOLATION_VIOLATIONS",
+      "HYPOTHESIS_TO_PROOF_CYCLE_TIME",
+      "REGRESSION_RATE",
+      "RECOVERY_TIME",
+      "ACCEPTED_HUMAN_GOLD_THROUGHPUT",
+      "FOUNDER_INTERVENTIONS",
+      "FOUNDER_TIME_BURDEN"
+    ],
+    "activityNotAcceptedAsProgress": [
+      "COMMITS",
+      "DOCUMENTS",
+      "AGENTS",
+      "BRANCHES",
+      "RAW_TASK_COMPLETIONS"
+    ]
+  },
+  "controlOfControl": {
+    "required": [
+      "EXACT_STATE_READBACK",
+      "CURRENT_STATE_REV_MATCH",
+      "CANDIDATE_AUTHORITY_FAIL_CLOSED",
+      "LIVE_MANIFEST_FAIL_CLOSED",
+      "ERROR_TO_IMMUNITY_REGRESSIONS_PRESENT",
+      "CONVERGENCE_GATE_EXECUTES_THIS_CONTRACT_TEST",
+      "SOURCE_ISOLATION_GATE_ZERO",
+      "NO_GBRAIN_CUTOVER_BY_ARCHITECTURE_CLAIM"
+    ]
+  }
+}

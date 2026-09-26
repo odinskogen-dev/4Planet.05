@@ -1,0 +1,47 @@
+# 4PLANET repository instructions
+
+Treat this repository as an execution surface, not the authoritative source for current 4PLANET programme state. Programme priorities, Founder decisions, cross-project status and current authority must come from a fresh AXE / GPT Project Lead BRAIN handoff when they matter to the task.
+
+## ELITE OPERATING DOCTRINE / SYSTEM 2.0 — mandatory
+
+Read `docs/control/ELITE_OPERATING_DOCTRINE.md` and `docs/control/ELITE_OPERATING_DOCTRINE.json` before material work. The canonical Founder Decision is in Knowledge OS; these files are the repository-local projection for memoryless agents and create no parallel authority.
+
+For material work apply the relevant sequence: `HUMAN VALUE / FOUNDER INTENT → PROGRAMME ADMISSION when applicable → QUESTION / DELETE / SIMPLIFY / OPTIMISE → SIMPLEST CAPABLE EXECUTION → DESIRED STATE + PROOF + ROLLBACK → EXECUTE → JIDOKA / ANDON → INDEPENDENT VERIFICATION / VALIDATION where material → evaluator improvement only with trustworthy fitness → reliability/value measurement → ERROR-TO-IMMUNITY → WRITEBACK + READBACK → DESIRED/OBSERVED RECONCILIATION`.
+
+Hard execution rules:
+- Escalate only as needed: deterministic/existing primitive → simple workflow → LLM workflow → single agent → multi-agent.
+- Classify material decisions `TWO-WAY DOOR` or `ONE-WAY DOOR`; one-way decisions retain existing Founder/professional gates.
+- `JIDOKA / ANDON` fails closed on unresolved authority, stale/current-state conflict, source isolation, protected-Gold/lineage loss, regression, unsupported claims, security/secrets, destructive uncertainty, scope breach, critical evaluator failure, writeback mismatch or missing rollback identity.
+- `MAKER` may not be the sole judge on material truth/source/security/release/impact/acceptance gates.
+- Autonomy is earned through measured reliability; activity volume does not increase authority.
+- Evaluator/evolution loops may not autonomously promote Canon or truth.
+- Compare `DESIRED STATE` with fresh observed Git/runtime/source evidence and record/reconcile material drift.
+- Do not create a second BRAIN, Factory, programme register, methodology stack or task system.
+
+Run `node scripts/elite-operating-doctrine-gate.mjs` before claiming a repository-level control candidate is verified. Do not bypass or weaken the gate.
+
+Before changing code, inspect the assigned task/PR, exact branch, recent relevant git history and existing components/contracts. Read `AGENTS.md`, `docs/control/FOUR_STATE_PRODUCT_CONTROL.md`, `docs/control/PRODUCT_SURFACE_REGISTRY.json`, `docs/control/PROJECT_CANDIDATE_AUTHORITY.json`, `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/CODE_LINEAGE_REGISTER.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and `docs/control/GOLD_CURRENT_BRIEF.md`. Do not create parallel architecture when an existing implementation can be extended.
+
+For any material user-facing mutation, resolve the affected product's four authority states before writing code: `LIVE`, the sole `HEIR`, the single registered `SANDBOX` or explicit NONE, and `ARCHIVED` history/donors. Resolve exact HEIR branch/SHA, current registered sandbox branch/SHA/review URL, parent SHA, allowed donors, return path to HEIR and rollback identity. If any required authority state is unresolved, stop user-facing mutation with `PRODUCT AUTHORITY CONTEXT UNRESOLVED`.
+
+Hard product-authority laws: one HEIR per product; max one active user-facing SANDBOX per product; `king/test` is the sole integrated HEIR line; branch names, PRs, deployment aliases, recency, `GOLD`, `RECOVERY`, `RELEASE`, `AGENT`, `WORK` or `SANDBOX` names confer zero authority; unknown user-facing lines are history/donor/archive quarantine; a new user-facing branch must be registered as the one permitted SANDBOX before its first material user-facing edit. Never newest-wins.
+
+Run `node scripts/product-authority-gate.mjs` for user-facing work. Do not bypass or weaken it. User-facing PRs return to `king/test`. Technical PASS is not Human Gold: every material user-facing delivery requires a working Founder-visible URL under the registered review surface before candidate/adoption claims. SANDBOX → HEIR requires exact-SHA gates plus human visual/use judgement. HEIR → LIVE requires the exact tested artifact plus explicit Founder release and rollback/archive identity.
+
+For every material user-facing change, update `docs/control/GOLD_CURRENT_BRIEF.md` in the same bounded change before implementation. It must define USER ARRIVES BECAUSE, ONE THING TO UNDERSTAND, PRIMARY ACTION, SECONDARY DEPTH, P1/P2/P3/P4 hierarchy, WHAT CAN BE REMOVED, WHAT MUST BE REUSED, TRUTH BOUNDARY, MOBILE-FIRST RISK and HUMAN SUCCESS. Apply REDUCE BEFORE GENERATE: DELETE → PRIORITISE → CONSOLIDATE → HUMANISE → TEST → REFINE.
+
+Run Human Craft / AI-Wash structurally, not cosmetically. Generic card grids, arbitrary symmetry, equal-weight UI, generic copy, decorative motion, duplicated primitives, hard-coded local styles, obsolete canon, dead actions and metadata competing with life/place/story must be DELETE / MERGE / REUSE / SUBORDINATE / JUSTIFY. Do not call a change GOLD because it compiles or looks polished.
+
+Never state that GitHub, a connector, deployment route, branch, tool or permission is unavailable without checking the relevant capability in the current run, unless a higher-level rule forbids the check.
+
+Keep status exact: SPECIFIED != IMPLEMENTED != VERIFIED != FOUNDER ACCEPTED != MERGED != DEPLOYED != PRODUCTION. Never promote a status by wording.
+
+Current Founder-review routing is controlled by `docs/control/PRODUCT_SURFACE_REGISTRY.json`: `test.4planet.org/<product>` is HEIR review, `test.4planet.org/<product>/sandbox` is the one registered SANDBOX review where present, and `archive.4planet.org` is read-only visual history. Separate LIVE brand domains remain separate. Historical product branches and repositories are donors/recovery/reference evidence until explicitly dispositioned. Every material donor delta is ADOPT / ALREADY PRESENT / SUPERSEDED BY BETTER IMPLEMENTATION / REJECT WITH REASON / DEFER WITH REASON. Never wholesale-merge divergent candidates.
+
+A user-facing production candidate must come through `king/test`. LIVE promotion additionally requires exact HEIR SHA/artifact, prior LIVE rollback identity, evidence and explicit Founder release authority recorded in `docs/control/LIVE_PROMOTION_MANIFEST.json`. The default NOT_AUTHORISED manifest is fail-closed and is not release authority.
+
+Normal validation commands include `node scripts/elite-operating-doctrine-gate.mjs`, `node scripts/product-authority-gate.mjs`, `node scripts/gold-policy-check.mjs --mode=quality-contract`, `npm ci`, `npm run typecheck`, `npm run assets:verify`, `npm run lint`, `npm run build`, `npm run test:smoke`, and `npm run test:e2e` for applicable UI/runtime journeys. After rendered product-proof evidence exists, run `node scripts/gold-visual-lock-check.mjs`. Verify user-visible behaviour for UI work, not only compilation.
+
+Every material return must include project/task identity, human value / Founder intent, programme-admission status when applicable, delete/simplify/reuse decision, execution class, door class/authority, desired state, protected invariants, proof, rollback, Andon conditions, independent-verification status where material, writeback/readback targets, desired/observed reconciliation, learning/immunity delta, affected product, resolved LIVE/HEIR/SANDBOX/ARCHIVED relationship, branch, exact commit SHA, Founder-visible review URL when user-facing, PR/issue if applicable, changed files or visible change, tests/runtime evidence, user job/P1–P4 and remove/reuse/AI-Wash results for user-facing work, donor decisions, limitations, exact status, human-test status when relevant and next gate. Preserve failures and write generalisable learning back through AXE/BRAIN rather than fixing only the local symptom.
+
+Do not infer or change Locked Canon, Founder decisions, production release state, binding commitments, legal/accounting conclusions or external relationship status from repository context.

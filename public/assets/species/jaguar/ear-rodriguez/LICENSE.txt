@@ -1,0 +1,9 @@
+4PLANET Asset ID: 4P-JAG-3D-EARROD-01
+Creator: Ear.Rodriguez
+Source: https://sketchfab.com/3d-models/jaguar-91c61c329d2a4668816f81f08dfcd492
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+Attribution: This work is based on “jaguar” by Ear.Rodriguez, licensed under CC BY 4.0.
+Original founder-supplied 1K GLB SHA-256: 8225124ef8370f7798c437b8ade8651d420e1ec0155ecbbb529058c586b89f13
+Original master state: SECURED_IN_4PLANET_ASSET_BANK
+Runtime derivative: jaguar-ear-rodriguez-runtime.glb.gz
+Runtime derivative semantics: browser-optimised visual mesh/material derivative; original rig/animation preserved only in immutable master at this stage.

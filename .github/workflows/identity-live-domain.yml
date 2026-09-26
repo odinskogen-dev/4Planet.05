@@ -1,0 +1,131 @@
+name: 4PLANET ID Live Domain
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/identity/**"
+      - "src/pages/identity/**"
+      - "src/App.tsx"
+      - "src/components/layout/PublicShell.tsx"
+      - ".github/workflows/identity-live-domain.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourplanet-id-live-domain
+  cancel-in-progress: false
+
+jobs:
+  attach-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ID_DOMAIN: id.4planet.org
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve exact 4PLANET Pages authority
+        id: authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          zone="$(curl -fsS "$api/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$zone")"
+          aid="$(jq -r '.result[0].account.id // empty' <<<"$zone")"
+          test -n "$zid" && test -n "$aid"
+          projects="$(curl -fsS "$api/accounts/$aid/pages/projects" "${auth[@]}")"
+          project="$(jq -r '[.result[]? | select(any(.domains[]?; . == "4planet.org"))][0].name // empty' <<<"$projects")"
+          test -n "$project" || { echo "Primary Pages project not found"; exit 11; }
+          echo "account=$aid" >> "$GITHUB_OUTPUT"
+          echo "zone=$zid" >> "$GITHUB_OUTPUT"
+          echo "project=$project" >> "$GITHUB_OUTPUT"
+
+          # Never steal a hostname from another Worker or Pages project.
+          workers="$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")"
+          jq -e --arg h "$ID_DOMAIN" '([.result[]? | select(.hostname==$h)] | length)==0' <<<"$workers" >/dev/null || {
+            echo "ID hostname already owned by a Worker; fail closed"; exit 12;
+          }
+          other_pages="$(jq -r --arg h "$ID_DOMAIN" --arg p "$project" '[.result[]? | select(.name != $p and any(.domains[]?; . == $h))] | length' <<<"$projects")"
+          test "$other_pages" = "0" || { echo "ID hostname owned by another Pages project"; exit 13; }
+
+      - name: Wait for exact main deployment
+        shell: bash
+        env:
+          AID: ${{ steps.authority.outputs.account }}
+          PROJECT: ${{ steps.authority.outputs.project }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          for attempt in $(seq 1 60); do
+            dep="$(curl -fsS "$api/accounts/$AID/pages/projects/$PROJECT/deployments?page=1&per_page=25" "${auth[@]}")"
+            commit="$(jq -r '[.result[]? | select(.deployment_trigger.metadata.branch=="main")][0].deployment_trigger.metadata.commit_hash // empty' <<<"$dep")"
+            status="$(jq -r '[.result[]? | select(.deployment_trigger.metadata.branch=="main")][0].latest_stage.status // empty' <<<"$dep")"
+            if [ "$commit" = "$GITHUB_SHA" ] && [ "$status" = "success" ]; then
+              echo "Exact main Pages deployment verified: $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Exact main Pages deployment not ready"
+          exit 14
+
+      - name: Attach canonical ID hostname
+        shell: bash
+        env:
+          AID: ${{ steps.authority.outputs.account }}
+          PROJECT: ${{ steps.authority.outputs.project }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          domains="$(curl -fsS "$api/accounts/$AID/pages/projects/$PROJECT/domains" "${auth[@]}")"
+          if ! jq -e --arg h "$ID_DOMAIN" '.result[]? | select(.name==$h)' <<<"$domains" >/dev/null; then
+            created="$(curl -fsS -X POST "$api/accounts/$AID/pages/projects/$PROJECT/domains" "${auth[@]}" --data "{"name":"$ID_DOMAIN"}")"
+            jq -e '.success==true' <<<"$created" >/dev/null
+          fi
+          for attempt in $(seq 1 60); do
+            domains="$(curl -fsS "$api/accounts/$AID/pages/projects/$PROJECT/domains" "${auth[@]}")"
+            state="$(jq -r --arg h "$ID_DOMAIN" '.result[]? | select(.name==$h) | .status // empty' <<<"$domains")"
+            if [ "$state" = "active" ]; then
+              echo "Canonical identity hostname active: $ID_DOMAIN"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "ID domain did not become active"
+          exit 15
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Real-domain browser proof
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await page.goto('https://id.4planet.org/', { waitUntil: 'networkidle' });
+          await page.getByText('4PLANET_', { exact: true }).waitFor();
+          await page.getByRole('heading', { name: /Logg inn|Din 4PLANET ID/ }).waitFor();
+          const idTitle = await page.title();
+          await page.goto('https://4planet.org/', { waitUntil: 'networkidle' });
+          await page.getByRole('link', { name: /SIGN IN|ACCOUNT/ }).waitFor();
+          console.log(JSON.stringify({ idHost: 'PASS', primaryLoginEntry: 'PASS', idTitle }));
+          await browser.close();
+          NODE

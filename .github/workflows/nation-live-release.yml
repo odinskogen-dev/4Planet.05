@@ -1,0 +1,113 @@
+name: 4NATION Explicit Live Release
+on:
+  # A code push is never founder authorisation to release a production domain.
+  workflow_dispatch:
+    inputs:
+      founder_release:
+        description: 'Explicit founder production release approval (exact: enig send)'
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: 4nation-domain-live-exact-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.founder_release == 'enig send' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Exact tested immutable product and current HEIR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin king/test --no-tags
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse origin/king/test)" = "$GITHUB_SHA" || { echo 'STALE_HEIR_HOLD'; exit 9; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'TOKEN_NOT_PRESENT_HOLD'; exit 10; }
+          node --check ops/nation/4nation-live-worker.js
+          diff <(git show 1c98ec1e8bb8a4895279c5365a90e01b5e7a0ecd:src/pages/nation/NationPage.tsx) src/pages/nation/NationPage.tsx || { echo 'PRODUCT_CHANGED_HOLD'; exit 11; }
+          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=1c98ec1e8bb8a4895279c5365a90e01b5e7a0ecd&per_page=100")
+          jq -e '[.workflow_runs[]|select(.name=="4NATION Gold Candidate QA" and .conclusion=="success")]|length>=1' <<<"$runs" >/dev/null
+          jq -e '[.workflow_runs[]|select(.name=="4NATION Founder Visual Preview" and .conclusion=="success")]|length>=1' <<<"$runs" >/dev/null
+          code=$(curl -LsS --max-time 20 -o /tmp/nation-preview -w '%{http_code}' https://852b848d.4planet-05.pages.dev/4nation || true)
+          [ "$code" = 200 ] && grep -qi 'noindex,nofollow' /tmp/nation-preview || { echo 'IMMUTABLE_SOURCE_NOT_AVAILABLE_HOLD'; exit 12; }
+      - name: Verify only the existing 4NATION Worker owns the public hostname
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          z=$(curl -fsS "$api/zones?name=4nation.org" "${auth[@]}")
+          jq -e '.success==true and (.result|length)==1 and .result[0].status=="active"' <<<"$z" >/dev/null
+          aid=$(jq -r '.result[0].account.id' <<<"$z")
+          zid=$(jq -r '.result[0].id' <<<"$z")
+          echo "CLOUDFLARE_ACCOUNT_ID=$aid" >> "$GITHUB_ENV"
+          ds=$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(.hostname=="4nation.org" and .service=="4planet-nation-live")] | length)==1' <<<"$ds" >/dev/null || { echo 'EXACT_EXISTING_4NATION_OWNER_MISSING'; exit 13; }
+          jq -e '([.result[]? | select((.hostname=="4nation.org" or .hostname=="www.4nation.org") and .service!="4planet-nation-live")] | length)==0' <<<"$ds" >/dev/null || { echo 'OTHER_WORKER_DOMAIN_COLLISION'; exit 14; }
+          d=$(curl -fsS "$api/zones/$zid/dns_records?name=4nation.org" "${auth[@]}")
+          jq -e '.success==true' <<<"$d" >/dev/null
+          www=$(curl -fsS "$api/zones/$zid/dns_records?name=www.4nation.org" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(.type!="TXT" and .type!="MX")] | length)==0' <<<"$www" >/dev/null || { echo 'WWW_DNS_COLLISION'; exit 15; }
+          routes=$(curl -fsS "$api/zones/$zid/workers/routes" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(.pattern|contains("4nation.org"))] | length)==0' <<<"$routes" >/dev/null || { echo 'OTHER_WORKER_ROUTE_COLLISION'; exit 16; }
+          ps=$(curl -fsS "$api/accounts/$aid/pages/projects" "${auth[@]}")
+          jq -e '.success==true and ([.result[]? | select(any(.domains[]?;.=="4nation.org" or .=="www.4nation.org"))] | length)==0' <<<"$ps" >/dev/null || { echo 'PAGES_DOMAIN_COLLISION'; exit 17; }
+          echo 'EXACT_EXISTING_4NATION_WORKER_ONLY=PASS / ALL OTHER HOSTS UNCHANGED'
+      - name: Attach only 4nation.org using Cloudflare-managed TLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > nation-live-release-wrangler.toml <<'EOF'
+          name = "4planet-nation-live"
+          main = "ops/nation/4nation-live-worker.js"
+          compatibility_date = "2026-09-21"
+          workers_dev = true
+          [[routes]]
+          pattern = "4nation.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@4.128.0 deploy --config nation-live-release-wrangler.toml | tee /tmp/nation-live-deploy.log
+          echo '4NATION_DOMAIN_RELEASE_SUBMITTED=YES / SOURCE_IMMUTABLE'
+      - name: Verify exact production hostname and full route set
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=''
+          for attempt in $(seq 1 24); do
+            code=$(curl -L -sS --max-time 18 -o /tmp/nation-live-page -w '%{http_code}' https://4nation.org/ || true)
+            if [ "$code" = 200 ] && grep -q 'index,follow,max-image-preview:large' /tmp/nation-live-page; then break; fi
+            sleep 5
+          done
+          [ "$code" = 200 ] && grep -q 'index,follow,max-image-preview:large' /tmp/nation-live-page || { echo "APEX_EXTERNAL_FAIL=$code"; exit 17; }
+          for route in / /4nation /atlas '/atlas?embed=nation'; do
+            code=$(curl -L -sS --max-time 18 -o /tmp/nation-route -w '%{http_code}' "https://4nation.org$route")
+            [ "$code" = 200 ] || { echo "ROUTE_ERROR=$route/$code"; exit 18; }
+          done
+          header=$(curl -LsSI --max-time 18 https://4nation.org/)
+          grep -qi 'x-4nation-sha: 1c98ec1e8bb8a4895279c5365a90e01b5e7a0ecd' <<<"$header" || { echo 'EXACT_SHA_HEADER_MISMATCH'; exit 19; }
+          if grep -qi 'x-robots-tag:.*noindex' <<<"$header"; then echo 'LIVE_NOINDEX_LEAK'; exit 20; fi
+          echo '4NATION_LIVE_HTTP_TLS_ROUTES_EXACT_SHA=PASS'
+      - name: Real-domain Chromium desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium
+          BASE_URL=https://4nation.org npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo '4NATION_LIVE_BROWSER_15_OF_15=PASS'

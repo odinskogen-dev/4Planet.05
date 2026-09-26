@@ -1,0 +1,118 @@
+name: 4NATION Founder Visual Preview
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - '.github/workflows/nation-visible-preview.yml'
+      - 'src/App.tsx'
+      - 'src/pages/nation/**'
+      - 'src/earth/AtlasEmbed.tsx'
+      - 'src/earth/atlas-embed.css'
+      - 'src/planet/nationDecisionCase.ts'
+      - 'docs/control/GOLD_CURRENT_BRIEF.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: nation-visible-preview
+  cancel-in-progress: true
+jobs:
+  publish-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Exact HEAD and 4NATION QA gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin king/test --no-tags
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse origin/king/test)" = "$GITHUB_SHA" || exit 7
+          passed=0
+          for attempt in $(seq 1 90); do
+            runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=70")
+            outcome=$(jq -r '[.workflow_runs[] | select(.name=="4NATION Gold Candidate QA")][0].conclusion // "pending"' <<<"$runs")
+            if [ "$outcome" = success ]; then passed=1; break; fi
+            if [ "$outcome" != pending ]; then echo "EXACT_SHA_NATION_QA=$outcome"; exit 8; fi
+            sleep 8
+          done
+          [ "$passed" = 1 ] || { echo 'EXACT_SHA_QA_MISSING'; exit 9; }
+      - name: Build same existing product for non-indexed visual review
+        run: |
+          npm ci
+          node --test scripts/4nation-gold.test.mjs
+          npm run typecheck
+          npm run build
+          printf '/* /index.html 200\n' > dist/_redirects
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dist/index.html')
+          s=p.read_text().replace('</head>', '<meta name="robots" content="noindex,nofollow,noarchive" /></head>')
+          p.write_text(s)
+          PY
+      - name: Resolve existing Cloudflare account and dedicated 4NATION preview
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          zones=$(curl -fsS "$api/zones?name=4nation.org" "${auth[@]}")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zones")
+          test -n "$account"
+          export CLOUDFLARE_ACCOUNT_ID="$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          projects=$(curl -fsS "$api/accounts/$account/pages/projects" "${auth[@]}")
+          jq -e '.success == true' <<<"$projects" >/dev/null
+          # Project creation reached Cloudflare account limit 8000027.
+          # Reuse the existing 4PLANET Pages origin on an isolated non-production
+          # direct-upload branch. Never mutate its production branch or domains.
+          project=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].name // empty' <<<"$projects")
+          production=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].production_branch // empty' <<<"$projects")
+          test "$project" = "4planet-05" || { echo 'EXISTING_PAGES_ORIGIN_NOT_FOUND'; exit 12; }
+          test "$production" != "4nation-preview" || { echo 'PREVIEW_BRANCH_EQUALS_LIVE'; exit 13; }
+          echo "NATION_PREVIEW_PROJECT=$project" >> "$GITHUB_ENV"
+          echo 'NATION_PREVIEW_BRANCH=4nation-preview' >> "$GITHUB_ENV"
+          echo 'NATION_PREVIEW_REUSE=EXISTING_ORIGIN_NONPRODUCTION_BRANCH'
+      - name: Publish isolated preview ONLY (no production branch or DNS writes)
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$NATION_PREVIEW_PROJECT" --branch "$NATION_PREVIEW_BRANCH" --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/nation-wrangler-deploy.txt
+          # Wrangler is the deployment authority. Avoid Pages API pagination
+          # parameters: the account rejects this list request with HTTP 400.
+          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/nation-wrangler-deploy.txt | head -n1 || true)
+          test -n "$url" || { echo 'EXACT_BRANCH_PREVIEW_UNVERIFIED'; exit 14; }
+          echo "NATION_PREVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "EXACT_NATION_PREVIEW=$url/4nation"
+          echo "EXACT_SHA=$GITHUB_SHA"
+      - name: Externally check exact host and noindex isolation
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 15); do
+            code=$(curl -L -sS -o /tmp/nation.html -w '%{http_code}' "$NATION_PREVIEW_URL/4nation" || true)
+            [ "$code" = 200 ] && break
+            sleep 3
+          done
+          test "$code" = 200
+          grep -q 'noindex,nofollow' /tmp/nation.html
+          echo "EXACT_FOUNDER_PREVIEW=$NATION_PREVIEW_URL/4nation"
+          echo "FOUNDER_PREVIEW_VISIBLE=YES; LIVE_4NATION_DNS_UNCHANGED"
+
+      - name: Browser proof on actual Cloudflare preview / desktop and iPhone widths
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          BASE_URL="$NATION_PREVIEW_URL" npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
+          echo "EXTERNAL_NATION_BROWSER_GOLD=PASS"
