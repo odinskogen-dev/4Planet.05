@@ -1,0 +1,64 @@
+name: 4PLANET ID Gold Gate
+
+on:
+  push:
+    branches: [king/test, main]
+    paths:
+      - "src/identity/**"
+      - "src/pages/identity/**"
+      - "src/App.tsx"
+      - "src/components/layout/PublicShell.tsx"
+      - "scripts/identity-contract.test.mjs"
+      - ".github/workflows/identity-gold-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Identity contract
+        run: node --test scripts/identity-contract.test.mjs
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Start exact candidate
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/identity-preview.log 2>&1 &
+          for i in $(seq 1 45); do curl -fsS http://127.0.0.1:4173/id/login >/dev/null && exit 0; sleep 1; done
+          cat /tmp/identity-preview.log
+          exit 1
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Chromium + WebKit identity UX contract
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for (const type of [chromium, webkit]) {
+            const browser = await type.launch();
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            await page.goto(process.env.BASE_URL + '/id/login?return_to=https%3A%2F%2Foddekalv.org%2F');
+            await page.getByRole('heading', { name: 'Logg inn' }).waitFor();
+            await page.getByRole('button', { name: 'Glemt passord?' }).waitFor();
+            const current = await page.locator('#identity-password').getAttribute('autocomplete');
+            if (current !== 'current-password') throw new Error('current-password autocomplete missing');
+            await page.getByRole('button', { name: 'Opprett konto' }).click();
+            const next = await page.locator('#identity-password').getAttribute('autocomplete');
+            if (next !== 'new-password') throw new Error('new-password autocomplete missing');
+            if (page.url().includes('oddekalv.org')) throw new Error('excluded domain accepted as return target');
+            await browser.close();
+          }
+          NODE
