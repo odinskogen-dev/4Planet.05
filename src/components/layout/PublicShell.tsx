@@ -460,7 +460,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .public-header__nav-button{appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:22px 2px;cursor:pointer;transition:color .16s ease}
         .public-header__nav-button:focus-visible,.public-header__identity:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
         .public-header__actions{display:flex;align-items:center;gap:14px}
-        .public-header__identity{font-family:\${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
+        .public-header__identity{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__identity:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
