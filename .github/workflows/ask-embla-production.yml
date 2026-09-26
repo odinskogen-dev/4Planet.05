@@ -113,6 +113,8 @@ jobs:
           Allow: /
           Disallow: /brain/
           Disallow: /app/money/
+          Disallow: /finance.html
+          Disallow: /finance/
           Sitemap: https://4sapien.com/sitemap.xml
           """)
           (site/"sitemap.xml").write_text("""<?xml version="1.0" encoding="UTF-8"?>
@@ -191,6 +193,10 @@ jobs:
           grep -Fq 'data-exposure-id="food-dinner-intent-01"' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html
           grep -Fq 'https://4sapien.com/mat/hva-skal-vi-ha-til-middag/' products/4sapien/site/sitemap.xml
           grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml' products/4sapien/site/robots.txt
+          # Crawl guidance only: these assertions do not establish access control.
+          for private_route in /brain/ /app/money/ /finance.html /finance/; do
+            grep -Fxq "Disallow: $private_route" products/4sapien/site/robots.txt
+          done
           grep -Fq 'name="description"' "$ROOT"
           ! grep -Rqi 'noindex' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html products/4sapien/site/robots.txt
 
