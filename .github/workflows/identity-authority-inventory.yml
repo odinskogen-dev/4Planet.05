@@ -1,0 +1,65 @@
+name: 4PLANET ID Authority Inventory
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/identity-authority-inventory.yml"
+      - "src/identity/**"
+      - "src/pages/identity/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF3: ${{ secrets.CF_API_TOKEN }}
+      SUPA1: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPA2: ${{ secrets.SUPABASE_MANAGEMENT_TOKEN }}
+      SUPA3: ${{ secrets.SUPABASE_TOKEN }}
+      RESEND: ${{ secrets.RESEND_API_KEY }}
+      SB_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+      SB_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+    steps:
+      - name: Read-only identity authority inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-}}}"
+          test -n "$token" || { echo "Cloudflare token: MISSING"; exit 2; }
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $token" -H "Content-Type: application/json")
+          root="$(curl -fsS "$api/zones?name=4planet.org&status=active" "${auth[@]}")"
+          aid="$(jq -r '.result[0].account.id // empty' <<<"$root")"
+          test -n "$aid"
+
+          projects="$(curl -fsS "$api/accounts/$aid/pages/projects" "${auth[@]}")"
+          workers="$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}" || echo '{"result":[]}' )"
+          settings="$(curl -fsS -H "apikey: $SB_KEY" "$SB_URL/auth/v1/settings")"
+
+          echo "## 4PLANET ID read-only authority inventory"
+          echo "HEIR: $GITHUB_SHA"
+          echo
+          echo "### Pages custom domains (oddekalv.org excluded)"
+          jq -r '.result[]? | .name as $p | .production_branch as $b | .domains[]? | select((contains("oddekalv.org")|not)) | "- " + . + " | Pages=" + $p + " | production=" + ($b // "")' <<<"$projects" | sort
+          echo
+          echo "### Worker custom domains (oddekalv.org excluded)"
+          jq -r '.result[]? | select((.hostname | contains("oddekalv.org") | not)) | "- " + .hostname + " | Worker=" + (.service // "")' <<<"$workers" | sort
+          echo
+          echo "### Public Supabase Auth state"
+          echo "- email: $(jq -r '(.external.email // false)|tostring' <<<"$settings")"
+          echo "- google: $(jq -r '(.external.google // false)|tostring' <<<"$settings")"
+          echo "- signup_disabled: $(jq -r '(.disable_signup // false)|tostring' <<<"$settings")"
+          echo "- autoconfirm: $(jq -r '(.mailer_autoconfirm // "not_public")|tostring' <<<"$settings")"
+          echo
+          echo "### Existing CI control-plane credentials (presence only)"
+          test -n "${SUPA1:-${SUPA2:-${SUPA3:-}}}" && echo "- Supabase management credential: PRESENT" || echo "- Supabase management credential: MISSING"
+          test -n "${RESEND:-}" && echo "- Resend API credential in GitHub: PRESENT" || echo "- Resend API credential in GitHub: MISSING"
+          echo
+          echo "READ-ONLY. No DNS, auth configuration, Worker, Pages project, domain or secret was mutated."
