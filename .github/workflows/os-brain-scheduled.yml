@@ -1,0 +1,41 @@
+name: 4PLANET OS — scheduled Brain source sync
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/os-brain-scheduled.yml]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+concurrency:
+  group: os-brain-sync-scheduled
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    env:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: labs/overview-v1
+      - name: Synchronize controlled 4PLANET Drive sources
+        run: |
+          node --check scripts/os-brain-sync.mjs
+          python3 -m py_compile scripts/os-xlsx-rows.py
+          node scripts/os-brain-sync.mjs
+
+      - name: Report genuine scheduled sync blocker to existing OS issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "OS automatic BRAIN sync FAILED: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT . Latest previously successful BRAIN version remains retained; OS should mark stale if >12h. No secret values are included."
+
+# QA trigger: prove actual 4PLANET Drive document revision OS-SYNC-READBACK-PROOF-2026-09-20-01.
+
+# Six-hour production cadence restored. A genuine schedule-event run remains a distinct pending proof gate.
