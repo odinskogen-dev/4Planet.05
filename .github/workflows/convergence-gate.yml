@@ -68,6 +68,12 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: MapLibre sanitizer and bundled worker regression
+        run: node scripts/maplibre-compatibility.test.mjs
+
+      - name: Return-camera input ownership regression
+        run: node scripts/atlas-return-camera-release.test.mjs
+
       - name: Contract and smoke tests
         run: npm run test:smoke
 

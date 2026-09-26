@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import * as maplibregl from "maplibre-gl";
+import * as maplibregl from "@/earth/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { planetProofBySlug, type PlanetProof, type ProofMapLayer, type ProofSection } from "@/planet/proofs/planetProofs";
 
@@ -26,6 +26,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     if (!box.current) return;
     let alive = true;
     const m = new maplibregl.Map({
+      zoomLevelsToOverscale: undefined,
       container: box.current,
       style: VECTOR_STYLE,
       center: proof.center,

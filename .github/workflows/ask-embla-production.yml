@@ -2,7 +2,7 @@ name: 4SAPIEN One Product production gate
 
 on:
   push:
-    branches: [build/ask-embla-live-20260909]
+    branches: [build/ask-embla-live-20260909, work/4sapien-exposure-01-20260925]
     paths:
       - 'products/4sapien/**'
       - '.github/workflows/ask-embla-production.yml'
@@ -24,6 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Materialize Claude unified redesign release
+        id: materialize
         run: |
           set -euo pipefail
           SITE=products/4sapien/site
@@ -47,6 +48,7 @@ jobs:
           # Claude's merged Food handback already contains the proven gateway, meal-plan,
           # permission, auth and Supabase runtime. Do not re-apply stale visible patches.
           cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
+          python products/4sapien/build/apply_oauth_recovery_guard.py "$FOOD"
 
           # Claude's merged Finance donor + AXE experience; keep the existing V3 interaction seam
           # and canonical Finance Twin runtime, but do not re-apply the superseded premium visual layer.
@@ -70,12 +72,70 @@ jobs:
           <!doctype html><html lang="no"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/"><title>4SAPIEN</title><link rel="canonical" href="https://4sapien.com/"></head><body><a href="/">Åpne 4SAPIEN</a></body></html>
           HTML
 
+          # Exposure Engine 01: one useful, indexable FOOD-intent entry into the existing product.
+          python - <<'PY'
+          from pathlib import Path
+          site=Path("products/4sapien/site")
+          root=site/"index.html"
+          s=root.read_text()
+          meta='''<meta name="description" content="4SAPIEN hjelper deg forstå valg i hverdagen med kilder, synlig usikkerhet og fakta fremfor råd."><link rel="canonical" href="https://4sapien.com/"><meta property="og:title" content="4SAPIEN"><meta property="og:description" content="Se livet ditt klart. Fakta, kilder og synlig usikkerhet — du bestemmer."><meta property="og:url" content="https://4sapien.com/"><meta property="og:type" content="website">'''
+          if 'name="description"' not in s:
+              s=s.replace('</head>',meta+'</head>',1)
+              root.write_text(s)
+
+          p=site/"mat"/"hva-skal-vi-ha-til-middag"
+          p.mkdir(parents=True,exist_ok=True)
+          (p/"index.html").write_text(r'''<!doctype html>
+          <html lang="no"><head>
+          <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>Hva skal vi ha til middag? | 4SAPIEN Mat</title>
+          <meta name="description" content="Start med det du allerede har. 4SAPIEN Mat hjelper deg strukturere middagsvalget etter tid, pris, preferanser og tilgjengelige ingredienser.">
+          <link rel="canonical" href="https://4sapien.com/mat/hva-skal-vi-ha-til-middag/">
+          <meta property="og:title" content="Hva skal vi ha til middag? | 4SAPIEN Mat">
+          <meta property="og:description" content="Start med det du allerede har, velg hva som betyr mest, og åpne 4SAPIEN Mat.">
+          <meta property="og:url" content="https://4sapien.com/mat/hva-skal-vi-ha-til-middag/"><meta property="og:type" content="website">
+          <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Hva skal vi ha til middag?","url":"https://4sapien.com/mat/hva-skal-vi-ha-til-middag/","isPartOf":{"@type":"WebSite","name":"4SAPIEN","url":"https://4sapien.com/"}}</script>
+          <style>
+          :root{font-family:Arial,sans-serif;color:#0a0a0a;background:#fff}*{box-sizing:border-box}body{margin:0}main{max-width:860px;margin:auto;padding:72px 24px 96px}.brand{font-weight:700;letter-spacing:-.03em}.ey{margin-top:72px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#666}h1{font-size:clamp(42px,8vw,78px);line-height:.96;letter-spacing:-.055em;margin:16px 0 20px}.lead{font-size:20px;line-height:1.55;max-width:660px;color:#444}.steps{display:grid;gap:12px;margin:42px 0}.step{border:1px solid #ddd;border-radius:16px;padding:20px}.step b{display:block;margin-bottom:6px}.cta{display:inline-block;margin-top:8px;padding:15px 22px;border-radius:12px;background:#0a0a0a;color:#fff;text-decoration:none;font-weight:650}.note{margin-top:22px;color:#666;font-size:14px;line-height:1.5}@media(prefers-color-scheme:dark){:root{color:#fff;background:#000}.lead,.note,.ey{color:#aaa}.step{border-color:#333}.cta{background:#3ae86f;color:#000}}
+          </style></head><body><main>
+          <div class="brand">4SAPIEN <span style="font-weight:400;color:#777">BY 4PLANET</span></div>
+          <div class="ey">MAT · ET KONKRET VALG</div>
+          <h1>Hva skal vi ha til middag?</h1>
+          <p class="lead">Ikke start med tusen oppskrifter. Start med situasjonen din: hva du allerede har, hva som betyr mest akkurat nå, og hva som faktisk er kjent.</p>
+          <div class="steps">
+            <div class="step"><b>1. Se hva du har.</b>Ingredienser hjemme kan være et bedre utgangspunkt enn enda en handleliste.</div>
+            <div class="step"><b>2. Velg kriteriene.</b>Tid, pris, preferanser og det du vil bruke opp kan trekke i ulike retninger.</div>
+            <div class="step"><b>3. Se alternativer og usikkerhet.</b>4SAPIEN Mat er bygget for å vise fakta og ukjente tydelig. Du tar valget.</div>
+          </div>
+          <a class="cta" data-exposure-id="food-dinner-intent-01" href="/app/food/?utm_source=4sapien&utm_medium=organic&utm_campaign=food_intent_01&utm_content=hva_skal_vi_ha_til_middag">Åpne 4SAPIEN Mat →</a>
+          <p class="note">4SAPIEN gir beslutningsstøtte, ikke personlige helse- eller ernæringsråd.</p>
+          </main></body></html>''')
+
+          (site/"robots.txt").write_text("""User-agent: *
+          Disallow: /brain/
+          Disallow: /app/money/
+          Disallow: /finance.html
+          Disallow: /finance/
+          Sitemap: https://4sapien.com/sitemap.xml
+          """)
+          (site/"sitemap.xml").write_text("""<?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url><loc>https://4sapien.com/</loc></url>
+            <url><loc>https://4sapien.com/mat/hva-skal-vi-ha-til-middag/</loc></url>
+          </urlset>
+          """)
+          PY
+
       - name: Zero-loss unified product and security QA
+        id: qa
         run: |
           set -euo pipefail
           ROOT=products/4sapien/site/index.html
           FOOD=products/4sapien/site/app/food/index.html
           MONEY=products/4sapien/site/app/money/index.html
+          # Test actual generated bytes; stale artifacts must fail, never be patched by QA.
+          node products/4sapien/build/test_finance_session_ownership.cjs
+          node products/4sapien/build/test_oauth_recovery.cjs
 
           # Unified root / Today shell.
           grep -q '<title>4SAPIEN</title>' "$ROOT"
@@ -132,6 +192,15 @@ jobs:
             products/4sapien/build/apply_finance_route.py "$MONEY"
 
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' products/4sapien/site
+          grep -Fq 'data-exposure-id="food-dinner-intent-01"' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html
+          grep -Fq 'https://4sapien.com/mat/hva-skal-vi-ha-til-middag/' products/4sapien/site/sitemap.xml
+          grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml' products/4sapien/site/robots.txt
+          # Crawl guidance only: these assertions do not establish access control.
+          for private_route in /brain/ /app/money/ /finance.html /finance/; do
+            grep -Fxq "Disallow: $private_route" products/4sapien/site/robots.txt
+          done
+          grep -Fq 'name="description"' "$ROOT"
+          ! grep -Rqi 'noindex' products/4sapien/site/mat/hva-skal-vi-ha-til-middag/index.html products/4sapien/site/robots.txt
 
           # Babel/React syntax for both live worlds.
           python - <<'PY'
@@ -188,6 +257,50 @@ jobs:
             grep -Fq "$marker" "$BRAIN"
           done
 
+      - name: Verify generated exposure artifact identity
+        id: exposure_artifact_check
+        if: github.ref == 'refs/heads/work/4sapien-exposure-01-20260925'
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          site = Path("products/4sapien/site")
+          landing = site / "mat/hva-skal-vi-ha-til-middag/index.html"
+          food = site / "app/food/index.html"
+          def verify_landing(text):
+              required = [
+                  "<title>Hva skal vi ha til middag? | 4SAPIEN Mat</title>",
+                  'rel="canonical" href="https://4sapien.com/mat/hva-skal-vi-ha-til-middag/"',
+                  'data-exposure-id="food-dinner-intent-01"',
+                  "/app/food/?utm_source=4sapien&utm_medium=organic&utm_campaign=food_intent_01&utm_content=hva_skal_vi_ha_til_middag",
+              ]
+              return all(marker in text for marker in required)
+          content = landing.read_text()
+          assert verify_landing(content), "Generated dinner page identity missing"
+          assert not verify_landing((site / "index.html").read_text()), "Root fallback must not pass"
+          assert not verify_landing("<html><title>404</title></html>"), "404 must not pass"
+          assert not verify_landing(content.replace('data-exposure-id="food-dinner-intent-01"', "")), "Missing CTA must fail"
+          assert "functions/v1/embla-products" in food.read_text(), "Existing Food product missing"
+          manifest = {
+              "source_sha": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "proof_scope": "STATIC_GENERATED_SITE_ONLY_NOT_BROWSER_AUTH_OR_TELEMETRY",
+              "files": {str(path.relative_to(site)): hashlib.sha256(path.read_bytes()).hexdigest()
+                        for path in sorted(site.rglob("*")) if path.is_file()},
+          }
+          (site / "exposure-build-proof.json").write_text(json.dumps(manifest, indent=2) + "\n")
+          print("Generated-site identity and three negative controls passed; browser/attribution remain unproven.")
+          PY
+
+      - name: Retain exact generated 4SAPIEN site for isolated review
+        if: github.ref == 'refs/heads/work/4sapien-exposure-01-20260925' && steps.exposure_artifact_check.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4sapien-generated-site-${{ github.sha }}
+          path: products/4sapien/site/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Verify Supabase database gate
         id: db
         run: |
@@ -223,6 +336,7 @@ jobs:
           echo "Auth provider state: email=${email}, google=${google}"
 
       - name: Resolve Cloudflare authority
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: cf
         env:
           CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -245,6 +359,7 @@ jobs:
           echo "zone=$zone" >> "$GITHUB_OUTPUT"
 
       - name: Deploy isolated Workers static-assets candidate
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
@@ -271,6 +386,7 @@ jobs:
           exit 11
 
       - name: Fail closed on conflicting 4sapien.com Worker authority
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909'
         id: domaincheck
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
@@ -284,7 +400,7 @@ jobs:
 
       - name: Attach 4sapien.com after all gates pass
         id: prod
-        if: steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
+        if: github.ref == 'refs/heads/build/ask-embla-live-20260909' && steps.db.outputs.ready == '1' && steps.auth.outputs.launch_ready == '1' && steps.gateway.outputs.ready == '1'
         env:
           CF_API_TOKEN: ${{ steps.cf.outputs.token }}
           CF_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
@@ -310,22 +426,42 @@ jobs:
 
       - name: Release summary
         if: always()
+        env:
+          MATERIALIZE_OUTCOME: ${{ steps.materialize.outcome }}
+          QA_OUTCOME: ${{ steps.qa.outcome }}
+          DB_OUTCOME: ${{ steps.db.outcome }}
+          GATEWAY_OUTCOME: ${{ steps.gateway.outcome }}
+          AUTH_OUTCOME: ${{ steps.auth.outcome }}
+          CF_OUTCOME: ${{ steps.cf.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          DOMAIN_OUTCOME: ${{ steps.domaincheck.outcome }}
+          PROD_OUTCOME: ${{ steps.prod.outcome }}
         run: |
-          {
-            echo '## 4SAPIEN Unified Redesign production gate'
-            echo '- Claude unified shell: PASS'
-            echo '- Claude shared design grammar: PASS'
-            echo '- Claude merged Food runtime: PASS'
-            echo '- Claude merged Finance + AXE V3: PASS'
-            echo '- Canonical Finance Twin runtime preserved: PASS'
-            echo '- Canonical theme + sans typography: PASS'
-            echo '- Browser-secret scan: PASS'
-            echo "- Database gate: ${{ steps.db.outputs.ready }}"
-            echo "- Food + Embla auth boundary: ${{ steps.gateway.outputs.ready }}"
-            echo "- Email Auth: ${{ steps.auth.outputs.email }}"
-            echo "- Google Auth: ${{ steps.auth.outputs.google }}"
-            echo '- 4sapien.com Cloudflare authority: PASS'
-            echo "- Isolated Worker candidate: ${{ steps.deploy.outputs.url }}"
-            echo "- Custom-domain conflict: ${{ steps.domaincheck.outputs.current }}"
-            echo "- 4sapien.com production attached: ${{ steps.prod.outputs.deployed }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import os
+          def label(outcome):
+              return {"success": "PASS", "failure": "FAIL", "cancelled": "CANCELLED",
+                      "skipped": "SKIPPED"}.get(outcome, "UNKNOWN")
+          gates = [
+              ("Materialized product", "MATERIALIZE_OUTCOME"),
+              ("Bounded zero-loss/security QA", "QA_OUTCOME"),
+              ("Database gate", "DB_OUTCOME"),
+              ("Food + Embla auth boundary", "GATEWAY_OUTCOME"),
+              ("Auth provider inspection (not user login proof)", "AUTH_OUTCOME"),
+              ("4sapien.com Cloudflare authority", "CF_OUTCOME"),
+              ("Worker deploy and runtime verification", "DEPLOY_OUTCOME"),
+              ("Custom-domain conflict check", "DOMAIN_OUTCOME"),
+              ("Production attachment and runtime verification", "PROD_OUTCOME"),
+          ]
+          # Negative controls run even when an upstream gate fails or is skipped.
+          for _, key in gates:
+              for outcome, expected in [("success", "PASS"), ("failure", "FAIL"),
+                                        ("cancelled", "CANCELLED"), ("skipped", "SKIPPED"),
+                                        ("", "UNKNOWN"), ("neutral", "UNKNOWN")]:
+                  assert label(outcome) == expected, (key, outcome)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
+              report.write("## 4SAPIEN production gate — observed step outcomes\n")
+              for title, key in gates:
+                  report.write(f"- {title}: {label(os.environ.get(key, ''))}\n")
+              report.write("- These step outcomes are not independent Gold or real-user proof.\n")
+          PY
