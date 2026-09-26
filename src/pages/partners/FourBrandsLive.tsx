@@ -54,6 +54,20 @@ const DECISION_STATES: DecisionState[] = [
   "LEARNING",
 ];
 
+type ScenarioState = {
+  revenueDelta: number;
+  costDelta: number;
+  marginDelta: number;
+  horizon: string;
+};
+
+const INITIAL_SCENARIO: ScenarioState = {
+  revenueDelta: 10,
+  costDelta: 0,
+  marginDelta: 0,
+  horizon: "12 months",
+};
+
 const STORAGE_KEY = "4brands:company-twin:local-beta-01";
 
 function Field({ label, value, placeholder, onChange, wide = false }: { label: string; value: string; placeholder: string; onChange: (value: string) => void; wide?: boolean }) {
@@ -82,6 +96,13 @@ function show(value: string, fallback = "UNKNOWN — add company data") {
 export default function FourBrandsLive() {
   const [twin, setTwin] = useState<TwinState>(INITIAL);
   const [saved, setSaved] = useState(false);
+  const [scenario, setScenario] = useState<ScenarioState>(INITIAL_SCENARIO);
+
+  const baselineRevenue = Number(twin.revenue.replace(/[^0-9.-]/g, ""));
+  const hasNumericRevenue = Number.isFinite(baselineRevenue) && baselineRevenue > 0;
+  const scenarioRevenue = hasNumericRevenue
+    ? baselineRevenue * (1 + scenario.revenueDelta / 100)
+    : null;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -116,6 +137,9 @@ export default function FourBrandsLive() {
           .fbl-shell{background:#f4f4ef;color:#0a0a0a;padding:clamp(74px,9vw,140px) clamp(22px,6vw,96px);border-top:1px solid #0a0a0a;font-family:"Instrument Sans",system-ui,sans-serif}
           .fbl-jump{position:fixed;right:18px;bottom:18px;z-index:120;text-decoration:none;background:#0a0a0a;color:#fff;border:1px solid #fff;padding:12px 15px;font:9px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.07em}
           .fbl-kicker{font:9px/1.2 "Fragment Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#656565;margin:0 0 16px}
+          .fbl-system{margin-bottom:82px;border-top:1px solid #0a0a0a;padding-top:28px}.fbl-system__head{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,520px);gap:48px;margin-bottom:32px}.fbl-system__head h2{font-size:clamp(46px,7vw,92px);line-height:.92;letter-spacing:-.06em;font-weight:500;margin:0}.fbl-system__head p{font-size:15px;line-height:1.55;color:#505050;margin:0}.fbl-layers{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid #cfcfc8;border-top:1px solid #0a0a0a;background:#fff}.fbl-layer{padding:22px;min-height:230px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-layer span{font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.07em;color:#777}.fbl-layer h3{font-size:24px;line-height:1.05;letter-spacing:-.035em;font-weight:500;margin:16px 0 14px}.fbl-layer p{font-size:12px;line-height:1.5;color:#555;margin:0}.fbl-layer strong{display:block;margin-top:22px;font:8px/1.3 "Fragment Mono",ui-monospace,monospace;letter-spacing:.05em;color:#111;text-transform:uppercase}
+          .fbl-brain{margin:0 0 82px;border-top:1px solid #0a0a0a;padding-top:30px}.fbl-brain__head{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:50px;margin-bottom:28px}.fbl-brain h2{font-size:clamp(38px,5vw,70px);line-height:.96;letter-spacing:-.055em;font-weight:500;margin:0}.fbl-brain__head p{font-size:14px;line-height:1.55;color:#555;margin:0}.fbl-brain__grid{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid #cfcfc8;border-top:1px solid #cfcfc8;background:#fff}.fbl-brain__grid article{padding:18px;min-height:170px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-brain__grid span{font:8px/1 "Fragment Mono",ui-monospace,monospace;color:#777}.fbl-brain__grid h3{font-size:20px;font-weight:500;letter-spacing:-.03em;margin:14px 0 10px}.fbl-brain__grid p{font-size:11px;line-height:1.5;color:#555;margin:0}
+          .fbl-future{margin-top:82px;border-top:1px solid #0a0a0a;padding-top:32px}.fbl-future__head{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:50px;margin-bottom:30px}.fbl-future h3{font-size:clamp(38px,5vw,70px);line-height:.96;letter-spacing:-.055em;font-weight:500;margin:0}.fbl-future__head p{font-size:14px;line-height:1.55;color:#555;margin:0}.fbl-scenario{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid #cfcfc8;border-top:1px solid #0a0a0a;background:#fff}.fbl-scenario label,.fbl-scenario__result{padding:18px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8;min-height:140px}.fbl-scenario label span,.fbl-scenario__result span{display:block;font:8px/1.2 "Fragment Mono",ui-monospace,monospace;color:#777;text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}.fbl-scenario input{width:100%;box-sizing:border-box;border:0;border-bottom:1px solid #aaa;background:transparent;padding:8px 0;font:500 22px/1 "Instrument Sans",system-ui,sans-serif;outline:none}.fbl-scenario__result{grid-column:span 2;background:#0a0a0a;color:#fff}.fbl-scenario__result strong{display:block;font-size:clamp(30px,4vw,54px);font-weight:500;letter-spacing:-.05em;margin-bottom:10px}.fbl-scenario__result p{font-size:11px;line-height:1.5;color:#bbb;margin:0}
           .fbl-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,520px);gap:36px clamp(48px,8vw,130px);align-items:end;margin-bottom:50px}
           .fbl-head h2{font-size:clamp(46px,7vw,96px);line-height:.92;letter-spacing:-.06em;font-weight:500;margin:0;max-width:1000px}
           .fbl-head__copy>p:not(.fbl-kicker){font-size:16px;line-height:1.55;color:#484848;margin:0 0 18px}
@@ -127,14 +151,43 @@ export default function FourBrandsLive() {
           .fbl-boards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-left:1px solid #cfcfc8;border-top:1px solid #0a0a0a;background:#fff}.fbl-board{padding:20px;min-height:280px;border-right:1px solid #cfcfc8;border-bottom:1px solid #cfcfc8}.fbl-board>span{font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.07em;color:#777}.fbl-board h3{font-size:23px;line-height:1.05;letter-spacing:-.035em;font-weight:500;margin:16px 0 24px}.fbl-board p{border-top:1px solid #deded8;margin:0;padding:10px 0;font-size:12px;line-height:1.45;color:#444}.fbl-board p strong{display:block;font-size:13px;font-weight:500;color:#111;margin-bottom:3px}
           .fbl-ledger{margin-top:70px;background:#fff;border-top:1px solid #0a0a0a;padding:0 22px 22px}.fbl-ledger__head{display:grid;grid-template-columns:1fr minmax(280px,520px);gap:36px;padding:30px 0}.fbl-ledger h3{font-size:clamp(34px,4vw,58px);line-height:1;letter-spacing:-.05em;font-weight:500;margin:0}.fbl-ledger__head p{font-size:13px;line-height:1.55;color:#555;margin:0}.fbl-ledger__row{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,310px);gap:20px;align-items:center;border-top:1px solid #d8d8d2;padding:20px 0}.fbl-ledger__row strong{display:block;font-size:17px;font-weight:500;margin-bottom:5px}.fbl-ledger__row span{font:9px/1.4 "Fragment Mono",ui-monospace,monospace;color:#777;text-transform:uppercase}.fbl-ledger select{width:100%;border:1px solid #bdbdb7;background:#fff;padding:11px;font:9px/1.2 "Fragment Mono",ui-monospace,monospace;color:#111}
           .fbl-studio{margin-top:70px;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:50px;border-top:1px solid #0a0a0a;padding-top:34px}.fbl-studio h3{font-size:clamp(36px,5vw,68px);line-height:.96;letter-spacing:-.055em;font-weight:500;margin:8px 0 22px}.fbl-studio__copy>p:not(.fbl-kicker){font-size:14px;line-height:1.55;color:#555;max-width:540px}.fbl-preview{background:#0a0a0a;color:#fff;min-height:390px;padding:clamp(28px,5vw,62px);display:flex;flex-direction:column;justify-content:space-between}.fbl-preview>span{font:8px/1 "Fragment Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#aaa}.fbl-preview h4{font-size:clamp(42px,5vw,76px);line-height:.92;letter-spacing:-.06em;font-weight:500;margin:0 0 18px}.fbl-preview p{font-size:15px;line-height:1.5;color:#d3d3d3;max-width:680px;margin:0}.fbl-preview footer{border-top:1px solid #393939;padding-top:16px;font:9px/1.4 "Fragment Mono",ui-monospace,monospace;color:#aaa;text-transform:uppercase;letter-spacing:.05em}
-          @media(max-width:1100px){.fbl-head{grid-template-columns:1fr}.fbl-form{grid-template-columns:repeat(2,1fr)}.fbl-field--wide{grid-column:span 2}.fbl-boards{grid-template-columns:repeat(2,1fr)}.fbl-law{grid-template-columns:repeat(2,1fr)}.fbl-law div:nth-child(2){border-right:0}.fbl-studio{grid-template-columns:1fr}}
-          @media(max-width:720px){.fbl-shell{padding-left:18px;padding-right:18px}.fbl-form,.fbl-boards,.fbl-law,.fbl-ledger__head{grid-template-columns:1fr}.fbl-field--wide{grid-column:auto}.fbl-law div{border-right:0;border-bottom:1px solid #cfcfc8}.fbl-board{min-height:auto}.fbl-actions{align-items:flex-start;flex-direction:column}.fbl-ledger__row{grid-template-columns:1fr}.fbl-preview{min-height:340px}.fbl-jump{right:12px;bottom:12px}}
+          @media(max-width:1100px){.fbl-system__head,.fbl-brain__head,.fbl-future__head,.fbl-head{grid-template-columns:1fr}.fbl-layers,.fbl-brain__grid{grid-template-columns:repeat(2,1fr)}.fbl-scenario{grid-template-columns:repeat(2,1fr)}.fbl-form{grid-template-columns:repeat(2,1fr)}.fbl-field--wide{grid-column:span 2}.fbl-boards{grid-template-columns:repeat(2,1fr)}.fbl-law{grid-template-columns:repeat(2,1fr)}.fbl-law div:nth-child(2){border-right:0}.fbl-studio{grid-template-columns:1fr}}
+          @media(max-width:720px){.fbl-shell{padding-left:18px;padding-right:18px}.fbl-layers,.fbl-brain__grid,.fbl-scenario,.fbl-form,.fbl-boards,.fbl-law,.fbl-ledger__head{grid-template-columns:1fr}.fbl-scenario__result{grid-column:auto}.fbl-field--wide{grid-column:auto}.fbl-law div{border-right:0;border-bottom:1px solid #cfcfc8}.fbl-board{min-height:auto}.fbl-actions{align-items:flex-start;flex-direction:column}.fbl-ledger__row{grid-template-columns:1fr}.fbl-preview{min-height:340px}.fbl-jump{right:12px;bottom:12px}}
         `}</style>
+
+        <div className="fbl-system">
+          <div className="fbl-system__head">
+            <div>
+              <p className="fbl-kicker">4BRANDS / BETTER COMPANY</p>
+              <h2>Understand today. Build a better tomorrow.</h2>
+            </div>
+            <p>4BRANDS starts with what can be known from the outside, then becomes a private learning system for the company itself. The layers stay distinct so public evidence, company truth, scenarios and realised results are never confused.</p>
+          </div>
+          <div className="fbl-layers">
+            <article className="fbl-layer"><span>00 / ANALYSIS</span><h3>Understand the company</h3><p>Free, source-aware analysis from public information: economics, value drivers, leakage, opportunities and unknowns.</p><strong>Acquisition + first value</strong></article>
+            <article className="fbl-layer"><span>01 / COMPANY BRAIN</span><h3>Remember what it learns</h3><p>Company knowledge, decisions, playbooks, sources and learning become durable, permission-aware organisational memory.</p><strong>Knowledge + continuity</strong></article>
+            <article className="fbl-layer"><span>02 / COMPANY TWIN</span><h3>Know the company now</h3><p>A living model of customers, money, people, operations, constraints, objectives and relevant planetary intersections.</p><strong>State + causal model</strong></article>
+            <article className="fbl-layer"><span>03 / FUTURE ENGINE</span><h3>Explore what could happen</h3><p>Test assumptions and scenarios before acting. Every scenario remains distinct from fact, forecast and realised outcome.</p><strong>Scenario → decision → proof</strong></article>
+          </div>
+        </div>
+
+        <section className="fbl-brain" aria-label="Company Brain">
+          <div className="fbl-brain__head">
+            <div><p className="fbl-kicker">01 / COMPANY BRAIN</p><h2>The company that remembers.</h2></div>
+            <p>Connect the systems the company already uses. Keep source permissions and provenance. Convert durable learning into reviewed company knowledge instead of letting it disappear in email, meetings or chat.</p>
+          </div>
+          <div className="fbl-brain__grid">
+            <article><span>01</span><h3>Connect</h3><p>Drive, Microsoft 365, GitHub, Slack, CRM, finance and other approved sources.</p></article>
+            <article><span>02</span><h3>Understand</h3><p>Resolve company identity, people, products, customers, decisions, metrics, processes and relationships.</p></article>
+            <article><span>03</span><h3>Remember</h3><p>Versioned playbooks, decisions and learning with authority, time, source and supersession intact.</p></article>
+            <article><span>04</span><h3>Improve</h3><p>New evidence creates a reviewable learning candidate. Approved learning updates the Brain and becomes reusable.</p></article>
+          </div>
+        </section>
 
         <div className="fbl-head">
           <div>
-            <p className="fbl-kicker">4BRANDS / COMPANY OPERATING TWIN / BETA</p>
-            <h2>One living model of the company.</h2>
+            <p className="fbl-kicker">02 / COMPANY TWIN / BETA</p>
+            <h2>One living model of the company now.</h2>
           </div>
           <div className="fbl-head__copy">
             <p>The public Company Value Map above is the outside view. Add the minimum internal baseline here to start a working company twin: what the company is trying to achieve, the economic spine, the constraint, the opportunity and the decision state.</p>
@@ -190,6 +243,29 @@ export default function FourBrandsLive() {
             <p><strong>State</strong>{twin.decisionState}</p>
           </Board>
         </div>
+
+        <section className="fbl-future" aria-label="Future Engine">
+          <div className="fbl-future__head">
+            <div><p className="fbl-kicker">03 / FUTURE ENGINE / EARLY PROTOTYPE</p><h3>Model choices before making them.</h3></div>
+            <p>This is an illustrative scenario surface, not a forecast. Assumptions must stay visible, uncertainty must stay explicit, and the real result must later be compared with the scenario so the Company Brain can learn.</p>
+          </div>
+          <div className="fbl-scenario">
+            <label><span>Revenue change assumption</span><input type="number" value={scenario.revenueDelta} onChange={(event) => setScenario((s) => ({ ...s, revenueDelta: Number(event.target.value) }))} /><small>%</small></label>
+            <label><span>Cost change assumption</span><input type="number" value={scenario.costDelta} onChange={(event) => setScenario((s) => ({ ...s, costDelta: Number(event.target.value) }))} /><small>%</small></label>
+            <label><span>Margin change assumption</span><input type="number" value={scenario.marginDelta} onChange={(event) => setScenario((s) => ({ ...s, marginDelta: Number(event.target.value) }))} /><small>percentage points</small></label>
+            <label><span>Horizon</span><input value={scenario.horizon} onChange={(event) => setScenario((s) => ({ ...s, horizon: event.target.value }))} /></label>
+            <div className="fbl-scenario__result">
+              <span>Illustrative scenario revenue · {scenario.horizon}</span>
+              <strong>{scenarioRevenue === null ? "ADD A NUMERIC REVENUE BASELINE" : scenarioRevenue.toLocaleString(undefined, { maximumFractionDigits: 1 })}</strong>
+              <p>Simple arithmetic illustration using the entered revenue baseline and revenue-change assumption only. It is not a predictive model. Cost, margin, causal dependencies, confidence ranges and external conditions require validated company data and modelling.</p>
+            </div>
+            <div className="fbl-scenario__result">
+              <span>Decision discipline</span>
+              <strong>ASSUMPTION ≠ FORECAST ≠ RESULT</strong>
+              <p>Future Engine should preserve baseline, assumptions, scenario version, model version, confidence and later actual outcome so prediction error becomes new learning.</p>
+            </div>
+          </div>
+        </section>
 
         <div className="fbl-ledger">
           <div className="fbl-ledger__head">
