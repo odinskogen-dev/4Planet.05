@@ -24,6 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Materialize Claude unified redesign release
+        id: materialize
         run: |
           set -euo pipefail
           SITE=products/4sapien/site
@@ -123,6 +124,7 @@ jobs:
           PY
 
       - name: Zero-loss unified product and security QA
+        id: qa
         run: |
           set -euo pipefail
           ROOT=products/4sapien/site/index.html
@@ -361,22 +363,42 @@ jobs:
 
       - name: Release summary
         if: always()
+        env:
+          MATERIALIZE_OUTCOME: ${{ steps.materialize.outcome }}
+          QA_OUTCOME: ${{ steps.qa.outcome }}
+          DB_OUTCOME: ${{ steps.db.outcome }}
+          GATEWAY_OUTCOME: ${{ steps.gateway.outcome }}
+          AUTH_OUTCOME: ${{ steps.auth.outcome }}
+          CF_OUTCOME: ${{ steps.cf.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          DOMAIN_OUTCOME: ${{ steps.domaincheck.outcome }}
+          PROD_OUTCOME: ${{ steps.prod.outcome }}
         run: |
-          {
-            echo '## 4SAPIEN Unified Redesign production gate'
-            echo '- Claude unified shell: PASS'
-            echo '- Claude shared design grammar: PASS'
-            echo '- Claude merged Food runtime: PASS'
-            echo '- Claude merged Finance + AXE V3: PASS'
-            echo '- Canonical Finance Twin runtime preserved: PASS'
-            echo '- Canonical theme + sans typography: PASS'
-            echo '- Browser-secret scan: PASS'
-            echo "- Database gate: ${{ steps.db.outputs.ready }}"
-            echo "- Food + Embla auth boundary: ${{ steps.gateway.outputs.ready }}"
-            echo "- Email Auth: ${{ steps.auth.outputs.email }}"
-            echo "- Google Auth: ${{ steps.auth.outputs.google }}"
-            echo '- 4sapien.com Cloudflare authority: PASS'
-            echo "- Isolated Worker candidate: ${{ steps.deploy.outputs.url }}"
-            echo "- Custom-domain conflict: ${{ steps.domaincheck.outputs.current }}"
-            echo "- 4sapien.com production attached: ${{ steps.prod.outputs.deployed }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import os
+          def label(outcome):
+              return {"success": "PASS", "failure": "FAIL", "cancelled": "CANCELLED",
+                      "skipped": "SKIPPED"}.get(outcome, "UNKNOWN")
+          gates = [
+              ("Materialized product", "MATERIALIZE_OUTCOME"),
+              ("Bounded zero-loss/security QA", "QA_OUTCOME"),
+              ("Database gate", "DB_OUTCOME"),
+              ("Food + Embla auth boundary", "GATEWAY_OUTCOME"),
+              ("Auth provider inspection (not user login proof)", "AUTH_OUTCOME"),
+              ("4sapien.com Cloudflare authority", "CF_OUTCOME"),
+              ("Worker deploy and runtime verification", "DEPLOY_OUTCOME"),
+              ("Custom-domain conflict check", "DOMAIN_OUTCOME"),
+              ("Production attachment and runtime verification", "PROD_OUTCOME"),
+          ]
+          # Negative controls run even when an upstream gate fails or is skipped.
+          for _, key in gates:
+              for outcome, expected in [("success", "PASS"), ("failure", "FAIL"),
+                                        ("cancelled", "CANCELLED"), ("skipped", "SKIPPED"),
+                                        ("", "UNKNOWN"), ("neutral", "UNKNOWN")]:
+                  assert label(outcome) == expected, (key, outcome)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
+              report.write("## 4SAPIEN production gate — observed step outcomes\n")
+              for title, key in gates:
+                  report.write(f"- {title}: {label(os.environ.get(key, ''))}\n")
+              report.write("- These step outcomes are not independent Gold or real-user proof.\n")
+          PY
