@@ -10,6 +10,7 @@ import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { AtlasEmbedRuntime } from "@/earth/AtlasEmbedRuntime";
 import { isAtlasEmbedKind } from "@/earth/atlasViewContract";
+import IdentityApp from "@/pages/identity/IdentityApp";
 
 import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import "@/styles/global.css";
@@ -45,6 +46,13 @@ function isFourBrandPath() {
   if (typeof window === "undefined") return false;
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   return path === "/4brand" || path.startsWith("/4brand/") || path === "/4brands" || path.startsWith("/4brands/");
+}
+
+function isIdentitySurface() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  const path = window.location.pathname;
+  return host === "id.4planet.org" || path === "/id" || path.startsWith("/id/") || path === "/auth/4planet/callback";
 }
 
 function isCreatorHost() {
@@ -108,6 +116,8 @@ function isFirstPartyAtlasEmbedRoute() {
 }
 
 export default function App() {
+  if (isIdentitySurface()) return <IdentityApp />;
+
   // Standalone hosts must not recursively render their homepage inside /atlas iframes.
   if (isFirstPartyAtlasEmbedRoute() || (isNationHost() && window.location.pathname === "/atlas")) return <BrowserRouter><StandardApp /></BrowserRouter>;
   if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
