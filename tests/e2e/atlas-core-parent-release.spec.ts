@@ -126,6 +126,28 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
     body: JSON.stringify({ inputPoint, hit }), contentType: "application/json",
   });
   expect(hit.canvas, "wheel must hit the map, not an observation overlay").toBe(true);
+  // Observe the reset writer without forcing camera state or suppressing errors.
+  await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    const evidence: unknown[] = [];
+    (window as any).__atlasCameraResetEvidence = evidence;
+    const record = (entry: object) => {
+      if (evidence.length < 100) evidence.push({ at: performance.now(), ...entry });
+    };
+    const originalJumpTo = map.jumpTo;
+    map.jumpTo = function (...args: unknown[]) {
+      record({ kind: "jumpTo", stack: new Error("camera writer").stack, options: args[0] });
+      return originalJumpTo.apply(this, args);
+    };
+    window.addEventListener("wheel", (event) => {
+      record({ kind: "wheel", trusted: event.isTrusted,
+        target: (event.target as Element)?.tagName,
+        canvasInPath: event.composedPath().includes(map.getCanvas()) });
+    }, { capture: true, passive: true });
+    for (const name of ["movestart", "moveend", "idle", "resize"]) {
+      map.on(name, () => record({ kind: name, zoom: map.getZoom(), center: map.getCenter() }));
+    }
+  });
   await page.mouse.move(inputPoint.x, inputPoint.y);
   await page.mouse.wheel(0, -700);
   await page.waitForFunction((initialZoom) => {
@@ -143,6 +165,10 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
     const map = (window as any).__4planet_map;
     const center = map.getCenter();
     return { zoom: map.getZoom(), lng: center.lng, lat: center.lat };
+  });
+  await testInfo.attach("camera-reset-writer", {
+    body: JSON.stringify(await page.evaluate(() => (window as any).__atlasCameraResetEvidence), null, 2),
+    contentType: "application/json",
   });
   expect(Math.abs(userOwned.zoom - target.zoom)).toBeGreaterThan(0.1);
 
