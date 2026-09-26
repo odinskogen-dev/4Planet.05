@@ -137,9 +137,9 @@ export default function FourBrand() {
 
   return (
     <main className="fb-shell">
-      <nav className="fb-nav" aria-label="4BRAND">
+      <nav className="fb-nav" aria-label="4BRANDS">
         <a href="/" className="fb-wordmark">4PLANET<span>_</span></a>
-        <div className="fb-nav__context">PARTNERS / 4BRAND</div>
+        <div className="fb-nav__context">4BRANDS / COMPANY ANALYSIS</div>
         <a href="/companies" className="fb-nav__link">COMPANIES</a>
       </nav>
 
@@ -176,7 +176,7 @@ export default function FourBrand() {
           {error && <div className="fb-error" role="status"><p>{error}</p><button type="button" onClick={() => { setCompany("TOMRA"); setError(null); }}>Use TOMRA proof</button></div>}
 
           <div className="fb-entry__note">
-            <span>4BRAND / 01</span>
+            <span>4BRANDS / 00</span>
             <p>Facts stay facts. Estimates stay estimates. Nothing is called impact until it is measured.</p>
           </div>
         </section>
@@ -191,7 +191,7 @@ export default function FourBrand() {
             </div>
             <div className="fb-company__title">
               <div>
-                <p className="fb-eyebrow">4BRAND VALUE MAP</p>
+                <p className="fb-eyebrow">4BRANDS COMPANY ANALYSIS</p>
                 <h1>{analysis.company.name}</h1>
               </div>
               <p>{analysis.company.description}</p>
@@ -291,7 +291,7 @@ export default function FourBrand() {
           </section>
 
           <footer className="fb-footer">
-            <span>4BRAND / UNIVERSAL ACTOR VALUE ENGINE</span>
+            <span>4BRANDS / UNIVERSAL ACTOR VALUE ENGINE</span>
             <p>{new Date(analysis.generatedAt).toLocaleDateString()} · Decision intelligence, not assurance.</p>
           </footer>
         </div>
