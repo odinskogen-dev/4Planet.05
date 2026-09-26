@@ -134,7 +134,8 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   }, target.zoom, { timeout: 8_000 });
   await page.waitForFunction(() => {
     const map = (window as any).__4planet_map;
-    return map && !map.isMoving() && !map.isZooming() && !map.isEasing();
+    // Public isMoving covers both camera animation and user gestures.
+    return map && !map.isMoving() && !map.isZooming();
   }, undefined, { timeout: 8_000 });
   await page.waitForTimeout(400);
 
@@ -157,4 +158,3 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(afterSettle.lng - userOwned.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(afterSettle.lat - userOwned.lat)).toBeLessThanOrEqual(0.05);
 });
-
