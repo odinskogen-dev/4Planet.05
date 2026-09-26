@@ -5,6 +5,7 @@ import { Mark } from "@/components/ui";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
+import { getIdentityClient, identityAccountUrl, identityLoginUrl } from "@/identity/identityClient";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const strip = (s: string) => s.replace(/_$/, "");
@@ -174,6 +175,22 @@ function topIsDark(pathname: string) {
   return false;
 }
 
+function IdentityHeaderAction({ color }: { color: string }) {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    let unsubscribe = () => {};
+    getIdentityClient().then((client) => {
+      client.auth.getSession().then(({ data }) => { if (alive) setSignedIn(Boolean(data.session)); });
+      const listener = client.auth.onAuthStateChange((_event, session) => { if (alive) setSignedIn(Boolean(session)); });
+      unsubscribe = () => listener.data.subscription.unsubscribe();
+    }).catch(() => undefined);
+    return () => { alive = false; unsubscribe(); };
+  }, []);
+  const href = signedIn ? identityAccountUrl(window.location.href) : identityLoginUrl(window.location.href);
+  return <a href={href} className="public-header__identity" style={{ color }}>{signedIn ? "ACCOUNT" : "SIGN IN"}</a>;
+}
+
 function Header() {
   const { pathname } = useLocation();
   const [panel, setPanel] = useState<PanelKey | null>(null);
@@ -340,6 +357,7 @@ function Header() {
           </nav>
 
           <div className="public-header__actions">
+            <IdentityHeaderAction color={fg} />
             <Link to="/join" className="public-header__join" style={{ color: fg }}>JOIN 4PLANET</Link>
             <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
               {mobileOpen ? "CLOSE" : "MENU"}
@@ -440,8 +458,10 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .public-brand{font-family:${T.display};font-size:18px;font-weight:650;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
         .public-header__desktop{display:flex;align-items:center;justify-content:center;height:100%;gap:clamp(12px,2.2vw,34px)}
         .public-header__nav-button{appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:22px 2px;cursor:pointer;transition:color .16s ease}
-        .public-header__nav-button:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+        .public-header__nav-button:focus-visible,.public-header__identity:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
         .public-header__actions{display:flex;align-items:center;gap:14px}
+        .public-header__identity{font-family:\${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
+        .public-header__identity:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__menu{display:none;appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 0;cursor:pointer}
