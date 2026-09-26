@@ -131,8 +131,20 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
   test.skip(!REMOTE || testInfo.project.name !== "desktop-1440", "single immutable desktop evidence capture");
   await page.goto(ATLAS);
   await waitForAtlas(page);
-  await selectOrca(page);
+  // Observe the UI's own response; do not issue a second provider-backed request.
+  const uiResponse = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return url.origin === new URL(ATLAS).origin && url.pathname === "/api/inaturalist"
+      && url.searchParams.get("q") === "Orcinus orca"
+      && url.searchParams.get("perPage") === "80"
+      && url.searchParams.get("quality") === "research";
+  }, { timeout: 30_000 });
+  const [captured] = await Promise.all([uiResponse, selectOrca(page)]);
   const state = await waitForSourceState(page, "atlasInatRecordState");
+  await testInfo.attach("observation-ui-response-state", {
+    body: JSON.stringify({ state, status: captured.status(), observationProof: "NOT_YET_ESTABLISHED" }),
+    contentType: "application/json",
+  });
 
   if (state === "unavailable") {
     await expect(page.getByText(/iNATURALIST OBSERVATIONS UNAVAILABLE/i)).toBeVisible();
@@ -141,13 +153,11 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
   }
 
   expect(state).toBe("live");
-  const source = await page.evaluate(async () => {
-    const response = await fetch("/api/inaturalist?q=Orcinus%20orca&perPage=20&quality=research");
-    const data = await response.json();
+  const source = await page.evaluate(async ({ ok, status, data }) => {
     return {
-      ok: response.ok,
+      ok,
       diagnostic: {
-        status: response.status,
+        status,
         // Contract codes only: never attach raw bodies, observations or headers.
         availability: ["available", "unavailable"].includes(data.availability) ? data.availability : null,
         reason: ["RATE_LIMITED", "PROVIDER_UNAVAILABLE", "TAXON_RESOLUTION_FAILURE", "NETWORK_FAILURE", "PROVIDER_CONTRACT_MISMATCH"].includes(data.reason) ? data.reason : null,
@@ -160,10 +170,10 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
       semantics: data.semantics || "",
       resolvedTaxon: data.resolvedTaxon || null,
     };
-  });
+  }, { ok: captured.ok(), status: captured.status(), data: await captured.json() });
 
   await testInfo.attach("observation-source-http-contract", {
-    body: JSON.stringify({ uiStateBeforeRequest: state, ...source.diagnostic }),
+    body: JSON.stringify({ uiStateAfterResponse: state, evidenceSource: "UI_RESPONSE", ...source.diagnostic }),
     contentType: "application/json",
   });
   expect(source.ok).toBe(true);

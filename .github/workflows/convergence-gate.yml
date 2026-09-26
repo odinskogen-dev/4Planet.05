@@ -74,6 +74,9 @@ jobs:
       - name: Return-camera input ownership regression
         run: node scripts/atlas-return-camera-release.test.mjs
 
+      - name: Atlas source diagnostic regression (offline)
+        run: node scripts/atlas-source-diagnostic.test.mjs
+
       - name: Contract and smoke tests
         run: npm run test:smoke
 
