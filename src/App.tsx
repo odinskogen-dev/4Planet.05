@@ -9,6 +9,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { AtlasEmbedRuntime } from "@/earth/AtlasEmbedRuntime";
+import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
 import { isAtlasEmbedKind } from "@/earth/atlasViewContract";
 
 import { OdinCreatorPage } from "@/pages/v5/CreatorMarket";
@@ -75,7 +76,7 @@ function MeasuredStandalone({ children }: { children: ReactNode }) {
 
 function StandardApp() {
   return (
-    <>
+    <FourPlanetIdentityProvider>
       <ScrollToTop />
       <ContextRetained />
       <Analytics />
@@ -97,7 +98,7 @@ function StandardApp() {
           .world:has(.site-menu) .site-menu{max-height:calc(100svh - 76px);overflow-y:auto;overscroll-behavior:contain}
         }
       `}</style>
-    </>
+    </FourPlanetIdentityProvider>
   );
 }
 
