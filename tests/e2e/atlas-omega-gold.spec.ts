@@ -146,6 +146,15 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
     const data = await response.json();
     return {
       ok: response.ok,
+      diagnostic: {
+        status: response.status,
+        // Contract codes only: never attach raw bodies, observations or headers.
+        availability: ["available", "unavailable"].includes(data.availability) ? data.availability : null,
+        reason: ["RATE_LIMITED", "PROVIDER_UNAVAILABLE", "TAXON_RESOLUTION_FAILURE"].includes(data.reason) ? data.reason : null,
+        upstreamStatus: Number.isInteger(data.upstreamStatus) && data.upstreamStatus >= 100 && data.upstreamStatus <= 599 ? data.upstreamStatus : null,
+        semantics: ["PUBLIC_OCCURRENCE_RECORDS_RETURNED", "SOURCE_UNAVAILABLE_NOT_ZERO", "SOURCE_UNAVAILABLE_NO_EXACT_IDENTITY_NOT_ZERO", "NO_EXACT_TAXON_IDENTITY_WAS_PROMOTED"].includes(data.semantics) ? data.semantics : null,
+        error: ["TAXON_NOT_EXACTLY_RESOLVED", "TAXON_CONTRACT_MISMATCH"].includes(data.error) ? data.error : null,
+      },
       records: data.records || [],
       limitations: data.limitations || [],
       semantics: data.semantics || "",
@@ -153,6 +162,10 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
     };
   });
 
+  await testInfo.attach("observation-source-http-contract", {
+    body: JSON.stringify({ uiStateBeforeRequest: state, ...source.diagnostic }),
+    contentType: "application/json",
+  });
   expect(source.ok).toBe(true);
   expect(source.records.length).toBeGreaterThan(0);
   expect(source.resolvedTaxon?.name).toBe("Orcinus orca");
