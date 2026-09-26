@@ -58,7 +58,8 @@ jobs:
             await page.getByRole('button', { name: 'Opprett konto' }).click();
             const next = await page.locator('#identity-password').getAttribute('autocomplete');
             if (next !== 'new-password') throw new Error('new-password autocomplete missing');
-            if (page.url().includes('oddekalv.org')) throw new Error('excluded domain accepted as return target');
+            const safeTarget = await page.locator('.identity-card').getAttribute('data-return-to');
+            if (safeTarget !== 'https://4planet.org/') throw new Error('excluded domain accepted as return target: ' + safeTarget);
             await browser.close();
           }
           NODE

@@ -239,7 +239,7 @@ export default function IdentityApp() {
 
   return (
     <main className="identity-shell">
-      <section className="identity-card" aria-labelledby="identity-title">
+      <section className="identity-card" aria-labelledby="identity-title" data-return-to={returnTo}>
         <a className="identity-brand" href="https://4planet.org/">4PLANET_</a>
         <div className="identity-kicker">ID · ONE ACCOUNT</div>
         <h1 id="identity-title">{title}</h1>
