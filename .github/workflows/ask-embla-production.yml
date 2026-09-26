@@ -110,7 +110,6 @@ jobs:
           </main></body></html>''')
 
           (site/"robots.txt").write_text("""User-agent: *
-          Allow: /
           Disallow: /brain/
           Disallow: /app/money/
           Disallow: /finance.html
