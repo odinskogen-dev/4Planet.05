@@ -58,6 +58,19 @@ jobs:
           echo "- signup_disabled: $(jq -r '(.disable_signup // false)|tostring' <<<"$settings")"
           echo "- autoconfirm: $(jq -r '(.mailer_autoconfirm // "not_public")|tostring' <<<"$settings")"
           echo
+          echo "### Supabase Management Auth config (safe fields only)"
+          mgmt="${SUPA1:-${SUPA2:-${SUPA3:-}}}"
+          if [ -n "$mgmt" ]; then
+            cfg="$(curl -fsS -H "Authorization: Bearer $mgmt" "https://api.supabase.com/v1/projects/ghvdzetmplqkdtfqiror/config/auth")"
+            echo "- available_keys: $(jq -r 'keys | sort | join(",")' <<<"$cfg")"
+            for key in site_url uri_allow_list disable_signup mailer_autoconfirm mailer_secure_email_change_enabled password_min_length password_required_characters security_captcha_enabled security_leaked_password_protection_enabled security_manual_linking_enabled jwt_exp refresh_token_rotation_enabled refresh_token_reuse_interval rate_limit_email_sent rate_limit_token_refresh; do
+              value="$(jq -c --arg k "$key" 'if has($k) then .[$k] else "NOT_PRESENT" end' <<<"$cfg")"
+              echo "- $key: $value"
+            done
+          else
+            echo "- UNAVAILABLE"
+          fi
+          echo
           echo "### Existing CI control-plane credentials (presence only)"
           test -n "${SUPA1:-${SUPA2:-${SUPA3:-}}}" && echo "- Supabase management credential: PRESENT" || echo "- Supabase management credential: MISSING"
           test -n "${RESEND:-}" && echo "- Resend API credential in GitHub: PRESENT" || echo "- Resend API credential in GitHub: MISSING"
