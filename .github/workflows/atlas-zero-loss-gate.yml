@@ -105,6 +105,16 @@ jobs:
             --project=mobile-390 \
             --grep-invert="one existing search surface resolves human signal intent to canonical data layers"
 
+      - name: Preserve local-chromium compact report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/atlas-compact
+          if test -f artifacts/atlas-gold/results.json; then
+            cp artifacts/atlas-gold/results.json artifacts/atlas-compact/local-chromium.json
+            rm artifacts/atlas-gold/results.json
+          fi
+
       - name: Wait for immutable Cloudflare Pages deployment of exact SHA
         if: github.event_name == 'pull_request'
         shell: bash
@@ -173,6 +183,16 @@ jobs:
             --project=mobile-390 \
             --project=mobile-430
 
+      - name: Preserve deployed-chromium compact report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/atlas-compact
+          if test -f artifacts/atlas-gold/results.json; then
+            cp artifacts/atlas-gold/results.json artifacts/atlas-compact/deployed-chromium.json
+            rm artifacts/atlas-gold/results.json
+          fi
+
       - name: WebKit — exact deployed recovered capability + Human Gold proof
         shell: bash
         env:
@@ -189,6 +209,16 @@ jobs:
             --project=webkit-desktop \
             --project=webkit-390 \
             --project=webkit-430
+
+      - name: Preserve deployed-webkit compact report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts/atlas-compact
+          if test -f artifacts/atlas-gold/results.json; then
+            cp artifacts/atlas-gold/results.json artifacts/atlas-compact/deployed-webkit.json
+            rm artifacts/atlas-gold/results.json
+          fi
 
       - name: Record Zero Loss + OMEGA release facts
         shell: bash
@@ -301,4 +331,16 @@ jobs:
             atlas-deployed-evidence.json
             artifacts/atlas-gold/**
           if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload compact camera review reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-camera-compact-evidence
+          path: |
+            atlas-exact-sha.txt
+            atlas-preview-url.txt
+            artifacts/atlas-compact/*.json
+          if-no-files-found: error
           retention-days: 30

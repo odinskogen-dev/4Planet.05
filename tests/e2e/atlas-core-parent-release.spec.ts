@@ -75,7 +75,7 @@ test("CORE PARENT — mobile ATLAS primary controls do not collide", async ({ pa
   }
 });
 
-test("CORE PARENT — returned mobile camera remains the user-created camera after responsive settling", async ({ page }, testInfo) => {
+test("CORE PARENT — returned mobile camera remains the user-created camera after responsive settling", async ({ page, browserName }, testInfo) => {
   test.skip(!["mobile-390", "mobile-430", "webkit-390", "webkit-430"].includes(testInfo.project.name), "mobile return-camera proof only");
 
   const target = { zoom: 7.35, lng: -6.25, lat: 46.4 };
@@ -111,7 +111,7 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(afterClose.lat - target.lat)).toBeLessThanOrEqual(0.05);
 
   // Prove user ownership with an actual browser input, not application code.
-  // The wheel event is delivered by Playwright through the browser input stack,
+  // Input is delivered by Playwright through the browser input stack,
   // which crosses ATLAS' real user-release boundary and changes the live camera.
   const canvas = page.locator("canvas.maplibregl-canvas");
   const box = await canvas.boundingBox();
@@ -139,8 +139,8 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
       record({ kind: "jumpTo", stack: new Error("camera writer").stack, options: args[0] });
       return originalJumpTo.apply(this, args);
     };
-    window.addEventListener("wheel", (event) => {
-      record({ kind: "wheel", trusted: event.isTrusted,
+    for (const type of ["wheel", "touchstart", "pointerdown"]) window.addEventListener(type, (event) => {
+      record({ kind: event.type, trusted: event.isTrusted,
         target: (event.target as Element)?.tagName,
         canvasInPath: event.composedPath().includes(map.getCanvas()) });
     }, { capture: true, passive: true });
@@ -148,8 +148,15 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
       map.on(name, () => record({ kind: name, zoom: map.getZoom(), center: map.getCenter() }));
     }
   });
-  await page.mouse.move(inputPoint.x, inputPoint.y);
-  await page.mouse.wheel(0, -700);
+  if (browserName === "webkit") {
+    // Mobile WebKit rejects mouse.wheel; use its supported touch input path.
+    // MapLibre's enabled double-click zoom also recognises a one-finger double tap.
+    await page.touchscreen.tap(inputPoint.x, inputPoint.y);
+    await page.touchscreen.tap(inputPoint.x, inputPoint.y);
+  } else {
+    await page.mouse.move(inputPoint.x, inputPoint.y);
+    await page.mouse.wheel(0, -700);
+  }
   await page.waitForFunction((initialZoom) => {
     const map = (window as any).__4planet_map;
     return map && Math.abs(map.getZoom() - initialZoom) > 0.1;
@@ -179,6 +186,10 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
     const map = (window as any).__4planet_map;
     const center = map.getCenter();
     return { zoom: map.getZoom(), lng: center.lng, lat: center.lat };
+  });
+  await testInfo.attach("camera-preservation-samples", {
+    body: JSON.stringify({ browserName, target, settled, afterClose, userOwned, afterSettle }),
+    contentType: "application/json",
   });
   expect(Math.abs(afterSettle.zoom - userOwned.zoom)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(afterSettle.lng - userOwned.lng)).toBeLessThanOrEqual(0.05);
