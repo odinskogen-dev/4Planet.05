@@ -94,18 +94,48 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(settled.lng - target.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(settled.lat - target.lat)).toBeLessThanOrEqual(0.05);
 
+  // The returned observation sheet overlays the canvas on narrow screens.
+  // Close it through the real UI before claiming a gesture targets the map.
+  const sheet = page.locator(".ctx");
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole("button", { name: "CLOSE", exact: true }).click();
+  await expect(sheet).toBeHidden();
+
+  const afterClose = await page.evaluate(() => {
+    const map = (window as any).__4planet_map;
+    const center = map.getCenter();
+    return { zoom: map.getZoom(), lng: center.lng, lat: center.lat };
+  });
+  expect(Math.abs(afterClose.zoom - target.zoom)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(afterClose.lng - target.lng)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(afterClose.lat - target.lat)).toBeLessThanOrEqual(0.05);
+
   // Prove user ownership with an actual browser input, not application code.
   // The wheel event is delivered by Playwright through the browser input stack,
   // which crosses ATLAS' real user-release boundary and changes the live camera.
   const canvas = page.locator("canvas.maplibregl-canvas");
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  const inputPoint = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
+  const hit = await page.evaluate(({ x, y }) => {
+    const element = document.elementFromPoint(x, y);
+    return { canvas: element?.matches("canvas.maplibregl-canvas") ?? false,
+      tag: element?.tagName, className: element?.getAttribute("class") };
+  }, inputPoint);
+  await testInfo.attach("map-wheel-hit-target", {
+    body: JSON.stringify({ inputPoint, hit }), contentType: "application/json",
+  });
+  expect(hit.canvas, "wheel must hit the map, not an observation overlay").toBe(true);
+  await page.mouse.move(inputPoint.x, inputPoint.y);
   await page.mouse.wheel(0, -700);
+  await page.waitForFunction((initialZoom) => {
+    const map = (window as any).__4planet_map;
+    return map && Math.abs(map.getZoom() - initialZoom) > 0.1;
+  }, target.zoom, { timeout: 8_000 });
   await page.waitForFunction(() => {
     const map = (window as any).__4planet_map;
     return map && !map.isMoving() && !map.isZooming() && !map.isEasing();
-  }, undefined, { timeout: 8_000 }).catch(() => {});
+  }, undefined, { timeout: 8_000 });
   await page.waitForTimeout(400);
 
   const userOwned = await page.evaluate(() => {
@@ -127,3 +157,4 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
   expect(Math.abs(afterSettle.lng - userOwned.lng)).toBeLessThanOrEqual(0.05);
   expect(Math.abs(afterSettle.lat - userOwned.lat)).toBeLessThanOrEqual(0.05);
 });
+
