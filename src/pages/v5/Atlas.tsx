@@ -10,7 +10,7 @@
    ─────────────────────────────────────────────────────────────────────────── */
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "@/earth/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const MONO = "'Fragment Mono', ui-monospace, monospace";
@@ -440,6 +440,7 @@ function AtlasMap() {
   useEffect(() => {
     if (map.current) return;
     const m = new maplibregl.Map({
+      zoomLevelsToOverscale: undefined,
       container: boxRef.current, style: makeStyle(init.current.light),
       center: init.current.center, zoom: init.current.zoom, minZoom: 1, maxZoom: 10,
       attributionControl: { compact: true }, canvasContextAttributes: { antialias: true },
