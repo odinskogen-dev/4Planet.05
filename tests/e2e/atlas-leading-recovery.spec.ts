@@ -67,7 +67,14 @@ test("dark ATLAS uses the provider dark street style without losing the planetar
     return {
       name: String(map.getStyle?.()?.name || ""),
       blueMarble: Boolean(map.getLayer?.("bluemarble")),
+      styleLoaded: map.isStyleLoaded(),
+      layerIds: (map.getStyle()?.layers || []).map((layer: { id: string }) => layer.id),
+      sourceIds: Object.keys(map.getStyle()?.sources || {}),
     };
+  });
+  await testInfo.attach("dark-overlay-state-before-assertion", {
+    body: JSON.stringify({ project: testInfo.project.name, state }),
+    contentType: "application/json",
   });
   expect(state.name.toLowerCase()).toContain("dark");
   expect(state.blueMarble).toBe(true);

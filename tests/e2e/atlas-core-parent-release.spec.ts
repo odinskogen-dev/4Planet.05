@@ -1,5 +1,28 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
+test.afterEach(async ({ page }, testInfo) => {
+  if (!testInfo.title.includes("returned mobile camera")) return;
+  try {
+    const diagnostic = await page.evaluate(() => {
+      const map = (window as any).__4planet_map;
+      return {
+        events: (window as any).__atlasCameraResetEvidence ?? [],
+        camera: map ? { zoom: map.getZoom(), center: map.getCenter(), moving: map.isMoving(), zooming: map.isZooming() } : null,
+        authority: (window as any).__4planetAtlasReturnCameraLock?.status?.() ?? null,
+      };
+    });
+    await testInfo.attach("camera-terminal-diagnostic", {
+      body: JSON.stringify({ status: testInfo.status, project: testInfo.project.name, ...diagnostic }),
+      contentType: "application/json",
+    });
+  } catch (error) {
+    // A diagnostic failure must never replace an existing input/assertion error.
+    // On an otherwise passing test it is a real evidence failure, not silent PASS.
+    if (testInfo.status === "passed") throw error;
+    console.error("Camera terminal diagnostic unavailable", error);
+  }
+});
+
 async function waitForAtlas(page: Page) {
   await page.waitForFunction(() => {
     const map = (window as any).__4planet_map;
