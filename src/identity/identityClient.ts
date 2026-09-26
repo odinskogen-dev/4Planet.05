@@ -17,6 +17,13 @@ export type FourPlanetSession = {
 type AuthError = { message: string } | null;
 type SessionResponse = { data: { session: FourPlanetSession | null }; error: AuthError };
 type UserIdentity = { id?: string; provider?: string; identity_id?: string };
+export type OAuthAuthorizationDetails = {
+  authorization_id?: string;
+  redirect_url?: string;
+  redirect_uri?: string;
+  scope?: string;
+  client?: { name?: string; client_id?: string };
+};
 type SupabaseClientLike = {
   auth: {
     getSession(): Promise<SessionResponse>;
@@ -30,6 +37,11 @@ type SupabaseClientLike = {
     getUserIdentities(): Promise<{ data: { identities: UserIdentity[] } | null; error: AuthError }>;
     onAuthStateChange(callback: (event: string, session: FourPlanetSession | null) => void): {
       data: { subscription: { unsubscribe(): void } };
+    };
+    oauth: {
+      getAuthorizationDetails(authorizationId: string): Promise<{ data: OAuthAuthorizationDetails | null; error: AuthError }>;
+      approveAuthorization(authorizationId: string): Promise<{ data: { redirect_url?: string } | null; error: AuthError }>;
+      denyAuthorization(authorizationId: string): Promise<{ data: { redirect_url?: string } | null; error: AuthError }>;
     };
   };
 };
@@ -200,10 +212,16 @@ export async function saveProfile(session: FourPlanetSession, displayName: strin
   if (!response.ok) throw new Error("Could not save account profile");
 }
 
+export function identityCallbackUrl(mode: "login" | "reset", returnTo?: string) {
+  const target = safeReturnTo(returnTo || "https://4planet.org/");
+  const url = new URL("https://id.4planet.org/login");
+  if (mode === "reset") url.searchParams.set("mode", "reset");
+  url.searchParams.set("return_to", target);
+  return url.href;
+}
+
 export const identityConstants = {
   supabaseUrl: SUPABASE_URL,
   publishableKey: SUPABASE_KEY,
-  recoveryCallback: "https://4sapien.com/login/?mode=global-reset",
-  confirmationCallback: "https://4sapien.com/login/?mode=global-confirm",
-  oauthRelay: "https://4sapien.com/login/?mode=global-oauth",
+  canonicalOrigin: "https://id.4planet.org",
 };

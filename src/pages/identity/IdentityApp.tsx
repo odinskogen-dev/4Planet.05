@@ -3,19 +3,21 @@ import {
   bridgeSessionTo,
   consumeBridgeFromLocation,
   getIdentityClient,
-  identityConstants,
+  identityCallbackUrl,
   readProfile,
   safeReturnTo,
   saveProfile,
   type FourPlanetSession,
+  type OAuthAuthorizationDetails,
 } from "@/identity/identityClient";
 
-type Mode = "login" | "signup" | "forgot" | "reset" | "account" | "callback";
+type Mode = "login" | "signup" | "forgot" | "reset" | "account" | "callback" | "consent";
 
 function modeFromLocation(): Mode {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   const q = new URLSearchParams(window.location.search).get("mode");
   if (path === "/auth/4planet/callback") return "callback";
+  if (path === "/oauth/consent") return "consent";
   if (path.endsWith("/account") || q === "account") return "account";
   if (q === "signup") return "signup";
   if (q === "forgot") return "forgot";
@@ -45,6 +47,7 @@ export default function IdentityApp() {
   const [statusKind, setStatusKind] = useState<"ok" | "err" | "">("");
   const [busy, setBusy] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [oauthDetails, setOauthDetails] = useState<OAuthAuthorizationDetails | null>(null);
 
   const returnTo = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -107,6 +110,25 @@ export default function IdentityApp() {
         const result = await client.auth.getSession();
         if (!alive) return;
         setSession(result.data.session);
+
+        if (mode === "consent") {
+          const authorizationId = new URLSearchParams(window.location.search).get("authorization_id");
+          if (!authorizationId) throw new Error("Missing authorization request");
+          if (!result.data.session) {
+            window.location.replace(`https://id.4planet.org/login?return_to=${encodeURIComponent(window.location.href)}`);
+            return;
+          }
+          const details = await client.auth.oauth.getAuthorizationDetails(authorizationId);
+          if (details.error || !details.data) throw new Error(details.error?.message || "Invalid authorization request");
+          if (details.data.redirect_url && !details.data.authorization_id) {
+            window.location.replace(details.data.redirect_url);
+            return;
+          }
+          setOauthDetails(details.data);
+          setBusy(false);
+          return;
+        }
+
         if (result.data.session) {
           setEmail(result.data.session.user.email || "");
           await hydrateAccount(result.data.session);
@@ -145,7 +167,7 @@ export default function IdentityApp() {
         const result = await client.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: identityConstants.confirmationCallback },
+          options: { emailRedirectTo: identityCallbackUrl("login", returnTo) },
         });
         if (result.error) throw new Error(result.error.message);
         if (result.data.session) {
@@ -157,7 +179,7 @@ export default function IdentityApp() {
       }
       if (mode === "forgot") {
         const result = await client.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: identityConstants.recoveryCallback,
+          redirectTo: identityCallbackUrl("reset", returnTo),
         });
         if (result.error) throw new Error(result.error.message);
         showStatus("Hvis adressen finnes hos oss, er en sikker tilbakestillingslenke sendt.", "ok");
@@ -180,8 +202,20 @@ export default function IdentityApp() {
   }
 
   async function google() {
-    const relay = safeReturnTo(returnTo, "https://4planet.org/");
-    window.location.assign(`${identityConstants.oauthRelay}&relay=${encodeURIComponent(relay)}`);
+    setBusy(true);
+    showStatus("");
+    try {
+      const client = await getIdentityClient();
+      const result = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: identityCallbackUrl("login", returnTo) },
+      });
+      if (result.error) throw new Error(result.error.message);
+      if (result.data.url) window.location.assign(result.data.url);
+    } catch (error) {
+      showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
+      setBusy(false);
+    }
   }
 
   async function saveAccount() {
@@ -219,7 +253,7 @@ export default function IdentityApp() {
     try {
       const client = await getIdentityClient();
       const result = await client.auth.resetPasswordForEmail(session.user.email, {
-        redirectTo: identityConstants.recoveryCallback,
+        redirectTo: identityCallbackUrl("reset", "https://id.4planet.org/account"),
       });
       if (result.error) throw new Error(result.error.message);
       showStatus("Sikker lenke for passordendring er sendt.", "ok");
@@ -230,10 +264,30 @@ export default function IdentityApp() {
     }
   }
 
-  const title = mode === "signup" ? "Opprett 4PLANET ID" : mode === "forgot" ? "Tilbakestill passord" : mode === "reset" ? "Velg nytt passord" : mode === "account" ? "Din 4PLANET ID" : "Logg inn";
+  async function decideAuthorization(decision: "approve" | "deny") {
+    const authorizationId = new URLSearchParams(window.location.search).get("authorization_id");
+    if (!authorizationId) return;
+    setBusy(true);
+    showStatus("");
+    try {
+      const client = await getIdentityClient();
+      const result = decision === "approve"
+        ? await client.auth.oauth.approveAuthorization(authorizationId)
+        : await client.auth.oauth.denyAuthorization(authorizationId);
+      if (result.error || !result.data?.redirect_url) throw new Error(result.error?.message || "Authorization failed");
+      window.location.replace(result.data.redirect_url);
+    } catch (error) {
+      showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
+      setBusy(false);
+    }
+  }
+
+  const title = mode === "signup" ? "Opprett 4PLANET ID" : mode === "forgot" ? "Tilbakestill passord" : mode === "reset" ? "Velg nytt passord" : mode === "account" ? "Din 4PLANET ID" : mode === "consent" ? "Gi tilgang" : "Logg inn";
   const lead = mode === "account"
     ? "Én identitet for 4PLANET, 4SAPIEN og tilknyttede 4PLANET-tjenester."
-    : "Én sikker innlogging på tvers av 4PLANET.";
+    : mode === "consent"
+      ? "Kontroller hvilken 4PLANET-tjeneste som får tilgang til identiteten din."
+      : "Én sikker innlogging på tvers av 4PLANET.";
 
   if (busy && mode === "callback") return <main className="identity-shell"><div className="identity-card"><div className="identity-brand">4PLANET ID</div><p>Fullfører sikker innlogging…</p><IdentityStyles /></div></main>;
 
@@ -245,7 +299,20 @@ export default function IdentityApp() {
         <h1 id="identity-title">{title}</h1>
         <p className="identity-lead">{lead}</p>
 
-        {mode === "account" && session ? (
+        {mode === "consent" ? (
+          <div className="identity-account">
+            <div className="identity-section">
+              <div className="identity-meta-label">Tjeneste</div>
+              <div className="identity-value">{oauthDetails?.client?.name || "4PLANET service"}</div>
+              <div className="identity-meta-label">Ber om</div>
+              <div className="identity-value">{(oauthDetails?.scope || "openid profile email").split(" ").filter(Boolean).join(" · ")}</div>
+            </div>
+            <div className="identity-section">
+              <button className="identity-primary" type="button" onClick={() => decideAuthorization("approve")} disabled={busy}>Fortsett</button>
+              <button className="identity-secondary" type="button" onClick={() => decideAuthorization("deny")} disabled={busy}>Avbryt</button>
+            </div>
+          </div>
+        ) : mode === "account" && session ? (
           <div className="identity-account">
             <div className="identity-section">
               <label htmlFor="display-name">Navn</label>

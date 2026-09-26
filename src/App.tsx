@@ -52,7 +52,7 @@ function isIdentitySurface() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
   const path = window.location.pathname;
-  return host === "id.4planet.org" || path === "/id" || path.startsWith("/id/") || path === "/auth/4planet/callback";
+  return host === "id.4planet.org" || path === "/id" || path.startsWith("/id/") || path === "/auth/4planet/callback" || path === "/oauth/consent";
 }
 
 function isCreatorHost() {
