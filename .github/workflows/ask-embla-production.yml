@@ -60,6 +60,7 @@ jobs:
           cp products/4sapien/source/4sapien-live-hardening.css "${SITE}/4sapien-live-hardening.css"
           cp products/4sapien/source/4sapien-live-hardening.js "${SITE}/4sapien-live-hardening.js"
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
+          python products/4sapien/build/apply_auth_premium_guard.py "$SITE"
           python products/4sapien/build/apply_document_intake_guard.py "$SITE"
           python products/4sapien/build/apply_finance_daniel_feedback_guard.py "$SITE"
 
@@ -175,6 +176,13 @@ jobs:
           done
           grep -Fq 'exportPersonalBrain' products/4sapien/site/brain/index.html
           python -m py_compile products/4sapien/build/apply_live_hardening_guard.py
+          python -m py_compile products/4sapien/build/apply_auth_premium_guard.py
+          AUTH=products/4sapien/site/login/index.html
+          test -f "$AUTH"
+          for marker in 'Glemt passord?' 'resetPasswordForEmail' 'updateUser({password:password.value})' 'signInWithPassword' "provider:'google'" 'autocomplete="current-password"' 'autocomplete="new-password"' 'four-sapien-global-auth-router'; do
+            grep -Fq "$marker" "$AUTH" || grep -Fq "$marker" products/4sapien/site/app/food/index.html
+          done
+          grep -Fq 'href="/login/"' "$ROOT"
           BRAIN=products/4sapien/site/brain/index.html
           for marker in 'persistDirectContextFallback' 'MODEL_PENDING' 'brainIdentity' '/4sapien-live-hardening.js'; do
             grep -Fq "$marker" "$BRAIN"
