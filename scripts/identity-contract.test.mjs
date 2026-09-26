@@ -18,8 +18,8 @@ test("4PLANET ID is one canonical cross-product identity surface", () => {
 test("global auth includes premium recovery and password-manager semantics", () => {
   assert.match(ui, /Glemt passord\?/);
   assert.match(ui, /resetPasswordForEmail/);
-  assert.match(ui, /autocomplete=.*current-password/);
-  assert.match(ui, /autocomplete=.*new-password/);
+  assert.match(ui, /autoComplete=.*current-password/);
+  assert.match(ui, /autoComplete=.*new-password/);
   assert.match(ui, /Logg ut overalt/);
 });
 
