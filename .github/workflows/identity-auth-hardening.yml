@@ -1,0 +1,83 @@
+name: 4PLANET ID Auth Hardening
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/identity-auth-hardening.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourplanet-id-auth-hardening
+  cancel-in-progress: false
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ghvdzetmplqkdtfqiror
+    steps:
+      - name: Harden shared production Auth without destructive identity changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          api="https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth"
+          auth=(-H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json")
+
+          before="$(curl -fsS "$api" "${auth[@]}")"
+          allow="$(jq -r '.uri_allow_list // ""' <<<"$before")"
+          for entry in             'https://id.4planet.org/**'             'https://4brands.org/**'             'https://www.4brands.org/**'             'https://4nation.org/**'             'https://www.4nation.org/**'             'https://4planetatlas.com/**'             'https://www.4planetatlas.com/**'
+          do
+            case ",$allow," in *",$entry,"*) ;; *) allow="${allow:+$allow,}$entry" ;; esac
+          done
+
+          core="$(jq -n --arg allow "$allow" '{
+            uri_allow_list:$allow,
+            password_min_length:8,
+            security_update_password_require_reauthentication:true,
+            mailer_secure_email_change_enabled:true,
+            refresh_token_rotation_enabled:true,
+            mailer_notifications_password_changed_enabled:true
+          }')"
+          core_code="$(curl -sS -o /tmp/core.json -w '%{http_code}' -X PATCH "$api" "${auth[@]}" --data "$core")"
+          test "$core_code" = "200" || { echo "Core auth hardening failed HTTP $core_code"; jq -c '{message,error}' /tmp/core.json 2>/dev/null || true; exit 11; }
+
+          oauth='{"oauth_server_enabled":true,"oauth_server_authorization_path":"/oauth/consent","oauth_server_allow_dynamic_registration":false}'
+          oauth_code="$(curl -sS -o /tmp/oauth.json -w '%{http_code}' -X PATCH "$api" "${auth[@]}" --data "$oauth")"
+          test "$oauth_code" = "200" || { echo "OAuth server activation failed HTTP $oauth_code"; jq -c '{message,error}' /tmp/oauth.json 2>/dev/null || true; exit 12; }
+
+          # Strong leaked-password rejection is desirable, but Supabase documents
+          # it as a paid-plan capability. Attempt it independently so a plan
+          # restriction cannot roll back the safe core hardening above.
+          hibp_code="$(curl -sS -o /tmp/hibp.json -w '%{http_code}' -X PATCH "$api" "${auth[@]}" --data '{"password_hibp_enabled":true}')"
+          echo "HIBP enable attempt HTTP $hibp_code"
+
+          after="$(curl -fsS "$api" "${auth[@]}")"
+          jq -e '
+            .password_min_length >= 8 and
+            .security_update_password_require_reauthentication == true and
+            .mailer_secure_email_change_enabled == true and
+            .refresh_token_rotation_enabled == true and
+            .oauth_server_enabled == true and
+            .oauth_server_authorization_path == "/oauth/consent" and
+            .oauth_server_allow_dynamic_registration == false and
+            (.uri_allow_list | contains("https://id.4planet.org/**")) and
+            (.uri_allow_list | contains("https://4sapien.com/**")) and
+            (.uri_allow_list | contains("https://4planet.org/**")) and
+            (.uri_allow_list | contains("https://4brands.org/**")) and
+            (.uri_allow_list | contains("https://4nation.org/**"))
+          ' <<<"$after" >/dev/null
+
+          echo "4PLANET ID AUTH HARDENING: PASS"
+          echo "site_url=$(jq -r '.site_url' <<<"$after")"
+          echo "password_min_length=$(jq -r '.password_min_length' <<<"$after")"
+          echo "reauth=$(jq -r '.security_update_password_require_reauthentication' <<<"$after")"
+          echo "oauth_server_enabled=$(jq -r '.oauth_server_enabled' <<<"$after")"
+          echo "oauth_authorization_path=$(jq -r '.oauth_server_authorization_path' <<<"$after")"
+          echo "password_hibp_enabled=$(jq -r '.password_hibp_enabled // false' <<<"$after")"
