@@ -151,12 +151,14 @@ export function OdinCreatorPage() {
 }
 
 function LivePrintCard({ product }: { product: typeof LIVE_PRINTS[number] }) {
-  const href = `${FOURTHWALL_SHOP}/products/${product.slug}`;
+  const href = `${FOURTHWALL_SHOP}/products/${product.slug}?utm_source=4planetmarket&utm_medium=market&utm_campaign=first_creator_proof&utm_content=${encodeURIComponent(product.slug)}`;
   return (
     <article style={{ borderTop: `1px solid ${T.lineStrong}`, paddingTop: 14 }}>
       <a
         href={href}
         onClick={() => trackEvent("market_product_open", { product_area: "market", product_key: product.slug, destination: "fourthwall" })}
+        target="_blank"
+        rel="noopener noreferrer"
         style={{ color: "inherit", textDecoration: "none", display: "block" }}
       >
         <img src={product.image} alt={`${product.title} — Fine Art Print`} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "4 / 5", objectFit: "cover", display: "block", background: "#dedbd3" }} />
@@ -195,12 +197,12 @@ export function MarketHome() {
           <div style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(54px,7vw,96px) clamp(20px,5vw,72px) clamp(84px,10vw,140px)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "baseline", marginBottom: 32 }}>
               <div style={{ ...mono, color: T.blue }}>LIVE PRODUCTS_</div>
-              <div style={{ ...mono, color: T.dim }}>5 PUBLIC · USD 50.50 · VERIFIED 18 SEP 2026</div>
+              <div style={{ ...mono, color: T.dim }}>5 PUBLIC · USD 50.50 · VERIFIED 27 SEP 2026</div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,240px),1fr))", gap: "clamp(28px,4vw,54px) clamp(18px,2.4vw,34px)" }}>
               {LIVE_PRINTS.map((product) => <LivePrintCard key={product.slug} product={product} />)}
             </div>
-            <p style={{ margin: "34px 0 0", maxWidth: 760, color: T.dim, fontSize: 13, lineHeight: 1.6 }}>Product availability, price and fulfilment are owned by the live Fourthwall offer. 4PLANET does not treat a product click as a purchase or delivery record.</p>
+            <p style={{ margin: "34px 0 0", maxWidth: 760, color: T.dim, fontSize: 13, lineHeight: 1.6 }}>Product availability, price and fulfilment are owned by the live Fourthwall offer. Product links carry 4PLANET MARKET attribution so completed Fourthwall sales can be reconciled by source; 4PLANET still does not treat a click as a purchase or delivery record.</p>
           </div>
         </section>
       </main>

@@ -1,3 +1,23 @@
+# 4PLANET MARKET — ATTRIBUTED PURCHASE PATH 01 / 27 SEP 2026
+
+**STATUS:** HEIR / TEST CANDIDATE / NO FALSE PURCHASE CLAIM
+
+**FOUNDER TASK:** Improve the real 4PLANET MARKET transaction/value-delivery loop without creating a second commerce stack.
+
+**VERIFIED EXTERNAL STATE:** Connected Fourthwall shop readback on 27 Sep 2026 returned six offers: five are PUBLIC + AVAILABLE + Fourthwall-fulfilled at USD 50.50; one duplicate Summit offer is HIDDEN. No Fourthwall offer, price, payout or fulfilment state was mutated.
+
+**HIGHEST-VALUE CORRECTABLE FRICTION:** 4PLANET MARKET already sends a buyer to the real Fourthwall product, but the outbound product URL had no Market-specific purchase attribution. A later real sale therefore could not be cleanly reconciled back to the originating 4PLANET MARKET product click from Fourthwall's UTM sales reporting.
+
+**SAME-COMMIT CHANGE:** All five live product links now carry deterministic `utm_source=4planetmarket`, `utm_medium=market`, `utm_campaign=first_creator_proof` and product-specific `utm_content=<slug>`. External commerce opens in a separate tab with noopener/noreferrer so the Market context is retained. The visible catalogue verification date is refreshed to the actual connected-shop readback on 27 Sep 2026.
+
+**TRUTH BOUNDARY:** Attribution creates a measurable path from Market traffic to a completed Fourthwall sale. It does NOT turn a click into a purchase, payment, delivery or ecological-impact record. Purchase/fulfilment proof remains Fourthwall-owned unless separately read back.
+
+**QA:** Existing user-proof analytics contract is strengthened to require all four UTM dimensions, safe external-link semantics, current verification date and the explicit click ≠ purchase boundary. Exact-head build/browser gates still determine acceptance.
+
+**LIVE:** 4planetmarket.com remains separately release/readback controlled. Do not call this LIVE until the existing production path serves this exact change and external readback verifies it.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — SPECIES LIVE EVIDENCE DISCOVERY — 27 SEP 2026
 
 STATUS: HEIR CANDIDATE BRIEF / NONPRODUCTION / NO CANON PROMOTION / NO LIVE RELEASE AUTHORITY.
