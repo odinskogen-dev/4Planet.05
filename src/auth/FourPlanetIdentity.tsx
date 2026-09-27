@@ -70,12 +70,6 @@ type SupabaseGlobal = {
   ) => SupabaseClient;
 };
 
-declare global {
-  interface Window {
-    supabase?: SupabaseGlobal;
-  }
-}
-
 type IdentityContextValue = {
   ready: boolean;
   user: AuthUser | null;
@@ -113,7 +107,8 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
         window.localStorage.setItem(canonicalKey, legacy);
       }
     } catch {}
-    return window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    const supabaseGlobal = (window as unknown as { supabase?: SupabaseGlobal }).supabase;
+    return supabaseGlobal?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
