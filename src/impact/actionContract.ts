@@ -1,3 +1,5 @@
+import type { ProofEvidenceRelationship } from "./proofPassport";
+
 export type ActionContractReadiness =
   | "DISCOVERY"
   | "BLOCKED_EXTERNAL_FACTS"
@@ -13,6 +15,17 @@ export interface ActionContractEvidenceField<T> {
   state: EvidenceState;
   value: T | null;
   sourceNote: string;
+}
+
+export interface IndependentEvidenceSource {
+  id: string;
+  publisher: string | null;
+  sourceRef: string | null;
+  relationship: ProofEvidenceRelationship;
+  state: "CONNECTED" | "NOT_CONNECTED" | "REVIEW_REQUIRED";
+  supports: string;
+  rights: string;
+  limitations: string[];
 }
 
 export interface ActionMilestone {
@@ -49,6 +62,7 @@ export interface ActionContract {
   suitableFunderTypes: string[];
   milestones: ActionMilestone[];
   deliveryProof: string[];
+  independentEvidenceSources: IndependentEvidenceSource[];
   outcomeBoundary: string;
   readiness: ActionContractReadiness;
   blockers: string[];
@@ -151,6 +165,35 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
     "delivery window",
     "evidence references",
   ],
+  independentEvidenceSources: [
+    {
+      id: "evidence-source:obis:cetacea:bay-of-biscay:v1",
+      publisher: "Ocean Biodiversity Information System (OBIS)",
+      sourceRef: "/api/obis?scientificName=Cetacea&bbox=-10.5,43,0,49.5&size=50",
+      relationship: "CONTEXT_ONLY",
+      state: "CONNECTED",
+      supports: "Independent marine-mammal occurrence context inside the existing Bay of Biscay navigation bounding box. It does not verify ORCA survey delivery or a population trend.",
+      rights: "Per-record/dataset licence is preserved by the existing OBIS adapter and must be evaluated before downstream reuse.",
+      limitations: [
+        "The Bay of Biscay bounding box is navigation context, not an official survey corridor or ecological boundary.",
+        "Occurrence records are not abundance, population trend, live position or proof of ecological change.",
+        "An OBIS record is not automatically an ORCA record and is not evidence that the funded survey occurred.",
+      ],
+    },
+    {
+      id: "evidence-source:independent-survey-effort-mrv:bay-of-biscay:v1",
+      publisher: null,
+      sourceRef: null,
+      relationship: "DELIVERY_LINKED",
+      state: "NOT_CONNECTED",
+      supports: "Independent MRV of delivered route geometry, observation hours and distance if a qualified independent source can be linked to the exact survey instance.",
+      rights: "NOT_APPLICABLE_UNTIL_SOURCE_EXISTS",
+      limitations: [
+        "No independent delivery-MRV source is currently connected to this Action Contract.",
+        "ORCA route/effort evidence remains attributable provider/partner evidence and must not self-promote into independent verification.",
+      ],
+    },
+  ],
   outcomeBoundary: "Delivery proof demonstrates that bounded monitoring work occurred. It does not by itself demonstrate ecological improvement, cetacean population change or verified ecological impact.",
   readiness: "BLOCKED_EXTERNAL_FACTS",
   blockers: [
@@ -189,6 +232,7 @@ export function actionContractTruthSummary(contract: ActionContract) {
     knownFundingAmount: contract.fundingNeed.amount.state === "KNOWN" ? contract.fundingNeed.amount.value : null,
     knownQuantity: contract.fundingNeed.quantity.state === "KNOWN" ? contract.fundingNeed.quantity.value : null,
     blockers: [...contract.blockers],
+    independentEvidenceSources: contract.independentEvidenceSources.map((source) => ({ id: source.id, relationship: source.relationship, state: source.state })),
     proofBoundary: contract.outcomeBoundary,
   };
 }

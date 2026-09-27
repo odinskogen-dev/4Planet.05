@@ -1,3 +1,21 @@
+# DATA VALUE CONVERGENCE 01 — IMPACT / INDEPENDENT OBSERVATION + MRV RELATIONSHIP — 28 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / SOURCE CONNECTED / NO CLAIM PROMOTION.
+
+**ACTION CONTRACT:** existing Bay of Biscay survey Action Contract now carries explicit independent evidence-source relationships. The existing OBIS adapter is attached as CONTEXT_ONLY over the existing Bay of Biscay navigation bounding box. A separate DELIVERY_LINKED independent survey-effort MRV requirement is present and truthfully remains NOT_CONNECTED.
+
+**PRODUCT VALUE:** the IMPACT proof surface exposes the bounded OBIS source path and its limitations alongside the current survey-effort semantics. A reviewer can inspect independent ecological occurrence context without confusing it with ORCA delivery.
+
+**PROOF PASSPORT HARDENING:** Passport VERIFIED / impact eligibility now requires a THIRD_PARTY VERIFICATION item explicitly marked IMPACT_LINKED. A third-party item marked CONTEXT_ONLY cannot increase verification depth or impact eligibility.
+
+**TRUTH LAW:** co-location, subject similarity and independent publisher status are not a join. OBIS occurrences do not verify ORCA survey effort, population trend, ecological change or impact. ORCA evidence remains provider/partner evidence. Independent delivery MRV is still an explicit gap.
+
+**NO DUPLICATE SYSTEM:** existing Action Contract + existing Proof Passport + existing OBIS adapter. No new MRV database or proof authority.
+
+**ACCEPTANCE:** typecheck/build/smoke; Proof Passport negative context-only test; IMPACT independent-evidence contract; browser/public-preview gates. No physical-delivery, outcome or impact state is promoted.
+
+---
+
 # ATLAS MOBILE CONTEXT / NATIVE CONTROL COLLISION CLOSURE — 28 SEP 2026
 
 **SOURCE FAILURE:** exact deployed HEIR browser proof on mobile-430 timed out because `.ctx-head` intercepted pointer events intended for MapLibre's visible native zoom-in control. 69 deployed ATLAS tests had passed before this single geometry failure.

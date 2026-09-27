@@ -82,6 +82,20 @@ export function BayActionProof() {
           <div style={{ ...mono, color: "#8A6500" }}>TRUTH RULES</div>
           <div style={{ marginTop: 14, display: "flex", gap: 8, flexWrap: "wrap" }}>{cell.monitoringSemantics.rules.map((rule) => <span key={rule} style={{ ...mono, border: "1px solid rgba(138,101,0,.35)", padding: "8px 10px" }}>{rule}</span>)}</div>
         </div>
+        <div style={{ marginTop: 26, ...grid }}>
+          {action.independentEvidenceSources.map((source) => (
+            <div key={source.id} style={panel}>
+              <div style={{ ...mono, color: source.state === "CONNECTED" ? T.blue : T.red }}>INDEPENDENT EVIDENCE RELATIONSHIPS</div>
+              <h3 style={{ margin: "12px 0 8px", fontSize: 20 }}>{source.relationship.replaceAll("_", " ")} · {source.state.replaceAll("_", " ")}</h3>
+              <p style={body}>{source.supports}</p>
+              <div style={{ marginTop: 12, ...mono }}>{source.publisher || "NO INDEPENDENT SOURCE CONNECTED"}</div>
+              {source.sourceRef
+                ? <a href={source.sourceRef} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 12, ...mono, color: T.blue }}>OPEN BOUNDED SOURCE DATA →</a>
+                : <div style={{ marginTop: 12, ...mono, color: T.red }}>MRV GAP REMAINS OPEN</div>}
+              <RuleList items={source.limitations} />
+            </div>
+          ))}
+        </div>
       </Section>
 
       <Section>

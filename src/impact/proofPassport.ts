@@ -4,6 +4,7 @@ export type ClaimDistance = "D0" | "D1" | "D2" | "D3" | "D4";
 export type DoubleCountState = "UNKNOWN" | "PROVIDER_CONTROLLED" | "UNIQUE_CLAIM_ID" | "INDEPENDENTLY_CHECKED";
 export type ProofEnvironment = ContributionRecord["environment"];
 export type ProofPassportDepth = "LITE" | "STANDARD" | "VERIFIED";
+export type ProofEvidenceRelationship = "CONTEXT_ONLY" | "DELIVERY_LINKED" | "OUTCOME_LINKED" | "IMPACT_LINKED";
 export type VvlLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export interface ProofEvidenceItem {
@@ -12,6 +13,8 @@ export interface ProofEvidenceItem {
   sourceRef: string;
   capturedAt: string | null;
   verifierClass: "PROVIDER" | "THIRD_PARTY" | "4PLANET" | "UNKNOWN";
+  /** Relationship to this action/passport; CONTEXT_ONLY can never advance proof depth. */
+  relationship?: ProofEvidenceRelationship;
   rights: string;
   limitations: string[];
 }
@@ -211,7 +214,7 @@ export function deriveProofPassportDepth(input: ProofPassportInput): ProofPasspo
   const production = input.contribution.environment === "PRODUCTION" && input.delivery.environment === "PRODUCTION";
   const hasAllocationIdentity = Boolean(uniqueClaimOrAllocationId) || doubleCountState === "UNIQUE_CLAIM_ID" || doubleCountState === "INDEPENDENTLY_CHECKED";
   const hasIndependentVerification = evidenceItems.some(
-    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY",
+    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED",
   );
 
   if (
@@ -275,14 +278,14 @@ export function validateProofPassport(passport: ProofPassport): string[] {
   if (!(passport.quantity > 0) || !passport.unitDefinition) failures.push("unit");
   if (passport.environment !== "PRODUCTION" && passport.claimDistance !== "D0") failures.push("nonproduction_claim_distance");
   if (passport.depth === "VERIFIED" && passport.doubleCountState !== "INDEPENDENTLY_CHECKED") failures.push("verified_without_independent_double_count_check");
-  if (passport.depth === "VERIFIED" && !passport.evidenceItems.some((item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY")) failures.push("verified_without_third_party_verification");
+  if (passport.depth === "VERIFIED" && !passport.evidenceItems.some((item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED")) failures.push("verified_without_impact_linked_third_party_verification");
   if (passport.depth !== "LITE" && !passport.uniqueClaimOrAllocationId && passport.doubleCountState === "UNKNOWN") failures.push("standard_without_allocation_identity");
   return failures;
 }
 
 export function proofPassportCanClaimImpact(passport: ProofPassport): boolean {
   const independentVerification = passport.evidenceItems.some(
-    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY",
+    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED",
   );
   return (
     passport.environment === "PRODUCTION" &&
