@@ -8,8 +8,8 @@ type Lens = 'decisions' | 'atlas' | 'brain' | 'solutions' | 'economy' | 'outcome
 
 const lenses: { key: Lens; label: string; description: string }[] = [
   { key: 'decisions', label: 'Decisions', description: 'What is being considered?' },
-  { key: 'atlas', label: 'Nation Atlas', description: 'Where does it matter?' },
-  { key: 'brain', label: 'Nation Brain', description: 'What can we establish?' },
+  { key: 'atlas', label: 'Map', description: 'Where does it matter?' },
+  { key: 'brain', label: 'Evidence', description: 'What can we establish?' },
   { key: 'solutions', label: 'Solutions', description: 'Which approaches are discussed?' },
   { key: 'economy', label: 'Economy', description: 'What can be traced financially?' },
   { key: 'outcomes', label: 'Outcomes', description: 'What actually changed?' },
@@ -84,7 +84,6 @@ export default function NationPage() {
       <a href='#top' className='nt-wordmark' aria-label='4NATION home'><span>4</span>NATION<span className='nt-dot'>.</span></a>
       <nav aria-label='Main navigation' className='nt-topnav'>
         <a href='#nt-workbench'>Decisions</a>
-        <a href='#nt-why'>Our purpose</a>
         <button type='button' onClick={() => setSourceOpen(true)}>Sources</button>
       </nav>
       <a className='nt-family' href='https://4planet.org' target='_blank' rel='noopener noreferrer'>4PLANET <span aria-hidden='true'>↗</span></a>
@@ -142,8 +141,10 @@ export default function NationPage() {
             <p>{audience==='people'?'See what has happened, what remains open and where to verify it. No recommendations about what you should support.':'Review the objective, authority, existing plan and documented scientific scenarios. The institution, not this prototype, determines the policy.'}</p>
             <div className='nt-facts'><div><small>CURRENT PUBLIC STATUS</small><strong>Under consideration</strong><Source id='KLD-2026-HEARING' label='OFFICIAL RECORD ↗'/></div><div><small>CONSULTATION</small><strong>Ordinary deadline passed</strong><span>15 September 2026</span></div><div><small>LOCAL / REGIONAL</small><strong>Separate deadline</strong><span>15 October 2026</span></div></div>
             {audience==='institutions' && <div className='nt-institution'><SmallLabel>NON-BINDING DECISION INTELLIGENCE</SmallLabel><h4>What needs to be understood?</h4><ul><li>Legal authority and procedural status, distinct from implementation.</li><li>Impacts on residents, public services, costs, nature and long-term resilience.</li><li>Scenario A and B are scientific model assumptions, not a recorded political ballot.</li><li>Local implementation responsibilities and verified project costs: not established for this case.</li></ul><Source id='MDE-2026-MODEL' label='READ THE SCIENTIFIC SOURCE ↗'/></div>}
-            <h4 className='nt-timeline-title'>Decision timeline</h4>
-            <ol className='nt-timeline'>{nationDecision.timeline.map(item=><li key={item.date+item.label}><span>{item.date}</span><div><small>{item.state}</small><p>{item.label}</p><Source id={item.sourceId} label='VERIFY ↗'/></div></li>)}</ol>
+            <details className='nt-timeline-disclosure'>
+              <summary><span>Decision timeline</span><small>{nationDecision.timeline.length} dated events · open full record</small></summary>
+              <ol className='nt-timeline'>{nationDecision.timeline.map(item=><li key={item.date+item.label}><span>{item.date}</span><div><small>{item.state}</small><p>{item.label}</p><Source id={item.sourceId} label='VERIFY ↗'/></div></li>)}</ol>
+            </details>
           </section>}
           {lens==='atlas' && <section className='nt-panel-body'><h3>Place gives a decision its context.</h3><p>The Oslofjord connects marine ecosystems, communities and a catchment crossing multiple administrative boundaries. The geographical extent below is inherited from the existing 4PLANET PLACE registry, not a new authoritative jurisdiction or drainage-basin map.</p>{nationPlace ? <AtlasEmbed view={{ kind: 'NATION', title: 'Oslofjord — geographic context', placeId: nationPlace.id, layers: ['bluemarble'], description: 'An interactive navigation view over the existing 4PLANET ATLAS. The decision remains sourced to the official documents below.', limitation: 'Navigation extent only. This map does not depict an official catchment, decision boundary, implementation site or measured ecological outcome.' }} /> : <p role='status'>Geographic context is not available.</p>}<Source id='KLD-2026-HEARING' label='OFFICIAL POLICY GEOGRAPHY ↗'/></section>}
           {lens==='brain' && <section className='nt-panel-body'><h3>Ask better questions of the evidence.</h3><p>These answers are curated from the cited primary-source snapshot. This first prototype does not claim live conversational PLANETBRAIN access or current-feed coverage.</p><div className='nt-qa'><h4>Is the new plan already adopted?</h4><p>No final adoption is established by the cited hearing record. Its current public status is “under consideration” as of {nationCaseAsOf}.</p><Source id='KLD-2026-HEARING' label='OFFICIAL STATUS ↗'/></div><div className='nt-qa'><h4>What does the scientific model establish?</h4><p>It compares modelled measures, not delivered ecological results. A 30–40% nitrate reduction is a modelled requirement against a 2017–2019 baseline, not proof that the reduction has occurred.</p><Source id='MDE-2026-MODEL' label='RESEARCH SUMMARY ↗'/></div></section>}
@@ -161,7 +162,7 @@ export default function NationPage() {
       <div className='nt-proof-note'><SmallLabel>TRUTH BEFORE CERTAINTY</SmallLabel><p>One verified public case, not an all-Norway feed. Primary sources, dated status and unknowns stay visible. This prototype does not make public decisions, represent any government or rank political options.</p><button type='button' onClick={()=>setSourceOpen(true)}>Inspect all sources ↗</button></div>
     </section>
 
-    <section className='nt-why' id='nt-why'><SmallLabel>02 / WHY WE EXIST</SmallLabel><h2>Better intelligence.<br/>Informed choices.<br/><em>A better nation.</em></h2><div className='nt-why-grid'><p>For people: understand which decisions may shape your place, and what is established by the original record.</p><p>For institutions: see the legal, human, economic and ecological dimensions of a choice — then measure separately what happens after it.</p></div><div className='nt-family-row'><span>4SAPIEN / PERSON</span><span>4BRANDS / COMPANY</span><strong>4NATION / NATION</strong><span>4PLANET / LIVING PLANET</span></div></section>
+    <section className='nt-why' id='nt-why'><SmallLabel>WHY 4NATION</SmallLabel><div className='nt-why-compact'><h2>Public decisions should be easier to understand.</h2><p>One sourced record for people and institutions — with place, evidence, economics and outcomes kept distinct.</p></div><div className='nt-family-row'><span>4SAPIEN / PERSON</span><span>4BRANDS / COMPANY</span><strong>4NATION / NATION</strong><span>4PLANET / LIVING PLANET</span></div></section>
 
     <footer className='nt-footer'><strong>4NATION.</strong><p>BETTER NATION. A 4PLANET product concept.</p><span>Prototype · dated evidence · not an official government service</span><a href='#top'>BACK TO TOP ↑</a></footer>
 

@@ -2,7 +2,7 @@
 
 CHANGE ID: PLANETBRAIN-SOURCE-CITES-01-2026-09-27
 STATUS: HEIR CHILD / NOT GOLD / NO LIVE RELEASE
-PARENT: king/test@e36090048fdfa8cbc6817ad760c042806093ed0d
+PARENT: king/test@c287c3780ddd01a07a889f5445895def977c3a4b (forward-synced; citation work began at e36090048fdfa8cbc6817ad760c042806093ed0d)
 PRODUCT: LIVING_SYSTEMS decision intelligence, the existing PLANETBRAIN recovered-source surface. ATLAS sandbox remains untouched.
 
 ## USER ARRIVES BECAUSE
@@ -50,6 +50,50 @@ MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
 Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss mobile-430 zoom intercept stays an inherited open failure, unrelated to this slice.
 
 --- PRIOR GOLD BRIEFS PRESERVED BELOW ---
+
+4NATION UX06 PASS B/C — FINAL RELEASE PREPARATION / PARENT ab08fed29b299779217e04cedf48c7281c1c436d / 27 SEP 2026
+ACTUAL VISUAL JUDGMENT performed from Cloudflare screenshots at mobile390/mobile430/tablet/desktop, not source-only. First hosted pass showed overly long mobile page, always-open six-event timeline, oversized marketing WHY block and internal Nation Atlas/Nation Brain labels. PASS B/C commit d742f9ee6cc93c3754eb0c077e73109314e0233f collapses full timeline behind accessible native disclosure, keeps 6 verified events one tap away, changes visible layers to Map/Evidence, removes low-value Our purpose top nav link and replaces huge black marketing section with compact light 4PLANET close. Final immutable preview https://82a64686.4planet-05.pages.dev/4nation. Exact external preview/browser run 36340292741 SUCCESS: 18/18 desktop1440/mobile390/mobile430 including existing people/institution/source/deep-link/map/full ATLAS and new timeline disclosure; real final screenshots captured in workflow 36340696982 and visually reviewed. Product remains evidence-first and politically neutral; same official Oslofjord status/source bundle, no recommendation/ranking/official affiliation.
+This SAME COMMIT updates repository release Worker source and existing dispatch-only live workflow to final immutable origin + source SHA d742f9ee6cc93c3754eb0c077e73109314e0233f. NO Cloudflare deploy occurs from this commit. The protected production workflow still requires exact founder_release input "enig send"; auto-push release remains disabled. Existing public 4nation.org therefore continues prior pinned version until that explicit production gate executes. Do not call UX06 LIVE yet. No other domain or Pages production branch may be mutated.
+---
+4NATION UX06 PASS B/C / VISUAL-JUDGE ITERATION / PARENT a1552c56385675178466a2623ade5f0a888ee3e5
+Actual rendered screenshot evidence from immutable Cloudflare preview 852b848d: desktop, tablet, 390 and 430 captured by workflow 36340005095 artifact 4nation-ux06-visual-proof. Visual findings: first fold materially improved, but full mobile remained unnecessarily long because six-event timeline was always expanded; large black WHY block read like marketing instead of utility; Nation Atlas/Nation Brain labels exposed internal architecture; top nav carried low-value purpose jump. This SAME COMMIT responds to the rendered product: rename visible layers Map/Evidence (keys/data unchanged), remove purpose from primary nav, collapse full dated timeline behind native accessible details/summary (all six events and sources retained one tap away), replace oversized black marketing block with compact light 4PLANET-neutral explanation, shorten overall mobile page. No political meaning/status/source data/map behavior/audience modes removed. Tests updated to require disclosure mechanics, all six events after opening, plain labels. Existing new UX preview remains previous candidate until this commit gets exact host preview/browser QA. Public 4nation.org still old build; production release remains dispatch-only exact founder 'enig send'. Maker still not sole Judge.
+---
+# CURRENT GOLD BRIEF — 4BRANDS COMPANY INTELLIGENCE 0–3
+
+**CHANGE ID:** 4BRANDS-COMPANY-INTELLIGENCE-0-3-2026-09-27
+
+**STATUS:** HEIR / TEST CANDIDATE / NOT GOLD / NO PUBLIC CUSTOM-DOMAIN RELEASE
+
+**BASE AUTHORITY:** `king/test` sole HEIR. This bounded change converges the already-existing 4BRANDS public analysis, authenticated Company Brain, Company Twin and Decision + Value Ledger into one explicit product architecture. It does not create a parallel 4BRANDS app, Brain, database or identity system.
+
+**FOUNDER DIRECTION:** 0. Company Analysis → 1. Company Brain → 2. Company Twin → 3. Future Engine. Company Analysis is the free public entry and acquisition surface. Company Brain is durable company memory/knowledge. Company Twin models the current company. Future Engine explores explicit scenarios before action.
+
+## USER ARRIVES BECAUSE
+A person wants to understand a company from public evidence, find potential value, then connect authenticated internal context and test better decisions without losing the distinction between evidence and hypothesis.
+
+## PRIMARY FLOW
+Company Analysis → create/sign in with canonical 4PLANET ID → create/select Company Brain workspace → persist analysis + Twin state → inspect Decision + Value Ledger → explore bounded scenarios.
+
+## COMPANY BRAIN
+Reuse existing 4Planet_ OS 4BRANDS tenant state, memberships, RLS, durable memories, metrics, decisions, interventions, results, learning and audit. The browser no longer owns a separate Company-Brain-specific auth session; authentication converges on the existing universal 4PLANET ID. Local recovery is non-canonical only.
+
+## FUTURE ENGINE BETA
+The first Future Engine is deterministic scenario arithmetic over explicit user assumptions and numeric Twin baselines. It is NOT an AI forecast and does not claim causal prediction. Future probabilistic or learned models require evidence, calibration and separate validation.
+
+## TRUTH BOUNDARY
+FACT ≠ ASSUMPTION ≠ SCENARIO ≠ FORECAST ≠ OBSERVED RESULT ≠ ATTRIBUTED VALUE.
+Public analysis remains source-aware. Unknown is not zero. Scenario outputs do not become realised value. Company-private state never becomes shared 4PLANET/PLANETBRAIN truth by convenience.
+
+## SECURITY
+Company RPCs are authenticated tenant operations. 2026-09-27 backend hardening removed anonymous EXECUTE from Company Brain workspace/snapshot/twin/analysis/intervention/result/value-report/compounding RPCs and narrowed material UPDATE policies to authenticated. Existing membership/RLS checks remain authoritative.
+
+## HUMAN REVIEW INTENT
+Verify desktop and mobile hierarchy; the 0–3 architecture is understandable without internal jargon; public Company Analysis still works without login; 4PLANET ID sign-in/create-account returns to Company Brain; authenticated workspace creation/save/readback works for an actual permitted user; scenario controls clearly show assumptions; Company Twin and Value Ledger remain usable; no false forecast/value/impact claim.
+
+## QA / RELEASE GATE
+Exact SHA typecheck/build and relevant 4BRANDS/identity/runtime journeys must pass on HEIR or controlled preview. Positive real-user authenticated readback cannot be inferred from source tests. Maker ≠ Judge. Custom-domain LIVE promotion remains a separate Founder-release action; this brief does not authorize it.
+
+--- PRIOR GOLD HISTORY PRESERVED BELOW ---
 
 ATLAS GOLD 04 / MAPLIBRE API TEST COMPATIBILITY / 22 SEP 2026
 Parent 93212f4582d141287b7e833cdc1022827bf1a1eb. Exact SHA 1c98ec1 source had previously failing ATLAS Zero Loss mobile 390 click target blocked by Orca context; mobile native controls now usable and click reached MapLibre. Test then crashed on TypeError map.isEasing is not a function, MapLibre v6 runtime does not expose this optional legacy method. SAME COMMIT fixes test compatibility while RETAINING both !map.isMoving() and !map.isZooming() and checking isEasing only when supported. Camera ownership, settled zoom, lat/lng acceptance assertions and timeouts are unchanged. No production, DNS, branch, new architecture or external release. Exact HEAD rebuild/CI required, no Gold before portfolio gates and live camera approved separately.
