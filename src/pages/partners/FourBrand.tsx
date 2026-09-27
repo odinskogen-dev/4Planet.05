@@ -89,6 +89,11 @@ type ClimateFacility = {
   lat: number; lon: number; co2e: number | null; year: string | number; gas: string;
 };
 
+type ProcurementSignal = {
+  id: string; title: string; buyer: string | null; buyerCountry: string | null;
+  publicationDate: string | null; noticeType: string | null; cpv: string[]; deadline: string | null; sourceUrl: string;
+};
+
 const EMPTY_TWIN: TwinState = {
   objective: "",
   annualRevenue: "",
@@ -213,6 +218,77 @@ function OpportunityRow({ item, primary = false }: { item: Opportunity; primary?
         </details>
       </div>
     </article>
+  );
+}
+
+function ProcurementDemandPanel({ analysis }: { analysis: Analysis }) {
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState<"NOR" | "ALL">("NOR");
+  const [signals, setSignals] = useState<ProcurementSignal[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
+  const [state, setState] = useState<"IDLE" | "LOADING" | "READY" | "NO_MATCH" | "ERROR">("IDLE");
+
+  const search = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const q = query.trim();
+    if (q.length < 2) return;
+    setState("LOADING"); setSignals([]); setTotal(null);
+    try {
+      const response = await fetch(`/api/procurement-demand?q=${encodeURIComponent(q)}&country=${country}`);
+      const payload = await response.json() as { ok?: boolean; signals?: ProcurementSignal[]; total?: number };
+      if (!response.ok || !payload.ok) throw new Error("PROCUREMENT_SOURCE_FAILED");
+      const next = Array.isArray(payload.signals) ? payload.signals : [];
+      setSignals(next);
+      setTotal(typeof payload.total === "number" ? payload.total : next.length);
+      setState(next.length ? "READY" : "NO_MATCH");
+      trackEvent("company_procurement_demand_searched", { product_area: "4brands", result_count: next.length, country_scope: country });
+    } catch {
+      setState("ERROR");
+    }
+  };
+
+  return (
+    <section className="fb-demand" aria-label="Public procurement demand signals">
+      <div className="fb-demand__head">
+        <div>
+          <p className="fb-eyebrow">PUBLIC DEMAND SIGNALS · TED</p>
+          <h2>See what public buyers are actually publishing.</h2>
+          <p>Search a product, solution or capability relevant to {analysis.company.name}. The search is user-controlled: company sector text is never converted into demand automatically.</p>
+        </div>
+      </div>
+      <form className="fb-demand__search" onSubmit={search}>
+        <label htmlFor="fb-demand-query">Procurement keywords</label>
+        <div>
+          <input id="fb-demand-query" value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="e.g. reverse vending, recycling sorting, biodiversity monitoring" />
+          <select aria-label="Procurement geography" value={country} onChange={(event)=>setCountry(event.target.value as "NOR"|"ALL")}>
+            <option value="NOR">Norway on TED</option>
+            <option value="ALL">All TED markets</option>
+          </select>
+          <button type="submit" disabled={state==="LOADING"||query.trim().length<2}>{state==="LOADING"?"Searching…":"Search published notices"}</button>
+        </div>
+        <small>TED is queried anonymously through its published-notice Search API. Doffin-only/national Norwegian notices are not represented as complete coverage until the official Doffin subscription is configured.</small>
+      </form>
+      {state==="ERROR"&&<p className="fb-demand__state" role="status">TED search is unavailable right now. No market conclusion is inferred.</p>}
+      {state==="NO_MATCH"&&<p className="fb-demand__state" role="status">No active bounded result returned. This is not evidence that there is no market demand.</p>}
+      {state==="READY"&&(
+        <>
+          <div className="fb-demand__summary"><strong>{total ?? signals.length}</strong><span>matching active TED notice records reported by the source query · showing up to {signals.length}</span></div>
+          <div className="fb-demand__results">
+            {signals.map((signal)=>(
+              <article key={signal.id}>
+                <span>{signal.id}</span>
+                <h3>{signal.title}</h3>
+                <p>{signal.buyer || "BUYER NAME UNAVAILABLE"}{signal.buyerCountry ? ` · ${signal.buyerCountry}` : ""}</p>
+                <div>{signal.publicationDate || "PUBLICATION DATE UNKNOWN"}{signal.deadline ? ` · deadline ${signal.deadline}` : ""}</div>
+                {signal.cpv.length>0&&<small>CPV {signal.cpv.slice(0,4).join(" · ")}</small>}
+                <a href={signal.sourceUrl} target="_blank" rel="noreferrer">Open original TED notice ↗</a>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+      <p className="fb-demand__boundary">A notice is a source-grounded procurement signal. It is not a sale, contract award, supplier fit, willingness-to-pay proof, realised value or ecological outcome.</p>
+    </section>
   );
 }
 
@@ -616,6 +692,8 @@ export default function FourBrand() {
           </section>
 
           <CompanyClimateTracePanel analysis={analysis} />
+
+          <ProcurementDemandPanel analysis={analysis} />
 
           <section className="fb-model-strip" aria-label="Public company model">
             <article><span>ECONOMIC STATE</span><strong>{analysis.economicBaseline.length} sourced baseline signals</strong></article>

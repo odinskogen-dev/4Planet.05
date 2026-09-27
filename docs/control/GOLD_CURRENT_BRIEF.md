@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — PUBLIC PROCUREMENT DEMAND SIGNALS — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / TED ACTIVE-NOTICE DISCOVERY / DOFFIN ACCESS GATE OPEN.
+
+**SOURCE CHOICE:** use the official TED Search API v3 immediately because published-notice search is anonymous and explicitly supports commercial/reuser applications. Doffin Public API is the authoritative Norwegian search/download source for Doffin notices, but its official integration documentation requires registration/subscription. No undocumented or scraped Doffin runtime is substituted.
+
+**USER FLOW:** 4BRANDS company analysis → user enters product/solution/capability keywords → choose Norway-on-TED or all TED markets → official active published notices → inspect buyer/date/CPV/deadline → open original TED notice.
+
+**NO AUTOMATIC MARKET CLAIM:** company sector text does not trigger procurement queries. Search terms are user-controlled. A published notice is evidence of a published procurement process/market signal only. It is not a sale, award, company fit, willingness to pay, realised value or ecological outcome.
+
+**CANONICAL OBJECT:** each returned notice is `procurement:ted:<publication-number>` with original source URL. No notice is automatically joined to a company, facility, solution or intervention.
+
+**COVERAGE LIMIT:** Norway-on-TED is not complete Doffin coverage. National/Doffin-only notices remain an explicit coverage gap until the official Doffin subscription key and exact Public API contract are configured.
+
+**BEFORE → AFTER VALUE:** a company user can now test whether public buyers are publishing notices around a capability using an authoritative, inspectable, current source instead of relying on model inference.
+
+**ACCEPTANCE:** typecheck/build/smoke including procurement-demand contract, lint, 4BRAND runtime audit and browser proof. No public production claim until gates pass.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — COMPANY → FACILITY / CLIMATE TRACE — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / REVIEW-GATED JOIN / NO LIVE RELEASE CLAIM.
