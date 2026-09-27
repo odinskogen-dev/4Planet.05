@@ -11,6 +11,17 @@ export default {
       return Response.redirect(incoming.toString(), 308);
     }
     if (!["GET","HEAD"].includes(request.method)) return new Response("Method not allowed",{status:405});
+    if (incoming.pathname === "/auth/4planet/callback") {
+      const body = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>4PLANET ID</title><script src=\"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js\"></script><style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#fff;color:#080808;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Arial,sans-serif}.c{width:min(90vw,440px)}h1{font-size:34px;letter-spacing:-.04em;margin:0 0 12px}p{line-height:1.5;color:#555}.err{color:#b42318}</style></head><body><main class=\"c\"><h1>4PLANET ID</h1><p id=\"status\">Completing secure sign-in…</p></main><script>(async function(){var SB_URL='https://ghvdzetmplqkdtfqiror.supabase.co';var SB_KEY='sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE';var status=document.getElementById('status');function safe(v){try{var u=new URL(v||'/',location.origin);if(u.origin===location.origin)return u.pathname+u.search+u.hash}catch(e){}return '/'}try{var h=new URLSearchParams(location.hash.replace(/^#/,''));var token=h.get('token_hash');var next=safe(h.get('return_to'));history.replaceState({},'',location.pathname);if(!token)throw new Error('missing');var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});var r=await sb.auth.verifyOtp({token_hash:token,type:'email'});if(r.error||!r.data||!r.data.session)throw r.error||new Error('expired');location.replace(next)}catch(e){status.textContent='This sign-in link is invalid or expired. Reopening 4PLANET ID…';status.className='err';setTimeout(function(){location.replace('https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+'/'))},900)}})();</script></body></html>";
+      return new Response(request.method==="HEAD"?null:body,{status:200,headers:{
+        "content-type":"text/html; charset=utf-8",
+        "cache-control":"private, no-store",
+        "x-robots-tag":"noindex, nofollow",
+        "x-content-type-options":"nosniff",
+        "referrer-policy":"no-referrer",
+        "content-security-policy":"default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; connect-src https://ghvdzetmplqkdtfqiror.supabase.co; frame-ancestors 'none'; base-uri 'none'"
+      }});
+    }
     if (incoming.pathname === "/robots.txt") return new Response("User-agent: *\nAllow: /\n",{headers:{"content-type":"text/plain; charset=utf-8","x-4nation-sha":SOURCE_SHA}});
     const upstreamUrl = new URL(IMMUTABLE_ORIGIN);
     upstreamUrl.pathname = incoming.pathname === "/" ? "/4nation" : incoming.pathname;
@@ -31,6 +42,9 @@ export default {
       let body=await upstream.text();
       body=body.replace(/<meta\s+name=["']robots["'][^>]*>/gi,"");
       body=body.replace("</head>",'<meta name="robots" content="index,follow,max-image-preview:large" /><link rel="canonical" href="https://4nation.org/" /></head>');
+      const idHref="https://id.4planet.org/login?return_to="+encodeURIComponent(incoming.toString());
+      const idEntry='<a data-fourplanet-id-entry="1" href="'+idHref+'" aria-label="Log in with 4PLANET ID" style="position:fixed;top:14px;right:16px;z-index:2147483000;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08)">LOG IN · 4PLANET ID</a>';
+      body=body.replace(/<body([^>]*)>/i,'<body$1>'+idEntry);
       headers.set("cache-control","public, max-age=90, must-revalidate");
       return new Response(body,{status:upstream.status,headers});
     }
