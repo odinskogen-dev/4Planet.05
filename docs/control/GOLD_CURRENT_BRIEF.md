@@ -47,7 +47,7 @@ On Pollination, IPBES opens https://www.ipbes.net. On Amazonia, sources without 
 MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
 
 ## CI CONTINUATION — SAME SLICE
-Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss mobile-430 zoom intercept stays an inherited open failure, unrelated to this slice.
+Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The six accepted citation cases verify rendered links, not outbound navigation or scientific source content. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss receipt retained: run 36343973048, deployed Chromium mobile-430 zoom click intercepted by `.ctx-head`. Classification: inherited source rules; deployed-parent baseline absent; runtime causality unproven.
 
 --- PRIOR GOLD BRIEFS PRESERVED BELOW ---
 
