@@ -9,6 +9,7 @@ on:
       - "src/auth/FourPlanetIdentity.tsx"
       - "src/App.tsx"
       - "src/styles/identity-polish.css"
+      - "index.html"
       - ".github/workflows/identity-canonical-live.yml"
   workflow_dispatch:
 
