@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — 4BRANDS COMPANY IDENTITY SPINE — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE RELEASE CLAIM.
+
+**SAME PROVIDER, NOT SECOND BRREG:** the existing authenticated 4SAPIEN exact-org-number adapter is refactored to call one shared BRREG provider module. 4BRANDS uses that same provider for name discovery and exact organisation-number resolution.
+
+**USER FLOW:** company name → BRREG candidates → explicit user selection → exact BRREG organisation-number readback → optional GLEIF lookup → LEI auto-crosswalk only when GLEIF `registeredAs` exactly equals the BRREG organisation number → company analysis.
+
+**TRUTH BOUNDARY:** name search is discovery, not identity. Fuzzy/name similarity never becomes canonical company identity. BRREG exact organisation number is the Norwegian legal-identity anchor. GLEIF name results remain candidates unless the registration ID exactly crosswalks. Legal identity does not prove ownership, financials, emissions or value.
+
+**RIGHTS:** Brønnøysundregistrene Open Data / NLOD 2.0. GLEIF public LEI reference data / CC0. Source URLs and observed identity records travel into the 4BRANDS evidence list.
+
+**BEFORE → AFTER VALUE:** before, arbitrary company analysis could begin from a free-text name with no canonical legal-entity anchor. After, Norwegian users can disambiguate the actual company first and carry organisation number + optional exact LEI into the value map and later Company Brain.
+
+**NO DUPLICATE SYSTEM:** existing identity/auth, Company Brain and BRREG capability remain. No new company database or parallel company truth store.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke including company identity contract; existing `embla-brreg` auth and fail-closed behaviour preserved; browser proof; no production release claim until gates pass.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — 4SAPIEN FOOD / MATVARETABELLEN — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / USER-FACING / NO LIVE RELEASE CLAIM.
