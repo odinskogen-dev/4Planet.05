@@ -45,5 +45,5 @@ test("GLEIF is optional and only exact registeredAs crosswalk is auto-accepted",
   assert.match(api,/exact\.length===1\?"EXACT_REGISTRATION_ID"/);
   assert.match(api,/registeredAs===entity\.organizationNumber/);
   assert.match(api,/NO_AUTOMATIC_JOIN/);
-  assert.match(api,/license:"CC0"/);
+  assert.match(api,/license:"CC0 1.0"/);
 });

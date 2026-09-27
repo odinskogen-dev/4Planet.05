@@ -42,5 +42,5 @@ test("reference gateway uses official foods endpoint, bounded edge cache and tru
   assert.match(source,/CACHE_SECONDS = 60 \* 60 \* 24 \* 30/);
   assert.match(source,/GENERIC_FOOD_COMPOSITION_REFERENCE_NOT_BRANDED_PRODUCT/);
   assert.match(source,/user must explicitly confirm/i);
-  assert.match(source,/attribution:"Matvaretabellen"/);
+  assert.match(source,/attribution:"Matvaretabellen 2026\\. Mattilsynet\\. www\\.matvaretabellen\\.no"/);
 });
