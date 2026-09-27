@@ -63,3 +63,12 @@ test('human-first Nation entry keeps one real case and one primary action', () =
  assert.doesNotMatch(page,/Explore decision intelligence/);
  assert.doesNotMatch(page,/One decision\.<br\/>A clearer picture/);
 });
+
+test('human navigation uses plain-language map and evidence labels and collapses the long record', () => {
+  assert.match(page,/label: 'Map'/);
+  assert.match(page,/label: 'Evidence'/);
+  assert.doesNotMatch(page,/label: 'Nation Atlas'/);
+  assert.doesNotMatch(page,/label: 'Nation Brain'/);
+  assert.match(page,/nt-timeline-disclosure/);
+  assert.match(page,/Public decisions should be easier to understand/);
+});

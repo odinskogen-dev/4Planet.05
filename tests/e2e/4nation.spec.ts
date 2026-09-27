@@ -9,7 +9,7 @@ test('4NATION citizen and institutional decision paths share official-source rec
   await expect(page.getByText('15 October 2026',{exact:false}).first()).toBeVisible();
   await page.getByRole('button',{name:'For institutions'}).click();
   await expect(page.getByText('NON-BINDING DECISION INTELLIGENCE')).toBeVisible();
-  await page.getByRole('button',{name:/Nation Brain/i}).click();
+  await page.getByRole('button',{name:/Evidence/i}).click();
   await expect(page.getByText('does not claim live conversational PLANETBRAIN',{exact:false})).toBeVisible();
   await page.getByRole('button',{name:'Sources',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -137,4 +137,14 @@ test('the first mobile screen starts with a real case and one clear action', asy
   expect(visible,'The actual Oslofjord case must appear on the first screen').toBe(true);
   await hero.getByRole('button',{name:/Explore public decisions/i}).click();
   await expect(page.getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
+});
+
+test('4NATION progressive disclosure keeps the long timeline collapsed until requested', async ({page}) => {
+  await page.goto('/4nation?view=people&lens=decisions');
+  const details=page.locator('.nt-timeline-disclosure');
+  await expect(details).toHaveCount(1);
+  await expect(details).not.toHaveAttribute('open','');
+  await details.locator('summary').click();
+  await expect(details).toHaveAttribute('open','');
+  await expect(details.locator('.nt-timeline li')).toHaveCount(6);
 });
