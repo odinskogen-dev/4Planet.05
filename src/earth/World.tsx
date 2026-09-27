@@ -45,6 +45,7 @@ import * as maplibregl from "maplibre-gl";
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./world.css";
+import { trackEvent } from "@/analytics/Analytics";
 
 import {
   BASE, C, DOT, LAYERS, MODES, RASTER_ORDER,
@@ -187,6 +188,15 @@ function WorldInner() {
   /* ── v1 state ─────────────────────────────────────────────────────────── */
   const [lens, setLens] = useState(init.current.lens);
   const [ctx, setCtx] = useState<ContextState | null>(null);
+
+  useEffect(() => {
+    if (!ctx) return;
+    trackEvent("atlas_object_opened", {
+      product_area: "atlas",
+      object_kind: ctx.kind,
+      has_canonical_entity: !["COORDINATE", "LEGACY_POINT"].includes(ctx.kind),
+    });
+  }, [ctx]);
   const [pool, setPool] = useState(EMPTY_POOL);
   const [poolLoading, setPoolLoading] = useState(true);
   const [q, setQ] = useState("");
