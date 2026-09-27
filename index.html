@@ -37,6 +37,63 @@
     <div id="root"></div>
     <script src="/atlas-return-camera-lock-v68.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
+    <script id="fourplanet-id-static-entry">
+      (() => {
+        const host = location.hostname.toLowerCase();
+        const allowed = new Set([
+          "4planet.org","www.4planet.org","s4piens.com","www.s4piens.com",
+          "4planetatlas.com","www.4planetatlas.com","labs.4planet.org",
+          "4brands.org","www.4brands.org"
+        ]);
+        if (!allowed.has(host) || host === "id.4planet.org" || host.endsWith(".oddekalv.org") || host === "oddekalv.org") return;
+        const nativeSelector = ".public-header__identity,.fourplanet-id-global-entry";
+        let fallback = null;
+
+        async function ensure() {
+          if (document.querySelector(nativeSelector)) {
+            fallback?.remove();
+            fallback = null;
+            return;
+          }
+          if (fallback || !document.body) return;
+
+          let signedIn = false;
+          try {
+            if (window.supabase?.createClient) {
+              const sb = window.supabase.createClient(
+                "https://ghvdzetmplqkdtfqiror.supabase.co",
+                "sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE",
+                { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+              );
+              const result = await sb.auth.getSession();
+              signedIn = Boolean(result?.data?.session);
+            }
+          } catch {}
+
+          const destination = signedIn ? "account" : "login";
+          const a = document.createElement("a");
+          a.dataset.fourplanetIdEntry = "static";
+          a.href = "https://id.4planet.org/" + destination + "?return_to=" + encodeURIComponent(location.href);
+          a.textContent = signedIn ? "4PLANET ID" : "LOG IN";
+          a.setAttribute("aria-label", signedIn ? "Open 4PLANET ID account" : "Log in with 4PLANET ID");
+          a.style.cssText = "position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:1090;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08);backdrop-filter:blur(14px)";
+          fallback = a;
+          document.body.appendChild(a);
+        }
+
+        const observer = new MutationObserver(() => {
+          if (document.querySelector(nativeSelector)) {
+            fallback?.remove();
+            fallback = null;
+          }
+        });
+        document.addEventListener("DOMContentLoaded", () => {
+          observer.observe(document.body, { childList: true, subtree: true });
+          setTimeout(ensure, 900);
+          setTimeout(ensure, 3000);
+        }, { once: true });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
