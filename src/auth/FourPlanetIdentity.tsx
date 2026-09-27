@@ -258,7 +258,7 @@ function IdentityUtility({
       {styles}
       {createPortal(
         <div className="fourplanet-id-utility" aria-label="4PLANET account">
-          {!ready ? null : user ? (
+          {user ? (
             <button type="button" className="fourplanet-id-button fourplanet-id-account" onClick={() => onOpen("account")} title={user.email || "4PLANET ID"}>
               4PLANET ID ✓
             </button>
