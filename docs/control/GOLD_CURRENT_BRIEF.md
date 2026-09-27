@@ -46,6 +46,9 @@ On Pollination, IPBES opens https://www.ipbes.net. On Amazonia, sources without 
 
 MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
 
+## CI CONTINUATION — SAME SLICE
+Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss mobile-430 zoom intercept stays an inherited open failure, unrelated to this slice.
+
 --- PRIOR GOLD BRIEFS PRESERVED BELOW ---
 
 ATLAS GOLD 04 / MAPLIBRE API TEST COMPATIBILITY / 22 SEP 2026
