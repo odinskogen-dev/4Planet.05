@@ -140,7 +140,7 @@ export default function NationPage() {
   useEffect(() => {
     document.title = '4NATION — Better Nation | Understand your nation';
     const existing = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (existing) existing.content = 'A source-grounded public decision intelligence prototype. Understand your nation, its places, and the decisions shaping them.';
+    if (existing) existing.content = 'Follow a real public decision from proposal to implementation and measured outcome, with the original evidence kept close.';
   }, []);
 
   const activeLens = lenses.find((item) => item.key === lens) || lenses[0];
@@ -171,17 +171,18 @@ export default function NationPage() {
     <section className='nt-hero' aria-labelledby='nt-heading'>
       <div className='nt-hero-copy'>
         <SmallLabel>4NATION / BETTER NATION</SmallLabel>
-        <h1 id='nt-heading'>Understand <em>your nation.</em></h1>
-        <p>Public decisions, explained through the original evidence. Start with one real place and one case.</p>
-        <button className='nt-primary nt-hero-action' type='button' onClick={() => selectAudience('people')}>Explore public decisions <span aria-hidden='true'>↗</span></button>
+        <span className='nt-hero-kicker'>UNDERSTAND YOUR NATION.</span>
+        <h1 id='nt-heading'>What is happening to the <em>Oslofjord?</em></h1>
+        <p>Norway has proposed a new plan for the fjord. Follow what is proposed, what is actually decided, what happens next and where the evidence comes from.</p>
+        <button className='nt-primary nt-hero-action' type='button' onClick={() => selectAudience('people')}>Understand this decision <span aria-hidden='true'>↗</span></button>
         <p className='nt-hero-trust'>An independent 4PLANET prototype · <button type='button' onClick={() => setSourceOpen(true)}>See the sources ↗</button></p>
       </div>
       <article className='nt-featured' aria-labelledby='nt-feature-title'>
-        <div className='nt-feature-top'><SmallLabel>OSLOFJORD / NORWAY</SmallLabel><span className='nt-feature-status'>PROPOSAL · UNDER CONSIDERATION</span></div>
+        <div className='nt-feature-top'><SmallLabel>OSLOFJORD / NORWAY</SmallLabel><span className='nt-feature-status'>OFFICIAL STATUS · UNDER CONSIDERATION</span></div>
         <div className='nt-feature-middle'>
           <span className='nt-feature-eyebrow'>ONE PUBLIC DECISION · 2026–2030</span>
-          <h2 id='nt-feature-title'>What is happening<br/>to the <em>Oslofjord?</em></h2>
-          <p>Norway has proposed a new plan for the fjord. It is still being considered — not an adopted plan.</p>
+          <h2 id='nt-feature-title'>One proposal.<br/><em>What happens next?</em></h2>
+          <p>Follow the same case through proposal, consultation, decision, implementation and measured outcome. The source still lists it as under consideration.</p>
         </div>
         <div className='nt-feature-facts' aria-label='The case at a glance'>
           <div><span>THE ISSUE</span><strong>A fjord under pressure</strong></div>
@@ -194,13 +195,9 @@ export default function NationPage() {
 
     <section className='nt-workbench' id='nt-workbench' aria-labelledby='nt-work-heading'>
       <div className='nt-work-head'>
-        <div><SmallLabel>THE OSLOFJORD / OFFICIAL CASE</SmallLabel><h2 id='nt-work-heading'>Understand the decision.</h2><p>Begin with the proposal. Explore the evidence, place, costs and outcomes when you need them.</p></div>
+        <div><SmallLabel>THE OSLOFJORD / OFFICIAL CASE</SmallLabel><h2 id='nt-work-heading'>The decision, in one place.</h2><p>Start with what is being considered. Open the map, evidence, solutions, economy and outcomes only when you need more depth.</p></div>
         <div className='nt-audiences' role='group' aria-label='Choose audience'><button type='button' aria-pressed={audience==='people'} onClick={()=>setAudience('people')}>For people</button><button type='button' aria-pressed={audience==='institutions'} onClick={()=>setAudience('institutions')}>For institutions</button></div>
       </div>
-
-      <LiveStortingCaseFinder />
-
-      <StatbankContextFinder />
 
       <div className='nt-geography'>
         <span>PLACE / CONTEXT</span><button type='button' aria-expanded={geographyOpen} onClick={()=>setGeographyOpen(!geographyOpen)}>Oslofjord / Norway <span aria-hidden='true'>{geographyOpen?'−':'⌄'}</span></button><span className='nt-geography-status'>ONE SOURCED CASE / NOT A NATIONAL FEED</span>
@@ -243,11 +240,20 @@ export default function NationPage() {
           </nav>
       </div>
       <div className='nt-proof-note'><SmallLabel>TRUTH BEFORE CERTAINTY</SmallLabel><p>One verified public case, not an all-Norway feed. Primary sources, dated status and unknowns stay visible. This prototype does not make public decisions, represent any government or rank political options.</p><button type='button' onClick={()=>setSourceOpen(true)}>Inspect all sources ↗</button></div>
+
+      <details className='nt-discovery'>
+        <summary><span><SmallLabel>GO BEYOND THIS CASE</SmallLabel><strong>Explore official Norway data</strong></span><small>Stortinget + SSB · source-first tools</small></summary>
+        <div className='nt-discovery-body'>
+          <p className='nt-discovery-intro'>Search current parliamentary cases or official statistics when you want broader context. These tools stay separate from the Oslofjord decision so source discovery does not become a policy recommendation or replace the case record.</p>
+          <LiveStortingCaseFinder />
+          <StatbankContextFinder />
+        </div>
+      </details>
     </section>
 
     <section className='nt-why' id='nt-why'><SmallLabel>WHY 4NATION</SmallLabel><div className='nt-why-compact'><h2>Public decisions should be easier to understand.</h2><p>One sourced record for people and institutions — with place, evidence, economics and outcomes kept distinct.</p></div><div className='nt-family-row'><span>4SAPIEN / PERSON</span><span>4BRANDS / COMPANY</span><strong>4NATION / NATION</strong><span>4PLANET / LIVING PLANET</span></div></section>
 
-    <footer className='nt-footer'><strong>4NATION.</strong><p>BETTER NATION. A 4PLANET product concept.</p><span>Prototype · dated evidence · not an official government service</span><a href='#top'>BACK TO TOP ↑</a></footer>
+    <footer className='nt-footer'><strong>4NATION.</strong><p>BETTER NATION. A 4PLANET product.</p><span>Prototype · dated evidence · not an official government service</span><a href='#top'>BACK TO TOP ↑</a></footer>
 
     {sourceOpen && <div className='nt-source-overlay' role='presentation' onMouseDown={(event)=>{if(event.target===event.currentTarget)setSourceOpen(false);}}><section className='nt-source-dialog' role='dialog' aria-modal='true' aria-labelledby='nt-source-title'><div className='nt-source-dialog-head'><SmallLabel>SOURCE REGISTER / THIS CASE</SmallLabel><button id='nt-source-close' type='button' onClick={()=>setSourceOpen(false)} aria-label='Close sources'>CLOSE ×</button></div><h2 id='nt-source-title'>Follow the original record.</h2><p>Curated and reviewed as of {nationCaseAsOf}. These are links to the issuing bodies; we have not integrated a live API for this case.</p>{nationSources.map(source=><article key={source.id}><small>{source.date} / {source.id}</small><h3>{source.title}</h3><p>{source.issuer}</p><a href={source.url} target='_blank' rel='noopener noreferrer'>VIEW ORIGINAL ↗</a></article>)}<h3>What remains uncertain</h3>{nationLearning.map(item=><EvidenceRow key={item.title} {...item}/>)}<button className='nt-close-bottom' type='button' onClick={()=>setSourceOpen(false)}>Close source register</button></section></div>}
   </main>;
