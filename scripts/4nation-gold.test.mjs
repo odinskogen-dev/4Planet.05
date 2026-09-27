@@ -9,7 +9,7 @@ const app = read('src/App.tsx');
 const router = read('src/routes/router.tsx');
 
 test('4NATION source projection is explicit, dated and linked to existing PLACE', () => {
-  assert.match(source,/nationCaseAsOf = '22 September 2026'/);
+  assert.match(source,/nationCaseAsOf = '28 September 2026'/);
   assert.match(source,/PLACES\.find\(\(place\) => place\.id === placeId\('oslofjord'\)\)/);
   assert.match(source,/GOV-NOR-OSLOFJORD-PLAN-2026-HEARING/);
   assert.match(source,/id3166019/);

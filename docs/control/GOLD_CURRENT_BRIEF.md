@@ -463,3 +463,5 @@ SOURCE/TRUTH: Official Norwegian Ministry hearing record re-checked 28 Sep 2026.
 ACCEPTANCE: 4NATION source-state contracts, typecheck/build/smoke/lint, desktop 1440 and mobile 390/430 browser journey, primary-source access, people/institution views, six lenses, timeline disclosure, ATLAS embed/full route and progressive source-tool disclosure must pass. Human craft/Founder visual review remains distinct from maker implementation.
 
 ROLLBACK: revert the bounded 4NATION 07 commit(s). Existing public 4nation.org Worker stays pinned to its previously verified immutable UX06 origin until a separately authorised exact tested artifact is promoted.
+
+QA CORRECTION / 28 SEP 2026: 4NATION source-date contract advanced with the verified snapshot from 22 Sep to 28 Sep; no political status, deadline, source identity or decision semantics changed.
