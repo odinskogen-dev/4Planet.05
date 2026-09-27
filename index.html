@@ -57,7 +57,17 @@
           }
           if (fallback || !document.body) return;
 
-          let signedIn = false;
+          const a = document.createElement("a");
+          a.dataset.fourplanetIdEntry = "static";
+          a.href = "https://id.4planet.org/login?return_to=" + encodeURIComponent(location.href);
+          a.textContent = "LOG IN";
+          a.setAttribute("aria-label", "Log in with 4PLANET ID");
+          a.style.cssText = "position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:1090;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08);backdrop-filter:blur(14px)";
+          fallback = a;
+          document.body.appendChild(a);
+
+          // Never delay the visible identity entry while auth storage hydrates.
+          // Upgrade it to ACCOUNT asynchronously when a local session exists.
           try {
             if (window.supabase?.createClient) {
               const sb = window.supabase.createClient(
@@ -65,20 +75,14 @@
                 "sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE",
                 { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
               );
-              const result = await sb.auth.getSession();
-              signedIn = Boolean(result?.data?.session);
+              sb.auth.getSession().then((result) => {
+                if (!fallback || !result?.data?.session) return;
+                fallback.href = "https://id.4planet.org/account?return_to=" + encodeURIComponent(location.href);
+                fallback.textContent = "4PLANET ID";
+                fallback.setAttribute("aria-label", "Open 4PLANET ID account");
+              }).catch(() => {});
             }
           } catch {}
-
-          const destination = signedIn ? "account" : "login";
-          const a = document.createElement("a");
-          a.dataset.fourplanetIdEntry = "static";
-          a.href = "https://id.4planet.org/" + destination + "?return_to=" + encodeURIComponent(location.href);
-          a.textContent = signedIn ? "4PLANET ID" : "LOG IN";
-          a.setAttribute("aria-label", signedIn ? "Open 4PLANET ID account" : "Log in with 4PLANET ID");
-          a.style.cssText = "position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:1090;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08);backdrop-filter:blur(14px)";
-          fallback = a;
-          document.body.appendChild(a);
         }
 
         const observer = new MutationObserver(() => {
