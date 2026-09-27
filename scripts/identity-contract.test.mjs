@@ -30,3 +30,19 @@ test("cross-domain handoff is one-time and excludes oddekalv.org", () => {
   assert.match(client, /oddekalv\.org/);
   assert.match(client, /target\.hostname\.endsWith\("oddekalv\.org"\)/);
 });
+
+
+test("canonical ID client can hand off to every priority product host accepted by the bridge", () => {
+  for (const host of [
+    "4planet.org",
+    "4sapien.com",
+    "s4piens.com",
+    "4brands.org",
+    "4planetatlas.com",
+    "4species.com",
+    "labs.4planet.org",
+    "4brain.app",
+  ]) {
+    assert.ok(client.includes(`"${host}"`), `trusted host missing: ${host}`);
+  }
+});
