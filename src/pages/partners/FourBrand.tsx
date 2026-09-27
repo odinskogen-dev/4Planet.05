@@ -77,6 +77,25 @@ const DECISION_STATES: DecisionState[] = [
   "MEASURED", "VALUE ATTRIBUTION REVIEWED", "REALISED", "NOT REALISED", "LEARNING",
 ];
 
+type ScenarioState = {
+  revenueDelta: string;
+  marginDelta: string;
+  horizon: string;
+};
+
+const INITIAL_SCENARIO: ScenarioState = {
+  revenueDelta: "10",
+  marginDelta: "0",
+  horizon: "12 months",
+};
+
+function parseScenarioNumber(value: string) {
+  const normalized = value.trim().replace(/\s/g, "").replace(/,/g, ".").replace(/[^0-9.-]/g, "");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function storageKey(kind: "twin" | "ledger", companyName: string) {
   return `4brands:${kind}:${companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
@@ -188,6 +207,22 @@ export default function FourBrand() {
   const [twin, setTwin] = useState<TwinState>(EMPTY_TWIN);
   const [ledger, setLedger] = useState<LedgerState>({});
   const [saveState, setSaveState] = useState<"IDLE" | "SAVED">("IDLE");
+  const [scenario, setScenario] = useState<ScenarioState>(INITIAL_SCENARIO);
+
+  const baselineRevenue = parseScenarioNumber(twin.annualRevenue);
+  const baselineMargin = parseScenarioNumber(twin.grossMargin);
+  const revenueDelta = parseScenarioNumber(scenario.revenueDelta) ?? 0;
+  const marginDelta = parseScenarioNumber(scenario.marginDelta) ?? 0;
+  const scenarioRevenue = baselineRevenue !== null && baselineRevenue > 0
+    ? baselineRevenue * (1 + revenueDelta / 100)
+    : null;
+  const scenarioMargin = baselineMargin !== null ? baselineMargin + marginDelta : null;
+  const baselineGrossProfit = baselineRevenue !== null && baselineMargin !== null
+    ? baselineRevenue * (baselineMargin / 100)
+    : null;
+  const scenarioGrossProfit = scenarioRevenue !== null && scenarioMargin !== null
+    ? scenarioRevenue * (scenarioMargin / 100)
+    : null;
 
   const sourceCount = useMemo(() => analysis?.evidence.length ?? 0, [analysis]);
   const leadMetrics = useMemo(() => analysis?.economicBaseline.slice(0, 4) ?? [], [analysis]);
@@ -309,12 +344,18 @@ export default function FourBrand() {
         .fb-studio-preview h4{font:500 clamp(40px,5vw,74px)/.93 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.055em;margin:0 0 18px}
         .fb-studio-preview p{font-size:15px;line-height:1.5;color:#d3d3d3;margin:0;max-width:680px}
         .fb-studio-preview footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #393939;padding-top:16px;font:9px "Fragment Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;color:#aaa}
+        .fb-architecture{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #0a0a0a;border-bottom:1px solid #0a0a0a;margin:0 clamp(24px,6vw,96px);background:#fff}
+        .fb-architecture a{display:block;min-height:152px;padding:18px;text-decoration:none;color:#111;border-right:1px solid #d9d9d4}.fb-architecture a:last-child{border-right:0}
+        .fb-architecture span{font:9px "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#777}.fb-architecture strong{display:block;font:500 20px/1.08 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.025em;margin:18px 0 9px}.fb-architecture p{font-size:11px;line-height:1.45;color:#666;margin:0}
+        .fb-brain-layer{margin:28px 0 0;padding:28px 0 0;border-top:1px solid #0a0a0a;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:42px}.fb-brain-layer h3{font:500 clamp(28px,4vw,50px)/1 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.045em;margin:5px 0 0}.fb-brain-layer p{font-size:13px;line-height:1.55;color:#555;margin:0}
+        .fb-future{margin-top:72px;padding-top:32px;border-top:1px solid #0a0a0a}.fb-future__head{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:42px;margin-bottom:26px}.fb-future__head h3{font:500 clamp(34px,5vw,64px)/.98 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.05em;margin:6px 0 0}.fb-future__head p{font-size:13px;line-height:1.55;color:#555;margin:0}
+        .fb-future-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #0a0a0a;border-left:1px solid #d4d4ce;background:#fff}.fb-scenario-control,.fb-scenario-result{padding:18px;border-right:1px solid #d4d4ce;border-bottom:1px solid #d4d4ce;min-height:132px}.fb-scenario-control label,.fb-scenario-result span{display:block;font:9px/1.25 "Fragment Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;color:#777;margin-bottom:14px}.fb-scenario-control input,.fb-scenario-control select{width:100%;box-sizing:border-box;border:0;border-bottom:1px solid #aaa;background:transparent;padding:8px 0;font:500 21px/1.1 "Instrument Sans",system-ui,sans-serif;color:#111;outline:0}.fb-scenario-result strong{display:block;font:500 25px/1.05 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.035em;margin-bottom:8px}.fb-scenario-result p{font-size:10px;line-height:1.45;color:#666;margin:0}.fb-future-law{margin-top:14px;font:9px/1.55 "Fragment Mono",ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:#666}
         .fb-model-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #0a0a0a;border-bottom:1px solid #0a0a0a;margin:0 clamp(24px,6vw,96px)}
         .fb-model-strip article{padding:18px 18px 22px;border-right:1px solid #d9d9d4}.fb-model-strip article:last-child{border-right:0}
         .fb-model-strip span{font:9px "Fragment Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#777}
         .fb-model-strip strong{display:block;font:500 17px/1.28 "Instrument Sans",system-ui,sans-serif;margin-top:9px;color:#111}
-        @media(max-width:1100px){.fb-twin-boards{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-twin-form{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-model-strip{grid-template-columns:repeat(2,1fr)}.fb-model-strip article:nth-child(2){border-right:0}}
-        @media(max-width:720px){.fb-twin__head,.fb-ledger__head,.fb-studio{grid-template-columns:1fr}.fb-twin-form,.fb-twin-boards,.fb-model-strip{grid-template-columns:1fr}.fb-twin-field--wide{grid-column:auto}.fb-twin-board{min-height:auto}.fb-model-strip article{border-right:0;border-bottom:1px solid #d9d9d4}.fb-ledger-row{grid-template-columns:34px 1fr}.fb-ledger-row select{grid-column:2}.fb-twin-actions{align-items:flex-start;flex-direction:column}.fb-studio-preview{min-height:360px}}
+        @media(max-width:1100px){.fb-twin-boards{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-twin-form{grid-template-columns:repeat(2,minmax(0,1fr))}.fb-architecture,.fb-future-grid,.fb-model-strip{grid-template-columns:repeat(2,1fr)}.fb-architecture a:nth-child(2){border-right:0}.fb-model-strip article:nth-child(2){border-right:0}.fb-brain-layer,.fb-future__head{grid-template-columns:1fr}}
+        @media(max-width:720px){.fb-twin__head,.fb-ledger__head,.fb-studio{grid-template-columns:1fr}.fb-twin-form,.fb-twin-boards,.fb-architecture,.fb-future-grid,.fb-model-strip{grid-template-columns:1fr}.fb-twin-field--wide{grid-column:auto}.fb-twin-board{min-height:auto}.fb-architecture a,.fb-model-strip article{border-right:0;border-bottom:1px solid #d9d9d4}.fb-ledger-row{grid-template-columns:34px 1fr}.fb-ledger-row select{grid-column:2}.fb-twin-actions{align-items:flex-start;flex-direction:column}.fb-studio-preview{min-height:360px}}
       `}</style>
 
       <nav className="fb-nav" aria-label="4BRANDS">
@@ -323,8 +364,15 @@ export default function FourBrand() {
         <a href="#company-twin" className="fb-nav__link">BUILD YOUR TWIN</a>
       </nav>
 
+      <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
+        <a href="#company-analysis"><span>00 / COMPANY ANALYSIS</span><strong>Understand from the outside.</strong><p>Free public, source-aware company analysis and value discovery.</p></a>
+        <a href="#company-brain"><span>01 / COMPANY BRAIN</span><strong>Remember what the company learns.</strong><p>Permission-aware knowledge, decisions, playbooks and durable learning.</p></a>
+        <a href="#company-twin"><span>02 / COMPANY TWIN</span><strong>Model the company now.</strong><p>Current objectives, economics, customers, operations, constraints and decisions.</p></a>
+        <a href="#future-engine"><span>03 / FUTURE ENGINE</span><strong>Explore what could happen.</strong><p>Explicit assumptions and scenarios before action. Scenario is never fact or forecast.</p></a>
+      </section>
+
       {!analysis && (
-        <section className="fb-entry">
+        <section className="fb-entry" id="company-analysis">
           <div className="fb-entry__copy">
             <p className="fb-eyebrow">4BRANDS / COMPANY VALUE INTELLIGENCE</p>
             <h1>Make the company<br />better.</h1>
@@ -447,6 +495,10 @@ export default function FourBrand() {
               <div className="fb-twin-field"><label htmlFor="twin-constraint">Primary operating constraint</label><input id="twin-constraint" value={twin.primaryConstraint} onChange={(e) => { setTwin({ ...twin, primaryConstraint: e.target.value }); setSaveState("IDLE"); }} placeholder="What is currently limiting value?" /></div>
               <div className="fb-twin-field fb-twin-field--wide"><label htmlFor="twin-notes">Internal context / unknowns</label><textarea id="twin-notes" rows={2} value={twin.notes} onChange={(e) => { setTwin({ ...twin, notes: e.target.value }); setSaveState("IDLE"); }} placeholder="What public data cannot know about this company?" /></div>
             </div>
+            <div className="fb-brain-layer" id="company-brain">
+              <div><p className="fb-eyebrow">01 / COMPANY BRAIN</p><h3>The company that remembers.</h3></div>
+              <p>Authenticated company knowledge persists across sessions and devices with workspace membership, provenance and audit. Public analysis can enter the Brain as source-derived context; internal input remains company-owned truth. Durable learning should be reviewed and written back instead of disappearing in email, meetings or chat.</p>
+            </div>
             <CompanyBrainControls
               companyName={analysis.company.name}
               legalName={analysis.company.legalName}
@@ -494,6 +546,45 @@ export default function FourBrand() {
                 </div>
               ))}
             </div>
+
+            <section className="fb-future" id="future-engine" aria-label="4BRANDS Future Engine">
+              <div className="fb-future__head">
+                <div><p className="fb-eyebrow">03 / FUTURE ENGINE / BETA</p><h3>Explore the decision before you make it.</h3></div>
+                <p>Change explicit assumptions and inspect a deterministic scenario against the company baseline. This first engine is arithmetic, not an AI forecast. Future models can add causal drivers, distributions and learned company-specific parameters only when evidence supports them.</p>
+              </div>
+              <div className="fb-future-grid">
+                <div className="fb-scenario-control">
+                  <label htmlFor="scenario-revenue">Revenue change assumption (%)</label>
+                  <input id="scenario-revenue" inputMode="decimal" value={scenario.revenueDelta} onChange={(e) => setScenario({ ...scenario, revenueDelta: e.target.value })} />
+                </div>
+                <div className="fb-scenario-control">
+                  <label htmlFor="scenario-margin">Margin change assumption (pp)</label>
+                  <input id="scenario-margin" inputMode="decimal" value={scenario.marginDelta} onChange={(e) => setScenario({ ...scenario, marginDelta: e.target.value })} />
+                </div>
+                <div className="fb-scenario-control">
+                  <label htmlFor="scenario-horizon">Scenario horizon</label>
+                  <select id="scenario-horizon" value={scenario.horizon} onChange={(e) => setScenario({ ...scenario, horizon: e.target.value })}>
+                    <option>3 months</option><option>12 months</option><option>24 months</option><option>36 months</option>
+                  </select>
+                </div>
+                <div className="fb-scenario-result">
+                  <span>Scenario revenue · {scenario.horizon}</span>
+                  <strong>{scenarioRevenue === null ? "ADD NUMERIC BASELINE" : scenarioRevenue.toLocaleString("en-GB", { maximumFractionDigits: 0 })}</strong>
+                  <p>Baseline revenue × explicit revenue-change assumption. Currency follows the company baseline; no currency is inferred.</p>
+                </div>
+                <div className="fb-scenario-result">
+                  <span>Scenario margin</span>
+                  <strong>{scenarioMargin === null ? "ADD NUMERIC MARGIN" : `${scenarioMargin.toFixed(1)}%`}</strong>
+                  <p>Current gross/contribution margin + explicit percentage-point assumption.</p>
+                </div>
+                <div className="fb-scenario-result">
+                  <span>Illustrative gross-profit delta</span>
+                  <strong>{baselineGrossProfit === null || scenarioGrossProfit === null ? "INSUFFICIENT BASELINE" : (scenarioGrossProfit - baselineGrossProfit).toLocaleString("en-GB", { maximumFractionDigits: 0 })}</strong>
+                  <p>Only computed when both revenue and margin baselines are numeric. This is a scenario calculation, not realised value.</p>
+                </div>
+              </div>
+              <p className="fb-future-law">FACT ≠ ASSUMPTION ≠ SCENARIO ≠ FORECAST ≠ OBSERVED RESULT ≠ ATTRIBUTED VALUE. Every future model must preserve this boundary.</p>
+            </section>
 
             <div className="fb-studio">
               <div className="fb-studio__copy">
