@@ -108,6 +108,12 @@ export const onRequestGet=async(ctx:PagesContext):Promise<Response>=>{
           publisher:"Statistisk sentralbyrå (SSB)",
           api:"PxWebApi v2",
           license:"CC BY 4.0",
+          commercialReuse:"PERMITTED_WITH_ATTRIBUTION",
+          attribution:"Statistisk sentralbyrå (SSB)",
+          redistribution:"PERMITTED_WITH_CC_BY_4_0_ATTRIBUTION",
+          accessCost:"FREE_OPEN_DATA_API",
+          maxExtract:"800000 data cells per documented SSB limit",
+          canonicalObjectMapping:"statistical-table:ssb:<tableId>",
           retrievedAt:new Date().toISOString(),
           cacheState:infoRes.cacheState===dataRes.cacheState?infoRes.cacheState:"MIXED",
           rateLimit:"30 queries/minute documented by SSB; 4PLANET caches table metadata/default extracts for 15 minutes.",
@@ -123,7 +129,7 @@ export const onRequestGet=async(ctx:PagesContext):Promise<Response>=>{
       const tables=rows.map(normalizeSsbTable).filter(Boolean).slice(0,8);
       return json({
         ok:true,state:tables.length?"TABLE_CANDIDATES":"NO_MATCH",query:q,tables,
-        source:{publisher:"Statistisk sentralbyrå (SSB)",api:"PxWebApi v2",license:"CC BY 4.0",retrievedAt:new Date().toISOString(),cacheState},
+        source:{publisher:"Statistisk sentralbyrå (SSB)",api:"PxWebApi v2",license:"CC BY 4.0",commercialReuse:"PERMITTED_WITH_ATTRIBUTION",attribution:"Statistisk sentralbyrå (SSB)",accessCost:"FREE_OPEN_DATA_API",rateLimit:"30 queries/minute",cachePolicy:"4PLANET cache 15 minutes",retrievedAt:new Date().toISOString(),cacheState},
         truthBoundary:"Table search is discovery only. 4PLANET does not select a statistic as evidence for a decision until the user opens and evaluates the table context.",
       });
     }

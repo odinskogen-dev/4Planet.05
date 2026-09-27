@@ -128,6 +128,12 @@ export const onRequestGet=async({request}:PagesContext):Promise<Response>=>{
         endpoint:TED_SEARCH,
         retrievedAt:new Date().toISOString(),
         access:"ANONYMOUS_PUBLISHED_NOTICE_SEARCH",
+        license:"EU_REUSE_POLICY — procurement notices freely reusable for commercial or non-commercial purposes unless otherwise noted; SIMAP metadata CC0",
+        commercialReuse:"PERMITTED_UNLESS_OTHERWISE_NOTED",
+        attribution:"Publications Office of the European Union / TED; original notice link retained",
+        cachePolicy:"4PLANET response cache 15 minutes; source notice remains authoritative",
+        accessCost:"FREE_ANONYMOUS_SEARCH_API",
+        rateLimit:"NOT_STATED_IN_THIS_ADAPTER; bounded to 24 active results per user query",
       },
       coverage:{
         doffin:"NOT_CONNECTED_IN_THIS_SLICE",
