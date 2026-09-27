@@ -37,9 +37,13 @@ jobs:
             const browser=await engine.launch();
             const page=await browser.newPage({viewport:{width:390,height:844}});
             for(const url of hosts){
+              console.log('CHECK '+url);
               const resp=await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
               if(resp?.status()!==200) throw new Error(url+' HTTP '+resp?.status());
               const login=page.getByText('LOG IN',{exact:true});
+              const count=await login.count();
+              const body=(await page.locator('body').innerText()).slice(0,500);
+              console.log(JSON.stringify({url,status:resp?.status(),loginCount:count,title:await page.title(),body}));
               await login.first().waitFor({timeout:10000});
               await login.first().click();
               await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?/,{timeout:10000});
