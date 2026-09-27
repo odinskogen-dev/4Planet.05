@@ -259,3 +259,10 @@
  .nt-why-compact p{font-size:15px}
  .nt-family-row{gap:10px 18px;font-size:9px}
 }
+
+/* DATA VALUE CONVERGENCE 01 — live neutral Stortinget case discovery */
+.nt-live-cases{margin:28px 0 34px;padding:clamp(22px,4vw,40px);border:1px solid var(--nt-line,#d7d7d0);background:#fff}
+.nt-live-cases-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start}.nt-live-cases-head h3{font-size:clamp(30px,4vw,52px);letter-spacing:-.045em;margin:10px 0 12px}.nt-live-cases-head p{max-width:760px;line-height:1.55;color:#555}.nt-live-cases-head>span{font:10px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.nt-live-search{display:grid;gap:7px;margin-top:24px}.nt-live-search>div{display:flex;gap:8px}.nt-live-search input{flex:1;min-height:46px;border:1px solid #bbb;padding:0 13px;background:#fff;color:#111}.nt-live-search button{min-height:46px;border:1px solid #111;background:#111;color:#fff;padding:0 16px;cursor:pointer}.nt-live-search button:disabled{opacity:.45}
+.nt-live-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin-top:22px;background:#ddd;border:1px solid #ddd}.nt-live-results article{background:#fff;padding:18px;display:grid;gap:9px}.nt-live-results article>div{display:flex;justify-content:space-between;gap:12px;font:9px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;color:#666}.nt-live-results h4{font-size:19px;margin:4px 0}.nt-live-results p,.nt-live-results small,.nt-live-limit,.nt-live-state{font-size:11px;line-height:1.5;color:#666}.nt-live-results a{font:10px ui-monospace,SFMono-Regular,Menlo,monospace;color:#2255cc;margin-top:5px}.nt-live-limit{margin-top:14px;max-width:900px}
+@media(max-width:720px){.nt-live-cases-head{grid-template-columns:1fr}.nt-live-results{grid-template-columns:1fr}.nt-live-search>div{flex-direction:column}}

@@ -1,3 +1,25 @@
+# DATA VALUE CONVERGENCE 01 — 4NATION / STORTINGET LIVE CASE DISCOVERY — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / NEUTRAL SOURCE DISCOVERY / PUBLIC 4NATION RELEASE UNTOUCHED.
+
+**AUTHORITY:** current 4NATION curated Oslofjord case remains unchanged. The live production Worker remains pinned to the previously founder-reviewed immutable artifact; this change affects the current HEIR candidate only.
+
+**SOURCE:** Stortinget Open Data `/eksport/saker?format=JSON`, current session. Stortinget supports JSON/XML reuse without registration, requires Stortinget attribution under NLOD, and documents a 100-call/minute limit. 4PLANET caches the source session snapshot for ten minutes.
+
+**CANONICAL OBJECT:** `public-decision:stortinget:<sakid>` retains Stortinget case ID, exact source status, case type, document group, committee, subjects, source update time and exact source-record URL.
+
+**NEUTRALITY / TRUTH:** the finder performs bounded text filtering only. It does not rank options, infer ideology, recommend policy, assess political actors, or convert a case into adopted/implemented policy. Source status remains the authority.
+
+**COVERAGE:** current parliamentary session only. It is not all Norwegian public decisions, government implementation, municipal/regional decisions or measured outcomes.
+
+**BEFORE → AFTER VALUE:** users can now move from one curated 4NATION case to a live, original-source search of current parliamentary cases while retaining procedural status and provenance.
+
+**NO DUPLICATE SYSTEM:** no new public-decision database, BRAIN or political knowledge store. One read-through cached adapter plus the existing 4NATION surface.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke incl. `nation-stortinget-contract.test.mjs`, 4NATION QA/browser proof, neutrality/truth boundaries. No production release.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — PUBLIC PROCUREMENT DEMAND SIGNALS — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / TED ACTIVE-NOTICE DISCOVERY / DOFFIN ACCESS GATE OPEN.
