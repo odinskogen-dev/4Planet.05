@@ -17,7 +17,7 @@ permissions:
 
 concurrency:
   group: fourplanet-id-canonical-live
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   PAGES_PROJECT: 4planet-05
@@ -68,6 +68,8 @@ jobs:
           test -n "$aid" && test -n "$zid"
           project="$(curl -fsS "$api/accounts/$aid/pages/projects/$PAGES_PROJECT" "${auth[@]}")"
           jq -e --arg branch "$RELEASE_BRANCH" '.success==true and .result.production_branch==$branch' <<<"$project" >/dev/null
+          target="$(jq -r '.result.subdomain // empty' <<<"$project")"
+          test -n "$target"
           workers="$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")"
           jq -e --arg h "$ID_DOMAIN" '([.result[]? | select(.hostname==$h)] | length)==0' <<<"$workers" >/dev/null || {
             echo "Refusing to steal ID hostname from Worker authority"; exit 11;
@@ -75,6 +77,7 @@ jobs:
           echo "token=$token" >> "$GITHUB_OUTPUT"
           echo "account=$aid" >> "$GITHUB_OUTPUT"
           echo "zone=$zid" >> "$GITHUB_OUTPUT"
+          echo "target=$target" >> "$GITHUB_OUTPUT"
 
       - name: Deploy exact identity release to existing Pages authority
         env:
@@ -88,10 +91,24 @@ jobs:
         env:
           TOKEN: ${{ steps.cf.outputs.token }}
           AID: ${{ steps.cf.outputs.account }}
+          ZID: ${{ steps.cf.outputs.zone }}
+          PAGES_TARGET: ${{ steps.cf.outputs.target }}
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+
+          records="$(curl -fsS "$api/zones/$ZID/dns_records?name=$ID_DOMAIN&per_page=100" "${auth[@]}")"
+          count="$(jq -r '.result | length' <<<"$records")"
+          if [ "$count" = "0" ]; then
+            payload="$(jq -nc --arg name "id" --arg target "$PAGES_TARGET" '{type:"CNAME",name:$name,content:$target,ttl:1,proxied:true}')"
+            created_dns="$(curl -fsS -X POST "$api/zones/$ZID/dns_records" "${auth[@]}" --data "$payload")"
+            jq -e '.success==true' <<<"$created_dns" >/dev/null
+          else
+            matching="$(jq -r --arg target "$PAGES_TARGET" '[.result[]? | select(.type=="CNAME" and .content==$target and .proxied==true)] | length' <<<"$records")"
+            [ "$matching" != "0" ] || { echo "Refusing to overwrite conflicting id.4planet.org DNS"; jq -c '.result[] | {type,name,content,proxied}' <<<"$records"; exit 13; }
+          fi
+
           domains="$(curl -fsS "$api/accounts/$AID/pages/projects/$PAGES_PROJECT/domains" "${auth[@]}")"
           if ! jq -e --arg h "$ID_DOMAIN" '.result[]? | select(.name==$h)' <<<"$domains" >/dev/null; then
             payload="$(jq -nc --arg h "$ID_DOMAIN" '{name:$h}')"
