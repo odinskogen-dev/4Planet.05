@@ -29,13 +29,14 @@ function runWrapper({ exitCode, text, cwd, pathPrefix }) {
   };
 }
 
-function fakeNode(exitCode, text) {
+function fakeNode(exitCode, text, stream = "stdout") {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "product-authority-exit-"));
   const bin = path.join(dir, "bin");
   fs.mkdirSync(bin);
+  const redirect = stream === "stderr" ? " >&2" : "";
   fs.writeFileSync(
     path.join(bin, "node"),
-    `#!/bin/sh\nprintf '%s\\n' ${JSON.stringify(text)}\nexit ${exitCode}\n`,
+    `#!/bin/sh\nprintf '%s\\n' ${JSON.stringify(text)}${redirect}\nexit ${exitCode}\n`,
     { mode: 0o755 },
   );
   return { dir, bin };
@@ -47,7 +48,7 @@ test("the workflow calls the shared wrapper and does not pipe the gate straight 
   assert.match(source, /bash scripts\/product-authority-enforce\.sh/);
   assert.doesNotMatch(source, /node scripts\/product-authority-gate\.mjs \| tee /);
   assert.match(script, /set -o pipefail/);
-  assert.match(script, /node scripts\/product-authority-gate\.mjs \| tee product-authority-result\.txt/);
+  assert.match(script, /node scripts\/product-authority-gate\.mjs 2>&1 \| tee product-authority-result\.txt/);
 });
 
 test("bash -e without pipefail masks a failing gate piped to tee", () => {
@@ -67,6 +68,14 @@ test("gate exit 1 stays a wrapper failure and the diagnostic is retained", () =>
   assert.equal(result.status, 1);
   assert.match(result.stdout, /PRODUCT AUTHORITY GATE: FAIL — synthetic exit/);
   assert.match(result.file, /PRODUCT AUTHORITY GATE: FAIL — synthetic exit/);
+});
+
+test("gate exit 1 stderr diagnostic is retained in product-authority-result.txt", () => {
+  const { dir, bin } = fakeNode(1, "PRODUCT AUTHORITY GATE: FAIL — stderr stream", "stderr");
+  const result = runWrapper({ cwd: dir, pathPrefix: bin });
+  assert.equal(result.status, 1);
+  assert.match(result.file, /PRODUCT AUTHORITY GATE: FAIL — stderr stream/);
+  assert.match(result.stdout, /PRODUCT AUTHORITY GATE: FAIL — stderr stream/);
 });
 
 test("gate exit 0 stays wrapper success and the diagnostic is retained", () => {
