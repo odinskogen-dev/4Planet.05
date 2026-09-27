@@ -1,11 +1,11 @@
-import {FormEvent,useState} from 'react';
-import {sendCompanyBrainMagicLink} from '@/product/FourBrandBrainClient';
+import { identityLoginUrl } from "@/identity/identityClient";
 
 export default function CompanyBrainSignIn({onMessage}:{onMessage:(message:string)=>void}){
- const[email,setEmail]=useState('');const[busy,setBusy]=useState(false);
- async function submit(event:FormEvent){event.preventDefault();setBusy(true);try{await sendCompanyBrainMagicLink(email);onMessage('Sign-in link sent. Existing 4PLANET accounts only; no account is silently created.')}catch(cause){onMessage(cause instanceof Error?cause.message:'Sign-in link failed.')}finally{setBusy(false)}}
- return <form onSubmit={submit} style={{display:'grid',gridTemplateColumns:'minmax(0,360px) auto',gap:8,marginTop:16,maxWidth:620}}>
-  <input type='email' value={email} onChange={event=>setEmail(event.target.value)} placeholder='Work email for existing 4PLANET ID' autoComplete='email' required style={{border:'1px solid #bdbdb7',background:'#fff',padding:'12px',font:'14px Instrument Sans, system-ui, sans-serif'}}/>
-  <button type='submit' disabled={busy}>{busy?'SENDING…':'SIGN IN TO COMPANY BRAIN'}</button>
- </form>
+ const returnTo=typeof window!=="undefined"?window.location.origin+window.location.pathname+"#company-brain":"https://4brands.org/#company-brain";
+ const signIn=identityLoginUrl(returnTo);
+ const signUp=`https://id.4planet.org/login?mode=signup&return_to=${encodeURIComponent(returnTo)}`;
+ return <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:16,alignItems:"center"}}>
+  <a href={signIn} onClick={()=>onMessage("Continue through 4PLANET ID, then return here.")} style={{border:"1px solid #0a0a0a",background:"#0a0a0a",color:"#fff",padding:"12px 14px",textDecoration:"none",font:"10px Fragment Mono, ui-monospace, monospace"}}>SIGN IN WITH 4PLANET ID</a>
+  <a href={signUp} style={{border:"1px solid #bdbdb7",background:"#fff",color:"#111",padding:"12px 14px",textDecoration:"none",font:"10px Fragment Mono, ui-monospace, monospace"}}>CREATE 4PLANET ID</a>
+ </div>;
 }
