@@ -1,6 +1,6 @@
 // 4NATION: host-only public origin for the exact tested Pages artifact.
-const IMMUTABLE_ORIGIN = "https://852b848d.4planet-05.pages.dev";
-const SOURCE_SHA = "1c98ec1e8bb8a4895279c5365a90e01b5e7a0ecd";
+const IMMUTABLE_ORIGIN = "https://82a64686.4planet-05.pages.dev";
+const SOURCE_SHA = "d742f9ee6cc93c3754eb0c077e73109314e0233f";
 const ALLOWED = new Set(["4nation.org", "www.4nation.org"]);
 export default {
   async fetch(request) {
