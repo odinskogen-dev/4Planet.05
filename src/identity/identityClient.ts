@@ -111,6 +111,16 @@ const TRUSTED_HOSTS = new Set([
   "www.4planetmarket.com",
   "4planetmagazine.com",
   "www.4planetmagazine.com",
+  "4planetatlas.com",
+  "www.4planetatlas.com",
+  "labs.4planet.org",
+  "4brain.app",
+  "4species.com",
+  "www.4species.com",
+  "cre4tors.com",
+  "www.cre4tors.com",
+  "n4turetech.com",
+  "www.n4turetech.com",
 ]);
 
 export function safeReturnTo(value: string | null | undefined, fallback = "https://4planet.org/") {
