@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { T } from "@/styles/tokens";
+import { identityAccountUrl, identityLoginUrl } from "@/identity/identityClient";
 
 const SUPABASE_URL = "https://ghvdzetmplqkdtfqiror.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE";
@@ -104,16 +105,22 @@ export function useFourPlanetIdentity() {
 }
 
 export function FourPlanetIdentityProvider({ children }: { children: ReactNode }) {
-  const [client] = useState<SupabaseClient | null>(() =>
-    window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  const [client] = useState<SupabaseClient | null>(() => {
+    try {
+      const legacy = window.localStorage.getItem("4planet.identity.v1");
+      const canonicalKey = "sb-ghvdzetmplqkdtfqiror-auth-token";
+      if (legacy && !window.localStorage.getItem(canonicalKey)) {
+        window.localStorage.setItem(canonicalKey, legacy);
+      }
+    } catch {}
+    return window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: "4planet.identity.v1",
       },
-    }) || null,
-  );
+    }) || null;
+  });
   const [session, setSession] = useState<AuthSession | null>(null);
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState<AuthMode | null>(null);
@@ -163,7 +170,14 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
   }, [client, ensureProfile]);
 
   const openAuth = useCallback((next: AuthMode = "signup") => {
-    setMode(session ? "account" : next);
+    const returnTo = window.location.href;
+    if (session) {
+      window.location.assign(identityAccountUrl(returnTo));
+      return;
+    }
+    const url = new URL(identityLoginUrl(returnTo));
+    if (next === "signup") url.searchParams.set("mode", "signup");
+    window.location.assign(url.href);
   }, [session]);
   const closeAuth = useCallback(() => setMode(null), []);
 
@@ -179,11 +193,11 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
       if (url.origin !== window.location.origin) return;
       if (!["/join", "/members", "/ambassadors"].includes(url.pathname)) return;
       event.preventDefault();
-      setMode(session ? "account" : "signup");
+      openAuth(session ? "account" : "signup");
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [session]);
+  }, [session, openAuth]);
 
   const value = useMemo<IdentityContextValue>(() => ({
     ready,

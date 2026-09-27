@@ -1,4 +1,3 @@
-/* Public header stays visually clean. Identity remains available through the
-   dedicated JOIN / 4PLANET ID entry points, but no account utility is rendered
-   in the global header chrome. */
-.fourplanet-id-utility{display:none!important}
+/* Canonical 4PLANET ID is intentionally visible in global 4PLANET navigation.
+   The provider replaces the legacy JOIN control with LOG IN / JOIN 4PLANET / 4PLANET ID. */
+.fourplanet-id-utility{display:flex!important}

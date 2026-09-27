@@ -1,0 +1,153 @@
+name: 4PLANET ID Canonical Live
+
+on:
+  push:
+    branches: [release/one-interface-sprint2-6bbfebb]
+    paths:
+      - "src/identity/**"
+      - "src/pages/identity/**"
+      - "src/auth/FourPlanetIdentity.tsx"
+      - "src/App.tsx"
+      - "src/styles/identity-polish.css"
+      - ".github/workflows/identity-canonical-live.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourplanet-id-canonical-live
+  cancel-in-progress: false
+
+env:
+  PAGES_PROJECT: 4planet-05
+  RELEASE_BRANCH: release/one-interface-sprint2-6bbfebb
+  ID_DOMAIN: id.4planet.org
+
+jobs:
+  build-deploy-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run prebuild
+      - name: Build exact release
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
+        run: npx vite build
+
+      - name: Resolve Cloudflare authority
+        id: cf
+        shell: bash
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          test -n "$token"
+          token="$(printf '%s' "$token" | tr -d '\r\n')"
+          token="${token#Bearer }"; token="${token#bearer }"
+          echo "::add-mask::$token"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $token" -H "Content-Type: application/json")
+          zone="$(curl -fsS "$api/zones?name=4planet.org&status=active" "${auth[@]}")"
+          aid="$(jq -r '.result[0].account.id // empty' <<<"$zone")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$zone")"
+          test -n "$aid" && test -n "$zid"
+          project="$(curl -fsS "$api/accounts/$aid/pages/projects/$PAGES_PROJECT" "${auth[@]}")"
+          jq -e --arg branch "$RELEASE_BRANCH" '.success==true and .result.production_branch==$branch' <<<"$project" >/dev/null
+          workers="$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")"
+          jq -e --arg h "$ID_DOMAIN" '([.result[]? | select(.hostname==$h)] | length)==0' <<<"$workers" >/dev/null || {
+            echo "Refusing to steal ID hostname from Worker authority"; exit 11;
+          }
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+          echo "account=$aid" >> "$GITHUB_OUTPUT"
+          echo "zone=$zid" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy exact identity release to existing Pages authority
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.cf.outputs.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account }}
+        run: |
+          npx wrangler@4.128.0 pages deploy dist             --project-name "$PAGES_PROJECT"             --branch "$RELEASE_BRANCH"             --commit-hash "$GITHUB_SHA"             --commit-message "4PLANET ID canonical live $GITHUB_SHA"
+
+      - name: Attach id.4planet.org to existing Pages project
+        shell: bash
+        env:
+          TOKEN: ${{ steps.cf.outputs.token }}
+          AID: ${{ steps.cf.outputs.account }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+          domains="$(curl -fsS "$api/accounts/$AID/pages/projects/$PAGES_PROJECT/domains" "${auth[@]}")"
+          if ! jq -e --arg h "$ID_DOMAIN" '.result[]? | select(.name==$h)' <<<"$domains" >/dev/null; then
+            payload="$(jq -nc --arg h "$ID_DOMAIN" '{name:$h}')"
+            created="$(curl -fsS -X POST "$api/accounts/$AID/pages/projects/$PAGES_PROJECT/domains" "${auth[@]}" --data "$payload")"
+            jq -e '.success==true' <<<"$created" >/dev/null
+          fi
+          for attempt in $(seq 1 60); do
+            domains="$(curl -fsS "$api/accounts/$AID/pages/projects/$PAGES_PROJECT/domains" "${auth[@]}")"
+            state="$(jq -r --arg h "$ID_DOMAIN" '.result[]? | select(.name==$h) | .status // empty' <<<"$domains")"
+            [ "$state" = active ] && exit 0
+            sleep 5
+          done
+          echo "ID hostname did not become active"; exit 12
+
+      - run: npx playwright install --with-deps chromium webkit
+
+      - name: Live browser verification on canonical domains
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for (const engine of [chromium, webkit]) {
+            const browser = await engine.launch();
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+            let idReady = false;
+            for (let i=1;i<=30;i++) {
+              try {
+                await page.goto('https://id.4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'networkidle',timeout:60000});
+                await page.getByRole('heading',{name:'Logg inn'}).waitFor({timeout:7000});
+                idReady = true; break;
+              } catch {}
+              await page.waitForTimeout(5000);
+            }
+            if (!idReady) throw new Error('id.4planet.org login surface not live');
+
+            let primaryReady = false;
+            for (let i=1;i<=30;i++) {
+              try {
+                await page.goto('https://4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'networkidle',timeout:60000});
+                await page.getByRole('button',{name:'LOG IN'}).waitFor({timeout:7000});
+                primaryReady = true; break;
+              } catch {}
+              await page.waitForTimeout(5000);
+            }
+            if (!primaryReady) throw new Error('4planet.org canonical login entry not live');
+
+            await page.getByRole('button',{name:'LOG IN'}).click();
+            await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?/,{timeout:10000});
+            const target = await page.locator('.identity-card').getAttribute('data-return-to');
+            if (!target?.startsWith('https://4planet.org/')) throw new Error('original return URL was not preserved');
+
+            await page.goto('https://4planet.org/auth/4planet/callback',{waitUntil:'networkidle'});
+            await page.getByText('Noe gikk galt. Prøv igjen.').waitFor({timeout:10000});
+            await browser.close();
+          }
+          console.log('4PLANET ID LIVE BROWSER PROOF: PASS');
+          NODE

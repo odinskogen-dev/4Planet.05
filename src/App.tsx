@@ -10,6 +10,7 @@ import { ProductRouteAnalytics } from "@/analytics/ProductRouteAnalytics";
 import { PublicCompletionBridge } from "@/components/PublicCompletionBridge";
 import { AtlasReturnCameraAuthority } from "@/earth/AtlasReturnCameraAuthority";
 import { FourPlanetIdentityProvider } from "@/auth/FourPlanetIdentity";
+import IdentityApp from "@/pages/identity/IdentityApp";
 import FourBrandsEconomicV2 from "@/pages/partners/FourBrandsEconomicV2";
 import "@/styles/global.css";
 import "@/styles/species-source-first-read-v01.css";
@@ -30,6 +31,16 @@ function normalisedPath() {
 function hostIs(...hosts: string[]) {
   if (typeof window === "undefined") return false;
   return hosts.includes(window.location.hostname.toLowerCase());
+}
+
+function isIdentitySurface() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  const path = normalisedPath();
+  return host === "id.4planet.org" ||
+    path === "/id" || path.startsWith("/id/") ||
+    path === "/auth/4planet/callback" ||
+    path === "/oauth/consent";
 }
 
 function isFourBrandsHost() {
@@ -79,6 +90,7 @@ function AtlasProductSwitcher() {
 }
 
 export default function App() {
+  if (isIdentitySurface()) return <IdentityApp />;
   if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
   if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsEconomicV2 />;
 
