@@ -162,8 +162,28 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
       record({ kind: "jumpTo", stack: new Error("camera writer").stack, options: args[0] });
       return originalJumpTo.apply(this, args);
     };
-    for (const type of ["wheel", "touchstart", "pointerdown"]) window.addEventListener(type, (event) => {
+    const dimensions = () => {
+      const canvas = map.getCanvas();
+      const container = map.getContainer();
+      return { canvasWidth: canvas.width, canvasHeight: canvas.height,
+        canvasClientWidth: canvas.clientWidth, canvasClientHeight: canvas.clientHeight,
+        containerWidth: container.clientWidth, containerHeight: container.clientHeight };
+    };
+    const originalResize = map.resize;
+    map.resize = function (...args: unknown[]) {
+      record({ kind: "resize-call", stack: new Error("resize caller").stack,
+        dimensions: dimensions(), moving: map.isMoving(), zoom: map.getZoom() });
+      try {
+        return originalResize.apply(this, args);
+      } finally {
+        record({ kind: "resize-return", dimensions: dimensions(),
+          moving: map.isMoving(), zoom: map.getZoom() });
+      }
+    };
+    for (const type of ["wheel", "touchstart", "touchend", "touchcancel", "pointerdown"]) window.addEventListener(type, (event) => {
       record({ kind: event.type, trusted: event.isTrusted,
+        eventTime: event.timeStamp,
+        touches: "touches" in event ? (event as TouchEvent).touches.length : null,
         target: (event.target as Element)?.tagName,
         canvasInPath: event.composedPath().includes(map.getCanvas()) });
     }, { capture: true, passive: true });
