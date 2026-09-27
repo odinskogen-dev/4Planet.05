@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — 4NATION / SSB STATISTICAL CONTEXT — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / OFFICIAL STATISTICAL DISCOVERY + DEFAULT EXTRACT / PUBLIC LIVE UNTOUCHED.
+
+**SOURCE:** Statistics Norway PxWebApi v2. Search uses `/tables?query=...`; selected tables use `/tables/{id}` and the source-defined default/latest `/data` extract. SSB documents open access without registration, CC BY 4.0, 30 queries/minute and 800,000-cell extract limits. 4PLANET caches metadata/default extracts for fifteen minutes.
+
+**CANONICAL OBJECT:** `statistical-table:ssb:<5-digit-table-id>`. Returned data retain table label/update/periods/dimensions plus JSON-stat2 coordinates, cell values and source status markers.
+
+**USER LAW:** the user chooses the table. 4NATION does not silently decide which statistic proves or disproves a public policy. Default extracts are context, not causal models.
+
+**TRUTH BOUNDARY:** null/status/confidential values stay explicit. Units, dimensions, table metadata and footnotes remain necessary context. Statistical association does not establish policy causation or measured implementation outcome.
+
+**BEFORE → AFTER:** a 4NATION user can move from a public case to official measurable context, inspect the latest default source extract and open the original SSB table without model-generated statistics.
+
+**NO DUPLICATE SYSTEM:** read-through shared source adapter; no statistical warehouse or parallel public-decision store.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke incl. `nation-ssb-contract.test.mjs`, 4NATION QA/browser proof, no production release.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — 4NATION / STORTINGET LIVE CASE DISCOVERY — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / NEUTRAL SOURCE DISCOVERY / PUBLIC 4NATION RELEASE UNTOUCHED.
