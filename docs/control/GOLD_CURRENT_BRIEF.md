@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — 4SAPIEN FOOD / MATVARETABELLEN — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / USER-FACING / NO LIVE RELEASE CLAIM.
+
+**HUMAN TRUTH:** a branded grocery product and a generic food-composition reference are different objects. Name similarity is not provenance.
+
+**SAME-COMMIT CHANGE:** add a server-side Matvaretabellen reference gateway over the official Norwegian foods dataset, with a bounded 30-day Cloudflare edge snapshot, source/version metadata and explicit attribution. Add a FOOD UI seam where the user searches Matvaretabellen and explicitly confirms a generic reference for the current GTIN. No candidate is auto-selected. The confirmed relation is recoverable on the same device only and is visibly NOT Personal Brain or shared PLANETBRAIN truth.
+
+**SOURCE:** Mattilsynet / Matvaretabellen official API `/api/nb/foods.json`. Source docs state annual autumn updates, few/no changes during the rest of the year, local caching is safe, and Matvaretabellen should be cited.
+
+**TRUTH BOUNDARY:** branded product facts continue to come from product-specific evidence. Generic composition values never overwrite GTIN identity, ingredients, allergens, price or product-specific nutrition. A user-confirmed generic reference is a relationship assertion with provenance, not proof that both compositions are identical.
+
+**BEFORE → AFTER USER VALUE:** before, the FOOD surface could inspect a branded product but had no official Norwegian generic composition context. After, a user can inspect a product, deliberately connect it to an official generic food reference, see source-linked nutrient values, remove the join, and receive local return value on revisit.
+
+**NO DUPLICATE SYSTEM:** no new database, BRAIN, Source Registry or product engine. Existing FOOD route + existing Cloudflare function plane + local non-canonical recovery only.
+
+**ACCEPTANCE:** exact-head typecheck, build, smoke including `food-matvaretabellen-contract.test.mjs`, lint and browser product proof. No LIVE/Gold claim until gates prove it.
+
+---
+
 # 4PLANET MARKET — ATTRIBUTED PURCHASE PATH 01 / 27 SEP 2026
 
 **STATUS:** HEIR / TEST CANDIDATE / NO FALSE PURCHASE CLAIM

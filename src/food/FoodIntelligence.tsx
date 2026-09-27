@@ -59,9 +59,43 @@ interface BarcodeDetectorConstructor {
   new (options: { formats: string[] }): BarcodeDetectorInstance;
 }
 
+interface GenericNutrientRef {
+  nutrientId?: string;
+  quantity: number;
+  unit: string | null;
+  sourceId: string | null;
+}
+
+interface GenericFoodReference {
+  foodId: string;
+  foodName: string;
+  foodGroupId: string | null;
+  searchKeywords: string[];
+  nutritionPer100: Record<string, GenericNutrientRef | null>;
+}
+
+interface GenericReferenceEnvelope {
+  ok: boolean;
+  source?: {
+    id: string;
+    publisher: string;
+    exactDataset: string;
+    retrievedAt: string;
+    sourceVersion: string;
+    attribution: string;
+    scope: string;
+    truthBoundary: string;
+  };
+  query?: string;
+  matches?: GenericFoodReference[];
+  food?: GenericFoodReference | null;
+  error?: string;
+}
+
 const DEFAULT_BARCODE = "7038010055652";
 const RAW_PREFIX = "p18:food:raw:v1";
 const PREFS_KEY = "p18:food:preferences:v1";
+const GENERIC_REF_PREFIX = "p18:food:generic-reference:v1";
 
 const initialPreferences: Required<FoodPreferences> = {
   avoidAllergens: [],
@@ -195,6 +229,140 @@ function ProductCard({ product }: { product: CanonicalFoodProduct }) {
           <div><dt>Fibre</dt><dd>{formatNumber(product.nutrients.fibre)}</dd></div>
         </dl>
       </div>
+    </section>
+  );
+}
+
+function nutrientText(value: GenericNutrientRef | null | undefined) {
+  if (!value) return "Not available";
+  return `${value.quantity.toLocaleString("nb-NO", { maximumFractionDigits: 1 })} ${value.unit || ""}`.trim();
+}
+
+function GenericFoodReferencePanel({ product }: { product: CanonicalFoodProduct }) {
+  const storageKey = `${GENERIC_REF_PREFIX}:${product.gtin}`;
+  const [query, setQuery] = useState(product.name || "");
+  const [matches, setMatches] = useState<GenericFoodReference[]>([]);
+  const [selected, setSelected] = useState<GenericFoodReference | null>(null);
+  const [source, setSource] = useState<GenericReferenceEnvelope["source"] | null>(null);
+  const [status, setStatus] = useState<"IDLE" | "SEARCHING" | "READY" | "ERROR" | "RETURNED">("IDLE");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { food?: GenericFoodReference; source?: GenericReferenceEnvelope["source"]; confirmedAt?: string };
+      if (saved?.food?.foodId && saved?.food?.foodName) {
+        setSelected(saved.food);
+        setSource(saved.source ?? null);
+        setStatus("RETURNED");
+      }
+    } catch {
+      // Local recovery is optional and never canonical.
+    }
+  }, [storageKey]);
+
+  const runSearch = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const q = query.trim();
+    if (q.length < 2) return;
+    setStatus("SEARCHING");
+    setMatches([]);
+    try {
+      const response = await fetch(`/api/food-reference?q=${encodeURIComponent(q)}`, { headers: { accept: "application/json" } });
+      const payload = await response.json() as GenericReferenceEnvelope;
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "Reference source unavailable");
+      setMatches(Array.isArray(payload.matches) ? payload.matches : []);
+      setSource(payload.source ?? null);
+      setStatus("READY");
+    } catch {
+      setStatus("ERROR");
+    }
+  };
+
+  const confirm = (food: GenericFoodReference) => {
+    setSelected(food);
+    setMatches([]);
+    setStatus("READY");
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        food,
+        source,
+        confirmedAt: new Date().toISOString(),
+        relation: "USER_CONFIRMED_GENERIC_REFERENCE",
+        brandedProductGtin: product.gtin,
+      }));
+    } catch {
+      // UI still works if local recovery is unavailable.
+    }
+  };
+
+  const remove = () => {
+    setSelected(null);
+    setStatus("IDLE");
+    try { localStorage.removeItem(storageKey); } catch { /* optional local recovery */ }
+  };
+
+  return (
+    <section className="food-card food-generic-reference" aria-labelledby="food-generic-title">
+      <div className="food-generic-reference__head">
+        <div>
+          <span className="food-kicker">Official Norwegian composition reference</span>
+          <h2 id="food-generic-title">Connect the product to a generic food only if it is a fair match.</h2>
+          <p>Matvaretabellen describes generic foods, not this branded GTIN. 4PLANET will not make that join from name similarity. You choose the reference; the join is stored only as local recovery on this device.</p>
+        </div>
+        <span className="food-relation-pill" data-relation={selected ? "direct" : "unknown"}>{selected ? "USER CONFIRMED" : "NOT JOINED"}</span>
+      </div>
+
+      {!selected && (
+        <form className="food-generic-search" onSubmit={runSearch}>
+          <label htmlFor="generic-food-query">Generic food</label>
+          <div>
+            <input id="generic-food-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. havregryn" />
+            <button type="submit" disabled={status === "SEARCHING" || query.trim().length < 2}>{status === "SEARCHING" ? "Checking…" : "Search Matvaretabellen"}</button>
+          </div>
+          <small>No result is selected automatically, even when the names are identical.</small>
+        </form>
+      )}
+
+      {status === "ERROR" && <p role="status" className="food-generic-state">Matvaretabellen is unavailable right now. The product record remains unchanged.</p>}
+      {!selected && status === "READY" && matches.length === 0 && <p role="status" className="food-generic-state">No bounded match returned. This does not mean the food is absent from every source.</p>}
+
+      {!selected && matches.length > 0 && (
+        <div className="food-generic-results" aria-label="Matvaretabellen candidates">
+          {matches.map((food) => (
+            <button type="button" key={food.foodId} onClick={() => confirm(food)}>
+              <span><strong>{food.foodName}</strong><small>ID {food.foodId}{food.foodGroupId ? ` · group ${food.foodGroupId}` : ""}</small></span>
+              <b>CONFIRM THIS REFERENCE</b>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selected && (
+        <div className="food-generic-selected">
+          {status === "RETURNED" && <p role="status" className="food-generic-return">Returned value: your previously confirmed generic reference was restored from this device. It is not Personal Brain or shared PLANETBRAIN truth.</p>}
+          <div className="food-generic-selected__title">
+            <div><span className="food-kicker">USER_CONFIRMED_GENERIC_REFERENCE</span><h3>{selected.foodName}</h3><p>Matvaretabellen ID {selected.foodId}{selected.foodGroupId ? ` · group ${selected.foodGroupId}` : ""}</p></div>
+            <button type="button" onClick={remove}>Remove join</button>
+          </div>
+          <dl className="food-generic-nutrients">
+            <div><dt>Energy</dt><dd>{nutrientText(selected.nutritionPer100.energyKcal)}</dd></div>
+            <div><dt>Protein</dt><dd>{nutrientText(selected.nutritionPer100.protein)}</dd></div>
+            <div><dt>Carbohydrate</dt><dd>{nutrientText(selected.nutritionPer100.carbohydrate)}</dd></div>
+            <div><dt>Sugars</dt><dd>{nutrientText(selected.nutritionPer100.sugars)}</dd></div>
+            <div><dt>Fibre</dt><dd>{nutrientText(selected.nutritionPer100.fibre)}</dd></div>
+            <div><dt>Fat</dt><dd>{nutrientText(selected.nutritionPer100.fat)}</dd></div>
+            <div><dt>Saturated fat</dt><dd>{nutrientText(selected.nutritionPer100.saturatedFat)}</dd></div>
+            <div><dt>Salt</dt><dd>{nutrientText(selected.nutritionPer100.salt)}</dd></div>
+          </dl>
+          <div className="food-generic-source">
+            <span>Source: {source?.publisher || "Mattilsynet"} / Matvaretabellen</span>
+            <span>Version: {source?.sourceVersion || "Source version unavailable"}</span>
+            <span>Retrieved: {source?.retrievedAt ? new Date(source.retrievedAt).toLocaleString("nb-NO") : "Unknown"}</span>
+          </div>
+          <p className="food-source-limit">Reference values describe the selected generic food per source conventions. They do not prove this branded product has the same composition, formulation, allergens, price or health effect. Verify the physical product label for product-specific facts.</p>
+        </div>
+      )}
     </section>
   );
 }
@@ -446,6 +614,8 @@ export default function FoodIntelligence() {
             </div>
 
             <ProductCard product={result.product} />
+
+            <GenericFoodReferencePanel product={result.product} />
 
             <section className="food-card food-priorities">
               <div>
