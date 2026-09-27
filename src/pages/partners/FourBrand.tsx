@@ -25,7 +25,7 @@ type Opportunity = {
 type Evidence = { id: string; title: string; publisher: string; url: string; checkedAt: string; note: string };
 type Analysis = {
   engine: string;
-  company: { name: string; legalName: string; ticker: string; sector: string; geography: string; description: string };
+  company: { name: string; legalName: string; ticker: string; sector: string; geography: string; description: string; organizationNumber?: string; lei?: string | null; identityState?: string };
   generatedAt: string;
   analysisStatus: "LIVE_RESEARCH" | "SEEDED_PROOF" | "PARTIAL";
   statusNote: string;
@@ -61,6 +61,38 @@ type TwinState = {
 };
 
 type LedgerState = Record<string, DecisionState>;
+
+type CompanyIdentityCandidate = {
+  organizationNumber: string;
+  entityName: string;
+  organizationForm: string | null;
+  registeredDate: string | null;
+  deleted: boolean;
+  bankrupt: boolean;
+  liquidation: boolean;
+  sourceUrl: string;
+};
+
+type CompanyIdentityResolution = {
+  entity: CompanyIdentityCandidate;
+  gleif: {
+    state: string;
+    verified: { lei: string; legalName: string; registeredAs: string | null; sourceUrl: string } | null;
+    candidates: Array<{ lei: string; legalName: string; registeredAs: string | null; sourceUrl: string }>;
+  };
+};
+
+type ClimateOwnerCandidate = { id: string; name: string; country: string | null; type: string | null; sourceUrl: string };
+type ClimateFacility = {
+  id: string | number | null; sourceId: string | number | null; canonicalFacilityId: string | null;
+  name: string | null; sector: string | null; subsector: string | null; country: string | null;
+  lat: number; lon: number; co2e: number | null; year: string | number; gas: string;
+};
+
+type ProcurementSignal = {
+  id: string; title: string; buyer: string | null; buyerCountry: string | null;
+  publicationDate: string | null; noticeType: string | null; cpv: string[]; deadline: string | null; sourceUrl: string;
+};
 
 const EMPTY_TWIN: TwinState = {
   objective: "",
@@ -189,6 +221,148 @@ function OpportunityRow({ item, primary = false }: { item: Opportunity; primary?
   );
 }
 
+function ProcurementDemandPanel({ analysis }: { analysis: Analysis }) {
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState<"NOR" | "ALL">("NOR");
+  const [signals, setSignals] = useState<ProcurementSignal[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
+  const [state, setState] = useState<"IDLE" | "LOADING" | "READY" | "NO_MATCH" | "ERROR">("IDLE");
+
+  const search = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const q = query.trim();
+    if (q.length < 2) return;
+    setState("LOADING"); setSignals([]); setTotal(null);
+    try {
+      const response = await fetch(`/api/procurement-demand?q=${encodeURIComponent(q)}&country=${country}`);
+      const payload = await response.json() as { ok?: boolean; signals?: ProcurementSignal[]; total?: number };
+      if (!response.ok || !payload.ok) throw new Error("PROCUREMENT_SOURCE_FAILED");
+      const next = Array.isArray(payload.signals) ? payload.signals : [];
+      setSignals(next);
+      setTotal(typeof payload.total === "number" ? payload.total : next.length);
+      setState(next.length ? "READY" : "NO_MATCH");
+      trackEvent("company_procurement_demand_searched", { product_area: "4brands", result_count: next.length, country_scope: country });
+    } catch {
+      setState("ERROR");
+    }
+  };
+
+  return (
+    <section className="fb-demand" aria-label="Public procurement demand signals">
+      <div className="fb-demand__head">
+        <div>
+          <p className="fb-eyebrow">PUBLIC DEMAND SIGNALS · TED</p>
+          <h2>See what public buyers are actually publishing.</h2>
+          <p>Search a product, solution or capability relevant to {analysis.company.name}. The search is user-controlled: company sector text is never converted into demand automatically.</p>
+        </div>
+      </div>
+      <form className="fb-demand__search" onSubmit={search}>
+        <label htmlFor="fb-demand-query">Procurement keywords</label>
+        <div>
+          <input id="fb-demand-query" value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="e.g. reverse vending, recycling sorting, biodiversity monitoring" />
+          <select aria-label="Procurement geography" value={country} onChange={(event)=>setCountry(event.target.value as "NOR"|"ALL")}>
+            <option value="NOR">Norway on TED</option>
+            <option value="ALL">All TED markets</option>
+          </select>
+          <button type="submit" disabled={state==="LOADING"||query.trim().length<2}>{state==="LOADING"?"Searching…":"Search published notices"}</button>
+        </div>
+        <small>TED is queried anonymously through its published-notice Search API. Doffin-only/national Norwegian notices are not represented as complete coverage until the official Doffin subscription is configured.</small>
+      </form>
+      {state==="ERROR"&&<p className="fb-demand__state" role="status">TED search is unavailable right now. No market conclusion is inferred.</p>}
+      {state==="NO_MATCH"&&<p className="fb-demand__state" role="status">No active bounded result returned. This is not evidence that there is no market demand.</p>}
+      {state==="READY"&&(
+        <>
+          <div className="fb-demand__summary"><strong>{total ?? signals.length}</strong><span>matching active TED notice records reported by the source query · showing up to {signals.length}</span></div>
+          <div className="fb-demand__results">
+            {signals.map((signal)=>(
+              <article key={signal.id}>
+                <span>{signal.id}</span>
+                <h3>{signal.title}</h3>
+                <p>{signal.buyer || "BUYER NAME UNAVAILABLE"}{signal.buyerCountry ? ` · ${signal.buyerCountry}` : ""}</p>
+                <div>{signal.publicationDate || "PUBLICATION DATE UNKNOWN"}{signal.deadline ? ` · deadline ${signal.deadline}` : ""}</div>
+                {signal.cpv.length>0&&<small>CPV {signal.cpv.slice(0,4).join(" · ")}</small>}
+                <a href={signal.sourceUrl} target="_blank" rel="noreferrer">Open original TED notice ↗</a>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+      <p className="fb-demand__boundary">A notice is a source-grounded procurement signal. It is not a sale, contract award, supplier fit, willingness-to-pay proof, realised value or ecological outcome.</p>
+    </section>
+  );
+}
+
+function CompanyClimateTracePanel({ analysis }: { analysis: Analysis }) {
+  const legalName = analysis.company.legalName || analysis.company.name;
+  const [owners, setOwners] = useState<ClimateOwnerCandidate[]>([]);
+  const [selectedOwner, setSelectedOwner] = useState<ClimateOwnerCandidate | null>(null);
+  const [facilities, setFacilities] = useState<ClimateFacility[]>([]);
+  const [state, setState] = useState<"IDLE" | "SEARCHING" | "REVIEW" | "LOADING" | "READY" | "NO_MATCH" | "ERROR">("IDLE");
+
+  const discover = async () => {
+    setState("SEARCHING"); setOwners([]); setFacilities([]); setSelectedOwner(null);
+    try {
+      const response = await fetch(`/api/climate-trace-owners?name=${encodeURIComponent(legalName)}`);
+      const payload = await response.json() as { ok?: boolean; candidates?: ClimateOwnerCandidate[] };
+      if (!response.ok || !payload.ok) throw new Error("OWNER_SEARCH_FAILED");
+      const next = Array.isArray(payload.candidates) ? payload.candidates : [];
+      setOwners(next); setState(next.length ? "REVIEW" : "NO_MATCH");
+    } catch { setState("ERROR"); }
+  };
+
+  const confirmOwner = async (owner: ClimateOwnerCandidate) => {
+    setSelectedOwner(owner); setFacilities([]); setState("LOADING");
+    try {
+      const response = await fetch(`/api/climate-trace?ownerIds=${encodeURIComponent(owner.id)}&sectors=power,electricity-generation,oil-and-gas-production-and-transport,oil-and-gas-refining,coal-mining,manufacturing&limit=250&year=2025&gas=co2e_100yr`);
+      const payload = await response.json() as { ok?: boolean; assets?: ClimateFacility[] };
+      if (!response.ok || !payload.ok) throw new Error("SOURCE_SEARCH_FAILED");
+      const next = Array.isArray(payload.assets) ? payload.assets : [];
+      setFacilities(next); setState(next.length ? "READY" : "NO_MATCH");
+      trackEvent("company_climate_trace_owner_reviewed", { product_area: "4brands", result_count: next.length });
+    } catch { setState("ERROR"); }
+  };
+
+  return (
+    <section className="fb-climate" aria-label="Climate TRACE emitting-source discovery">
+      <div className="fb-climate__head">
+        <div><p className="fb-eyebrow">FACILITIES / EMISSIONS · CLIMATE TRACE</p><h2>Connect the legal company to emitting sources only after review.</h2>
+          <p>Climate TRACE owner search is a discovery layer. 4PLANET does not infer that a similarly named owner is the BRREG/GLEIF company. Choose an owner record before any facility list is shown.</p></div>
+        {state === "IDLE" && <button type="button" onClick={() => void discover()}>Find owner candidates</button>}
+      </div>
+      {state === "SEARCHING" && <p role="status">Searching Climate TRACE owner records…</p>}
+      {state === "NO_MATCH" && <p role="status">No bounded owner/facility result returned. No emissions are inferred.</p>}
+      {state === "ERROR" && <p role="status">Climate TRACE is unavailable for this lookup. Existing company evidence is unchanged.</p>}
+      {state === "REVIEW" && (
+        <div className="fb-climate__owners">
+          {owners.map((owner) => <button type="button" key={owner.id} onClick={() => void confirmOwner(owner)}>
+            <span><strong>{owner.name}</strong><small>Climate TRACE owner ID {owner.id}{owner.country ? ` · ${owner.country}` : ""}</small></span><b>REVIEW THIS OWNER</b>
+          </button>)}
+        </div>
+      )}
+      {state === "LOADING" && <p role="status">Loading Climate TRACE sources for the reviewed owner…</p>}
+      {selectedOwner && state === "READY" && (
+        <>
+          <div className="fb-climate__status"><strong>USER-REVIEWED SOURCE JOIN</strong><span>{legalName} → Climate TRACE owner {selectedOwner.name} ({selectedOwner.id})</span>
+            <p>This review is session context, not automatically promoted to Company Brain or PLANETBRAIN truth.</p></div>
+          <div className="fb-climate__facilities">
+            {facilities.slice(0, 12).map((facility, index) => (
+              <article key={String(facility.canonicalFacilityId || facility.sourceId || index)}>
+                <span>{facility.canonicalFacilityId || `facility:climatetrace:${facility.sourceId}`}</span>
+                <h3>{facility.name || "Unnamed Climate TRACE source"}</h3>
+                <p>{facility.sector || "SECTOR UNKNOWN"}{facility.subsector ? ` / ${facility.subsector}` : ""}</p>
+                <strong>{facility.co2e != null ? `${Math.round(facility.co2e).toLocaleString()} t CO₂e` : "EMISSIONS NOT REPORTED"}</strong>
+                <small>{String(facility.year || "YEAR UNKNOWN")} · {facility.country || "COUNTRY UNKNOWN"} · source {String(facility.sourceId ?? "UNKNOWN")}</small>
+                <a href={`/atlas?l=emissions&z=7&c=${facility.lon.toFixed(3)},${facility.lat.toFixed(3)}`} target="_blank" rel="noreferrer">Open this location in ATLAS ↗</a>
+              </article>
+            ))}
+          </div>
+          {facilities.length > 12 && <p className="fb-climate__more">{facilities.length - 12} additional source records returned; not hidden from the source, only collapsed in this first view.</p>}
+        </>
+      )}
+    </section>
+  );
+}
+
 function Board({ label, title, children }: { label: string; title: string; children: React.ReactNode }) {
   return (
     <article className="fb-twin-board">
@@ -208,6 +382,9 @@ export default function FourBrand() {
   const [ledger, setLedger] = useState<LedgerState>({});
   const [saveState, setSaveState] = useState<"IDLE" | "SAVED">("IDLE");
   const [scenario, setScenario] = useState<ScenarioState>(INITIAL_SCENARIO);
+  const [identityCandidates, setIdentityCandidates] = useState<CompanyIdentityCandidate[]>([]);
+  const [identityResolution, setIdentityResolution] = useState<CompanyIdentityResolution | null>(null);
+  const [identityState, setIdentityState] = useState<"IDLE" | "SEARCHING" | "CANDIDATES" | "NO_MATCH" | "RESOLVING" | "READY" | "ERROR">("IDLE");
 
   const baselineRevenue = parseScenarioNumber(twin.annualRevenue);
   const baselineMargin = parseScenarioNumber(twin.grossMargin);
@@ -242,19 +419,27 @@ export default function FourBrand() {
     }
   }, [analysis, companyKey]);
 
-  async function runAnalysis(event?: FormEvent) {
-    event?.preventDefault();
-    const query = company.trim();
-    if (query.length < 2) return;
+  async function analyseResolved(query: string, identity: CompanyIdentityResolution | null) {
     setLoading(true);
     setError(null);
     setAnalysis(null);
-    trackEvent("company_analysis_started", { product_area: "4brand" });
+    trackEvent("company_analysis_started", { product_area: "4brand", legal_identity: identity ? "brreg_exact" : "unresolved" });
     try {
+      const verifiedLei = identity?.gleif?.verified || null;
       const response = await fetch("/api/brand-analysis", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ company: query }),
+        body: JSON.stringify({
+          company: identity?.entity?.entityName || query,
+          identity: identity ? {
+            organizationNumber: identity.entity.organizationNumber,
+            legalName: identity.entity.entityName,
+            lei: verifiedLei?.lei || null,
+            identityState: verifiedLei ? "BRREG_EXACT_GLEIF_EXACT_REGISTRATION_ID" : "BRREG_EXACT_GLEIF_UNRESOLVED",
+            brregSourceUrl: identity.entity.sourceUrl,
+            gleifSourceUrl: verifiedLei?.sourceUrl || null,
+          } : null,
+        }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string; detail?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.detail || payload.error || "Analysis engine unavailable");
@@ -262,18 +447,62 @@ export default function FourBrand() {
       trackEvent("company_analysis_completed", { product_area: "4brand", analysis_status: payload.analysis.analysisStatus, source_count: payload.analysis.evidence.length });
       trackEvent("company_opened", { product_area: "4brand", analysis_status: payload.analysis.analysisStatus });
       if (payload.analysis.opportunities.length > 0) trackEvent("economic_value_found", { product_area: "4brand", opportunity_count: payload.analysis.opportunities.length });
-      trackEvent("company_analysis", {
-        product_area: "4brands",
-        analysis_status: payload.analysis.analysisStatus,
-        source_count: payload.analysis.evidence.length,
-        opportunity_count: payload.analysis.opportunities.length,
-      });
+      trackEvent("company_analysis", { product_area: "4brands", analysis_status: payload.analysis.analysisStatus, source_count: payload.analysis.evidence.length, opportunity_count: payload.analysis.opportunities.length });
       trackMeaningfulUse("4brands", "record_open", "company_value_map");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Analysis engine unavailable");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function runAnalysis(event?: FormEvent) {
+    event?.preventDefault();
+    const query = company.trim();
+    if (query.length < 2) return;
+    setError(null);
+    setIdentityResolution(null);
+    setIdentityCandidates([]);
+    setIdentityState("SEARCHING");
+    try {
+      const response = await fetch(`/api/company-identity?q=${encodeURIComponent(query)}`, { headers: { accept: "application/json" } });
+      const payload = await response.json() as { ok?: boolean; candidates?: CompanyIdentityCandidate[]; error?: string };
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "Company identity source unavailable");
+      const candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
+      setIdentityCandidates(candidates);
+      setIdentityState(candidates.length ? "CANDIDATES" : "NO_MATCH");
+    } catch (cause) {
+      setIdentityState("ERROR");
+      setError(cause instanceof Error ? cause.message : "Company identity source unavailable");
+    }
+  }
+
+  async function confirmIdentity(candidate: CompanyIdentityCandidate) {
+    setIdentityState("RESOLVING");
+    setError(null);
+    try {
+      const response = await fetch(`/api/company-identity?orgnr=${encodeURIComponent(candidate.organizationNumber)}`, { headers: { accept: "application/json" } });
+      const payload = await response.json() as { ok?: boolean; entity?: CompanyIdentityCandidate; gleif?: CompanyIdentityResolution["gleif"]; error?: string };
+      if (!response.ok || !payload.ok || !payload.entity || !payload.gleif) throw new Error(payload.error || "Exact company identity could not be resolved");
+      const resolved: CompanyIdentityResolution = { entity: payload.entity, gleif: payload.gleif };
+      setIdentityResolution(resolved);
+      setIdentityCandidates([]);
+      setIdentityState("READY");
+      setCompany(payload.entity.entityName);
+      await analyseResolved(payload.entity.entityName, resolved);
+    } catch (cause) {
+      setIdentityState("ERROR");
+      setError(cause instanceof Error ? cause.message : "Exact company identity could not be resolved");
+    }
+  }
+
+  async function continueWithoutNorwegianIdentity() {
+    const query = company.trim();
+    if (query.length < 2) return;
+    setIdentityCandidates([]);
+    setIdentityResolution(null);
+    setIdentityState("READY");
+    await analyseResolved(query, null);
   }
 
   function saveTwin() {
@@ -400,6 +629,24 @@ export default function FourBrand() {
             </div>
           </form>
 
+          {identityState === "SEARCHING" && <div className="fb-identity-state" role="status">Resolving Norwegian legal entities from Brønnøysundregistrene…</div>}
+          {identityCandidates.length > 0 && (
+            <section className="fb-identity-results" aria-label="Legal entity candidates">
+              <div><p className="fb-eyebrow">LEGAL IDENTITY · BRREG</p><h2>Which legal entity do you mean?</h2><p>Name search is discovery only. Select the organisation number before economic analysis begins.</p></div>
+              <div className="fb-identity-list">
+                {identityCandidates.map((candidate) => (
+                  <button type="button" key={candidate.organizationNumber} onClick={() => void confirmIdentity(candidate)}>
+                    <span><strong>{candidate.entityName}</strong><small>{candidate.organizationNumber} · {candidate.organizationForm || "FORM UNKNOWN"}</small></span>
+                    <b>USE THIS ENTITY</b>
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="fb-identity-fallback" onClick={() => void continueWithoutNorwegianIdentity()}>Not a Norwegian entity / continue unresolved</button>
+            </section>
+          )}
+          {identityState === "NO_MATCH" && <div className="fb-identity-state"><p>No Norwegian legal-entity match was found. That does not mean the company does not exist.</p><button type="button" onClick={() => void continueWithoutNorwegianIdentity()}>Continue without Norwegian legal identity</button></div>}
+          {identityResolution && !analysis && <div className="fb-identity-state" role="status">Exact BRREG identity resolved. Building the value map…</div>}
+
           {loading && <div className="fb-loading" role="status"><span /><p>Reading the company. Building the value map.</p></div>}
           {error && <div className="fb-error" role="status"><p>{error}</p><button type="button" onClick={() => { setCompany("TOMRA"); setError(null); }}>Use TOMRA proof</button></div>}
 
@@ -426,6 +673,8 @@ export default function FourBrand() {
             </div>
             <div className="fb-company__identity">
               <span>{analysis.company.legalName || "Legal entity unresolved"}</span>
+              <span>{analysis.company.organizationNumber ? `ORG ${analysis.company.organizationNumber}` : "Organisation number unresolved"}</span>
+              <span>{analysis.company.lei ? `LEI ${analysis.company.lei}` : "LEI unresolved / not applicable"}</span>
               <span>{analysis.company.ticker || "Private / ticker unresolved"}</span>
               <span>{analysis.company.sector || "Sector unresolved"}</span>
               <span>{analysis.company.geography || "Geography unresolved"}</span>
@@ -441,6 +690,10 @@ export default function FourBrand() {
               </article>
             ))}
           </section>
+
+          <CompanyClimateTracePanel analysis={analysis} />
+
+          <ProcurementDemandPanel analysis={analysis} />
 
           <section className="fb-model-strip" aria-label="Public company model">
             <article><span>ECONOMIC STATE</span><strong>{analysis.economicBaseline.length} sourced baseline signals</strong></article>

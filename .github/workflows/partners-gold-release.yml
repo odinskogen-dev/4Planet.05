@@ -6,6 +6,8 @@ on:
     paths:
       - src/content/partnersHub.json
       - src/pages/partners/**
+      - src/partners-main.tsx
+      - src/identity/**
       - src/styles/partners-hub.css
       - src/routes/router.tsx
       - scripts/check-partners-hub.mjs

@@ -146,8 +146,18 @@ test("4MARKET HEIR exposes the five verified live Fourthwall products without cl
     "bergen-blue-hour-fine-art-print",
   ]) assert.ok(market.includes(slug), `missing live product ${slug}`);
   assert.match(market, /market_product_open/);
+  for (const token of [
+    "utm_source=4planetmarket",
+    "utm_medium=market",
+    "utm_campaign=first_creator_proof",
+    "utm_content=",
+  ]) assert.ok(market.includes(token), `Fourthwall attribution missing: ${token}`);
+  assert.match(market, /target="_blank"/);
+  assert.match(market, /rel="noopener noreferrer"/);
+  assert.match(market, /VERIFIED 27 SEP 2026/);
   assert.match(market, /Product availability, price and fulfilment are owned by the live Fourthwall offer/);
-  assert.match(market, /does not treat a product click as a purchase or delivery record/);
+  assert.match(market, /completed Fourthwall sales can be reconciled by source/);
+  assert.match(market, /still does not treat a click as a purchase or delivery record/);
 });
 
 test("flagship journey entries physically exist and retain a return path", () => {

@@ -2,7 +2,7 @@
 
 CHANGE ID: PLANETBRAIN-SOURCE-CITES-01-2026-09-27
 STATUS: HEIR CHILD / NOT GOLD / NO LIVE RELEASE
-PARENT: king/test@c287c3780ddd01a07a889f5445895def977c3a4b (forward-synced; citation work began at e36090048fdfa8cbc6817ad760c042806093ed0d)
+PARENT: king/test@e1124012d5f64eaae59b03dfc153e79d517f0a74 (forward-synced; citation work began at e36090048fdfa8cbc6817ad760c042806093ed0d)
 PRODUCT: LIVING_SYSTEMS decision intelligence, the existing PLANETBRAIN recovered-source surface. ATLAS sandbox remains untouched.
 
 ## USER ARRIVES BECAUSE
@@ -50,6 +50,170 @@ MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
 Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The six accepted citation cases verify rendered links, not outbound navigation or scientific source content. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss receipt retained: run 36343973048, deployed Chromium mobile-430 zoom click intercepted by `.ctx-head`. Classification: inherited source rules; deployed-parent baseline absent; runtime causality unproven.
 
 --- PRIOR GOLD BRIEFS PRESERVED BELOW ---
+
+# DATA VALUE CONVERGENCE 01 — 4NATION / SSB STATISTICAL CONTEXT — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / OFFICIAL STATISTICAL DISCOVERY + DEFAULT EXTRACT / PUBLIC LIVE UNTOUCHED.
+
+**SOURCE:** Statistics Norway PxWebApi v2. Search uses `/tables?query=...`; selected tables use `/tables/{id}` and the source-defined default/latest `/data` extract. SSB documents open access without registration, CC BY 4.0, 30 queries/minute and 800,000-cell extract limits. 4PLANET caches metadata/default extracts for fifteen minutes.
+
+**CANONICAL OBJECT:** `statistical-table:ssb:<5-digit-table-id>`. Returned data retain table label/update/periods/dimensions plus JSON-stat2 coordinates, cell values and source status markers.
+
+**USER LAW:** the user chooses the table. 4NATION does not silently decide which statistic proves or disproves a public policy. Default extracts are context, not causal models.
+
+**TRUTH BOUNDARY:** null/status/confidential values stay explicit. Units, dimensions, table metadata and footnotes remain necessary context. Statistical association does not establish policy causation or measured implementation outcome.
+
+**BEFORE → AFTER:** a 4NATION user can move from a public case to official measurable context, inspect the latest default source extract and open the original SSB table without model-generated statistics.
+
+**NO DUPLICATE SYSTEM:** read-through shared source adapter; no statistical warehouse or parallel public-decision store.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke incl. `nation-ssb-contract.test.mjs`, 4NATION QA/browser proof, no production release.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — 4NATION / STORTINGET LIVE CASE DISCOVERY — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / NEUTRAL SOURCE DISCOVERY / PUBLIC 4NATION RELEASE UNTOUCHED.
+
+**AUTHORITY:** current 4NATION curated Oslofjord case remains unchanged. The live production Worker remains pinned to the previously founder-reviewed immutable artifact; this change affects the current HEIR candidate only.
+
+**SOURCE:** Stortinget Open Data `/eksport/saker?format=JSON`, current session. Stortinget supports JSON/XML reuse without registration, requires Stortinget attribution under NLOD, and documents a 100-call/minute limit. 4PLANET caches the source session snapshot for ten minutes.
+
+**CANONICAL OBJECT:** `public-decision:stortinget:<sakid>` retains Stortinget case ID, exact source status, case type, document group, committee, subjects, source update time and exact source-record URL.
+
+**NEUTRALITY / TRUTH:** the finder performs bounded text filtering only. It does not rank options, infer ideology, recommend policy, assess political actors, or convert a case into adopted/implemented policy. Source status remains the authority.
+
+**COVERAGE:** current parliamentary session only. It is not all Norwegian public decisions, government implementation, municipal/regional decisions or measured outcomes.
+
+**BEFORE → AFTER VALUE:** users can now move from one curated 4NATION case to a live, original-source search of current parliamentary cases while retaining procedural status and provenance.
+
+**NO DUPLICATE SYSTEM:** no new public-decision database, BRAIN or political knowledge store. One read-through cached adapter plus the existing 4NATION surface.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke incl. `nation-stortinget-contract.test.mjs`, 4NATION QA/browser proof, neutrality/truth boundaries. No production release.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — PUBLIC PROCUREMENT DEMAND SIGNALS — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / TED ACTIVE-NOTICE DISCOVERY / DOFFIN ACCESS GATE OPEN.
+
+**SOURCE CHOICE:** use the official TED Search API v3 immediately because published-notice search is anonymous and explicitly supports commercial/reuser applications. Doffin Public API is the authoritative Norwegian search/download source for Doffin notices, but its official integration documentation requires registration/subscription. No undocumented or scraped Doffin runtime is substituted.
+
+**USER FLOW:** 4BRANDS company analysis → user enters product/solution/capability keywords → choose Norway-on-TED or all TED markets → official active published notices → inspect buyer/date/CPV/deadline → open original TED notice.
+
+**NO AUTOMATIC MARKET CLAIM:** company sector text does not trigger procurement queries. Search terms are user-controlled. A published notice is evidence of a published procurement process/market signal only. It is not a sale, award, company fit, willingness to pay, realised value or ecological outcome.
+
+**CANONICAL OBJECT:** each returned notice is `procurement:ted:<publication-number>` with original source URL. No notice is automatically joined to a company, facility, solution or intervention.
+
+**COVERAGE LIMIT:** Norway-on-TED is not complete Doffin coverage. National/Doffin-only notices remain an explicit coverage gap until the official Doffin subscription key and exact Public API contract are configured.
+
+**BEFORE → AFTER VALUE:** a company user can now test whether public buyers are publishing notices around a capability using an authoritative, inspectable, current source instead of relying on model inference.
+
+**ACCEPTANCE:** typecheck/build/smoke including procurement-demand contract, lint, 4BRAND runtime audit and browser proof. No public production claim until gates pass.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — COMPANY → FACILITY / CLIMATE TRACE — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / REVIEW-GATED JOIN / NO LIVE RELEASE CLAIM.
+
+**SHARED SOURCE OBJECT:** the existing `/api/climate-trace` adapter remains the one source/facility path already consumed by ATLAS. It is extended with the official v7 `ownerIds` filter and returns `facility:climatetrace:<sourceId>` identifiers. 4BRANDS uses the same endpoint; no second emissions store or ATLAS copy is created.
+
+**JOIN LAW:** BRREG/GLEIF legal identity → Climate TRACE owner search is discovery only. The user must explicitly review/select a Climate TRACE owner candidate before 4BRANDS requests that owner's source records. Name similarity never auto-joins the company. The reviewed join remains session context and is not silently promoted into Company Brain or PLANETBRAIN.
+
+**SOURCE CONTRACT:** Climate TRACE public API v7 beta exposes owner search and source filtering by owner IDs. Production dependence stays bounded because the API is beta; errors/empty contracts fail closed. Facility records retain Climate TRACE source ID, coordinates, sector/subsector, year/gas and emissions value. Climate TRACE and upstream ownership/source terms remain attached as limitations.
+
+**ATLAS REUSE:** ATLAS already uses `/api/climate-trace` for its emissions layer. Facility identity is now shown in the ATLAS point detail, and 4BRANDS can deep-link to the same emissions layer/location. This is one data path viewed through two product lenses.
+
+**TRUTH BOUNDARY:** source-level emissions do not by themselves assign legal responsibility to the BRREG entity. Ownership and emissions are source records. A possible reduction strategy is not a realised reduction, and no strategy dataset is promoted in this slice.
+
+**BEFORE → AFTER VALUE:** a correctly identified company can now be used to discover/review Climate TRACE owner candidates, inspect source-level emitting facilities, see source/year/emissions context and continue spatially in ATLAS without 4PLANET inventing the company→facility relationship.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke including company-climate contract, lint, 4BRAND runtime audit, ATLAS source bridge and browser proof. No public LIVE claim until gates pass.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — 4BRANDS COMPANY IDENTITY SPINE — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE RELEASE CLAIM.
+
+**SAME PROVIDER, NOT SECOND BRREG:** the existing authenticated 4SAPIEN exact-org-number adapter is refactored to call one shared BRREG provider module. 4BRANDS uses that same provider for name discovery and exact organisation-number resolution.
+
+**USER FLOW:** company name → BRREG candidates → explicit user selection → exact BRREG organisation-number readback → optional GLEIF lookup → LEI auto-crosswalk only when GLEIF `registeredAs` exactly equals the BRREG organisation number → company analysis.
+
+**TRUTH BOUNDARY:** name search is discovery, not identity. Fuzzy/name similarity never becomes canonical company identity. BRREG exact organisation number is the Norwegian legal-identity anchor. GLEIF name results remain candidates unless the registration ID exactly crosswalks. Legal identity does not prove ownership, financials, emissions or value.
+
+**RIGHTS:** Brønnøysundregistrene Open Data / NLOD 2.0. GLEIF public LEI reference data / CC0. Source URLs and observed identity records travel into the 4BRANDS evidence list.
+
+**BEFORE → AFTER VALUE:** before, arbitrary company analysis could begin from a free-text name with no canonical legal-entity anchor. After, Norwegian users can disambiguate the actual company first and carry organisation number + optional exact LEI into the value map and later Company Brain.
+
+**NO DUPLICATE SYSTEM:** existing identity/auth, Company Brain and BRREG capability remain. No new company database or parallel company truth store.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke including company identity contract; existing `embla-brreg` auth and fail-closed behaviour preserved; browser proof; no production release claim until gates pass.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — 4SAPIEN FOOD / MATVARETABELLEN — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / USER-FACING / NO LIVE RELEASE CLAIM.
+
+**HUMAN TRUTH:** a branded grocery product and a generic food-composition reference are different objects. Name similarity is not provenance.
+
+**SAME-COMMIT CHANGE:** add a server-side Matvaretabellen reference gateway over the official Norwegian foods dataset, with a bounded 30-day Cloudflare edge snapshot, source/version metadata and explicit attribution. Add a FOOD UI seam where the user searches Matvaretabellen and explicitly confirms a generic reference for the current GTIN. No candidate is auto-selected. The confirmed relation is recoverable on the same device only and is visibly NOT Personal Brain or shared PLANETBRAIN truth.
+
+**SOURCE:** Mattilsynet / Matvaretabellen official API `/api/nb/foods.json`. Source docs state annual autumn updates, few/no changes during the rest of the year, local caching is safe, and Matvaretabellen should be cited.
+
+**TRUTH BOUNDARY:** branded product facts continue to come from product-specific evidence. Generic composition values never overwrite GTIN identity, ingredients, allergens, price or product-specific nutrition. A user-confirmed generic reference is a relationship assertion with provenance, not proof that both compositions are identical.
+
+**BEFORE → AFTER USER VALUE:** before, the FOOD surface could inspect a branded product but had no official Norwegian generic composition context. After, a user can inspect a product, deliberately connect it to an official generic food reference, see source-linked nutrient values, remove the join, and receive local return value on revisit.
+
+**NO DUPLICATE SYSTEM:** no new database, BRAIN, Source Registry or product engine. Existing FOOD route + existing Cloudflare function plane + local non-canonical recovery only.
+
+**ACCEPTANCE:** exact-head typecheck, build, smoke including `food-matvaretabellen-contract.test.mjs`, lint and browser product proof. No LIVE/Gold claim until gates prove it.
+
+---
+
+# 4PLANET MARKET — ATTRIBUTED PURCHASE PATH 01 / 27 SEP 2026
+
+**STATUS:** HEIR / TEST CANDIDATE / NO FALSE PURCHASE CLAIM
+
+**FOUNDER TASK:** Improve the real 4PLANET MARKET transaction/value-delivery loop without creating a second commerce stack.
+
+**VERIFIED EXTERNAL STATE:** Connected Fourthwall shop readback on 27 Sep 2026 returned six offers: five are PUBLIC + AVAILABLE + Fourthwall-fulfilled at USD 50.50; one duplicate Summit offer is HIDDEN. No Fourthwall offer, price, payout or fulfilment state was mutated.
+
+**HIGHEST-VALUE CORRECTABLE FRICTION:** 4PLANET MARKET already sends a buyer to the real Fourthwall product, but the outbound product URL had no Market-specific purchase attribution. A later real sale therefore could not be cleanly reconciled back to the originating 4PLANET MARKET product click from Fourthwall's UTM sales reporting.
+
+**SAME-COMMIT CHANGE:** All five live product links now carry deterministic `utm_source=4planetmarket`, `utm_medium=market`, `utm_campaign=first_creator_proof` and product-specific `utm_content=<slug>`. External commerce opens in a separate tab with noopener/noreferrer so the Market context is retained. The visible catalogue verification date is refreshed to the actual connected-shop readback on 27 Sep 2026.
+
+**TRUTH BOUNDARY:** Attribution creates a measurable path from Market traffic to a completed Fourthwall sale. It does NOT turn a click into a purchase, payment, delivery or ecological-impact record. Purchase/fulfilment proof remains Fourthwall-owned unless separately read back.
+
+**QA:** Existing user-proof analytics contract is strengthened to require all four UTM dimensions, safe external-link semantics, current verification date and the explicit click ≠ purchase boundary. Exact-head build/browser gates still determine acceptance.
+
+**LIVE:** 4planetmarket.com remains separately release/readback controlled. Do not call this LIVE until the existing production path serves this exact change and external readback verifies it.
+
+---
+
+# DATA VALUE CONVERGENCE 01 — SPECIES LIVE EVIDENCE DISCOVERY — 27 SEP 2026
+
+STATUS: HEIR CANDIDATE BRIEF / NONPRODUCTION / NO CANON PROMOTION / NO LIVE RELEASE AUTHORITY.
+
+HUMAN TRUTH: a species page becomes more useful when the person can move from a canonical species identity to current research metadata and source-linked interaction records without confusing discovery with established biological truth.
+
+BOUNDED CHANGE: reuse the existing SPECIES evidence seam and newly added shared provider adapters. For curated species with an existing source envelope, fetch a small live discovery set from OpenAlex metadata and GloBI. OpenAlex results are research discovery only; titles/metadata are not biological findings. GloBI interactions remain REVIEW_REQUIRED and must retain study/dataset provenance; an indexed interaction is not universal behaviour, abundance, causality, local presence or current state.
+
+TTFV: existing species page still renders from current sources first. Live discovery is progressive enhancement, never a blocker.
+
+SOURCE / RIGHTS: OpenAlex metadata only; do not rehost abstract/full text. GloBI general data licence does not erase original dataset provenance/terms. React output escaping remains mandatory. Provider unavailable/rate-limited => explicit unavailable state; never fabricate fallback records.
+
+MEASUREMENT: source-discovery load state, research records returned, interaction records returned, source-open actions later. These are product-use signals, not ecological outcome.
+
+AUTHORITY: SPECIES = king/test HEIR_ONLY. No ATLAS sandbox mutation. No Supabase schema, BRAIN database, public domain, DNS, payment, outreach or production release.
+
+ACCEPTANCE: typecheck/build/test:smoke plus TEST KING Species+Lens proof; exact candidate SHA; no claim of Gold or live deployment without independent proof.
+
+IMPLEMENTATION COHERENCE RECEIPT: this brief and the SPECIES live-discovery surface marker are updated together in the same bounded change; source discovery stays noncanonical and fail-closed.
+
+---
 
 4NATION UX06 PASS B/C — FINAL RELEASE PREPARATION / PARENT ab08fed29b299779217e04cedf48c7281c1c436d / 27 SEP 2026
 ACTUAL VISUAL JUDGMENT performed from Cloudflare screenshots at mobile390/mobile430/tablet/desktop, not source-only. First hosted pass showed overly long mobile page, always-open six-event timeline, oversized marketing WHY block and internal Nation Atlas/Nation Brain labels. PASS B/C commit d742f9ee6cc93c3754eb0c077e73109314e0233f collapses full timeline behind accessible native disclosure, keeps 6 verified events one tap away, changes visible layers to Map/Evidence, removes low-value Our purpose top nav link and replaces huge black marketing section with compact light 4PLANET close. Final immutable preview https://82a64686.4planet-05.pages.dev/4nation. Exact external preview/browser run 36340292741 SUCCESS: 18/18 desktop1440/mobile390/mobile430 including existing people/institution/source/deep-link/map/full ATLAS and new timeline disclosure; real final screenshots captured in workflow 36340696982 and visually reviewed. Product remains evidence-first and politically neutral; same official Oslofjord status/source bundle, no recommendation/ranking/official affiliation.

@@ -6,6 +6,18 @@ import { AtlasEmbed } from '@/earth/AtlasEmbed';
 type Audience = 'people' | 'institutions';
 type Lens = 'decisions' | 'atlas' | 'brain' | 'solutions' | 'economy' | 'outcomes';
 
+type StortingCase = {
+  id:string; sourceCaseId:string; title:string; shortTitle:string|null; caseType:string|null; status:string;
+  documentGroup:string|null; committee:string|null; subjects:string[]; lastUpdated:string|null; sourceUrl:string;
+};
+
+type SsbTable = {
+  id:string; tableId:string; label:string; description:string|null; updated:string|null; firstPeriod:string|null; lastPeriod:string|null;
+  variableNames:string[]; source:string; sourceUrl:string;
+};
+type SsbCell = { index:number; value:number|string|null; status:string|null; coordinates:Record<string,{code:string;label:string}> };
+type SsbDataset = { label:string; updated:string|null; dimensions:string[]; cells:SsbCell[] };
+
 const lenses: { key: Lens; label: string; description: string }[] = [
   { key: 'decisions', label: 'Decisions', description: 'What is being considered?' },
   { key: 'atlas', label: 'Map', description: 'Where does it matter?' },
@@ -14,6 +26,73 @@ const lenses: { key: Lens; label: string; description: string }[] = [
   { key: 'economy', label: 'Economy', description: 'What can be traced financially?' },
   { key: 'outcomes', label: 'Outcomes', description: 'What actually changed?' },
 ];
+
+function StatbankContextFinder() {
+  const [query,setQuery]=useState('');
+  const [tables,setTables]=useState<SsbTable[]>([]);
+  const [selected,setSelected]=useState<SsbTable|null>(null);
+  const [dataset,setDataset]=useState<SsbDataset|null>(null);
+  const [state,setState]=useState<'IDLE'|'SEARCHING'|'CANDIDATES'|'LOADING'|'READY'|'NO_MATCH'|'ERROR'>('IDLE');
+
+  const search=async(event?:React.FormEvent)=>{
+    event?.preventDefault();const q=query.trim();if(q.length<2)return;
+    setState('SEARCHING');setTables([]);setSelected(null);setDataset(null);
+    try{
+      const response=await fetch('/api/statbank-context?q='+encodeURIComponent(q));
+      const payload=await response.json() as {ok?:boolean;tables?:SsbTable[]};
+      if(!response.ok||!payload.ok)throw new Error('SSB_SEARCH_FAILED');
+      const next=Array.isArray(payload.tables)?payload.tables:[];
+      setTables(next);setState(next.length?'CANDIDATES':'NO_MATCH');
+    }catch{setState('ERROR');}
+  };
+  const openTable=async(table:SsbTable)=>{
+    setSelected(table);setDataset(null);setState('LOADING');
+    try{
+      const response=await fetch('/api/statbank-context?table='+encodeURIComponent(table.tableId));
+      const payload=await response.json() as {ok?:boolean;dataset?:SsbDataset};
+      if(!response.ok||!payload.ok||!payload.dataset)throw new Error('SSB_TABLE_FAILED');
+      setDataset(payload.dataset);setState('READY');
+    }catch{setState('ERROR');}
+  };
+  return <section className='nt-statbank' aria-labelledby='nt-statbank-title'>
+    <div className='nt-statbank-head'><div><SmallLabel>OFFICIAL STATISTICAL CONTEXT / SSB</SmallLabel><h3 id='nt-statbank-title'>Put the decision in measurable context.</h3><p>Find an SSB table, then inspect its default latest extract. 4NATION does not pick the statistic for you or treat correlation as policy causation.</p></div><span>PXWEBAPI V2 · CC BY 4.0</span></div>
+    <form className='nt-statbank-search' onSubmit={search}><label htmlFor='nt-ssb-search'>Search Statbank Norway</label><div><input id='nt-ssb-search' value={query} onChange={event=>setQuery(event.target.value)} placeholder='e.g. befolkning Oslo, avløp, jordbruk, utslipp'/><button type='submit' disabled={state==='SEARCHING'||query.trim().length<2}>{state==='SEARCHING'?'Searching…':'Find official tables'}</button></div></form>
+    {state==='NO_MATCH'&&<p className='nt-statbank-state' role='status'>No table matched this bounded search. No statistical conclusion is inferred.</p>}
+    {state==='ERROR'&&<p className='nt-statbank-state' role='status'>SSB is unavailable for this lookup. Existing decision evidence is unchanged.</p>}
+    {state==='CANDIDATES'&&<div className='nt-statbank-tables'>{tables.map(table=><button type='button' key={table.id} onClick={()=>void openTable(table)}><span><strong>{table.tableId}</strong><b>{table.label}</b><small>{table.lastPeriod?'latest period '+table.lastPeriod:'latest period not reported'} · {table.variableNames.slice(0,4).join(' · ')}</small></span><em>OPEN DEFAULT EXTRACT</em></button>)}</div>}
+    {state==='LOADING'&&<p className='nt-statbank-state' role='status'>Loading SSB's default latest extract…</p>}
+    {selected&&dataset&&state==='READY'&&<div className='nt-statbank-data'><div className='nt-statbank-tabletitle'><span>statistical-table:ssb:{selected.tableId}</span><h4>{dataset.label||selected.label}</h4><p>{dataset.updated?'Source updated '+new Date(dataset.updated).toLocaleDateString('nb-NO'):'Source update time unavailable'}</p><a href={selected.sourceUrl} target='_blank' rel='noopener noreferrer'>OPEN SSB TABLE METADATA ↗</a></div><div className='nt-statbank-cells'>{dataset.cells.map(cell=><article key={cell.index}><div>{Object.values(cell.coordinates).map(c=>c.label).join(' / ')}</div><strong>{cell.value===null?'NOT PUBLISHED / SEE STATUS':String(cell.value)}</strong>{cell.status&&<small>SSB STATUS {cell.status}</small>}</article>)}</div></div>}
+    <p className='nt-statbank-limit'>This is the source's default extract, not a 4NATION-selected causal model. Units, dimensions, footnotes and confidentiality/status markers remain part of the interpretation boundary.</p>
+  </section>;
+}
+
+function LiveStortingCaseFinder() {
+  const [query,setQuery]=useState('');
+  const [cases,setCases]=useState<StortingCase[]>([]);
+  const [state,setState]=useState<'IDLE'|'LOADING'|'READY'|'NO_MATCH'|'ERROR'>('IDLE');
+
+  const search=async(event?:React.FormEvent)=>{
+    event?.preventDefault();
+    const q=query.trim();if(q.length<2)return;
+    setState('LOADING');setCases([]);
+    try{
+      const response=await fetch('/api/nation-cases?q='+encodeURIComponent(q));
+      const payload=await response.json() as {ok?:boolean;cases?:StortingCase[]};
+      if(!response.ok||!payload.ok)throw new Error('SOURCE_FAILED');
+      const next=Array.isArray(payload.cases)?payload.cases:[];
+      setCases(next);setState(next.length?'READY':'NO_MATCH');
+    }catch{setState('ERROR');}
+  };
+
+  return <section className='nt-live-cases' aria-labelledby='nt-live-cases-title'>
+    <div className='nt-live-cases-head'><div><SmallLabel>LIVE SOURCE DISCOVERY / STORTINGET</SmallLabel><h3 id='nt-live-cases-title'>Find a parliamentary case.</h3><p>Search the current Storting session by subject. Results keep the source's case ID and procedural status; 4NATION does not rank policy choices or infer what should be decided.</p></div><span>SOURCE / NLOD / 10-MIN SNAPSHOT</span></div>
+    <form onSubmit={search} className='nt-live-search'><label htmlFor='nt-case-search'>Search current Storting cases</label><div><input id='nt-case-search' value={query} onChange={event=>setQuery(event.target.value)} placeholder='e.g. natur, havbruk, klima, transport'/><button type='submit' disabled={state==='LOADING'||query.trim().length<2}>{state==='LOADING'?'Checking…':'Search official cases'}</button></div></form>
+    {state==='ERROR'&&<p role='status' className='nt-live-state'>Stortinget's data service is unavailable right now. No case status is inferred.</p>}
+    {state==='NO_MATCH'&&<p role='status' className='nt-live-state'>No current-session case matched this bounded search. That is not evidence that no relevant public decision exists.</p>}
+    {state==='READY'&&<div className='nt-live-results'>{cases.map(item=><article key={item.id}><div><span>{item.id}</span><strong>{item.status.replaceAll('_',' ')}</strong></div><h4>{item.title}</h4><p>{item.committee||'Committee not established in this source row'}{item.caseType?' · '+item.caseType:''}</p><small>{item.lastUpdated?'SOURCE UPDATED '+new Date(item.lastUpdated).toLocaleDateString('nb-NO'):'SOURCE UPDATE DATE UNAVAILABLE'}</small><a href={item.sourceUrl} target='_blank' rel='noopener noreferrer'>OPEN STORTINGET SOURCE ↗</a></article>)}</div>}
+    <p className='nt-live-limit'>Coverage: current parliamentary session only. This finder is not a complete feed of Norwegian national, regional or local decisions, and a parliamentary case is not automatically enacted or implemented policy.</p>
+  </section>;
+}
 
 function Source({ id, label }: { id: string; label?: string }) {
   const source = nationSources.find((item) => item.id === id);
@@ -118,6 +197,10 @@ export default function NationPage() {
         <div><SmallLabel>THE OSLOFJORD / OFFICIAL CASE</SmallLabel><h2 id='nt-work-heading'>Understand the decision.</h2><p>Begin with the proposal. Explore the evidence, place, costs and outcomes when you need them.</p></div>
         <div className='nt-audiences' role='group' aria-label='Choose audience'><button type='button' aria-pressed={audience==='people'} onClick={()=>setAudience('people')}>For people</button><button type='button' aria-pressed={audience==='institutions'} onClick={()=>setAudience('institutions')}>For institutions</button></div>
       </div>
+
+      <LiveStortingCaseFinder />
+
+      <StatbankContextFinder />
 
       <div className='nt-geography'>
         <span>PLACE / CONTEXT</span><button type='button' aria-expanded={geographyOpen} onClick={()=>setGeographyOpen(!geographyOpen)}>Oslofjord / Norway <span aria-hidden='true'>{geographyOpen?'−':'⌄'}</span></button><span className='nt-geography-status'>ONE SOURCED CASE / NOT A NATIONAL FEED</span>

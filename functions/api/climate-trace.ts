@@ -57,9 +57,11 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
   const offset = Math.max(0, Number.parseInt(url.searchParams.get("offset") || "0", 10) || 0);
   const year = /^\d{4}$/.test(url.searchParams.get("year") || "") ? url.searchParams.get("year")! : DEFAULT_YEAR;
   const gas = /^[a-z0-9_]+$/.test(url.searchParams.get("gas") || "") ? url.searchParams.get("gas")! : DEFAULT_GAS;
+  const ownerIds = cleanList(url.searchParams.get("ownerIds"), /^[A-Za-z0-9_.:-]+$/);
 
   const qs = new URLSearchParams({ sectors, limit: String(limit), offset: String(offset), year, gas });
   if (countries) qs.set("gadmId", countries);
+  if (ownerIds) qs.set("ownerIds", ownerIds);
 
   const upstream = `${base}/sources?${qs.toString()}`;
   try {
@@ -81,8 +83,11 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
         const lon = finite(a.longitude, a.lon, a.lng, a.centroid?.longitude, a.centroid?.lon);
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
         const co2e = finite(a.emissionsQuantity, a.emissions_quantity, a.co2e, a.emissions);
+        const sourceId = a.id ?? a.source_id ?? a.asset_id ?? null;
         return {
-          id: a.id ?? a.source_id ?? a.asset_id ?? null,
+          id: sourceId,
+          sourceId,
+          canonicalFacilityId: sourceId != null ? `facility:climatetrace:${sourceId}` : null,
           name: a.name ?? a.source_name ?? a.asset_name ?? null,
           sector: a.sector ?? null,
           subsector: a.subsector ?? null,
@@ -106,7 +111,15 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
       ok: true,
       source: "climatetrace",
       apiVersion: "v7",
-      query: { sectors, year, gas, limit, offset },
+      query: { sectors, countries: countries || null, ownerIds: ownerIds || null, year, gas, limit, offset },
+      sourceMeta: {
+        publisher: "Climate TRACE",
+        apiVersion: "v7 beta",
+        endpoint: "/sources",
+        checkedAt: new Date().toISOString(),
+        rights: "Climate TRACE data are published for public reuse; upstream ownership/source datasets may carry separate terms that must travel with derived records.",
+        truthBoundary: "Source-level emissions are estimates/observations for Climate TRACE source records. Owner filtering does not by itself prove a legal-company crosswalk or attribution of responsibility.",
+      },
       count: assets.length,
       assets,
     });
