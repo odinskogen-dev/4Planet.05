@@ -1,3 +1,22 @@
+# DATA VALUE CONVERGENCE 01 — SOURCE GATE RIGHTS / OPERATIONS HARDENING — 28 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / OFFICIAL TERMS VERIFIED.
+
+Production-capable source responses now expose use boundaries directly: publisher/API, licence or rights state, commercial reuse, attribution, caching, access cost/rate where established, canonical mapping and limitations.
+
+Verified rights/read constraints:
+- Brønnøysundregistrene Enhetsregisteret: NLOD 2.0.
+- GLEIF LEI Access Service: CC0 1.0.
+- Climate TRACE core emissions data/metadata: CC BY 4.0; listed external and ownership sources can carry different terms and therefore remain review-gated.
+- TED published procurement notices: freely reusable commercially/non-commercially unless otherwise noted; SIMAP metadata CC0.
+- Stortinget Open Data: NLOD, Stortinget attribution, non-misleading presentation, 100 calls/min.
+- SSB PxWebApi v2: CC BY 4.0, 30 queries/min, 800,000-cell extract limit.
+- Matvaretabellen: official local caching permitted; clear source citation required. 4PLANET uses the publisher's requested 2026 citation and does not silently treat generic foods as branded-product facts.
+
+No new Source Registry or truth store was created.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — IMPACT / INDEPENDENT OBSERVATION + MRV RELATIONSHIP — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / SOURCE CONNECTED / NO CLAIM PROMOTION.
