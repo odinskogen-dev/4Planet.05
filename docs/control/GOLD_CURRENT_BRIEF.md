@@ -1,5 +1,33 @@
 # CURRENT GOLD BRIEF
 
+## Bounded dependency correction — Exposure 01, 26 September 2026
+
+Current bounded exception: existing PR #336 / work/4sapien-exposure-01-20260925,
+parent and rollback 0eb37ace90c29079bb4799b68e8e66aefe3d6504. Authority: current
+4SAPIEN master and independent Gold5846673281. No HEIR/LIVE promotion; the older
+CORE brief below is preserved as history, not a new release-readiness claim.
+
+USER ARRIVES BECAUSE: existing map users need source-backed maps without the
+known attribution sanitiser defect. ONE THING TO UNDERSTAND: map attribution
+remains evidence, not trusted executable content. PRIMARY ACTION: retain map
+exploration. SECONDARY DEPTH: retain source links and existing controls.
+P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH: existing map, place identity,
+navigation/selection and source detail remain unchanged; no visual redesign.
+WHAT CAN BE REMOVED: vulnerable dependency and duplicated worker setup.
+WHAT MUST BE REUSED: existing three map consumers, CSP, attribution, CI and Gold.
+TRUTH BOUNDARY: source/model/build/audit proof is not browser proof or evidence
+of a LIVE exploit. MOBILE-FIRST RISK: worker load, labels, hit-testing and
+globe/flat behaviour must be checked at 390/430 before acceptance.
+HUMAN SUCCESS: maps render and retain source links and selection across all
+three consumers. No human test or isolated preview pass is claimed here.
+DONOR: no divergent code donor; adopt upstream 6.4.1 security fix and documented
+v5 rendering compatibility option. Shared worker entry is provisional, not Gold.
+DONE: exact-candidate typecheck/build/audit, upstream sanitizer regression,
+worker-closure proof, isolated map/render/projection checks and independent Gold.
+Food auth-return/campaign measurement remains a separate required gate.
+
+## Preserved historical CORE brief
+
 This file is the machine-readable human contract for the **current bounded TEST KING change**. Historical briefs belong in issue/PR evidence; this file always reflects the current mutation.
 
 **CHANGE ID:** CORE-RELEASE-CLOSURE-2026-09-09-01

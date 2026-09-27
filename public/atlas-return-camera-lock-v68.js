@@ -17,6 +17,7 @@
   let programmaticWrite = false;
   let writeCount = 0;
   let lastReason = 'not-restored';
+  let unbindInput = () => {};
 
   const cameraDrifted = (map) => {
     if (!map?.getCenter || !map?.getZoom) return false;
@@ -55,7 +56,18 @@
   };
 
   const bind = (map) => {
+    unbindInput();
     if (!hasExplicitCamera || !map?.on) return;
+
+    // Match the existing React return-camera authority's canvas boundary.
+    // Do not depend solely on movement-event metadata surviving the handler path.
+    const canvas = map.getCanvas?.();
+    const releaseInput = (event) => {
+      if (event.isTrusted) releaseAuthority(`user-${event.type}`);
+    };
+    const inputEvents = ['wheel', 'pointerdown', 'touchstart'];
+    inputEvents.forEach((name) => canvas?.addEventListener(name, releaseInput, { capture: true, passive: true }));
+    unbindInput = () => inputEvents.forEach((name) => canvas?.removeEventListener(name, releaseInput, true));
 
     // Explicit z+c owns reconstruction through the full MapLibre startup seam.
     // Mobile globe/style initialisation and the context-panel resize can happen

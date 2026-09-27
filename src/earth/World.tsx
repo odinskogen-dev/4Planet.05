@@ -41,7 +41,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "./maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./world.css";
 
@@ -843,6 +843,7 @@ function WorldInner() {
     if (map.current) return;
     const m = new maplibregl.Map({
       container: boxRef.current, style: VECTOR_STYLE, center: init.current.center,
+      zoomLevelsToOverscale: undefined,
       zoom: init.current.zoom, minZoom: 1, maxZoom: 22,
       attributionControl: { compact: true }, canvasContextAttributes: { antialias: true },
       // V40 P0: the persistent world must never freeze when context is open.

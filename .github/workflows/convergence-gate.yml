@@ -68,6 +68,18 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: MapLibre sanitizer and bundled worker regression
+        run: node scripts/maplibre-compatibility.test.mjs
+
+      - name: Return-camera input ownership regression
+        run: node scripts/atlas-return-camera-release.test.mjs
+
+      - name: Atlas source diagnostic regression (offline)
+        run: node scripts/atlas-source-diagnostic.test.mjs
+
+      - name: Atlas resize diagnostic regression (offline)
+        run: node scripts/atlas-resize-diagnostic.test.mjs
+
       - name: Contract and smoke tests
         run: npm run test:smoke
 

@@ -159,8 +159,9 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   }
   await page.waitForFunction(() => {
     const m = (window as any).__4planet_map;
-    return m && !m.isMoving() && !m.isZooming() && !m.isEasing();
-  }, undefined, { timeout: 8_000 }).catch(() => {});
+    // Public isMoving covers both camera animation and user gestures.
+    return m && !m.isMoving() && !m.isZooming();
+  }, undefined, { timeout: 8_000 });
   await page.waitForTimeout(600);
   const after = await mapState(page);
   expect(after.zoom !== before.zoom || after.lng !== before.lng || after.lat !== before.lat).toBeTruthy();
