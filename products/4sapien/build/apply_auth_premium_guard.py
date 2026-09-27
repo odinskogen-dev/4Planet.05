@@ -227,6 +227,22 @@ canonical_login_html = r'''<!doctype html>
   location.replace(url);
 })();
 </script></body></html>'''
+canonical_redirect = r'''<script id="fourplanet-id-canonical-relay">
+(function(){
+  function safeNext(v){
+    try{
+      var u=new URL(v||'/',location.origin);
+      if(u.origin!==location.origin)return '/';
+      if(u.pathname==='/'||u.pathname.indexOf('/app/food/')===0||u.pathname.indexOf('/app/money/')===0||u.pathname.indexOf('/brain/')===0)return u.pathname+u.search+u.hash;
+    }catch(_e){}
+    return '/';
+  }
+  var qs=new URLSearchParams(location.search);
+  var next=safeNext(qs.get('next')||'/');
+  location.replace('https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+next));
+})();
+</script>'''
+canonical_login_html = auth_html.replace('<body>', '<body>'+canonical_redirect, 1)
 login.write_text(canonical_login_html, encoding='utf-8')
 
 callback = site / 'auth' / '4planet' / 'callback' / 'index.html'
@@ -273,7 +289,7 @@ callback.write_text(r'''<!doctype html>
 s = root.read_text(encoding='utf-8')
 if 'id="account-link"' not in s:
     raise SystemExit('root account-link missing')
-s = s.replace('id="account-link" href="/app/food/"', 'id="account-link" href="https://id.4planet.org/login?return_to=https%3A%2F%2F4sapien.com%2F"', 1)
+s = s.replace('id="account-link" href="/app/food/"', 'id="account-link" href="/login/"', 1)
 s = s.replace("a.href='/app/food/';a.className='btn pri';", "a.href='https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+'/');a.className='btn pri';", 1)
 signed = "link.setAttribute('data-signed-in','1');"
 if signed not in s:
@@ -324,8 +340,8 @@ for marker in (
 for p in (food, money, brain):
     if 'four-sapien-global-auth-router' not in p.read_text(encoding='utf-8'):
         raise SystemExit(f'global auth router missing: {p}')
-if 'id.4planet.org/login' not in root.read_text(encoding='utf-8'):
-    raise SystemExit('root canonical 4PLANET ID link missing')
+if 'href="/login/"' not in root.read_text(encoding='utf-8'):
+    raise SystemExit('root canonical login relay link missing')
 if 'id.4planet.org/login' not in login.read_text(encoding='utf-8'):
     raise SystemExit('legacy login relay missing canonical 4PLANET ID')
 if 'verifyOtp' not in callback.read_text(encoding='utf-8'):
