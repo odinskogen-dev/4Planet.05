@@ -1,3 +1,53 @@
+# CURRENT GOLD BRIEF — PLANETBRAIN SOURCE CITATIONS 01
+
+CHANGE ID: PLANETBRAIN-SOURCE-CITES-01-2026-09-27
+STATUS: HEIR CHILD / NOT GOLD / NO LIVE RELEASE
+PARENT: king/test@e36090048fdfa8cbc6817ad760c042806093ed0d
+PRODUCT: LIVING_SYSTEMS decision intelligence, the existing PLANETBRAIN recovered-source surface. ATLAS sandbox remains untouched.
+
+## USER ARRIVES BECAUSE
+A person reading Amazonia or Pollination decision intelligence wants to open the original source behind a pathway, signal or learning record.
+
+## ONE THING TO UNDERSTAND
+A recovered source is openable only when an https URL is already recorded. Donor review is not current verification.
+
+## PRIMARY ACTION
+Open Deep Intelligence and follow a cited source, or read that the original URL is not established.
+
+## SECONDARY DEPTH
+The same citation sits on the pathway, the decision signal, the learning record and the source register.
+
+## P1 DOMINANT
+The cited original, or the explicit absence of one.
+
+## P2 ORIENTATION
+Donor review state stays visible beside the citation and is not upgraded.
+
+## P3 ACTION / NEXT
+Open the recorded https source in a new tab. Unresolved sources have no link.
+
+## P4 DEPTH
+Existing trust counts, cascade, data-quality notes and truth boundary remain.
+
+## WHAT CAN BE REMOVED
+Dead source labels that look equally openable whether or not a URL exists.
+
+## WHAT MUST BE REUSED
+Existing `sourceCitation` over `recoveredSource`, Living Systems routes, and the current decision-intelligence records. No new source, database, BRAIN or service.
+
+## TRUTH BOUNDARY
+No URL is invented. Placeholder authorities such as AMAZON_INSTITUTIONAL stay unlinked. Donor VERIFIED is not a current 4PLANET verification stamp.
+
+## MOBILE-FIRST RISK
+Citations wrap inside the existing panel. 390 and 430 widths must not gain horizontal overflow.
+
+## HUMAN SUCCESS
+On Pollination, IPBES opens https://www.ipbes.net. On Amazonia, sources without a recorded URL say ORIGINAL URL NOT ESTABLISHED and are not links.
+
+MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
+
+--- PRIOR GOLD BRIEFS PRESERVED BELOW ---
+
 ATLAS GOLD 04 / MAPLIBRE API TEST COMPATIBILITY / 22 SEP 2026
 Parent 93212f4582d141287b7e833cdc1022827bf1a1eb. Exact SHA 1c98ec1 source had previously failing ATLAS Zero Loss mobile 390 click target blocked by Orca context; mobile native controls now usable and click reached MapLibre. Test then crashed on TypeError map.isEasing is not a function, MapLibre v6 runtime does not expose this optional legacy method. SAME COMMIT fixes test compatibility while RETAINING both !map.isMoving() and !map.isZooming() and checking isEasing only when supported. Camera ownership, settled zoom, lat/lng acceptance assertions and timeouts are unchanged. No production, DNS, branch, new architecture or external release. Exact HEAD rebuild/CI required, no Gold before portfolio gates and live camera approved separately.
 --- PRIOR HISTORY BELOW ---

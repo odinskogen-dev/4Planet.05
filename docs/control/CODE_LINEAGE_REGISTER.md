@@ -85,6 +85,16 @@ Every one of these receives a complete donor matrix before total closure:
 12. 4MARKET / COMMERCE / ECONOMY / Stripe
 13. BRAIN / PSI / Decision Intelligence / Brand OS / Trust / LABS
 
+## PLANETBRAIN SOURCE CITATIONS 01 — bounded HEIR child
+
+| Identity | Role now | Branch / source | Exact identity | TEST KING obligation |
+|---|---|---|---|---|
+| LIVING SYSTEMS HEIR | ACTIVE DEVELOPMENT | `king/test` | parent `e36090048fdfa8cbc6817ad760c042806093ed0d` | Sole integration line. This slice returns here by PR and does not become a second product. |
+| PLANETBRAIN SOURCE CITATIONS 01 | FIXED REVIEW CANDIDATE | `cursor/planetbrain-source-cites-6067` | child of `e36090048fdfa8cbc6817ad760c042806093ed0d` | Open recorded https sources on the existing Living Systems decision panel. Do not invent URLs or a new BRAIN. |
+| ATLAS sandbox | REGISTERED SANDBOX / DO NOT WRITE | `work/atlas-zero-loss-gold-convergence-01` | PR #263 | Already occupies the one ATLAS sandbox. This slice does not edit it. |
+
+Donor disposition: existing recovered source records are **ALREADY PRESENT**; clickable citation of those records is **ADOPT**; fabricating missing dataset URLs is **REJECT WITH REASON**.
+
 ## MUST NOT LOSE — global
 - shared source/provenance/truth boundaries;
 - one shared ATLAS engine and Product Context continuity;
