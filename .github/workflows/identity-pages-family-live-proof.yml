@@ -21,28 +21,34 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - name: Inspect live family identity entry points
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Prove canonical 4PLANET ID entry across shared live product family
         run: |
           node --input-type=module <<'NODE'
-          import { chromium } from '@playwright/test';
-          const browser=await chromium.launch();
-          const page=await browser.newPage({viewport:{width:1280,height:900}});
-          const hosts=['https://4planet.org/','https://s4piens.com/','https://4planetatlas.com/','https://labs.4planet.org/','https://4brands.org/'];
-          const results=[];
-          for(const url of hosts){
-            try{
+          import { chromium, webkit } from '@playwright/test';
+          const hosts=[
+            'https://4planet.org/',
+            'https://s4piens.com/',
+            'https://4planetatlas.com/',
+            'https://labs.4planet.org/',
+            'https://4brands.org/'
+          ];
+          for(const engine of [chromium, webkit]){
+            const browser=await engine.launch();
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            for(const url of hosts){
               const resp=await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
-              await page.waitForTimeout(2500);
-              results.push({
-                url,
-                status:resp?.status(),
-                login:await page.getByText('LOG IN',{exact:true}).count(),
-                account:await page.getByText('4PLANET ID',{exact:true}).count(),
-                title:await page.title()
-              });
-            }catch(e){results.push({url,error:String(e)})}
+              if(resp?.status()!==200) throw new Error(url+' HTTP '+resp?.status());
+              const login=page.getByText('LOG IN',{exact:true});
+              await login.first().waitFor({timeout:10000});
+              await login.first().click();
+              await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?/,{timeout:10000});
+              const target=await page.locator('.identity-card').getAttribute('data-return-to');
+              if(!target || new URL(target).origin!==new URL(url).origin){
+                throw new Error(url+' return target mismatch '+target);
+              }
+            }
+            await browser.close();
           }
-          console.log(JSON.stringify(results));
-          await browser.close();
+          console.log('4PLANET ID PAGES FAMILY LIVE PROOF: PASS');
           NODE
