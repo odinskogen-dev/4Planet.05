@@ -448,3 +448,18 @@ The builder may prove deterministic calculations, security shape and browser beh
 **MAKER ≠ JUDGE / RELEASE:** Factual source check and scoped technical tests are necessary but not sufficient for production. Existing FOUR STATE Founder Review exact ATLAS sandbox evidence and baseline Oslofjord MAP READY failure are open. No direct domain change, auto-promotion or false live claim from this brief.
 
 Gold QA repair, 21 Sep: Source-contract test updated to assert the clearer actual UI wording ‘Proposal, not an adopted plan.’ No weakening of underlying claim; official status remains UNDER CONSIDERATION. This fix and its Gold brief are in one bounded TEST KING commit. No live authority.
+
+
+## 4NATION 07 — ONE CASE FIRST / HUMAN-FIRST CORRECTION — 28 SEP 2026
+
+STATUS: BOUNDED HEIR PRODUCT CHANGE / CANDIDATE QA REQUIRED / PUBLIC LIVE ORIGIN UNCHANGED BY THIS CHANGE.
+
+USER JOB: A first-time person should immediately understand one real public decision without passing through source-search tools or internal product architecture first.
+
+CHANGE: The Oslofjord case is again the first-screen object. The hero asks “What is happening to the Oslofjord?”, retains the single UX06 primary CTA “Explore public decisions”, and keeps source/status beside the case. Stortinget case discovery and SSB statistical context remain available but move behind progressive disclosure after the six-lens case journey. No source adapter, shared fact model, ATLAS contract, 4PLANET ID path or political decision logic is replaced.
+
+SOURCE/TRUTH: Official Norwegian Ministry hearing record re-checked 28 Sep 2026. Public status remains under consideration; ordinary consultation deadline 15 Sep 2026 has passed; separate municipality/county politically processed deadline is 15 Oct 2026. Proposal, consultation, decision, implementation and measured outcome remain distinct. No policy recommendation or government affiliation is implied.
+
+ACCEPTANCE: 4NATION source-state contracts, typecheck/build/smoke/lint, desktop 1440 and mobile 390/430 browser journey, primary-source access, people/institution views, six lenses, timeline disclosure, ATLAS embed/full route and progressive source-tool disclosure must pass. Human craft/Founder visual review remains distinct from maker implementation.
+
+ROLLBACK: revert the bounded 4NATION 07 commit(s). Existing public 4nation.org Worker stays pinned to its previously verified immutable UX06 origin until a separately authorised exact tested artifact is promoted.

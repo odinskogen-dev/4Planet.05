@@ -174,7 +174,7 @@ export default function NationPage() {
         <span className='nt-hero-kicker'>UNDERSTAND YOUR NATION.</span>
         <h1 id='nt-heading'>What is happening to the <em>Oslofjord?</em></h1>
         <p>Norway has proposed a new plan for the fjord. Follow what is proposed, what is actually decided, what happens next and where the evidence comes from.</p>
-        <button className='nt-primary nt-hero-action' type='button' onClick={() => selectAudience('people')}>Understand this decision <span aria-hidden='true'>↗</span></button>
+        <button className='nt-primary nt-hero-action' type='button' onClick={() => selectAudience('people')}>Explore public decisions <span aria-hidden='true'>↗</span></button>
         <p className='nt-hero-trust'>An independent 4PLANET prototype · <button type='button' onClick={() => setSourceOpen(true)}>See the sources ↗</button></p>
       </div>
       <article className='nt-featured' aria-labelledby='nt-feature-title'>
