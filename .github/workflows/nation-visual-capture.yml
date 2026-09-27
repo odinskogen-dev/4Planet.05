@@ -31,7 +31,7 @@ jobs:
             for (const view of views) {
               const name=view[0], width=view[1], height=view[2];
               const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
-              await page.goto('https://852b848d.4planet-05.pages.dev/4nation',{waitUntil:'networkidle'});
+              await page.goto('https://82a64686.4planet-05.pages.dev/4nation',{waitUntil:'networkidle'});
               await page.screenshot({path:'visual-proof/'+name+'-top.png',fullPage:false});
               await page.screenshot({path:'visual-proof/'+name+'-full.png',fullPage:true});
               await page.close();
