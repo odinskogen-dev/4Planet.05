@@ -204,7 +204,6 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
   return (
     <IdentityContext.Provider value={value}>
       {children}
-      <IdentityUtility user={session?.user || null} ready={ready} onOpen={openAuth} />
       {mode && (
         <IdentityModal
           client={client}
