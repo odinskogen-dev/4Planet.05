@@ -171,7 +171,19 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
     };
     const originalResize = map.resize;
     map.resize = function (...args: unknown[]) {
+      // MapLibre 6.4.1's ResizeObserver passes its entries to resize;
+      // World's context effect calls resize without arguments. Do not infer
+      // World ownership from NO_ARGUMENTS: other callers can use that shape.
+      const data = args[0];
+      const observerEntries = Array.isArray(data) && data.length > 0 &&
+        typeof ResizeObserverEntry !== "undefined" &&
+        data.every((entry) => entry instanceof ResizeObserverEntry);
+      const eventDataKind = args.length === 0 ? "NO_ARGUMENTS" :
+        observerEntries ? "RESIZE_OBSERVER_ENTRIES" : "OTHER";
       record({ kind: "resize-call", stack: new Error("resize caller").stack,
+        eventDataKind, argumentCount: args.length,
+        observerEntryCount: observerEntries ? data.length : null,
+        observesMapContainer: observerEntries ? data.some((entry) => entry.target === map.getContainer()) : null,
         dimensions: dimensions(), moving: map.isMoving(), zoom: map.getZoom() });
       try {
         return originalResize.apply(this, args);
