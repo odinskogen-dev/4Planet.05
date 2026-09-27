@@ -82,6 +82,13 @@ type CompanyIdentityResolution = {
   };
 };
 
+type ClimateOwnerCandidate = { id: string; name: string; country: string | null; type: string | null; sourceUrl: string };
+type ClimateFacility = {
+  id: string | number | null; sourceId: string | number | null; canonicalFacilityId: string | null;
+  name: string | null; sector: string | null; subsector: string | null; country: string | null;
+  lat: number; lon: number; co2e: number | null; year: string | number; gas: string;
+};
+
 const EMPTY_TWIN: TwinState = {
   objective: "",
   annualRevenue: "",
@@ -206,6 +213,77 @@ function OpportunityRow({ item, primary = false }: { item: Opportunity; primary?
         </details>
       </div>
     </article>
+  );
+}
+
+function CompanyClimateTracePanel({ analysis }: { analysis: Analysis }) {
+  const legalName = analysis.company.legalName || analysis.company.name;
+  const [owners, setOwners] = useState<ClimateOwnerCandidate[]>([]);
+  const [selectedOwner, setSelectedOwner] = useState<ClimateOwnerCandidate | null>(null);
+  const [facilities, setFacilities] = useState<ClimateFacility[]>([]);
+  const [state, setState] = useState<"IDLE" | "SEARCHING" | "REVIEW" | "LOADING" | "READY" | "NO_MATCH" | "ERROR">("IDLE");
+
+  const discover = async () => {
+    setState("SEARCHING"); setOwners([]); setFacilities([]); setSelectedOwner(null);
+    try {
+      const response = await fetch(`/api/climate-trace-owners?name=${encodeURIComponent(legalName)}`);
+      const payload = await response.json() as { ok?: boolean; candidates?: ClimateOwnerCandidate[] };
+      if (!response.ok || !payload.ok) throw new Error("OWNER_SEARCH_FAILED");
+      const next = Array.isArray(payload.candidates) ? payload.candidates : [];
+      setOwners(next); setState(next.length ? "REVIEW" : "NO_MATCH");
+    } catch { setState("ERROR"); }
+  };
+
+  const confirmOwner = async (owner: ClimateOwnerCandidate) => {
+    setSelectedOwner(owner); setFacilities([]); setState("LOADING");
+    try {
+      const response = await fetch(`/api/climate-trace?ownerIds=${encodeURIComponent(owner.id)}&sectors=power,electricity-generation,oil-and-gas-production-and-transport,oil-and-gas-refining,coal-mining,manufacturing&limit=250&year=2025&gas=co2e_100yr`);
+      const payload = await response.json() as { ok?: boolean; assets?: ClimateFacility[] };
+      if (!response.ok || !payload.ok) throw new Error("SOURCE_SEARCH_FAILED");
+      const next = Array.isArray(payload.assets) ? payload.assets : [];
+      setFacilities(next); setState(next.length ? "READY" : "NO_MATCH");
+      trackEvent("company_climate_trace_owner_reviewed", { product_area: "4brands", result_count: next.length });
+    } catch { setState("ERROR"); }
+  };
+
+  return (
+    <section className="fb-climate" aria-label="Climate TRACE emitting-source discovery">
+      <div className="fb-climate__head">
+        <div><p className="fb-eyebrow">FACILITIES / EMISSIONS · CLIMATE TRACE</p><h2>Connect the legal company to emitting sources only after review.</h2>
+          <p>Climate TRACE owner search is a discovery layer. 4PLANET does not infer that a similarly named owner is the BRREG/GLEIF company. Choose an owner record before any facility list is shown.</p></div>
+        {state === "IDLE" && <button type="button" onClick={() => void discover()}>Find owner candidates</button>}
+      </div>
+      {state === "SEARCHING" && <p role="status">Searching Climate TRACE owner records…</p>}
+      {state === "NO_MATCH" && <p role="status">No bounded owner/facility result returned. No emissions are inferred.</p>}
+      {state === "ERROR" && <p role="status">Climate TRACE is unavailable for this lookup. Existing company evidence is unchanged.</p>}
+      {state === "REVIEW" && (
+        <div className="fb-climate__owners">
+          {owners.map((owner) => <button type="button" key={owner.id} onClick={() => void confirmOwner(owner)}>
+            <span><strong>{owner.name}</strong><small>Climate TRACE owner ID {owner.id}{owner.country ? ` · ${owner.country}` : ""}</small></span><b>REVIEW THIS OWNER</b>
+          </button>)}
+        </div>
+      )}
+      {state === "LOADING" && <p role="status">Loading Climate TRACE sources for the reviewed owner…</p>}
+      {selectedOwner && state === "READY" && (
+        <>
+          <div className="fb-climate__status"><strong>USER-REVIEWED SOURCE JOIN</strong><span>{legalName} → Climate TRACE owner {selectedOwner.name} ({selectedOwner.id})</span>
+            <p>This review is session context, not automatically promoted to Company Brain or PLANETBRAIN truth.</p></div>
+          <div className="fb-climate__facilities">
+            {facilities.slice(0, 12).map((facility, index) => (
+              <article key={String(facility.canonicalFacilityId || facility.sourceId || index)}>
+                <span>{facility.canonicalFacilityId || `facility:climatetrace:${facility.sourceId}`}</span>
+                <h3>{facility.name || "Unnamed Climate TRACE source"}</h3>
+                <p>{facility.sector || "SECTOR UNKNOWN"}{facility.subsector ? ` / ${facility.subsector}` : ""}</p>
+                <strong>{facility.co2e != null ? `${Math.round(facility.co2e).toLocaleString()} t CO₂e` : "EMISSIONS NOT REPORTED"}</strong>
+                <small>{String(facility.year || "YEAR UNKNOWN")} · {facility.country || "COUNTRY UNKNOWN"} · source {String(facility.sourceId ?? "UNKNOWN")}</small>
+                <a href={`/atlas?l=emissions&z=7&c=${facility.lon.toFixed(3)},${facility.lat.toFixed(3)}`} target="_blank" rel="noreferrer">Open this location in ATLAS ↗</a>
+              </article>
+            ))}
+          </div>
+          {facilities.length > 12 && <p className="fb-climate__more">{facilities.length - 12} additional source records returned; not hidden from the source, only collapsed in this first view.</p>}
+        </>
+      )}
+    </section>
   );
 }
 
@@ -536,6 +614,8 @@ export default function FourBrand() {
               </article>
             ))}
           </section>
+
+          <CompanyClimateTracePanel analysis={analysis} />
 
           <section className="fb-model-strip" aria-label="Public company model">
             <article><span>ECONOMIC STATE</span><strong>{analysis.economicBaseline.length} sourced baseline signals</strong></article>

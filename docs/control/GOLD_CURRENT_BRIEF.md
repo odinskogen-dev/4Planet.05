@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — COMPANY → FACILITY / CLIMATE TRACE — 27 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / REVIEW-GATED JOIN / NO LIVE RELEASE CLAIM.
+
+**SHARED SOURCE OBJECT:** the existing `/api/climate-trace` adapter remains the one source/facility path already consumed by ATLAS. It is extended with the official v7 `ownerIds` filter and returns `facility:climatetrace:<sourceId>` identifiers. 4BRANDS uses the same endpoint; no second emissions store or ATLAS copy is created.
+
+**JOIN LAW:** BRREG/GLEIF legal identity → Climate TRACE owner search is discovery only. The user must explicitly review/select a Climate TRACE owner candidate before 4BRANDS requests that owner's source records. Name similarity never auto-joins the company. The reviewed join remains session context and is not silently promoted into Company Brain or PLANETBRAIN.
+
+**SOURCE CONTRACT:** Climate TRACE public API v7 beta exposes owner search and source filtering by owner IDs. Production dependence stays bounded because the API is beta; errors/empty contracts fail closed. Facility records retain Climate TRACE source ID, coordinates, sector/subsector, year/gas and emissions value. Climate TRACE and upstream ownership/source terms remain attached as limitations.
+
+**ATLAS REUSE:** ATLAS already uses `/api/climate-trace` for its emissions layer. Facility identity is now shown in the ATLAS point detail, and 4BRANDS can deep-link to the same emissions layer/location. This is one data path viewed through two product lenses.
+
+**TRUTH BOUNDARY:** source-level emissions do not by themselves assign legal responsibility to the BRREG entity. Ownership and emissions are source records. A possible reduction strategy is not a realised reduction, and no strategy dataset is promoted in this slice.
+
+**BEFORE → AFTER VALUE:** a correctly identified company can now be used to discover/review Climate TRACE owner candidates, inspect source-level emitting facilities, see source/year/emissions context and continue spatially in ATLAS without 4PLANET inventing the company→facility relationship.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke including company-climate contract, lint, 4BRAND runtime audit, ATLAS source bridge and browser proof. No public LIVE claim until gates pass.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — 4BRANDS COMPANY IDENTITY SPINE — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / NO LIVE RELEASE CLAIM.
