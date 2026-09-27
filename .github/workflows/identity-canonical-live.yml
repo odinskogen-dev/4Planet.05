@@ -136,24 +136,24 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
             let idReady = false;
-            for (let i=1;i<=30;i++) {
+            for (let i=1;i<=12;i++) {
               try {
-                await page.goto('https://id.4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'networkidle',timeout:60000});
+                await page.goto('https://id.4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'domcontentloaded',timeout:30000});
                 await page.getByRole('heading',{name:'Logg inn'}).waitFor({timeout:7000});
                 idReady = true; break;
               } catch {}
-              await page.waitForTimeout(5000);
+              await page.waitForTimeout(3000);
             }
             if (!idReady) throw new Error('id.4planet.org login surface not live');
 
             let primaryReady = false;
-            for (let i=1;i<=30;i++) {
+            for (let i=1;i<=12;i++) {
               try {
-                await page.goto('https://4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'networkidle',timeout:60000});
+                await page.goto('https://4planet.org/?release='+process.env.SHA+'&i='+i,{waitUntil:'domcontentloaded',timeout:30000});
                 await page.getByRole('button',{name:'LOG IN'}).waitFor({timeout:7000});
                 primaryReady = true; break;
               } catch {}
-              await page.waitForTimeout(5000);
+              await page.waitForTimeout(3000);
             }
             if (!primaryReady) throw new Error('4planet.org canonical login entry not live');
 
@@ -162,7 +162,7 @@ jobs:
             const target = await page.locator('.identity-card').getAttribute('data-return-to');
             if (!target?.startsWith('https://4planet.org/')) throw new Error('original return URL was not preserved');
 
-            await page.goto('https://4planet.org/auth/4planet/callback',{waitUntil:'networkidle'});
+            await page.goto('https://4planet.org/auth/4planet/callback',{waitUntil:'domcontentloaded',timeout:30000});
             await page.getByText('Noe gikk galt. Prøv igjen.').waitFor({timeout:10000});
             await browser.close();
           }
