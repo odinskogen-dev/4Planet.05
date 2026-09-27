@@ -1,3 +1,13 @@
+# ATLAS MOBILE CONTEXT / NATIVE CONTROL COLLISION CLOSURE — 28 SEP 2026
+
+**SOURCE FAILURE:** exact deployed HEIR browser proof on mobile-430 timed out because `.ctx-head` intercepted pointer events intended for MapLibre's visible native zoom-in control. 69 deployed ATLAS tests had passed before this single geometry failure.
+
+**FIX:** no camera authority, test, MapLibre behavior or context model changed. On <=760px only while `.ctx` exists, move the existing bottom-right native navigation-control container above the maximum 72vh bottom sheet. No force-click, no hidden control, no parallel navigation UI.
+
+**ACCEPTANCE:** contract test + full ATLAS Zero Loss deployed browser proof on exact candidate. Do not call the ATLAS gate green before that exact run passes.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — 4NATION / SSB STATISTICAL CONTEXT — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / OFFICIAL STATISTICAL DISCOVERY + DEFAULT EXTRACT / PUBLIC LIVE UNTOUCHED.
