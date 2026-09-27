@@ -34,6 +34,47 @@ Minimum current-state path: `00_ READ FIRST → 01_ PROJECT LEAD CURRENT — NOW
 
 If the required BRAIN/current-state read cannot be completed, fail closed on the affected claim with `CURRENT BRAIN READ REQUIRED` rather than guessing. Continue only bounded work that does not depend on missing state. After a material Founder decision, accepted/rejected artifact, code-line change or durable learning, write back to existing canonical authorities and read back in the same work cycle. Do not create another memory or management system.
 
+## HUMAN VALUE + NETWORK EFFECT + ALIGNMENT — mandatory for material work
+
+4PLANET product work is not complete when code/features ship. Before implementation, define and preserve the product's:
+
+- HUMAN TRUTH
+- ONE MAGICAL CORE EXPERIENCE
+- TIME TO FIRST VALUE
+- FRICTIONLESS ENTRY
+- USER-CREATED REUSABLE ASSET
+- SHARE / INVITE MECHANISM
+- NEXT-USER VALUE
+- REPEAT TRIGGER
+- ORGANISATIONAL PULL
+- PAID DEPTH
+- VERIFIED-OUTCOME / PROOF BOUNDARY
+- LEARNING INSTRUMENTATION
+
+Default product loop:
+
+HUMAN TRUTH → ONE MAGICAL CORE EXPERIENCE → FRICTIONLESS ENTRY → INDIVIDUAL VALUE → USER CREATES VALUE → SOCIAL SHARING → NETWORK EFFECT → ORGANISATIONAL VALUE → PAID DEPTH → VERIFIED OUTCOMES → LEARNING → BETTER PRODUCT.
+
+User contribution is never canonical truth by default. Any contributed or remixed object must preserve creator/provenance, relevant source/claim links, visibility, review/truth state and lineage where applicable. Reuse the existing Actor, Product Context, Source, Claim and entity infrastructure; do not build a parallel social/content truth store.
+
+Product success must be measured with human/value signals where applicable: time-to-first-value, activation, return use, asset creation, share rate, invite/open conversion, remix/reuse, second-user value, organic acquisition, organisational pull-through, paid-depth conversion, verified outcome state and learning-cycle time. Commits, documents, agent messages and tokens are throughput, not success.
+
+All agents use one shared Foundation and deliberately differentiated specialist depth. Shared foundation includes 4PLANET purpose, BETTER. FOR EVERYONE., Living Planet Intelligence, Founder Thesis, truth/source law, shared-infrastructure rules, current North Star, authority/release boundaries and writeback. A specialist role must additionally define its unique mission, mastery domain, authoritative source universe, tools, decision rights, prohibited decisions, output contract, quality benchmark, fresh evaluation set, anti-goals, handoffs and training/apprenticeship. Maker ≠ Judge remains binding.
+
+Every material wake rehydrates in this order:
+
+FOUNDATION → ROLE → PROJECT → CURRENT STATE → CURRENT NORTH STAR → CURRENT TENSIONS → ACTIVE TASK.
+
+Every material return closes with:
+
+RESULT → EVIDENCE → USER EFFECT → LEARNING → STATE CHANGE → NEXT BEST ACTION → BRAIN WRITEBACK.
+
+Organisation learning loop:
+
+PURPOSE → DIRECTION → TENSION MADE VISIBLE → DECISION WITH CONTEXT → AUTONOMOUS EXECUTION → REAL USER EVIDENCE → VERIFIED LEARNING → BRAIN WRITEBACK → BETTER DIRECTION.
+
+Real-user evidence is a product input. Founder/agent judgement may guide early work but may not indefinitely substitute for observed users, analytics, feedback/support evidence or explicit external-user tests when those are required for the product claim.
+
 ## FOUR-STATE PRODUCT AUTHORITY — mandatory before user-facing mutation
 
 Every material public-product task must resolve the current four human-visible product states before changing code:
