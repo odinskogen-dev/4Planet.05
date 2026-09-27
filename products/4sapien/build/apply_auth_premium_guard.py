@@ -203,14 +203,78 @@ boot();
 
 login = site / 'login' / 'index.html'
 login.parent.mkdir(parents=True, exist_ok=True)
-login.write_text(auth_html, encoding='utf-8')
+canonical_login_html = r'''<!doctype html>
+<html lang="no"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>4PLANET ID</title>
+<style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#fff;color:#080808;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.c{width:min(90vw,440px)}h1{font-size:34px;letter-spacing:-.04em;margin:0 0 12px}p{line-height:1.5;color:#555}a{color:#159c46}</style>
+</head><body><main class="c"><h1>4PLANET ID</h1><p>Åpner sikker innlogging…</p><p><a id="manual" href="https://id.4planet.org/login">Fortsett manuelt</a></p></main>
+<script>
+(function(){
+  function safeNext(v){
+    try{
+      var u=new URL(v||'/',location.origin);
+      if(u.origin!==location.origin)return '/';
+      if(u.pathname==='/'||u.pathname.indexOf('/app/food/')===0||u.pathname.indexOf('/app/money/')===0||u.pathname.indexOf('/brain/')===0)return u.pathname+u.search+u.hash;
+    }catch(_e){}
+    return '/';
+  }
+  var qs=new URLSearchParams(location.search);
+  var next=safeNext(qs.get('next')||'/');
+  var target=location.origin+next;
+  var url='https://id.4planet.org/login?return_to='+encodeURIComponent(target);
+  document.getElementById('manual').href=url;
+  location.replace(url);
+})();
+</script></body></html>'''
+login.write_text(canonical_login_html, encoding='utf-8')
+
+callback = site / 'auth' / '4planet' / 'callback' / 'index.html'
+callback.parent.mkdir(parents=True, exist_ok=True)
+callback.write_text(r'''<!doctype html>
+<html lang="no"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>4PLANET ID</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js"></script>
+<style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#fff;color:#080808;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.c{width:min(90vw,440px)}h1{font-size:34px;letter-spacing:-.04em;margin:0 0 12px}p{line-height:1.5;color:#555}.err{color:#b42318}</style>
+</head><body><main class="c"><h1>4PLANET ID</h1><p id="status">Fullfører sikker innlogging…</p></main>
+<script>
+(async function(){
+  var SB_URL='https://ghvdzetmplqkdtfqiror.supabase.co';
+  var SB_KEY='sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE';
+  var status=document.getElementById('status');
+  function safeReturn(v){
+    try{
+      var u=new URL(v||'/',location.origin);
+      if(u.origin!==location.origin)return '/';
+      if(u.pathname==='/'||u.pathname.indexOf('/app/food/')===0||u.pathname.indexOf('/app/money/')===0||u.pathname.indexOf('/brain/')===0)return u.pathname+u.search+u.hash;
+    }catch(_e){}
+    return '/';
+  }
+  try{
+    var hash=new URLSearchParams(location.hash.replace(/^#/,''));
+    var token=hash.get('token_hash');
+    var next=safeReturn(hash.get('return_to')||'/');
+    history.replaceState({},'',location.pathname);
+    if(!token)throw new Error('missing');
+    var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    var result=await sb.auth.verifyOtp({token_hash:token,type:'email'});
+    if(result.error||!result.data||!result.data.session)throw result.error||new Error('expired');
+    location.replace(next);
+  }catch(_e){
+    status.textContent='Innloggingslenken er ugyldig eller utløpt. Åpner 4PLANET ID på nytt…';
+    status.className='err';
+    setTimeout(function(){location.replace('https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+'/'));},900);
+  }
+})();
+</script></body></html>''', encoding='utf-8')
 
 # Public root points signed-out users to the dedicated identity surface.
 s = root.read_text(encoding='utf-8')
 if 'id="account-link"' not in s:
     raise SystemExit('root account-link missing')
-s = s.replace('id="account-link" href="/app/food/"', 'id="account-link" href="/login/"', 1)
-s = s.replace("a.href='/app/food/';a.className='btn pri';", "a.href='/login/?next=/';a.className='btn pri';", 1)
+s = s.replace('id="account-link" href="/app/food/"', 'id="account-link" href="https://id.4planet.org/login?return_to=https%3A%2F%2F4sapien.com%2F"', 1)
+s = s.replace("a.href='/app/food/';a.className='btn pri';", "a.href='https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+'/');a.className='btn pri';", 1)
 signed = "link.setAttribute('data-signed-in','1');"
 if signed not in s:
     raise SystemExit('root signed-in identity marker missing')
@@ -229,7 +293,7 @@ router = r'''<script id="four-sapien-global-auth-router">
       var r=await sb.auth.getSession();
       if(r&&r.data&&r.data.session)return;
       var n=location.pathname+location.search+location.hash;
-      location.replace('/login/?next='+encodeURIComponent(n));
+      location.replace('https://id.4planet.org/login?return_to='+encodeURIComponent(location.origin+n));
     }catch(_e){}
   }
   run();
@@ -260,7 +324,11 @@ for marker in (
 for p in (food, money, brain):
     if 'four-sapien-global-auth-router' not in p.read_text(encoding='utf-8'):
         raise SystemExit(f'global auth router missing: {p}')
-if 'href="/login/"' not in root.read_text(encoding='utf-8'):
-    raise SystemExit('root login link not upgraded')
+if 'id.4planet.org/login' not in root.read_text(encoding='utf-8'):
+    raise SystemExit('root canonical 4PLANET ID link missing')
+if 'id.4planet.org/login' not in login.read_text(encoding='utf-8'):
+    raise SystemExit('legacy login relay missing canonical 4PLANET ID')
+if 'verifyOtp' not in callback.read_text(encoding='utf-8'):
+    raise SystemExit('4PLANET ID callback missing one-time handoff verification')
 
-print('4SAPIEN PREMIUM AUTH 01 applied: shared login + Google + signup + forgot/reset + password-manager semantics + global private-world routing')
+print('4SAPIEN UNIVERSAL ID applied: canonical 4PLANET ID relay + one-time cross-domain callback + global private-world routing')
