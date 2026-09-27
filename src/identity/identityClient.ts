@@ -125,9 +125,23 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
   return fallback;
 }
 
-export function identityLoginUrl(returnTo?: string) {
+export function identityLoginUrl(returnTo?: string, mode?: "signup") {
   const target = safeReturnTo(returnTo || (typeof window !== "undefined" ? window.location.href : "https://4planet.org/"));
-  return `https://id.4planet.org/login?return_to=${encodeURIComponent(target)}`;
+  const url = new URL("https://id.4planet.org/login");
+  if (mode === "signup") url.searchParams.set("mode", "signup");
+  url.searchParams.set("return_to", target);
+  return url.href;
+}
+
+export function identityDisplayLabel(
+  profile: { display_name?: string | null } | null | undefined,
+  user?: { email?: string | null } | null,
+) {
+  const name = profile?.display_name?.trim();
+  if (name) return name;
+  const email = user?.email?.trim();
+  if (email) return email;
+  return "ACCOUNT";
 }
 
 export function identityAccountUrl(returnTo?: string) {
