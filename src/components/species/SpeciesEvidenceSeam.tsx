@@ -192,9 +192,9 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
           })}
         </div>
 
-        <section data-testid="species-live-intelligence" style={{ marginTop: 34, borderTop: `1px solid ${T.line}`, paddingTop: 30 }}>
+        <section data-testid="species-live-intelligence" data-source-layer="OPENALEX_GLOBI_DISCOVERY_01" aria-labelledby="species-live-intelligence-title" style={{ marginTop: 34, borderTop: `1px solid ${T.line}`, paddingTop: 30 }}>
           <div style={{ ...mono, color: T.blue }}>LIVE DISCOVERY · SOURCE-BOUNDED</div>
-          <h3 style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3.4vw,42px)", letterSpacing: "-.035em" }}>
+          <h3 id="species-live-intelligence-title" style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3.4vw,42px)", letterSpacing: "-.035em" }}>
             Research and documented relationships.
           </h3>
           <p style={{ marginTop: 12, maxWidth: 760, color: T.dim, lineHeight: 1.6 }}>

@@ -36,6 +36,8 @@ AUTHORITY: SPECIES = king/test HEIR_ONLY. No ATLAS sandbox mutation. No Supabase
 
 ACCEPTANCE: typecheck/build/test:smoke plus TEST KING Species+Lens proof; exact candidate SHA; no claim of Gold or live deployment without independent proof.
 
+IMPLEMENTATION COHERENCE RECEIPT: this brief and the SPECIES live-discovery surface marker are updated together in the same bounded change; source discovery stays noncanonical and fail-closed.
+
 ---
 
 4NATION UX06 PASS B/C — FINAL RELEASE PREPARATION / PARENT ab08fed29b299779217e04cedf48c7281c1c436d / 27 SEP 2026
