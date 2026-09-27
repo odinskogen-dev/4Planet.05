@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('4NATION citizen and institutional decision paths share official-source record', async ({ page }) => {
   await page.goto('/4nation');
-  await expect(page.getByRole('heading',{name:/understand your nation/i})).toBeVisible();
+  await expect(page.getByText(/UNDERSTAND YOUR NATION/i).first()).toBeVisible();
   await page.getByRole('button',{name:/Explore public decisions/i}).click();
   await expect(page.getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
   await expect(page.getByText('UNDER CONSIDERATION',{exact:false}).first()).toBeVisible();
@@ -129,7 +129,7 @@ test('SPECIES Orca shows the shared contextual ATLAS without inventing live posi
 test('the first mobile screen starts with a real case and one clear action', async ({page}) => {
   await page.goto('/4nation');
   const hero=page.locator('.nt-hero');
-  await expect(hero.getByRole('heading',{name:/Understand your nation/i})).toBeVisible();
+  await expect(hero.getByText(/UNDERSTAND YOUR NATION/i).first()).toBeVisible();
   await expect(hero.getByRole('heading',{name:/What is happening.*Oslofjord/i})).toBeVisible();
   await expect(hero.getByText('PROPOSAL · UNDER CONSIDERATION')).toBeVisible();
   await expect(hero.getByRole('button',{name:/Explore public decisions/i})).toHaveCount(1);

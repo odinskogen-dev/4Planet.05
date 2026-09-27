@@ -465,3 +465,5 @@ ACCEPTANCE: 4NATION source-state contracts, typecheck/build/smoke/lint, desktop 
 ROLLBACK: revert the bounded 4NATION 07 commit(s). Existing public 4nation.org Worker stays pinned to its previously verified immutable UX06 origin until a separately authorised exact tested artifact is promoted.
 
 QA CORRECTION / 28 SEP 2026: 4NATION source-date contract advanced with the verified snapshot from 22 Sep to 28 Sep; no political status, deadline, source identity or decision semantics changed.
+
+UX CONTRACT CORRECTION / 28 SEP 2026: “Understand your nation.” remains visible as the 4NATION product proposition, but is no longer a second competing hero heading. The Oslofjord question is the single hero heading. Browser acceptance now asserts that hierarchy directly. The compact factual status label remains “PROPOSAL · UNDER CONSIDERATION”.

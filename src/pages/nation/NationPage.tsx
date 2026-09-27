@@ -178,7 +178,7 @@ export default function NationPage() {
         <p className='nt-hero-trust'>An independent 4PLANET prototype · <button type='button' onClick={() => setSourceOpen(true)}>See the sources ↗</button></p>
       </div>
       <article className='nt-featured' aria-labelledby='nt-feature-title'>
-        <div className='nt-feature-top'><SmallLabel>OSLOFJORD / NORWAY</SmallLabel><span className='nt-feature-status'>OFFICIAL STATUS · UNDER CONSIDERATION</span></div>
+        <div className='nt-feature-top'><SmallLabel>OSLOFJORD / NORWAY</SmallLabel><span className='nt-feature-status'>PROPOSAL · UNDER CONSIDERATION</span></div>
         <div className='nt-feature-middle'>
           <span className='nt-feature-eyebrow'>ONE PUBLIC DECISION · 2026–2030</span>
           <h2 id='nt-feature-title'>One proposal.<br/><em>What happens next?</em></h2>
