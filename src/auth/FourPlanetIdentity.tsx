@@ -204,6 +204,7 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
   return (
     <IdentityContext.Provider value={value}>
       {children}
+      <UniversalIdentityEntry user={session?.user || null} onOpen={openAuth} />
       {mode && (
         <IdentityModal
           client={client}
@@ -214,6 +215,57 @@ export function FourPlanetIdentityProvider({ children }: { children: ReactNode }
         />
       )}
     </IdentityContext.Provider>
+  );
+}
+
+function UniversalIdentityEntry({
+  user,
+  onOpen,
+}: {
+  user: AuthUser | null;
+  onOpen: (mode?: AuthMode) => void;
+}) {
+  const [checked, setChecked] = useState(false);
+  const [nativeEntry, setNativeEntry] = useState(false);
+
+  useEffect(() => {
+    const resolve = () => {
+      setNativeEntry(Boolean(document.querySelector(".public-header__identity")));
+      setChecked(true);
+    };
+    resolve();
+    const observer = new MutationObserver(resolve);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  if (!checked || nativeEntry) return null;
+  return (
+    <button
+      type="button"
+      className="fourplanet-id-global-entry"
+      onClick={() => onOpen(user ? "account" : "signin")}
+      aria-label={user ? "Open 4PLANET ID account" : "Log in with 4PLANET ID"}
+    >
+      <span>{user ? "4PLANET ID" : "LOG IN"}</span>
+      <small>{user ? "ACCOUNT" : "4PLANET ID"}</small>
+      <style>{`
+        .fourplanet-id-global-entry{
+          position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:1090;
+          display:flex;align-items:baseline;gap:9px;padding:9px 12px;border:1px solid rgba(8,8,8,.18);
+          border-radius:999px;background:rgba(255,255,255,.92);color:#080808;backdrop-filter:blur(14px);
+          box-shadow:0 4px 18px rgba(0,0,0,.08);font-family:${T.mono};cursor:pointer
+        }
+        .fourplanet-id-global-entry span{font-size:10px;letter-spacing:.12em;font-weight:650}
+        .fourplanet-id-global-entry small{font-size:8px;letter-spacing:.13em;color:#666}
+        .fourplanet-id-global-entry:hover{border-color:${T.blue}}
+        .fourplanet-id-global-entry:focus-visible{outline:3px solid ${T.blue};outline-offset:3px}
+        @media(max-width:520px){
+          .fourplanet-id-global-entry{top:calc(10px + env(safe-area-inset-top,0px));right:10px;padding:8px 10px}
+          .fourplanet-id-global-entry small{display:none}
+        }
+      `}</style>
+    </button>
   );
 }
 

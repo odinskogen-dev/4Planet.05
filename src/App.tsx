@@ -92,7 +92,13 @@ function AtlasProductSwitcher() {
 export default function App() {
   if (isIdentitySurface()) return <IdentityApp />;
   if (isLegacyFourBrandHost() || isLegacyFourBrandsPath()) return <CanonicalFourBrandsRedirect />;
-  if (isFourBrandsHost() || isFourBrandsSandbox()) return <FourBrandsEconomicV2 />;
+  if (isFourBrandsHost() || isFourBrandsSandbox()) {
+    return (
+      <FourPlanetIdentityProvider>
+        <FourBrandsEconomicV2 />
+      </FourPlanetIdentityProvider>
+    );
+  }
 
   return (
     <BrowserRouter>
