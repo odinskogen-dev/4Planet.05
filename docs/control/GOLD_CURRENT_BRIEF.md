@@ -1,3 +1,40 @@
+# CURRENT GOLD BRIEF — 4BRANDS COMPANY INTELLIGENCE 0–3
+
+**CHANGE ID:** 4BRANDS-COMPANY-INTELLIGENCE-0-3-2026-09-27
+
+**STATUS:** HEIR / TEST CANDIDATE / NOT GOLD / NO PUBLIC CUSTOM-DOMAIN RELEASE
+
+**BASE AUTHORITY:** `king/test` sole HEIR. This bounded change converges the already-existing 4BRANDS public analysis, authenticated Company Brain, Company Twin and Decision + Value Ledger into one explicit product architecture. It does not create a parallel 4BRANDS app, Brain, database or identity system.
+
+**FOUNDER DIRECTION:** 0. Company Analysis → 1. Company Brain → 2. Company Twin → 3. Future Engine. Company Analysis is the free public entry and acquisition surface. Company Brain is durable company memory/knowledge. Company Twin models the current company. Future Engine explores explicit scenarios before action.
+
+## USER ARRIVES BECAUSE
+A person wants to understand a company from public evidence, find potential value, then connect authenticated internal context and test better decisions without losing the distinction between evidence and hypothesis.
+
+## PRIMARY FLOW
+Company Analysis → create/sign in with canonical 4PLANET ID → create/select Company Brain workspace → persist analysis + Twin state → inspect Decision + Value Ledger → explore bounded scenarios.
+
+## COMPANY BRAIN
+Reuse existing 4Planet_ OS 4BRANDS tenant state, memberships, RLS, durable memories, metrics, decisions, interventions, results, learning and audit. The browser no longer owns a separate Company-Brain-specific auth session; authentication converges on the existing universal 4PLANET ID. Local recovery is non-canonical only.
+
+## FUTURE ENGINE BETA
+The first Future Engine is deterministic scenario arithmetic over explicit user assumptions and numeric Twin baselines. It is NOT an AI forecast and does not claim causal prediction. Future probabilistic or learned models require evidence, calibration and separate validation.
+
+## TRUTH BOUNDARY
+FACT ≠ ASSUMPTION ≠ SCENARIO ≠ FORECAST ≠ OBSERVED RESULT ≠ ATTRIBUTED VALUE.
+Public analysis remains source-aware. Unknown is not zero. Scenario outputs do not become realised value. Company-private state never becomes shared 4PLANET/PLANETBRAIN truth by convenience.
+
+## SECURITY
+Company RPCs are authenticated tenant operations. 2026-09-27 backend hardening removed anonymous EXECUTE from Company Brain workspace/snapshot/twin/analysis/intervention/result/value-report/compounding RPCs and narrowed material UPDATE policies to authenticated. Existing membership/RLS checks remain authoritative.
+
+## HUMAN REVIEW INTENT
+Verify desktop and mobile hierarchy; the 0–3 architecture is understandable without internal jargon; public Company Analysis still works without login; 4PLANET ID sign-in/create-account returns to Company Brain; authenticated workspace creation/save/readback works for an actual permitted user; scenario controls clearly show assumptions; Company Twin and Value Ledger remain usable; no false forecast/value/impact claim.
+
+## QA / RELEASE GATE
+Exact SHA typecheck/build and relevant 4BRANDS/identity/runtime journeys must pass on HEIR or controlled preview. Positive real-user authenticated readback cannot be inferred from source tests. Maker ≠ Judge. Custom-domain LIVE promotion remains a separate Founder-release action; this brief does not authorize it.
+
+--- PRIOR GOLD HISTORY PRESERVED BELOW ---
+
 ATLAS GOLD 04 / MAPLIBRE API TEST COMPATIBILITY / 22 SEP 2026
 Parent 93212f4582d141287b7e833cdc1022827bf1a1eb. Exact SHA 1c98ec1 source had previously failing ATLAS Zero Loss mobile 390 click target blocked by Orca context; mobile native controls now usable and click reached MapLibre. Test then crashed on TypeError map.isEasing is not a function, MapLibre v6 runtime does not expose this optional legacy method. SAME COMMIT fixes test compatibility while RETAINING both !map.isMoving() and !map.isZooming() and checking isEasing only when supported. Camera ownership, settled zoom, lat/lng acceptance assertions and timeouts are unchanged. No production, DNS, branch, new architecture or external release. Exact HEAD rebuild/CI required, no Gold before portfolio gates and live camera approved separately.
 --- PRIOR HISTORY BELOW ---

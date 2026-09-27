@@ -549,7 +549,7 @@ export default function FourBrand() {
 
             <section className="fb-future" id="future-engine" aria-label="4BRANDS Future Engine">
               <div className="fb-future__head">
-                <div><p className="fb-eyebrow">03 / FUTURE ENGINE / BETA</p><h3>Explore the decision before you make it.</h3></div>
+                <div><p className="fb-eyebrow">03 / FUTURE ENGINE / BETA</p><h3>Explore the decision before acting.</h3></div>
                 <p>Change explicit assumptions and inspect a deterministic scenario against the company baseline. This first engine is arithmetic, not an AI forecast. Future models can add causal drivers, distributions and learned company-specific parameters only when evidence supports them.</p>
               </div>
               <div className="fb-future-grid">
