@@ -39,7 +39,7 @@ export const onRequestGet=async({request}:PagesContext):Promise<Response>=>{
     const candidates=rows.map(normalizeClimateTraceOwner).filter(Boolean);
     return json({
       ok:true,state:candidates.length?"CANDIDATES_REVIEW_REQUIRED":"NO_MATCH",query:name,candidates,
-      source:{publisher:"Climate TRACE",apiVersion:"v7 beta",endpoint:"/owners",checkedAt:new Date().toISOString()},
+      source:{publisher:"Climate TRACE",apiVersion:"v7 beta",endpoint:"/owners",checkedAt:new Date().toISOString(),license:"MIXED_UPSTREAM_OWNERSHIP_SOURCES_REVIEW_REQUIRED",commercialReuse:"REVIEW_UPSTREAM_OWNERSHIP_SOURCE_TERMS_BEFORE_PERSISTENCE_OR_REDISTRIBUTION",attribution:"Climate TRACE owner index plus underlying ownership sources where applicable",cachePolicy:"4PLANET edge cache 1 hour; discovery results are not canonical company truth",accessCost:"FREE_PUBLIC_API_BETA",rateLimit:"NOT_GUARANTEED; KEEP_VOLUME_LOW"},
       truthBoundary:"Owner-name search is discovery only. A 4PLANET company→Climate TRACE owner relationship requires explicit user review or an independently verified identifier crosswalk.",
     });
   }catch(error){

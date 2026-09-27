@@ -57,8 +57,8 @@ export const onRequestGet=async({request}:PagesContext):Promise<Response>=>{
       return json({
         ok:true,state:"EXACT_BRREG_IDENTITY",entity,gleif,
         sources:{
-          brreg:{publisher:"Brønnøysundregistrene",license:"NLOD 2.0",exactDataset:entity.sourceUrl,joinRule:"EXACT_ORGANIZATION_NUMBER"},
-          gleif:{publisher:"GLEIF",license:"CC0",api:GLEIF_API,joinRule:gleif.verified?"EXACT_REGISTERED_AS_EQUALS_BRREG_ORGNR":"NO_AUTOMATIC_JOIN"},
+          brreg:{publisher:"Brønnøysundregistrene",license:"NLOD 2.0",commercialReuse:"PERMITTED_WITH_NLOD_CONDITIONS",attribution:"Brønnøysundregistrene",exactDataset:entity.sourceUrl,accessCost:"FREE_OPEN_DATA_API",cachePolicy:"NO_STORE_IN_THIS_IDENTITY_GATEWAY",rateLimit:"NOT_RECORDED_IN_THIS_ADAPTER",joinRule:"EXACT_ORGANIZATION_NUMBER"},
+          gleif:{publisher:"GLEIF",license:"CC0 1.0",commercialReuse:"PERMITTED_CC0",attribution:"GLEIF",api:GLEIF_API,accessCost:"FREE_ACCESS_SERVICE",cachePolicy:"NO_STORE_IN_THIS_IDENTITY_GATEWAY",rateLimit:"SUBJECT_TO_GLEIF_ACCESS_SERVICE_TERMS",joinRule:gleif.verified?"EXACT_REGISTERED_AS_EQUALS_BRREG_ORGNR":"NO_AUTOMATIC_JOIN"},
         },
         truthBoundary:"Company-name search is discovery. Only exact BRREG organisation number is canonical Norwegian legal identity. LEI is accepted automatically only when GLEIF registeredAs exactly equals the BRREG organisation number.",
       });
@@ -67,7 +67,7 @@ export const onRequestGet=async({request}:PagesContext):Promise<Response>=>{
       const candidates=await searchBrregByName(q,{signal:AbortSignal.timeout(6500),limit:8});
       return json({
         ok:true,state:candidates.length?"CANDIDATES":"NO_MATCH",query:q,candidates,
-        source:{publisher:"Brønnøysundregistrene",license:"NLOD 2.0",api:"https://data.brreg.no/enhetsregisteret/api/enheter",matchRule:"NAME_DISCOVERY_REQUIRES_USER_SELECTION"},
+        source:{publisher:"Brønnøysundregistrene",license:"NLOD 2.0",commercialReuse:"PERMITTED_WITH_NLOD_CONDITIONS",attribution:"Brønnøysundregistrene",api:"https://data.brreg.no/enhetsregisteret/api/enheter",retrievedAt:new Date().toISOString(),accessCost:"FREE_OPEN_DATA_API",cachePolicy:"NO_STORE_IN_THIS_IDENTITY_GATEWAY",rateLimit:"NOT_RECORDED_IN_THIS_ADAPTER",matchRule:"NAME_DISCOVERY_REQUIRES_USER_SELECTION"},
       });
     }
     return json({ok:false,error:"QUERY_OR_ORGNR_REQUIRED"},400);
