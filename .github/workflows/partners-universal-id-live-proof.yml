@@ -1,0 +1,46 @@
+name: Partners Universal 4PLANET ID Live Proof
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/partners-universal-id-live-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Real-domain Partners identity proof
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for(const engine of [chromium,webkit]){
+            const browser=await engine.launch();
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const resp=await page.goto('https://partners.4planet.org/',{waitUntil:'domcontentloaded',timeout:30000});
+            if(resp?.status()!==200) throw new Error('Partners HTTP '+resp?.status());
+            const login=page.getByRole('link',{name:'Log in with 4PLANET ID'});
+            await login.waitFor({timeout:10000});
+            await login.click();
+            await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?return_to=/,{timeout:10000});
+            const target=await page.locator('.identity-card').getAttribute('data-return-to');
+            if(!target?.startsWith('https://partners.4planet.org/')) throw new Error('Partners return target lost '+target);
+
+            await page.goto('https://partners.4planet.org/auth/4planet/callback',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?return_to=/,{timeout:10000});
+            await browser.close();
+          }
+          console.log('PARTNERS UNIVERSAL 4PLANET ID LIVE PROOF: PASS');
+          NODE
