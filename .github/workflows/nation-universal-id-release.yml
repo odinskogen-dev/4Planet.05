@@ -55,7 +55,7 @@ jobs:
           echo "CLOUDFLARE_ACCOUNT_ID=$aid" >> "$GITHUB_ENV"
       - name: Deploy identity-only wrapper to existing 4NATION Worker
         run: |
-          cat > /tmp/nation-id-wrangler.toml <<'EOF'
+          cat > nation-id-wrangler.toml <<'EOF'
           name = "4planet-nation-live"
           main = "ops/nation/4nation-live-worker.js"
           compatibility_date = "2026-09-21"
@@ -64,7 +64,7 @@ jobs:
           pattern = "4nation.org"
           custom_domain = true
           EOF
-          npx --yes wrangler@4.128.0 deploy --config /tmp/nation-id-wrangler.toml
+          npx --yes wrangler@4.128.0 deploy --config nation-id-wrangler.toml
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - name: Real-domain identity proof
