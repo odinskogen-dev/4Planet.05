@@ -1,0 +1,48 @@
+name: 4PLANET ID Pages Family Live Proof
+
+on:
+  push:
+    branches: [release/one-interface-sprint2-6bbfebb]
+    paths:
+      - ".github/workflows/identity-pages-family-live-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect live family identity entry points
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch();
+          const page=await browser.newPage({viewport:{width:1280,height:900}});
+          const hosts=['https://4planet.org/','https://s4piens.com/','https://4planetatlas.com/','https://labs.4planet.org/','https://4brands.org/'];
+          const results=[];
+          for(const url of hosts){
+            try{
+              const resp=await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(2500);
+              results.push({
+                url,
+                status:resp?.status(),
+                login:await page.getByText('LOG IN',{exact:true}).count(),
+                account:await page.getByText('4PLANET ID',{exact:true}).count(),
+                title:await page.title()
+              });
+            }catch(e){results.push({url,error:String(e)})}
+          }
+          console.log(JSON.stringify(results));
+          await browser.close();
+          NODE
