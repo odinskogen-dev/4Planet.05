@@ -1,3 +1,23 @@
+# DATA VALUE CONVERGENCE 01 — SPECIES LIVE EVIDENCE DISCOVERY — 27 SEP 2026
+
+STATUS: HEIR CANDIDATE BRIEF / NONPRODUCTION / NO CANON PROMOTION / NO LIVE RELEASE AUTHORITY.
+
+HUMAN TRUTH: a species page becomes more useful when the person can move from a canonical species identity to current research metadata and source-linked interaction records without confusing discovery with established biological truth.
+
+BOUNDED CHANGE: reuse the existing SPECIES evidence seam and newly added shared provider adapters. For curated species with an existing source envelope, fetch a small live discovery set from OpenAlex metadata and GloBI. OpenAlex results are research discovery only; titles/metadata are not biological findings. GloBI interactions remain REVIEW_REQUIRED and must retain study/dataset provenance; an indexed interaction is not universal behaviour, abundance, causality, local presence or current state.
+
+TTFV: existing species page still renders from current sources first. Live discovery is progressive enhancement, never a blocker.
+
+SOURCE / RIGHTS: OpenAlex metadata only; do not rehost abstract/full text. GloBI general data licence does not erase original dataset provenance/terms. React output escaping remains mandatory. Provider unavailable/rate-limited => explicit unavailable state; never fabricate fallback records.
+
+MEASUREMENT: source-discovery load state, research records returned, interaction records returned, source-open actions later. These are product-use signals, not ecological outcome.
+
+AUTHORITY: SPECIES = king/test HEIR_ONLY. No ATLAS sandbox mutation. No Supabase schema, BRAIN database, public domain, DNS, payment, outreach or production release.
+
+ACCEPTANCE: typecheck/build/test:smoke plus TEST KING Species+Lens proof; exact candidate SHA; no claim of Gold or live deployment without independent proof.
+
+---
+
 4NATION UX06 PASS B/C — FINAL RELEASE PREPARATION / PARENT ab08fed29b299779217e04cedf48c7281c1c436d / 27 SEP 2026
 ACTUAL VISUAL JUDGMENT performed from Cloudflare screenshots at mobile390/mobile430/tablet/desktop, not source-only. First hosted pass showed overly long mobile page, always-open six-event timeline, oversized marketing WHY block and internal Nation Atlas/Nation Brain labels. PASS B/C commit d742f9ee6cc93c3754eb0c077e73109314e0233f collapses full timeline behind accessible native disclosure, keeps 6 verified events one tap away, changes visible layers to Map/Evidence, removes low-value Our purpose top nav link and replaces huge black marketing section with compact light 4PLANET close. Final immutable preview https://82a64686.4planet-05.pages.dev/4nation. Exact external preview/browser run 36340292741 SUCCESS: 18/18 desktop1440/mobile390/mobile430 including existing people/institution/source/deep-link/map/full ATLAS and new timeline disclosure; real final screenshots captured in workflow 36340696982 and visually reviewed. Product remains evidence-first and politically neutral; same official Oslofjord status/source bundle, no recommendation/ranking/official affiliation.
 This SAME COMMIT updates repository release Worker source and existing dispatch-only live workflow to final immutable origin + source SHA d742f9ee6cc93c3754eb0c077e73109314e0233f. NO Cloudflare deploy occurs from this commit. The protected production workflow still requires exact founder_release input "enig send"; auto-push release remains disabled. Existing public 4nation.org therefore continues prior pinned version until that explicit production gate executes. Do not call UX06 LIVE yet. No other domain or Pages production branch may be mutated.
