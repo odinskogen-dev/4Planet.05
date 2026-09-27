@@ -46,3 +46,11 @@ test("canonical ID client can hand off to every priority product host accepted b
     assert.ok(client.includes(`"${host}"`), `trusted host missing: ${host}`);
   }
 });
+
+
+test("identity funnel is measurable without emitting credentials or email", () => {
+  assert.match(ui, /trackEvent\("signup_started"/);
+  assert.match(ui, /trackEvent\("signup_completed"/);
+  assert.match(ui, /trackEvent\("login"/);
+  assert.doesNotMatch(ui, /trackEvent\([^\n]*(email|password)/);
+});
