@@ -101,7 +101,14 @@
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
       "heir": {"review_path": "/living-systems", "origin_path": "/living-systems"},
-      "sandbox": null
+      "sandbox": {
+        "branch": "cursor/planetbrain-source-cites-6067",
+        "sha_at_registration": "e36090048fdfa8cbc6817ad760c042806093ed0d",
+        "review_path": "/living-systems/sandbox",
+        "origin_path": "/living-systems",
+        "lineage_state": "BOUNDED_SOURCE_CITATION_REPAIR_HUMAN_REVIEW_PENDING",
+        "live_authority": false
+      }
     },
     "ORCA": {
       "live": {"url": "https://4planet.org/species/orca", "identity_state": "READBACK_REQUIRED"},

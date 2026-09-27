@@ -31,10 +31,15 @@ jobs:
       - name: Fetch current HEIR
         run: git fetch --no-tags origin king/test
 
+      - name: Prove product authority pipeline exit codes
+        shell: bash
+        run: node --test scripts/product-authority-enforce.test.mjs
+
       - name: Validate registry and current mutation authority
         env:
           AUTHORITY_BASE_REF: ${{ github.base_ref }}
-        run: node scripts/product-authority-gate.mjs | tee product-authority-result.txt
+        shell: bash
+        run: bash scripts/product-authority-enforce.sh
 
       - name: Inventory remote refs under absolute write-authority law
         env:

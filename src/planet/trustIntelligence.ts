@@ -102,6 +102,38 @@ const EXTRA_SOURCES: Record<string, RecoveredTrustSource> = {
 export const recoveredSource = (id: string): RecoveredTrustSource | undefined =>
   (RECOVERED_SOURCE_REFS[id] as RecoveredTrustSource | undefined) ?? EXTRA_SOURCES[id];
 
+const HTTPS_SOURCE_URL = /^https:\/\/\S+$/i;
+
+export interface SourceCitation {
+  id: string;
+  label: string;
+  authority: string;
+  donorReview: string;
+  url: string | null;
+  note: string;
+  /** True only when an existing https URL can be opened. Never invented. */
+  established: boolean;
+}
+
+/**
+ * Public citation for an already recovered source.
+ * Donor review is copied, not upgraded. A missing or non-https URL stays unlinked.
+ */
+export function sourceCitation(id: string): SourceCitation | null {
+  const source = recoveredSource(id);
+  if (!source) return null;
+  const url = typeof source.url === "string" && HTTPS_SOURCE_URL.test(source.url) ? source.url : null;
+  return {
+    id: source.id,
+    label: source.label,
+    authority: source.authority,
+    donorReview: source.donorReview,
+    url,
+    note: source.note,
+    established: url !== null,
+  };
+}
+
 export const ALL_RECOVERED_TRUST_SOURCES: Record<string, RecoveredTrustSource> = {
   ...RECOVERED_SOURCE_REFS,
   ...EXTRA_SOURCES,

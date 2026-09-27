@@ -64,3 +64,16 @@ test("deep intelligence stays progressive disclosure inside current Living Syste
   assert.match(page, /LivingSystemsIntelligencePanel/);
   assert.match(page, /anchorSlug=\{a\.slug\}/);
 });
+
+test("recovered sources are openable only when an https URL already exists", () => {
+  assert.match(trust, /export function sourceCitation/);
+  assert.match(trust, /HTTPS_SOURCE_URL/);
+  assert.match(trust, /established: url !== null/);
+  assert.match(panel, /sourceCitation/);
+  assert.match(panel, /ORIGINAL URL NOT ESTABLISHED/);
+  assert.match(panel, /DONOR, NOT CURRENT VERIFICATION/);
+  assert.match(panel, /data-established=/);
+  assert.doesNotMatch(panel, /href=\{[^}]*\|\|/);
+  assert.match(intel, /url: "https:\/\/www\.ipbes\.net"/);
+  assert.doesNotMatch(intel, /id: "INPE"[\s\S]{0,220}url:/);
+});

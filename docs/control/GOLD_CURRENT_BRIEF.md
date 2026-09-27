@@ -1,3 +1,56 @@
+# CURRENT GOLD BRIEF — PLANETBRAIN SOURCE CITATIONS 01
+
+CHANGE ID: PLANETBRAIN-SOURCE-CITES-01-2026-09-27
+STATUS: HEIR CHILD / NOT GOLD / NO LIVE RELEASE
+PARENT: king/test@e1124012d5f64eaae59b03dfc153e79d517f0a74 (forward-synced; citation work began at e36090048fdfa8cbc6817ad760c042806093ed0d)
+PRODUCT: LIVING_SYSTEMS decision intelligence, the existing PLANETBRAIN recovered-source surface. ATLAS sandbox remains untouched.
+
+## USER ARRIVES BECAUSE
+A person reading Amazonia or Pollination decision intelligence wants to open the original source behind a pathway, signal or learning record.
+
+## ONE THING TO UNDERSTAND
+A recovered source is openable only when an https URL is already recorded. Donor review is not current verification.
+
+## PRIMARY ACTION
+Open Deep Intelligence and follow a cited source, or read that the original URL is not established.
+
+## SECONDARY DEPTH
+The same citation sits on the pathway, the decision signal, the learning record and the source register.
+
+## P1 DOMINANT
+The cited original, or the explicit absence of one.
+
+## P2 ORIENTATION
+Donor review state stays visible beside the citation and is not upgraded.
+
+## P3 ACTION / NEXT
+Open the recorded https source in a new tab. Unresolved sources have no link.
+
+## P4 DEPTH
+Existing trust counts, cascade, data-quality notes and truth boundary remain.
+
+## WHAT CAN BE REMOVED
+Dead source labels that look equally openable whether or not a URL exists.
+
+## WHAT MUST BE REUSED
+Existing `sourceCitation` over `recoveredSource`, Living Systems routes, and the current decision-intelligence records. No new source, database, BRAIN or service.
+
+## TRUTH BOUNDARY
+No URL is invented. Placeholder authorities such as AMAZON_INSTITUTIONAL stay unlinked. Donor VERIFIED is not a current 4PLANET verification stamp.
+
+## MOBILE-FIRST RISK
+Citations wrap inside the existing panel. 390 and 430 widths must not gain horizontal overflow.
+
+## HUMAN SUCCESS
+On Pollination, IPBES opens https://www.ipbes.net. On Amazonia, sources without a recorded URL say ORIGINAL URL NOT ESTABLISHED and are not links.
+
+MAKER ≠ JUDGE. This brief does not certify Gold or authorise LIVE.
+
+## CI CONTINUATION — SAME SLICE
+Existing `scripts/living-systems-recovery-contract.test.mjs` now runs through `npm run test:smoke` and `npm run test:contracts`. Existing `tests/e2e/planetbrain-source-cites.spec.ts` now runs in ONE INTERFACE Convergence Gate on Chromium desktop-1440, mobile-390 and mobile-430. Assertions are unchanged. The six accepted citation cases verify rendered links, not outbound navigation or scientific source content. The registry review path stays `/living-systems/sandbox` because the control gate requires that suffix; origin remains `/living-systems`. ATLAS Zero Loss receipt retained: run 36343973048, deployed Chromium mobile-430 zoom click intercepted by `.ctx-head`. Classification: inherited source rules; deployed-parent baseline absent; runtime causality unproven.
+
+--- PRIOR GOLD BRIEFS PRESERVED BELOW ---
+
 # DATA VALUE CONVERGENCE 01 — 4NATION / SSB STATISTICAL CONTEXT — 27 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / OFFICIAL STATISTICAL DISCOVERY + DEFAULT EXTRACT / PUBLIC LIVE UNTOUCHED.
