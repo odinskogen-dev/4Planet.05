@@ -54,5 +54,5 @@ jobs:
             }
             await browser.close();
           }
-          console.log('4PLANET ID PAGES FAMILY LIVE PROOF: PASS · STATIC FALLBACK INCLUDED');
+          console.log('4PLANET ID PAGES FAMILY LIVE PROOF: PASS · STATIC FALLBACK VERIFIED AFTER HYDRATION FIX');
           NODE
