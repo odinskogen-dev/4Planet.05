@@ -146,13 +146,6 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
     contentType: "application/json",
   });
 
-  if (state === "unavailable") {
-    await expect(page.getByText(/iNATURALIST OBSERVATIONS UNAVAILABLE/i)).toBeVisible();
-    await evidence(page, "06-selected-record-provider-unavailable.png");
-    return;
-  }
-
-  expect(state).toBe("live");
   const source = await page.evaluate(async ({ ok, status, data }) => {
     return {
       ok,
@@ -176,6 +169,13 @@ test("OMEGA — deployed observation evidence answers the seven human questions 
     body: JSON.stringify({ uiStateAfterResponse: state, evidenceSource: "UI_RESPONSE", ...source.diagnostic }),
     contentType: "application/json",
   });
+  if (state === "unavailable") {
+    await expect(page.getByText(/iNATURALIST OBSERVATIONS UNAVAILABLE/i)).toBeVisible();
+    await evidence(page, "06-selected-record-provider-unavailable.png");
+    return;
+  }
+
+  expect(state).toBe("live");
   expect(source.ok).toBe(true);
   expect(source.records.length).toBeGreaterThan(0);
   expect(source.resolvedTaxon?.name).toBe("Orcinus orca");
