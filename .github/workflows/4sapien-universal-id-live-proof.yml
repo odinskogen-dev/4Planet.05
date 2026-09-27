@@ -1,0 +1,49 @@
+name: 4SAPIEN Universal ID Live Proof
+
+on:
+  push:
+    branches: [build/ask-embla-live-20260909]
+    paths:
+      - "products/4sapien/build/apply_auth_premium_guard.py"
+      - ".github/workflows/4sapien-universal-id-live-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Prove 4SAPIEN uses canonical 4PLANET ID
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for (const engine of [chromium, webkit]) {
+            const browser = await engine.launch();
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+            await page.goto('https://4sapien.com/login/?next=%2Fapp%2Ffood%2F',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?return_to=/,{timeout:10000});
+            const loginUrl = new URL(page.url());
+            const returnTo = loginUrl.searchParams.get('return_to');
+            if (returnTo !== 'https://4sapien.com/app/food/') throw new Error('4SAPIEN return target not preserved: '+returnTo);
+            await page.getByRole('heading',{name:'Logg inn'}).waitFor({timeout:10000});
+
+            const callback = await page.request.get('https://4sapien.com/auth/4planet/callback/');
+            if (callback.status() !== 200) throw new Error('4SAPIEN SSO callback HTTP '+callback.status());
+            const body = await callback.text();
+            if (!body.includes('verifyOtp') || !body.includes('token_hash')) throw new Error('4SAPIEN SSO callback contract missing');
+
+            await browser.close();
+          }
+          console.log('4SAPIEN UNIVERSAL 4PLANET ID LIVE PROOF: PASS');
+          NODE
