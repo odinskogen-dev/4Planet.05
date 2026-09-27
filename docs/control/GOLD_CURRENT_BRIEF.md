@@ -1,3 +1,16 @@
+4PLANET ID ON HEIR / FREE ACCOUNT ONLY / 26 SEP 2026
+USER ARRIVES BECAUSE the public site already lets a person create a free 4PLANET ID, and the HEIR Join page had dropped that path.
+ONE THING TO UNDERSTAND: a free ID is not paid membership.
+PRIMARY ACTION: CREATE 4PLANET ID or LOG IN on /join.
+SECONDARY DEPTH: signed-in account dialog, including the existing link to 4SAPIEN.
+P1 DOMINANT: the account action. P2 ORIENTATION: paid membership stays future. P3 ACTION: create or log in. P4 DEPTH: account dialog.
+WHAT CAN BE REMOVED: the false line that said no registration exists.
+WHAT MUST BE REUSED: the existing FourPlanetIdentity runtime from the live one-interface line. No second auth system.
+TRUTH BOUNDARY: account creation does not confirm payment, membership entitlement, or ecological outcome. OAuth and email confirmation return to the current host.
+MOBILE-FIRST RISK: header account control must stay reachable beside the existing menu.
+HUMAN SUCCESS: a person can open the create/login dialog on HEIR and return to the same host after confirmation.
+--- PRIOR HISTORY BELOW ---
+
 ATLAS GOLD 04 / MAPLIBRE API TEST COMPATIBILITY / 22 SEP 2026
 Parent 93212f4582d141287b7e833cdc1022827bf1a1eb. Exact SHA 1c98ec1 source had previously failing ATLAS Zero Loss mobile 390 click target blocked by Orca context; mobile native controls now usable and click reached MapLibre. Test then crashed on TypeError map.isEasing is not a function, MapLibre v6 runtime does not expose this optional legacy method. SAME COMMIT fixes test compatibility while RETAINING both !map.isMoving() and !map.isZooming() and checking isEasing only when supported. Camera ownership, settled zoom, lat/lng acceptance assertions and timeouts are unchanged. No production, DNS, branch, new architecture or external release. Exact HEAD rebuild/CI required, no Gold before portfolio gates and live camera approved separately.
 --- PRIOR HISTORY BELOW ---

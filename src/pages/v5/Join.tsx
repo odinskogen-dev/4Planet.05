@@ -3,6 +3,7 @@ import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label, Button } from "@/components/ui";
 import { returnHrefFromSearch } from "@/product/productContext";
+import { useFourPlanetIdentity } from "@/auth/FourPlanetIdentity";
 
 const ROLES: [string, string, string][] = [
   ["4PEOPLE MEMBER_", "Free membership and mission updates.", "Follow the domains you care about and take part as new pathways open."],
@@ -14,6 +15,7 @@ const ROLES: [string, string, string][] = [
 export default function Join() {
   const location = useLocation();
   const returnHref = returnHrefFromSearch(location.search);
+  const { user, openAuth } = useFourPlanetIdentity();
   const NOW: [string, string, string][] = [
     ["FOLLOW", "Follow a Domain, Mission or species.", "Watch the living systems you care about and see what is reported about them over time."],
     ["EXPLORE THE EVIDENCE", "Use ATLAS and the test journeys.", "Explore real source records in ATLAS and walk the IMPACT test journeys — no account, no payment."],
@@ -34,9 +36,29 @@ export default function Join() {
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.05 }}>Everyone has a role in bringing nature back into balance.</h1>
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 640, lineHeight: 1.55 }}>
           4Planet is being built to bring people, partners, brands and funders into the same system for action.
-          Some ways to take part are open now; paid membership is not yet active. We would rather be honest about
-          that than pretend.
+          Some ways to take part are open now; paid membership is not yet active. A free 4PLANET ID saves your participation profile and does not start a payment or a membership subscription.
         </p>
+        <div style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button
+            type="button"
+            data-testid="create-4planet-id"
+            onClick={() => openAuth(user ? "account" : "signup")}
+            style={{ border: `1px solid ${T.blue}`, background: T.blue, color: "#fff", padding: "13px 18px", borderRadius: 999, fontFamily: T.mono, fontSize: 10.5, fontWeight: 600, letterSpacing: ".12em", cursor: "pointer" }}
+          >
+            {user ? "OPEN YOUR 4PLANET ID" : "CREATE 4PLANET ID"}
+          </button>
+          {!user && (
+            <button
+              type="button"
+              data-testid="login-4planet-id"
+              onClick={() => openAuth("signin")}
+              style={{ border: `1px solid ${T.line}`, background: "transparent", color: T.ink, padding: "13px 18px", borderRadius: 999, fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".12em", cursor: "pointer" }}
+            >
+              LOG IN
+            </button>
+          )}
+          {user && <span className="mono" data-testid="4planet-id-active" style={{ fontSize: 10.5, color: T.blue, letterSpacing: ".1em" }}>4PLANET ID ACTIVE</span>}
+        </div>
 
         {/* Ways to take part NOW — honest, no payment or data capture */}
         <div className="mono" style={{ fontSize: 11, color: T.blue, marginTop: 40, letterSpacing: ".14em" }}>WAYS TO TAKE PART NOW</div>
@@ -63,7 +85,7 @@ export default function Join() {
         </div>
 
         <p style={{ fontSize: 13.5, color: T.faint, marginTop: 20, maxWidth: 640, lineHeight: 1.55 }}>
-          Membership will support 4Planet's platform, mission development and proof infrastructure. It will not purchase or fund a specific Impact Unit. No registration, payment or data capture is active in this release.
+          Membership will support 4Planet's platform, mission development and proof infrastructure. It will not purchase or fund a specific Impact Unit. Creating a free 4PLANET ID does not activate paid membership, payment, or a member entitlement.
         </p>
         <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Button to="/domains" arrow>ENTER DOMAINS_</Button>
