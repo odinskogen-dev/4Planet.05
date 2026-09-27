@@ -24,7 +24,7 @@ export interface OpenAlexSearchResult {
 
 const fnv1a32=(input:string)=>{let hash=0x811c9dc5;for(let i=0;i<input.length;i+=1){hash^=input.charCodeAt(i);hash=Math.imul(hash,0x01000193)>>>0;}return hash.toString(16).padStart(8,"0");};
 const stripControlCharacters=(input:string)=>Array.from(input,(char)=>{const code=char.charCodeAt(0);return code<32||code===127?" ":char;}).join("");
-const clean=(v:unknown,max=500)=>typeof v==="string"?stripControlCharacters(v).replace(/\\s+/g," ").trim().slice(0,max):"";
+const clean=(v:unknown,max=500)=>typeof v==="string"?stripControlCharacters(v).replace(/\s+/g," ").trim().slice(0,max):"";
 
 export const normalizeOpenAlexWork=(work:OpenAlexWorkPayload):OpenAlexWorkReference=>{
   const id=clean(work.id,120),title=clean(work.title||work.display_name,500);
