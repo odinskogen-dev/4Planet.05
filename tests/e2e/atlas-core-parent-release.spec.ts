@@ -170,6 +170,21 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
         containerWidth: container.clientWidth, containerHeight: container.clientHeight };
     };
     const originalResize = map.resize;
+    // Preserve scheduling and callback semantics while identifying an actual
+    // rAF caller. Only record a strict direct-resize expression, never arbitrary
+    // callback source or closure values. Other callbacks remain unclassified.
+    let activeFrame: { directResizeExpression: string | null } | null = null;
+    const originalRequestFrame = window.requestAnimationFrame;
+    window.requestAnimationFrame = function (this: Window, callback: FrameRequestCallback) {
+      const source = Function.prototype.toString.call(callback).trim();
+      const directResizeExpression = /^\(\)\s*=>\s*[A-Za-z_$][\w$]*\.resize\(\)$/.test(source) ? source : null;
+      return originalRequestFrame.call(this, function (this: Window, timestamp: number) {
+        const previous = activeFrame;
+        activeFrame = { directResizeExpression };
+        try { callback.call(this, timestamp); }
+        finally { activeFrame = previous; }
+      });
+    };
     map.resize = function (...args: unknown[]) {
       // MapLibre 6.4.1's ResizeObserver passes its entries to resize;
       // World's context effect calls resize without arguments. Do not infer
@@ -182,6 +197,7 @@ test("CORE PARENT — returned mobile camera remains the user-created camera aft
         observerEntries ? "RESIZE_OBSERVER_ENTRIES" : "OTHER";
       record({ kind: "resize-call", stack: new Error("resize caller").stack,
         eventDataKind, argumentCount: args.length,
+        animationFrame: activeFrame,
         observerEntryCount: observerEntries ? data.length : null,
         observesMapContainer: observerEntries ? data.some((entry) => entry.target === map.getContainer()) : null,
         dimensions: dimensions(), moving: map.isMoving(), zoom: map.getZoom() });

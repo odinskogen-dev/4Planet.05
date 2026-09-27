@@ -28,7 +28,9 @@ const map = {
     return this;
   },
 };
-const window = { __4planet_map: map, addEventListener: (type, fn) => { listeners[type] = fn; } };
+const frames = [];
+const window = { __4planet_map: map, addEventListener: (type, fn) => { listeners[type] = fn; },
+  requestAnimationFrame(callback) { assert.equal(this, window); frames.push(callback); return frames.length; } };
 await vm.runInNewContext(`(async () => { ${js} })()`, {
   window, page: { evaluate: fn => fn() }, performance: { now: () => 100 }, Error, ResizeObserverEntry,
 });
@@ -60,6 +62,20 @@ for (const [args, kind, count, matches] of [
   assert.equal(event.observesMapContainer, matches);
 }
 assert.equal(JSON.stringify(events).includes('DO_NOT_RECORD'), false);
+expectedArgs = [];
+assert.equal(window.requestAnimationFrame(() => map.resize()), 1);
+assert.equal(events.at(-2).animationFrame, null);
+frames[0].call(window, 456);
+assert.equal(events.at(-2).animationFrame.directResizeExpression, '() => map.resize()');
+let callbackThis, callbackTime;
+window.requestAnimationFrame(function (time) { callbackThis = this; callbackTime = time; map.resize(); });
+frames[1].call(window, 789);
+assert.equal(callbackThis, window); assert.equal(callbackTime, 789);
+assert.equal(events.at(-2).animationFrame.directResizeExpression, null);
+window.requestAnimationFrame(() => { throw failure; });
+assert.throws(() => frames[2].call(window, 900), error => error === failure);
+map.resize();
+assert.equal(events.at(-2).animationFrame, null);
 for (const type of ['touchend', 'touchcancel']) {
   listeners[type]({ type, timeStamp: 123, touches: [], isTrusted: true,
     target: { tagName: 'CANVAS' }, composedPath: () => [canvas] });
@@ -75,3 +91,4 @@ assert.equal(events.length, 100);
 assert.equal(events.at(-1).touches, null);
 console.log('PASS: resize arguments/receiver/result, before-after sizes/stack, original exception, touchend/cancel timing, bounded evidence');
 console.log('PASS: six resize event-data identities; raw arguments/DOM/private data not recorded');
+console.log('PASS: rAF deferred scheduling/id/receiver/time/error preserved; direct expression and unclassified frame distinguished; context cleared');
