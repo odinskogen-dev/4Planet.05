@@ -13,7 +13,7 @@ export interface GlobiSearchResult {
   rights:"GLOBI_CC_BY_4_GENERAL_ORIGINAL_DATASET_PROVENANCE_REQUIRED";error?:string;
 }
 const fnv1a32=(input:string)=>{let hash=0x811c9dc5;for(let i=0;i<input.length;i+=1){hash^=input.charCodeAt(i);hash=Math.imul(hash,0x01000193)>>>0;}return hash.toString(16).padStart(8,"0");};
-const clean=(v:unknown,max=500)=>typeof v==="string"?v.replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim().slice(0,max):"";
+const stripControlCharacters=(input:string)=>Array.from(input,(char)=>{const code=char.charCodeAt(0);return code<32||code===127?" ":char;}).join("");\nconst clean=(v:unknown,max=500)=>typeof v==="string"?stripControlCharacters(v).replace(/\\s+/g," ").trim().slice(0,max):"";
 const pick=(row:Record<string,unknown>,...keys:string[])=>{for(const k of keys){const v=clean(row[k]);if(v)return v;}return "";};
 
 export const normalizeGlobiInteraction=(row:Record<string,unknown>):GlobiInteractionReference=>{
