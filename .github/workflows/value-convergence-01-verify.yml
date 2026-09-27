@@ -1,0 +1,64 @@
+name: VALUE CONVERGENCE 01 Verify
+
+on:
+  push:
+    branches:
+      - axe/multi-product-value-convergence-01
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts-build-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Contract and smoke suite
+        run: npm run test:smoke
+      - name: Production build
+        run: npm run build
+      - name: Install browser matrix
+        run: npx playwright install --with-deps chromium webkit
+      - name: Start exact-SHA preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 > /tmp/value-convergence-preview.log 2>&1 &
+          echo $! > /tmp/value-convergence-preview.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/value-convergence-preview.log
+          exit 1
+      - name: Critical desktop and iPhone-sized browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >
+          npx playwright test
+          tests/e2e/pantry-choice.spec.ts
+          tests/e2e/species-first-read.spec.ts
+          tests/e2e/atlas-core-parent-release.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=webkit-desktop
+          --project=webkit-390
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: value-convergence-01-failure-evidence
+          path: |
+            artifacts/atlas-gold
+            /tmp/value-convergence-preview.log
+          if-no-files-found: ignore
