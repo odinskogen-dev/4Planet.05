@@ -144,6 +144,31 @@ export function identityDisplayLabel(
   return "ACCOUNT";
 }
 
+/** Binds a profile read to the session that requested it. A later account or logout invalidates the earlier response. */
+export function createIdentityLabelOwner() {
+  let generation = 0;
+  let userId: string | null = null;
+  return {
+    begin(session: { user: { id: string } } | null) {
+      const nextId = session?.user.id ?? null;
+      const changed = nextId !== userId;
+      if (changed) {
+        generation += 1;
+        userId = nextId;
+      }
+      return {
+        generation,
+        changed,
+        signedIn: Boolean(session),
+        label: changed ? "ACCOUNT" as const : null,
+      };
+    },
+    accept(requestGeneration: number, requestUserId: string) {
+      return requestGeneration === generation && userId !== null && requestUserId === userId;
+    },
+  };
+}
+
 export function identityAccountUrl(returnTo?: string) {
   const target = safeReturnTo(returnTo || (typeof window !== "undefined" ? window.location.href : "https://4planet.org/"));
   return `https://id.4planet.org/account?return_to=${encodeURIComponent(target)}`;

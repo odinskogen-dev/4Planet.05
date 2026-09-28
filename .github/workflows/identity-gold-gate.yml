@@ -9,6 +9,7 @@ on:
       - "src/App.tsx"
       - "src/components/layout/PublicShell.tsx"
       - "scripts/identity-contract.test.mjs"
+      - "scripts/identity-label-ownership.test.mjs"
       - ".github/workflows/identity-gold-gate.yml"
   workflow_dispatch:
 
@@ -29,7 +30,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Identity contract
-        run: node --test scripts/identity-contract.test.mjs
+        run: node --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Production build

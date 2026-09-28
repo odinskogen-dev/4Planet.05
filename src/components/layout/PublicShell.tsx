@@ -5,7 +5,7 @@ import { Mark } from "@/components/ui";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
-import { getIdentityClient, identityAccountUrl, identityDisplayLabel, identityLoginUrl, readProfile, type FourPlanetSession } from "@/identity/identityClient";
+import { createIdentityLabelOwner, getIdentityClient, identityAccountUrl, identityDisplayLabel, identityLoginUrl, readProfile, type FourPlanetSession } from "@/identity/identityClient";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const strip = (s: string) => s.replace(/_$/, "");
@@ -201,21 +201,24 @@ const joinIdentitySecondary: CSSProperties = {
 export function IdentityAffordances({ color, presentation = "header" }: { color?: string; presentation?: "header" | "join" }) {
   const [signedIn, setSignedIn] = useState(false);
   const [label, setLabel] = useState("ACCOUNT");
+  const labelOwner = useRef(createIdentityLabelOwner()).current;
   useEffect(() => {
     let alive = true;
     let unsubscribe = () => {};
     const apply = (session: FourPlanetSession | null) => {
       if (!alive) return;
-      if (!session) {
-        setSignedIn(false);
-        setLabel("ACCOUNT");
-        return;
-      }
-      setSignedIn(true);
+      const next = labelOwner.begin(session);
+      setSignedIn(next.signedIn);
+      if (next.label) setLabel(next.label);
+      if (!session) return;
+      const generation = next.generation;
+      const requestUserId = session.user.id;
       readProfile(session).then((profile) => {
-        if (alive) setLabel(identityDisplayLabel(profile, session.user));
+        if (!alive || !labelOwner.accept(generation, requestUserId)) return;
+        setLabel(identityDisplayLabel(profile, session.user));
       }).catch(() => {
-        if (alive) setLabel(identityDisplayLabel(null, session.user));
+        if (!alive || !labelOwner.accept(generation, requestUserId)) return;
+        setLabel(identityDisplayLabel(null, session.user));
       });
     };
     getIdentityClient().then((client) => {
