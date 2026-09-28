@@ -353,21 +353,33 @@ async function enrichedControlRoom(request: Request, env: ActiveEnv, ctx: Execut
 
 async function startLearningProof(env: ActiveEnv) {
   const factory: any = await factoryAgent(env);
+  const exactFactorySha = exactBuildSha(env);
   const receipt = await factory.getLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID);
-  if (receipt?.active === true) return { alreadyProven: true, receipt };
+  if (receipt?.active === true && receipt?.exactFactorySha === exactFactorySha) {
+    return { alreadyProven: true, receipt };
+  }
 
-  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}`;
+  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}-${exactFactorySha.slice(0, 12)}`;
   const existing = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
   if (!existing) {
+    await factory.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, {
+      active: false,
+      state: "RUNNING",
+      learnerId: "learning-1",
+      exactFactorySha,
+      startedAt: new Date().toISOString(),
+      previousReceiptState: receipt?.state ?? null,
+      previousReceiptFactorySha: receipt?.exactFactorySha ?? null,
+    });
     await factory.runWorkflow(
       "LEARNING_PROOF_WORKFLOW",
-      { proofId: SELF_IMPROVEMENT_PROOF_ID },
+      { proofId: SELF_IMPROVEMENT_PROOF_ID, exactFactorySha },
       {
         id: workflowId,
         metadata: {
           selfImprovementProof: true,
           proofId: SELF_IMPROVEMENT_PROOF_ID,
-          exactFactorySha: exactBuildSha(env),
+          exactFactorySha,
           productMutation: false,
           liveAuthority: false,
           canonAuthority: false,
@@ -381,7 +393,7 @@ async function startLearningProof(env: ActiveEnv) {
     started: !existing,
     workflowId,
     workflowStatus: existing?.status ?? "DISPATCHED",
-    exactFactorySha: exactBuildSha(env),
+    exactFactorySha,
     testKingDependency: "NONE_FOR_INTERNAL_LEARNING_PROOF",
     productMutation: false,
     liveAuthority: false,
@@ -390,18 +402,20 @@ async function startLearningProof(env: ActiveEnv) {
 
 async function learningProofStatus(env: ActiveEnv) {
   const factory: any = await factoryAgent(env);
-  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}`;
+  const exactFactorySha = exactBuildSha(env);
+  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}-${exactFactorySha.slice(0, 12)}`;
   const [receipt, workflow] = await Promise.all([
     factory.getLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID),
     factory.getWorkflow?.(workflowId),
   ]);
+  const currentReceipt = receipt?.exactFactorySha === exactFactorySha ? receipt : null;
   return {
     ok: true,
     proofId: SELF_IMPROVEMENT_PROOF_ID,
-    exactFactorySha: exactBuildSha(env),
+    exactFactorySha,
     workflowId,
     workflow: workflow ?? null,
-    receipt: receipt ?? null,
+    receipt: currentReceipt,
     boundaries: {
       productMutation: false,
       live: false,
