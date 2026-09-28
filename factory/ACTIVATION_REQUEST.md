@@ -27,3 +27,17 @@ Success is accepted bounded value + evidence + learning + writeback/readback, no
 - Required proof: local receiver/provider block must not stop unrelated read-only production; terminal outcome must persist and continue to next deterministic legal package without duplicate dispatch.
 - If TEST moves again, stop stale mutation but classify repeated churn as activation-starvation and continue with conflict-free work rather than weakening exact-lineage safety.
 - This request grants no additional product-write, LIVE, Canon, outreach, spend or legal authority.
+
+## SELF-IMPROVING COMPANY / LEARNING ENGINE bounded proof — 2026-09-28
+
+- Founder Decision: 4PLANET SELF-IMPROVING COMPANY + LEARNING ENGINE LIVE 01.
+- Exact HEIR observed before this request: `king/test@ac8d70aa55e139665afc3d12dd7da19de978e375`.
+- Factory was forward-converged with that exact HEIR and exact-head Production Factory Shadow CI passed after Learning Engine implementation.
+- This cohort is the first bounded runtime evidence attempt for capability-aware learning on existing Factory work. It does not itself prove self-improvement.
+- Proof targets: real Work Package execution → learner evidence writeback → governed learning candidate/promotion only under existing rules → later capability-aware retrieval → fresh held-out/transfer evidence in later work.
+- Current real proof packages declare C04 HUMAN-FIRST PRODUCT CRAFT + C06 AI-NATIVE EXECUTION/RELIABILITY capability requirements.
+- No whole-BRAIN injection. Runtime may select only governed PROMOTED learning in KEEP/MODIFY state; CANDIDATE, stale/review-due, superseded, expired and rejected learning fail closed.
+- Free/capped existing Factory AI budgets remain unchanged. No payment, quota bypass or provider expansion is authorised.
+- Candidate authority, exact current HEIR ancestry, single-writer, CI, Browser QA, Gold and Maker ≠ Judge gates remain unchanged.
+- If HEIR moves, authority fails, capacity is unavailable or any one-way-door boundary is encountered, stop and preserve the blocker as learning evidence.
+
