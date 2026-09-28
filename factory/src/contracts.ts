@@ -186,6 +186,46 @@ export interface ProjectProjection {
   founderGate?: string;
 }
 
+export type LearningKnowledgeLifecycle = "KEEP" | "MODIFY" | "SUPERSEDE" | "EXPIRE" | "REJECT";
+
+export type LearnerEvidenceKind = "PRACTICE" | "HELD_OUT" | "REAL_WORK" | "TRANSFER" | "REGRESSION";
+
+export type LearnerCapabilityStage =
+  | "UNASSESSED"
+  | "PRACTISING"
+  | "MASTERY_STANDARD_PASS"
+  | "FRESH_HELD_OUT_PASS"
+  | "REAL_WORK_PASS"
+  | "TRANSFER_PROVEN"
+  | "STALE";
+
+export interface RuntimeLearningItem {
+  learningId: string;
+  capabilityId: string;
+  lesson: string;
+  evidenceRefs: string[];
+  lifecycle: LearningKnowledgeLifecycle;
+  regressionEval?: string;
+}
+
+export interface LearnerCapabilitySnapshot {
+  learnerId: string;
+  capabilityId: string;
+  stage: LearnerCapabilityStage;
+  evidenceRefs: string[];
+  knownFailureClasses: string[];
+  lastVerifiedAt?: string;
+  nextLearningNeed: string;
+}
+
+export interface RuntimeLearningContext {
+  learnerId: string;
+  requiredCapabilities: string[];
+  capabilityStates: LearnerCapabilitySnapshot[];
+  selectedLearning: RuntimeLearningItem[];
+  generatedAt: string;
+}
+
 export interface WorkPackage {
   id: string;
   projectId: string;
@@ -207,6 +247,12 @@ export interface WorkPackage {
   resourceBudget?: ResourceBudget;
   run?: RunContract;
   learningQuestion?: string;
+  /** Capability IDs required for capability-aware learning retrieval. */
+  requiredCapabilities?: string[];
+  /** Runtime-selected, evidence-gated learning. Never a Canon authority. */
+  learningContext?: RuntimeLearningContext;
+  /** Explicit eval kind lets fresh held-out and transfer proof remain distinct from normal work. */
+  learningEvaluation?: { kind: LearnerEvidenceKind; contextKey: string; failureClass?: string };
   founderGate?: string;
   createdAt: string;
   deadlineAt?: string;
@@ -248,6 +294,12 @@ export interface LearningCandidate {
   regressionEval?: string;
   nextTest?: string;
   status: "CANDIDATE" | "PROMOTED" | "REJECTED" | "EXPIRED";
+  /** Capability tags enable minimal runtime retrieval; absent means not runtime-selectable. */
+  capabilityIds?: string[];
+  /** KEEP/MODIFY may be retrieved only after governed PROMOTED status; other states are suppressed. */
+  knowledgeLifecycle?: LearningKnowledgeLifecycle;
+  reviewAt?: string;
+  supersedesLearningIds?: string[];
   createdAt: string;
 }
 
