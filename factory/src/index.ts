@@ -29,6 +29,7 @@ import {
 } from "./workers";
 
 export { WorkPackageWorkflow } from "./workflow";
+export { LearningProofWorkflow } from "./learningProofWorkflow";
 export {
   BrainControlWorker,
   CapitalWorker,
@@ -120,6 +121,13 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
         work_package_id TEXT NOT NULL,
         payload TEXT NOT NULL,
         created_at TEXT NOT NULL
+      )
+    `;
+    this.sql`
+      CREATE TABLE IF NOT EXISTS learning_proof_receipts (
+        proof_id TEXT PRIMARY KEY,
+        payload TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
     `;
     this.sql`
@@ -561,6 +569,27 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   @callable()
+  recordLearningProofReceipt(proofId: string, payload: unknown) {
+    const clean = proofId?.trim() ?? "";
+    if (!/^[a-z0-9._:-]{8,180}$/i.test(clean)) throw new Error("LEARNING_PROOF_ID_INVALID");
+    const updatedAt = new Date().toISOString();
+    this.sql`
+      INSERT INTO learning_proof_receipts (proof_id, payload, updated_at)
+      VALUES (${clean}, ${JSON.stringify(payload)}, ${updatedAt})
+      ON CONFLICT(proof_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at
+    `;
+    return clean;
+  }
+
+  @callable()
+  getLearningProofReceipt(proofId: string) {
+    const row = this.sql<{ payload: string; updated_at: string }>`
+      SELECT payload, updated_at FROM learning_proof_receipts WHERE proof_id = ${proofId}
+    `[0];
+    return row ? { ...JSON.parse(row.payload), receiptUpdatedAt: row.updated_at } : null;
+  }
+
+  @callable()
   getLearningRetrievalReceipts(workPackageIds: string[] = []) {
     const ids = [...new Set(workPackageIds.filter(Boolean))].slice(0, 32);
     if (ids.length === 0) {
@@ -745,6 +774,7 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
       learning: this.sql<{ id: string; status: string; created_at: string }>`SELECT id, status, created_at FROM learning_candidates ORDER BY created_at DESC LIMIT 20`,
       learnerEvidence: this.sql<{ id: string; learner_id: string; capability_id: string; kind: string; outcome: string; occurred_at: string }>`SELECT id, learner_id, capability_id, kind, outcome, occurred_at FROM learner_evidence ORDER BY occurred_at DESC LIMIT 30`,
       learningRetrievals: this.sql<{ id: string; learner_id: string; work_package_id: string; created_at: string }>`SELECT id, learner_id, work_package_id, created_at FROM learning_retrieval_receipts ORDER BY created_at DESC LIMIT 30`,
+      learningProofs: this.sql<{ proof_id: string; updated_at: string }>`SELECT proof_id, updated_at FROM learning_proof_receipts ORDER BY updated_at DESC LIMIT 10`,
       locks: this.sql<{ scope: string; work_package_id: string; expires_at: string }>`SELECT scope, work_package_id, expires_at FROM write_locks`,
       projectionReceipts: this.sql<{ id: string; ingested_at: string }>`SELECT id, ingested_at FROM projection_receipts ORDER BY ingested_at DESC LIMIT 5`,
       workers: this.listSubAgents(),
