@@ -71,26 +71,35 @@ jobs:
             echo "learning_proof_requested=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Prove exact current TEST KING ancestry
+      - name: Prove product-mutation lineage or record learning-proof context
         id: lineage
+        env:
+          ACTIVATION_REQUESTED: ${{ steps.activation_intent.outputs.activation_requested }}
+          LEARNING_PROOF_REQUESTED: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ ! "${FACTORY_HEAD_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Factory activation blocked: exact Factory branch-head SHA is invalid."
+            echo "Factory control blocked: exact Factory branch-head SHA is invalid."
             exit 1
           fi
           git fetch origin king/test --no-tags
           TEST_KING_SHA="$(git rev-parse origin/king/test)"
-          if ! git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
-            echo "Factory activation blocked: current TEST KING is not an ancestor of exact Factory head."
+          echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
+          if git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
+            echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
+          elif [[ "$LEARNING_PROOF_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning proof lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested proof is non-mutating, SHADOW-only, and cannot start product activation."
+            echo "Factory: $FACTORY_HEAD_SHA"
+            echo "TEST KING context: $TEST_KING_SHA"
+          else
+            echo "Factory product-mutation/activation blocked: current TEST KING is not an ancestor of exact Factory head."
             echo "Factory: $FACTORY_HEAD_SHA"
             echo "TEST KING: $TEST_KING_SHA"
             exit 1
           fi
-          echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
           echo "Exact Factory head: $FACTORY_HEAD_SHA"
-          echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
 
       - name: Check dedicated credentials without exposing values
         id: credentials
