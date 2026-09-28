@@ -319,12 +319,13 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
         await agent.recordLearning(adaptedLearningCandidate(baseline, practice));
         await agent.upsertWorkPackage(packages.practiceRetry);
       });
-      practiceRetry = await step.do("adaptive-practice-retry", async () => {
-        const outcome = await agent.dispatchToWorker(packages.practiceRetry.id);
+      const retryOutcome: Outcome = await step.do("adaptive-practice-retry", async () => {
+        const outcome = await agent.dispatchToWorker(packages.practiceRetry.id) as Outcome;
         await agent.finalizeWorkflowOutcome(outcome);
         return outcome;
       });
-      if (!accepted(practiceRetry)) {
+      practiceRetry = retryOutcome;
+      if (!accepted(retryOutcome)) {
         return await finish("practice-retry-failed", {
           active: false,
           state: "PRACTICE_RETRY_FAILED",
