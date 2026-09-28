@@ -8,7 +8,7 @@ export const LEARNER_ID = "learning-1";
 export const CAPABILITY_ID = "C06_EVIDENCE_SCOPE_DISCIPLINE";
 export const BRAIN_LEARNING_ID = "brain-learning-evidence-scope-v1";
 
-type LearningProofParams = { proofId: typeof SELF_IMPROVEMENT_PROOF_ID };
+type LearningProofParams = { proofId: typeof SELF_IMPROVEMENT_PROOF_ID; exactFactorySha: string };
 
 function project(now: string): ProjectProjection {
   return {
@@ -262,15 +262,18 @@ function selectedLearning(outcome: Outcome) {
 export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent, LearningProofParams> {
   async run(event: AgentWorkflowEvent<LearningProofParams>, step: AgentWorkflowStep) {
     if (event.payload.proofId !== SELF_IMPROVEMENT_PROOF_ID) throw new Error("LEARNING_PROOF_ID_INVALID");
+    if (!/^[0-9a-f]{40}$/i.test(event.payload.exactFactorySha)) throw new Error("LEARNING_PROOF_FACTORY_SHA_INVALID");
+    const attemptFactorySha = event.payload.exactFactorySha;
     const agent: any = this.agent;
     const now = new Date().toISOString();
     const proofProject = project(now);
     const packages = createSelfImprovementProofPackages(now);
     const finish = async (label: string, result: Record<string, unknown>) => {
+      const receipt = { ...result, exactFactorySha: attemptFactorySha };
       await step.do(`persist-learning-proof-${label}`, async () =>
-        agent.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, result)
+        agent.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, receipt)
       );
-      return result;
+      return receipt;
     };
 
     await step.do("seed-baseline", async () => {
