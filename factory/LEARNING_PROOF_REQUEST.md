@@ -51,3 +51,10 @@ Requested: 2026-09-29 Europe/Oslo.
   4. later materially different transfer.
 - No restart, no quota bypass, no product mutation.
 
+## SHA-isolated continuation — 2026-09-29
+
+- Proof harness fixed so each attempt is bound to exact Factory SHA and writes RUNNING before dispatch.
+- PR Shadow CI on the full corrected implementation: SUCCESS (run #825).
+- Old PRACTICE_FAILED receipt remains historical evidence only and cannot terminalise this attempt.
+- Continue from the same persistent learner evidence; do not replay paid/AI work that already has a durable Outcome.
+
