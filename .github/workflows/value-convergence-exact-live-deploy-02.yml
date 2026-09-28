@@ -1,0 +1,100 @@
+name: VALUE CONVERGENCE EXACT LIVE DEPLOY 02
+
+on:
+  push:
+    branches:
+      - ops/value-convergence-live-proof-02
+    paths:
+      - .github/workflows/value-convergence-exact-live-deploy-02.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_SHA: 1700b646bb9e1139e4dc514b4c777546a0c81fea
+  TESTED_SHA: bf743e8816ff1f9c1ee579ec2a49543be71c4d4b
+  PROJECT: 4planet-05
+
+jobs:
+  deploy-exact-authorised-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact release control artifact
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
+
+      - name: Prove exact release authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git rev-parse HEAD^)" = "$TESTED_SHA"
+          test "$(git diff --name-only "$TESTED_SHA" "$RELEASE_SHA")" = "docs/control/LIVE_PROMOTION_MANIFEST.json"
+          ALLOW_PREPROMOTION_CHECK=1 GITHUB_REF_NAME=main node scripts/live-promotion-authority-gate.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build exact release
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Resolve Cloudflare token and account
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ]
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS "$api/zones?name=4planet.org&status=active" -H "Authorization: Bearer $TOKEN")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+
+      - name: Deploy exact authorised artifact to existing Pages production branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist             --project-name "$PROJECT"             --branch main             --commit-hash "$RELEASE_SHA"             --commit-dirty=false | tee /tmp/exact-live-deploy.txt
+
+      - name: Verify Cloudflare production points to exact release
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          for attempt in $(seq 1 40); do
+            deps=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/deployments?page=1&per_page=25" "${auth[@]}")
+            commit=$(jq -r '[.result[]? | select(.deployment_trigger.metadata.branch=="main" and .environment=="production")][0].deployment_trigger.metadata.commit_hash // empty' <<<"$deps")
+            status=$(jq -r '[.result[]? | select(.deployment_trigger.metadata.branch=="main" and .environment=="production")][0].latest_stage.status // empty' <<<"$deps")
+            url=$(jq -r '[.result[]? | select(.deployment_trigger.metadata.branch=="main" and .environment=="production")][0].url // empty' <<<"$deps")
+            echo "production commit=$commit status=$status url=$url"
+            if [ "$commit" = "$RELEASE_SHA" ] && [ "$status" = success ]; then
+              echo "EXACT_LIVE_DEPLOY=PASS"
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
