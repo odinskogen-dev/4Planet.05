@@ -139,6 +139,25 @@ jobs:
             done
 
             echo
+            echo
+            echo '## Standalone Worker runtime probes'
+            echo
+            echo '| Service | SHA256 | Relevant script strings |'
+            echo '|---|---|---|'
+            for service in 4planetmarket-prototype four-sapien-embla; do
+              tmp=$(mktemp)
+              headers=$(mktemp)
+              if curl -fsS -D "$headers" "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -o "$tmp"; then
+                sum=$(sha256sum "$tmp" | awk '{print $1}')
+                hints=$(strings "$tmp" | grep -Eio 'https?://[^ "'\''<>]+|fourthwall|4planetmarket|4sapien|/market|/app/food|assets|fetch\(' | head -n 30 | tr '\n' ' ' | sed 's/|/\\|/g')
+                [ -n "$hints" ] || hints='NO_RELEVANT_LITERAL_STRINGS'
+                echo "| \`${service}\` | \`${sum}\` | ${hints} |"
+              else
+                echo "| \`${service}\` | FETCH_FAILED | |"
+              fi
+              rm -f "$tmp" "$headers"
+            done
+
             echo '> READ-ONLY AUDIT. No DNS, Worker, Pages project, deployment or public domain was mutated.'
           } > /tmp/cf-report.md
           cat /tmp/cf-report.md
