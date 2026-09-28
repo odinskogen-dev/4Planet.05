@@ -3,7 +3,7 @@ name: VALUE CONVERGENCE 01 Verify
 on:
   push:
     branches:
-      - axe/multi-product-value-convergence-01
+      - axe/multi-product-value-convergence-final-02
   workflow_dispatch:
 
 permissions:
