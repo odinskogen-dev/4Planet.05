@@ -140,6 +140,19 @@ jobs:
 
             echo
             echo
+            echo '## Public standalone product state'
+            echo
+            market_health=$(curl -fsS 'https://4planetmarket.com/api/market-health?audit='${GITHUB_RUN_ID} || true)
+            market_status=$(curl -fsS 'https://4planetmarket.com/api/market-commerce-status?audit='${GITHUB_RUN_ID} || true)
+            echo "- 4PLANET MARKET health: \`$(jq -c '{ok,source}' <<<"$market_health" 2>/dev/null || echo UNAVAILABLE)\`"
+            echo "- 4PLANET MARKET commerce: \`$(jq -c '{ok,environment,publicCheckoutEnabled,checkoutInfrastructureReady,fulfilmentInfrastructureReady,webhookConfigured,releaseApproved,photoSampleApproved,artSampleApproved,releasedProductIds,productCount}' <<<"$market_status" 2>/dev/null || echo UNAVAILABLE)\`"
+            sapien_root=$(curl -fsS -H 'Sec-Fetch-Mode: navigate' 'https://4sapien.com/' || true)
+            sapien_food=$(curl -fsS -H 'Sec-Fetch-Mode: navigate' 'https://4sapien.com/app/food/' || true)
+            if grep -Fq 'Se livet ditt klart.' <<<"$sapien_root"; then sapien_root_state='ROOT_OK'; else sapien_root_state='ROOT_MARKER_MISSING'; fi
+            if grep -Fq 'FoodPantryProof' <<<"$sapien_food" || grep -Fq '4sapien-pantry-decision.js' <<<"$sapien_food"; then pantry_state='PANTRY_LIVE'; else pantry_state='PANTRY_NOT_LIVE'; fi
+            echo "- 4SAPIEN root: $sapien_root_state"
+            echo "- 4SAPIEN pantry return proof: $pantry_state"
+            echo
             echo '## Standalone Worker runtime probes'
             echo
             echo '| Service | SHA256 | Relevant script strings |'
@@ -149,7 +162,7 @@ jobs:
               headers=$(mktemp)
               if curl -fsS -D "$headers" "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -o "$tmp"; then
                 sum=$(sha256sum "$tmp" | awk '{print $1}')
-                hints=$(strings "$tmp" | grep -Eio 'https?://[^ "'\''<>]+|fourthwall|4planetmarket|4sapien|/market|/app/food|assets|fetch\(' | head -n 30 | tr '\n' ' ' | sed 's/|/\\|/g')
+                hints=$(strings "$tmp" | grep -Eio 'https?://[^ "'\''<>]+|fourthwall|4planetmarket|4sapien|/market|/app/food|assets|fetch\(' | head -n 30 | tr '\n' ' ' | sed 's/|/\\|/g' || true)
                 [ -n "$hints" ] || hints='NO_RELEVANT_LITERAL_STRINGS'
                 echo "| \`${service}\` | \`${sum}\` | ${hints} |"
               else
