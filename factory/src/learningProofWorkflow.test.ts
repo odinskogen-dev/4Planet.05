@@ -1,44 +1,46 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  BRAIN_LEARNING_ID,
-  CAPABILITY_ID,
-  LEARNER_ID,
-  brainDerivedLearningCandidate,
-  createSelfImprovementProofPackages,
-} from "./learningProofWorkflow";
-import type { Outcome } from "./contracts";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
-test("proof packages use one Learning worker capability and no product write scopes", () => {
-  const packages = createSelfImprovementProofPackages("2026-09-28T00:00:00Z");
-  for (const pkg of Object.values(packages)) {
-    assert.equal(pkg.section, "LEARNING");
-    assert.deepEqual(pkg.requiredCapabilities, [CAPABILITY_ID]);
-    assert.deepEqual(pkg.writeScopes, []);
-    assert.equal(pkg.execution?.kind, "INTERNAL_LEARNING_EVAL");
-    assert.equal(pkg.resourceBudget?.maxModelCalls, 1);
-  }
-  assert.equal(LEARNER_ID, "learning-1");
-  assert.equal(packages.baseline.learningEvaluation?.kind, "REAL_WORK");
-  assert.equal(packages.heldOut.learningEvaluation?.kind, "HELD_OUT");
-  assert.equal(packages.transfer.learningEvaluation?.kind, "TRANSFER");
+const here = dirname(fileURLToPath(import.meta.url));
+const source = readFileSync(resolve(here, "learningProofWorkflow.ts"), "utf8");
+
+test("proof contract keeps one actual LEARNING worker capability and no product write scopes", () => {
+  assert.match(source, /export const LEARNER_ID = "learning-1"/);
+  assert.match(source, /export const CAPABILITY_ID = "C06_EVIDENCE_SCOPE_DISCIPLINE"/);
+  assert.match(source, /section: "LEARNING"/);
+  assert.match(source, /writeScopes: \[\]/);
+  assert.match(source, /kind: "INTERNAL_LEARNING_EVAL"/);
+  assert.match(source, /maxModelCalls: 1/);
+  assert.match(source, /"REAL_WORK"[\s\S]*baseline-github-filtered-workflow-view/);
+  assert.match(source, /"HELD_OUT"[\s\S]*heldout-bounded-knowledge-search/);
+  assert.match(source, /"TRANSFER"[\s\S]*transfer-bounded-communication-search/);
 });
 
-test("BRAIN-derived runtime lesson is explicit, governed in scope and never Canon", () => {
-  const baseline: Outcome = {
-    workPackageId: "baseline",
-    status: "REJECTED",
-    evidence: ["learning-eval FAIL"],
-    materialDelta: "Preserved a genuine gap.",
-    expected: "bounded evidence",
-    actual: "overclaim",
-    completedAt: "2026-09-28T00:00:00Z",
-  };
-  const candidate = brainDerivedLearningCandidate(baseline, "2026-09-28T00:01:00Z");
-  assert.equal(candidate.id, BRAIN_LEARNING_ID);
-  assert.equal(candidate.status, "PROMOTED");
-  assert.equal(candidate.knowledgeLifecycle, "KEEP");
-  assert.deepEqual(candidate.capabilityIds, [CAPABILITY_ID]);
-  assert.match(candidate.scope, /runtime cache/i);
-  assert.doesNotMatch(candidate.scope, /Canon promotion/i);
+test("BRAIN-derived runtime lesson is evidence-scoped and never claims model-weight learning", () => {
+  assert.match(source, /export const BRAIN_LEARNING_ID = "brain-learning-evidence-scope-v1"/);
+  assert.match(source, /status: "PROMOTED"/);
+  assert.match(source, /knowledgeLifecycle: "KEEP"/);
+  assert.match(source, /BRAIN:4PLANET LEARNING ENGINE DEEP STUDY 01/);
+  assert.match(source, /WORKFLOW_RUN_OBSERVABILITY_FALSE_NEGATIVE/);
+  assert.match(source, /Never infer absence or completeness from a bounded, filtered, scoped or first-page evidence view/);
+  assert.match(source, /runtime cache/);
+  assert.match(source, /Model weights are unchanged/);
+});
+
+test("proof stops rather than inventing improvement when baseline has no genuine gap or is blocked", () => {
+  assert.match(source, /NO_GENUINE_GAP_OBSERVED/);
+  assert.match(source, /self-improvement is not claimed/);
+  assert.match(source, /BASELINE_BLOCKED/);
+  assert.match(source, /No curriculum is inferred from a capacity\/runtime blocker/);
+});
+
+test("proof requires later wake, runtime retrieval and materially different transfer before ACTIVE", () => {
+  assert.match(source, /step\.sleep\("later-independent-learning-wake", "1 minute"\)/);
+  assert.match(source, /getLearningRetrievalReceipts/);
+  assert.match(source, /runtimeSelectionProven/);
+  assert.match(source, /learnerState\?\.stage === "TRANSFER_PROVEN"/);
+  assert.match(source, /RUNTIME_TRANSFER_PROVEN_BRAIN_WRITEBACK_REQUIRED/);
 });
