@@ -1,0 +1,97 @@
+name: 4PLANET ID Canonical Live
+
+on:
+  push:
+    branches: [release/targeted-4planet-id-20260929]
+    paths:
+      - "src/identity/**"
+      - "src/components/layout/PublicShell.tsx"
+      - "src/pages/v5/Join.tsx"
+      - "scripts/identity-contract.test.mjs"
+      - "scripts/identity-label-ownership.test.mjs"
+      - "scripts/product-authority-gate.mjs"
+      - "scripts/live-promotion-authority-gate.mjs"
+      - "docs/control/LIVE_PROMOTION_MANIFEST.json"
+      - ".github/workflows/identity-canonical-live.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fourplanet-id-canonical-live
+  cancel-in-progress: true
+
+env:
+  PAGES_PROJECT: 4planet-05
+
+jobs:
+  contain-then-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Identity contract and ownership
+        run: node --experimental-strip-types --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs scripts/targeted-id-release-contract.test.mjs
+      - name: Product authority must pass
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/product-authority-gate.mjs | tee product-authority-result.txt
+      - name: Live promotion stays closed until Gold binds the candidate
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          node scripts/live-promotion-authority-gate.mjs | tee promotion-result.txt
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "Promotion gate passed. Deploy is a separate step and runs only from this job after this point."
+          else
+            grep -q "targeted identity release is not live-authorised" promotion-result.txt
+            echo "NO DEPLOY. The one-time release is not live-authorised."
+            exit 0
+          fi
+      - name: Deploy tested runtime only when the promotion gate passed
+        if: success()
+        shell: bash
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! grep -q "LIVE PROMOTION AUTHORITY GUARD: PASS" promotion-result.txt; then
+            echo "NO DEPLOY. Promotion result is not a pass."
+            exit 0
+          fi
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          test -n "$token"
+          token="$(printf '%s' "$token" | tr -d '\r\n')"
+          token="${token#Bearer }"; token="${token#bearer }"
+          echo "::add-mask::$token"
+          api=https://api.cloudflare.com/client/v4
+          account="$(curl -fsS "$api/zones?name=4planet.org" -H "Authorization: Bearer $token" | jq -r '.result[0].account.id // empty')"
+          test -n "$account"
+          project="$(curl -fsS "$api/accounts/$account/pages/projects/4planet-05" -H "Authorization: Bearer $token")"
+          production="$(jq -r '.result.production_branch // empty' <<<"$project")"
+          test -n "$production"
+          test "$production" != "release/targeted-4planet-id-20260929"
+          echo "production_branch=$production"
+          npm run build
+          npx wrangler@4.128.0 pages deploy dist \
+            --project-name "$PAGES_PROJECT" \
+            --branch "$production" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-dirty=false \
+            --commit-message "4PLANET ID targeted release $GITHUB_SHA"

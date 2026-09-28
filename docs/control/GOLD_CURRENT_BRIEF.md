@@ -1,3 +1,39 @@
+# TARGETED 4PLANET ID RELEASE — ONE-TIME CARRIER — 29 SEP 2026
+
+**STATUS:** CANDIDATE / NOT LIVE. This is not a new product candidate class and not a development line.
+
+**USER ARRIVES BECAUSE:** they are on 4planet.org and need to create or open one free 4PLANET ID.
+
+**ONE THING TO UNDERSTAND:** a free 4PLANET ID is not paid membership.
+
+**PRIMARY ACTION:** CREATE 4PLANET ID, or SIGN IN.
+
+**SECONDARY DEPTH:** the signed-in label is the existing profile display name, then the account email, then ACCOUNT, and it links to the canonical account.
+
+**P1 DOMINANT:** the create and sign-in actions on /join and in the header.
+
+**P2 ORIENTATION:** the existing join page, including the ATLAS return link and the ways to take part.
+
+**P3 ACTION:** canonical id.4planet.org links with a safe return to this page.
+
+**P4 DEPTH:** account label after sign-in. Real-session name proof is still open.
+
+**WHAT CAN BE REMOVED:** the sentence that says registration is inactive.
+
+**WHAT MUST BE REUSED:** the existing identity client, trusted hosts, and this live source tree. No second auth provider.
+
+**TRUTH BOUNDARY:** signup does not create a member entitlement. Paid membership stays inactive.
+
+**MOBILE-FIRST RISK:** the header must show SIGN IN and CREATE 4PLANET ID at 390px without covering the mark.
+
+**HUMAN SUCCESS:** a signed-out person can start or open a free ID and come back to the page they left.
+
+**DONOR:** PR #346 behavior is ported onto the proven live source. Trusted hosts that exist on that source stay. Newer join functionality stays.
+
+**AUTHORITY:** one-time branch `release/targeted-4planet-id-20260929` from live source `d5540905de7e57a2a781db92771da4d87c472c60`. `live_authority` stays false until an independent Gold acceptance and a later manifest bind this exact candidate. Rollback deployment is `https://3d1e7976.4planet-05.pages.dev` (`1700b646bb9e1139e4dc514b4c777546a0c81fea`).
+
+---
+
 # MULTI-PRODUCT VALUE CONVERGENCE FINAL INTEGRATION + LIVE CLOSURE 02 — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / EXACT-SHA VERIFICATION REQUIRED / NO LIVE CLAIM FROM SOURCE ALONE.

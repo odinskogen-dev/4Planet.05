@@ -79,6 +79,88 @@ function isGovernanceOnly(file) {
   return GOVERNANCE_ONLY_PREFIXES.some((prefix) => file.startsWith(prefix));
 }
 
+const TARGETED_ID_RELEASE = {
+  branch: "release/targeted-4planet-id-20260929",
+  liveSourceSha: "d5540905de7e57a2a781db92771da4d87c472c60",
+  founderDecision: "ENIG TARGETED RELEASE CONTROL AMENDMENT",
+  allow: new Set([
+    "src/identity/identityClient.ts",
+    "src/components/layout/PublicShell.tsx",
+    "src/pages/v5/Join.tsx",
+    "scripts/identity-contract.test.mjs",
+    "scripts/identity-label-ownership.test.mjs",
+    "scripts/product-authority-gate.mjs",
+    "scripts/live-promotion-authority-gate.mjs",
+    "scripts/targeted-id-release-contract.test.mjs",
+    ".github/workflows/identity-canonical-live.yml",
+    ".github/workflows/product-authority-enforcement.yml",
+    "docs/control/LIVE_PROMOTION_MANIFEST.json",
+    "docs/control/GOLD_CURRENT_BRIEF.md",
+  ]),
+};
+
+function targetedReleaseFiles() {
+  let names = "";
+  try {
+    names = execFileSync("git", ["diff", "--name-only", TARGETED_ID_RELEASE.liveSourceSha, "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } catch (error) {
+    die(`targeted release comparison failed: ${error.message}`);
+  }
+  return names.split("\n").filter(Boolean);
+}
+
+function assertTargetedIdentityRelease(headBranch) {
+  if (headBranch !== TARGETED_ID_RELEASE.branch) return false;
+  const source = TARGETED_ID_RELEASE.liveSourceSha;
+  if (!gitSucceeds(["rev-parse", "--verify", `${source}^{commit}`])) {
+    die("targeted release LIVE_SOURCE_SHA cannot be resolved");
+  }
+  if (!gitSucceeds(["merge-base", "--is-ancestor", source, "HEAD"])) {
+    die("targeted release carrier does not descend from LIVE_SOURCE_SHA");
+  }
+  const merges = git(["rev-list", "--merges", `${source}..HEAD`]);
+  if (merges) die("targeted release carrier imported unrelated merge commits");
+  const files = targetedReleaseFiles();
+  if (files.length === 0) die("targeted release comparison was empty; refusing an empty diff");
+  const unexpected = files.filter((file) => !TARGETED_ID_RELEASE.allow.has(file));
+  if (unexpected.length > 0) die(`targeted release unexpected files: ${unexpected.join(", ")}`);
+  const manifest = readJson(path.join(ROOT, "docs/control/LIVE_PROMOTION_MANIFEST.json"));
+  const targeted = manifest.targetedIdentityRelease;
+  if (!targeted) die("targeted release manifest block missing");
+  if (targeted.branch !== TARGETED_ID_RELEASE.branch) die("targeted release manifest branch pin mismatch");
+  if (targeted.liveSourceSha !== source) die("targeted release manifest source pin mismatch");
+  if (!String(targeted.founderDecisionRef || "").includes(TARGETED_ID_RELEASE.founderDecision)) {
+    die("targeted release founder decision pin mismatch");
+  }
+  if (targeted.liveAuthority === false) {
+    if (targeted.candidateSha != null || targeted.goldEvidenceRef != null) {
+      die("targeted release stays unbound until the manifest-only release child");
+    }
+    return "carrier";
+  }
+  if (targeted.liveAuthority !== true || !targeted.goldEvidenceRef || !isSha(targeted.candidateSha)) {
+    die("targeted identity release is not live-authorised");
+  }
+  if (!isSha(targeted.rollbackSha) || !String(targeted.rollbackDeployment || "").includes("pages.dev")) {
+    die("targeted release rollback is missing");
+  }
+  const head = git(["rev-parse", "HEAD"]);
+  const parent = git(["rev-parse", "HEAD^"]);
+  if (head !== targeted.candidateSha && parent !== targeted.candidateSha) {
+    die("targeted release HEAD is not the tested candidate or its manifest-only child");
+  }
+  if (head !== targeted.candidateSha) {
+    const child = git(["diff", "--name-only", targeted.candidateSha, "HEAD"]).split("\n").filter(Boolean);
+    if (child.length !== 1 || child[0] !== "docs/control/LIVE_PROMOTION_MANIFEST.json") {
+      die(`targeted release-control commit changed non-manifest files: ${child.join(", ") || "NONE"}`);
+    }
+  }
+  return "release";
+}
+
 const registry = readJson(REGISTRY_PATH);
 const authority = readJson(AUTHORITY_PATH);
 
@@ -164,9 +246,12 @@ const isSystemBranch = SYSTEM_BRANCH_PREFIXES.some((prefix) => headBranch.starts
 const isHeir = headBranch === "king/test";
 const registeredSandbox = registeredSandboxes.get(headBranch);
 const isAuthorisedProductWriteBranch = isHeir || Boolean(registeredSandbox);
+const targetedRelease = assertTargetedIdentityRelease(headBranch);
+const targetedCarrier = targetedRelease === "carrier" || targetedRelease === "release";
 
 // Absolute freeze: an unregistered historical branch is not a work surface at all.
-if (!isAuthorisedProductWriteBranch && !isSystemBranch && changed.length > 0) {
+// The one-time identity carrier is not a branch-name exemption: the pin check above already failed closed.
+if (!targetedCarrier && !isAuthorisedProductWriteBranch && !isSystemBranch && changed.length > 0) {
   die(`branch ${headBranch || "UNKNOWN"} is QUARANTINE_PENDING_ARCHIVE / read-only donor; all writes are forbidden. Copy donor value into HEIR or the one registered SANDBOX instead`);
 }
 
@@ -176,7 +261,7 @@ if (isSystemBranch && productChanges.length > 0) {
 }
 
 // Product code is legal only on HEIR or the single registered SANDBOX.
-if (productChanges.length > 0 && !isAuthorisedProductWriteBranch) {
+if (!targetedCarrier && productChanges.length > 0 && !isAuthorisedProductWriteBranch) {
   die(`product mutation on unauthorised branch ${headBranch || "UNKNOWN"}; only king/test HEIR or the single registered SANDBOX may receive product writes`);
 }
 
@@ -210,7 +295,11 @@ console.log(JSON.stringify({
   changedFiles: changed.length,
   productChanges: productChanges.length,
   governanceOnlyChanges,
-  role: isHeir
+  role: targetedRelease === "release"
+    ? "ONE_TIME_TARGETED_ID_RELEASE_BOUND_NO_CONTINUING_AUTHORITY"
+    : targetedRelease === "carrier"
+    ? "ONE_TIME_TARGETED_ID_RELEASE_CARRIER_NO_LIVE_AUTHORITY"
+    : isHeir
     ? "HEIR_PRODUCT_WRITE_AUTHORITY"
     : registeredSandbox
       ? `SANDBOX_PRODUCT_WRITE_AUTHORITY:${registeredSandbox.product}`

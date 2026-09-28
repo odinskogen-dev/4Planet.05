@@ -32,9 +32,12 @@ jobs:
         run: git fetch --no-tags origin king/test
 
       - name: Validate registry and current mutation authority
+        shell: bash
         env:
           AUTHORITY_BASE_REF: ${{ github.base_ref }}
-        run: node scripts/product-authority-gate.mjs | tee product-authority-result.txt
+        run: |
+          set -o pipefail
+          node scripts/product-authority-gate.mjs | tee product-authority-result.txt
 
       - name: Inventory remote refs under absolute write-authority law
         env:
