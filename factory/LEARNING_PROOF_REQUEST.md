@@ -26,3 +26,13 @@ Control boundaries:
 - Full ACTIVE remains false until canonical BRAIN writeback and independent readback close after runtime transfer proof.
 
 Requested: 2026-09-29 Europe/Oslo.
+
+## Fresh validated proof attempt — 2026-09-29
+
+- Exact pre-trigger Factory implementation: `8e3a9393a5f7c879dbe4d04e0c1cac83182ed7e9`.
+- Production Factory Shadow CI push run #806: SUCCESS.
+- Production Factory Shadow CI PR run #807: SUCCESS.
+- Runtime capability probe: PASS.
+- Previous proof trigger is invalid as learning evidence because its exact-head Factory CI failed before runtime proof.
+- This fresh attempt must use the same `learning-1` worker, preserve the hidden Judge standard, and stop rather than fabricate improvement if the baseline already passes or runtime capacity blocks.
+
