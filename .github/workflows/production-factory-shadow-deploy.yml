@@ -34,6 +34,7 @@ jobs:
       github_write_ready: ${{ steps.credentials.outputs.github_write_ready }}
       test_king_sha: ${{ steps.lineage.outputs.test_king_sha }}
       activation_requested: ${{ steps.activation_intent.outputs.activation_requested }}
+      learning_proof_requested: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,6 +55,20 @@ jobs:
           else
             echo "activation_requested=false" >> "$GITHUB_OUTPUT"
             echo "Hardening/SHADOW deployment only. Bounded worker boot intentionally not started on every commit."
+          fi
+
+      - name: Resolve explicit Learning Engine proof intent
+        id: learning_proof_intent
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${COMMIT_MESSAGE:-}" == *"[learning-proof]"* ]]; then
+            echo "learning_proof_requested=true" >> "$GITHUB_OUTPUT"
+            echo "Bounded internal SELF-IMPROVING COMPANY proof REQUESTED."
+          else
+            echo "learning_proof_requested=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prove exact current TEST KING ancestry
@@ -266,6 +281,79 @@ jobs:
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
           echo "convergence_passed=false" >> "$GITHUB_OUTPUT"
 
+      - name: Run bounded Self-Improving Company proof
+        if: needs.preflight.outputs.learning_proof_requested == 'true'
+        id: learning_proof
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+
+          HTTP_STATUS="$(curl --silent --show-error             -o factory-learning-proof-start.json             -w '%{http_code}'             -X POST             -H "x-factory-control: $CONTROL_TOKEN"             -H "content-type: application/json"             "$BASE_URL/__factory/learning-proof/start")"
+          cat factory-learning-proof-start.json
+          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+            echo "Learning proof start failed with HTTP $HTTP_STATUS."
+            exit 1
+          fi
+
+          TERMINAL=false
+          ACTIVE=false
+          RESPONSE=""
+          for attempt in $(seq 1 90); do
+            RESPONSE="$(curl --silent --show-error               -X POST               -H "x-factory-control: $CONTROL_TOKEN"               -H "content-type: application/json"               "$BASE_URL/__factory/learning-proof/status" || true)"
+            printf '%s\n' "$RESPONSE" > factory-learning-proof.json
+            STATE="$(echo "$RESPONSE" | jq -r '.receipt.state // "RUNNING"' 2>/dev/null || echo "UNREADABLE")"
+            PROVEN="$(echo "$RESPONSE" | jq -r '.receipt.active // false' 2>/dev/null || echo "false")"
+            echo "Learning proof poll $attempt/90: state=$STATE active=$PROVEN"
+            if [[ "$STATE" != "RUNNING" && "$STATE" != "null" ]]; then
+              TERMINAL=true
+              if [[ "$PROVEN" == "true" ]]; then ACTIVE=true; fi
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ "$TERMINAL" != "true" ]]; then
+            echo "Learning proof did not produce a terminal receipt in the bounded window."
+            exit 1
+          fi
+          if [[ "$ACTIVE" != "true" ]]; then
+            echo "Learning proof reached a terminal non-ACTIVE state. Evidence preserved."
+            cat factory-learning-proof.json
+            exit 1
+          fi
+
+          jq -e '.receipt.learnerId == "learning-1"' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.learnerState.stage == "TRANSFER_PROVEN"' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.metrics.runtimeSelectionProven == true' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.metrics.founderIntervention == 0' factory-learning-proof.json >/dev/null
+          echo "runtime_transfer_proven=true" >> "$GITHUB_OUTPUT"
+
+      - name: Record Learning Engine proof receipt on Factory PR
+        if: always() && needs.preflight.outputs.learning_proof_requested == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ ! -f factory-learning-proof.json ]]; then
+            echo "No terminal learning proof receipt file was produced."
+            exit 0
+          fi
+          SUMMARY="$(jq -c '{proofId,exactFactorySha,receipt:{active,state,learnerId,capabilityId,learningId,learnerState,metrics,causalLink},boundaries}' factory-learning-proof.json)"
+          BODY=$(cat <<EOF
+          ## SELF-IMPROVING COMPANY — BOUNDED RUNTIME PROOF
+
+          Exact Factory SHA: `$FACTORY_HEAD_SHA`
+
+          Runtime receipt: `$SUMMARY`
+
+          This receipt proves only the internal Learning Engine runtime chain recorded above. It grants no LIVE, Canon, outreach, spend or product-mutation authority. Canonical BRAIN writeback remains a separate required gate before FULL ACTIVE closure.
+          EOF
+          )
+          gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
+
       - name: Record hardening-only SHADOW deployment
         if: needs.preflight.outputs.activation_requested != 'true'
         shell: bash
@@ -388,6 +476,8 @@ jobs:
             factory-shadow-canary.json
             factory-activation-start.json
             factory-active-certification.json
+            factory-learning-proof-start.json
+            factory-learning-proof.json
           if-no-files-found: ignore
           retention-days: 30
 
