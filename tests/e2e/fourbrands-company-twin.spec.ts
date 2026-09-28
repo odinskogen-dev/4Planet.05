@@ -44,6 +44,7 @@ test("4BRANDS public model → economic twin → value → decision", async ({ p
   await page.getByRole("button", { name: "Try TOMRA public model" }).click();
   await expect(page.getByRole("heading", { name: "TOMRA" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Build your Company Twin." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The company that remembers." })).toBeVisible();
   await shot(page, "02-public-model", testInfo.project.name);
 
   await page.getByRole("button", { name: "Explore with synthetic demo finance" }).click();
@@ -72,6 +73,11 @@ test("4BRANDS public model → economic twin → value → decision", async ({ p
   await page.getByRole("button", { name: "Lock baseline" }).click();
   await expect(page.getByText("LOCKED BASELINE", { exact: true })).toBeVisible();
   await shot(page, "06-decision-ledger", testInfo.project.name);
+
+  await nav(page, "Future");
+  await expect(page.getByRole("heading", { name: "Explore before you decide." })).toBeVisible();
+  await expect(page.getByText("FACT ≠ ASSUMPTION ≠ SCENARIO ≠ FORECAST ≠ OBSERVED RESULT ≠ ATTRIBUTED VALUE.", { exact: true })).toBeVisible();
+  await shot(page, "07-future-engine", testInfo.project.name);
 
   const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(horizontalOverflow).toBeLessThanOrEqual(2);
