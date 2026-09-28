@@ -28,6 +28,29 @@ test.describe("4SAPIEN Personal Choice Proof", () => {
     await expectNoHorizontalOverflow(page);
   });
 
+
+  test("restores a saved shopping context after reload", async ({ page }) => {
+    await page.goto("/4sapien");
+    await page.evaluate(() => window.localStorage.removeItem("4planet.embla.shopping-list.v1"));
+    await page.reload();
+
+    const list = page.getByLabel("What do you need?");
+    await list.fill("Kaffe\nHavremelk");
+    await page.getByLabel("Store").selectOption({ label: "MENY" });
+    await page.getByLabel("Budget · NOK").fill("275");
+    await page.getByRole("button", { name: "Analyse my list" }).click();
+    await page.getByRole("button", { name: "Use this list" }).click();
+    await expect(page.getByText(/Saved on this device/i)).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByText(/Your saved list is back on this device/i)).toBeVisible();
+    await expect(list).toHaveValue("Kaffe\nHavremelk");
+    await expect(page.getByLabel("Store")).toHaveValue("MENY");
+    await expect(page.getByLabel("Budget · NOK")).toHaveValue("275");
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("FOOD proof exposes real lookup without a universal score", async ({ page }) => {
     await page.goto("/4sapien/food");
     await expect(page).toHaveURL(/\/4sapien\/food$/);
