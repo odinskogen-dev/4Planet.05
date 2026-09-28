@@ -1,0 +1,97 @@
+name: VALUE CONVERGENCE LIVE READBACK 02
+
+on:
+  push:
+    branches:
+      - ops/value-convergence-live-proof-02
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: HTTP live surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in             https://4planet.org/             https://id.4planet.org/             https://4sapien.com/             https://4brands.org/             https://4planet.org/atlas             https://4planet.org/species/orca
+          do
+            body="/tmp/$(echo "$url" | sed 's#https://##;s#[/:]#-#g').html"
+            code=$(curl -sS -L --max-time 30 -o "$body" -w '%{http_code}' "$url")
+            bytes=$(wc -c < "$body" | tr -d ' ')
+            echo "$url HTTP=$code bytes=$bytes"
+            test "$code" = "200"
+            test "$bytes" -gt 500
+          done
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Custom-domain human readback
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+
+          const targets = [
+            { url:'https://4planet.org/', text:/4PLANET/i, auth:true },
+            { url:'https://id.4planet.org/', text:/4PLANET|Logg inn|Din 4PLANET ID/i, auth:false },
+            { url:'https://4sapien.com/', text:/4SAPIEN|Embla/i, auth:false },
+            { url:'https://4brands.org/', text:/4BRAND|BETTER COMPANY|Company/i, auth:false },
+          ];
+
+          for (const browserType of [chromium, webkit]) {
+            const browser = await browserType.launch();
+            for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+              const page = await browser.newPage({viewport});
+              for (const target of targets) {
+                const response = await page.goto(target.url,{waitUntil:'networkidle',timeout:60000});
+                if (!response || response.status() !== 200) throw new Error(`${target.url} HTTP ${response?.status()}`);
+                const body = await page.locator('body').innerText();
+                if (!target.text.test(body)) throw new Error(`${target.url} missing expected product identity`);
+                const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+                if (overflow > 2) throw new Error(`${target.url} horizontal overflow ${overflow}px at ${viewport.width}`);
+                if (target.auth) {
+                  const authLinks = page.locator('a[href*="id.4planet.org"]');
+                  if (await authLinks.count() < 1) throw new Error('4planet.org missing canonical ID entry');
+                }
+                console.log(JSON.stringify({browser:browserType.name(),viewport:viewport.width,url:target.url,status:'PASS'}));
+              }
+              await page.close();
+            }
+            await browser.close();
+          }
+          NODE
+
+      - name: Existing live product journeys
+        env:
+          BASE_URL: https://4planet.org
+        run: >
+          npx playwright test
+          tests/e2e/pantry-choice.spec.ts
+          tests/e2e/species-first-read.spec.ts
+          tests/e2e/atlas-core-parent-release.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=webkit-desktop
+          --project=webkit-390
+
+      - name: Record scope truth
+        run: |
+          {
+            echo '## LIVE READBACK 02'
+            echo '- Read-only custom-domain HTTP + Chromium/WebKit desktop/mobile proof.'
+            echo '- Existing pantry, Species and ATLAS journeys executed against https://4planet.org.'
+            echo '- This does NOT claim a credentialed cross-domain login, authenticated pantry return, or model-backed Embla success.'
+          } >> "$GITHUB_STEP_SUMMARY"
