@@ -145,6 +145,22 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
+  const practiceRetry2 = pkg(
+    "learn-proof-practice-retry-actions-b3",
+    "Adaptive practice retry 2 — apply IDENTITY / EVIDENCE TYPE / COVERAGE",
+    [
+      "A release audit knows the exact commit under review. Its only execution evidence is a first-page GitHub check-runs collection and the target workflow name is absent from that collection.",
+      "The audit is about whether that workflow executed for the exact commit through any relevant trigger.",
+      "Classify the evidence and specify the proof procedure required before reporting workflow absence.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["exact sha|commit sha|exact commit", "check-runs", "workflow runs|actions runs|workflow-run", "push|pull request|workflow dispatch|event types|all relevant triggers", "pagination|all pages", "authoritative|raw"],
+    ["workflow did not execute", "absence proven"],
+    "PRACTICE",
+    "practice-retry-identity-type-coverage",
+    now,
+  );
+
   const heldOut = pkg(
     "learn-proof-heldout-library-c",
     "Fresh held-out — bounded document search",
@@ -194,7 +210,7 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
-  return { baseline, practice, practiceRetry, heldOut, retry, transfer };
+  return { baseline, practice, practiceRetry, practiceRetry2, heldOut, retry, transfer };
 }
 
 export function brainDerivedLearningCandidate(baseline: Outcome, now = new Date().toISOString()): LearningCandidate {
@@ -242,6 +258,28 @@ export function adaptedLearningCandidate(baseline: Outcome, practice: Outcome, n
     ].join(" "),
     ruleProposal: "Absence/completeness requires exact identity + authoritative claim-type evidence + complete relevant event/surface/pagination coverage; otherwise INSUFFICIENT_EVIDENCE.",
     nextTest: "Retry on a fresh practice variant, then held-out and later cross-system transfer.",
+  };
+}
+
+
+export function refinedLearningCandidate(baseline: Outcome, practice: Outcome, practiceRetry: Outcome, now = new Date().toISOString()): LearningCandidate {
+  const base = adaptedLearningCandidate(baseline, practice, now);
+  return {
+    ...base,
+    evidence: [
+      ...base.evidence,
+      ...practiceRetry.evidence,
+      "ADAPTIVE_FEEDBACK_02: learner improved on decision, identity, authority and pagination but still omitted claim-type evidence and relevant event/trigger coverage.",
+    ],
+    lesson: [
+      "Use the 3-CHECK ABSENCE PROOF before any universal absence/completeness claim.",
+      "CHECK 1 — IDENTITY: bind the exact object/version/commit SHA.",
+      "CHECK 2 — EVIDENCE TYPE: use the authoritative evidence source for the claim itself; for whether a GitHub workflow executed, inspect Actions/workflow-runs, not merely check-runs.",
+      "CHECK 3 — COVERAGE: cover all relevant triggers/event types (for example push, pull_request, workflow_dispatch when applicable) and all pages/pagination.",
+      "If any check is missing, the only valid classification is INSUFFICIENT_EVIDENCE and the missing checks must be named explicitly.",
+    ].join(" "),
+    ruleProposal: "3-CHECK ABSENCE PROOF = exact identity + authoritative claim-type evidence + complete trigger/surface/pagination coverage; otherwise INSUFFICIENT_EVIDENCE.",
+    nextTest: "Apply all three checks on a fresh practice variant; then proceed to held-out only if the unchanged Judge passes.",
   };
 }
 
@@ -329,15 +367,28 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       });
       practiceRetry = retryOutcome;
       if (!accepted(retryOutcome)) {
-        return await finish("practice-retry-failed", {
-          active: false,
-          state: "PRACTICE_RETRY_FAILED",
-          learnerId: LEARNER_ID,
-          baseline,
-          practice,
-          practiceRetry,
-          reason: "Adaptive curriculum did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+        await step.do("refine-curriculum-from-second-practice-feedback", async () => {
+          await agent.recordLearning(refinedLearningCandidate(baseline, practice, retryOutcome));
+          await agent.upsertWorkPackage(packages.practiceRetry2);
         });
+        const retryOutcome2: Outcome = await step.do("adaptive-practice-retry-2", async () => {
+          const outcome = await agent.dispatchToWorker(packages.practiceRetry2.id) as Outcome;
+          await agent.finalizeWorkflowOutcome(outcome);
+          return outcome;
+        });
+        practiceRetry = retryOutcome2;
+        if (!accepted(retryOutcome2)) {
+          return await finish("practice-retry-2-failed", {
+            active: false,
+            state: "PRACTICE_RETRY_2_FAILED",
+            learnerId: LEARNER_ID,
+            baseline,
+            practice,
+            firstPracticeRetry: retryOutcome,
+            practiceRetry: retryOutcome2,
+            reason: "Second adaptive curriculum still did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+          });
+        }
       }
     }
 
@@ -362,7 +413,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const preWakeReceipts = await step.do("readback-pre-wake", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.heldOut.id, packages.retry.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.heldOut.id, packages.retry.id])
     );
 
     await step.sleep("later-independent-learning-wake", "1 minute");
@@ -378,7 +429,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const receipts = await step.do("independent-learning-readback", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
     );
     const learnerState = await step.do("learner-state-readback", async () =>
       agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
