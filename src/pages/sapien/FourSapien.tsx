@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
@@ -17,12 +17,30 @@ export function FourSapienHome() {
   const [budget, setBudget] = useState("150");
   const [analysed, setAnalysed] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [restored, setRestored] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
 
   const items = useMemo(() => parseEmblaShoppingList(shoppingList), [shoppingList]);
   const summary = useMemo(() => summariseEmblaShoppingList(items), [items]);
   const embla = useMemo(() => submittedPrompt === null ? null : resolveEmblaIntake(submittedPrompt), [submittedPrompt]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = "4planet.embla.shopping-list.v1";
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return;
+    try {
+      const value = JSON.parse(raw) as { shoppingList?: unknown; store?: unknown; budget?: unknown };
+      if (typeof value.shoppingList !== "string" || !value.shoppingList.trim()) return;
+      setShoppingList(value.shoppingList);
+      if (typeof value.store === "string" && value.store.trim()) setStore(value.store);
+      if (typeof value.budget === "string") setBudget(value.budget);
+      setRestored(true);
+    } catch {
+      window.localStorage.removeItem(key);
+    }
+  }, []);
 
   const analyseList = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -49,6 +67,7 @@ export function FourSapienHome() {
       window.localStorage.setItem("4planet.embla.shopping-list.v1", JSON.stringify({ shoppingList, store, budget, savedAt: new Date().toISOString() }));
     }
     setSaved(true);
+    setRestored(false);
     trackEvent("decision_saved", { product_area: "4sapien", decision_kind: "shopping_list" });
   };
 
@@ -84,11 +103,12 @@ export function FourSapienHome() {
 
           <form onSubmit={analyseList} className="embla02__list-form">
             <label htmlFor="embla-shopping-list">What do you need?</label>
-            <textarea id="embla-shopping-list" value={shoppingList} onChange={(event) => { setShoppingList(event.target.value); setAnalysed(false); }} placeholder="Coffee\nMilk\nButter" />
+            {restored ? <p className="embla02__saved" aria-live="polite">Your saved list is back on this device. Review it, change it or analyse it again.</p> : null}
+            <textarea id="embla-shopping-list" value={shoppingList} onChange={(event) => { setShoppingList(event.target.value); setAnalysed(false); setRestored(false); }} placeholder="Coffee\nMilk\nButter" />
 
             <div className="embla02__context-grid">
               <label>Store
-                <select value={store} onChange={(event) => setStore(event.target.value)}>
+                <select value={store} onChange={(event) => { setStore(event.target.value); setRestored(false); }}>
                   <option>KIWI</option>
                   <option>REMA 1000</option>
                   <option>MENY</option>
@@ -97,7 +117,7 @@ export function FourSapienHome() {
                 </select>
               </label>
               <label>Budget · NOK
-                <input inputMode="decimal" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9.,]/g, ""))} placeholder="Optional" />
+                <input inputMode="decimal" value={budget} onChange={(event) => { setBudget(event.target.value.replace(/[^0-9.,]/g, "")); setRestored(false); }} placeholder="Optional" />
               </label>
             </div>
 
