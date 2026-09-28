@@ -733,7 +733,7 @@ export default function FourBrand() {
             <div className="fb-twin__head">
               <div>
                 <p className="fb-eyebrow">BUILD YOUR TWIN / BETA</p>
-                <h2>One living model of the company.</h2>
+                <h2>Build your Company Twin.</h2>
                 <div className="fb-twin__status"><span>COMPANY BRAIN</span><span>SERVER PERSISTENCE WHEN SIGNED IN</span><span>LOCAL RECOVERY BEFORE SIGN-IN</span></div>
               </div>
               <p>Public evidence is only the outside view. Add a minimum internal baseline to turn the public Value Map into a working Company Operating Twin. Authenticated company state is persisted in the existing 4Planet_ OS under workspace membership and RLS; local browser state remains recovery-only.</p>
