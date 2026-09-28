@@ -226,6 +226,12 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     const now = new Date().toISOString();
     const proofProject = project(now);
     const packages = createSelfImprovementProofPackages(now);
+    const finish = async (label: string, result: Record<string, unknown>) => {
+      await step.do(`persist-learning-proof-${label}`, async () =>
+        this.agent.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, result)
+      );
+      return result;
+    };
 
     await step.do("seed-baseline", async () => {
       await this.agent.upsertProject(proofProject);
@@ -239,22 +245,22 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     });
 
     if (accepted(baseline)) {
-      return {
+      return await finish("no-gap", {
         active: false,
         state: "NO_GENUINE_GAP_OBSERVED",
         learnerId: LEARNER_ID,
         baseline,
         reason: "Baseline already met the hidden standard without targeted learning; self-improvement is not claimed.",
-      };
+      });
     }
     if (baseline.status === "BLOCKED") {
-      return {
+      return await finish("baseline-blocked", {
         active: false,
         state: "BASELINE_BLOCKED",
         learnerId: LEARNER_ID,
         baseline,
         reason: "No curriculum is inferred from a capacity/runtime blocker.",
-      };
+      });
     }
 
     await step.do("select-targeted-brain-learning", async () => {
@@ -268,7 +274,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       return outcome;
     });
     if (!accepted(practice)) {
-      return { active: false, state: "PRACTICE_FAILED", learnerId: LEARNER_ID, baseline, practice };
+      return await finish("practice-failed", { active: false, state: "PRACTICE_FAILED", learnerId: LEARNER_ID, baseline, practice });
     }
 
     await step.do("seed-fresh-heldout", async () => this.agent.upsertWorkPackage(packages.heldOut));
@@ -278,7 +284,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       return outcome;
     });
     if (!accepted(heldOut)) {
-      return { active: false, state: "HELD_OUT_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut };
+      return await finish("heldout-failed", { active: false, state: "HELD_OUT_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut });
     }
 
     await step.do("seed-comparable-real-retry", async () => this.agent.upsertWorkPackage(packages.retry));
@@ -288,7 +294,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       return outcome;
     });
     if (!accepted(retry)) {
-      return { active: false, state: "REAL_WORK_RETRY_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry };
+      return await finish("real-retry-failed", { active: false, state: "REAL_WORK_RETRY_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry });
     }
 
     const preWakeReceipts = await step.do("readback-pre-wake", async () =>
@@ -304,7 +310,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       return outcome;
     });
     if (!accepted(transfer)) {
-      return { active: false, state: "TRANSFER_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry, transfer };
+      return await finish("transfer-failed", { active: false, state: "TRANSFER_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry, transfer });
     }
 
     const receipts = await step.do("independent-learning-readback", async () =>
@@ -353,7 +359,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       && runtimeSelectionProven
       && learnerState?.stage === "TRANSFER_PROVEN";
 
-    return {
+    return await finish("terminal", {
       active,
       state: active ? "RUNTIME_TRANSFER_PROVEN_BRAIN_WRITEBACK_REQUIRED" : "RUNTIME_PROOF_INCOMPLETE",
       learnerId: LEARNER_ID,
@@ -374,6 +380,6 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
         after: "Comparable retry and materially different transfer explicitly receipted the learning ID and passed the same independent evidence-discipline standard.",
         limitation: "This proves organisational/runtime learning for this capability. Model weights are unchanged. Canonical BRAIN writeback and independent Founder/Gold readback remain separate final gates.",
       },
-    };
+    });
   }
 }
