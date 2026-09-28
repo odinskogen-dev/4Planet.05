@@ -561,6 +561,24 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
   }
 
   @callable()
+  getLearningRetrievalReceipts(workPackageIds: string[] = []) {
+    const ids = [...new Set(workPackageIds.filter(Boolean))].slice(0, 32);
+    if (ids.length === 0) {
+      return this.sql<{ payload: string }>`
+        SELECT payload FROM learning_retrieval_receipts ORDER BY created_at DESC LIMIT 50
+      `.map((row) => JSON.parse(row.payload));
+    }
+    const receipts: unknown[] = [];
+    for (const id of ids) {
+      const rows = this.sql<{ payload: string }>`
+        SELECT payload FROM learning_retrieval_receipts WHERE work_package_id = ${id} ORDER BY created_at ASC
+      `;
+      receipts.push(...rows.map((row) => JSON.parse(row.payload)));
+    }
+    return receipts;
+  }
+
+  @callable()
   getRuntimeLearningBrief(workPackageId: string, learnerId: string): RuntimeLearningContext {
     const pkg = this.getWorkPackage(workPackageId);
     if (!pkg) throw new Error(`Unknown work package: ${workPackageId}`);
