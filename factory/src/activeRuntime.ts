@@ -400,6 +400,26 @@ async function startLearningProof(env: ActiveEnv) {
   };
 }
 
+async function learningProofCapacity(env: ActiveEnv, requestedCalls: number) {
+  const factory: any = await factoryAgent(env);
+  const exactFactorySha = exactBuildSha(env);
+  const snapshot = await factory.getLearningProofCapacity(requestedCalls);
+  return {
+    ok: true,
+    exactFactorySha,
+    proofId: SELF_IMPROVEMENT_PROOF_ID,
+    ...snapshot,
+    boundaries: {
+      readOnly: true,
+      reservesCapacity: false,
+      buysCapacity: false,
+      productMutation: false,
+      live: false,
+      canonPromotion: false,
+    },
+  };
+}
+
 async function learningProofStatus(env: ActiveEnv) {
   const factory: any = await factoryAgent(env);
   const exactFactorySha = exactBuildSha(env);
@@ -435,6 +455,16 @@ export default {
     if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) {
       await enforceExactBuildCertification(env);
       return worldClassRuntime.fetch(request, env, ctx);
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/learning-proof/capacity") {
+      if (!authorised(request, env)) return authFailure();
+      try {
+        const body = await request.json().catch(() => ({})) as { requestedCalls?: number };
+        return Response.json(await learningProofCapacity(env, body.requestedCalls ?? 4));
+      } catch (error) {
+        return Response.json({ ok: false, error: error instanceof Error ? error.message : "LEARNING_PROOF_CAPACITY_FAILED" }, { status: 409 });
+      }
     }
 
     if (request.method === "POST" && url.pathname === "/__factory/learning-proof/start") {

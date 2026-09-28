@@ -35,6 +35,7 @@ jobs:
       test_king_sha: ${{ steps.lineage.outputs.test_king_sha }}
       activation_requested: ${{ steps.activation_intent.outputs.activation_requested }}
       learning_proof_requested: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
+      learning_capacity_requested: ${{ steps.learning_capacity_intent.outputs.learning_capacity_requested }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,11 +72,26 @@ jobs:
             echo "learning_proof_requested=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Resolve read-only Learning Engine capacity intent
+        id: learning_capacity_intent
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${COMMIT_MESSAGE:-}" == *"[learning-capacity]"* ]]; then
+            echo "learning_capacity_requested=true" >> "$GITHUB_OUTPUT"
+            echo "Authoritative same-worker read-only capacity snapshot REQUESTED."
+          else
+            echo "learning_capacity_requested=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Prove product-mutation lineage or record learning-proof context
         id: lineage
         env:
           ACTIVATION_REQUESTED: ${{ steps.activation_intent.outputs.activation_requested }}
           LEARNING_PROOF_REQUESTED: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
+          LEARNING_CAPACITY_REQUESTED: ${{ steps.learning_capacity_intent.outputs.learning_capacity_requested }}
         shell: bash
         run: |
           set -euo pipefail
@@ -88,9 +104,9 @@ jobs:
           echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
           if git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
             echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
-          elif [[ "$LEARNING_PROOF_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
-            echo "Learning proof lineage context only: current TEST KING is not an ancestor of Factory head."
-            echo "This is allowed ONLY because the requested proof is non-mutating, SHADOW-only, and cannot start product activation."
+          elif [[ ( "$LEARNING_PROOF_REQUESTED" == "true" || "$LEARNING_CAPACITY_REQUESTED" == "true" ) && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning proof/capacity lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested operation is non-mutating, SHADOW-only, and cannot start product activation."
             echo "Factory: $FACTORY_HEAD_SHA"
             echo "TEST KING context: $TEST_KING_SHA"
           else
@@ -290,6 +306,38 @@ jobs:
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
           echo "convergence_passed=false" >> "$GITHUB_OUTPUT"
 
+      - name: Read authoritative same-worker learning capacity
+        if: needs.preflight.outputs.learning_capacity_requested == 'true'
+        id: learning_capacity
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+          HTTP_STATUS="$(curl --silent --show-error \
+            -o factory-learning-capacity.json \
+            -w '%{http_code}' \
+            -X POST \
+            -H "x-factory-control: $CONTROL_TOKEN" \
+            -H "content-type: application/json" \
+            --data '{"requestedCalls":4}' \
+            "$BASE_URL/__factory/learning-proof/capacity")"
+          cat factory-learning-capacity.json
+          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+            echo "Learning capacity snapshot failed with HTTP $HTTP_STATUS."
+            exit 1
+          fi
+          jq -e '.ok == true' factory-learning-capacity.json >/dev/null
+          jq -e '.learnerId == "learning-1"' factory-learning-capacity.json >/dev/null
+          jq -e '.capabilityId == "C06_EVIDENCE_SCOPE_DISCIPLINE"' factory-learning-capacity.json >/dev/null
+          jq -e '.requestedCalls == 4' factory-learning-capacity.json >/dev/null
+          jq -e '.readOnly == true and .boundaries.reservesCapacity == false and .boundaries.buysCapacity == false' factory-learning-capacity.json >/dev/null
+          jq -e --arg sha "$FACTORY_HEAD_SHA" '.exactFactorySha == $sha' factory-learning-capacity.json >/dev/null
+          echo "capacity_available=$(jq -r '.allowed')" >> "$GITHUB_OUTPUT"
+          echo "day_remaining=$(jq -r '.dayRemaining')" >> "$GITHUB_OUTPUT"
+          echo "month_remaining=$(jq -r '.monthRemaining')" >> "$GITHUB_OUTPUT"
+
       - name: Run bounded Self-Improving Company proof
         if: needs.preflight.outputs.learning_proof_requested == 'true'
         id: learning_proof
@@ -485,6 +533,7 @@ jobs:
             factory-shadow-canary.json
             factory-activation-start.json
             factory-active-certification.json
+            factory-learning-capacity.json
             factory-learning-proof-start.json
             factory-learning-proof.json
           if-no-files-found: ignore

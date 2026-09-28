@@ -568,6 +568,25 @@ export class ProductionFactoryAgent extends Agent<Cloudflare.Env, FactoryState> 
     );
   }
 
+  /**
+   * Read the persisted AI reservation counters from the exact same durable
+   * learner that executes the Learning Engine proof. This is deliberately
+   * read-only: it cannot reserve, buy, expand, or bypass capacity.
+   */
+  @callable()
+  async getLearningProofCapacity(requestedCalls: number = 4) {
+    if (!Number.isInteger(requestedCalls) || requestedCalls < 1 || requestedCalls > 6) {
+      throw new Error("LEARNING_PROOF_CAPACITY_REQUEST_INVALID");
+    }
+    const learnerId = "learning-1";
+    const snapshot = await (await this.subAgent(LearningWorker, learnerId)).getAiCapacitySnapshot(requestedCalls);
+    return {
+      learnerId,
+      capabilityId: "C06_EVIDENCE_SCOPE_DISCIPLINE",
+      ...snapshot,
+    };
+  }
+
   @callable()
   recordLearningProofReceipt(proofId: string, payload: unknown) {
     const clean = proofId?.trim() ?? "";
