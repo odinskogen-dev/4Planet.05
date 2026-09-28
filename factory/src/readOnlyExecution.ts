@@ -1,6 +1,7 @@
 import type { Outcome, WorkPackage } from "./contracts";
 import { runResearchSearch } from "./capabilityExpansion";
 import { aiText } from "./autonomousExecution";
+import { judgeLearningEval } from "./learningEvalJudge";
 
 // Source pages are frequently substantially larger than the small machine-readable
 // endpoints used by the first canary. Keep the read bounded, but large enough to
@@ -276,14 +277,6 @@ function parseLearningEvalPayload(raw: unknown): LearningEvalPayload {
   };
 }
 
-function signalPresent(haystack: string, signal: string): boolean {
-  return signal
-    .split("|")
-    .map((part) => part.trim().toLowerCase())
-    .filter(Boolean)
-    .some((part) => haystack.includes(part));
-}
-
 async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome> {
   const execution = pkg.execution;
   if (!execution || execution.kind !== "INTERNAL_LEARNING_EVAL") throw new Error("INTERNAL_LEARNING_EVAL execution spec required");
@@ -355,33 +348,30 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     });
   }
 
-  const combined = [
-    payload.decision,
-    payload.rationale,
-    ...(payload.evidenceNeeded ?? []),
-  ].join("\n").toLowerCase();
   const required = execution.requiredSignals ?? [];
   const forbidden = execution.forbiddenSignals ?? [];
-  const missingSignals = required.filter((signal) => !signalPresent(combined, signal));
-  const forbiddenHits = forbidden.filter((signal) => signalPresent(combined, signal));
-  const decisionPass = payload.decision.trim().toLowerCase() === expectedDecision.toLowerCase();
   const selectedIds = selected.map((item) => item.learningId);
-  const applied = new Set(payload.appliedLearningIds ?? []);
-  const learningReceiptPass = selectedIds.every((id) => applied.has(id));
-  const passed = decisionPass && missingSignals.length === 0 && forbiddenHits.length === 0 && learningReceiptPass;
+  const judgement = judgeLearningEval({
+    expectedDecision,
+    actualDecision: payload.decision,
+    rationale: payload.rationale,
+    evidenceNeeded: payload.evidenceNeeded ?? [],
+    requiredSignals: required,
+    forbiddenSignals: forbidden,
+    selectedLearningIds: selectedIds,
+    appliedLearningIds: payload.appliedLearningIds ?? [],
+  });
+  const passed = judgement.passed;
 
   const evidence = [
     `learning-eval ${passed ? "PASS" : "FAIL"}`,
     `scenario ${execution.scenarioId}`,
     `expected-decision ${expectedDecision}`,
     `actual-decision ${payload.decision}`,
-    `decision-match ${decisionPass ? "PASS" : "FAIL"}`,
-    ...required.map((signal) => `required-signal ${signal}=${signalPresent(combined, signal) ? "PASS" : "FAIL"}`),
-    ...forbidden.map((signal) => `forbidden-signal ${signal}=${signalPresent(combined, signal) ? "FAIL" : "PASS"}`),
-    `selected-learning ${selectedIds.join(",") || "NONE"}`,
-    `applied-learning ${(payload.appliedLearningIds ?? []).join(",") || "NONE"}`,
-    `learning-receipt ${learningReceiptPass ? "PASS" : "FAIL"}`,
+    ...judgement.evidence,
     `model ${model}`,
+    "judge deterministic-hidden-rubric",
+    "maker-not-judge PASS",
     "founder-minutes=0",
     "production-minutes=0",
   ];
