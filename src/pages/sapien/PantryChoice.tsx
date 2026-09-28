@@ -1,5 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { comparePantryMeals, type FoodRecipe, type PantryItem } from '@/food/pantry-decision.js';
+import {
+  currentFoodPantrySession,
+  loadFoodPantryMemory,
+  removeFoodPantryMemory,
+  saveFoodPantryMemory,
+  type FoodPantryMemory,
+} from '@/food/pantryMemory';
+import { identityLoginUrl, type FourPlanetSession } from '@/identity/identityClient';
+import { trackEvent } from '@/analytics/Analytics';
 
 const DEMO_RECIPES: FoodRecipe[] = [
   { id:'fixture-porridge',name:'Porridge — example',sourceRef:'DEMO_FIXTURE_NOT_VERIFIED',
@@ -19,43 +28,177 @@ const DEMO_PANTRY: PantryItem[] = [
 
 const inputStyle = { minHeight:44, padding:'8px 10px', border:'1px solid #b0b0ad', borderRadius:8, background:'#fff', color:'#080808', fontSize:15 } as const;
 const btnStyle = { minHeight:44, padding:'8px 15px', border:'1px solid #080808', borderRadius:8, background:'#080808', color:'#fff', cursor:'pointer' } as const;
+
+type MemoryState = 'CHECKING' | 'SIGNED_OUT' | 'EMPTY' | 'RETURNED' | 'SAVING' | 'SAVED' | 'REMOVED' | 'ERROR';
+
 export default function PantryChoice() {
   const [pantry,setPantry] = useState<PantryItem[]>([]);
   const [name,setName] = useState('');
   const [amount,setAmount] = useState('');
   const [unit,setUnit] = useState('g');
   const [budget,setBudget] = useState('');
+  const [session,setSession] = useState<FourPlanetSession|null>(null);
+  const [memory,setMemory] = useState<FoodPantryMemory|null>(null);
+  const [memoryState,setMemoryState] = useState<MemoryState>('CHECKING');
+  const [memoryMessage,setMemoryMessage] = useState('');
+
   const options = useMemo(() => comparePantryMeals({
     pantry, recipes:DEMO_RECIPES,
     budgetNok:budget.trim() === '' ? null : Number(budget)
   }), [pantry,budget]);
-  const update = (index:number,patch:Partial<PantryItem>) =>
+
+  useEffect(() => {
+    let active = true;
+    currentFoodPantrySession()
+      .then(async current => {
+        if (!active) return;
+        if (!current) {
+          setMemoryState('SIGNED_OUT');
+          return;
+        }
+        setSession(current);
+        const saved = await loadFoodPantryMemory(current);
+        if (!active) return;
+        if (!saved) {
+          setMemoryState('EMPTY');
+          return;
+        }
+        setMemory(saved);
+        setPantry(saved.pantry);
+        setBudget(saved.budgetNok === null ? '' : String(saved.budgetNok));
+        setMemoryState('RETURNED');
+        setMemoryMessage(`Welcome back. Restored ${saved.pantry.length} user-confirmed pantry items from your private 4SAPIEN memory.`);
+        trackEvent('return_value', {
+          product_area:'4sapien',
+          value_kind:'food_pantry_rehydrated',
+          item_count:saved.pantry.length,
+        });
+      })
+      .catch(() => {
+        if (!active) return;
+        setMemoryState('ERROR');
+        setMemoryMessage('Private pantry memory could not be read. Nothing was assumed or overwritten.');
+      });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!pantry.length || !options.length || typeof window === 'undefined') return;
+    const key = '4p:value-reached:food-pantry-v1';
+    if (window.sessionStorage.getItem(key)) return;
+    trackEvent('value_reached', {
+      product_area:'4sapien',
+      value_kind:'food_pantry_comparison',
+      option_count:options.length,
+    });
+    window.sessionStorage.setItem(key,'1');
+  }, [pantry.length,options.length]);
+
+  const update = (index:number,patch:Partial<PantryItem>) => {
     setPantry(previous => previous.map((item,i) => i === index ? {...item,...patch} : item));
+    if (memoryState === 'SAVED' || memoryState === 'RETURNED') setMemoryState('EMPTY');
+  };
+
+  const loadExample = () => {
+    setPantry(DEMO_PANTRY.map(item=>({...item})));
+    setMemoryState(session ? 'EMPTY' : 'SIGNED_OUT');
+    trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_example_loaded'});
+  };
+
+  const clearPantry = () => {
+    setPantry([]);
+    setBudget('');
+    if (memoryState === 'SAVED' || memoryState === 'RETURNED') setMemoryState('EMPTY');
+  };
+
+  const savePantry = async () => {
+    if (!session) {
+      window.location.assign(identityLoginUrl(window.location.href));
+      return;
+    }
+    const budgetNumber = budget.trim() === '' ? null : Number(budget);
+    if (budgetNumber !== null && (!Number.isFinite(budgetNumber) || budgetNumber < 0)) {
+      setMemoryState('ERROR');
+      setMemoryMessage('Check the optional budget before saving.');
+      return;
+    }
+    setMemoryState('SAVING');
+    setMemoryMessage('');
+    try {
+      const saved = await saveFoodPantryMemory(session,pantry,budgetNumber,memory?.id);
+      setMemory(saved);
+      setMemoryState('SAVED');
+      setMemoryMessage('Saved and read back from your private 4SAPIEN memory. It can now improve your next visit.');
+      trackEvent('memory_written',{
+        product_area:'4sapien',
+        memory_kind:'food_pantry',
+        item_count:saved.pantry.length,
+      });
+    } catch (cause) {
+      setMemoryState('ERROR');
+      setMemoryMessage(cause instanceof Error && cause.message === 'PANTRY_PRIOR_REVISION_REVIEW_REQUIRED'
+        ? 'New pantry revision was saved, but the previous revision needs cleanup review.'
+        : 'Private pantry could not be saved. Nothing is presented as remembered.');
+    }
+  };
+
+  const removeMemory = async () => {
+    if (!session || !memory?.id) return;
+    setMemoryState('SAVING');
+    setMemoryMessage('');
+    try {
+      await removeFoodPantryMemory(session,memory.id);
+      setMemory(null);
+      setPantry([]);
+      setBudget('');
+      setMemoryState('REMOVED');
+      setMemoryMessage('Private pantry memory removed.');
+      trackEvent('memory_removed',{product_area:'4sapien',memory_kind:'food_pantry'});
+    } catch {
+      setMemoryState('ERROR');
+      setMemoryMessage('Private pantry memory could not be removed. Reload before relying on its state.');
+    }
+  };
+
   return <section aria-labelledby="pantry-choice-title" style={{padding:'clamp(24px,5vw,72px)',background:'#faf9f5',color:'#080808'}}>
-    <p className="embla02__eyebrow">FOOD · INDEPENDENT VALUE LOOP · TEST SURFACE</p>
+    <p className="embla02__eyebrow">FOOD · FIRST-RETURN VALUE LOOP</p>
     <h2 id="pantry-choice-title" style={{fontSize:'clamp(30px,5vw,58px)',lineHeight:1,letterSpacing:'-.04em',margin:'12px 0'}}>What can I make with what I have?</h2>
-    <p style={{maxWidth:720,lineHeight:1.6}}>Try a bounded ingredient-matching demonstration. Example recipes are synthetic test fixtures, not verified nutritional, allergy or environmental guidance. Edit your pantry to correct an answer. Nothing here is sent or saved to your account.</p>
-    <div style={{display:'flex',flexWrap:'wrap',gap:10,margin:'20px 0'}}>
-      <button type="button" onClick={()=>setPantry(DEMO_PANTRY.map(item=>({...item})))} style={btnStyle}>Load example pantry</button>
-      <button type="button" onClick={()=>setPantry([])} style={{...btnStyle,background:'#fff',color:'#080808'}}>Clear</button>
+    <p style={{maxWidth:720,lineHeight:1.6}}>Compare your reported pantry against three clearly labelled example recipes. The comparison is deterministic. Recipes are synthetic test fixtures, not verified nutritional, allergy or environmental guidance.</p>
+
+    <div role="status" aria-live="polite" style={{maxWidth:900,padding:'14px 0',borderTop:'1px solid #c4c4c0',borderBottom:'1px solid #c4c4c0',margin:'18px 0'}}>
+      {memoryState === 'CHECKING' && <span>Checking private 4SAPIEN memory…</span>}
+      {memoryState === 'SIGNED_OUT' && <span>Anonymous use stays in this browser tab. Sign in with 4PLANET ID to make a user-confirmed pantry available on your next visit.</span>}
+      {(memoryState === 'EMPTY' || memoryState === 'RETURNED' || memoryState === 'SAVED' || memoryState === 'REMOVED' || memoryState === 'ERROR') && <span>{memoryMessage || (session ? 'Signed in. Nothing is remembered until you explicitly save.' : 'Not signed in.')}</span>}
+      {memoryState === 'SAVING' && <span>Writing private memory and verifying server readback…</span>}
     </div>
+
+    <div style={{display:'flex',flexWrap:'wrap',gap:10,margin:'20px 0'}}>
+      <button type="button" onClick={loadExample} style={btnStyle}>Load example pantry</button>
+      <button type="button" onClick={clearPantry} style={{...btnStyle,background:'#fff',color:'#080808'}}>Clear</button>
+      <button type="button" disabled={memoryState === 'SAVING' || memoryState === 'CHECKING'} onClick={savePantry} style={{...btnStyle,background:'#fff',color:'#080808'}}>
+        {session ? 'Remember this pantry' : 'Sign in to remember this'}
+      </button>
+      {session && memory && <button type="button" disabled={memoryState === 'SAVING'} onClick={removeMemory} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove remembered pantry</button>}
+    </div>
+
     <div style={{display:'grid',gap:12,maxWidth:900}}>
       {pantry.map((item,index)=><div key={index} style={{display:'flex',flexWrap:'wrap',gap:8}}>
         <input aria-label={`Ingredient ${index+1}`} value={item.name} onChange={e=>update(index,{name:e.target.value})} style={{...inputStyle,flex:'2 1 160px'}}/>
         <input aria-label={`Quantity ${index+1}`} type="number" min="0" step="any" value={item.amount ?? ''} onChange={e=>update(index,{amount:e.target.value===''?null:Number(e.target.value)})} style={{...inputStyle,width:105}}/>
         <select aria-label={`Unit ${index+1}`} value={item.unit} onChange={e=>update(index,{unit:e.target.value})} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
-        <button type="button" onClick={()=>setPantry(previous=>previous.filter((_,i)=>i!==index))} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove</button>
+        <button type="button" onClick={()=>{setPantry(previous=>previous.filter((_,i)=>i!==index));if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');}} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove</button>
       </div>)}
-      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
+      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_item_added'});}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
         <input aria-label="New ingredient" placeholder="Ingredient" value={name} onChange={e=>setName(e.target.value)} style={{...inputStyle,flex:'2 1 160px'}}/>
         <input aria-label="New quantity" placeholder="Quantity" type="number" min="0" step="any" value={amount} onChange={e=>setAmount(e.target.value)} style={{...inputStyle,width:105}}/>
         <select aria-label="New unit" value={unit} onChange={e=>setUnit(e.target.value)} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
         <button type="submit" style={btnStyle}>Add ingredient</button>
       </form>
       <label style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>Optional additional shopping budget (NOK)
-        <input aria-label="Additional shopping budget in NOK" type="number" min="0" step="any" placeholder="Unknown" value={budget} onChange={e=>setBudget(e.target.value)} style={{...inputStyle,width:140}}/>
+        <input aria-label="Additional shopping budget in NOK" type="number" min="0" step="any" placeholder="Unknown" value={budget} onChange={e=>{setBudget(e.target.value);if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');}} style={{...inputStyle,width:140}}/>
       </label>
     </div>
+
     <div aria-live="polite" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,marginTop:28}}>
       {pantry.length ? options.map(option=><article key={option.id} style={{padding:18,border:'1px solid #c4c4c0',borderRadius:12,background:'#fff'}}>
         <small style={{fontFamily:'monospace'}}>{option.status.replaceAll('_',' ')}</small>
@@ -66,6 +209,7 @@ export default function PantryChoice() {
         <small>Example recipe, not a product-level evidence or allergy guarantee. Total meal cost and ecological effect UNKNOWN.</small>
       </article>):<p>Add ingredients or load the example to compare three test recipes.</p>}
     </div>
-    <p style={{maxWidth:720,fontSize:13,lineHeight:1.6,marginTop:22}}>Privacy boundary: this test keeps your edits in this browser tab only. Refresh clears them; account persistence and second-visit learning are NOT implemented here. Missing budget or missing dated prices are UNKNOWN, not 0 NOK.</p>
+
+    <p style={{maxWidth:720,fontSize:13,lineHeight:1.6,marginTop:22}}>Privacy boundary: anonymous edits remain in this browser tab only. Signed-in persistence writes only after explicit confirmation to your private Person memory under existing owner RLS. It is not shared PLANETBRAIN truth. Missing budget or missing dated prices are UNKNOWN, not 0 NOK.</p>
   </section>;
 }

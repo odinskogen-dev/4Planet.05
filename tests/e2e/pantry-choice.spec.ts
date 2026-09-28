@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("4SAPIEN pantry fixture: editable first visit, honest unknowns and explicit no-persistence boundary", async ({ page }) => {
+test("4SAPIEN pantry: editable anonymous visit, honest unknowns and explicit authenticated persistence boundary", async ({ page }) => {
   await page.goto("/4sapien");
   const section = page.getByRole("region", { name: "What can I make with what I have?" });
   await expect(section).toBeVisible();
@@ -19,5 +19,6 @@ test("4SAPIEN pantry fixture: editable first visit, honest unknowns and explicit
   await expect(pasta.getByText(/Additional purchase: 0 NOK/)).toBeVisible();
   await page.reload();
   await expect(section.getByText("Add ingredients or load the example to compare three test recipes.")).toBeVisible();
-  await expect(section.getByText(/account persistence and second-visit learning are NOT implemented here/)).toBeVisible();
+  await expect(section.getByText(/Anonymous use stays in this browser tab/i)).toBeVisible();
+  await expect(section.getByRole("button", { name: "Sign in to remember this" })).toBeVisible();
 });

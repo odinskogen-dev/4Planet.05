@@ -10,6 +10,11 @@ const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
 const market = read("src/pages/v5/CreatorMarket.tsx");
 const sapien = read("src/pages/sapien/FourSapien.tsx");
 const fourbrands = read("src/pages/partners/FourBrand.tsx");
+const companyBrain = read("src/pages/partners/CompanyBrainControls.tsx");
+const identity = read("src/pages/identity/IdentityApp.tsx");
+const pantry = read("src/pages/sapien/PantryChoice.tsx");
+const species = read("src/pages/integrated/Species.tsx");
+const atlas = read("src/earth/World.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -24,7 +29,12 @@ const requiredEvents = [
 
 const requiredAnalyticsHosts = [
   "4planet.org",
+  "id.4planet.org",
   "test.4planet.org",
+  "labs.4planet.org",
+  "4sapien.com",
+  "4planetatlas.com",
+  "4brain.app",
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
@@ -171,4 +181,22 @@ test("flagship journey entries physically exist and retain a return path", () =>
     assert.match(html, /<title>[^<]+<\/title>/i, `${path} missing title`);
     assert.ok(returnNeedles.some((needle) => html.includes(`href=\"${needle}`) || html.includes(`href='${needle}`)), `${path} has no return path`);
   }
+});
+
+
+test("convergence funnel exposes the required privacy-safe value events", () => {
+  for (const token of ["signup_started", "signup_completed", "login"]) assert.ok(identity.includes(token), `identity event missing ${token}`);
+  for (const token of ["value_action", "memory_written", "return_value", "value_reached"]) assert.ok(pantry.includes(token), `4SAPIEN event missing ${token}`);
+  for (const token of ["company_claim_started", "company_brain_created", "value_action"]) assert.ok(companyBrain.includes(token), `4BRANDS event missing ${token}`);
+  for (const token of ["species_opened", "source_opened", "cross_product_navigation"]) assert.ok(species.includes(token), `SPECIES event missing ${token}`);
+  assert.match(atlas, /atlas_object_opened/);
+  assert.doesNotMatch(atlas, /trackEvent\([^\n]*(lat|lng|latitude|longitude|coordinates)/i);
+});
+
+test("priority product hosts are first-class analytics surfaces", () => {
+  for (const host of ["id.4planet.org", "4sapien.com", "4planetatlas.com", "4species.com", "4brands.org", "4brain.app"]) {
+    assert.ok(analytics.includes(`"${host}"`), `priority analytics host missing: ${host}`);
+  }
+  assert.match(analytics, /host === "4sapien\.com"/);
+  assert.match(analytics, /host === "4planetatlas\.com"/);
 });

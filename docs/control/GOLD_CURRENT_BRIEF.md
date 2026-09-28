@@ -1,3 +1,28 @@
+# MULTI-PRODUCT VALUE CONVERGENCE FINAL INTEGRATION + LIVE CLOSURE 02 — 28 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / EXACT-SHA VERIFICATION REQUIRED / NO LIVE CLAIM FROM SOURCE ALONE.
+
+**AUTHORITY:** one atomic product write to the existing `king/test` sole HEIR. PR #347 / PR #345 are read-only donor provenance after this convergence; no new candidate class, second HEIR, parallel BRAIN, auth system, memory store or company database is created.
+
+**FOUNDER DIRECTION:** converge the already-tested universal identity, Person memory, Company Brain, ATLAS/SPECIES and measurement improvements onto fresh HEIR, preserve all newer `king/test` work, verify the exact merged SHA, then promote only the verified artifact to existing authorised 4PLANET-owned live surfaces.
+
+**BOUNDED USER VALUE:**
+- 4PLANET ID client trusted-host parity now covers the same priority cross-product destinations accepted by the active server bridge, including 4PLANET, 4SAPIEN/S4PIENS, 4BRANDS, ATLAS, SPECIES, Labs and 4BRAIN.
+- 4SAPIEN FOOD pantry reuses the existing private Person memory table under canonical 4PLANET ID. Persistence is explicit-consent only, requires server write/readback, supports supersession and deletion, and restores user-confirmed pantry context on return. Anonymous edits remain session-only.
+- 4BRANDS keeps the existing Company Brain architecture. Versioned migrations make workspace owner-membership creation idempotent and permit only member-scoped authenticated audit writes for canonical Company Brain save/analysis actions.
+- ATLAS and SPECIES keep the existing canonical context/return mechanisms; this change adds privacy-safe value-path instrumentation rather than a new router or camera authority.
+- Existing consented analytics gains signup/login, Person-memory return value, Company Brain creation/value actions, ATLAS context opens, SPECIES/source opens and cross-product navigation. Free text and precise location are not added to analytics.
+
+**DATABASE READBACK:** active `4Planet_ OS` has two auth users matched to two canonical profiles and two 4SAPIEN profiles. RLS readback shows the second sampled user can see its own canonical profile but zero of the first user's Person memories, Company workspaces or memberships. The two Company Brain audit policies are active. Prior transactional tests proved Person-memory write/readback/supersede/delete and Company Brain workspace → twin → metric → opportunity → decision → intervention → measured result → learning → audit, with rollback and zero synthetic value records retained.
+
+**EXTERNAL BLOCKER / TRUTH BOUNDARY:** model-backed Embla / Brain turns are NOT VERIFIED while the configured upstream model account returns HTTP 429 `credit_balance_exhausted`. No conversational PLANETBRAIN Gold claim is permitted from this change.
+
+**ACCEPTANCE:** exact HEIR SHA must pass typecheck, production build, full smoke/contracts, Chromium desktop + 390px mobile, WebKit desktop + 390px mobile, plus existing ATLAS/Species/pantry critical journeys. LIVE custom-domain status requires post-promotion runtime readback; a successful source commit or Pages build is not enough.
+
+**LIVE RELEASE:** this section does not itself claim LIVE. Founder has authorised promotion only after the exact merged SHA passes the acceptance gate. Rollback is the prior immutable LIVE artifact / prior HEIR SHA.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — SOURCE GATE RIGHTS / OPERATIONS HARDENING — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / OFFICIAL TERMS VERIFIED.

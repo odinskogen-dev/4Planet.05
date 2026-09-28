@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { trackEvent } from "@/analytics/Analytics";
 import {
   bridgeSessionTo,
   consumeBridgeFromLocation,
@@ -101,6 +102,7 @@ export default function IdentityApp() {
           if (!bridged) throw new Error("Secure sign-in handoff is missing");
           if (!alive) return;
           setSession(bridged.session);
+          trackEvent("login", { product_area: "4planet", auth_method: "cross_domain_bridge" });
           const params = new URLSearchParams(window.location.search);
           const final = safeReturnTo(params.get("final") || bridged.returnTo, bridged.returnTo);
           await continueWith(bridged.session, final);
@@ -158,10 +160,12 @@ export default function IdentityApp() {
       if (mode === "login") {
         const result = await client.auth.signInWithPassword({ email: email.trim(), password });
         if (result.error || !result.data.session) throw new Error(result.error?.message || "Login failed");
+        trackEvent("login", { product_area: "4planet", auth_method: "password" });
         await continueWith(result.data.session);
         return;
       }
       if (mode === "signup") {
+        trackEvent("signup_started", { product_area: "4planet", auth_method: "password" });
         if (password.length < 8) throw new Error("Password should be at least 8 characters");
         if (password !== confirm) throw new Error("Passordene er ikke like.");
         const result = await client.auth.signUp({
@@ -170,6 +174,7 @@ export default function IdentityApp() {
           options: { emailRedirectTo: identityCallbackUrl("login", returnTo) },
         });
         if (result.error) throw new Error(result.error.message);
+        trackEvent("signup_completed", { product_area: "4planet", auth_method: "password", confirmation_state: result.data.session ? "session_ready" : "email_confirmation_required" });
         if (result.data.session) {
           await continueWith(result.data.session);
           return;
