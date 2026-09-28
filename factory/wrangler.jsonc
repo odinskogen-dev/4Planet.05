@@ -51,6 +51,11 @@
       "name": "4planet-work-package-workflow-shadow",
       "binding": "WORK_PACKAGE_WORKFLOW",
       "class_name": "WorkPackageWorkflow"
+    },
+    {
+      "name": "4planet-learning-proof-workflow-shadow",
+      "binding": "LEARNING_PROOF_WORKFLOW",
+      "class_name": "LearningProofWorkflow"
     }
   ],
   "queues": {
