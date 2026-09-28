@@ -104,9 +104,14 @@ jobs:
           echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
           if git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
             echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
-          elif [[ ( "$LEARNING_PROOF_REQUESTED" == "true" || "$LEARNING_CAPACITY_REQUESTED" == "true" ) && "$ACTIVATION_REQUESTED" != "true" ]]; then
-            echo "Learning proof/capacity lineage context only: current TEST KING is not an ancestor of Factory head."
-            echo "This is allowed ONLY because the requested operation is non-mutating, SHADOW-only, and cannot start product activation."
+          elif [[ "$LEARNING_PROOF_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning proof lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested proof is non-mutating, SHADOW-only, and cannot start product activation."
+            echo "Factory: $FACTORY_HEAD_SHA"
+            echo "TEST KING context: $TEST_KING_SHA"
+          elif [[ "$LEARNING_CAPACITY_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning capacity lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested snapshot is read-only, SHADOW-only, and cannot reserve capacity or start product activation."
             echo "Factory: $FACTORY_HEAD_SHA"
             echo "TEST KING context: $TEST_KING_SHA"
           else
