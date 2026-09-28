@@ -284,6 +284,40 @@ export function refinedLearningCandidate(baseline: Outcome, practice: Outcome, p
 }
 
 
+const NEGATIVE_CONTROL_LEARNING_IDS = [
+  "negative-learning-candidate-only",
+  "negative-learning-rejected",
+  "negative-learning-expired",
+  "negative-learning-superseded",
+  "negative-learning-review-due",
+] as const;
+
+function negativeControlLearningCandidates(now = new Date().toISOString()): LearningCandidate[] {
+  const base: Omit<LearningCandidate, "id" | "status" | "knowledgeLifecycle"> = {
+    workPackageId: "negative-control",
+    observation: "Negative retrieval control only.",
+    expectedVsActual: "Must never enter runtime task context.",
+    evidence: ["SELF_IMPROVING_COMPANY_NEGATIVE_CONTROL"],
+    causeHypothesis: "Invalid lifecycle/status learning must be suppressed.",
+    lesson: "INVALID NEGATIVE CONTROL — if retrieved, the Learning Engine fails.",
+    scope: "FACTORY learning retrieval negative control",
+    confidence: "HIGH",
+    ruleProposal: "INVALID NEGATIVE CONTROL — never apply.",
+    regressionEval: "Selected learning IDs must exclude this object.",
+    nextTest: "Runtime retrieval negative control.",
+    capabilityIds: [CAPABILITY_ID],
+    createdAt: now,
+  };
+  return [
+    { ...base, id: NEGATIVE_CONTROL_LEARNING_IDS[0], status: "CANDIDATE", knowledgeLifecycle: "KEEP" },
+    { ...base, id: NEGATIVE_CONTROL_LEARNING_IDS[1], status: "PROMOTED", knowledgeLifecycle: "REJECT" },
+    { ...base, id: NEGATIVE_CONTROL_LEARNING_IDS[2], status: "PROMOTED", knowledgeLifecycle: "EXPIRE" },
+    { ...base, id: NEGATIVE_CONTROL_LEARNING_IDS[3], status: "PROMOTED", knowledgeLifecycle: "SUPERSEDE" },
+    { ...base, id: NEGATIVE_CONTROL_LEARNING_IDS[4], status: "PROMOTED", knowledgeLifecycle: "KEEP", reviewAt: "2026-01-01T00:00:00.000Z" },
+  ];
+}
+
+
 function accepted(outcome: Outcome) {
   return outcome.status === "ACCEPTED" && outcome.evidence.includes("learning-eval PASS");
 }
@@ -369,6 +403,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       if (!accepted(retryOutcome)) {
         await step.do("refine-curriculum-from-second-practice-feedback", async () => {
           await agent.recordLearning(refinedLearningCandidate(baseline, practice, retryOutcome));
+          for (const control of negativeControlLearningCandidates()) await agent.recordLearning(control);
           await agent.upsertWorkPackage(packages.practiceRetry2);
         });
         const retryOutcome2: Outcome = await step.do("adaptive-practice-retry-2", async () => {
@@ -443,9 +478,19 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       && retrySelected.includes(BRAIN_LEARNING_ID)
       && transferSelected.includes(BRAIN_LEARNING_ID);
 
+    const runtimeSelectedLearningIds = receipts.flatMap((receipt: any) => receipt.selectedLearningIds ?? []);
+    const negativeControlHits = runtimeSelectedLearningIds.filter((id: string) =>
+      (NEGATIVE_CONTROL_LEARNING_IDS as readonly string[]).includes(id)
+    );
+    const staleSuppressionProven =
+      runtimeSelectedLearningIds.includes(BRAIN_LEARNING_ID)
+      && negativeControlHits.length === 0;
     const staleSuppressionProbe = {
-      note: "Deterministic suppression of CANDIDATE/REJECT/EXPIRE/SUPERSEDE/review-due learning is covered by learningEngine.test.ts; this runtime proof additionally proves only the selected KEEP lesson appears in later task evidence.",
-      runtimeSelectedLearningIds: receipts.flatMap((receipt: any) => receipt.selectedLearningIds ?? []),
+      proven: staleSuppressionProven,
+      negativeControlIds: [...NEGATIVE_CONTROL_LEARNING_IDS],
+      negativeControlHits,
+      runtimeSelectedLearningIds,
+      note: "Runtime negative controls share the same capability but are CANDIDATE, REJECT, EXPIRE, SUPERSEDE or review-due. None may enter task context.",
     };
 
     const metrics = {
@@ -453,7 +498,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       baselineRequiredSignalsPassed: requiredSignalPasses(baseline),
       practiceAccepted: accepted(practice),
       practiceRetryAccepted: practiceRetry ? accepted(practiceRetry) : null,
-      correctionAttempts: practiceRetry ? 1 : 0,
+      correctionAttempts: practiceRetry?.workPackageId === packages.practiceRetry2.id ? 2 : practiceRetry ? 1 : 0,
       heldOutAccepted: accepted(heldOut),
       realRetryAccepted: accepted(retry),
       retryRequiredSignalsPassed: requiredSignalPasses(retry),
@@ -474,6 +519,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       && accepted(retry)
       && accepted(transfer)
       && runtimeSelectionProven
+      && staleSuppressionProven
       && learnerState?.stage === "TRANSFER_PROVEN";
 
     return await finish("terminal", {
