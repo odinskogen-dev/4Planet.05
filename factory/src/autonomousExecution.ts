@@ -269,6 +269,12 @@ async function generateCandidate(
     `Definition of Done: ${pkg.definitionOfDone.join(" | ")}`,
     `Required evidence: ${pkg.requiredEvidence.join(" | ")}`,
     `Source refs: ${(spec.sourceRefs ?? []).join(" | ") || "NONE SUPPLIED — do not invent source facts"}`,
+    pkg.learningContext?.selectedLearning?.length
+      ? `CURRENT VALIDATED LEARNING (minimum relevant context only): ${pkg.learningContext.selectedLearning.map((item) => `[${item.capabilityId}] ${item.lesson} | evidence=${item.evidenceRefs.join(",") || "NONE"} | regression=${item.regressionEval ?? "NONE"}`).join(" || ")}`
+      : "CURRENT VALIDATED LEARNING: NONE SELECTED — do not invent a prior lesson.",
+    pkg.learningContext?.capabilityStates?.length
+      ? `LEARNER STATE: ${pkg.learningContext.capabilityStates.map((state) => `${state.capabilityId}=${state.stage}; next=${state.nextLearningNeed}`).join(" | ")}`
+      : "LEARNER STATE: no explicit capability state supplied.",
     correctionContext ? `Previous candidate failed these gates: ${correctionContext}` : "This is the first candidate attempt.",
     "\nCURRENT FILE CONTENT (empty means create a new file):",
     existingContent || "<EMPTY>",
