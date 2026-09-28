@@ -58,3 +58,6 @@ Requested: 2026-09-29 Europe/Oslo.
 - Old PRACTICE_FAILED receipt remains historical evidence only and cannot terminalise this attempt.
 - Continue from the same persistent learner evidence; do not replay paid/AI work that already has a durable Outcome.
 
+## Capacity preflight
+
+Before any further proof trigger, the exact deployed Factory runtime must produce an authenticated, read-only capacity receipt from the same durable learner `learning-1` for `requestedCalls=4`. The receipt may neither reserve nor purchase capacity. Only `allowed=true` with at least four daily and monthly calls remaining authorises the existing `[learning-proof]` continuation; all prior outcomes remain preserved.
