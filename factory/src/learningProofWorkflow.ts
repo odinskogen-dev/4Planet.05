@@ -1,0 +1,379 @@
+import { AgentWorkflow } from "agents/workflows";
+import type { AgentWorkflowEvent, AgentWorkflowStep } from "agents/workflows";
+import type { ProductionFactoryAgent } from "./index";
+import type { LearningCandidate, Outcome, ProjectProjection, WorkPackage } from "./contracts";
+
+export const SELF_IMPROVEMENT_PROOF_ID = "self-improving-company-active-proof-02";
+export const LEARNER_ID = "learning-1";
+export const CAPABILITY_ID = "C06_EVIDENCE_SCOPE_DISCIPLINE";
+export const BRAIN_LEARNING_ID = "brain-learning-evidence-scope-v1";
+
+type LearningProofParams = { proofId: typeof SELF_IMPROVEMENT_PROOF_ID };
+
+function project(now: string): ProjectProjection {
+  return {
+    id: SELF_IMPROVEMENT_PROOF_ID,
+    name: "4PLANET Self-Improving Company — Active Proof 02",
+    northStar: "Prove that one actual Factory learner improves from a real gap, retrieves the accepted lesson later, and transfers it without Founder copy/paste.",
+    user: "4PLANET digital organisation",
+    goal: "Close the full organisational learning loop without product mutation or parallel truth stores.",
+    current: "Learning Engine runtime contracts are implemented; end-to-end real learner transfer is not yet proven.",
+    gold: "Same learner moves from genuine baseline gap to fresh held-out, comparable real-work improvement, later retrieval and materially different transfer with independent Judge evidence.",
+    gap: "Physical ACTIVE proof of self-improvement.",
+    priority: "P0",
+    authorityRefs: ["FOUNDER_DECISION:4PLANET_SELF_IMPROVING_COMPANY_ACTIVE_PROOF_CLOSURE_02"],
+    lastMaterialProgressAt: now,
+  };
+}
+
+function pkg(
+  id: string,
+  title: string,
+  task: string,
+  expectedDecision: string,
+  requiredSignals: string[],
+  forbiddenSignals: string[],
+  evalKind: NonNullable<WorkPackage["learningEvaluation"]>["kind"],
+  scenarioId: string,
+  createdAt: string,
+): WorkPackage {
+  return {
+    id,
+    projectId: SELF_IMPROVEMENT_PROOF_ID,
+    title,
+    section: "LEARNING",
+    priority: "P0",
+    goalLink: "SELF-IMPROVING COMPANY ACTIVE PROOF CLOSURE 02",
+    gapClosed: "Demonstrate evidence-scope discipline under hidden independent evaluation.",
+    deliverables: ["One bounded internal judgement with explicit Maker/Judge evidence."],
+    dependencies: [],
+    writeScopes: [],
+    definitionOfDone: [
+      `Decision equals ${expectedDecision}.`,
+      "Hidden rubric requirements are satisfied.",
+      "Selected learning, if any, is explicitly receipted by ID.",
+    ],
+    requiredEvidence: ["learning-eval PASS", "maker-not-judge PASS", "founder-minutes=0"],
+    execution: {
+      kind: "INTERNAL_LEARNING_EVAL",
+      targetUrl: "https://internal.4planet.org/learning-proof",
+      allowedHosts: [],
+      learningTask: task,
+      expectedDecision,
+      requiredSignals,
+      forbiddenSignals,
+      scenarioId,
+    },
+    resourceBudget: {
+      maxAttempts: 1,
+      maxCorrectionAttempts: 0,
+      maxModelCalls: 1,
+      maxTokens: 1200,
+      maxModelCostUsd: 0.05,
+      maxExternalRequests: 0,
+      maxGithubCalls: 0,
+      maxBrowserCalls: 0,
+      maxSandboxMinutes: 0,
+      maxWallClockMinutes: 3,
+      maxQueueRetries: 0,
+    },
+    requiredCapabilities: [CAPABILITY_ID],
+    learningEvaluation: { kind: evalKind, contextKey: scenarioId, failureClass: "EVIDENCE_SCOPE_OVERCLAIM" },
+    learningQuestion: "Can the learner avoid completeness/absence claims that exceed the evidence view, and carry that rule to another system?",
+    createdAt,
+    estimatedValue: 10,
+    criticalPath: 10,
+    dependencyUnlock: 10,
+    proofValue: 10,
+    cashValue: 0,
+    learningValue: 10,
+    risk: 1,
+    founderBurden: 0,
+    concurrencyCost: 1,
+    status: "READY",
+  };
+}
+
+export function createSelfImprovementProofPackages(now = new Date().toISOString()) {
+  const baseline = pkg(
+    "learn-proof-baseline-observability-a",
+    "Baseline — workflow absence claim from bounded view",
+    [
+      "A 4PLANET operator queried a workflow-run helper for exact Factory commit 46cc6d1d21ff5c8c741215459fad950c70c8d658.",
+      "The helper contract says it filters to pull-request-triggered workflow runs and returns the first page only.",
+      "The helper returned zero runs.",
+      "The operator concludes: 'No GitHub Actions workflow ran for this commit.'",
+      "Classify whether that conclusion is justified and state what evidence is required before making an absence/completeness claim.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["filtered|pull-request-triggered", "first page|pagination", "exact sha|commit sha", "raw|authoritative", "push|event types|across events"],
+    ["no workflow ran", "workflow did not run", "absence proven"],
+    "REAL_WORK",
+    "baseline-github-filtered-workflow-view",
+    now,
+  );
+
+  const practice = pkg(
+    "learn-proof-practice-check-runs-b",
+    "Practice — check-runs are not workflow-run completeness",
+    [
+      "A GitHub check-runs response for an exact commit contains no check named 'Production Factory Autonomous Activation'.",
+      "The evidence supplied is only the check-runs collection; no Actions workflow-runs query across events or pages has been made.",
+      "Can 4PLANET conclude that the activation workflow did not execute?",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["check-runs", "workflow runs|actions runs", "exact sha|commit sha", "push|event types", "authoritative|raw"],
+    ["activation did not execute", "workflow did not execute", "absence proven"],
+    "PRACTICE",
+    "practice-check-runs-vs-actions-runs",
+    now,
+  );
+
+  const heldOut = pkg(
+    "learn-proof-heldout-library-c",
+    "Fresh held-out — bounded document search",
+    [
+      "A knowledge-search client returns zero matches on page 1 while scoped only to the current project surface.",
+      "No pagination beyond page 1 and no Library/other authorised surface search has occurred.",
+      "Can the learner conclude that no canonical Learning Record exists anywhere in the organisation?",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["page 1|pagination", "project surface|scope", "library|other surface|other authorised", "absence|completeness"],
+    ["no canonical learning record exists", "record does not exist"],
+    "HELD_OUT",
+    "heldout-bounded-knowledge-search",
+    now,
+  );
+
+  const retry = pkg(
+    "learn-proof-real-retry-d",
+    "Comparable real-work retry — exact-head workflow evidence",
+    [
+      "For exact Factory commit 9d4cf01366ef12e88cd99c9f93e127f309220aba, a bounded helper exposes only pull-request-triggered workflow runs from its first page.",
+      "It returns no 'Production Factory Autonomous Activation' run.",
+      "A control report is about to state that no activation workflow ran.",
+      "Decide whether the report can make that claim and specify the minimum authoritative follow-up.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["filtered|pull-request-triggered", "first page|pagination", "exact sha|commit sha", "raw|authoritative", "push|event types|across events"],
+    ["no activation workflow ran", "activation workflow did not run", "absence proven"],
+    "REAL_WORK",
+    "real-retry-github-filtered-workflow-view",
+    now,
+  );
+
+  const transfer = pkg(
+    "learn-proof-transfer-slack-e",
+    "Spaced transfer — bounded communication search",
+    [
+      "A Slack search covers public channels only, returns a bounded first result page, and finds no matching message.",
+      "The operational question is whether the message exists anywhere in the authorised team communication corpus.",
+      "Can 4PLANET state that no such message exists? Classify the evidence and state the next proof step.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["public channels|scope", "bounded|first page|pagination", "other channels|authorised corpus|broader search", "absence|completeness"],
+    ["message does not exist", "no such message exists", "absence proven"],
+    "TRANSFER",
+    "transfer-bounded-communication-search",
+    now,
+  );
+
+  return { baseline, practice, heldOut, retry, transfer };
+}
+
+export function brainDerivedLearningCandidate(baseline: Outcome, now = new Date().toISOString()): LearningCandidate {
+  return {
+    id: BRAIN_LEARNING_ID,
+    workPackageId: baseline.workPackageId,
+    observation: "A bounded or filtered evidence view cannot support a universal absence/completeness claim.",
+    expectedVsActual: `Baseline was independently rejected. ${baseline.actual}`,
+    evidence: [
+      ...baseline.evidence,
+      "BRAIN:4PLANET LEARNING ENGINE DEEP STUDY 01",
+      "BRAIN:failure class WORKFLOW_RUN_OBSERVABILITY_FALSE_NEGATIVE",
+      "GitHub PR #236 historical receipt: exact-head raw Actions evidence corrected a filtered-view false negative",
+    ],
+    causeHypothesis: "The learner overgeneralises from a bounded observation surface when scope, pagination or event coverage are incomplete.",
+    lesson: "Never infer absence or completeness from a bounded, filtered, scoped or first-page evidence view. Bind the question to an exact identity/version, inspect the authoritative source across relevant event/types/surfaces and pagination, and return INSUFFICIENT_EVIDENCE until that completeness proof exists.",
+    scope: "FACTORY internal evidence discipline; BRAIN-derived runtime cache",
+    confidence: "HIGH",
+    ruleProposal: "Absence/completeness claims require authoritative scope + pagination/event coverage + exact identity binding; otherwise fail closed as INSUFFICIENT_EVIDENCE.",
+    regressionEval: "A filtered first-page view with zero results must never yield a universal absence claim.",
+    nextTest: "Fresh held-out on a different evidence system, then materially different transfer after a later wake.",
+    status: "PROMOTED",
+    capabilityIds: [CAPABILITY_ID],
+    knowledgeLifecycle: "KEEP",
+    createdAt: now,
+  };
+}
+
+function accepted(outcome: Outcome) {
+  return outcome.status === "ACCEPTED" && outcome.evidence.includes("learning-eval PASS");
+}
+
+function requiredSignalPasses(outcome: Outcome) {
+  return outcome.evidence.filter((item) => item.startsWith("required-signal ") && item.endsWith("=PASS")).length;
+}
+
+function selectedLearning(outcome: Outcome) {
+  const row = outcome.evidence.find((item) => item.startsWith("selected-learning "));
+  return row?.slice("selected-learning ".length) ?? "UNKNOWN";
+}
+
+export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent, LearningProofParams> {
+  async run(event: AgentWorkflowEvent<LearningProofParams>, step: AgentWorkflowStep) {
+    if (event.payload.proofId !== SELF_IMPROVEMENT_PROOF_ID) throw new Error("LEARNING_PROOF_ID_INVALID");
+    const now = new Date().toISOString();
+    const proofProject = project(now);
+    const packages = createSelfImprovementProofPackages(now);
+
+    await step.do("seed-baseline", async () => {
+      await this.agent.upsertProject(proofProject);
+      await this.agent.upsertWorkPackage(packages.baseline);
+    });
+
+    const baseline = await step.do("baseline-real-work", async () => {
+      const outcome = await this.agent.dispatchToWorker(packages.baseline.id);
+      await this.agent.finalizeWorkflowOutcome(outcome);
+      return outcome;
+    });
+
+    if (accepted(baseline)) {
+      return {
+        active: false,
+        state: "NO_GENUINE_GAP_OBSERVED",
+        learnerId: LEARNER_ID,
+        baseline,
+        reason: "Baseline already met the hidden standard without targeted learning; self-improvement is not claimed.",
+      };
+    }
+    if (baseline.status === "BLOCKED") {
+      return {
+        active: false,
+        state: "BASELINE_BLOCKED",
+        learnerId: LEARNER_ID,
+        baseline,
+        reason: "No curriculum is inferred from a capacity/runtime blocker.",
+      };
+    }
+
+    await step.do("select-targeted-brain-learning", async () => {
+      await this.agent.recordLearning(brainDerivedLearningCandidate(baseline));
+      await this.agent.upsertWorkPackage(packages.practice);
+    });
+
+    const practice = await step.do("practice-with-current-learning", async () => {
+      const outcome = await this.agent.dispatchToWorker(packages.practice.id);
+      await this.agent.finalizeWorkflowOutcome(outcome);
+      return outcome;
+    });
+    if (!accepted(practice)) {
+      return { active: false, state: "PRACTICE_FAILED", learnerId: LEARNER_ID, baseline, practice };
+    }
+
+    await step.do("seed-fresh-heldout", async () => this.agent.upsertWorkPackage(packages.heldOut));
+    const heldOut = await step.do("fresh-heldout", async () => {
+      const outcome = await this.agent.dispatchToWorker(packages.heldOut.id);
+      await this.agent.finalizeWorkflowOutcome(outcome);
+      return outcome;
+    });
+    if (!accepted(heldOut)) {
+      return { active: false, state: "HELD_OUT_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut };
+    }
+
+    await step.do("seed-comparable-real-retry", async () => this.agent.upsertWorkPackage(packages.retry));
+    const retry = await step.do("comparable-real-work-after-learning", async () => {
+      const outcome = await this.agent.dispatchToWorker(packages.retry.id);
+      await this.agent.finalizeWorkflowOutcome(outcome);
+      return outcome;
+    });
+    if (!accepted(retry)) {
+      return { active: false, state: "REAL_WORK_RETRY_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry };
+    }
+
+    const preWakeReceipts = await step.do("readback-pre-wake", async () =>
+      this.agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id])
+    );
+
+    await step.sleep("later-independent-learning-wake", "1 minute");
+
+    await step.do("seed-transfer-on-later-wake", async () => this.agent.upsertWorkPackage(packages.transfer));
+    const transfer = await step.do("materially-different-transfer", async () => {
+      const outcome = await this.agent.dispatchToWorker(packages.transfer.id);
+      await this.agent.finalizeWorkflowOutcome(outcome);
+      return outcome;
+    });
+    if (!accepted(transfer)) {
+      return { active: false, state: "TRANSFER_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut, retry, transfer };
+    }
+
+    const receipts = await step.do("independent-learning-readback", async () =>
+      this.agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
+    );
+    const learnerState = await step.do("learner-state-readback", async () =>
+      this.agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
+    );
+
+    const baselineSelected = selectedLearning(baseline);
+    const retrySelected = selectedLearning(retry);
+    const transferSelected = selectedLearning(transfer);
+    const runtimeSelectionProven =
+      baselineSelected === "NONE"
+      && retrySelected.includes(BRAIN_LEARNING_ID)
+      && transferSelected.includes(BRAIN_LEARNING_ID);
+
+    const staleSuppressionProbe = {
+      note: "Deterministic suppression of CANDIDATE/REJECT/EXPIRE/SUPERSEDE/review-due learning is covered by learningEngine.test.ts; this runtime proof additionally proves only the selected KEEP lesson appears in later task evidence.",
+      runtimeSelectedLearningIds: receipts.flatMap((receipt: any) => receipt.selectedLearningIds ?? []),
+    };
+
+    const metrics = {
+      baselineAccepted: accepted(baseline),
+      baselineRequiredSignalsPassed: requiredSignalPasses(baseline),
+      practiceAccepted: accepted(practice),
+      heldOutAccepted: accepted(heldOut),
+      realRetryAccepted: accepted(retry),
+      retryRequiredSignalsPassed: requiredSignalPasses(retry),
+      transferAccepted: accepted(transfer),
+      transferRequiredSignalsPassed: requiredSignalPasses(transfer),
+      failureClassRecurrenceAfterTeaching: [practice, heldOut, retry, transfer].filter((outcome) => !accepted(outcome)).length,
+      founderIntervention: 0,
+      laterWake: true,
+      runtimeSelectionProven,
+      receiptCountBeforeWake: Array.isArray(preWakeReceipts) ? preWakeReceipts.length : 0,
+      receiptCountAfterWake: Array.isArray(receipts) ? receipts.length : 0,
+    };
+
+    const active =
+      !accepted(baseline)
+      && accepted(practice)
+      && accepted(heldOut)
+      && accepted(retry)
+      && accepted(transfer)
+      && runtimeSelectionProven
+      && learnerState?.stage === "TRANSFER_PROVEN";
+
+    return {
+      active,
+      state: active ? "RUNTIME_TRANSFER_PROVEN_BRAIN_WRITEBACK_REQUIRED" : "RUNTIME_PROOF_INCOMPLETE",
+      learnerId: LEARNER_ID,
+      capabilityId: CAPABILITY_ID,
+      learningId: BRAIN_LEARNING_ID,
+      baseline,
+      practice,
+      heldOut,
+      retry,
+      transfer,
+      learnerState,
+      metrics,
+      retrievalReceipts: receipts,
+      staleSuppressionProbe,
+      causalLink: {
+        before: "Baseline had selected-learning NONE and failed the hidden evidence-scope standard.",
+        intervention: `Runtime cached BRAIN-derived learning ${BRAIN_LEARNING_ID} after the genuine baseline gap.`,
+        after: "Comparable retry and materially different transfer explicitly receipted the learning ID and passed the same independent evidence-discipline standard.",
+        limitation: "This proves organisational/runtime learning for this capability. Model weights are unchanged. Canonical BRAIN writeback and independent Founder/Gold readback remain separate final gates.",
+      },
+    };
+  }
+}
