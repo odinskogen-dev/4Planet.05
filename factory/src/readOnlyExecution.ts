@@ -320,6 +320,7 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     learningText,
     "",
     "Do not assume hidden data. Use only the task evidence and any explicitly supplied CURRENT VALIDATED LEARNING.",
+    selected.length ? "If validated learning contains an explicit checklist or decision procedure, apply every relevant step explicitly rather than merely citing the lesson." : "No prior learning is supplied; solve the task from its evidence alone.",
   ].join("\n");
 
   const model = runtimeEnv.FACTORY_AI_MODEL?.trim() || DEFAULT_LEARNING_MODEL;
