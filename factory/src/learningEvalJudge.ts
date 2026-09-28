@@ -18,12 +18,17 @@ export interface LearningEvalJudgement {
   evidence: string[];
 }
 
+function normaliseSignal(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
 function signalPresent(haystack: string, signal: string): boolean {
+  const normalisedHaystack = normaliseSignal(haystack);
   return signal
     .split("|")
-    .map((part) => part.trim().toLowerCase())
+    .map((part) => normaliseSignal(part))
     .filter(Boolean)
-    .some((part) => haystack.includes(part));
+    .some((part) => normalisedHaystack.includes(part));
 }
 
 /**
