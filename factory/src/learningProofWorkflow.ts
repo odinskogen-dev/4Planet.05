@@ -223,24 +223,25 @@ function selectedLearning(outcome: Outcome) {
 export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent, LearningProofParams> {
   async run(event: AgentWorkflowEvent<LearningProofParams>, step: AgentWorkflowStep) {
     if (event.payload.proofId !== SELF_IMPROVEMENT_PROOF_ID) throw new Error("LEARNING_PROOF_ID_INVALID");
+    const agent: any = this.agent;
     const now = new Date().toISOString();
     const proofProject = project(now);
     const packages = createSelfImprovementProofPackages(now);
     const finish = async (label: string, result: Record<string, unknown>) => {
       await step.do(`persist-learning-proof-${label}`, async () =>
-        this.agent.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, result)
+        agent.recordLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID, result)
       );
       return result;
     };
 
     await step.do("seed-baseline", async () => {
-      await this.agent.upsertProject(proofProject);
-      await this.agent.upsertWorkPackage(packages.baseline);
+      await agent.upsertProject(proofProject);
+      await agent.upsertWorkPackage(packages.baseline);
     });
 
     const baseline = await step.do("baseline-real-work", async () => {
-      const outcome = await this.agent.dispatchToWorker(packages.baseline.id);
-      await this.agent.finalizeWorkflowOutcome(outcome);
+      const outcome = await agent.dispatchToWorker(packages.baseline.id);
+      await agent.finalizeWorkflowOutcome(outcome);
       return outcome;
     });
 
@@ -264,33 +265,33 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     await step.do("select-targeted-brain-learning", async () => {
-      await this.agent.recordLearning(brainDerivedLearningCandidate(baseline));
-      await this.agent.upsertWorkPackage(packages.practice);
+      await agent.recordLearning(brainDerivedLearningCandidate(baseline));
+      await agent.upsertWorkPackage(packages.practice);
     });
 
     const practice = await step.do("practice-with-current-learning", async () => {
-      const outcome = await this.agent.dispatchToWorker(packages.practice.id);
-      await this.agent.finalizeWorkflowOutcome(outcome);
+      const outcome = await agent.dispatchToWorker(packages.practice.id);
+      await agent.finalizeWorkflowOutcome(outcome);
       return outcome;
     });
     if (!accepted(practice)) {
       return await finish("practice-failed", { active: false, state: "PRACTICE_FAILED", learnerId: LEARNER_ID, baseline, practice });
     }
 
-    await step.do("seed-fresh-heldout", async () => this.agent.upsertWorkPackage(packages.heldOut));
+    await step.do("seed-fresh-heldout", async () => agent.upsertWorkPackage(packages.heldOut));
     const heldOut = await step.do("fresh-heldout", async () => {
-      const outcome = await this.agent.dispatchToWorker(packages.heldOut.id);
-      await this.agent.finalizeWorkflowOutcome(outcome);
+      const outcome = await agent.dispatchToWorker(packages.heldOut.id);
+      await agent.finalizeWorkflowOutcome(outcome);
       return outcome;
     });
     if (!accepted(heldOut)) {
       return await finish("heldout-failed", { active: false, state: "HELD_OUT_FAILED", learnerId: LEARNER_ID, baseline, practice, heldOut });
     }
 
-    await step.do("seed-comparable-real-retry", async () => this.agent.upsertWorkPackage(packages.retry));
+    await step.do("seed-comparable-real-retry", async () => agent.upsertWorkPackage(packages.retry));
     const retry = await step.do("comparable-real-work-after-learning", async () => {
-      const outcome = await this.agent.dispatchToWorker(packages.retry.id);
-      await this.agent.finalizeWorkflowOutcome(outcome);
+      const outcome = await agent.dispatchToWorker(packages.retry.id);
+      await agent.finalizeWorkflowOutcome(outcome);
       return outcome;
     });
     if (!accepted(retry)) {
@@ -298,15 +299,15 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const preWakeReceipts = await step.do("readback-pre-wake", async () =>
-      this.agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id])
     );
 
     await step.sleep("later-independent-learning-wake", "1 minute");
 
-    await step.do("seed-transfer-on-later-wake", async () => this.agent.upsertWorkPackage(packages.transfer));
+    await step.do("seed-transfer-on-later-wake", async () => agent.upsertWorkPackage(packages.transfer));
     const transfer = await step.do("materially-different-transfer", async () => {
-      const outcome = await this.agent.dispatchToWorker(packages.transfer.id);
-      await this.agent.finalizeWorkflowOutcome(outcome);
+      const outcome = await agent.dispatchToWorker(packages.transfer.id);
+      await agent.finalizeWorkflowOutcome(outcome);
       return outcome;
     });
     if (!accepted(transfer)) {
@@ -314,10 +315,10 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const receipts = await step.do("independent-learning-readback", async () =>
-      this.agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
     );
     const learnerState = await step.do("learner-state-readback", async () =>
-      this.agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
+      agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
     );
 
     const baselineSelected = selectedLearning(baseline);
