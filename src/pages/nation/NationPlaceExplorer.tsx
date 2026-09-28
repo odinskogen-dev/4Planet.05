@@ -66,8 +66,8 @@ export default function NationPlaceExplorer(){
 
     <div className='nt-place-summary'>
       <div><span className='nt-label'>{place.kind} / {place.label}</span><h3>{place.name}</h3><p>{place.intro}</p></div>
-      <div className='nt-place-case-list' role='list' aria-label={place.name+' public decisions'}>
-        {decisions.map(decision=><button type='button' role='listitem' key={decision.id} aria-pressed={decision.id===selected.id} onClick={()=>setDecisionId(decision.id)}>
+      <div className='nt-place-case-list' aria-label={place.name+' public decisions'}>
+        {decisions.map(decision=><button type='button' key={decision.id} aria-pressed={decision.id===selected.id} onClick={()=>setDecisionId(decision.id)}>
           <DecisionStatus decision={decision}/><strong>{decision.shortTitle}</strong><span>{decision.authority}</span>
         </button>)}
       </div>
