@@ -354,9 +354,9 @@ jobs:
           BODY=$(cat <<EOF
           ## SELF-IMPROVING COMPANY — BOUNDED RUNTIME PROOF
 
-          Exact Factory SHA: `$FACTORY_HEAD_SHA`
+          Exact Factory SHA: $FACTORY_HEAD_SHA
 
-          Runtime receipt: `$SUMMARY`
+          Runtime receipt: $SUMMARY
 
           This receipt proves only the internal Learning Engine runtime chain recorded above. It grants no LIVE, Canon, outreach, spend or product-mutation authority. Canonical BRAIN writeback remains a separate required gate before FULL ACTIVE closure.
           EOF
