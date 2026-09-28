@@ -1,0 +1,116 @@
+name: VALUE CONVERGENCE CLOUDFLARE PRODUCTION AUTHORITY FIX 02
+
+on:
+  push:
+    branches:
+      - ops/value-convergence-live-proof-02
+    paths:
+      - .github/workflows/value-convergence-cloudflare-production-authority-fix-02.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_SHA: 1700b646bb9e1139e4dc514b4c777546a0c81fea
+  TESTED_SHA: bf743e8816ff1f9c1ee579ec2a49543be71c4d4b
+  PROJECT: 4planet-05
+  EXPECTED_OLD_PRODUCTION_BRANCH: release/one-interface-sprint2-6bbfebb
+
+jobs:
+  align-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
+
+      - name: Prove authorised artifact
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git rev-parse HEAD^)" = "$TESTED_SHA"
+          test "$(git diff --name-only "$TESTED_SHA" "$RELEASE_SHA")" = "docs/control/LIVE_PROMOTION_MANIFEST.json"
+          ALLOW_PREPROMOTION_CHECK=1 GITHUB_REF_NAME=main node scripts/live-promotion-authority-gate.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build exact authorised artifact
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Resolve Cloudflare authority
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          test -n "$TOKEN"
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS "$api/zones?name=4planet.org&status=active" -H "Authorization: Bearer $TOKEN")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+
+      - name: Align Pages production branch with canonical LIVE authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          before=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT" "${auth[@]}")
+          old=$(jq -r '.result.production_branch // empty' <<<"$before")
+          echo "production_branch_before=$old"
+          test "$old" = "$EXPECTED_OLD_PRODUCTION_BRANCH" || test "$old" = "main"
+          if [ "$old" != "main" ]; then
+            patched=$(curl -fsS -X PATCH "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT" "${auth[@]}" --data '{"production_branch":"main"}')
+            test "$(jq -r '.success' <<<"$patched")" = true
+          fi
+          after=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT" "${auth[@]}")
+          test "$(jq -r '.result.production_branch' <<<"$after")" = main
+          echo "production_branch_after=main"
+
+      - name: Deploy exact release as production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist             --project-name "$PROJECT"             --branch main             --commit-hash "$RELEASE_SHA"             --commit-dirty=false | tee /tmp/production-deploy.txt
+
+      - name: Verify exact production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          for attempt in $(seq 1 60); do
+            deps=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/deployments?page=1&per_page=30" "${auth[@]}")
+            row=$(jq -c --arg sha "$RELEASE_SHA" '[.result[]? | select(.environment=="production" and .deployment_trigger.metadata.commit_hash==$sha)][0] // {}' <<<"$deps")
+            id=$(jq -r '.id // empty' <<<"$row")
+            stage=$(jq -r '.latest_stage.status // empty' <<<"$row")
+            url=$(jq -r '.url // empty' <<<"$row")
+            echo "exact production id=$id stage=$stage url=$url"
+            if [ -n "$id" ] && [ "$stage" = success ]; then
+              echo "EXACT_PRODUCTION=PASS"
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
