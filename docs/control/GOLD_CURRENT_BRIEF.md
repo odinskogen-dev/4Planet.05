@@ -514,3 +514,31 @@ ROLLBACK: revert the bounded 4NATION 07 commit(s). Existing public 4nation.org W
 QA CORRECTION / 28 SEP 2026: 4NATION source-date contract advanced with the verified snapshot from 22 Sep to 28 Sep; no political status, deadline, source identity or decision semantics changed.
 
 UX CONTRACT CORRECTION / 28 SEP 2026: “Understand your nation.” remains visible as the 4NATION product proposition, but is no longer a second competing hero heading. The Oslofjord question is the single hero heading. Browser acceptance now asserts that hierarchy directly. The compact factual status label remains “PROPOSAL · UNDER CONSIDERATION”.
+
+
+## 4NATION 08 — HUMAN NATION + MUNICIPAL DECISION MAP — 28 SEP 2026
+
+STATUS: BOUNDED HEIR PRODUCT CANDIDATE. 4NATION 07 is the current verified live origin while this exact 08 candidate completes Gold + hosted visual QA. Founder has explicitly authorised live iteration; only an exact tested immutable 08 artifact may replace the live origin.
+
+PRODUCT JOB: make public decisions understandable as one connected journey: NORWAY → PLACE → PUBLIC DECISION → DECISION THREAD → ATLAS → ORIGINAL EVIDENCE.
+
+DESIGN: 4NATION now adopts the existing 4SAPIEN human-first visual grammar rather than creating a parallel design system: white paper, soft 20–22px rounded cards, calm hairlines, compact rounded controls, Instrument Sans + DM Sans, and persistent light/dark mode. 4NATION keeps its own semantic identity and neutral public-decision status language.
+
+CANONICAL OBJECT: src/planet/nationPublicDecisions.ts defines one PublicDecision shape for national and municipal records. Proposal, consultation, decided, implementing and measured remain distinct stages. A case may have additional evidence/process events without silently promoting its political state.
+
+FIRST PLACE MODELS:
+- NORWAY_ — Oslofjord proposal remains the national source-reviewed anchor.
+- BERGEN_ — Bergen municipal model uses the official political case for “Et tryggere samfunn – sammen”, including recorded treatment through city government, committees and City Council.
+- OSLO_ — Oslo municipal model includes the 2026 land-use-plan consultation and the separately adopted district reform, so consultation and implementation states are visibly different.
+
+ATLAS: existing shared 4PLANET ATLAS is the geographic navigation surface for Norway, Bergen and Oslo through canonical PLACE ids. Current map extent is navigational context. Kartverket/Geonorge official administrative boundary data is registered as the authoritative boundary source, but 08 MUST NOT claim that legal municipal polygons or decision-specific implementation geometry are rendered until that overlay is physically integrated and verified.
+
+DATA BACKBONE: official-source federation is exposed progressively: Kartverket/Geonorge geography, Stortinget open-data search, SSB Statbank search, Bergen municipality and Oslo municipality. Existing PLANETBRAIN/PLACE/ATLAS infrastructure remains shared; no Government Brain or duplicate truth database is created.
+
+MOBILE / ACCESSIBILITY: place selector, municipality lookup, case selector, decision stage path, ATLAS and source thread must work at 390/430 and desktop widths without horizontal document overflow. Theme state persists locally; reduced-motion and existing source/dialog contracts remain.
+
+POLITICAL / TRUTH BOUNDARY: 4NATION describes sourced procedural state and evidence. It does not rank political options, recommend a vote or policy choice, infer motives, claim governmental endorsement, or convert proposals/consultations into adopted or implemented policy.
+
+ACCEPTANCE: source-contract test, typecheck, build, smoke, lint, desktop 1440 + mobile 390/430 browser proof, hosted immutable Founder Visual Preview, Norway/Bergen/Oslo place journey, shared ATLAS, original-source links and persistent light/dark mode must all pass on the exact artifact before live promotion.
+
+LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE_SHA from the canonical 4NATION Worker and waits for that exact artifact on 4nation.org before testing. No stale hard-coded live SHA is accepted.

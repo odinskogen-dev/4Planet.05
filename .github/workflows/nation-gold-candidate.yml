@@ -6,6 +6,8 @@ on:
     paths:
       - 'src/pages/nation/**'
       - 'src/planet/nationDecisionCase.ts'
+      - 'src/planet/nationPublicDecisions.ts'
+      - 'scripts/4nation-gold.test.mjs'
       - 'src/App.tsx'
       - 'src/routes/router.tsx'
       - 'tests/e2e/4nation.spec.ts'
@@ -17,6 +19,7 @@ on:
     paths:
       - 'src/pages/nation/**'
       - 'src/planet/nationDecisionCase.ts'
+      - 'src/planet/nationPublicDecisions.ts'
       - 'src/App.tsx'
       - 'src/routes/router.tsx'
       - 'scripts/4nation-gold.test.mjs'

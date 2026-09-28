@@ -9,6 +9,7 @@ on:
       - 'src/earth/AtlasEmbed.tsx'
       - 'src/earth/atlas-embed.css'
       - 'src/planet/nationDecisionCase.ts'
+      - 'src/planet/nationPublicDecisions.ts'
       - 'docs/control/GOLD_CURRENT_BRIEF.md'
   workflow_dispatch:
 permissions:

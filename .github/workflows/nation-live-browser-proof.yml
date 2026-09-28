@@ -24,11 +24,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          code=$(curl -LsS --max-time 18 -o /tmp/4nation-live -w '%{http_code}' https://4nation.org/)
-          test "$code" = 200
-          curl -LsSI --max-time 18 https://4nation.org/ | grep -qi 'x-4nation-sha: 4a13f9d118066cd6765c3399ebff46a7d3298609'
+          expected=$(sed -n 's/^const SOURCE_SHA = "\([^"]*\)";/\1/p' ops/nation/4nation-live-worker.js)
+          test -n "$expected"
+          matched=0
+          for attempt in $(seq 1 30); do
+            code=$(curl -LsS --max-time 18 -o /tmp/4nation-live -w '%{http_code}' https://4nation.org/ || true)
+            header=$(curl -LsSI --max-time 18 https://4nation.org/ || true)
+            if [ "$code" = 200 ] && grep -qi "x-4nation-sha: $expected" <<<"$header"; then matched=1; break; fi
+            sleep 5
+          done
+          [ "$matched" = 1 ] || { echo "LIVE_ARTIFACT_NOT_SETTLED expected=$expected code=$code"; exit 3; }
           grep -q 'index,follow,max-image-preview:large' /tmp/4nation-live
-          echo 'LIVE_HOST_HTTPS_EXACT_ARTIFACT=PASS'
+          if grep -qi 'x-robots-tag:.*noindex' <<<"$header"; then echo 'LIVE_NOINDEX_LEAK'; exit 4; fi
+          echo "LIVE_HOST_HTTPS_EXACT_ARTIFACT=PASS sha=$expected"
       - name: Browser check root, scoped journeys and full canonical ATLAS
         shell: bash
         run: |
@@ -36,4 +44,4 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           BASE_URL=https://4nation.org npx playwright test tests/e2e/4nation.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430
-          echo 'LIVE_4NATION_9_OF_9=PASS'
+          echo 'LIVE_4NATION_BROWSER_PROOF=PASS'
