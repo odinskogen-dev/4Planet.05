@@ -5,6 +5,10 @@ on:
     branches: [king/test]
     paths:
       - .github/workflows/cloudflare-pages-audit.yml
+      - src/pages/sapien/FourSapien.tsx
+      - src/pages/v5/CreatorMarket.tsx
+      - src/components/living/LivingSystemsIntelligencePanel.tsx
+      - src/planet/trustIntelligence.ts
   workflow_dispatch:
 
 permissions:
