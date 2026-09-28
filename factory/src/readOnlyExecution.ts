@@ -319,7 +319,7 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     "CURRENT VALIDATED LEARNING:",
     learningText,
     "",
-    "Do not assume hidden data. Do not turn an incomplete evidence view into a completeness or absence claim.",
+    "Do not assume hidden data. Use only the task evidence and any explicitly supplied CURRENT VALIDATED LEARNING.",
   ].join("\n");
 
   const model = runtimeEnv.FACTORY_AI_MODEL?.trim() || DEFAULT_LEARNING_MODEL;
