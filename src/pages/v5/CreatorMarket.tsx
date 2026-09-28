@@ -64,6 +64,10 @@ const LIVE_PRINTS = [
   },
 ] as const;
 
+function marketProductHref(slug: string, placement: "hero" | "catalogue") {
+  return `${FOURTHWALL_SHOP}/products/${slug}?utm_source=4planetmarket&utm_medium=market&utm_campaign=first_creator_proof&utm_content=${encodeURIComponent(`${placement}_${slug}`)}`;
+}
+
 const mono: React.CSSProperties = {
   fontFamily: T.mono,
   fontSize: 10.5,
@@ -151,7 +155,7 @@ export function OdinCreatorPage() {
 }
 
 function LivePrintCard({ product }: { product: typeof LIVE_PRINTS[number] }) {
-  const href = `${FOURTHWALL_SHOP}/products/${product.slug}?utm_source=4planetmarket&utm_medium=market&utm_campaign=first_creator_proof&utm_content=${encodeURIComponent(product.slug)}`;
+  const href = marketProductHref(product.slug, "catalogue");
   return (
     <article style={{ borderTop: `1px solid ${T.lineStrong}`, paddingTop: 14 }}>
       <a
@@ -188,7 +192,15 @@ export function MarketHome() {
               <div style={{ ...mono, color: T.dim }}>FIRST CREATOR · FIVE LIVE PRINTS</div>
               <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(34px,4.5vw,60px)", lineHeight: .92 }}>Odin Oddekalv</h2>
               <p style={{ margin: "18px 0 0", color: T.dim, fontSize: 17, lineHeight: 1.62 }}>Five existing fine-art prints are public and available through the current Fourthwall fulfilment path. 4PLANET MARKET now exposes the real product path instead of presenting unfinished catalogue placeholders.</p>
-              <Link to="/cre4tor/odin" style={{ ...mono, display: "inline-flex", marginTop: 26, color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.ink}`, paddingBottom: 5 }}>VIEW CREATOR →</Link>
+              <a
+                href={marketProductHref(LIVE_PRINTS[0].slug, "hero")}
+                onClick={() => trackEvent("market_product_open", { product_area: "market", product_key: LIVE_PRINTS[0].slug, destination: "fourthwall", placement: "hero" })}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ ...mono, display: "inline-flex", marginTop: 26, color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.ink}`, paddingBottom: 5 }}
+              >BUY SUMMIT AT SUNSET · {LIVE_PRINTS[0].price} →</a>
+              <div style={{ ...mono, color: T.dim, marginTop: 12 }}>SECURE CHECKOUT + FULFILMENT ON FOURTHWALL · OPENS IN A NEW TAB</div>
+              <Link to="/cre4tor/odin" style={{ ...mono, display: "inline-flex", marginTop: 18, color: T.ink, textDecoration: "none" }}>VIEW CREATOR →</Link>
             </div>
           </div>
         </section>
