@@ -45,6 +45,7 @@ export function compileLearningCandidate(
         : `PENDING — inspectable failure evidence is missing; capture evidence before retry/closure, then add the regression/control or explicit non-automatable reason.`,
       nextTest: `Reproduce or falsify the failure cause, apply the bounded correction, and rerun the same acceptance contract before closure for ${scope}.`,
       status: "CANDIDATE",
+      capabilityIds: pkg.requiredCapabilities ? [...pkg.requiredCapabilities] : undefined,
       createdAt: outcome.completedAt,
     };
     return {
