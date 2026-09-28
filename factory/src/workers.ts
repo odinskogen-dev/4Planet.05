@@ -206,6 +206,46 @@ abstract class SectionWorker extends Agent<Cloudflare.Env, WorkerState> {
       }
     }
 
+    if (pkg.execution?.kind === "INTERNAL_LEARNING_EVAL") {
+      const configuredModel = (this.env as Cloudflare.Env & { FACTORY_AI_MODEL?: string }).FACTORY_AI_MODEL?.trim();
+      if (!modelIsBudgetApproved(configuredModel)) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          `FACTORY_PAID_AI_HARD_CAP_FAIL_CLOSED: learning-eval model override ${configuredModel} is outside the approved cost envelope.`,
+          [`Approved model=${APPROVED_FACTORY_AI_MODEL}`, "No model call attempted"],
+          "Learning proof cannot widen the governed AI model/cost envelope.",
+        );
+      }
+      const budget = effectiveResourceBudget(pkg.resourceBudget);
+      if (budget.maxModelCalls < 1 || budget.maxAttempts < 1) {
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          "RESOURCE_BUDGET_FAIL_CLOSED: internal learning evaluation has no authorised model-call capacity.",
+          ["No model call attempted"],
+          "Learning proof cannot bypass the normal Factory resource budget.",
+        );
+      }
+      const reservation = this.reserveAiBudget(1);
+      if (reservation !== "RESERVED") {
+        const monthly = reservation === "MONTHLY_CAP";
+        return this.finish(
+          pkg,
+          "BLOCKED",
+          monthly
+            ? `FACTORY_PAID_AI_HARD_CAP_FAIL_CLOSED: worker monthly AI reservation cap reached (${MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_MONTH}).`
+            : `ZERO_CASH_DAILY_FAIL_CLOSED: worker daily AI reservation cap reached (${MAX_RESERVED_AI_CALLS_PER_WORKER_PER_UTC_DAY}).`,
+          [
+            "No Workers AI call attempted",
+            monthly ? "WAIT until next UTC month budget window" : "WAIT until next UTC day quota window",
+            `Worst-case Factory monthly envelope USD=${WORST_CASE_FACTORY_AI_USD_PER_UTC_MONTH.toFixed(4)} (<5)`,
+          ],
+          "Learning proof must wait for legitimate existing capacity; it cannot buy or bypass capacity.",
+        );
+      }
+    }
+
     try {
       const executed = await executeReadOnlyPackage(this.env, pkg);
       if (executed) return this.persistOutcome(pkg, executed);
