@@ -260,7 +260,11 @@ async function certifyAndActivate(
       ruleProposal: governedProposal.proposal.proposedChange,
       regressionEval: "Never reuse an activation outcome across Factory builds; never weaken truth/safety/Human Gold gates; do not generalise a reusable rule from this single boot instance.",
       nextTest: "Run the next authorised distinct bounded internal 4PLANET work package and compare time, corrections, Founder burden, human quality and reuse before generalising.",
-      status: "CANDIDATE",
+      capabilityIds: ["C05_LEARNING_EXPERIMENTATION", "C06_AI_NATIVE_EXECUTION_RELIABILITY"],
+      knowledgeLifecycle: "KEEP",
+      // Governed FACTORY_INTERNAL learning is runtime-promotable but never Canon.
+      // The next relevant wake may retrieve it; later failure can reopen the capability.
+      status: governedProposal.destination === "FACTORY_INTERNAL" ? "PROMOTED" : "CANDIDATE",
       createdAt: new Date().toISOString(),
     };
     await factory.recordLearning(learningCandidate);
