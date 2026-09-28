@@ -36,3 +36,18 @@ Requested: 2026-09-29 Europe/Oslo.
 - Previous proof trigger is invalid as learning evidence because its exact-head Factory CI failed before runtime proof.
 - This fresh attempt must use the same `learning-1` worker, preserve the hidden Judge standard, and stop rather than fabricate improvement if the baseline already passes or runtime capacity blocks.
 
+## Adaptive continuation — 2026-09-29
+
+- Exact adaptive implementation pre-trigger: `e506a311b3f3a5a3857b19cb409d45cc2045036d`.
+- Exact-head Production Factory Shadow CI push run #817: SUCCESS.
+- Preserved same-worker evidence from prior non-ACTIVE run:
+  - baseline: genuine REJECTED gap;
+  - targeted learning ID: `brain-learning-evidence-scope-v1`;
+  - first practice: REJECTED despite using/receipting the lesson.
+- This continuation must reuse those durable outcomes, adapt the curriculum from the practice failure, and spend at most four additional existing zero-cash model calls on:
+  1. adaptive practice retry;
+  2. fresh held-out;
+  3. comparable real-work retry;
+  4. later materially different transfer.
+- No restart, no quota bypass, no product mutation.
+
