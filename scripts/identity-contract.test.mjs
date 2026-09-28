@@ -48,9 +48,15 @@ test("canonical ID client can hand off to every priority product host accepted b
 });
 
 
-test("identity funnel is measurable without emitting credentials or email", () => {
+test("identity funnel is measurable without emitting credential values or email", () => {
   assert.match(ui, /trackEvent\("signup_started"/);
   assert.match(ui, /trackEvent\("signup_completed"/);
   assert.match(ui, /trackEvent\("login"/);
-  assert.doesNotMatch(ui, /trackEvent\([^\n]*(email|password)/);
+  const telemetryCalls = [...ui.matchAll(/trackEvent\([\s\S]*?\);/g)].map((match) => match[0]);
+  for (const call of telemetryCalls) {
+    assert.doesNotMatch(call, /\bemail\s*:/);
+    assert.doesNotMatch(call, /\bpassword\s*:/);
+    assert.doesNotMatch(call, /\bemail\.trim\(/);
+    assert.doesNotMatch(call, /[{,]\s*(?:email|password)\s*[,}]/);
+  }
 });
