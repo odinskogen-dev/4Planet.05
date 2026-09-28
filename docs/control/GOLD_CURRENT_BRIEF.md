@@ -1,3 +1,21 @@
+# 4PLANET ID / JOIN CONTINUITY — SLICE A — 28 SEP 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE / NO PAID MEMBERSHIP.
+
+**USER ARRIVES BECAUSE:** they want one 4PLANET ID from 4planet.org, either to create it or to open the account they already have.
+
+**ONE THING TO UNDERSTAND:** a free 4PLANET ID is not paid membership.
+
+**PRIMARY ACTION:** CREATE 4PLANET ID or SIGN IN. Signed in, the visible name opens the canonical account.
+
+**WHAT MUST BE REUSED:** `identityLoginUrl(returnTo, "signup")`, `identityLoginUrl(returnTo)`, `identityAccountUrl(returnTo)`, `readProfile().display_name`, and `safeReturnTo`. No second auth client.
+
+**TRUTH BOUNDARY:** display name comes from the existing profile row. Missing name falls back to the account email, then ACCOUNT. No invented profile and no member entitlement. A profile response is applied only while it still belongs to the current session; account change and logout clear the previous label immediately.
+
+**ACCEPTANCE:** identity contract, fail-closed product authority, typecheck, and desktop plus mobile browser proof of the hrefs. Ordinary /join links stay ordinary links.
+
+---
+
 # DATA VALUE CONVERGENCE 01 — SOURCE GATE RIGHTS / OPERATIONS HARDENING — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / OFFICIAL TERMS VERIFIED.

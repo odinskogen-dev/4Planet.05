@@ -61,7 +61,14 @@
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
       "heir": {"review_path": "/", "origin_path": "/"},
-      "sandbox": null
+      "sandbox": {
+        "branch": "cursor/join-4planet-id-8454",
+        "sha_at_registration": "7ea9a36801ba6031ec9e3ed4c96ae20daebf4065",
+        "review_path": "/join/sandbox",
+        "origin_path": "/join",
+        "lineage_state": "BOUNDED_4PLANET_ID_JOIN_SLICE_HUMAN_REVIEW_PENDING",
+        "live_authority": false
+      }
     },
     "ATLAS": {
       "live": {

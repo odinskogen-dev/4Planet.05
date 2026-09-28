@@ -34,7 +34,7 @@
     "unregistered_user_facing_branch_policy": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR_FAIL_CLOSED"
   },
   "products": {
-    "4PLANET": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED"},
+    "4PLANET": {"heir": "king/test", "sandbox": {"branch": "cursor/join-4planet-id-8454", "registration_sha": "7ea9a36801ba6031ec9e3ed4c96ae20daebf4065", "classification": "SANDBOX", "review_path": "/join/sandbox", "purpose": "Bounded 4PLANET ID join and header continuity. A free ID is not paid membership.", "live_authority": false}, "lineage_state": "BOUNDED_4PLANET_ID_JOIN_SLICE_HUMAN_REVIEW_PENDING", "all_other_lines": "READ_ONLY_DONOR_UNLESS_EXPLICITLY_REGISTERED"},
     "ATLAS": {
       "heir": "king/test",
       "sandbox": {"branch": "work/atlas-zero-loss-gold-convergence-01", "registration_sha": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547", "last_observed_sha": "2002f0cfac364f110182f26c1e0ca4d960466456", "pr": 263, "classification": "SANDBOX", "review_path": "/atlas/sandbox", "purpose": "Founder-directed ATLAS total zero-loss Gold convergence and live-heir candidate", "live_authority": false},

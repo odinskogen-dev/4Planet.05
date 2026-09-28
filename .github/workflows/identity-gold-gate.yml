@@ -2,13 +2,24 @@ name: 4PLANET ID Gold Gate
 
 on:
   push:
-    branches: [king/test, main]
+    branches: [king/test, main, cursor/join-4planet-id-8454]
     paths:
       - "src/identity/**"
       - "src/pages/identity/**"
       - "src/App.tsx"
       - "src/components/layout/PublicShell.tsx"
       - "scripts/identity-contract.test.mjs"
+      - "scripts/identity-label-ownership.test.mjs"
+      - ".github/workflows/identity-gold-gate.yml"
+  pull_request:
+    branches: [king/test]
+    paths:
+      - "src/identity/**"
+      - "src/pages/identity/**"
+      - "src/App.tsx"
+      - "src/components/layout/PublicShell.tsx"
+      - "scripts/identity-contract.test.mjs"
+      - "scripts/identity-label-ownership.test.mjs"
       - ".github/workflows/identity-gold-gate.yml"
   workflow_dispatch:
 
@@ -22,14 +33,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - name: Identity contract
-        run: node --test scripts/identity-contract.test.mjs
+        run: node --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Production build
