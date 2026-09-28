@@ -542,3 +542,6 @@ POLITICAL / TRUTH BOUNDARY: 4NATION describes sourced procedural state and evide
 ACCEPTANCE: source-contract test, typecheck, build, smoke, lint, desktop 1440 + mobile 390/430 browser proof, hosted immutable Founder Visual Preview, Norway/Bergen/Oslo place journey, shared ATLAS, original-source links and persistent light/dark mode must all pass on the exact artifact before live promotion.
 
 LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE_SHA from the canonical 4NATION Worker and waits for that exact artifact on 4nation.org before testing. No stale hard-coded live SHA is accepted.
+
+
+4NATION 08 QA NOTE / 28 SEP 2026: Browser assertions are explicitly scoped to the intended decision surface and ATLAS iframe. This preserves both the new place-level map and the existing deep Oslofjord map without weakening either product contract. Real-domain proof now also triggers on canonical Worker source changes.

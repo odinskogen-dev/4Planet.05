@@ -4,6 +4,7 @@ on:
     branches: [king/test]
     paths:
       - '.github/workflows/nation-live-browser-proof.yml'
+      - 'ops/nation/4nation-live-worker.js'
       - 'tests/e2e/4nation.spec.ts'
   workflow_dispatch:
 permissions:
