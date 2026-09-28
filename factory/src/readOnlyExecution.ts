@@ -1,5 +1,6 @@
 import type { Outcome, WorkPackage } from "./contracts";
 import { runResearchSearch } from "./capabilityExpansion";
+import { aiText } from "./autonomousExecution";
 
 // Source pages are frequently substantially larger than the small machine-readable
 // endpoints used by the first canary. Keep the read bounded, but large enough to
@@ -251,11 +252,159 @@ async function exaSearch(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome
   });
 }
 
+
+const DEFAULT_LEARNING_MODEL = "@cf/zai-org/glm-4.7-flash";
+
+type LearningEvalPayload = {
+  decision: string;
+  rationale: string;
+  evidenceNeeded?: string[];
+  appliedLearningIds?: string[];
+};
+
+function parseLearningEvalPayload(raw: unknown): LearningEvalPayload {
+  const text = aiText(raw).replace(/^\`\`\`(?:json)?\\s*/i, "").replace(/\\s*\`\`\`$/i, "").trim();
+  const parsed = JSON.parse(text) as Record<string, unknown>;
+  if (typeof parsed.decision !== "string" || typeof parsed.rationale !== "string") {
+    throw new Error("INTERNAL_LEARNING_EVAL_RESPONSE_INVALID");
+  }
+  return {
+    decision: parsed.decision.trim(),
+    rationale: parsed.rationale.trim(),
+    evidenceNeeded: Array.isArray(parsed.evidenceNeeded) ? parsed.evidenceNeeded.filter((x): x is string => typeof x === "string").slice(0, 12) : [],
+    appliedLearningIds: Array.isArray(parsed.appliedLearningIds) ? parsed.appliedLearningIds.filter((x): x is string => typeof x === "string").slice(0, 12) : [],
+  };
+}
+
+function signalPresent(haystack: string, signal: string): boolean {
+  return signal
+    .split("|")
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean)
+    .some((part) => haystack.includes(part));
+}
+
+async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome> {
+  const execution = pkg.execution;
+  if (!execution || execution.kind !== "INTERNAL_LEARNING_EVAL") throw new Error("INTERNAL_LEARNING_EVAL execution spec required");
+  const task = execution.learningTask?.trim() ?? "";
+  const expectedDecision = execution.expectedDecision?.trim() ?? "";
+  if (!task || !expectedDecision || !execution.scenarioId?.trim()) {
+    throw new Error("INTERNAL_LEARNING_EVAL_CONTRACT_INCOMPLETE");
+  }
+
+  const runtimeEnv = env as Cloudflare.Env & {
+    AI?: { run(model: string, input: unknown): Promise<unknown> };
+    FACTORY_AI_MODEL?: string;
+  };
+  if (!runtimeEnv.AI) {
+    return baseOutcome(pkg, {
+      status: "BLOCKED",
+      evidence: ["learning-eval FAIL", "Workers AI binding unavailable", `scenario ${execution.scenarioId}`],
+      materialDelta: "Internal learning evaluation was blocked before Maker execution because Workers AI is unavailable.",
+      actual: "No model call or learning judgement was completed.",
+      limitation: "No learner-state or self-improvement claim may be inferred.",
+    });
+  }
+
+  const selected = pkg.learningContext?.selectedLearning ?? [];
+  const learningText = selected.length
+    ? selected.map((item) => `[${item.learningId}] capability=${item.capabilityId}: ${item.lesson}`).join("\n")
+    : "NONE — solve from current task context without inventing prior lessons.";
+
+  const prompt = [
+    "You are the Maker in a bounded 4PLANET internal learning evaluation.",
+    "Return STRICT JSON only with keys: decision, rationale, evidenceNeeded, appliedLearningIds.",
+    "decision must be a short operational classification.",
+    "rationale must explain why using only the evidence in the task and any CURRENT VALIDATED LEARNING below.",
+    "evidenceNeeded is a JSON array of missing or next evidence needed.",
+    "appliedLearningIds is a JSON array containing only learning IDs you actually used.",
+    "",
+    "TASK:",
+    task,
+    "",
+    "CURRENT VALIDATED LEARNING:",
+    learningText,
+    "",
+    "Do not assume hidden data. Do not turn an incomplete evidence view into a completeness or absence claim.",
+  ].join("\n");
+
+  const model = runtimeEnv.FACTORY_AI_MODEL?.trim() || DEFAULT_LEARNING_MODEL;
+  let payload: LearningEvalPayload;
+  try {
+    const raw = await runtimeEnv.AI.run(model, {
+      messages: [
+        { role: "system", content: "You are a bounded 4PLANET learning worker. Follow the JSON contract exactly." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0,
+      reasoning_effort: "low",
+      chat_template_kwargs: { enable_thinking: false },
+      response_format: { type: "json_object" },
+      max_completion_tokens: 900,
+    });
+    payload = parseLearningEvalPayload(raw);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown Maker response failure";
+    return baseOutcome(pkg, {
+      status: "REJECTED",
+      evidence: ["learning-eval FAIL", `scenario ${execution.scenarioId}`, `maker-response-invalid ${message}`, `model ${model}`],
+      materialDelta: "Internal learning Maker failed the bounded response contract; the attempt is preserved as learner evidence.",
+      actual: `Maker output could not be independently judged: ${message}`,
+      limitation: "No mastery, held-out or transfer credit is granted.",
+    });
+  }
+
+  const combined = [
+    payload.decision,
+    payload.rationale,
+    ...(payload.evidenceNeeded ?? []),
+  ].join("\n").toLowerCase();
+  const required = execution.requiredSignals ?? [];
+  const forbidden = execution.forbiddenSignals ?? [];
+  const missingSignals = required.filter((signal) => !signalPresent(combined, signal));
+  const forbiddenHits = forbidden.filter((signal) => signalPresent(combined, signal));
+  const decisionPass = payload.decision.trim().toLowerCase() === expectedDecision.toLowerCase();
+  const selectedIds = selected.map((item) => item.learningId);
+  const applied = new Set(payload.appliedLearningIds ?? []);
+  const learningReceiptPass = selectedIds.every((id) => applied.has(id));
+  const passed = decisionPass && missingSignals.length === 0 && forbiddenHits.length === 0 && learningReceiptPass;
+
+  const evidence = [
+    `learning-eval ${passed ? "PASS" : "FAIL"}`,
+    `scenario ${execution.scenarioId}`,
+    `expected-decision ${expectedDecision}`,
+    `actual-decision ${payload.decision}`,
+    `decision-match ${decisionPass ? "PASS" : "FAIL"}`,
+    ...required.map((signal) => `required-signal ${signal}=${signalPresent(combined, signal) ? "PASS" : "FAIL"}`),
+    ...forbidden.map((signal) => `forbidden-signal ${signal}=${signalPresent(combined, signal) ? "FAIL" : "PASS"}`),
+    `selected-learning ${selectedIds.join(",") || "NONE"}`,
+    `applied-learning ${(payload.appliedLearningIds ?? []).join(",") || "NONE"}`,
+    `learning-receipt ${learningReceiptPass ? "PASS" : "FAIL"}`,
+    `model ${model}`,
+    "founder-minutes=0",
+    "production-minutes=0",
+  ];
+
+  return baseOutcome(pkg, {
+    status: passed ? "ACCEPTED" : "REJECTED",
+    evidence,
+    materialDelta: passed
+      ? "Verified a bounded internal learning task against an independent hidden rubric with explicit learning-retrieval receipt."
+      : "Preserved a genuine bounded learning gap against an independent hidden rubric for targeted curriculum and retry.",
+    actual: `Decision=${payload.decision}; rationale=${payload.rationale}; evidenceNeeded=${(payload.evidenceNeeded ?? []).join(" | ") || "NONE"}.`,
+    limitation: passed
+      ? "This proves only this scenario and learner state; transfer requires a fresh materially different task."
+      : "Failure is evidence for curriculum selection, not permission to lower the acceptance standard.",
+  });
+}
+
 /** Returns undefined when no real bound adapter exists for the package. */
 export async function executeReadOnlyPackage(env: Cloudflare.Env, pkg: WorkPackage): Promise<Outcome | undefined> {
   if (!pkg.execution) return undefined;
   if (pkg.execution.kind === "BROWSER_QA") return browserQa(env, pkg);
   if (pkg.execution.kind === "HTTP_SOURCE_CHECK") return sourceCheck(pkg);
   if (pkg.execution.kind === "EXA_SEARCH") return exaSearch(env, pkg);
+  if (pkg.execution.kind === "INTERNAL_LEARNING_EVAL") return internalLearningEval(env, pkg);
   return undefined;
 }
