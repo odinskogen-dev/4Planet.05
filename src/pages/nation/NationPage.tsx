@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { nationCaseAsOf, nationDecision, nationLearning, nationPlace, nationSources } from '@/planet/nationDecisionCase';
 import './nation.css';
 import { AtlasEmbed } from '@/earth/AtlasEmbed';
+import NationPlaceExplorer from './NationPlaceExplorer';
 
 type Audience = 'people' | 'institutions';
+type NationTheme = 'light' | 'dark';
 type Lens = 'decisions' | 'atlas' | 'brain' | 'solutions' | 'economy' | 'outcomes';
 
 type StortingCase = {
@@ -112,8 +114,15 @@ export default function NationPage() {
   const [audience, setAudience] = useState<Audience>(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'institutions' ? 'institutions' : 'people');
   const [lens, setLens] = useState<Lens>(() => { const value = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('lens'); return lenses.some(item => item.key === value) ? value as Lens : 'decisions'; });
   const [sourceOpen, setSourceOpen] = useState(false);
+  const [theme, setTheme] = useState<NationTheme>(() => { if (typeof window === 'undefined') return 'light'; const saved=window.localStorage.getItem('4nation_theme'); if(saved==='light'||saved==='dark') return saved; return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; });
   const [geographyOpen, setGeographyOpen] = useState(false);
   const [shareState, setShareState] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  useEffect(() => {
+    window.localStorage.setItem('4nation_theme', theme);
+    const meta=document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    if(meta)meta.content=theme==='dark'?'#000000':'#FFFFFF';
+  }, [theme]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -154,18 +163,19 @@ export default function NationPage() {
   const selectAudience = (next: Audience) => {
     setAudience(next);
     setLens('decisions');
-    document.getElementById('nt-workbench')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    document.getElementById('nt-places')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   };
 
-  return <main className='nt-shell' id='top'>
-    <a className='nt-skip' href='#nt-workbench'>Skip to the decision</a>
+  return <main className='nt-shell' id='top' data-nt-theme={theme}>
+    <a className='nt-skip' href='#nt-places'>Skip to public decisions</a>
     <header className='nt-header'>
       <a href='#top' className='nt-wordmark' aria-label='4NATION home'><span>4</span>NATION<span className='nt-dot'>.</span></a>
       <nav aria-label='Main navigation' className='nt-topnav'>
-        <a href='#nt-workbench'>Decisions</a>
+        <a href='#nt-places'>Places</a>
+        <a href='#nt-workbench'>Oslofjord</a>
         <button type='button' onClick={() => setSourceOpen(true)}>Sources</button>
       </nav>
-      <a className='nt-family' href='https://4planet.org' target='_blank' rel='noopener noreferrer'>4PLANET <span aria-hidden='true'>↗</span></a>
+      <div className='nt-header-actions'><button className='nt-theme-toggle' type='button' aria-label={theme==='light'?'Switch to dark mode':'Switch to light mode'} onClick={()=>setTheme(theme==='light'?'dark':'light')}>{theme==='light'?'DARK':'LIGHT'}</button><a className='nt-family' href='https://4planet.org' target='_blank' rel='noopener noreferrer'>4PLANET <span aria-hidden='true'>↗</span></a></div>
     </header>
 
     <section className='nt-hero' aria-labelledby='nt-heading'>
@@ -192,6 +202,8 @@ export default function NationPage() {
         <div className='nt-feature-source'>Official record · checked {nationCaseAsOf} · <Source id='KLD-2026-HEARING' label='VIEW SOURCE ↗'/></div>
       </article>
     </section>
+
+    <NationPlaceExplorer />
 
     <section className='nt-workbench' id='nt-workbench' aria-labelledby='nt-work-heading'>
       <div className='nt-work-head'>

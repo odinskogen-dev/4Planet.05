@@ -148,3 +148,32 @@ test('4NATION progressive disclosure keeps the long timeline collapsed until req
   await expect(details).toHaveAttribute('open','');
   await expect(details.locator('.nt-timeline li')).toHaveCount(6);
 });
+
+
+test('4NATION 08 connects Norway, Bergen and Oslo through place, decision and ATLAS context', async ({page}) => {
+  await page.goto('/4nation');
+  await expect(page.getByRole('heading',{name:'Start with a place.'})).toBeVisible();
+  await page.getByRole('button',{name:/BERGEN_/}).click();
+  await expect(page.getByRole('heading',{name:/Et tryggere samfunn/})).toBeVisible();
+  await expect(page.getByText('CITY COUNCIL DECISION RECORDED',{exact:true})).toBeVisible();
+  await expect(page.getByTestId('atlas-embed')).toBeVisible();
+  await page.getByRole('button',{name:/OSLO_/}).click();
+  await expect(page.getByRole('heading',{name:/Oslo kommuneplanens arealdel/})).toBeVisible();
+  await expect(page.getByText('CONSULTATION CLOSED · INPUTS UNDER REVIEW',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:/Oslo district reform/i}).click();
+  await expect(page.getByRole('heading',{name:/Oslo bydelsreform/})).toBeVisible();
+  await expect(page.getByText('DECIDED · PREPARING 2028 CHANGE',{exact:true})).toBeVisible();
+});
+
+test('4NATION 08 has a persistent human-first light and dark mode control', async ({page}) => {
+  await page.goto('/4nation');
+  const shell=page.locator('.nt-shell');
+  const dark=page.getByRole('button',{name:'Switch to dark mode'});
+  await expect(dark).toBeVisible();
+  await dark.click();
+  await expect(shell).toHaveAttribute('data-nt-theme','dark');
+  await page.reload();
+  await expect(shell).toHaveAttribute('data-nt-theme','dark');
+  await page.getByRole('button',{name:'Switch to light mode'}).click();
+  await expect(shell).toHaveAttribute('data-nt-theme','light');
+});

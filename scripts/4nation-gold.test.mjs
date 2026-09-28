@@ -72,3 +72,17 @@ test('human navigation uses plain-language map and evidence labels and collapses
   assert.match(page,/nt-timeline-disclosure/);
   assert.match(page,/Public decisions should be easier to understand/);
 });
+
+
+test('4NATION 08 has one canonical public-decision model for national and municipal cases', () => {
+  const decisions = read('src/planet/nationPublicDecisions.ts');
+  const explorer = read('src/pages/nation/NationPlaceExplorer.tsx');
+  assert.match(decisions,/export type PublicDecision/);
+  assert.match(decisions,/MUN-NO-4601-BEREDSKAP-2026/);
+  assert.match(decisions,/MUN-NO-0301-KPA-2026-HEARING/);
+  assert.match(decisions,/MUN-NO-0301-BYDELSREFORM-2026/);
+  assert.match(decisions,/Kartverket \/ Geonorge/);
+  assert.match(explorer,/NORWAY → PLACE → PUBLIC DECISION/);
+  assert.match(explorer,/AtlasEmbed/);
+  assert.match(explorer,/Find municipality/);
+});
