@@ -33,8 +33,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check ops/nation/4nation-live-worker.js
-          grep -Fq 'IMMUTABLE_ORIGIN = "https://82a64686.4planet-05.pages.dev"' ops/nation/4nation-live-worker.js
-          grep -Fq 'SOURCE_SHA = "d742f9ee6cc93c3754eb0c077e73109314e0233f"' ops/nation/4nation-live-worker.js
+          grep -Fq 'IMMUTABLE_ORIGIN = "https://9c7fe142.4planet-05.pages.dev"' ops/nation/4nation-live-worker.js
+          grep -Fq 'SOURCE_SHA = "ba354a82b443f9e0cd2124af6ead75a995ed0e8c"' ops/nation/4nation-live-worker.js
           grep -Fq 'data-fourplanet-id-entry' ops/nation/4nation-live-worker.js
           grep -Fq '/auth/4planet/callback' ops/nation/4nation-live-worker.js
           grep -Fq 'verifyOtp' ops/nation/4nation-live-worker.js

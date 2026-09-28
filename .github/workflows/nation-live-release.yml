@@ -40,11 +40,11 @@ jobs:
           test "$(git rev-parse origin/king/test)" = "$GITHUB_SHA" || { echo 'STALE_HEIR_HOLD'; exit 9; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo 'TOKEN_NOT_PRESENT_HOLD'; exit 10; }
           node --check ops/nation/4nation-live-worker.js
-          diff <(git show d742f9ee6cc93c3754eb0c077e73109314e0233f:src/pages/nation/NationPage.tsx) src/pages/nation/NationPage.tsx || { echo 'PRODUCT_CHANGED_HOLD'; exit 11; }
-          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=d742f9ee6cc93c3754eb0c077e73109314e0233f&per_page=100")
+          diff <(git show ba354a82b443f9e0cd2124af6ead75a995ed0e8c:src/pages/nation/NationPage.tsx) src/pages/nation/NationPage.tsx || { echo 'PRODUCT_CHANGED_HOLD'; exit 11; }
+          runs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=ba354a82b443f9e0cd2124af6ead75a995ed0e8c&per_page=100")
           jq -e '[.workflow_runs[]|select(.name=="4NATION Gold Candidate QA" and .conclusion=="success")]|length>=1' <<<"$runs" >/dev/null
           jq -e '[.workflow_runs[]|select(.name=="4NATION Founder Visual Preview" and .conclusion=="success")]|length>=1' <<<"$runs" >/dev/null
-          code=$(curl -LsS --max-time 20 -o /tmp/nation-preview -w '%{http_code}' https://82a64686.4planet-05.pages.dev/4nation || true)
+          code=$(curl -LsS --max-time 20 -o /tmp/nation-preview -w '%{http_code}' https://9c7fe142.4planet-05.pages.dev/4nation || true)
           [ "$code" = 200 ] && grep -qi 'noindex,nofollow' /tmp/nation-preview || { echo 'IMMUTABLE_SOURCE_NOT_AVAILABLE_HOLD'; exit 12; }
       - name: Verify only the existing 4NATION Worker owns the public hostname
         shell: bash
@@ -100,7 +100,7 @@ jobs:
             [ "$code" = 200 ] || { echo "ROUTE_ERROR=$route/$code"; exit 18; }
           done
           header=$(curl -LsSI --max-time 18 https://4nation.org/)
-          grep -qi 'x-4nation-sha: d742f9ee6cc93c3754eb0c077e73109314e0233f' <<<"$header" || { echo 'EXACT_SHA_HEADER_MISMATCH'; exit 19; }
+          grep -qi 'x-4nation-sha: ba354a82b443f9e0cd2124af6ead75a995ed0e8c' <<<"$header" || { echo 'EXACT_SHA_HEADER_MISMATCH'; exit 19; }
           if grep -qi 'x-robots-tag:.*noindex' <<<"$header"; then echo 'LIVE_NOINDEX_LEAK'; exit 20; fi
           echo '4NATION_LIVE_HTTP_TLS_ROUTES_EXACT_SHA=PASS'
       - name: Real-domain Chromium desktop and mobile
