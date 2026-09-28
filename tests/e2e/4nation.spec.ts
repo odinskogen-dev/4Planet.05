@@ -4,7 +4,7 @@ test('4NATION citizen and institutional decision paths share official-source rec
   await page.goto('/4nation');
   await expect(page.getByText(/UNDERSTAND YOUR NATION/i).first()).toBeVisible();
   await page.getByRole('button',{name:/Explore public decisions/i}).click();
-  await expect(page.getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
+  await expect(page.locator('#nt-workbench').getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
   await expect(page.getByText('UNDER CONSIDERATION',{exact:false}).first()).toBeVisible();
   await expect(page.getByText('15 October 2026',{exact:false}).first()).toBeVisible();
   await page.getByRole('button',{name:'For institutions'}).click();
@@ -39,7 +39,7 @@ test('4NATION deep link retains institution and economy lens across refresh', as
 
 test('4NATION contextual ATLAS Embed opens the existing first-party map', async ({ page }) => {
   await page.goto('/4nation?view=people&lens=atlas');
-  const embed = page.getByTestId('atlas-embed');
+  const embed = page.locator('#nt-workbench').getByTestId('atlas-embed');
   // On failure expose the actual box/visibility; do not relax the acceptance assertion.
   console.log('ATLAS_EMBED_LAYOUT', await embed.evaluate((node) => {
     const css = getComputedStyle(node);
@@ -136,7 +136,7 @@ test('the first mobile screen starts with a real case and one clear action', asy
   const visible=await hero.locator('#nt-feature-title').evaluate(node=>node.getBoundingClientRect().top < window.innerHeight);
   expect(visible,'The actual Oslofjord case must appear on the first screen').toBe(true);
   await hero.getByRole('button',{name:/Explore public decisions/i}).click();
-  await expect(page.getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
+  await expect(page.locator('#nt-workbench').getByRole('heading',{name:/The proposed Oslofjord Plan/i})).toBeVisible();
 });
 
 test('4NATION progressive disclosure keeps the long timeline collapsed until requested', async ({page}) => {
@@ -155,14 +155,15 @@ test('4NATION 08 connects Norway, Bergen and Oslo through place, decision and AT
   await expect(page.getByRole('heading',{name:'Start with a place.'})).toBeVisible();
   await page.getByRole('button',{name:/BERGEN_/}).click();
   await expect(page.getByRole('heading',{name:/Et tryggere samfunn/})).toBeVisible();
-  await expect(page.getByText('CITY COUNCIL DECISION RECORDED',{exact:true})).toBeVisible();
-  await expect(page.getByTestId('atlas-embed')).toBeVisible();
+  const explorer=page.locator('#nt-places');
+  await expect(explorer.locator('.nt-public-decision').getByText('CITY COUNCIL DECISION RECORDED',{exact:true})).toBeVisible();
+  await expect(explorer.getByTestId('atlas-embed')).toBeVisible();
   await page.getByRole('button',{name:/OSLO_/}).click();
-  await expect(page.getByRole('heading',{name:/Oslo kommuneplanens arealdel/})).toBeVisible();
-  await expect(page.getByText('CONSULTATION CLOSED · INPUTS UNDER REVIEW',{exact:true})).toBeVisible();
+  await expect(explorer.locator('.nt-public-decision').getByRole('heading',{name:/Oslo kommuneplanens arealdel/})).toBeVisible();
+  await expect(explorer.locator('.nt-public-decision').getByText('CONSULTATION CLOSED · INPUTS UNDER REVIEW',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:/Oslo district reform/i}).click();
-  await expect(page.getByRole('heading',{name:/Oslo bydelsreform/})).toBeVisible();
-  await expect(page.getByText('DECIDED · PREPARING 2028 CHANGE',{exact:true})).toBeVisible();
+  await expect(explorer.locator('.nt-public-decision').getByRole('heading',{name:/Oslo bydelsreform/})).toBeVisible();
+  await expect(explorer.locator('.nt-public-decision').getByText('DECIDED · PREPARING 2028 CHANGE',{exact:true})).toBeVisible();
 });
 
 test('4NATION 08 has a persistent human-first light and dark mode control', async ({page}) => {
