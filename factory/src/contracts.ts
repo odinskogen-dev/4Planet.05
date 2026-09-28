@@ -28,7 +28,7 @@ export interface ProductionLineContext {
   role: ProductionLineRole;
 }
 
-export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK" | "EXA_SEARCH";
+export type ExecutionKind = "BROWSER_QA" | "HTTP_SOURCE_CHECK" | "EXA_SEARCH" | "INTERNAL_LEARNING_EVAL";
 
 /**
  * Bounded runtime instruction. This is deliberately small: the first safe
@@ -48,6 +48,16 @@ export interface ExecutionSpec {
   query?: string;
   /** Bounded result count for read-only discovery. */
   limit?: number;
+  /** Internal non-mutating learning/evaluation task. Never sent externally. */
+  learningTask?: string;
+  /** Hidden Judge expectation; not included in the Maker prompt. */
+  expectedDecision?: string;
+  /** Hidden Judge evidence phrases/ideas that must appear in the Maker output. */
+  requiredSignals?: string[];
+  /** Hidden Judge phrases/claims that must not appear in the Maker output. */
+  forbiddenSignals?: string[];
+  /** Stable scenario identity used to distinguish practice, held-out and transfer cases. */
+  scenarioId?: string;
 }
 
 export interface ResourceBudget {
