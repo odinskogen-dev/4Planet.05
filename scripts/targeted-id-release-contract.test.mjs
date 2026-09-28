@@ -46,21 +46,33 @@ test("both gates pin the same one-time source, branch and allowlist", () => {
   }
 });
 
-test("the manifest stays unbound and the carrier is not live authority", () => {
+test("the one-time manifest is unbound until Gold binds a manifest-only child", () => {
   const manifest = JSON.parse(fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8"));
-  assert.equal(manifest.status, "NOT_AUTHORISED");
-  assert.equal(manifest.founderDecisionRef, null);
   const targeted = manifest.targetedIdentityRelease;
-  assert.equal(targeted.liveAuthority, false);
   assert.equal(targeted.branch, BRANCH);
   assert.equal(targeted.liveSourceSha, SOURCE);
-  assert.equal(targeted.candidateSha, null);
-  assert.equal(targeted.goldEvidenceRef, null);
   assert.match(targeted.founderDecisionRef, new RegExp(DECISION));
   assert.equal(targeted.rollbackDeployment, "https://3d1e7976.4planet-05.pages.dev");
   assert.equal(targeted.rollbackSha, "1700b646bb9e1139e4dc514b4c777546a0c81fea");
   assert.equal(targeted.immutableSourceDeployment, "https://1387126b.4planet-05.pages.dev");
   assert.equal(targeted.liveAsset, "/assets/index-CrCdYuxo.js");
+  if (targeted.liveAuthority === false) {
+    assert.equal(manifest.status, "NOT_AUTHORISED");
+    assert.equal(manifest.founderDecisionRef, null);
+    assert.equal(targeted.candidateSha, null);
+    assert.equal(targeted.goldEvidenceRef, null);
+    return;
+  }
+  assert.equal(targeted.liveAuthority, true);
+  assert.match(targeted.candidateSha, /^[0-9a-f]{40}$/);
+  assert.ok(targeted.goldEvidenceRef);
+  const head = git(["rev-parse", "HEAD"]);
+  const parent = git(["rev-parse", "HEAD^"]);
+  assert.ok(head === targeted.candidateSha || parent === targeted.candidateSha);
+  if (head !== targeted.candidateSha) {
+    const child = git(["diff", "--name-only", targeted.candidateSha, "HEAD"]).split("\n").filter(Boolean);
+    assert.deepEqual(child, ["docs/control/LIVE_PROMOTION_MANIFEST.json"]);
+  }
 });
 
 test("the canonical live workflow cannot deploy a closed release", () => {
