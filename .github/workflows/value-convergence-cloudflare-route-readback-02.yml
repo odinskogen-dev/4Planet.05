@@ -1,0 +1,62 @@
+name: VALUE CONVERGENCE CLOUDFLARE ROUTE READBACK 02
+
+on:
+  push:
+    branches:
+      - ops/value-convergence-live-proof-02
+    paths:
+      - .github/workflows/value-convergence-cloudflare-route-readback-02.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  route-readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Cloudflare token and inspect routing
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          test -n "$TOKEN"
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+
+          zone=$(curl -fsS "$api/zones?name=4planet.org&status=active" "${auth[@]}")
+          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$zid"; test -n "$account"
+
+          echo '=== DNS apex/www/id ==='
+          curl -fsS "$api/zones/$zid/dns_records?per_page=100" "${auth[@]}" |
+            jq '[.result[] | select(.name=="4planet.org" or .name=="www.4planet.org" or .name=="id.4planet.org") | {id,type,name,content,proxied}]'
+
+          echo '=== Worker routes ==='
+          curl -fsS "$api/zones/$zid/workers/routes" "${auth[@]}" | jq '.result'
+
+          echo '=== Worker custom domains ==='
+          curl -fsS "$api/accounts/$account/workers/domains" "${auth[@]}" |
+            jq '[.result[]? | select(.hostname=="4planet.org" or .hostname=="www.4planet.org" or .hostname=="id.4planet.org") | {id,hostname,service,environment,zone_name}]'
+
+          echo '=== Pages 4planet-05 ==='
+          curl -fsS "$api/accounts/$account/pages/projects/4planet-05" "${auth[@]}" |
+            jq '{name:.result.name,production_branch:.result.production_branch,domains:.result.domains,latest_deployment:.result.latest_deployment}'
+
+          echo '=== Recent Pages deployments ==='
+          curl -fsS "$api/accounts/$account/pages/projects/4planet-05/deployments?page=1&per_page=10" "${auth[@]}" |
+            jq '[.result[] | {id,url,environment,created_on,latest_stage,deployment_trigger}]'
