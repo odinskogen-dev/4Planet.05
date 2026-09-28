@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SpeciesSourceEnvelope } from "@/data/speciesSourceEnvelope";
+import { fetchSpeciesIntelligence, type SpeciesIntelligenceBundle } from "@/data/speciesIntelligence";
 import { T } from "@/styles/tokens";
 
 const mono: React.CSSProperties = {
@@ -42,10 +43,41 @@ const publicRefreshMeaning = (refresh: { status: string; verification: string; t
 
 export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnvelope }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
+  const [liveIntel, setLiveIntel] = useState<SpeciesIntelligenceBundle | null>(null);
+  const [liveIntelState, setLiveIntelState] = useState<"IDLE" | "LOADING" | "READY" | "PARTIAL" | "UNAVAILABLE">("IDLE");
 
   useEffect(() => {
     setTarget(document.getElementById("main-content"));
   }, []);
+
+  useEffect(() => {
+    if (!envelope?.scientificName) {
+      setLiveIntel(null);
+      setLiveIntelState("IDLE");
+      return;
+    }
+    const controller = new AbortController();
+    setLiveIntel(null);
+    setLiveIntelState("LOADING");
+    void fetchSpeciesIntelligence(envelope.scientificName, new Date().toISOString(), {
+      signal: controller.signal,
+      researchLimit: 5,
+      interactionLimit: 8,
+    }).then((bundle) => {
+      if (controller.signal.aborted) return;
+      setLiveIntel(bundle);
+      const researchAvailable = bundle.research.snapshot.available;
+      const interactionsAvailable = bundle.interactions.snapshot.available;
+      setLiveIntelState(
+        researchAvailable && interactionsAvailable ? "READY"
+          : researchAvailable || interactionsAvailable ? "PARTIAL"
+            : "UNAVAILABLE",
+      );
+    }).catch(() => {
+      if (!controller.signal.aborted) setLiveIntelState("UNAVAILABLE");
+    });
+    return () => controller.abort();
+  }, [envelope?.scientificName]);
 
   if (!envelope || !target) return null;
 
@@ -159,6 +191,56 @@ export function SpeciesEvidenceSeam({ envelope }: { envelope?: SpeciesSourceEnve
             );
           })}
         </div>
+
+        <section data-testid="species-live-intelligence" data-source-layer="OPENALEX_GLOBI_DISCOVERY_01" aria-labelledby="species-live-intelligence-title" style={{ marginTop: 34, borderTop: `1px solid ${T.line}`, paddingTop: 30 }}>
+          <div style={{ ...mono, color: T.blue }}>LIVE DISCOVERY · SOURCE-BOUNDED</div>
+          <h3 id="species-live-intelligence-title" style={{ marginTop: 10, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(26px,3.4vw,42px)", letterSpacing: "-.035em" }}>
+            Research and documented relationships.
+          </h3>
+          <p style={{ marginTop: 12, maxWidth: 760, color: T.dim, lineHeight: 1.6 }}>
+            This is a live discovery layer around the canonical species object. OpenAlex metadata helps find relevant research; GloBI exposes interaction records contributed by underlying datasets. Neither source automatically changes canonical 4PLANET claims.
+          </p>
+
+          {liveIntelState === "LOADING" && <p role="status" style={{ marginTop: 18, color: T.dim }}>Checking current research metadata and interaction records…</p>}
+          {liveIntelState === "UNAVAILABLE" && <p role="status" style={{ marginTop: 18, color: "#8A6500" }}>Live discovery sources are unavailable right now. Existing species evidence remains unchanged.</p>}
+          {liveIntel && (liveIntelState === "READY" || liveIntelState === "PARTIAL") && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 22 }}>
+              <article style={{ border: `1px solid ${T.line}`, padding: 18 }}>
+                <div style={{ ...mono, color: T.dim }}>OPENALEX · RESEARCH DISCOVERY</div>
+                <strong style={{ display: "block", marginTop: 8, fontFamily: T.display, fontSize: 22 }}>
+                  {liveIntel.research.works.length} current metadata result{liveIntel.research.works.length === 1 ? "" : "s"}
+                </strong>
+                <p style={{ marginTop: 8, color: T.dim, fontSize: 13, lineHeight: 1.55 }}>Search results are not findings or endorsements. Article text is not copied into this surface.</p>
+                <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+                  {liveIntel.research.works.slice(0, 5).map((work) => (
+                    <a key={work.openAlexId} href={work.doi ?? work.openAlexId} target="_blank" rel="noreferrer" style={{ color: T.ink, textDecoration: "none", borderTop: `1px solid ${T.line}`, paddingTop: 10 }}>
+                      <strong style={{ display: "block", fontSize: 14, lineHeight: 1.4 }}>{work.title}</strong>
+                      <span style={{ ...mono, display: "block", marginTop: 5, color: T.dim }}>{work.publicationYear ?? "YEAR UNKNOWN"}{work.sourceName ? ` · ${work.sourceName}` : ""}</span>
+                    </a>
+                  ))}
+                  {liveIntel.research.works.length === 0 && <span style={{ color: T.dim, fontSize: 13 }}>No bounded results returned. That is not evidence that no research exists.</span>}
+                </div>
+              </article>
+
+              <article style={{ border: `1px solid ${T.line}`, padding: 18 }}>
+                <div style={{ ...mono, color: "#8A6500" }}>GLOBI · INTERACTION RECORDS · REVIEW REQUIRED</div>
+                <strong style={{ display: "block", marginTop: 8, fontFamily: T.display, fontSize: 22 }}>
+                  {liveIntel.interactions.interactions.length} source-linked record{liveIntel.interactions.interactions.length === 1 ? "" : "s"}
+                </strong>
+                <p style={{ marginTop: 8, color: T.dim, fontSize: 13, lineHeight: 1.55 }}>An indexed interaction is not universal behaviour, local presence or current ecological state. Original study and dataset provenance remain required.</p>
+                <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+                  {liveIntel.interactions.interactions.slice(0, 6).map((interaction, index) => (
+                    <div key={`${interaction.sourceTaxonName}-${interaction.interactionType}-${interaction.targetTaxonName}-${index}`} style={{ borderTop: `1px solid ${T.line}`, paddingTop: 10 }}>
+                      <strong style={{ display: "block", fontSize: 14 }}>{interaction.sourceTaxonName} → {interaction.interactionType} → {interaction.targetTaxonName}</strong>
+                      <span style={{ display: "block", marginTop: 5, color: T.dim, fontSize: 12, lineHeight: 1.45 }}>{interaction.studyCitation || interaction.studySourceCitation || "Underlying citation not returned in this bounded record."}</span>
+                    </div>
+                  ))}
+                  {liveIntel.interactions.interactions.length === 0 && <span style={{ color: T.dim, fontSize: 13 }}>No bounded records returned. That is not evidence that no ecological interactions exist.</span>}
+                </div>
+              </article>
+            </div>
+          )}
+        </section>
 
         <details style={{ marginTop: 18, border: `1px solid ${T.line}`, padding: "0 16px" }}>
           <summary style={{ ...mono, cursor: "pointer", padding: "16px 0", color: "#8A6500" }}>WHAT WE DO NOT CLAIM</summary>

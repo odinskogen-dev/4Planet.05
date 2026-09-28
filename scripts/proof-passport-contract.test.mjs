@@ -86,6 +86,7 @@ const independentVerification = {
   sourceRef: "source:independent:1",
   capturedAt: "2026-09-08T00:00:00Z",
   verifierClass: "THIRD_PARTY",
+  relationship: "IMPACT_LINKED",
   rights: "INTERNAL_TEST",
   limitations: [],
 };
@@ -146,6 +147,29 @@ test("provider-labelled verification can never self-promote Passport VERIFIED", 
     environment: "PRODUCTION",
     ...base,
     evidenceItems: [providerVerification],
+    uniqueClaimOrAllocationId: "claim:unique:1",
+    doubleCountState: "INDEPENDENTLY_CHECKED",
+    lastVerifiedAt: "2026-09-08T00:00:00Z",
+  }));
+  assert.equal(passport.depth, "STANDARD");
+  assert.equal(proof.proofPassportCanClaimImpact(passport), false);
+});
+
+test("context-only third-party evidence cannot self-promote Passport VERIFIED or impact eligibility", () => {
+  const base = records("PRODUCTION");
+  base.delivery.status = "EVIDENCE_ATTACHED";
+  base.delivery.evidenceRefs = ["evidence:delivery:1"];
+  base.outcome.status = "INDEPENDENTLY_REVIEWED";
+  base.outcome.claim = "A bounded proximate outcome was observed.";
+  base.outcome.evidenceRefs = ["evidence:outcome:1"];
+  base.impact.status = "VERIFIED";
+  base.impact.claim = "Verified bounded impact claim.";
+  base.impact.method = "Independent attribution method v1";
+  const contextOnly = { ...independentVerification, id: "evidence:context:1", relationship: "CONTEXT_ONLY" };
+  const passport = proof.createProofPassport(passportInput({
+    environment: "PRODUCTION",
+    ...base,
+    evidenceItems: [providerEvidence, contextOnly],
     uniqueClaimOrAllocationId: "claim:unique:1",
     doubleCountState: "INDEPENDENTLY_CHECKED",
     lastVerifiedAt: "2026-09-08T00:00:00Z",

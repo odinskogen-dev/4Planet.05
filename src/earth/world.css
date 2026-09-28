@@ -419,6 +419,15 @@
   .atlas-panel .mbtn { min-height: 38px; }
   /* Bottom map controls clear of the iOS home indicator. */
   .maplibregl-ctrl-bottom-right { margin-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* When shared context is open it becomes a bottom sheet. Keep MapLibre's
+     native navigation controls above the sheet rather than letting ctx-head
+     intercept the real user gesture. This preserves the existing camera
+     authority and keeps the control physically operable on 390/430px phones. */
+  .world:has(.ctx) .maplibregl-ctrl-bottom-right {
+    bottom: calc(72vh + 34px);
+    margin-bottom: 0;
+  }
 }
 
 /* ── V40 P0: RECENTER control ────────────────────────────────────────────── */

@@ -8,11 +8,14 @@ const isPartnersRelease =
 
 const partnersIsolation = {
   name: "4planet-partners-isolated-entry",
-  transformIndexHtml(html: string) {
-    if (!isPartnersRelease) return html;
-    return html
-      .replace('<script src="/atlas-return-camera-lock-v68.js"></script>', "")
-      .replace('/src/main.tsx', '/src/partners-main.tsx');
+  transformIndexHtml: {
+    order: "pre" as const,
+    handler(html: string) {
+      if (!isPartnersRelease) return html;
+      return html
+        .replace('<script src="/atlas-return-camera-lock-v68.js"></script>', "")
+        .replace('/src/main.tsx', '/src/partners-main.tsx');
+    },
   },
   generateBundle(this: any) {
     if (!isPartnersRelease) return;

@@ -1,0 +1,73 @@
+name: 4SAPIEN Finance typography restore
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finance-font-emergency.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore Claude typography on Finance production source
+        run: |
+          set -euo pipefail
+          git fetch origin build/ask-embla-live-20260909
+          git checkout -B build/ask-embla-live-20260909 origin/build/ask-embla-live-20260909
+
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('products/4sapien/build/apply_finance_route.py')
+          s = p.read_text()
+
+          if 'AXE_FINANCE_FONT_RESTORE_V1' not in s:
+              anchor = "for marker in ('AXE_FINANCE_UX_V3','max-width:1080px','Enter lagrer · Esc avbryter','function editKey('):\n"
+              if anchor not in s:
+                  raise SystemExit('Finance UX V3 anchor missing')
+
+              patch = r'''# AXE_FINANCE_FONT_RESTORE_V1 — restore Claude's original typography tokens.
+          # Original Claude donor: Instrument Sans display, DM Sans body/UI, Fragment Mono numeric/truth.
+          font_restore = '<style id="axe-finance-font-restore">#axeFin,#axeFin input,#axeFin select,#axeFin button{font-family:"DM Sans",sans-serif!important}#axeFin h1,#axeFin .big,#axeFin .ttl{font-family:"Instrument Sans",sans-serif!important}#axeFin .mono,#axeFin .val,#axeFin .truth,#axeFin .mo b,#axeFin .mo small,#axeFin .detail b{font-family:"Fragment Mono",monospace!important}</style>'
+          experience = experience.replace('</style>', '</style>'+font_restore, 1)
+          if 'axe-finance-font-restore' not in experience:
+              raise SystemExit('Finance typography restore injection failed')
+          '''
+              s = s.replace(anchor, patch + '\n' + anchor, 1)
+              p.write_text(s)
+          PY
+
+          rm -rf /tmp/finance-font-restore
+          mkdir -p /tmp/finance-font-restore
+          python products/4sapien/build/apply_finance_route.py /tmp/finance-font-restore/index.html
+          MONEY=/tmp/finance-font-restore/app/money/index.html
+
+          grep -q 'AXE_FINANCE_FONT_RESTORE_V1' products/4sapien/build/apply_finance_route.py
+          grep -q 'axe-finance-font-restore' "$MONEY"
+          grep -q 'font-family:"DM Sans",sans-serif!important' "$MONEY"
+          grep -q 'font-family:"Instrument Sans",sans-serif!important' "$MONEY"
+          grep -q 'font-family:"Fragment Mono",monospace!important' "$MONEY"
+          grep -q 'AXE_FINANCE_UX_V3' "$MONEY"
+          grep -q 'Din økonomiske tvilling · 2026' "$MONEY"
+          ! grep -qi 'service_role\|sb_secret_\|SUPABASE_SERVICE_ROLE\|CLOUDFLARE_API_TOKEN' "$MONEY"
+
+      - name: Commit typography-only fix to production branch
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- products/4sapien/build/apply_finance_route.py; then
+            echo 'Typography restore already present; nothing to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add products/4sapien/build/apply_finance_route.py
+          git commit -m 'fix(4sapien finance): restore Claude sans typography'
+          git push origin HEAD:build/ask-embla-live-20260909

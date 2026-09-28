@@ -41,9 +41,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./world.css";
+import { trackEvent } from "@/analytics/Analytics";
 
 import {
   BASE, C, DOT, LAYERS, MODES, RASTER_ORDER,
@@ -186,6 +188,15 @@ function WorldInner() {
   /* ── v1 state ─────────────────────────────────────────────────────────── */
   const [lens, setLens] = useState(init.current.lens);
   const [ctx, setCtx] = useState<ContextState | null>(null);
+
+  useEffect(() => {
+    if (!ctx) return;
+    trackEvent("atlas_object_opened", {
+      product_area: "atlas",
+      object_kind: ctx.kind,
+      has_canonical_entity: !["COORDINATE", "LEGACY_POINT"].includes(ctx.kind),
+    });
+  }, [ctx]);
   const [pool, setPool] = useState(EMPTY_POOL);
   const [poolLoading, setPoolLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -841,6 +852,10 @@ function WorldInner() {
 
   useEffect(() => {
     if (map.current) return;
+    // MapLibre v6 ESM + Vite: the package default resolves a worker URL that
+    // production preview may serve as HTML via SPA fallback. Bundle the matching
+    // self-contained worker with Vite; never create a second map/camera authority.
+    maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const m = new maplibregl.Map({
       container: boxRef.current, style: VECTOR_STYLE, center: init.current.center,
       zoom: init.current.zoom, minZoom: 1, maxZoom: 22,

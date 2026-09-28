@@ -1,0 +1,104 @@
+/* ===================================================================
+   4SAPIEN DESIGN SYSTEM — one shared visual grammar for every surface
+   (Front · Today shell · Food · Finance). Import this; the whole app
+   inherits the look. Visible layer only — never changes logic/data.
+   Canonical theme: window.FourSapienTheme sets html[data-theme].
+   =================================================================== */
+:root{
+  /* surfaces */
+  --paper:#FFFFFF; --ink:#0A0A0A; --soft:#565048; --faint:#8C867C;
+  --line:rgba(10,10,10,.09); --line2:rgba(10,10,10,.15); --fill:#FAFAF8;
+  /* brand */
+  --blue:#2E2EFF; --green:#3AE86F; --orange:#FF4D22; --pink:#FF5ACD;
+  /* semantic accents — Founder colour law */
+  --embla:var(--blue);        /* core/Embla accent: BLUE in light only  */
+  --food:var(--green);        /* Food world accent                      */
+  --money:var(--orange);      /* Money world accent                     */
+  --onAccent:#FFFFFF;
+  --wc:var(--embla);          /* active world accent (set per surface)  */
+  /* type */
+  --disp:'Instrument Sans',sans-serif; --body:'DM Sans',sans-serif; --mono:'Fragment Mono',monospace;
+  --t-xs:.74rem; --t-s:.9rem; --t-b:1.0625rem; --t-l:1.5rem; --t-xl:clamp(1.9rem,4vw,2.6rem);
+  --t-hero:clamp(2rem,5.4vw,3.6rem); --t-mega:clamp(3rem,8vw,6rem);
+  /* space (baseline 8) */
+  --s1:8px; --s2:16px; --s3:24px; --s4:40px; --s5:64px;
+  --r:20px; --rlg:22px; --pad:clamp(20px,4vw,72px); --maxw:1760px;
+}
+html[data-theme="dark"]{
+  --paper:#000000; --ink:#FFFFFF; --soft:#A7A29A; --faint:#7C786F;
+  --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.20); --fill:rgba(255,255,255,.03);
+  --embla:var(--green);       /* core/Embla accent: GREEN in dark (blue never on black) */
+  --money:#FF6A47; --onAccent:#000000; --blue:var(--ink); /* neutralise stray blue in dark */
+}
+/* base */
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:var(--t-b);
+  line-height:1.5;letter-spacing:-.006em;-webkit-font-smoothing:antialiased;
+  transition:background .4s,color .4s}
+h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:-.03em;line-height:1.04;margin:0}
+.fs-mono{font-family:var(--mono);letter-spacing:.09em}
+.fs-kr{font-variant-numeric:tabular-nums}
+/* layout */
+.fs-wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding-left:var(--pad);padding-right:var(--pad)}
+/* eyebrow — quiet, neutral (type carries, not colour) */
+.fs-ey{font-family:var(--mono);font-size:var(--t-xs);letter-spacing:.16em;color:var(--faint);
+  text-transform:uppercase;display:inline-flex;align-items:center;gap:9px;margin-bottom:var(--s2)}
+.fs-ey::before{content:"";width:14px;height:1px;background:var(--line2)}
+/* card — rounded hairline with a left world-accent rail */
+.fs-card{border:1px solid var(--line2);border-radius:var(--r);padding:clamp(20px,2.4vw,28px);
+  position:relative;overflow:hidden;background:transparent}
+.fs-card.rail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wc)}
+.fs-card .k{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--faint);text-transform:uppercase}
+.fs-card h3{font-size:var(--t-l);margin:var(--s1) 0}
+.fs-card p{color:var(--soft);font-size:.95rem;line-height:1.5}
+/* buttons */
+.fs-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:500;
+  font-size:var(--t-s);padding:12px 20px;border-radius:12px;cursor:pointer;border:1px solid var(--line2);
+  background:transparent;color:var(--ink);transition:border-color .2s,background .2s,filter .2s}
+.fs-btn:hover{border-color:var(--wc)}
+.fs-btn.pri{background:var(--wc);color:var(--onAccent);border-color:var(--wc)}
+.fs-btn.pri:hover{filter:brightness(1.06)}
+/* truth grammar — chip; colour is never the sole carrier (label always present) */
+.fs-truth{font-family:var(--mono);font-size:10px;letter-spacing:.05em;border:1px solid var(--line2);
+  border-radius:6px;padding:2px 8px;color:var(--ink)}
+.fs-truth.u{color:var(--faint)}                                    /* UKJENT */
+.fs-truth.m{color:var(--wc);border-color:color-mix(in srgb,var(--wc) 40%,var(--line2))} /* MODELLERT/kontekst */
+/* inputs */
+.fs-in{width:100%;border:1px solid var(--line2);border-radius:11px;padding:11px 14px;font-size:1rem;
+  background:transparent;color:var(--ink);outline:none;transition:border-color .15s}
+.fs-in:focus{border-color:var(--wc)}
+.fs-in::placeholder{color:var(--faint)}
+/* pills (choices) */
+.fs-pill{font-size:.9rem;padding:8px 14px;border-radius:10px;border:1px solid var(--line2);
+  background:transparent;color:var(--ink);cursor:pointer}
+.fs-pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* sheet / drawer */
+.fs-scrim{position:fixed;inset:0;background:rgba(10,10,10,.34);z-index:60;display:flex;
+  align-items:flex-end;justify-content:center}
+html[data-theme="dark"] .fs-scrim{background:rgba(0,0,0,.6)}
+.fs-sheet{width:100%;max-width:720px;background:var(--paper);border:1px solid var(--line2);
+  border-bottom:none;border-radius:var(--rlg) var(--rlg) 0 0;padding:22px;max-height:88vh;overflow:auto}
+/* empty state — calm, never "under construction" */
+.fs-empty{color:var(--faint);font-size:.96rem;line-height:1.6;max-width:52ch}
+.fs-empty b{color:var(--ink);font-family:var(--disp);font-weight:500}
+.fs-flag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--faint);
+  border:1px solid var(--line2);border-radius:5px;padding:2px 6px}
+/* bottom nav grammar */
+.fs-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--paper);
+  border-top:1px solid var(--line);display:flex;justify-content:center;
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.fs-nav .in{width:100%;max-width:var(--maxw);display:flex;padding:0 var(--pad)}
+.fs-nav button{flex:1;background:none;border:none;padding:11px 2px 13px;cursor:pointer;display:flex;
+  flex-direction:column;align-items:center;gap:5px;color:var(--faint);font-size:10.5px;font-weight:500}
+.fs-nav button.on{color:var(--ink)}
+/* ambient Embla bar — calm, no glow */
+.fs-embla{display:flex;gap:9px;align-items:center;background:var(--paper);border:1px solid var(--line2);
+  border-radius:16px;padding:7px 7px 7px 18px}
+.fs-embla:focus-within{border-color:var(--embla)}
+.fs-embla input{flex:1;border:none;outline:none;background:transparent;font-size:1.02rem;color:var(--ink)}
+.fs-embla .send{border:none;background:var(--embla);color:var(--onAccent);border-radius:11px;
+  width:42px;height:42px;font-size:17px;cursor:pointer;flex-shrink:0}
+/* world accent binding — set on a container: class="w-food" | "w-money" | "w-embla" */
+.w-food{--wc:var(--food)} .w-money{--wc:var(--money)} .w-embla{--wc:var(--embla)}
+/* motion respects reduced-motion */
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

@@ -49,6 +49,16 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 ## Current control fact
 `king/test` was created from former #121 exact head `633981cc6f54d152ed34ae02001ca3fb0fbe11c8`; #121 was then closed/frozen at the same SHA. Subsequent TEST KING control commits selectively adopted missing PR #120 control value. Production/LIVE KING was not modified.
 
+## 4SAPIEN CORE FINANCE 01 — bounded HEIR sequence
+
+| Identity | Role now | Branch / source | Exact identity | TEST KING obligation |
+|---|---|---|---|---|
+| 4SAPIEN LIVE | PRODUCTION / READ-ONLY | `deploy/4sapien-claude-unified-20260918` | `5065e44331f5a11954632dabdb5936b22f7bd0cf` | Preserve `https://4sapien.com/`; no development in place and no release without explicit Founder authority. |
+| 4SAPIEN functional closure | DONOR / READ-ONLY | `work/4sapien-final-functional-closure-20260919` | `a0410606db9fc769707df22cd75e9b4a8a308a05` | Selectively adopt finance truth, document/CSV and authenticated-runtime contracts; no wholesale merge across divergent history. |
+| 4SAPIEN CORE FINANCE 01 | ACTIVE DEVELOPMENT | `king/test` | parent `50db0d4fa9e590b28d2b777a8ef5856d898efe06` | Build the manual economy/portfolio proof and authorised-provider seam on the sole HEIR. Production database and LIVE domain remain untouched. |
+
+Donor disposition for this slice: finance truth conventions and owner-scoped data boundaries are **ADOPT**; the existing HEIR analytics/privacy spine is **ALREADY PRESENT**; a Yahoo/yfinance commercial runtime dependency is **REJECT WITH REASON** because its own project states personal-use and non-affiliation constraints; provider activation is **DEFER WITH REASON** until an authorised PSD2 provider agreement, credentials and explicit consent exist.
+
 ## LUME ROOM — clean-room sequence
 
 | Identity | Role now | Branch / PR | Exact parent SHA | TEST KING obligation |

@@ -1,0 +1,56 @@
+name: 4PLANET ID Live Probe
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/identity-live-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Probe live canonical identity surfaces
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          const errors=[];
+          page.on('console',m=>{ if(m.type()==='error') errors.push(m.text()) });
+          page.on('pageerror',e=>errors.push(String(e)));
+
+          const idResp=await page.goto('https://id.4planet.org/?probe=1',{waitUntil:'domcontentloaded',timeout:30000});
+          const idHeading=await page.getByRole('heading',{name:'Logg inn'}).count();
+          console.log('ID',JSON.stringify({status:idResp?.status(),url:page.url(),heading:idHeading,body:(await page.locator('body').innerText()).slice(0,700),errors:[...errors]}));
+
+          errors.length=0;
+          const pResp=await page.goto('https://4planet.org/?probe=1',{waitUntil:'domcontentloaded',timeout:30000});
+          await page.waitForTimeout(6000);
+          const diag={
+            status:pResp?.status(),
+            url:page.url(),
+            loginButtons:await page.getByRole('button',{name:'LOG IN'}).count(),
+            identityUtility:await page.locator('.fourplanet-id-utility').count(),
+            headerActions:await page.locator('.public-header__actions').count(),
+            joinLinks:await page.getByRole('link',{name:'JOIN 4PLANET'}).count(),
+            body:(await page.locator('body').innerText()).slice(0,1800),
+            errors:[...errors]
+          };
+          console.log('4PLANET',JSON.stringify(diag));
+          if(!idHeading) throw new Error('canonical ID host failed');
+          if(!diag.loginButtons) throw new Error('4planet login button absent');
+          await browser.close();
+          NODE

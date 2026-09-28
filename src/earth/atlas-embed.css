@@ -1,0 +1,18 @@
+/* Preserve legacy home-atlas strict size containment, but NOT on contextual embeds.
+   The old global '.atlas-embed { contain: strict }' collapses this section to
+   zero intrinsic height; the lazy iframe then never makes a network request. */
+.atlas-embed.atlas-embed--contextual{contain:none!important;display:block;min-height:clamp(290px,45vw,500px)}
+.atlas-embed{margin:32px 0;background:#080808;color:#fff;border:1px solid rgba(8,8,8,.24);font-family:"DM Sans",sans-serif;min-width:0}
+.atlas-embed__head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.22)}
+.atlas-embed__head span,.atlas-embed__foot a,.atlas-embed__limit{font-family:"Fragment Mono",monospace;font-size:10px;letter-spacing:.08em}
+.atlas-embed__head span{color:rgba(255,255,255,.65)}
+.atlas-embed__head strong{font-weight:500;font-size:16px}
+.atlas-embed__frame{position:relative;height:clamp(290px,45vw,500px);background:#080808;overflow:hidden}
+.atlas-embed__frame iframe{display:block;width:100%;height:100%;border:0;background:#080808}
+.atlas-embed__foot{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 20px}
+.atlas-embed__foot p{margin:0;max-width:660px;color:rgba(255,255,255,.76);font-size:13px;line-height:1.5}
+.atlas-embed__foot a{white-space:nowrap;color:#fff;text-underline-offset:4px;padding:10px 0}
+.atlas-embed__limit{margin:0;padding:13px 20px;border-top:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.62);line-height:1.65;letter-spacing:.01em}
+.atlas-embed-unavailable{padding:20px;border:1px solid rgba(8,8,8,.22);color:#333;line-height:1.5}
+.atlas-embed__foot a:focus-visible{outline:2px solid #3ae86f;outline-offset:5px}
+@media(max-width:680px){.atlas-embed{margin:24px 0}.atlas-embed__head,.atlas-embed__foot{padding:14px 16px}.atlas-embed__frame{height:360px}.atlas-embed__foot{align-items:flex-start;flex-direction:column;gap:8px}.atlas-embed__limit{padding:12px 16px}}

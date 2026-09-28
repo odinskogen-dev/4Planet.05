@@ -1,0 +1,90 @@
+name: 4NATION Universal 4PLANET ID Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - "ops/nation/4nation-live-worker.js"
+      - ".github/workflows/nation-universal-id-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4nation-universal-id-release
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Identity-only source guard
+        run: |
+          set -euo pipefail
+          node --check ops/nation/4nation-live-worker.js
+          grep -Fq 'IMMUTABLE_ORIGIN = "https://9c7fe142.4planet-05.pages.dev"' ops/nation/4nation-live-worker.js
+          grep -Fq 'SOURCE_SHA = "ba354a82b443f9e0cd2124af6ead75a995ed0e8c"' ops/nation/4nation-live-worker.js
+          grep -Fq 'data-fourplanet-id-entry' ops/nation/4nation-live-worker.js
+          grep -Fq '/auth/4planet/callback' ops/nation/4nation-live-worker.js
+          grep -Fq 'verifyOtp' ops/nation/4nation-live-worker.js
+          ! grep -Fq 'oddekalv.org' ops/nation/4nation-live-worker.js
+      - name: Verify exact existing Cloudflare authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          z=$(curl -fsS "$api/zones?name=4nation.org&status=active" "${auth[@]}")
+          aid=$(jq -r '.result[0].account.id // empty' <<<"$z")
+          zid=$(jq -r '.result[0].id // empty' <<<"$z")
+          test -n "$aid" && test -n "$zid"
+          d=$(curl -fsS "$api/accounts/$aid/workers/domains" "${auth[@]}")
+          jq -e '([.result[]? | select(.hostname=="4nation.org" and .service=="4planet-nation-live")] | length)==1' <<<"$d" >/dev/null
+          echo "CLOUDFLARE_ACCOUNT_ID=$aid" >> "$GITHUB_ENV"
+      - name: Deploy identity-only wrapper to existing 4NATION Worker
+        run: |
+          cat > nation-id-wrangler.toml <<'EOF'
+          name = "4planet-nation-live"
+          main = "ops/nation/4nation-live-worker.js"
+          compatibility_date = "2026-09-21"
+          workers_dev = true
+          [[routes]]
+          pattern = "4nation.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@4.128.0 deploy --config nation-id-wrangler.toml
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Real-domain identity proof
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for(const engine of [chromium,webkit]){
+            const browser=await engine.launch();
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const resp=await page.goto('https://4nation.org/',{waitUntil:'domcontentloaded',timeout:30000});
+            if(resp?.status()!==200) throw new Error('4NATION HTTP '+resp?.status());
+            const login=page.getByRole('link',{name:'Log in with 4PLANET ID'});
+            await login.waitFor({timeout:10000});
+            await login.click();
+            await page.waitForURL(/https:\/\/id\.4planet\.org\/login\?return_to=/,{timeout:10000});
+            const target=await page.locator('.identity-card').getAttribute('data-return-to');
+            if(!target?.startsWith('https://4nation.org/')) throw new Error('4NATION return target lost '+target);
+            const cb=await page.request.get('https://4nation.org/auth/4planet/callback');
+            if(cb.status()!==200 || !(await cb.text()).includes('verifyOtp')) throw new Error('4NATION callback invalid');
+            await browser.close();
+          }
+          console.log('4NATION UNIVERSAL 4PLANET ID LIVE PROOF: PASS');
+          NODE

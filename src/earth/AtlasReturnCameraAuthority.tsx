@@ -38,7 +38,8 @@ export function AtlasReturnCameraAuthority() {
   const location = useLocation();
   const { pathname, search } = location;
   const record = new URLSearchParams(search).get("record") || "";
-  const semanticKey = `${pathname}|${record}`;
+  const entity = new URLSearchParams(search).get("entity") || "";
+  const semanticKey = `${pathname}|${record}|${entity}`;
   const entrySearchRef = useRef<{ key: string; search: string }>({ key: "", search: "" });
 
   // BrowserRouter keeps this authority mounted across product navigation. Save
@@ -59,13 +60,16 @@ export function AtlasReturnCameraAuthority() {
     // This guard is specifically for reconstructed cross-product/record context,
     // not generic ATLAS deep links. A plain explicit camera remains user-owned
     // from first render.
-    if (!record) return;
+    // A typed cross-product Embed opens an entity with explicit z/c but no record.
+    // This is the SAME camera authority as the existing observation-return path.
+    if (!record && !entity) return;
 
     const target = { zoom, center: [center[0], center[1]] as [number, number] };
     let disposed = false;
     let released = false;
     let map: AtlasMapLike | undefined;
     let canvas: HTMLCanvasElement | undefined;
+    let controlButtons: HTMLButtonElement[] = [];
     let mountFrame = 0;
 
     const restore = () => {
@@ -86,6 +90,10 @@ export function AtlasReturnCameraAuthority() {
       canvas?.removeEventListener("pointerdown", release);
       canvas?.removeEventListener("touchstart", release);
       canvas?.removeEventListener("wheel", release);
+      controlButtons.forEach((button) => {
+        button.removeEventListener("pointerdown", release);
+        button.removeEventListener("click", release);
+      });
     };
 
     const attach = () => {
@@ -108,6 +116,13 @@ export function AtlasReturnCameraAuthority() {
       canvas?.addEventListener("pointerdown", release, { passive: true });
       canvas?.addEventListener("touchstart", release, { passive: true });
       canvas?.addEventListener("wheel", release, { passive: true });
+      // The native MapLibre zoom controls are outside its canvas: a user click
+      // must release return-camera ownership just like a map gesture does.
+      controlButtons = Array.from(canvas?.closest(".maplibregl-map")?.querySelectorAll<HTMLButtonElement>(".maplibregl-ctrl-zoom-in, .maplibregl-ctrl-zoom-out") ?? []);
+      controlButtons.forEach((button) => {
+        button.addEventListener("pointerdown", release, { passive: true });
+        button.addEventListener("click", release);
+      });
 
       restore();
       requestAnimationFrame(restore);
@@ -119,7 +134,7 @@ export function AtlasReturnCameraAuthority() {
       if (mountFrame) cancelAnimationFrame(mountFrame);
       release();
     };
-  }, [pathname, record]);
+  }, [pathname, record, entity]);
 
   return null;
 }

@@ -7,6 +7,14 @@ const shared = read("src/analytics/ProductAnalytics.ts");
 const analytics = read("src/analytics/Analytics.tsx");
 const posthog = read("src/analytics/PostHogSink.ts");
 const routeAnalytics = read("src/analytics/ProductRouteAnalytics.tsx");
+const market = read("src/pages/v5/CreatorMarket.tsx");
+const sapien = read("src/pages/sapien/FourSapien.tsx");
+const fourbrands = read("src/pages/partners/FourBrand.tsx");
+const companyBrain = read("src/pages/partners/CompanyBrainControls.tsx");
+const identity = read("src/pages/identity/IdentityApp.tsx");
+const pantry = read("src/pages/sapien/PantryChoice.tsx");
+const species = read("src/pages/integrated/Species.tsx");
+const atlas = read("src/earth/World.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
 const robots = read("public/robots.txt");
 
@@ -21,10 +29,18 @@ const requiredEvents = [
 
 const requiredAnalyticsHosts = [
   "4planet.org",
+  "id.4planet.org",
   "test.4planet.org",
+  "labs.4planet.org",
+  "4sapien.com",
+  "4planetatlas.com",
+  "4brain.app",
   "4planetmagazine.com",
   "s4piens.com",
   "4species.com",
+  "4brands.org",
+  "cre4tor.com",
+  "cre4tor.4planet.org",
   "cre4tors.com",
   "4planetmarket.com",
 ];
@@ -33,8 +49,18 @@ const requiredRoutes = [
   "/",
   "/atlas",
   "/species",
+  "/species/orca",
+  "/4sapien",
+  "/4sapien/food",
+  "/4sapien/finance",
+  "/4brands",
   "/living-systems",
+  "/living-systems/oslofjord",
+  "/living-systems/great-barrier-reef",
   "/impact",
+  "/impact/actions/bay-of-biscay-survey",
+  "/market",
+  "/cre4tor/odin",
   "/missions",
   "/magazine",
   "/join",
@@ -90,11 +116,58 @@ test("analytics is fail-closed to the approved product and test-domain set", () 
   assert.match(analytics, /isAnalyticsHostAllowed/);
 });
 
+test("product attribution covers person, company, commerce and creator surfaces", () => {
+  for (const token of ["4sapien", "s4piens", "4brands", "market", "creator"]) {
+    assert.ok(shared.includes(`"${token}"`), `ProductArea missing: ${token}`);
+    assert.ok(routeAnalytics.includes(`"${token}"`), `route classifier missing: ${token}`);
+    assert.ok(analytics.includes(`"${token}"`), `page classifier missing: ${token}`);
+  }
+});
+
 test("canonical discovery routes remain generated and crawlable", () => {
   for (const route of requiredRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);
+});
+
+test("4SAPIEN and 4BRANDS value actions are measurable without sending user/company free text", () => {
+  assert.match(sapien, /trackEvent\("activation"/);
+  assert.match(sapien, /activation_kind: "shopping_list_analysis"/);
+  assert.match(sapien, /activation_kind: "ask_embla"/);
+  assert.match(sapien, /trackEvent\("decision_saved"/);
+  assert.doesNotMatch(sapien, /trackEvent\([^\n]*prompt/);
+  assert.doesNotMatch(sapien, /trackEvent\([^\n]*shoppingList/);
+
+  assert.match(fourbrands, /trackEvent\("company_analysis"/);
+  assert.match(fourbrands, /analysis_status:/);
+  assert.match(fourbrands, /source_count:/);
+  assert.match(fourbrands, /opportunity_count:/);
+  assert.match(fourbrands, /trackEvent\("company_twin_saved"/);
+  assert.doesNotMatch(fourbrands, /trackEvent\([^\n]*company,/);
+});
+
+test("4MARKET HEIR exposes the five verified live Fourthwall products without claiming purchase", () => {
+  for (const slug of [
+    "summit-at-sunset-fine-art-print",
+    "northern-harbour-fine-art-print",
+    "purple-shore-fine-art-print",
+    "bergen-reflections-fine-art-print",
+    "bergen-blue-hour-fine-art-print",
+  ]) assert.ok(market.includes(slug), `missing live product ${slug}`);
+  assert.match(market, /market_product_open/);
+  for (const token of [
+    "utm_source=4planetmarket",
+    "utm_medium=market",
+    "utm_campaign=first_creator_proof",
+    "utm_content=",
+  ]) assert.ok(market.includes(token), `Fourthwall attribution missing: ${token}`);
+  assert.match(market, /target="_blank"/);
+  assert.match(market, /rel="noopener noreferrer"/);
+  assert.match(market, /VERIFIED 27 SEP 2026/);
+  assert.match(market, /Product availability, price and fulfilment are owned by the live Fourthwall offer/);
+  assert.match(market, /completed Fourthwall sales can be reconciled by source/);
+  assert.match(market, /still does not treat a click as a purchase or delivery record/);
 });
 
 test("flagship journey entries physically exist and retain a return path", () => {
@@ -108,4 +181,22 @@ test("flagship journey entries physically exist and retain a return path", () =>
     assert.match(html, /<title>[^<]+<\/title>/i, `${path} missing title`);
     assert.ok(returnNeedles.some((needle) => html.includes(`href=\"${needle}`) || html.includes(`href='${needle}`)), `${path} has no return path`);
   }
+});
+
+
+test("convergence funnel exposes the required privacy-safe value events", () => {
+  for (const token of ["signup_started", "signup_completed", "login"]) assert.ok(identity.includes(token), `identity event missing ${token}`);
+  for (const token of ["value_action", "memory_written", "return_value", "value_reached"]) assert.ok(pantry.includes(token), `4SAPIEN event missing ${token}`);
+  for (const token of ["company_claim_started", "company_brain_created", "value_action"]) assert.ok(companyBrain.includes(token), `4BRANDS event missing ${token}`);
+  for (const token of ["species_opened", "source_opened", "cross_product_navigation"]) assert.ok(species.includes(token), `SPECIES event missing ${token}`);
+  assert.match(atlas, /atlas_object_opened/);
+  assert.doesNotMatch(atlas, /trackEvent\([^\n]*(lat|lng|latitude|longitude|coordinates)/i);
+});
+
+test("priority product hosts are first-class analytics surfaces", () => {
+  for (const host of ["id.4planet.org", "4sapien.com", "4planetatlas.com", "4species.com", "4brands.org", "4brain.app"]) {
+    assert.ok(analytics.includes(`"${host}"`), `priority analytics host missing: ${host}`);
+  }
+  assert.match(analytics, /host === "4sapien\.com"/);
+  assert.match(analytics, /host === "4planetatlas\.com"/);
 });

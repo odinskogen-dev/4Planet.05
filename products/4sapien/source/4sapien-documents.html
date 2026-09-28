@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF"><title>Dokumenter · 4SAPIEN Penger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/4sapien-design.css">
+<script src="/4sapien-theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js"></script>
+<style>
+body{margin:0;--wc:var(--money);min-height:100vh}
+a{color:inherit;text-decoration:none}button{font:inherit}
+.doc-top{border-bottom:1px solid var(--line);padding:18px clamp(18px,4vw,64px);display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.doc-brand{font:700 23px var(--disp);letter-spacing:-.035em}
+.doc-brand small{font:9px var(--mono);display:block;letter-spacing:.13em;color:var(--faint);margin-top:5px}
+.doc-nav{display:flex;flex-wrap:wrap;gap:13px;align-items:center;font-size:13px}
+.doc-nav button{background:transparent;color:var(--ink);border:1px solid var(--line2);padding:9px 12px;border-radius:99px;cursor:pointer}
+.doc-nav a{color:var(--soft);padding:7px 3px}
+.doc-nav a:hover{color:var(--ink)}
+.doc-wrap{max-width:1180px;padding:38px clamp(18px,4vw,64px) 90px;margin:auto}
+.doc-ey{font:10px var(--mono);letter-spacing:.13em;color:var(--faint);text-transform:uppercase;margin-bottom:12px}
+h1{font:600 clamp(29px,4vw,45px) var(--disp);letter-spacing:-.045em;line-height:1.06}
+.doc-lead{color:var(--soft);max-width:730px;margin:14px 0 28px;font-size:15px;line-height:1.55}
+.doc-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.85fr);gap:16px;align-items:start}
+.doc-card{border:1px solid var(--line2);border-radius:20px;padding:clamp(17px,2.4vw,27px);min-width:0}
+.doc-card h2{font:600 23px var(--disp);letter-spacing:-.03em;margin-bottom:6px}
+.doc-note{color:var(--soft);font-size:13px;line-height:1.5}
+.doc-pill{border:1px solid var(--line2);border-radius:8px;padding:5px 9px;font:10px var(--mono);color:var(--soft);display:inline-block;margin-top:10px}
+.doc-line{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.doc-field{display:flex;flex-direction:column;gap:6px;margin-top:15px;min-width:0}
+.doc-field label{font:11px var(--mono);color:var(--soft);letter-spacing:.04em}
+.doc-field input,.doc-field select,.doc-field textarea{width:100%;min-width:0;border:1px solid var(--line2);border-radius:11px;background:var(--paper);color:var(--ink);padding:13px 12px;font:14px var(--body);outline:none}
+.doc-field :is(input,select,textarea):focus{border-color:var(--money)}
+.doc-field textarea{min-height:96px;resize:vertical}
+.doc-upload{width:100%;border:1px dashed var(--line2);padding:22px 16px;border-radius:14px;cursor:pointer;display:block;text-align:center;margin-top:17px}
+.doc-upload input{max-width:100%;margin-top:10px;font:12px var(--body)}
+.doc-preview{max-height:240px;max-width:100%;object-fit:contain;display:block;margin:14px auto;border-radius:9px}
+.doc-meta{margin:8px 0;font:12px var(--mono);color:var(--faint);overflow-wrap:anywhere}
+.doc-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:22px}
+.doc-primary{border:1px solid var(--money);background:var(--money);color:var(--onAccent);border-radius:11px;padding:13px 17px;cursor:pointer;font-weight:600}
+.doc-primary:disabled{opacity:.45;cursor:wait}
+.doc-secondary{border:1px solid var(--line2);background:transparent;color:var(--ink);border-radius:11px;padding:12px 15px;cursor:pointer}
+.doc-status{margin-top:15px;min-height:26px;font:13px var(--body);color:var(--soft);overflow-wrap:anywhere}
+.doc-status[role=alert]{color:var(--money)}
+.doc-check{display:flex;align-items:flex-start;gap:10px;font-size:12px;margin-top:18px;color:var(--soft)}
+.doc-check input{margin-top:2px;accent-color:var(--money)}
+.doc-list{list-style:none;padding:0;margin:12px 0 0}
+.doc-list li{padding:13px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:start;font-size:13px}
+.doc-list li:last-child{border:0}
+.doc-list small{display:block;font:10px var(--mono);color:var(--faint);margin-top:5px}
+.doc-list button{border:0;background:transparent;color:var(--money);cursor:pointer}
+.doc-empty{color:var(--faint);font-size:13px;padding:12px 0}
+.doc-decision{border-top:1px solid var(--line);margin-top:20px;padding-top:16px;font-size:12px;color:var(--soft)}
+.doc-decision strong{color:var(--ink)}
+.doc-copy{word-break:break-word}
+@media(max-width:850px){.doc-grid{grid-template-columns:1fr}.doc-wrap{padding-top:24px}}
+@media(max-width:480px){.doc-line{grid-template-columns:1fr}.doc-top{padding:15px 18px}.doc-brand{font-size:20px}.doc-wrap{padding-left:18px;padding-right:18px}.doc-nav{gap:9px;font-size:12px}}
+</style>
+</head>
+<body class="w-money">
+<header class="doc-top">
+<a class="doc-brand" href="/">4SAPIEN<small>PENGER · EMBLA · BY 4PLANET</small></a>
+<nav class="doc-nav" aria-label="Hovednavigasjon">
+<a href="/">I dag</a><a href="/app/food/">Mat</a><a href="/app/money/">Penger</a><a href="/app/money/import/">Bank-CSV</a><a href="/brain/">Brain</a>
+<button id="docTheme" type="button" aria-label="Bytt tema">◐</button>
+<span id="docIdentity" aria-live="polite">4PLANET ID</span>
+</nav>
+</header>
+<main class="doc-wrap">
+<div class="doc-ey">Penger · Dokumenter · Faktisk, ikke antatt</div>
+<h1>Fra dokument til oversikt.</h1>
+<p class="doc-lead">Legg inn en regning eller kvittering. Originalen lagres privat; du bekrefter beløp og dato før Finance endres. PDF-tekst leses lokalt når nettleseren støtter det. Bilder kan du lese med valgfri lokal OCR. Både OCR og PDF-forslag krever manuell kontroll; ingen automatisk betaling.</p>
+<div class="doc-grid">
+<section class="doc-card" aria-labelledby="docHeading">
+<h2 id="docHeading">Nytt dokument</h2>
+<p class="doc-note">Regning blir en kommende betaling, ikke en betalt kostnad. Kvittering blir en registrert utgift. Begge bruker eksisterende Finance Twin.</p>
+<form id="docForm" autocomplete="off">
+<div class="doc-field"><label for="docKind">DOKUMENTTYPE</label><select id="docKind" required><option value="bill">Regning · skal betales</option><option value="receipt">Kvittering · allerede betalt</option></select></div>
+<label class="doc-upload" for="docFile"><strong>Velg bilde eller PDF</strong><span class="doc-note" style="display:block;margin-top:5px">JPEG · PNG · WEBP · PDF · inntil 10 MB</span><input id="docFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></label>
+<div id="docPreview" class="doc-meta" aria-live="polite">Ingen dokument valgt</div>
+<div id="docOcrWrap" hidden class="doc-actions"><button class="doc-secondary" type="button" id="docOcr">Les bildet lokalt (OCR) · valgfritt</button><span class="doc-note">Ingen betaling eller ekstern AI. Kan ta litt tid på mobil. Resultatet er alltid ubekreftet.</span></div>
+<div id="docSuggestions" hidden class="doc-card" style="margin-top:14px;padding:14px;border-color:var(--line2)" aria-live="polite">
+<strong>Forslag fra dokumenttekst — ikke verifisert</strong>
+<p class="doc-note">Trykk «Bruk forslag» for hvert felt du ønsker. Kontroller deretter originalen og bekreft selv.</p>
+<div id="docSuggestionList" class="doc-actions"></div>
+<div id="docItemLines" class="doc-note"></div>
+</div>
+<div class="doc-field"><label for="docName">HVA GJELDER DET? · BRUKERBEKREFTET</label><input id="docName" maxlength="180" required placeholder="F.eks. Strømregning september"></div>
+<div class="doc-line">
+<div class="doc-field"><label for="docAmount">BELØP I HELE KRONER</label><input id="docAmount" type="number" min="1" max="1000000000" step="1" required placeholder="1250"></div>
+<div class="doc-field"><label for="docDate" id="docDateLabel">FORFALLSDATO</label><input id="docDate" type="date" required></div>
+</div>
+<div class="doc-field"><label for="docCategory">KATEGORI · VALGFRITT</label><input id="docCategory" maxlength="90" placeholder="F.eks. Strøm, husleie eller mat"></div>
+<div id="docExtractWrap" hidden class="doc-field"><label for="docExtract">TEKST FRA PDF · KONTROLLER SELV</label><textarea id="docExtract" maxlength="12000" aria-label="Lokal PDF-tekst" placeholder="Ingen tekst funnet. Fyll inn feltene selv."></textarea><div class="doc-note">Teksten er ikke en verifisert regning. Les originalen før du godkjenner.</div></div>
+<label class="doc-check"><input id="docBrain" type="checkbox" checked><span>Legg kun de bekreftede opplysningene i Personal Brain. Ikke lagre hele dokumentteksten som en ubekreftet sannhet.</span></label>
+<div class="doc-decision"><strong>Bekreftelse:</strong> Jeg har kontrollert originalen og godkjenner dokumenttype, navn, beløp og dato. Ingen betaling gjennomføres.</div>
+<div class="doc-actions"><button class="doc-primary" id="docSubmit" type="submit">Bekreft og lagre</button><button class="doc-secondary" id="docReset" type="reset">Start på nytt</button></div>
+<div id="docStatus" class="doc-status" aria-live="polite"></div>
+</form>
+</section>
+<aside class="doc-card">
+<h2>Dokumenterte hendelser</h2>
+<p class="doc-note">Kun dine dokumenter. Åpne originalen via en kortvarig, privat lenke.</p>
+<ul class="doc-list" id="docList"><li class="doc-empty">Laster…</li></ul>
+<div class="doc-decision"><strong>Ukjent ≠ null.</strong> OCR er valgfri og ikke verifisert. Et dokument uten bekreftede felt føres aldri automatisk inn i økonomien. Samme fil kan ikke gi to aktive Finance-hendelser.</div>
+<div id="docBrainRetry" class="doc-status" aria-live="polite"></div>
+</aside>
+</div>
+</main>
+<script src="/4sapien-document-analysis.js" defer></script>
+<script src="/4sapien-documents.js" defer></script>
+</body>
+</html>

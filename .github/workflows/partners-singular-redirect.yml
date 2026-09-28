@@ -1,0 +1,92 @@
+name: Partners Singular Canonical Redirect
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/partners-singular-redirect.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  canonical-redirect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Resolve existing Cloudflare credential
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo 'CANONICAL_REDIRECT_BLOCKED=token_missing'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n' | sed -e 's/^Bearer //' -e 's/^bearer //' -e 's/^CLOUDFLARE_API_TOKEN=//' -e 's/^CF_API_TOKEN=//' -e 's/^"//' -e 's/"$//')
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: Inspect existing rules and make only the authorised singular redirect
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4planet.org&status=active")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          [ -n "$zone_id" ] || { echo 'CANONICAL_REDIRECT_BLOCKED=zone_unavailable'; exit 3; }
+          current_dns=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone_id/dns_records?name=partner.4planet.org&per_page=100")
+          jq -e '.success == true' <<<"$current_dns" >/dev/null
+          count=$(jq '.result | length' <<<"$current_dns")
+          if [ "$count" != 0 ]; then
+            jq -e 'all(.result[]; .type=="A" and .content=="192.0.2.1" and .proxied==true)' <<<"$current_dns" >/dev/null ||
+              { echo 'CANONICAL_REDIRECT_BLOCKED=singular_dns_collision'; exit 4; }
+          fi
+          listed=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone_id/rulesets")
+          jq -e '.success == true' <<<"$listed" >/dev/null
+          matches=$(jq '[.result[]? | select(.kind=="zone" and .phase=="http_request_dynamic_redirect")] | length' <<<"$listed")
+          [ "$matches" -le 1 ] || { echo 'CANONICAL_REDIRECT_BLOCKED=ambiguous_redirect_rulesets'; exit 5; }
+          existing_id=$(jq -r '[.result[]? | select(.kind=="zone" and .phase=="http_request_dynamic_redirect")][0].id // empty' <<<"$listed")
+          rule=$(jq -nc '{ref:"4planet_partners_singular_to_plural",description:"301 singular partner hostname -> partners; preserve path and query",expression:"http.host eq \"partner.4planet.org\"",action:"redirect",action_parameters:{from_value:{target_url:{expression:"concat(\"https://partners.4planet.org\", http.request.uri.path)"},status_code:301,preserve_query_string:true}}}')
+          if [ -n "$existing_id" ]; then
+            existing=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone_id/rulesets/$existing_id")
+            jq -e '.success == true' <<<"$existing" >/dev/null
+            collides=$(jq '[.result.rules[]? | select((.expression // "") | contains("partner.4planet.org"))] | length' <<<"$existing")
+            if [ "$collides" -gt 0 ]; then
+              jq -e '[.result.rules[]? | select((.expression // "") | contains("partner.4planet.org"))] | all(.action=="redirect" and .action_parameters.from_value.status_code==301 and .action_parameters.from_value.target_url.expression=="concat(\"https://partners.4planet.org\", http.request.uri.path)")' <<<"$existing" >/dev/null ||
+                { echo 'CANONICAL_REDIRECT_BLOCKED=conflicting_existing_rule'; exit 6; }
+              echo 'CANONICAL_RULE=already_present'
+            else
+              add=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' -X POST "$api/zones/$zone_id/rulesets/$existing_id/rules" --data "$rule")
+              jq -e '.success==true' <<<"$add" >/dev/null ||
+                { echo 'CANONICAL_REDIRECT_BLOCKED=rule_add_failed'; exit 7; }
+              echo 'CANONICAL_RULE=added_to_existing_ruleset'
+            fi
+          else
+            body=$(jq -nc --argjson rule "$rule" '{name:"4PLANET zone single redirects",kind:"zone",phase:"http_request_dynamic_redirect",rules:[$rule]}')
+            add=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' -X POST "$api/zones/$zone_id/rulesets" --data "$body")
+            jq -e '.success==true' <<<"$add" >/dev/null ||
+              { echo 'CANONICAL_REDIRECT_BLOCKED=ruleset_create_failed'; exit 8; }
+            echo 'CANONICAL_RULE=new_ruleset_created'
+          fi
+          if [ "$count" = 0 ]; then
+            record=$(jq -nc '{type:"A",name:"partner",content:"192.0.2.1",proxied:true,ttl:1}')
+            created=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' -X POST "$api/zones/$zone_id/dns_records" --data "$record")
+            jq -e '.success==true' <<<"$created" >/dev/null ||
+              { echo 'CANONICAL_REDIRECT_BLOCKED=dns_create_failed'; exit 9; }
+            echo 'CANONICAL_DNS=created_proxied_redirect_record'
+          else
+            echo 'CANONICAL_DNS=existing_proxied_redirect_record'
+          fi
+      - name: Verify actual TLS and exact path/query redirect
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 15); do
+            code=$(curl -sS -o /dev/null -D /tmp/partners-singular-headers -w '%{http_code}' 'https://partner.4planet.org/for/science?source=canonical-proof' || true)
+            loc=$(awk 'tolower($1)=="location:" {sub(/\r$/,"",$2);print $2}' /tmp/partners-singular-headers 2>/dev/null | tail -1)
+            if [ "$code" = 301 ] && [ "$loc" = 'https://partners.4planet.org/for/science?source=canonical-proof' ]; then ready=true; break; fi
+            sleep 4
+          done
+          [ "$ready" = true ] || { echo "CANONICAL_REDIRECT_NOT_YET_VERIFIED_HTTP=$code"; exit 10; }
+          echo 'CANONICAL_REDIRECT_HTTP_301_PATH_QUERY_TLS=PASS'

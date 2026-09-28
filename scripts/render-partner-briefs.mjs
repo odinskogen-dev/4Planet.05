@@ -12,7 +12,7 @@ try {
     try {
       const response = await page.goto(`${base}/`, { waitUntil: "networkidle", timeout: 20000 });
       lastBody = await page.locator("body").innerText().catch(() => "");
-      if (response?.ok() && lastBody.includes("The living world is connected.")) {
+      if (response?.ok() && lastBody.includes("A living planet.")) {
         ready = true;
         console.log(`PARTNERS_PREVIEW_RENDER_READY attempt=${attempt}`);
         break;

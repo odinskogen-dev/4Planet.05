@@ -41,7 +41,7 @@ assert(css.includes("@media print"), "print brief support missing");
 assert(app.includes('host === "partners.4planet.org"'), "custom Partners host identity missing");
 assert(app.includes('host === "4planet-partners.pages.dev"'), "root Partners Pages host identity missing");
 assert(app.includes('host.endsWith(".4planet-partners.pages.dev")'), "hashed Partners preview identity missing");
-assert(app.includes('if (isPartnersHost()) return <PartnersHub />;'), "Partners host does not select PartnersHub");
+assert(app.includes('if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;') || app.includes('if (isPartnersHost()) return <PartnersHub />;'), "Partners host does not select PartnersHub");
 assert(!app.includes('host.endsWith(".pages.dev")'), "Partners host gate is too broad and could capture unrelated Pages apps");
 
 // The dedicated release must physically exclude the main 4PLANET application and its map/router runtime.

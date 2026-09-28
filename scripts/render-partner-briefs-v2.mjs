@@ -219,7 +219,7 @@ try {
   const desktop = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
   await desktop.goto(`${base}/`, { waitUntil: "networkidle" });
   const body = await desktop.locator("body").innerText();
-  if (!body.includes("The living world is connected.")) throw new Error("PARTNERS_RENDER_FAIL homepage thesis missing");
+  if (!body.includes("A living planet.")) throw new Error("PARTNERS_RENDER_FAIL homepage thesis missing");
   const robots = await desktop.locator('meta[name="robots"]').getAttribute("content");
   if (!robots?.includes("noindex")) throw new Error("PARTNERS_RENDER_FAIL noindex meta missing");
   await desktop.screenshot({ path: path.join(evidence, "partners-home-desktop.png"), fullPage: true });

@@ -1,16 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
+import { trackEvent } from "@/analytics/Analytics";
+import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
+import { FinanceWorkspace } from "../../finance/FinanceWorkspace";
+import PantryChoice from "./PantryChoice";
 import "./embla-02.css";
 
 type EmblaMode = "LIST" | "ASK";
-
-const financeModules = [
-  { title: "MONEY MAP", text: "One honest picture of income, fixed costs, debt, assets, goals and recurring commitments. Manual-first; connected accounts later." },
-  { title: "CHOICE COST", text: "Turn everyday decisions into 1, 5 and 10-year consequences: cash, total cost, risk and opportunity cost." },
-  { title: "INVESTMENT INTELLIGENCE", text: "Fundamentals, valuation ranges, scenarios, company evidence and uncertainty. Analysis and comparison — not BUY / SELL instructions." },
-];
 
 export function FourSapienHome() {
   const [mode, setMode] = useState<EmblaMode>("LIST");
@@ -19,6 +17,7 @@ export function FourSapienHome() {
   const [budget, setBudget] = useState("150");
   const [analysed, setAnalysed] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [restored, setRestored] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
 
@@ -26,15 +25,41 @@ export function FourSapienHome() {
   const summary = useMemo(() => summariseEmblaShoppingList(items), [items]);
   const embla = useMemo(() => submittedPrompt === null ? null : resolveEmblaIntake(submittedPrompt), [submittedPrompt]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = "4planet.embla.shopping-list.v1";
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return;
+    try {
+      const value = JSON.parse(raw) as { shoppingList?: unknown; store?: unknown; budget?: unknown };
+      if (typeof value.shoppingList !== "string" || !value.shoppingList.trim()) return;
+      setShoppingList(value.shoppingList);
+      if (typeof value.store === "string" && value.store.trim()) setStore(value.store);
+      if (typeof value.budget === "string") setBudget(value.budget);
+      setRestored(true);
+    } catch {
+      window.localStorage.removeItem(key);
+    }
+  }, []);
+
   const analyseList = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAnalysed(true);
     setSaved(false);
+    trackEvent("activation", {
+      product_area: "4sapien",
+      activation_kind: "shopping_list_analysis",
+      evidence_ready_items: summary.supported,
+      unsupported_items: summary.unsupported,
+    });
+    trackMeaningfulUse("4sapien", "journey_progress", "shopping_list_analysis");
   };
 
   const runEmbla = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmittedPrompt(prompt);
+    trackEvent("activation", { product_area: "4sapien", activation_kind: "ask_embla" });
+    trackMeaningfulUse("4sapien", "journey_progress", "ask_embla");
   };
 
   const saveList = () => {
@@ -42,6 +67,8 @@ export function FourSapienHome() {
       window.localStorage.setItem("4planet.embla.shopping-list.v1", JSON.stringify({ shoppingList, store, budget, savedAt: new Date().toISOString() }));
     }
     setSaved(true);
+    setRestored(false);
+    trackEvent("decision_saved", { product_area: "4sapien", decision_kind: "shopping_list" });
   };
 
   return (
@@ -76,11 +103,12 @@ export function FourSapienHome() {
 
           <form onSubmit={analyseList} className="embla02__list-form">
             <label htmlFor="embla-shopping-list">What do you need?</label>
-            <textarea id="embla-shopping-list" value={shoppingList} onChange={(event) => { setShoppingList(event.target.value); setAnalysed(false); }} placeholder="Coffee\nMilk\nButter" />
+            {restored ? <p className="embla02__saved" aria-live="polite">Your saved list is back on this device. Review it, change it or analyse it again.</p> : null}
+            <textarea id="embla-shopping-list" value={shoppingList} onChange={(event) => { setShoppingList(event.target.value); setAnalysed(false); setRestored(false); }} placeholder="Coffee\nMilk\nButter" />
 
             <div className="embla02__context-grid">
               <label>Store
-                <select value={store} onChange={(event) => setStore(event.target.value)}>
+                <select value={store} onChange={(event) => { setStore(event.target.value); setRestored(false); }}>
                   <option>KIWI</option>
                   <option>REMA 1000</option>
                   <option>MENY</option>
@@ -89,7 +117,7 @@ export function FourSapienHome() {
                 </select>
               </label>
               <label>Budget · NOK
-                <input inputMode="decimal" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9.,]/g, ""))} placeholder="Optional" />
+                <input inputMode="decimal" value={budget} onChange={(event) => { setBudget(event.target.value.replace(/[^0-9.,]/g, "")); setRestored(false); }} placeholder="Optional" />
               </label>
             </div>
 
@@ -154,6 +182,8 @@ export function FourSapienHome() {
         </section>
       )}
 
+      <PantryChoice />
+
       <section className="embla02__principle">
         <div>
           <p className="embla02__eyebrow">ONE SAPIEN / MANY CHOICES</p>
@@ -169,12 +199,5 @@ export function FourSapienHome() {
 }
 
 export function FourFinanceHome() {
-  return (
-    <main className="embla-finance">
-      <header className="embla-finance__header"><Link to="/4sapien">← EMBLA</Link><span>4FINANCE / PROOF 00</span></header>
-      <section className="embla-finance__hero"><p>EMBLA / MONEY INTELLIGENCE</p><h1>Understand money.<br />Choose with it.</h1><span>4FINANCE is the financial lens inside 4SAPIEN. The same Choice Engine links money to the rest of your life.</span></section>
-      <section className="embla-finance__modules">{financeModules.map((module, index) => <article key={module.title}><span>0{index + 1}</span><h2>{module.title}</h2><p>{module.text}</p></article>)}</section>
-      <section className="embla-finance__boundary"><p>TRUTH BY DESIGN</p><h2>Evidence and scenarios. Not a magic BUY button.</h2><span>Connected accounts and evidence-complete investment comparison are not active in this proof. Missing financial context remains UNKNOWN.</span></section>
-    </main>
-  );
+  return <FinanceWorkspace />;
 }

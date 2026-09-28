@@ -19,6 +19,8 @@ import { contextHref } from "@/product/ProductNav";
 import { NotFound } from "@/pages/system";
 import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
 import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
+import { AtlasEmbed } from "@/earth/AtlasEmbed";
+import { trackEvent } from "@/analytics/Analytics";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
@@ -45,7 +47,7 @@ function EvidenceClaimCard({ claim }: { claim: EvidenceClaim }) {
       <p style={{ marginTop: 16, fontSize: 15, lineHeight: 1.6 }}>{claim.text}</p>
       {claim.limitation && <p style={{ marginTop: 16, color: T.dim, fontSize: 12.5, lineHeight: 1.55 }}><strong>BOUNDARY:</strong> {claim.limitation}</p>}
       {claim.sourceUrl && (
-        <a href={claim.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, marginTop: "auto", paddingTop: 24, color: T.blue }}>
+        <a href={claim.sourceUrl} target="_blank" rel="noreferrer" onClick={() => trackEvent("source_opened", { product_area: "species", source_kind: claim.sourceLabel ?? "claim_source" })} style={{ ...mono, marginTop: "auto", paddingTop: 24, color: T.blue }}>
           {claim.sourceLabel ?? "OPEN SOURCE"} ↗
         </a>
       )}
@@ -267,6 +269,7 @@ export function SpeciesProfilePage() {
 
   useEffect(() => {
     if (!profile) return;
+    trackEvent("species_opened", { product_area: "species", species_slug: profile.slug, canonical_entity: profile.id });
     let alive = true;
     setOccurrences({ status: "LOADING", rows: [], total: 0 });
     taxonOccurrences(profile.gbifKey, 24).then((result) => {
@@ -287,9 +290,9 @@ export function SpeciesProfilePage() {
 
   const actions = (
     <>
-      <Link to={atlasHref} data-testid="species-to-atlas" style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
+      <Link to={atlasHref} data-testid="species-to-atlas" onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })} style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
       {isOrca && (
-        <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
+        <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "living_systems", canonical_entity: profile.id })} style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
       )}
       {profile.missionSlug && (
         <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
@@ -348,6 +351,7 @@ export function SpeciesProfilePage() {
             </div>
           </div>
         )}
+        <AtlasEmbed view={{ kind: "SPECIES", title: profile.commonName + " — where recorded", entityId: profile.id, layers: ["bluemarble", "biodiv"], description: "Explore available source records for the same canonical taxon in full ATLAS.", limitation: "Historical occurrence records are not live animal positions, a verified distribution range, population abundance or a migration route." }} />
         <div className="tw" style={{ marginTop: 52 }}>
           <div style={panel}>
             <div style={{ ...mono, color: T.dim }}>TAXON IDENTITY</div>

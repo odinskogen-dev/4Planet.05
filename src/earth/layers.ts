@@ -251,8 +251,9 @@ export const LAYERS = [
         const frac = a.co2e > 0 ? Math.log10(a.co2e + 1) / Math.log10(max + 1) : 0;
         const sectorLabel = String(a.sector || "asset").replace(/-/g, " ").toUpperCase();
         const tonnes = Number.isFinite(a.co2e) ? `${Math.round(a.co2e).toLocaleString()} t CO\\u2082e${a.year ? ` (${a.year})` : ""}` : "CO\\u2082e NOT REPORTED";
+        const sourceId = a.sourceId ?? a.id ?? "UNKNOWN";
         return { lon: a.lon, lat: a.lat, size: 3 + frac * 7,
-          html: `<b>${esc(a.name || sectorLabel)}</b><br><span class="lat">${esc(sectorLabel)} ${DOT} ${esc(tonnes)}</span>` };
+          html: `<b>${esc(a.name || sectorLabel)}</b><br><span class="lat">${esc(sectorLabel)} ${DOT} ${esc(tonnes)}</span><br><span class="lat">CLIMATE TRACE SOURCE ${esc(sourceId)}</span>` };
       });
     } },
   { id: "iss", dom: "PLANET", group: "SIGNALS", kind: "live", domain: ["PLANET", "S4PIENS"], every: 5000,

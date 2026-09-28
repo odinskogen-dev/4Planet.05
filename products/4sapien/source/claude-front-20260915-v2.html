@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>4SAPIEN</title><meta name="theme-color" content="#FFFFFF"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Fragment+Mono&display=swap" rel="stylesheet">
+<!-- CANONICAL shared theme runtime (from 04_SHARED_RUNTIME/4sapien-theme.js) -->
+<script>(function(){const KEY='4sapien_theme';const valid=v=>v==='dark'||v==='light';function system(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}function get(){try{const v=localStorage.getItem(KEY);return valid(v)?v:system()}catch(e){return system()}}function paint(mode){const t=valid(mode)?mode:'light';document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t;const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#000000':'#FFFFFF');return t}function set(mode){const t=paint(mode);try{localStorage.setItem(KEY,t)}catch(e){}window.dispatchEvent(new CustomEvent('4sapien-theme-change',{detail:{mode:t}}));return t}function toggle(){return set(get()==='dark'?'light':'dark')}function subscribe(fn){const c=e=>fn(e.detail&&e.detail.mode?e.detail.mode:get()),s=e=>{if(e.key===KEY)fn(get())};window.addEventListener('4sapien-theme-change',c);window.addEventListener('storage',s);return()=>{window.removeEventListener('4sapien-theme-change',c);window.removeEventListener('storage',s)}}window.FourSapienTheme={key:KEY,get,set,toggle,subscribe,paint};paint(get())})();</script>
+<style>
+ :root{
+  --paper:#FFFFFF;--ink:#0A0A0A;--soft:#565048;--faint:#8C867C;
+  --line:rgba(10,10,10,.09);--line2:rgba(10,10,10,.15);--fill:#FAFAF8;
+  --blue:#2E2EFF;--green:#3AE86F;--orange:#FF4D22;--pink:#FF5ACD;
+  --embla:var(--blue);          /* Embla/core accent: blue in LIGHT only */
+  --food:var(--green);--money:var(--orange);--onAccent:#FFFFFF;
+  --disp:'Instrument Sans',sans-serif;--body:'DM Sans',sans-serif;--mono:'Fragment Mono',monospace;
+ }
+ html[data-theme="dark"]{
+  --paper:#000000;--ink:#FFFFFF;--soft:#A7A29A;--faint:#7C786F;
+  --line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.20);--fill:rgba(255,255,255,.03);
+  --embla:var(--green);          /* Embla/core accent: green in DARK only (blue never on black) */
+  --food:var(--green);--money:#FF6A47;--onAccent:#000000;
+ }
+ *{box-sizing:border-box;margin:0;padding:0}
+ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;letter-spacing:-.006em;transition:background .4s,color .4s}
+ button,input,select{font-family:inherit;color:inherit}
+ h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:-.03em;line-height:1.04}
+ .mono{font-family:var(--mono);letter-spacing:.09em}
+ /* ---- shared shell ---- */
+ .app{min-height:100vh;display:flex;flex-direction:column}
+ header.shell{position:sticky;top:0;z-index:40;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(20px,4vw,72px);height:66px}
+ .brand{font-family:var(--disp);font-weight:700;font-size:1.18rem;letter-spacing:-.02em;line-height:1;white-space:nowrap}
+ .brand small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--faint);margin-top:3px;font-weight:400}
+ .worlds{display:flex;gap:2px}
+ 
+ .worlds button{border:none;background:transparent;color:var(--faint);font-family:var(--body);font-weight:500;font-size:.95rem;padding:8px 4px;margin:0 10px 0 0;cursor:pointer;position:relative;transition:color .15s}
+ 
+ .worlds button.on{color:var(--ink)}.worlds button.on::after{content:"";position:absolute;left:0;right:10px;bottom:-19px;height:2px;background:var(--wd,var(--ink));border-radius:2px}
+ 
+ .worlds button[data-w=food]{--wd:var(--food)} .worlds button[data-w=money]{--wd:var(--money)} .worlds button[data-w=today]{--wd:var(--embla)}
+ .hr{display:flex;gap:10px;align-items:center}
+ .ib{width:36px;height:36px;border-radius:99px;border:1px solid var(--line2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:border-color .2s}.ib:hover{border-color:var(--embla)}
+ main.content{flex:1;width:100%;max-width:1760px;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(20px,4vw,72px) 160px}
+ /* ---- tokens shared across worlds ---- */
+ .ey{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;display:inline-flex;align-items:center;gap:9px;margin-bottom:18px}
+ .ey::before{content:"";width:14px;height:1px;background:var(--line2)}
+ .hair{border:1px solid var(--line2);border-radius:20px}
+ .tc{font-family:var(--mono);font-size:10px;letter-spacing:.05em;border:1px solid var(--line2);border-radius:6px;padding:2px 8px;color:var(--ink)}
+ .tc.u{color:var(--faint)} .tc.e{color:var(--wc,var(--embla));border-color:color-mix(in srgb,var(--wc,var(--embla)) 40%,var(--line2))}
+ .btn{display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:.92rem;padding:12px 20px;border-radius:12px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--ink);transition:.2s}
+ .btn:hover{border-color:var(--wc,var(--embla))} .btn.pri{background:var(--wc,var(--embla));color:var(--onAccent);border-color:var(--wc,var(--embla))}
+ /* today */
+ .hero{font-family:var(--disp);font-weight:500;font-size:clamp(1.9rem,5vw,3.2rem);letter-spacing:-.035em;max-width:16ch;line-height:1.04}
+ .subline{color:var(--soft);margin-top:14px;font-size:clamp(1rem,1.5vw,1.15rem);max-width:52ch}
+ .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:clamp(30px,4vw,48px)}
+ @media(min-width:820px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:1.4fr 1fr 1fr}}
+ .card{border:1px solid var(--line2);border-radius:20px;padding:clamp(20px,2.4vw,28px);position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:150px;background:transparent}
+ .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wc,var(--embla))}
+ .card .k{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--faint);text-transform:uppercase}
+ .card h3{font-size:1.4rem;margin:8px 0}
+ .card p{color:var(--soft);font-size:.95rem;flex:1;line-height:1.5}
+ .card .go{margin-top:16px;font-weight:600;color:var(--wc,var(--embla));font-size:.9rem;cursor:pointer}.card .go::after{content:" →"}
+ .card .empty{color:var(--faint);font-size:.94rem;line-height:1.5;margin-top:6px}
+ .flag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--faint);border:1px solid var(--line2);border-radius:5px;padding:2px 6px;position:absolute;top:18px;right:18px}
+ .mount{border:1px solid var(--line);border-left:3px solid var(--wc,var(--embla));border-radius:20px;padding:clamp(34px,6vw,72px) clamp(22px,4vw,44px);color:var(--soft);line-height:1.6;max-width:60ch}
+ .mount b{color:var(--ink);font-family:var(--disp);font-weight:500;font-size:1.35rem;letter-spacing:-.02em;display:block;margin-bottom:10px}
+ /* ambient Embla bar + drawer */
+ .emblabar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:center;padding:0 clamp(16px,4vw,72px) max(16px,env(safe-area-inset-bottom));pointer-events:none}
+ .emblabar .in{width:100%;max-width:760px;pointer-events:auto;display:flex;gap:9px;align-items:center;background:var(--paper);border:1px solid var(--line2);border-radius:16px;padding:7px 7px 7px 18px;box-shadow:0 -1px 0 var(--line),0 16px 40px -28px rgba(0,0,0,.4)}
+ .emblabar input{flex:1;border:none;outline:none;background:transparent;font-size:1.02rem}.emblabar .in:focus-within{border-color:var(--embla)}
+ .emblabar .send{border:none;background:var(--embla);color:var(--onAccent);border-radius:11px;width:42px;height:42px;font-size:17px;cursor:pointer;flex-shrink:0}
+ .drawer{position:fixed;inset:0;z-index:60;background:rgba(10,10,10,.34);display:none;align-items:flex-end;justify-content:center}
+ html[data-theme=dark] .drawer{background:rgba(0,0,0,.6)}
+ .drawer.on{display:flex}
+ .drawer .panel{width:100%;max-width:720px;background:var(--paper);border:1px solid var(--line2);border-bottom:none;border-radius:22px 22px 0 0;padding:22px;max-height:80vh;overflow:auto}
+ .drawer h3{font-size:1.15rem;margin-bottom:6px}
+ .drawer .ctx{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;margin-bottom:16px}
+ .drawer .msg{display:flex;gap:11px;padding:14px 0;border-top:1px solid var(--line)}
+ .drawer .who{font-family:var(--mono);font-weight:400;font-size:.7rem;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;white-space:nowrap;width:56px;padding-top:2px}
+ .drawer .txt{color:var(--soft);font-size:.96rem;line-height:1.55}
+ .close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:99px;border:1px solid var(--line2);background:transparent;cursor:pointer}
+ @media(max-width:600px){.brand small{display:none}.worlds button{font-size:.9rem;margin-right:6px}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="shell">
+  <div style="display:flex;align-items:center;gap:clamp(14px,3vw,32px)">
+   <div class="brand">4SAPIEN<small>BY 4PLANET</small></div>
+   <nav class="worlds" id="worlds"></nav>
+  </div>
+  <div class="hr"><button class="ib" id="theme" aria-label="Tema">◐</button><button class="ib" aria-label="Konto">Ut</button></div>
+ </header>
+ <main class="content" id="view"></main>
+</div>
+
+<!-- ambient Embla, present across worlds -->
+<div class="emblabar"><div class="in"><input id="emblaIn" placeholder="Spør Embla…" aria-label="Spør Embla"/><button class="send" id="emblaSend" aria-label="Send">→</button></div></div>
+<div class="drawer" id="drawer"><div class="panel"><button class="close" id="dClose" aria-label="Lukk">✕</button>
+ <h3>Embla</h3><div class="ctx" id="dCtx">KONTEKST</div><div id="dBody"></div></div></div>
+
+<script>
+ var T=window.FourSapienTheme; // canonical shared theme
+ function paintToggle(){document.getElementById('theme').textContent=T.get()==='dark'?'\u25D1':'\u25D0';}
+ document.getElementById('theme').onclick=function(){T.toggle();};
+ T.subscribe(paintToggle);paintToggle();
+
+ var WORLDS=[['today','I dag','◒','var(--embla)'],['food','Mat','🌿','var(--food)'],['money','Penger','◑','var(--money)']];
+ var cur='today';
+ function setWC(w){var c=w==='food'?'var(--food)':w==='money'?'var(--money)':'var(--embla)';document.documentElement.style.setProperty('--wc',c);}
+ function renderWorlds(){document.getElementById('worlds').innerHTML=WORLDS.map(function(w){return '<button data-w="'+w[0]+'" class="'+(cur===w[0]?'on':'')+'" onclick="go(\''+w[0]+'\')">'+w[1]+'</button>';}).join('');}
+
+ function Today(){return ''
+  +'<div class="ey">I dag · forstå</div>'
+  +'<h1 class="hero">Se livet ditt klart.</h1>'
+  +'<p class="subline">Embla leser det kompliserte og viser deg det korte — med kilden synlig og det ukjente ærlig. Du bestemmer.</p>'
+  +'<div class="grid three">'
+    +'<div class="card" style="--wc:var(--money)"><span class="flag">SETT OPP</span><div class="k">Penger · tilgjengelig</div><div class="empty">Legg til en konto, så viser Embla hva du faktisk har — aldri en gjettet null.</div><div class="go" onclick="go(\'money\')">Åpne Penger</div></div>'
+    +'<div class="card"><div class="k">Embla merket</div><p>Når pengene og maten din henger sammen, peker Embla på det som trenger oppmerksomhet — før det koster deg. Ingenting vises før det er ekte.</p></div>'
+    +'<div class="card" style="--wc:var(--food)"><span class="flag">SETT OPP</span><div class="k">Mat · denne uka</div><div class="empty">Skann en kvittering eller planlegg et måltid, så starter matverdenen din her.</div><div class="go" onclick="go(\'food\')">Åpne Mat</div></div>'
+  +'</div>'
+  +'<div class="ey" style="margin-top:44px">Én sammenheng · på tvers</div>'
+  +'<div class="card" style="--wc:var(--embla);min-height:auto">'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span class="tc e">Mat</span><span class="tc">×</span><span class="tc e" style="--wc:var(--money)">Penger</span></div>'
+    +'<h3 style="margin-top:12px">«Planlegg maten min til lønning.»</h3>'
+    +'<p>Ett spørsmål som trenger begge verdener: hva du har tilgjengelig, og hva du vil spise. Embla viser alternativene, kostnaden og hva som bare er antatt — så velger du. Ingenting kjøpes før du sier ifra.</p>'
+    +'<div class="go" onclick="askEmbla(\'Planlegg maten min til lønning\')">Spør Embla</div></div>';
+ }
+ function Mount(name,accent){return '<div class="ey" style="--wc:'+accent+'">'+name+'</div><div class="mount"><b>'+name+'-verdenen monteres her</b>Den levende '+name+'-runtimen (Supabase, Embla, ekte data) kjører inne i dette delte skallet — samme identitet, samme tema, samme Embla, samme sannhets-grammatikk. Skallet leverer hodet, navigasjonen, kontoen, temaet og Embla; verdenen beholder sitt eget innhold og sin aksent.</div>';}
+
+ function screen(){setWC(cur);if(cur==='food')return Mount('Mat','var(--food)');if(cur==='money')return Mount('Penger','var(--money)');return Today();}
+ function go(w){cur=w;document.getElementById('emblaIn').placeholder='Spør Embla om '+(w==='food'?'mat':w==='money'?'penger':'livet ditt')+'…';document.getElementById('view').innerHTML=screen();renderWorlds();window.scrollTo(0,0);}
+
+ // ambient Embla — context-aware, restraint (facts, not advice), never a chat-everywhere
+ function askEmbla(seed){var d=document.getElementById('drawer');
+  document.getElementById('dCtx').textContent='Kontekst: '+(cur==='food'?'Mat':cur==='money'?'Penger':'I dag')+' · fakta, ikke råd';
+  document.getElementById('dBody').innerHTML=
+   '<div class="msg"><span class="who">Du</span><span class="txt">'+(seed||document.getElementById('emblaIn').value||'…')+'</span></div>'
+   +'<div class="msg"><span class="who">Embla</span><span class="txt">Jeg viser deg det som er kjent, hva som er usikkert og hva som bare er modellert — med kilden — og lar deg bestemme. (I det ekte produktet svarer Embla-runtimen her, med tilgang kun til verdenene du har gitt tillatelse til.)</span></div>';
+  d.classList.add('on');}
+ document.getElementById('emblaSend').onclick=function(){askEmbla();};
+ document.getElementById('emblaIn').addEventListener('keydown',function(e){if(e.key==='Enter')askEmbla();});
+ document.getElementById('dClose').onclick=function(){document.getElementById('drawer').classList.remove('on');};
+ document.getElementById('drawer').onclick=function(e){if(e.target.id==='drawer')this.classList.remove('on');};
+
+ renderWorlds();go('today');
+</script>
+</body>
+</html>

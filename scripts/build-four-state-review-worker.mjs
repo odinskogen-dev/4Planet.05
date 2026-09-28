@@ -83,6 +83,7 @@ export default { async fetch(request) {
   if (url.hostname === CONFIG.archiveHost) return archive();
   if (url.hostname !== CONFIG.reviewHost) return new Response("Unknown control host", {status:404});
   const path = normalise(url.pathname);
+
   if (path === '/_control') return dashboard();
 
   // Founder-approved review namespace: direct, read-only HEIR projection at a stable test.4planet.org URL.
