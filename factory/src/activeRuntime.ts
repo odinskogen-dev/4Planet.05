@@ -4,6 +4,7 @@ import { createRealProjectProofCases, REAL_FACTORY_PROOF_VERSION } from "./realP
 import { evaluateGovernedLearning, proveGovernedLearningContract } from "./governedLearning";
 import type { FactoryActivationEvidence } from "./activationGate";
 import type { LearningCandidate, Outcome } from "./contracts";
+import { SELF_IMPROVEMENT_PROOF_ID } from "./learningProofWorkflow";
 import {
   activationProofBuildKey,
   activationProofId,
@@ -350,6 +351,67 @@ async function enrichedControlRoom(request: Request, env: ActiveEnv, ctx: Execut
   });
 }
 
+async function startLearningProof(env: ActiveEnv) {
+  const factory: any = await factoryAgent(env);
+  const receipt = await factory.getLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID);
+  if (receipt?.active === true) return { alreadyProven: true, receipt };
+
+  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}`;
+  const existing = await factory.getWorkflow?.(workflowId) as { status?: string; createdAt?: string } | undefined;
+  if (!existing) {
+    await factory.runWorkflow(
+      "LEARNING_PROOF_WORKFLOW",
+      { proofId: SELF_IMPROVEMENT_PROOF_ID },
+      {
+        id: workflowId,
+        metadata: {
+          selfImprovementProof: true,
+          proofId: SELF_IMPROVEMENT_PROOF_ID,
+          exactFactorySha: exactBuildSha(env),
+          productMutation: false,
+          liveAuthority: false,
+          canonAuthority: false,
+          founderMinutesTarget: 0,
+        },
+        agentBinding: "PRODUCTION_FACTORY",
+      },
+    );
+  }
+  return {
+    started: !existing,
+    workflowId,
+    workflowStatus: existing?.status ?? "DISPATCHED",
+    exactFactorySha: exactBuildSha(env),
+    testKingDependency: "NONE_FOR_INTERNAL_LEARNING_PROOF",
+    productMutation: false,
+    liveAuthority: false,
+  };
+}
+
+async function learningProofStatus(env: ActiveEnv) {
+  const factory: any = await factoryAgent(env);
+  const workflowId = `factory-learning-proof-${SELF_IMPROVEMENT_PROOF_ID}`;
+  const [receipt, workflow] = await Promise.all([
+    factory.getLearningProofReceipt(SELF_IMPROVEMENT_PROOF_ID),
+    factory.getWorkflow?.(workflowId),
+  ]);
+  return {
+    ok: true,
+    proofId: SELF_IMPROVEMENT_PROOF_ID,
+    exactFactorySha: exactBuildSha(env),
+    workflowId,
+    workflow: workflow ?? null,
+    receipt: receipt ?? null,
+    boundaries: {
+      productMutation: false,
+      live: false,
+      canonPromotion: false,
+      externalSend: false,
+      automaticSpend: false,
+    },
+  };
+}
+
 export default {
   async fetch(request: Request, envInput: Cloudflare.Env, ctx: ExecutionContext) {
     const env = envInput as ActiveEnv;
@@ -359,6 +421,24 @@ export default {
     if (request.method === "GET" && SAFE_PUBLIC_GETS.has(url.pathname)) {
       await enforceExactBuildCertification(env);
       return worldClassRuntime.fetch(request, env, ctx);
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/learning-proof/start") {
+      if (!authorised(request, env)) return authFailure();
+      try {
+        return Response.json({ ok: true, ...(await startLearningProof(env)) }, { status: 202 });
+      } catch (error) {
+        return Response.json({ ok: false, error: error instanceof Error ? error.message : "LEARNING_PROOF_START_FAILED" }, { status: 409 });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/__factory/learning-proof/status") {
+      if (!authorised(request, env)) return authFailure();
+      try {
+        return Response.json(await learningProofStatus(env));
+      } catch (error) {
+        return Response.json({ ok: false, error: error instanceof Error ? error.message : "LEARNING_PROOF_STATUS_FAILED" }, { status: 409 });
+      }
     }
 
     if (request.method === "POST" && url.pathname === "/__factory/intake") {
