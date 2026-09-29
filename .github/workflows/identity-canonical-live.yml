@@ -148,7 +148,7 @@ jobs:
             test "$(git diff --name-only)" = "docs/control/LIVE_PROMOTION_MANIFEST.json"
             git add docs/control/LIVE_PROMOTION_MANIFEST.json
             git -c user.name='4planet-id-canonical-live' -c user.email='noreply@4planet.org' commit -m "Close the one-time 4PLANET ID release authority."
-            git push origin HEAD:release/targeted-4planet-id-20260929
+            git push origin HEAD:refs/heads/release/targeted-4planet-id-20260929
             exit 0
           fi
           npm run build
@@ -162,4 +162,4 @@ jobs:
           test "$(git diff --name-only)" = "docs/control/LIVE_PROMOTION_MANIFEST.json"
           git add docs/control/LIVE_PROMOTION_MANIFEST.json
           git -c user.name='4planet-id-canonical-live' -c user.email='noreply@4planet.org' commit -m "Close the one-time 4PLANET ID release authority."
-          git push origin HEAD:release/targeted-4planet-id-20260929
+          git push origin HEAD:refs/heads/release/targeted-4planet-id-20260929

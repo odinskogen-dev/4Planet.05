@@ -1001,6 +1001,7 @@ write('<script type="module" src="/assets/index-NewRel.js"></script>\\n');
     execFileSync("git", ["init", "--bare", "--quiet", bare], { stdio: "ignore" });
     const gitRepo = (args) => execFileSync("git", args, { cwd: repo, encoding: "utf8" }).trim();
     gitRepo(["remote", "set-url", "origin", bare]);
+    gitRepo(["checkout", "--detach"]);
     assert.equal(gitRepo(["remote", "get-url", "origin"]), bare);
     for (const file of ["scripts/product-authority-gate.mjs", "scripts/live-promotion-authority-gate.mjs"]) {
       fs.copyFileSync(path.join(process.cwd(), file), path.join(repo, file));
