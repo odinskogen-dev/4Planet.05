@@ -23,6 +23,7 @@
     "authorityState": "UNSPENT",
     "closureReceipt": null,
     "immutableSourceDeployment": "https://1387126b.4planet-05.pages.dev",
+    "currentLiveOrigin": "https://4planet.org",
     "liveAsset": "/assets/index-CrCdYuxo.js",
     "notImmediateRollback": {
       "rollbackDeployment": "https://3d1e7976.4planet-05.pages.dev",

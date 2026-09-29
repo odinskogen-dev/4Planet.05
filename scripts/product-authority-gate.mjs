@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { observePinnedDeployment, rollbackProblems } from "./live-promotion-authority-gate.mjs";
+import { CURRENT_LIVE_ORIGIN, IMMEDIATE_PRE_RELEASE, currentLiveProblems, observeCurrentLive, observePinnedDeployment, rollbackProblems } from "./live-promotion-authority-gate.mjs";
 
 const ROOT = process.cwd();
 const REGISTRY_PATH = path.join(ROOT, "docs/control/PRODUCT_SURFACE_REGISTRY.json");
@@ -138,10 +138,16 @@ function assertTargetedIdentityRelease(headBranch) {
   }
   const provenance = rollbackProblems(targeted, observePinnedDeployment());
   if (provenance.length > 0) die(provenance.join("; "));
+  if (targeted.currentLiveOrigin !== CURRENT_LIVE_ORIGIN) die("current live origin pin mismatch");
+  const liveNow = currentLiveProblems(observeCurrentLive());
+  if (liveNow.length > 0) die(liveNow.join("; "));
   if (targeted.authorityState !== "UNSPENT" && targeted.authorityState !== "CLOSED") die("targeted release authority state is invalid");
   if (targeted.authorityState === "CLOSED" || targeted.closureReceipt != null) {
     if (targeted.authorityState !== "CLOSED" || targeted.liveAuthority !== true || !isSha(targeted.closureReceipt?.candidateSha)) {
       die("cannot spend a targeted release that failed authority");
+    }
+    if (!targeted.closureReceipt.productionDeploymentUrl || !targeted.closureReceipt.productionAsset || targeted.closureReceipt.productionDeploymentUrl === IMMEDIATE_PRE_RELEASE.deployment || targeted.closureReceipt.productionAssetSha256 === IMMEDIATE_PRE_RELEASE.sha256) {
+      die("closure is not bound to the new production");
     }
     const closedHead = git(["rev-parse", "HEAD"]);
     const closedParent = git(["rev-parse", "HEAD^"]);

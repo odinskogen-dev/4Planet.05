@@ -30,7 +30,7 @@
 
 **DONOR:** PR #346 behavior is ported onto the proven live source. Trusted hosts that exist on that source stay. Newer join functionality stays.
 
-**AUTHORITY:** one-time branch `release/targeted-4planet-id-20260929` from live source `d5540905de7e57a2a781db92771da4d87c472c60`. `live_authority` stays false and `authorityState` stays `UNSPENT` until an independent Gold acceptance and a later manifest bind this exact candidate. The immediate pre-release rollback is the current public runtime, `https://1387126b.4planet-05.pages.dev` (`d5540905de7e57a2a781db92771da4d87c472c60`, `/assets/index-CrCdYuxo.js`). The older main deployment `https://3d1e7976.4planet-05.pages.dev` is not that rollback. A failed deploy does not spend the authority. A successful closure cannot deploy again.
+**AUTHORITY:** one-time branch `release/targeted-4planet-id-20260929` from live source `d5540905de7e57a2a781db92771da4d87c472c60`. `live_authority` stays false and `authorityState` stays `UNSPENT` until an independent Gold acceptance and a later manifest bind this exact candidate. The immediate pre-release rollback is the current public runtime, `https://1387126b.4planet-05.pages.dev` (`d5540905de7e57a2a781db92771da4d87c472c60`, `/assets/index-CrCdYuxo.js`). The older main deployment `https://3d1e7976.4planet-05.pages.dev` is not that rollback. Promotion requires `https://4planet.org` to still serve that same runtime. A preview deployment is not spent authority. A failed deploy does not spend the authority. After a verified production deploy, closure records that new production readback and cannot deploy again, including when the closure write itself has to be retried.
 
 ---
 

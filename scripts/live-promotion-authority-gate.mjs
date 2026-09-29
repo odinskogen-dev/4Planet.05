@@ -19,6 +19,11 @@ export const SUPERSEDED_MAIN_DEPLOYMENT = {
   asset: '/assets/index-ByJwZ9e4.js',
 };
 
+export const CURRENT_LIVE_ORIGIN = 'https://4planet.org';
+const PROJECT_HOST_SUFFIX = '.4planet-05.pages.dev';
+const PREVIEW_ALIAS_HOST = 'release-targeted-4planet-id.4planet-05.pages.dev';
+const PRE_RELEASE_HOST = '1387126b.4planet-05.pages.dev';
+
 export function exactDeploymentOrigin(value) {
   if (typeof value !== 'string') return null;
   let url;
@@ -30,18 +35,134 @@ export function exactDeploymentOrigin(value) {
   return url.origin;
 }
 
-export function observePinnedDeployment() {
-  const page = spawnSync('curl', ['-fsS', '--max-time', '25', '-A', '4planet-control', `${IMMEDIATE_PRE_RELEASE.deployment}/`], { encoding: 'utf8' });
-  if (page.status !== 0) return { available: false, assetReferenced: false, sha256: '', bytes: 0 };
-  if (!page.stdout.includes(IMMEDIATE_PRE_RELEASE.asset)) return { available: true, assetReferenced: false, sha256: '', bytes: 0 };
-  const asset = spawnSync('curl', ['-fsS', '--max-time', '25', '-A', '4planet-control', `${IMMEDIATE_PRE_RELEASE.deployment}${IMMEDIATE_PRE_RELEASE.asset}`], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 });
-  if (asset.status !== 0 || !asset.stdout) return { available: false, assetReferenced: false, sha256: '', bytes: 0 };
+function observeOrigin(origin) {
+  const page = spawnSync('curl', ['-fsS', '--max-time', '25', '-A', '4planet-control', `${origin}/`], { encoding: 'utf8' });
+  if (page.status !== 0) return { available: false, assetReferenced: false, asset: '', sha256: '', bytes: 0 };
+  const match = String(page.stdout || '').match(/\/assets\/index-[^"' ]+\.js/);
+  const assetPath = match ? match[0] : '';
+  if (!assetPath) return { available: true, assetReferenced: false, asset: '', sha256: '', bytes: 0 };
+  const asset = spawnSync('curl', ['-fsS', '--max-time', '25', '-A', '4planet-control', `${origin}${assetPath}`], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 });
+  if (asset.status !== 0 || !asset.stdout) return { available: false, assetReferenced: false, asset: assetPath, sha256: '', bytes: 0 };
   return {
     available: true,
     assetReferenced: true,
+    asset: assetPath,
     sha256: createHash('sha256').update(asset.stdout).digest('hex'),
     bytes: asset.stdout.length,
   };
+}
+
+export function observePinnedDeployment() {
+  return observeOrigin(IMMEDIATE_PRE_RELEASE.deployment);
+}
+
+export function observeCurrentLive() {
+  return observeOrigin(CURRENT_LIVE_ORIGIN);
+}
+
+export function currentLiveProblems(observation) {
+  const expected = IMMEDIATE_PRE_RELEASE;
+  if (!observation || observation.available !== true) return ['current live baseline is unavailable'];
+  if (observation.assetReferenced !== true || observation.asset !== expected.asset || observation.sha256 !== expected.sha256 || observation.bytes !== expected.bytes) {
+    return ['current live baseline drifted from the pre-release runtime'];
+  }
+  return [];
+}
+
+function deploymentRecordComplete(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  if (typeof item.id !== 'string' || !item.id) return false;
+  if (item.environment !== 'production' && item.environment !== 'preview') return false;
+  if (typeof item.url !== 'string') return false;
+  if (typeof item.latest_stage?.status !== 'string' || !item.latest_stage.status) return false;
+  const hash = item.deployment_trigger?.metadata?.commit_hash;
+  return typeof hash === 'string' && /^[0-9a-f]{40}$/i.test(hash);
+}
+
+export function providerProblems(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return ['provider response is malformed'];
+  if (payload.success !== true) return ['provider response is not successful'];
+  if (!Array.isArray(payload.errors)) return ['provider errors are missing'];
+  if (payload.errors.length) return ['provider response contains errors'];
+  if (!Array.isArray(payload.result)) return ['provider result is missing'];
+  const info = payload.result_info;
+  if (!info || typeof info !== 'object' || Array.isArray(info)) return ['provider result_info is missing'];
+  for (const key of ['page', 'per_page', 'count', 'total_count', 'total_pages']) {
+    if (!Number.isInteger(info[key]) || info[key] < 0) return [`provider result_info.${key} is invalid`];
+  }
+  if (info.page !== 1 || info.total_pages !== 1) return ['provider response is a partial page'];
+  if (info.count !== payload.result.length || info.total_count !== payload.result.length) return ['provider response is incomplete'];
+  if (payload.result.some((item) => !deploymentRecordComplete(item))) return ['provider result is malformed'];
+  return [];
+}
+
+export function assembleProviderPages(pages) {
+  if (!Array.isArray(pages) || pages.length === 0) return { ok: false, problems: ['provider response is incomplete'], payload: null };
+  const first = pages[0];
+  if (!first || typeof first !== 'object' || first.success !== true) return { ok: false, problems: ['provider response is not successful'], payload: null };
+  const totalPages = first.result_info?.total_pages;
+  const totalCount = first.result_info?.total_count;
+  if (!Number.isInteger(totalPages) || totalPages < 1 || totalPages > 50) return { ok: false, problems: ['provider page count is invalid'], payload: null };
+  if (pages.length !== totalPages) return { ok: false, problems: ['provider response is a partial page'], payload: null };
+  const seen = new Set();
+  const result = [];
+  for (let index = 0; index < pages.length; index += 1) {
+    const page = pages[index];
+    if (!page || page.success !== true) return { ok: false, problems: ['provider response is not successful'], payload: null };
+    if (!Array.isArray(page.errors) || page.errors.length) return { ok: false, problems: ['provider response contains errors'], payload: null };
+    if (page.result_info?.page !== index + 1 || page.result_info?.total_pages !== totalPages || page.result_info?.total_count !== totalCount) {
+      return { ok: false, problems: ['provider response is incomplete'], payload: null };
+    }
+    if (!Array.isArray(page.result) || page.result.length !== page.result_info.count) return { ok: false, problems: ['provider response is incomplete'], payload: null };
+    for (const item of page.result) {
+      if (!deploymentRecordComplete(item)) return { ok: false, problems: ['provider result is malformed'], payload: null };
+      if (seen.has(item.id)) return { ok: false, problems: ['provider response contains duplicate deployments'], payload: null };
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  if (result.length !== totalCount) return { ok: false, problems: ['provider response is incomplete'], payload: null };
+  const payload = {
+    success: true,
+    errors: [],
+    messages: [],
+    result,
+    result_info: { page: 1, per_page: Math.max(result.length, 1), count: result.length, total_count: result.length, total_pages: 1 },
+  };
+  const problems = providerProblems(payload);
+  return problems.length ? { ok: false, problems, payload: null } : { ok: true, problems: [], payload };
+}
+
+export function productionConsumption(payload, artifactSha) {
+  const problems = providerProblems(payload);
+  if (problems.length) return { ok: false, consumed: false, previewOnly: false, match: null, problems };
+  const matches = payload.result.filter((item) => item.environment === 'production' && item.latest_stage.status === 'success' && item.deployment_trigger.metadata.commit_hash === artifactSha);
+  const previews = payload.result.filter((item) => item.environment === 'preview' && item.latest_stage.status === 'success' && item.deployment_trigger.metadata.commit_hash === artifactSha);
+  return { ok: true, consumed: matches.length > 0, previewOnly: matches.length === 0 && previews.length > 0, match: matches[0] || null, problems: [] };
+}
+
+function productionOrigin(value) {
+  if (typeof value !== 'string') return null;
+  let url;
+  try { url = new URL(value); } catch { return null; }
+  if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash) return null;
+  if (url.pathname !== '/' && url.pathname !== '') return null;
+  if (!url.hostname.endsWith(PROJECT_HOST_SUFFIX)) return null;
+  if (url.hostname === PRE_RELEASE_HOST || url.hostname === PREVIEW_ALIAS_HOST) return null;
+  return url.origin;
+}
+
+export function productionReadbackProblems(readback, artifactSha) {
+  if (!readback || readback.available !== true || readback.assetReferenced !== true) return ['new production readback is unavailable'];
+  const origin = productionOrigin(readback.deployment);
+  if (!origin) return ['production readback is not a new existing-project deployment'];
+  if (readback.sha256 === IMMEDIATE_PRE_RELEASE.sha256 || readback.asset === IMMEDIATE_PRE_RELEASE.asset) return ['production readback is still the pre-release runtime'];
+  if (typeof readback.asset !== 'string' || !readback.asset.startsWith('/assets/index-') || typeof readback.sha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(readback.sha256) || !Number.isInteger(readback.bytes) || readback.bytes <= 0) {
+    return ['production readback identity is incomplete'];
+  }
+  if (typeof readback.id !== 'string' || !readback.id) return ['production readback is not bound to a provider deployment'];
+  if (readback.commitHash !== artifactSha) return ['production readback is not bound to the one-time artifact'];
+  return [];
 }
 
 export function rollbackProblems(targeted, observation) {
@@ -56,29 +177,93 @@ export function rollbackProblems(targeted, observation) {
   return problems;
 }
 
-export function promotionDecision(targeted, observation, testedHead) {
+function authorityProblems(targeted, testedHead) {
+  if (!targeted || (targeted.authorityState !== 'UNSPENT' && targeted.authorityState !== 'CLOSED')) return ['targeted release authority state is invalid'];
+  if (targeted.authorityState === 'CLOSED' || targeted.closureReceipt != null) return ['targeted identity release authority is already spent'];
+  if (targeted.liveAuthority !== true || !targeted.goldEvidenceRef || !sha(targeted.candidateSha)) return ['targeted identity release is not live-authorised'];
+  if (targeted.candidateSha === targeted.liveSourceSha) return ['targeted release candidate drifted onto the live source'];
+  if (testedHead && targeted.candidateSha !== testedHead) return ['targeted release candidate drifted from the tested head'];
+  return [];
+}
+
+export function promotionDecision(targeted, observation, testedHead, currentLive) {
   const provenance = rollbackProblems(targeted, observation);
   if (provenance.length) return { ok: false, message: provenance.join('; ') };
-  if (targeted.authorityState !== 'UNSPENT' && targeted.authorityState !== 'CLOSED') return { ok: false, message: 'targeted release authority state is invalid' };
-  if (targeted.authorityState === 'CLOSED' || targeted.closureReceipt != null) return { ok: false, message: 'targeted identity release authority is already spent' };
-  if (targeted.liveAuthority !== true || !targeted.goldEvidenceRef || !sha(targeted.candidateSha)) return { ok: false, message: 'targeted identity release is not live-authorised' };
-  if (targeted.candidateSha === targeted.liveSourceSha) return { ok: false, message: 'targeted release candidate drifted onto the live source' };
-  if (testedHead && targeted.candidateSha !== testedHead) return { ok: false, message: 'targeted release candidate drifted from the tested head' };
+  const live = currentLiveProblems(currentLive);
+  if (live.length) return { ok: false, message: live.join('; ') };
+  const authority = authorityProblems(targeted, testedHead);
+  if (authority.length) return { ok: false, message: authority.join('; ') };
   return { ok: true, message: 'targeted identity release is authorised once' };
 }
 
-export function closureAfterDeploy(targeted, deployOk, observation, testedHead) {
+export function closureAfterDeploy(targeted, deployOk, observation, testedHead, productionReadback) {
   const original = structuredClone(targeted);
-  const decision = promotionDecision(original, observation, testedHead);
-  if (deployOk !== true || !decision.ok) {
-    return { spent: false, mutated: false, targeted: original, message: deployOk === true ? decision.message : 'failed deploy leaves authority unspent' };
+  const rollback = rollbackProblems(original, observation);
+  const authority = authorityProblems(original, testedHead);
+  if (deployOk !== true || rollback.length || authority.length) {
+    return {
+      spent: false,
+      mutated: false,
+      targeted: original,
+      message: deployOk === true ? [...rollback, ...authority].join('; ') : 'failed deploy leaves authority unspent',
+    };
   }
+  const readback = productionReadbackProblems(productionReadback, original.candidateSha);
+  if (readback.length) return { spent: false, mutated: false, targeted: original, message: readback.join('; ') };
   return {
     spent: true,
     mutated: true,
-    targeted: { ...original, authorityState: 'CLOSED', closureReceipt: { candidateSha: original.candidateSha } },
+    targeted: {
+      ...original,
+      authorityState: 'CLOSED',
+      closureReceipt: {
+        candidateSha: original.candidateSha,
+        productionDeploymentId: productionReadback.id,
+        productionDeploymentUrl: productionOrigin(productionReadback.deployment),
+        productionAsset: productionReadback.asset,
+        productionAssetSha256: productionReadback.sha256,
+        productionAssetBytes: productionReadback.bytes,
+      },
+    },
     message: 'targeted identity release authority is already spent',
   };
+}
+
+export function releaseLifecycle({
+  targeted,
+  rollbackObservation,
+  currentLive,
+  provider,
+  artifactSha,
+  testedHead,
+  deployOk = null,
+  productionReadback = null,
+  closureWriteOk = null,
+}) {
+  const original = structuredClone(targeted);
+  const stopped = (message, action = 'FAIL') => ({ action, deploy: false, persist: false, mutated: false, spent: false, targeted: original, message });
+  const provenance = rollbackProblems(original, rollbackObservation);
+  if (provenance.length) return stopped(provenance.join('; '));
+  if (original.authorityState === 'CLOSED' || original.closureReceipt != null) return stopped('targeted identity release authority is already spent');
+  const consumption = productionConsumption(provider, artifactSha);
+  if (!consumption.ok) return stopped(consumption.problems.join('; '));
+  if (artifactSha !== original.candidateSha) return stopped('production consumption is not bound to the one-time artifact');
+  if (consumption.consumed) {
+    const readback = productionReadbackProblems(productionReadback, artifactSha);
+    if (readback.length) return stopped(readback.join('; '), 'HOLD');
+    if (productionOrigin(productionReadback.deployment) !== productionOrigin(consumption.match.url)) return stopped('production readback is not the consumed deployment', 'HOLD');
+    if (closureWriteOk === false) return stopped('closure persistence failed; verified production consumption blocks another deploy', 'HOLD');
+    const closed = closureAfterDeploy(original, true, rollbackObservation, testedHead, productionReadback);
+    if (!closed.spent) return stopped(closed.message, 'HOLD');
+    return { action: 'PERSIST_CLOSURE', deploy: false, persist: true, mutated: true, spent: true, targeted: closed.targeted, message: closed.message };
+  }
+  const live = currentLiveProblems(currentLive);
+  if (live.length) return stopped(live.join('; '));
+  const authority = authorityProblems(original, testedHead);
+  if (authority.length) return stopped(authority.join('; '));
+  if (deployOk === true) return stopped('deploy was reported without a verified production record; refusing another deploy and refusing closure', 'HOLD');
+  if (deployOk === false) return stopped('failed deploy leaves authority unspent');
+  return { action: 'DEPLOY', deploy: true, persist: false, mutated: false, spent: false, targeted: original, message: 'production consumption is absent; one deploy is allowed' };
 }
 
 function fail(message) {
@@ -150,7 +335,8 @@ if (branch === TARGETED_ID_RELEASE.branch) {
   if (!targeted) fail('targeted identity release is not live-authorised');
   if (targeted.branch !== TARGETED_ID_RELEASE.branch || targeted.liveSourceSha !== source) fail('targeted release pin mismatch');
   if (!String(targeted.founderDecisionRef || '').includes(TARGETED_ID_RELEASE.founderDecision)) fail('targeted release founder decision pin mismatch');
-  const decision = promotionDecision(targeted, observePinnedDeployment(), head === targeted.candidateSha ? head : parent);
+  if (targeted.currentLiveOrigin !== CURRENT_LIVE_ORIGIN) fail('current live origin pin mismatch');
+  const decision = promotionDecision(targeted, observePinnedDeployment(), head === targeted.candidateSha ? head : parent, observeCurrentLive());
   if (!decision.ok) fail(decision.message);
   const releaseHead = head === targeted.candidateSha ? head : parent;
   if (releaseHead !== targeted.candidateSha) fail('targeted release HEAD is not the tested candidate or its manifest-only child');
@@ -203,4 +389,136 @@ console.log(JSON.stringify({
 }, null, 2));
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
+function curlJson(url, token) {
+  const response = spawnSync('curl', ['-fsS', '--max-time', '25', '-H', `Authorization: Bearer ${token}`, url], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
+  if (response.status !== 0 || !response.stdout) return { ok: false, problems: ['provider response is unavailable'] };
+  try { return { ok: true, body: JSON.parse(response.stdout) }; }
+  catch { return { ok: false, problems: ['provider response is malformed'] }; }
+}
+
+function fetchProviderLive() {
+  const token = process.env.CLOUDFLARE_API_TOKEN || '';
+  const account = process.env.PAGES_ACCOUNT_ID || '';
+  if (!token || !account) return { ok: false, problems: ['provider credentials are missing'] };
+  const pages = [];
+  let totalPages = 1;
+  for (let page = 1; page <= totalPages; page += 1) {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${account}/pages/projects/4planet-05/deployments?page=${page}`;
+    const fetched = curlJson(url, token);
+    if (!fetched.ok) return fetched;
+    pages.push(fetched.body);
+    const reported = fetched.body?.result_info?.total_pages;
+    if (!Number.isInteger(reported) || reported < 1 || reported > 50) return { ok: false, problems: ['provider page count is invalid'] };
+    totalPages = reported;
+  }
+  return assembleProviderPages(pages);
+}
+
+function printLifecycle(result) {
+  console.log(JSON.stringify({
+    action: result.action,
+    deploy: result.deploy,
+    persist: result.persist,
+    mutated: result.mutated,
+    spent: result.spent,
+    message: result.message,
+    targeted: result.targeted,
+  }));
+  process.exit(result.action === 'DEPLOY' || result.action === 'PERSIST_CLOSURE' ? 0 : 1);
+}
+
+function fixtureLifecycle(file) {
+  const fixture = JSON.parse(fs.readFileSync(file, 'utf8'));
+  printLifecycle(releaseLifecycle(fixture));
+}
+
+function liveLifecycle() {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const targeted = manifest.targetedIdentityRelease;
+  const head = git(['rev-parse', 'HEAD']);
+  const parent = git(['rev-parse', 'HEAD^']);
+  const provider = fetchProviderLive();
+  if (!provider.ok) {
+    printLifecycle({ action: 'FAIL', deploy: false, persist: false, mutated: false, spent: false, targeted, message: provider.problems.join('; ') });
+  }
+  const artifactSha = targeted.candidateSha;
+  printLifecycle(releaseLifecycle({
+    targeted,
+    rollbackObservation: observePinnedDeployment(),
+    currentLive: observeCurrentLive(),
+    provider: provider.payload,
+    artifactSha,
+    testedHead: head === artifactSha ? head : parent,
+    productionReadback: productionReadbackFromProvider(provider.payload, artifactSha),
+  }));
+}
+
+function productionReadbackFromProvider(provider, artifactSha) {
+  const consumption = productionConsumption(provider, artifactSha);
+  if (!consumption.ok || !consumption.consumed) return null;
+  const origin = productionOrigin(consumption.match.url);
+  if (!origin) return { available: false };
+  const observed = observeOrigin(origin);
+  const apex = observeCurrentLive();
+  if (!observed.available || apex.sha256 !== observed.sha256 || apex.asset !== observed.asset || apex.bytes !== observed.bytes) return { available: false };
+  return { ...observed, deployment: origin, id: consumption.match.id, commitHash: artifactSha };
+}
+
+function persistClosure(file, manifestOut) {
+  const fixture = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const result = releaseLifecycle({ ...fixture, closureWriteOk: fixture.closureWriteOk === false ? false : true });
+  if (!result.persist || result.deploy) {
+    console.error(result.message);
+    process.exit(1);
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.targetedIdentityRelease = result.targeted;
+  fs.writeFileSync(manifestOut, `${JSON.stringify(manifest, null, 2)}\n`);
+  process.exit(0);
+}
+
+function livePersist() {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const targeted = manifest.targetedIdentityRelease;
+  const head = git(['rev-parse', 'HEAD']);
+  const parent = git(['rev-parse', 'HEAD^']);
+  const provider = fetchProviderLive();
+  if (!provider.ok) {
+    console.error(provider.problems.join('; '));
+    process.exit(1);
+  }
+  const result = releaseLifecycle({
+    targeted,
+    rollbackObservation: observePinnedDeployment(),
+    currentLive: observeCurrentLive(),
+    provider: provider.payload,
+    artifactSha: targeted.candidateSha,
+    testedHead: head === targeted.candidateSha ? head : parent,
+    productionReadback: productionReadbackFromProvider(provider.payload, targeted.candidateSha),
+    closureWriteOk: true,
+  });
+  if (!result.persist || result.deploy) {
+    console.error(result.message);
+    process.exit(1);
+  }
+  manifest.targetedIdentityRelease = result.targeted;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  process.exit(0);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const fixtureFlag = process.argv.indexOf('--fixture');
+  const fixture = fixtureFlag === -1 ? null : process.argv[fixtureFlag + 1];
+  if (process.argv.includes('--release-lifecycle')) {
+    if (fixture) fixtureLifecycle(fixture);
+    else liveLifecycle();
+  } else if (process.argv.includes('--persist-closure')) {
+    const outFlag = process.argv.indexOf('--manifest-out');
+    if (fixture && outFlag !== -1) persistClosure(fixture, process.argv[outFlag + 1]);
+    if (fixture || outFlag !== -1) {
+      console.error('closure persistence fixture and manifest output must be paired');
+      process.exit(1);
+    }
+    livePersist();
+  } else main();
+}
