@@ -44,19 +44,46 @@ jobs:
         run: node --experimental-strip-types --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs scripts/targeted-id-release-contract.test.mjs
       - name: Product authority must pass
         shell: bash
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
         run: |
           set -o pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          if [ -n "$token" ]; then
+            token="$(printf '%s' "$token" | tr -d '\r\n')"
+            token="${token#Bearer }"; token="${token#bearer }"
+            echo "::add-mask::$token"
+            export CLOUDFLARE_API_TOKEN="$token"
+          fi
           node scripts/product-authority-gate.mjs | tee product-authority-result.txt
       - name: Live promotion stays closed until Gold binds the candidate
         shell: bash
+        env:
+          CF1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CF3: ${{ secrets.CF_API_TOKEN }}
+          CF4: ${{ secrets.CF_TOKEN }}
         run: |
           set +e
           set -o pipefail
+          token="${CF1:-${CF2:-${CF3:-${CF4:-}}}}"
+          if [ -n "$token" ]; then
+            token="$(printf '%s' "$token" | tr -d '\r\n')"
+            token="${token#Bearer }"; token="${token#bearer }"
+            echo "::add-mask::$token"
+            export CLOUDFLARE_API_TOKEN="$token"
+          fi
           node scripts/live-promotion-authority-gate.mjs 2>&1 | tee promotion-result.txt
           code=$?
           set -e
           if [ "$code" -eq 0 ]; then
             echo "Promotion gate passed. Deploy is a separate step and runs only from this job after this point."
+          elif grep -q "LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY" promotion-result.txt; then
+            echo "PERSIST_RECOVERY. Verified production consumption can close without another deploy."
+            exit 0
           elif grep -q "targeted identity release authority is already spent" promotion-result.txt; then
             echo "NO DEPLOY. The one-time release authority is already spent."
             exit 0
@@ -75,7 +102,11 @@ jobs:
           CF4: ${{ secrets.CF_TOKEN }}
         run: |
           set -euo pipefail
-          if ! grep -q "LIVE PROMOTION AUTHORITY GUARD: PASS" promotion-result.txt; then
+          recovery=0
+          if grep -q "LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY" promotion-result.txt; then
+            recovery=1
+          fi
+          if [ "$recovery" -ne 1 ] && ! grep -q "LIVE PROMOTION AUTHORITY GUARD: PASS" promotion-result.txt; then
             echo "NO DEPLOY. Promotion result is not a pass."
             exit 0
           fi
@@ -108,6 +139,10 @@ jobs:
             echo "DEPLOY_NOW"
           fi
           # RELEASE_LIFECYCLE_END
+          if [ "$recovery" -eq 1 ] && [ "$deploy" = "true" ]; then
+            echo "NO DEPLOY. Verified persistence recovery is refusing a second deploy."
+            exit 1
+          fi
           if [ "$deploy" != "true" ]; then
             node scripts/live-promotion-authority-gate.mjs --persist-closure
             test "$(git diff --name-only)" = "docs/control/LIVE_PROMOTION_MANIFEST.json"

@@ -11,8 +11,11 @@ import {
   assembleProviderPages,
   closureAfterDeploy,
   currentLiveProblems,
+  decideProductLive,
+  decidePromotion,
   observeCurrentLive,
   observePinnedDeployment,
+  persistenceRecovery,
   productionConsumption,
   promotionDecision,
   providerProblems,
@@ -550,4 +553,387 @@ test("persist closure writes only the new production receipt", () => {
   assert.equal(written.targetedIdentityRelease.closureReceipt.productionAssetSha256, PRODUCTION_SHA);
   assert.equal(fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8"), before);
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+const PARENT = "1111111111111111111111111111111111111111";
+const CHILD = "2222222222222222222222222222222222222222";
+const LIVE_NEW = {
+  available: true,
+  assetReferenced: true,
+  asset: PRODUCTION_ASSET,
+  sha256: PRODUCTION_SHA,
+  bytes: 1767493,
+};
+
+function childProduction() {
+  return providerPayload([
+    deploymentRecord({ environment: "production", id: "prod-child", url: PRODUCTION_URL, sha: CHILD }),
+  ]);
+}
+
+function childReadback() {
+  return productionReadback({ id: "prod-child", commitHash: CHILD, manifestChild: true });
+}
+
+function recoveryInput(overrides = {}) {
+  return {
+    targeted: authorised({ candidateSha: PARENT }),
+    rollbackObservation: MATCHING,
+    currentLive: LIVE_NEW,
+    provider: childProduction(),
+    productionReadback: childReadback(),
+    testedHead: PARENT,
+    deployedSha: CHILD,
+    manifestChild: true,
+    ...overrides,
+  };
+}
+
+test("lookup binds the deployed child without rewriting it to the tested parent", () => {
+  const produced = childProduction();
+  assert.notEqual(PARENT, CHILD);
+  assert.equal(productionConsumption(produced, PARENT).consumed, false);
+  assert.equal(productionConsumption(produced, { candidateSha: PARENT, deployedSha: CHILD }).ok, false);
+  const bound = productionConsumption(produced, { candidateSha: PARENT, deployedSha: CHILD, manifestChild: true });
+  assert.equal(bound.ok, true);
+  assert.equal(bound.consumed, true);
+  assert.equal(bound.previewOnly, false);
+  assert.equal(bound.match.deployment_trigger.metadata.commit_hash, CHILD);
+  const preview = providerPayload([
+    deploymentRecord({ environment: "preview", id: "preview-child", url: "https://694e6d47.4planet-05.pages.dev", sha: CHILD }),
+  ]);
+  assert.equal(productionConsumption(preview, { candidateSha: PARENT, deployedSha: CHILD, manifestChild: true }).consumed, false);
+  const closed = closureAfterDeploy(authorised({ candidateSha: PARENT }), true, MATCHING, PARENT, childReadback());
+  assert.equal(closed.spent, true);
+  assert.equal(closed.targeted.closureReceipt.candidateSha, PARENT);
+  assert.equal(closed.targeted.closureReceipt.deployedCommitSha, CHILD);
+  const persisted = runLifecycle(lifecycleFixture({
+    targeted: authorised({ candidateSha: PARENT }),
+    provider: produced,
+    productionReadback: childReadback(),
+    artifactSha: PARENT,
+    deployedSha: CHILD,
+    manifestChild: true,
+    testedHead: PARENT,
+    currentLive: LIVE_NEW,
+  }));
+  assert.equal(persisted.status, 0);
+  assert.equal(persisted.body.action, "PERSIST_CLOSURE");
+  assert.equal(persisted.body.deploy, false);
+  assert.equal(persisted.body.targeted.closureReceipt.candidateSha, PARENT);
+  assert.equal(persisted.body.targeted.closureReceipt.deployedCommitSha, CHILD);
+  const parentLookup = runLifecycle(lifecycleFixture({
+    targeted: authorised({ candidateSha: PARENT }),
+    provider: produced,
+    artifactSha: PARENT,
+    testedHead: PARENT,
+    currentLive: LIVE_MATCHING,
+  }));
+  assert.equal(parentLookup.body.action, "DEPLOY");
+  assert.equal(parentLookup.body.deploy, true);
+  const source = fs.readFileSync("scripts/live-promotion-authority-gate.mjs", "utf8");
+  assert.match(source, /commitHash: consumption\.match\.deployment_trigger\.metadata\.commit_hash/);
+  const workflow = fs.readFileSync(".github/workflows/identity-canonical-live.yml", "utf8");
+  assert.match(workflow, /--commit-hash "\$GITHUB_SHA"/);
+});
+
+test("ordinary promotion stays closed on apex drift and verified recovery is a separate evaluator", () => {
+  assert.equal(promotionDecision(authorised(), MATCHING, CANDIDATE, LIVE_MATCHING).ok, true);
+  const drifted = promotionDecision(authorised(), MATCHING, CANDIDATE, LIVE_NEW);
+  assert.equal(drifted.ok, false);
+  assert.match(drifted.message, /current live baseline drifted/);
+  const recovered = decidePromotion(recoveryInput());
+  assert.equal(recovered.code, 2);
+  assert.match(recovered.lines[0], /LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY/);
+  assert.equal(decideProductLive(recoveryInput()).recovery, true);
+  assert.match(persistenceRecovery(recoveryInput()).message, /without another deploy/);
+  const missed = persistenceRecovery(recoveryInput({ deployedSha: PARENT, manifestChild: false }));
+  assert.equal(missed.ok, false);
+  assert.match(missed.message, /drifted/);
+  const unverified = decidePromotion(recoveryInput({ provider: providerPayload([]), productionReadback: null }));
+  assert.equal(unverified.code, 1);
+  assert.match(unverified.lines.join("\n"), /drifted/);
+  assert.doesNotMatch(unverified.lines.join("\n"), /PERSIST_RECOVERY/);
+  const unauthorised = decidePromotion(recoveryInput({
+    targeted: authorised({ candidateSha: PARENT, liveAuthority: false, goldEvidenceRef: null }),
+  }));
+  assert.equal(unauthorised.code, 1);
+  assert.match(unauthorised.lines.join("\n"), /not live-authorised/);
+  const passed = decidePromotion(recoveryInput({
+    currentLive: LIVE_MATCHING,
+    provider: null,
+    productionReadback: null,
+    targeted: authorised(),
+    testedHead: CANDIDATE,
+    deployedSha: CANDIDATE,
+    manifestChild: false,
+  }));
+  assert.equal(passed.code, 0);
+  assert.match(passed.lines[0], /LIVE PROMOTION AUTHORITY GUARD: PASS/);
+});
+
+function stepScript(workflow, name) {
+  const at = workflow.indexOf(`- name: ${name}`);
+  assert.notEqual(at, -1, name);
+  const runAt = workflow.indexOf("\n        run: |\n", at);
+  assert.notEqual(runAt, -1, name);
+  const bodyStart = runAt + "\n        run: |\n".length;
+  const next = workflow.indexOf("\n      - ", bodyStart);
+  const raw = workflow.slice(bodyStart, next === -1 ? workflow.length : next);
+  return `${raw.split("\n").map((line) => (line.startsWith("          ") ? line.slice(10) : line)).join("\n").trim()}\n`;
+}
+
+function cleanStepFiles() {
+  fs.rmSync("product-authority-result.txt", { force: true });
+  fs.rmSync("promotion-result.txt", { force: true });
+}
+
+function runReleaseJob(scripts, input) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "id-steps-"));
+  const bin = path.join(dir, "bin");
+  fs.mkdirSync(bin);
+  const names = ["product", "promotion", "lifecycle", "persist"];
+  const files = Object.fromEntries(names.map((name) => [name, path.join(dir, `${name}.json`)]));
+  for (const name of names) fs.writeFileSync(files[name], JSON.stringify(input[name]));
+  const wranglerLog = path.join(dir, "wrangler.log");
+  const gitLog = path.join(dir, "git.log");
+  const manifestOut = path.join(dir, "manifest-out.json");
+  const realGit = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
+  const stub = (name, body) => {
+    const file = path.join(bin, name);
+    fs.writeFileSync(file, body);
+    fs.chmodSync(file, 0o755);
+  };
+  stub("node", `#!/bin/bash
+set -euo pipefail
+mode=""
+for arg in "$@"; do
+  if [ "$arg" = "--release-lifecycle" ]; then mode=lifecycle; fi
+  if [ "$arg" = "--persist-closure" ]; then mode=persist; fi
+done
+if [ "$mode" = "lifecycle" ]; then exec "$REAL_NODE" "$@" --fixture "$LIFECYCLE_FIXTURE"; fi
+if [ "$mode" = "persist" ]; then exec "$REAL_NODE" "$@" --fixture "$PERSIST_FIXTURE" --manifest-out "$MANIFEST_OUT"; fi
+case "$1" in
+  *product-authority-gate.mjs) exec "$REAL_NODE" "$@" --fixture "$PRODUCT_FIXTURE" ;;
+  *) exec "$REAL_NODE" "$@" --fixture "$PROMOTION_FIXTURE" ;;
+esac
+`);
+  stub("curl", `#!/bin/bash
+if printf '%s\\n' "$@" | grep -q 'zones?name=4planet.org'; then
+  printf '%s\\n' '{"success":true,"result":[{"account":{"id":"acct-test"}}]}'
+else
+  printf '%s\\n' '{"success":true,"result":{"production_branch":"main"}}'
+fi
+`);
+  stub("npm", "#!/bin/bash\nexit 0\n");
+  stub("npx", "#!/bin/bash\nprintf '%s\\n' \"$*\" >> \"$WRANGLER_LOG\"\nexit 0\n");
+  stub("git", `#!/bin/bash
+joined=" $* "
+if [[ "$joined" == *" diff "* && "$joined" == *" --name-only "* ]]; then
+  if [ -s "$MANIFEST_OUT" ]; then
+    printf '%s\\n' "docs/control/LIVE_PROMOTION_MANIFEST.json"
+    exit 0
+  fi
+fi
+if [[ "$joined" == *" commit "* ]]; then printf '%s\\n' commit >> "$GIT_LOG"; exit 0; fi
+if [[ "$joined" == *" push "* ]]; then printf '%s\\n' push >> "$GIT_LOG"; exit 0; fi
+if [[ "$joined" == *" add "* ]]; then printf '%s\\n' add >> "$GIT_LOG"; exit 0; fi
+exec "$REAL_GIT" "$@"
+`);
+  const env = {
+    ...process.env,
+    PATH: `${bin}:${process.env.PATH}`,
+    REAL_NODE: process.execPath,
+    REAL_GIT: realGit,
+    PRODUCT_FIXTURE: files.product,
+    PROMOTION_FIXTURE: files.promotion,
+    LIFECYCLE_FIXTURE: files.lifecycle,
+    PERSIST_FIXTURE: files.persist,
+    MANIFEST_OUT: manifestOut,
+    WRANGLER_LOG: wranglerLog,
+    GIT_LOG: gitLog,
+    CF1: "test-token",
+    GITHUB_SHA: input.githubSha || CHILD,
+    PAGES_PROJECT: "4planet-05",
+  };
+  let productRun = null;
+  let promotionRun = null;
+  let deployRun = null;
+  try {
+    cleanStepFiles();
+    productRun = spawnSync("bash", ["-c", scripts.product], { encoding: "utf8", env });
+    if (productRun.status === 0) {
+      promotionRun = spawnSync("bash", ["-c", scripts.promotion], { encoding: "utf8", env });
+      if (promotionRun.status === 0) {
+        deployRun = spawnSync("bash", ["-c", scripts.deploy], { encoding: "utf8", env });
+      }
+    }
+    return {
+      productRun,
+      promotionRun,
+      deployRun,
+      wrangler: fs.existsSync(wranglerLog) ? fs.readFileSync(wranglerLog, "utf8") : "",
+      gitTrace: fs.existsSync(gitLog) ? fs.readFileSync(gitLog, "utf8") : "",
+      closure: fs.existsSync(manifestOut) ? JSON.parse(fs.readFileSync(manifestOut, "utf8")) : null,
+    };
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    cleanStepFiles();
+  }
+}
+
+test("release steps deploy once, fail closure, then persist the child without a second deploy", () => {
+  const workflow = fs.readFileSync(".github/workflows/identity-canonical-live.yml", "utf8");
+  assert.doesNotMatch(workflow, /--fixture/);
+  assert.doesNotMatch(workflow, /--manifest-out/);
+  const wranglerAt = workflow.indexOf("npx wrangler@4.128.0 pages deploy dist");
+  assert.ok(workflow.indexOf("refusing a second deploy") < wranglerAt);
+  const scripts = {
+    product: stepScript(workflow, "Product authority must pass"),
+    promotion: stepScript(workflow, "Live promotion stays closed until Gold binds the candidate"),
+    deploy: stepScript(workflow, "Deploy tested runtime only when the promotion gate passed"),
+  };
+  const manifestBefore = fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8");
+  const previewChild = providerPayload([
+    deploymentRecord({ environment: "preview", id: "preview-child", url: "https://694e6d47.4planet-05.pages.dev", sha: CHILD }),
+  ]);
+  const firstDecision = recoveryInput({
+    currentLive: LIVE_MATCHING,
+    provider: previewChild,
+    productionReadback: null,
+  });
+  const first = runReleaseJob(scripts, {
+    product: firstDecision,
+    promotion: firstDecision,
+    lifecycle: lifecycleFixture({
+      targeted: authorised({ candidateSha: PARENT }),
+      provider: previewChild,
+      artifactSha: PARENT,
+      deployedSha: CHILD,
+      manifestChild: true,
+      testedHead: PARENT,
+      currentLive: LIVE_MATCHING,
+    }),
+    persist: lifecycleFixture({
+      targeted: authorised({ candidateSha: PARENT }),
+      provider: childProduction(),
+      productionReadback: childReadback(),
+      artifactSha: PARENT,
+      deployedSha: CHILD,
+      manifestChild: true,
+      testedHead: PARENT,
+      currentLive: LIVE_NEW,
+      closureWriteOk: false,
+    }),
+  });
+  assert.equal(first.productRun.status, 0, first.productRun.stderr);
+  assert.match(first.productRun.stdout, /PRODUCT AUTHORITY GATE: PASS/);
+  assert.equal(first.promotionRun.status, 0, first.promotionRun.stderr);
+  assert.match(first.promotionRun.stdout, /Promotion gate passed/);
+  assert.doesNotMatch(first.promotionRun.stdout, /PERSIST_RECOVERY/);
+  assert.equal(first.deployRun.status, 1, first.deployRun.stderr);
+  assert.match(first.wrangler, new RegExp(`--commit-hash ${CHILD}`));
+  assert.doesNotMatch(first.wrangler, new RegExp(PARENT));
+  assert.match(first.wrangler, /--project-name 4planet-05/);
+  assert.equal(first.closure, null);
+  assert.equal(first.gitTrace, "");
+
+  const retryDecision = recoveryInput();
+  const retry = runReleaseJob(scripts, {
+    product: retryDecision,
+    promotion: retryDecision,
+    lifecycle: lifecycleFixture({
+      targeted: authorised({ candidateSha: PARENT }),
+      provider: childProduction(),
+      productionReadback: childReadback(),
+      artifactSha: PARENT,
+      deployedSha: CHILD,
+      manifestChild: true,
+      testedHead: PARENT,
+      currentLive: LIVE_NEW,
+    }),
+    persist: lifecycleFixture({
+      targeted: authorised({ candidateSha: PARENT }),
+      provider: childProduction(),
+      productionReadback: childReadback(),
+      artifactSha: PARENT,
+      deployedSha: CHILD,
+      manifestChild: true,
+      testedHead: PARENT,
+      currentLive: LIVE_NEW,
+    }),
+  });
+  assert.equal(retry.productRun.status, 0, retry.productRun.stderr);
+  assert.match(retry.productRun.stdout, /PRODUCT AUTHORITY GATE: PERSIST_RECOVERY/);
+  assert.equal(retry.promotionRun.status, 0, retry.promotionRun.stderr);
+  assert.match(retry.promotionRun.stdout, /PERSIST_RECOVERY/);
+  assert.doesNotMatch(retry.promotionRun.stdout, /Promotion gate passed/);
+  assert.equal(retry.deployRun.status, 0, `${retry.deployRun.stdout}\n${retry.deployRun.stderr}`);
+  assert.equal(retry.wrangler, "");
+  assert.match(retry.deployRun.stdout, /PERSIST_ONLY/);
+  assert.doesNotMatch(retry.deployRun.stdout, /DEPLOY_NOW/);
+  assert.equal(retry.closure.targetedIdentityRelease.authorityState, "CLOSED");
+  assert.equal(retry.closure.targetedIdentityRelease.closureReceipt.candidateSha, PARENT);
+  assert.equal(retry.closure.targetedIdentityRelease.closureReceipt.deployedCommitSha, CHILD);
+  assert.match(retry.gitTrace, /commit/);
+  assert.match(retry.gitTrace, /push/);
+  assert.equal((retry.gitTrace.match(/commit/g) || []).length, 1);
+
+  const drifted = recoveryInput({ provider: providerPayload([]), productionReadback: null });
+  const drift = runReleaseJob(scripts, {
+    product: drifted,
+    promotion: drifted,
+    lifecycle: lifecycleFixture({ currentLive: LIVE_NEW }),
+    persist: lifecycleFixture({ currentLive: LIVE_NEW }),
+  });
+  assert.equal(drift.productRun.status, 1);
+  assert.match(`${drift.productRun.stdout}\n${drift.productRun.stderr}`, /drifted/);
+  assert.equal(drift.promotionRun, null);
+  assert.equal(drift.deployRun, null);
+  assert.equal(drift.wrangler, "");
+
+  const unauthorisedDecision = recoveryInput({
+    currentLive: LIVE_MATCHING,
+    provider: null,
+    productionReadback: null,
+    targeted: authorised({ liveAuthority: false, candidateSha: null, goldEvidenceRef: null }),
+    testedHead: null,
+    deployedSha: CHILD,
+    manifestChild: false,
+  });
+  const unauthorised = runReleaseJob(scripts, {
+    product: unauthorisedDecision,
+    promotion: unauthorisedDecision,
+    lifecycle: lifecycleFixture(),
+    persist: lifecycleFixture(),
+  });
+  assert.equal(unauthorised.productRun.status, 0, unauthorised.productRun.stderr);
+  assert.equal(unauthorised.promotionRun.status, 0, unauthorised.promotionRun.stderr);
+  assert.match(unauthorised.promotionRun.stdout, /not live-authorised/);
+  assert.doesNotMatch(unauthorised.promotionRun.stdout, /Promotion gate passed/);
+  assert.equal(unauthorised.deployRun.status, 0, unauthorised.deployRun.stderr);
+  assert.match(unauthorised.deployRun.stdout, /Promotion result is not a pass/);
+  assert.equal(unauthorised.wrangler, "");
+  assert.equal(unauthorised.closure, null);
+
+  const refused = runReleaseJob(scripts, {
+    product: retryDecision,
+    promotion: retryDecision,
+    lifecycle: lifecycleFixture({
+      targeted: authorised({ candidateSha: PARENT }),
+      provider: previewChild,
+      artifactSha: PARENT,
+      deployedSha: CHILD,
+      manifestChild: true,
+      testedHead: PARENT,
+      currentLive: LIVE_MATCHING,
+    }),
+    persist: lifecycleFixture(),
+  });
+  assert.equal(refused.promotionRun.status, 0, refused.promotionRun.stderr);
+  assert.equal(refused.deployRun.status, 1, refused.deployRun.stdout);
+  assert.match(refused.deployRun.stdout, /refusing a second deploy/);
+  assert.equal(refused.wrangler, "");
+  assert.equal(refused.closure, null);
+  assert.equal(fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8"), manifestBefore);
 });

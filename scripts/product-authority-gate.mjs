@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { CURRENT_LIVE_ORIGIN, IMMEDIATE_PRE_RELEASE, currentLiveProblems, observeCurrentLive, observePinnedDeployment, rollbackProblems } from "./live-promotion-authority-gate.mjs";
+import { CURRENT_LIVE_ORIGIN, IMMEDIATE_PRE_RELEASE, currentLiveProblems, decideProductLive, fetchProviderLive, observeCurrentLive, observePinnedDeployment, productionReadbackFromProvider, rollbackProblems } from "./live-promotion-authority-gate.mjs";
 
 const ROOT = process.cwd();
 const REGISTRY_PATH = path.join(ROOT, "docs/control/PRODUCT_SURFACE_REGISTRY.json");
@@ -136,28 +136,61 @@ function assertTargetedIdentityRelease(headBranch) {
   if (!String(targeted.founderDecisionRef || "").includes(TARGETED_ID_RELEASE.founderDecision)) {
     die("targeted release founder decision pin mismatch");
   }
-  const provenance = rollbackProblems(targeted, observePinnedDeployment());
+  const rollbackObservation = observePinnedDeployment();
+  const provenance = rollbackProblems(targeted, rollbackObservation);
   if (provenance.length > 0) die(provenance.join("; "));
   if (targeted.currentLiveOrigin !== CURRENT_LIVE_ORIGIN) die("current live origin pin mismatch");
-  const liveNow = currentLiveProblems(observeCurrentLive());
-  if (liveNow.length > 0) die(liveNow.join("; "));
+  const headNow = git(["rev-parse", "HEAD"]);
+  const parentNow = git(["rev-parse", "HEAD^"]);
+  const deployedSha = process.env.GITHUB_SHA || headNow;
+  const manifestChild = Boolean(targeted.candidateSha) && deployedSha !== targeted.candidateSha;
+  const currentLive = observeCurrentLive();
+  let provider = null;
+  let productionReadback = null;
+  if (currentLiveProblems(currentLive).length > 0 && process.env.CLOUDFLARE_API_TOKEN) {
+    const fetched = fetchProviderLive();
+    if (fetched.ok) {
+      provider = fetched.payload;
+      productionReadback = productionReadbackFromProvider(provider, { candidateSha: targeted.candidateSha, deployedSha, manifestChild });
+    }
+  }
+  const liveDecision = decideProductLive({
+    targeted,
+    rollbackObservation,
+    currentLive,
+    provider,
+    productionReadback,
+    testedHead: headNow === targeted.candidateSha ? headNow : parentNow,
+    deployedSha,
+    manifestChild,
+  });
+  if (!liveDecision.ok) die(liveDecision.message);
+  if (liveDecision.recovery) return "recovery";
   if (targeted.authorityState !== "UNSPENT" && targeted.authorityState !== "CLOSED") die("targeted release authority state is invalid");
   if (targeted.authorityState === "CLOSED" || targeted.closureReceipt != null) {
     if (targeted.authorityState !== "CLOSED" || targeted.liveAuthority !== true || !isSha(targeted.closureReceipt?.candidateSha)) {
       die("cannot spend a targeted release that failed authority");
     }
-    if (!targeted.closureReceipt.productionDeploymentUrl || !targeted.closureReceipt.productionAsset || targeted.closureReceipt.productionDeploymentUrl === IMMEDIATE_PRE_RELEASE.deployment || targeted.closureReceipt.productionAssetSha256 === IMMEDIATE_PRE_RELEASE.sha256) {
+    if (!targeted.closureReceipt.productionDeploymentUrl || !targeted.closureReceipt.productionAsset || !isSha(targeted.closureReceipt.deployedCommitSha) || targeted.closureReceipt.productionDeploymentUrl === IMMEDIATE_PRE_RELEASE.deployment || targeted.closureReceipt.productionAssetSha256 === IMMEDIATE_PRE_RELEASE.sha256) {
       die("closure is not bound to the new production");
     }
     const closedHead = git(["rev-parse", "HEAD"]);
     const closedParent = git(["rev-parse", "HEAD^"]);
-    if (closedHead !== targeted.closureReceipt.candidateSha && closedParent !== targeted.closureReceipt.candidateSha) {
+    const deployedCommit = targeted.closureReceipt.deployedCommitSha;
+    const anchors = new Set([targeted.closureReceipt.candidateSha, deployedCommit]);
+    if (!anchors.has(closedHead) && !anchors.has(closedParent)) {
       die("spent release is not the tested candidate or its manifest-only child");
     }
-    if (closedHead !== targeted.closureReceipt.candidateSha) {
-      const closedDiff = git(["diff", "--name-only", targeted.closureReceipt.candidateSha, "HEAD"]).split("\n").filter(Boolean);
+    if (closedHead !== targeted.closureReceipt.candidateSha && closedHead !== deployedCommit) {
+      const closedDiff = git(["diff", "--name-only", closedParent, "HEAD"]).split("\n").filter(Boolean);
       if (closedDiff.length !== 1 || closedDiff[0] !== "docs/control/LIVE_PROMOTION_MANIFEST.json") {
         die(`targeted release-control commit changed non-manifest files: ${closedDiff.join(", ") || "NONE"}`);
+      }
+    }
+    if (deployedCommit !== targeted.closureReceipt.candidateSha) {
+      const childDiff = git(["diff", "--name-only", targeted.closureReceipt.candidateSha, deployedCommit]).split("\n").filter(Boolean);
+      if (childDiff.length !== 1 || childDiff[0] !== "docs/control/LIVE_PROMOTION_MANIFEST.json") {
+        die("deployed commit is not a manifest-only child of the tested candidate");
       }
     }
     return "closed";
@@ -183,6 +216,17 @@ function assertTargetedIdentityRelease(headBranch) {
     }
   }
   return "release";
+}
+
+if (process.argv.includes("--fixture")) {
+  const fixture = JSON.parse(fs.readFileSync(process.argv[process.argv.indexOf("--fixture") + 1], "utf8"));
+  const decision = decideProductLive(fixture);
+  if (!decision.ok) {
+    console.error(`PRODUCT AUTHORITY GATE: FAIL — ${decision.message}`);
+    process.exit(1);
+  }
+  console.log(decision.recovery ? "PRODUCT AUTHORITY GATE: PERSIST_RECOVERY" : "PRODUCT AUTHORITY GATE: PASS");
+  process.exit(0);
 }
 
 const registry = readJson(REGISTRY_PATH);
@@ -323,6 +367,8 @@ console.log(JSON.stringify({
     ? "ONE_TIME_TARGETED_ID_RELEASE_BOUND_NO_CONTINUING_AUTHORITY"
     : targetedRelease === "closed"
     ? "ONE_TIME_TARGETED_ID_RELEASE_SPENT_NO_REPLAY"
+    : targetedRelease === "recovery"
+    ? "ONE_TIME_TARGETED_ID_RELEASE_PERSIST_RECOVERY_NO_DEPLOY"
     : targetedRelease === "carrier"
     ? "ONE_TIME_TARGETED_ID_RELEASE_CARRIER_NO_LIVE_AUTHORITY"
     : isHeir

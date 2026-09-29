@@ -133,12 +133,29 @@ export function assembleProviderPages(pages) {
   return problems.length ? { ok: false, problems, payload: null } : { ok: true, problems: [], payload };
 }
 
-export function productionConsumption(payload, artifactSha) {
+export function releaseIdentity(identity) {
+  if (typeof identity === 'string') {
+    return sha(identity)
+      ? { ok: true, candidateSha: identity, deployedSha: identity, manifestChild: false }
+      : { ok: false, problems: ['release identity is incomplete'] };
+  }
+  const candidateSha = identity?.candidateSha;
+  const deployedSha = identity?.deployedSha ?? identity?.candidateSha;
+  if (!sha(candidateSha) || !sha(deployedSha)) return { ok: false, problems: ['release identity is incomplete'] };
+  if (deployedSha === candidateSha) return { ok: true, candidateSha, deployedSha, manifestChild: false };
+  if (identity?.manifestChild !== true) return { ok: false, problems: ['deployed commit is not the tested candidate or its manifest-only child'] };
+  return { ok: true, candidateSha, deployedSha, manifestChild: true };
+}
+
+export function productionConsumption(payload, identity) {
   const problems = providerProblems(payload);
   if (problems.length) return { ok: false, consumed: false, previewOnly: false, match: null, problems };
-  const matches = payload.result.filter((item) => item.environment === 'production' && item.latest_stage.status === 'success' && item.deployment_trigger.metadata.commit_hash === artifactSha);
-  const previews = payload.result.filter((item) => item.environment === 'preview' && item.latest_stage.status === 'success' && item.deployment_trigger.metadata.commit_hash === artifactSha);
-  return { ok: true, consumed: matches.length > 0, previewOnly: matches.length === 0 && previews.length > 0, match: matches[0] || null, problems: [] };
+  const bound = releaseIdentity(identity);
+  if (!bound.ok) return { ok: false, consumed: false, previewOnly: false, match: null, problems: bound.problems };
+  const commitOf = (item) => item.deployment_trigger.metadata.commit_hash;
+  const matches = payload.result.filter((item) => item.environment === 'production' && item.latest_stage.status === 'success' && commitOf(item) === bound.deployedSha);
+  const previews = payload.result.filter((item) => item.environment === 'preview' && item.latest_stage.status === 'success' && commitOf(item) === bound.deployedSha);
+  return { ok: true, consumed: matches.length > 0, previewOnly: matches.length === 0 && previews.length > 0, match: matches[0] || null, identity: bound, problems: [] };
 }
 
 function productionOrigin(value) {
@@ -152,8 +169,10 @@ function productionOrigin(value) {
   return url.origin;
 }
 
-export function productionReadbackProblems(readback, artifactSha) {
+export function productionReadbackProblems(readback, identity) {
   if (!readback || readback.available !== true || readback.assetReferenced !== true) return ['new production readback is unavailable'];
+  const bound = releaseIdentity(identity);
+  if (!bound.ok) return bound.problems;
   const origin = productionOrigin(readback.deployment);
   if (!origin) return ['production readback is not a new existing-project deployment'];
   if (readback.sha256 === IMMEDIATE_PRE_RELEASE.sha256 || readback.asset === IMMEDIATE_PRE_RELEASE.asset) return ['production readback is still the pre-release runtime'];
@@ -161,7 +180,8 @@ export function productionReadbackProblems(readback, artifactSha) {
     return ['production readback identity is incomplete'];
   }
   if (typeof readback.id !== 'string' || !readback.id) return ['production readback is not bound to a provider deployment'];
-  if (readback.commitHash !== artifactSha) return ['production readback is not bound to the one-time artifact'];
+  if (readback.commitHash !== bound.deployedSha) return ['production readback is not bound to the deployed commit'];
+  if (bound.manifestChild && readback.commitHash === bound.candidateSha) return ['production readback falsifies the deployed commit'];
   return [];
 }
 
@@ -208,7 +228,13 @@ export function closureAfterDeploy(targeted, deployOk, observation, testedHead, 
       message: deployOk === true ? [...rollback, ...authority].join('; ') : 'failed deploy leaves authority unspent',
     };
   }
-  const readback = productionReadbackProblems(productionReadback, original.candidateSha);
+  const identity = releaseIdentity({
+    candidateSha: original.candidateSha,
+    deployedSha: productionReadback?.commitHash,
+    manifestChild: productionReadback?.manifestChild === true,
+  });
+  if (!identity.ok) return { spent: false, mutated: false, targeted: original, message: identity.problems.join('; ') };
+  const readback = productionReadbackProblems(productionReadback, identity);
   if (readback.length) return { spent: false, mutated: false, targeted: original, message: readback.join('; ') };
   return {
     spent: true,
@@ -217,7 +243,8 @@ export function closureAfterDeploy(targeted, deployOk, observation, testedHead, 
       ...original,
       authorityState: 'CLOSED',
       closureReceipt: {
-        candidateSha: original.candidateSha,
+        candidateSha: identity.candidateSha,
+        deployedCommitSha: identity.deployedSha,
         productionDeploymentId: productionReadback.id,
         productionDeploymentUrl: productionOrigin(productionReadback.deployment),
         productionAsset: productionReadback.asset,
@@ -229,12 +256,92 @@ export function closureAfterDeploy(targeted, deployOk, observation, testedHead, 
   };
 }
 
+export function persistenceRecovery({
+  targeted,
+  rollbackObservation,
+  currentLive,
+  provider,
+  productionReadback,
+  testedHead,
+  deployedSha,
+  manifestChild,
+}) {
+  const drifted = 'current live baseline drifted from the pre-release runtime';
+  if (currentLiveProblems(currentLive).length === 0) return { ok: false, message: 'baseline still matches the pre-release runtime' };
+  const provenance = rollbackProblems(targeted, rollbackObservation);
+  if (provenance.length) return { ok: false, message: provenance.join('; ') };
+  const authority = authorityProblems(targeted, testedHead);
+  if (authority.length) return { ok: false, message: authority.join('; ') };
+  const identity = releaseIdentity({ candidateSha: targeted.candidateSha, deployedSha, manifestChild });
+  if (!identity.ok || !provider) return { ok: false, message: drifted };
+  const consumption = productionConsumption(provider, identity);
+  if (!consumption.ok || !consumption.consumed) return { ok: false, message: drifted };
+  if (consumption.match.deployment_trigger.metadata.commit_hash !== identity.deployedSha) return { ok: false, message: drifted };
+  const readback = productionReadbackProblems(productionReadback, identity);
+  if (readback.length) return { ok: false, message: drifted };
+  if (currentLive?.asset !== productionReadback.asset || currentLive?.sha256 !== productionReadback.sha256 || currentLive?.bytes !== productionReadback.bytes) {
+    return { ok: false, message: drifted };
+  }
+  return { ok: true, message: 'verified production consumption can persist without another deploy' };
+}
+
+export function decidePromotion({
+  targeted,
+  rollbackObservation,
+  currentLive,
+  provider = null,
+  productionReadback = null,
+  testedHead,
+  deployedSha,
+  manifestChild = false,
+}) {
+  if (currentLiveProblems(currentLive).length === 0) {
+    const decision = promotionDecision(targeted, rollbackObservation, testedHead, currentLive);
+    if (!decision.ok) return { code: 1, lines: [`LIVE PROMOTION AUTHORITY GUARD: FAIL — ${decision.message}`] };
+    return { code: 0, lines: ['LIVE PROMOTION AUTHORITY GUARD: PASS'] };
+  }
+  const recovery = persistenceRecovery({
+    targeted, rollbackObservation, currentLive, provider, productionReadback, testedHead, deployedSha, manifestChild,
+  });
+  if (recovery.ok) return { code: 2, lines: ['LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY', recovery.message] };
+  return { code: 1, lines: [`LIVE PROMOTION AUTHORITY GUARD: FAIL — ${recovery.message}`] };
+}
+
+export function decideProductLive({
+  targeted,
+  rollbackObservation,
+  currentLive,
+  provider = null,
+  productionReadback = null,
+  testedHead,
+  deployedSha,
+  manifestChild = false,
+}) {
+  const provenance = rollbackProblems(targeted, rollbackObservation);
+  if (provenance.length) return { ok: false, recovery: false, message: provenance.join('; ') };
+  if (currentLiveProblems(currentLive).length === 0) return { ok: true, recovery: false, message: 'baseline' };
+  if (targeted?.authorityState === 'CLOSED' || targeted?.closureReceipt) {
+    const receipt = targeted.closureReceipt || {};
+    if (currentLive?.asset === receipt.productionAsset && currentLive?.sha256 === receipt.productionAssetSha256 && currentLive?.bytes === receipt.productionAssetBytes) {
+      return { ok: true, recovery: false, message: 'closed runtime' };
+    }
+    return { ok: false, recovery: false, message: 'current live baseline drifted from the pre-release runtime' };
+  }
+  const recovery = persistenceRecovery({
+    targeted, rollbackObservation, currentLive, provider, productionReadback, testedHead, deployedSha, manifestChild,
+  });
+  if (recovery.ok) return { ok: true, recovery: true, message: recovery.message };
+  return { ok: false, recovery: false, message: recovery.message };
+}
+
 export function releaseLifecycle({
   targeted,
   rollbackObservation,
   currentLive,
   provider,
   artifactSha,
+  deployedSha = null,
+  manifestChild = false,
   testedHead,
   deployOk = null,
   productionReadback = null,
@@ -245,11 +352,16 @@ export function releaseLifecycle({
   const provenance = rollbackProblems(original, rollbackObservation);
   if (provenance.length) return stopped(provenance.join('; '));
   if (original.authorityState === 'CLOSED' || original.closureReceipt != null) return stopped('targeted identity release authority is already spent');
-  const consumption = productionConsumption(provider, artifactSha);
+  const identity = releaseIdentity({
+    candidateSha: original.candidateSha,
+    deployedSha: deployedSha ?? artifactSha,
+    manifestChild,
+  });
+  if (!identity.ok) return stopped(identity.problems.join('; '));
+  const consumption = productionConsumption(provider, identity);
   if (!consumption.ok) return stopped(consumption.problems.join('; '));
-  if (artifactSha !== original.candidateSha) return stopped('production consumption is not bound to the one-time artifact');
   if (consumption.consumed) {
-    const readback = productionReadbackProblems(productionReadback, artifactSha);
+    const readback = productionReadbackProblems(productionReadback, identity);
     if (readback.length) return stopped(readback.join('; '), 'HOLD');
     if (productionOrigin(productionReadback.deployment) !== productionOrigin(consumption.match.url)) return stopped('production readback is not the consumed deployment', 'HOLD');
     if (closureWriteOk === false) return stopped('closure persistence failed; verified production consumption blocks another deploy', 'HOLD');
@@ -336,16 +448,34 @@ if (branch === TARGETED_ID_RELEASE.branch) {
   if (targeted.branch !== TARGETED_ID_RELEASE.branch || targeted.liveSourceSha !== source) fail('targeted release pin mismatch');
   if (!String(targeted.founderDecisionRef || '').includes(TARGETED_ID_RELEASE.founderDecision)) fail('targeted release founder decision pin mismatch');
   if (targeted.currentLiveOrigin !== CURRENT_LIVE_ORIGIN) fail('current live origin pin mismatch');
-  const decision = promotionDecision(targeted, observePinnedDeployment(), head === targeted.candidateSha ? head : parent, observeCurrentLive());
-  if (!decision.ok) fail(decision.message);
-  const releaseHead = head === targeted.candidateSha ? head : parent;
-  if (releaseHead !== targeted.candidateSha) fail('targeted release HEAD is not the tested candidate or its manifest-only child');
-  if (head !== targeted.candidateSha) {
-    const child = git(['diff', '--name-only', targeted.candidateSha, head]).split('\n').filter(Boolean);
+  const testedHead = head === targeted.candidateSha ? head : parent;
+  const deployedSha = process.env.GITHUB_SHA || head;
+  const manifestChild = Boolean(targeted.candidateSha) && deployedSha !== targeted.candidateSha;
+  if (manifestChild) {
+    if (parent !== targeted.candidateSha || (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== head)) fail('deployed commit does not match the checked out release child');
+    const child = git(['diff', '--name-only', targeted.candidateSha, deployedSha]).split('\n').filter(Boolean);
     if (child.length !== 1 || child[0] !== manifestPath) fail(`targeted release-control commit changed non-manifest files: ${child.join(', ') || 'NONE'}`);
   }
-  console.log('LIVE PROMOTION AUTHORITY GUARD: PASS');
-  console.log(JSON.stringify({ branch, releaseHead: head, exactTestedArtifact: targeted.candidateSha, runtimeDelta: head === targeted.candidateSha ? 'NONE' : 'MANIFEST_ONLY', liveAuthority: true }, null, 2));
+  const rollbackObservation = observePinnedDeployment();
+  const currentLive = observeCurrentLive();
+  let provider = null;
+  let productionReadback = null;
+  if (currentLiveProblems(currentLive).length > 0 && process.env.CLOUDFLARE_API_TOKEN) {
+    const fetched = fetchProviderLive();
+    if (fetched.ok) {
+      provider = fetched.payload;
+      const identity = releaseIdentity({ candidateSha: targeted.candidateSha, deployedSha, manifestChild });
+      productionReadback = identity.ok ? productionReadbackFromProvider(provider, identity) : null;
+    }
+  }
+  const verdict = decidePromotion({
+    targeted, rollbackObservation, currentLive, provider, productionReadback, testedHead, deployedSha, manifestChild,
+  });
+  verdict.lines.forEach((line) => (verdict.code === 1 ? console.error(line) : console.log(line)));
+  if (verdict.code !== 0) process.exit(verdict.code);
+  const releaseHead = testedHead;
+  if (releaseHead !== targeted.candidateSha) fail('targeted release HEAD is not the tested candidate or its manifest-only child');
+  console.log(JSON.stringify({ branch, releaseHead: head, exactTestedArtifact: targeted.candidateSha, deployedCommitSha: deployedSha, runtimeDelta: manifestChild ? 'MANIFEST_ONLY' : 'NONE', liveAuthority: true }, null, 2));
   process.exit(0);
 }
 
@@ -396,10 +526,15 @@ function curlJson(url, token) {
   catch { return { ok: false, problems: ['provider response is malformed'] }; }
 }
 
-function fetchProviderLive() {
+export function fetchProviderLive() {
   const token = process.env.CLOUDFLARE_API_TOKEN || '';
-  const account = process.env.PAGES_ACCOUNT_ID || '';
-  if (!token || !account) return { ok: false, problems: ['provider credentials are missing'] };
+  if (!token) return { ok: false, problems: ['provider credentials are missing'] };
+  let account = process.env.PAGES_ACCOUNT_ID || '';
+  if (!account) {
+    const zone = curlJson('https://api.cloudflare.com/client/v4/zones?name=4planet.org', token);
+    account = zone.ok ? (zone.body?.result?.[0]?.account?.id || '') : '';
+    if (!account) return { ok: false, problems: ['provider credentials are missing'] };
+  }
   const pages = [];
   let totalPages = 1;
   for (let page = 1; page <= totalPages; page += 1) {
@@ -441,27 +576,39 @@ function liveLifecycle() {
   if (!provider.ok) {
     printLifecycle({ action: 'FAIL', deploy: false, persist: false, mutated: false, spent: false, targeted, message: provider.problems.join('; ') });
   }
-  const artifactSha = targeted.candidateSha;
+  const candidateSha = targeted.candidateSha;
+  const deployedSha = process.env.GITHUB_SHA || head;
+  const manifestChild = Boolean(candidateSha) && deployedSha !== candidateSha;
+  const identity = { candidateSha, deployedSha, manifestChild };
   printLifecycle(releaseLifecycle({
     targeted,
     rollbackObservation: observePinnedDeployment(),
     currentLive: observeCurrentLive(),
     provider: provider.payload,
-    artifactSha,
-    testedHead: head === artifactSha ? head : parent,
-    productionReadback: productionReadbackFromProvider(provider.payload, artifactSha),
+    artifactSha: candidateSha,
+    deployedSha,
+    manifestChild,
+    testedHead: head === candidateSha ? head : parent,
+    productionReadback: productionReadbackFromProvider(provider.payload, identity),
   }));
 }
 
-function productionReadbackFromProvider(provider, artifactSha) {
-  const consumption = productionConsumption(provider, artifactSha);
+export function productionReadbackFromProvider(provider, identity) {
+  const bound = releaseIdentity(identity);
+  const consumption = productionConsumption(provider, bound.ok ? bound : identity);
   if (!consumption.ok || !consumption.consumed) return null;
   const origin = productionOrigin(consumption.match.url);
   if (!origin) return { available: false };
   const observed = observeOrigin(origin);
   const apex = observeCurrentLive();
   if (!observed.available || apex.sha256 !== observed.sha256 || apex.asset !== observed.asset || apex.bytes !== observed.bytes) return { available: false };
-  return { ...observed, deployment: origin, id: consumption.match.id, commitHash: artifactSha };
+  return {
+    ...observed,
+    deployment: origin,
+    id: consumption.match.id,
+    commitHash: consumption.match.deployment_trigger.metadata.commit_hash,
+    manifestChild: bound.manifestChild === true,
+  };
 }
 
 function persistClosure(file, manifestOut) {
@@ -493,8 +640,14 @@ function livePersist() {
     currentLive: observeCurrentLive(),
     provider: provider.payload,
     artifactSha: targeted.candidateSha,
+    deployedSha: process.env.GITHUB_SHA || head,
+    manifestChild: Boolean(targeted.candidateSha) && (process.env.GITHUB_SHA || head) !== targeted.candidateSha,
     testedHead: head === targeted.candidateSha ? head : parent,
-    productionReadback: productionReadbackFromProvider(provider.payload, targeted.candidateSha),
+    productionReadback: productionReadbackFromProvider(provider.payload, {
+      candidateSha: targeted.candidateSha,
+      deployedSha: process.env.GITHUB_SHA || head,
+      manifestChild: Boolean(targeted.candidateSha) && (process.env.GITHUB_SHA || head) !== targeted.candidateSha,
+    }),
     closureWriteOk: true,
   });
   if (!result.persist || result.deploy) {
@@ -520,5 +673,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       process.exit(1);
     }
     livePersist();
+  } else if (fixture) {
+    const body = JSON.parse(fs.readFileSync(fixture, 'utf8'));
+    const verdict = decidePromotion(body);
+    for (const line of verdict.lines) {
+      if (verdict.code === 1) console.error(line);
+      else console.log(line);
+    }
+    process.exit(verdict.code);
   } else main();
 }
