@@ -165,7 +165,21 @@ function assertTargetedIdentityRelease(headBranch) {
     manifestChild,
   });
   if (!liveDecision.ok) die(liveDecision.message);
-  if (liveDecision.recovery) return "recovery";
+  if (liveDecision.recovery) {
+    if (headNow !== targeted.candidateSha && parentNow !== targeted.candidateSha) {
+      die("targeted release HEAD is not the tested candidate or its manifest-only child");
+    }
+    if (manifestChild) {
+      if (parentNow !== targeted.candidateSha || (process.env.GITHUB_SHA && process.env.GITHUB_SHA !== headNow)) {
+        die("deployed commit does not match the checked out release child");
+      }
+      const childDiff = git(["diff", "--name-only", targeted.candidateSha, deployedSha]).split("\n").filter(Boolean);
+      if (childDiff.length !== 1 || childDiff[0] !== "docs/control/LIVE_PROMOTION_MANIFEST.json") {
+        die(`targeted release-control commit changed non-manifest files: ${childDiff.join(", ") || "NONE"}`);
+      }
+    }
+    return "recovery";
+  }
   if (targeted.authorityState !== "UNSPENT" && targeted.authorityState !== "CLOSED") die("targeted release authority state is invalid");
   if (targeted.authorityState === "CLOSED" || targeted.closureReceipt != null) {
     if (targeted.authorityState !== "CLOSED" || targeted.liveAuthority !== true || !isSha(targeted.closureReceipt?.candidateSha)) {
@@ -315,7 +329,7 @@ const isHeir = headBranch === "king/test";
 const registeredSandbox = registeredSandboxes.get(headBranch);
 const isAuthorisedProductWriteBranch = isHeir || Boolean(registeredSandbox);
 const targetedRelease = assertTargetedIdentityRelease(headBranch);
-const targetedCarrier = targetedRelease === "carrier" || targetedRelease === "release" || targetedRelease === "closed";
+const targetedCarrier = targetedRelease === "carrier" || targetedRelease === "release" || targetedRelease === "closed" || targetedRelease === "recovery";
 
 // Absolute freeze: an unregistered historical branch is not a work surface at all.
 // The one-time identity carrier is not a branch-name exemption: the pin check above already failed closed.

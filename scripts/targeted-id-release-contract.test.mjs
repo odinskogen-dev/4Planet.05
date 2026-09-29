@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -936,4 +937,208 @@ test("release steps deploy once, fail closure, then persist the child without a 
   assert.equal(refused.wrangler, "");
   assert.equal(refused.closure, null);
   assert.equal(fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8"), manifestBefore);
+});
+
+test("real product authority entry classifies recovery and persists one closure", { timeout: 120000 }, () => {
+  const workflow = fs.readFileSync(".github/workflows/identity-canonical-live.yml", "utf8");
+  const scripts = {
+    product: stepScript(workflow, "Product authority must pass"),
+    promotion: stepScript(workflow, "Live promotion stays closed until Gold binds the candidate"),
+    deploy: stepScript(workflow, "Deploy tested runtime only when the promotion gate passed"),
+  };
+  for (const script of Object.values(scripts)) {
+    assert.doesNotMatch(script, /--fixture/);
+    assert.doesNotMatch(script, /--manifest-out/);
+  }
+  const workspaceHead = git(["rev-parse", "HEAD"]);
+  const workspaceManifest = fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "id-real-entry-"));
+  const repo = path.join(dir, "repo");
+  const bare = path.join(dir, "bare.git");
+  const bin = path.join(dir, "bin");
+  const rollbackFile = path.join(dir, "rollback.js");
+  const newFile = path.join(dir, "new.js");
+  const providerFile = path.join(dir, "provider.json");
+  const mutationLog = path.join(dir, "mutation.log");
+  const stubPath = path.join(dir, "curl-stub.mjs");
+  fs.mkdirSync(bin);
+  const realCurl = execFileSync("bash", ["-lc", "command -v curl"], { encoding: "utf8" }).trim();
+  try {
+    execFileSync(realCurl, ["-fsS", "--max-time", "25", "-A", "4planet-control", "-o", rollbackFile, `${IMMEDIATE_PRE_RELEASE.deployment}${IMMEDIATE_PRE_RELEASE.asset}`], { stdio: "ignore" });
+    const rollbackBytes = fs.readFileSync(rollbackFile);
+    assert.equal(rollbackBytes.length, IMMEDIATE_PRE_RELEASE.bytes);
+    assert.equal(createHash("sha256").update(rollbackBytes).digest("hex"), IMMEDIATE_PRE_RELEASE.sha256);
+    const novel = Buffer.alloc(192, 0x71);
+    fs.writeFileSync(newFile, novel);
+    assert.notEqual(createHash("sha256").update(novel).digest("hex"), IMMEDIATE_PRE_RELEASE.sha256);
+    fs.writeFileSync(stubPath, `import fs from 'node:fs';
+const url = [...process.argv.slice(2)].reverse().find((arg) => arg.startsWith('http'));
+if (!url) process.exit(1);
+const write = (body) => {
+  const buf = Buffer.isBuffer(body) ? body : Buffer.from(body);
+  let offset = 0;
+  while (offset < buf.length) offset += fs.writeSync(1, buf, offset, buf.length - offset);
+  process.exit(0);
+};
+if (url.includes('zones?name=4planet.org')) write(JSON.stringify({ success: true, result: [{ account: { id: 'acct-test' } }] }));
+if (url.includes('/deployments')) write(fs.readFileSync(process.env.PROVIDER_FILE));
+if (url.includes('/pages/projects/4planet-05')) write(JSON.stringify({ success: true, result: { production_branch: 'main' } }));
+const rollbackHost = '1387126b.4planet-05.pages.dev';
+if (url.includes(rollbackHost) && url.includes('.js')) write(fs.readFileSync(process.env.ROLLBACK_FILE));
+if (url.includes(rollbackHost)) write('<script type="module" src="/assets/index-CrCdYuxo.js"></script>\\n');
+if (process.env.CURL_MODE === 'baseline') {
+  if (url.includes('.js')) write(fs.readFileSync(process.env.ROLLBACK_FILE));
+  write('<script type="module" src="/assets/index-CrCdYuxo.js"></script>\\n');
+}
+if (url.includes('.js')) write(fs.readFileSync(process.env.NEW_FILE));
+write('<script type="module" src="/assets/index-NewRel.js"></script>\\n');
+`);
+    fs.writeFileSync(path.join(bin, "curl"), `#!/bin/bash\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(stubPath)} "$@"\n`);
+    fs.writeFileSync(path.join(bin, "npm"), `#!/bin/bash\nprintf '%s\\n' "npm $*" >> ${JSON.stringify(mutationLog)}\nexit 1\n`);
+    fs.writeFileSync(path.join(bin, "npx"), `#!/bin/bash\nprintf '%s\\n' "npx $*" >> ${JSON.stringify(mutationLog)}\nexit 1\n`);
+    for (const name of ["curl", "npm", "npx"]) fs.chmodSync(path.join(bin, name), 0o755);
+    execFileSync("git", ["clone", "--shared", "--quiet", process.cwd(), repo], { stdio: "ignore" });
+    execFileSync("git", ["init", "--bare", "--quiet", bare], { stdio: "ignore" });
+    const gitRepo = (args) => execFileSync("git", args, { cwd: repo, encoding: "utf8" }).trim();
+    gitRepo(["remote", "set-url", "origin", bare]);
+    assert.equal(gitRepo(["remote", "get-url", "origin"]), bare);
+    for (const file of ["scripts/product-authority-gate.mjs", "scripts/live-promotion-authority-gate.mjs"]) {
+      fs.copyFileSync(path.join(process.cwd(), file), path.join(repo, file));
+    }
+    if (gitRepo(["diff", "--name-only"])) {
+      gitRepo(["add", "scripts/product-authority-gate.mjs", "scripts/live-promotion-authority-gate.mjs"]);
+      gitRepo(["-c", "user.name=id-release-test", "-c", "user.email=noreply@4planet.org", "commit", "-m", "Sync the targeted release gates under test."]);
+    }
+    const candidate = gitRepo(["rev-parse", "HEAD"]);
+    const authorise = (manifest) => {
+      const targeted = manifest.targetedIdentityRelease;
+      targeted.liveAuthority = true;
+      targeted.candidateSha = candidate;
+      targeted.goldEvidenceRef = "https://github.com/odinskogen-dev/4Planet.05/pull/346#issuecomment-5884300773";
+      targeted.authorityState = "UNSPENT";
+      targeted.closureReceipt = null;
+    };
+    const commitChild = (mutate, extra) => {
+      gitRepo(["reset", "--hard", candidate]);
+      gitRepo(["clean", "-fd"]);
+      const manifestPath = path.join(repo, "docs/control/LIVE_PROMOTION_MANIFEST.json");
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      mutate(manifest);
+      fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+      if (extra) extra();
+      gitRepo(["add", "-A"]);
+      gitRepo(["-c", "user.name=id-release-test", "-c", "user.email=noreply@4planet.org", "commit", "-m", "Bind the manifest-only release child under test."]);
+      const child = gitRepo(["rev-parse", "HEAD"]);
+      assert.equal(gitRepo(["rev-parse", "HEAD^"]), candidate);
+      assert.notEqual(child, candidate);
+      return child;
+    };
+    const baseEnv = () => {
+      const env = { ...process.env };
+      for (const key of ["GITHUB_HEAD_REF", "GITHUB_BASE_REF", "GITHUB_EVENT_BEFORE", "GITHUB_EVENT_NAME", "GITHUB_SHA", "GITHUB_REF", "GITHUB_REF_NAME", "CLOUDFLARE_API_TOKEN", "PAGES_ACCOUNT_ID"]) delete env[key];
+      env.PATH = `${bin}${path.delimiter}${process.env.PATH}`;
+      env.PROVIDER_FILE = providerFile;
+      env.ROLLBACK_FILE = rollbackFile;
+      env.NEW_FILE = newFile;
+      env.CURL_MODE = "recovery";
+      env.CLOUDFLARE_API_TOKEN = "test-token";
+      env.CF1 = "test-token";
+      env.PAGES_PROJECT = "4planet-05";
+      env.GITHUB_REF_NAME = BRANCH;
+      return env;
+    };
+    const writeProvider = (records) => fs.writeFileSync(providerFile, JSON.stringify(providerPayload(records)));
+    const productionRecord = (child) => deploymentRecord({ environment: "production", id: "prod-child", url: PRODUCTION_URL, sha: child });
+    const previewRecord = (child) => deploymentRecord({ environment: "preview", id: "preview-child", url: "https://694e6d47.4planet-05.pages.dev", sha: child });
+    const runCli = (script, child) => spawnSync(process.execPath, [script], { cwd: repo, env: { ...baseEnv(), GITHUB_SHA: child }, encoding: "utf8" });
+    const runStep = (script, child) => spawnSync("bash", ["-c", script], { cwd: repo, env: { ...baseEnv(), GITHUB_SHA: child }, encoding: "utf8" });
+    const outputOf = (result) => `${result.stdout}\n${result.stderr}`;
+
+    const child = commitChild(authorise);
+    writeProvider([productionRecord(child)]);
+    const product = runCli("scripts/product-authority-gate.mjs", child);
+    assert.equal(product.status, 0, outputOf(product));
+    assert.match(product.stdout, /ONE_TIME_TARGETED_ID_RELEASE_PERSIST_RECOVERY_NO_DEPLOY/);
+    assert.doesNotMatch(outputOf(product), /QUARANTINE_PENDING_ARCHIVE/);
+    const promotion = runCli("scripts/live-promotion-authority-gate.mjs", child);
+    assert.equal(promotion.status, 2, outputOf(promotion));
+    assert.match(promotion.stdout, /LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY/);
+    assert.doesNotMatch(promotion.stdout, /LIVE PROMOTION AUTHORITY GUARD: PASS/);
+
+    const promoted = runStep(scripts.promotion, child);
+    assert.equal(promoted.status, 0, outputOf(promoted));
+    assert.match(fs.readFileSync(path.join(repo, "promotion-result.txt"), "utf8"), /LIVE PROMOTION AUTHORITY GUARD: PERSIST_RECOVERY/);
+    const refusedEnv = baseEnv();
+    refusedEnv.CURL_MODE = "baseline";
+    refusedEnv.GITHUB_SHA = child;
+    writeProvider([previewRecord(child)]);
+    fs.rmSync(mutationLog, { force: true });
+    const refused = spawnSync("bash", ["-c", scripts.deploy], { cwd: repo, env: refusedEnv, encoding: "utf8" });
+    assert.equal(refused.status, 1, outputOf(refused));
+    assert.match(refused.stdout, /refusing a second deploy/);
+    assert.equal(fs.existsSync(mutationLog), false);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(repo, "docs/control/LIVE_PROMOTION_MANIFEST.json"), "utf8")).targetedIdentityRelease.authorityState, "UNSPENT");
+
+    writeProvider([productionRecord(child)]);
+    const promotedAgain = runStep(scripts.promotion, child);
+    assert.equal(promotedAgain.status, 0, outputOf(promotedAgain));
+    fs.rmSync(mutationLog, { force: true });
+    const persisted = runStep(scripts.deploy, child);
+    assert.equal(persisted.status, 0, outputOf(persisted));
+    assert.equal(fs.existsSync(mutationLog), false);
+    assert.doesNotMatch(persisted.stdout, /DEPLOY_NOW/);
+    const closed = JSON.parse(gitRepo(["show", "HEAD:docs/control/LIVE_PROMOTION_MANIFEST.json"]));
+    assert.equal(closed.targetedIdentityRelease.authorityState, "CLOSED");
+    assert.equal(closed.targetedIdentityRelease.closureReceipt.candidateSha, candidate);
+    assert.equal(closed.targetedIdentityRelease.closureReceipt.deployedCommitSha, child);
+    assert.notEqual(closed.targetedIdentityRelease.closureReceipt.deployedCommitSha, candidate);
+    const closureSubjects = gitRepo(["log", "--format=%s"]).split("\n").filter((line) => line === "Close the one-time 4PLANET ID release authority.");
+    assert.deepEqual(closureSubjects, ["Close the one-time 4PLANET ID release authority."]);
+    assert.equal(execFileSync("git", ["rev-parse", "release/targeted-4planet-id-20260929"], { cwd: bare, encoding: "utf8" }).trim(), gitRepo(["rev-parse", "HEAD"]));
+
+    const invalid = commitChild(authorise, () => fs.writeFileSync(path.join(repo, "evil-lineage.txt"), "no\n"));
+    writeProvider([productionRecord(invalid)]);
+    const invalidProduct = runCli("scripts/product-authority-gate.mjs", invalid);
+    const invalidPromotion = runCli("scripts/live-promotion-authority-gate.mjs", invalid);
+    assert.equal(invalidProduct.status, 1, outputOf(invalidProduct));
+    assert.equal(invalidPromotion.status, 1, outputOf(invalidPromotion));
+    assert.match(outputOf(invalidProduct), /unexpected files/);
+    assert.match(outputOf(invalidPromotion), /unexpected files/);
+
+    const nonManifest = commitChild(authorise, () => fs.appendFileSync(path.join(repo, "docs/control/GOLD_CURRENT_BRIEF.md"), "\nrecovery probe\n"));
+    writeProvider([productionRecord(nonManifest)]);
+    const nonManifestProduct = runCli("scripts/product-authority-gate.mjs", nonManifest);
+    const nonManifestPromotion = runCli("scripts/live-promotion-authority-gate.mjs", nonManifest);
+    assert.equal(nonManifestProduct.status, 1, outputOf(nonManifestProduct));
+    assert.equal(nonManifestPromotion.status, 1, outputOf(nonManifestPromotion));
+    assert.match(outputOf(nonManifestProduct), /non-manifest/);
+    assert.match(outputOf(nonManifestPromotion), /non-manifest/);
+
+    gitRepo(["reset", "--hard", candidate]);
+    gitRepo(["clean", "-fd"]);
+    writeProvider([productionRecord(candidate)]);
+    const unauthorisedProduct = runCli("scripts/product-authority-gate.mjs", candidate);
+    const unauthorisedPromotion = runCli("scripts/live-promotion-authority-gate.mjs", candidate);
+    assert.equal(unauthorisedProduct.status, 1, outputOf(unauthorisedProduct));
+    assert.equal(unauthorisedPromotion.status, 1, outputOf(unauthorisedPromotion));
+    assert.match(outputOf(unauthorisedProduct), /not live-authorised/);
+    assert.match(outputOf(unauthorisedPromotion), /not live-authorised/);
+    assert.doesNotMatch(outputOf(unauthorisedProduct), /PERSIST_RECOVERY_NO_DEPLOY/);
+
+    const drifted = commitChild(authorise);
+    writeProvider([previewRecord(drifted)]);
+    const driftedProduct = runCli("scripts/product-authority-gate.mjs", drifted);
+    const driftedPromotion = runCli("scripts/live-promotion-authority-gate.mjs", drifted);
+    assert.equal(driftedProduct.status, 1, outputOf(driftedProduct));
+    assert.equal(driftedPromotion.status, 1, outputOf(driftedPromotion));
+    assert.match(outputOf(driftedProduct), /drifted/);
+    assert.match(outputOf(driftedPromotion), /drifted/);
+    assert.doesNotMatch(outputOf(driftedProduct), /QUARANTINE_PENDING_ARCHIVE/);
+    assert.doesNotMatch(outputOf(driftedPromotion), /PERSIST_RECOVERY/);
+
+    assert.equal(git(["rev-parse", "HEAD"]), workspaceHead);
+    assert.equal(fs.readFileSync("docs/control/LIVE_PROMOTION_MANIFEST.json", "utf8"), workspaceManifest);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
