@@ -61,3 +61,7 @@ Requested: 2026-09-29 Europe/Oslo.
 ## Capacity preflight
 
 Before any further proof trigger, the exact deployed Factory runtime must produce an authenticated, read-only capacity receipt from the same durable learner `learning-1` for `requestedCalls=4`. The receipt may neither reserve nor purchase capacity. Only `allowed=true` with at least four daily and monthly calls remaining authorises the existing `[learning-proof]` continuation; all prior outcomes remain preserved.
+
+### Capacity receipts
+
+- 2026-09-28T23:11:36Z — exact Factory `422f0bb06bf44054efaaae97db2ee373274ac9bc`; learner `learning-1`; requested 4; daily reserved 3/6; daily remaining 3; monthly remaining 47; decision `DAILY_CAP`; read-only; no reservation or purchase. Proof correctly not started.
