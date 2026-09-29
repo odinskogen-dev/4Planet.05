@@ -21,6 +21,8 @@ test("proof contract keeps one actual LEARNING worker capability and no product 
   assert.match(source, /practice-retry-explicit-three-check-procedure/);
   assert.match(source, /learn-proof-practice-retry-actions-b5/);
   assert.match(source, /practice-retry-exact-learning-receipt/);
+  assert.match(source, /learn-proof-practice-retry-actions-b6/);
+  assert.match(source, /practice-retry-structured-three-check-receipt/);
 });
 
 test("BRAIN-derived runtime lesson is evidence-scoped and never claims model-weight learning", () => {
@@ -48,7 +50,7 @@ test("proof requires later wake, runtime retrieval and materially different tran
   assert.match(source, /learnerState\?\.stage === "TRANSFER_PROVEN"/);
   assert.match(source, /RUNTIME_TRANSFER_PROVEN_BRAIN_WRITEBACK_REQUIRED/);
   assert.match(source, /accepted\(practiceRetry \?\? practice\)/);
-  assert.match(source, /correctionAttempts:[\s\S]*practiceRetry4/);
+  assert.match(source, /correctionAttempts:[\s\S]*practiceRetry5/);
 });
 
 
@@ -57,4 +59,12 @@ test("Maker learning receipts normalise only an exact bracket wrapper without we
   assert.match(execution, /normaliseAppliedLearningId/);
   assert.match(execution, /\^\\\[\(\[a-z0-9\._:-\]\+\)\\\]\$\/i/);
   assert.match(execution, /Copy appliedLearningIds exactly as supplied/);
+});
+
+
+test("Maker prompt binds selected learning to an exact mandatory receipt", () => {
+  const execution = readFileSync(resolve(here, "readOnlyExecution.ts"), "utf8");
+  assert.match(execution, /MANDATORY RECEIPT/);
+  assert.match(execution, /JSON\.stringify\(selectedLearningIds\)/);
+  assert.match(execution, /appliedLearningIds must equal/);
 });

@@ -195,6 +195,24 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
+  const practiceRetry5 = pkg(
+    "learn-proof-practice-retry-actions-b6",
+    "Adaptive practice retry 5 — structured identity, evidence type, coverage and receipt",
+    [
+      "The exact object under review is commit SHA 7f3a9c2b6e4d1f8098a7b6c5d4e3f2109876abcd.",
+      "The only execution evidence supplied is a first-page GitHub check-runs collection; the target workflow name is absent.",
+      "The audit asks whether that GitHub Actions workflow executed for this exact commit through any relevant trigger.",
+      "Return INSUFFICIENT_EVIDENCE. In the rationale use literal headings and complete each one: IDENTITY — exact commit SHA; EVIDENCE TYPE — raw GitHub Actions workflow-runs rather than check-runs; COVERAGE — push, pull_request, workflow_dispatch when relevant, and pagination/all pages.",
+      "List the missing evidence, make no absence claim, and return appliedLearningIds with the exact supplied learning ID and no decoration.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["exact sha|commit sha|exact commit", "check-runs", "workflow runs|actions runs|workflow-run", "push|pull request|workflow dispatch|event types|all relevant triggers", "pagination|all pages", "authoritative|raw"],
+    ["workflow did not execute", "absence proven"],
+    "PRACTICE",
+    "practice-retry-structured-three-check-receipt",
+    now,
+  );
+
   const heldOut = pkg(
     "learn-proof-heldout-library-c",
     "Fresh held-out — bounded document search",
@@ -244,7 +262,7 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
-  return { baseline, practice, practiceRetry, practiceRetry2, practiceRetry3, practiceRetry4, heldOut, retry, transfer };
+  return { baseline, practice, practiceRetry, practiceRetry2, practiceRetry3, practiceRetry4, practiceRetry5, heldOut, retry, transfer };
 }
 
 export function brainDerivedLearningCandidate(baseline: Outcome, now = new Date().toISOString()): LearningCandidate {
@@ -367,6 +385,33 @@ export function receiptReinforcedLearningCandidate(
       "When returning appliedLearningIds, copy each supplied learning ID byte-for-byte as the JSON array value with no brackets, backticks, labels or decoration.",
     ].join(" "),
     nextTest: "Complete one exact-receipt corrective practice, then proceed to the unscaffolded fresh held-out standard.",
+  };
+}
+
+
+export function mandatoryReceiptLearningCandidate(
+  baseline: Outcome,
+  practice: Outcome,
+  practiceRetry: Outcome,
+  practiceRetry2: Outcome,
+  practiceRetry3: Outcome,
+  practiceRetry4: Outcome,
+  now = new Date().toISOString(),
+): LearningCandidate {
+  const base = receiptReinforcedLearningCandidate(baseline, practice, practiceRetry, practiceRetry2, practiceRetry3, now);
+  return {
+    ...base,
+    evidence: [
+      ...base.evidence,
+      ...practiceRetry4.evidence,
+      "ADAPTIVE_FEEDBACK_05: evidence type and coverage transferred, but the Maker omitted explicit exact-commit wording and the mandatory learning-ID receipt.",
+    ],
+    lesson: [
+      base.lesson,
+      "For the next corrective practice, use literal headings IDENTITY, EVIDENCE TYPE and COVERAGE; under IDENTITY explicitly say exact commit SHA.",
+      "Because the procedure is supplied by the current validated learning, appliedLearningIds must contain brain-learning-evidence-scope-v1 exactly.",
+    ].join(" "),
+    nextTest: "Complete one structured corrective practice, then rely only on the unchanged unscaffolded held-out, real-work and transfer gates.",
   };
 }
 
@@ -522,18 +567,31 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
             });
             practiceRetry = retryOutcome4;
             if (!accepted(retryOutcome4)) {
-              return await finish("practice-retry-4-failed", {
-                active: false,
-                state: "PRACTICE_RETRY_4_FAILED",
-                learnerId: LEARNER_ID,
-                baseline,
-                practice,
-                firstPracticeRetry: retryOutcome,
-                secondPracticeRetry: retryOutcome2,
-                thirdPracticeRetry: retryOutcome3,
-                practiceRetry: retryOutcome4,
-                reason: "Exact-receipt corrective practice still did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+              await step.do("reinforce-structured-three-check-receipt", async () => {
+                await agent.recordLearning(mandatoryReceiptLearningCandidate(baseline, practice, retryOutcome, retryOutcome2, retryOutcome3, retryOutcome4));
+                await agent.upsertWorkPackage(packages.practiceRetry5);
               });
+              const retryOutcome5: Outcome = await step.do("adaptive-practice-retry-5", async () => {
+                const outcome = await agent.dispatchToWorker(packages.practiceRetry5.id) as Outcome;
+                await agent.finalizeWorkflowOutcome(outcome);
+                return outcome;
+              });
+              practiceRetry = retryOutcome5;
+              if (!accepted(retryOutcome5)) {
+                return await finish("practice-retry-5-failed", {
+                  active: false,
+                  state: "PRACTICE_RETRY_5_FAILED",
+                  learnerId: LEARNER_ID,
+                  baseline,
+                  practice,
+                  firstPracticeRetry: retryOutcome,
+                  secondPracticeRetry: retryOutcome2,
+                  thirdPracticeRetry: retryOutcome3,
+                  fourthPracticeRetry: retryOutcome4,
+                  practiceRetry: retryOutcome5,
+                  reason: "Structured corrective practice still did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+                });
+              }
             }
           }
         }
@@ -561,7 +619,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const preWakeReceipts = await step.do("readback-pre-wake", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.practiceRetry4.id, packages.heldOut.id, packages.retry.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.practiceRetry4.id, packages.practiceRetry5.id, packages.heldOut.id, packages.retry.id])
     );
 
     await step.sleep("later-independent-learning-wake", "1 minute");
@@ -577,7 +635,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const receipts = await step.do("independent-learning-readback", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.practiceRetry4.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.practiceRetry4.id, packages.practiceRetry5.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
     );
     const learnerState = await step.do("learner-state-readback", async () =>
       agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
@@ -611,7 +669,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       baselineRequiredSignalsPassed: requiredSignalPasses(baseline),
       practiceAccepted: accepted(practice),
       practiceRetryAccepted: practiceRetry ? accepted(practiceRetry) : null,
-      correctionAttempts: practiceRetry?.workPackageId === packages.practiceRetry4.id ? 4 : practiceRetry?.workPackageId === packages.practiceRetry3.id ? 3 : practiceRetry?.workPackageId === packages.practiceRetry2.id ? 2 : practiceRetry ? 1 : 0,
+      correctionAttempts: practiceRetry?.workPackageId === packages.practiceRetry5.id ? 5 : practiceRetry?.workPackageId === packages.practiceRetry4.id ? 4 : practiceRetry?.workPackageId === packages.practiceRetry3.id ? 3 : practiceRetry?.workPackageId === packages.practiceRetry2.id ? 2 : practiceRetry ? 1 : 0,
       heldOutAccepted: accepted(heldOut),
       realRetryAccepted: accepted(retry),
       retryRequiredSignalsPassed: requiredSignalPasses(retry),

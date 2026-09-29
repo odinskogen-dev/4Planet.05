@@ -311,6 +311,8 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     ? selected.map((item) => `[${item.learningId}] capability=${item.capabilityId}: ${item.lesson}`).join("\n")
     : "NONE — solve from current task context without inventing prior lessons.";
 
+  const selectedLearningIds = selected.map((item) => item.learningId);
+
   const prompt = [
     "You are the Maker in a bounded 4PLANET internal learning evaluation.",
     "Return STRICT JSON only with keys: decision, rationale, evidenceNeeded, appliedLearningIds.",
@@ -327,6 +329,7 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     learningText,
     "",
     "Do not assume hidden data. Use only the task evidence and any explicitly supplied CURRENT VALIDATED LEARNING.",
+    selected.length ? `MANDATORY RECEIPT: if you use the supplied procedure, appliedLearningIds must equal ${JSON.stringify(selectedLearningIds)} exactly.` : "appliedLearningIds must be an empty array because no validated learning is supplied.",
     selected.length ? "If validated learning contains an explicit checklist or decision procedure, mirror every relevant heading in the rationale, name the claim-specific authoritative evidence type, enumerate every required coverage dimension, and repeat missing checks in evidenceNeeded. Merely citing the lesson is insufficient." : "No prior learning is supplied; solve the task from its evidence alone.",
   ].join("\n");
 
