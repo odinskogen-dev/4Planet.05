@@ -15,9 +15,20 @@
     "founderDecisionRef": "ENIG TARGETED RELEASE CONTROL AMENDMENT — autoriser én engangs, fil-/delta-avgrenset 4PLANET-identitetsrelease fra verifisert immutable LIVE-kilde, med eksakt kandidat, uavhengig Gold, rollback og eksisterende Pages-prosjekt. Ingen hel HEIR-promotering.",
     "candidateSha": null,
     "goldEvidenceRef": null,
-    "rollbackDeployment": "https://3d1e7976.4planet-05.pages.dev",
-    "rollbackSha": "1700b646bb9e1139e4dc514b4c777546a0c81fea",
+    "rollbackDeployment": "https://1387126b.4planet-05.pages.dev",
+    "rollbackSha": "d5540905de7e57a2a781db92771da4d87c472c60",
+    "rollbackAsset": "/assets/index-CrCdYuxo.js",
+    "rollbackAssetSha256": "46514cd2eb489dd532a3ac831d246d0c22a00672aca9508c621ac84fe089297d",
+    "rollbackAssetBytes": 1765323,
+    "authorityState": "UNSPENT",
+    "closureReceipt": null,
     "immutableSourceDeployment": "https://1387126b.4planet-05.pages.dev",
-    "liveAsset": "/assets/index-CrCdYuxo.js"
+    "liveAsset": "/assets/index-CrCdYuxo.js",
+    "notImmediateRollback": {
+      "rollbackDeployment": "https://3d1e7976.4planet-05.pages.dev",
+      "rollbackSha": "1700b646bb9e1139e4dc514b4c777546a0c81fea",
+      "asset": "/assets/index-ByJwZ9e4.js",
+      "reason": "Pages recorded this main deployment at 2026-09-28T05:15Z. The public apex now serves d5540905 from https://1387126b.4planet-05.pages.dev with /assets/index-CrCdYuxo.js. Restoring 3d1e7976 would skip that current runtime, so it is not the immediate pre-release rollback."
+    }
   }
 }

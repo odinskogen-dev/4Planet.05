@@ -2,6 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
+import {
+  IMMEDIATE_PRE_RELEASE,
+  SUPERSEDED_MAIN_DEPLOYMENT,
+  closureAfterDeploy,
+  observePinnedDeployment,
+  promotionDecision,
+  rollbackProblems,
+} from "./live-promotion-authority-gate.mjs";
 
 const SOURCE = "d5540905de7e57a2a781db92771da4d87c472c60";
 const BRANCH = "release/targeted-4planet-id-20260929";
@@ -52,8 +60,15 @@ test("the one-time manifest is unbound until Gold binds a manifest-only child", 
   assert.equal(targeted.branch, BRANCH);
   assert.equal(targeted.liveSourceSha, SOURCE);
   assert.match(targeted.founderDecisionRef, new RegExp(DECISION));
-  assert.equal(targeted.rollbackDeployment, "https://3d1e7976.4planet-05.pages.dev");
-  assert.equal(targeted.rollbackSha, "1700b646bb9e1139e4dc514b4c777546a0c81fea");
+  assert.equal(targeted.rollbackDeployment, IMMEDIATE_PRE_RELEASE.deployment);
+  assert.equal(targeted.rollbackSha, IMMEDIATE_PRE_RELEASE.sha);
+  assert.equal(targeted.rollbackAsset, IMMEDIATE_PRE_RELEASE.asset);
+  assert.equal(targeted.rollbackAssetSha256, IMMEDIATE_PRE_RELEASE.sha256);
+  assert.equal(targeted.rollbackAssetBytes, IMMEDIATE_PRE_RELEASE.bytes);
+  assert.equal(targeted.authorityState, "UNSPENT");
+  assert.equal(targeted.closureReceipt, null);
+  assert.equal(targeted.notImmediateRollback.rollbackDeployment, SUPERSEDED_MAIN_DEPLOYMENT.deployment);
+  assert.equal(targeted.notImmediateRollback.rollbackSha, SUPERSEDED_MAIN_DEPLOYMENT.sha);
   assert.equal(targeted.immutableSourceDeployment, "https://1387126b.4planet-05.pages.dev");
   assert.equal(targeted.liveAsset, "/assets/index-CrCdYuxo.js");
   if (targeted.liveAuthority === false) {
@@ -108,4 +123,102 @@ test("the complete delta from the live source is the allowlist and has no merge"
   assert.ok(files.length > 0, "refusing an empty diff");
   const unexpected = files.filter((file) => !ALLOW.includes(file));
   assert.deepEqual(unexpected, []);
+});
+
+const MATCHING = {
+  available: true,
+  assetReferenced: true,
+  sha256: IMMEDIATE_PRE_RELEASE.sha256,
+  bytes: IMMEDIATE_PRE_RELEASE.bytes,
+};
+const CANDIDATE = "933801c251ea4653cd0fb70a8106a997145f9c37";
+
+function authorised(overrides = {}) {
+  return {
+    branch: BRANCH,
+    liveSourceSha: SOURCE,
+    founderDecisionRef: DECISION,
+    liveAuthority: true,
+    goldEvidenceRef: "https://github.com/odinskogen-dev/4Planet.05/pull/346#issuecomment-5880658004",
+    candidateSha: CANDIDATE,
+    rollbackSha: IMMEDIATE_PRE_RELEASE.sha,
+    rollbackDeployment: IMMEDIATE_PRE_RELEASE.deployment,
+    rollbackAsset: IMMEDIATE_PRE_RELEASE.asset,
+    rollbackAssetSha256: IMMEDIATE_PRE_RELEASE.sha256,
+    rollbackAssetBytes: IMMEDIATE_PRE_RELEASE.bytes,
+    authorityState: "UNSPENT",
+    closureReceipt: null,
+    ...overrides,
+  };
+}
+
+function historicalRollbackAccepted(rollbackSha, rollbackDeployment) {
+  return Boolean(String(rollbackSha || "")) && String(rollbackDeployment || "").includes("pages.dev");
+}
+
+function historicalAuthorised(targeted) {
+  return targeted.liveAuthority === true
+    && Boolean(targeted.goldEvidenceRef)
+    && /^[0-9a-f]{40}$/i.test(targeted.candidateSha)
+    && Boolean(String(targeted.rollbackSha || ""))
+    && String(targeted.rollbackDeployment || "").includes("pages.dev");
+}
+
+test("the old rollback check accepted a spoof and the corrected check rejects it", () => {
+  assert.equal(historicalRollbackAccepted("not-a-sha", "https://example.com/pages.dev"), true);
+  const spoof = authorised({ rollbackSha: "not-a-sha", rollbackDeployment: "https://example.com/pages.dev" });
+  assert.ok(rollbackProblems(spoof, MATCHING).length > 0);
+  for (const deployment of [
+    "https://example.com/pages.dev",
+    "https://1387126b.4planet-05.pages.dev.evil.com",
+    "http://1387126b.4planet-05.pages.dev",
+    "https://1387126b.4planet-05.pages.dev/extra",
+    SUPERSEDED_MAIN_DEPLOYMENT.deployment,
+  ]) {
+    assert.ok(rollbackProblems(authorised({ rollbackDeployment: deployment }), MATCHING).length > 0, deployment);
+  }
+  assert.deepEqual(rollbackProblems(authorised(), MATCHING), []);
+});
+
+test("the old gate passed the same authorisation twice and the corrected gate spends it once", () => {
+  const release = authorised();
+  assert.equal(historicalAuthorised(release), true);
+  assert.equal(historicalAuthorised(release), true);
+  assert.equal(promotionDecision(release, MATCHING, CANDIDATE).ok, true);
+  assert.equal(promotionDecision(release, MATCHING, CANDIDATE).ok, true);
+  const failed = closureAfterDeploy(release, false, MATCHING, CANDIDATE);
+  assert.equal(failed.spent, false);
+  assert.equal(failed.mutated, false);
+  assert.deepEqual(failed.targeted, release);
+  const closed = closureAfterDeploy(release, true, MATCHING, CANDIDATE);
+  assert.equal(closed.spent, true);
+  assert.equal(closed.targeted.authorityState, "CLOSED");
+  assert.equal(promotionDecision(closed.targeted, MATCHING, CANDIDATE).ok, false);
+  assert.match(promotionDecision(closed.targeted, MATCHING, CANDIDATE).message, /already spent/);
+  const replay = closureAfterDeploy(closed.targeted, true, MATCHING, CANDIDATE);
+  assert.equal(replay.spent, false);
+  assert.deepEqual(replay.targeted, closed.targeted);
+});
+
+test("malformed, mismatched, unavailable, drifted and failed-authority states do not pass", () => {
+  assert.ok(rollbackProblems(authorised(), { available: false }).some((problem) => problem.includes("unavailable")));
+  assert.ok(rollbackProblems(authorised(), { available: true, assetReferenced: true, sha256: "a".repeat(64), bytes: 1 }).some((problem) => problem.includes("do not match")));
+  assert.equal(promotionDecision(authorised({ candidateSha: SOURCE }), MATCHING, SOURCE).ok, false);
+  assert.equal(promotionDecision(authorised({ liveSourceSha: SUPERSEDED_MAIN_DEPLOYMENT.sha, rollbackSha: SUPERSEDED_MAIN_DEPLOYMENT.sha }), MATCHING, CANDIDATE).ok, false);
+  assert.equal(promotionDecision(authorised(), MATCHING, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").ok, false);
+  const unauthorised = authorised({ liveAuthority: false, candidateSha: null, goldEvidenceRef: null });
+  const spentAnyway = closureAfterDeploy(unauthorised, true, MATCHING);
+  assert.equal(spentAnyway.spent, false);
+  assert.deepEqual(spentAnyway.targeted, unauthorised);
+  assert.equal(promotionDecision({ ...unauthorised, authorityState: "CLOSED", closureReceipt: { candidateSha: CANDIDATE } }, MATCHING).ok, false);
+});
+
+test("the served pre-release deployment still matches the rollback pin", () => {
+  const observed = observePinnedDeployment();
+  assert.deepEqual(rollbackProblems(authorised(), observed), []);
+  for (const gate of ["scripts/product-authority-gate.mjs", "scripts/live-promotion-authority-gate.mjs"]) {
+    const source = fs.readFileSync(gate, "utf8");
+    assert.equal(source.includes("pages.dev"), source.includes("1387126b.4planet-05.pages.dev"));
+    assert.doesNotMatch(source, /includes\(["']pages\.dev["']\)/);
+  }
 });

@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
+import { observePinnedDeployment, rollbackProblems } from "./live-promotion-authority-gate.mjs";
 
 const ROOT = process.cwd();
 const REGISTRY_PATH = path.join(ROOT, "docs/control/PRODUCT_SURFACE_REGISTRY.json");
@@ -135,6 +136,26 @@ function assertTargetedIdentityRelease(headBranch) {
   if (!String(targeted.founderDecisionRef || "").includes(TARGETED_ID_RELEASE.founderDecision)) {
     die("targeted release founder decision pin mismatch");
   }
+  const provenance = rollbackProblems(targeted, observePinnedDeployment());
+  if (provenance.length > 0) die(provenance.join("; "));
+  if (targeted.authorityState !== "UNSPENT" && targeted.authorityState !== "CLOSED") die("targeted release authority state is invalid");
+  if (targeted.authorityState === "CLOSED" || targeted.closureReceipt != null) {
+    if (targeted.authorityState !== "CLOSED" || targeted.liveAuthority !== true || !isSha(targeted.closureReceipt?.candidateSha)) {
+      die("cannot spend a targeted release that failed authority");
+    }
+    const closedHead = git(["rev-parse", "HEAD"]);
+    const closedParent = git(["rev-parse", "HEAD^"]);
+    if (closedHead !== targeted.closureReceipt.candidateSha && closedParent !== targeted.closureReceipt.candidateSha) {
+      die("spent release is not the tested candidate or its manifest-only child");
+    }
+    if (closedHead !== targeted.closureReceipt.candidateSha) {
+      const closedDiff = git(["diff", "--name-only", targeted.closureReceipt.candidateSha, "HEAD"]).split("\n").filter(Boolean);
+      if (closedDiff.length !== 1 || closedDiff[0] !== "docs/control/LIVE_PROMOTION_MANIFEST.json") {
+        die(`targeted release-control commit changed non-manifest files: ${closedDiff.join(", ") || "NONE"}`);
+      }
+    }
+    return "closed";
+  }
   if (targeted.liveAuthority === false) {
     if (targeted.candidateSha != null || targeted.goldEvidenceRef != null) {
       die("targeted release stays unbound until the manifest-only release child");
@@ -143,9 +164,6 @@ function assertTargetedIdentityRelease(headBranch) {
   }
   if (targeted.liveAuthority !== true || !targeted.goldEvidenceRef || !isSha(targeted.candidateSha)) {
     die("targeted identity release is not live-authorised");
-  }
-  if (!isSha(targeted.rollbackSha) || !String(targeted.rollbackDeployment || "").includes("pages.dev")) {
-    die("targeted release rollback is missing");
   }
   const head = git(["rev-parse", "HEAD"]);
   const parent = git(["rev-parse", "HEAD^"]);
@@ -247,7 +265,7 @@ const isHeir = headBranch === "king/test";
 const registeredSandbox = registeredSandboxes.get(headBranch);
 const isAuthorisedProductWriteBranch = isHeir || Boolean(registeredSandbox);
 const targetedRelease = assertTargetedIdentityRelease(headBranch);
-const targetedCarrier = targetedRelease === "carrier" || targetedRelease === "release";
+const targetedCarrier = targetedRelease === "carrier" || targetedRelease === "release" || targetedRelease === "closed";
 
 // Absolute freeze: an unregistered historical branch is not a work surface at all.
 // The one-time identity carrier is not a branch-name exemption: the pin check above already failed closed.
@@ -297,6 +315,8 @@ console.log(JSON.stringify({
   governanceOnlyChanges,
   role: targetedRelease === "release"
     ? "ONE_TIME_TARGETED_ID_RELEASE_BOUND_NO_CONTINUING_AUTHORITY"
+    : targetedRelease === "closed"
+    ? "ONE_TIME_TARGETED_ID_RELEASE_SPENT_NO_REPLAY"
     : targetedRelease === "carrier"
     ? "ONE_TIME_TARGETED_ID_RELEASE_CARRIER_NO_LIVE_AUTHORITY"
     : isHeir

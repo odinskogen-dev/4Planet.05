@@ -12,11 +12,12 @@ on:
       - "scripts/product-authority-gate.mjs"
       - "scripts/live-promotion-authority-gate.mjs"
       - "docs/control/LIVE_PROMOTION_MANIFEST.json"
+      - "scripts/targeted-id-release-contract.test.mjs"
       - ".github/workflows/identity-canonical-live.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: fourplanet-id-canonical-live
@@ -51,11 +52,14 @@ jobs:
         run: |
           set +e
           set -o pipefail
-          node scripts/live-promotion-authority-gate.mjs | tee promotion-result.txt
+          node scripts/live-promotion-authority-gate.mjs 2>&1 | tee promotion-result.txt
           code=$?
           set -e
           if [ "$code" -eq 0 ]; then
             echo "Promotion gate passed. Deploy is a separate step and runs only from this job after this point."
+          elif grep -q "targeted identity release authority is already spent" promotion-result.txt; then
+            echo "NO DEPLOY. The one-time release authority is already spent."
+            exit 0
           else
             grep -q "targeted identity release is not live-authorised" promotion-result.txt
             echo "NO DEPLOY. The one-time release is not live-authorised."
@@ -88,6 +92,12 @@ jobs:
           test -n "$production"
           test "$production" != "release/targeted-4planet-id-20260929"
           echo "production_branch=$production"
+          deps="$(curl -fsS "$api/accounts/$account/pages/projects/4planet-05/deployments" -H "Authorization: Bearer $token")"
+          already="$(jq -r --arg sha "$GITHUB_SHA" '[.result[]? | select((.deployment_trigger.metadata.commit_hash // "") == $sha and ((.latest_stage.status // "") == "success"))] | length' <<<"$deps")"
+          if [ "$already" != "0" ]; then
+            echo "targeted identity release authority is already spent"
+            exit 1
+          fi
           npm run build
           npx wrangler@4.128.0 pages deploy dist \
             --project-name "$PAGES_PROJECT" \
@@ -95,3 +105,20 @@ jobs:
             --commit-hash "$GITHUB_SHA" \
             --commit-dirty=false \
             --commit-message "4PLANET ID targeted release $GITHUB_SHA"
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import { closureAfterDeploy, observePinnedDeployment } from "./scripts/live-promotion-authority-gate.mjs";
+          const path = "docs/control/LIVE_PROMOTION_MANIFEST.json";
+          const manifest = JSON.parse(fs.readFileSync(path, "utf8"));
+          const observation = observePinnedDeployment();
+          const failed = closureAfterDeploy(manifest.targetedIdentityRelease, false, observation);
+          if (failed.spent || failed.mutated) process.exit(2);
+          const closed = closureAfterDeploy(manifest.targetedIdentityRelease, true, observation);
+          if (!closed.spent || closed.targeted.authorityState !== "CLOSED" || closed.targeted.closureReceipt?.candidateSha !== manifest.targetedIdentityRelease.candidateSha) process.exit(3);
+          manifest.targetedIdentityRelease = closed.targeted;
+          fs.writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
+          NODE
+          test "$(git diff --name-only)" = "docs/control/LIVE_PROMOTION_MANIFEST.json"
+          git add docs/control/LIVE_PROMOTION_MANIFEST.json
+          git -c user.name='4planet-id-canonical-live' -c user.email='noreply@4planet.org' commit -m "Close the one-time 4PLANET ID release authority."
+          git push origin HEAD:release/targeted-4planet-id-20260929
