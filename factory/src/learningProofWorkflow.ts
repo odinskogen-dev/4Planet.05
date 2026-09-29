@@ -161,6 +161,23 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
+  const practiceRetry3 = pkg(
+    "learn-proof-practice-retry-actions-b4",
+    "Adaptive practice retry 3 — execute the complete 3-CHECK procedure",
+    [
+      "A release audit is bound to one exact commit. Its only execution evidence is a first-page GitHub check-runs collection, and the target workflow name is absent from that collection.",
+      "The audit asks whether that GitHub Actions workflow executed for the exact commit through any relevant trigger.",
+      "Use the taught 3-CHECK ABSENCE PROOF explicitly in the response: IDENTITY; EVIDENCE TYPE (raw Actions workflow-runs, not check-runs); COVERAGE (push, pull_request, workflow_dispatch when relevant, plus pagination/all pages).",
+      "Classify the evidence, name every missing check, and do not claim absence.",
+    ].join("\n"),
+    "INSUFFICIENT_EVIDENCE",
+    ["exact sha|commit sha|exact commit", "check-runs", "workflow runs|actions runs|workflow-run", "push|pull request|workflow dispatch|event types|all relevant triggers", "pagination|all pages", "authoritative|raw"],
+    ["workflow did not execute", "absence proven"],
+    "PRACTICE",
+    "practice-retry-explicit-three-check-procedure",
+    now,
+  );
+
   const heldOut = pkg(
     "learn-proof-heldout-library-c",
     "Fresh held-out — bounded document search",
@@ -210,7 +227,7 @@ export function createSelfImprovementProofPackages(now = new Date().toISOString(
     now,
   );
 
-  return { baseline, practice, practiceRetry, practiceRetry2, heldOut, retry, transfer };
+  return { baseline, practice, practiceRetry, practiceRetry2, practiceRetry3, heldOut, retry, transfer };
 }
 
 export function brainDerivedLearningCandidate(baseline: Outcome, now = new Date().toISOString()): LearningCandidate {
@@ -280,6 +297,34 @@ export function refinedLearningCandidate(baseline: Outcome, practice: Outcome, p
     ].join(" "),
     ruleProposal: "3-CHECK ABSENCE PROOF = exact identity + authoritative claim-type evidence + complete trigger/surface/pagination coverage; otherwise INSUFFICIENT_EVIDENCE.",
     nextTest: "Apply all three checks on a fresh practice variant; then proceed to held-out only if the unchanged Judge passes.",
+  };
+}
+
+
+export function reinforcedLearningCandidate(
+  baseline: Outcome,
+  practice: Outcome,
+  practiceRetry: Outcome,
+  practiceRetry2: Outcome,
+  now = new Date().toISOString(),
+): LearningCandidate {
+  const base = refinedLearningCandidate(baseline, practice, practiceRetry, now);
+  return {
+    ...base,
+    evidence: [
+      ...base.evidence,
+      ...practiceRetry2.evidence,
+      "ADAPTIVE_FEEDBACK_03: decision, identity, authority and pagination improved, but the Maker did not explicitly name raw Actions/workflow-runs as the claim-type evidence or enumerate relevant trigger events.",
+    ],
+    lesson: [
+      "For every absence/completeness task, write the 3-CHECK ABSENCE PROOF explicitly.",
+      "IDENTITY — name the exact object/version/commit SHA under judgement.",
+      "EVIDENCE TYPE — name the authoritative source for the claim itself; for GitHub workflow execution say raw GitHub Actions workflow-runs, and state that check-runs alone are not workflow-run completeness.",
+      "COVERAGE — enumerate every relevant trigger/event surface (including push, pull_request and workflow_dispatch when applicable) and all pages/pagination.",
+      "If any check is missing, classify INSUFFICIENT_EVIDENCE, list the missing evidence under the same three headings, and make no absence claim.",
+    ].join(" "),
+    ruleProposal: "3-CHECK ABSENCE PROOF must be stated and executed as IDENTITY + authoritative EVIDENCE TYPE + complete trigger/surface/pagination COVERAGE; otherwise INSUFFICIENT_EVIDENCE.",
+    nextTest: "Complete one explicitly scaffolded corrective practice, then prove the capability on a fresh held-out case with no answer scaffold.",
   };
 }
 
@@ -413,16 +458,29 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
         });
         practiceRetry = retryOutcome2;
         if (!accepted(retryOutcome2)) {
-          return await finish("practice-retry-2-failed", {
-            active: false,
-            state: "PRACTICE_RETRY_2_FAILED",
-            learnerId: LEARNER_ID,
-            baseline,
-            practice,
-            firstPracticeRetry: retryOutcome,
-            practiceRetry: retryOutcome2,
-            reason: "Second adaptive curriculum still did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+          await step.do("reinforce-explicit-three-check-procedure", async () => {
+            await agent.recordLearning(reinforcedLearningCandidate(baseline, practice, retryOutcome, retryOutcome2));
+            await agent.upsertWorkPackage(packages.practiceRetry3);
           });
+          const retryOutcome3: Outcome = await step.do("adaptive-practice-retry-3", async () => {
+            const outcome = await agent.dispatchToWorker(packages.practiceRetry3.id) as Outcome;
+            await agent.finalizeWorkflowOutcome(outcome);
+            return outcome;
+          });
+          practiceRetry = retryOutcome3;
+          if (!accepted(retryOutcome3)) {
+            return await finish("practice-retry-3-failed", {
+              active: false,
+              state: "PRACTICE_RETRY_3_FAILED",
+              learnerId: LEARNER_ID,
+              baseline,
+              practice,
+              firstPracticeRetry: retryOutcome,
+              secondPracticeRetry: retryOutcome2,
+              practiceRetry: retryOutcome3,
+              reason: "Explicit corrective practice still did not reach the unchanged mastery standard; no held-out or transfer credit granted.",
+            });
+          }
         }
       }
     }
@@ -448,7 +506,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const preWakeReceipts = await step.do("readback-pre-wake", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.heldOut.id, packages.retry.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.heldOut.id, packages.retry.id])
     );
 
     await step.sleep("later-independent-learning-wake", "1 minute");
@@ -464,7 +522,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
     }
 
     const receipts = await step.do("independent-learning-readback", async () =>
-      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
+      agent.getLearningRetrievalReceipts([packages.baseline.id, packages.practice.id, packages.practiceRetry.id, packages.practiceRetry2.id, packages.practiceRetry3.id, packages.heldOut.id, packages.retry.id, packages.transfer.id])
     );
     const learnerState = await step.do("learner-state-readback", async () =>
       agent.getLearnerCapabilityState(LEARNER_ID, CAPABILITY_ID)
@@ -498,7 +556,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       baselineRequiredSignalsPassed: requiredSignalPasses(baseline),
       practiceAccepted: accepted(practice),
       practiceRetryAccepted: practiceRetry ? accepted(practiceRetry) : null,
-      correctionAttempts: practiceRetry?.workPackageId === packages.practiceRetry2.id ? 2 : practiceRetry ? 1 : 0,
+      correctionAttempts: practiceRetry?.workPackageId === packages.practiceRetry3.id ? 3 : practiceRetry?.workPackageId === packages.practiceRetry2.id ? 2 : practiceRetry ? 1 : 0,
       heldOutAccepted: accepted(heldOut),
       realRetryAccepted: accepted(retry),
       retryRequiredSignalsPassed: requiredSignalPasses(retry),
@@ -514,7 +572,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
 
     const active =
       !accepted(baseline)
-      && accepted(practice)
+      && accepted(practiceRetry ?? practice)
       && accepted(heldOut)
       && accepted(retry)
       && accepted(transfer)
@@ -541,7 +599,7 @@ export class LearningProofWorkflow extends AgentWorkflow<ProductionFactoryAgent,
       causalLink: {
         before: "Baseline had selected-learning NONE and failed the hidden evidence-scope standard.",
         intervention: `Runtime cached BRAIN-derived learning ${BRAIN_LEARNING_ID} after the genuine baseline gap.`,
-        after: "After targeted feedback and, when needed, one adaptive practice retry, the fresh held-out, comparable real-work retry and materially different transfer explicitly receipted the learning ID and passed the unchanged independent evidence-discipline standard.",
+        after: "After targeted feedback and bounded adaptive corrective practice, the fresh held-out, comparable real-work retry and materially different transfer explicitly receipted the learning ID and passed the unchanged independent evidence-discipline standard.",
         limitation: "This proves organisational/runtime learning for this capability. Model weights are unchanged. Canonical BRAIN writeback and independent Founder/Gold readback remain separate final gates.",
       },
     });

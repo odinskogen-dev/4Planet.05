@@ -17,6 +17,8 @@ test("proof contract keeps one actual LEARNING worker capability and no product 
   assert.match(source, /"REAL_WORK"[\s\S]*baseline-github-filtered-workflow-view/);
   assert.match(source, /"HELD_OUT"[\s\S]*heldout-bounded-knowledge-search/);
   assert.match(source, /"TRANSFER"[\s\S]*transfer-bounded-communication-search/);
+  assert.match(source, /learn-proof-practice-retry-actions-b4/);
+  assert.match(source, /practice-retry-explicit-three-check-procedure/);
 });
 
 test("BRAIN-derived runtime lesson is evidence-scoped and never claims model-weight learning", () => {
@@ -43,4 +45,6 @@ test("proof requires later wake, runtime retrieval and materially different tran
   assert.match(source, /runtimeSelectionProven/);
   assert.match(source, /learnerState\?\.stage === "TRANSFER_PROVEN"/);
   assert.match(source, /RUNTIME_TRANSFER_PROVEN_BRAIN_WRITEBACK_REQUIRED/);
+  assert.match(source, /accepted\(practiceRetry \?\? practice\)/);
+  assert.match(source, /correctionAttempts:[\s\S]*practiceRetry3/);
 });
