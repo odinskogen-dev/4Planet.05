@@ -65,3 +65,4 @@ Before any further proof trigger, the exact deployed Factory runtime must produc
 ### Capacity receipts
 
 - 2026-09-28T23:11:36Z — exact Factory `422f0bb06bf44054efaaae97db2ee373274ac9bc`; learner `learning-1`; requested 4; daily reserved 3/6; daily remaining 3; monthly remaining 47; decision `DAILY_CAP`; read-only; no reservation or purchase. Proof correctly not started.
+- 2026-09-29T00:01:59Z — exact Factory `ca01e3ae7f780ba180ab93424d303241a97f0605`; exact-head push Shadow CI run `36500919096` PASS; learner `learning-1`; requested 4; daily reserved 0/6; daily remaining 6; monthly reserved 3/50; monthly remaining 47; decision `AVAILABLE`; read-only; no reservation or purchase. One continuation proof is authorised.
