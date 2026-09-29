@@ -263,6 +263,12 @@ type LearningEvalPayload = {
   appliedLearningIds?: string[];
 };
 
+function normaliseAppliedLearningId(value: string): string {
+  const trimmed = value.trim();
+  const bracketed = trimmed.match(/^\[([a-z0-9._:-]+)\]$/i);
+  return bracketed?.[1] ?? trimmed;
+}
+
 function parseLearningEvalPayload(raw: unknown): LearningEvalPayload {
   const text = aiText(raw).replace(/^\`\`\`(?:json)?\\s*/i, "").replace(/\\s*\`\`\`$/i, "").trim();
   const parsed = JSON.parse(text) as Record<string, unknown>;
@@ -273,7 +279,7 @@ function parseLearningEvalPayload(raw: unknown): LearningEvalPayload {
     decision: parsed.decision.trim(),
     rationale: parsed.rationale.trim(),
     evidenceNeeded: Array.isArray(parsed.evidenceNeeded) ? parsed.evidenceNeeded.filter((x): x is string => typeof x === "string").slice(0, 12) : [],
-    appliedLearningIds: Array.isArray(parsed.appliedLearningIds) ? parsed.appliedLearningIds.filter((x): x is string => typeof x === "string").slice(0, 12) : [],
+    appliedLearningIds: Array.isArray(parsed.appliedLearningIds) ? parsed.appliedLearningIds.filter((x): x is string => typeof x === "string").map(normaliseAppliedLearningId).slice(0, 12) : [],
   };
 }
 
@@ -312,6 +318,7 @@ async function internalLearningEval(env: Cloudflare.Env, pkg: WorkPackage): Prom
     "rationale must explain why using only the evidence in the task and any CURRENT VALIDATED LEARNING below.",
     "evidenceNeeded is a JSON array of missing or next evidence needed.",
     "appliedLearningIds is a JSON array containing only learning IDs you actually used.",
+    "Copy appliedLearningIds exactly as supplied, without brackets, backticks, labels or other decoration.",
     "",
     "TASK:",
     task,
