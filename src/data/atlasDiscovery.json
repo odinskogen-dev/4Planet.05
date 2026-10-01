@@ -1,0 +1,120 @@
+{
+  "schema": "4PLANET_ATLAS_DISCOVERY_OBJECTS_01",
+  "updatedAt": "2026-10-01",
+  "publicationLaw": "Only source-grounded objects that point into the existing shared ATLAS may be indexable. These pages explain the data and its limits; they do not create a second map or truth system.",
+  "objects": [
+    {
+      "slug": "earth",
+      "title": "Earth — Explore the living planet in 4PLANET ATLAS",
+      "name": "Earth",
+      "eyebrow": "ATLAS / PLANET",
+      "description": "Explore Earth through source-grounded satellite imagery and planetary layers in 4PLANET ATLAS, with source dates, limitations and direct access to the live map.",
+      "summary": "Start with the whole planet. 4PLANET ATLAS brings public planetary data into one shared interface so a person can move from Earth-scale context towards places, species, events and human systems.",
+      "whyItMatters": "Planetary data is often fragmented across specialist services. This object gives a human-readable entry point into the existing ATLAS without hiding where the underlying data comes from.",
+      "availableData": [
+        "NASA Blue Marble as the stable global base view",
+        "Daily or near-daily NASA imagery and scientific layers where the source supports it",
+        "Biodiversity, ocean, land, climate, event and human-system layers inside the same ATLAS"
+      ],
+      "atlasHref": "/atlas?m=PLANET&l=bluemarble,truecolor,biodiv&z=1.65&c=5,18",
+      "freshness": "Each ATLAS layer has its own time semantics. Blue Marble is a composite base; dated scientific layers must be read with their displayed source date.",
+      "limitations": [
+        "The map is an interface over multiple sources with different coverage and update cadences.",
+        "A visible layer is not automatically live or complete.",
+        "Absence of a record or signal is not evidence of ecological absence."
+      ],
+      "sources": [
+        {
+          "label": "NASA Global Imagery Browse Services (GIBS)",
+          "authority": "NASA EOSDIS",
+          "url": "https://nasa-gibs.github.io/gibs-api-docs/",
+          "checkedAt": "2026-10-01",
+          "use": "Source documentation for the Blue Marble and NASA imagery layers used by ATLAS."
+        }
+      ],
+      "related": [
+        {"label": "Explore Orca", "href": "/species/orca"},
+        {"label": "Explore Oslofjord", "href": "/living-systems/oslofjord"},
+        {"label": "Global fires", "href": "/atlas/fires"}
+      ]
+    },
+    {
+      "slug": "fires",
+      "title": "Global Fires — Satellite thermal anomalies in 4PLANET ATLAS",
+      "name": "Global Fires",
+      "eyebrow": "ATLAS / EARTH SIGNAL",
+      "description": "Explore recent global satellite thermal anomalies and source-reported open events in 4PLANET ATLAS. A heat detection is not automatically a confirmed wildfire.",
+      "summary": "See where recent heat signals are being detected across the planet, then inspect them in the shared ATLAS alongside other planetary layers.",
+      "whyItMatters": "Fire information spreads quickly and is easy to overstate. 4PLANET keeps the signal and the interpretation separate: satellite thermal anomalies show detected heat, while source-reported event feeds describe events under their own definitions.",
+      "availableData": [
+        "NASA GIBS MODIS Terra thermal-anomaly imagery used by the existing global ATLAS fire layer",
+        "NASA EONET source-reported open natural-event records in the existing ATLAS event layer",
+        "Direct comparison with other ATLAS context such as vegetation, forest loss and Earth imagery"
+      ],
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,fires,events&z=1.65&c=5,18",
+      "freshness": "The current ATLAS fire raster requests a recent configured NASA GIBS date. EONET records retain the source feed's event status. Read the source date and event definition before treating either as current local conditions.",
+      "limitations": [
+        "A thermal anomaly is detected heat, not proof of a wildfire.",
+        "An EONET event marked open is not automatically an active local emergency.",
+        "Cloud, satellite coverage, source latency and source definitions can affect what appears."
+      ],
+      "sources": [
+        {
+          "label": "NASA GIBS API documentation",
+          "authority": "NASA EOSDIS",
+          "url": "https://nasa-gibs.github.io/gibs-api-docs/",
+          "checkedAt": "2026-10-01",
+          "use": "Source documentation for the MODIS thermal-anomaly imagery used by the ATLAS fire layer."
+        },
+        {
+          "label": "NASA EONET v3 documentation",
+          "authority": "NASA Earth Observatory Natural Event Tracker",
+          "url": "https://eonet.gsfc.nasa.gov/docs/v3",
+          "checkedAt": "2026-10-01",
+          "use": "Source documentation for the source-reported natural-event records used by ATLAS."
+        }
+      ],
+      "related": [
+        {"label": "Earth in ATLAS", "href": "/atlas/earth"},
+        {"label": "Amazonia Mission", "href": "/missions/am4zonia"},
+        {"label": "Explore ATLAS", "href": "/atlas"}
+      ]
+    },
+    {
+      "slug": "whales",
+      "title": "Whales — Explore reported cetacean observations in 4PLANET ATLAS",
+      "name": "Whales",
+      "eyebrow": "ATLAS / OCEAN LIFE",
+      "description": "Explore a bounded set of reported whale and dolphin occurrence records in 4PLANET ATLAS, then move into source-grounded species profiles such as Orca.",
+      "summary": "Whales leave records across many datasets, not a single live track. The current ATLAS whale layer exposes a bounded OBIS occurrence slice so users can explore reported cetacean records while keeping the source limitations visible.",
+      "whyItMatters": "Dots on a map are seductive. They can also be misleading. This object makes the distinction explicit: occurrence records show reported observations or samples, not live positions, migration routes, population size or abundance.",
+      "availableData": [
+        "Current public ATLAS whale layer backed by an OBIS Cetacea occurrence query",
+        "Map exploration of reported cetacean records with the existing shared ATLAS",
+        "Direct route into the curated Orca SPECIES object for deeper source-grounded context"
+      ],
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble,whales&z=2.2&c=0,20",
+      "freshness": "The current public ATLAS whale layer is a bounded broad Cetacea query and does not represent the complete OBIS record universe. Individual records carry their own observation dates and source context.",
+      "limitations": [
+        "Occurrence records are not live animal positions.",
+        "Occurrence points do not form a migration route.",
+        "Record count is not abundance or population size.",
+        "The current broad ATLAS query is bounded and therefore incomplete."
+      ],
+      "sources": [
+        {
+          "label": "Ocean Biodiversity Information System API",
+          "authority": "OBIS",
+          "url": "https://api.obis.org/",
+          "checkedAt": "2026-10-01",
+          "use": "Primary source family for the current public ATLAS Cetacea occurrence layer."
+        }
+      ],
+      "related": [
+        {"label": "Explore Orca", "href": "/species/orca"},
+        {"label": "Oslofjord", "href": "/living-systems/oslofjord"},
+        {"label": "Earth in ATLAS", "href": "/atlas/earth"}
+      ]
+    }
+  ]
+}
