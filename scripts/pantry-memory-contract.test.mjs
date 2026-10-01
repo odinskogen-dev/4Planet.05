@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const memory = await readFile(new URL("../src/food/pantryMemory.ts", import.meta.url), "utf8");
 const ui = await readFile(new URL("../src/pages/sapien/PantryChoice.tsx", import.meta.url), "utf8");
+const emblaRuntime = await readFile(new URL("../products/4sapien/supabase/functions/embla-core-preview/index.ts", import.meta.url), "utf8");
 
 test("FOOD pantry persistence reuses canonical 4PLANET ID and private Person memory", () => {
   assert.match(memory, /getIdentityClient/);
@@ -54,4 +55,23 @@ test("FOOD choice can persist private user decision state without claiming outco
   assert.match(ui, /not that the meal was cooked or useful/i);
   assert.match(ui, /Was this comparison useful for this task/);
   assert.match(ui, /never ingredient names, pantry contents, prompts or free text/i);
+});
+
+
+test("Embla reads the same owner-RLS pantry memory instead of a parallel pantry schema", () => {
+  assert.match(emblaRuntime, /name==="read_pantry"/);
+  assert.match(emblaRuntime, /four_sapien_embla_memories/);
+  assert.match(emblaRuntime, /namespace==="food_pantry_v1"/);
+  assert.match(emblaRuntime, /truth:"USER_CONFIRMED"/);
+  assert.match(emblaRuntime, /UNKNOWN_NO_PANTRY/);
+  assert.doesNotMatch(emblaRuntime, /PANTRY_SCHEMA_NOT_IMPLEMENTED/);
+  assert.match(emblaRuntime, /Purchased is not consumed/);
+});
+
+test("Human Utility recruitment attribution is bounded and never stores raw query parameters", () => {
+  assert.match(ui, /get\('src'\) === 'human_utility'/);
+  assert.match(ui, /human_utility_recruitment/);
+  assert.match(ui, /direct_or_unknown/);
+  assert.match(ui, /food_landing/);
+  assert.doesNotMatch(ui, /utm_/i);
 });
