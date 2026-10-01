@@ -1,3 +1,13 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — PLANET SIGNAL TYPECHECK FIX — 01 OCT 2026
+
+**STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.
+
+**DELTA:** replace one invalid presentation-only `T.body` reference in the PLANET SIGNAL email input with the existing public body-font stack. Consent, Resend writes, analytics and routing are unchanged.
+
+**ACCEPTANCE:** exact-head typecheck + build + smoke + owned-return contract.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN + DISTRIBUTION CLOSURE — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / UNSENT / LIVE CONFIG UNTOUCHED.

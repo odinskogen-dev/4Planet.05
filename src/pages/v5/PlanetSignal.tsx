@@ -82,7 +82,7 @@ export default function PlanetSignal() {
           <form onSubmit={submit} style={{marginTop:26}}>
             <label style={{display:"block",fontSize:13,fontWeight:600}}>Email</label>
             <input type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email"
-              style={{width:"100%",boxSizing:"border-box",marginTop:8,border:`1px solid ${T.lineStrong}`,padding:"14px 12px",fontSize:16,fontFamily:T.body}} />
+              style={{width:"100%",boxSizing:"border-box",marginTop:8,border:`1px solid ${T.lineStrong}`,padding:"14px 12px",fontSize:16,fontFamily:"DM Sans, Arial, Helvetica, sans-serif"}} />
             <input tabIndex={-1} aria-hidden name="company" autoComplete="off" style={{position:"absolute",left:"-10000px",width:1,height:1}} />
             <label style={{display:"flex",gap:10,alignItems:"flex-start",fontSize:13,lineHeight:1.5,color:T.dim,marginTop:16}}>
               <input type="checkbox" checked={consent} onChange={(e)=>setConsent(e.target.checked)} style={{marginTop:3}} />
