@@ -36,6 +36,7 @@ const staticRoutes = [
   "/partners",
   "/funders",
   "/reports",
+  "/signal",
   "/journey/jaguar/",
   "/journey/orca/",
   "/magazine",

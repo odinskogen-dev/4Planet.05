@@ -1,3 +1,19 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN + DISTRIBUTION CLOSURE — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / UNSENT / LIVE CONFIG UNTOUCHED.
+
+**PLANET SIGNAL:** add `/signal` plus `/api/planet-signal`. Explicit consent creates/updates the one Resend Contact, adds the dedicated PLANET SIGNAL Segment and sets the opt-out-by-default PLANET SIGNAL Topic to `opt_in`. No local subscriber database and no automatic welcome email. Missing `RESEND_API_KEY` fails closed; the UI does not claim collection.
+
+**MEASUREMENT:** successful signup emits only bounded `email_signup` metadata; the submitted email is not sent to analytics.
+
+**DISTRIBUTION:** production-ready MAGAZINE queue, Kenya social copy/storyboard, PLANET SIGNAL issue queue and P2 4SAPIEN/4BRANDS readiness are internal assets only. P4nther remains the only Metricool brand discovered; no content is scheduled there.
+
+**CLOUDFLARE ANALYTICS BLOCKER:** current repository workflow is production-connected and still omits `4brands.org`. Its mutation was deliberately not included in this HEIR product commit because changing/dispatching a production-linked workflow is a separate Founder-gated infrastructure action.
+
+**ACCEPTANCE:** typecheck + build + smoke + owned-return contract + product authority/Gold policy. External social/email publication, IndexNow submission, Cloudflare analytics mutation and custom-domain promotion remain Founder-gated.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — INDEXNOW KEY CONTROL FIX — 01 OCT 2026
 
 **STATUS:** HEIR / CONTROL CORRECTION / NO EXTERNAL SUBMISSION.

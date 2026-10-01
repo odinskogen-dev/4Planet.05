@@ -13,7 +13,9 @@ BUILD_NEXT: Blue Whale, Asian Elephant, Tiger, Leopard, Polar Bear, Giant Panda,
 
 P1 internal/unsent: MAGAZINE queue — Kenya is not one ecosystem; what an Orca observation does not prove; Oslofjord below the surface; Great Barrier Reef heat signals; what a species map really shows. Social pattern — one object to carousel/LinkedIn/ATLAS short. Current Metricool brand is not 4PLANET, so nothing scheduled. PLANET SIGNAL — one object, 150–300 words, 2–4 sources, one limitation, one ATLAS CTA; first candidates Kenya/Orca/Oslofjord/GBR/Jaguar. Nothing sent.
 
-Kenya graph closure: African Savanna Elephant, Lion and Cheetah are now curated Species objects with GBIF taxon IDs, bounded source envelopes, public evidence claims, and the existing SPECIES → ATLAS occurrence-map seam. Kenya links to all three only after promotion to curated/indexable.\n\nNext: exact-SHA QA → licensed media enrichment → next high-interest Species batch → Search Console/live readback → Founder release packet.
+Kenya graph closure: African Savanna Elephant, Lion and Cheetah are now curated Species objects with GBIF taxon IDs, bounded source envelopes, public evidence claims, and the existing SPECIES → ATLAS occurrence-map seam. Kenya links to all three only after promotion to curated/indexable.
+
+Next: exact-SHA QA → licensed media enrichment → next high-interest Species batch → Search Console/live readback → Founder release packet.
 
 
 ## P1 discovery distribution closure
@@ -21,3 +23,10 @@ Kenya graph closure: African Savanna Elephant, Lion and Cheetah are now curated 
 - A privacy-bounded `discovery_entry` event classifies ChatGPT, Perplexity, Google, Bing, Instagram, Facebook, LinkedIn, email, direct and other referral without transmitting raw query strings or raw referrer URLs.
 - IndexNow support is prepared with a hosted ownership-key file and a release-gated submission script that submits only qualified Place/Species discovery URLs. It refuses to run unless `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW` and the origin is exactly `https://4planet.org`.
 - IndexNow preparation is not a claim of indexing or ranking; submission remains a post-release discovery notification.
+
+
+## Owned return loop
+- Dedicated Resend Segment and opt-out-by-default Topic named PLANET SIGNAL exist.
+- `/signal` candidate and `/api/planet-signal` gateway use explicit consent and the existing Resend account; no subscriber database is added.
+- The gateway fails closed with HTTP 503 when `RESEND_API_KEY` is absent and sends no welcome mail.
+- The signup page is intentionally `noindex,follow`; it is a return/acquisition surface, not a thin SEO object.

@@ -28,6 +28,7 @@ import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CulturePlay } from "@/pages/v5/Culture";
 import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import Privacy from "@/pages/v5/Privacy";
+import PlanetSignal from "@/pages/v5/PlanetSignal";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -150,6 +151,7 @@ export function AppRoutes() {
       <Route path="/stories" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/signal" element={<PlanetSignal />} />
       <Route path="/culture/film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/play" element={<CulturePlay />} />
       <Route path="/market" element={<MarketHome />} />

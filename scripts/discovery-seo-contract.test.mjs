@@ -13,3 +13,5 @@ test("IndexNow is prepared but fails closed without explicit Founder release", (
   assert.match(indexNow, /item\.indexable === true/);
   assert.equal(read("public/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt").trim(), "8f4c2d91a7b64e3fa1c9d0b6e5274a83");
 });
+
+test("owned return route exists but is intentionally separate from private identity",()=>{const router=read("src/routes/router.tsx");const map=read("scripts/generate-sitemap.mjs");assert.match(router,/path="\/signal"/);assert.match(map,/"\/signal"/);});
