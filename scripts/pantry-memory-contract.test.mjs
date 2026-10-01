@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const memory = await readFile(new URL("../src/food/pantryMemory.ts", import.meta.url), "utf8");
 const ui = await readFile(new URL("../src/pages/sapien/PantryChoice.tsx", import.meta.url), "utf8");
 const emblaRuntime = await readFile(new URL("../products/4sapien/supabase/functions/embla-core-preview/index.ts", import.meta.url), "utf8");
+const liveFoodPantry = await readFile(new URL("../products/4sapien/source/4sapien-pantry-proof.jsx", import.meta.url), "utf8");
 
 test("FOOD pantry persistence reuses canonical 4PLANET ID and private Person memory", () => {
   assert.match(memory, /getIdentityClient/);
@@ -74,4 +75,19 @@ test("Human Utility recruitment attribution is bounded and never stores raw quer
   assert.match(ui, /direct_or_unknown/);
   assert.match(ui, /food_landing/);
   assert.doesNotMatch(ui, /utm_/i);
+});
+
+
+test("actual 4SAPIEN Food source closes the bounded measurement and decision seams without raw pantry analytics", () => {
+  assert.match(liveFoodPantry, /four_sapien_decisions/);
+  assert.match(liveFoodPantry, /USER_DECISION/);
+  assert.match(liveFoodPantry, /food_second_value_reached/);
+  assert.match(liveFoodPantry, /food_context_saved/);
+  assert.match(liveFoodPantry, /food_context_returned/);
+  assert.match(liveFoodPantry, /SB\.functions\.invoke\("embla-core-preview"/);
+  assert.match(liveFoodPantry, /measurement_event:"useful_outcome"/);
+  assert.match(liveFoodPantry, /human_utility_recruitment/);
+  assert.match(liveFoodPantry, /aldri ingrediensnavn, beholdning, prompts eller fritekst/i);
+  assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*pantry/s);
+  assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*entry/s);
 });
