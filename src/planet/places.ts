@@ -57,6 +57,20 @@ export const PLACES: Place[] = [
     pressureIds: [pressureId("warming-water"), pressureId("habitat-loss")],
   },
   {
+    id: placeId("kenya"),
+    name: "Kenya",
+    kind: "COUNTRY",
+    lat: 0.0236,
+    lng: 37.9062,
+    bbox: [33.8, -4.8, 41.9, 5.2],
+    zoom: 4.6,
+    geometryKind: "BOUNDING_BOX",
+    blurb:
+      "A country-scale discovery entry into Kenya's connected forests, grasslands, drylands, wetlands, coast and marine context. The rectangle is navigation geometry, not an official administrative or ecological boundary.",
+    livingSystemIds: [],
+    pressureIds: [],
+  },
+  {
     id: placeId("norwegian-sea"),
     name: "Norwegian Sea",
     kind: "MARINE_AREA",

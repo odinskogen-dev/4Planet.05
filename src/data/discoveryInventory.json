@@ -1,0 +1,275 @@
+{
+  "schema": "4PLANET_DISCOVERY_INVENTORY_01",
+  "updatedAt": "2026-10-01",
+  "publicationLaw": "Only objects with indexable=true have passed this sprint's bounded public-discovery threshold. BUILD_NEXT items are inventory candidates, not published truth objects.",
+  "places": [
+    {
+      "slug": "kenya",
+      "name": "Kenya",
+      "kind": "COUNTRY",
+      "placeId": "place:4p:kenya",
+      "indexable": true,
+      "publicationState": "READY_FOR_FOUNDER_RELEASE",
+      "title": "Kenya — Living systems, wildlife and ecological context | 4PLANET",
+      "description": "Explore Kenya as a living system: forests, grasslands, drylands, wetlands, coastal and marine ecosystems, protected areas, pressures, sources and an ATLAS map.",
+      "summary": "Kenya spans multiple ecological zones and habitats, including lowland and mountain forests, wooded and open grasslands, semi-arid scrubland, dry woodlands, inland aquatic systems, wetlands, and coastal and marine ecosystems.",
+      "truthBoundary": "This page is a source-grounded country-scale discovery object. The ATLAS bounding box is a navigation extent, not an official administrative or ecological boundary. Protected-area totals and coverage figures use different source definitions and must not be collapsed.",
+      "ecosystems": [
+        "Lowland and mountain forests",
+        "Wooded and open grasslands",
+        "Semi-arid scrubland and dry woodlands",
+        "Inland aquatic systems and wetlands",
+        "Coastal and marine ecosystems"
+      ],
+      "protectedAreasSummary": "Protected Planet's September 2026 country profile lists 374 protected areas. Kenya Wildlife Service separately states that its national parks, national reserves and national sanctuaries cover 8.2% of Kenya's land mass. These are different measures with different coverage and definitions.",
+      "pressures": [
+        "Habitat fragmentation",
+        "Human–wildlife conflict",
+        "Poaching and wildlife trafficking",
+        "Climate-change impacts"
+      ],
+      "relatedSpecies": [
+        {
+          "label": "African Savanna Elephant",
+          "scientificName": "Loxodonta africana",
+          "state": "BUILD_NEXT"
+        },
+        {
+          "label": "African Lion",
+          "scientificName": "Panthera leo",
+          "state": "BUILD_NEXT"
+        },
+        {
+          "label": "Cheetah",
+          "scientificName": "Acinonyx jubatus",
+          "state": "BUILD_NEXT"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Kenya Wildlife Service — Protected Area Management",
+          "url": "https://kws.go.ke/protected-area-management/",
+          "checkedAt": "2026-10-01",
+          "use": "Protected-area framework, conservation areas and KWS land-coverage statement."
+        },
+        {
+          "label": "Kenya Wildlife Service — Ecosystems, Land and Seascapes Conservation",
+          "url": "https://kws.go.ke/ecosystems-land-and-seascapes-conservation/",
+          "checkedAt": "2026-10-01",
+          "use": "KWS ecosystem-management scope including forests, wetlands, savannas and marine ecosystems."
+        },
+        {
+          "label": "Convention on Biological Diversity — Kenya Country Profile",
+          "url": "https://www.cbd.int/countries/profile?country=ke",
+          "checkedAt": "2026-10-01",
+          "use": "Ecological-zone and habitat summary. CBD labels the profile text as draft; 4PLANET preserves that limitation."
+        },
+        {
+          "label": "GBIF — Kenya",
+          "url": "https://www.gbif.org/country/KE/summary",
+          "checkedAt": "2026-10-01",
+          "use": "Country-scale biodiversity occurrence-data entry point; occurrence records are not population estimates or complete range."
+        },
+        {
+          "label": "Protected Planet — Kenya",
+          "url": "https://www.protectedplanet.net/en/country/KEN",
+          "checkedAt": "2026-10-01",
+          "use": "September 2026 protected-area profile and source inventory."
+        },
+        {
+          "label": "Kenya Wildlife Service — Strategic Plan 2024–2028",
+          "url": "https://kws.go.ke/strategic-plan/",
+          "checkedAt": "2026-10-01",
+          "use": "KWS-described pressures including habitat fragmentation, human–wildlife conflict, poaching and climate change."
+        }
+      ]
+    }
+  ],
+  "species": [
+    {
+      "slug": "orca",
+      "commonName": "Orca",
+      "scientificName": "Orcinus orca",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Orca identity, habitat, source-grounded evidence, reported observations and the same canonical species in 4PLANET ATLAS."
+    },
+    {
+      "slug": "humpback-whale",
+      "commonName": "Humpback Whale",
+      "scientificName": "Megaptera novaeangliae",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Humpback Whale identity, habitat, evidence, reported observations and ATLAS context in 4PLANET SPECIES."
+    },
+    {
+      "slug": "western-honey-bee",
+      "commonName": "Western Honey Bee",
+      "scientificName": "Apis mellifera",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore the Western Honey Bee, its ecological context, source-backed species facts and connected 4PLANET ATLAS context."
+    },
+    {
+      "slug": "sperm-whale",
+      "commonName": "Sperm Whale",
+      "scientificName": "Physeter macrocephalus",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Sperm Whale identity, habitat, source-grounded evidence, reported observations and ATLAS context."
+    },
+    {
+      "slug": "harbour-porpoise",
+      "commonName": "Harbour Porpoise",
+      "scientificName": "Phocoena phocoena",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Harbour Porpoise identity, habitat, source-grounded evidence and reported observations in 4PLANET ATLAS."
+    },
+    {
+      "slug": "bottlenose-dolphin",
+      "commonName": "Common Bottlenose Dolphin",
+      "scientificName": "Tursiops truncatus",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Common Bottlenose Dolphin identity, habitat, evidence, observations and connected ATLAS context."
+    },
+    {
+      "slug": "atlantic-cod",
+      "commonName": "Atlantic Cod",
+      "scientificName": "Gadus morhua",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Atlantic Cod identity, habitat, ecological context, source records and reported observations in 4PLANET."
+    },
+    {
+      "slug": "blue-mussel",
+      "commonName": "Blue Mussel",
+      "scientificName": "Mytilus edulis",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Blue Mussel identity, habitat, source-grounded context and reported observations through 4PLANET SPECIES and ATLAS."
+    },
+    {
+      "slug": "jaguar",
+      "commonName": "Jaguar",
+      "scientificName": "Panthera onca",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Jaguar identity, tropical-forest habitat, source-grounded evidence and the same species in 4PLANET ATLAS."
+    },
+    {
+      "slug": "hyacinth-macaw",
+      "commonName": "Hyacinth Macaw",
+      "scientificName": "Anodorhynchus hyacinthinus",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Hyacinth Macaw identity, habitat, source-grounded species context and connected 4PLANET ATLAS."
+    },
+    {
+      "slug": "blue-whale",
+      "commonName": "Blue Whale",
+      "scientificName": "Balaenoptera musculus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "african-savanna-elephant",
+      "commonName": "African Savanna Elephant",
+      "scientificName": "Loxodonta africana",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "asian-elephant",
+      "commonName": "Asian Elephant",
+      "scientificName": "Elephas maximus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "lion",
+      "commonName": "Lion",
+      "scientificName": "Panthera leo",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "tiger",
+      "commonName": "Tiger",
+      "scientificName": "Panthera tigris",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "leopard",
+      "commonName": "Leopard",
+      "scientificName": "Panthera pardus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "cheetah",
+      "commonName": "Cheetah",
+      "scientificName": "Acinonyx jubatus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "polar-bear",
+      "commonName": "Polar Bear",
+      "scientificName": "Ursus maritimus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "giant-panda",
+      "commonName": "Giant Panda",
+      "scientificName": "Ailuropoda melanoleuca",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "eastern-gorilla",
+      "commonName": "Eastern Gorilla",
+      "scientificName": "Gorilla beringei",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "chimpanzee",
+      "commonName": "Chimpanzee",
+      "scientificName": "Pan troglodytes",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "bornean-orangutan",
+      "commonName": "Bornean Orangutan",
+      "scientificName": "Pongo pygmaeus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "whale-shark",
+      "commonName": "Whale Shark",
+      "scientificName": "Rhincodon typus",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "green-sea-turtle",
+      "commonName": "Green Sea Turtle",
+      "scientificName": "Chelonia mydas",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    },
+    {
+      "slug": "emperor-penguin",
+      "commonName": "Emperor Penguin",
+      "scientificName": "Aptenodytes forsteri",
+      "indexable": false,
+      "state": "BUILD_NEXT"
+    }
+  ]
+}

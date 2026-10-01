@@ -8,7 +8,6 @@ const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
 const DEFAULT_ANALYTICS_DOMAINS = [
   "4planet.org",
   "id.4planet.org",
-  "test.4planet.org",
   "labs.4planet.org",
   "4sapien.com",
   "4planetatlas.com",

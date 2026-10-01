@@ -1,3 +1,21 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — P0 DISCOVERY HEIR SLICE — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
+
+**AUTHORITY:** one atomic product write to current `king/test` sole HEIR. No new branch, candidate class, truth store, Species engine or Atlas renderer is created.
+
+**FOUNDER NORTH STAR:** UNKNOWN PERSON → SEARCH / AI / SOCIAL / EDITORIAL DISCOVERY → USEFUL PUBLIC OBJECT → PRODUCT EXPLORATION → RETURN → LEARNING.
+
+**BOUNDED DELTA:** reusable Place routes + Kenya Gold candidate; 25-Species production inventory with only 10 existing curated profiles indexable; discovery-derived sitemap; raw HTML discovery prerender; runtime Species SEO/noindex threshold; explicit Search/AI crawler policy; non-production host noindex; and production GA4 isolation from TEST KING.
+
+**KENYA TRUTH BOUNDARY:** KWS, CBD, GBIF and Protected Planet remain named sources. CBD marks its Kenya profile text as draft. The ATLAS bbox is navigation geometry only. KWS land-coverage and Protected Planet area-count measures remain separate.
+
+**SPECIES TRUTH BOUNDARY:** occurrence records remain reported observations, not range, abundance, trend, population status or live location. BUILD_NEXT inventory is not publication approval.
+
+**ACCEPTANCE:** typecheck + production build + discovery contract + existing smoke/contracts + rendered HEIR browser verification. Public custom-domain promotion requires a separate exact-artifact Founder release after Gold.
+
+---
+
 # MULTI-PRODUCT VALUE CONVERGENCE FINAL INTEGRATION + LIVE CLOSURE 02 — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / EXACT-SHA VERIFICATION REQUIRED / NO LIVE CLAIM FROM SOURCE ALONE.
