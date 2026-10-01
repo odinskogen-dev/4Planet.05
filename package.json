@@ -24,7 +24,8 @@
     "seo:sitemap": "node scripts/generate-sitemap.mjs",
     "seo:prerender": "node scripts/prerender-magazine-seo.mjs",
     "test:e2e": "playwright test",
-    "test:discovery": "node --test scripts/discovery-seo-contract.test.mjs"
+    "test:discovery": "node --test scripts/discovery-seo-contract.test.mjs",
+    "indexnow:submit": "node scripts/submit-indexnow.mjs"
   },
   "dependencies": {
     "maplibre-gl": "6.10.0",

@@ -1,3 +1,17 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — DISTRIBUTION + MEASUREMENT SEAM — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / UNSENT / NO LIVE PROMOTION.
+
+**MEASUREMENT:** add one consent-bound, once-per-session `discovery_entry` classification for ChatGPT, Perplexity, Google, Bing, Instagram, Facebook, LinkedIn, email, direct and bounded other-referral. Raw query strings and raw referrer URLs are never emitted.
+
+**INDEXNOW:** host-verification key + submission script are prepared. The script refuses execution unless `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW` and the target origin is exactly `https://4planet.org`. Only indexable discovery inventory routes are submitted. This is release preparation, not a claim of indexing, crawl, ranking or traffic.
+
+**EMAIL:** PLANET SIGNAL is created as a draft in the existing Resend account. Draft creation is internal preparation only; it is not published and no subscriber email has been sent.
+
+**ACCEPTANCE:** exact-head typecheck/build/smoke/discovery contracts. IndexNow invocation and any external email remain Founder-gated actions.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — KENYA SPECIES GRAPH CLOSURE — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.

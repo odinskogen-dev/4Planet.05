@@ -4,3 +4,12 @@ test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/p
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
 test("crawler policy",()=>{for(const b of["OAI-SearchBot","Googlebot","Bingbot"])assert.ok(robots.includes(`User-agent: ${b}`));for(const p of["/labs","/os","/sandbox","/checkout","/api"])assert.ok(robots.includes(`Disallow: ${p}`));assert.match(idx,/host-indexing-policy\.js/)});
 test("measurement isolation",()=>{const d=analytics.match(/const DEFAULT_ANALYTICS_DOMAINS = \[([\s\S]*?)\] as const;/)?.[1]||"";assert.doesNotMatch(d,/"test\.4planet\.org"/);assert.match(d,/"4sapien\.com"/);assert.match(d,/"4brands\.org"/)});
+
+test("IndexNow is prepared but fails closed without explicit Founder release", () => {
+  const indexNow = read("scripts/submit-indexnow.mjs");
+  assert.match(indexNow, /FOUNDER_INDEXNOW_RELEASE/);
+  assert.match(indexNow, /ENIG_INDEXNOW/);
+  assert.match(indexNow, /https:\/\/api\.indexnow\.org\/indexnow/);
+  assert.match(indexNow, /item\.indexable === true/);
+  assert.equal(read("public/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt").trim(), "8f4c2d91a7b64e3fa1c9d0b6e5274a83");
+});

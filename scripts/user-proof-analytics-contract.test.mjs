@@ -199,3 +199,14 @@ test("priority product hosts are first-class analytics surfaces", () => {
   assert.match(analytics, /host === "4sapien\.com"/);
   assert.match(analytics, /host === "4planetatlas\.com"/);
 });
+
+test("discovery attribution records only bounded channel labels, never raw referrer or query payloads", () => {
+  assert.match(analytics, /discovery_entry/);
+  assert.match(analytics, /AI_CHATGPT/);
+  assert.match(analytics, /SEARCH_GOOGLE/);
+  assert.match(analytics, /SOCIAL_INSTAGRAM/);
+  assert.match(analytics, /new URLSearchParams\(window\.location\.search\)\.get\("utm_source"\)/);
+  assert.match(analytics, /safeHostname\(document\.referrer\)/);
+  assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}document\.referrer/);
+  assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}window\.location\.search/);
+});
