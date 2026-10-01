@@ -1,3 +1,17 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — KENYA SPECIES GRAPH CLOSURE — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
+
+**DELTA:** African Savanna Elephant (`Loxodonta africana`, GBIF 2435350), Lion (`Panthera leo`, GBIF 5219404) and Cheetah (`Acinonyx jubatus`, GBIF 2435270) are promoted from BUILD_NEXT into curated SPECIES objects. Each receives bounded source claims and a Source Envelope. The existing SPECIES page machinery supplies ATLAS embedding and GBIF occurrence retrieval; occurrence records remain reports of observations, never range, abundance, residency or live tracking.
+
+**KENYA GRAPH:** `/place/kenya` now links to these three SPECIES objects. Discovery inventory increases from 10 to 13 indexable species while total candidate inventory remains 25. Sitemap and raw discovery prerender automatically follow the controlled inventory.
+
+**SOURCE SET:** GBIF; Kenya Wildlife Service (Amboseli, lion recovery/action plan, 2026 lion census statement, historical cheetah strategy); U.S. Fish & Wildlife Service African Elephant; IUCN SSC Cat Specialist Group; Convention on Migratory Species. Historical Kenya cheetah sighting material is explicitly bounded as historical and non-residency evidence.
+
+**ACCEPTANCE:** typecheck + production build + discovery/smoke contracts + product authority + TEST KING/browser proof on exact candidate. No custom-domain promotion without Founder exact-artifact release.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — P0 DISCOVERY HEIR SLICE — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.

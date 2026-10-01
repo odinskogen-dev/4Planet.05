@@ -30,19 +30,22 @@
       ],
       "relatedSpecies": [
         {
+          "slug": "african-savanna-elephant",
           "label": "African Savanna Elephant",
           "scientificName": "Loxodonta africana",
-          "state": "BUILD_NEXT"
+          "state": "CURATED"
         },
         {
+          "slug": "lion",
           "label": "African Lion",
           "scientificName": "Panthera leo",
-          "state": "BUILD_NEXT"
+          "state": "CURATED"
         },
         {
+          "slug": "cheetah",
           "label": "Cheetah",
           "scientificName": "Acinonyx jubatus",
-          "state": "BUILD_NEXT"
+          "state": "CURATED"
         }
       ],
       "sources": [
@@ -177,8 +180,9 @@
       "slug": "african-savanna-elephant",
       "commonName": "African Savanna Elephant",
       "scientificName": "Loxodonta africana",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore African Savanna Elephant identity, Kenya habitat context, source-grounded evidence, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "asian-elephant",
@@ -191,8 +195,9 @@
       "slug": "lion",
       "commonName": "Lion",
       "scientificName": "Panthera leo",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Lion identity, Kenya recovery/census context, source-grounded evidence, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "tiger",
@@ -212,8 +217,9 @@
       "slug": "cheetah",
       "commonName": "Cheetah",
       "scientificName": "Acinonyx jubatus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Cheetah identity, Kenya and global conservation context, source-grounded evidence, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "polar-bear",
