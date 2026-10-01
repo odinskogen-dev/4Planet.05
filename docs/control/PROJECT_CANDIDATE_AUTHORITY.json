@@ -67,7 +67,7 @@
         "purpose": "One FOOD sandbox for the pantry restore-ownership correction. Returns to king/test. No LIVE authority.",
         "live_authority": false
       },
-      "last_observed_heir_sha": "53c525cc73e4bea05425472217fddef48efcbac6",
+      "last_observed_heir_sha": "5305ca081ac4d28ebe38d7f0eb0dfea93eafd178",
       "lineage_state": "ONE_REGISTERED_SANDBOX_RETURN_TO_KING_TEST",
       "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"
     },

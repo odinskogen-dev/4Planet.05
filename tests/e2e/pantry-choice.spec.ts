@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 test("4SAPIEN pantry: editable anonymous visit, honest unknowns and explicit authenticated persistence boundary", async ({ page }) => {
   await page.goto("/4sapien");
@@ -34,7 +34,7 @@ const OLD_MEMORY = [{
   },
 }];
 
-test("Clear during a delayed pantry restore keeps the newer empty pantry", async ({ page }) => {
+async function openDelayedRestore(page: Page) {
   await page.route(AUTH_SDK, async (route) => {
     await route.fulfill({
       status: 200,
@@ -57,20 +57,75 @@ test("Clear during a delayed pantry restore keeps the newer empty pantry", async
   await page.route("**/rest/v1/four_sapien_embla_events**", async (route) => {
     await route.fulfill({ status: 201, body: "" });
   });
-
   await page.goto("/4sapien");
   const section = page.getByRole("region", { name: "What can I make with what I have?" });
   await expect(section.getByText("Checking private 4SAPIEN memory…")).toBeVisible();
   await expect(section.getByRole("button", { name: "Remember this pantry" })).toBeVisible();
-  await section.getByRole("button", { name: "Clear" }).click();
-  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
-  const memoryDone = page.waitForResponse((response) => response.url().includes("four_sapien_embla_memories"));
-  releaseMemory();
-  await memoryDone;
-  await page.waitForTimeout(300);
-  await expect(section.getByText("Welcome back")).toHaveCount(0);
-  await expect(section.getByLabel("Ingredient 1")).toHaveCount(0);
-  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  return {
+    section,
+    async release() {
+      const memoryDone = page.waitForResponse((response) => response.url().includes("four_sapien_embla_memories"));
+      releaseMemory();
+      await memoryDone;
+      await page.waitForTimeout(300);
+    },
+  };
+}
+
+test("untouched delayed restore still returns the saved pantry", async ({ page }) => {
+  const restore = await openDelayedRestore(page);
+  await restore.release();
+  await expect(restore.section.getByText("Welcome back. Restored 1 user-confirmed pantry items from your private 4SAPIEN memory.")).toBeVisible();
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveValue("old saved food");
+  await expect(restore.section.getByLabel("Quantity 1")).toHaveValue("2");
+  await expect(restore.section.getByLabel("Additional shopping budget in NOK")).toHaveValue("100");
+});
+
+test("Clear during a delayed pantry restore keeps the newer empty pantry", async ({ page }) => {
+  const restore = await openDelayedRestore(page);
+  await restore.section.getByRole("button", { name: "Clear" }).click();
+  await expect(restore.section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  await restore.release();
+  await expect(restore.section.getByText("Welcome back")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Additional shopping budget in NOK")).toHaveValue("");
+  await expect(restore.section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+});
+
+test("example load during a delayed pantry restore keeps the example pantry", async ({ page }) => {
+  const restore = await openDelayedRestore(page);
+  await restore.section.getByRole("button", { name: "Load example pantry" }).click();
+  await expect(restore.section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveValue("Oats");
+  await restore.release();
+  await expect(restore.section.getByText("Welcome back")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveValue("Oats");
+  await expect(restore.section.getByLabel("Ingredient 2")).toHaveValue("Milk");
+  await expect(restore.section.getByLabel("Additional shopping budget in NOK")).toHaveValue("");
+});
+
+test("ingredient add during a delayed pantry restore keeps the new ingredient", async ({ page }) => {
+  const restore = await openDelayedRestore(page);
+  await restore.section.getByLabel("New ingredient").fill("Pasta");
+  await restore.section.getByLabel("New quantity").fill("80");
+  await restore.section.getByRole("button", { name: "Add ingredient" }).click();
+  await expect(restore.section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveValue("Pasta");
+  await restore.release();
+  await expect(restore.section.getByText("Welcome back")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveValue("Pasta");
+  await expect(restore.section.getByLabel("Quantity 1")).toHaveValue("80");
+  await expect(restore.section.getByLabel("Ingredient 2")).toHaveCount(0);
+});
+
+test("budget edit during a delayed pantry restore keeps the newer budget", async ({ page }) => {
+  const restore = await openDelayedRestore(page);
+  await restore.section.getByLabel("Additional shopping budget in NOK").fill("25");
+  await expect(restore.section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  await restore.release();
+  await expect(restore.section.getByText("Welcome back")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Ingredient 1")).toHaveCount(0);
+  await expect(restore.section.getByLabel("Additional shopping budget in NOK")).toHaveValue("25");
 });
 
 test("Clear before the session returns skips identity side effects and the old pantry", async ({ page }) => {

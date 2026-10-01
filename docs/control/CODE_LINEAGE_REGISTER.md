@@ -51,7 +51,7 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 
 ## FOOD pantry restore ownership — 01 Oct 2026
 
-One registered FOOD sandbox: `work/4sapien-food-restore-ownership-20261001`, parent `53c525cc73e4bea05425472217fddef48efcbac6` (`origin/king/test` at registration). Return path is a pull request to `king/test`. Donor `cursor/pantry-restore-ownership-4a35` @ `fb07d639ea40717e18c1e8b0fcd250c8f66f6dfe` is QUARANTINE_PENDING_ARCHIVE and may only donate by copy. No LIVE authority.
+One registered FOOD sandbox: `work/4sapien-food-restore-ownership-20261001`. Registered against `53c525cc73e4bea05425472217fddef48efcbac6`, then forward-synced onto `5305ca081ac4d28ebe38d7f0eb0dfea93eafd178` (`origin/king/test`). That HEIR tip already contains the IndexNow key-file repair (`2516a5defbdf91ab43c5bd54e0ff39f3c9a156aa`, `5305ca081ac4d28ebe38d7f0eb0dfea93eafd178`); this package does not carry a second copy. Return path is a pull request to `king/test`. Donor `cursor/pantry-restore-ownership-4a35` @ `fb07d639ea40717e18c1e8b0fcd250c8f66f6dfe` is QUARANTINE_PENDING_ARCHIVE and may only donate by copy. No LIVE authority.
 
 ## 4SAPIEN CORE FINANCE 01 — bounded HEIR sequence
 
