@@ -1,5 +1,6 @@
 import {test,expect} from "@playwright/test";
 const BASE=process.env.FOOD_REVIEW_URL || process.env.BASE_URL;
+const CACHE_BUST=process.env.FOOD_REVIEW_CACHE_BUST || "";
 if(!BASE) throw new Error("FOOD_REVIEW_URL/BASE_URL required; no inferred LIVE domain");
 const stub=String.raw`
 window.supabase={createClient:()=>({
@@ -27,18 +28,37 @@ window.supabase={createClient:()=>({
   };
   return self;
  },
+ functions:{invoke:async(name,options={})=>window.__syntheticFunction(name,options?.body||{})},
  storage:{from(){return {createSignedUrl:async()=>({data:null,error:null})}}}
 })};
 `;
 test("synthetic first/return UI through existing Food Auth client and mock BACKEND ONLY",async({page})=>{
  test.setTimeout(150000);
  const memory:any[]=[];
+ const events:any[]=[];
+ const decisions:any[]=[];
+ const measurements:any[]=[];
  let next=1;
+ await page.exposeFunction("__syntheticFunction",async(name:string,body:any)=>{
+  measurements.push({name,body});
+  if(name==="embla-core-preview"&&body?.measurement_event==="useful_outcome"){
+   return {data:{ok:true,state:"MEASUREMENT_RECORDED",measurement_event:"useful_outcome"},error:null};
+  }
+  return {data:null,error:{message:"UNEXPECTED_SYNTHETIC_FUNCTION"}};
+ });
  await page.exposeFunction("__syntheticBackend",async(q:any)=>{
   const user=(q.filters||[]).find((f:any)=>f[1]==="user_id")?.[2]||"synthetic-user-a";
   if(q.table==="four_sapien_profiles")return {data:{user_id:user,diet:"none",store:"KIWI",avoid:[],budget:""},error:null};
   if(q.table==="four_sapien_meal_plans")return {data:null,error:null};
   if(q.table==="four_sapien_list_items"||q.table==="four_sapien_shops")return {data:[],error:null};
+  if(q.table==="four_sapien_embla_events"){
+   if(q.op==="insert"){const x={...q.row,id:"event-"+next++};events.push(x);return {data:q.mode==="single"?x:[x],error:null};}
+   return {data:[],error:null};
+  }
+  if(q.table==="four_sapien_decisions"){
+   if(q.op==="insert"){const x={...q.row,id:"decision-"+next++};decisions.push(x);return {data:q.mode==="single"?x:[x],error:null};}
+   return {data:[],error:null};
+  }
   if(q.table!=="four_sapien_embla_memories")return {data:[],error:null};
   const matching=()=>{
    let rows=memory.filter(x=>x.user_id===user);
@@ -55,7 +75,8 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await page.route("**/supabase.min.js",async route=>route.fulfill({status:200,contentType:"application/javascript",body:stub}));
  page.on("pageerror",e=>console.log("SYNTHETIC_PAGE_ERROR",String(e.message).slice(0,350)));
  page.on("console",m=>{if(m.type()==="error")console.log("SYNTHETIC_BROWSER_CONSOLE",m.text().slice(0,350));});
- await page.goto(BASE.replace(/\/$/,"")+"/app/food/",{waitUntil:"domcontentloaded"});
+ const foodUrl=BASE.replace(/\/$/,"")+"/app/food/"+(CACHE_BUST?`?qa_release=${encodeURIComponent(CACHE_BUST)}`:"");
+ await page.goto(foodUrl,{waitUntil:"domcontentloaded"});
  console.log("SYNTHETIC_BODY_FIRST", (await page.locator("body").innerText()).slice(0,1250));
  console.log("SYNTHETIC_RUNTIME_STATE",await page.evaluate(()=>({sb:typeof window.supabase,matcher:typeof (window as any).FourSapienPantryDecision,body:document.body.children.length})));
  console.log("SYNTHETIC_SCRIPTS",await page.evaluate(()=>Array.from(document.scripts).map(x=>({src:x.src,typ:x.type,inline:x.textContent?.length})).slice(-16)));
@@ -73,10 +94,20 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await expect(pantry.getByLabel("Ingrediens 1")).toHaveValue("Havregryn");
  await pantry.getByRole("button",{name:/Bekreft og lagre/}).click();
  await expect(pantry.getByText("Lagring: SAVED",{exact:false})).toBeVisible();
+ await pantry.getByRole("button",{name:"Bruk dette alternativet"}).first().click();
+ await expect(pantry.getByText(/Valget er lagret privat/)).toBeVisible();
+ await pantry.getByRole("button",{name:"Ja",exact:true}).click();
+ await expect(pantry.getByText(/Nyttesignal registrert via eksisterende Human Utility-måling/)).toBeVisible();
+ expect(decisions.length).toBeGreaterThan(0);
+ expect(decisions.at(-1)?.provenance?.evidence_class).toBe("USER_DECISION");
+ expect(measurements.some(x=>x.name==="embla-core-preview"&&x.body?.measurement_event==="useful_outcome"&&x.body?.measurement_value==="yes")).toBeTruthy();
+ expect(events.some(x=>x.event_type==="food_context_saved")).toBeTruthy();
  await page.reload({waitUntil:"domcontentloaded"});
  await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Tilbake: 1 tidligere bekreftede ingredienser/)).toBeVisible();
  await expect(pantry.getByLabel("Ingrediens 1")).toHaveValue("Havregryn");
+ await expect.poll(()=>events.some(x=>x.event_type==="food_context_returned")).toBeTruthy();
+ await expect.poll(()=>events.some(x=>x.event_type==="food_second_value_reached")).toBeTruthy();
  await pantry.getByLabel("Mengde 1").fill("200");
  await pantry.getByRole("button",{name:/Bekreft og lagre/}).click();
  await expect(pantry.getByText("Lagring: SAVED",{exact:false})).toBeVisible();
@@ -93,5 +124,6 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await page.reload({waitUntil:"domcontentloaded"});
  await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Legg inn ingredienser/)).toBeVisible();
+ expect(events.every(x=>!JSON.stringify(x.payload||{}).match(/Havregryn|pantry|prompt/i))).toBeTruthy();
  // CI's in-memory mock is not a real Supabase authenticated session or RLS E2E.
 });

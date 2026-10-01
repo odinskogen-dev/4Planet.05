@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { comparePantryMeals, type FoodRecipe, type PantryItem } from '@/food/pantry-decision.js';
 import {
   currentFoodPantrySession,
   loadFoodPantryMemory,
+  recordFoodValueEvent,
+  recordHumanUtilityMeasurement,
   removeFoodPantryMemory,
+  saveFoodDecision,
   saveFoodPantryMemory,
   type FoodPantryMemory,
 } from '@/food/pantryMemory';
@@ -41,6 +44,18 @@ export default function PantryChoice() {
   const [memory,setMemory] = useState<FoodPantryMemory|null>(null);
   const [memoryState,setMemoryState] = useState<MemoryState>('CHECKING');
   const [memoryMessage,setMemoryMessage] = useState('');
+  const [decisionState,setDecisionState] = useState<'IDLE'|'SAVING'|'SAVED'|'ERROR'>('IDLE');
+  const [decisionMessage,setDecisionMessage] = useState('');
+  const [valueSignal,setValueSignal] = useState<boolean|null>(null);
+  const [valueSignalState,setValueSignalState] = useState<'IDLE'|'SAVING'|'SAVED'|'ERROR'>('IDLE');
+  const startedAtRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const acquisitionSourceRef = useRef(
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('src') === 'human_utility'
+      ? 'human_utility_recruitment'
+      : 'direct_or_unknown',
+  );
+  const activationSentRef = useRef(false);
+  const valueEventSentRef = useRef(false);
 
   const options = useMemo(() => comparePantryMeals({
     pantry, recipes:DEMO_RECIPES,
@@ -48,6 +63,11 @@ export default function PantryChoice() {
   }), [pantry,budget]);
 
   useEffect(() => {
+    trackEvent('food_landing',{
+      product_area:'4sapien',
+      loop:'food_first_value_v2',
+      source_state:acquisitionSourceRef.current,
+    });
     let active = true;
     currentFoodPantrySession()
       .then(async current => {
@@ -57,6 +77,12 @@ export default function PantryChoice() {
           return;
         }
         setSession(current);
+        trackEvent('food_identity_ready',{product_area:'4sapien',loop:'food_first_value_v2'});
+        recordFoodValueEvent(current,'food_identity_ready',{
+          loop:'food_first_value_v2',
+          stage:'identity',
+          source_state:acquisitionSourceRef.current,
+        }).catch(()=>undefined);
         const saved = await loadFoodPantryMemory(current);
         if (!active) return;
         if (!saved) {
@@ -73,6 +99,13 @@ export default function PantryChoice() {
           value_kind:'food_pantry_rehydrated',
           item_count:saved.pantry.length,
         });
+        recordFoodValueEvent(current,'food_context_returned',{
+          loop:'food_first_value_v2',
+          stage:'return',
+          returning:true,
+          item_count:saved.pantry.length,
+          source_state:acquisitionSourceRef.current,
+        }).catch(()=>undefined);
       })
       .catch(() => {
         if (!active) return;
@@ -83,16 +116,43 @@ export default function PantryChoice() {
   }, []);
 
   useEffect(() => {
-    if (!pantry.length || !options.length || typeof window === 'undefined') return;
-    const key = '4p:value-reached:food-pantry-v1';
-    if (window.sessionStorage.getItem(key)) return;
-    trackEvent('value_reached', {
+    if (!pantry.length || !options.length || valueEventSentRef.current) return;
+    const returning = memoryState === 'RETURNED';
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsedMs = Math.max(0,Math.round(now-startedAtRef.current));
+    valueEventSentRef.current = true;
+    trackEvent(returning ? 'second_value_reached' : 'value_reached', {
       product_area:'4sapien',
       value_kind:'food_pantry_comparison',
       option_count:options.length,
+      returning,
+      elapsed_ms:elapsedMs,
     });
-    window.sessionStorage.setItem(key,'1');
-  }, [pantry.length,options.length]);
+    if (session) {
+      recordFoodValueEvent(session,returning ? 'food_second_value_reached' : 'food_value_reached',{
+        loop:'food_first_value_v2',
+        stage:returning ? 'second_value' : 'first_value',
+        returning,
+        elapsed_ms:elapsedMs,
+        item_count:pantry.length,
+        option_count:options.length,
+        source_state:acquisitionSourceRef.current,
+      }).catch(()=>undefined);
+    }
+  }, [memoryState,options.length,pantry.length,session]);
+
+  const recordActivation = (stage:'example'|'manual_item') => {
+    if (activationSentRef.current) return;
+    activationSentRef.current = true;
+    trackEvent('food_activation',{product_area:'4sapien',loop:'food_first_value_v2',stage});
+    if (session) {
+      recordFoodValueEvent(session,'food_activation',{
+        loop:'food_first_value_v2',
+        stage,
+        source_state:acquisitionSourceRef.current,
+      }).catch(()=>undefined);
+    }
+  };
 
   const update = (index:number,patch:Partial<PantryItem>) => {
     setPantry(previous => previous.map((item,i) => i === index ? {...item,...patch} : item));
@@ -102,6 +162,7 @@ export default function PantryChoice() {
   const loadExample = () => {
     setPantry(DEMO_PANTRY.map(item=>({...item})));
     setMemoryState(session ? 'EMPTY' : 'SIGNED_OUT');
+    recordActivation('example');
     trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_example_loaded'});
   };
 
@@ -134,11 +195,75 @@ export default function PantryChoice() {
         memory_kind:'food_pantry',
         item_count:saved.pantry.length,
       });
+      recordFoodValueEvent(session,'food_context_saved',{
+        loop:'food_first_value_v2',
+        stage:'saved_context',
+        item_count:saved.pantry.length,
+      }).catch(()=>undefined);
     } catch (cause) {
       setMemoryState('ERROR');
       setMemoryMessage(cause instanceof Error && cause.message === 'PANTRY_PRIOR_REVISION_REVIEW_REQUIRED'
         ? 'New pantry revision was saved, but the previous revision needs cleanup review.'
         : 'Private pantry could not be saved. Nothing is presented as remembered.');
+    }
+  };
+
+  const chooseOption = async (option:(typeof options)[number]) => {
+    if (!session) {
+      window.location.assign(identityLoginUrl(window.location.href));
+      return;
+    }
+    setDecisionState('SAVING');
+    setDecisionMessage('');
+    try {
+      await saveFoodDecision(session,{
+        optionId:option.id,
+        sourceRef:option.sourceRef,
+        status:option.status,
+        missingCount:option.missing.length,
+        unknownCount:option.unknown.length,
+        comparedOptionIds:options.map(candidate=>candidate.id),
+      });
+      setDecisionState('SAVED');
+      setDecisionMessage('Choice saved as your private decision state. This records the choice, not that the meal was cooked or useful.');
+      trackEvent('food_decision_saved',{
+        product_area:'4sapien',
+        decision_status:option.status,
+        missing_count:option.missing.length,
+        unknown_count:option.unknown.length,
+      });
+      recordFoodValueEvent(session,'food_decision_saved',{
+        loop:'food_first_value_v2',
+        stage:'decision',
+        decision_status:option.status,
+        missing_count:option.missing.length,
+        unknown_count:option.unknown.length,
+        source_state:option.sourceRef === 'DEMO_FIXTURE_NOT_VERIFIED' ? 'demo_fixture' : 'source_referenced',
+      }).catch(()=>undefined);
+    } catch {
+      setDecisionState('ERROR');
+      setDecisionMessage('The decision could not be saved. Nothing is presented as remembered.');
+    }
+  };
+
+  const recordValueSignal = async (helpful:boolean) => {
+    if (valueSignalState === 'SAVING' || valueSignalState === 'SAVED') return;
+    setValueSignal(helpful);
+    trackEvent('explicit_value_signal',{
+      product_area:'4sapien',
+      value_kind:'food_pantry_comparison',
+      helpful,
+    });
+    if (!session) {
+      setValueSignalState('IDLE');
+      return;
+    }
+    setValueSignalState('SAVING');
+    try {
+      await recordHumanUtilityMeasurement(session,'useful_outcome',helpful ? 'yes' : 'not_yet');
+      setValueSignalState('SAVED');
+    } catch {
+      setValueSignalState('ERROR');
     }
   };
 
@@ -188,7 +313,7 @@ export default function PantryChoice() {
         <select aria-label={`Unit ${index+1}`} value={item.unit} onChange={e=>update(index,{unit:e.target.value})} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
         <button type="button" onClick={()=>{setPantry(previous=>previous.filter((_,i)=>i!==index));if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');}} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove</button>
       </div>)}
-      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_item_added'});}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
+      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');recordActivation('manual_item');trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_item_added'});}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
         <input aria-label="New ingredient" placeholder="Ingredient" value={name} onChange={e=>setName(e.target.value)} style={{...inputStyle,flex:'2 1 160px'}}/>
         <input aria-label="New quantity" placeholder="Quantity" type="number" min="0" step="any" value={amount} onChange={e=>setAmount(e.target.value)} style={{...inputStyle,width:105}}/>
         <select aria-label="New unit" value={unit} onChange={e=>setUnit(e.target.value)} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
@@ -207,9 +332,25 @@ export default function PantryChoice() {
         {option.unknown.length>0&&<p>Unknown: {option.unknown.map(i=>i.name).join(', ')}. Correct the information before relying on this result.</p>}
         <p>Additional purchase: {option.additionalPurchase.nok===null?'UNKNOWN':`${option.additionalPurchase.nok.toLocaleString('en-GB')} NOK`}. {option.budget.state.replaceAll('_',' ')}.</p>
         <small>Example recipe, not a product-level evidence or allergy guarantee. Total meal cost and ecological effect UNKNOWN.</small>
+        <div style={{marginTop:14}}>
+          <button type="button" disabled={decisionState==='SAVING'} onClick={()=>chooseOption(option)} style={{...btnStyle,background:'#fff',color:'#080808'}}>
+            {session ? 'Use this option' : 'Sign in to save this choice'}
+          </button>
+        </div>
       </article>):<p>Add ingredients or load the example to compare three test recipes.</p>}
     </div>
 
-    <p style={{maxWidth:720,fontSize:13,lineHeight:1.6,marginTop:22}}>Privacy boundary: anonymous edits remain in this browser tab only. Signed-in persistence writes only after explicit confirmation to your private Person memory under existing owner RLS. It is not shared PLANETBRAIN truth. Missing budget or missing dated prices are UNKNOWN, not 0 NOK.</p>
+    {decisionState!=='IDLE'&&<p role="status" style={{maxWidth:720,marginTop:16}}>{decisionState==='SAVING'?'Saving private decision…':decisionMessage}</p>}
+
+    {pantry.length>0&&options.length>0&&<section aria-label="Value feedback" style={{maxWidth:720,marginTop:28,paddingTop:18,borderTop:'1px solid #c4c4c0'}}>
+      <p style={{margin:'0 0 10px'}}>Was this comparison useful for this task?</p>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        <button type="button" disabled={valueSignalState==='SAVING'||valueSignalState==='SAVED'} aria-pressed={valueSignal===true} onClick={()=>recordValueSignal(true)} style={{...btnStyle,background:valueSignal===true?'#080808':'#fff',color:valueSignal===true?'#fff':'#080808'}}>Yes</button>
+        <button type="button" disabled={valueSignalState==='SAVING'||valueSignalState==='SAVED'} aria-pressed={valueSignal===false} onClick={()=>recordValueSignal(false)} style={{...btnStyle,background:valueSignal===false?'#080808':'#fff',color:valueSignal===false?'#fff':'#080808'}}>Not yet</button>
+      </div>
+      {valueSignal!==null&&<p role="status" style={{fontSize:13}}>{!session?'Value signal recorded for this anonymous session only.':valueSignalState==='SAVING'?'Recording authenticated Human Utility signal…':valueSignalState==='SAVED'?'Authenticated useful-outcome signal recorded through the existing Embla Human Utility measurement path.':'Could not persist the authenticated value signal; no success is claimed.'}</p>}
+    </section>}
+
+    <p style={{maxWidth:720,fontSize:13,lineHeight:1.6,marginTop:22}}>Privacy boundary: anonymous edits remain in this browser tab only. Signed-in persistence writes only after explicit confirmation to your private Person memory under existing owner RLS. Value-loop analytics contain stage, timing, counts and yes/no usefulness only — never ingredient names, pantry contents, prompts or free text. It is not shared PLANETBRAIN truth. Missing budget or missing dated prices are UNKNOWN, not 0 NOK.</p>
   </section>;
 }

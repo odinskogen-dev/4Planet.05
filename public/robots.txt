@@ -1,5 +1,20 @@
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
 User-agent: *
 Allow: /
+Disallow: /labs
+Disallow: /os
+Disallow: /sandbox
+Disallow: /checkout
+Disallow: /api
+Disallow: /4nation
 
 Sitemap: https://4planet.org/sitemap.xml
 Sitemap: https://4planet.org/news-sitemap.xml

@@ -5,6 +5,10 @@ on:
     branches: [king/test]
     paths:
       - .github/workflows/cloudflare-pages-audit.yml
+      - src/pages/sapien/FourSapien.tsx
+      - src/pages/v5/CreatorMarket.tsx
+      - src/components/living/LivingSystemsIntelligencePanel.tsx
+      - src/planet/trustIntelligence.ts
   workflow_dispatch:
 
 permissions:
@@ -50,7 +54,7 @@ jobs:
 
           projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
           jq -e '.success == true' <<<"$projects" >/dev/null
-          all_deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=100" "${auth[@]}")
+          all_deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?page=1&per_page=25" "${auth[@]}")
           jq -e '.success == true' <<<"$all_deployments" >/dev/null
           custom_domains=$(curl -fsS "${api}/accounts/${account_id}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
 
@@ -64,7 +68,7 @@ jobs:
             echo
             echo '| Domain | Zone | Apex DNS | Worker routes |'
             echo '|---|---|---|---|'
-            for domain in 4planet.org s4piens.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
+            for domain in 4planet.org s4piens.com 4sapien.com 4planetmagazine.com 4species.com cre4tors.com 4planetmarket.com; do
               zone=$(curl -fsS "${api}/zones?name=${domain}" "${auth[@]}")
               zid=$(jq -r '.result[0].id // empty' <<<"$zone")
               zstatus=$(jq -r '.result[0].status // "missing"' <<<"$zone")
@@ -84,7 +88,7 @@ jobs:
             echo
             echo '| Project | Production branch | Domains |'
             echo '|---|---|---|'
-            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4sapien\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | [.name, (.production_branch // ""), ([.domains[]?] | join(", "))] | @tsv' <<<"$projects" | while IFS=$'\t' read -r name branch domains; do
               echo "| \`${name}\` | \`${branch}\` | ${domains} |"
             done
 
@@ -93,7 +97,7 @@ jobs:
             echo
             echo '| Project | Commit | Branch | Status | Created | Immutable URL |'
             echo '|---|---|---|---|---|---|'
-            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | .name' <<<"$projects" | while IFS= read -r project; do
+            jq -r '.result[]? | select(any(.domains[]?; test("4planet\\.org|s4piens\\.com|4sapien\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com"))) | .name' <<<"$projects" | while IFS= read -r project; do
               dep=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=3" "${auth[@]}")
               jq -r --arg p "$project" '.result[]? | [$p, (.deployment_trigger.metadata.commit_hash // ""), (.deployment_trigger.metadata.branch // ""), (.latest_stage.status // ""), (.created_on // ""), (.url // "")] | @tsv' <<<"$dep" | while IFS=$'\t' read -r p commit branch status created url; do
                 echo "| \`${p}\` | \`${commit}\` | \`${branch}\` | ${status} | ${created} | ${url} |"
@@ -105,7 +109,7 @@ jobs:
             echo
             echo '| Hostname | Service | Pages origin(s) in Worker | Origin source commit / branch / environment |'
             echo '|---|---|---|---|'
-            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service; do
+            jq -r '.result[]? | select(.hostname | test("^(www\\.)?(4sapien\\.com|4planetmagazine\\.com|4species\\.com|cre4tors\\.com|4planetmarket\\.com)$")) | [(.hostname // ""), (.service // "")] | @tsv' <<<"$custom_domains" | while IFS=$'\t' read -r hostname service; do
               tmp=$(mktemp)
               if curl -fsS "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" > "$tmp"; then
                 origins=$(grep -Eo '[a-zA-Z0-9-]+\.4planet-05\.pages\.dev' "$tmp" | sort -u | paste -sd ', ' - || true)
@@ -126,7 +130,7 @@ jobs:
                     environment=$(jq -r '.environment // ""' <<<"$row")
                     source+="${origin}: ${commit} / ${branch} / ${environment}; "
                   else
-                    source+="${origin}: DEPLOYMENT_NOT_FOUND_IN_FIRST_100; "
+                    source+="${origin}: DEPLOYMENT_NOT_FOUND_IN_FIRST_25; "
                   fi
                 done < <(tr ',' '\n' <<<"$origins" | sed 's/^ *//;s/ *$//')
               fi
@@ -135,6 +139,38 @@ jobs:
             done
 
             echo
+            echo
+            echo '## Public standalone product state'
+            echo
+            market_health=$(curl -fsS 'https://4planetmarket.com/api/market-health?audit='${GITHUB_RUN_ID} || true)
+            market_status=$(curl -fsS 'https://4planetmarket.com/api/market-commerce-status?audit='${GITHUB_RUN_ID} || true)
+            echo "- 4PLANET MARKET health: \`$(jq -c '{ok,source}' <<<"$market_health" 2>/dev/null || echo UNAVAILABLE)\`"
+            echo "- 4PLANET MARKET commerce: \`$(jq -c '{ok,environment,publicCheckoutEnabled,checkoutInfrastructureReady,fulfilmentInfrastructureReady,webhookConfigured,releaseApproved,photoSampleApproved,artSampleApproved,releasedProductIds,productCount}' <<<"$market_status" 2>/dev/null || echo UNAVAILABLE)\`"
+            sapien_root=$(curl -fsS -H 'Sec-Fetch-Mode: navigate' 'https://4sapien.com/' || true)
+            sapien_food=$(curl -fsS -H 'Sec-Fetch-Mode: navigate' 'https://4sapien.com/app/food/' || true)
+            if grep -Fq 'Se livet ditt klart.' <<<"$sapien_root"; then sapien_root_state='ROOT_OK'; else sapien_root_state='ROOT_MARKER_MISSING'; fi
+            if grep -Fq 'FoodPantryProof' <<<"$sapien_food" || grep -Fq '4sapien-pantry-decision.js' <<<"$sapien_food"; then pantry_state='PANTRY_LIVE'; else pantry_state='PANTRY_NOT_LIVE'; fi
+            echo "- 4SAPIEN root: $sapien_root_state"
+            echo "- 4SAPIEN pantry return proof: $pantry_state"
+            echo
+            echo '## Standalone Worker runtime probes'
+            echo
+            echo '| Service | SHA256 | Relevant script strings |'
+            echo '|---|---|---|'
+            for service in 4planetmarket-prototype four-sapien-embla; do
+              tmp=$(mktemp)
+              headers=$(mktemp)
+              if curl -fsS -D "$headers" "${api}/accounts/${account_id}/workers/scripts/${service}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -o "$tmp"; then
+                sum=$(sha256sum "$tmp" | awk '{print $1}')
+                hints=$(strings "$tmp" | grep -Eio 'https?://[^ "'\''<>]+|fourthwall|4planetmarket|4sapien|/market|/app/food|assets|fetch\(' | head -n 30 | tr '\n' ' ' | sed 's/|/\\|/g' || true)
+                [ -n "$hints" ] || hints='NO_RELEVANT_LITERAL_STRINGS'
+                echo "| \`${service}\` | \`${sum}\` | ${hints} |"
+              else
+                echo "| \`${service}\` | FETCH_FAILED | |"
+              fi
+              rm -f "$tmp" "$headers"
+            done
+
             echo '> READ-ONLY AUDIT. No DNS, Worker, Pages project, deployment or public domain was mutated.'
           } > /tmp/cf-report.md
           cat /tmp/cf-report.md

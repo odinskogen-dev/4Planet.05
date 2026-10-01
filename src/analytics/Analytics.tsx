@@ -8,7 +8,6 @@ const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
 const DEFAULT_ANALYTICS_DOMAINS = [
   "4planet.org",
   "id.4planet.org",
-  "test.4planet.org",
   "labs.4planet.org",
   "4sapien.com",
   "4planetatlas.com",
@@ -39,6 +38,64 @@ function measurementId(): string {
 
 function canonicalHost(host: string): string {
   return host.trim().toLowerCase().replace(/^www\./, "");
+}
+
+const DISCOVERY_SESSION_KEY = "4planet.discovery.entry.v1";
+
+type DiscoveryChannel =
+  | "AI_CHATGPT"
+  | "AI_PERPLEXITY"
+  | "SEARCH_GOOGLE"
+  | "SEARCH_BING"
+  | "SOCIAL_INSTAGRAM"
+  | "SOCIAL_FACEBOOK"
+  | "SOCIAL_LINKEDIN"
+  | "EMAIL"
+  | "DIRECT"
+  | "REFERRAL_OTHER";
+
+function safeHostname(rawUrl: string): string {
+  if (!rawUrl) return "";
+  try {
+    return canonicalHost(new URL(rawUrl).hostname);
+  } catch {
+    return "";
+  }
+}
+
+function classifyDiscoveryEntry(): DiscoveryChannel {
+  const source = (new URLSearchParams(window.location.search).get("utm_source") || "").trim().toLowerCase();
+  const medium = (new URLSearchParams(window.location.search).get("utm_medium") || "").trim().toLowerCase();
+  const referrerHost = safeHostname(document.referrer);
+
+  if (source.includes("chatgpt") || referrerHost === "chatgpt.com" || referrerHost.endsWith(".chatgpt.com")) return "AI_CHATGPT";
+  if (source.includes("perplexity") || referrerHost === "perplexity.ai" || referrerHost.endsWith(".perplexity.ai")) return "AI_PERPLEXITY";
+  if (source === "google" || referrerHost.startsWith("google.") || referrerHost.includes(".google.")) return "SEARCH_GOOGLE";
+  if (source === "bing" || referrerHost === "bing.com" || referrerHost.endsWith(".bing.com")) return "SEARCH_BING";
+  if (source.includes("instagram") || source === "ig" || referrerHost === "instagram.com" || referrerHost.endsWith(".instagram.com")) return "SOCIAL_INSTAGRAM";
+  if (source.includes("facebook") || referrerHost === "facebook.com" || referrerHost.endsWith(".facebook.com")) return "SOCIAL_FACEBOOK";
+  if (source.includes("linkedin") || referrerHost === "linkedin.com" || referrerHost.endsWith(".linkedin.com")) return "SOCIAL_LINKEDIN";
+  if (medium === "email" || medium === "newsletter" || source.includes("newsletter")) return "EMAIL";
+  if (!referrerHost && !source) return "DIRECT";
+  return "REFERRAL_OTHER";
+}
+
+function trackDiscoveryEntryOnce(pagePath: string) {
+  if (window.sessionStorage.getItem(DISCOVERY_SESSION_KEY)) return;
+  const discoveryChannel = classifyDiscoveryEntry();
+  window.gtag?.("event", "discovery_entry", {
+    discovery_channel: discoveryChannel,
+    landing_product: productArea(pagePath, window.location.hostname),
+    landing_path: pagePath,
+    site_host: canonicalHost(window.location.hostname),
+  });
+  capturePostHog("discovery_entry", {
+    discovery_channel: discoveryChannel,
+    landing_product: productArea(pagePath, window.location.hostname),
+    landing_path: pagePath,
+    site_host: canonicalHost(window.location.hostname),
+  });
+  window.sessionStorage.setItem(DISCOVERY_SESSION_KEY, discoveryChannel);
 }
 
 function configuredDomains(): string[] {
@@ -182,6 +239,7 @@ export function Analytics() {
       page_path: location.pathname,
     });
     capturePostHog("$pageview", pageProperties);
+    trackDiscoveryEntryOnce(location.pathname);
   }, [allowedHost, consent, id, location.pathname]);
 
   if (!allowedHost || !id || consent !== null) return null;

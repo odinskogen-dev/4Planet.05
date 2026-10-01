@@ -1,0 +1,141 @@
+name: 4SAPIEN Founder-authorised bounded LIVE release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - '.github/workflows/ask-embla-production.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4sapien-bounded-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[4sapien-live]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Assert exact HEIR release intent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/king/test"
+          git fetch origin king/test --depth=1
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/king/test)"
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+
+      - name: Materialize current canonical 4SAPIEN product
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE=products/4sapien/site
+          DROP=/tmp/4sapien-unified-20260917
+          FOOD=$SITE/app/food/index.html
+          rm -rf "$SITE" "$DROP"
+          mkdir -p "$SITE/app/food" "$SITE/app" "$DROP"
+          python products/4sapien/build/materialize_unified_drop.py products/4sapien/source/claude-unified-20260917 "$DROP"
+          cp products/4sapien/source/4sapien-design.css "$SITE/4sapien-design.css"
+          cp products/4sapien/source/4sapien-theme.js "$SITE/4sapien-theme.js"
+          python products/4sapien/build/apply_front_v2_release.py "$DROP/4sapien_app_unified.html" "$SITE/index.html"
+          cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
+          python products/4sapien/build/apply_finance_route.py "$SITE/index.html" "$DROP/4sapien_finance_MERGED.html" "$DROP/4sapien_finance_AXE_experience_MERGED.html"
+          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
+          python products/4sapien/build/apply_unified_design_guard.py "$SITE"
+          cp products/4sapien/source/4sapien-live-hardening.css "$SITE/4sapien-live-hardening.css"
+          cp products/4sapien/source/4sapien-live-hardening.js "$SITE/4sapien-live-hardening.js"
+          python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
+          python products/4sapien/build/apply_document_intake_guard.py "$SITE"
+          python products/4sapien/build/apply_pantry_first_return_guard.py "$SITE"
+          cp products/4sapien/cloudflare/_headers "$SITE/_headers"
+          cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
+          python - <<'PY'
+          import os, pathlib
+          sha=os.environ["GITHUB_SHA"]
+          for p in pathlib.Path("products/4sapien/site").rglob("*.html"):
+              s=p.read_text()
+              if "</head>" not in s: raise SystemExit(f"missing head {p}")
+              p.write_text(s.replace("</head>",f'<meta name="4planet-source-sha" content="{sha}"></head>',1))
+          PY
+
+      - name: Zero-loss and pantry-return gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE=products/4sapien/site
+          ROOT=$SITE/index.html
+          FOOD=$SITE/app/food/index.html
+          MONEY=$SITE/app/money/index.html
+          BRAIN=$SITE/brain/index.html
+          for marker in 'Se livet ditt klart.' 'functions/v1/embla-core-preview' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$ROOT"; done
+          for marker in 'fs-food-main' 'MAT · EMBLA' 'FoodPantryProof' 'four_sapien_embla_memories' '4sapien-pantry-decision.js'; do grep -Fq "$marker" "$FOOD"; done
+          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1'; do grep -Fq "$marker" "$MONEY"; done
+          for marker in 'brainIdentity' 'functions/v1/brain-profile'; do grep -Fq "$marker" "$BRAIN"; done
+          node --check "$SITE/4sapien-live-hardening.js"
+          node --check "$SITE/4sapien-pantry-decision.js"
+          ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$SITE"
+          grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$ROOT"
+          grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$FOOD"
+
+      - name: Browser prove first-return before LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install --with-deps chromium >/dev/null
+          python -m http.server 4173 -d products/4sapien/site >/tmp/4sapien-local.log 2>&1 &
+          pid=$!
+          trap 'kill $pid || true' EXIT
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/app/food/ >/dev/null && break; sleep 1; done
+          FOOD_REVIEW_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+
+      - name: Verify existing LIVE Worker authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS "$api/zones?name=4sapien.com&status=active" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          domains=$(curl -fsS "$api/accounts/$account/workers/domains" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          service=$(jq -r '[.result[]? | select(.hostname=="4sapien.com")][0].service // empty' <<<"$domains")
+          test "$service" = "four-sapien-embla"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+
+      - name: Deploy only canonical 4SAPIEN Worker
+        working-directory: products/4sapien
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --config wrangler.jsonc | tee /tmp/4sapien-live-deploy.log
+
+      - name: Physical LIVE readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in $(seq 1 30); do
+            root_code=$(curl -L -sS -o /tmp/live-root.html -w '%{http_code}' "https://4sapien.com/?release=$GITHUB_RUN_ID-$attempt" || true)
+            food_code=$(curl -L -sS -o /tmp/live-food.html -w '%{http_code}' "https://4sapien.com/app/food/?release=$GITHUB_RUN_ID-$attempt" || true)
+            if [ "$root_code" = 200 ] && [ "$food_code" = 200 ] &&
+               grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" /tmp/live-root.html &&
+               grep -Fq 'FoodPantryProof' /tmp/live-food.html &&
+               grep -Fq '4sapien-pantry-decision.js' /tmp/live-food.html; then ready=1; break; fi
+            sleep 3
+          done
+          test "$ready" = 1
+          FOOD_REVIEW_CACHE_BUST="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" FOOD_REVIEW_URL=https://4sapien.com npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+          echo "4SAPIEN LIVE VERIFIED https://4sapien.com/ source=$GITHUB_SHA"
+
+# Founder LIVE release authorised 2026-10-01 — 4SAPIEN FOOD value loop

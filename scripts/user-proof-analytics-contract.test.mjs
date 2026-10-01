@@ -30,7 +30,6 @@ const requiredEvents = [
 const requiredAnalyticsHosts = [
   "4planet.org",
   "id.4planet.org",
-  "test.4planet.org",
   "labs.4planet.org",
   "4sapien.com",
   "4planetatlas.com",
@@ -109,7 +108,7 @@ test("PostHog reuses the same consented event spine and fails closed without con
   assert.doesNotMatch(posthog, /phc_[A-Za-z0-9]+/);
 });
 
-test("analytics is fail-closed to the approved product and test-domain set", () => {
+test("analytics is fail-closed to the approved production product-domain set", () => {
   for (const host of requiredAnalyticsHosts) assert.ok(analytics.includes(`\"${host}\"`), `analytics host missing: ${host}`);
   assert.match(analytics, /\.pages\.dev/);
   assert.match(analytics, /localhost/);
@@ -199,4 +198,15 @@ test("priority product hosts are first-class analytics surfaces", () => {
   }
   assert.match(analytics, /host === "4sapien\.com"/);
   assert.match(analytics, /host === "4planetatlas\.com"/);
+});
+
+test("discovery attribution records only bounded channel labels, never raw referrer or query payloads", () => {
+  assert.match(analytics, /discovery_entry/);
+  assert.match(analytics, /AI_CHATGPT/);
+  assert.match(analytics, /SEARCH_GOOGLE/);
+  assert.match(analytics, /SOCIAL_INSTAGRAM/);
+  assert.match(analytics, /new URLSearchParams\(window\.location\.search\)\.get\("utm_source"\)/);
+  assert.match(analytics, /safeHostname\(document\.referrer\)/);
+  assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}document\.referrer/);
+  assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}window\.location\.search/);
 });
