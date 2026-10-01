@@ -1,3 +1,6 @@
+import { BrregProviderError, fetchBrregExact } from "../../products/4sapien/supabase/functions/_shared/brreg";
+import { bindBrregIdentity, markIdentityUnknown, normaliseOrganisationNumber } from "../_shared/fourbrands-provenance.mjs";
+
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
 
 type CompanyIdentityInput = {
@@ -298,36 +301,24 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   if (company.length < 2) return json({ ok: false, error: "COMPANY_REQUIRED" }, 400);
   const identity = body.identity && typeof body.identity === "object" ? body.identity as CompanyIdentityInput : null;
 
-  const applyIdentity = (analysis: any) => {
-    if (!identity?.organizationNumber || !/^\\d{9}$/.test(identity.organizationNumber)) return analysis;
-    analysis.company = {
-      ...analysis.company,
-      legalName: clean(identity.legalName, 240) || analysis.company?.legalName || analysis.company?.name || "",
-      organizationNumber: identity.organizationNumber,
-      lei: identity.lei || null,
-      identityState: identity.identityState || "EXACT_BRREG_IDENTITY",
-    };
-    const checkedAt = new Date().toISOString().slice(0, 10);
-    if (identity.brregSourceUrl && !analysis.evidence?.some((item: any) => item.id === "BRREG-LEGAL-IDENTITY")) {
-      analysis.evidence = [...(analysis.evidence || []), {
-        id: "BRREG-LEGAL-IDENTITY", title: "Enhetsregisteret legal entity record", publisher: "Brønnøysundregistrene",
-        url: identity.brregSourceUrl, checkedAt, note: `Exact organisation number ${identity.organizationNumber}; NLOD 2.0.`,
-      }];
+  const applyIdentity = async (analysis: any) => {
+    if (!identity) return analysis;
+    const organizationNumber = normaliseOrganisationNumber(identity.organizationNumber);
+    if (!organizationNumber) return markIdentityUnknown(analysis, "MALFORMED_ORGANISATION_NUMBER");
+    try {
+      const entity = await fetchBrregExact(organizationNumber, { signal: AbortSignal.timeout(6500) });
+      if (!entity) return markIdentityUnknown(analysis, "BRREG_IDENTITY_NOT_FOUND");
+      return bindBrregIdentity(analysis, entity, company).analysis;
+    } catch (error) {
+      const state = error instanceof BrregProviderError ? error.state : "IDENTITY_SOURCE_UNAVAILABLE";
+      return markIdentityUnknown(analysis, state);
     }
-    if (identity.lei && identity.gleifSourceUrl && !analysis.evidence?.some((item: any) => item.id === "GLEIF-LEI")) {
-      analysis.evidence = [...(analysis.evidence || []), {
-        id: "GLEIF-LEI", title: "Global LEI Index legal entity record", publisher: "GLEIF",
-        url: identity.gleifSourceUrl, checkedAt, note: `LEI ${identity.lei}; accepted only from exact registeredAs ↔ BRREG organisation-number crosswalk; GLEIF open data / CC0.`,
-      }];
-    }
-    analysis.statusNote = `${analysis.statusNote || ""} Legal identity is separately source-resolved; legal identity does not prove economic, environmental or ownership claims.`.trim();
-    return analysis;
   };
 
   const normalised = company.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: applyIdentity(tomraProof()) });
+  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: await applyIdentity(tomraProof()) });
 
-  try { return json({ ok: true, analysis: applyIdentity(await liveAnalysis(company, ctx.env)) }); }
+  try { return json({ ok: true, analysis: await applyIdentity(await liveAnalysis(company, ctx.env)) }); }
   catch (error) {
     return json({ ok: false, error: "ANALYSIS_ENGINE_UNAVAILABLE", detail: error instanceof Error ? error.message : "Live company research unavailable." }, 503);
   }
