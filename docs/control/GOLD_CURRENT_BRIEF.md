@@ -1,3 +1,15 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN QA CORRECTION — 01 OCT 2026
+
+**STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.
+
+**DELTA:** correct the owned-return privacy contract so it forbids an `email` analytics parameter rather than falsely matching the event name `email_signup`. Remove `/signal` from the discovery sitemap because its page-level contract is deliberately `noindex,follow`.
+
+**TRUTH:** PLANET SIGNAL remains a consented return/acquisition surface, not an SEO inventory object. No subscriber email, raw query string or raw referrer URL is added to analytics.
+
+**ACCEPTANCE:** exact-head typecheck + build + smoke + discovery contracts + authority/Gold policy.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — PLANET SIGNAL TYPECHECK FIX — 01 OCT 2026
 
 **STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.

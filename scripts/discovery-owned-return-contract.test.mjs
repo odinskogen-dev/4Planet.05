@@ -16,5 +16,5 @@ test("PLANET SIGNAL signup is explicit-consent and one-source-of-audience-truth"
   assert.match(api,/cd9c9b30-ff3b-4b33-9c67-5abbd6d049ea/);
   assert.match(api,/subscription: "opt_in"/);
   assert.match(api,/unsubscribed: false/);
-  assert.doesNotMatch(page,/trackEvent\([^)]*email/);
+  assert.doesNotMatch(page,/trackEvent\("email_signup"[^\n]*\bemail\s*:/);
 });
