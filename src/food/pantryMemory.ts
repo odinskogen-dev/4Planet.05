@@ -12,6 +12,41 @@ export type FoodPantryMemory = {
   createdAt: string;
 };
 
+export type FoodValueEventType =
+  | "food_identity_ready"
+  | "food_activation"
+  | "food_value_reached"
+  | "food_context_saved"
+  | "food_context_returned"
+  | "food_second_value_reached"
+  | "food_decision_saved"
+  | "food_value_signal";
+
+export type FoodDecisionSummary = {
+  optionId: string;
+  sourceRef: string | null;
+  status: string;
+  missingCount: number;
+  unknownCount: number;
+  comparedOptionIds: string[];
+};
+
+type FoodValuePayload = Record<string, string | number | boolean | null>;
+
+const FOOD_VALUE_PAYLOAD_KEYS = new Set([
+  "loop",
+  "stage",
+  "returning",
+  "elapsed_ms",
+  "item_count",
+  "option_count",
+  "missing_count",
+  "unknown_count",
+  "decision_status",
+  "source_state",
+  "helpful",
+]);
+
 type MemoryRow = {
   id: string;
   value?: {
@@ -149,6 +184,84 @@ export async function saveFoodPantryMemory(
     budgetNok,
     createdAt: verified.created_at || "",
   };
+}
+
+
+function privacySafeFoodPayload(payload: FoodValuePayload) {
+  return Object.fromEntries(
+    Object.entries(payload)
+      .filter(([key, value]) => FOOD_VALUE_PAYLOAD_KEYS.has(key) && (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ))
+      .map(([key, value]) => [
+        key,
+        typeof value === "string" ? value.slice(0, 80) : value,
+      ]),
+  );
+}
+
+export async function recordFoodValueEvent(
+  session: FourPlanetSession,
+  eventType: FoodValueEventType,
+  payload: FoodValuePayload = {},
+) {
+  const response = await fetch(`${identityConstants.supabaseUrl}/rest/v1/four_sapien_embla_events`, {
+    method: "POST",
+    headers: headers(session, {
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    }),
+    body: JSON.stringify({
+      user_id: session.user.id,
+      event_type: eventType,
+      world: "food",
+      source: "4sapien_food_value_loop_v2",
+      payload: privacySafeFoodPayload(payload),
+    }),
+  });
+  if (!response.ok) throw new Error("FOOD_VALUE_EVENT_WRITE_FAILED");
+}
+
+export async function saveFoodDecision(
+  session: FourPlanetSession,
+  summary: FoodDecisionSummary,
+) {
+  const response = await fetch(`${identityConstants.supabaseUrl}/rest/v1/four_sapien_decisions`, {
+    method: "POST",
+    headers: headers(session, {
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    }),
+    body: JSON.stringify({
+      user_id: session.user.id,
+      world: "food",
+      title: "FOOD meal choice",
+      question: "What can I make with what I have?",
+      options: summary.comparedOptionIds.slice(0, 10).map((id) => ({ id })),
+      decision: summary.optionId,
+      status: "decided",
+      evidence: [{
+        source_ref: summary.sourceRef,
+        source_state: summary.sourceRef === "DEMO_FIXTURE_NOT_VERIFIED" ? "DEMO_FIXTURE_NOT_VERIFIED" : "SOURCE_REFERENCED",
+        missing_count: summary.missingCount,
+        unknown_count: summary.unknownCount,
+      }],
+      provenance: {
+        source: "4SAPIEN FOOD",
+        privacy: "private_person",
+        evidence_class: "USER_DECISION",
+        loop: "food_first_value_v2",
+      },
+      decided_at: new Date().toISOString(),
+    }),
+  });
+  if (!response.ok) throw new Error("FOOD_DECISION_WRITE_FAILED");
+  const rows = (await response.json()) as Array<{ id?: string }>;
+  if (!rows[0]?.id) throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
+  return rows[0].id;
 }
 
 export async function removeFoodPantryMemory(session: FourPlanetSession, id: string) {
