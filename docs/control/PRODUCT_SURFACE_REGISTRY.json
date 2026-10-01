@@ -165,7 +165,14 @@
     "FOOD": {
       "live": {"url": "https://s4piens.com/food", "identity_state": "READBACK_REQUIRED"},
       "heir": {"review_path": "/food", "origin_path": "/4sapien/food"},
-      "sandbox": null
+      "sandbox": {
+        "branch": "work/4sapien-food-restore-ownership-20261001",
+        "sha_at_registration": "53c525cc73e4bea05425472217fddef48efcbac6",
+        "review_path": "/food/sandbox",
+        "origin_path": "/4sapien/food",
+        "lineage_state": "REGISTERED_FOOD_PANTRY_RESTORE_OWNERSHIP",
+        "live_authority": false
+      }
     },
     "CRE4TORS": {
       "live": {"url": "https://cre4tors.com/", "identity_state": "READBACK_REQUIRED"},

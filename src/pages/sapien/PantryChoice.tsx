@@ -10,6 +10,7 @@ import {
   saveFoodPantryMemory,
   type FoodPantryMemory,
 } from '@/food/pantryMemory';
+import { createRestoreOwnership, restoreFoodPantryIfStillOwned } from '@/food/pantryRestoreOwnership.js';
 import { identityLoginUrl, type FourPlanetSession } from '@/identity/identityClient';
 import { trackEvent } from '@/analytics/Analytics';
 
@@ -56,6 +57,7 @@ export default function PantryChoice() {
   );
   const activationSentRef = useRef(false);
   const valueEventSentRef = useRef(false);
+  const ownershipRef = useRef(createRestoreOwnership());
 
   const options = useMemo(() => comparePantryMeals({
     pantry, recipes:DEMO_RECIPES,
@@ -68,14 +70,16 @@ export default function PantryChoice() {
       loop:'food_first_value_v2',
       source_state:acquisitionSourceRef.current,
     });
-    let active = true;
-    currentFoodPantrySession()
-      .then(async current => {
-        if (!active) return;
-        if (!current) {
-          setMemoryState('SIGNED_OUT');
-          return;
-        }
+    const ownership = ownershipRef.current;
+    const token = ownership.begin();
+    let seenSession: FourPlanetSession | null = null;
+    void restoreFoodPantryIfStillOwned({
+      ownership,
+      token,
+      loadSession: currentFoodPantrySession,
+      loadMemory: loadFoodPantryMemory,
+      onSession: (current) => {
+        seenSession = current;
         setSession(current);
         trackEvent('food_identity_ready',{product_area:'4sapien',loop:'food_first_value_v2'});
         recordFoodValueEvent(current,'food_identity_ready',{
@@ -83,12 +87,10 @@ export default function PantryChoice() {
           stage:'identity',
           source_state:acquisitionSourceRef.current,
         }).catch(()=>undefined);
-        const saved = await loadFoodPantryMemory(current);
-        if (!active) return;
-        if (!saved) {
-          setMemoryState('EMPTY');
-          return;
-        }
+      },
+      onSignedOut: () => setMemoryState('SIGNED_OUT'),
+      onEmpty: () => setMemoryState('EMPTY'),
+      onReturned: (saved) => {
         setMemory(saved);
         setPantry(saved.pantry);
         setBudget(saved.budgetNok === null ? '' : String(saved.budgetNok));
@@ -99,20 +101,21 @@ export default function PantryChoice() {
           value_kind:'food_pantry_rehydrated',
           item_count:saved.pantry.length,
         });
-        recordFoodValueEvent(current,'food_context_returned',{
+        if (!seenSession) return;
+        recordFoodValueEvent(seenSession,'food_context_returned',{
           loop:'food_first_value_v2',
           stage:'return',
           returning:true,
           item_count:saved.pantry.length,
           source_state:acquisitionSourceRef.current,
         }).catch(()=>undefined);
-      })
-      .catch(() => {
-        if (!active) return;
+      },
+      onError: () => {
         setMemoryState('ERROR');
         setMemoryMessage('Private pantry memory could not be read. Nothing was assumed or overwritten.');
-      });
-    return () => { active = false; };
+      },
+    });
+    return () => { ownership.endLifetime(); };
   }, []);
 
   useEffect(() => {
@@ -154,22 +157,36 @@ export default function PantryChoice() {
     }
   };
 
+  const releaseAutomaticRestore = () => {
+    ownershipRef.current.noteUserIntent();
+    if (memoryState === 'CHECKING') {
+      setMemoryState('EMPTY');
+      setMemoryMessage('Automatic restore will not replace this edit.');
+      return;
+    }
+    if (memoryState === 'SAVED' || memoryState === 'RETURNED') {
+      setMemoryState('EMPTY');
+      setMemoryMessage('');
+    }
+  };
+
   const update = (index:number,patch:Partial<PantryItem>) => {
+    releaseAutomaticRestore();
     setPantry(previous => previous.map((item,i) => i === index ? {...item,...patch} : item));
-    if (memoryState === 'SAVED' || memoryState === 'RETURNED') setMemoryState('EMPTY');
   };
 
   const loadExample = () => {
+    releaseAutomaticRestore();
     setPantry(DEMO_PANTRY.map(item=>({...item})));
-    setMemoryState(session ? 'EMPTY' : 'SIGNED_OUT');
+    if (!session && memoryState !== 'CHECKING') setMemoryState('SIGNED_OUT');
     recordActivation('example');
     trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_example_loaded'});
   };
 
   const clearPantry = () => {
+    releaseAutomaticRestore();
     setPantry([]);
     setBudget('');
-    if (memoryState === 'SAVED' || memoryState === 'RETURNED') setMemoryState('EMPTY');
   };
 
   const savePantry = async () => {
@@ -311,16 +328,16 @@ export default function PantryChoice() {
         <input aria-label={`Ingredient ${index+1}`} value={item.name} onChange={e=>update(index,{name:e.target.value})} style={{...inputStyle,flex:'2 1 160px'}}/>
         <input aria-label={`Quantity ${index+1}`} type="number" min="0" step="any" value={item.amount ?? ''} onChange={e=>update(index,{amount:e.target.value===''?null:Number(e.target.value)})} style={{...inputStyle,width:105}}/>
         <select aria-label={`Unit ${index+1}`} value={item.unit} onChange={e=>update(index,{unit:e.target.value})} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
-        <button type="button" onClick={()=>{setPantry(previous=>previous.filter((_,i)=>i!==index));if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');}} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove</button>
+        <button type="button" onClick={()=>{releaseAutomaticRestore();setPantry(previous=>previous.filter((_,i)=>i!==index));}} style={{...btnStyle,background:'#fff',color:'#080808'}}>Remove</button>
       </div>)}
-      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');recordActivation('manual_item');trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_item_added'});}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
+      <form onSubmit={e=>{e.preventDefault();if(!name.trim())return;releaseAutomaticRestore();setPantry(previous=>[...previous,{name:name.trim(),amount:amount===''?null:Number(amount),unit}]);setName('');setAmount('');recordActivation('manual_item');trackEvent('value_action',{product_area:'4sapien',action_kind:'food_pantry_item_added'});}} style={{display:'flex',flexWrap:'wrap',gap:8}}>
         <input aria-label="New ingredient" placeholder="Ingredient" value={name} onChange={e=>setName(e.target.value)} style={{...inputStyle,flex:'2 1 160px'}}/>
         <input aria-label="New quantity" placeholder="Quantity" type="number" min="0" step="any" value={amount} onChange={e=>setAmount(e.target.value)} style={{...inputStyle,width:105}}/>
         <select aria-label="New unit" value={unit} onChange={e=>setUnit(e.target.value)} style={inputStyle}><option value="g">g</option><option value="ml">ml</option><option value="stk">pieces</option></select>
         <button type="submit" style={btnStyle}>Add ingredient</button>
       </form>
       <label style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>Optional additional shopping budget (NOK)
-        <input aria-label="Additional shopping budget in NOK" type="number" min="0" step="any" placeholder="Unknown" value={budget} onChange={e=>{setBudget(e.target.value);if(memoryState==='SAVED'||memoryState==='RETURNED')setMemoryState('EMPTY');}} style={{...inputStyle,width:140}}/>
+        <input aria-label="Additional shopping budget in NOK" type="number" min="0" step="any" placeholder="Unknown" value={budget} onChange={e=>{setBudget(e.target.value);releaseAutomaticRestore();}} style={{...inputStyle,width:140}}/>
       </label>
     </div>
 

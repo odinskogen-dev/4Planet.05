@@ -1,3 +1,31 @@
+# FOOD PANTRY RESTORE OWNERSHIP — WP1 CORRECTION — 01 OCT 2026
+
+**STATUS:** REGISTERED FOOD SANDBOX CANDIDATE / NOT GOLD / NO LIVE PROMOTION.
+
+**USER ARRIVES BECAUSE:** they already told 4SAPIEN what is in the pantry and expect a return visit to restore that private context, unless they have started a newer edit.
+
+**ONE THING TO UNDERSTAND:** a late restore must not replace a Clear, example load, ingredient edit, or budget edit made while the restore was still in flight.
+
+**PRIMARY ACTION:** edit or clear the pantry. The newer edit stays.
+
+**SECONDARY DEPTH:** untouched first return still restores the private pantry and records `return_value`.
+
+**P1 DOMINANT:** the pantry the person is editing now. **P2 ORIENTATION:** private-memory status. **P3 ACTION:** Clear, example, add, save. **P4 DEPTH:** value-loop timing, which is unchanged.
+
+**WHAT CAN BE REMOVED:** the single `active` lifetime flag that treated every in-flight response as still owned.
+
+**WHAT MUST BE REUSED:** the existing Person-memory pantry load, the value-loop events already on HEIR, and the ownership split donated from the quarantined candidate. No new memory store, route, or product surface.
+
+**TRUTH BOUNDARY:** restored items are user-confirmed private memory. Example recipes stay labelled fixtures. A blocked restore is not an empty memory and not a failed save.
+
+**MOBILE-FIRST RISK:** Clear and the status line must stay reachable while memory is still checking. Controls stay enabled during checking.
+
+**HUMAN SUCCESS:** Clear during a delayed restore leaves the pantry empty, shows that automatic restore will not replace the edit, and never says welcome back.
+
+**DONOR:** `cursor/pantry-restore-ownership-4a35` @ `fb07d639` is ADOPT BY COPY for the ownership module, then QUARANTINE. Session side effects are additionally skipped when intent has already advanced.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — INDEXNOW KEY CONTROL FIX — 01 OCT 2026
 
 **STATUS:** HEIR / CONTROL CORRECTION / NO EXTERNAL SUBMISSION.
