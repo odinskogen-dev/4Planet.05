@@ -38,8 +38,11 @@ test("live 4SAPIEN pantry exposes explicit consent, return value and privacy bou
 test("FOOD loop records only bounded privacy-safe measurement fields", () => {
   assert.match(memory, /four_sapien_embla_events/);
   assert.match(memory, /FOOD_VALUE_PAYLOAD_KEYS/);
-  assert.match(memory, /food_value_signal/);
   assert.match(memory, /food_second_value_reached/);
+  assert.match(memory, /embla-core-preview/);
+  assert.match(memory, /measurement_event/);
+  assert.match(memory, /useful_outcome/);
+  assert.doesNotMatch(memory, /food_value_signal/);
   assert.doesNotMatch(memory, /payload:\s*\{[^}]*pantry/s);
   assert.doesNotMatch(memory, /payload:\s*\{[^}]*prompt/s);
 });
