@@ -30,6 +30,7 @@ test("first ATLAS useful internet objects are source-grounded and bounded", () =
   assert.match(fires.limitations.join(" "), /not proof of a wildfire/i);
   assert.match(whales.limitations.join(" "), /not live animal positions/i);
   for (const item of atlas.objects) {
+    assert.equal(item.indexable, true);
     assert.ok(item.atlasHref.startsWith("/atlas?"));
     assert.ok(item.sources.length >= 1);
     assert.ok(item.limitations.length >= 1);
@@ -40,11 +41,13 @@ test("discovery routes, sitemap and prerender stay inside the shared product fam
   assert.match(router, /path="\/places"/);
   assert.match(router, /path="\/place\/:slug"/);
   assert.match(router, /path="\/atlas\/:objectSlug"/);
-  assert.match(sitemap, /"\/atlas\/earth"/);
-  assert.match(sitemap, /"\/atlas\/fires"/);
-  assert.match(sitemap, /"\/atlas\/whales"/);
+  assert.match(sitemap, /atlasDiscovery\.json/);
+  assert.match(sitemap, /atlasDiscovery\.objects/);
+  assert.match(sitemap, /item\.indexable === true/);
   assert.match(prerender, /atlasDiscovery\.json/);
+  assert.match(prerender, /item\.indexable === true/);
   assert.match(prerender, /atlasObjects\.length/);
+  assert.match(atlasPage, /object\.indexable \? "index,follow,max-image-preview:large" : "noindex,follow"/);
   assert.match(atlasPage, /OPEN LIVE ATLAS/);
   assert.match(atlasPage, /SOURCES \/ PROVENANCE/);
 });
