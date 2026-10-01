@@ -33,3 +33,22 @@ test("live 4SAPIEN pantry exposes explicit consent, return value and privacy bou
   assert.match(ui, /not shared PLANETBRAIN truth/i);
   assert.match(ui, /user-confirmed pantry items/i);
 });
+
+
+test("FOOD loop records only bounded privacy-safe measurement fields", () => {
+  assert.match(memory, /four_sapien_embla_events/);
+  assert.match(memory, /FOOD_VALUE_PAYLOAD_KEYS/);
+  assert.match(memory, /food_value_signal/);
+  assert.match(memory, /food_second_value_reached/);
+  assert.doesNotMatch(memory, /payload:\s*\{[^}]*pantry/s);
+  assert.doesNotMatch(memory, /payload:\s*\{[^}]*prompt/s);
+});
+
+test("FOOD choice can persist private user decision state without claiming outcome", () => {
+  assert.match(memory, /four_sapien_decisions/);
+  assert.match(memory, /evidence_class:\s*"USER_DECISION"/);
+  assert.match(ui, /Use this option/);
+  assert.match(ui, /not that the meal was cooked or useful/i);
+  assert.match(ui, /Was this comparison useful for this task/);
+  assert.match(ui, /never ingredient names, pantry contents, prompts or free text/i);
+});
