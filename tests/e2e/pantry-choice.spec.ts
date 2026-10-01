@@ -22,3 +22,92 @@ test("4SAPIEN pantry: editable anonymous visit, honest unknowns and explicit aut
   await expect(section.getByText(/Anonymous use stays in this browser tab/i)).toBeVisible();
   await expect(section.getByRole("button", { name: "Sign in to remember this" })).toBeVisible();
 });
+
+const AUTH_SDK = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js";
+const OLD_MEMORY = [{
+  id: "memory-1",
+  created_at: "2026-01-01T00:00:00.000Z",
+  value: {
+    namespace: "food_pantry_v1",
+    pantry: [{ name: "old saved food", amount: 2, unit: "g" }],
+    budgetNok: 100,
+  },
+}];
+
+test("Clear during a delayed pantry restore keeps the newer empty pantry", async ({ page }) => {
+  await page.route(AUTH_SDK, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/javascript",
+      body: `window.supabase={createClient(){return{auth:{getSession:()=>Promise.resolve({data:{session:{access_token:"tok",refresh_token:"ref",user:{id:"user-race"}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})}}}}`,
+    });
+  });
+  let releaseMemory = () => {};
+  const memoryHeld = new Promise<void>((resolve) => {
+    releaseMemory = resolve;
+  });
+  await page.route("**/rest/v1/four_sapien_embla_memories**", async (route) => {
+    await memoryHeld;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(OLD_MEMORY),
+    });
+  });
+  await page.route("**/rest/v1/four_sapien_embla_events**", async (route) => {
+    await route.fulfill({ status: 201, body: "" });
+  });
+
+  await page.goto("/4sapien");
+  const section = page.getByRole("region", { name: "What can I make with what I have?" });
+  await expect(section.getByText("Checking private 4SAPIEN memory…")).toBeVisible();
+  await expect(section.getByRole("button", { name: "Remember this pantry" })).toBeVisible();
+  await section.getByRole("button", { name: "Clear" }).click();
+  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  const memoryDone = page.waitForResponse((response) => response.url().includes("four_sapien_embla_memories"));
+  releaseMemory();
+  await memoryDone;
+  await page.waitForTimeout(300);
+  await expect(section.getByText("Welcome back")).toHaveCount(0);
+  await expect(section.getByLabel("Ingredient 1")).toHaveCount(0);
+  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+});
+
+test("Clear before the session returns skips identity side effects and the old pantry", async ({ page }) => {
+  await page.route(AUTH_SDK, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/javascript",
+      body: `window.supabase={createClient(){let release;const pending=new Promise((resolve)=>{release=resolve});window.__releaseFoodSession=()=>release({data:{session:{access_token:"tok",refresh_token:"ref",user:{id:"user-race"}}},error:null});return{auth:{getSession:()=>pending,onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})}}}}`,
+    });
+  });
+  await page.route("**/rest/v1/four_sapien_embla_memories**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(OLD_MEMORY),
+    });
+  });
+  await page.route("**/rest/v1/four_sapien_embla_events**", async (route) => {
+    await route.fulfill({ status: 201, body: "" });
+  });
+
+  await page.goto("/4sapien");
+  const section = page.getByRole("region", { name: "What can I make with what I have?" });
+  await expect(section.getByText("Checking private 4SAPIEN memory…")).toBeVisible();
+  await expect(section.getByRole("button", { name: "Sign in to remember this" })).toBeVisible();
+  await section.getByRole("button", { name: "Clear" }).click();
+  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+  const sawMemory = page.waitForRequest((request) => request.url().includes("four_sapien_embla_memories"), { timeout: 1000 })
+    .then(() => "requested", () => "quiet");
+  await page.evaluate(() => {
+    const release = (window as Window & { __releaseFoodSession?: () => void }).__releaseFoodSession;
+    if (!release) throw new Error("session release missing");
+    release();
+  });
+  expect(await sawMemory).toBe("quiet");
+  await expect(section.getByText("Welcome back")).toHaveCount(0);
+  await expect(section.getByLabel("Ingredient 1")).toHaveCount(0);
+  await expect(section.getByRole("button", { name: "Sign in to remember this" })).toBeVisible();
+  await expect(section.getByText("Automatic restore will not replace this edit.")).toBeVisible();
+});

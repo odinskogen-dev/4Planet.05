@@ -49,6 +49,10 @@ Historical reconstruction selectively adopted from PR #120. Exact historical SHA
 ## Current control fact
 `king/test` was created from former #121 exact head `633981cc6f54d152ed34ae02001ca3fb0fbe11c8`; #121 was then closed/frozen at the same SHA. Subsequent TEST KING control commits selectively adopted missing PR #120 control value. Production/LIVE KING was not modified.
 
+## FOOD pantry restore ownership — 01 Oct 2026
+
+One registered FOOD sandbox: `work/4sapien-food-restore-ownership-20261001`, parent `53c525cc73e4bea05425472217fddef48efcbac6` (`origin/king/test` at registration). Return path is a pull request to `king/test`. Donor `cursor/pantry-restore-ownership-4a35` @ `fb07d639ea40717e18c1e8b0fcd250c8f66f6dfe` is QUARANTINE_PENDING_ARCHIVE and may only donate by copy. No LIVE authority.
+
 ## 4SAPIEN CORE FINANCE 01 — bounded HEIR sequence
 
 | Identity | Role now | Branch / source | Exact identity | TEST KING obligation |
