@@ -72,6 +72,7 @@ export function AtlasDiscoveryPage() {
         title={object.title}
         description={object.description}
         path={canonicalPath}
+        robots={object.indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}
         imageAlt={`${object.name} — 4PLANET ATLAS`}
         jsonLd={({ canonicalUrl }) => ({
           "@context": "https://schema.org",
