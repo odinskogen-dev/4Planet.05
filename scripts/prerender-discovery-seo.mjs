@@ -51,7 +51,7 @@ function write(route, html) {
 
 const species = (inv.species || []).filter((item) => item.indexable);
 const places = (inv.places || []).filter((item) => item.indexable);
-const atlasObjects = atlas.objects || [];
+const atlasObjects = (atlas.objects || []).filter((item) => item.indexable === true);
 
 write("/species", page({
   pathName: "/species",
