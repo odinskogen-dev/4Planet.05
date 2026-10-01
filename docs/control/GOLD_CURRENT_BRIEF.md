@@ -1,3 +1,21 @@
+# 4SAPIEN FOOD FIRST PROVEN VALUE LOOP 02 — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / ISOLATED NOINDEX REVIEW ONLY / LIVE EMBLA UPDATE NOT RELEASED / HUMAN GOLD OPEN.
+
+**BOUNDED PRODUCT DELTA:** existing 4PLANET ID + existing owner-RLS `four_sapien_embla_memories` now carry the FOOD pantry loop through explicit save/readback/supersession/delete and return reuse. Existing `four_sapien_decisions` stores an explicit private meal-choice state without claiming the meal was cooked or useful. Existing `four_sapien_embla_events` receives only bounded stage/timing/count metadata. Ingredient names, pantry contents, prompts and free text are excluded from value-loop analytics.
+
+**EMBLA SEAM:** the HEIR candidate reconciles from the physically deployed `embla-core-preview` v10 source and changes only the existing `read_pantry` tool from `PANTRY_SCHEMA_NOT_IMPLEMENTED` to reading the same active user-confirmed `food_pantry_v1` Person memory under the caller's authenticated RLS context. Existing Brain reuse and Human Utility measurement events are preserved. The explicit useful/not-yet signal uses the existing `measurement_useful_outcome` path; no second measurement truth system is created.
+
+**MEASUREMENT:** bounded recruitment attribution accepts only `src=human_utility` → `human_utility_recruitment`, otherwise `direct_or_unknown`. The measured path separates identity, activation, first value, saved context, return, second value, saved decision and explicit useful outcome. Synthetic and Founder sessions never count as real-user or return proof.
+
+**TRUTH BOUNDARY:** current deterministic meal examples remain `DEMO_FIXTURE_NOT_VERIFIED`. Missing price/amount/context stays UNKNOWN. Purchased is not consumed. A saved choice is not a cooked meal, useful outcome, payment or ecological result.
+
+**TECHNICAL PROOF:** 4SAPIEN HEIR QA on exact source candidate `383172b45b1b221e72bda8557d2055b1c2ba92f6` passed materialisation, Deno Edge checks, esbuild FOOD checks, secret/zero-loss controls, read-only Supabase/auth seams, isolated Pages noindex deploy, HTTP source-SHA verification and rendered synthetic first→return. The strengthened synthetic test additionally covers private decision write, canonical useful-outcome invocation and second-value event; exact-head QA must pass before this addendum is treated as closed.
+
+**OPEN GATES:** active Supabase currently has zero `food_pantry_v1` rows and zero FOOD decision rows from real users. Production `embla-core-preview` remains v10 until exact Founder live release; current LIVE still returns `PANTRY_SCHEMA_NOT_IMPLEMENTED` for `read_pantry`. Real-user proof, authenticated real return, NOK 100/month WTP/payment proof and source-grounded production recipe donors remain open. No broad exposure programme and no LIVE/DNS promotion is authorised by this section.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — DISTRIBUTION + MEASUREMENT SEAM — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / UNSENT / NO LIVE PROMOTION.
