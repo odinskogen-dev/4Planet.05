@@ -1,3 +1,15 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — INDEXNOW KEY CONTROL FIX — 01 OCT 2026
+
+**STATUS:** HEIR / CONTROL CORRECTION / NO EXTERNAL SUBMISSION.
+
+**DELTA:** normalise the public IndexNow ownership-key file to the exact key text with no literal escape characters. This change exists solely to satisfy the ownership-file contract and is paired with this Gold receipt in the same bounded change.
+
+**TRUTH / RELEASE:** the key file alone does not notify a search engine or claim indexing. The submission script remains founder-gated behind `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW`.
+
+**ACCEPTANCE:** discovery contract + smoke + product authority + Gold policy on exact SHA.
+
+---
+
 # 4SAPIEN FOOD FIRST PROVEN VALUE LOOP 02 — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / ISOLATED NOINDEX REVIEW ONLY / LIVE EMBLA UPDATE NOT RELEASED / HUMAN GOLD OPEN.
