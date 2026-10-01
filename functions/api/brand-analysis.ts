@@ -30,6 +30,28 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 const clean = (value: unknown, max = 120) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
+type ValueCell = "MAKE MORE" | "SPEND BETTER";
+
+function publicValueCell(item: any): ValueCell {
+  const explicit = clean(item?.valueCell, 40).toUpperCase();
+  if (explicit === "MAKE MORE" || explicit === "SPEND BETTER") return explicit as ValueCell;
+  const text = `${clean(item?.title, 240)} ${clean(item?.economicLogic, 800)}`.toLowerCase();
+  const spendSignals = ["cost", "spend", "procurement", "supplier", "vendor", "energy", "inventory", "working capital", "cash", "renewal", "waste", "efficiency"];
+  return spendSignals.some(signal => text.includes(signal)) ? "SPEND BETTER" : "MAKE MORE";
+}
+
+function attachValueCells(analysis: any) {
+  if (!analysis || typeof analysis !== "object") return analysis;
+  const opportunities = Array.isArray(analysis.opportunities)
+    ? analysis.opportunities.map((item: any) => ({ ...item, valueCell: publicValueCell(item) }))
+    : [];
+  const byTitle = new Map(opportunities.map((item: any) => [clean(item?.title, 240), item]));
+  const alignedTop3 = Array.isArray(analysis.alignedTop3)
+    ? analysis.alignedTop3.map((item: any) => byTitle.get(clean(item?.title, 240)) || ({ ...item, valueCell: publicValueCell(item) }))
+    : opportunities.slice(0, 3);
+  return { ...analysis, opportunities, alignedTop3 };
+}
+
 const TOMRA_2025 = "https://www.tomra.com/investor-relations/reports/key-figures";
 const TOMRA_Q2 = "https://www.tomra.com/-/media/project/tomra/tomra/investor-relations/quarterly-results-files/2026/2q/2026-q2_press-release_tomra.pdf";
 const TOMRA_Q2_REPORT = "https://www.tomra.com/-/media/project/tomra/tomra/investor-relations/quarterly-results-files/2026/2q/2026-q2_quarterly-report_tomra.pdf";
@@ -238,7 +260,7 @@ Hard rules:
 9. Output only one valid JSON object with the exact top-level keys requested. No markdown.
 
 Required JSON shape:
-{"engine":"4BRAND ECONOMIC VALUE ENGINE 01","company":{"name":"","legalName":"","ticker":"","sector":"","geography":"","description":""},"generatedAt":"ISO-8601","analysisStatus":"LIVE_RESEARCH","statusNote":"","economicBaseline":[{"label":"","value":"","period":"","truthClass":"FACT","sourceIds":["SRC-01"]}],"businessModel":[{"title":"","detail":"","truthClass":"FACT","confidence":"HIGH","sourceIds":["SRC-01"]}],"valueDrivers":[],"valueLeakage":[],"opportunities":[{"rank":1,"title":"","economicLogic":"","estimatedValue":"","planetaryLogic":"","planetaryDelta":"","truthClass":"ESTIMATE","confidence":"MEDIUM","sourceIds":["SRC-01"]}],"alignedTop3":[],"solutions":[],"nextExperiment":{"title":"","hypothesis":"","method":"","successMetric":"","economicMeasurement":"","planetaryMeasurement":"","truthClass":"ASSUMPTION"},"evidence":[{"id":"SRC-01","title":"","publisher":"","url":"https://...","checkedAt":"YYYY-MM-DD","note":""}],"assumptions":[""],"unknowns":[""]}`;
+{"engine":"4BRAND ECONOMIC VALUE ENGINE 01","company":{"name":"","legalName":"","ticker":"","sector":"","geography":"","description":""},"generatedAt":"ISO-8601","analysisStatus":"LIVE_RESEARCH","statusNote":"","economicBaseline":[{"label":"","value":"","period":"","truthClass":"FACT","sourceIds":["SRC-01"]}],"businessModel":[{"title":"","detail":"","truthClass":"FACT","confidence":"HIGH","sourceIds":["SRC-01"]}],"valueDrivers":[],"valueLeakage":[],"opportunities":[{"rank":1,"valueCell":"MAKE MORE","title":"","economicLogic":"","estimatedValue":"","planetaryLogic":"","planetaryDelta":"","truthClass":"ESTIMATE","confidence":"MEDIUM","sourceIds":["SRC-01"]}],"alignedTop3":[],"solutions":[],"nextExperiment":{"title":"","hypothesis":"","method":"","successMetric":"","economicMeasurement":"","planetaryMeasurement":"","truthClass":"ASSUMPTION"},"evidence":[{"id":"SRC-01","title":"","publisher":"","url":"https://...","checkedAt":"YYYY-MM-DD","note":""}],"assumptions":[""],"unknowns":[""]}`;
 
 function extractOutputText(payload: any): string {
   if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text;
@@ -291,7 +313,7 @@ async function liveAnalysis(company: string, env: Env) {
   parsed.engine = "4BRAND ECONOMIC VALUE ENGINE 01";
   parsed.analysisStatus = "LIVE_RESEARCH";
   parsed.generatedAt = new Date().toISOString();
-  return parsed;
+  return attachValueCells(parsed);
 }
 
 export const onRequestPost = async (ctx: { request: Request; env: Env }): Promise<Response> => {
@@ -316,7 +338,7 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   };
 
   const normalised = company.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: await applyIdentity(tomraProof()) });
+  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: await applyIdentity(attachValueCells(tomraProof())) });
 
   try { return json({ ok: true, analysis: await applyIdentity(await liveAnalysis(company, ctx.env)) }); }
   catch (error) {
