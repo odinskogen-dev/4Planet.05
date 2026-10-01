@@ -1,5 +1,6 @@
 export type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
 export type Confidence = "HIGH" | "MEDIUM" | "LOW";
+export type ValueCell = "MAKE MORE" | "SPEND BETTER";
 export type RowKind = "invoice" | "payment_in" | "cost" | "payment_out" | "usage" | "software" | "renewal";
 
 export type EconomicRow = {
@@ -34,6 +35,7 @@ export type CashWeek = { week: number; label: string; inflow: number; outflow: n
 export type ProfitLine = { key: string; revenue: number; directCost: number; contribution: number; contributionMargin: number; rows: number };
 export type Opportunity = {
   id: string;
+  valueCell: ValueCell;
   detector: string;
   title: string;
   eyebrow: string;
@@ -239,8 +241,19 @@ function cashProjection(rows: EconomicRow[], currentCash: number) {
   return weeks;
 }
 
-function opportunity(input: Omit<Opportunity, "currency"> & { currency?: string }): Opportunity {
-  return { currency: input.currency || "EUR", ...input };
+function valueCellFor(id: string): ValueCell {
+  const spendBetter = new Set([
+    "duplicate-payments",
+    "unused-seats",
+    "upcoming-renewals",
+    "overdue-ap",
+    "cash-risk-13w",
+  ]);
+  return spendBetter.has(id) || id.startsWith("vendor-creep-") ? "SPEND BETTER" : "MAKE MORE";
+}
+
+function opportunity(input: Omit<Opportunity, "currency" | "valueCell"> & { currency?: string; valueCell?: ValueCell }): Opportunity {
+  return { currency: input.currency || "EUR", valueCell: input.valueCell || valueCellFor(input.id), ...input };
 }
 
 function detectOpportunities(rows: EconomicRow[], twinBase: Omit<EconomicTwin, "opportunities">): Opportunity[] {
