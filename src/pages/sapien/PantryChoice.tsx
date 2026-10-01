@@ -4,6 +4,7 @@ import {
   currentFoodPantrySession,
   loadFoodPantryMemory,
   recordFoodValueEvent,
+  recordHumanUtilityMeasurement,
   removeFoodPantryMemory,
   saveFoodDecision,
   saveFoodPantryMemory,
@@ -46,6 +47,7 @@ export default function PantryChoice() {
   const [decisionState,setDecisionState] = useState<'IDLE'|'SAVING'|'SAVED'|'ERROR'>('IDLE');
   const [decisionMessage,setDecisionMessage] = useState('');
   const [valueSignal,setValueSignal] = useState<boolean|null>(null);
+  const [valueSignalState,setValueSignalState] = useState<'IDLE'|'SAVING'|'SAVED'|'ERROR'>('IDLE');
   const startedAtRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
   const activationSentRef = useRef(false);
   const valueEventSentRef = useRef(false);
@@ -230,20 +232,24 @@ export default function PantryChoice() {
     }
   };
 
-  const recordValueSignal = (helpful:boolean) => {
+  const recordValueSignal = async (helpful:boolean) => {
+    if (valueSignalState === 'SAVING' || valueSignalState === 'SAVED') return;
     setValueSignal(helpful);
     trackEvent('explicit_value_signal',{
       product_area:'4sapien',
       value_kind:'food_pantry_comparison',
       helpful,
     });
-    if (session) {
-      recordFoodValueEvent(session,'food_value_signal',{
-        loop:'food_first_value_v2',
-        stage:'explicit_value',
-        helpful,
-        returning:memoryState === 'RETURNED',
-      }).catch(()=>undefined);
+    if (!session) {
+      setValueSignalState('IDLE');
+      return;
+    }
+    setValueSignalState('SAVING');
+    try {
+      await recordHumanUtilityMeasurement(session,'useful_outcome',helpful ? 'yes' : 'not_yet');
+      setValueSignalState('SAVED');
+    } catch {
+      setValueSignalState('ERROR');
     }
   };
 
@@ -325,10 +331,10 @@ export default function PantryChoice() {
     {pantry.length>0&&options.length>0&&<section aria-label="Value feedback" style={{maxWidth:720,marginTop:28,paddingTop:18,borderTop:'1px solid #c4c4c0'}}>
       <p style={{margin:'0 0 10px'}}>Was this comparison useful for this task?</p>
       <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-        <button type="button" aria-pressed={valueSignal===true} onClick={()=>recordValueSignal(true)} style={{...btnStyle,background:valueSignal===true?'#080808':'#fff',color:valueSignal===true?'#fff':'#080808'}}>Yes</button>
-        <button type="button" aria-pressed={valueSignal===false} onClick={()=>recordValueSignal(false)} style={{...btnStyle,background:valueSignal===false?'#080808':'#fff',color:valueSignal===false?'#fff':'#080808'}}>Not yet</button>
+        <button type="button" disabled={valueSignalState==='SAVING'||valueSignalState==='SAVED'} aria-pressed={valueSignal===true} onClick={()=>recordValueSignal(true)} style={{...btnStyle,background:valueSignal===true?'#080808':'#fff',color:valueSignal===true?'#fff':'#080808'}}>Yes</button>
+        <button type="button" disabled={valueSignalState==='SAVING'||valueSignalState==='SAVED'} aria-pressed={valueSignal===false} onClick={()=>recordValueSignal(false)} style={{...btnStyle,background:valueSignal===false?'#080808':'#fff',color:valueSignal===false?'#fff':'#080808'}}>Not yet</button>
       </div>
-      {valueSignal!==null&&<p role="status" style={{fontSize:13}}>Value signal recorded{session?' with your authenticated test journey':' for this anonymous session only'}.</p>}
+      {valueSignal!==null&&<p role="status" style={{fontSize:13}}>{!session?'Value signal recorded for this anonymous session only.':valueSignalState==='SAVING'?'Recording authenticated Human Utility signal…':valueSignalState==='SAVED'?'Authenticated useful-outcome signal recorded through the existing Embla Human Utility measurement path.':'Could not persist the authenticated value signal; no success is claimed.'}</p>}
     </section>}
 
     <p style={{maxWidth:720,fontSize:13,lineHeight:1.6,marginTop:22}}>Privacy boundary: anonymous edits remain in this browser tab only. Signed-in persistence writes only after explicit confirmation to your private Person memory under existing owner RLS. Value-loop analytics contain stage, timing, counts and yes/no usefulness only — never ingredient names, pantry contents, prompts or free text. It is not shared PLANETBRAIN truth. Missing budget or missing dated prices are UNKNOWN, not 0 NOK.</p>
