@@ -1,3 +1,37 @@
+# COMPANY GOLD 01A — TONY'S INTERNAL REVIEW ROUTE — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / INTERNAL NOINDEX REVIEW ONLY / NOT HUMAN GOLD / NO LIVE.
+
+**USER ARRIVES BECAUSE:** a reviewer needs the existing Tony's company → product → material evidence drawer, which was present as a file and unreachable.
+
+**ONE THING TO UNDERSTAND:** company-level cocoa traceability is not the origin of this retail bar. Cooperative, farm and batch stay UNKNOWN.
+
+**PRIMARY ACTION:** open `/labs/company-gold/tonys`.
+
+**SECONDARY DEPTH:** named first-party sources and the next evidence decision.
+
+**P1 DOMINANT:** Milk Chocolate 32% 180g identity, with the preserved unknown beside it.
+
+**P2 ORIENTATION:** what is source-backed versus what remains UNKNOWN.
+
+**P3 ACTION:** open the named sources.
+
+**P4 DEPTH:** material disclosures, rights and the next evidence decision.
+
+**WHAT CAN BE REMOVED:** no second company model, store or public product line.
+
+**WHAT MUST BE REUSED:** existing `TONYS_COMPANY_GOLD` and `CompanyGoldTony`.
+
+**TRUTH BOUNDARY:** Tony's own pages are SOURCE TERMS / REFERENCE ONLY. This route is not an ecological outcome claim and not business advice.
+
+**MOBILE-FIRST RISK:** evidence cards stack; the unknown and the next decision must stay readable at 390px.
+
+**HUMAN SUCCESS:** desktop and mobile both render the same object, with UNKNOWN preserved and robots `noindex,nofollow,noarchive`.
+
+**DELTA:** one internal labs route mounts that same drawer. No 4SAPIEN, 4BRANDS or SEO change. No LIVE.
+
+---
+
 # 4SAPIEN FOOD FIRST PROVEN VALUE LOOP 02 — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / ISOLATED NOINDEX REVIEW ONLY / LIVE EMBLA UPDATE NOT RELEASED / HUMAN GOLD OPEN.
