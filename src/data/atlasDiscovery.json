@@ -5,6 +5,7 @@
   "objects": [
     {
       "slug": "earth",
+      "indexable": true,
       "title": "Earth — Explore the living planet in 4PLANET ATLAS",
       "name": "Earth",
       "eyebrow": "ATLAS / PLANET",
@@ -33,13 +34,23 @@
         }
       ],
       "related": [
-        {"label": "Explore Orca", "href": "/species/orca"},
-        {"label": "Explore Oslofjord", "href": "/living-systems/oslofjord"},
-        {"label": "Global fires", "href": "/atlas/fires"}
+        {
+          "label": "Explore Orca",
+          "href": "/species/orca"
+        },
+        {
+          "label": "Explore Oslofjord",
+          "href": "/living-systems/oslofjord"
+        },
+        {
+          "label": "Global fires",
+          "href": "/atlas/fires"
+        }
       ]
     },
     {
       "slug": "fires",
+      "indexable": true,
       "title": "Global Fires — Satellite thermal anomalies in 4PLANET ATLAS",
       "name": "Global Fires",
       "eyebrow": "ATLAS / EARTH SIGNAL",
@@ -75,13 +86,23 @@
         }
       ],
       "related": [
-        {"label": "Earth in ATLAS", "href": "/atlas/earth"},
-        {"label": "Amazonia Mission", "href": "/missions/am4zonia"},
-        {"label": "Explore ATLAS", "href": "/atlas"}
+        {
+          "label": "Earth in ATLAS",
+          "href": "/atlas/earth"
+        },
+        {
+          "label": "Amazonia Mission",
+          "href": "/missions/am4zonia"
+        },
+        {
+          "label": "Explore ATLAS",
+          "href": "/atlas"
+        }
       ]
     },
     {
       "slug": "whales",
+      "indexable": true,
       "title": "Whales — Explore reported cetacean observations in 4PLANET ATLAS",
       "name": "Whales",
       "eyebrow": "ATLAS / OCEAN LIFE",
@@ -111,9 +132,18 @@
         }
       ],
       "related": [
-        {"label": "Explore Orca", "href": "/species/orca"},
-        {"label": "Oslofjord", "href": "/living-systems/oslofjord"},
-        {"label": "Earth in ATLAS", "href": "/atlas/earth"}
+        {
+          "label": "Explore Orca",
+          "href": "/species/orca"
+        },
+        {
+          "label": "Oslofjord",
+          "href": "/living-systems/oslofjord"
+        },
+        {
+          "label": "Earth in ATLAS",
+          "href": "/atlas/earth"
+        }
       ]
     }
   ]
