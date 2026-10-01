@@ -51,7 +51,7 @@ const staticRoutes = [
 const discoveryRoutes = [
   ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
-  ...(atlasDiscovery.objects ?? []).map((item) => `/atlas/${item.slug}`),
+  ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
