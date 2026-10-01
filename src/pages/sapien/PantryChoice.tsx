@@ -49,6 +49,11 @@ export default function PantryChoice() {
   const [valueSignal,setValueSignal] = useState<boolean|null>(null);
   const [valueSignalState,setValueSignalState] = useState<'IDLE'|'SAVING'|'SAVED'|'ERROR'>('IDLE');
   const startedAtRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const acquisitionSourceRef = useRef(
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('src') === 'human_utility'
+      ? 'human_utility_recruitment'
+      : 'direct_or_unknown',
+  );
   const activationSentRef = useRef(false);
   const valueEventSentRef = useRef(false);
 
@@ -58,6 +63,11 @@ export default function PantryChoice() {
   }), [pantry,budget]);
 
   useEffect(() => {
+    trackEvent('food_landing',{
+      product_area:'4sapien',
+      loop:'food_first_value_v2',
+      source_state:acquisitionSourceRef.current,
+    });
     let active = true;
     currentFoodPantrySession()
       .then(async current => {
@@ -71,6 +81,7 @@ export default function PantryChoice() {
         recordFoodValueEvent(current,'food_identity_ready',{
           loop:'food_first_value_v2',
           stage:'identity',
+          source_state:acquisitionSourceRef.current,
         }).catch(()=>undefined);
         const saved = await loadFoodPantryMemory(current);
         if (!active) return;
@@ -93,6 +104,7 @@ export default function PantryChoice() {
           stage:'return',
           returning:true,
           item_count:saved.pantry.length,
+          source_state:acquisitionSourceRef.current,
         }).catch(()=>undefined);
       })
       .catch(() => {
@@ -124,6 +136,7 @@ export default function PantryChoice() {
         elapsed_ms:elapsedMs,
         item_count:pantry.length,
         option_count:options.length,
+        source_state:acquisitionSourceRef.current,
       }).catch(()=>undefined);
     }
   }, [memoryState,options.length,pantry.length,session]);
@@ -136,6 +149,7 @@ export default function PantryChoice() {
       recordFoodValueEvent(session,'food_activation',{
         loop:'food_first_value_v2',
         stage,
+        source_state:acquisitionSourceRef.current,
       }).catch(()=>undefined);
     }
   };
