@@ -7,6 +7,7 @@ const publicDir = path.join(root, "public");
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const stories = readStories();
 const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
+const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 
 const staticRoutes = [
   "/",
@@ -18,9 +19,6 @@ const staticRoutes = [
   "/missions",
   "/living-systems",
   "/atlas",
-  "/atlas/earth",
-  "/atlas/fires",
-  "/atlas/whales",
   "/places",
   "/species",
   "/4sapien",
@@ -53,6 +51,7 @@ const staticRoutes = [
 const discoveryRoutes = [
   ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
+  ...(atlasDiscovery.objects ?? []).map((item) => `/atlas/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
