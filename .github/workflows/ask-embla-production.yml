@@ -135,7 +135,7 @@ jobs:
             sleep 3
           done
           test "$ready" = 1
-          FOOD_REVIEW_URL=https://4sapien.com npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+          FOOD_REVIEW_CACHE_BUST="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" FOOD_REVIEW_URL=https://4sapien.com npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
           echo "4SAPIEN LIVE VERIFIED https://4sapien.com/ source=$GITHUB_SHA"
 
 # Founder LIVE release authorised 2026-10-01 — 4SAPIEN FOOD value loop
