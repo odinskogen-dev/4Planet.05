@@ -1,5 +1,6 @@
 import {test,expect} from "@playwright/test";
 const BASE=process.env.FOOD_REVIEW_URL || process.env.BASE_URL;
+const CACHE_BUST=process.env.FOOD_REVIEW_CACHE_BUST || "";
 if(!BASE) throw new Error("FOOD_REVIEW_URL/BASE_URL required; no inferred LIVE domain");
 const stub=String.raw`
 window.supabase={createClient:()=>({
@@ -74,7 +75,8 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  await page.route("**/supabase.min.js",async route=>route.fulfill({status:200,contentType:"application/javascript",body:stub}));
  page.on("pageerror",e=>console.log("SYNTHETIC_PAGE_ERROR",String(e.message).slice(0,350)));
  page.on("console",m=>{if(m.type()==="error")console.log("SYNTHETIC_BROWSER_CONSOLE",m.text().slice(0,350));});
- await page.goto(BASE.replace(/\/$/,"")+"/app/food/",{waitUntil:"domcontentloaded"});
+ const foodUrl=BASE.replace(/\/$/,"")+"/app/food/"+(CACHE_BUST?`?qa_release=${encodeURIComponent(CACHE_BUST)}`:"");
+ await page.goto(foodUrl,{waitUntil:"domcontentloaded"});
  console.log("SYNTHETIC_BODY_FIRST", (await page.locator("body").innerText()).slice(0,1250));
  console.log("SYNTHETIC_RUNTIME_STATE",await page.evaluate(()=>({sb:typeof window.supabase,matcher:typeof (window as any).FourSapienPantryDecision,body:document.body.children.length})));
  console.log("SYNTHETIC_SCRIPTS",await page.evaluate(()=>Array.from(document.scripts).map(x=>({src:x.src,typ:x.type,inline:x.textContent?.length})).slice(-16)));
