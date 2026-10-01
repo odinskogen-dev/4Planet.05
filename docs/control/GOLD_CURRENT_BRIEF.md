@@ -1,3 +1,19 @@
+# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — GLOBAL SPECIES BATCH 20 — 01 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
+
+**DELTA:** promote seven source-qualified, high-interest species into the existing curated SPECIES engine: Blue Whale, Asian Elephant, Tiger, Polar Bear, Giant Panda, Whale Shark and Green Turtle. Together with the prior 13, the controlled discovery inventory now contains 20 indexable curated species out of 25 candidates.
+
+**SOURCE BOUNDARY:** NOAA Fisheries supplies Blue Whale and Green Turtle context; U.S. Fish & Wildlife Service supplies Asian Elephant, Polar Bear and Giant Panda context; IUCN SSC Cat Specialist Group supplies Tiger context; Convention on Migratory Species supplies Whale Shark context. GBIF numeric keys remain the existing engine's taxon/occurrence identifiers. Provider taxonomy changes are a refresh concern, not permission to silently rebind identity.
+
+**OCCURRENCE LAW:** every added species reuses the shared GBIF occurrence seam. A reported occurrence is not complete range, abundance, trend, residency, population condition or live position. Green Turtle regulatory status stays population-segment-aware rather than being collapsed into one global label.
+
+**QUALITY GATE:** Leopard, Eastern Gorilla, Chimpanzee, Bornean Orangutan and Emperor Penguin remain BUILD_NEXT/noindex instead of being promoted without the same source and product closure.
+
+**ACCEPTANCE:** exact-head typecheck + production build + full smoke/discovery contracts + authority/Gold policy + browser/preview proof. No custom-domain promotion without exact-artifact Founder release.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN QA CORRECTION — 01 OCT 2026
 
 **STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.

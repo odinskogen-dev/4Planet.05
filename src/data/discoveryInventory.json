@@ -173,8 +173,9 @@
       "slug": "blue-whale",
       "commonName": "Blue Whale",
       "scientificName": "Balaenoptera musculus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Blue Whale identity, NOAA-backed habitat and pressure context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "african-savanna-elephant",
@@ -188,8 +189,9 @@
       "slug": "asian-elephant",
       "commonName": "Asian Elephant",
       "scientificName": "Elephas maximus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Asian Elephant identity, source-grounded habitat and pressure context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "lion",
@@ -203,8 +205,9 @@
       "slug": "tiger",
       "commonName": "Tiger",
       "scientificName": "Panthera tigris",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Tiger identity, IUCN Cat Specialist Group context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "leopard",
@@ -225,15 +228,17 @@
       "slug": "polar-bear",
       "commonName": "Polar Bear",
       "scientificName": "Ursus maritimus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Polar Bear identity, circumpolar sea-ice context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "giant-panda",
       "commonName": "Giant Panda",
       "scientificName": "Ailuropoda melanoleuca",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Giant Panda identity, central-China habitat context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "eastern-gorilla",
@@ -260,15 +265,17 @@
       "slug": "whale-shark",
       "commonName": "Whale Shark",
       "scientificName": "Rhincodon typus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Whale Shark identity, migratory conservation context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "green-sea-turtle",
       "commonName": "Green Sea Turtle",
       "scientificName": "Chelonia mydas",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Green Turtle identity, population-segment-aware NOAA context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "emperor-penguin",

@@ -446,6 +446,91 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
       { state: "KNOWN", text: "Kenya's cheetah strategy explicitly warns that a sighting proves occurrence at a place and time but does not by itself prove a resident or breeding population.", source: "Kenya Wildlife Service — Conservation and Management Strategy for Cheetah and Wild Dogs in Kenya", sourceUrl: "https://www.kws.go.ke/sites/default/files/2019-11/Conservation%20and%20Management%20Strategy%20for%20Cheetah%20and%20Wildogs%20in%20Kenya_0.pdf", checkedAt: "2026-10-01", limitation: "The strategy's sighting maps are historical; the inference boundary remains useful but the records must not be presented as current distribution." },
     ],
   },
+
+  {
+    id:"taxon:gbif:2440735", slug:"blue-whale", commonName:"Blue Whale", scientificName:"Balaenoptera musculus", gbifKey:2440735,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/2440735",
+    livingSystemId:"living-system:4p:deep-ocean", issue:{id:"issue:4p:marine-pressure-review",label:"Marine pressure review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:protected-restoration",label:"Protection and restoration",status:"SOURCE_REVIEW_PENDING"},
+    context:"Global discovery profile. Source-grounded description is separate from reported occurrence records.",
+    group:"Marine mammals", intro:"The blue whale is the largest animal on Earth. NOAA describes it as an endangered baleen whale found in all oceans except the Arctic.", habitat:"Oceanic waters across most of the world's oceans; habitat use and movement vary among populations and seasons.",
+    descriptorSource:{source:"NOAA Fisheries",sourceUrl:"https://www.fisheries.noaa.gov/species/blue-whale",checkedAt:"2026-10-01",note:"Range-wide species description; not a local abundance, trend or live-position claim."}, region:"Global ocean",
+    publicClaims:[
+      {state:"KNOWN",text:"NOAA Fisheries describes blue whales from all oceans except the Arctic Ocean.",source:"NOAA Fisheries — Blue Whale",sourceUrl:"https://www.fisheries.noaa.gov/species/blue-whale",checkedAt:"2026-10-01",limitation:"Global description does not establish local presence at a particular time."},
+      {state:"KNOWN",text:"NOAA lists vessel strikes, fishing-gear entanglement and ocean noise among documented pressures.",source:"NOAA Fisheries — Blue Whale",sourceUrl:"https://www.fisheries.noaa.gov/species/blue-whale",checkedAt:"2026-10-01",limitation:"Pressure intensity differs by population, place and time."}
+    ],
+  },
+  {
+    id:"taxon:gbif:5219461", slug:"asian-elephant", commonName:"Asian Elephant", scientificName:"Elephas maximus", gbifKey:5219461,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/5219461",
+    livingSystemId:"living-system:4p:tropical-forest", issue:{id:"issue:4p:habitat-fragmentation-review",label:"Habitat fragmentation review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:connected-landscapes",label:"Connected landscapes and coexistence",status:"SOURCE_REVIEW_PENDING"},
+    context:"Asian discovery profile. Range-wide source context stays distinct from local population condition.",
+    group:"Land mammals", intro:"Asian elephants use forest and grassland landscapes across a fragmented range in Asia. Habitat loss and fragmentation, conflict and poaching are documented pressures.", habitat:"Forests and grasslands across remaining Asian range countries; local habitat use varies by landscape and population.",
+    descriptorSource:{source:"U.S. Fish & Wildlife Service",sourceUrl:"https://www.fws.gov/species/asian-elephant-elephas-maximus",checkedAt:"2026-10-01",note:"Range-wide description; not a local population estimate or distribution map."}, region:"Asia",
+    publicClaims:[
+      {state:"KNOWN",text:"U.S. Fish & Wildlife Service describes Asian elephants as an endangered species of Asian forests and grasslands.",source:"U.S. Fish & Wildlife Service — Asian Elephant",sourceUrl:"https://www.fws.gov/species/asian-elephant-elephas-maximus",checkedAt:"2026-10-01",limitation:"Species-level context does not describe every local population."},
+      {state:"KNOWN",text:"Habitat loss and fragmentation, human-elephant conflict and poaching are documented pressures.",source:"U.S. Fish & Wildlife Service — Asian Elephant",sourceUrl:"https://www.fws.gov/species/asian-elephant-elephas-maximus",checkedAt:"2026-10-01",limitation:"Pressure intensity differs across landscapes."}
+    ],
+  },
+  {
+    id:"taxon:gbif:5219416", slug:"tiger", commonName:"Tiger", scientificName:"Panthera tigris", gbifKey:5219416,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/5219416",
+    livingSystemId:"living-system:4p:tropical-forest", issue:{id:"issue:4p:large-carnivore-pressure-review",label:"Large carnivore pressure review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:connected-landscapes",label:"Connected habitat and prey protection",status:"SOURCE_REVIEW_PENDING"},
+    context:"Global discovery profile. Subspecies taxonomy and regional conditions remain explicit uncertainties.",
+    group:"Land mammals", intro:"The tiger is the largest living cat species. The IUCN SSC Cat Specialist Group lists it as Endangered and documents habitat loss, fragmentation, prey depletion and illegal hunting/trade among major pressures.", habitat:"Tropical and subtropical forests, mangroves, grasslands and temperate forests across remaining Asian range.",
+    descriptorSource:{source:"IUCN SSC Cat Specialist Group",sourceUrl:"https://www.catsg.org/living-species-tiger",checkedAt:"2026-10-01",note:"Species-level account; subspecies taxonomy is under review and local conditions vary."}, region:"Asia",
+    publicClaims:[
+      {state:"KNOWN",text:"The IUCN SSC Cat Specialist Group lists Panthera tigris as Endangered and notes that subspecies taxonomy remains under review.",source:"IUCN SSC Cat Specialist Group — Tiger",sourceUrl:"https://www.catsg.org/living-species-tiger",checkedAt:"2026-10-01",limitation:"Species status does not establish a specific population condition."},
+      {state:"KNOWN",text:"The account documents illegal hunting/trade, habitat loss, fragmentation and prey depletion among major pressures.",source:"IUCN SSC Cat Specialist Group — Tiger",sourceUrl:"https://www.catsg.org/living-species-tiger",checkedAt:"2026-10-01",limitation:"Threat mix varies across landscapes."}
+    ],
+  },
+  {
+    id:"taxon:gbif:2433451", slug:"polar-bear", commonName:"Polar Bear", scientificName:"Ursus maritimus", gbifKey:2433451,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/2433451",
+    livingSystemId:"living-system:4p:coastal-sea", issue:{id:"issue:4p:climate-habitat-review",label:"Sea-ice habitat review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:climate-habitat-protection",label:"Climate and habitat protection",status:"SOURCE_REVIEW_PENDING"},
+    context:"Circumpolar discovery profile. Subpopulation status varies; observations do not define sea-ice habitat quality.",
+    group:"Land mammals", intro:"The polar bear is a marine mammal of the circumpolar Arctic that depends heavily on sea ice.", habitat:"Seasonally and permanently ice-covered Arctic and Subarctic marine waters across Canada, Greenland, Norway, Russia and the United States.",
+    descriptorSource:{source:"U.S. Fish & Wildlife Service",sourceUrl:"https://www.fws.gov/species/polar-bear-ursus-maritimus",checkedAt:"2026-10-01",note:"Circumpolar and U.S. context; individual subpopulations require their own evidence."}, region:"Circumpolar Arctic",
+    publicClaims:[
+      {state:"KNOWN",text:"U.S. Fish & Wildlife Service describes polar bears as sea-ice-dependent marine mammals across 19 circumpolar subpopulations.",source:"U.S. Fish & Wildlife Service — Polar Bear",sourceUrl:"https://www.fws.gov/species/polar-bear-ursus-maritimus",checkedAt:"2026-10-01",limitation:"Subpopulation status varies."},
+      {state:"KNOWN",text:"The current U.S. five-year review retains threatened status and identifies continued sea-ice habitat loss as a central concern.",source:"U.S. Fish & Wildlife Service — Polar Bear 5-Year Review",sourceUrl:"https://www.fws.gov/page/polar-bear-5-year-status-review-FAQ",checkedAt:"2026-10-01",limitation:"U.S. regulatory status is not a global population measurement."}
+    ],
+  },
+  {
+    id:"taxon:gbif:2433399", slug:"giant-panda", commonName:"Giant Panda", scientificName:"Ailuropoda melanoleuca", gbifKey:2433399,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/2433399",
+    livingSystemId:"living-system:4p:tropical-forest", issue:{id:"issue:4p:forest-fragmentation-review",label:"Forest fragmentation review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:connected-forest",label:"Connected forest habitat",status:"SOURCE_REVIEW_PENDING"},
+    context:"China discovery profile. Captive-animal context is not used as wild-population evidence.",
+    group:"Land mammals", intro:"The giant panda is a bear endemic to China. U.S. Fish & Wildlife Service describes wild pandas in mountain bamboo and coniferous forests of central China.", habitat:"Dense bamboo and coniferous forests in mountain areas of Sichuan, Gansu and Shaanxi.",
+    descriptorSource:{source:"U.S. Fish & Wildlife Service",sourceUrl:"https://www.fws.gov/species/giant-panda-ailuropoda-melanoleuca",checkedAt:"2026-10-01",note:"Species-level habitat description; not a current occupancy or population survey."}, region:"Central China",
+    publicClaims:[
+      {state:"KNOWN",text:"U.S. Fish & Wildlife Service identifies Ailuropoda melanoleuca as a bear found in mountain areas of central China.",source:"U.S. Fish & Wildlife Service — Giant Panda",sourceUrl:"https://www.fws.gov/species/giant-panda-ailuropoda-melanoleuca",checkedAt:"2026-10-01",limitation:"Species-level context is not a current population survey."},
+      {state:"KNOWN",text:"The Service describes dense bamboo and coniferous forest as wild giant-panda habitat.",source:"U.S. Fish & Wildlife Service — Giant Panda",sourceUrl:"https://www.fws.gov/species/giant-panda-ailuropoda-melanoleuca",checkedAt:"2026-10-01",limitation:"Habitat does not establish current presence."}
+    ],
+  },
+  {
+    id:"taxon:gbif:2417522", slug:"whale-shark", commonName:"Whale Shark", scientificName:"Rhincodon typus", gbifKey:2417522,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/2417522",
+    livingSystemId:"living-system:4p:deep-ocean", issue:{id:"issue:4p:marine-pressure-review",label:"Marine pressure review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:marine-protection",label:"Marine protection and bycatch reduction",status:"SOURCE_REVIEW_PENDING"},
+    context:"Migratory marine profile. Occurrence, aggregation and track records retain distinct sampling semantics.",
+    group:"Other", intro:"The whale shark is the world's largest living fish and a migratory filter-feeding shark. The Convention on Migratory Species lists it as Endangered.", habitat:"Warm and tropical marine waters across a broad migratory range; local aggregations are seasonal and source-dependent.",
+    descriptorSource:{source:"Convention on Migratory Species",sourceUrl:"https://www.cms.int/species/rhincodon-typus",checkedAt:"2026-10-01",note:"Migratory and conservation context; not a local abundance or live-position claim."}, region:"Tropical and warm-temperate ocean",
+    publicClaims:[
+      {state:"KNOWN",text:"The Convention on Migratory Species identifies Rhincodon typus as the world's largest living fish and lists its IUCN status as Endangered.",source:"Convention on Migratory Species — Whale Shark",sourceUrl:"https://www.cms.int/species/rhincodon-typus",checkedAt:"2026-10-01",limitation:"Global status does not establish local abundance."},
+      {state:"KNOWN",text:"Whale sharks are migratory; an observation or tracked individual does not describe the species' complete range.",source:"Convention on Migratory Species — Whale Shark",sourceUrl:"https://www.cms.int/species/rhincodon-typus",checkedAt:"2026-10-01",limitation:"Movement evidence is dataset-, season- and place-specific."}
+    ],
+  },
+  {
+    id:"taxon:gbif:2442225", slug:"green-sea-turtle", commonName:"Green Turtle", scientificName:"Chelonia mydas", gbifKey:2442225,
+    rank:"SPECIES", taxonomicStatus:"ACCEPTED", kingdom:"Animalia", taxonSourceUrl:"https://www.gbif.org/species/2442225",
+    livingSystemId:"living-system:4p:coastal-sea", issue:{id:"issue:4p:marine-pressure-review",label:"Marine pressure review",status:"SOURCE_REVIEW_PENDING"}, solution:{id:"solution:4p:marine-protection",label:"Nesting, foraging habitat and bycatch protection",status:"SOURCE_REVIEW_PENDING"},
+    context:"Global marine-turtle profile. Regulatory status is population-segment specific and is not collapsed into one universal label.",
+    group:"Other", intro:"Green turtles are large hard-shelled sea turtles found around the world. NOAA documents different protection statuses among distinct population segments.", habitat:"Oceanic habitat early in life, followed by nearshore coastal foraging grounds; adults migrate between foraging areas and nesting beaches.",
+    descriptorSource:{source:"NOAA Fisheries",sourceUrl:"https://www.fisheries.noaa.gov/species/green-turtle",checkedAt:"2026-10-01",note:"Species-level life-history and U.S. population-segment context; status varies among populations."}, region:"Global tropical and subtropical ocean",
+    publicClaims:[
+      {state:"KNOWN",text:"NOAA Fisheries describes green turtles as globally distributed and documents distinct population segments with different U.S. ESA statuses.",source:"NOAA Fisheries — Green Turtle",sourceUrl:"https://www.fisheries.noaa.gov/species/green-turtle",checkedAt:"2026-10-01",limitation:"Do not collapse population-segment status into one universal label."},
+      {state:"KNOWN",text:"NOAA documents bycatch, habitat loss/degradation, changing environmental conditions, pollution/debris and vessel strikes among important pressures.",source:"NOAA Fisheries — Green Turtle",sourceUrl:"https://www.fisheries.noaa.gov/species/green-turtle",checkedAt:"2026-10-01",limitation:"Pressure exposure varies by population and place."}
+    ],
+  },
   {
     id: "taxon:gbif:5219426",
     slug: "jaguar",
