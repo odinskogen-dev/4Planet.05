@@ -1,4 +1,16 @@
+import { BrregProviderError, fetchBrregExact } from "../../products/4sapien/supabase/functions/_shared/brreg";
+import { bindBrregIdentity, markIdentityUnknown, normaliseOrganisationNumber } from "../_shared/fourbrands-provenance.mjs";
+
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
+
+type CompanyIdentityInput = {
+  organizationNumber?: string;
+  legalName?: string;
+  lei?: string | null;
+  identityState?: string;
+  brregSourceUrl?: string;
+  gleifSourceUrl?: string | null;
+};
 
 type Env = {
   FOURBRAND_OPENAI_API_KEY?: string;
@@ -17,6 +29,28 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 });
 
 const clean = (value: unknown, max = 120) => typeof value === "string" ? value.trim().slice(0, max) : "";
+
+type ValueCell = "MAKE MORE" | "SPEND BETTER";
+
+function publicValueCell(item: any): ValueCell {
+  const explicit = clean(item?.valueCell, 40).toUpperCase();
+  if (explicit === "MAKE MORE" || explicit === "SPEND BETTER") return explicit as ValueCell;
+  const text = `${clean(item?.title, 240)} ${clean(item?.economicLogic, 800)}`.toLowerCase();
+  const spendSignals = ["cost", "spend", "procurement", "supplier", "vendor", "energy", "inventory", "working capital", "cash", "renewal", "waste", "efficiency"];
+  return spendSignals.some(signal => text.includes(signal)) ? "SPEND BETTER" : "MAKE MORE";
+}
+
+function attachValueCells(analysis: any) {
+  if (!analysis || typeof analysis !== "object") return analysis;
+  const opportunities = Array.isArray(analysis.opportunities)
+    ? analysis.opportunities.map((item: any) => ({ ...item, valueCell: publicValueCell(item) }))
+    : [];
+  const byTitle = new Map(opportunities.map((item: any) => [clean(item?.title, 240), item]));
+  const alignedTop3 = Array.isArray(analysis.alignedTop3)
+    ? analysis.alignedTop3.map((item: any) => byTitle.get(clean(item?.title, 240)) || ({ ...item, valueCell: publicValueCell(item) }))
+    : opportunities.slice(0, 3);
+  return { ...analysis, opportunities, alignedTop3 };
+}
 
 const TOMRA_2025 = "https://www.tomra.com/investor-relations/reports/key-figures";
 const TOMRA_Q2 = "https://www.tomra.com/-/media/project/tomra/tomra/investor-relations/quarterly-results-files/2026/2q/2026-q2_press-release_tomra.pdf";
@@ -226,7 +260,7 @@ Hard rules:
 9. Output only one valid JSON object with the exact top-level keys requested. No markdown.
 
 Required JSON shape:
-{"engine":"4BRAND ECONOMIC VALUE ENGINE 01","company":{"name":"","legalName":"","ticker":"","sector":"","geography":"","description":""},"generatedAt":"ISO-8601","analysisStatus":"LIVE_RESEARCH","statusNote":"","economicBaseline":[{"label":"","value":"","period":"","truthClass":"FACT","sourceIds":["SRC-01"]}],"businessModel":[{"title":"","detail":"","truthClass":"FACT","confidence":"HIGH","sourceIds":["SRC-01"]}],"valueDrivers":[],"valueLeakage":[],"opportunities":[{"rank":1,"title":"","economicLogic":"","estimatedValue":"","planetaryLogic":"","planetaryDelta":"","truthClass":"ESTIMATE","confidence":"MEDIUM","sourceIds":["SRC-01"]}],"alignedTop3":[],"solutions":[],"nextExperiment":{"title":"","hypothesis":"","method":"","successMetric":"","economicMeasurement":"","planetaryMeasurement":"","truthClass":"ASSUMPTION"},"evidence":[{"id":"SRC-01","title":"","publisher":"","url":"https://...","checkedAt":"YYYY-MM-DD","note":""}],"assumptions":[""],"unknowns":[""]}`;
+{"engine":"4BRAND ECONOMIC VALUE ENGINE 01","company":{"name":"","legalName":"","ticker":"","sector":"","geography":"","description":""},"generatedAt":"ISO-8601","analysisStatus":"LIVE_RESEARCH","statusNote":"","economicBaseline":[{"label":"","value":"","period":"","truthClass":"FACT","sourceIds":["SRC-01"]}],"businessModel":[{"title":"","detail":"","truthClass":"FACT","confidence":"HIGH","sourceIds":["SRC-01"]}],"valueDrivers":[],"valueLeakage":[],"opportunities":[{"rank":1,"valueCell":"MAKE MORE","title":"","economicLogic":"","estimatedValue":"","planetaryLogic":"","planetaryDelta":"","truthClass":"ESTIMATE","confidence":"MEDIUM","sourceIds":["SRC-01"]}],"alignedTop3":[],"solutions":[],"nextExperiment":{"title":"","hypothesis":"","method":"","successMetric":"","economicMeasurement":"","planetaryMeasurement":"","truthClass":"ASSUMPTION"},"evidence":[{"id":"SRC-01","title":"","publisher":"","url":"https://...","checkedAt":"YYYY-MM-DD","note":""}],"assumptions":[""],"unknowns":[""]}`;
 
 function extractOutputText(payload: any): string {
   if (typeof payload?.output_text === "string" && payload.output_text.trim()) return payload.output_text;
@@ -279,7 +313,7 @@ async function liveAnalysis(company: string, env: Env) {
   parsed.engine = "4BRAND ECONOMIC VALUE ENGINE 01";
   parsed.analysisStatus = "LIVE_RESEARCH";
   parsed.generatedAt = new Date().toISOString();
-  return parsed;
+  return attachValueCells(parsed);
 }
 
 export const onRequestPost = async (ctx: { request: Request; env: Env }): Promise<Response> => {
@@ -287,11 +321,26 @@ export const onRequestPost = async (ctx: { request: Request; env: Env }): Promis
   try { body = await ctx.request.json(); } catch { return json({ ok: false, error: "INVALID_JSON" }, 400); }
   const company = clean(body.company);
   if (company.length < 2) return json({ ok: false, error: "COMPANY_REQUIRED" }, 400);
+  const identity = body.identity && typeof body.identity === "object" ? body.identity as CompanyIdentityInput : null;
+
+  const applyIdentity = async (analysis: any) => {
+    if (!identity) return analysis;
+    const organizationNumber = normaliseOrganisationNumber(identity.organizationNumber);
+    if (!organizationNumber) return markIdentityUnknown(analysis, "MALFORMED_ORGANISATION_NUMBER");
+    try {
+      const entity = await fetchBrregExact(organizationNumber, { signal: AbortSignal.timeout(6500) });
+      if (!entity) return markIdentityUnknown(analysis, "BRREG_IDENTITY_NOT_FOUND");
+      return bindBrregIdentity(analysis, entity, company).analysis;
+    } catch (error) {
+      const state = error instanceof BrregProviderError ? error.state : "IDENTITY_SOURCE_UNAVAILABLE";
+      return markIdentityUnknown(analysis, state);
+    }
+  };
 
   const normalised = company.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: tomraProof() });
+  if (["tomra", "tomrasystems", "tomrasystemsasa"].includes(normalised)) return json({ ok: true, analysis: await applyIdentity(attachValueCells(tomraProof())) });
 
-  try { return json({ ok: true, analysis: await liveAnalysis(company, ctx.env) }); }
+  try { return json({ ok: true, analysis: await applyIdentity(await liveAnalysis(company, ctx.env)) }); }
   catch (error) {
     return json({ ok: false, error: "ANALYSIS_ENGINE_UNAVAILABLE", detail: error instanceof Error ? error.message : "Live company research unavailable." }, 503);
   }

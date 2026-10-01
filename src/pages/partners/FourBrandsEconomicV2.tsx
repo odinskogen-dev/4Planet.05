@@ -1,4 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState, type ReactNode } from "react";
+import CompanyBrainSignIn from "@/pages/partners/CompanyBrainSignIn";
+import { createCompanyBrainWorkspace, currentCompanyBrainSession, listCompanyBrainWorkspaces, loadCompanyBrain, recordCompanyResult, saveCompanyTwin, startCompanyIntervention, syncCompanyAnalysis, syncCompanyValueCell } from "@/product/FourBrandBrainClient";
 import {
   buildEconomicTwin,
   CSV_TEMPLATE,
@@ -27,7 +29,7 @@ import "@/styles/fourbrands-money-os.css";
 
 type PublicMetric = { label: string; value: string; period: string; truthClass: TruthClass; sourceIds: string[] };
 type PublicEvidence = { id: string; title: string; publisher: string; url: string; checkedAt: string; note: string };
-type PublicOpportunity = { rank: number; title: string; economicLogic: string; estimatedValue: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
+type PublicOpportunity = { rank: number; valueCell?: "MAKE MORE" | "SPEND BETTER"; title: string; economicLogic: string; estimatedValue: string; truthClass: TruthClass; confidence: Confidence; sourceIds: string[] };
 type PublicAnalysis = {
   company: { name: string; legalName?: string; ticker?: string; sector?: string; geography?: string; description?: string };
   generatedAt: string;
@@ -39,16 +41,23 @@ type PublicAnalysis = {
   assumptions: string[];
   unknowns: string[];
 };
-type MainView = "overview" | "money" | "value" | "decisions";
+type MainView = "overview" | "money" | "value" | "decisions" | "future";
 type MoneyView = "overview" | "year" | "cash" | "profit" | "drivers" | "balance";
-type DecisionState = "OPPORTUNITY" | "REVIEWED" | "CHOSEN" | "BASELINE LOCKED" | "INTERVENTION STARTED" | "MEASURED" | "ATTRIBUTION REVIEWED" | "REALISED / NOT REALISED" | "LEARNING";
+type DecisionState = "OPPORTUNITY" | "REVIEWED" | "CHOSEN" | "BASELINE LOCKED" | "INTERVENTION STARTED" | "MEASURED" | "VALUE ATTRIBUTION REVIEWED" | "REALISED" | "NOT REALISED" | "LEARNING";
 type Attribution = "IDENTIFIED" | "DIRECT / RECONCILED" | "OBSERVED" | "COMPARATIVE" | "QUASI-EXPERIMENTAL" | "CONTROLLED EXPERIMENT";
 type AddMode = "transaction" | "account" | "asset" | "debt";
 
-const DECISION_STATES: DecisionState[] = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","ATTRIBUTION REVIEWED","REALISED / NOT REALISED","LEARNING"];
+const DECISION_STATES: DecisionState[] = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","VALUE ATTRIBUTION REVIEWED","REALISED","NOT REALISED","LEARNING"];
 const ATTRIBUTION: Attribution[] = ["IDENTIFIED","DIRECT / RECONCILED","OBSERVED","COMPARATIVE","QUASI-EXPERIMENTAL","CONTROLLED EXPERIMENT"];
-const NAV: { id: MainView; label: string }[] = [{id:"overview",label:"Overview"},{id:"money",label:"Money"},{id:"value",label:"Value"},{id:"decisions",label:"Decisions"}];
-const MONEY_NAV: {id:MoneyView;label:string}[] = [{id:"overview",label:"Overview"},{id:"year",label:"Year"},{id:"cash",label:"Cash"},{id:"profit",label:"Profit"},{id:"drivers",label:"Why"},{id:"balance",label:"Balance"}];
+const persistedAttribution=(value:Attribution)=>{
+  if(value==="OBSERVED")return "OBSERVED";
+  if(value==="DIRECT / RECONCILED"||value==="COMPARATIVE")return "ATTRIBUTED";
+  if(value==="QUASI-EXPERIMENTAL")return "INCREMENTAL";
+  if(value==="CONTROLLED EXPERIMENT")return "CAUSAL";
+  return "IDENTIFIED";
+};
+const NAV: { id: MainView; label: string }[] = [{id:"overview",label:"Overview"},{id:"money",label:"Money"},{id:"value",label:"Value"},{id:"decisions",label:"Decisions"},{id:"future",label:"Future"}];
+const MONEY_NAV: {id:MoneyView;label:string}[] = [{id:"overview",label:"Overview"},{id:"year",label:"Year"},{id:"cash",label:"Cash"},{id:"profit",label:"Profit"},{id:"drivers",label:"Driver Tree"},{id:"balance",label:"Balance"}];
 const LOAD_STEPS = ["Resolve company","Find official evidence","Read public economics","Map value drivers","Build public company model"];
 const today = () => new Date().toISOString().slice(0,10);
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
@@ -61,6 +70,7 @@ function initialView(): MainView {
   if (path.endsWith("/money")) return "money";
   if (path.endsWith("/value")) return "value";
   if (path.endsWith("/decisions")) return "decisions";
+  if (path.endsWith("/future")) return "future";
   return "overview";
 }
 function syncCanonical(view: MainView) {
@@ -142,19 +152,83 @@ export default function FourBrandsEconomicV2(){
 
   return <main className="fb-app fb-product fb-money-os">
     <header className="fb-topbar"><button className="fb-logo fb-logo-button" onClick={resetPrivate}>4BRANDS<span>_</span></button><button className="fb-company-chip" onClick={resetPrivate}><i/><strong>{analysis.company.name}</strong><small>Company Twin</small></button><div className="fb-top-actions"><span className="fb-session">{dataLabel}</span><button className="fb-add" onClick={()=>setAddOpen(true)}>+ Add</button><button className="fb-add fb-add-secondary" onClick={()=>setImportOpen(true)}>Import</button></div></header>
-    <div className="fb-shell"><aside className="fb-nav"><nav>{NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>setView(item.id)}>{item.label}</button>)}</nav><div><span>SESSION MODE</span><p>Manual and imported company data stays in this browser session. No server write.</p></div></aside><section className="fb-workspace">{dataLabel&&<div className="fb-mobile-session">{dataLabel}</div>}{view==="overview"&&<Overview twin={twin} snapshot={snapshot} opportunity={twin.opportunities[0]} onMoney={()=>setView("money")} onValue={()=>setView("value")} onDecision={()=>twin.opportunities[0]&&chooseOpportunity(twin.opportunities[0])}/>} {view==="money"&&<MoneySystem twin={twin} snapshot={snapshot} accounts={accounts} balanceItems={balanceItems} mode={moneyView} setMode={setMoneyView} year={year} setYear={setYear} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} onAdd={()=>setAddOpen(true)}/>} {view==="value"&&<ValueFinder twin={twin} active={activeOpportunity} setActive={setActiveOpportunity} onChoose={chooseOpportunity}/>} {view==="decisions"&&<DecisionLedger twin={twin} selected={selectedOpportunity} state={decisionState} setState={setDecisionState} attribution={attribution} setAttribution={setAttribution} baseline={baseline} lockBaseline={lockBaseline} intervention={intervention} setIntervention={setIntervention} result={measuredResult} setResult={setMeasuredResult} onFind={()=>setView("value")}/>}</section></div>
+    <div className="fb-shell"><aside className="fb-nav"><nav>{NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>setView(item.id)}>{item.label}</button>)}</nav><div><span>SESSION MODE</span><p>Manual and imported company data stays in this browser session. No server write.</p></div></aside><section className="fb-workspace">{dataLabel&&<div className="fb-mobile-session">{dataLabel}</div>}{view==="overview"&&<Overview twin={twin} snapshot={snapshot} opportunity={twin.opportunities[0]} onMoney={()=>setView("money")} onValue={()=>setView("value")} onDecision={()=>twin.opportunities[0]&&chooseOpportunity(twin.opportunities[0])} brain={<CompanyBrainBridge analysis={analysis} twin={twin} cash={snapshot.totalCash} dataLabel={dataLabel}/>} />} {view==="money"&&<MoneySystem twin={twin} snapshot={snapshot} accounts={accounts} balanceItems={balanceItems} mode={moneyView} setMode={setMoneyView} year={year} setYear={setYear} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} onAdd={()=>setAddOpen(true)}/>} {view==="value"&&<ValueFinder twin={twin} active={activeOpportunity} setActive={setActiveOpportunity} onChoose={chooseOpportunity}/>} {view==="decisions"&&<DecisionLedger analysis={analysis} twin={twin} selected={selectedOpportunity} state={decisionState} setState={setDecisionState} attribution={attribution} setAttribution={setAttribution} baseline={baseline} lockBaseline={lockBaseline} intervention={intervention} setIntervention={setIntervention} result={measuredResult} setResult={setMeasuredResult} onFind={()=>setView("value")}/>} {view==="future"&&<FutureEngine twin={twin}/>}</section></div>
     <nav className="fb-mobile-nav">{NAV.map(item=><button key={item.id} className={view===item.id?"is-active":""} onClick={()=>setView(item.id)}>{item.label}</button>)}</nav>
     <ImportPanel open={importOpen} onClose={()=>setImportOpen(false)} cashInput={cashInput} setCashInput={setCashInput} importError={importError} onFile={importFile} onDemo={loadDemo}/><AddMoneyPanel open={addOpen} onClose={()=>setAddOpen(false)} onSave={saveManual}/>
   </main>;
 }
 
-function FrontDoor({query,setQuery,runAnalysis,loading,loadingStep,error,clearError}:{query:string;setQuery:(v:string)=>void;runAnalysis:(e?:FormEvent,forced?:string)=>Promise<void>;loading:boolean;loadingStep:number;error:string;clearError:()=>void}){return <main className="fb-app fb-front"><nav className="fb-front-nav"><a className="fb-logo" href="/">4BRANDS<span>_</span></a><a href="https://4planet.org">BY 4PLANET</a></nav><section className="fb-front-main"><div className="fb-front-copy"><p className="fb-kicker">COMPANY CONTROL SYSTEM</p><h1>MAKE YOUR<br/>COMPANY BETTER</h1><p>Understand the whole company. Control the money. Find value. Make better decisions.</p></div><form className="fb-company-search" onSubmit={runAnalysis}><label htmlFor="company">Enter company name or website</label><div><input id="company" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Company name or website" autoFocus/><button type="submit" aria-label="Build public company model" disabled={loading||query.trim().length<2}>→</button></div><p>PUBLIC MODEL FIRST · PRIVATE DATA ONLY WHEN YOU ADD IT</p><button className="fb-demo-link" type="button" onClick={()=>runAnalysis(undefined,"TOMRA")}>Try TOMRA public model</button></form></section><footer className="fb-front-footer"><span>DATA → ECONOMIC TWIN → FIND VALUE → DECIDE → MEASURE</span><span>One company. One state. One interface.</span></footer>{loading&&<div className="fb-loading"><div><span>BUILDING PUBLIC COMPANY MODEL</span><strong>{query}</strong><i><b style={{width:`${((loadingStep+1)/LOAD_STEPS.length)*100}%`}}/></i>{LOAD_STEPS.map((step,index)=><p className={index<=loadingStep?"is-active":""} key={step}>{index<loadingStep?"✓":"·"} {step}</p>)}</div></div>}{error&&<div className="fb-toast"><strong>Research paused</strong><span>{error}</span><button onClick={clearError}>Close</button></div>}</main>}
+function FrontDoor({query,setQuery,runAnalysis,loading,loadingStep,error,clearError}:{query:string;setQuery:(v:string)=>void;runAnalysis:(e?:FormEvent,forced?:string)=>Promise<void>;loading:boolean;loadingStep:number;error:string;clearError:()=>void}){return <main className="fb-app fb-front"><nav className="fb-front-nav"><a className="fb-logo" href="/">4BRANDS<span>_</span></a><a href="https://4planet.org">BY 4PLANET</a></nav><section className="fb-front-main"><div className="fb-front-copy"><p className="fb-kicker">00 / COMPANY ANALYSIS · FREE PUBLIC ENTRY</p><h1>MAKE YOUR<br/>COMPANY BETTER</h1><p>Start with public evidence. Then remember what the company learns, model the company now and explore future scenarios before making decisions.</p></div><form className="fb-company-search" onSubmit={runAnalysis}><label htmlFor="company">Enter company name or website</label><div><input id="company" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Company name or website" autoFocus/><button type="submit" aria-label="Build public company model" disabled={loading||query.trim().length<2}>→</button></div><p>PUBLIC MODEL FIRST · PRIVATE DATA ONLY WHEN YOU ADD IT</p><button className="fb-demo-link" type="button" onClick={()=>runAnalysis(undefined,"TOMRA")}>Try TOMRA public model</button></form></section><LayerRail/><footer className="fb-front-footer"><span>ANALYSE → REMEMBER → MODEL → SIMULATE → DECIDE → MEASURE → LEARN</span><span>One company. One Brain. One living model.</span></footer>{loading&&<div className="fb-loading"><div><span>BUILDING PUBLIC COMPANY MODEL</span><strong>{query}</strong><i><b style={{width:`${((loadingStep+1)/LOAD_STEPS.length)*100}%`}}/></i>{LOAD_STEPS.map((step,index)=><p className={index<=loadingStep?"is-active":""} key={step}>{index<loadingStep?"✓":"·"} {step}</p>)}</div></div>}{error&&<div className="fb-toast"><strong>Research paused</strong><span>{error}</span><button onClick={clearError}>Close</button></div>}</main>}
 
-function PublicModel({analysis,reset,openImport,openManual,loadDemo,overlays}:{analysis:PublicAnalysis;reset:()=>void;openImport:()=>void;openManual:()=>void;loadDemo:()=>void;overlays:ReactNode}){return <main className="fb-app fb-public"><header className="fb-public-head"><button className="fb-logo fb-logo-button" onClick={reset}>4BRANDS<span>_</span></button><span>PUBLIC COMPANY MODEL</span><button onClick={reset}>Switch company</button></header><section className="fb-public-hero"><div><p className="fb-kicker">{analysis.analysisStatus.replaceAll("_"," ")}</p><h1>{analysis.company.name}</h1><p>{analysis.company.description||analysis.statusNote}</p></div><div className="fb-public-status"><span>PUBLIC SOURCES</span><strong>{analysis.evidence.length}</strong><small>{analysis.unknowns.length} important unknowns remain</small></div></section><section className="fb-public-grid"><article><span>WHAT 4BRANDS CAN ALREADY SEE</span><div className="fb-public-metrics">{analysis.economicBaseline.slice(0,4).map(metric=><div key={`${metric.label}-${metric.period}`}><small>{metric.label}</small><strong>{metric.value}</strong><Truth value={metric.truthClass}/></div>)}</div></article><article className="fb-build-card"><p className="fb-kicker">BUILD YOUR COMPANY TWIN</p><h2>Start with the money.</h2><p>Add accounts, income, costs, tax/public charges, assets and debt manually — or import structured financial data.</p><button className="fb-primary" onClick={openManual}>Start manually</button><button className="fb-secondary" onClick={openImport}>Import financial data</button><button className="fb-demo-link" onClick={loadDemo}>Explore synthetic demo</button><small>Private prototype data remains session-only.</small></article></section><section className="fb-public-bottom"><div><span>PUBLIC VALUE HYPOTHESES</span>{analysis.opportunities.slice(0,3).map(item=><article key={item.rank}><b>{String(item.rank).padStart(2,"0")}</b><div><strong>{item.title}</strong><p>{item.economicLogic}</p></div><Truth value={item.truthClass}/></article>)}</div><aside><span>EVIDENCE</span>{analysis.evidence.slice(0,5).map(source=><a key={source.id} href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong><small>{source.publisher} · {source.checkedAt}</small></a>)}</aside></section>{overlays}</main>}
+function PublicModel({analysis,reset,openImport,openManual,loadDemo,overlays}:{analysis:PublicAnalysis;reset:()=>void;openImport:()=>void;openManual:()=>void;loadDemo:()=>void;overlays:ReactNode}){return <main className="fb-app fb-public"><header className="fb-public-head"><button className="fb-logo fb-logo-button" onClick={reset}>4BRANDS<span>_</span></button><span>00 / COMPANY ANALYSIS</span><button onClick={reset}>Switch company</button></header><LayerRail/><section className="fb-public-hero"><div><p className="fb-kicker">{analysis.analysisStatus.replaceAll("_"," ")}</p><h1>{analysis.company.name}</h1><p>{analysis.company.description||analysis.statusNote}</p></div><div className="fb-public-status"><span>PUBLIC SOURCES</span><strong>{analysis.evidence.length}</strong><small>{analysis.unknowns.length} important unknowns remain</small></div></section><section className="fb-public-grid"><article><span>WHAT 4BRANDS CAN ALREADY SEE</span><div className="fb-public-metrics">{analysis.economicBaseline.slice(0,4).map(metric=><div key={`${metric.label}-${metric.period}`}><small>{metric.label}</small><strong>{metric.value}</strong><Truth value={metric.truthClass}/></div>)}</div></article><article className="fb-build-card"><p className="fb-kicker">02 / COMPANY TWIN</p><h2>Build your Company Twin.</h2><p>Add accounts, income, costs, tax/public charges, assets and debt manually — or import structured financial data.</p><button className="fb-primary" onClick={openManual}>Start manually</button><button className="fb-secondary" onClick={openImport}>Import financial data</button><button className="fb-demo-link" onClick={loadDemo}>Explore with synthetic demo finance</button><small>Private prototype data remains session-only until supported state is explicitly saved to Company Brain.</small></article></section><CompanyBrainBridge analysis={analysis}/><section className="fb-public-bottom"><div><span>PUBLIC VALUE HYPOTHESES</span>{analysis.opportunities.slice(0,3).map(item=><article key={item.rank}><b>{String(item.rank).padStart(2,"0")}</b><div><small>{item.valueCell||"VALUE CELL PENDING"}</small><strong>{item.title}</strong><p>{item.economicLogic}</p></div><Truth value={item.truthClass}/></article>)}</div><aside><span>EVIDENCE</span>{analysis.evidence.slice(0,5).map(source=><a key={source.id} href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong><small>{source.publisher} · {source.checkedAt}</small></a>)}</aside></section>{overlays}</main>}
 
-function Overview({twin,snapshot,opportunity,onMoney,onValue,onDecision}:{twin:EconomicTwin;snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;opportunity?:Opportunity;onMoney:()=>void;onValue:()=>void;onDecision:()=>void}){const next=snapshot.months.find(month=>month.projectedClosingCash!==null);return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">OVERVIEW</p><h1>What matters now.</h1></div><div className="fb-fresh"><span>{twin.rowCount} economic rows</span><small>{snapshot.events.length} cash-calendar events</small></div></div><div className="fb-state-strip"><Metric label="Cash across accounts" value={money(snapshot.totalCash,snapshot.currency)} meta={`${money(snapshot.next30Outflow,snapshot.currency)} out next 30d`}/><Metric label="Revenue · recorded" value={money(twin.revenue,twin.currency)} meta={`${twin.customers} customers`}/><Metric label="Assets / debt" value={`${money(snapshot.totalAssets,snapshot.currency)} / ${money(snapshot.totalDebt,snapshot.currency)}`} meta={`Net position ${money(snapshot.netAssets,snapshot.currency)}`}/><Metric label="Public charges · next 30d" value={money(snapshot.next30PublicCharges,snapshot.currency)} meta={`${money(snapshot.annualPublicCharges,snapshot.currency)} in ${snapshot.year}`} tone={snapshot.next30PublicCharges>0?"warn":undefined}/></div><div className="fb-overview-grid"><article className="fb-primary-insight"><div><span>PRIMARY INSIGHT</span>{opportunity&&<ConfidenceTag value={opportunity.confidence}/>}</div>{opportunity?<><h2>{money(opportunity.valueLow,twin.currency)}–{money(opportunity.valueHigh,twin.currency)}</h2><h3>{opportunity.title}</h3><p>{opportunity.why}</p><div className="fb-insight-actions"><button onClick={onValue}>Review opportunity</button><button onClick={onDecision}>Take to decision →</button></div></>:<><h2>Build more truth.</h2><p>The Company Twin is live, but no bounded value detector fires yet.</p></>}</article><article className="fb-change-card"><span>MONEY THIS YEAR</span><div><small>Expected / recorded inflow</small><strong>{money(snapshot.annualInflow,snapshot.currency)}</strong></div><div><small>Expected / recorded outflow</small><strong>{money(snapshot.annualOutflow,snapshot.currency)}</strong></div><button onClick={onMoney}>Open annual money view →</button></article><article className="fb-cash-card"><span>LIQUIDITY</span><div><small>Next visible month</small><strong>{next?.projectedClosingCash===null?"—":money(next?.projectedClosingCash||snapshot.totalCash,snapshot.currency)}</strong><p>{next?.month||"No schedule"} · based on current session data</p></div><button onClick={onMoney}>Open Money →</button></article></div></div>}
+function LayerRail(){
+  return <section className="fb-layer-rail" aria-label="4BRANDS company intelligence model">
+    <article><span>00</span><strong>Company Analysis</strong><p>Understand from public evidence.</p></article>
+    <article><span>01</span><strong>Company Brain</strong><p>Remember knowledge, decisions and learning.</p></article>
+    <article><span>02</span><strong>Company Twin</strong><p>Model the company as it is now.</p></article>
+    <article><span>03</span><strong>Future Engine</strong><p>Explore scenarios before action.</p></article>
+  </section>
+}
 
-function MoneySystem({twin,snapshot,accounts,balanceItems,mode,setMode,year,setYear,selectedMonth,setSelectedMonth,onAdd}:{twin:EconomicTwin;snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;accounts:MoneyAccount[];balanceItems:BalanceItem[];mode:MoneyView;setMode:(v:MoneyView)=>void;year:number;setYear:(v:number)=>void;selectedMonth:number;setSelectedMonth:(v:number)=>void;onAdd:()=>void}){return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">MONEY</p><h1>Your company economy, alive.</h1><p>Income, costs, liquidity, accounts, assets, debt and public charges in one economic twin.</p></div><button className="fb-primary fb-money-add" onClick={onAdd}>+ Add money data</button></div><div className="fb-subnav fb-subnav-money">{MONEY_NAV.map(item=><button key={item.id} className={mode===item.id?"is-active":""} onClick={()=>setMode(item.id)}>{item.label}</button>)}</div>{mode==="overview"&&<MoneyOverview twin={twin} snapshot={snapshot} accounts={accounts} balanceItems={balanceItems} setMode={setMode}/>} {mode==="year"&&<YearView snapshot={snapshot} year={year} setYear={setYear} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}/>} {mode==="cash"&&<CashView twin={twin} snapshot={snapshot} accounts={accounts}/>} {mode==="profit"&&<ProfitView twin={twin}/>} {mode==="drivers"&&<DriverView twin={twin}/>} {mode==="balance"&&<BalanceView snapshot={snapshot} accounts={accounts} items={balanceItems} onAdd={onAdd}/>}</div>}
+function CompanyBrainBridge({analysis,twin,cash,dataLabel}:{analysis:PublicAnalysis;twin?:EconomicTwin;cash?:number;dataLabel?:string}){
+  const [signedIn,setSignedIn]=useState(false);
+  const [companyId,setCompanyId]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState("");
+  useEffect(()=>{
+    let live=true;
+    currentCompanyBrainSession().then(async session=>{
+      if(!live||!session)return;
+      setSignedIn(true);
+      const workspaces=await listCompanyBrainWorkspaces();
+      if(!live)return;
+      const key=(analysis.company.legalName||analysis.company.name).trim().toLowerCase();
+      const match=workspaces.find(item=>item.display_name.trim().toLowerCase()===key)||workspaces.find(item=>item.display_name.trim().toLowerCase()===analysis.company.name.trim().toLowerCase());
+      setCompanyId(match?.company_id||"");
+    }).catch(()=>undefined);
+    return()=>{live=false};
+  },[analysis.company.name,analysis.company.legalName]);
+  async function createBrain(){
+    setBusy(true);setMessage("");
+    try{
+      const created=await createCompanyBrainWorkspace(analysis.company.name,analysis.company.legalName);
+      setCompanyId(created.company_id);
+      await syncCompanyAnalysis(created.company_id,analysis,{});
+      setMessage("Company Brain created and public model written back.");
+    }catch(cause){setMessage(cause instanceof Error?cause.message:"Company Brain creation failed.");}
+    finally{setBusy(false);}
+  }
+  async function savePublic(){
+    if(!companyId)return;setBusy(true);setMessage("");
+    try{await syncCompanyAnalysis(companyId,analysis,{});setMessage("Public model saved to Company Brain.");}
+    catch(cause){setMessage(cause instanceof Error?cause.message:"Company Brain writeback failed.");}
+    finally{setBusy(false);}
+  }
+  async function saveTwinState(){
+    if(!companyId||!twin)return;setBusy(true);setMessage("");
+    try{
+      await saveCompanyTwin(companyId,{objective:"Improve company value with explicit evidence and measured outcomes",annualRevenue:String(twin.revenue||""),grossMargin:String(twin.grossMargin||""),operatingCash:String(cash??twin.cash??""),customerGrowth:String(twin.revenueDelta||""),primaryConstraint:"",notes:dataLabel||"Company Twin state saved from 4BRANDS"});
+      setMessage("Current Company Twin baseline saved to Company Brain.");
+    }catch(cause){setMessage(cause instanceof Error?cause.message:"Company Twin writeback failed.");}
+    finally{setBusy(false);}
+  }
+  const status=companyId?("CONNECTED · "+companyId.slice(0,8)+"…"):(signedIn?"SIGNED IN · NO WORKSPACE YET":"SIGN IN WITH 4PLANET ID TO PERSIST COMPANY MEMORY");
+  return <section className="fb-brain-bridge" id="company-brain"><div><p className="fb-kicker">01 / COMPANY BRAIN</p><h2>The company that remembers.</h2><p>Public analysis can become source-derived context. Authenticated company knowledge persists under 4PLANET ID, workspace membership, provenance, audit and tenant isolation.</p></div><div className="fb-brain-actions">{!signedIn&&<CompanyBrainSignIn onMessage={setMessage}/>} {signedIn&&!companyId&&<button className="fb-primary" type="button" disabled={busy} onClick={createBrain}>Create Company Brain</button>} {signedIn&&companyId&&<button className="fb-secondary" type="button" disabled={busy} onClick={savePublic}>Save public model to Brain</button>} {signedIn&&companyId&&twin&&<button className="fb-primary" type="button" disabled={busy} onClick={saveTwinState}>Save current Twin to Brain</button>}<small>{status}</small>{message&&<p role="status">{message}</p>}</div></section>
+}
+
+function FutureEngine({twin}:{twin:EconomicTwin}){
+  const [revenuePct,setRevenuePct]=useState("10");
+  const [marginPp,setMarginPp]=useState("0");
+  const [horizon,setHorizon]=useState("12 months");
+  const rev=Number(revenuePct)||0; const margin=Number(marginPp)||0;
+  const scenarioRevenue=twin.revenue*(1+rev/100); const scenarioMargin=twin.grossMargin+margin;
+  const baselineGross=twin.revenue*(twin.grossMargin/100); const scenarioGross=scenarioRevenue*(scenarioMargin/100);
+  return <div className="fb-view fb-future-view"><div className="fb-view-title"><div><p className="fb-kicker">03 / FUTURE ENGINE · SCENARIO, NOT FORECAST</p><h1>Explore before you decide.</h1><p>Change explicit assumptions against the current Company Twin. No scenario becomes fact, forecast or realised value by calculation alone.</p></div></div><div className="fb-future-controls"><label>Revenue change assumption (%)<input value={revenuePct} inputMode="decimal" onChange={e=>setRevenuePct(e.target.value)}/></label><label>Margin change assumption (pp)<input value={marginPp} inputMode="decimal" onChange={e=>setMarginPp(e.target.value)}/></label><label>Scenario horizon<select value={horizon} onChange={e=>setHorizon(e.target.value)}><option>3 months</option><option>12 months</option><option>24 months</option><option>36 months</option></select></label></div><div className="fb-state-strip fb-future-results"><Metric label={"Scenario revenue · "+horizon} value={money(scenarioRevenue,twin.currency)} meta={"Baseline "+money(twin.revenue,twin.currency)+" · assumption "+(rev>=0?"+":"")+rev+"%"}/><Metric label="Scenario gross margin" value={scenarioMargin.toFixed(1)+"%"} meta={"Baseline "+twin.grossMargin.toFixed(1)+"% · assumption "+(margin>=0?"+":"")+margin.toFixed(1)+"pp"}/><Metric label="Illustrative gross-profit delta" value={money(scenarioGross-baselineGross,twin.currency)} meta="Arithmetic scenario only · not attributed or realised value"/></div><section className="fb-future-law"><strong>TRUTH BOUNDARY</strong><p>FACT ≠ ASSUMPTION ≠ SCENARIO ≠ FORECAST ≠ OBSERVED RESULT ≠ ATTRIBUTED VALUE.</p></section></div>
+}
+function Overview({twin,snapshot,opportunity,onMoney,onValue,onDecision,brain}:{twin:EconomicTwin;snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;opportunity?:Opportunity;onMoney:()=>void;onValue:()=>void;onDecision:()=>void;brain:ReactNode}){const next=snapshot.months.find(month=>month.projectedClosingCash!==null);return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">OVERVIEW</p><h1>What matters now.</h1></div><div className="fb-fresh"><span>{twin.rowCount} economic rows</span><small>{snapshot.events.length} cash-calendar events</small></div></div><div className="fb-state-strip"><Metric label="Cash across accounts" value={money(snapshot.totalCash,snapshot.currency)} meta={`${money(snapshot.next30Outflow,snapshot.currency)} out next 30d`}/><Metric label="Revenue · recorded" value={money(twin.revenue,twin.currency)} meta={`${twin.customers} customers`}/><Metric label="Assets / debt" value={`${money(snapshot.totalAssets,snapshot.currency)} / ${money(snapshot.totalDebt,snapshot.currency)}`} meta={`Net position ${money(snapshot.netAssets,snapshot.currency)}`}/><Metric label="Public charges · next 30d" value={money(snapshot.next30PublicCharges,snapshot.currency)} meta={`${money(snapshot.annualPublicCharges,snapshot.currency)} in ${snapshot.year}`} tone={snapshot.next30PublicCharges>0?"warn":undefined}/></div>{brain}<div className="fb-overview-grid"><article className="fb-primary-insight"><div><span>PRIMARY INSIGHT</span>{opportunity&&<ConfidenceTag value={opportunity.confidence}/>}</div>{opportunity?<><h2>{money(opportunity.valueLow,twin.currency)}–{money(opportunity.valueHigh,twin.currency)}</h2><h3>{opportunity.title}</h3><p>{opportunity.why}</p><div className="fb-insight-actions"><button onClick={onValue}>Review opportunity</button><button onClick={onDecision}>Take to decision →</button></div></>:<><h2>Build more truth.</h2><p>The Company Twin is live, but no bounded value detector fires yet.</p></>}</article><article className="fb-change-card"><span>MONEY THIS YEAR</span><div><small>Expected / recorded inflow</small><strong>{money(snapshot.annualInflow,snapshot.currency)}</strong></div><div><small>Expected / recorded outflow</small><strong>{money(snapshot.annualOutflow,snapshot.currency)}</strong></div><button onClick={onMoney}>Open annual money view →</button></article><article className="fb-cash-card"><span>LIQUIDITY</span><div><small>Next visible month</small><strong>{next?.projectedClosingCash===null?"—":money(next?.projectedClosingCash||snapshot.totalCash,snapshot.currency)}</strong><p>{next?.month||"No schedule"} · based on current session data</p></div><button onClick={onMoney}>Open Money →</button></article></div></div>}
+
+function MoneySystem({twin,snapshot,accounts,balanceItems,mode,setMode,year,setYear,selectedMonth,setSelectedMonth,onAdd}:{twin:EconomicTwin;snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;accounts:MoneyAccount[];balanceItems:BalanceItem[];mode:MoneyView;setMode:(v:MoneyView)=>void;year:number;setYear:(v:number)=>void;selectedMonth:number;setSelectedMonth:(v:number)=>void;onAdd:()=>void}){return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">ECONOMIC TWIN</p><h1>Know the economic state.</h1><p>Income, costs, liquidity, accounts, assets, debt and public charges in one economic twin.</p></div><button className="fb-primary fb-money-add" onClick={onAdd}>+ Add money data</button></div><div className="fb-subnav fb-subnav-money">{MONEY_NAV.map(item=><button key={item.id} className={mode===item.id?"is-active":""} onClick={()=>setMode(item.id)}>{item.label}</button>)}</div>{mode==="overview"&&<MoneyOverview twin={twin} snapshot={snapshot} accounts={accounts} balanceItems={balanceItems} setMode={setMode}/>} {mode==="year"&&<YearView snapshot={snapshot} year={year} setYear={setYear} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}/>} {mode==="cash"&&<CashView twin={twin} snapshot={snapshot} accounts={accounts}/>} {mode==="profit"&&<ProfitView twin={twin}/>} {mode==="drivers"&&<DriverView twin={twin}/>} {mode==="balance"&&<BalanceView snapshot={snapshot} accounts={accounts} items={balanceItems} onAdd={onAdd}/>}</div>}
 
 function MoneyOverview({twin,snapshot,accounts,balanceItems,setMode}:{twin:EconomicTwin;snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;accounts:MoneyAccount[];balanceItems:BalanceItem[];setMode:(v:MoneyView)=>void}){return <div className="fb-money-home"><section className="fb-money-equation"><div><span>CASH</span><strong>{money(snapshot.totalCash,snapshot.currency)}</strong><small>{accounts.length?`${accounts.length} account${accounts.length===1?"":"s"}`:"No account split yet"}</small></div><b>+</b><div><span>ASSETS</span><strong>{money(snapshot.totalAssets,snapshot.currency)}</strong><small>{balanceItems.filter(i=>i.kind==="asset").length} recorded</small></div><b>−</b><div><span>DEBT</span><strong>{money(snapshot.totalDebt,snapshot.currency)}</strong><small>{balanceItems.filter(i=>i.kind==="debt").length} recorded</small></div><b>=</b><div className="is-result"><span>NET POSITION</span><strong>{money(snapshot.netAssets,snapshot.currency)}</strong><small>Cash + recorded assets − debt</small></div></section><div className="fb-money-home-grid"><section className="fb-surface"><div className="fb-surface-head"><span>NEXT 30 DAYS</span><small>LIQUIDITY</small></div><div className="fb-money-big-row"><div><small>Money in</small><strong>{money(snapshot.next30Inflow,snapshot.currency)}</strong></div><div><small>Money out</small><strong>{money(snapshot.next30Outflow,snapshot.currency)}</strong></div><div><small>Public charges</small><strong>{money(snapshot.next30PublicCharges,snapshot.currency)}</strong></div></div><button className="fb-text-button" onClick={()=>setMode("year")}>See the whole year →</button></section><section className="fb-surface"><div className="fb-surface-head"><span>ECONOMIC CORE</span><small>RECORDED</small></div><div className="fb-economic-row"><span>Revenue</span><strong>{money(twin.revenue,twin.currency)}</strong><small>Invoices</small></div><div className="fb-economic-row"><span>Costs</span><strong>{money(twin.costs,twin.currency)}</strong><small>Direct + operating</small></div><div className="fb-economic-row"><span>Gross margin</span><strong>{twin.grossMargin.toFixed(1)}%</strong><small>{pp(twin.grossMarginDeltaPp)} vs prior 30d</small></div><div className="fb-economic-row"><span>AR / AP</span><strong>{money(twin.ar,twin.currency)} / {money(twin.ap,twin.currency)}</strong><small>Receivables / payables</small></div></section></div><div className="fb-truth-note"><strong>Revenue ≠ invoice ≠ payment ≠ cash.</strong><p>4BRANDS keeps accounting truth, payment truth, company-confirmed inputs, calculations and estimates distinct.</p></div></div>}
 
@@ -166,9 +240,133 @@ function ProfitView({twin}:{twin:EconomicTwin}){return <div className="fb-profit
 function DriverView({twin}:{twin:EconomicTwin}){return <div className="fb-driver-layout"><section className="fb-surface"><div className="fb-surface-head"><span>REVENUE DRIVER TREE</span><small>Must reconcile to {money(twin.revenueDelta,twin.currency)}</small></div><div className="fb-driver-root"><span>REVENUE CHANGE</span><strong>{money(twin.revenueDelta,twin.currency)}</strong></div>{twin.revenueDrivers.map(node=><div className="fb-driver-row" key={node.label}><div><strong>{node.label}</strong><p>{node.detail}</p></div><b>{money(node.value,twin.currency)}</b></div>)}</section><section className="fb-surface"><div className="fb-surface-head"><span>GROSS-MARGIN WHY</span><small>{pp(twin.grossMarginDeltaPp)} total change</small></div><div className="fb-driver-root"><span>GROSS MARGIN CHANGE</span><strong>{pp(twin.grossMarginDeltaPp)}</strong></div>{twin.marginDrivers.map(node=><div className="fb-driver-row" key={node.label}><div><strong>{node.label}</strong><p>{node.detail}</p></div><b>{pp(node.value)}</b></div>)}</section></div>}
 function BalanceView({snapshot,accounts,items,onAdd}:{snapshot:ReturnType<typeof buildCompanyMoneySnapshot>;accounts:MoneyAccount[];items:BalanceItem[];onAdd:()=>void}){return <div className="fb-balance-view"><section className="fb-surface"><div className="fb-surface-head"><span>ACCOUNTS</span><button onClick={onAdd}>+ Add</button></div>{accounts.map(item=><div className="fb-balance-row" key={item.id}><div><strong>{item.name}</strong><small>{item.type} · {item.source}</small></div><b>{money(item.balance,item.currency)}</b></div>)}{!accounts.length&&<p className="fb-muted">No accounts yet.</p>}<div className="fb-balance-total"><span>Total cash</span><strong>{money(snapshot.totalCash,snapshot.currency)}</strong></div></section><section className="fb-surface"><div className="fb-surface-head"><span>ASSETS</span><button onClick={onAdd}>+ Add</button></div>{items.filter(i=>i.kind==="asset").map(item=><div className="fb-balance-row" key={item.id}><div><strong>{item.name}</strong><small>{item.category}</small></div><b>{money(item.amount,item.currency)}</b></div>)}<div className="fb-balance-total"><span>Total assets</span><strong>{money(snapshot.totalAssets,snapshot.currency)}</strong></div></section><section className="fb-surface"><div className="fb-surface-head"><span>DEBT</span><button onClick={onAdd}>+ Add</button></div>{items.filter(i=>i.kind==="debt").map(item=><div className="fb-balance-row" key={item.id}><div><strong>{item.name}</strong><small>{item.category}</small></div><b>{money(item.amount,item.currency)}</b></div>)}<div className="fb-balance-total"><span>Total debt</span><strong>{money(snapshot.totalDebt,snapshot.currency)}</strong></div></section></div>}
 
-function ValueFinder({twin,active,setActive,onChoose}:{twin:EconomicTwin;active:number;setActive:(i:number)=>void;onChoose:(o:Opportunity)=>void}){const item=twin.opportunities[active]||twin.opportunities[0];return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">VALUE FINDER</p><h1>Where is value leaking?</h1><p>Bounded findings supported by company data. Identified value is not realised value.</p></div><div className="fb-found"><strong>{twin.opportunities.length}</strong><span>detectors fired</span></div></div>{item?<div className="fb-value-layout"><div className="fb-opportunity-list">{twin.opportunities.map((op,index)=><button key={op.id} className={index===active?"is-active":""} onClick={()=>setActive(index)}><div><span>{op.detector}</span><strong>{op.title}</strong></div><b>{money(op.valueLow,twin.currency)}–{money(op.valueHigh,twin.currency)}</b><ConfidenceTag value={op.confidence}/></button>)}</div><article className="fb-opportunity-detail"><div className="fb-opportunity-top"><span>{item.eyebrow}</span><div><Truth value={item.truthClass}/><ConfidenceTag value={item.confidence}/></div></div><h2>{money(item.valueLow,twin.currency)}–{money(item.valueHigh,twin.currency)}</h2><h3>{item.title}</h3><p>{item.why}</p><button className="fb-primary" onClick={()=>onChoose(item)}>Take to decision</button><div className="fb-progressive"><details open><summary>Why?</summary><p>{item.why}</p><p><b>Time to value:</b> {item.timeToValue}</p></details><details><summary>Calculation</summary><p>{item.calculation}</p><ul>{item.exactData.map(v=><li key={v}>{v}</li>)}</ul></details><details><summary>Evidence</summary><ul>{item.evidence.map(v=><li key={v}>{v}</li>)}</ul></details><details><summary>Assumptions + falsifier</summary><ul>{item.assumptions.map(v=><li key={v}>{v}</li>)}</ul><p><b>Falsifier:</b> {item.falsifier}</p></details></div></article></div>:<div className="fb-empty"><h2>No bounded opportunity detected.</h2><p>Add richer company data. Value Finder only fires when a detector has enough evidence.</p></div>}</div>}
+function ValueFinder({twin,active,setActive,onChoose}:{twin:EconomicTwin;active:number;setActive:(i:number)=>void;onChoose:(o:Opportunity)=>void}){const item=twin.opportunities[active]||twin.opportunities[0];return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">VALUE FINDER</p><h1>Where is value leaking?</h1><p>Bounded findings supported by company data. Identified value is not realised value.</p></div><div className="fb-found"><strong>{twin.opportunities.length}</strong><span>detectors fired</span></div></div>{item?<div className="fb-value-layout"><div className="fb-opportunity-list">{twin.opportunities.map((op,index)=><button key={op.id} className={index===active?"is-active":""} onClick={()=>setActive(index)}><div><span>{op.valueCell} · {op.detector}</span><strong>{op.title}</strong></div><b>{money(op.valueLow,twin.currency)}–{money(op.valueHigh,twin.currency)}</b><ConfidenceTag value={op.confidence}/></button>)}</div><article className="fb-opportunity-detail"><div className="fb-opportunity-top"><span>{item.valueCell} · {item.eyebrow}</span><div><Truth value={item.truthClass}/><ConfidenceTag value={item.confidence}/></div></div><h2>{money(item.valueLow,twin.currency)}–{money(item.valueHigh,twin.currency)}</h2><h3>{item.title}</h3><p>{item.why}</p><button className="fb-primary" onClick={()=>onChoose(item)}>Take to decision</button><div className="fb-progressive"><details open><summary>Why?</summary><p>{item.why}</p><p><b>Time to value:</b> {item.timeToValue}</p></details><details><summary>Calculation</summary><p>{item.calculation}</p><ul>{item.exactData.map(v=><li key={v}>{v}</li>)}</ul></details><details><summary>Evidence</summary><ul>{item.evidence.map(v=><li key={v}>{v}</li>)}</ul></details><details><summary>Assumptions + falsifier</summary><ul>{item.assumptions.map(v=><li key={v}>{v}</li>)}</ul><p><b>Falsifier:</b> {item.falsifier}</p></details></div></article></div>:<div className="fb-empty"><h2>No bounded opportunity detected.</h2><p>Add richer company data. Value Finder only fires when a detector has enough evidence.</p></div>}</div>}
 
-function DecisionLedger({twin,selected,state,setState,attribution,setAttribution,baseline,lockBaseline,intervention,setIntervention,result,setResult,onFind}:{twin:EconomicTwin;selected:Opportunity|null;state:DecisionState;setState:(v:DecisionState)=>void;attribution:Attribution;setAttribution:(v:Attribution)=>void;baseline:string;lockBaseline:()=>void;intervention:string;setIntervention:(v:string)=>void;result:string;setResult:(v:string)=>void;onFind:()=>void}){if(!selected)return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">DECISIONS</p><h1>Nothing becomes value by itself.</h1></div></div><div className="fb-empty fb-empty-large"><span>OPPORTUNITY → DECISION → INTERVENTION → RESULT → LEARNING</span><h2>No opportunity selected.</h2><button className="fb-primary" onClick={onFind}>Open Value Finder</button></div></div>;const index=DECISION_STATES.indexOf(state);return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">DECISION + VALUE LEDGER</p><h1>Make the choice explicit.</h1></div><Truth value={selected.truthClass}/></div><div className="fb-ledger"><section className="fb-decision-main"><div className="fb-ledger-op"><span>SELECTED OPPORTUNITY</span><h2>{selected.title}</h2><strong>{money(selected.valueLow,twin.currency)}–{money(selected.valueHigh,twin.currency)}</strong><p>Identified range · not approved, attributable or realised value.</p></div><label><span>INTERVENTION</span><textarea value={intervention} onChange={e=>setIntervention(e.target.value)} rows={4}/></label><label><span>MEASURED RESULT</span><textarea value={result} onChange={e=>setResult(e.target.value)} rows={4} placeholder="Enter measured result only after the intervention has run."/></label>{baseline?<div className="fb-baseline"><span>LOCKED BASELINE</span><p>{baseline}</p></div>:<button className="fb-primary" onClick={lockBaseline}>Lock baseline</button>}</section><aside className="fb-decision-side"><span>WORKFLOW STATE</span><div className="fb-state-machine">{DECISION_STATES.map((item,i)=><button key={item} className={i===index?"is-current":i<index?"is-done":""} onClick={()=>setState(item)}><i/>{item}</button>)}</div><span>ATTRIBUTION STRENGTH</span><select value={attribution} onChange={e=>setAttribution(e.target.value as Attribution)}>{ATTRIBUTION.map(item=><option key={item}>{item}</option>)}</select><p>A later result does not prove the intervention caused it.</p></aside></div></div>}
+function DecisionLedger({analysis,twin,selected,state,setState,attribution,setAttribution,baseline,lockBaseline,intervention,setIntervention,result,setResult,onFind}:{analysis:PublicAnalysis;twin:EconomicTwin;selected:Opportunity|null;state:DecisionState;setState:(v:DecisionState)=>void;attribution:Attribution;setAttribution:(v:Attribution)=>void;baseline:string;lockBaseline:()=>void;intervention:string;setIntervention:(v:string)=>void;result:string;setResult:(v:string)=>void;onFind:()=>void}){
+  if(!selected)return <div className="fb-view"><div className="fb-view-title"><div><p className="fb-kicker">DECISIONS</p><h1>Nothing becomes value by itself.</h1></div></div><div className="fb-empty fb-empty-large"><span>OPPORTUNITY → DECISION → INTERVENTION → RESULT → LEARNING</span><h2>No opportunity selected.</h2><button className="fb-primary" onClick={onFind}>Open Value Finder</button></div></div>;
+  const index=DECISION_STATES.indexOf(state);
+  return <div className="fb-view">
+    <div className="fb-view-title"><div><p className="fb-kicker">DECISION + VALUE LEDGER</p><h1>Make the choice explicit.</h1></div><Truth value={selected.truthClass}/></div>
+    <div className="fb-ledger">
+      <section className="fb-decision-main">
+        <div className="fb-ledger-op"><span>{selected.valueCell} · SELECTED OPPORTUNITY</span><h2>{selected.title}</h2><strong>{money(selected.valueLow,twin.currency)}–{money(selected.valueHigh,twin.currency)}</strong><p>Identified range · not approved, attributable or realised value.</p></div>
+        <label><span>INTERVENTION</span><textarea value={intervention} onChange={e=>setIntervention(e.target.value)} rows={4}/></label>
+        <label><span>MEASURED RESULT</span><textarea value={result} onChange={e=>setResult(e.target.value)} rows={4} placeholder="Enter measured result only after the intervention has run."/></label>
+        {baseline?<div className="fb-baseline"><span>LOCKED BASELINE</span><p>{baseline}</p></div>:<button className="fb-primary" onClick={lockBaseline}>Lock baseline</button>}
+      </section>
+      <aside className="fb-decision-side">
+        <span>WORKFLOW STATE</span>
+        <div className="fb-state-machine">{DECISION_STATES.map((item,i)=><button key={item} className={i===index?"is-current":i<index?"is-done":""} onClick={()=>setState(item)}><i/>{item}</button>)}</div>
+        <span>ATTRIBUTION STRENGTH</span>
+        <select value={attribution} onChange={e=>setAttribution(e.target.value as Attribution)}>{ATTRIBUTION.map(item=><option key={item}>{item}</option>)}</select>
+        <p>A later result does not prove the intervention caused it.</p>
+        <CompanyBrainDecisionBridge analysis={analysis} twin={twin} selected={selected} state={state} setState={setState} baseline={baseline} intervention={intervention} result={result} attribution={attribution}/>
+      </aside>
+    </div>
+  </div>;
+}
+
+function CompanyBrainDecisionBridge({analysis,twin,selected,state,setState,baseline,intervention,result,attribution}:{analysis:PublicAnalysis;twin:EconomicTwin;selected:Opportunity;state:DecisionState;setState:(v:DecisionState)=>void;baseline:string;intervention:string;result:string;attribution:Attribution}){
+  const[companyId,setCompanyId]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[message,setMessage]=useState("");
+  const[decisionId,setDecisionId]=useState("");
+  const[interventionId,setInterventionId]=useState("");
+  const[learning,setLearning]=useState("");
+
+  useEffect(()=>{
+    let live=true;
+    currentCompanyBrainSession().then(async session=>{
+      if(!live||!session)return;
+      const workspaces=await listCompanyBrainWorkspaces();
+      if(!live)return;
+      const keys=[analysis.company.legalName,analysis.company.name].filter(Boolean).map(value=>String(value).trim().toLowerCase());
+      const match=workspaces.find(item=>keys.includes(item.display_name.trim().toLowerCase())||Boolean(item.legal_name&&keys.includes(item.legal_name.trim().toLowerCase())));
+      setCompanyId(match?.company_id||"");
+    }).catch(()=>undefined);
+    return()=>{live=false};
+  },[analysis.company.name,analysis.company.legalName]);
+
+  async function persistDecision(targetState:DecisionState=state){
+    if(!companyId)throw new Error("Create or connect this Company Brain first.");
+    const receipt=await syncCompanyValueCell(companyId,selected,targetState,{
+      summary:baseline||null,
+      locked_at:baseline?new Date().toISOString():null,
+      value_cell:selected.valueCell,
+      expected_value_low:selected.valueLow,
+      expected_value_high:selected.valueHigh,
+      currency:twin.currency,
+      falsifier:selected.falsifier,
+    });
+    const snapshot=await loadCompanyBrain(companyId);
+    const readback=snapshot.decisions.some(item=>String(item.id||"")===receipt.decision_id);
+    if(!readback)throw new Error("Decision write returned without Company Brain readback.");
+    setDecisionId(receipt.decision_id);
+    return receipt;
+  }
+
+  async function saveDecision(){
+    setBusy(true);setMessage("");
+    try{
+      const receipt=await persistDecision(baseline?"BASELINE LOCKED":state);
+      setMessage(`${receipt.value_cell} decision saved and read back from Company Brain.`);
+    }catch(cause){setMessage(cause instanceof Error?cause.message:"Decision persistence failed.");}
+    finally{setBusy(false);}
+  }
+
+  async function startMeasuredAction(){
+    setBusy(true);setMessage("");
+    try{
+      const receipt=decisionId?{decision_id:decisionId}:await persistDecision("BASELINE LOCKED");
+      const id=await startCompanyIntervention(companyId,{
+        decisionId:receipt.decision_id,
+        title:intervention||selected.intervention||selected.title,
+        expectedValueLow:selected.valueLow,
+        expectedValueHigh:selected.valueHigh,
+        currency:twin.currency,
+        measurementWindow:{
+          contract_version:"4BRANDS_VALUE_CELL_01",
+          value_cell:selected.valueCell,
+          baseline_summary:baseline||"Baseline not yet locked in the interface.",
+          expected_range:{low:selected.valueLow,high:selected.valueHigh,currency:twin.currency},
+          truth_notice:"Expected value is not realised value. A later observation does not by itself prove attribution.",
+          falsifier:selected.falsifier,
+          evidence:selected.evidence,
+        },
+      });
+      const snapshot=await loadCompanyBrain(companyId);
+      if(!snapshot.interventions.some(item=>String(item.id||"")===id))throw new Error("Intervention write returned without Company Brain readback.");
+      setInterventionId(id);setDecisionId(receipt.decision_id);setState("INTERVENTION STARTED");
+      setMessage("Action and outcome measurement contract saved and read back.");
+    }catch(cause){setMessage(cause instanceof Error?cause.message:"Intervention start failed.");}
+    finally{setBusy(false);}
+  }
+
+  async function recordOutcome(){
+    if(!interventionId){setMessage("Start the measured action before recording an outcome.");return;}
+    if(!result.trim()){setMessage("Enter an observed result before recording it.");return;}
+    setBusy(true);setMessage("");
+    try{
+      const snapshot=await recordCompanyResult(companyId,{
+        interventionId,
+        metricKey:selected.id,
+        currency:twin.currency,
+        attributionStrength:persistedAttribution(attribution),
+        conclusion:result.trim(),
+        evidence:selected.evidence,
+        learning:learning.trim()||undefined,
+      });
+      const readback=snapshot.results.some(item=>String(item.intervention_id||"")===interventionId);
+      if(!readback)throw new Error("Measured result returned without Company Brain readback.");
+      if(learning.trim()&&!snapshot.learning.length)throw new Error("Learning writeback was not visible in Company Brain readback.");
+      setState(learning.trim()?"LEARNING":"MEASURED");
+      setMessage(learning.trim()?"Observed result and learning saved and read back.":"Observed result saved and read back; attribution remains bounded by the selected method.");
+    }catch(cause){setMessage(cause instanceof Error?cause.message:"Measured-result writeback failed.");}
+    finally{setBusy(false);}
+  }
+
+  return <div className="fb-progressive"><details open><summary>Company Brain persistence</summary><p><b>Value Cell:</b> {selected.valueCell}. Expected range remains identified value, not realised value.</p>{companyId?<><button className="fb-secondary" disabled={busy} onClick={saveDecision}>Save decision to Brain</button><button className="fb-secondary" disabled={busy||!baseline} onClick={startMeasuredAction}>Start measured action</button><label><span>LEARNING AFTER OBSERVATION</span><textarea rows={3} value={learning} onChange={event=>setLearning(event.target.value)} placeholder="What did the company learn from the measured result?"/></label><button className="fb-secondary" disabled={busy||!interventionId||!result.trim()} onClick={recordOutcome}>Record outcome + learning</button></>:<p>Connect or create the matching Company Brain above before persistent decision/action/result writeback.</p>}{message&&<p role="status">{message}</p>}</details></div>;
+}
 
 function ImportPanel({open,onClose,cashInput,setCashInput,importError,onFile,onDemo}:{open:boolean;onClose:()=>void;cashInput:string;setCashInput:(v:string)=>void;importError:string;onFile:(file?:File|null)=>void;onDemo:()=>void}){if(!open)return null;return <div className="fb-modal"><section><div className="fb-modal-head"><div><p className="fb-kicker">BUILD YOUR COMPANY TWIN</p><h2>Import economic truth.</h2></div><button onClick={onClose}>×</button></div><div className="fb-security"><strong>LOCAL SESSION MODE</strong><p>Your CSV is parsed in the browser for this session. No server write.</p></div><label className="fb-cash-input"><span>Current cash / bank balance <small>optional</small></span><input value={cashInput} onChange={e=>setCashInput(e.target.value)} inputMode="decimal" placeholder="e.g. 125000"/></label><label className="fb-file-drop"><input type="file" accept=".csv,text/csv" onChange={event=>onFile(event.target.files?.[0])}/><strong>Choose financial CSV</strong><span>Invoices, payments, costs, usage, software seats or renewals.</span></label>{importError&&<p className="fb-import-error">{importError}</p>}<div className="fb-import-actions"><button className="fb-secondary" onClick={onDemo}>Use synthetic demo finance</button><a href={`data:text/csv;charset=utf-8,${encodeURIComponent(CSV_TEMPLATE)}`} download="4brands-economic-template.csv">Download CSV template</a></div></section></div>}
 
