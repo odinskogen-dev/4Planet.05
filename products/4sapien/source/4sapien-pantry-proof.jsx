@@ -8,7 +8,28 @@ function FoodPantryProof({user,avoid}) {
  const [save,setSave]=useState("UNSAVED");
  const [returnCount,setReturnCount]=useState(null);
  const [busy,setBusy]=useState(false);
+ const [startedAt]=useState(()=>Date.now());
+ const [activationSent,setActivationSent]=useState(false);
+ const [valueEventSent,setValueEventSent]=useState(false);
+ const [decisionState,setDecisionState]=useState("IDLE");
+ const [decisionMessage,setDecisionMessage]=useState("");
+ const [valueSignal,setValueSignal]=useState(null);
+ const [valueSignalState,setValueSignalState]=useState("IDLE");
+ const [acquisitionSource]=useState(()=>new URLSearchParams(window.location.search).get("src")==="human_utility"?"human_utility_recruitment":"direct_or_unknown");
  const userId=user?.id||null;
+ const emitFoodEvent=async(eventType,payload={})=>{
+  if(!userId)return;
+  const safe={loop:"food_first_value_v2",source_state:acquisitionSource};
+  for(const key of ["stage","returning","elapsed_ms","item_count","option_count","missing_count","unknown_count","decision_status"]){
+   const value=payload[key]; if(value===null||["string","number","boolean"].includes(typeof value))safe[key]=value;
+  }
+  await SB.from("four_sapien_embla_events").insert({user_id:userId,event_type:eventType,world:"food",source:"4sapien_food_value_loop_v2",payload:safe});
+ };
+ const recordHumanUtility=async(helpful)=>{
+  const {data,error}=await SB.functions.invoke("embla-core-preview",{body:{measurement_event:"useful_outcome",measurement_value:helpful?"yes":"not_yet"}});
+  if(error||!data?.ok||data?.state!=="MEASUREMENT_RECORDED")throw error||new Error("HUMAN_UTILITY_MEASUREMENT_FAILED");
+ };
+
  const recipes=[
   {id:"fixture-porridge",name:"Havregrøt (eksempel)",sourceRef:"DEMO_FIXTURE_NOT_VERIFIED",ingredients:[{name:"Havregryn",amount:80,unit:"g"},{name:"Melk",amount:200,unit:"ml"}],allergens:["milk"]},
   {id:"fixture-pasta",name:"Tomatpasta (eksempel)",sourceRef:"DEMO_FIXTURE_NOT_VERIFIED",ingredients:[{name:"Pasta",amount:100,unit:"g"},{name:"Hakkede tomater",amount:200,unit:"g"}],allergens:["wheat"]},
@@ -19,6 +40,7 @@ function FoodPantryProof({user,avoid}) {
   setItems([]);setBudget("");setRecord(null);setReturnCount(null);setSave("UNSAVED");
   if(!userId){setLoad("AUTH_REQUIRED");return()=>{active=false;};}
   setLoad("LOADING");
+  emitFoodEvent("food_identity_ready",{stage:"identity"}).catch(()=>{});
   (async()=>{
    const {data,error}=await SB.from("four_sapien_embla_memories")
     .select("id,value,created_at")
@@ -33,6 +55,7 @@ function FoodPantryProof({user,avoid}) {
    setItems(validated);setBudget(typeof v.budgetNok==="number"&&Number.isFinite(v.budgetNok)&&v.budgetNok>=0?String(v.budgetNok):"");
    setRecord(row);setReturnCount(row?validated.length:null);
    setLoad(row?"RETURNED":"EMPTY");setSave(row?"SAVED":"UNSAVED");
+   if(row)emitFoodEvent("food_context_returned",{stage:"return",returning:true,item_count:validated.length}).catch(()=>{});
   })().catch(()=>{if(active)setLoad("READ_FAILED");});
   return()=>{active=false;};
  },[userId]);
@@ -41,6 +64,41 @@ function FoodPantryProof({user,avoid}) {
   pantry:items,recipes,budgetNok:budget.trim()===""?null:Number(budget),
   avoid:Array.isArray(avoid)?avoid.filter(x=>typeof x==="string"):[]
  });
+ useEffect(()=>{
+  if(!userId||!items.length||!options.length||valueEventSent)return;
+  const returning=load==="RETURNED";
+  setValueEventSent(true);
+  emitFoodEvent(returning?"food_second_value_reached":"food_value_reached",{
+   stage:returning?"second_value":"first_value",returning,elapsed_ms:Math.max(0,Date.now()-startedAt),item_count:items.length,option_count:options.length
+  }).catch(()=>{});
+ },[userId,items.length,options.length,load,valueEventSent,startedAt]);
+ const recordActivation=(stage)=>{
+  if(activationSent)return;setActivationSent(true);
+  emitFoodEvent("food_activation",{stage}).catch(()=>{});
+ };
+ const chooseOption=async(option)=>{
+  if(!userId||busy)return;
+  setDecisionState("SAVING");setDecisionMessage("");
+  try{
+   const row={user_id:userId,world:"food",title:"FOOD meal choice",question:"What can I make with what I have?",
+    options:options.slice(0,10).map(candidate=>({id:candidate.id})),decision:option.id,status:"decided",
+    evidence:[{source_ref:option.sourceRef,source_state:option.sourceRef==="DEMO_FIXTURE_NOT_VERIFIED"?"DEMO_FIXTURE_NOT_VERIFIED":"SOURCE_REFERENCED",missing_count:option.missing.length,unknown_count:option.unknown.length}],
+    provenance:{source:"4SAPIEN FOOD",privacy:"private_person",evidence_class:"USER_DECISION",loop:"food_first_value_v2"},decided_at:new Date().toISOString()};
+   const {data,error}=await SB.from("four_sapien_decisions").insert(row).select("id").single();
+   if(error||!data?.id)throw error||new Error("FOOD_DECISION_WRITE_FAILED");
+   setDecisionState("SAVED");setDecisionMessage("Valget er lagret privat. Det betyr ikke at måltidet er laget eller at resultatet var nyttig.");
+   emitFoodEvent("food_decision_saved",{stage:"decision",decision_status:option.status,missing_count:option.missing.length,unknown_count:option.unknown.length}).catch(()=>{});
+  }catch(_){setDecisionState("ERROR");setDecisionMessage("Valget kunne ikke lagres. Ingenting vises som husket.");}
+ };
+ const recordValueSignal=async(helpful)=>{
+  if(valueSignalState==="SAVING"||valueSignalState==="SAVED")return;
+  setValueSignal(helpful);
+  if(!userId)return;
+  setValueSignalState("SAVING");
+  try{await recordHumanUtility(helpful);setValueSignalState("SAVED");}
+  catch(_){setValueSignalState("ERROR");}
+ };
+
  const persist=async()=>{
   if(!userId||busy||load==="LOADING"||load==="READ_FAILED")return;
   const clean=items.filter(i=>i.name?.trim()).slice(0,40).map(i=>({name:i.name.trim().slice(0,100),amount:i.amount,unit:i.unit}));
@@ -59,6 +117,7 @@ function FoodPantryProof({user,avoid}) {
      .select("id,value").eq("id",data.id).eq("user_id",userId).eq("state","active").maybeSingle();
    if(readError||readback?.value?.namespace!=="food_pantry_v1")throw readError||new Error("WRITE_READBACK_FAILED");
    setRecord(data);setSave("SAVED");setReturnCount(null);
+   emitFoodEvent("food_context_saved",{stage:"saved_context",item_count:clean.length}).catch(()=>{});
    if(record?.id){
     const {data:prior,error:priorError}=await SB.from("four_sapien_embla_memories")
       .update({state:"superseded",updated_at:new Date().toISOString()})
@@ -95,7 +154,7 @@ function FoodPantryProof({user,avoid}) {
        <select aria-label={"Enhet "+(k+1)} value={i.unit} onChange={e=>setItem(k,{unit:e.target.value})} style={field}><option value="g">g</option><option value="ml">ml</option><option value="stk">stk</option></select>
        <button type="button" onClick={()=>{setItems(old=>old.filter((_,n)=>n!==k));setSave("UNSAVED");}} style={field}>Fjern</button>
       </div>)}
-     <form onSubmit={e=>{e.preventDefault();if(!entry.name.trim())return;setItems(old=>[...old,{name:entry.name.trim(),amount:entry.amount===""?null:Number(entry.amount),unit:entry.unit}]);setEntry({name:"",amount:"",unit:"g"});setSave("UNSAVED");}} style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+     <form onSubmit={e=>{e.preventDefault();if(!entry.name.trim())return;setItems(old=>[...old,{name:entry.name.trim(),amount:entry.amount===""?null:Number(entry.amount),unit:entry.unit}]);setEntry({name:"",amount:"",unit:"g"});setSave("UNSAVED");recordActivation("manual_item");}} style={{display:"flex",gap:6,flexWrap:"wrap"}}>
        <input aria-label="Ny ingrediens" value={entry.name} onChange={e=>setEntry({...entry,name:e.target.value})} placeholder="Matvare" style={{...field,flex:"2 1 140px"}}/>
        <input aria-label="Ny mengde" type="number" min="0" step="any" value={entry.amount} onChange={e=>setEntry({...entry,amount:e.target.value})} placeholder="Mengde" style={{...field,width:90}}/>
        <select aria-label="Ny enhet" value={entry.unit} onChange={e=>setEntry({...entry,unit:e.target.value})} style={field}><option value="g">g</option><option value="ml">ml</option><option value="stk">stk</option></select>
@@ -109,11 +168,20 @@ function FoodPantryProof({user,avoid}) {
        {o.unknown.length>0&&<p>UKJENT: {o.unknown.map(i=>i.name).join(", ")}</p>}
        <p>Ekstra innkjøp: {o.additionalPurchase.nok===null?"UKJENT":o.additionalPurchase.nok+" NOK"} · {o.budget.state.replaceAll("_"," ")}</p>
        <small>Eksempeldata, ikke verifisert oppskrift eller helse-/allergi-/miljøvurdering.</small>
+       <div style={{marginTop:10}}><button type="button" disabled={busy||decisionState==="SAVING"} onClick={()=>chooseOption(o)} style={field}>Bruk dette alternativet</button></div>
       </article>):<p>Legg inn ingredienser for å se hva som kan matches.</p>}
     </div>
     <button type="button" disabled={busy||load==="READ_FAILED"} onClick={persist} style={{...field,cursor:"pointer"}}>Bekreft og lagre i min private 4SAPIEN</button>
     {record&&<button type="button" disabled={busy} onClick={removeSaved} style={{...field,marginLeft:7}}>Fjern min lagrede beholdning</button>}
     <p role="status">Lagring: {save}. Endringer er ikke lagret før du bekrefter. Privat Person-minne, ikke felles PLANETBRAIN.</p>
+    {decisionState!=="IDLE"&&<p role="status">{decisionState==="SAVING"?"Lagrer privat valg…":decisionMessage}</p>}
+    {items.length>0&&options.length>0&&<div style={{marginTop:18,paddingTop:14,borderTop:"1px solid var(--line2)"}}>
+      <p>Var denne sammenligningen nyttig for denne oppgaven?</p>
+      <button type="button" disabled={valueSignalState==="SAVING"||valueSignalState==="SAVED"} aria-pressed={valueSignal===true} onClick={()=>recordValueSignal(true)} style={field}>Ja</button>
+      <button type="button" disabled={valueSignalState==="SAVING"||valueSignalState==="SAVED"} aria-pressed={valueSignal===false} onClick={()=>recordValueSignal(false)} style={{...field,marginLeft:7}}>Ikke ennå</button>
+      {valueSignal!==null&&<p role="status">{valueSignalState==="SAVING"?"Registrerer nyttesignal…":valueSignalState==="SAVED"?"Nyttesignal registrert via eksisterende Human Utility-måling.":valueSignalState==="ERROR"?"Nyttesignalet kunne ikke lagres; ingen suksess påstås.":"Kun lokalt valg til innlogging er bekreftet."}</p>}
+    </div>}
+    <p style={{fontSize:12}}>Måling lagrer kun steg, timing, tellinger og eksplisitt ja/ikke ennå — aldri ingrediensnavn, beholdning, prompts eller fritekst.</p>
    </>}
  </section>;
 }
