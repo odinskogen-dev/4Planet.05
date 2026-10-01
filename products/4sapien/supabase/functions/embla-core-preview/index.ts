@@ -54,6 +54,30 @@ async function logTool(token,userId,conversationId,toolName,status,started,resul
 async function logEvent(ctx,eventType,payload={}){
   await dbInsert(ctx.token,"four_sapien_embla_events",{user_id:ctx.userId,event_type:eventType,world:"core",source:"embla-core-preview",payload:{conversation_id:ctx.conversationId,...payload}}).catch(()=>null);
 }
+
+const MEASUREMENT_EVENTS=new Set(["useful_outcome","return_intent","wtp","price_reaction","payment_intent"]);
+async function hasMeasurementEventToday(ctx,eventType){
+  const now=new Date();
+  const start=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())).toISOString();
+  const end=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1)).toISOString();
+  const rows=await dbGet(ctx.token,`four_sapien_embla_events?event_type=eq.${encodeURIComponent(eventType)}&occurred_at=gte.${encodeURIComponent(start)}&occurred_at=lt.${encodeURIComponent(end)}&select=id&limit=1`).catch(()=>[]);
+  return Boolean(rows?.[0]?.id);
+}
+async function captureAutomaticMeasurement(ctx){
+  const emitted=[];
+  const conversations=await dbGet(ctx.token,"four_sapien_embla_conversations?select=id,created_at&order=created_at.desc&limit=20").catch(()=>[]);
+  const activeDays=[...new Set((conversations||[]).map((x)=>String(x?.created_at||"").slice(0,10)).filter(Boolean))];
+  const activation=await dbGet(ctx.token,"four_sapien_embla_events?event_type=eq.activation_observed&select=id&limit=1").catch(()=>[]);
+  if(!activation?.[0]?.id){
+    await logEvent(ctx,"activation_observed",{measurement_version:"HU-01",basis:"first_successful_measured_turn"});
+    emitted.push("activation_observed");
+  }
+  if(activeDays.length>=2 && !(await hasMeasurementEventToday(ctx,"actual_return_observed"))){
+    await logEvent(ctx,"actual_return_observed",{measurement_version:"HU-01",basis:"authenticated_conversation_on_later_utc_date",active_days:activeDays.length});
+    emitted.push("actual_return_observed");
+  }
+  return {events:emitted,active_days:activeDays.length};
+}
 async function brainProfileIngest(ctx,text,mode="auto",sourceLabel="Embla conversation"){
   try{
     const r=await fetch(`${SUPABASE_URL}/functions/v1/brain-profile`,{method:"POST",headers:{apikey:ANON_KEY,Authorization:`Bearer ${ctx.token}`,"Content-Type":"application/json"},body:JSON.stringify({action:"ingest",tenant_type:"person",text:safeText(text,12000),source_label:sourceLabel,learning_mode:mode,source_message_id:ctx.sourceMessageId||null}),signal:timeout(35000)});
@@ -133,7 +157,28 @@ async function executeTool(ctx,name,args){
     }else if(name==="calculate_budget"){
       const rows=await dbGet(token,`four_sapien_finance_budget?select=category,planned_month,source&order=category.asc`); result=rows.length?{state:"AVAILABLE",truth:"USER_INPUT_OR_SOURCE_PLAN",budgets:rows,count:rows.length}:{state:"UNKNOWN_NO_BUDGET",budgets:[],count:0};
     }else if(name==="read_pantry"){
-      result={state:"UNAVAILABLE",reason:"PANTRY_SCHEMA_NOT_IMPLEMENTED",items:[]};
+      const rows=await dbGet(token,`four_sapien_embla_memories?memory_type=eq.durable_fact&state=eq.active&deleted_at=is.null&select=id,value,created_at,updated_at&order=updated_at.desc&limit=20`);
+      const pantryMemory=(rows||[]).find((row)=>row?.value?.namespace==="food_pantry_v1");
+      if(!pantryMemory){
+        result={state:"UNKNOWN_NO_PANTRY",items:[],budget_nok:null,truth:"UNKNOWN"};
+      }else{
+        const rawItems=Array.isArray(pantryMemory?.value?.pantry)?pantryMemory.value.pantry:[];
+        const items=rawItems.slice(0,40).map((item)=>({
+          name:safeText(item?.name,100),
+          amount:Number.isFinite(Number(item?.amount))&&Number(item?.amount)>=0?Number(item.amount):null,
+          unit:["g","ml","stk"].includes(String(item?.unit||""))?String(item.unit):null
+        })).filter((item)=>item.name);
+        const rawBudget=pantryMemory?.value?.budgetNok;
+        result={
+          state:"AVAILABLE",
+          truth:"USER_CONFIRMED",
+          items,
+          budget_nok:Number.isFinite(Number(rawBudget))&&Number(rawBudget)>=0?Number(rawBudget):null,
+          memory_id:pantryMemory.id,
+          updated_at:pantryMemory.updated_at||pantryMemory.created_at||null,
+          limitation:"Purchased is not consumed. Missing items, amounts, prices and consumption remain UNKNOWN unless explicitly confirmed."
+        };
+      }
     }else if(name==="read_food_budget_context"){
       result=await dbRpc(token,"four_sapien_food_budget_context",{});
     }else if(name==="read_food_until_payday_context"){
@@ -171,7 +216,28 @@ Deno.serve(async(req)=>{
   if(req.method!=="POST") return json(req,{ok:false,state:"METHOD_NOT_ALLOWED"},405);
   const user=await requireUser(req); if(!user) return json(req,{ok:false,state:"UNAUTHENTICATED"},401);
   try{
-    const body=await req.json().catch(()=>({})); const message=safeText(body?.message,12000); if(!message) return json(req,{ok:false,state:"EMPTY_MESSAGE"},400);
+    const body=await req.json().catch(()=>({}));
+    const measurementEvent=safeText(body?.measurement_event,80);
+    if(measurementEvent){
+      if(!MEASUREMENT_EVENTS.has(measurementEvent)) return json(req,{ok:false,state:"INVALID_MEASUREMENT_EVENT"},400);
+      const conversationId=safeText(body?.conversation_id,80)||null;
+      if(conversationId){
+        const rows=await dbGet(user.token,`four_sapien_embla_conversations?id=eq.${encodeURIComponent(conversationId)}&select=id&limit=1`);
+        if(!rows?.[0]) return json(req,{ok:false,state:"CONVERSATION_NOT_FOUND"},404);
+      }
+      const rawValue=safeText(body?.measurement_value,500);
+      const priceNok=body?.price_nok==null?null:Number(body.price_nok);
+      const payload={
+        measurement_version:"HU-01",
+        conversation_id:conversationId,
+        value:rawValue||null,
+        price_nok:Number.isFinite(priceNok)?priceNok:null,
+        explicit_user_feedback:true
+      };
+      await dbInsert(user.token,"four_sapien_embla_events",{user_id:user.id,event_type:`measurement_${measurementEvent}`,world:"core",source:"embla-core-preview",payload});
+      return json(req,{ok:true,state:"MEASUREMENT_RECORDED",measurement_event:measurementEvent});
+    }
+    const message=safeText(body?.message,12000); if(!message) return json(req,{ok:false,state:"EMPTY_MESSAGE"},400);
     let conversationId=safeText(body?.conversation_id,80)||null;
     if(conversationId){ const rows=await dbGet(user.token,`four_sapien_embla_conversations?id=eq.${encodeURIComponent(conversationId)}&select=id&limit=1`); if(!rows?.[0]) return json(req,{ok:false,state:"CONVERSATION_NOT_FOUND"},404); }
     else { const c=await dbInsert(user.token,"four_sapien_embla_conversations",{user_id:user.id,title:message.slice(0,80),world:"core"}); conversationId=c?.id||null; }
@@ -187,6 +253,16 @@ Deno.serve(async(req)=>{
     if(!isExplicitRemember(message)&&!run.toolNames.includes("propose_memory_write")) learning=await brainProfileIngest(ctx,message,"auto","Embla conversation");
     else if(isExplicitRemember(message)&&!run.toolNames.includes("propose_memory_write")) learning=await brainProfileIngest(ctx,message,"confirmed","Embla explicit memory request");
     await dbInsert(user.token,"four_sapien_embla_events",{user_id:user.id,event_type:"embla_turn_completed",world:"core",source:"embla-core-preview",payload:{conversation_id:conversationId,message_id:assistantMessage?.id||null,tool_count:run.toolNames.length,provider_state:"stateless",brain_context_count:run.brainContextCount,brain_learning_state:learning.state,brain_learning_count:learning.count}}).catch(()=>null);
-    return json(req,{ok:true,state:"COMPLETE",conversation_id:conversationId,message_id:assistantMessage?.id||null,answer,model:{provider:MODEL_PROVIDER,id:MODEL},tools_used:run.toolNames,brain:{context_count:run.brainContextCount,learning_state:learning.state,learning_count:learning.count},streaming:false,provider_state:"stateless",runtime:"EMBLA_CORE_PREVIEW_V08_OBSERVABLE"});
+    const compounding={memory_reused:false,learning_written:false};
+    if(run.brainContextCount>0){
+      await logEvent(ctx,"brain_context_reused",{measurement_version:"CAV-01",context_count:run.brainContextCount,basis:"tenant_context_used_in_model_turn"});
+      compounding.memory_reused=true;
+    }
+    if(Number(learning.count||0)>0){
+      await logEvent(ctx,"brain_learning_written",{measurement_version:"CAV-01",objects_written:Number(learning.count||0),learning_state:learning.state});
+      compounding.learning_written=true;
+    }
+    const measurement=await captureAutomaticMeasurement(ctx).catch(()=>({events:[],active_days:null}));
+    return json(req,{ok:true,state:"COMPLETE",conversation_id:conversationId,message_id:assistantMessage?.id||null,answer,model:{provider:MODEL_PROVIDER,id:MODEL},tools_used:run.toolNames,brain:{context_count:run.brainContextCount,learning_state:learning.state,learning_count:learning.count},measurement,compounding,streaming:false,provider_state:"stateless",runtime:"EMBLA_CORE_PREVIEW_V10_COMPOUNDING"});
   }catch(e){const code=e instanceof Error?e.message:"INTERNAL_ERROR";return json(req,{ok:false,state:"INTERNAL_ERROR",error_code:code.slice(0,180)},500);}
 });
