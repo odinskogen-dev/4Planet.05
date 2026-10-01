@@ -19,8 +19,7 @@ export type FoodValueEventType =
   | "food_context_saved"
   | "food_context_returned"
   | "food_second_value_reached"
-  | "food_decision_saved"
-  | "food_value_signal";
+  | "food_decision_saved";
 
 export type FoodDecisionSummary = {
   optionId: string;
@@ -223,6 +222,30 @@ export async function recordFoodValueEvent(
     }),
   });
   if (!response.ok) throw new Error("FOOD_VALUE_EVENT_WRITE_FAILED");
+}
+
+export async function recordHumanUtilityMeasurement(
+  session: FourPlanetSession,
+  measurementEvent: "useful_outcome" | "return_intent" | "wtp" | "price_reaction" | "payment_intent",
+  measurementValue: string,
+  priceNok: number | null = null,
+) {
+  const response = await fetch(`${identityConstants.supabaseUrl}/functions/v1/embla-core-preview`, {
+    method: "POST",
+    headers: headers(session, {
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify({
+      measurement_event: measurementEvent,
+      measurement_value: measurementValue.slice(0, 80),
+      price_nok: Number.isFinite(priceNok) ? priceNok : null,
+    }),
+  });
+  if (!response.ok) throw new Error("HUMAN_UTILITY_MEASUREMENT_WRITE_FAILED");
+  const payload = (await response.json()) as { ok?: boolean; state?: string };
+  if (!payload?.ok || payload.state !== "MEASUREMENT_RECORDED") {
+    throw new Error("HUMAN_UTILITY_MEASUREMENT_READBACK_FAILED");
+  }
 }
 
 export async function saveFoodDecision(
