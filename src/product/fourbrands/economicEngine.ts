@@ -253,7 +253,7 @@ function valueCellFor(id: string): ValueCell {
 }
 
 function opportunity(input: Omit<Opportunity, "currency" | "valueCell"> & { currency?: string; valueCell?: ValueCell }): Opportunity {
-  return { currency: input.currency || "EUR", valueCell: input.valueCell || valueCellFor(input.id), ...input };
+  return { ...input, currency: input.currency || "EUR", valueCell: input.valueCell || valueCellFor(input.id) };
 }
 
 function detectOpportunities(rows: EconomicRow[], twinBase: Omit<EconomicTwin, "opportunities">): Opportunity[] {
