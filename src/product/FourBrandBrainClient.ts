@@ -23,3 +23,34 @@ export const saveCompanyTwin=(companyId:string,twin:Record<string,string>)=>auth
 export const syncCompanyAnalysis=(companyId:string,analysis:unknown,ledger:Record<string,string>)=>authed<CompanyBrainSnapshot>('sync_analysis',{company_id:companyId,analysis,ledger});
 export const companyValueReport=(companyId:string)=>authed<Record<string,unknown>>('value_report',{company_id:companyId});
 export const companyCompoundingMetrics=(companyId:string)=>authed<Record<string,unknown>>('compounding_metrics',{company_id:companyId});
+
+
+export type CompanyValueCellReceipt={opportunity_id:string;decision_id:string;value_cell:"MAKE MORE"|"SPEND BETTER";state:string};
+export const syncCompanyValueCell=(companyId:string,opportunity:unknown,state:string,baseline:Record<string,unknown>={})=>
+  authed<CompanyValueCellReceipt>('sync_value_cell',{company_id:companyId,opportunity,state,baseline});
+
+export const startCompanyIntervention=(companyId:string,input:{decisionId:string;title:string;expectedValueLow?:number;expectedValueHigh?:number;currency?:string;measurementWindow?:Record<string,unknown>})=>
+  authed<string>('start_intervention',{
+    company_id:companyId,
+    decision_id:input.decisionId,
+    title:input.title,
+    expected_value_low:input.expectedValueLow??null,
+    expected_value_high:input.expectedValueHigh??null,
+    currency:input.currency||null,
+    measurement_window:input.measurementWindow||{},
+  });
+
+export const recordCompanyResult=(companyId:string,input:{interventionId:string;metricKey?:string;baselineValue?:number;measuredValue?:number;attributableValue?:number;currency?:string;attributionStrength?:string;conclusion?:string;evidence?:unknown[];learning?:string})=>
+  authed<CompanyBrainSnapshot>('record_result',{
+    company_id:companyId,
+    intervention_id:input.interventionId,
+    metric_key:input.metricKey||null,
+    baseline_value:input.baselineValue??null,
+    measured_value:input.measuredValue??null,
+    attributable_value:input.attributableValue??null,
+    currency:input.currency||null,
+    attribution_strength:input.attributionStrength||'IDENTIFIED',
+    conclusion:input.conclusion||null,
+    evidence:input.evidence||[],
+    learning:input.learning||null,
+  });
