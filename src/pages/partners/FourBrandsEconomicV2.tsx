@@ -43,11 +43,11 @@ type PublicAnalysis = {
 };
 type MainView = "overview" | "money" | "value" | "decisions" | "future";
 type MoneyView = "overview" | "year" | "cash" | "profit" | "drivers" | "balance";
-type DecisionState = "OPPORTUNITY" | "REVIEWED" | "CHOSEN" | "BASELINE LOCKED" | "INTERVENTION STARTED" | "MEASURED" | "ATTRIBUTION REVIEWED" | "REALISED / NOT REALISED" | "LEARNING";
+type DecisionState = "OPPORTUNITY" | "REVIEWED" | "CHOSEN" | "BASELINE LOCKED" | "INTERVENTION STARTED" | "MEASURED" | "VALUE ATTRIBUTION REVIEWED" | "REALISED" | "NOT REALISED" | "LEARNING";
 type Attribution = "IDENTIFIED" | "DIRECT / RECONCILED" | "OBSERVED" | "COMPARATIVE" | "QUASI-EXPERIMENTAL" | "CONTROLLED EXPERIMENT";
 type AddMode = "transaction" | "account" | "asset" | "debt";
 
-const DECISION_STATES: DecisionState[] = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","ATTRIBUTION REVIEWED","REALISED / NOT REALISED","LEARNING"];
+const DECISION_STATES: DecisionState[] = ["OPPORTUNITY","REVIEWED","CHOSEN","BASELINE LOCKED","INTERVENTION STARTED","MEASURED","VALUE ATTRIBUTION REVIEWED","REALISED","NOT REALISED","LEARNING"];
 const ATTRIBUTION: Attribution[] = ["IDENTIFIED","DIRECT / RECONCILED","OBSERVED","COMPARATIVE","QUASI-EXPERIMENTAL","CONTROLLED EXPERIMENT"];
 const persistedAttribution=(value:Attribution)=>{
   if(value==="OBSERVED")return "OBSERVED";
