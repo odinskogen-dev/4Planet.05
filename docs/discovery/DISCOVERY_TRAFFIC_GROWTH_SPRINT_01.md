@@ -21,3 +21,104 @@ Kenya graph closure: African Savanna Elephant, Lion and Cheetah are now curated 
 - A privacy-bounded `discovery_entry` event classifies ChatGPT, Perplexity, Google, Bing, Instagram, Facebook, LinkedIn, email, direct and other referral without transmitting raw query strings or raw referrer URLs.
 - IndexNow support is prepared with a hosted ownership-key file and a release-gated submission script that submits only qualified Place/Species discovery URLs. It refuses to run unless `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW` and the origin is exactly `https://4planet.org`.
 - IndexNow preparation is not a claim of indexing or ranking; submission remains a post-release discovery notification.
+
+
+## FOUNDER-DIRECTED EXPOSURE SPRINT ADDENDUM — 2026-10-01
+
+Authority: user execution order “4PLANET DISCOVERY + USEFUL INTERNET OBJECTS + EXPOSURE SPRINT 01”.
+
+Implementation candidate:
+- branch: axe/discovery-exposure-sprint-01-20261001
+- draft PR: #356
+- base: king/test
+- external release: NONE
+
+### Object set
+
+Existing canonical objects retained:
+- ORCA → /species/orca
+- OSLOFJORD → /living-systems/oslofjord
+
+New first-party ATLAS discovery candidate:
+- EARTH → /atlas/earth
+- GLOBAL FIRES → /atlas/fires
+- WHALES → /atlas/whales
+
+These pages use the existing shared ATLAS and sources. No second map, source database or truth system was created.
+
+### Search / AI discovery delta
+
+New ATLAS routes now participate in:
+- canonical metadata;
+- OG / social metadata;
+- JSON-LD;
+- raw HTML prerender;
+- sitemap generation;
+- internal next-journey links;
+- source links;
+- source/date/limitations copy.
+
+IndexNow remains Founder-release gated. Its verification key file was corrected after exact-SHA QA proved the prior tracked file contained a literal backslash-n suffix.
+
+External search audit on 2026-10-01 returned no indexed results for the queried 4PLANET public domains/surfaces. Search footprint remains effectively unproven and must be rechecked after production promotion.
+
+### Analytics delta
+
+GA4 baseline 2026-09-01 to 2026-10-01:
+28 active users / 24 new users / 88 sessions / 49 engaged sessions / 941 page views / 0 key events.
+
+These figures remain measurement evidence, not verified unknown-human traction.
+
+New object events:
+- discovery_object_view
+- discovery_object_explore
+- discovery_object_share
+- discovery_object_next
+
+Public-host attribution corrected for:
+- 4nation.org
+- 4species.com
+- 4planetmagazine.com
+
+Query strings and URL fragments remain excluded from analytics.
+
+### Distribution production
+
+Produced internally:
+- docs/discovery/ORCA_DISTRIBUTION_PACKAGE_01.md
+- docs/discovery/DISTRIBUTION_RESEARCH_01.md
+- docs/discovery/GROWTH_SCOREBOARD_01.md
+- docs/discovery/FOUNDER_RELEASE_PACKET_DISCOVERY_01.md
+
+Nothing has been published, sent or promoted externally.
+
+### QA truth
+
+First exact-SHA PR run proved:
+- typecheck PASS
+- production build PASS
+- discovery object contract PASS
+- discovery route/sitemap/prerender contract PASS
+- crawler contract PASS
+- host-attribution contract PASS
+
+The overall convergence suite remained RED because:
+1. discovery test found the malformed IndexNow key file — fixed in this branch;
+2. an inherited 4SAPIEN FOOD pantry contract expects food_value_signal, unrelated to this discovery delta.
+
+Do not classify PR #356 GREEN until a fresh exact-SHA run confirms the discovery correction and the relevant acceptance boundary is resolved.
+
+### First exposure loop
+
+ORCA is the first prepared loop:
+
+SEARCH / AI / EARNED / SOCIAL
+→ /species/orca
+→ meaningful species interaction
+→ /atlas/whales
+→ source / map exploration
+→ next object
+→ share / return
+→ join only after value
+
+External publication remains behind Founder release.
