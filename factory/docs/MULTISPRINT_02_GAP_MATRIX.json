@@ -1,0 +1,112 @@
+{
+  "programme": "4PLANET CORPORATE AUTONOMOUS OS × FACTORY 1 — MULTISPRINT 02",
+  "updatedAt": "2026-09-03T00:00:00Z",
+  "authority": {
+    "factoryLineage": "factory/symphony-runtime-v01",
+    "integrationReceiver": "king/test",
+    "liveAuthority": false,
+    "canonAuthority": false,
+    "externalSendAuthority": false,
+    "paymentAuthority": false
+  },
+  "statusVocabulary": [
+    "ALREADY_PROVEN",
+    "IMPLEMENTED_UNDER_TEST",
+    "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+    "BLOCKED_EXTERNAL_CAPABILITY",
+    "MISSING"
+  ],
+  "gaps": [
+    {
+      "requirement": "Dedicated Cloudflare Factory runtime",
+      "status": "ALREADY_PROVEN",
+      "evidence": ["dedicated non-production Worker deploy PASS", "Durable Object + Workflow + Queue + Browser + AI bindings", "SHADOW source/browser round-trip PASS"],
+      "nextTest": "repeat exact-head SHADOW canary after final activation marker"
+    },
+    {
+      "requirement": "Persistent self-scheduling Conductor",
+      "status": "ALREADY_PROVEN",
+      "evidence": ["ProductionFactoryAgent schedules runHour at 0 * * * *", "Guardian requires hourly schedule"],
+      "nextTest": "prove post-activation hourly dispatch on real READY packages"
+    },
+    {
+      "requirement": "Fresh Level 2 activation proof",
+      "status": "IMPLEMENTED_UNDER_TEST",
+      "evidence": ["prior three-family proof correctly BLOCKED on zero-cash Workers AI daily reservation cap", "proof IDs now bind to exact Factory build", "old ACTIVE demotes to SHADOW when build SHA changes"],
+      "nextTest": "one explicit [factory-activate] exact-head run after hardening CI is green"
+    },
+    {
+      "requirement": "Real multi-project mutation production",
+      "status": "IMPLEMENTED_UNDER_TEST",
+      "evidence": ["SPECIES/BAY/ACTOR proof compiler", "historical Factory draft candidates exist for Bay and Actor", "exact-build fresh proof pending"],
+      "nextTest": "fresh accepted SPECIES + BAY + ACTOR outcomes on exact final Factory head"
+    },
+    {
+      "requirement": "Run identity and state machine",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["RunContract", "canonical RunLedger state machine", "duplicate-delivery decisions", "state-change recompile rule"],
+      "nextTest": "persist RunLedger transitions inside Durable Object control plane and kill/recover a live run"
+    },
+    {
+      "requirement": "Lease fencing",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["existing hierarchical TTL write locks", "new lease generation/fencing pure control and adversarial tests"],
+      "nextTest": "persist run_id/worker/generation/heartbeat in DO lease table and prove stale worker commit rejection"
+    },
+    {
+      "requirement": "At-least-once idempotency",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["existing outcome replay by Work Package ID", "Queue trace/idempotency evidence", "new run identity distinguishes retry from changed state"],
+      "nextTest": "duplicate live Queue/Workflow delivery with side-effect assertions"
+    },
+    {
+      "requirement": "Hard resource budgets",
+      "status": "IMPLEMENTED_UNDER_TEST",
+      "evidence": ["Work Package ResourceBudget", "worker enforcement", "existing max AI attempts", "zero-cash fail-closed"],
+      "nextTest": "exact-head Factory CI + deliberate budget exhaustion runtime proof"
+    },
+    {
+      "requirement": "Provider-neutral model fabric",
+      "status": "IMPLEMENTED_UNDER_TEST",
+      "evidence": ["provider/model role registry", "explicit approved fallbacks", "maker cannot judge", "strict typed judge parser", "deterministic gates outrank AI judge"],
+      "nextTest": "wire adapter into execution runtime and simulate 429/503/timeout on live SHADOW package"
+    },
+    {
+      "requirement": "Sandbox isolation and egress",
+      "status": "BLOCKED_EXTERNAL_CAPABILITY",
+      "evidence": ["zero-trust Sandbox policy and tests implemented", "default disabled", "no secrets in Sandbox", "RPC preferred", "allowlisted egress"],
+      "blocker": "Cloudflare Sandbox/Containers is a paid capability; current Founder cost law authorises zero cash and no paid feature activation",
+      "nextTest": "after action-specific cost approval, provision bounded Sandbox binding and run poisoned-brief + egress-deny torture tests"
+    },
+    {
+      "requirement": "Supply-chain defence",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["dependency allowlist policy", "typosquat rejection regression", "Sandbox lockfile-only default"],
+      "nextTest": "wire to sandbox/dependency installation path and prove malicious package blocked before install"
+    },
+    {
+      "requirement": "Evidence integrity",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["EvidenceEnvelope contract", "stale run/input/Test SHA validation", "maker==judge rejection", "exact-build activation evidence"],
+      "nextTest": "generate envelopes from control plane/CI for real run and reject replayed envelope"
+    },
+    {
+      "requirement": "Watchdog/heartbeat",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["watchdog decision policy", "existing hourly recovery of interrupted work and expired locks"],
+      "nextTest": "persist heartbeat/progress per run and run stale-work recovery torture test"
+    },
+    {
+      "requirement": "DSPy Learning Compiler",
+      "status": "IMPLEMENTED_BUT_NOT_RUNTIME_PROVEN",
+      "evidence": ["shadow-only optimiser promotion contract", "curated train/validation/held-out requirements", "cross-project evidence", "safety/authority weakening forbidden"],
+      "nextTest": "accumulate enough trusted Factory examples, then run first offline baseline-vs-candidate evaluation"
+    },
+    {
+      "requirement": "24/7 production-grade Level 3",
+      "status": "MISSING",
+      "evidence": ["explicit fail-closed ProductionGradeGate implemented"],
+      "nextTest": "close every Level 3 proof item; code presence alone cannot certify Level 3"
+    }
+  ]
+}

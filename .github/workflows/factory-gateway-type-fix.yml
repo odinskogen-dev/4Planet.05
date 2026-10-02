@@ -1,0 +1,60 @@
+name: Factory Gateway Type Repair
+
+on:
+  push:
+    branches:
+      - "factory/symphony-runtime-v01"
+    paths:
+      - ".github/workflows/factory-gateway-type-fix.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    environment: production-factory-shadow
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: factory/symphony-runtime-v01
+          token: ${{ secrets.FACTORY_GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: factory/package.json
+
+      - name: Repair generated Cloudflare Env compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('factory/src/capabilityExpansion.ts')
+          text = path.read_text()
+          old = '  FACTORY_AI_GATEWAY_ID?: string;\n'
+          if old not in text:
+              raise SystemExit('expected FACTORY_AI_GATEWAY_ID optional declaration not found')
+          path.write_text(text.replace(old, '', 1))
+          PY
+
+      - name: Validate exact repair
+        working-directory: factory
+        run: |
+          npm install --ignore-scripts
+          npm run typecheck
+          npm test
+
+      - name: Commit validated repair and request bounded ACTIVE boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "4PLANET Factory"
+          git config user.email "factory@4planet.org"
+          git add factory/src/capabilityExpansion.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "[factory-activate] fix(factory): align AI Gateway env type"
+          git push origin HEAD:factory/symphony-runtime-v01

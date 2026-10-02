@@ -86,7 +86,7 @@ jobs:
 
       - name: Dependency audit — high severity blocks (moderate is known debt)
         shell: bash
-        run: npm audit --audit-level=high 2>&1 | tee dependency-audit.txt
+        run: npm audit --package-lock-only --audit-level=high 2>&1 | tee dependency-audit.txt
 
       - name: Record bundle evidence
         shell: bash

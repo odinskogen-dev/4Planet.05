@@ -34,6 +34,8 @@ jobs:
       github_write_ready: ${{ steps.credentials.outputs.github_write_ready }}
       test_king_sha: ${{ steps.lineage.outputs.test_king_sha }}
       activation_requested: ${{ steps.activation_intent.outputs.activation_requested }}
+      learning_proof_requested: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
+      learning_capacity_requested: ${{ steps.learning_capacity_intent.outputs.learning_capacity_requested }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,26 +58,69 @@ jobs:
             echo "Hardening/SHADOW deployment only. Bounded worker boot intentionally not started on every commit."
           fi
 
-      - name: Prove exact current TEST KING ancestry
+      - name: Resolve explicit Learning Engine proof intent
+        id: learning_proof_intent
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${COMMIT_MESSAGE:-}" == *"[learning-proof]"* ]]; then
+            echo "learning_proof_requested=true" >> "$GITHUB_OUTPUT"
+            echo "Bounded internal SELF-IMPROVING COMPANY proof REQUESTED."
+          else
+            echo "learning_proof_requested=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve read-only Learning Engine capacity intent
+        id: learning_capacity_intent
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${COMMIT_MESSAGE:-}" == *"[learning-capacity]"* ]]; then
+            echo "learning_capacity_requested=true" >> "$GITHUB_OUTPUT"
+            echo "Authoritative same-worker read-only capacity snapshot REQUESTED."
+          else
+            echo "learning_capacity_requested=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prove product-mutation lineage or record learning-proof context
         id: lineage
+        env:
+          ACTIVATION_REQUESTED: ${{ steps.activation_intent.outputs.activation_requested }}
+          LEARNING_PROOF_REQUESTED: ${{ steps.learning_proof_intent.outputs.learning_proof_requested }}
+          LEARNING_CAPACITY_REQUESTED: ${{ steps.learning_capacity_intent.outputs.learning_capacity_requested }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ ! "${FACTORY_HEAD_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "Factory activation blocked: exact Factory branch-head SHA is invalid."
+            echo "Factory control blocked: exact Factory branch-head SHA is invalid."
             exit 1
           fi
           git fetch origin king/test --no-tags
           TEST_KING_SHA="$(git rev-parse origin/king/test)"
-          if ! git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
-            echo "Factory activation blocked: current TEST KING is not an ancestor of exact Factory head."
+          echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
+          if git merge-base --is-ancestor "$TEST_KING_SHA" "$FACTORY_HEAD_SHA"; then
+            echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
+          elif [[ "$LEARNING_PROOF_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning proof lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested proof is non-mutating, SHADOW-only, and cannot start product activation."
+            echo "Factory: $FACTORY_HEAD_SHA"
+            echo "TEST KING context: $TEST_KING_SHA"
+          elif [[ "$LEARNING_CAPACITY_REQUESTED" == "true" && "$ACTIVATION_REQUESTED" != "true" ]]; then
+            echo "Learning capacity lineage context only: current TEST KING is not an ancestor of Factory head."
+            echo "This is allowed ONLY because the requested snapshot is read-only, SHADOW-only, and cannot reserve capacity or start product activation."
+            echo "Factory: $FACTORY_HEAD_SHA"
+            echo "TEST KING context: $TEST_KING_SHA"
+          else
+            echo "Factory product-mutation/activation blocked: current TEST KING is not an ancestor of exact Factory head."
             echo "Factory: $FACTORY_HEAD_SHA"
             echo "TEST KING: $TEST_KING_SHA"
             exit 1
           fi
-          echo "test_king_sha=$TEST_KING_SHA" >> "$GITHUB_OUTPUT"
           echo "Exact Factory head: $FACTORY_HEAD_SHA"
-          echo "Exact TEST KING ancestry PASS: $TEST_KING_SHA"
 
       - name: Check dedicated credentials without exposing values
         id: credentials
@@ -138,8 +183,10 @@ jobs:
         run: |
           set -euo pipefail
           CONTROL_TOKEN="$(openssl rand -hex 32)"
+          CONTROL_TOKEN_FILE="$RUNNER_TEMP/4planet-factory-control-token"
           echo "::add-mask::$CONTROL_TOKEN"
-          echo "control_token=$CONTROL_TOKEN" >> "$GITHUB_OUTPUT"
+          umask 077
+          printf '%s' "$CONTROL_TOKEN" > "$CONTROL_TOKEN_FILE"
 
           printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
           printf '%s' "$FACTORY_HEAD_SHA" | npx wrangler secret put FACTORY_BUILD_SHA
@@ -152,15 +199,45 @@ jobs:
             echo "github_write_installed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # `wrangler secret put` creates and immediately deploys a new Worker version.
+      # The URL emitted by the earlier code deploy can therefore identify the
+      # pre-secret version. Re-deploy exact code after all secrets so the URL used
+      # for authenticated control calls is guaranteed to bind exact code + secrets.
+      - name: Rebind exact Factory code after runtime secrets
+        id: bound_deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          workingDirectory: factory
+          packageManager: npm
+          wranglerVersion: "4.128.0"
+          command: deploy
+
+      # Re-apply only the ephemeral control secret after the exact code deploy.
+      # This closes the observed Cloudflare version-binding failure where the
+      # control call could hit exact code while FACTORY_CONTROL_TOKEN was stale.
+      - name: Rebind control token after exact deploy
+        working-directory: factory
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+          echo "::add-mask::$CONTROL_TOKEN"
+          printf '%s' "$CONTROL_TOKEN" | npx wrangler secret put FACTORY_CONTROL_TOKEN
+
       - name: Resolve deployed Worker URL
         id: runtime
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOYMENT_URL: ${{ steps.bound_deploy.outputs.deployment-url }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ -z "${DEPLOYMENT_URL:-}" ]]; then
-            echo "Wrangler did not return a deployment URL."
+            echo "Post-secret exact deployment did not return a deployment URL."
             exit 1
           fi
           BASE_URL="${DEPLOYMENT_URL%/}"
@@ -215,7 +292,7 @@ jobs:
           FACTORY_PASS=false
           for attempt in $(seq 1 90); do
             RUNS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${FACTORY_HEAD_SHA}&per_page=100")"
-            FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI")][0].conclusion // "pending"')"
+            FACTORY="$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.name=="Production Factory Shadow CI" and .event=="push")][0].conclusion // "pending"')"
             echo "Exact-head Factory evidence: ShadowCI=$FACTORY"
             if [[ "$FACTORY" != "pending" && "$FACTORY" != "success" ]]; then
               echo "Required exact-head Factory CI concluded non-success: $FACTORY"
@@ -233,6 +310,111 @@ jobs:
           fi
           echo "shadow_ci_passed=true" >> "$GITHUB_OUTPUT"
           echo "convergence_passed=false" >> "$GITHUB_OUTPUT"
+
+      - name: Read authoritative same-worker learning capacity
+        if: needs.preflight.outputs.learning_capacity_requested == 'true'
+        id: learning_capacity
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+          HTTP_STATUS="$(curl --silent --show-error \
+            -o factory-learning-capacity.json \
+            -w '%{http_code}' \
+            -X POST \
+            -H "x-factory-control: $CONTROL_TOKEN" \
+            -H "content-type: application/json" \
+            --data '{"requestedCalls":4}' \
+            "$BASE_URL/__factory/learning-proof/capacity")"
+          cat factory-learning-capacity.json
+          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+            echo "Learning capacity snapshot failed with HTTP $HTTP_STATUS."
+            exit 1
+          fi
+          jq -e '.ok == true' factory-learning-capacity.json >/dev/null
+          jq -e '.learnerId == "learning-1"' factory-learning-capacity.json >/dev/null
+          jq -e '.capabilityId == "C06_EVIDENCE_SCOPE_DISCIPLINE"' factory-learning-capacity.json >/dev/null
+          jq -e '.requestedCalls == 4' factory-learning-capacity.json >/dev/null
+          jq -e '.readOnly == true and .boundaries.reservesCapacity == false and .boundaries.buysCapacity == false' factory-learning-capacity.json >/dev/null
+          jq -e --arg sha "$FACTORY_HEAD_SHA" '.exactFactorySha == $sha' factory-learning-capacity.json >/dev/null
+          echo "capacity_available=$(jq -r '.allowed')" >> "$GITHUB_OUTPUT"
+          echo "day_remaining=$(jq -r '.dayRemaining')" >> "$GITHUB_OUTPUT"
+          echo "month_remaining=$(jq -r '.monthRemaining')" >> "$GITHUB_OUTPUT"
+
+      - name: Run bounded Self-Improving Company proof
+        if: needs.preflight.outputs.learning_proof_requested == 'true'
+        id: learning_proof
+        env:
+          BASE_URL: ${{ steps.runtime.outputs.base_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
+
+          HTTP_STATUS="$(curl --silent --show-error             -o factory-learning-proof-start.json             -w '%{http_code}'             -X POST             -H "x-factory-control: $CONTROL_TOKEN"             -H "content-type: application/json"             "$BASE_URL/__factory/learning-proof/start")"
+          cat factory-learning-proof-start.json
+          if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+            echo "Learning proof start failed with HTTP $HTTP_STATUS."
+            exit 1
+          fi
+
+          TERMINAL=false
+          ACTIVE=false
+          RESPONSE=""
+          for attempt in $(seq 1 90); do
+            RESPONSE="$(curl --silent --show-error               -X POST               -H "x-factory-control: $CONTROL_TOKEN"               -H "content-type: application/json"               "$BASE_URL/__factory/learning-proof/status" || true)"
+            printf '%s\n' "$RESPONSE" > factory-learning-proof.json
+            STATE="$(echo "$RESPONSE" | jq -r '.receipt.state // "RUNNING"' 2>/dev/null || echo "UNREADABLE")"
+            PROVEN="$(echo "$RESPONSE" | jq -r '.receipt.active // false' 2>/dev/null || echo "false")"
+            echo "Learning proof poll $attempt/90: state=$STATE active=$PROVEN"
+            if [[ "$STATE" != "RUNNING" && "$STATE" != "null" ]]; then
+              TERMINAL=true
+              if [[ "$PROVEN" == "true" ]]; then ACTIVE=true; fi
+              break
+            fi
+            sleep 5
+          done
+
+          if [[ "$TERMINAL" != "true" ]]; then
+            echo "Learning proof did not produce a terminal receipt in the bounded window."
+            exit 1
+          fi
+          if [[ "$ACTIVE" != "true" ]]; then
+            echo "Learning proof reached a terminal non-ACTIVE state. Evidence preserved."
+            cat factory-learning-proof.json
+            exit 1
+          fi
+
+          jq -e '.receipt.learnerId == "learning-1"' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.learnerState.stage == "TRANSFER_PROVEN"' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.metrics.runtimeSelectionProven == true' factory-learning-proof.json >/dev/null
+          jq -e '.receipt.metrics.founderIntervention == 0' factory-learning-proof.json >/dev/null
+          echo "runtime_transfer_proven=true" >> "$GITHUB_OUTPUT"
+
+      - name: Record Learning Engine proof receipt on Factory PR
+        if: always() && needs.preflight.outputs.learning_proof_requested == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ ! -f factory-learning-proof.json ]]; then
+            echo "No terminal learning proof receipt file was produced."
+            exit 0
+          fi
+          SUMMARY="$(jq -c '{proofId,exactFactorySha,receipt:{active,state,learnerId,capabilityId,learningId,learnerState,metrics,causalLink},boundaries}' factory-learning-proof.json)"
+          BODY=$(cat <<EOF
+          ## SELF-IMPROVING COMPANY — BOUNDED RUNTIME PROOF
+
+          Exact Factory SHA: $FACTORY_HEAD_SHA
+
+          Runtime receipt: $SUMMARY
+
+          This receipt proves only the internal Learning Engine runtime chain recorded above. It grants no LIVE, Canon, outreach, spend or product-mutation authority. Canonical BRAIN writeback remains a separate required gate before FULL ACTIVE closure.
+          EOF
+          )
+          gh api "repos/${GITHUB_REPOSITORY}/issues/236/comments" -f body="$BODY" >/dev/null
 
       - name: Record hardening-only SHADOW deployment
         if: needs.preflight.outputs.activation_requested != 'true'
@@ -265,10 +447,10 @@ jobs:
         id: proof_start
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
-          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
         shell: bash
         run: |
           set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
           HTTP_STATUS="$(curl --silent --show-error \
             -o factory-activation-start.json \
             -w '%{http_code}' \
@@ -277,21 +459,33 @@ jobs:
             -H "content-type: application/json" \
             "$BASE_URL/__factory/activation-proof/start")"
           cat factory-activation-start.json
+
+          if [[ "$HTTP_STATUS" == "409" ]] \
+            && jq -e '.error == "ACTIVATION_PREFLIGHT_BLOCKED"' factory-activation-start.json >/dev/null \
+            && jq -e '[.preflight.authority[]?.code] | length > 0 and all(. == "RECEIVER_SINGLE_WRITER_CONFLICT")' factory-activation-start.json >/dev/null; then
+            echo "Local receiver conflict parked. Factory deployment/canary remain valid; no bypass branch, provider reservation or second writer created."
+            echo "production_started=false" >> "$GITHUB_OUTPUT"
+            echo "parked=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [[ ! "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
             echo "Bounded activation preflight/start blocked with HTTP $HTTP_STATUS. Evidence preserved."
             exit 1
           fi
           jq -e '.ok == true' factory-activation-start.json >/dev/null
+          echo "production_started=true" >> "$GITHUB_OUTPUT"
+          echo "parked=false" >> "$GITHUB_OUTPUT"
 
       - name: Poll real production, certify fresh evidence and activate
-        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true'
+        if: needs.preflight.outputs.activation_requested == 'true' && steps.runtime_secrets.outputs.github_write_installed == 'true' && steps.proof_start.outputs.production_started == 'true'
         id: activate
         env:
           BASE_URL: ${{ steps.runtime.outputs.base_url }}
-          CONTROL_TOKEN: ${{ steps.runtime_secrets.outputs.control_token }}
         shell: bash
         run: |
           set -euo pipefail
+          CONTROL_TOKEN="$(cat "$RUNNER_TEMP/4planet-factory-control-token")"
           ACTIVE=false
           RESPONSE=""
           for attempt in $(seq 1 100); do
@@ -319,6 +513,21 @@ jobs:
           fi
           echo "active=true" >> "$GITHUB_OUTPUT"
 
+      - name: Record locally parked package without global Factory failure
+        if: steps.proof_start.outputs.parked == 'true'
+        shell: bash
+        run: |
+          jq '{
+            active:false,
+            proofComplete:false,
+            parked:true,
+            localCapability:"PRODUCT_MUTATION_TO_CURRENT_RECEIVER",
+            reason:.error,
+            preflight:.preflight,
+            boundaries:{live:false,humanGoldFounderOnly:true,canonPromotion:false,outreach:false,automaticSpend:false}
+          }' factory-activation-start.json > factory-active-certification.json
+          echo "Blocked product mutation remains parked locally. Unrelated SHADOW source/browser production evidence remains valid."
+
       - name: Upload immutable Factory certification evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -329,6 +538,9 @@ jobs:
             factory-shadow-canary.json
             factory-activation-start.json
             factory-active-certification.json
+            factory-learning-capacity.json
+            factory-learning-proof-start.json
+            factory-learning-proof.json
           if-no-files-found: ignore
           retention-days: 30
 

@@ -1,0 +1,51 @@
+# MAXIMUM_AUTONOMOUS_PRODUCTION_01 bounded SAFE lanes
+name: Maximum Autonomy Safe Lanes Upgrade
+
+on:
+  push:
+    branches:
+      - "factory/symphony-runtime-v01"
+    paths:
+      - ".github/workflows/max-autonomy-safe-lanes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    environment: production-factory-shadow
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: factory/symphony-runtime-v01
+          token: ${{ secrets.FACTORY_GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: factory/package.json
+
+      - name: Apply bounded safe-autonomy upgrade
+        run: python .github/scripts/max_autonomy_safe_lanes.py
+
+      - name: Validate upgrade before writeback
+        working-directory: factory
+        run: |
+          npm install --ignore-scripts
+          npm run typecheck
+          npm test
+
+      - name: Commit validated safe-autonomy lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "4PLANET Factory"
+          git config user.email "factory@4planet.org"
+          git add factory/src/contracts.ts factory/src/readOnlyExecution.ts factory/src/scoring.ts factory/src/autonomousExecution.ts factory/src/nightShiftPortfolio.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(factory): activate recurring safe PRODUCT CAPITAL INTELLIGENCE lanes"
+          git push origin HEAD:factory/symphony-runtime-v01
