@@ -1,4 +1,4 @@
-import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),router=read("src/routes/router.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx");
+import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx");
 test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=25);assert.ok(inv.species.filter(s=>s.indexable).length>=20);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
@@ -15,3 +15,34 @@ test("IndexNow is prepared but fails closed without explicit Founder release", (
 });
 
 test("owned return route is noindex and deliberately excluded from discovery sitemap",()=>{const router=read("src/routes/router.tsx");const page=read("src/pages/v5/PlanetSignal.tsx");const map=read("scripts/generate-sitemap.mjs");assert.match(router,/path="\/signal"/);assert.match(page,/robots="noindex,follow"/);assert.doesNotMatch(map,/^\s*"\/signal",?$/m);});
+
+
+test("live ATLAS useful objects are source-grounded, indexable and bounded",()=>{
+  assert.deepEqual(atlas.objects.map((item)=>item.slug).sort(),["earth","fires","whales"]);
+  for(const item of atlas.objects){
+    assert.equal(item.indexable,true);
+    assert.ok(item.atlasHref.startsWith("/atlas?"));
+    assert.ok(item.sources.length>=1);
+    assert.ok(item.limitations.length>=1);
+  }
+  assert.match(atlas.objects.find((item)=>item.slug==="fires").limitations.join(" "),/not proof of a wildfire/i);
+  assert.match(atlas.objects.find((item)=>item.slug==="whales").limitations.join(" "),/not live animal positions/i);
+});
+
+test("live ATLAS objects are routed, searchable and prerendered",()=>{
+  assert.ok(router.includes('path="/atlas/:objectSlug"'));
+  assert.ok(map.includes("atlasDiscovery"));
+  assert.ok(map.includes("item.indexable === true"));
+  assert.ok(pre.includes("atlasDiscovery"));
+  assert.ok(pre.includes("ao.length"));
+  assert.ok(atlasPage.includes('object.indexable ? "index,follow,max-image-preview:large" : "noindex,follow"'));
+  assert.ok(atlasPage.includes("OPEN LIVE ATLAS"));
+  assert.ok(atlasPage.includes("SOURCES / PROVENANCE"));
+});
+
+test("live discovery analytics classifies public product hosts",()=>{
+  for(const host of ["4nation.org","4species.com","4planetmagazine.com"]) assert.ok(analytics.includes(`"${host}"`));
+  assert.ok(analytics.includes('host === "4nation.org"'));
+  assert.ok(analytics.includes('host === "4species.com"'));
+  assert.ok(analytics.includes('host === "4planetmagazine.com"'));
+});

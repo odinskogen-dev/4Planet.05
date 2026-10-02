@@ -14,6 +14,7 @@ import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { PlacesIndex, PlaceRoute } from "@/pages/integrated/Places";
+import { AtlasDiscoveryPage } from "@/pages/integrated/AtlasDiscoveryPage";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import PickPrototype from "../food/PickPrototype";
@@ -100,6 +101,7 @@ export function AppRoutes() {
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+      <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
       <Route path="/places" element={<PlacesIndex />} />
       <Route path="/place/:slug" element={<PlaceRoute />} />
       <Route path="/species" element={<SpeciesIndex />} />

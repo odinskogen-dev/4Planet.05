@@ -16,6 +16,7 @@ const DEFAULT_ANALYTICS_DOMAINS = [
   "s4piens.com",
   "4species.com",
   "4brands.org",
+  "4nation.org",
   "cre4tor.com",
   "cre4tor.4planet.org",
   "cre4tors.com",
@@ -120,6 +121,9 @@ function readConsent(): ConsentState {
 function productArea(pathname: string, hostname: string): string {
   const host = canonicalHost(hostname);
   if (host === "4brands.org" || pathname.startsWith("/4brand")) return "4brands";
+  if (host === "4nation.org" || pathname.startsWith("/4nation")) return "4nation";
+  if (host === "4species.com") return "species";
+  if (host === "4planetmagazine.com") return "magazine";
   if (host === "4sapien.com" || pathname.startsWith("/4sapien")) return "4sapien";
   if (host === "4planetatlas.com" || pathname.startsWith("/atlas")) return "atlas";
   if (host === "s4piens.com" || pathname === "/domains/s4piens" || pathname.startsWith("/s4piens/")) return "s4piens";

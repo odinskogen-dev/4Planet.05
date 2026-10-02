@@ -1,3 +1,62 @@
+# DISCOVERY + USEFUL INTERNET OBJECTS — BOUNDED LIVE RELEASE 03 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT-RUNTIME READBACK REQUIRED BEFORE LIVE CLAIM.
+
+**FOUNDER DECISION:** 03 OCT 2026 — “AXE Jeg foreslår vi faktisk kjører det ut live også sender du meg url når alt er ute”.
+
+**LIVE SCOPE:** Only three new public ATLAS discovery objects — Earth, Global Fires and Whales — plus their route, data-driven sitemap, raw HTML prerender and privacy-safe public-host discovery attribution. Source HEIR: `dc2d5e3be517c3da3bac5dcea71cbdcffa3ca870`.
+
+**EXCLUDED:** All unrelated current `king/test` work, 4SAPIEN changes, 4BRANDS work, 4NATION product changes, social/email publication, outreach, paid spend and IndexNow submission.
+
+**BOUNDING METHOD:** Preserve the exact current LIVE tree and overlay only the source-tested discovery delta. No wholesale `king/test` → LIVE promotion.
+
+**SECURITY CLOSURE:** Reuse the independently accepted HEIR lock-only remediation from `9c6dc8a418674b3819001966a2cc20246d431751`: `brace-expansion` 5.0.9 → 5.0.12. This removes the HIGH audit finding without changing application runtime logic. Remaining React Router findings are MODERATE and remain tracked debt.\n\n**SOURCE / QA EVIDENCE:** HEIR release candidate `6145c72d17438c46c4cb787aecafbfc30ae1c815`; PR #367; exact-head typecheck PASS; production build PASS; full smoke/contracts PASS; discovery contracts PASS for Earth/Fires/Whales, routing/prerender/searchability and public-host attribution. The wider convergence workflow later failed an inherited bundle-size ceiling, not these discovery contracts. Production carrier PR #368 independently passed typecheck, production build, smoke/contracts, lint, assets and Human Craft; its policy failure was release-lineage enforcement, which this two-commit bounded promotion contract resolves.
+
+**ROLLBACK:** prior production ref `main@44ed8eb1055aa2cdc6a033be23ae44db18b1dd48`. Production runtime must also retain the prior immutable Pages deployment as rollback evidence.
+
+**TRUTH:** No claim of Google/AI indexing, ranking, traffic growth, live wildlife positions, migration routes, whale abundance, confirmed wildfire status or ecological outcome. Global Fires exposes thermal-anomaly/event context with explicit limits. Whales exposes bounded occurrence records, not live tracking.
+
+## USER ARRIVES BECAUSE
+They searched for or followed a link about Earth, global fire signals or whales and want something useful immediately, without understanding 4PLANET first.
+
+## ONE THING TO UNDERSTAND
+4PLANET lets a person explore planetary data while keeping the source, date and evidence limits attached.
+
+## PRIMARY ACTION
+Open the relevant live ATLAS view and explore the underlying planetary context.
+
+## SECONDARY DEPTH
+Open sources, understand freshness/limitations, then continue into related species, places or planetary objects.
+
+## P1 DOMINANT
+The object itself: Earth, Global Fires or Whales, with one clear path into the live ATLAS.
+
+## P2 ORIENTATION
+A concise human explanation of what the object shows, why it matters and how fresh the data is.
+
+## P3 ACTION / NEXT
+Explore ATLAS, open an original source, share the object or continue to a related 4PLANET object such as Orca or Oslofjord.
+
+## P4 DEPTH
+Source provenance, explicit limitations and related-object navigation.
+
+## WHAT CAN BE REMOVED
+Generic marketing copy, duplicate map engines, unsupported claims, login gates before value and decorative SEO text.
+
+## WHAT MUST BE REUSED
+The existing shared ATLAS, existing source semantics, shared SEO component, current discovery inventory/sitemap/prerender pipeline and existing analytics consent boundary.
+
+## TRUTH BOUNDARY
+Thermal anomaly ≠ confirmed wildfire. Occurrence record ≠ live animal position. Occurrence points ≠ migration route. Record count ≠ abundance or population size. Missing data ≠ ecological absence.
+
+## MOBILE-FIRST RISK
+Large display typography and two-column explanatory sections must remain readable and non-overlapping at phone widths; the primary ATLAS action and share action must stay tappable.
+
+## HUMAN SUCCESS
+A new visitor can understand the object, inspect its source/limits and reach the relevant ATLAS view without login or prior 4PLANET knowledge.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH — BOUNDED LIVE RELEASE 02 OCT 2026
 
 **STATUS:** FOUNDER-AUTHORISED LIVE RELEASE SCOPE / BOUNDED DISCOVERY DELTA ONLY.
