@@ -1,0 +1,45 @@
+name: DISCOVERY ATLAS public readback diagnostic
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-public-readback.yml
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare Pages and public routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            "https://c7b653b4.4planet-05.pages.dev/atlas/earth"
+            "https://4planet-05.pages.dev/atlas/earth"
+            "https://4planetatlas.com/earth"
+            "https://4planet.org/atlas/earth"
+            "https://c7b653b4.4planet-05.pages.dev/atlas/fires"
+            "https://4planetatlas.com/fires"
+            "https://c7b653b4.4planet-05.pages.dev/atlas/whales"
+            "https://4planetatlas.com/whales"
+          )
+          i=0
+          for url in "${urls[@]}"; do
+            i=$((i+1))
+            body="/tmp/body-${i}.html"
+            headers="/tmp/headers-${i}.txt"
+            result="$(curl -L -sS --max-time 30 -D "$headers" -o "$body" -w '%{url_effective}|%{http_code}|%{size_download}' "$url")"
+            echo "===== $url ====="
+            echo "$result"
+            grep -Eio '<title>[^<]*</title>|<h1[^>]*>[^<]*</h1>|Earth|Global Fires|Whales|404|Not Found' "$body" | head -20 || true
+            echo "BODY_START"
+            head -c 600 "$body" | tr '\n' ' '
+            echo
+            echo "BODY_END"
+          done
