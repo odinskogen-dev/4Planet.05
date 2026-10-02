@@ -44,6 +44,8 @@ jobs:
           file /tmp/worker.bin
           echo "MODULE MARKERS:"
           grep -E 'export default|addEventListener|async fetch' /tmp/worker.bin | head -20 || true
+          echo "PATH HELPERS:"
+          grep -n -A18 -B4 'function withTrailingSlash' /tmp/worker.bin || true
           echo "PROXY FUNCTION:"
           grep -n -A95 -B10 'function proxy' /tmp/worker.bin || true
           echo "ATLAS HOST BLOCK:"
