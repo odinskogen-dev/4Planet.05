@@ -8,5 +8,31 @@
   "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/issues/173#issuecomment-5943189049",
   "rollbackRef": "main@7a9301d6be22520d5d1623aa4d150eaaa87fab9d",
   "releaseControlCommit": true,
-  "note": "Bounded discovery LIVE runtime assembled by preserving prior LIVE and overlaying only the source-tested discovery files from HEIR evidence c309e894e591789e4c06e26f0420f7ba347e481d. Concurrent 4SAPIEN pantry/Embla, Market and unrelated workflow changes were deliberately excluded. Immutable HEIR proof: https://6b36ca88.4planet-05.pages.dev. No social/email send or IndexNow submission is authorised by this promotion."
+  "note": "Bounded discovery LIVE runtime assembled by preserving prior LIVE and overlaying only the source-tested discovery files from HEIR evidence c309e894e591789e4c06e26f0420f7ba347e481d. Concurrent 4SAPIEN pantry/Embla, Market and unrelated workflow changes were deliberately excluded. Immutable HEIR proof: https://6b36ca88.4planet-05.pages.dev. No social/email send or IndexNow submission is authorised by this promotion.",
+  "targetedIdentityRelease": {
+    "liveAuthority": false,
+    "branch": "release/targeted-4planet-id-20261002-baseline",
+    "liveSourceSha": "359f687f91470a8ee40f8558ade56d578d76accb",
+    "founderDecisionRef": "ENIG TARGETED RELEASE CONTROL AMENDMENT — autoriser én engangs, fil-/delta-avgrenset 4PLANET-identitetsrelease fra verifisert immutable LIVE-kilde, med eksakt kandidat, uavhengig Gold, rollback og eksisterende Pages-prosjekt. Ingen hel HEIR-promotering.",
+    "candidateSha": null,
+    "goldEvidenceRef": null,
+    "rollbackDeployment": "https://3b786854.4planet-05.pages.dev",
+    "rollbackSha": "359f687f91470a8ee40f8558ade56d578d76accb",
+    "rollbackAsset": "/assets/index-BlYT68qY.js",
+    "rollbackAssetSha256": "65a7d039a39039ae181879fb6e61a0fc9848dee25fe86ddbec4078debb3bed3c",
+    "rollbackAssetBytes": 1833934,
+    "authorityState": "UNSPENT",
+    "closureReceipt": null,
+    "immutableSourceDeployment": "https://3b786854.4planet-05.pages.dev",
+    "currentLiveOrigin": "https://4planet.org",
+    "liveAsset": "/assets/index-BlYT68qY.js",
+    "liveAssetSha256": "65a7d039a39039ae181879fb6e61a0fc9848dee25fe86ddbec4078debb3bed3c",
+    "liveAssetBytes": 1833934,
+    "notImmediateRollback": {
+      "rollbackDeployment": "https://1387126b.4planet-05.pages.dev",
+      "rollbackSha": "d5540905de7e57a2a781db92771da4d87c472c60",
+      "asset": "/assets/index-CrCdYuxo.js",
+      "reason": "This deployment served the pre-discovery runtime d5540905. The public apex now serves the discovery runtime 359f687f from https://3b786854.4planet-05.pages.dev with /assets/index-BlYT68qY.js. Restoring 1387126b would skip that current runtime, so it is not the immediate pre-ID rollback. Discovery rollback remains main@7a9301d6 and is not this ID pin. Control tip 6e28101d is the manifest-only authorisation of 359f687f and is not a second runtime."
+    }
+  }
 }

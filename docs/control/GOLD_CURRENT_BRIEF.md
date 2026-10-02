@@ -1,3 +1,39 @@
+# TARGETED 4PLANET ID RELEASE — ONE-TIME CARRIER — 02 OCT 2026 BASELINE
+
+**STATUS:** CANDIDATE / NOT LIVE. This is not a new product candidate class and not a development line.
+
+**USER ARRIVES BECAUSE:** they are on 4planet.org and need to create or open one free 4PLANET ID.
+
+**ONE THING TO UNDERSTAND:** a free 4PLANET ID is not paid membership.
+
+**PRIMARY ACTION:** CREATE 4PLANET ID, or SIGN IN.
+
+**SECONDARY DEPTH:** the signed-in label is the existing profile display name, then the account email, then ACCOUNT, and it links to the canonical account.
+
+**P1 DOMINANT:** the create and sign-in actions on /join and in the header.
+
+**P2 ORIENTATION:** the existing join page, including the ATLAS return link and the ways to take part.
+
+**P3 ACTION:** canonical id.4planet.org links with a safe return to this page.
+
+**P4 DEPTH:** account label after sign-in. Real-session name proof is still open.
+
+**WHAT CAN BE REMOVED:** the sentence that says registration is inactive.
+
+**WHAT MUST BE REUSED:** the existing identity client, trusted hosts, and this live source tree. No second auth provider.
+
+**TRUTH BOUNDARY:** signup does not create a member entitlement. Paid membership stays inactive.
+
+**MOBILE-FIRST RISK:** the header must show SIGN IN and CREATE 4PLANET ID at 390px without covering the mark.
+
+**HUMAN SUCCESS:** a signed-out person can start or open a free ID and come back to the page they left.
+
+**DONOR:** PR #346 behavior is ported onto the current live source. Trusted hosts that exist on that source stay. Newer join functionality stays. Discovery LIVE value stays in the tree.
+
+**AUTHORITY:** one-time branch `release/targeted-4planet-id-20261002-baseline` from discovery runtime `359f687f91470a8ee40f8558ade56d578d76accb`, branched at control tip `6e28101d45156397f9ac4ea2c3e41351b4cdb93b`. `live_authority` stays false and `authorityState` stays `UNSPENT` until an independent Gold acceptance and a later manifest bind this exact candidate. The immediate pre-release rollback is the current public runtime, `https://3b786854.4planet-05.pages.dev` (`359f687f91470a8ee40f8558ade56d578d76accb`, `/assets/index-BlYT68qY.js`). The control tip is the manifest-only discovery authorisation and is not a second runtime. The stale deployment `https://1387126b.4planet-05.pages.dev` is not that rollback. A new production deploy requires `https://4planet.org` to still serve that same runtime. A preview deployment is not spent authority. A failed deploy does not spend the authority. Closure binds the tested candidate and the provider's deployed commit together, and does not rewrite that deployed commit to the candidate. After that production deploy is verified, a failed closure can be retried without a second deploy only when the apex matches the new production readback.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH — BOUNDED LIVE RELEASE 02 OCT 2026
 
 **STATUS:** FOUNDER-AUTHORISED LIVE RELEASE SCOPE / BOUNDED DISCOVERY DELTA ONLY.
