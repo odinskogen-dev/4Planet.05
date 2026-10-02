@@ -1,0 +1,43 @@
+name: DISCOVERY ATLAS worker origin audit
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-worker-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve Worker and current origin
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          echo "::add-mask::$TOKEN"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN")
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id' <<<"$root")"
+          account_id="$(jq -r '.result[0].account.id' <<<"$root")"
+          routes="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
+          echo "ATLAS ROUTE:"
+          jq -r '.result[]? | select(.pattern=="4planet.org/atlas*") | [.pattern,.script] | @tsv' <<<"$routes"
+          curl -fsS "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}" -o /tmp/worker.bin
+          echo "CONTENT TYPE:"
+          file /tmp/worker.bin
+          echo "PAGES ORIGINS:"
+          strings /tmp/worker.bin | grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' | sort -u || true
+          echo "RELEVANT STRINGS:"
+          strings /tmp/worker.bin | grep -E 'atlas|species|pages[.]dev|4planet' | head -120 || true
