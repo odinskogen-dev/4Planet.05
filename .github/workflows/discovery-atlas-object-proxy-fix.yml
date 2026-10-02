@@ -1,0 +1,200 @@
+name: DISCOVERY ATLAS object proxy fix
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-object-proxy-fix.yml
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Patch dedicated public object proxy
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN")
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$root")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$root")"
+          test -n "$zid"
+          test -n "$account_id"
+
+          routes_before="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
+          jq -e '.result[]? | select(.pattern=="4planet.org/atlas*" and .script=="4planet-product-domains")' <<<"$routes_before" >/dev/null
+          printf '%s' "$routes_before" > /tmp/routes-before.json
+
+          settings="$(curl -fsS "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains/settings" "${auth[@]}")"
+          jq -e '.success==true and .result.compatibility_date=="2026-09-14" and ((.result.bindings // [])|length)==0' <<<"$settings" >/dev/null
+
+          curl -fsS -D /tmp/worker-before.headers             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             "${auth[@]}"             -o /tmp/worker-before.multipart
+
+          python - <<'PY'
+          from pathlib import Path
+          from email.parser import BytesParser
+          from email.policy import default
+
+          headers = Path("/tmp/worker-before.headers").read_text("latin1")
+          content_type = next((line.split(":",1)[1].strip() for line in headers.splitlines()
+                               if line.lower().startswith("content-type:")), None)
+          if not content_type:
+              raise SystemExit("missing content type")
+          raw = Path("/tmp/worker-before.multipart").read_bytes()
+          msg = BytesParser(policy=default).parsebytes(
+              ("Content-Type: "+content_type+"\r\nMIME-Version: 1.0\r\n\r\n").encode("latin1")+raw
+          )
+          modules=[]
+          for part in msg.walk():
+              if part.is_multipart():
+                  continue
+              payload=part.get_payload(decode=True) or b""
+              if b"export default" in payload and b"async fetch" in payload:
+                  modules.append(payload)
+          if len(modules)!=1:
+              raise SystemExit(f"expected one module, found {len(modules)}")
+          source=modules[0].decode("utf-8")
+          Path("/tmp/worker-rollback.js").write_text(source)
+
+          old_helper='''async function proxyAsset(request) {
+            const incoming = new URL(request.url);'''
+          new_helper='''async function proxyPublicObject(request, targetPath, product) {
+            const incoming = new URL(request.url);
+            const target = new URL(ORIGIN);
+            target.pathname = withTrailingSlash(targetPath);
+            target.search = incoming.search;
+            const response = await fetch(target.toString(), { redirect: "follow" });
+            const type = response.headers.get("content-type") || "";
+            if (!type.includes("text/html")) return response;
+            return new HTMLRewriter()
+              .on("head", { element(el) { el.prepend(`<script>${edgeShim(product)}</script>`, { html: true }); } })
+              .transform(response);
+          }
+
+          async function proxyAsset(request) {
+            const incoming = new URL(request.url);'''
+          old_call='''        return proxy(request, `/atlas${path}`, "atlas");'''
+          new_call='''        return proxyPublicObject(request, `/atlas${path}`, "atlas");'''
+
+          if "async function proxyPublicObject(" in source:
+              raise SystemExit("dedicated object proxy already present")
+          if old_helper not in source:
+              raise SystemExit("proxy helper anchor missing")
+          if old_call not in source:
+              raise SystemExit("bounded ATLAS object call missing")
+          patched=source.replace(old_helper,new_helper,1).replace(old_call,new_call,1)
+          Path("/tmp/worker-new.js").write_text(patched)
+          PY
+
+          node --check /tmp/worker-new.js
+          diff -u /tmp/worker-rollback.js /tmp/worker-new.js > /tmp/worker.patch || test $? -eq 1
+          cat /tmp/worker.patch
+          grep -Fq 'async function proxyPublicObject' /tmp/worker-new.js
+          grep -Fq 'return proxyPublicObject(request, `/atlas${path}`, "atlas");' /tmp/worker-new.js
+
+          metadata='{"main_module":"worker.js","bindings":[],"compatibility_date":"2026-09-14","compatibility_flags":[],"usage_model":"standard"}'
+          response="$(curl -fsS -X PUT             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             "${auth[@]}"             -F "metadata=${metadata};type=application/json"             -F "worker.js=@/tmp/worker-new.js;filename=worker.js;type=application/javascript+module")"
+          jq -e '.success==true' <<<"$response" >/dev/null
+          echo "PATCH_UPLOADED=1" >> "$GITHUB_ENV"
+
+          routes_after="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
+          test "$(jq -c '[.result[]? | select(.script=="4planet-product-domains")]' /tmp/routes-before.json)" = "$(jq -c '[.result[]? | select(.script=="4planet-product-domains")]' <<<"$routes_after")"
+
+      - name: Verify public object content end to end
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in earth fires whales; do
+            result="$(curl -L --retry 12 --retry-all-errors --retry-delay 2 --max-time 30 -sS               -o "/tmp/direct-${route}.html" -w '%{url_effective}|%{http_code}|%{size_download}'               "https://4planetatlas.com/${route}")"
+            echo "direct ${route}: ${result}"
+            test "$(cut -d'|' -f2 <<<"$result")" = "200"
+          done
+          grep -Fq '<title>Earth — Explore the living planet in 4PLANET ATLAS</title>' /tmp/direct-earth.html
+          grep -Fq '<h1>Earth</h1>' /tmp/direct-earth.html
+          grep -Fq '<title>Global Fires — Satellite thermal anomalies in 4PLANET ATLAS</title>' /tmp/direct-fires.html
+          grep -Fq '<h1>Global Fires</h1>' /tmp/direct-fires.html
+          grep -Fq '<title>Whales — Explore reported cetacean observations in 4PLANET ATLAS</title>' /tmp/direct-whales.html
+          grep -Fq '<h1>Whales</h1>' /tmp/direct-whales.html
+
+          for route in earth fires whales; do
+            result="$(curl -L --retry 12 --retry-all-errors --retry-delay 2 --max-time 30 -sS               -o "/tmp/via-${route}.html" -w '%{url_effective}|%{http_code}|%{size_download}'               "https://4planet.org/atlas/${route}")"
+            echo "via 4planet ${route}: ${result}"
+            test "$(cut -d'|' -f2 <<<"$result")" = "200"
+          done
+          grep -Fq '<h1>Earth</h1>' /tmp/via-earth.html
+          grep -Fq '<h1>Global Fires</h1>' /tmp/via-fires.html
+          grep -Fq '<h1>Whales</h1>' /tmp/via-whales.html
+
+          test "$(curl -L -sS -o /tmp/atlas-root.html -w '%{http_code}' https://4planetatlas.com/)" = "200"
+          test "$(curl -L -sS -o /tmp/orca.html -w '%{http_code}' https://4species.com/orca)" = "200"
+
+          curl -L -fsS https://4planet.org/sitemap.xml > /tmp/live-sitemap.xml
+          grep -Fq '/atlas/earth' /tmp/live-sitemap.xml
+          grep -Fq '/atlas/fires' /tmp/live-sitemap.xml
+          grep -Fq '/atlas/whales' /tmp/live-sitemap.xml
+
+      - name: Roll back Worker if public verification fails
+        if: failure()
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "${PATCH_UPLOADED:-0}" != "1" || ! -f /tmp/worker-rollback.js ]]; then
+            echo "No uploaded patch to roll back."
+            exit 0
+          fi
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+          api='https://api.cloudflare.com/client/v4'
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" -H "Authorization: Bearer $TOKEN")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$root")"
+          test -n "$account_id"
+          metadata='{"main_module":"worker.js","bindings":[],"compatibility_date":"2026-09-14","compatibility_flags":[],"usage_model":"standard"}'
+          response="$(curl -fsS -X PUT             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             -H "Authorization: Bearer $TOKEN"             -F "metadata=${metadata};type=application/json"             -F "worker.js=@/tmp/worker-rollback.js;filename=worker.js;type=application/javascript+module")"
+          jq -e '.success==true' <<<"$response" >/dev/null
+          echo "Worker rollback completed."
+
+      - name: Upload proxy fix receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-atlas-object-proxy-receipt
+          path: |
+            /tmp/worker-before.multipart
+            /tmp/worker-before.headers
+            /tmp/worker-rollback.js
+            /tmp/worker-new.js
+            /tmp/worker.patch
+            /tmp/direct-earth.html
+            /tmp/direct-fires.html
+            /tmp/direct-whales.html
+            /tmp/via-earth.html
+            /tmp/via-fires.html
+            /tmp/via-whales.html
+            /tmp/live-sitemap.xml
+          if-no-files-found: warn
+          retention-days: 30
