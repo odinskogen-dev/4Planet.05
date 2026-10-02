@@ -34,9 +34,15 @@ jobs:
           routes="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
           echo "ATLAS ROUTE:"
           jq -r '.result[]? | select(.pattern=="4planet.org/atlas*") | [.pattern,.script] | @tsv' <<<"$routes"
-          curl -fsS "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}" -o /tmp/worker.bin
+          curl -fsS -D /tmp/worker.headers "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}" -o /tmp/worker.bin
+          echo "HTTP HEADERS:"
+          grep -Ei '^(content-type|etag|cf-ray|content-length):' /tmp/worker.headers || true
           echo "CONTENT TYPE:"
           file /tmp/worker.bin
+          echo "MODULE MARKERS:"
+          grep -E 'export default|addEventListener|async fetch' /tmp/worker.bin | head -20 || true
+          echo "ATLAS HOST BLOCK:"
+          grep -n -A18 -B4 'host === "4planetatlas.com"' /tmp/worker.bin || true
           echo "PAGES ORIGINS:"
           strings /tmp/worker.bin | grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' | sort -u || true
           echo "RELEVANT STRINGS:"
