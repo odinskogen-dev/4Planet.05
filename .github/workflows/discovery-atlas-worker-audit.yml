@@ -34,6 +34,9 @@ jobs:
           routes="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
           echo "ATLAS ROUTE:"
           jq -r '.result[]? | select(.pattern=="4planet.org/atlas*") | [.pattern,.script] | @tsv' <<<"$routes"
+          settings="$(curl -fsS "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains/settings" "${auth[@]}")"
+          echo "WORKER SETTINGS:"
+          jq '{compatibility_date:.result.compatibility_date,compatibility_flags:.result.compatibility_flags,usage_model:.result.usage_model,placement:.result.placement,observability:.result.observability,bindings:[.result.bindings[]? | {name,type}]}' <<<"$settings"
           curl -fsS -D /tmp/worker.headers "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}" -o /tmp/worker.bin
           echo "HTTP HEADERS:"
           grep -Ei '^(content-type|etag|cf-ray|content-length):' /tmp/worker.headers || true
