@@ -37,7 +37,9 @@ function moneyUrl(){
 }
 
 test.beforeEach(async({page})=>{
- await page.route("**/supabase.min.js",async route=>route.fulfill({status:200,contentType:"application/javascript",body:stub}));
+ const fulfill=async(route:any)=>route.fulfill({status:200,contentType:"application/javascript",body:stub});
+ await page.route("**/supabase.min.js",fulfill);
+ await page.route("**/npm/@supabase/supabase-js@2*",fulfill);
 });
 
 test("Money keeps all proven Finance guards and a usable navigation",async({page})=>{
