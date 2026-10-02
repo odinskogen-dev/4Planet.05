@@ -138,7 +138,8 @@ jobs:
             root_code=$(curl -L -sS -o /tmp/live-root.html -w '%{http_code}' "https://4sapien.com/?release=$GITHUB_RUN_ID-$attempt" || true)
             food_code=$(curl -L -sS -o /tmp/live-food.html -w '%{http_code}' "https://4sapien.com/app/food/?release=$GITHUB_RUN_ID-$attempt" || true)
             money_code=$(curl -L -sS -o /tmp/live-money.html -w '%{http_code}' "https://4sapien.com/app/money/?release=$GITHUB_RUN_ID-$attempt" || true)
-            if [ "$root_code" = 200 ] && [ "$food_code" = 200 ] && [ "$money_code" = 200 ] &&
+            money_js_code=$(curl -L -sS -H 'Cache-Control: no-cache' -o /tmp/live-money-now.js -w '%{http_code}' "https://4sapien.com/4sapien-money-now.js" || true)
+            if [ "$root_code" = 200 ] && [ "$food_code" = 200 ] && [ "$money_code" = 200 ] && [ "$money_js_code" = 200 ] &&
                grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" /tmp/live-root.html &&
                grep -Fq 'FoodPantryProof' /tmp/live-food.html &&
                grep -Fq '4sapien-pantry-decision.js' /tmp/live-food.html &&
@@ -147,7 +148,8 @@ jobs:
                grep -Fq 'FOUR_SAPIEN_FINANCE_TRUTH_MATH_V1' /tmp/live-money.html &&
                grep -Fq 'FOUR_SAPIEN_FINANCE_SYNC_B1C' /tmp/live-money.html &&
                grep -Fq 'FOUR_SAPIEN_MONEY_NOW_V1' /tmp/live-money.html &&
-               grep -Fq 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/live-money.html; then ready=1; break; fi
+               grep -Fq 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_MONEY_NOW_V1' /tmp/live-money-now.js; then ready=1; break; fi
             sleep 3
           done
           test "$ready" = 1
@@ -156,4 +158,4 @@ jobs:
           echo "4SAPIEN LIVE VERIFIED https://4sapien.com/ source=$GITHUB_SHA"
 
 # Founder LIVE release authorised 2026-10-01 — 4SAPIEN FOOD value loop
-# Founder LIVE release authorised 2026-10-02 — 4SAPIEN Finance recovery + Money closure — rerun 04
+# Founder LIVE release authorised 2026-10-02 — 4SAPIEN Finance recovery + Money closure — final verified rerun
