@@ -1115,11 +1115,35 @@ write('<script type="module" src="/assets/index-NewRel.js"></script>\\n');
     assert.match(outputOf(nonManifestProduct), /non-manifest/);
     assert.match(outputOf(nonManifestPromotion), /non-manifest/);
 
-    gitRepo(["reset", "--hard", candidate]);
-    gitRepo(["clean", "-fd"]);
-    writeProvider([productionRecord(candidate)]);
-    const unauthorisedProduct = runCli("scripts/product-authority-gate.mjs", candidate);
-    const unauthorisedPromotion = runCli("scripts/live-promotion-authority-gate.mjs", candidate);
+    const forceUnauthorised = () => {
+      gitRepo(["reset", "--hard", candidate]);
+      gitRepo(["clean", "-fd"]);
+      const manifestPath = path.join(repo, "docs/control/LIVE_PROMOTION_MANIFEST.json");
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      const targeted = manifest.targetedIdentityRelease;
+      targeted.liveAuthority = false;
+      targeted.candidateSha = null;
+      targeted.goldEvidenceRef = null;
+      targeted.authorityState = "UNSPENT";
+      targeted.closureReceipt = null;
+      const next = `${JSON.stringify(manifest, null, 2)}\n`;
+      if (fs.readFileSync(manifestPath, "utf8") !== next) {
+        fs.writeFileSync(manifestPath, next);
+        gitRepo(["add", "docs/control/LIVE_PROMOTION_MANIFEST.json"]);
+        gitRepo(["-c", "user.name=id-release-test", "-c", "user.email=noreply@4planet.org", "commit", "-m", "Synthetic unauthorised manifest for the negative regression."]);
+      }
+      const disk = JSON.parse(fs.readFileSync(manifestPath, "utf8")).targetedIdentityRelease;
+      assert.equal(disk.liveAuthority, false);
+      assert.equal(disk.candidateSha, null);
+      assert.equal(disk.goldEvidenceRef, null);
+      assert.equal(disk.authorityState, "UNSPENT");
+      assert.equal(disk.closureReceipt, null);
+      return gitRepo(["rev-parse", "HEAD"]);
+    };
+    const unauthorisedHead = forceUnauthorised();
+    writeProvider([productionRecord(unauthorisedHead)]);
+    const unauthorisedProduct = runCli("scripts/product-authority-gate.mjs", unauthorisedHead);
+    const unauthorisedPromotion = runCli("scripts/live-promotion-authority-gate.mjs", unauthorisedHead);
     assert.equal(unauthorisedProduct.status, 1, outputOf(unauthorisedProduct));
     assert.equal(unauthorisedPromotion.status, 1, outputOf(unauthorisedPromotion));
     assert.match(outputOf(unauthorisedProduct), /not live-authorised/);
