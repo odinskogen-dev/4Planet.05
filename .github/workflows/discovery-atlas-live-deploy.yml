@@ -1,0 +1,133 @@
+name: DISCOVERY ATLAS bounded LIVE deploy 2026-10-03
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-live-deploy.yml
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_SHA: 01e949bc06528c16bf177bcf310334b0586af1a0
+      PRODUCT_SHA: f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24
+    steps:
+      - name: Checkout exact authorised LIVE control
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+
+      - name: Assert exact target and release parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git rev-parse HEAD^)" = "$PRODUCT_SHA"
+          node scripts/live-promotion-authority-gate.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install and build exact authorised runtime
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npm run test:discovery
+          npm audit --audit-level=high
+
+      - name: Resolve Cloudflare production authority
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          echo "::add-mask::$TOKEN"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$root")"
+          test -n "$account_id"
+          project="$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")"
+          jq -e '.success == true and .result.production_branch == "main"' <<<"$project" >/dev/null
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy exact authorised runtime to existing production project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=main \
+            --commit-hash="$TARGET_SHA" \
+            --commit-dirty=false | tee /tmp/wrangler-deploy.txt
+          url="$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/wrangler-deploy.txt | head -n1 || true)"
+          test -n "$url"
+          echo "IMMUTABLE_URL=$url" >> "$GITHUB_ENV"
+          echo "$url" > immutable-url.txt
+
+      - name: Verify immutable deployment objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in atlas/earth atlas/fires atlas/whales; do
+            code="$(curl -L --retry 8 --retry-all-errors --max-time 30 -o "/tmp/${route##*/}.html" -w '%{http_code}' "$IMMUTABLE_URL/$route")"
+            test "$code" = "200"
+          done
+          grep -Fq 'Earth' /tmp/earth.html
+          grep -Fq 'Global Fires' /tmp/fires.html
+          grep -Fq 'Whales' /tmp/whales.html
+          curl -L --retry 8 --retry-all-errors --max-time 30 -fsS "$IMMUTABLE_URL/sitemap.xml" > /tmp/sitemap.xml
+          grep -Fq '/atlas/earth' /tmp/sitemap.xml
+          grep -Fq '/atlas/fires' /tmp/sitemap.xml
+          grep -Fq '/atlas/whales' /tmp/sitemap.xml
+
+      - name: Verify public custom domain readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in atlas/earth atlas/fires atlas/whales; do
+            code="$(curl -L --retry 12 --retry-all-errors --retry-delay 2 --max-time 30 -o "/tmp/live-${route##*/}.html" -w '%{http_code}' "https://4planet.org/$route")"
+            test "$code" = "200"
+          done
+          grep -Fq 'Earth' /tmp/live-earth.html
+          grep -Fq 'Global Fires' /tmp/live-fires.html
+          grep -Fq 'Whales' /tmp/live-whales.html
+          curl -L --retry 12 --retry-all-errors --retry-delay 2 --max-time 30 -fsS https://4planet.org/sitemap.xml > /tmp/live-sitemap.xml
+          grep -Fq '/atlas/earth' /tmp/live-sitemap.xml
+          grep -Fq '/atlas/fires' /tmp/live-sitemap.xml
+          grep -Fq '/atlas/whales' /tmp/live-sitemap.xml
+
+      - name: Upload LIVE receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-atlas-live-receipt
+          path: |
+            immutable-url.txt
+            /tmp/wrangler-deploy.txt
+            /tmp/earth.html
+            /tmp/fires.html
+            /tmp/whales.html
+            /tmp/sitemap.xml
+            /tmp/live-earth.html
+            /tmp/live-fires.html
+            /tmp/live-whales.html
+            /tmp/live-sitemap.xml
+          if-no-files-found: warn
+          retention-days: 30
