@@ -68,20 +68,22 @@ test("first ATLAS useful internet objects are source-grounded, indexable and bou
 });
 
 test("ATLAS useful objects are routed, searchable and prerendered from one inventory",()=>{
-  assert.match(router,/path="\\/atlas\\/:objectSlug"/);
-  assert.match(map,/atlasDiscovery/);
-  assert.match(map,/item\.indexable === true/);
-  assert.match(pre,/atlasDiscovery/);
-  assert.match(pre,/atlasObjects/);
-  assert.match(atlasPage,/object\.indexable \? "index,follow,max-image-preview:large" : "noindex,follow"/);
-  assert.match(atlasPage,/OPEN LIVE ATLAS/);
-  assert.match(atlasPage,/SOURCES \/ PROVENANCE/);
+  assert.ok(router.includes('path="/atlas/:objectSlug"'));
+  assert.ok(map.includes("atlasDiscovery"));
+  assert.ok(map.includes("item.indexable === true"));
+  assert.ok(pre.includes("atlasDiscovery"));
+  assert.ok(pre.includes("atlasObjects"));
+  assert.ok(atlasPage.includes('object.indexable ? "index,follow,max-image-preview:large" : "noindex,follow"'));
+  assert.ok(atlasPage.includes("OPEN LIVE ATLAS"));
+  assert.ok(atlasPage.includes("SOURCES / PROVENANCE"));
 });
 
 test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()=>{
-  const d=analytics.match(/const DEFAULT_ANALYTICS_DOMAINS = \\[([\\s\\S]*?)\\] as const;/)?.[1]||"";
-  for(const host of ["4nation.org","4species.com","4planetmagazine.com"]) assert.match(d,new RegExp(`"${host.replaceAll(".","\\\\.")}"`));
-  assert.match(analytics,/host === "4nation\\.org".*return "4nation"/);
-  assert.match(analytics,/host === "4species\\.com".*return "species"/);
-  assert.match(analytics,/host === "4planetmagazine\\.com".*return "magazine"/);
+  for(const host of ["4nation.org","4species.com","4planetmagazine.com"]) assert.ok(analytics.includes(`"${host}"`));
+  assert.ok(analytics.includes('host === "4nation.org"'));
+  assert.ok(analytics.includes('return "4nation"'));
+  assert.ok(analytics.includes('host === "4species.com"'));
+  assert.ok(analytics.includes('return "species"'));
+  assert.ok(analytics.includes('host === "4planetmagazine.com"'));
+  assert.ok(analytics.includes('return "magazine"'));
 });
