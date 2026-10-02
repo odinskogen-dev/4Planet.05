@@ -112,14 +112,23 @@
   }
 
   function mount() {
-    var host = document.getElementById('axeFin');
+    var main = document.querySelector('.fs-money-main');
+    var axe = document.getElementById('axeFin');
+    var host = main || axe;
     if (!host) return null;
     var el = document.getElementById(MOUNT);
     if (!el) {
       el = document.createElement('section');
       el.id = MOUNT;
       el.setAttribute('aria-label', 'Penger nå');
-      host.insertBefore(el, host.firstChild);
+      if (main) {
+        var head = main.querySelector(':scope > header');
+        if (head && head.nextSibling) main.insertBefore(el, head.nextSibling);
+        else if (head) main.appendChild(el);
+        else main.insertBefore(el, main.firstChild);
+      } else {
+        axe.insertBefore(el, axe.firstChild);
+      }
     }
     return el;
   }
@@ -151,6 +160,12 @@
     refresh();
     window.addEventListener(EV, function () { setTimeout(refresh, 160); });
     window.addEventListener('four-sapien-finance-twin', function () { setTimeout(refresh, 0); });
+    var root=document.getElementById('root'), remountTimer=null;
+    if(root)new MutationObserver(function(){
+      if(document.getElementById(MOUNT))return;
+      clearTimeout(remountTimer);
+      remountTimer=setTimeout(refresh,60);
+    }).observe(root,{childList:true,subtree:true});
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 200); });
   else setTimeout(boot, 200);
