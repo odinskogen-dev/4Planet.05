@@ -103,8 +103,8 @@ jobs:
           node --check /tmp/worker-new.js
           diff -u /tmp/worker-source.js /tmp/worker-new.js > /tmp/worker.patch || test $? -eq 1
           cat /tmp/worker.patch
-          added="$(grep '^+' /tmp/worker.patch | grep -v '^+++' | wc -l)"
-          removed="$(grep '^-' /tmp/worker.patch | grep -v '^---' | wc -l)"
+          added="$(awk '/^\+[^+]/{n++} END{print n+0}' /tmp/worker.patch)"
+          removed="$(awk '/^-[^-]/{n++} END{print n+0}' /tmp/worker.patch)"
           test "$added" -eq 3
           test "$removed" -eq 0
 
