@@ -1,0 +1,36 @@
+# 4PLANET DISCOVERY + TRAFFIC GROWTH SPRINT 01
+Status: HEIR BUILD — NO LIVE PROMOTION
+Date: 2026-10-01
+
+Baseline: 33 users, 102 sessions, 996 page views, 1 measured Google Organic session. Measurement-system evidence, not verified unknown humans.
+
+P0: reusable Place routes; Kenya source-grounded Place + existing ATLAS; 25-species funnel (20 curated/indexable after global batch closure, 5 BUILD_NEXT/noindex); discovery sitemap; raw HTML prerender; universal Species noindex threshold; OAI-SearchBot/Googlebot/Bingbot policy; non-production host noindex; GA4 TEST KING isolation.
+
+Kenya source set: KWS Protected Area Management; KWS Ecosystems/Land/Seascapes; CBD Kenya Country Profile (draft limitation retained); GBIF Kenya; Protected Planet Sep 2026; KWS Strategic Plan 2024–2028. ATLAS bbox is navigation geometry only.
+
+INDEXABLE: Orca, Humpback Whale, Western Honey Bee, Sperm Whale, Harbour Porpoise, Common Bottlenose Dolphin, Atlantic Cod, Blue Mussel, Jaguar, Hyacinth Macaw, African Savanna Elephant, Lion, Cheetah, Blue Whale, Asian Elephant, Tiger, Polar Bear, Giant Panda, Whale Shark, Green Turtle.
+BUILD_NEXT: Leopard, Eastern Gorilla, Chimpanzee, Bornean Orangutan, Emperor Penguin.
+
+P1 internal/unsent: MAGAZINE queue — Kenya is not one ecosystem; what an Orca observation does not prove; Oslofjord below the surface; Great Barrier Reef heat signals; what a species map really shows. Social pattern — one object to carousel/LinkedIn/ATLAS short. Current Metricool brand is not 4PLANET, so nothing scheduled. PLANET SIGNAL — one object, 150–300 words, 2–4 sources, one limitation, one ATLAS CTA; first candidates Kenya/Orca/Oslofjord/GBR/Jaguar. Nothing sent.
+
+Kenya graph closure: African Savanna Elephant, Lion and Cheetah are now curated Species objects with GBIF taxon IDs, bounded source envelopes, public evidence claims, and the existing SPECIES → ATLAS occurrence-map seam. Kenya links to all three only after promotion to curated/indexable.
+
+Next: exact-SHA QA → licensed media enrichment → next high-interest Species batch → Search Console/live readback → Founder release packet.
+
+
+## P1 discovery distribution closure
+- PLANET SIGNAL exists as an internal Resend draft template; nothing is published or sent.
+- A privacy-bounded `discovery_entry` event classifies ChatGPT, Perplexity, Google, Bing, Instagram, Facebook, LinkedIn, email, direct and other referral without transmitting raw query strings or raw referrer URLs.
+- IndexNow support is prepared with a hosted ownership-key file and a release-gated submission script that submits only qualified Place/Species discovery URLs. It refuses to run unless `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW` and the origin is exactly `https://4planet.org`.
+- IndexNow preparation is not a claim of indexing or ranking; submission remains a post-release discovery notification.
+
+
+## Owned return loop
+- Dedicated Resend Segment and opt-out-by-default Topic named PLANET SIGNAL exist.
+- `/signal` candidate and `/api/planet-signal` gateway use explicit consent and the existing Resend account; no subscriber database is added.
+- The gateway fails closed with HTTP 503 when `RESEND_API_KEY` is absent and sends no welcome mail.
+- The signup page is intentionally `noindex,follow`; it is a return/acquisition surface, not a thin SEO object.
+
+
+## Global Species batch closure
+Seven additional high-interest species cross the HEIR publication threshold: Blue Whale, Asian Elephant, Tiger, Polar Bear, Giant Panda, Whale Shark and Green Turtle. Each reuses the existing SPECIES engine, numeric GBIF taxon key, bounded authoritative species context, Source Envelope and shared ATLAS/GBIF occurrence seam. Five inventory candidates remain BUILD_NEXT rather than being promoted thinly.

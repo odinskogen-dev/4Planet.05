@@ -210,9 +210,139 @@ export const ELKHORN_CORAL_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
   ],
 };
 
+export const AFRICAN_SAVANNA_ELEPHANT_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2435350",
+  scientificName: "Loxodonta africana",
+  records: [
+    { id:"elephant-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Loxodonta africana", sourceUrl:"https://www.gbif.org/species/2435350", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"Accepted species identity and displayed IUCN category for the canonical 4PLANET Species object.", rightsOrTerms:"GBIF source page; occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity and global category do not establish local abundance, range, trend or live location.", updateSemantics:"Re-check when accepted-name or assessment display changes." },
+    { id:"elephant-kws-amboseli-2026-10-01", sourceFamily:"OTHER", label:"Kenya Wildlife Service — Amboseli National Park", sourceUrl:"https://kws.go.ke/park/amboseli-national-park/", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Official Kenya source used for a bounded example of elephant habitat context in Amboseli.", rightsOrTerms:"KWS public information; factual paraphrase with attribution, no implied endorsement.", evidenceState:"KNOWN", uncertainty:"One park is not the complete species habitat or range.", updateSemantics:"Re-check when KWS materially updates the park profile." },
+    { id:"elephant-usfws-pressure-2026-10-01", sourceFamily:"USFWS", label:"U.S. Fish & Wildlife Service — African Elephant", sourceUrl:"https://www.fws.gov/cites/species/african-elephant", checkedAt:"2026-10-01", purpose:"PRESSURE", provenance:"USFWS public species/CITES page used for broad documented pressure categories.", rightsOrTerms:"US government/public information; retain attribution.", evidenceState:"KNOWN", uncertainty:"Pressure intensity differs by population and landscape.", updateSemantics:"Re-check when the public species/CITES page materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical records","population health from one protected area","local pressure intensity from range-wide pressure categories"],
+};
+
+export const LION_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219404",
+  scientificName: "Panthera leo",
+  records: [
+    { id:"lion-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Panthera leo", sourceUrl:"https://www.gbif.org/species/5219404", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"Accepted taxon identity and displayed global IUCN category.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences.", evidenceState:"KNOWN", uncertainty:"Global category does not establish a local population condition.", updateSemantics:"Re-check when taxonomic or assessment display changes." },
+    { id:"lion-kws-recovery-2026-10-01", sourceFamily:"OTHER", label:"Kenya Wildlife Service — National Recovery and Action Plan for Lion and Spotted Hyena 2020–2030", sourceUrl:"https://kws.go.ke/wp-content/uploads/2026/02/LION_2020-2030.pdf", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Official Kenya recovery plan used for bounded Kenya habitat, prey-base and coexistence context.", rightsOrTerms:"KWS public document; paraphrase factual context with attribution.", evidenceState:"KNOWN", uncertainty:"Kenya management context cannot be generalized to all lion populations.", updateSemantics:"Re-check when KWS replaces or revises the recovery plan." },
+    { id:"lion-kws-census-2026-10-01", sourceFamily:"OTHER", label:"Kenya Wildlife Service — World Lion Day 2026", sourceUrl:"https://kws.go.ke/7501-2/", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"KWS statement reporting 2025 and 2021 national wildlife census lion figures.", rightsOrTerms:"KWS public information; report source figures with attribution and limitations.", evidenceState:"KNOWN", uncertainty:"National census figures require survey-method and detectability context and are not derived from GBIF occurrences.", updateSemantics:"Re-check when KWS publishes a newer national census or correction." },
+  ],
+  forbiddenInferences:["population from occurrence points","range from occurrence points alone","local prey condition from species identity","causal trend from two reported census totals alone","live location from historical observations"],
+};
+
+export const CHEETAH_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2435270",
+  scientificName: "Acinonyx jubatus",
+  records: [
+    { id:"cheetah-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Acinonyx jubatus", sourceUrl:"https://www.gbif.org/species/2435270", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"Accepted taxon identity and displayed IUCN category.", rightsOrTerms:"GBIF source page; occurrence records retain dataset-level licences.", evidenceState:"KNOWN", uncertainty:"Global category does not establish local abundance, range or trend.", updateSemantics:"Re-check when taxonomic or assessment display changes." },
+    { id:"cheetah-catsg-descriptor-2026-10-01", sourceFamily:"IUCN", label:"IUCN SSC Cat Specialist Group — Cheetah", sourceUrl:"https://www.catsg.org/living-species-cheetah", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Specialist-group species account used for bounded species-level morphology and distribution context.", rightsOrTerms:"Public specialist-group page; factual paraphrase with attribution only.", evidenceState:"KNOWN", uncertainty:"Species-level description does not prove local presence or residency.", updateSemantics:"Re-check when the specialist-group account materially changes." },
+    { id:"cheetah-cms-pressure-2026-10-01", sourceFamily:"OTHER", label:"Convention on Migratory Species — Acinonyx jubatus", sourceUrl:"https://www.cms.int/species/acinonyx-jubatus", checkedAt:"2026-10-01", purpose:"PRESSURE", provenance:"Current CMS species page used for status, range-state and threat context.", rightsOrTerms:"UN/CMS public information; factual paraphrase with attribution.", evidenceState:"KNOWN", uncertainty:"Range-state listing and global pressures do not establish current local presence or pressure intensity.", updateSemantics:"Re-check after CMS appendix/status or species-account changes." },
+  ],
+  forbiddenInferences:["resident or breeding population from a sighting","range from occurrence points alone","abundance or trend from occurrence count","live location from historical observation data","local pressure intensity from global threat categories"],
+};
+
+export const BLUE_WHALE_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2440735",
+  scientificName: "Balaenoptera musculus",
+  records: [
+    { id:"2440735-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Balaenoptera musculus", sourceUrl:"https://www.gbif.org/species/2440735", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"2440735-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Balaenoptera musculus", sourceUrl:"https://www.gbif.org/species/2440735", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2440735-descriptor-2026-10-01", sourceFamily:"NOAA", label:"NOAA Fisheries — Blue Whale", sourceUrl:"https://www.fisheries.noaa.gov/species/blue-whale", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Population and pressure conditions vary by ocean region and population.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const ASIAN_ELEPHANT_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219461",
+  scientificName: "Elephas maximus",
+  records: [
+    { id:"5219461-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Elephas maximus", sourceUrl:"https://www.gbif.org/species/5219461", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"5219461-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Elephas maximus", sourceUrl:"https://www.gbif.org/species/5219461", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"5219461-descriptor-2026-10-01", sourceFamily:"USFWS", label:"U.S. Fish & Wildlife Service — Asian Elephant", sourceUrl:"https://www.fws.gov/species/asian-elephant-elephas-maximus", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Range-wide context does not establish current local occupancy or population condition.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const TIGER_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219416",
+  scientificName: "Panthera tigris",
+  records: [
+    { id:"5219416-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Panthera tigris", sourceUrl:"https://www.gbif.org/species/5219416", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"5219416-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Panthera tigris", sourceUrl:"https://www.gbif.org/species/5219416", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"5219416-descriptor-2026-10-01", sourceFamily:"IUCN", label:"IUCN SSC Cat Specialist Group — Tiger", sourceUrl:"https://www.catsg.org/living-species-tiger", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Species and subspecies context varies; taxonomy below species level remains under review.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const POLAR_BEAR_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2433451",
+  scientificName: "Ursus maritimus",
+  records: [
+    { id:"2433451-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Ursus maritimus", sourceUrl:"https://www.gbif.org/species/2433451", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"2433451-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Ursus maritimus", sourceUrl:"https://www.gbif.org/species/2433451", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2433451-descriptor-2026-10-01", sourceFamily:"USFWS", label:"U.S. Fish & Wildlife Service — Polar Bear", sourceUrl:"https://www.fws.gov/species/polar-bear-ursus-maritimus", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Subpopulation status varies; circumpolar context is not a local sea-ice or population assessment.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const GIANT_PANDA_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2433399",
+  scientificName: "Ailuropoda melanoleuca",
+  records: [
+    { id:"2433399-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Ailuropoda melanoleuca", sourceUrl:"https://www.gbif.org/species/2433399", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"2433399-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Ailuropoda melanoleuca", sourceUrl:"https://www.gbif.org/species/2433399", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2433399-descriptor-2026-10-01", sourceFamily:"USFWS", label:"U.S. Fish & Wildlife Service — Giant Panda", sourceUrl:"https://www.fws.gov/species/giant-panda-ailuropoda-melanoleuca", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Habitat description does not prove current occupancy or population condition in a mapped forest.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const WHALE_SHARK_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2417522",
+  scientificName: "Rhincodon typus",
+  records: [
+    { id:"2417522-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Rhincodon typus", sourceUrl:"https://www.gbif.org/species/2417522", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"2417522-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Rhincodon typus", sourceUrl:"https://www.gbif.org/species/2417522", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2417522-descriptor-2026-10-01", sourceFamily:"OTHER", label:"Convention on Migratory Species — Whale Shark", sourceUrl:"https://www.cms.int/species/rhincodon-typus", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Migratory and aggregation context is not complete range, abundance or current position.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
+export const GREEN_TURTLE_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2442225",
+  scientificName: "Chelonia mydas",
+  records: [
+    { id:"2442225-gbif-taxonomy-2026-10-01", sourceFamily:"GBIF", label:"GBIF — Chelonia mydas", sourceUrl:"https://www.gbif.org/species/2442225", checkedAt:"2026-10-01", purpose:"TAXONOMY", provenance:"GBIF numeric taxon key retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Taxon identity does not establish range, abundance, trend or live location.", updateSemantics:"Re-check accepted-name mapping when GBIF taxonomy changes." },
+    { id:"2442225-gbif-occurrence-2026-10-01", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Chelonia mydas", sourceUrl:"https://www.gbif.org/species/2442225", checkedAt:"2026-10-01", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this taxon key.", rightsOrTerms:"Every occurrence retains dataset-level publisher, licence and record provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, population trend or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2442225-descriptor-2026-10-01", sourceFamily:"NOAA", label:"NOAA Fisheries — Green Turtle", sourceUrl:"https://www.fisheries.noaa.gov/species/green-turtle", checkedAt:"2026-10-01", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used for bounded descriptive and pressure context.", rightsOrTerms:"Factual paraphrase with source attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Regulatory and population status differs among distinct population segments.", updateSemantics:"Re-check when the source account materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
+};
+
 const SPECIES_SOURCE_ENVELOPES: Record<string, SpeciesSourceEnvelope> = {
   orca: ORCA_SOURCE_ENVELOPE,
   jaguar: JAGUAR_SOURCE_ENVELOPE,
+  "african-savanna-elephant": AFRICAN_SAVANNA_ELEPHANT_SOURCE_ENVELOPE,
+  lion: LION_SOURCE_ENVELOPE,
+  cheetah: CHEETAH_SOURCE_ENVELOPE,
+  "blue-whale": BLUE_WHALE_SOURCE_ENVELOPE,
+  "asian-elephant": ASIAN_ELEPHANT_SOURCE_ENVELOPE,
+  tiger: TIGER_SOURCE_ENVELOPE,
+  "polar-bear": POLAR_BEAR_SOURCE_ENVELOPE,
+  "giant-panda": GIANT_PANDA_SOURCE_ENVELOPE,
+  "whale-shark": WHALE_SHARK_SOURCE_ENVELOPE,
+  "green-sea-turtle": GREEN_TURTLE_SOURCE_ENVELOPE,
   "acropora-palmata": ELKHORN_CORAL_SOURCE_ENVELOPE,
 };
 

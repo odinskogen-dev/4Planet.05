@@ -13,6 +13,7 @@ import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
+import { PlacesIndex, PlaceRoute } from "@/pages/integrated/Places";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import PickPrototype from "../food/PickPrototype";
@@ -27,6 +28,7 @@ import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
 import { CulturePlay } from "@/pages/v5/Culture";
 import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import Privacy from "@/pages/v5/Privacy";
+import PlanetSignal from "@/pages/v5/PlanetSignal";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -98,6 +100,8 @@ export function AppRoutes() {
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+      <Route path="/places" element={<PlacesIndex />} />
+      <Route path="/place/:slug" element={<PlaceRoute />} />
       <Route path="/species" element={<SpeciesIndex />} />
       <Route path="/species/lab" element={<SpeciesEngineLab />} />
       <Route path="/species/orca/lume" element={<Suspense fallback={WorldFallback}><LumeRoom /></Suspense>} />
@@ -147,6 +151,7 @@ export function AppRoutes() {
       <Route path="/stories" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/stories/:slug" element={<Suspense fallback={MagazineFallback}><StoryArticle /></Suspense>} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/signal" element={<PlanetSignal />} />
       <Route path="/culture/film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/play" element={<CulturePlay />} />
       <Route path="/market" element={<MarketHome />} />

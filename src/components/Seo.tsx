@@ -75,10 +75,15 @@ function appendArticleTag(tag: string) {
   document.head.appendChild(node);
 }
 
+function shouldNoIndexHost(hostname: string): boolean {
+  const host = hostname.trim().toLowerCase().replace(/^www\./, "");
+  return host === "test.4planet.org" || host === "labs.4planet.org" || host === "os.4planet.org" || host === "id.4planet.org" || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".pages.dev");
+}
+
 function resetDefaultMetadata() {
   document.title = DEFAULT_TITLE;
   upsertMeta("name", "description", DEFAULT_DESCRIPTION);
-  upsertMeta("name", "robots", "index,follow,max-image-preview:large");
+  upsertMeta("name", "robots", shouldNoIndexHost(window.location.hostname) ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large");
   upsertMeta("property", "og:type", "website");
   upsertMeta("property", "og:site_name", "4PLANET_");
   upsertMeta("property", "og:title", DEFAULT_TITLE);
@@ -116,7 +121,7 @@ export function Seo({
 
     document.title = title;
     upsertMeta("name", "description", description);
-    upsertMeta("name", "robots", robots);
+    upsertMeta("name", "robots", shouldNoIndexHost(window.location.hostname) ? "noindex,nofollow,noarchive" : robots);
     upsertMeta("property", "og:type", type);
     upsertMeta("property", "og:site_name", siteName);
     upsertMeta("property", "og:locale", locale);

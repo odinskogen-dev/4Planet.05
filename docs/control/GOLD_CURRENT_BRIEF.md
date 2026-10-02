@@ -1,3 +1,23 @@
+# DISCOVERY + TRAFFIC GROWTH — BOUNDED LIVE RELEASE 02 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED LIVE RELEASE SCOPE / BOUNDED DISCOVERY DELTA ONLY.
+
+**FOUNDER DECISION:** 02 OCT 2026 — "ENIG LIVE RELEASE" after explicit explanation that final safety diff would exclude unrelated concurrent lanes.
+
+**LIVE SCOPE:** 4PLANET discovery only: Places/Kenya, curated SPECIES discovery inventory, Search/AI crawlability, discovery measurement, PLANET SIGNAL signup surface and supporting deterministic build/test seams.
+
+**EXCLUDED FROM THIS RELEASE:** concurrent 4SAPIEN pantry/Embla work, Market purchase-path work, unrelated workflow changes and any social/email send or IndexNow submission.
+
+**SOURCE EVIDENCE:** HEIR discovery artifact `c309e894e591789e4c06e26f0420f7ba347e481d`; immutable proof `https://6b36ca88.4planet-05.pages.dev`; closure receipt issue #173 comment 5943189049.
+
+**BOUNDING METHOD:** preserve the existing LIVE tree and overlay only the source-tested discovery files from the HEIR evidence artifact. Existing LIVE-only Market bytes remain untouched.
+
+**ROLLBACK:** `main@7a9301d6be22520d5d1623aa4d150eaaa87fab9d`.
+
+**TRUTH:** release does not claim search indexing, ranking, traffic uplift, subscriber growth, social publication, email delivery or ecological outcome. Those require post-release evidence.
+
+---
+
 # MULTI-PRODUCT VALUE CONVERGENCE FINAL INTEGRATION + LIVE CLOSURE 02 — 28 SEP 2026
 
 **STATUS:** HEIR CANDIDATE / EXACT-SHA VERIFICATION REQUIRED / NO LIVE CLAIM FROM SOURCE ALONE.
