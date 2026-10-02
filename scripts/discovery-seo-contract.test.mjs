@@ -45,3 +45,16 @@ test("Species graph links back to qualifying Places",()=> {
   const envelopes=read("src/data/speciesSourceEnvelope.ts");
   for (const token of ["LEOPARD_SOURCE_ENVELOPE","EASTERN_GORILLA_SOURCE_ENVELOPE","CHIMPANZEE_SOURCE_ENVELOPE","BORNEAN_ORANGUTAN_SOURCE_ENVELOPE","EMPEROR_PENGUIN_SOURCE_ENVELOPE"]) assert.match(envelopes,new RegExp(token));
 });
+
+test("phase 03 expands discovery through existing ATLAS identities without a second Place engine",()=> {
+  const expected=["amazon-basin","congo-basin","borneo","svalbard","oslofjord"];
+  assert.equal(inv.places.filter((p)=>p.indexable).length,10);
+  for(const slug of expected){
+    const place=inv.places.find((p)=>p.slug===slug);
+    assert.ok(place?.indexable===true, `missing phase03 place ${slug}`);
+    assert.ok(place.sources.length>=3, `source threshold failed ${slug}`);
+    assert.ok(place.relatedSpecies.some((item)=>item.state==="CURATED"&&item.slug), `species graph failed ${slug}`);
+  }
+  const registry=read("src/planet/places.ts");
+  for(const id of ["amazon","congo-basin","borneo","svalbard","oslofjord"]) assert.ok(registry.includes(`placeId("${id}")`), `registry missing ${id}`);
+});

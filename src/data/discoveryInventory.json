@@ -362,6 +362,297 @@
           "use": "Official use of NiN for mapping and describing ecological variation in Norway."
         }
       ]
+    },
+    {
+      "slug": "amazon-basin",
+      "name": "Amazon Basin",
+      "kind": "FOREST",
+      "placeId": "place:4p:amazon",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Amazon Basin — Rainforest, rivers, Jaguar and ecological connectivity | 4PLANET",
+      "description": "Explore the Amazon Basin through rainforest, freshwater connectivity, Jaguar, pressures, source evidence and 4PLANET ATLAS.",
+      "summary": "The Amazon is the world's largest rainforest and river system, spanning multiple South American countries and connecting immense forest and freshwater networks.",
+      "truthBoundary": "This is a transboundary basin-scale discovery object. The ATLAS rectangle is navigation geometry, not a legal basin, national or protected-area boundary. WWF figures are organisation-published regional context and must not be interpreted as a current 4PLANET census.",
+      "ecosystems": [
+        "Tropical rainforest",
+        "River and floodplain systems",
+        "Freshwater migration corridors",
+        "Wetlands and riparian habitats"
+      ],
+      "protectedAreasSummary": "No single protected-area percentage is presented because the Amazon spans multiple countries, legal systems and protected-area categories. Protection, Indigenous territories and other land designations require their own authoritative boundary datasets.",
+      "pressures": [
+        "Deforestation and forest degradation",
+        "Fire and drought pressure",
+        "Infrastructure-driven fragmentation",
+        "Disruption of freshwater connectivity"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "jaguar",
+          "label": "Jaguar",
+          "scientificName": "Panthera onca",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "WWF — Amazon",
+          "url": "https://www.worldwildlife.org/places/amazon/",
+          "checkedAt": "2026-10-02",
+          "use": "Basin/biome scale, forest/freshwater connectivity, biodiversity and pressure context."
+        },
+        {
+          "label": "WWF — Protecting the Amazon's critical wildlife areas",
+          "url": "https://www.worldwildlife.org/news/stories/protecting-the-amazons-critical-wildlife-corridors/",
+          "checkedAt": "2026-10-02",
+          "use": "Jaguar and migratory freshwater-species connectivity research context; connectivity is not a complete distribution map."
+        },
+        {
+          "label": "WWF — Amazon facts",
+          "url": "https://www.worldwildlife.org/resources/facts/what-animals-live-in-the-amazon-and-8-other-amazon-facts/",
+          "checkedAt": "2026-10-02",
+          "use": "Independent public explainer within the same publisher family used only as a secondary cross-check on rainforest/river-system and threat context."
+        }
+      ]
+    },
+    {
+      "slug": "congo-basin",
+      "name": "Congo Basin",
+      "kind": "FOREST",
+      "placeId": "place:4p:congo-basin",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Congo Basin — Forests, great apes, rivers and ecological context | 4PLANET",
+      "description": "Explore the Congo Basin through tropical forest, freshwater systems, Chimpanzee, Eastern Gorilla, pressures, sources and ATLAS.",
+      "summary": "The Congo Basin contains the world's second-largest tropical forest after the Amazon and a broad mosaic of rivers, dense forests, savannas, wetlands and tropical peatlands across Central Africa.",
+      "truthBoundary": "This is a transboundary ecological discovery object, not one legal or protected-area boundary. Great-ape species and subspecies occupy different parts of the basin; a basin-level link does not imply uniform distribution or population condition.",
+      "ecosystems": [
+        "Tropical forests",
+        "Rivers and freshwater systems",
+        "Savanna–forest mosaics",
+        "Wetlands and tropical peatlands"
+      ],
+      "protectedAreasSummary": "No single protected-area total is presented for the basin. Protected areas, community lands and national management systems differ across six countries and must retain their own legal/source identities.",
+      "pressures": [
+        "Forest degradation and deforestation",
+        "Illegal hunting and wildlife trade",
+        "Unsustainable logging and agriculture",
+        "Mining, fossil-fuel extraction and infrastructure fragmentation"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "chimpanzee",
+          "label": "Chimpanzee",
+          "scientificName": "Pan troglodytes",
+          "state": "CURATED"
+        },
+        {
+          "slug": "eastern-gorilla",
+          "label": "Eastern Gorilla",
+          "scientificName": "Gorilla beringei",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "WWF — Congo Basin",
+          "url": "https://www.worldwildlife.org/places/congo-basin/",
+          "checkedAt": "2026-10-02",
+          "use": "Basin-scale forest/freshwater mosaic, biodiversity, great-ape and pressure context."
+        },
+        {
+          "label": "WWF — Gorilla habituation in the Congo Basin",
+          "url": "https://www.worldwildlife.org/news/stories/what-is-gorilla-habituation-and-how-does-it-help-conservation/",
+          "checkedAt": "2026-10-02",
+          "use": "Current 2026 example of gorilla monitoring/conservation in northern Congo Basin; not transferable to all gorilla populations."
+        },
+        {
+          "label": "WWF — Chimpanzee",
+          "url": "https://www.worldwildlife.org/species/chimpanzee/",
+          "checkedAt": "2026-10-02",
+          "use": "Species habitat and pressure context for one curated species connection; does not establish basin-wide occupancy."
+        }
+      ]
+    },
+    {
+      "slug": "borneo",
+      "name": "Borneo",
+      "kind": "FOREST",
+      "placeId": "place:4p:borneo",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Borneo — Rainforest, Orangutan and forest connectivity | 4PLANET",
+      "description": "Explore Borneo through tropical forest, Bornean Orangutan, habitat fragmentation, source evidence and 4PLANET ATLAS.",
+      "summary": "Borneo is a major Southeast Asian tropical-forest island shared by Indonesia, Malaysia and Brunei, with globally important rainforest and peatland biodiversity.",
+      "truthBoundary": "This is an island-scale ecological discovery object, not a national or protected-area boundary. Bornean Orangutan subspecies, population estimates and habitat conditions vary across the island and must remain source-specific.",
+      "ecosystems": [
+        "Lowland tropical rainforest",
+        "Tropical swamp and peatland forest",
+        "Mountain forest",
+        "River and riparian systems"
+      ],
+      "protectedAreasSummary": "No single protected-area percentage is shown because Borneo spans three national jurisdictions and multiple land/protection categories. Forest cover, concessions and protected-area boundaries require source-specific spatial layers.",
+      "pressures": [
+        "Deforestation and habitat fragmentation",
+        "Oil-palm and agricultural conversion",
+        "Logging and mining",
+        "Wildlife trade and human–wildlife conflict",
+        "Forest fire"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "bornean-orangutan",
+          "label": "Bornean Orangutan",
+          "scientificName": "Pongo pygmaeus",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "WWF — Borneo and Sumatra",
+          "url": "https://www.worldwildlife.org/places/borneo-and-sumatra/",
+          "checkedAt": "2026-10-02",
+          "use": "Regional forest, deforestation, commodity and wildlife-pressure context."
+        },
+        {
+          "label": "WWF — Bornean Orangutan",
+          "url": "https://www.worldwildlife.org/species/orangutan/bornean-orangutan/",
+          "checkedAt": "2026-10-02",
+          "use": "Bornean Orangutan habitat, subspecies and pressure context; population figures remain source-published estimates."
+        },
+        {
+          "label": "WWF — Where orangutans live",
+          "url": "https://www.worldwildlife.org/resources/facts/where-do-orangutans-live-and-8-other-orangutan-facts/",
+          "checkedAt": "2026-10-02",
+          "use": "Secondary cross-check for Borneo/Sumatra rainforest dependence and broad pressure context."
+        }
+      ]
+    },
+    {
+      "slug": "svalbard",
+      "name": "Svalbard",
+      "kind": "REGION",
+      "placeId": "place:4p:svalbard",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Svalbard — Sea ice, Polar Bear, whales and protected Arctic nature | 4PLANET",
+      "description": "Explore Svalbard through sea ice, marine and terrestrial ecosystems, Polar Bear, whales, protected areas, sources and ATLAS.",
+      "summary": "Svalbard links Arctic land, fjords, sea ice and marine food webs. Energy moves strongly between sea and land through seabirds, marine mammals and other species adapted to polar conditions.",
+      "truthBoundary": "This is a Svalbard-scale discovery object. The ATLAS rectangle is navigation geometry, not the statutory boundary of the Svalbard archipelago or any protected area. Population and sea-ice conditions vary through time and by subpopulation/site.",
+      "ecosystems": [
+        "Sea-ice ecosystems",
+        "Fjords and coastal marine systems",
+        "Tundra and terrestrial Arctic systems",
+        "Seabird and marine-mammal food webs"
+      ],
+      "protectedAreasSummary": "The Governor of Svalbard reported on 23 September 2026 that Svalbard has seven national parks, 21 nature reserves and one geotopic conservation area, covering about 65% of land and 84% of territorial waters. These are Governor-reported legal protection figures, not ecological-condition scores.",
+      "pressures": [
+        "Sea-ice loss and climate change",
+        "Long-range pollutants",
+        "Changes in Arctic food-web conditions",
+        "Human–wildlife encounter pressure"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "polar-bear",
+          "label": "Polar Bear",
+          "scientificName": "Ursus maritimus",
+          "state": "CURATED"
+        },
+        {
+          "slug": "humpback-whale",
+          "label": "Humpback Whale",
+          "scientificName": "Megaptera novaeangliae",
+          "state": "CURATED"
+        },
+        {
+          "slug": "blue-whale",
+          "label": "Blue Whale",
+          "scientificName": "Balaenoptera musculus",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Norwegian Polar Institute — Fauna in Svalbard",
+          "url": "https://npolar.no/en/themes/fauna-svalbard/",
+          "checkedAt": "2026-10-02",
+          "use": "Sea–land ecosystem linkage, marine mammals, whales, Polar Bear, ice-fauna and climate-pressure context."
+        },
+        {
+          "label": "Norwegian Polar Institute — Polar Bear",
+          "url": "https://npolar.no/en/species/polar-bear/",
+          "checkedAt": "2026-10-02",
+          "use": "Polar Bear distribution, Svalbard/Barents Sea population context, sea-ice dependence and explicit uncertainty."
+        },
+        {
+          "label": "Governor of Svalbard — Protected areas in Svalbard",
+          "url": "https://www.sysselmesteren.no/en/the-governor-of-svalbard/environmental-protection/protected-areas-in-svalbard/",
+          "checkedAt": "2026-10-02",
+          "use": "Current 23 Sep 2026 legal protected-area counts and reported land/water coverage."
+        }
+      ]
+    },
+    {
+      "slug": "oslofjord",
+      "name": "Oslofjord",
+      "kind": "MARINE_AREA",
+      "placeId": "place:4p:oslofjord",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Oslofjord — Cod, Blue Mussel, pollution and restoration evidence | 4PLANET",
+      "description": "Explore Oslofjord through marine ecological condition, Cod, Blue Mussel, pollution evidence, fisheries measures, sources and ATLAS.",
+      "summary": "Oslofjord is a heavily used fjord system where wastewater, agricultural runoff, fisheries and other human pressures interact with marine habitats, food webs and coastal communities.",
+      "truthBoundary": "This is a fjord-scale discovery object, not a complete condition assessment. Official ecological/chemical classifications, monitoring samples, fishing rules and restoration areas measure different things and remain separate. The ATLAS rectangle is navigation geometry, not a statutory fjord boundary.",
+      "ecosystems": [
+        "Coastal and fjord marine systems",
+        "Shallow-water habitats",
+        "Sediment and benthic systems",
+        "Marine food-web habitats"
+      ],
+      "protectedAreasSummary": "4PLANET does not collapse marine national parks, three 2026 no-fishing areas, restoration sites and water-management classifications into one protected-area metric. Each has different legal purpose and spatial definition.",
+      "pressures": [
+        "Wastewater nutrient and pollution loads",
+        "Agricultural runoff",
+        "Fishing pressure and depleted coastal fish populations",
+        "Environmental contaminants",
+        "Habitat degradation"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "atlantic-cod",
+          "label": "Atlantic Cod",
+          "scientificName": "Gadus morhua",
+          "state": "CURATED"
+        },
+        {
+          "slug": "blue-mussel",
+          "label": "Blue Mussel",
+          "scientificName": "Mytilus edulis",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Norwegian Government — Oslofjorden",
+          "url": "https://www.regjeringen.no/no/tema/klima-og-miljo/naturmangfold/innsiktsartikler-naturmangfold/oslofjorden/id3139220/",
+          "checkedAt": "2026-10-02",
+          "use": "Current government summary of serious ecosystem condition, main pressures and 2026 policy/restoration context."
+        },
+        {
+          "label": "Norwegian Environment Agency — coastal contaminant monitoring 2024",
+          "url": "https://www.miljodirektoratet.no/aktuelt/fagmeldinger/2026/februar-2026/ny-overvakingsrapport-for-miljogifter-i-kystomradene/",
+          "checkedAt": "2026-10-02",
+          "use": "Annual monitoring evidence; Oslofjord sediment exceedances and explicit difficulty obtaining enough Cod samples."
+        },
+        {
+          "label": "Norwegian Environment Agency — contaminants in Oslofjord food webs",
+          "url": "https://www.miljodirektoratet.no/aktuelt/fagmeldinger/2026/august-2026/miljogifter-i-oslofjordens-naringskjeder/",
+          "checkedAt": "2026-10-02",
+          "use": "2025 Urban Fjord sampling across sediment and food-web organisms including Blue Mussel and Cod; sampled evidence is not whole-fjord condition."
+        }
+      ]
     }
   ],
   "species": [

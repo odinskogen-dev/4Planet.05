@@ -1,3 +1,19 @@
+# DISCOVERY + TRAFFIC GROWTH — PHASE 03 EXISTING-ATLAS PLACE EXPANSION — 02 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / NO PHASE-03 LIVE AUTHORITY.
+
+**OBJECTIVE:** compound public discovery by promoting source-qualified discovery objects for five Places that already exist in the shared ATLAS registry: Amazon Basin, Congo Basin, Borneo, Svalbard and Oslofjord. No new Place engine, map renderer, truth store or geocoder is created.
+
+**GRAPH:** Amazon Basin → Jaguar; Congo Basin → Chimpanzee + Eastern Gorilla; Borneo → Bornean Orangutan; Svalbard → Polar Bear + Humpback Whale + Blue Whale; Oslofjord → Atlantic Cod + Blue Mussel.
+
+**SOURCE BOUNDARY:** Amazon/Congo/Borneo use public WWF ecological/species material for bounded discovery context; Svalbard uses Norwegian Polar Institute + Governor of Svalbard; Oslofjord uses current Norwegian Government and Environment Agency evidence. Monitoring samples, protected-area rules, source-published population estimates and occurrence records retain their distinct semantics.
+
+**PUBLICATION LAW:** no basin/island/fjord object claims one universal protected-area percentage where jurisdictions/designations differ. Navigation bboxes remain navigation only. Species relationships mean documented ecological/geographic relevance, never current individual presence or complete distribution.
+
+**ACCEPTANCE:** exact HEIR SHA must pass build, full smoke/discovery contracts, authority/Gold and immutable preview/browser gates. No production promotion, IndexNow submission, social schedule or email send is authorised by this phase.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH — PHASE 02 GLOBAL GRAPH EXPANSION — 02 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / NO PHASE-02 LIVE AUTHORITY.
