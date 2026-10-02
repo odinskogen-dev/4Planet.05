@@ -108,8 +108,8 @@ jobs:
           test "$added" -eq 3
           test "$removed" -eq 0
 
-          metadata='{"main_module":"worker.js","compatibility_date":"2026-09-14","compatibility_flags":[]}'
-          response="$(curl -fsS -X PUT             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             "${auth[@]}"             -F "metadata=${metadata};type=application/json"             -F "worker.js=@/tmp/worker-new.js;type=application/javascript+module")"
+          metadata='{"main_module":"worker.js","bindings":[],"compatibility_date":"2026-09-14","compatibility_flags":[],"usage_model":"standard"}'
+          response="$(curl -fsS -X PUT             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             "${auth[@]}"             -F "metadata=${metadata};type=application/json"             -F "worker.js=@/tmp/worker-new.js;filename=worker.js;type=application/javascript+module")"
           jq -e '.success==true' <<<"$response" >/dev/null
 
           curl -fsS -D /tmp/worker-after.headers             "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains"             "${auth[@]}"             -o /tmp/worker-after.multipart
