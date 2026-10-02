@@ -57,6 +57,7 @@ jobs:
           cp products/4sapien/source/4sapien-live-hardening.js "$SITE/4sapien-live-hardening.js"
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
           python products/4sapien/build/apply_document_intake_guard.py "$SITE"
+          python products/4sapien/build/apply_finance_daniel_feedback_guard.py "$SITE"
           python products/4sapien/build/apply_pantry_first_return_guard.py "$SITE"
           cp products/4sapien/cloudflare/_headers "$SITE/_headers"
           cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
@@ -80,7 +81,9 @@ jobs:
           BRAIN=$SITE/brain/index.html
           for marker in 'Se livet ditt klart.' 'functions/v1/embla-core-preview' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$ROOT"; done
           for marker in 'fs-food-main' 'MAT · EMBLA' 'FoodPantryProof' 'four_sapien_embla_memories' '4sapien-pantry-decision.js'; do grep -Fq "$marker" "$FOOD"; done
-          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1'; do grep -Fq "$marker" "$MONEY"; done
+          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' 'four-sapien-finance-record-changed'; do grep -Fq "$marker" "$MONEY"; done
+          test -s products/4sapien/build/apply_finance_daniel_feedback_guard.py
+          test -s tests/e2e/four-sapien-money-regression.spec.ts
           for marker in 'brainIdentity' 'functions/v1/brain-profile'; do grep -Fq "$marker" "$BRAIN"; done
           node --check "$SITE/4sapien-live-hardening.js"
           node --check "$SITE/4sapien-pantry-decision.js"
@@ -88,17 +91,18 @@ jobs:
           grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$ROOT"
           grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$FOOD"
 
-      - name: Browser prove first-return before LIVE
+      - name: Browser prove Food + Money no-regression before LIVE
         shell: bash
         run: |
           set -euo pipefail
           npm ci
-          npx playwright install --with-deps chromium >/dev/null
+          npx playwright install --with-deps chromium webkit >/dev/null
           python -m http.server 4173 -d products/4sapien/site >/tmp/4sapien-local.log 2>&1 &
           pid=$!
           trap 'kill $pid || true' EXIT
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/app/food/ >/dev/null && break; sleep 1; done
           FOOD_REVIEW_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+          FOUR_SAPIEN_REVIEW_URL=http://127.0.0.1:4173 npx playwright test tests/e2e/four-sapien-money-regression.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-390
 
       - name: Verify existing LIVE Worker authority
         shell: bash
@@ -128,14 +132,19 @@ jobs:
           for attempt in $(seq 1 30); do
             root_code=$(curl -L -sS -o /tmp/live-root.html -w '%{http_code}' "https://4sapien.com/?release=$GITHUB_RUN_ID-$attempt" || true)
             food_code=$(curl -L -sS -o /tmp/live-food.html -w '%{http_code}' "https://4sapien.com/app/food/?release=$GITHUB_RUN_ID-$attempt" || true)
-            if [ "$root_code" = 200 ] && [ "$food_code" = 200 ] &&
+            money_code=$(curl -L -sS -o /tmp/live-money.html -w '%{http_code}' "https://4sapien.com/app/money/?release=$GITHUB_RUN_ID-$attempt" || true)
+            if [ "$root_code" = 200 ] && [ "$food_code" = 200 ] && [ "$money_code" = 200 ] &&
                grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" /tmp/live-root.html &&
                grep -Fq 'FoodPantryProof' /tmp/live-food.html &&
-               grep -Fq '4sapien-pantry-decision.js' /tmp/live-food.html; then ready=1; break; fi
+               grep -Fq '4sapien-pantry-decision.js' /tmp/live-food.html &&
+               grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/live-money.html; then ready=1; break; fi
             sleep 3
           done
           test "$ready" = 1
           FOOD_REVIEW_CACHE_BUST="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" FOOD_REVIEW_URL=https://4sapien.com npx playwright test tests/e2e/four-sapien-pantry-synthetic.spec.ts --project=desktop-1440 --project=mobile-390
+          FOUR_SAPIEN_REVIEW_CACHE_BUST="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" FOUR_SAPIEN_REVIEW_URL=https://4sapien.com npx playwright test tests/e2e/four-sapien-money-regression.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-390
           echo "4SAPIEN LIVE VERIFIED https://4sapien.com/ source=$GITHUB_SHA"
 
 # Founder LIVE release authorised 2026-10-01 — 4SAPIEN FOOD value loop
