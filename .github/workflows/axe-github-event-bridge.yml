@@ -1,0 +1,222 @@
+name: AXE GitHub event → Slack wake bridge
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize, closed]
+  workflow_run:
+    workflows:
+      - FOUR STATE Product Authority Gate
+      - FOUR STATE Founder Review Control Plane
+      - ONE INTERFACE Convergence Gate
+      - GOLD / WORLD CLASS Enforcement
+      - GOLD Human Craft Proof
+      - Browser Product Proof
+      - Public Preview Gate
+      - 4PLANET ID Gold Gate
+      - ATLAS Zero Loss Gate
+      - 4NATION Gold Candidate QA
+      - 4BRANDS Company Twin Proof
+      - 4BRANDS Canonical Live
+      - 4PLANET ID Canonical Live
+    types: [completed]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: axe-github-event-bridge-${{ github.event_name }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  pr-event:
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      SLACK_AXE_WEBHOOK_URL: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
+    steps:
+      - name: Send PR wake signal
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_STATE: ${{ github.event.pull_request.state }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          test -n "${SLACK_AXE_WEBHOOK_URL:-}" || {
+            echo "SLACK_AXE_WEBHOOK_URL repository secret is missing."
+            exit 2
+          }
+
+          EVENT_ID="github:${GITHUB_REPOSITORY}:pr:${PR_NUMBER}:${EVENT_ACTION}:${HEAD_SHA}"
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: PR_STATE' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            "action: ${EVENT_ACTION}" \
+            "state: ${PR_STATE}" \
+            "draft: ${PR_DRAFT}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "url: ${PR_URL}" \
+            "actor: ${ACTOR}" \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read GitHub/CI/BRAIN before action.')"
+
+          jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
+
+  ci-event:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      SLACK_AXE_WEBHOOK_URL: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Send completed PR-associated CI wake signal
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+
+          PR_COUNT="$(jq '.workflow_run.pull_requests | length' "$EVENT_PATH")"
+          if [ "$PR_COUNT" -lt 1 ]; then
+            echo "No associated pull request; no AXE wake."
+            exit 0
+          fi
+
+          test -n "${SLACK_AXE_WEBHOOK_URL:-}" || {
+            echo "SLACK_AXE_WEBHOOK_URL repository secret is missing."
+            exit 2
+          }
+
+          PR_NUMBER="$(jq -r '.workflow_run.pull_requests[0].number' "$EVENT_PATH")"
+          META="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+          HEAD_REPO="$(jq -r '.head.repo.full_name' <<<"$META")"
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "Fork PR ignored."
+            exit 0
+          fi
+
+          HEAD_SHA="$(jq -r '.head.sha' <<<"$META")"
+          HEAD_REF="$(jq -r '.head.ref' <<<"$META")"
+          BASE_REF="$(jq -r '.base.ref' <<<"$META")"
+          PR_URL="$(jq -r '.html_url' <<<"$META")"
+          WORKFLOW_NAME="$(jq -r '.workflow_run.name' "$EVENT_PATH")"
+          CONCLUSION="$(jq -r '.workflow_run.conclusion // "unknown"' "$EVENT_PATH")"
+          RUN_URL="$(jq -r '.workflow_run.html_url' "$EVENT_PATH")"
+          RUN_ID="$(jq -r '.workflow_run.id' "$EVENT_PATH")"
+          ACTOR="$(jq -r '.workflow_run.actor.login // "unknown"' "$EVENT_PATH")"
+
+          EVENT_ID="github:${GITHUB_REPOSITORY}:ci:${RUN_ID}:${CONCLUSION}"
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: CI_COMPLETED' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            'action: completed' \
+            "workflow: ${WORKFLOW_NAME}" \
+            "conclusion: ${CONCLUSION}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "pr_url: ${PR_URL}" \
+            "run_url: ${RUN_URL}" \
+            "actor: ${ACTOR}" \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before action.')"
+
+          jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
+
+  cloudflare-preview-event:
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      SLACK_AXE_WEBHOOK_URL: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Send Cloudflare Pages PR preview wake signal
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+          COMMENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+
+          if ! jq -e '
+            .issue.pull_request != null
+            and .comment.user.login == "cloudflare-workers-and-pages[bot]"
+            and (.comment.body | contains("Cloudflare Pages"))
+          ' "$EVENT_PATH" >/dev/null; then
+            echo "Not a Cloudflare Pages PR comment; no AXE wake."
+            exit 0
+          fi
+
+          test -n "${SLACK_AXE_WEBHOOK_URL:-}" || {
+            echo "SLACK_AXE_WEBHOOK_URL repository secret is missing."
+            exit 2
+          }
+
+          PR_NUMBER="$(jq -r '.issue.number' "$EVENT_PATH")"
+          META="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+          HEAD_REPO="$(jq -r '.head.repo.full_name' <<<"$META")"
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "Fork PR ignored."
+            exit 0
+          fi
+
+          HEAD_SHA="$(jq -r '.head.sha' <<<"$META")"
+          HEAD_REF="$(jq -r '.head.ref' <<<"$META")"
+          BASE_REF="$(jq -r '.base.ref' <<<"$META")"
+          PR_URL="$(jq -r '.html_url' <<<"$META")"
+          COMMENT_URL="$(jq -r '.comment.html_url' "$EVENT_PATH")"
+          COMMENT_ID="$(jq -r '.comment.id' "$EVENT_PATH")"
+          COMMENT_UPDATED_AT="$(jq -r '.comment.updated_at // .comment.created_at' "$EVENT_PATH")"
+          BODY="$(jq -r '.comment.body' "$EVENT_PATH")"
+          if grep -q 'Deploy successful!' <<<"$BODY"; then
+            CF_RESULT="success"
+          else
+            CF_RESULT="update"
+          fi
+
+          EVENT_ID="github:${GITHUB_REPOSITORY}:cloudflare-pr:${PR_NUMBER}:${COMMENT_ACTION}:${COMMENT_ID}:${COMMENT_UPDATED_AT}"
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: CLOUDFLARE_PAGES_PREVIEW' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            "action: ${COMMENT_ACTION}" \
+            "cloudflare_result: ${CF_RESULT}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "pr_url: ${PR_URL}" \
+            "comment_url: ${COMMENT_URL}" \
+            'actor: cloudflare-workers-and-pages[bot]' \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read PR, Cloudflare evidence, CI and BRAIN before action.')"
+
+          jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
