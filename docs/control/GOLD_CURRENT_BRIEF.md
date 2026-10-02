@@ -767,3 +767,18 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 
 
 4NATION 08 QA NOTE / 28 SEP 2026: Browser assertions are explicitly scoped to the intended decision surface and ATLAS iframe. This preserves both the new place-level map and the existing deep Oslofjord map without weakening either product contract. Real-domain proof now also triggers on canonical Worker source changes.
+
+
+## SECURITY HEIR INTEGRATION — 03 OCT 2026
+
+**STATE:** HEIR CONTROL CORRECTION / NOT A PRODUCT FEATURE / NOT LIVE / INDEPENDENT RE-JUDGEMENT REQUIRED.
+
+**EXACT HEIR LINEAGE:** parent `46453259c9a15ffd8fd86daeb14e153f4ce72f40` → security lock commit `9c6dc8a418674b3819001966a2cc20246d431751` → this brief child.
+
+**CHANGE:** retain the already independently-reviewed `package-lock.json` delta only: transitive `brace-expansion` 5.0.9 → 5.0.12 inside the existing `minimatch@10.2.5` range. `package.json` and user-facing product source are unchanged. The resulting lock blob is `c219160ec3d5bca8005793efc7edf1d6dd4a9760`, matching the accepted donor package.
+
+**WHY:** remove the high-severity dependency-audit blocker from the lawful TEST KING receiver without suppressing audit rules, changing product behaviour, opening a parallel branch/system, or granting LIVE/release authority.
+
+**HUMAN REVIEW INTENT:** independent Judge must confirm the exact HEIR candidate preserves product behaviour and that the high audit is cleared. Separate existing Andons remain separate: bundle-size gate and any unrelated workflow failures are not waived by this security correction.
+
+**BOUNDARY:** no LIVE promotion, no external release, no product-value claim, no Human Gold claim. Maker ≠ Judge. The next state may advance only from physical CI + independent judgement.
