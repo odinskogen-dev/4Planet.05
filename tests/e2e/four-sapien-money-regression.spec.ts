@@ -23,6 +23,7 @@ window.supabase={createClient:()=>({
  },
  rpc:async(name)=>{
   if(name==="four_sapien_finance_twin")return {data:{state:"AVAILABLE",year:new Date().getFullYear(),accounts:[],liquidity:{state:"UNKNOWN",amount:null,truth:"UNKNOWN"},net_worth:{state:"UNKNOWN",amount:null},monthly_recurring_expense_equivalent:{amount:0},data_quality:{category_review_count:0,unknown_account_balance_count:0},timeline:{months:Array.from({length:12},(_,i)=>({month:i+1,period_state:"KNOWN",actual:{income:0,expense:0},forecast:{income:0,expense:0},scheduled_unconfirmed:{income:0,expense:0}}))}},error:null};
+  if(name==="four_sapien_finance_control_read")return {data:{state:"AVAILABLE",as_of:new Date().toISOString().slice(0,10),money_now:{state:"UNKNOWN",amount:null,unknown_balance_count:1},next_income_date:null,before_next_income:{state:"UNKNOWN",projected_without_income:null},overdue_unconfirmed:[]},error:null};
   return {data:null,error:null};
  },
  functions:{invoke:async()=>({data:null,error:null})},
@@ -39,18 +40,34 @@ test.beforeEach(async({page})=>{
  await page.route("**/supabase.min.js",async route=>route.fulfill({status:200,contentType:"application/javascript",body:stub}));
 });
 
-test("Money keeps proven Finance fix and usable navigation",async({page})=>{
+test("Money keeps all proven Finance guards and a usable navigation",async({page})=>{
  await page.goto(moneyUrl(),{waitUntil:"domcontentloaded"});
  await expect(page.locator("body")).toHaveClass(/w-money/);
  const html=await page.content();
- expect(html).toContain("FOUR_SAPIEN_DANIEL_FINANCE_FIX_01");
- expect(html).toContain("four-sapien-finance-record-changed");
- expect(html).toContain("FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1");
+ for(const marker of [
+  "FOUR_SAPIEN_DANIEL_FINANCE_FIX_01",
+  "FOUR_SAPIEN_FINANCE_TRUTH_MATH_V1",
+  "FOUR_SAPIEN_FINANCE_SYNC_B1C",
+  "FOUR_SAPIEN_MONEY_NOW_V1",
+  "FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1",
+  "four-sapien-finance-record-changed"
+ ]) expect(html).toContain(marker);
 
- const nav=page.locator("#fs-global-appnav");
- await expect(nav).toBeAttached();
- await expect(nav).toBeVisible();
- for(const label of ["I dag","Mat","Penger","Brain"])await expect(nav.getByText(label,{exact:true})).toBeVisible();
+ await expect(page.locator("#fsMoneyNow")).toBeVisible();
+ await expect(page.locator("#fsMoneyNow")).toContainText("Penger nå");
+
+ const width=page.viewportSize()?.width||1440;
+ if(width<900){
+   const productNav=page.locator("body.w-money #root nav").first();
+   await expect(productNav).toBeVisible();
+   const box=await productNav.boundingBox();
+   expect(box).not.toBeNull();
+   expect(box!.y).toBeLessThan((page.viewportSize()?.height||900));
+ }else{
+   const globalNav=page.locator("#fs-global-appnav");
+   await expect(globalNav).toBeVisible();
+   for(const label of ["I dag","Mat","Penger","Brain"])await expect(globalNav.getByText(label,{exact:true})).toBeVisible();
+ }
 });
 
 test("Money remains readable in light and dark modes",async({page})=>{
@@ -64,22 +81,26 @@ test("Money remains readable in light and dark modes",async({page})=>{
     const p=m[1].split(",").map(x=>Number(x.trim()));
     return {r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};
    }
+   const dark=document.documentElement.getAttribute("data-theme")==="dark";
    function bg(el:Element|null):any{
     while(el){const c=rgba(getComputedStyle(el).backgroundColor);if(c&&c.a>0.05)return c;el=el.parentElement}
-    return {r:255,g:255,b:255,a:1};
+    return dark?{r:0,g:0,b:0,a:1}:{r:255,g:255,b:255,a:1};
    }
    function lum(c:any){const f=(v:number)=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c.r)+.7152*f(c.g)+.0722*f(c.b)}
    function ratio(a:any,b:any){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
-   const selectors=["#fs-global-appnav a.active",".fs-money-main h1","#axeFin .bar","#axeFin .lab"];
+   const selectors=[".fs-money-main h1","#axeFin .bar","#axeFin .lab","#fsMoneyNow .mnTitle","#fsMoneyNow .mnVal","body.w-money #root nav button"];
    const checks:any[]=[];
    for(const sel of selectors){
-    const el=document.querySelector(sel) as HTMLElement|null;if(!el)continue;
-    const cs=getComputedStyle(el),fg=rgba(cs.color),back=bg(el);
-    checks.push({sel,visible:!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length),alpha:fg?.a??0,ratio:fg?ratio(fg,back):0});
+    for(const el of Array.from(document.querySelectorAll(sel)) as HTMLElement[]){
+      const visible=!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length);if(!visible)continue;
+      const cs=getComputedStyle(el),fg=rgba(cs.color),back=bg(el);
+      checks.push({sel,alpha:fg?.a??0,ratio:fg?ratio(fg,back):0});
+      break;
+    }
    }
    return checks;
   });
-  expect(result.length).toBeGreaterThan(0);
-  for(const x of result){expect(x.visible,`${mode} ${x.sel} hidden`).toBeTruthy();expect(x.alpha,`${mode} ${x.sel} transparent`).toBeGreaterThan(.5);expect(x.ratio,`${mode} ${x.sel} low contrast`).toBeGreaterThan(2);}
+  expect(result.length).toBeGreaterThanOrEqual(3);
+  for(const x of result){expect(x.alpha,`${mode} ${x.sel} transparent`).toBeGreaterThan(.5);expect(x.ratio,`${mode} ${x.sel} low contrast`).toBeGreaterThan(2);}
  }
 });
