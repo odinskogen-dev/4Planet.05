@@ -21,3 +21,5 @@ export default {
     return new Response(JSON.stringify({ ok: true, event_id: eventId }), { headers: { "content-type": "application/json" } });
   }
 };
+
+// trigger registered canary workflow
