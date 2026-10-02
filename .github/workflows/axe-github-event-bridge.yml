@@ -16,10 +16,11 @@ on:
       - ATLAS Zero Loss Gate
       - 4NATION Gold Candidate QA
       - 4BRANDS Company Twin Proof
-      - Canonical Live
+      - 4BRANDS Canonical Live
+      - 4PLANET ID Canonical Live
     types: [completed]
   issue_comment:
-    types: [created]
+    types: [created, edited]
 
 permissions:
   contents: read
@@ -57,23 +58,27 @@ jobs:
           }
 
           EVENT_ID="github:${GITHUB_REPOSITORY}:pr:${PR_NUMBER}:${EVENT_ACTION}:${HEAD_SHA}"
-          TEXT="[GITHUB / EVENT]
-event_id: ${EVENT_ID}
-kind: PR_STATE
-repository: ${GITHUB_REPOSITORY}
-pr: ${PR_NUMBER}
-action: ${EVENT_ACTION}
-state: ${PR_STATE}
-draft: ${PR_DRAFT}
-head_sha: ${HEAD_SHA}
-head_ref: ${HEAD_REF}
-base_ref: ${BASE_REF}
-url: ${PR_URL}
-actor: ${ACTOR}
-WAKE SIGNAL ONLY — not proof. Fresh-read GitHub/CI/BRAIN before action."
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: PR_STATE' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            "action: ${EVENT_ACTION}" \
+            "state: ${PR_STATE}" \
+            "draft: ${PR_DRAFT}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "url: ${PR_URL}" \
+            "actor: ${ACTOR}" \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read GitHub/CI/BRAIN before action.')"
 
           jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
-          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error             -H 'Content-Type: application/json'             --data-binary @/tmp/slack-payload.json             "$SLACK_AXE_WEBHOOK_URL"
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
 
   ci-event:
     if: github.event_name == 'workflow_run'
@@ -119,24 +124,28 @@ WAKE SIGNAL ONLY — not proof. Fresh-read GitHub/CI/BRAIN before action."
           ACTOR="$(jq -r '.workflow_run.actor.login // "unknown"' "$EVENT_PATH")"
 
           EVENT_ID="github:${GITHUB_REPOSITORY}:ci:${RUN_ID}:${CONCLUSION}"
-          TEXT="[GITHUB / EVENT]
-event_id: ${EVENT_ID}
-kind: CI_COMPLETED
-repository: ${GITHUB_REPOSITORY}
-pr: ${PR_NUMBER}
-action: completed
-workflow: ${WORKFLOW_NAME}
-conclusion: ${CONCLUSION}
-head_sha: ${HEAD_SHA}
-head_ref: ${HEAD_REF}
-base_ref: ${BASE_REF}
-pr_url: ${PR_URL}
-run_url: ${RUN_URL}
-actor: ${ACTOR}
-WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before action."
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: CI_COMPLETED' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            'action: completed' \
+            "workflow: ${WORKFLOW_NAME}" \
+            "conclusion: ${CONCLUSION}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "pr_url: ${PR_URL}" \
+            "run_url: ${RUN_URL}" \
+            "actor: ${ACTOR}" \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before action.')"
 
           jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
-          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error             -H 'Content-Type: application/json'             --data-binary @/tmp/slack-payload.json             "$SLACK_AXE_WEBHOOK_URL"
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
 
   cloudflare-preview-event:
     if: github.event_name == 'issue_comment'
@@ -149,6 +158,7 @@ WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before actio
       - name: Send Cloudflare Pages PR preview wake signal
         env:
           EVENT_PATH: ${{ github.event_path }}
+          COMMENT_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
 
@@ -180,6 +190,7 @@ WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before actio
           PR_URL="$(jq -r '.html_url' <<<"$META")"
           COMMENT_URL="$(jq -r '.comment.html_url' "$EVENT_PATH")"
           COMMENT_ID="$(jq -r '.comment.id' "$EVENT_PATH")"
+          COMMENT_UPDATED_AT="$(jq -r '.comment.updated_at // .comment.created_at' "$EVENT_PATH")"
           BODY="$(jq -r '.comment.body' "$EVENT_PATH")"
           if grep -q 'Deploy successful!' <<<"$BODY"; then
             CF_RESULT="success"
@@ -187,21 +198,25 @@ WAKE SIGNAL ONLY — not proof. Fresh-read GitHub workflow/PR/BRAIN before actio
             CF_RESULT="update"
           fi
 
-          EVENT_ID="github:${GITHUB_REPOSITORY}:cloudflare-pr:${PR_NUMBER}:comment:${COMMENT_ID}"
-          TEXT="[GITHUB / EVENT]
-event_id: ${EVENT_ID}
-kind: CLOUDFLARE_PAGES_PREVIEW
-repository: ${GITHUB_REPOSITORY}
-pr: ${PR_NUMBER}
-action: preview_comment
-cloudflare_result: ${CF_RESULT}
-head_sha: ${HEAD_SHA}
-head_ref: ${HEAD_REF}
-base_ref: ${BASE_REF}
-pr_url: ${PR_URL}
-comment_url: ${COMMENT_URL}
-actor: cloudflare-workers-and-pages[bot]
-WAKE SIGNAL ONLY — not proof. Fresh-read PR, Cloudflare evidence, CI and BRAIN before action."
+          EVENT_ID="github:${GITHUB_REPOSITORY}:cloudflare-pr:${PR_NUMBER}:${COMMENT_ACTION}:${COMMENT_ID}:${COMMENT_UPDATED_AT}"
+          TEXT="$(printf '%s\n' \
+            '[GITHUB / EVENT]' \
+            "event_id: ${EVENT_ID}" \
+            'kind: CLOUDFLARE_PAGES_PREVIEW' \
+            "repository: ${GITHUB_REPOSITORY}" \
+            "pr: ${PR_NUMBER}" \
+            "action: ${COMMENT_ACTION}" \
+            "cloudflare_result: ${CF_RESULT}" \
+            "head_sha: ${HEAD_SHA}" \
+            "head_ref: ${HEAD_REF}" \
+            "base_ref: ${BASE_REF}" \
+            "pr_url: ${PR_URL}" \
+            "comment_url: ${COMMENT_URL}" \
+            'actor: cloudflare-workers-and-pages[bot]' \
+            'WAKE SIGNAL ONLY — not proof. Fresh-read PR, Cloudflare evidence, CI and BRAIN before action.')"
 
           jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
-          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error             -H 'Content-Type: application/json'             --data-binary @/tmp/slack-payload.json             "$SLACK_AXE_WEBHOOK_URL"
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/slack-payload.json \
+            "$SLACK_AXE_WEBHOOK_URL"
