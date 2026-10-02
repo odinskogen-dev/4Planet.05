@@ -1,3 +1,28 @@
+# ATLAS GOOGLE SEARCH DISCOVERY CLOSURE 01 — 02 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / SEARCH-INDEXABLE SOURCE ARTIFACT / NO GOOGLE INDEX CLAIM.
+
+**FOUNDER DIRECTION:** "Kan du gjøre atlas søkbar i Google nå?" The bounded objective is to make the existing public ATLAS technically discoverable and legible to Google without creating a second ATLAS or SEO content farm.
+
+**OBSERVED EXTERNAL STATE:** fresh web search for `"4PLANET Atlas" 4planetatlas.com`, `site:4planetatlas.com` and `site:4planet.org/atlas 4PLANET` returned no 4PLANET ATLAS result. This is evidence of absent/very weak current search visibility, not a complete Google index export.
+
+**ROOT CAUSE FOUND:** the actual public `/atlas` route renders `PublicWorld` without route-specific `Seo` metadata. The source build has `/atlas` in the 4planet.org sitemap and allows Googlebot, but the raw `/atlas` HTML is otherwise the generic SPA shell and no ATLAS-specific prerender exists. This weakens title/description/entity/canonical/content signals.
+
+**BOUNDED FIX:**
+- add explicit runtime ATLAS title, description, canonical path, OG/Twitter metadata and WebApplication JSON-LD to `PublicWorld`;
+- add a raw HTML prerender for `/atlas` with a visible H1, product description, source names, truth boundary and crawlable links to Places, Species and Living Systems;
+- add the ATLAS prerender to the normal production build;
+- add a deterministic search-discovery contract to smoke tests;
+- keep existing `/atlas` sitemap entry and Googlebot allow policy.
+
+**PRIMARY INDEX URL:** `https://4planet.org/atlas` remains the source-controlled canonical target in this slice. The separate `4planetatlas.com` host exists in analytics but its edge/DNS routing is outside this repository and cannot be independently HTTP-read from the current runtime; do not invent a canonical-host migration without verified routing.
+
+**TRUTH BOUNDARY:** this makes ATLAS crawlable/indexable and materially more legible to Google. It does NOT guarantee Google will index or rank it. Google controls crawling/index selection. Search Console URL Inspection / Request Indexing can accelerate a single-page recrawl after LIVE; the currently available Search Console connector is read-only.
+
+**ACCEPTANCE:** exact HEIR SHA must pass ATLAS search contract, typecheck, production build, smoke/contracts, Gold/product authority and immutable Cloudflare preview. LIVE custom-domain promotion remains an exact-artifact Founder gate.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH — PHASE 03 EXISTING-ATLAS PLACE EXPANSION — 02 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / NO PHASE-03 LIVE AUTHORITY.
