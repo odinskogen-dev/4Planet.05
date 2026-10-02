@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - "system/cloudflare-axe-wake-canary-20261003"
+    paths:
+      - "axe-clock-canary/**"
   pull_request_target:
     types: [opened, reopened, ready_for_review, synchronize, closed]
   workflow_run:
@@ -35,6 +40,41 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  cloudflare-axe-wake-canary:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/system/cloudflare-axe-wake-canary-20261003'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Slack webhook as isolated Worker secret
+        working-directory: axe-clock-canary
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$SLACK_WEBHOOK"
+          printf '%s' "$SLACK_WEBHOOK" | npx wrangler@4.128.0 secret put SLACK_AXE_WEBHOOK_URL
+      - name: Deploy isolated AXE wake canary Worker
+        working-directory: axe-clock-canary
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+        run: npx wrangler@4.128.0 deploy
+      - name: Fire Cloudflare to Slack canary
+        working-directory: axe-clock-canary
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          SUBDOMAIN=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | jq -r '.result.subdomain')
+          curl --fail-with-body --silent --show-error "https://4planet-axe-wake-canary.$SUBDOMAIN.workers.dev/canary"
+
   portfolio-pulse:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
