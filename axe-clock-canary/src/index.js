@@ -1,4 +1,13 @@
+async function wake(env, source) {
+  const eventId = "cloudflare-clock:" + Date.now();
+  const text = ["[CLOUDFLARE / CLOCK]", "event_id: " + eventId, "kind: PORTFOLIO_CLOCK", "action: quarter_hour_wake", "scope: GLOBAL_4PLANET_OPERATIONS", "source: " + source, "WAKE SIGNAL ONLY — existing AXE must fresh-read canonical context and continue safe portfolio work."] .join("\\n");
+  const res = await fetch(env.SLACK_AXE_WEBHOOK_URL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text})});
+  if(!res.ok) throw new Error("Slack failed: "+res.status);
+  return eventId;
+}
+
 export default {
+  async scheduled(controller, env, ctx) { ctx.waitUntil(wake(env, "cloudflare-cron")); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname !== "/canary") return new Response("AXE wake canary ready", { status: 200 });
