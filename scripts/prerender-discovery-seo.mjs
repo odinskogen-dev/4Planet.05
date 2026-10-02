@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const dist = path.join(root, "dist");
 const inventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
+const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const base = fs.readFileSync(path.join(dist, "index.html"), "utf8");
 
@@ -47,6 +48,7 @@ function writeRoute(pathName, html) {
 
 const species = (inventory.species || []).filter((item) => item.indexable === true);
 const places = (inventory.places || []).filter((item) => item.indexable === true);
+const atlasObjects = (atlasDiscovery.objects || []).filter((item) => item.indexable === true);
 
 const relatedPlacesForSpecies = (slug) =>
   places.filter((place) => (place.relatedSpecies || []).some((item) => item.slug === slug && item.state === "CURATED"));
@@ -130,4 +132,27 @@ for (const place of places) {
   }));
 }
 
-console.log(`Prerendered discovery HTML: ${species.length} species + ${places.length} places + 2 indexes`);
+for (const object of atlasObjects) {
+  const pathName = `/atlas/${object.slug}`;
+  writeRoute(pathName, pageHtml({
+    pathName,
+    title: object.title,
+    description: object.description,
+    body: `<main><p>${esc(object.eyebrow)}</p><h1>${esc(object.name)}</h1><p>${esc(object.summary)}</p><h2>Why it matters</h2><p>${esc(object.whyItMatters)}</p><h2>Current / available data</h2><ul>${object.availableData.map((item) => `<li>${esc(item)}</li>`).join("")}</ul><h2>Sources</h2><ul>${object.sources.map((source) => `<li><a href="${esc(source.url)}">${esc(source.label)}</a> — ${esc(source.use)}</li>`).join("")}</ul><h2>Limitations</h2><ul>${object.limitations.map((item) => `<li>${esc(item)}</li>`).join("")}</ul><p><a href="${esc(object.atlasHref)}">Open live ATLAS</a></p></main>`,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: object.title,
+      description: object.description,
+      url: origin + pathName,
+      dateModified: atlasDiscovery.updatedAt,
+      author: { "@type": "Organization", name: "4PLANET" },
+      publisher: { "@type": "Organization", name: "4PLANET" },
+      about: { "@type": "Thing", name: object.name },
+      citation: object.sources.map((source) => source.url),
+      isPartOf: { "@type": "WebSite", name: "4PLANET", url: origin + "/" },
+    },
+  }));
+}
+
+console.log(`Prerendered discovery HTML: ${species.length} species + ${places.length} places + ${atlasObjects.length} ATLAS objects + 2 indexes`);
