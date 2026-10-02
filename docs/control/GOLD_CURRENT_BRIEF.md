@@ -1,3 +1,27 @@
+# DISCOVERY + TRAFFIC GROWTH — PHASE 02 GLOBAL GRAPH EXPANSION — 02 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / NO PHASE-02 LIVE AUTHORITY.
+
+**FOUNDER DIRECTION:** continue production immediately after Sprint 01 LIVE release. This phase remains HEIR-only until a new exact-artifact Founder release.
+
+**P1 USER VALUE:** a person can enter 4PLANET through five source-qualified Places — Kenya, Serengeti, Costa Rica, Great Barrier Reef and Norway — and traverse real crawlable Place ↔ Species relationships into ATLAS and source evidence.
+
+**SPECIES INVENTORY:** close the controlled first inventory from 20/25 to 25/25 curated objects by adding Leopard, Eastern Gorilla, Chimpanzee, Bornean Orangutan and Emperor Penguin. Every added profile reuses the existing SPECIES engine and GBIF occurrence seam with a Source Envelope. Occurrence remains reported observation, never complete range, abundance, trend, residency or live location.
+
+**EASTERN GORILLA PROVIDER MIGRATION:** retain legacy numeric GBIF Backbone key `7262070` only for the current occurrence-adapter contract while documenting that current GBIF web taxonomy presents accepted `Gorilla beringei` under Catalogue-of-Life identifier `3H3C3`. Provider ID migration must be deliberate and tested; the system must not silently rebind identity.
+
+**PLACE INVENTORY:** add source-qualified public candidates for Serengeti and Costa Rica to the existing ATLAS Place registry and promote existing Norway / Great Barrier Reef registry objects into discovery inventory. Navigation bounding boxes are explicitly not official legal/ecological boundaries.
+
+**SOURCE SET:** IUCN SSC Cat Specialist Group (Leopard); current GBIF + WWF subspecies context (Eastern Gorilla); WWF (Chimpanzee, Bornean Orangutan); British Antarctic Survey + U.S. Fish & Wildlife Service (Emperor Penguin); UNESCO + Protected Planet + GBIF Tanzania (Serengeti); SINAC + CBD (Costa Rica); Great Barrier Reef Marine Park Authority + AIMS + UNESCO (Great Barrier Reef); CBD Norway + Artsdatabanken + Miljødirektoratet (Norway).
+
+**GRAPH / MACHINE READABILITY:** Place WebPage schema uses `citation` for provenance instead of incorrectly declaring source URLs as Place `sameAs`. Raw prerendered HTML carries related-species links; Species routes expose qualifying related Places; index pages use ItemList JSON-LD.
+
+**TRUTH BOUNDARIES:** draft CBD country profiles remain labelled draft; AIMS survey results are survey-bounded; Artskart/GBIF points are observations; World Heritage/national/protected-area designations and areas are not collapsed; species/global status never becomes a local-population diagnosis.
+
+**ACCEPTANCE:** exact HEIR SHA must pass typecheck, production build, full smoke/discovery contracts, product authority, Gold policy and immutable Pages/browser proof. No Phase-02 production release, search submission, social send or email send is authorised by this section.
+
+---
+
 # DISCOVERY + TRAFFIC GROWTH SPRINT 01 — GLOBAL SPECIES BATCH 20 — 01 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.

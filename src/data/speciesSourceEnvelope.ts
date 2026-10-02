@@ -330,6 +330,66 @@ export const GREEN_TURTLE_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
   forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from global species description","ecological outcome from species presence alone"],
 };
 
+export const LEOPARD_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219436",
+  scientificName: "Panthera pardus",
+  records: [
+    { id:"5219436-gbif-taxonomy-2026-10-02", sourceFamily:"GBIF", label:"GBIF — Panthera pardus", sourceUrl:"https://www.gbif.org/species/5219436", checkedAt:"2026-10-02", purpose:"TAXONOMY", provenance:"GBIF numeric taxon identity retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Accepted taxon identity does not establish local presence, abundance, range, trend or live location.", updateSemantics:"Re-check identity when GBIF taxonomy changes." },
+    { id:"5219436-gbif-occurrence-2026-10-02", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Panthera pardus", sourceUrl:"https://www.gbif.org/species/5219436", checkedAt:"2026-10-02", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this numeric taxon key.", rightsOrTerms:"Each occurrence retains dataset-level publisher, licence and provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, trend, residency or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"5219436-descriptor-2026-10-02", sourceFamily:"IUCN", label:"IUCN SSC Cat Specialist Group — Leopard", sourceUrl:"https://www.catsg.org/living-species-leopard", checkedAt:"2026-10-02", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used only for bounded descriptive/status/pressure context.", rightsOrTerms:"Factual paraphrase with attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Species/subspecies and local population conditions vary across a very broad range.", updateSemantics:"Re-check when the public source materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from a global species account","ecological outcome from species presence alone"],
+};
+
+export const EASTERN_GORILLA_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:7262070",
+  scientificName: "Gorilla beringei",
+  records: [
+    { id:"7262070-gbif-taxonomy-2026-10-02", sourceFamily:"GBIF", label:"GBIF — Gorilla beringei", sourceUrl:"https://www.gbif.org/species/7262070", checkedAt:"2026-10-02", purpose:"TAXONOMY", provenance:"GBIF numeric taxon identity retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Accepted taxon identity does not establish local presence, abundance, range, trend or live location.", updateSemantics:"Re-check identity when GBIF taxonomy changes. Current GBIF web taxonomy uses Catalogue of Life ID 3H3C3; legacy numeric key 7262070 is retained for current occurrence-adapter compatibility and must be migrated deliberately if provider support changes." },
+    { id:"7262070-gbif-occurrence-2026-10-02", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Gorilla beringei", sourceUrl:"https://www.gbif.org/species/7262070", checkedAt:"2026-10-02", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this numeric taxon key.", rightsOrTerms:"Each occurrence retains dataset-level publisher, licence and provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, trend, residency or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"7262070-descriptor-2026-10-02", sourceFamily:"OTHER", label:"GBIF + WWF — Eastern Gorilla", sourceUrl:"https://www.worldwildlife.org/species/gorilla/", checkedAt:"2026-10-02", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used only for bounded descriptive/status/pressure context.", rightsOrTerms:"Factual paraphrase with attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Mountain and Grauer’s gorillas have different habitats, population histories and local pressures; do not transfer claims between subspecies.", updateSemantics:"Re-check when the public source materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from a global species account","ecological outcome from species presence alone"],
+};
+
+export const CHIMPANZEE_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219534",
+  scientificName: "Pan troglodytes",
+  records: [
+    { id:"5219534-gbif-taxonomy-2026-10-02", sourceFamily:"GBIF", label:"GBIF — Pan troglodytes", sourceUrl:"https://www.gbif.org/species/5219534", checkedAt:"2026-10-02", purpose:"TAXONOMY", provenance:"GBIF numeric taxon identity retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Accepted taxon identity does not establish local presence, abundance, range, trend or live location.", updateSemantics:"Re-check identity when GBIF taxonomy changes." },
+    { id:"5219534-gbif-occurrence-2026-10-02", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Pan troglodytes", sourceUrl:"https://www.gbif.org/species/5219534", checkedAt:"2026-10-02", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this numeric taxon key.", rightsOrTerms:"Each occurrence retains dataset-level publisher, licence and provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, trend, residency or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"5219534-descriptor-2026-10-02", sourceFamily:"OTHER", label:"WWF — Chimpanzee", sourceUrl:"https://www.worldwildlife.org/species/chimpanzee/", checkedAt:"2026-10-02", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used only for bounded descriptive/status/pressure context.", rightsOrTerms:"Factual paraphrase with attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Species-wide habitat and threat context does not establish subspecies or site-level population condition.", updateSemantics:"Re-check when the public source materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from a global species account","ecological outcome from species presence alone"],
+};
+
+export const BORNEAN_ORANGUTAN_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:5219532",
+  scientificName: "Pongo pygmaeus",
+  records: [
+    { id:"5219532-gbif-taxonomy-2026-10-02", sourceFamily:"GBIF", label:"GBIF — Pongo pygmaeus", sourceUrl:"https://www.gbif.org/species/5219532", checkedAt:"2026-10-02", purpose:"TAXONOMY", provenance:"GBIF numeric taxon identity retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Accepted taxon identity does not establish local presence, abundance, range, trend or live location.", updateSemantics:"Re-check identity when GBIF taxonomy changes." },
+    { id:"5219532-gbif-occurrence-2026-10-02", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Pongo pygmaeus", sourceUrl:"https://www.gbif.org/species/5219532", checkedAt:"2026-10-02", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this numeric taxon key.", rightsOrTerms:"Each occurrence retains dataset-level publisher, licence and provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, trend, residency or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"5219532-descriptor-2026-10-02", sourceFamily:"OTHER", label:"WWF — Bornean Orangutan", sourceUrl:"https://www.worldwildlife.org/species/orangutan/bornean-orangutan/", checkedAt:"2026-10-02", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used only for bounded descriptive/status/pressure context.", rightsOrTerms:"Factual paraphrase with attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Island-wide trends and habitat descriptions do not establish local occupancy or current population size.", updateSemantics:"Re-check when the public source materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from a global species account","ecological outcome from species presence alone"],
+};
+
+export const EMPEROR_PENGUIN_SOURCE_ENVELOPE: SpeciesSourceEnvelope = {
+  schema: "4PLANET_SPECIES_SOURCE_ENVELOPE_01",
+  speciesId: "taxon:gbif:2481661",
+  scientificName: "Aptenodytes forsteri",
+  records: [
+    { id:"2481661-gbif-taxonomy-2026-10-02", sourceFamily:"GBIF", label:"GBIF — Aptenodytes forsteri", sourceUrl:"https://www.gbif.org/species/2481661", checkedAt:"2026-10-02", purpose:"TAXONOMY", provenance:"GBIF numeric taxon identity retained by the existing 4PLANET Species engine.", rightsOrTerms:"GBIF source page; downstream occurrence records retain dataset-level licences and citations.", evidenceState:"KNOWN", uncertainty:"Accepted taxon identity does not establish local presence, abundance, range, trend or live location.", updateSemantics:"Re-check identity when GBIF taxonomy changes." },
+    { id:"2481661-gbif-occurrence-2026-10-02", sourceFamily:"GBIF", label:"GBIF occurrence discovery — Aptenodytes forsteri", sourceUrl:"https://www.gbif.org/species/2481661", checkedAt:"2026-10-02", purpose:"OCCURRENCE_LAYER", provenance:"The existing 4PLANET occurrence seam queries reported GBIF records for this numeric taxon key.", rightsOrTerms:"Each occurrence retains dataset-level publisher, licence and provenance when materialised.", evidenceState:"KNOWN", uncertainty:"Occurrence points are reported observations, not complete range, abundance, trend, residency or live tracking.", updateSemantics:"Refresh through the controlled occurrence adapter only." },
+    { id:"2481661-descriptor-2026-10-02", sourceFamily:"OTHER", label:"British Antarctic Survey — Emperor Penguin 2026 Red List update", sourceUrl:"https://www.bas.ac.uk/news/emperor-penguin-and-antarctic-fur-seal-now-endangered-due-to-climate-change-iucn-red-list/", checkedAt:"2026-10-02", purpose:"DESCRIPTOR", provenance:"Authoritative public species account used only for bounded descriptive/status/pressure context.", rightsOrTerms:"Factual paraphrase with attribution; no source endorsement implied.", evidenceState:"KNOWN", uncertainty:"Species-level Red List and climate context does not establish the outcome or sea-ice condition of a specific colony.", updateSemantics:"Re-check when the public source materially changes." },
+  ],
+  forbiddenInferences:["range from occurrence points alone","abundance or trend from occurrence count","live location from historical occurrence data","local population condition from a global species account","ecological outcome from species presence alone"],
+};
+
 const SPECIES_SOURCE_ENVELOPES: Record<string, SpeciesSourceEnvelope> = {
   orca: ORCA_SOURCE_ENVELOPE,
   jaguar: JAGUAR_SOURCE_ENVELOPE,
@@ -343,6 +403,11 @@ const SPECIES_SOURCE_ENVELOPES: Record<string, SpeciesSourceEnvelope> = {
   "giant-panda": GIANT_PANDA_SOURCE_ENVELOPE,
   "whale-shark": WHALE_SHARK_SOURCE_ENVELOPE,
   "green-sea-turtle": GREEN_TURTLE_SOURCE_ENVELOPE,
+  leopard: LEOPARD_SOURCE_ENVELOPE,
+  "eastern-gorilla": EASTERN_GORILLA_SOURCE_ENVELOPE,
+  chimpanzee: CHIMPANZEE_SOURCE_ENVELOPE,
+  "bornean-orangutan": BORNEAN_ORANGUTAN_SOURCE_ENVELOPE,
+  "emperor-penguin": EMPEROR_PENGUIN_SOURCE_ENVELOPE,
   "acropora-palmata": ELKHORN_CORAL_SOURCE_ENVELOPE,
 };
 

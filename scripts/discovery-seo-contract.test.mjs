@@ -1,5 +1,5 @@
 import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),router=read("src/routes/router.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx");
-test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=25);assert.ok(inv.species.filter(s=>s.indexable).length>=20);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
+test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=25);assert.equal(inv.species.filter(s=>s.indexable).length,25);assert.equal(inv.species.filter(s=>!s.indexable).length,0);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle","leopard","eastern-gorilla","chimpanzee","bornean-orangutan","emperor-penguin"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
 test("crawler policy",()=>{for(const b of["OAI-SearchBot","Googlebot","Bingbot"])assert.ok(robots.includes(`User-agent: ${b}`));for(const p of["/labs","/os","/sandbox","/checkout","/api"])assert.ok(robots.includes(`Disallow: ${p}`));assert.match(idx,/host-indexing-policy\.js/)});
@@ -15,3 +15,33 @@ test("IndexNow is prepared but fails closed without explicit Founder release", (
 });
 
 test("owned return route is noindex and deliberately excluded from discovery sitemap",()=>{const router=read("src/routes/router.tsx");const page=read("src/pages/v5/PlanetSignal.tsx");const map=read("scripts/generate-sitemap.mjs");assert.match(router,/path="\/signal"/);assert.match(page,/robots="noindex,follow"/);assert.doesNotMatch(map,/^\s*"\/signal",?$/m);});
+
+test("phase 02 place inventory is source-qualified and graph-connected",()=> {
+  for (const slug of ["kenya","serengeti","costa-rica","great-barrier-reef","norway"]) {
+    const place=inv.places.find((item)=>item.slug===slug);
+    assert.ok(place?.indexable===true, `missing indexable place: ${slug}`);
+    assert.ok(place.sources.length>=3, `insufficient sources: ${slug}`);
+    assert.ok(place.relatedSpecies.some((item)=>item.state==="CURATED"&&item.slug), `missing curated species graph: ${slug}`);
+  }
+  const registry=read("src/planet/places.ts");
+  assert.match(registry,/placeId\("serengeti"\)/);
+  assert.match(registry,/placeId\("costa-rica"\)/);
+});
+
+test("Place schema uses citations rather than claiming sources are sameAs identities",()=> {
+  const page=read("src/pages/integrated/Places.tsx");
+  const prerender=read("scripts/prerender-discovery-seo.mjs");
+  assert.match(page,/citation:place\.sources\.map/);
+  assert.doesNotMatch(page,/sameAs:place\.sources/);
+  assert.match(prerender,/citation: place\.sources\.map/);
+  assert.match(prerender,/Related species/);
+  assert.match(prerender,/\/species\/\$\{esc\(item\.slug\)\}/);
+});
+
+test("Species graph links back to qualifying Places",()=> {
+  const route=read("src/pages/integrated/SpeciesRoute.tsx");
+  assert.match(route,/relatedPlaces/);
+  assert.match(route,/EXPLORE WHERE IT LIVES/);
+  const envelopes=read("src/data/speciesSourceEnvelope.ts");
+  for (const token of ["LEOPARD_SOURCE_ENVELOPE","EASTERN_GORILLA_SOURCE_ENVELOPE","CHIMPANZEE_SOURCE_ENVELOPE","BORNEAN_ORANGUTAN_SOURCE_ENVELOPE","EMPEROR_PENGUIN_SOURCE_ENVELOPE"]) assert.match(envelopes,new RegExp(token));
+});

@@ -1,6 +1,6 @@
 {
   "schema": "4PLANET_DISCOVERY_INVENTORY_01",
-  "updatedAt": "2026-10-01",
+  "updatedAt": "2026-10-02",
   "publicationLaw": "Only objects with indexable=true have passed this sprint's bounded public-discovery threshold. BUILD_NEXT items are inventory candidates, not published truth objects.",
   "places": [
     {
@@ -84,6 +84,282 @@
           "url": "https://kws.go.ke/strategic-plan/",
           "checkedAt": "2026-10-01",
           "use": "KWS-described pressures including habitat fragmentation, human–wildlife conflict, poaching and climate change."
+        }
+      ]
+    },
+    {
+      "slug": "serengeti",
+      "name": "Serengeti",
+      "kind": "REGION",
+      "placeId": "place:4p:serengeti",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Serengeti — Migration, savanna wildlife and ecological context | 4PLANET",
+      "description": "Explore Serengeti as a connected savanna system: migration, water, predators, protected-area context, source evidence and ATLAS-linked species.",
+      "summary": "Serengeti National Park sits at the heart of a wider East African ecosystem shaped by seasonal rainfall, grasslands, rivers, woodlands and one of the world's largest terrestrial migrations.",
+      "truthBoundary": "This is a source-grounded discovery object centred on Serengeti National Park and its wider ecological context. The ATLAS rectangle is navigation geometry, not the UNESCO or national-park legal boundary. Wildlife counts quoted by UNESCO are source-reported site context, not current 4PLANET population estimates.",
+      "ecosystems": [
+        "Short-grass plains and savanna",
+        "Woodlands and river systems",
+        "Seasonal water and migration corridors",
+        "Rocky outcrops and associated habitats"
+      ],
+      "protectedAreasSummary": "UNESCO describes the World Heritage property as 1,476,300 hectares and places it within a larger Serengeti ecosystem. Protected Planet separately records national and World Heritage designations with different reported areas; 4PLANET does not collapse those designations into one boundary or area figure.",
+      "pressures": [
+        "Dry-year surface-water scarcity",
+        "Poaching",
+        "Tourism pressure",
+        "Wildfires",
+        "Potential fragmentation of migration connectivity"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "african-savanna-elephant",
+          "label": "African Savanna Elephant",
+          "scientificName": "Loxodonta africana",
+          "state": "CURATED"
+        },
+        {
+          "slug": "lion",
+          "label": "Lion",
+          "scientificName": "Panthera leo",
+          "state": "CURATED"
+        },
+        {
+          "slug": "cheetah",
+          "label": "Cheetah",
+          "scientificName": "Acinonyx jubatus",
+          "state": "CURATED"
+        },
+        {
+          "slug": "leopard",
+          "label": "Leopard",
+          "scientificName": "Panthera pardus",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "UNESCO World Heritage Centre — Serengeti National Park",
+          "url": "https://whc.unesco.org/en/list/156/",
+          "checkedAt": "2026-10-02",
+          "use": "Savanna, migration, biodiversity, integrity and management-pressure context; UNESCO's property boundary remains authoritative for the World Heritage site."
+        },
+        {
+          "label": "Protected Planet — Serengeti National Park",
+          "url": "https://www.protectedplanet.net/2575",
+          "checkedAt": "2026-10-02",
+          "use": "Current protected-area/World Heritage designation record and source provenance."
+        },
+        {
+          "label": "GBIF — Tanzania",
+          "url": "https://www.gbif.org/country/TZ/summary",
+          "checkedAt": "2026-10-02",
+          "use": "Country-scale biodiversity-data entry point; GBIF records are observations, not population estimates or complete range."
+        }
+      ]
+    },
+    {
+      "slug": "costa-rica",
+      "name": "Costa Rica",
+      "kind": "COUNTRY",
+      "placeId": "place:4p:costa-rica",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Costa Rica — Forests, wetlands, coasts and biodiversity | 4PLANET",
+      "description": "Explore Costa Rica as a connected living system: forests, wetlands, mangroves, protected areas, biodiversity sources, Jaguar and ATLAS context.",
+      "summary": "Costa Rica connects tropical forests, wetlands, high-elevation páramo, mangroves and marine-coastal systems through a national network of conservation areas and protected wildlife areas.",
+      "truthBoundary": "This page is a country-scale discovery object, not a complete national biodiversity assessment. The CBD country profile used here is explicitly marked draft by the Secretariat. The ATLAS rectangle is navigation geometry, not an official national or ecological boundary dataset.",
+      "ecosystems": [
+        "Tropical forests",
+        "Wetlands and river systems",
+        "Páramo and high-elevation systems",
+        "Mangroves and coastal ecosystems",
+        "Marine ecosystems"
+      ],
+      "protectedAreasSummary": "SINAC organises national conservation management through 11 Conservation Areas and publishes the country's protected-wildlife-area categories and records. 4PLANET preserves SINAC's management definitions rather than inventing a single protected-area coverage figure.",
+      "pressures": [
+        "Habitat fragmentation",
+        "Pressure on vulnerable dry forests",
+        "Wetland and coastal management pressures",
+        "Connectivity between protected and productive landscapes"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "jaguar",
+          "label": "Jaguar",
+          "scientificName": "Panthera onca",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "SINAC — Conservation Areas",
+          "url": "https://www.sinac.go.cr/EN-US/ac/Pages/default.aspx",
+          "checkedAt": "2026-10-02",
+          "use": "Official national conservation-area structure."
+        },
+        {
+          "label": "SINAC — Protected Wildlife Areas",
+          "url": "https://www.sinac.go.cr/EN-US/asp/Pages/default.aspx",
+          "checkedAt": "2026-10-02",
+          "use": "Official protected-wildlife-area categories and management context."
+        },
+        {
+          "label": "Convention on Biological Diversity — Costa Rica Country Profile",
+          "url": "https://www.cbd.int/countries/profile?country=cr",
+          "checkedAt": "2026-10-02",
+          "use": "Country-scale ecosystem and biodiversity context. CBD labels this profile draft; that limitation is retained."
+        }
+      ]
+    },
+    {
+      "slug": "great-barrier-reef",
+      "name": "Great Barrier Reef",
+      "kind": "MARINE_AREA",
+      "placeId": "place:4p:great-barrier-reef",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Great Barrier Reef — Coral, turtles, heat signals and evidence | 4PLANET",
+      "description": "Explore the Great Barrier Reef through coral habitats, seagrass, mangroves, marine species, current reef-condition evidence and ATLAS context.",
+      "summary": "The Great Barrier Reef is the world's largest coral reef ecosystem and includes coral reefs, seagrass beds, mangroves, islands, deep-water features and highly connected marine habitats.",
+      "truthBoundary": "This page distinguishes the Great Barrier Reef World Heritage Area, Marine Park management context and monitoring evidence. The ATLAS rectangle is navigation geometry, not a statutory boundary. AIMS survey results describe surveyed reefs and regions, not every reef or the whole ecosystem at identical condition.",
+      "ecosystems": [
+        "Coral reefs",
+        "Seagrass beds",
+        "Mangroves and inshore habitats",
+        "Inter-reefal communities",
+        "Deep oceanic and continental-shelf habitats"
+      ],
+      "protectedAreasSummary": "UNESCO records the World Heritage property at about 348,000 km². Reef Authority describes more than 2,900 coral reefs and 70 bioregions; these are different ecological/administrative descriptors and are kept separate.",
+      "pressures": [
+        "Marine heat stress and bleaching",
+        "Tropical cyclones and flooding",
+        "Crown-of-thorns starfish outbreaks",
+        "Fishing and other human pressures"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "green-sea-turtle",
+          "label": "Green Turtle",
+          "scientificName": "Chelonia mydas",
+          "state": "CURATED"
+        },
+        {
+          "slug": "whale-shark",
+          "label": "Whale Shark",
+          "scientificName": "Rhincodon typus",
+          "state": "CURATED"
+        },
+        {
+          "slug": "humpback-whale",
+          "label": "Humpback Whale",
+          "scientificName": "Megaptera novaeangliae",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Great Barrier Reef Marine Park Authority — Biodiversity",
+          "url": "https://www.gbrmpa.gov.au/learn/biodiversity",
+          "checkedAt": "2026-10-02",
+          "use": "Official Reef biodiversity, habitats and bioregion context."
+        },
+        {
+          "label": "Great Barrier Reef Marine Park Authority — Marine Turtles",
+          "url": "https://www.gbrmpa.gov.au/learn/animals/marine-turtles",
+          "checkedAt": "2026-10-02",
+          "use": "Green-turtle and marine-turtle occurrence, habitat and nesting context."
+        },
+        {
+          "label": "AIMS — Annual Summary Report of Coral Reef Condition 2025/26",
+          "url": "https://www.aims.gov.au/monitoring-great-barrier-reef/gbr-condition-summary-2025-26",
+          "checkedAt": "2026-10-02",
+          "use": "Current 2025–26 surveyed-reef coral-cover and heat/bleaching context, with survey limitations."
+        },
+        {
+          "label": "UNESCO World Heritage Centre — Great Barrier Reef",
+          "url": "https://whc.unesco.org/en/list/154",
+          "checkedAt": "2026-10-02",
+          "use": "World Heritage property identity, extent and biodiversity context."
+        }
+      ]
+    },
+    {
+      "slug": "norway",
+      "name": "Norway",
+      "kind": "COUNTRY",
+      "placeId": "place:4p:norway",
+      "indexable": true,
+      "publicationState": "HEIR_CANDIDATE",
+      "title": "Norway — Coasts, forests, mountains and species observations | 4PLANET",
+      "description": "Explore Norway through coastal and marine systems, forests, wetlands, mountains, public biodiversity data and ATLAS-linked species.",
+      "summary": "Norway spans strong ecological gradients from southern forests and humid coasts to inland valleys, mountains and Arctic environments, with extensive marine systems connected to the mainland.",
+      "truthBoundary": "This is a country-scale discovery object. The ATLAS rectangle covers mainland Norway and is navigation geometry, not a legal boundary; Svalbard has its own Place object and is not represented by this mainland map extent. Artskart observations are reported records from multiple data owners and do not prove complete range, abundance or current presence.",
+      "ecosystems": [
+        "Coastal and marine systems",
+        "Forests",
+        "Wetlands",
+        "Mountains and alpine systems",
+        "Open lowland and semi-natural systems"
+      ],
+      "protectedAreasSummary": "Norway uses the Natur i Norge (NiN) system to describe ecological variation. Artsdatabanken's Artskart aggregates species observations from multiple data owners and GBIF Norway; 4PLANET treats those as observations with source ownership and quality limits, not a complete national census.",
+      "pressures": [
+        "Habitat loss and land-use pressure",
+        "Marine warming and ecosystem change",
+        "Pressure on threatened nature types",
+        "Sampling and coverage gaps in biodiversity observations"
+      ],
+      "relatedSpecies": [
+        {
+          "slug": "orca",
+          "label": "Orca",
+          "scientificName": "Orcinus orca",
+          "state": "CURATED"
+        },
+        {
+          "slug": "sperm-whale",
+          "label": "Sperm Whale",
+          "scientificName": "Physeter macrocephalus",
+          "state": "CURATED"
+        },
+        {
+          "slug": "harbour-porpoise",
+          "label": "Harbour Porpoise",
+          "scientificName": "Phocoena phocoena",
+          "state": "CURATED"
+        },
+        {
+          "slug": "atlantic-cod",
+          "label": "Atlantic Cod",
+          "scientificName": "Gadus morhua",
+          "state": "CURATED"
+        },
+        {
+          "slug": "blue-mussel",
+          "label": "Blue Mussel",
+          "scientificName": "Mytilus edulis",
+          "state": "CURATED"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Convention on Biological Diversity — Norway Country Profile",
+          "url": "https://www.cbd.int/countries/profile?country=no",
+          "checkedAt": "2026-10-02",
+          "use": "Country-scale ecological diversity and habitat-gradient context."
+        },
+        {
+          "label": "Artsdatabanken — Artskart",
+          "url": "https://data.artsdatabanken.no/artskart",
+          "checkedAt": "2026-10-02",
+          "use": "Norwegian species-observation discovery and provenance model; records originate from multiple data owners and GBIF Norway."
+        },
+        {
+          "label": "Miljødirektoratet — Naturkart / Natur i Norge",
+          "url": "https://www.miljodirektoratet.no/ansvarsomrader/overvaking-arealplanlegging/arealplanlegging/naturkart/",
+          "checkedAt": "2026-10-02",
+          "use": "Official use of NiN for mapping and describing ecological variation in Norway."
         }
       ]
     }
@@ -213,8 +489,9 @@
       "slug": "leopard",
       "commonName": "Leopard",
       "scientificName": "Panthera pardus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Leopard identity, IUCN Cat Specialist Group context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "cheetah",
@@ -244,22 +521,25 @@
       "slug": "eastern-gorilla",
       "commonName": "Eastern Gorilla",
       "scientificName": "Gorilla beringei",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Eastern Gorilla identity, subspecies-aware forest context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "chimpanzee",
       "commonName": "Chimpanzee",
       "scientificName": "Pan troglodytes",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Chimpanzee identity, WWF-backed habitat and pressure context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "bornean-orangutan",
       "commonName": "Bornean Orangutan",
       "scientificName": "Pongo pygmaeus",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Bornean Orangutan identity, Borneo forest context, reported GBIF observations and connected ATLAS context."
     },
     {
       "slug": "whale-shark",
@@ -281,8 +561,9 @@
       "slug": "emperor-penguin",
       "commonName": "Emperor Penguin",
       "scientificName": "Aptenodytes forsteri",
-      "indexable": false,
-      "state": "BUILD_NEXT"
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Emperor Penguin identity, Antarctic sea-ice context, reported GBIF observations and connected ATLAS context."
     }
   ]
 }
