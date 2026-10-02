@@ -2,11 +2,11 @@
   "schemaVersion": 2,
   "status": "FOUNDER_AUTHORISED",
   "sourceBranch": "king/test",
-  "testKingSha": "359f687f91470a8ee40f8558ade56d578d76accb",
-  "priorLiveSha": "7a9301d6be22520d5d1623aa4d150eaaa87fab9d",
-  "founderDecisionRef": "Founder instruction 2026-10-02 — \"ENIG LIVE RELEASE\" for the bounded 4PLANET discovery release after final diff safety check.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/issues/173#issuecomment-5943189049",
-  "rollbackRef": "main@7a9301d6be22520d5d1623aa4d150eaaa87fab9d",
+  "testKingSha": "f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24",
+  "priorLiveSha": "44ed8eb1055aa2cdc6a033be23ae44db18b1dd48",
+  "founderDecisionRef": "Founder instruction 2026-10-03 — “AXE Jeg foreslår vi faktisk kjører det ut live også sender du meg url når alt er ute”.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37077436047",
+  "rollbackRef": "main@44ed8eb1055aa2cdc6a033be23ae44db18b1dd48",
   "releaseControlCommit": true,
-  "note": "Bounded discovery LIVE runtime assembled by preserving prior LIVE and overlaying only the source-tested discovery files from HEIR evidence c309e894e591789e4c06e26f0420f7ba347e481d. Concurrent 4SAPIEN pantry/Embla, Market and unrelated workflow changes were deliberately excluded. Immutable HEIR proof: https://6b36ca88.4planet-05.pages.dev. No social/email send or IndexNow submission is authorised by this promotion."
+  "note": "Bounded 4PLANET discovery LIVE release. Runtime parent f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24 preserves prior LIVE and overlays only Earth/Fires/Whales useful internet objects, route/sitemap/prerender/public-host analytics, GOLD brief, and the accepted brace-expansion lock remediation. Source HEIR dc2d5e3be517c3da3bac5dcea71cbdcffa3ca870. No social/email send, outreach, paid spend or IndexNow submission."
 }
