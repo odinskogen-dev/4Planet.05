@@ -58,6 +58,9 @@ jobs:
           python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
           python products/4sapien/build/apply_document_intake_guard.py "$SITE"
           python products/4sapien/build/apply_finance_daniel_feedback_guard.py "$SITE"
+          python products/4sapien/build/apply_finance_truth_math_guard.py "$SITE"
+          python products/4sapien/build/apply_finance_sync_b1c_guard.py "$SITE"
+          python products/4sapien/build/apply_money_now_guard.py "$SITE"
           python products/4sapien/build/apply_pantry_first_return_guard.py "$SITE"
           cp products/4sapien/cloudflare/_headers "$SITE/_headers"
           cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
@@ -81,8 +84,10 @@ jobs:
           BRAIN=$SITE/brain/index.html
           for marker in 'Se livet ditt klart.' 'functions/v1/embla-core-preview' '/4sapien-live-hardening.js'; do grep -Fq "$marker" "$ROOT"; done
           for marker in 'fs-food-main' 'MAT · EMBLA' 'FoodPantryProof' 'four_sapien_embla_memories' '4sapien-pantry-decision.js'; do grep -Fq "$marker" "$FOOD"; done
-          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' 'four-sapien-finance-record-changed'; do grep -Fq "$marker" "$MONEY"; done
-          test -s products/4sapien/build/apply_finance_daniel_feedback_guard.py
+          for marker in 'fs-money-main' 'PENGER · EMBLA' 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' 'FOUR_SAPIEN_FINANCE_TRUTH_MATH_V1' 'FOUR_SAPIEN_FINANCE_SYNC_B1C' 'FOUR_SAPIEN_MONEY_NOW_V1' 'four-sapien-finance-record-changed' '/4sapien-money-now.js'; do grep -Fq "$marker" "$MONEY"; done
+          for file in apply_finance_daniel_feedback_guard.py apply_finance_truth_math_guard.py apply_finance_sync_b1c_guard.py apply_money_now_guard.py; do test -s "products/4sapien/build/$file"; done
+          python -m py_compile products/4sapien/build/apply_finance_daniel_feedback_guard.py products/4sapien/build/apply_finance_truth_math_guard.py products/4sapien/build/apply_finance_sync_b1c_guard.py products/4sapien/build/apply_money_now_guard.py
+          node --check "$SITE/4sapien-money-now.js"
           test -s tests/e2e/four-sapien-money-regression.spec.ts
           for marker in 'brainIdentity' 'functions/v1/brain-profile'; do grep -Fq "$marker" "$BRAIN"; done
           node --check "$SITE/4sapien-live-hardening.js"
@@ -139,6 +144,9 @@ jobs:
                grep -Fq '4sapien-pantry-decision.js' /tmp/live-food.html &&
                grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" /tmp/live-money.html &&
                grep -Fq 'FOUR_SAPIEN_DANIEL_FINANCE_FIX_01' /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_FINANCE_TRUTH_MATH_V1' /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_FINANCE_SYNC_B1C' /tmp/live-money.html &&
+               grep -Fq 'FOUR_SAPIEN_MONEY_NOW_V1' /tmp/live-money.html &&
                grep -Fq 'FOUR_SAPIEN_FINANCE_TWIN_RUNTIME_V1_1' /tmp/live-money.html; then ready=1; break; fi
             sleep 3
           done
