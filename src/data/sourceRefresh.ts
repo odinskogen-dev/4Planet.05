@@ -89,6 +89,11 @@ export interface SourcePropagationResult<TObject> {
 
 const asArray = (value?: readonly string[]) => value ? [...value] : [];
 
+const checkedAtMillis = (value: string) => {
+  const millis = Date.parse(value);
+  return Number.isFinite(millis) ? millis : null;
+};
+
 const RIGHTS_SENSITIVE_FIELD_TOKENS = Object.freeze([
   "right",
   "rights",
@@ -206,8 +211,26 @@ export function evaluateSourceRefresh<T extends RefreshableSourceRecord>(
   const previousFingerprint = record.sourceFingerprint;
   const previousProviderId = record.providerId ?? context.providerId;
   const nextProviderId = snapshot.providerId ?? context.providerId;
+  const previousCheckedAtMillis = checkedAtMillis(record.checkedAt);
+  const nextCheckedAtMillis = checkedAtMillis(snapshot.checkedAt);
 
-  if (snapshot.checkedAt < record.checkedAt) {
+  if (previousCheckedAtMillis === null || nextCheckedAtMillis === null) {
+    const audit = makeAudit(
+      record,
+      snapshot,
+      "CONFLICT",
+      "REVIEW_REQUIRED",
+      "REVIEW_REQUIRED",
+      "A source check timestamp is invalid. Existing public evidence remains unchanged.",
+      context,
+      "PENDING",
+      "Recorded invalid source chronology in append-only audit history.",
+      "Did not compare or propagate source state with an invalid timestamp.",
+    );
+    return resultWithAudit(record, audit, false, false);
+  }
+
+  if (nextCheckedAtMillis < previousCheckedAtMillis) {
     const audit = makeAudit(
       record,
       snapshot,
@@ -219,6 +242,26 @@ export function evaluateSourceRefresh<T extends RefreshableSourceRecord>(
       "PENDING",
       "Recorded stale-source conflict in append-only audit history.",
       "Did not roll the source record back to an older checked state.",
+    );
+    return resultWithAudit(record, audit, false, false);
+  }
+
+  if (
+    nextCheckedAtMillis === previousCheckedAtMillis
+    && previousFingerprint
+    && previousFingerprint !== snapshot.fingerprint
+  ) {
+    const audit = makeAudit(
+      record,
+      snapshot,
+      "CONFLICT",
+      "REVIEW_REQUIRED",
+      "REVIEW_REQUIRED",
+      "A different source fingerprint was returned for the same checked instant. Existing public evidence remains unchanged.",
+      context,
+      "PENDING",
+      "Recorded same-instant source conflict in append-only audit history.",
+      "Did not choose between contradictory source states with identical chronology.",
     );
     return resultWithAudit(record, audit, false, false);
   }
