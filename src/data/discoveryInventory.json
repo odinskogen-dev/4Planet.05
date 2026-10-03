@@ -662,7 +662,22 @@
       "scientificName": "Orcinus orca",
       "indexable": true,
       "state": "CURATED",
-      "description": "Explore Orca identity, habitat, source-grounded evidence, reported observations and the same canonical species in 4PLANET ATLAS."
+      "description": "Explore the orca (Orcinus orca): identity, habitat, behaviour, source-grounded evidence, reported observations and context in 4PLANET ATLAS.",
+      "title": "Orca (Orcinus orca) — Killer whale profile | 4PLANET",
+      "image": "/assets/species/orca/hero.jpg",
+      "imageAlt": "Orca — 4PLANET SPECIES",
+      "atlasHref": "/atlas/whales",
+      "sourceUrls": [
+        "https://www.gbif.org/species/2440483",
+        "https://obis.org/taxon/137102",
+        "https://www.fisheries.noaa.gov/species/killer-whale"
+      ],
+      "limitations": [
+        "Occurrence records are not live animal positions.",
+        "Occurrence count does not establish abundance or population trend.",
+        "Population-specific statements must not be transferred to unidentified Orca records without evidence."
+      ],
+      "reviewedAt": "2026-08-28"
     },
     {
       "slug": "humpback-whale",
