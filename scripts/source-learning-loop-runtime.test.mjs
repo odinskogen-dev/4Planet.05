@@ -135,6 +135,56 @@ test('older source snapshots cannot roll canonical state backwards', () => {
   assert.equal(result.record.sourceFingerprint, 'fp-old');
 });
 
+test('timestamp ordering uses instants rather than ISO text order', () => {
+  const record = {
+    ...baseRecord(),
+    checkedAt: '2026-08-28T07:00:00+02:00',
+  };
+  const result = evaluateSourceRefresh(record, snapshot({
+    checkedAt: '2026-08-28T06:00:00Z',
+    fingerprint: 'fp-old',
+    sourceVersion: 'v1',
+    verification: 'VERIFIED',
+    changedFields: [],
+  }), context);
+  assert.equal(result.audit.status, 'UNCHANGED');
+  assert.equal(result.record.checkedAt, '2026-08-28T06:00:00Z');
+});
+
+test('timezone offsets cannot disguise an older source snapshot as newer', () => {
+  const result = evaluateSourceRefresh(baseRecord(), snapshot({
+    checkedAt: '2026-08-28T08:00:00+02:00',
+    verification: 'VERIFIED',
+  }), context);
+  assert.equal(result.audit.status, 'CONFLICT');
+  assert.equal(result.publicUpdateAllowed, false);
+  assert.equal(result.record.checkedAt, '2026-08-28T06:00:00Z');
+  assert.equal(result.record.sourceFingerprint, 'fp-old');
+});
+
+test('invalid source timestamps fail closed', () => {
+  const result = evaluateSourceRefresh(baseRecord(), snapshot({
+    checkedAt: 'not-a-timestamp',
+    verification: 'VERIFIED',
+  }), context);
+  assert.equal(result.audit.status, 'CONFLICT');
+  assert.equal(result.audit.truthEffect, 'REVIEW_REQUIRED');
+  assert.equal(result.publicUpdateAllowed, false);
+  assert.match(result.audit.note, /timestamp is invalid/i);
+});
+
+test('different fingerprints at the same instant require review', () => {
+  const result = evaluateSourceRefresh(baseRecord(), snapshot({
+    checkedAt: '2026-08-28T08:00:00+02:00',
+    verification: 'VERIFIED',
+  }), context);
+  assert.equal(result.audit.status, 'CONFLICT');
+  assert.equal(result.audit.truthEffect, 'REVIEW_REQUIRED');
+  assert.equal(result.publicUpdateAllowed, false);
+  assert.equal(result.record.sourceFingerprint, 'fp-old');
+  assert.match(result.audit.note, /same checked instant/i);
+});
+
 test('provider identifier changes cannot silently rebind a source', () => {
   const result = evaluateSourceRefresh(baseRecord(), snapshot({ providerId: 'GBIF:species:999' }), context);
   assert.equal(result.audit.status, 'CONFLICT');
