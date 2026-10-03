@@ -19,9 +19,15 @@ const mono = {
 function atlasHostHref(href: string) {
   if (typeof window === "undefined") return href;
   const host = window.location.hostname.toLowerCase().replace(/^www\./, "");
-  return host === "4planet.org" || host === "test.4planet.org" || host === "localhost" || host.endsWith(".pages.dev")
-    ? href
-    : `https://4planet.org${href}`;
+  // Hosts that serve the shared /atlas route keep the same-origin live-map link.
+  const servesAtlasPath =
+    host === "4planet.org" ||
+    host === "test.4planet.org" ||
+    host === "4planetatlas.com" ||
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.endsWith(".pages.dev");
+  return servesAtlasPath ? href : `https://4planet.org${href}`;
 }
 
 export function AtlasDiscoveryPage() {
