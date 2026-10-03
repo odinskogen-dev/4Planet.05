@@ -43,7 +43,7 @@ These pages explain source-grounded ATLAS layers and their limits. They do not c
 The object page already uses the shared shell. The redirect must land on that same route so phone and desktop hydration do not fall through to the generic shell or a missing route.
 
 ## HUMAN SUCCESS
-Following `https://4planet.org/atlas/earth`, `/atlas/fires`, and `/atlas/whales` ends on three distinct pages a person can read without JavaScript: the right name, sources, limits, and a live ATLAS link.
+Following `https://4planet.org/atlas/earth`, `/atlas/fires`, and `/atlas/whales` ends on three distinct pages a person can read without JavaScript: the right name, sources, limits, and a live ATLAS link. On `4planetatlas.com` that live-map link stays on `/atlas?…`, the route that host already serves.
 
 ---
 
