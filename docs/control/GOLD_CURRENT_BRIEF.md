@@ -1,3 +1,37 @@
+# COMPANY GOLD 01A — TONY'S REVIEW ROUTE ON CURRENT HEIR — 03 OCT 2026
+
+**STATUS:** HEIR / INTERNAL NOINDEX / NOT HUMAN GOLD / NO LIVE.
+
+**USER ARRIVES BECAUSE:** a reviewer needs the existing Tony's company → product → material drawer, which was on HEIR as a file and not routed.
+
+**ONE THING TO UNDERSTAND:** company-level cocoa traceability is not this retail bar's cooperative, farm or batch. That stays UNKNOWN.
+
+**PRIMARY ACTION:** open `/labs/company-gold/tonys`.
+
+**SECONDARY DEPTH:** named first-party sources and the next evidence decision.
+
+**P1 DOMINANT:** Milk Chocolate 32% 180g, EAN 8717677339914, with UNKNOWN beside it.
+
+**P2 ORIENTATION:** source-backed versus unknown.
+
+**P3 ACTION:** open the named sources.
+
+**P4 DEPTH:** materials, rights, next evidence decision.
+
+**WHAT CAN BE REMOVED:** no second company model.
+
+**WHAT MUST BE REUSED:** existing `TONYS_COMPANY_GOLD` and `CompanyGoldTony`.
+
+**TRUTH BOUNDARY:** Tony's pages are SOURCE TERMS / REFERENCE ONLY. Not an ecological outcome and not business advice.
+
+**MOBILE-FIRST RISK:** cards stack at 390 and 430. No horizontal overflow.
+
+**HUMAN SUCCESS:** desktop and mobile render the same object, robots `noindex,nofollow,noarchive`.
+
+**DELTA:** forward-port of the accepted route and route→same-object noindex regression onto `king/test` `4fcbd7a1`. The prior brief block from `0810f28` was not copied. Prior QA_ACCEPT is lineage only.
+
+---
+
 # ATLAS GOOGLE SEARCH DISCOVERY CLOSURE 01 — 02 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / SEARCH-INDEXABLE SOURCE ARTIFACT / NO GOOGLE INDEX CLAIM.
