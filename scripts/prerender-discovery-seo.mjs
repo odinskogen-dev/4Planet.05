@@ -13,7 +13,9 @@ const esc = (value = "") =>
 const json = (value) => JSON.stringify(value).replaceAll("<", "\\u003c");
 
 function setMeta(html, selector, value) {
-  const [kind, key] = selector.split(":");
+  const separator = selector.indexOf(":");
+  const kind = selector.slice(0, separator);
+  const key = selector.slice(separator + 1);
   const attr = kind === "property" ? "property" : "name";
   const re = new RegExp(`<meta\\s+${attr}=["']${key}["'][^>]*>`, "i");
   const tag = `<meta ${attr}="${key}" content="${esc(value)}" />`;

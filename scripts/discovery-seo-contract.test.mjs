@@ -111,4 +111,6 @@ test("Orca discovery object carries a reusable search, share and AI-retrieval pr
 test("Orca discovery metadata preserves citations, Taxon identity, limits and ATLAS journey in client and prerender",()=>{
   for(const token of ['"@type": "Taxon"',"citation: sourceUrls","scientificName: curated.scientificName",'limitations.join(" ")',"image={media?.localPath}"]) assert.ok(sr.includes(token), `client metadata missing ${token}`);
   for(const token of ['"@type": "Taxon"',"citation: sourceUrls","What this does not establish","image: item.image","atlasHref"]) assert.ok(pre.includes(token), `prerender metadata missing ${token}`);
+  assert.match(pre,/selector\.indexOf\(":"\)/);
+  assert.doesNotMatch(pre,/selector\.split\(":"\)/);
 });
